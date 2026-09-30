@@ -8,22 +8,22 @@
   "runner_sha256": "9b90ff1eecb68f1fad8fb5e322043abd1e9803b9b227ff1608d7ac1a36af87c3",
   "machine_pin": "toolchain/altirra-shell-paced.json",
   "machine_pin_sha256": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068",
-  "bundle_manifest_sha256": "d781c6d99da51a67f67c91e362c02d67d0805ecb6a8edaff5a228cf3e1e07d23",
-  "boot_xex_sha256": "97b615049042267646bbb8de6fd171187fbeabcc4d097b9235c99d37eac0ca8f",
-  "native_xex_sha256": "9daa23d7c12c7768a626536b8ae21cb4f890fa1d4b2fe14c73293fb0ea3c7272",
+  "bundle_manifest_sha256": "e2ee2056cc82bc934f757b1ae01543d71ae77a31413bb0a9eefd8fbfbc449e21",
+  "boot_xex_sha256": "63b079d191e455f3aa19b78283a185cad7e067ad1fdc7068c5a09a5237af59f7",
+  "native_xex_sha256": "bc4ca48e8fb31f72f9445b58dae88c781f5b691642f9b1008031f244ad9ca729",
   "system_disk_sha256": "1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2",
-  "exec_build": "dbea0fd",
-  "exec_build_revision": "dbea0fde607b1fbc1247e8482dd2197c63e9c2b2",
+  "exec_build": "b0fa8aa",
+  "exec_build_revision": "b0fa8aab37e9429a0be6c0d3ac3f6ad9823e51f8",
   "exec_build_dirty": false,
   "screenshots": [
     {
       "name": "docs/images/demo-boot.png",
-      "sha256": "5d7fe212a4ee4603677e94550779c5d2df206a9dbec4ff0c654afc52f6efed2a",
+      "sha256": "ca72d49560158f01671ba7abf8684d8a8078bcc1f3146eb8f92c93fdadd3b060",
       "commands": [
         "TASKS"
       ],
       "rows": [
-        "Exec816 (dbea0fd)",
+        "Exec816 (b0fa8aa)",
         "",
         "exec: 8 task slots",
         "exec: stack checks enabled",
