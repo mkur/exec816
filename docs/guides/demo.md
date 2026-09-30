@@ -67,6 +67,8 @@ The second screenshot is taken after the last command above:
 
 <img src="../demo.png" alt="Demo walkthrough showing memory information and HELLO and CAT pipelines while the prime task continues" width="672" style="image-rendering: pixelated;">
 
+Type `HELP` to list the shell's built-in commands.
+
 `HELLO | WC` prints `1 3 17`. `CAT STORY.TXT | WC` prints `24 133 746`.
 The columns are lines, words and bytes. Now run `CAT LONG.TXT | WC` and press
 **BREAK** while LONG.TXT is being read. Both pipeline stages retire before the

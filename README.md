@@ -87,6 +87,8 @@ search continues:
 
 <img src="docs/demo.png" alt="Demo walkthrough showing memory information and HELLO and CAT pipelines while the prime task continues" width="672" style="image-rendering: pixelated;">
 
+Type `HELP` to list the shell's built-in commands.
+
 `HELLO | WC` prints `1 3 17`: lines, words and bytes. Press **BREAK** to cancel
 a running command, or enter `EXIT` to stop the demo and restore the OS screen.
 Disk access is read-only; keep the same disk mounted until reset. If the system
