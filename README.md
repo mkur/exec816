@@ -35,22 +35,35 @@ Use [AltirraSDL](https://github.com/ilmenit/AltirraSDL) with these settings.
 Upstream Altirra will not run this build. The exact tested emulator build is
 recorded in the [platform pin](toolchain/altirra-shell-paced.json).
 
-| Setting | Value |
-| --- | --- |
-| Machine | Atari 800XL |
-| CPU | Native 65C816, 8× speed |
-| Memory | 64 KiB base RAM plus 15 high banks |
-| Video | PAL |
-| OS firmware | The included `altirraos-816.rom` |
-| BASIC | Disabled |
-| ROM shadowing | Enabled |
-| D1 drive emulation | Generic + 57600 baud |
-| SIO patch and burst I/O | Disabled |
+These steps use AltirraSDL's desktop interface. Open **System → Configure System…**.
+The first column below gives the page in the settings window's left-hand tree.
+Select the CPU before setting high memory.
 
-1. Mount the extracted `system.atr` in **D1**.
-2. Disable **Unload disks when booting new image** in the emulator.
-3. Cold-boot `Exec-of816.xex`, keeping the disk mounted. The ATR is the data
-   disk; the XEX starts the system.
+| Settings page | Control | Value |
+| --- | --- | --- |
+| Computer → System | Hardware type | Atari 800XL |
+| Computer → System | Video standard | PAL |
+| Computer → CPU | CPU selection | **65C816 (14.28MHz)** (8× speed) |
+| Computer → CPU | Shadow ROMs in fast RAM | Checked |
+| Computer → Memory | Memory Size | **64K** |
+| Computer → Memory | High memory banks | **960K** (15 banks above the base RAM) |
+| Computer → Firmware | Operating system | The included `altirraos-816.rom`; import it as described below |
+| Computer → Firmware | Enable internal BASIC (boot without Option pressed) | Unchecked |
+| Computer → Acceleration | SIO Patch | Unchecked |
+| Computer → Acceleration | D: burst I/O | Unchecked |
+| Computer → Boot | Unload disks when booting new image | **Unchecked**, so booting the XEX keeps the system disk mounted |
+
+To import the ROM, open **Computer → Firmware → Firmware Manager… → Add…**
+and choose the extracted `altirraos-816.rom`. In **Edit Firmware Settings**, name
+it **Exec816 AltirraOS**, set **Type** to **XL/XE OS**, and click **OK**. Close the
+Firmware Manager, then select **Exec816 AltirraOS** in **Operating system**.
+
+1. Close the settings window. Open **File → Disk Drives…** and click the **…**
+   button on the **D1:** row to select the extracted `system.atr`.
+2. In the same **Disk drives** window, set **Emulation level** to
+   **Generic + 57600 baud**. This setting applies to all drives.
+3. Choose **File → Boot Image…** and select `Exec-of816.xex`. The ATR is the
+   data disk; the XEX starts the system.
 4. Wait five seconds for OF816 to start Exec816. To enter the Forth monitor,
    press a key during the countdown; type `EXEC816` to continue booting.
 

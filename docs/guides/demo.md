@@ -18,14 +18,17 @@ notices and `SHA256SUMS`. Keep these files together and follow the included boot
 instructions. Building from source is an [optional alternative](#build-from-source-optional).
 
 Use [AltirraSDL](https://github.com/ilmenit/AltirraSDL); upstream Altirra will not
-run this build. Configure Atari 800XL, dedicated AltirraOS 3.44 for 65C816, native
-65C816 at 8×, PAL, 64 KiB base RAM plus 15 high banks, BASIC off and ROM shadowing
-enabled. Select the included `altirraos-816.rom` as the OS firmware. The tested
-configuration is recorded in the [platform pin](../../toolchain/altirra-shell-paced.json).
+run this build. Follow the [settings table and ROM import steps](../../README.md#installation)
+in the main README. Open **System → Configure System…** to configure the machine;
+the UI labels the 8× CPU setting **65C816 (14.28MHz)** and 15 high banks **960K**.
+The tested configuration is recorded in the [platform pin](../../toolchain/altirra-shell-paced.json).
 
-Mount the extracted `system.atr` in D1. Select **Generic + 57600 baud** drive
-emulation, with SIO patch and burst I/O disabled. Disable **Unload disks when
-booting new image**, then cold-boot `Exec-of816.xex` while keeping the ATR mounted.
+In **System → Configure System… → Computer → Boot**, uncheck **Unload disks
+when booting new image**. Open **File → Disk Drives…**, use the **…** button on
+the **D1:** row to mount `system.atr`, and set **Emulation level** to
+**Generic + 57600 baud**. In the settings window's **Computer → Acceleration**
+page, **SIO Patch** and **D: burst I/O** must both be unchecked.
+Choose **File → Boot Image…** and select `Exec-of816.xex`.
 Leave the keyboard alone to enter the shell after five seconds, or press a key
 to enter Forth and type `EXEC816` when ready. The ATR is a data disk; boot the
 XEX. A missing disk or wrong drive profile can leave the SIO driver offline

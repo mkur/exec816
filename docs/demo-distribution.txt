@@ -10,14 +10,44 @@ Boot in AltirraSDL
 Requires AltirraSDL: https://github.com/ilmenit/AltirraSDL
 Upstream Altirra will not run this build.
 
-1. Extract all files from this ZIP into one folder.
-2. Select the included altirraos-816.rom as the OS firmware.
-3. Configure Atari 800XL, native 65C816 at 8x, PAL, 64 KiB base RAM plus
-   15 high banks, BASIC off and ROM shadowing on.
-4. Mount @SYSTEM_DISK@ in D@SYSTEM_DRIVE@. Use Generic + 57600 baud drive emulation,
-   with SIO patch and burst I/O disabled. Disable "Unload disks when
-   booting new image".
-5. Boot Exec-of816.xex while keeping the disk mounted. Leave the keyboard
+These steps use AltirraSDL's desktop interface. Extract all files from this
+ZIP into one folder. Open System > Configure System... and select these
+pages in the settings window's left-hand tree:
+
+Computer > System
+  Hardware type: Atari 800XL
+  Video standard: PAL
+
+Computer > CPU
+  Select 65C816 (14.28MHz), which is 8x speed.
+  Check "Shadow ROMs in fast RAM".
+
+Computer > Memory
+  Memory Size: 64K
+  High memory banks: 960K (15 banks above the base RAM).
+  Select the 65C816 CPU first to enable this control.
+
+Computer > Firmware
+  Click Firmware Manager... > Add... and choose altirraos-816.rom.
+  In Edit Firmware Settings, name it "Exec816 AltirraOS", set Type to
+  "XL/XE OS", and click OK. Close the Firmware Manager, then select
+  "Exec816 AltirraOS" in Operating system.
+  Uncheck "Enable internal BASIC (boot without Option pressed)".
+
+Computer > Acceleration
+  Uncheck "SIO Patch" and "D: burst I/O".
+
+Computer > Boot
+  Uncheck "Unload disks when booting new image" so the system disk stays
+  mounted when you boot the XEX.
+
+Close the settings window, then:
+
+1. Open File > Disk Drives... and click the "..." button on the D@SYSTEM_DRIVE@: row
+   to select @SYSTEM_DISK@.
+2. In the same Disk drives window, set Emulation level to
+   "Generic + 57600 baud". This setting applies to all drives.
+3. Choose File > Boot Image... and select Exec-of816.xex. Leave the keyboard
    alone; Exec816 starts after the five-second countdown.
 
 The ATR contains the system files. Boot the XEX, not the ATR.

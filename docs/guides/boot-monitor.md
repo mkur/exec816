@@ -45,16 +45,19 @@ Download `exec816-demo.zip` from [Releases](https://github.com/mkur/exec816/rele
 and extract it. It includes OF816, Exec816, the system disk and the matching ROM.
 See the [installation guide](../../README.md#installation).
 
-Open the extracted `Exec-of816.xex` in
-[AltirraSDL](https://github.com/ilmenit/AltirraSDL) using the
-[pinned machine configuration](../../toolchain/altirra-shell-paced.json): 800XL,
-AltirraOS 65816, PAL, 8× CPU, shadow ROM, 64 KB base RAM plus 15 native high
-banks, BASIC disabled, VBI enabled and DLI disabled. Select the bundled
-`altirraos-816.rom` as the OS firmware. Upstream Altirra will not run this build.
+Configure [AltirraSDL](https://github.com/ilmenit/AltirraSDL) using the
+[installation guide's settings table and ROM import steps](../../README.md#installation).
+The [pinned machine configuration](../../toolchain/altirra-shell-paced.json) uses
+800XL, AltirraOS 65816, PAL, 8× CPU, shadow ROM, 64 KB base RAM plus 15 native high
+banks, BASIC disabled, VBI enabled and DLI disabled. Upstream Altirra will not
+run this build.
 
-Mount the extracted `system.atr` in D1 with **Generic + 57600 baud** drive emulation,
-SIO patch and burst I/O disabled. Disable **Unload disks when booting new image**,
-then boot the XEX while keeping the ATR mounted. The ATR is a data disk.
+In **System → Configure System… → Computer → Boot**, uncheck **Unload disks
+when booting new image**. Open **File → Disk Drives…**, use the **…** button on
+the **D1:** row to select `system.atr`, and set **Emulation level** to
+**Generic + 57600 baud**. Under **Computer → Acceleration** in the settings
+window, uncheck **SIO Patch** and **D: burst I/O**. Finally, choose
+**File → Boot Image…** and select `Exec-of816.xex`. The ATR is a data disk.
 
 Leave the keyboard alone to boot automatically. To use the monitor, press a
 normal keyboard key (or BREAK) during the countdown and release it. The cancel
