@@ -74,7 +74,9 @@ HELLO | WC prints 1 3 17. CAT STORY.TXT | WC prints 24 133 746.
 The columns count lines, words and bytes. The lower screen shows the
 prime search advancing independently.
 
-Type HELP to list the shell's built-in commands.
+Type HELP to list the shell's built-in commands:
+
+    HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES EXIT
 
 Try CAT LONG.TXT | WC, then press BREAK to cancel it. EXIT stops the demo
 and restores the OS display. Disk access is read-only; keep the same disk
