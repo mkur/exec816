@@ -5,9 +5,8 @@ written mainly in Action!. It provides Tasks, signals, message ports, memory
 allocation and asynchronous device I/O, with DOS, filesystems and a shell built
 on those services.
 
-The current target is the dedicated AltirraOS 65816 ROM under a pinned AltirraSDL
-configuration. This is a development system; supported profiles and validation
-limits are recorded with each build.
+You can try Exec816 in the AltirraSDL emulator. The demo download and setup
+instructions are below.
 
 <img src="docs/images/demo-boot.png" alt="Exec816 boot messages and TASKS listing, with the prime task running below" width="672" style="image-rendering: pixelated;">
 
