@@ -1,0 +1,97 @@
+diff --git a/src/Altirra/source/siomanager.cpp b/src/Altirra/source/siomanager.cpp
+index 8e34e5e4..5030168e 100644
+--- a/src/Altirra/source/siomanager.cpp
++++ b/src/Altirra/source/siomanager.cpp
+@@ -22,6 +22,9 @@
+ #include <at/atcore/enumparseimpl.h>
+ #include <at/atcore/snapshotimpl.h>
+ #include "siomanager.h"
++#include <cstdlib>
++#include <cstdio>
++#include <cstring>
+ #include "simulator.h"
+ #include "cpu.h"
+ #include "cpuhookmanager.h"
+@@ -468,6 +471,19 @@ void ATSIOManager::SIOInterface::BeginCommand() {
+ 	mbCommandActive = true;
+ }
+ 
++// Exec816 fault responder: only explicitly addressed D8, never the boot disk.
++// Changes peripheral bytes/stop bits, without calling into the guest kernel.
++static bool Exec816SIOFault(const char *name) {
++	const char *path = std::getenv("EXEC816_SIO_FAULT_FILE");
++	char value[32] {};
++	if (!path) return false;
++	FILE *file = std::fopen(path, "r");
++	if (!file) return false;
++	std::fscanf(file, "%31s", value);
++	std::fclose(file);
++	return !std::strcmp(value, name);
++}
++
+ void ATSIOManager::SIOInterface::SendData(const void *data, uint32 len, bool addChecksum) {
+ 	if (!IsCommandActive())
+ 		return;
+@@ -477,7 +493,9 @@ void ATSIOManager::SIOInterface::SendData(const void *data, uint32 len, bool add
+ 	if (!len)
+ 		return;
+ 
+-	uint32 spaceRequired = len;
++	const bool faultData = mActiveDeviceId == 0x38 && addChecksum && len == 128;
++	const bool extra = faultData && (Exec816SIOFault("extra") || Exec816SIOFault("late"));
++	uint32 spaceRequired = len + (extra ? 1 : 0);
+ 
+ 	if (addChecksum)
+ 		++spaceRequired;
+@@ -505,6 +523,24 @@ void ATSIOManager::SIOInterface::SendData(const void *data, uint32 len, bool add
+ 	if (addChecksum)
+ 		mTransferBuffer.push_back(ATComputeSIOChecksum(data8, len));
+ 
++	if (faultData && Exec816SIOFault("checksum"))
++		mTransferBuffer.back() ^= 1;
++	if (faultData && (Exec816SIOFault("short") || Exec816SIOFault("firstcause"))) {
++		step.mTransferLength -= 2;
++		mTransferBuffer.resize(mTransferBuffer.size() - 2);
++	}
++	if (extra) {
++		mTransferBuffer.push_back(0xA6);
++		if (Exec816SIOFault("late")) {
++			--step.mTransferLength;
++			Step& delay = mStepQueue.push_back();
++			delay.mType = kStepType_Delay;
++			delay.mDelayTicks = 50000;
++			Step& stray = mStepQueue.push_back();
++			stray.mType = kStepType_Send;
++			stray.mTransferLength = 1;
++		}
++	}
+ 	ExecuteNextStep();
+ }
+ 
+@@ -520,7 +556,7 @@ void ATSIOManager::SIOInterface::SendACK() {
+ 		Step& step = mStepQueue.push_back();
+ 		step.mType = kStepType_AccelSendACK;
+ 	} else {
+-		SendData("A", 1, false);
++		SendData(mActiveDeviceId == 0x38 && Exec816SIOFault("protocol") ? "X" : "A", 1, false);
+ 	}
+ }
+ 
+@@ -551,7 +587,7 @@ void ATSIOManager::SIOInterface::SendComplete(bool autoDelay) {
+ 		Step& step = mStepQueue.push_back();
+ 		step.mType = kStepType_AccelSendComplete;
+ 	} else {
+-		SendData("C", 1, false);
++		SendData(mActiveDeviceId == 0x38 && (Exec816SIOFault("device") || Exec816SIOFault("firstcause")) ? "E" : "C", 1, false);
+ 	}
+ 
+ 	if (g_ATLCSIOReply.IsEnabled())
+@@ -1301,7 +1337,7 @@ void ATSIOManager::SIOInterface::OnScheduledEvent(uint32 id) {
+ 				VDASSERT(mParent.mSendingInterfaces.Contains(this));
+ 				uint8 c = mTransferBuffer[mTransferIndex++];
+ 
+-				mParent.mpPokey->ReceiveSIOByte(c, mTransferCyclesPerBit, true, mbActiveDeviceDisk ? mParent.mbDiskBurstTransfersEnabled : mParent.mbBurstTransfersEnabled, false, false);
++				mParent.mpPokey->ReceiveSIOByte(c, mTransferCyclesPerBit, true, mbActiveDeviceDisk ? mParent.mbDiskBurstTransfersEnabled : mParent.mbBurstTransfersEnabled, false, mActiveDeviceId == 0x38 && mCurrentStep.mTransferLength > 1 && Exec816SIOFault("framing"));
+ 				mParent.TraceReceive(c, mTransferCyclesPerBit, false);
+ 
+ 				mParent.mpScheduler->SetEvent(mTransferCyclesPerByte + mTransferBurstOffset, this, kEventId_Send, mpTransferEvent);

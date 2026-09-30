@@ -1,0 +1,11 @@
+MODULE IOCONTEXT
+USE EXEC
+EXEC.IORequest item
+CARD ARRAY checks(8)
+
+; Exercise I/O admission from the required execution context.
+PROC Main()
+
+RETURN
+
+ENDMODULE

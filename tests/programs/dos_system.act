@@ -1,0 +1,216 @@
+MODULE DOSSYSTEM
+USE EXEC
+USE DOSCORE
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCLIENT
+USE FSTYPES
+USE FSREGISTRY
+USE FSBOOT
+USE FSMANAGER
+USE FSINSPECT
+USE FSNAMES
+USE BOOTCONFIG
+USE HEAPCORE
+
+CARD checks
+BYTE finished
+EXEC.Task child
+PROC POINTER absent()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ed00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; The harness supplies the effective physical name without changing program code.
+BYTE POINTER FUNC PhysicalName()
+
+RETURN(BYTE POINTER($d1000))
+
+PROC ReadFile(BYTE POINTER name)
+  CARD index
+
+  LET file=DOS.Open(name,DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  LET buffer=BYTE POINTER($d4000)
+  Require(DOS.Read(file,buffer,777)=777)
+  FOR index=0 TO 776 DO
+    IF buffer(index)<>(BYTE(index) XOR 83) THEN
+      HEAPCORE.Abort($edff)
+    FI
+  OD
+
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+; A child can use SYS without inheriting the parent's current directory.
+PROC Other()
+  DOS.FileLock POINTER old
+
+  IF DOS.Open(BYTE POINTER(c"DATA.BIN"),DOS.MODE_OLDFILE)<>NULL OR
+      DOS.IoErr()<>DOS.ERROR_NO_DEFAULT_DIR THEN
+    HEAPCORE.Abort($edfe)
+  FI
+
+  LET local=DOS.Lock(BYTE POINTER(c"sys:TOOLS"),DOS.SHARED_LOCK)
+  IF local=NULL THEN
+    HEAPCORE.Abort($edfd)
+  FI
+
+  old=DOS.CurrentDir(local)
+  LET file=DOS.Open(BYTE POINTER(c"SUB/DATA.BIN"),DOS.MODE_OLDFILE)
+  IF old<>NULL OR file=NULL THEN
+    HEAPCORE.Abort($edfc)
+  FI
+
+  LET closed=DOS.Close(file)
+  old=DOS.CurrentDir(NULL)
+  DOS.UnLock(old)
+  IF DOS.ReleaseContext()=0 THEN
+    HEAPCORE.Abort($edfb)
+  FI
+
+RETURN
+
+PROC Independent()
+
+  child.tc_Node.ln_Type=EXEC.NT_TASK
+  child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+  child.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
+  child.tc_SPReg=child.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@child.tc_MemEntry)
+  Require(EXEC.AddTask(@child,@Other,absent)=@child)
+  WHILE child.tc_State<>EXEC.TS_REMOVED DO
+    BEGIN
+      LET ticks=EXECTASKS.Sleep(1)
+    END
+  OD
+
+RETURN
+
+BYTE FUNC Equal(BYTE POINTER first,second)
+  CARD index
+
+  index=0
+  WHILE first(index)=second(index) DO
+    IF first(index)=0 THEN
+      RETURN(1)
+    FI
+
+    index==+1
+  OD
+
+RETURN(0)
+
+; Require SYS and the selected physical name to share one mount and cached
+; sectors.
+PROC Alias()
+  FSINSPECT.CacheInfo first,second
+  DOS.FileLock POINTER system,old
+  FSTYPES.Object POINTER alias
+
+  ReadFile(BYTE POINTER($d1040))
+  Require(FSINSPECT.CacheStatus(@first)<>0)
+  ReadFile(BYTE POINTER(c"sYs:TOOLS/SUB/DATA.BIN"))
+  Require(FSINSPECT.CacheStatus(@second)<>0)
+  Require(first.misses=second.misses AND second.hits>first.hits)
+
+  LET physical=DOS.Lock(PhysicalName(),DOS.SHARED_LOCK)
+  system=DOS.Lock(BYTE POINTER(c"SYS:TOOLS"),DOS.SHARED_LOCK)
+  Require(physical<>NULL AND system<>NULL)
+  LET original=FSTYPES.Object POINTER(physical)
+  alias=FSTYPES.Object POINTER(system)
+  Require(original.mount=alias.mount AND original.generation=alias.generation)
+  LET generation=alias.generation
+  LET buffer=BYTE POINTER($d3000)
+  Require(DOS.NameFromLock(system,buffer,256)<>0)
+  Require(Equal(buffer,PhysicalName())<>0)
+  LET info=DOS.FileInfoBlock POINTER($d3200)
+  Require(DOS.Examine(system,info)<>0 AND info.fib_DirEntryType=DOS.ST_USERDIR)
+  Require(Equal(info.fib_FileName,BYTE POINTER(c"TOOLS"))<>0)
+  Require(DOS.ExNext(system,info)<>0 AND Equal(info.fib_FileName,
+      BYTE POINTER(c"SUB"))<>0)
+  DOS.UnLock(physical)
+
+  old=DOS.CurrentDir(system)
+  Require(old=NULL)
+  Independent()
+  ReadFile(BYTE POINTER(c"SUB/DATA.BIN"))
+  ReadFile(BYTE POINTER(c":TOOLS/SUB/DATA.BIN"))
+  ReadFile(BYTE POINTER(c"SYS:TOOLS/SUB/DATA.BIN"))
+  Require(FSMANAGER.Unmount(BOOTCONFIG.B_SYSTEM_SLOT)=0
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  ReadFile(BYTE POINTER(c"SYS:TOOLS/SUB/DATA.BIN"))
+
+  alias.mount.offline=1
+  alias.mount.error=DOS.ERROR_NO_DISK
+  Require(DOS.Open(BYTE POINTER(c"SYS:TOOLS/SUB/DATA.BIN"),
+      DOS.MODE_OLDFILE)=NULL AND DOS.IoErr()=DOS.ERROR_NO_DISK)
+  alias.mount.offline=0
+  alias.mount.error=0
+  old=DOS.CurrentDir(NULL)
+  Require(old=system)
+  DOS.UnLock(old)
+  Require(FSMANAGER.Unmount(BOOTCONFIG.B_SYSTEM_SLOT)<>0)
+  Require(DOS.Lock(BYTE POINTER(c"SYS:"),DOS.SHARED_LOCK)=NULL
+      AND DOS.IoErr()=DOS.ERROR_DEVICE_NOT_MOUNTED)
+  Require(DOS.Lock(PhysicalName(),DOS.SHARED_LOCK)=NULL
+      AND DOS.IoErr()=DOS.ERROR_DEVICE_NOT_MOUNTED)
+  Require(FSMANAGER.Mount(BOOTCONFIG.B_SYSTEM_SLOT)<>0)
+  system=DOS.Lock(BYTE POINTER(c"SYS:"),DOS.SHARED_LOCK)
+  Require(system<>NULL)
+  alias=FSTYPES.Object POINTER(system)
+  Require(alias.generation>generation)
+  DOS.UnLock(system)
+  Require(FSBOOT.Stop()<>0)
+  ReadFile(BYTE POINTER(c"SYS:TOOLS/SUB/DATA.BIN"))
+
+RETURN
+
+; Exercise SYS and physical aliases sharing one mount and cached data.
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  LET expected=BYTE POINTER($d1100)
+  LET registry=DOSCORE.GetRegistry()
+  Require(BOOTCONFIG.SystemDrive()=expected(0) AND BOOTCONFIG.Status()=expected(1))
+  Require(FSNAMES.ValidAlias(BYTE POINTER(c"sys"))=0)
+  Require(DOS.CurrentDir(NULL)=NULL)
+  Require(DOS.Open(BYTE POINTER(c"DATA.BIN"),DOS.MODE_OLDFILE)=NULL
+      AND DOS.IoErr()=DOS.ERROR_NO_DEFAULT_DIR)
+  IF expected(2)<>0 THEN
+    Require(DOS.Lock(BYTE POINTER(c"SYS:"),DOS.SHARED_LOCK)=NULL
+        AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+    Require(registry.state=FSTYPES.STATE_FAILED)
+    Require(registry.runtime=NULL)
+  ELSEIF BOOTCONFIG.B_SYSTEM_SLOT=255 THEN
+    Require(DOS.Open(BYTE POINTER(c"SYS:TOOLS/SUB/DATA.BIN"),
+        DOS.MODE_OLDFILE)=NULL AND DOS.IoErr()=DOS.ERROR_DEVICE_NOT_MOUNTED)
+    ReadFile(BYTE POINTER($d1040))
+  ELSE
+    IF expected(0)<>1 THEN
+      Require(DOS.Lock(BYTE POINTER(c"D1:"),DOS.SHARED_LOCK)=NULL
+          AND DOS.IoErr()=DOS.ERROR_DEVICE_NOT_MOUNTED)
+    FI
+
+    Alias()
+  FI
+
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

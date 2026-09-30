@@ -1,0 +1,30 @@
+MODULE SIODEADLINETEST
+USE SIODRIVER
+USE HEAPCORE
+
+TYPE Sample=[
+  LONGCARD microseconds
+  CARD profile,ticks
+]
+
+CARD count,checks
+
+; Exercise conversion of SIO timeouts to bounded timer deadlines.
+PROC Main()
+  CARD index,actual
+  Sample POINTER samples
+
+  samples=Sample POINTER($d0000)
+  FOR index=0 TO count-1 DO
+    actual=SIODRIVER.DeadlineTicks(samples(index).microseconds,
+        samples(index).profile)
+    IF actual<>samples(index).ticks THEN
+      HEAPCORE.Abort($fa00)
+    FI
+
+    checks==+1
+  OD
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,73 @@
+MODULE SHELLHEAP
+USE HEAPCORE
+USE FSBOOT
+USE DOSCORE
+USE DOSCLIENT
+INCLUDE "shell-heap-observed.inc"
+LONGCARD baseline,minimum,peakUsed
+CARD peakObjects,checks
+BYTE finished
+BYTE ARRAY tools=[84 79 79 76 83 0]
+BYTE ARRAY sub=[83 85 66 0]
+BYTE ARRAY parent=[47 0]
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e780+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC ShellSample()
+  LONGCARD available
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+
+  available=EXEC.AvailMem(0)
+  IF available<minimum THEN
+    minimum=available
+  FI
+
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  IF client<>DOSCLIENT.ClientContext POINTER(0) THEN
+    IF client.objects>peakObjects THEN
+      peakObjects=client.objects
+    FI
+  FI
+
+RETURN
+
+PROC ShellWrite(DOS.FileHandle POINTER handle BYTE POINTER bytes CARD count)
+
+  NativeShellWrite(handle,bytes,count)
+  ShellSample()
+
+RETURN
+
+; Exercise shell allocation cleanup across command execution.
+PROC Main()
+
+  baseline=EXEC.AvailMem(0)
+  minimum=baseline
+  Check(ShellStart(shellRoot)<>0 AND SIZEOF(ShellState)=128)
+  ShellChange(tools)
+  Check(shell.status=0)
+  ShellChange(sub)
+  Check(shell.status=0)
+  ShellChange(parent)
+  Check(shell.status=0)
+  Check(peakObjects=3 AND shell.retiredDirectory=DOS.FileLock POINTER(0))
+  peakUsed=baseline-minimum
+  Check(peakUsed>=SHELL_BYTES)
+  Check(ShellFinish()=0 AND FSBOOT.Stop()<>0)
+  Check(EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+
+ENDMODULE

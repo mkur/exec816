@@ -1,0 +1,339 @@
+MODULE DOSCOOKED
+USE EXEC
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE DOSSTREAMS
+USE DOSRAW
+USE COOKEDLINE
+USE DOSBREAKTYPES
+USE DOSCANCEL
+USE CONSOLETYPES
+USE HEAPCORE
+INCLUDE "dos-types.inc"
+
+PUBLIC TYPE Handle=[
+  DOSSTREAMS.Handle stream
+  COOKEDLINE.Session POINTER state
+]
+
+; Pair a raw console endpoint with shared editable-line state.
+PUBLIC BYTE POINTER FUNC Open(DOSCLIENT.ClientContext POINTER client LONGCARD unit)
+  Handle POINTER item
+  COOKEDLINE.Session POINTER state
+  BYTE ignored
+
+  client.busy=1
+  state=COOKEDLINE.Create()
+  IF state=COOKEDLINE.Session POINTER(0) THEN
+    client.busy=0
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  item=Handle POINTER(DOSRAW.OpenSized(client,DOSOBJECTS.BACKEND_CON,
+      SIZEOF(Handle),unit))
+  IF item=Handle POINTER(0) THEN
+    ignored=COOKEDLINE.Destroy(state)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  item.state=state
+
+RETURN(BYTE POINTER(item))
+
+; Release the line-session reference only after the underlying endpoint
+; closes.
+PUBLIC LONGINT FUNC Close(DOSCLIENT.ClientContext POINTER client Handle
+    POINTER item)
+  COOKEDLINE.Session POINTER state
+  LONGINT result
+  BYTE ignored
+
+  state=item.state
+  IF state.references=1 AND state.busy<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  result=DOSRAW.CloseSized(client,@item.stream,SIZEOF(Handle))
+  ; A successful close consumes the wrapper; rejection leaves it owned.
+  IF result<>0 THEN
+    ignored=COOKEDLINE.Release(state)
+  FI
+
+RETURN(result)
+
+; The outer Read retains the endpoint's input lease and active reference across
+; all transfers. Every call collects its reply before reusing this one request.
+LONGINT FUNC Wire(DOSCLIENT.ClientContext POINTER client BYTE POINTER buffer
+    CARD length BYTE reading,cancellable)
+  EXEC.IOStdReq POINTER request
+  INT error
+  LONGINT secondary
+  DOSBREAKTYPES.Scope POINTER scope
+
+  request=client.request
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(length)
+  request.io_Actual=0
+  request.io_Offset=0
+  request.io_Flags=0
+  IF reading<>0 THEN
+    request.io_Command=EXEC.CMD_READ
+  ELSE
+    request.io_Command=EXEC.CMD_WRITE
+  FI
+
+  scope=DOSBREAKTYPES.Scope POINTER(0)
+  IF cancellable<>0 THEN
+    scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+  FI
+
+  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope)
+  secondary=LONGINT(error)
+  IF error=EXEC.CONERR_INPUTOVERFLOW THEN
+    secondary=ERROR_BUFFER_OVERFLOW
+  FI
+
+  IF error=EXEC.IOERR_UNITBUSY THEN
+    secondary=ERROR_OBJECT_IN_USE
+  FI
+
+  IF secondary=0 THEN
+    IF request.io_Actual>LONGCARD(length) OR (reading<>0
+        AND request.io_Actual=0) OR (reading=0
+        AND request.io_Actual<>LONGCARD(length)) THEN
+      secondary=LONGINT(EXEC.IOERR_BADLENGTH)
+    FI
+  FI
+
+  DOSCLIENT.SetError(secondary)
+  IF secondary<>0 THEN
+    RETURN(-1)
+  FI
+
+RETURN(LONGINT(request.io_Actual))
+
+; Prepare one cooked input operation against its retained line session.
+BYTE FUNC Begin(DOSCLIENT.ClientContext POINTER client COOKEDLINE.Session
+    POINTER state)
+  CONSOLETYPES.Instance POINTER instance
+  CARD available,width
+
+  instance=CONSOLETYPES.Instance POINTER(client.request.io_Unit)
+  EXEC.Forbid()
+  width=instance.width
+  available=width-instance.column
+  EXEC.Permit()
+  IF width<3 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(0)
+  FI
+
+  state.drawn=0
+  state.width=COOKEDLINE.TAIL_COLUMNS
+  IF available<3 THEN
+    state.echo(0)=10
+    IF Wire(client,state.echo,1,0,1)<0 THEN
+      RETURN(0)
+    FI
+
+    available=width
+  FI
+
+  IF available<COOKEDLINE.TAIL_COLUMNS+2 THEN
+    state.width=BYTE(available-2)
+  FI
+
+RETURN(1)
+
+; Cancellation retires a valid line and queued typeahead before the caller
+; can begin a new command. A corrupt line keeps its discard-through-Return
+; state. CLEAR and the final newline are cleanup and ignore the sticky break.
+LONGINT FUNC CancelLine(DOSCLIENT.ClientContext POINTER client
+    COOKEDLINE.Session POINTER state)
+  EXEC.IOStdReq POINTER request
+  CONSOLETYPES.Instance POINTER instance
+  INT error
+  BYTE ignored
+  LONGINT written
+
+  IF state.discard<>0 THEN
+    DOSCLIENT.SetError(ERROR_BREAK)
+    RETURN(-1)
+  FI
+
+  state.length=0
+  state.position=0
+  state.ready=0
+  state.eof=0
+  state.error=0
+  ignored=COOKEDLINE.Feed(state,3)
+  request=client.request
+  request.io_Command=EXEC.CMD_CLEAR
+  request.io_Data=BYTE POINTER(0)
+  request.io_Length=0
+  request.io_Actual=0
+  request.io_Offset=0
+  request.io_Flags=0
+  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),
+      DOSBREAKTYPES.Scope POINTER(0))
+  ; A canceled Write finishes its logical scroll before collection. At
+  ; column zero the next prompt already starts a fresh line; a second LF
+  ; would scroll a whole screen again during command retirement.
+  instance=CONSOLETYPES.Instance POINTER(request.io_Unit)
+  IF instance.column<>0 THEN
+    state.echo(0)=10
+    written=Wire(client,state.echo,1,0,0)
+  FI
+
+  state.drawn=0
+  DOSCLIENT.SetError(ERROR_BREAK)
+
+RETURN(0)
+
+; Serialize readers that share the same editable line state.
+LONGINT FUNC AcquireLine(DOSCLIENT.ClientContext POINTER client
+    COOKEDLINE.Session POINTER state)
+  BYTE action
+  CARD count
+  LONGINT error
+
+  IF Begin(client,state)=0 THEN
+    IF DOSCLIENT.IoErr()=ERROR_BREAK THEN
+      RETURN(CancelLine(client,state))
+    FI
+
+    RETURN(-1)
+  FI
+
+  WHILE state.ready=0 DO
+    IF Wire(client,@state.key,1,1,1)<0 THEN
+      error=DOSCLIENT.IoErr()
+      IF error=ERROR_BREAK THEN
+        RETURN(CancelLine(client,state))
+      FI
+
+      COOKEDLINE.Lose(state,error)
+      IF error<>ERROR_BUFFER_OVERFLOW THEN
+        RETURN(-1)
+      FI
+
+      count=COOKEDLINE.Render(state)
+      IF Wire(client,state.echo,count,0,1)<0 THEN
+        IF DOSCLIENT.IoErr()=ERROR_BREAK THEN
+          RETURN(CancelLine(client,state))
+        FI
+
+        RETURN(-1)
+      FI
+    ELSE
+      action=COOKEDLINE.Feed(state,state.key)
+      IF action=1 THEN
+        count=COOKEDLINE.Render(state)
+        IF Wire(client,state.echo,count,0,1)<0 THEN
+          error=DOSCLIENT.IoErr()
+          IF error=ERROR_BREAK THEN
+            RETURN(CancelLine(client,state))
+          FI
+
+          COOKEDLINE.Lose(state,error)
+          RETURN(-1)
+        FI
+      ELSEIF action=2 THEN
+        state.echo(0)=10
+        IF Wire(client,state.echo,1,0,1)<0 THEN
+          error=DOSCLIENT.IoErr()
+          IF error=ERROR_BREAK THEN
+            RETURN(CancelLine(client,state))
+          FI
+
+          COOKEDLINE.Lose(state,error)
+          RETURN(-1)
+        FI
+
+        state.drawn=0
+      FI
+    FI
+  OD
+
+RETURN(0)
+
+; Edit and deliver a line while retaining exclusive session ownership.
+LONGINT FUNC ReadLocked(DOSCLIENT.ClientContext POINTER client Handle
+    POINTER item BYTE POINTER buffer LONGINT length)
+  COOKEDLINE.Session POINTER state
+  EXEC.IOStdReq POINTER request
+  CARD limit
+  LONGINT result,error
+
+  client.busy=1
+  state=item.state
+  IF DOSRAW.Live(@item.stream)=0 THEN
+    client.busy=0
+    DOSCLIENT.SetError(ERROR_BAD_STREAM_NAME)
+    RETURN(-1)
+  FI
+
+  IF DOSRAW.ValidExtent(buffer,length)=0 THEN
+    client.busy=0
+    RETURN(-1)
+  FI
+
+  IF length=0 THEN
+    client.busy=0
+    DOSCLIENT.SetError(0)
+    RETURN(0)
+  FI
+
+  limit=256
+  IF length<256 THEN
+    limit=CARD(length)
+  FI
+
+  result=COOKEDLINE.Drain(state,buffer,limit)
+  IF result=COOKEDLINE.PENDING THEN
+    request=DOSRAW.Prepare(client,@item.stream,@state.key,1,1)
+    IF request=EXEC.IOStdReq POINTER(0) THEN
+      RETURN(-1)
+    FI
+
+    result=AcquireLine(client,state)
+    error=DOSCLIENT.IoErr()
+    DOSRAW.Finish(client,@item.stream,1)
+    IF result<0 THEN
+      DOSCLIENT.SetError(error)
+      RETURN(-1)
+    FI
+
+    result=COOKEDLINE.Drain(state,buffer,limit)
+  FI
+
+  error=0
+  IF result<0 THEN
+    error=state.error
+    state.error=0
+  FI
+
+  client.busy=0
+  DOSCLIENT.SetError(error)
+
+RETURN(result)
+
+; Acquire the cooked session and release it on every terminal read outcome.
+PUBLIC LONGINT FUNC Read(DOSCLIENT.ClientContext POINTER client Handle
+    POINTER item BYTE POINTER buffer LONGINT length)
+  LONGINT result
+
+  IF COOKEDLINE.Enter(item.state)=0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(-1)
+  FI
+
+  result=ReadLocked(client,item,buffer,length)
+  COOKEDLINE.Leave(item.state)
+
+RETURN(result)
+
+ENDMODULE

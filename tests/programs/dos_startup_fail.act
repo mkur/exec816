@@ -1,0 +1,61 @@
+MODULE DOSFAILTEST
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE FSREGISTRY
+USE FSTYPES
+USE HEAPCORE
+CARD checks
+LONGINT expected
+BYTE exhausted
+LONGCARD before
+DOS.FileHandle POINTER file
+DOSCLIENT.ClientContext POINTER client
+DOSCORE.DosRegistry POINTER registry
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Attempt(BYTE unused)
+  CARD ticks
+
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file=DOS.FileHandle POINTER(0) AND DOS.IoErr()=expected)
+  WHILE registry.worker<>BYTE POINTER(0) DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(registry.runtime=BYTE POINTER(0) AND registry.state=FSTYPES.STATE_FAILED)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Exercise filesystem startup rollback at injected failure boundaries.
+PROC Main()
+
+  client=DOSCLIENT.Ensure()
+  Require(client<>DOSCLIENT.ClientContext POINTER(0))
+  before=EXEC.AvailMem(0)
+  registry=DOSCORE.GetRegistry()
+  IF exhausted<>0 THEN
+    registry.generation=LONGCARD($ffffffff)
+  FI
+
+  Attempt(0)
+  Attempt(0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

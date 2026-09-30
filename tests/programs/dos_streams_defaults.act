@@ -1,0 +1,231 @@
+MODULE DOSDEFAULTS
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE HEAPCORE
+USE FSBOOT
+CARD checks,cycles
+EXEC.Task child
+PROC POINTER absent()
+DOS.FileHandle POINTER first,second,file
+DOS.FileLock POINTER lock
+DOSCORE.DosSlot POINTER owner
+DOSCLIENT.ClientContext POINTER client
+LONGCARD before
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e300+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Unset()
+
+  owner=DOSCORE.Current()
+  DOSCLIENT.SetError(70000)
+  Require(DOS.Input()=DOS.FileHandle POINTER(0)
+      AND DOS.Output()=DOS.FileHandle POINTER(0))
+  Require(DOS.IoErr()=70000 AND owner.context=BYTE POINTER(0)
+      AND EXEC.AvailMem(0)=before)
+  Require(DOS.SelectInput(DOS.FileHandle POINTER(0))=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=0)
+  Require(DOS.SelectOutput(DOS.FileHandle POINTER(0))=DOS.FileHandle POINTER(0)
+      AND owner.context=BYTE POINTER(0))
+  Require(DOS.SelectInput(DOS.FileHandle POINTER(
+      $ffffff))=DOS.FileHandle POINTER(0) AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  Require(DOS.IsInteractive(DOS.FileHandle POINTER(0))=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+
+RETURN
+
+PROC OpenStreams()
+
+  first=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  second=DOS.Open(BYTE POINTER($d1000),DOS.MODE_NEWFILE)
+  Require(first<>DOS.FileHandle POINTER(0) AND second<>DOS.FileHandle POINTER(0))
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  Require(SIZEOF(DOSCLIENT.ClientContext)=88 AND DOSCLIENT.CLIENT_SIZE=88)
+  Require(ADDRESS(@client.packet)-ADDRESS(client)=6
+      AND ADDRESS(@client.input)-ADDRESS(client)=71)
+  Require(ADDRESS(@client.output)-ADDRESS(client)=74
+      AND ADDRESS(@client.request)-ADDRESS(client)=77)
+  Require(client.request=EXEC.IOStdReq POINTER(0) AND client.objects=2)
+  Require(DOS.SelectInput(first)=DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
+  Require(DOS.SelectOutput(first)=DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
+  Require(DOS.SelectInput(second)=first AND DOS.Input()=second
+      AND DOS.Output()=first)
+  Require(DOS.SelectInput(first)=second)
+  Require(DOS.IsInteractive(first)=0 AND DOS.IoErr()=0)
+
+RETURN
+
+LONGINT FUNC Command(BYTE failure)
+
+  IF failure<>0 THEN
+    RETURN(DOS.Write(DOS.Output(),BYTE POINTER(0),-1))
+  FI
+
+RETURN(DOS.Write(DOS.Output(),BYTE POINTER($d1000),3))
+
+LONGINT FUNC Redirect(BYTE failure)
+  DOS.FileHandle POINTER oldInput,oldOutput,ignored
+  LONGINT result,error
+
+  oldInput=DOS.SelectInput(second)
+  oldOutput=DOS.SelectOutput(second)
+  result=Command(failure)
+  error=DOS.IoErr()
+  ignored=DOS.SelectOutput(oldOutput)
+  ignored=DOS.SelectInput(oldInput)
+  IF failure<>0 THEN
+    Require(result=-1 AND error=DOS.ERROR_BAD_NUMBER)
+  ELSE
+    Require(result=3 AND error=0)
+  FI
+
+RETURN(error)
+
+PROC Reentrant()
+
+  client.busy=1
+  Require(DOS.Close(first)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.SelectOutput(second)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Input()=first AND DOS.Output()=first AND client.objects=2)
+  client.busy=0
+  owner.active=1
+  Require(DOS.SelectInput(second)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  owner.active=0
+  Require(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+
+RETURN
+
+PROC Other()
+  DOS.FileHandle POINTER local,ignored
+
+  IF DOS.Input()<>DOS.FileHandle POINTER(0)
+      OR DOS.Output()<>DOS.FileHandle POINTER(0) OR DOS.IoErr()<>0 THEN
+    HEAPCORE.Abort($e3f0)
+  FI
+
+  IF DOS.SelectInput(first)<>DOS.FileHandle POINTER(0)
+      OR DOS.IoErr()<>DOS.ERROR_BAD_STREAM_NAME THEN
+    HEAPCORE.Abort($e3f1)
+  FI
+
+  local=DOS.Open(BYTE POINTER($d1000),DOS.MODE_READWRITE)
+  IF local=DOS.FileHandle POINTER(0) THEN
+    HEAPCORE.Abort($e3f2)
+  FI
+
+  ignored=DOS.SelectInput(local)
+  ignored=DOS.SelectOutput(local)
+  IF DOS.Input()<>local OR DOS.Output()<>local THEN
+    HEAPCORE.Abort($e3f3)
+  FI
+
+  IF DOS.Close(local)=0 OR DOS.Input()<>DOS.FileHandle POINTER(0)
+      OR DOS.Output()<>DOS.FileHandle POINTER(0) THEN
+    HEAPCORE.Abort($e3f4)
+  FI
+
+  IF DOS.ReleaseContext()=0 THEN
+    HEAPCORE.Abort($e3f5)
+  FI
+
+RETURN
+
+PROC Reuse()
+  CARD index,status
+  BYTE POINTER bytes
+  LONGCARD saved
+
+  saved=EXEC.AvailMem(0)
+  FOR cycles=0 TO 2 DO
+    bytes=BYTE POINTER(@child)
+    FOR index=0 TO EXEC.TASK_SIZE-1 DO
+      bytes(index)=0
+    OD
+
+    child.tc_Node.ln_Type=EXEC.NT_TASK
+    child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(1))
+    child.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(1))
+    child.tc_SPReg=child.tc_SPUpper-SIZE(2)
+    EXECLISTS.NewList(@child.tc_MemEntry)
+    Require(EXEC.AddTask(@child,@Other,absent)=@child)
+    WHILE child.tc_State<>EXEC.TS_REMOVED DO
+      status=EXECTASKS.Sleep(1)
+    OD
+
+    Require(EXEC.AvailMem(0)=saved AND DOS.Input()=first AND DOS.Output()=first)
+  OD
+
+RETURN
+
+PROC FileOutput()
+  DOS.FileHandle POINTER ignored
+
+  file=DOS.Open(BYTE POINTER($d1020),DOS.MODE_OLDFILE)
+  lock=DOS.Lock(BYTE POINTER($d1040),DOS.SHARED_LOCK)
+  Require(file<>DOS.FileHandle POINTER(0) AND lock<>DOS.FileLock POINTER(0)
+      AND client.objects=4)
+  Require(DOS.SelectOutput(DOS.FileHandle POINTER(lock))=DOS.FileHandle POINTER(
+      0) AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  Require(DOS.Output()=first AND DOS.SelectOutput(file)=first)
+  Require(DOS.IsInteractive(file)=0 AND DOS.IoErr()=0)
+  Require(DOS.Write(DOS.Output(),BYTE POINTER($d1000),1)=-1
+      AND DOS.IoErr()=DOS.ERROR_DISK_WRITE_PROTECTED)
+  Require(DOS.Close(file)<>0 AND DOS.Output()=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_DISK_WRITE_PROTECTED)
+  Require(DOS.SelectOutput(file)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  DOS.UnLock(lock)
+  ignored=DOS.SelectOutput(first)
+  Require(client.objects=2 AND FSBOOT.Stop()<>0)
+
+RETURN
+
+PROC Finish()
+
+  Require(DOS.Close(first)<>0 AND DOS.Input()=DOS.FileHandle POINTER(0)
+      AND DOS.Output()=DOS.FileHandle POINTER(0))
+  Require(DOS.SelectInput(first)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  Require(DOS.Close(second)<>0 AND client.objects=0)
+  ; Deliberately corrupt only a test-owned selection to qualify refusal even
+  ; without an object. No dangling selection may survive ReleaseContext.
+  client.input=BYTE POINTER($ffffff)
+  Require(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  client.input=BYTE POINTER(0)
+  Require(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Exercise Task-local standard streams and temporary redirection.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  Unset()
+  OpenStreams()
+  Reentrant()
+  Require(Redirect(0)=0 AND DOS.Input()=first AND DOS.Output()=first)
+  Require(Redirect(1)=DOS.ERROR_BAD_NUMBER AND DOS.Input()=first
+      AND DOS.Output()=first)
+  Reuse()
+  FileOutput()
+  Finish()
+
+RETURN
+
+ENDMODULE

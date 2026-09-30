@@ -1,0 +1,239 @@
+{
+  "abi": "exec816.process",
+  "version": 6,
+  "argument_limit": 255,
+  "record_bytes": 128,
+  "states": {
+    "FREE": 0,
+    "PREPARING": 1,
+    "RUNNING": 2,
+    "QUIESCING": 3,
+    "RETIRED": 4,
+    "COLLECTING": 5
+  },
+  "operations": {
+    "RESERVE": 16,
+    "LAUNCH": 17,
+    "ROLLBACK": 18,
+    "FIND": 19,
+    "CURRENT": 20,
+    "QUIESCE": 21,
+    "RETIRE_READY": 22,
+    "CLAIM": 23,
+    "RELEASE": 24,
+    "PREPARED": 25
+  },
+  "errors": {
+    "NO_FREE_STORE": 103,
+    "BAD_NUMBER": 115,
+    "OBJECT_IN_USE": 202,
+    "INVALID_PROCESS": 305
+  },
+  "record": [
+    [
+      "task",
+      "BYTE[62]",
+      0
+    ],
+    [
+      "owner",
+      "BYTE POINTER",
+      62
+    ],
+    [
+      "entry",
+      "LONGINT FUNC POINTER",
+      65
+    ],
+    [
+      "trampoline",
+      "PROC POINTER",
+      68
+    ],
+    [
+      "finalizer",
+      "PROC POINTER",
+      71
+    ],
+    [
+      "arguments",
+      "BYTE POINTER",
+      74
+    ],
+    [
+      "state",
+      "BYTE",
+      77
+    ],
+    [
+      "signalBit",
+      "BYTE",
+      78
+    ],
+    [
+      "slot",
+      "BYTE",
+      79
+    ],
+    [
+      "length",
+      "CARD",
+      80
+    ],
+    [
+      "identity",
+      "LONGCARD",
+      82
+    ],
+    [
+      "mask",
+      "LONGCARD",
+      86
+    ],
+    [
+      "primary",
+      "LONGINT",
+      90
+    ],
+    [
+      "secondary",
+      "LONGINT",
+      94
+    ],
+    [
+      "retireReady",
+      "BYTE",
+      98
+    ],
+    [
+      "input",
+      "BYTE POINTER",
+      99
+    ],
+    [
+      "output",
+      "BYTE POINTER",
+      102
+    ],
+    [
+      "directory",
+      "BYTE POINTER",
+      105
+    ],
+    [
+      "console",
+      "BYTE POINTER",
+      108
+    ],
+    [
+      "parentClient",
+      "BYTE POINTER",
+      111
+    ],
+    [
+      "parentScope",
+      "BYTE POINTER",
+      114
+    ],
+    [
+      "foreground",
+      "BYTE",
+      117
+    ],
+    [
+      "image",
+      "BYTE POINTER",
+      118
+    ],
+    [
+      "groupScope",
+      "BYTE POINTER",
+      121
+    ],
+    [
+      "reserved",
+      "BYTE[4]",
+      124
+    ]
+  ],
+  "calls": {
+    "Start": {
+      "sizes": [
+        3,
+        3,
+        2
+      ],
+      "result_bytes": 4
+    },
+    "Wait": {
+      "sizes": [
+        4,
+        3
+      ],
+      "result_bytes": 4
+    },
+    "Collect": {
+      "sizes": [
+        4,
+        3
+      ],
+      "result_bytes": 4
+    },
+    "GetArgStr": {
+      "sizes": [],
+      "result_bytes": 3
+    },
+    "StartForeground": {
+      "sizes": [
+        3,
+        3,
+        2
+      ],
+      "result_bytes": 4
+    },
+    "StartLoaded": {
+      "sizes": [
+        3,
+        3,
+        2,
+        1
+      ],
+      "result_bytes": 4
+    },
+    "PrepareLoaded": {
+      "sizes": [
+        3,
+        3,
+        2,
+        3
+      ],
+      "result_bytes": 4
+    },
+    "StartPrepared": {
+      "sizes": [
+        4
+      ],
+      "result_bytes": 1
+    },
+    "DiscardPrepared": {
+      "sizes": [
+        4
+      ],
+      "result_bytes": 1
+    }
+  },
+  "dos_storage": {
+    "client_allocation_bytes": 88,
+    "client_suspended_offset": 86,
+    "client_foreground_loan_offset": 87,
+    "file_object_bytes": 116,
+    "file_backing_bytes": 94,
+    "cooked_session_bytes": 402
+  },
+  "resident_entries": {
+    "count_offset": 17,
+    "entries_offset": 18,
+    "capacity": 36,
+    "descriptor_bytes": 128
+  }
+}

@@ -1,0 +1,161 @@
+MODULE TASKADMISSION
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+
+EXEC.Task candidate
+EXEC.Task ARRAY active(3)
+EXECLISTS.Node memoryNode
+BYTE ARRAY snapshot(EXEC.TASK_SIZE),stackSnapshot(32)
+BYTE ARRAY emptyName=[0]
+CARD ARRAY checks(22)
+CARD failures,index
+BYTE ran
+PROC POINTER missing(),bad()
+
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC Worker()
+
+  ran==+1
+
+RETURN
+
+PROC ExpectFailure(CARD slot)
+  BYTE POINTER bytes,stackBytes
+  CARD at
+  EXEC.Task POINTER result
+
+  bytes=BYTE POINTER(@candidate)
+  stackBytes=BYTE POINTER($57e0)
+  FOR at=0 TO 31 DO
+    stackSnapshot(at)=stackBytes(at)
+  OD
+
+  FOR at=0 TO EXEC.TASK_SIZE-1 DO
+    snapshot(at)=bytes(at)
+  OD
+
+  result=EXEC.AddTask(@candidate,@Worker,missing)
+  checks(slot)=CARD(result=EXEC.Task POINTER(0))
+  FOR at=0 TO 31 DO
+    IF stackSnapshot(at)<>stackBytes(at) THEN
+      failures==+1
+    FI
+  OD
+
+  FOR at=0 TO EXEC.TASK_SIZE-1 DO
+    IF snapshot(at)<>bytes(at) THEN
+      failures==+1
+    FI
+  OD
+
+RETURN
+
+; Reject Task records and stack extents outside the admitted writable domains.
+PROC InvalidStorage()
+  EXEC.Task POINTER result
+
+  result=EXEC.AddTask(EXEC.Task POINTER(0),@Worker,missing)
+  checks(0)=CARD(result=EXEC.Task POINTER(0))
+  result=EXEC.AddTask(EXEC.Task POINTER(@Worker),@Worker,missing)
+  checks(1)=CARD(result=EXEC.Task POINTER(0))
+  PrepareTask(@candidate,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  candidate.tc_SPReg=$0157fe
+  ExpectFailure(2)
+  candidate.tc_SPReg=$57fd
+  ExpectFailure(3)
+  candidate.tc_SPReg=$5310
+  ExpectFailure(4)
+  candidate.tc_SPReg=$57fe
+  candidate.tc_SPUpper=$015800
+  ExpectFailure(5)
+
+RETURN
+
+; Reject contradictory Task metadata without partially admitting the Task.
+PROC InvalidMetadata()
+
+  PrepareTask(@candidate,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  candidate.tc_Flags=1
+  ExpectFailure(6)
+  candidate.tc_Flags=0
+  candidate.tc_State=EXEC.TS_READY
+  ExpectFailure(7)
+  candidate.tc_State=EXEC.TS_INVALID
+  candidate.tc_Node.ln_Type=0
+  ExpectFailure(8)
+  candidate.tc_Node.ln_Type=EXEC.NT_TASK
+  EXECLISTS.AddTail(@candidate.tc_MemEntry,@memoryNode)
+  ExpectFailure(9)
+
+RETURN
+
+; Require registered execution entries before publishing scheduler ownership.
+PROC InvalidEntries()
+  ADDRESS POINTER location
+  EXEC.Task POINTER result
+
+  PrepareTask(@candidate,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  result=EXEC.AddTask(@candidate,missing,missing)
+  checks(10)=CARD(result=EXEC.Task POINTER(0))
+  location=ADDRESS POINTER(@bad)
+  location^=ADDRESS(@Worker)+SIZE(1)
+  result=EXEC.AddTask(@candidate,bad,missing)
+  checks(11)=CARD(result=EXEC.Task POINTER(0))
+  result=EXEC.AddTask(@candidate,@Worker,bad)
+  checks(12)=CARD(result=EXEC.Task POINTER(0))
+
+RETURN
+
+; Reject excess Tasks while preserving the already admitted set.
+PROC Capacity()
+  EXEC.Task POINTER result
+
+  PrepareTask(@active(0),TASKSTACKS.LOWER1,BYTE POINTER(0))
+  PrepareTask(@active(1),TASKSTACKS.LOWER2,BYTE POINTER(0))
+  PrepareTask(@active(2),TASKSTACKS.LOWER3,BYTE POINTER(0))
+  FOR index=0 TO 2 DO
+    result=EXEC.AddTask(@active(index),@Worker,missing)
+    checks(13+index)=CARD(result=@active(index))
+  OD
+
+  result=EXEC.AddTask(@active(0),@Worker,missing)
+  checks(16)=CARD(result=EXEC.Task POINTER(0))
+  PrepareTask(@candidate,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  ExpectFailure(17)
+  FOR index=0 TO 2 DO
+    EXEC.RemTask(@active(index))
+  OD
+
+  checks(18)=CARD(ran=0)
+
+RETURN
+
+PROC CheckEmptyName()
+  EXEC.Task POINTER result
+
+  PrepareTask(@candidate,TASKSTACKS.LOWER1,BYTE POINTER(emptyName))
+  result=EXEC.AddTask(@candidate,@Worker,missing)
+  checks(20)=CARD(EXEC.FindTask(BYTE POINTER(emptyName))=@candidate)
+  EXEC.RemTask(result)
+  checks(21)=CARD(EXEC.FindTask(BYTE POINTER(emptyName))=EXEC.Task POINTER(0))
+
+RETURN
+
+; Exercise rejection of invalid Task storage, metadata and entries.
+PROC Main()
+
+  EXEC.Forbid()
+  InvalidStorage()
+  InvalidMetadata()
+  InvalidEntries()
+  Capacity()
+  CheckEmptyName()
+  checks(19)=CARD(failures=0)
+  EXEC.Permit()
+
+RETURN
+
+ENDMODULE

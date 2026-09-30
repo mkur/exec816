@@ -1,0 +1,318 @@
+#!/usr/bin/env python3
+"""Physical walkthrough of the exact packaged demo, without target-code observers."""
+import argparse
+import json
+import re
+from pathlib import Path
+from generate_console import constants as console_constants
+from native_program import ROOT, read_build, require, sha256, verify_machine
+from os_boundary import emulator, run_to
+from test_console_display import glyph
+from test_dos_stack import execute, ownership
+from test_shell_core import KEYS
+
+
+def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
+        expected_cache=512,cache_smoke=False,cache_override=None,system_drive=1,showcase=False):
+    require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase)) <= 1,'Select one demo smoke scope')
+    manifest=json.loads((out/'demo-manifest.json').read_text())
+    require(all(sha256(out/name)==digest for name,digest in manifest['artifacts'].items()),'Changed demo bundle')
+    p=read_build(out);pin=manifest['pin'];observations=[];saved={}
+    screenshots=[];commands=[]
+    boot_image=None
+    if showcase:
+        require(bootstrap is None,'The screenshot walkthrough uses the packaged OF816 autoboot')
+        boot_image=out/manifest['boot_image']
+        boot=json.loads((out/manifest['boot_manifest']).read_text())
+        require(sha256(boot_image)==boot['xex_sha256'] and
+                sha256(out/'program.xex')==boot['exec_xex_sha256'],'Changed OF816 demo image')
+        require(sha256(out/'demo-manifest.json')==boot['media']['manifest_sha256'],
+                'OF816 image does not match the demo bundle')
+
+        def bootstrap(bridge,native):
+            bridge.boot(str(boot_image))
+            bridge.bp_set(boot['labels']['of_start'])
+            run_to(bridge,boot['labels']['of_start'],3000,90)
+            bridge.bp_clear_all()
+            bridge._cmd_ok('KEY ALL up')
+            bridge.bp_set(native['labels']['start'])
+            run_to(bridge,native['labels']['start'],3000,90)
+            bridge.bp_clear_all()
+    console=console_constants()
+    media=manifest.get('media',next(name for name in manifest['artifacts'] if name.endswith('.atr')))
+    media_path=Path(media_path) if media_path is not None else out/media
+    require(sha256(media_path)==manifest['artifacts'][media],'Changed companion media')
+    if stock_smoke:require(manifest['mounts'][0]['sector_bytes']==128,'STOCK810 requires 128-byte sectors')
+    binary=ROOT/'build/shell-paced-bridge/AltirraBridgeServer';rom=ROOT/'build/firmware/altirraos-816.rom'
+    require(sha256(binary)==pin['emulator']['sha256'] and sha256(rom)==pin['rom']['sha256'],'Unpinned demo machine')
+    def at(name):return next(d['address'] for d in p['image']['data'] if '_DEMO_'+name.upper()+'_' in d['name'])
+    with emulator(binary.parent,rom,out,pin=pin) as b:
+        for key,value in manifest['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
+        if stock_smoke:b.config('diskemu','810')
+        b.mount(system_drive-1,str(media_path));machine=verify_machine(b,rom,pin)
+        def far(address,length):
+            return b''.join((b.eval_expr(f'dw(${address+i:x})')&65535).to_bytes(2,'little') for i in range(0,length,2))[:length]
+        def number(address,length=4):return int.from_bytes(far(address,length),'little')
+        def pointer(address):return number(address,3)
+        def rendezvous(condition):
+            b.bp_clear_all();marker=p['labels']['native_nmi']
+            b.bp_set(marker,condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            original=b.regs
+            def regs():
+                state=original()
+                if int(state['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):
+                    require(b.peek16(0x2000)==0xffff,'Demo ended before checkpoint')
+                return state
+            b.regs=regs
+            try:run_to(b,marker,12000,240,condition)
+            finally:b.regs=original
+        def frames(count=3):rendezvous(f'@frame>={b.eval_expr("@frame")+count}')
+        capture=p['build']['memory']['console_storage']['CAPTURE']
+        def press(character):
+            name,shift=('BREAK',False) if character=='\x03' else KEYS[character]
+            if shift:b._cmd_ok('KEY SHIFT down')
+            previous=number(capture+10,2)
+            require(b._cmd_ok(f'KEY {name} down')['raw_scan'],'Physical keys required')
+            if character=='\x03':frames(3)
+            else:rendezvous(f'dw(${capture+10:x})>{previous}')
+            b._cmd_ok(f'KEY {name} up')
+            if shift:b._cmd_ok('KEY SHIFT up')
+            frames()
+        def ready(previous=None):
+            condition=f'(db(${saved["top"]+51:x})=2)&(db(${saved["scope"]+54:x})=0)'
+            if previous is not None:
+                # Group routes never wrap; the captured tag must have advanced.
+                condition+=f'&(dw(${saved["scope"]+14:x})>{previous&65535})'
+            rendezvous(condition)
+        def cells(label):
+            instances=[saved['top'],saved['bottom']];views=[saved['topView'],saved['bottomView']]
+            condition='&'.join(f'(dw(${i+14:x})>=dw(${i+16:x}))&(dw(${v+10:x})=dw(${i+54:x})+dw(${i+10:x}))' for i,v in zip(instances,views))
+            rendezvous(condition)
+            text=b''.join(far(pointer(i),length) for i,length in zip(instances,(720,240)))
+            physical=b.memdump(saved['screen'],960);expected=bytearray(map(glyph,text))
+            cursor=number(saved['top']+54,2)+number(saved['top']+10,2);expected[cursor]^=128
+            require(physical==expected,'Physical tile mismatch: '+label)
+            require(b'PRIME SEARCH' in text[720:],'Missing prime tile')
+            observations.append(dict(stage=label,prime_frames=number(at('demoFrames')),prime_count=number(at('demoCount'),2),guest_frame=b.eval_expr('@frame')))
+            return text
+        def begin(command):
+            previous=number(saved['scope']+14)
+            for character in command+'\n':press(character)
+            return previous
+        def result(error=0):
+            status=int.from_bytes(far(saved['shell']+32,4),'little',signed=True)
+            cause=int.from_bytes(far(saved['shell']+36,4),'little',signed=True)
+            require((status,cause)==(10 if error else 0,error),f'Demo command result: {status}/{cause}')
+        def command(text,expected=None):
+            print('Demo command:',text,flush=True)
+            previous=begin(text);ready(previous);result()
+            screen=cells(text)
+            if expected is not None:require(expected in screen[:720],'Missing command output: '+text)
+            commands.append(text)
+            if saved.get('measuring'):
+                cache=saved['cache_address']
+                saved['cache_commands'].append(dict(command=text,prime_frames=number(at('demoFrames')),
+                    hits=number(cache+16),misses=number(cache+20),evictions=number(cache+24)))
+            return screen
+        def screenshot(name,expected):
+            # Wait for the displayed frame, then save exactly what the emulator shows.
+            frames(3)
+            text=cells(name)
+            for fragment in expected:
+                require(fragment in text[:720],'Missing screenshot text: '+fragment.decode('ascii'))
+            path=out/name
+            path.write_bytes(b.screenshot())
+            screenshots.append(dict(name=name,sha256=sha256(path),commands=list(commands),
+                                    rows=[text[i:i+40].decode('ascii').rstrip() for i in range(0,960,40)]))
+        def ledger():
+            memory=p['build']['memory'];base=memory['process_storage']['BASE'];dos=memory['dos_storage']['BASE']
+            processes=[(number(base+128*i+77,1),pointer(base+128*i+118),pointer(base+128*i+121)) for i in range(8)]
+            objects=[]
+            tasks=p['build']['task_storage']
+            for i in range(8):
+                # Unadmitted DOS rows are uninitialized. Only a live Task owns
+                # a published context; its removal also checks the DOS ledger.
+                state=number(tasks['BASE']+i*tasks['SIZE']+tasks['TCB_STATE'],1)
+                context=pointer(dos+16*i) if state!=tasks['STATE_FREE'] else 0
+                objects.append(number(context+68,2) if context else 0)
+            require(far(saved['scope']+48,8)==bytes(8),'Retained pipeline group at prompt')
+            return dict(live=number(p['build']['task_storage']['LIVE'],1),processes=processes,objects=objects)
+        def memory():
+            screen=command('MEM')[:720].decode('ascii')
+            values=[int(value) for value in re.findall(r'(?:ordinary|linear) (?:total|largest) +(\d+)',screen)]
+            require(len(values)>=4,'Incomplete MEM output')
+            return values[-4:]
+        def active(scope):
+            return f'(db(${scope+21:x})=3)&(dw(dw(${scope+27:x})+db(${scope+29:x})*65536+22)=82)'
+        def cancel(loading=False):
+            print('Demo BREAK:', 'loading' if loading else 'active pipeline',flush=True)
+            previous=begin('CAT LONG.TXT | WC')
+            if loading:rendezvous(active(saved['scope']))
+            else:
+                scope=saved['scope']
+                rendezvous(f'(db(${scope+54:x})=1)&(dw(${scope+48:x})!=0)&(dw(${scope+51:x})!=0)')
+                children=[pointer(scope+offset) for offset in (48,51)]
+                rendezvous('|'.join(f'({active(child)})' for child in children))
+                require(number(p['build']['task_storage']['LIVE'],1)==7,'Pipeline Task peak differs')
+                before=number(at('demoFrames'));frames(60)
+                require(number(at('demoFrames'))>before,'Prime display did not advance during file I/O')
+                require(number(scope+54,1)==1,'Long pipeline finished before physical BREAK')
+            press('\x03');ready(previous);result(304);cells('break-loading' if loading else 'break-pipeline')
+            require(ledger()==saved['ledger'],'Ownership retained after BREAK')
+        def before(bridge):
+            if cache_override is not None:
+                boot=p['build']['memory']['boot_config']
+                b.memload(boot['address']+boot['abi']['fields']['cache_blocks'],cache_override.to_bytes(2,'little'))
+            if stock_smoke:
+                from banked_test_memory import write as far_write
+                far_write(b,p['build']['task_storage']['BASE']+0x900+34,(2).to_bytes(2,'little'),out)
+            saved.update(screen=b.peek16(88),cursor=b.peek(752),mask=b.peek(16))
+            saved['screenBytes']=b.memdump(saved['screen'],960);b._cmd_ok('KEY ALL up')
+            rendezvous(f'(db(${at("started"):x})=1)&(dw(${at("demoFrames"):x})>0)')
+            saved['shell']=pointer(at('shell'))
+            windows=p['build']['memory']['console_storage']['WINDOWS']
+            for name,unitName in [('top','demoShellUnit'),('bottom','demoPrimeUnit')]:
+                row=windows+console['WINDOWS_ITEMS']+console['WINDOW_SIZE']*(number(at(unitName))&3)
+                saved[name]=pointer(row+console['WINDOW_INSTANCE'])
+                saved[name+'View']=pointer(row+console['WINDOW_VIEW'])
+            dos=p['build']['memory']['dos_storage']['BASE'];saved['scope']=pointer(pointer(dos)+83)
+            ready();cells('startup')
+            if showcase:
+                command('TASKS',b'primes')
+                screenshot('boot-tasks.png',[b'Exec816 (',b'exec: 8 task slots',
+                    b'SYS: -> D1: ready, read-only',b'SLOT STATE',b'dos.filesystem',b'primes'])
+                command('MOUNT',b'SDFS' if manifest.get('filesystem')=='sdfs' else b'MyDOS')
+                command('CD SYS:')
+                command('DIR',b'STORY')
+                command('HELLO',b'Hello from disk!')
+                command('TYPE README.TXT',b'prime search keeps running')
+                memory()
+                command('HELLO | WC',b'1 3 17')
+                command('CAT STORY.TXT | WC',b'24 133 746')
+                screenshot('walkthrough.png',[b'HELLO | WC',b'1 3 17',
+                    b'CAT STORY.TXT | WC',b'24 133 746'])
+                require(observations[-1]['prime_frames']>observations[0]['prime_frames'],
+                        'Prime display did not advance during the walkthrough')
+                for character in 'EXIT':press(character)
+                b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+            # Private diagnostic layouts: DosRegistry.runtime, Service.adapter,
+            # Adapter.cache and Cache. The application ABI is unchanged.
+            registry=p['build']['memory']['dos_storage']['SHARED']
+            service=pointer(registry+68)
+            adapter=pointer(service)
+            cache=adapter+38
+            saved['cache_address']=cache
+            settings=p['build']['memory']['boot_config']['settings']
+            saved['cache']=dict(requested=number(cache+10,2),blocks=number(cache+12,2),
+                                captured=number(settings,2))
+            require(all(value==expected_cache for value in saved['cache'].values()),
+                    'Effective cache capacity differs from boot request: '+str(saved['cache']))
+            if cache_smoke:
+                saved['startup_memory']=memory()
+                saved['cache_commands']=[]
+                saved['measuring']=True
+                b.profile_start()
+                command('HELLO',b'Hello from disk!')
+                command('HELLO',b'Hello from disk!')
+                command('CAT STORY.TXT',b'system should also know how to stop.')
+                command('WC <STORY.TXT',b'24 133 746')
+                saved['memory']=memory();saved['ledger']=ledger()
+                command('HELLO',b'Hello from disk!')
+                command('CAT STORY.TXT',b'system should also know how to stop.')
+                command('WC <STORY.TXT',b'24 133 746')
+                command('CAT STORY.TXT | WC',b'24 133 746')
+                require(memory()==saved['memory'],'Repeated commands retained heap storage')
+                require(ledger()==saved['ledger'],'Repeated commands retained ownership')
+                b.profile_stop();saved['measuring']=False
+                for character in 'EXIT':press(character)
+                b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+            if boot_smoke:
+                startup=cells('system-volume')
+                require(f'SYS: -> D{system_drive}: ready, read-only'.encode() in startup[:720],
+                        'Wrong system-volume startup mapping')
+                mounted=command('MOUNT',b'SDFS')
+                require(mounted[:720].count(f'D{system_drive}:   SDFS'.encode())==1,
+                        'Mount listing duplicated or omitted the physical volume')
+                command('CD SYS:WORK')
+                command('CD',f'D{system_drive}:WORK'.encode())
+                command('SYS:HELLO',b'Hello from disk!')
+                # Two ordinary DOS names must share the same warmed cache.
+                command(f'TYPE D{system_drive}:STORY.TXT',b'system should also know how to stop.')
+                first=dict(hits=number(cache+16),misses=number(cache+20))
+                command('TYPE SYS:STORY.TXT',b'system should also know how to stop.')
+                second=dict(hits=number(cache+16),misses=number(cache+20))
+                require(first['misses']==second['misses'] and second['hits']>first['hits'],
+                        'Physical and SYS reads did not share the cache')
+                saved['sys_cache']=dict(physical=first,system=second)
+                command('SYS:CAT SYS:STORY.TXT | SYS:WC',b'24 133 746')
+                command('CD SYS:')
+                command('CD',f'D{system_drive}:'.encode())
+                command('HELLO',b'Hello from disk!')
+                frames(3);cells('boot-smoke')
+                (out/'boot-smoke.png').write_bytes(b.screenshot())
+                for character in 'EXIT':press(character)
+                b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+            if stock_smoke:
+                command('HELLO',b'Hello from disk!')
+                for character in 'EXIT':press(character)
+                b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+            if loading_smoke:
+                command('HELLO',b'Hello from disk!')
+                command('CAT STORY.TXT | WC',b'24 133 746')
+                saved['memory']=memory();saved['ledger']=ledger()
+                cancel(loading=True)
+                command('HELLO',b'Hello from disk!')
+                require(memory()==saved['memory'],'Loader BREAK retained heap storage')
+                require(ledger()==saved['ledger'],'Loader BREAK retained ownership')
+                for character in 'EXIT':press(character)
+                b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+            command('MOUNT',b'SDFS' if manifest.get('filesystem')=='sdfs' else b'MyDOS')
+            command('CD SYS:')
+            command('DIR',b'STORY')
+            command('HELLO',b'Hello from disk!')
+            command('TYPE README.TXT',b'prime search keeps running')
+            command('TASKS',b'primes')
+            command('HELLO | WC',b'1 3 17')
+            command('CAT STORY.TXT | WC',b'24 133 746')
+            saved['memory']=memory();saved['ledger']=ledger()
+            require(saved['ledger']['live']==5,'Idle demo Task count differs')
+            for _ in range(2):
+                command('HELLO|WC',b'1 3 17')
+                command('CAT <STORY.TXT | WC',b'24 133 746')
+                require(ledger()==saved['ledger'],'Ownership retained after pipeline')
+            cancel(loading=True);command('HELLO | WC',b'1 3 17')
+            cancel();command('HELLO | WC',b'1 3 17')
+            require(memory()==saved['memory'],'Demo heap did not return to warmed baseline')
+            require(ledger()==saved['ledger'],'Demo ownership did not return to baseline')
+            # Capture the real final machine display for the guide.
+            command('CAT STORY.TXT | WC',b'24 133 746');frames(3);cells('showcase')
+            (out/'walkthrough.png').write_bytes(b.screenshot())
+            for character in 'EXIT':press(character)
+            b._cmd_ok('KEY RETURN down');b.bp_clear_all()
+        if bootstrap is not None:bootstrap(b,p)
+        runtime,_=execute(b,p,preloaded=bootstrap is not None,before_run=before,timeout=240,frame_limit=12000)
+        b._cmd_ok('KEY ALL up')
+        require(number(at('exitStatus'))==0,'Demo EXIT failed')
+        require(b.memdump(saved['screen'],960)==saved['screenBytes'] and b.peek(752)==saved['cursor'] and b.peek(16)==saved['mask'],'Demo OS display/input restoration failed')
+        ownership(b,p,out)
+        require(sha256(media_path)==manifest['artifacts'][media],'Read-only demo media changed')
+    return dict(status='pass',tier='development',bundle_manifest_sha256=sha256(out/'demo-manifest.json'),
+        xex_sha256=sha256(out/'program.xex'),media_sha256=sha256(media_path),screenshot_sha256=sha256(out/'boot-smoke.png') if boot_smoke else None if stock_smoke or loading_smoke or cache_smoke else sha256(out/'walkthrough.png'),
+        runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
+        screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
+        cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
+        baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=None if stock_smoke or showcase else 7,
+        system_drive=system_drive,sys_cache=saved.get('sys_cache'),
+        scope='OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=dict(fixed=0,per_task=0))
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--bundle',type=Path,default=ROOT/'build/demo')
+    smoke=parser.add_mutually_exclusive_group()
+    smoke.add_argument('--stock-smoke',action='store_true')
+    smoke.add_argument('--loading-smoke',action='store_true',help='Check command loading and physical BREAK without the full walkthrough')
+    smoke.add_argument('--screenshots',action='store_true',help='Capture boot/TASKS and the documented walkthrough through OF816 autoboot')
+    args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,showcase=args.screenshots)
+    (out/('screenshots-results.json' if args.screenshots else 'stock810-results.json' if args.stock_smoke else 'loading-results.json' if args.loading_smoke else 'demo-results.json')).write_text(json.dumps(record,indent=2)+'\n')
+    print('Packaged demo walkthrough passed')

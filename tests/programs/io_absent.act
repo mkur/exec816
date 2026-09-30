@@ -1,0 +1,29 @@
+MODULE IOABSENT
+USE EXEC
+USE HEAPCORE
+EXEC.IORequest item
+CARD checks
+INCLUDE "io-names.inc"
+
+; Exercise I/O rejection when the requested resident is absent.
+PROC Main()
+  INT error
+
+  item.io_Message.mn_Length=26
+  error=EXEC.OpenDevice(immediateName,0,@item,0)
+  IF error<>EXEC.IOERR_OPENFAIL THEN
+    HEAPCORE.Abort($ff90)
+  FI
+
+  EXEC.CloseDevice(@item)
+  error=EXEC.OpenDevice(sioName,0,@item,0)
+  IF error<>EXEC.IOERR_OPENFAIL THEN
+    HEAPCORE.Abort($ff90)
+  FI
+
+  EXEC.CloseDevice(@item)
+  checks=2
+
+RETURN
+
+ENDMODULE

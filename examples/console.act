@@ -1,0 +1,19 @@
+; Build with --tasks --task-capacity 8 --console and an explicit D1 mount.
+; r starts one large Read on a persistent client; input/echo continues.
+; t previews ATASCII text, e demonstrates a missing-file error, q exits safely.
+MODULE CONSOLEEXAMPLE
+INCLUDE "console-session.inc"
+
+; Run the resident interactive console demonstration and release its session.
+PROC Main()
+
+  OpenConsole(0)
+  AllocateReader(0)
+  StartReader(0)
+  Session(0)
+  JoinReader(0)
+  Cleanup(0)
+
+RETURN
+
+ENDMODULE

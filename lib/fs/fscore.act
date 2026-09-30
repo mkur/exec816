@@ -1,0 +1,50 @@
+; Backend-neutral record and operation bookkeeping. No I/O or worker dispatch.
+MODULE FSCORE
+USE FSSTATUS
+
+USE FSBTYPES
+
+PUBLIC CONST READ=1, SEEK=2
+
+; Preserve the complete entry, including the backend's opaque identity.
+PUBLIC PROC CopyEntry(FSBTYPES.Entry POINTER target,source)
+  CARD index
+
+  LET destination=BYTE POINTER(target)
+  LET origin=BYTE POINTER(source)
+  FOR index=0 TO CARD(SIZEOF(FSBTYPES.Entry)-1) DO
+    destination(index)=origin(index)
+  OD
+
+RETURN
+
+; Save the committed position before entering a backend's resumable traversal.
+PUBLIC PROC BeginOperation(FSBTYPES.Operation POINTER op BYTE kind,stage)
+
+  op.work.error=0
+  op.work.ioError=0
+  op.start=op.file.position
+  op.completed=0
+  op.result=-1
+  op.kind=kind
+  op.stage=stage
+
+RETURN
+
+; Commit a completed read or seek; failures retain backend-specific rollback.
+PUBLIC BYTE FUNC FinishOperation(FSBTYPES.Operation POINTER op)
+
+  IF op.kind=READ THEN
+    op.file.position=op.start+op.completed
+    op.result=op.completed
+
+  ELSE
+    op.file.position=op.target
+    op.result=op.start
+  FI
+
+  op.stage=0
+
+RETURN(FSSTATUS.DONE)
+
+ENDMODULE

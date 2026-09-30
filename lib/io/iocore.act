@@ -1,0 +1,217 @@
+MODULE IOCORE
+USE EXEC
+USE SIODRIVER
+USE IORESIDENT
+USE IORESIDENTMETA
+USE HEAPCORE
+
+PUBLIC EXTERNAL LONGCARD FUNC OpenGateway(BYTE POINTER name LONGCARD unit
+    EXEC.IORequest POINTER request LONGCARD flags)
+
+PUBLIC EXTERNAL LONGCARD FUNC CloseGateway(EXEC.IORequest POINTER request)
+
+PUBLIC EXTERNAL LONGCARD FUNC BeginGateway(EXEC.IORequest POINTER request)
+
+PUBLIC EXTERNAL LONGCARD FUNC SendGateway(EXEC.IORequest POINTER request)
+
+PUBLIC EXTERNAL LONGCARD FUNC StartGateway(EXEC.IORequest POINTER request)
+
+PUBLIC EXTERNAL LONGCARD FUNC AbortGateway(EXEC.IORequest POINTER request)
+
+; Serialize resident-device admission and preserve its public error result.
+PUBLIC INT FUNC OpenDevice(BYTE POINTER name LONGCARD unit EXEC.IORequest
+    POINTER request LONGCARD flags)
+  BYTE okay
+  LONGCARD route
+  INT error
+  ; Only the matching resident is initialized. Open has no SIO wire traffic.
+  IF SIODRIVER.Matches(name)<>0 THEN
+    okay=SIODRIVER.Start()
+  FI
+
+  EXEC.Forbid()
+  route=OpenGateway(name,unit,request,flags)
+  IF (route & LONGCARD(IORESIDENTMETA.TAG))<>0 THEN
+    error=IORESIDENT.Open(CARD(route),name,unit,request,flags)
+  ELSE
+    error=INT(CARD(route))
+  FI
+
+  EXEC.Permit()
+
+RETURN(error)
+
+; Release a device binding only after request ownership permits closing it.
+PUBLIC PROC CloseDevice(EXEC.IORequest POINTER request)
+  LONGCARD route
+
+  EXEC.Forbid()
+  route=CloseGateway(request)
+  IF (route & LONGCARD(IORESIDENTMETA.TAG))<>0 THEN
+    IF IORESIDENT.Bound(CARD(route),request)=0 THEN
+      HEAPCORE.Abort(4)
+    FI
+
+    IORESIDENT.Close(CARD(route),request)
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
+; Route a validated request to its resident device implementation.
+PUBLIC LONGCARD FUNC Submit(EXEC.IORequest POINTER request BYTE mode)
+  LONGCARD route,result
+  CARD error
+
+  EXEC.Forbid()
+  IF mode=0 THEN
+    route=BeginGateway(request)
+  ELSEIF mode=1 THEN
+    route=SendGateway(request)
+  ELSE
+    route=StartGateway(request)
+  FI
+
+  result=route
+  IF (route & LONGCARD(IORESIDENTMETA.TAG))<>0 THEN
+    IF IORESIDENT.Bound(CARD(route),request)=0 THEN
+      HEAPCORE.Abort(4)
+    FI
+
+    IF mode=1 THEN
+      request.io_Flags=0
+    ELSEIF mode=2 THEN
+      request.io_Flags=EXEC.IOF_QUICK
+    FI
+
+    request.io_Error=0
+    request.io_Message.mn_Node.ln_Type=EXEC.NT_MESSAGE
+    IORESIDENT.BeginIO(CARD(route),request)
+    result=LONGCARD($10000)
+    ; Only DoIO reads back: its checked reply owner is this Task, still under
+    ; exclusion. Nonblocking send/begin never touch a published request again.
+    IF mode=2 THEN
+      IF (request.io_Flags & EXEC.IOF_QUICK)<>0 THEN
+        error=CARD(request.io_Error)
+        IF error>=128 THEN
+          error=error OR $ff00
+        FI
+
+        result=LONGCARD(error)
+      FI
+    FI
+  FI
+
+  EXEC.Permit()
+
+RETURN(result)
+
+; Enter the device callback while protecting shared request state.
+PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
+  LONGCARD result
+
+  result=Submit(request,0)
+
+RETURN
+
+; Force asynchronous reply semantics before submitting the request.
+PUBLIC PROC SendIO(EXEC.IORequest POINTER request)
+  LONGCARD result
+
+  result=Submit(request,1)
+
+RETURN
+
+; Ask the bound resident to cancel under the request ownership exclusion.
+PUBLIC PROC AbortIO(EXEC.IORequest POINTER request)
+  LONGCARD route
+
+  EXEC.Forbid()
+  route=AbortGateway(request)
+  IF (route & LONGCARD(IORESIDENTMETA.TAG))<>0 THEN
+    IF IORESIDENT.Bound(CARD(route),request)=0 THEN
+      HEAPCORE.Abort(4)
+    FI
+
+    IORESIDENT.AbortIO(CARD(route),request)
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC EXTERNAL CARD FUNC CreateCheck(EXEC.MsgPort POINTER port)
+
+PUBLIC EXTERNAL CARD FUNC DeleteCheck(EXEC.IORequest POINTER request)
+
+; Allocate a cleared request with the caller's reply port and declared size.
+PUBLIC EXEC.IORequest POINTER FUNC CreateIORequest(EXEC.MsgPort
+    POINTER replyPort LONGCARD size)
+  EXEC.IORequest POINTER request
+  CARD valid
+
+  valid=CreateCheck(replyPort)
+  IF valid=0 OR size<EXEC.MESSAGE_SIZE OR size>LONGCARD($ffff) THEN
+    RETURN(EXEC.IORequest POINTER(0))
+  FI
+
+  request=EXEC.IORequest POINTER(EXEC.AllocMem(size,EXEC.MEMF_PUBLIC
+      OR EXEC.MEMF_CLEAR))
+  IF request=EXEC.IORequest POINTER(0) THEN
+    RETURN(request)
+  FI
+
+  request.io_Message.mn_ReplyPort=replyPort
+  request.io_Message.mn_Length=CARD(size)
+  request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+
+RETURN(request)
+
+; Free only an idle, unbound request whose storage still belongs to the
+; caller.
+PUBLIC PROC DeleteIORequest(EXEC.IORequest POINTER request)
+  CARD size
+
+  IF request=EXEC.IORequest POINTER(0) THEN
+    RETURN
+  FI
+
+  size=DeleteCheck(request)
+  EXEC.FreeMem(BYTE POINTER(request),LONGCARD(size))
+
+RETURN
+
+PUBLIC EXTERNAL LONGCARD FUNC Collect(EXEC.IORequest POINTER request)
+
+PUBLIC LONGCARD FUNC Start(EXEC.IORequest POINTER request)
+
+RETURN(Submit(request,2))
+
+; Wait for completion and collect the reply before returning request
+; ownership.
+PUBLIC INT FUNC WaitIO(EXEC.IORequest POINTER request)
+  LONGCARD state,bits
+
+  state=Collect(request)
+  WHILE (state & LONGCARD($10000))<>0 DO
+    ; Collect returns a copied signal bit, never a retained kernel activation.
+    ; No SetSignal belongs in this gap: a post before Wait must remain visible.
+    bits=EXEC.Wait(LONGCARD(1) LSH BYTE(state))
+    state=Collect(request)
+  OD
+
+RETURN(INT(CARD(state)))
+
+; Try quick completion, falling back to the ordinary reply-and-wait path.
+PUBLIC INT FUNC DoIO(EXEC.IORequest POINTER request)
+  LONGCARD state
+
+  state=Start(request)
+  IF (state & LONGCARD($10000))<>0 THEN
+    RETURN(WaitIO(request))
+  FI
+
+RETURN(INT(CARD(state)))
+
+ENDMODULE

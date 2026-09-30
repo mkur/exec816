@@ -1,0 +1,214 @@
+MODULE DOSBREAK
+USE EXEC
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE DOSRAW
+USE DOSSTREAMS
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+INCLUDE "dos-types.inc"
+
+; Find the foreground scope belonging to this Task's DOS context.
+PUBLIC DOSBREAKTYPES.Scope POINTER FUNC Current()
+  DOSCORE.DosSlot POINTER slot
+  DOSCLIENT.ClientContext POINTER client
+
+  slot=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(slot.context)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(DOSBREAKTYPES.Scope POINTER(0))
+  FI
+
+RETURN(DOSBREAKTYPES.Scope POINTER(client.foreground))
+
+; Create a break scope with its own signal and console identity.
+PUBLIC DOSBREAKTYPES.Scope POINTER FUNC Allocate(DOSCLIENT.ClientContext
+    POINTER client BYTE POINTER identity)
+  DOSBREAKTYPES.Scope POINTER scope
+  BYTE signal
+
+  signal=EXEC.AllocSignal($ff)
+  IF signal=$ff THEN
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(DOSBREAKTYPES.Scope POINTER(0))
+  FI
+
+  scope=DOSBREAKTYPES.Scope POINTER(EXEC.AllocMem(DOSBREAKTYPES.SCOPE_SIZE,
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    EXEC.FreeSignal(signal)
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(scope)
+  FI
+
+  scope.owner=BYTE POINTER(client.owner)
+  scope.client=BYTE POINTER(client)
+  scope.handle=identity
+  scope.mask=LONGCARD(1) LSH signal
+  scope.signal=signal
+
+RETURN(scope)
+
+; Release scope storage only after foreground routing has been detached.
+PUBLIC PROC Free(DOSBREAKTYPES.Scope POINTER scope)
+  LONGCARD ignored
+
+  ignored=EXEC.SetSignal(0,scope.mask)
+  EXEC.FreeSignal(scope.signal)
+  EXEC.FreeMem(BYTE POINTER(scope),DOSBREAKTYPES.SCOPE_SIZE)
+
+RETURN
+
+; Bind the caller's console to a fresh foreground command lifetime.
+PUBLIC LONGINT FUNC Begin(BYTE POINTER identity)
+  DOSCLIENT.ClientContext POINTER client
+  DOSOBJECTS.Header POINTER header
+  DOSBREAKTYPES.Scope POINTER scope
+  DOSRAW.RawEndpoint POINTER endpoint
+  DOSSTREAMS.Handle POINTER handle
+  BYTE fresh,okay
+
+  client=DOSCLIENT.Ensure()
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF client.foregroundLoan<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  header=DOSOBJECTS.Find(DOSCORE.Current(),identity,DOSOBJECTS.KIND_FILE)
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_BAD_STREAM_NAME)
+    RETURN(0)
+  FI
+
+  IF header.backend<>DOSOBJECTS.BACKEND_CON THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(0)
+  FI
+
+  IF DOSRAW.Live(DOSSTREAMS.Handle POINTER(identity))=0 THEN
+    DOSCLIENT.SetError(ERROR_BAD_STREAM_NAME)
+    RETURN(0)
+  FI
+
+  scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+  fresh=0
+  IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+    IF scope.groupActive<>0 THEN
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+      RETURN(0)
+    FI
+
+    IF scope.handle<>identity THEN
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+      RETURN(0)
+    FI
+  ELSE
+    scope=Allocate(client,identity)
+    IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+      RETURN(0)
+    FI
+
+    fresh=1
+  FI
+
+  handle=DOSSTREAMS.Handle POINTER(identity)
+  endpoint=DOSRAW.RawEndpoint POINTER(handle.endpoint)
+  scope.unit=endpoint.unit
+  EXEC.Forbid()
+  okay=CONSOLEFOREGROUND.Begin(scope)
+  IF okay<>0 THEN
+    client.foreground=BYTE POINTER(scope)
+  FI
+
+  EXEC.Permit()
+  IF okay=0 THEN
+    IF fresh<>0 THEN
+      Free(scope)
+    FI
+
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  DOSCLIENT.SetError(0)
+
+RETURN(-1)
+
+; Retire the foreground lifetime before releasing its break resources.
+PUBLIC LONGINT FUNC End()
+  DOSCLIENT.ClientContext POINTER client
+  DOSBREAKTYPES.Scope POINTER scope
+
+  scope=Current()
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  IF scope.groupActive<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  client=DOSCLIENT.Ensure()
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF client.foregroundLoan<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  CONSOLEFOREGROUND.End(scope)
+  client.foreground=BYTE POINTER(0)
+  EXEC.Permit()
+  Free(scope)
+
+RETURN(-1)
+
+; Observe a foreground interruption without reading redirected standard input.
+PUBLIC LONGINT FUNC Pending()
+  DOSBREAKTYPES.Scope POINTER scope
+
+  scope=Current()
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF scope.pending<>0 THEN
+    RETURN(-1)
+  FI
+
+RETURN(0)
+
+; Acknowledge the current scope's pending interruption.
+PUBLIC PROC Clear()
+  DOSBREAKTYPES.Scope POINTER scope
+  DOSCLIENT.ClientContext POINTER client
+  LONGCARD ignored
+
+  scope=Current()
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN
+  FI
+
+  client=DOSCLIENT.ClientContext POINTER(scope.client)
+  IF client.suspended<>0 OR scope.groupActive<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN
+  FI
+
+  EXEC.Forbid()
+  scope.pending=0
+  ignored=EXEC.SetSignal(0,scope.mask)
+  EXEC.Permit()
+
+RETURN
+
+ENDMODULE

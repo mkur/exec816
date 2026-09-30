@@ -1,0 +1,393 @@
+; One ordinary resident Task owns the physical bus. All driver coordination
+; uses public Exec facilities. Hardware IRQ executes only the native adapter.
+MODULE SIODRIVER
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE EXECPRODUCER
+USE TASKSTACKS
+USE SIOADAPTER
+USE HEAPCORE
+USE EXECMEMORY
+INCLUDE "sio-storage-action.inc"
+INCLUDE "io-storage-action.inc"
+
+TYPE Descriptor=[
+  BYTE owned,phase,cancel,error,direction,divisor
+  CARD timeout,length,actual
+  BYTE POINTER cursor
+  BYTE pad
+  BYTE POINTER buffer
+  BYTE pad2
+  CARD remaining
+  BYTE checksum,value,alarm,pad3
+  CARD clock,deadline
+]
+
+INCLUDE "sio-requests.inc"
+INCLUDE "sio-lifetime.inc"
+
+; Validate the entire DMA-independent transfer buffer against the RAM map.
+BYTE FUNC SIOMapped(BYTE POINTER data LONGCARD bytes)
+  EXECMEMORY.BankRecord info
+  CARD first,last,index
+
+  IF data=BYTE POINTER(0) OR bytes>LONGCARD($1000000)-LONGCARD(ADDRESS(data)) THEN
+    RETURN(0)
+  FI
+
+  first=CARD(ADDRESS(data) RSH 16)
+  last=CARD((LONGCARD(ADDRESS(data))+bytes-1) RSH 16)
+  ; Initial DMA-free profile uses physical upper RAM, with no bank-zero bounce.
+  IF first=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=first TO last DO
+    IF EXECMEMORY.Query(index,@info)<>0 THEN
+      RETURN(0)
+    FI
+
+    IF info.state=0 THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; Derive the byte extent required by the selected SIO direction.
+BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
+
+  IF sio.io_Length=0 THEN
+    RETURN(0)
+  FI
+
+  IF sio.io_Length<=128 THEN
+    RETURN(1)
+  FI
+
+  ; Double-density reads only; larger writes and intermediate sizes stay out.
+  IF sio.io_Length<>256 THEN
+    RETURN(0)
+  FI
+
+  IF sio.sio_Profile<>EXEC.SIO_PROFILE_FASTEST125
+      AND sio.sio_Profile<>EXEC.SIO_PROFILE_GENERIC57600 THEN
+    RETURN(0)
+  FI
+
+  IF sio.sio_Direction<>EXEC.SIODIR_READ OR sio.sio_Command<>$52 THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Reject unsupported request shapes before touching the serial hardware.
+BYTE FUNC SIOValidate(EXEC.IORequest POINTER request)
+  EXEC.IOSIOReq POINTER sio
+
+  IF request.io_Message.mn_Length<EXEC.IOSIOREQ_SIZE THEN
+    RETURN(BYTE(EXEC.IOERR_BADLENGTH))
+  FI
+
+  sio=EXEC.IOSIOReq POINTER(request)
+  sio.io_Actual=0
+  IF request.io_Command<>EXEC.SIOCMD_TRANSACTION THEN
+    RETURN(BYTE(EXEC.IOERR_NOCMD))
+  FI
+
+  IF request.io_Flags<>0 THEN
+    RETURN(BYTE(EXEC.IOERR_BADLENGTH))
+  FI
+
+  IF sio.sio_Profile<EXEC.SIO_PROFILE_FASTEST125
+      OR sio.sio_Profile>EXEC.SIO_PROFILE_GENERIC57600 THEN
+    RETURN(EXEC.SIOERR_BADPROFILE)
+  FI
+
+  IF sio.sio_Profile=EXEC.SIO_PROFILE_HAPPY1050 AND sio.sio_Direction<>0 THEN
+    RETURN(EXEC.SIOERR_BADPROFILE)
+  FI
+
+  IF sio.sio_TimeoutUS<>0 AND sio.sio_TimeoutUS<4041 THEN
+    RETURN(BYTE(EXEC.IOERR_BADLENGTH))
+  FI
+
+  IF sio.sio_TimeoutUS>1000000 THEN
+    IF sio.sio_Profile<>EXEC.SIO_PROFILE_STOCK810 OR sio.sio_TimeoutUS>2000000 THEN
+      RETURN(BYTE(EXEC.IOERR_BADLENGTH))
+    FI
+  FI
+
+  IF sio.io_Offset<>0 OR sio.sio_Direction>2 THEN
+    RETURN(BYTE(EXEC.IOERR_BADLENGTH))
+  FI
+
+  IF sio.sio_Direction=0 THEN
+    IF sio.io_Length<>0 THEN
+      RETURN(BYTE(EXEC.IOERR_BADLENGTH))
+    FI
+
+    RETURN(0)
+  FI
+
+  IF PayloadLength(sio)=0 THEN
+    RETURN(BYTE(EXEC.IOERR_BADLENGTH))
+  FI
+
+  IF SIOMapped(sio.io_Data,sio.io_Length)=0 THEN
+    RETURN(BYTE(EXEC.IOERR_BADADDRESS))
+  FI
+
+RETURN(0)
+
+; Convert a request timeout into the bounded deadline used by the adapter.
+PUBLIC CARD FUNC DeadlineTicks(LONGCARD microseconds CARD profile)
+  CARD ticks,weight
+  LONGCARD budget
+
+  IF microseconds=0 THEN
+    microseconds=1000000
+    ; A cold 810 seek/rotation plus a stock-speed sector can exceed one
+    ; second. This changes its device-operation budget, never byte timing.
+    IF profile=EXEC.SIO_PROFILE_STOCK810 THEN
+      microseconds=2000000
+    FI
+  FI
+
+  ; Binary long division takes nine bounded steps for the admitted <=2s
+  ; range. Round upward by the same 4041us floor of the PAL timer period.
+  ; Preparation stays preemptible without a 248/495-iteration arithmetic walk.
+  ticks=0
+  weight=256
+  budget=LONGCARD(4041) LSH 8
+  WHILE weight<>0 DO
+    IF microseconds>=budget THEN
+      microseconds==-budget
+      ticks==+weight
+    FI
+
+    weight=weight RSH 1
+    budget=budget RSH 1
+  OD
+
+  IF microseconds<>0 THEN
+    ticks==+1
+  FI
+
+RETURN(ticks)
+
+; Translate the public request into the hardware transaction descriptor.
+PROC Prepare(EXEC.IOSIOReq POINTER request)
+  Descriptor POINTER desc
+  BYTE POINTER command
+  CARD total,index
+
+  desc=Descriptor POINTER(SIO_STATE)
+  command=BYTE POINTER(SD_COMMAND)
+  desc.direction=request.sio_Direction
+  desc.length=CARD(request.io_Length)
+  desc.buffer=request.io_Data
+  desc.divisor=0
+  IF request.sio_Profile<>EXEC.SIO_PROFILE_FASTEST125 THEN
+    desc.divisor=40
+  FI
+
+  ; Nominal 57.6k high-speed command/data frames (Altirra generic56k).
+  IF request.sio_Profile=EXEC.SIO_PROFILE_GENERIC57600 THEN
+    desc.divisor=8
+  FI
+
+  ; 4041 is the floor of the real PAL period; rounding up cannot expire early.
+  desc.timeout=DeadlineTicks(request.sio_TimeoutUS,request.sio_Profile)
+  command(0)=request.io_Unit^
+  command(1)=request.sio_Command
+  command(2)=request.sio_Aux1
+  command(3)=request.sio_Aux2
+  total=0
+  FOR index=0 TO 3 DO
+    total==+CARD(command(index))
+    IF total>255 THEN
+      total=(total & 255)+1
+    FI
+  OD
+
+  command(4)=BYTE(total)
+
+RETURN
+
+; Acquire the serial adapter before publishing worker readiness.
+BYTE FUNC HardwareInit()
+  BYTE okay,first,second,third
+
+  first=EXEC.AllocSignal(31)
+  second=EXEC.AllocSignal(30)
+  third=EXEC.AllocSignal(29)
+  IF first=$ff OR second=$ff OR third=$ff THEN
+    IF first<>$ff THEN
+      EXEC.FreeSignal(first)
+    FI
+
+    IF second<>$ff THEN
+      EXEC.FreeSignal(second)
+    FI
+
+    IF third<>$ff THEN
+      EXEC.FreeSignal(third)
+    FI
+
+    RETURN(0)
+  FI
+
+  okay=EXEC.RegisterResident(LONGCARD(STOP_MASK))
+  IF okay<>0 THEN
+    okay=EXECPRODUCER.Bind(EXEC.FindTask(BYTE POINTER(0)),LONGCARD($40000000))
+    IF okay<>0 THEN
+      okay=SIOADAPTER.Init()
+      IF okay<>0 THEN
+        RETURN(1)
+      FI
+
+      EXECPRODUCER.Release()
+      EXECPRODUCER.Drain()
+    FI
+
+    okay=EXEC.UnregisterResident()
+  FI
+
+  EXEC.FreeSignal(29)
+  EXEC.FreeSignal(30)
+  EXEC.FreeSignal(31)
+
+RETURN(0)
+
+; Drive one retained request through validation, hardware work and completion.
+PROC RunRequest(EXEC.IOSIOReq POINTER request)
+  LONGCARD value,bits
+  Descriptor POINTER desc
+  BYTE okay,error
+  CARD status
+  BYTE POINTER offline
+
+  offline=BYTE POINTER(SD_OFFLINE)
+  IF offline^<>0 THEN
+    request.io_Error=EXEC.SIOERR_BUSUNAVAILABLE
+    request.io_Actual=0
+    Finish(0)
+    RETURN
+  FI
+
+  desc=Descriptor POINTER(SIO_STATE)
+  request.io_Error=SIOValidate(EXEC.IORequest POINTER(request))
+  IF request.io_Error<>0 THEN
+    Finish(0)
+    RETURN
+  FI
+
+  Prepare(request)
+  Activate()
+  okay=SIOADAPTER.Start()
+  IF okay=0 THEN
+    IF offline^=0 THEN
+      HEAPCORE.Abort($ff91)
+    FI
+
+    desc.buffer=BYTE POINTER(0)
+    desc.cursor=BYTE POINTER(0)
+    request.io_Error=EXEC.SIOERR_BUSUNAVAILABLE
+    request.io_Actual=0
+    Finish(0)
+    RETURN
+  FI
+
+  WHILE desc.phase<>13 DO
+    bits=EXEC.Wait(LONGCARD($c0000000))
+  OD
+
+  okay=SIOADAPTER.Retire()
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff92)
+  FI
+
+  error=desc.error
+  ; This guarded operation clears active ownership and publishes the reply.
+  ; Never dereference request after it: the recipient can free it immediately.
+  Finish(1)
+  ; A complete successful response needs no OS-service delay. Error recovery
+  ; keeps its existing quiet interval; uncertain outcomes remain offline.
+  IF error<>0 THEN
+    status=EXECTASKS.Sleep(3)
+  FI
+
+  okay=SIOADAPTER.Recovered()
+
+RETURN
+
+; Serialize bus transactions while remaining schedulable between device
+; events.
+PUBLIC PROC Worker()
+  LONGCARD bits
+  EXEC.IOSIOReq POINTER request
+  EXEC.Task POINTER self
+  DriverBus POINTER bus
+  BYTE okay
+
+  EXEC.Forbid()
+  bus=DriverBus POINTER(ADDRESS(IS_BASE+64))
+  self=EXEC.FindTask(BYTE POINTER(0))
+  ; Public admission does not grant ownership of an already running driver.
+  IF bus.worker<>self OR bus.state<>1 OR bus.lease.task<>self THEN
+    EXEC.Permit()
+    RETURN
+  FI
+
+  IF HardwareInit()=0 THEN
+    RetireWorker(bus)
+    RETURN
+  FI
+
+  bus.state=2
+  Notify(bus)
+  EXEC.Permit()
+  bits=0
+  WHILE Stopping(bus,self,bits)=0 DO
+    bits=0
+    request=EXEC.IOSIOReq POINTER(Claim())
+    IF request=EXEC.IOSIOReq POINTER(0) THEN
+      bits=EXEC.Wait(LONGCARD(WAKE_MASK))
+    ELSE
+      RunRequest(request)
+    FI
+  OD
+
+  EXEC.Forbid()
+  SIOADAPTER.Shutdown()
+  EXECPRODUCER.Release()
+  EXECPRODUCER.Drain()
+  okay=EXEC.UnregisterResident()
+  EXEC.FreeSignal(29)
+  EXEC.FreeSignal(30)
+  EXEC.FreeSignal(31)
+  RetireWorker(bus)
+
+RETURN
+
+; Recognize the resident SIO device name without allocating temporary storage.
+PUBLIC BYTE FUNC Matches(BYTE POINTER name)
+  BYTE POINTER expected
+  BYTE index
+
+  IF name=BYTE POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  expected=BYTE POINTER(ADDRESS(IS_BASE+224))
+  FOR index=0 TO 10 DO
+    IF name(index)<>expected(index) THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+ENDMODULE

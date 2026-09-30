@@ -1,0 +1,221 @@
+MODULE SIGNALQUEUE
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE EXECSIGNALIRQ
+USE PRODUCERPROBE
+USE TASKSTACKS
+
+EXEC.Task POINTER first,second,third,parent
+VOLATILE BYTE mask=$10,irqen=$d20e,skctl=$d20f,skshadow=$232
+VOLATILE BYTE freq3=$d204,vol3=$d205,freq4=$d206,vol4=$d207,audctl=$d208,
+    stimer=$d209,skreset=$d20a,serout=$d20d
+VOLATILE BYTE nmien=$d40e
+VOLATILE CARD irqs=$2004,ticks=$2034
+BYTE oldsk,index,orderCount,variant
+CARD ARRAY checks(32)
+BYTE ARRAY order(3)
+LONGCARD ARRAY values(3)
+PROC POINTER missing()
+INCLUDE "tasks_exec_helpers.inc"
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE value)
+
+  checks(index)=CARD(value)
+  index==+1
+
+RETURN
+
+PROC FirstWorker()
+
+  values(0)=EXEC.Wait(LONGCARD($80000001))
+  order(orderCount)=1
+  orderCount==+1
+
+RETURN
+
+PROC SecondWorker()
+
+  values(1)=EXEC.Wait(1)
+  order(orderCount)=2
+  orderCount==+1
+
+RETURN
+
+PROC ThirdWorker()
+
+  values(2)=EXEC.Wait(1)
+  order(orderCount)=3
+  orderCount==+1
+
+RETURN
+
+PROC Pulse(EXEC.Task POINTER item LONGCARD bits)
+  CARD before,deadline
+  BYTE claimed
+
+  claimed=PRODUCERPROBE.Bind(item,bits)
+  Check(BYTE(claimed=1))
+  skctl=0
+  freq3=6
+  vol3=0
+  freq4=0
+  vol4=0
+  audctl=$28
+  skshadow=$23
+  skctl=$23
+  skreset=$23
+  stimer=$23
+  before=irqs
+  deadline=ticks+8
+  mask=mask % $10
+  irqen=mask
+  serout=$5a
+  WHILE irqs=before AND ticks<>deadline DO
+  OD
+
+  Check(BYTE(irqs<>before))
+  mask=mask & $ef
+  irqen=mask
+  skctl=0
+  PRODUCERPROBE.Release()
+
+RETURN
+
+BYTE FUNC Queued(EXEC.Task POINTER item)
+  BYTE POINTER flag
+
+  flag=BYTE POINTER(item.tc_ExecPrivate+SIZE(13))
+
+RETURN(flag^)
+
+PROC Setup()
+  EXEC.Task POINTER item
+  CARD status
+  EXECLISTS.MinNode POINTER node,other
+
+  first=EXEC.Task POINTER($08ffef)
+  second=EXEC.Task POINTER($09ffef)
+  third=EXEC.Task POINTER($0affef)
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  PrepareTask(first,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  PrepareTask(second,TASKSTACKS.LOWER2,BYTE POINTER(0))
+  PrepareTask(third,TASKSTACKS.LOWER3,BYTE POINTER(0))
+  item=EXEC.AddTask(first,@FirstWorker,missing)
+  item=EXEC.AddTask(second,@SecondWorker,missing)
+  item=EXEC.AddTask(third,@ThirdWorker,missing)
+  WHILE first.tc_State<>EXEC.TS_WAIT OR second.tc_State<>EXEC.TS_WAIT
+      OR third.tc_State<>EXEC.TS_WAIT DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+; Publish several wake requests before allowing the consumer to drain them.
+PROC QueuePosts()
+  EXECLISTS.MinNode POINTER node,other
+
+  oldsk=skshadow
+  EXEC.Forbid()
+  Pulse(second,1)
+  Pulse(first,LONGCARD($80000000))
+  Pulse(third,1)
+  Pulse(first,1)
+  Check(BYTE(Queued(first)=1 AND Queued(second)=1 AND Queued(third)=1))
+  node=EXECLISTS.MinNode POINTER(second.tc_ExecPrivate+SIZE(32))
+  other=EXECLISTS.MinNode POINTER(first.tc_ExecPrivate+SIZE(32))
+  Check(BYTE(node.mln_Succ=other AND other.mln_Pred=node))
+  node=other
+  other=EXECLISTS.MinNode POINTER(third.tc_ExecPrivate+SIZE(32))
+  Check(BYTE(node.mln_Succ=other AND other.mln_Pred=node))
+  Check(BYTE(first.tc_State=EXEC.TS_WAIT AND second.tc_State=EXEC.TS_WAIT
+      AND third.tc_State=EXEC.TS_WAIT))
+
+RETURN
+
+PROC CancelAll()
+  BYTE POINTER pending
+
+  pending=BYTE POINTER($203a)
+  EXEC.RemTask(second)
+  EXEC.RemTask(first)
+  EXEC.RemTask(third)
+  Check(BYTE(pending^=0))
+  Check(BYTE(first.tc_ExecPrivate=0 AND second.tc_ExecPrivate=0
+      AND third.tc_ExecPrivate=0))
+  PRODUCERPROBE.Drain()
+
+RETURN
+
+PROC Fifo()
+
+  PRODUCERPROBE.Drain()
+  Check(BYTE(first.tc_State=EXEC.TS_READY AND second.tc_State=EXEC.TS_READY
+      AND third.tc_State=EXEC.TS_READY))
+
+RETURN
+
+; Replace the wake producer without retaining authority from its previous
+; owner.
+PROC Takeover()
+  EXECLISTS.MinNode POINTER node,other
+
+  other=EXECLISTS.MinNode POINTER(third.tc_ExecPrivate+SIZE(32))
+  ; Direct delivery takes over the queued middle node without duplication.
+  EXEC.Signal(first,1)
+  Check(BYTE(Queued(first)=0 AND first.tc_State=EXEC.TS_READY))
+  node=EXECLISTS.MinNode POINTER(second.tc_ExecPrivate+SIZE(32))
+  Check(BYTE(node.mln_Succ=other AND other.mln_Pred=node))
+  ; Cancel the tail, then explicitly drain the singleton at a safe boundary.
+  EXEC.RemTask(third)
+  Check(BYTE(third.tc_ExecPrivate=0))
+  PRODUCERPROBE.Drain()
+  Check(BYTE(Queued(second)=0 AND second.tc_State=EXEC.TS_READY))
+
+RETURN
+
+; Retire producer and consumer ownership after every queued wake is accounted
+; for.
+PROC Complete()
+  ; Pin execution order after ready publication; VBI may otherwise preempt a
+  ; correctly selected worker before its observable order write.
+  nmien=0
+  skshadow=oldsk
+  skctl=oldsk
+  audctl=0
+  EXEC.Permit()
+  AwaitRemoval(first)
+  AwaitRemoval(second)
+  AwaitRemoval(third)
+  nmien=$40
+  IF variant=0 THEN
+    Check(BYTE(orderCount=2 AND order(0)=1 AND order(1)=2))
+    Check(BYTE(values(0)=LONGCARD($80000001) AND values(1)=1 AND values(2)=0))
+  ELSEIF variant=1 THEN
+    Check(BYTE(orderCount=0))
+  ELSE
+    Check(BYTE(orderCount=3 AND order(0)=2 AND order(1)=1 AND order(2)=3))
+    Check(BYTE(values(0)=LONGCARD($80000001) AND values(1)=1 AND values(2)=1))
+  FI
+
+RETURN
+
+; Exercise queued wake order, cancellation and producer takeover.
+PROC Main()
+
+  Setup()
+  QueuePosts()
+  IF variant=0 THEN
+    Takeover()
+  ELSEIF variant=1 THEN
+    CancelAll()
+  ELSE
+    Fifo()
+  FI
+
+  Complete()
+
+RETURN
+
+ENDMODULE

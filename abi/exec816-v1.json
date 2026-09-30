@@ -1,0 +1,115 @@
+{
+  "abi": "exec816.cop.v1",
+  "version": 256,
+  "cop_signature": 80,
+  "selector": "A bits 0..7",
+  "exit_code": "X bits 0..15",
+  "services": {
+    "VERSION": 0,
+    "YIELD": 1,
+    "EXIT": 2,
+    "TASK_ID": 3,
+    "LOCK": 4,
+    "UNLOCK": 5,
+    "POLL": 6
+  },
+  "errors": {
+    "UNKNOWN": 65296,
+    "CONTEXT": 65297,
+    "LOCK": 65298
+  },
+  "task_states": {
+    "READY": 1,
+    "EXITED": 2
+  },
+  "addresses": {
+    "OLD_COP": 8224,
+    "CURRENT": 8227,
+    "SWITCHING": 8228,
+    "SWITCH_COUNT": 8230,
+    "GATE_COUNT": 8232,
+    "OS_CALLS": 8234,
+    "FORWARD_COUNT": 8236,
+    "OS_OWNER": 8242,
+    "TASK0": 8256,
+    "TASK1": 8272,
+    "KERNEL_OWNER": 8288,
+    "PROBE0": 8320,
+    "PROBE1": 8352,
+    "TASK1_DP": 9216,
+    "KERNEL_DP": 9728,
+    "TASK1_STACK_BASE": 20992,
+    "TASK1_STACK_FLOOR": 21248,
+    "TASK1_STACK_TOP": 22526,
+    "TASK1_STACK_CEILING": 22527,
+    "KERNEL_STACK_BASE": 18944,
+    "KERNEL_STACK_FLOOR": 19200,
+    "KERNEL_STACK_TOP": 20478,
+    "KERNEL_STACK_CEILING": 20479,
+    "OLD_VBI": 8238,
+    "TICK_PENDING": 8240,
+    "VBI_COUNT": 8244,
+    "VBI_DISPATCHES": 8246,
+    "IRQ_DEPTH": 8248
+  },
+  "task_record": {
+    "size": 16,
+    "fields": [
+      {
+        "name": "savedS",
+        "type": "CARD",
+        "offset": 0
+      },
+      {
+        "name": "state",
+        "type": "BYTE",
+        "offset": 2
+      },
+      {
+        "name": "id",
+        "type": "BYTE",
+        "offset": 3
+      },
+      {
+        "name": "lockDepth",
+        "type": "CARD",
+        "offset": 4
+      },
+      {
+        "name": "pending",
+        "type": "BYTE",
+        "offset": 6
+      },
+      {
+        "name": "reserved",
+        "type": "BYTE",
+        "offset": 7
+      },
+      {
+        "name": "exitCode",
+        "type": "CARD",
+        "offset": 8
+      },
+      {
+        "name": "reserved0",
+        "type": "CARD",
+        "offset": 10
+      },
+      {
+        "name": "reserved1",
+        "type": "CARD",
+        "offset": 12
+      },
+      {
+        "name": "reserved2",
+        "type": "CARD",
+        "offset": 14
+      }
+    ]
+  },
+  "compiler_frame": {
+    "a_full": 8,
+    "x": 6,
+    "p": 10
+  }
+}

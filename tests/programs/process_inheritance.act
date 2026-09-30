@@ -1,0 +1,671 @@
+MODULE PROCESSINHERITANCE
+USE EXEC
+USE EXECTASKS
+USE PROCESS
+USE PROCESSSTATE
+USE PROCESSPROBE
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE DOSSTREAMS
+USE DOSRAW
+USE DOSCOOKED
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE COOKEDLINE
+USE FSBOOT
+USE FSREGISTRY
+USE FSLOCKS
+USE DOSINHERIT
+USE FSTYPES
+USE CONSOLEDRIVER
+USE CONSOLEFOREGROUND
+USE CONSOLEINPUT
+USE CONSOLETYPES
+USE HEAPCORE
+
+CARD checks,completed,entered
+CARD ARRAY layouts(8)
+BYTE stage,variant,kind,gate,ready,done
+BYTE ARRAY arguments(1)
+LONGCARD ARRAY children(4)
+LONGCARD baseline,signals,observedFree,oldRoute,childRoute
+DOS.FileHandle POINTER input,output,console
+DOS.FileLock POINTER directory
+DOSCLIENT.ClientContext POINTER parent,peer
+DOSBREAKTYPES.Scope POINTER parentScope,childScope
+DOSCORE.DosSlot POINTER owner
+EXEC.Task POINTER root
+FSTYPES.Mount POINTER mount
+COOKEDLINE.Session POINTER session
+DOSRAW.RawEndpoint POINTER endpoint
+CONSOLETYPES.Instance POINTER instance
+CONSOLETYPES.Service POINTER consoleService
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  EXEC.Forbid()
+  IF okay=0 THEN
+    observedFree=EXEC.AvailMem(0)
+    HEAPCORE.Abort($f600+(checks & 255))
+  FI
+
+  checks==+1
+  EXEC.Permit()
+
+RETURN
+
+PROC CheckBaseline(BYTE unused)
+  BYTE slot
+  PROCESSSTATE.Table POINTER table
+
+  table=PROCESSSTATE.Registry()
+  Require(EXEC.AvailMem(0)=baseline AND root.tc_SigAlloc=signals)
+  Require(owner.context=BYTE POINTER(0) AND owner.objects=BYTE POINTER(0))
+  Require(mount.references=0)
+  FOR slot=1 TO 7 DO
+    Require(table.entries(slot).state=PROCESSSTATE.STATE_FREE)
+  OD
+
+RETURN
+
+PROC Files(BYTE unused)
+  DOS.FileHandle POINTER ignored
+  DOS.FileLock POINTER previous
+
+  input=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  output=DOS.Open(BYTE POINTER($d1080),DOS.MODE_NEWFILE)
+  directory=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  Require(input<>DOS.FileHandle POINTER(0) AND output<>DOS.FileHandle POINTER(0)
+      AND directory<>DOS.FileLock POINTER(0))
+  ignored=DOS.SelectInput(input)
+  ignored=DOS.SelectOutput(output)
+  previous=DOS.CurrentDir(directory)
+  parent=DOSCLIENT.Ensure()
+
+RETURN
+
+PROC CloseFiles(BYTE unused)
+  DOS.FileLock POINTER previous
+
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  previous=DOS.CurrentDir(DOS.FileLock POINTER(0))
+  Require(previous=directory)
+  DOS.UnLock(previous)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+; Prepare parent stream selections whose child wrappers must retain
+; independent ownership.
+PROC Streams(BYTE backend)
+  DOS.FileHandle POINTER ignored
+  DOSCOOKED.Handle POINTER cooked
+  DOSSTREAMS.Handle POINTER stream
+  BYTE POINTER name
+
+  name=BYTE POINTER($d1080)
+  IF backend=3 OR backend=4 OR backend=5 THEN
+    name=BYTE POINTER($d10a0)
+  FI
+
+  IF backend=6 THEN
+    name=BYTE POINTER($d10c0)
+  FI
+
+  input=DOS.Open(name,DOS.MODE_OLDFILE)
+  Require(input<>DOS.FileHandle POINTER(0))
+  ignored=DOS.SelectInput(input)
+  ignored=DOS.SelectOutput(input)
+  output=input
+  parent=DOSCLIENT.Ensure()
+  cooked=DOSCOOKED.Handle POINTER(input)
+  stream=DOSSTREAMS.Handle POINTER(input)
+  IF backend=3 OR backend=4 OR backend=5 THEN
+    session=cooked.state
+  FI
+
+  IF backend<>2 THEN
+    endpoint=DOSRAW.RawEndpoint POINTER(stream.endpoint)
+  FI
+
+RETURN
+
+; Use an inherited current-directory base without depending on the parent's
+; later selection.
+PROC ReadRelative(BYTE POINTER buffer)
+  DOS.FileHandle POINTER file,extra
+  DOS.FileLock POINTER lock,previous
+
+  file=DOS.Open(BYTE POINTER($d1040),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  Require(DOS.Read(file,buffer,4)=4)
+  lock=DOS.Lock(BYTE POINTER($d1060),DOS.SHARED_LOCK)
+  Require(lock<>DOS.FileLock POINTER(0))
+  previous=DOS.CurrentDir(lock)
+  Require(previous<>DOS.FileLock POINTER(0))
+  extra=DOS.Open(BYTE POINTER($d1080),DOS.MODE_NEWFILE)
+  Require(extra<>DOS.FileHandle POINTER(0))
+; Both inherited and newly opened objects deliberately reach the finalizer.
+RETURN
+
+; Check inherited DOS state from the child's own process and Task context.
+LONGINT FUNC Child()
+  DOSCLIENT.ClientContext POINTER client
+  DOS.FileHandle POINTER selected,ignored
+  DOSCORE.DosSlot POINTER slot
+  FSTYPES.FileObject POINTER file
+  FSTYPES.LockObject POINTER lock
+  FSLOCKS.Name POINTER name
+  DOSCOOKED.Handle POINTER cooked
+  DOSSTREAMS.Handle POINTER stream
+  BYTE POINTER buffer,text
+  CSTRING tail
+  BYTE index
+
+  client=DOSCLIENT.Ensure()
+  slot=DOSCORE.Current()
+  Require(client.owner<>root AND client.port<>parent.port AND client<>parent)
+  index=0
+  tail=PROCESS.GetArgStr()
+  IF tail^<>0 THEN
+    index=tail(0)-'0
+  FI
+
+  buffer=BYTE POINTER(ADDRESS($d2000)+(SIZE(index) LSH 8))
+  selected=DOS.Input()
+  cooked=DOSCOOKED.Handle POINTER(selected)
+  stream=DOSSTREAMS.Handle POINTER(selected)
+  IF kind<>8 THEN
+    Require(selected<>input AND DOS.IoErr()=0)
+  FI
+
+  EXEC.Forbid()
+  entered==+1
+  EXEC.Permit()
+  IF index=0 THEN
+    peer=client
+  FI
+
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+  CASE kind OF
+  WHEN 1 THEN
+    file=FSTYPES.FileObject POINTER(selected)
+    lock=FSTYPES.LockObject POINTER(client.directory)
+    Require(lock<>FSTYPES.LockObject POINTER(directory) AND lock.common.mount=mount)
+    name=FSLOCKS.Trailer(lock)
+    text=FSLOCKS.Text(lock)
+    Require(name.length=12 AND text(0)=68)
+    Require(DOS.Read(selected,buffer,4)=4)
+    Require(DOS.Write(DOS.Output(),buffer,4)=4)
+    ReadRelative(buffer)
+    ignored=DOS.SelectInput(DOS.FileHandle POINTER(0))
+    Require(ignored=selected AND client.directory<>BYTE POINTER(lock))
+  WHEN 2 THEN
+    Require(DOS.Input()=DOS.Output() AND client.objects=1)
+    Require(DOS.Read(selected,buffer,4)=0 AND DOS.Write(selected,buffer,4)=4)
+  WHEN 3 THEN
+    Require(DOS.Input()=DOS.Output() AND client.objects=1)
+    Require(cooked.state=session)
+    Require(DOS.Read(selected,buffer,2)=2 AND buffer(0)=65 AND buffer(1)=66)
+    Require(DOS.Write(selected,buffer,1)=1)
+  WHEN 4 THEN
+    Require(DOS.Read(selected,buffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  WHEN 5 THEN
+    IF index=0 THEN
+      ready=1
+      Require(DOS.Read(selected,buffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_BREAK)
+    ELSE
+      ReadRelative(buffer)
+      EXEC.Forbid()
+      done==+1
+      EXEC.Permit()
+    FI
+  WHEN 6 THEN
+    Require(DOS.Input()=DOS.Output() AND client.objects=1)
+    Require(stream.endpoint=BYTE POINTER(endpoint))
+    Require(DOS.Write(selected,BYTE POINTER($d1040),1)=1)
+  WHEN 7 THEN
+    childScope=DOSBREAK.Current()
+    childRoute=childScope.generation
+    Require(childScope.active<>0 AND parentScope.active=0)
+    Require(client.foregroundLoan=1 AND client.port<>parent.port)
+    Require(DOS.EndForeground()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+    Require(DOS.BeginForeground(DOS.FileHandle POINTER(childScope.handle))=0)
+    ready=1
+    Require(DOS.Read(DOS.FileHandle POINTER(childScope.handle),buffer,1)=-1
+        AND DOS.IoErr()=DOS.ERROR_BREAK)
+    Require(client.busy=0
+        AND client.request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+    Require(client.request.io_Device=BYTE POINTER(0)
+        AND EXEC.GetMsg(client.port)=EXEC.Message POINTER(0))
+  WHEN 8 THEN
+    IF variant=3 THEN
+      Require(DOS.ReleaseContext()<>0)
+      EXEC.RemTask(EXEC.Task POINTER(0))
+    FI
+  ESAC
+
+  Require(slot.active=0 AND client.busy=0)
+  DOSCLIENT.SetError(77777)
+  Require(DOS.SetIoErr(-70000)=77777)
+  EXEC.Forbid()
+  completed==+1
+  EXEC.Permit()
+
+RETURN(123456)
+
+PROC Spawn(BYTE count,BYTE foreground)
+  BYTE index
+  CARD before
+
+  before=entered
+  FOR index=0 TO count-1 DO
+    arguments(0)=index+'0
+    IF foreground<>0 THEN
+      children(index)=PROCESS.StartForeground(@Child,arguments,1)
+    ELSE
+      children(index)=PROCESS.Start(@Child,arguments,1)
+    FI
+
+    Require(children(index)<>0)
+  OD
+
+  WHILE entered<>before+count DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Collect(BYTE count)
+  BYTE index
+  PROCESS.Result result
+
+  FOR index=0 TO count-1 DO
+    Require(PROCESS.Wait(children(index),@result)<>0)
+    Require(result.primary=123456 AND result.secondary=-70000)
+    Require(PROCESS.Collect(children(index),@result)=0
+        AND DOS.IoErr()=PROCESS.ERROR_INVALID_PROCESS)
+  OD
+
+RETURN
+
+; Compare parent and child ownership before and after child execution.
+PROC Inheritance(BYTE unused)
+  BYTE cycle,ignored
+  DOS.FileLock POINTER previous
+  DOS.FileHandle POINTER file
+  LONGCARD saved
+  FSTYPES.FileObject POINTER object
+  BYTE POINTER buffer
+
+  buffer=BYTE POINTER($d2400)
+  FOR cycle=0 TO 1 DO
+    Files(0)
+    kind=1
+    gate=0
+    Require(DOS.Read(input,BYTE POINTER($d2400),4)=4)
+    Spawn(2,0)
+    object=FSTYPES.FileObject POINTER(input)
+    Require(object.backing.references=3 AND mount.references=6)
+    Require(parent.input=BYTE POINTER(input)
+        AND parent.directory=BYTE POINTER(directory))
+    IF cycle=1 THEN
+      CloseFiles(0)
+    FI
+
+    gate=1
+    Collect(2)
+    IF cycle=0 THEN
+      Require(object.backing.references=1 AND mount.references=2)
+      Require(DOS.Seek(input,0,DOS.OFFSET_CURRENT)=12)
+      Require(parent.input=BYTE POINTER(input)
+          AND parent.output=BYTE POINTER(output)
+          AND parent.directory=BYTE POINTER(directory))
+      CloseFiles(0)
+    FI
+
+    CheckBaseline(0)
+  OD
+
+  FOR kind=2 TO 6 DO
+    IF kind<>5 THEN
+      Streams(kind)
+      IF kind=3 THEN
+        ignored=COOKEDLINE.Feed(session,65)
+        ignored=COOKEDLINE.Feed(session,66)
+        ignored=COOKEDLINE.Feed(session,67)
+        ignored=COOKEDLINE.Feed(session,4)
+      FI
+
+      IF kind=4 THEN
+        Require(COOKEDLINE.Enter(session)<>0)
+      FI
+
+      gate=1
+      Spawn(1,0)
+      Collect(1)
+      IF kind=3 THEN
+        Require(session.references=1 AND endpoint.references=1)
+        Require(DOS.Read(input,buffer,4)=1 AND buffer(0)=67)
+        Require(DOS.Read(input,BYTE POINTER($d2400),4)=0)
+      FI
+
+      IF kind=4 THEN
+        Require(DOS.Close(input)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+        Require(session.references=1 AND parent.objects=1)
+        COOKEDLINE.Leave(session)
+      FI
+
+      Require(DOS.Close(input)<>0 AND DOS.ReleaseContext()<>0)
+      CheckBaseline(0)
+    FI
+  OD
+
+  ; All eight slots are live while CON blocks and three children use SIO.
+  kind=5
+  gate=0
+  ready=0
+  done=0
+  Streams(5)
+  directory=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  previous=DOS.CurrentDir(directory)
+  Spawn(4,0)
+  Require(PROCESS.Start(@Child,BYTE POINTER(0),0)=0
+      AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  gate=1
+  WHILE ready=0 OR done<>3 DO
+    EXEC.Yield()
+  OD
+
+  WHILE instance.read=BYTE POINTER(0) DO
+    EXEC.Yield()
+  OD
+
+  file=DOS.Open(BYTE POINTER($d1040),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0) AND DOS.Read(file,
+      BYTE POINTER($d2400),4)=4)
+  Require(DOS.Close(file)<>0)
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(instance,$1012f)
+  EXEC.Signal(@consoleService.task,$40000000)
+  EXEC.Permit()
+  Collect(4)
+  previous=DOS.CurrentDir(DOS.FileLock POINTER(0))
+  DOS.UnLock(previous)
+  Require(DOS.Close(input)<>0 AND DOS.ReleaseContext()<>0)
+  CheckBaseline(0)
+
+RETURN
+
+; Failed retention and ticket exhaustion must leave the parent's objects intact.
+PROC CloneFailures()
+  BYTE POINTER copy
+
+  LET file=FSTYPES.FileObject POINTER(input)
+  LET registry=DOSCORE.GetRegistry()
+  LET available=EXEC.AvailMem(0)
+  LET references=mount.references
+  mount.references=$ffff
+  copy=DOSINHERIT.Clone(owner,BYTE POINTER(input),DOSOBJECTS.KIND_FILE)
+  Require(copy=NULL AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  copy=DOSINHERIT.Clone(owner,BYTE POINTER(directory),DOSOBJECTS.KIND_LOCK)
+  Require(copy=NULL AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  mount.references=references
+  file.backing.references=$ffff
+  copy=DOSINHERIT.Clone(owner,BYTE POINTER(input),DOSOBJECTS.KIND_FILE)
+  Require(copy=NULL AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  file.backing.references=1
+
+  LET generation=registry.generation
+  registry.generation=$ffffffff
+  copy=DOSINHERIT.Clone(owner,BYTE POINTER(directory),DOSOBJECTS.KIND_LOCK)
+  Require(copy=NULL AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  copy=DOSINHERIT.Clone(owner,BYTE POINTER(input),DOSOBJECTS.KIND_FILE)
+  Require(copy<>NULL AND file.backing.references=2)
+  Require(DOSINHERIT.Discard(copy)<>0)
+  registry.generation=generation
+  Require(EXEC.AvailMem(0)=available AND mount.references=references
+      AND file.backing.references=1)
+
+RETURN
+
+; Inject preparation failures and require retained parent resources to
+; survive.
+PROC Failures(BYTE foreground)
+  BYTE point,count
+  CARD before
+  LONGCARD freeBytes,mask,identity
+  PROCESS.Result result
+  FSTYPES.FileObject POINTER object
+
+  object=FSTYPES.FileObject POINTER(input)
+  freeBytes=EXEC.AvailMem(0)
+  mask=root.tc_SigAlloc
+  count=3
+  IF foreground<>0 THEN
+    count=4
+  FI
+
+  FOR point=1 TO count DO
+    PROCESSPROBE.allocation=0
+    PROCESSPROBE.failAllocation=point
+    IF foreground<>0 THEN
+      identity=PROCESS.StartForeground(@Child,BYTE POINTER(0),0)
+    ELSE
+      identity=PROCESS.Start(@Child,BYTE POINTER(0),0)
+    FI
+
+    Require(identity=0 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+    Require(EXEC.AvailMem(0)=freeBytes AND root.tc_SigAlloc=mask)
+    Require(parent.objects=2+CARD(foreground)+1 AND parent.suspended=0)
+    Require(object.backing.references=1 AND mount.references=2)
+  OD
+
+  PROCESSPROBE.failAllocation=0
+  count=3
+  IF foreground<>0 THEN
+    count=6
+  FI
+
+  FOR point=1 TO count DO
+    PROCESSPROBE.failure=point
+    before=entered
+    IF foreground<>0 THEN
+      identity=PROCESS.StartForeground(@Child,BYTE POINTER(0),0)
+    ELSE
+      identity=PROCESS.Start(@Child,BYTE POINTER(0),0)
+    FI
+
+    Require(identity<>0 AND PROCESS.Wait(identity,@result)<>0)
+    Require(entered=before AND result.primary=20)
+    IF point=6 THEN
+      Require(result.secondary=DOS.ERROR_OBJECT_IN_USE)
+    ELSE
+      Require(result.secondary=DOS.ERROR_NO_FREE_STORE)
+    FI
+
+    Require(EXEC.AvailMem(0)=freeBytes AND root.tc_SigAlloc=mask
+        AND parent.suspended=0)
+    Require(parent.input=BYTE POINTER(input)
+        AND parent.output=BYTE POINTER(output)
+        AND parent.directory=BYTE POINTER(directory))
+  OD
+
+  PROCESSPROBE.failure=0
+
+RETURN
+
+; Verify console BREAK handoff to the child and restoration to the parent.
+PROC Foreground(BYTE unused)
+  BYTE ignored
+  CARD consumed
+  LONGCARD identity
+  PROCESS.Result result
+
+  Files(0)
+  kind=1
+  CloneFailures()
+  Failures(0)
+  console=DOS.Open(BYTE POINTER($d10a0),DOS.MODE_OLDFILE)
+  Require(console<>DOS.FileHandle POINTER(0) AND DOS.BeginForeground(console)<>0)
+  parentScope=DOSBREAK.Current()
+  Failures(1)
+  oldRoute=parentScope.generation
+  kind=7
+  gate=1
+  ready=0
+  Spawn(1,1)
+  WHILE ready=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(parent.suspended<>0 AND parentScope.active=0)
+  Require(CONSOLEFOREGROUND.Resolve(oldRoute)=CONSOLETYPES.Window POINTER(0))
+  Require(DOS.Input()=input AND DOS.Output()=output)
+  Require(DOS.Read(input,BYTE POINTER($d2400),1)=-1
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.EndForeground()=0 AND DOS.ReleaseContext()=0)
+  Require(PROCESS.StartForeground(@Child,BYTE POINTER(0),0)=0
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  WHILE instance.read=BYTE POINTER(0) DO
+    EXEC.Yield()
+  OD
+
+  EXEC.Forbid()
+  ignored=CONSOLEFOREGROUND.Deliver(oldRoute)
+  Require(childScope.pending=0)
+  IF variant=4 THEN
+    PROCESSPROBE.failure=7
+  FI
+
+  ignored=CONSOLEFOREGROUND.Deliver(childRoute)
+  EXEC.Permit()
+  Collect(1)
+  Require(parent.suspended=0 AND parentScope.active<>0
+      AND parentScope.generation<>oldRoute)
+  Require(parent.input=BYTE POINTER(input) AND parent.output=BYTE POINTER(output))
+  EXEC.Forbid()
+  ignored=CONSOLEFOREGROUND.Deliver(childRoute)
+  Require(parentScope.pending=0)
+  consumed=CONSOLEINPUT.Pump(instance)
+  Require(instance.inputCount=0
+      AND CONSOLEFOREGROUND.Resolve(childRoute)=CONSOLETYPES.Window POINTER(0))
+  EXEC.Permit()
+  Require(DOS.EndForeground()<>0 AND DOS.Close(console)<>0)
+  CloseFiles(0)
+  CheckBaseline(0)
+
+RETURN
+
+; Attempt conflicting ownership changes at the fixture's teardown checkpoints.
+PROC Adversary(BYTE unused)
+  DOSRAW.StreamRegistry POINTER registry
+  DOSRAW.RawEndpoint POINTER endpoint
+  PROCESSSTATE.Table POINTER table
+  PROCESSSTATE.Entry POINTER row
+  BYTE index
+
+  parent=DOSCLIENT.Ensure()
+  kind=8
+  gate=0
+  IF variant=5 THEN
+    Streams(3)
+  FI
+
+  Spawn(1,0)
+  table=PROCESSSTATE.Registry()
+  row=PROCESSSTATE.Entry POINTER(0)
+  FOR index=1 TO 7 DO
+    IF table.entries(index).identity=children(0) THEN
+      row=@table.entries(index)
+    FI
+  OD
+
+  Require(row<>PROCESSSTATE.Entry POINTER(0))
+  IF variant<>5 THEN
+    Require(DOS.ReleaseContext()<>0)
+  FI
+
+  IF variant=1 THEN
+    EXEC.RemTask(root)
+  FI
+
+  IF variant=5 THEN
+    Require(DOS.Close(input)<>0 AND DOS.ReleaseContext()<>0)
+    ; A real active endpoint must prevent teardown and retain the child.
+    registry=DOSRAW.GetRegistry()
+    endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+    endpoint.active=1
+  FI
+
+  gate=1
+  IF variant=2 THEN
+    WHILE row.state<>PROCESSSTATE.STATE_RETIRED DO
+      EXEC.Yield()
+    OD
+
+    EXEC.RemTask(root)
+  FI
+
+  Collect(1)
+  HEAPCORE.Abort($f6ff)
+
+RETURN
+
+; Exercise child stream/directory inheritance and foreground restoration.
+PROC Main()
+  FSTYPES.Service POINTER service
+  DOSCLIENT.ClientContext POINTER layoutClient
+  COOKEDLINE.Session POINTER layoutSession
+  FSTYPES.FileObject POINTER layoutFile
+
+  layouts(0)=CARD(SIZEOF(DOSCLIENT.ClientContext))
+  layouts(1)=CARD(SIZEOF(FSTYPES.FileObject))
+  layouts(2)=CARD(SIZEOF(FSTYPES.FileBacking))
+  layouts(3)=CARD(SIZEOF(COOKEDLINE.Session))
+  layouts(4)=CARD(SIZEOF(DOSSTREAMS.Handle))
+  layouts(5)=CARD(SIZEOF(DOSCOOKED.Handle))
+  layouts(6)=CARD(SIZEOF(FSTYPES.LockObject))
+  layouts(7)=CARD(SIZEOF(FSTYPES.Object))
+  Require(layouts(0)=88 AND layouts(1)=20 AND layouts(2)=112 AND layouts(3)=402
+      AND layouts(4)=16 AND layouts(5)=20 AND layouts(6)=98 AND layouts(7)=16)
+  layoutClient=DOSCLIENT.ClientContext POINTER($d2000)
+  layoutSession=COOKEDLINE.Session POINTER($d2000)
+  layoutFile=FSTYPES.FileObject POINTER($d2000)
+  Require(ADDRESS(@layoutClient.suspended)-ADDRESS(layoutClient)=86
+      AND ADDRESS(@layoutClient.foregroundLoan)-ADDRESS(layoutClient)=87)
+  Require(ADDRESS(@layoutSession.busy)-ADDRESS(layoutSession)=400
+      AND ADDRESS(@layoutFile.backing)-ADDRESS(layoutFile)=16)
+  owner=DOSCORE.Current()
+  root=EXEC.FindTask(BYTE POINTER(0))
+  Require(FSBOOT.Ensure()<>0)
+  service=FSREGISTRY.Service()
+  mount=service.mounts(0).item
+  instance=CONSOLEDRIVER.GetInstance()
+  consoleService=CONSOLEDRIVER.GetService()
+  baseline=EXEC.AvailMem(0)
+  signals=root.tc_SigAlloc
+  IF variant<>0 AND variant<>4 THEN
+    Adversary(0)
+  FI
+
+  stage=1
+  IF variant=0 THEN
+    Inheritance(0)
+  FI
+
+  stage=2
+  Foreground(0)
+  stage=3
+  Require(FSBOOT.Stop()<>0)
+
+RETURN
+
+ENDMODULE

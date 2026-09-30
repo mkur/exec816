@@ -1,0 +1,539 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-20",
+  "status": "pass",
+  "scope": "One 70003-byte DOS.Read, three live public tasks, eight-slot layout, kernel bank 1; raw and optimized NIR on pinned PAL 8x FASTEST125 with accurate disk timing. Passive observer only; no production change or new uninstrumented replay.",
+  "exec_revision_before_probe": "f476990",
+  "compiler_pin": "toolchain/actionc.json",
+  "platform_pin": "toolchain/altirra-sio-queued.json",
+  "probe_sha256": {
+    "tests/programs/dos_large_read.act": "599102754e17a2fac30e0bc54238afa86e658b112e74ebc690734e9206c006cc",
+    "tools/probe_dos_large_read.py": "5a0a6198b2bfedec0eafd4031ce09c2430ace6595c9ab28e1577cca5a12777b0"
+  },
+  "reserved_bank_zero_delta": 0,
+  "per_task_reserved_bank_zero_delta": 0,
+  "cases": [
+    {
+      "mode": "raw",
+      "status": "pass",
+      "artifact": "build/dos-large-read/raw/results.json",
+      "artifact_sha256": "e4bbc2664a5e009638ad79e09e4440e682265af98c91547352c2cdded156d0ae",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "image_sha256": "04515c0c081340703d3e218d2ad1a4a8535b7d59cbf9f2ea6c7c938ab1db4edf",
+      "xex_sha256": "5aef498c74b682e2b61a85b2ca822a8b7ad387667366546896949ee0b157f3de",
+      "media_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "observations_sha256": "897fdb223455a5056ff860aac5dabf14a97e2f5e91785b305ab9537d56fab499",
+      "observed": {
+        "received": 70003,
+        "ioError": 0,
+        "verified": 70003,
+        "checks": 7
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 2,
+        "live_tasks": 0,
+        "native_nmi_count": 2732,
+        "vbi_dispatches": 326,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 746,
+            "untouched_above_floor": 534
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 724,
+            "untouched_above_floor": 44
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 648,
+            "untouched_above_floor": 120
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 58,
+            "untouched_above_floor": 198
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1173,
+          "untouched_from_base": 363,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "timing": {
+        "elapsed_seconds": 48.7124043000991,
+        "file_bytes": 70003,
+        "file_bytes_per_second": 1437.067231761697,
+        "sectors": 277,
+        "sector_payload_bytes": 70912,
+        "rx_bytes": 71743,
+        "tx_bytes": 1385,
+        "serial_byte_clock_seconds": 5.772891500876119,
+        "ack_end_to_complete_begin": {
+          "seconds": 19.710476346212673,
+          "count": 277,
+          "min_us": 41228.736683775525,
+          "mean_us": 71156.95431845731,
+          "max_us": 174360.95514527493
+        },
+        "breakdown": {
+          "submit_to_start": {
+            "seconds": 15.570113225793264,
+            "percent": 31.96334373042143,
+            "count": 277,
+            "min_us": 34487.840773408854,
+            "mean_us": 56209.795038964854,
+            "max_us": 72862.8842973925
+          },
+          "start_to_terminal_post": {
+            "seconds": 26.186969941314867,
+            "percent": 53.758319503152904,
+            "count": 277,
+            "min_us": 64604.463904344506,
+            "mean_us": 94537.79762207533,
+            "max_us": 197741.26383780743
+          },
+          "terminal_post_to_sector_return": {
+            "seconds": 2.0417369981349887,
+            "percent": 4.191410847956924,
+            "count": 277,
+            "min_us": 6604.579498406353,
+            "mean_us": 7370.891690018009,
+            "max_us": 9162.943927012218
+          },
+          "between_sector_calls": {
+            "seconds": 4.864555688848979,
+            "percent": 9.986277127444277,
+            "count": 276,
+            "min_us": 15261.658436463442,
+            "mean_us": 17625.201771191954,
+            "max_us": 18189.359989511955
+          },
+          "read_edges": {
+            "seconds": 0.04902844600700049,
+            "percent": 0.10064879102446755,
+            "count": 2,
+            "min_us": 21478.29298583691,
+            "mean_us": 24514.223003500243,
+            "max_us": 27550.153021163584
+          }
+        },
+        "copy_wall_seconds": 3.8496175528173233,
+        "copy": {
+          "count": 277,
+          "min_us": 8476.216521774679,
+          "mean_us": 13897.536291759288,
+          "max_us": 15085.23652377643
+        },
+        "recovery_sleep": {
+          "count": 278,
+          "min_us": 42797.43268408002,
+          "mean_us": 59796.382753702674,
+          "max_us": 80675.35125793124
+        },
+        "recovery_overlap_with_queue_seconds": 13.685349862344388,
+        "terminal_post_to_retire": {
+          "count": 277,
+          "min_us": 1445.912551682528,
+          "mean_us": 1767.472086469203,
+          "max_us": 2053.8386391477616
+        },
+        "boundary": "JSL DOS.Read entry to return; guest time; excludes Open, verification and cleanup. Copy/recovery are overlapping diagnostics, not additional breakdown terms."
+      }
+    },
+    {
+      "mode": "opt",
+      "status": "pass",
+      "artifact": "build/dos-large-read/opt/results.json",
+      "artifact_sha256": "67aa1727e1fb7ebd2c61a43792b4a4237ee4ed5b452b83be7cf526cc24f17d07",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "image_sha256": "76c1df664ae7297c771e7f3814814fbbca777ef7a1c08516992d993c2e6b09e2",
+      "xex_sha256": "bbe51ee883a6983b9b4cec021d9a4907c3eb8b64b50941a8c1bf8c169804845a",
+      "media_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "observations_sha256": "b2d933d9cd5002dac4fa8fdcfeb8283dd667ccbcda593b648302d0ced7bf016c",
+      "observed": {
+        "received": 70003,
+        "ioError": 0,
+        "verified": 70003,
+        "checks": 7
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 2,
+        "live_tasks": 0,
+        "native_nmi_count": 2688,
+        "vbi_dispatches": 209,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 586,
+            "untouched_above_floor": 694
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 562,
+            "untouched_above_floor": 206
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 500,
+            "untouched_above_floor": 268
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 52,
+            "untouched_above_floor": 204
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1052,
+          "untouched_from_base": 484,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "timing": {
+        "elapsed_seconds": 48.71419262481692,
+        "file_bytes": 70003,
+        "file_bytes_per_second": 1437.0144762357763,
+        "sectors": 277,
+        "sector_payload_bytes": 70912,
+        "rx_bytes": 71743,
+        "tx_bytes": 1385,
+        "serial_byte_clock_seconds": 5.772891500876119,
+        "ack_end_to_complete_begin": {
+          "seconds": 20.32384606818076,
+          "count": 277,
+          "min_us": 45242.38806054309,
+          "mean_us": 73371.28544469588,
+          "max_us": 193667.4189678578
+        },
+        "breakdown": {
+          "submit_to_start": {
+            "seconds": 15.83401214301523,
+            "percent": 32.5038993563218,
+            "count": 277,
+            "min_us": 24052.798292591124,
+            "mean_us": 57162.49871124631,
+            "max_us": 69568.45353471134
+          },
+          "start_to_terminal_post": {
+            "seconds": 26.80208252570206,
+            "percent": 55.01904287344799,
+            "count": 277,
+            "min_us": 68627.13725667098,
+            "mean_us": 96758.42067040455,
+            "max_us": 217048.43250223083
+          },
+          "terminal_post_to_sector_return": {
+            "seconds": 1.8822763994987164,
+            "percent": 3.86391788117168,
+            "count": 277,
+            "min_us": 6058.468040356425,
+            "mean_us": 6795.221658840132,
+            "max_us": 9227.789376341843
+          },
+          "between_sector_calls": {
+            "seconds": 4.1532612327119915,
+            "percent": 8.525772488316182,
+            "count": 276,
+            "min_us": 13140.01401225579,
+            "mean_us": 15048.047944608667,
+            "max_us": 16032.121052357063
+          },
+          "read_edges": {
+            "seconds": 0.042560323888922565,
+            "percent": 0.08736740074234683,
+            "count": 2,
+            "min_us": 19828.96307897471,
+            "mean_us": 21280.16194446128,
+            "max_us": 22731.360809947855
+          }
+        },
+        "copy_wall_seconds": 3.249014631106926,
+        "copy": {
+          "count": 277,
+          "min_us": 7183.5365862254175,
+          "mean_us": 11729.294697136915,
+          "max_us": 13046.411015832158
+        },
+        "recovery_sleep": {
+          "count": 278,
+          "min_us": 43535.19063857261,
+          "mean_us": 58710.427605638775,
+          "max_us": 60837.64814013384
+        },
+        "recovery_overlap_with_queue_seconds": 14.038998405647757,
+        "terminal_post_to_retire": {
+          "count": 277,
+          "min_us": 1276.9619625052333,
+          "mean_us": 1514.9331074813117,
+          "max_us": 1930.91422215769
+        },
+        "boundary": "JSL DOS.Read entry to return; guest time; excludes Open, verification and cleanup. Copy/recovery are overlapping diagnostics, not additional breakdown terms."
+      }
+    }
+  ],
+  "interleave_check": {
+    "rotation_base_cycles": 372869,
+    "rotation_ms": 210.25093779206884,
+    "interleave": "default DD 15:1",
+    "cases": [
+      {
+        "mode": "raw",
+        "consecutive_transitions": 275,
+        "max_residual_cycles": 0,
+        "min_interval_ms": 155.0274253960154,
+        "max_interval_ms": 188.1617583830364,
+        "nonconsecutive": [
+          {
+            "previous": 25,
+            "sector": 1152,
+            "actual_cycles": 451218,
+            "expected_forward_cycles": 78349,
+            "extra_rotations": 1.0
+          }
+        ]
+      },
+      {
+        "mode": "opt",
+        "consecutive_transitions": 275,
+        "max_residual_cycles": 0,
+        "min_interval_ms": 155.0274253960154,
+        "max_interval_ms": 188.1617583830364,
+        "nonconsecutive": [
+          {
+            "previous": 25,
+            "sector": 1152,
+            "actual_cycles": 451218,
+            "expected_forward_cycles": 78349,
+            "extra_rotations": 1.0
+          }
+        ]
+      }
+    ],
+    "method": "Compare successive Complete-byte start times with forward sector-position differences modulo one rotation, using the default DD 15:1 interleave and float32 position calculation from the retained Altirra source.",
+    "angular_positions": [
+      0,
+      15,
+      12,
+      9,
+      6,
+      3,
+      1,
+      16,
+      13,
+      10,
+      7,
+      4,
+      2,
+      17,
+      14,
+      11,
+      8,
+      5
+    ],
+    "turns_per_position": "float32(10.944f / (60000.0f / 288.0f))",
+    "source_sha256": {
+      "build/altirra-irq-fix/src/ATIO/source/diskimage.cpp": "059e521a60bbc0d5c3f2ad55d9a594cbbd3e877e809c9c6262201022747158ab",
+      "build/altirra-irq-fix/src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db"
+    },
+    "interpretation": "No extra revolution on any consecutive-sector transition. Recovery and drive wait are coupled; reducing the pause need not reduce their sum. The fragmentation jump has one extra revolution, whose cause is not isolated by this comparison."
+  },
+  "without_mechanical_timing": {
+    "status": "pass",
+    "mode": "opt",
+    "scope": "Same single large Read, byte-identical native image/XEX and media; only accurate disk timing disabled. No new raw-NIR run or uninstrumented replay.",
+    "exec_revision_before_comparison": "4335d83",
+    "runner_sha256": "1555958ef75f440a80b00415253094b2e89ca000cd75e7d8516ab888bc613974",
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": false,
+      "diskemu": "fastest"
+    },
+    "configuration_delta": {
+      "accuratedisk": {
+        "baseline": true,
+        "comparison": false
+      }
+    },
+    "native_image_identical": true,
+    "xex_identical": true,
+    "media_identical": true,
+    "xex_sha256": "bbe51ee883a6983b9b4cec021d9a4907c3eb8b64b50941a8c1bf8c169804845a",
+    "artifact": "build/dos-large-read/opt-no-disk-timing/results.json",
+    "artifact_sha256": "9a889f68e35c9aa16078d33bb4569ca255e3d6448dae03aaaba2a2de4c922a28",
+    "observations_sha256": "f316ece6909a97b20cc3a3c3cbe23347521df87901c89e1c0abaa8e2a26aa746",
+    "observed": {
+      "received": 70003,
+      "ioError": 0,
+      "verified": 70003,
+      "checks": 7
+    },
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "live_tasks": 0,
+      "created": 2
+    },
+    "timing": {
+      "elapsed_seconds": 27.767686948725576,
+      "file_bytes": 70003,
+      "file_bytes_per_second": 2521.023811931618,
+      "sectors": 277,
+      "sector_payload_bytes": 70912,
+      "rx_bytes": 71743,
+      "tx_bytes": 1385,
+      "serial_byte_clock_seconds": 5.772891500876119,
+      "ack_end_to_complete_begin": {
+        "seconds": 0.15619295186353135,
+        "count": 277,
+        "min_us": 563.8734724315211,
+        "mean_us": 563.8734724315211,
+        "max_us": 563.8734724315211
+      },
+      "breakdown": {
+        "submit_to_start": {
+          "seconds": 14.873347533546948,
+          "percent": 53.56350912847486,
+          "count": 277,
+          "min_us": 21631.384633602065,
+          "mean_us": 53694.39542796732,
+          "max_us": 54097.316103239595
+        },
+        "start_to_terminal_post": {
+          "seconds": 6.634033852143918,
+          "percent": 23.89120082055806,
+          "count": 277,
+          "min_us": 23947.072016510218,
+          "mean_us": 23949.58069366035,
+          "max_us": 23951.442035921562
+        },
+        "terminal_post_to_sector_return": {
+          "seconds": 1.8490993530961588,
+          "percent": 6.659176749257557,
+          "count": 277,
+          "min_us": 6428.932911743934,
+          "mean_us": 6675.448928144977,
+          "max_us": 6887.2210764626525
+        },
+        "between_sector_calls": {
+          "seconds": 4.373070319251063,
+          "percent": 15.748774204081732,
+          "count": 276,
+          "min_us": 15805.584884807697,
+          "mean_us": 15844.457678445882,
+          "max_us": 15903.416932274567
+        },
+        "read_edges": {
+          "seconds": 0.038135890687488634,
+          "percent": 0.13733909762778754,
+          "count": 2,
+          "min_us": 18317.00684683364,
+          "mean_us": 19067.945343744315,
+          "max_us": 19818.883840654995
+        }
+      },
+      "copy_wall_seconds": 3.193070558897289,
+      "copy": {
+        "count": 277,
+        "min_us": 9739.575036757502,
+        "mean_us": 11527.33053753534,
+        "max_us": 12932.156153480719
+      },
+      "recovery_sleep": {
+        "count": 278,
+        "min_us": 60515.67638737543,
+        "mean_us": 60516.83684101002,
+        "max_us": 60837.64814013384
+      },
+      "recovery_overlap_with_queue_seconds": 13.24646895383145,
+      "terminal_post_to_retire": {
+        "count": 277,
+        "min_us": 1440.9786587987521,
+        "mean_us": 1686.9638809473176,
+        "max_us": 1898.2800449407157
+      },
+      "boundary": "JSL DOS.Read entry to return; guest time; excludes Open, verification and cleanup. Copy/recovery are overlapping diagnostics, not additional breakdown terms."
+    },
+    "reserved_bank_zero_delta": 0
+  }
+}

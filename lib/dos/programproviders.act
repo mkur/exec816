@@ -1,0 +1,103 @@
+MODULE PROGRAMPROVIDERS
+USE DOSCORE
+USE O65TYPES
+USE O65READ
+USE PROGRAMAPI
+USE PROGRAMLIBRARIES
+
+; Find a compatible resident export for the requested library and symbol
+; identity.
+PUBLIC BYTE FUNC Resolve(O65TYPES.Validation POINTER validation)
+  O65TYPES.Cursor cursor
+  O65TYPES.Span name
+  O65TYPES.Import POINTER item
+  BYTE POINTER manifest
+  LONGCARD length,targetAddress,extent,signature
+  CARD count,index,provider
+
+  manifest=DOSCORE.Control(O65TYPES.PROVIDER_OPERATION,BYTE POINTER(0))
+  IF manifest=BYTE POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  cursor.bytes=manifest
+  cursor.at=0
+  cursor.limit=O65TYPES.PROVIDER_CAPACITY
+  cursor.error=0
+  IF O65READ.U32(@cursor)<>LONGCARD($32565045) THEN
+    RETURN(0)
+  FI
+
+  length=O65READ.U32(@cursor)
+  IF length<16 OR length>O65TYPES.PROVIDER_CAPACITY THEN
+    RETURN(0)
+  FI
+
+  cursor.limit=length
+  count=O65READ.U16(@cursor)
+  IF count=0 OR count>64 OR O65READ.U16(@cursor)<>0 OR O65READ.U8(@cursor)<>1 OR
+    O65READ.U8(@cursor)<>1 OR O65READ.U16(@cursor)<>0 THEN
+    RETURN(0)
+  FI
+
+  ; Addresses are the per-load match cache. Reset them before matching, even
+  ; on a retry of the same Validation, so earlier matches cannot be reused.
+  ; With no imports, preserve the header-only validation used by this loader.
+  IF validation.importCount=0 THEN
+    RETURN(1)
+  FI
+
+  index=0
+  WHILE index<validation.importCount DO
+    validation.imports(index).address=ADDRESS(0)
+    index==+1
+  OD
+
+  ; Parse every provider once, matching against all imports while its decoded
+  ; fields are live. Keep scanning after matches to reject duplicates and bad
+  ; trailing entries just as the former per-import scans did.
+  provider=0
+  WHILE provider<count AND cursor.error=0 DO
+    O65READ.String(@cursor,@name)
+    targetAddress=LONGCARD(O65READ.U16(@cursor))
+        OR (LONGCARD(O65READ.U8(@cursor)) LSH 16)
+    extent=O65READ.U32(@cursor)
+    signature=O65READ.U32(@cursor)
+    IF targetAddress=0 OR extent=0 OR O65READ.Extent(targetAddress,extent,
+        $1000000)=0 THEN
+      RETURN(0)
+    FI
+
+    index=0
+    WHILE index<validation.importCount DO
+      item=@validation.imports(index)
+      IF O65READ.Literal(@name,item.name.bytes,item.name.length)<>0 THEN
+        IF item.address<>ADDRESS(0) OR signature<>item.signature THEN
+          RETURN(0)
+        FI
+
+        item.address=ADDRESS(targetAddress)
+      FI
+
+      index==+1
+    OD
+
+    provider==+1
+  OD
+
+  IF cursor.error<>0 OR cursor.at<>cursor.limit THEN
+    RETURN(0)
+  FI
+
+  index=0
+  WHILE index<validation.importCount DO
+    IF validation.imports(index).address=ADDRESS(0) THEN
+      RETURN(0)
+    FI
+
+    index==+1
+  OD
+
+RETURN(1)
+
+ENDMODULE

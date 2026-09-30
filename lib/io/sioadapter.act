@@ -1,0 +1,15 @@
+; Private platform interface. The worker owns the descriptor and binding.
+MODULE SIOADAPTER
+
+PUBLIC EXTERNAL BYTE FUNC Init()
+
+PUBLIC EXTERNAL BYTE FUNC Start()
+
+PUBLIC EXTERNAL PROC Cancel()
+
+PUBLIC EXTERNAL BYTE FUNC Retire()
+
+PUBLIC EXTERNAL BYTE FUNC Recovered()
+
+PUBLIC EXTERNAL PROC Shutdown()
+  ENDMODULE

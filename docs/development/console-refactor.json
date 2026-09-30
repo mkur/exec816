@@ -1,0 +1,975 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "release_qualified": false,
+  "implementation_revision": "2bca1c8a3852923e55b3ccb8081f0bfb15893300",
+  "host_tools_revision": "f20f4a7bb92ec146d30127d32520512ded7b7279",
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "5f62c9fdd02e29f9de3807ce9436047b2745c7a6",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act"
+  },
+  "compiler_scope": "Runtime memory helpers and their contracts/tests; code-generation backend unchanged from baseline.",
+  "platform_pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "unloaded": {
+    "scope": "No mounted disks or SIO worker; direct loops, then root plus console worker; PAL 8x; stack checks enabled; guest RTC ticks. Visibility polling yields rather than sleeping for a whole frame; zero means below RTC resolution, not zero execution cost.",
+    "repetitions": 16,
+    "ticks_50hz": {
+      "core_scroll": 1,
+      "display_redraw": 6,
+      "worker_hidden": 3,
+      "worker_visible": 3,
+      "small_reply": 6,
+      "small_visible": 7,
+      "tile_reply": 4,
+      "tile_visible": 4
+    },
+    "nominal_ms_per_scroll": {
+      "core_scroll": 1.25,
+      "display_redraw": 7.5,
+      "worker_hidden": 3.75,
+      "worker_visible": 3.75,
+      "small_reply": 7.5,
+      "small_visible": 8.75,
+      "tile_reply": 5.0,
+      "tile_visible": 5.0
+    },
+    "checks": [
+      2114
+    ],
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "on",
+      "burstio": false,
+      "accuratedisk": false,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 15,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": true,
+      "diskemu": "generic",
+      "vbxe": false,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "off",
+      "exeloadmode": "default",
+      "kernel_id": "$eeca81434d995c35",
+      "actual_kernel_id": "$eeca81434d995c35",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "observation": {
+      "edit": {
+        "calls": 68,
+        "median_ms": 1.1566454603251577,
+        "max_ms": 1.7601310441949929
+      },
+      "display": {
+        "calls": 224,
+        "median_ms": 0.44010324523280225,
+        "max_ms": 1.8053818903576226
+      },
+      "write": {
+        "calls": 128,
+        "median_ms": 1.1741607800625617,
+        "max_ms": 16.676839883898452
+      },
+      "worker_turn": {
+        "calls": 134
+      },
+      "translated_cell": {
+        "calls": 17676
+      }
+    }
+  },
+  "unloaded_image": {
+    "image_sha256": "9c7142df5a7ef043abd69ade3eb459b8e0a2c75d94439e50c9f1ac067adccf03",
+    "xex_sha256": "4ad6bf54967037d89057d40073598b6a3cf7273c6117a5e20a150908a0c99f5c",
+    "exec_build": {
+      "revision": "574b45fce5cfd9d0b3f7f51eb5d70ce4173c0767",
+      "dirty": true,
+      "display": "574b45f-dirty",
+      "actionc_pin": "5f62c9fdd02e29f9de3807ce9436047b2745c7a6",
+      "task_capacity": 8,
+      "stack_checks": true,
+      "mount": null,
+      "strings": {
+        "banner": "Exec816 (574b45f-dirty)\n\n",
+        "slots": "exec: 8 task slots\n",
+        "stackChecks": "exec: stack checks enabled\n",
+        "version": "Exec816 (574b45f-dirty)\nactionc pin: 5f62c9f\n",
+        "sioReady": "",
+        "mountStart": "SYS: no system volume configured\n"
+      }
+    }
+  },
+  "unloaded_production_inputs_match_committed_sources": true,
+  "observation_scope": "Edit, drawing and write-call durations include interruptions; no complete worker-turn duration is claimed. Drawing marker is Present after the refactor and Quantum at baseline.",
+  "loaded": {
+    "status": "pass",
+    "counters": {
+      "checks": 77,
+      "floods": 35,
+      "smalls": 8,
+      "reads": 1,
+      "computes": 54
+    },
+    "limits": {
+      "small_collected_ms": 250,
+      "small_visible_ms": 500,
+      "flood_collected_ms": 1000,
+      "third_collected_ms": 250,
+      "third_visible_ms": 500,
+      "cooked_echo_ms": 500,
+      "break_durable_ms": 100
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 15,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "fastest",
+      "vbxe": false,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "off",
+      "exeloadmode": "default",
+      "kernel_id": "$eeca81434d995c35",
+      "actual_kernel_id": "$eeca81434d995c35",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "timing": {
+      "windows": {
+        "small_collected_ms": {
+          "samples": 8,
+          "max_ms": 32.55467105736143,
+          "limit_ms": 250
+        },
+        "small_visible_ms": {
+          "samples": 8,
+          "max_ms": 41.417281876119816,
+          "limit_ms": 500
+        },
+        "flood_collected_ms": {
+          "samples": 35,
+          "max_ms": 73.20240661198034,
+          "limit_ms": 1000
+        },
+        "third_collected_ms": {
+          "samples": 1,
+          "max_ms": 60.46055775544525,
+          "limit_ms": 250
+        },
+        "third_visible_ms": {
+          "samples": 1,
+          "max_ms": 75.8841183626806,
+          "limit_ms": 500
+        },
+        "cooked_echo_ms": {
+          "samples": 1,
+          "max_ms": 116.79609912331772,
+          "limit_ms": 500
+        },
+        "break_durable_ms": {
+          "samples": 1,
+          "max_ms": 2.8816048966772345,
+          "limit_ms": 100
+        },
+        "next_sector_max_us": 34069.37617268061
+      },
+      "wire": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 2358,
+          "min_us": 7.894228614041295,
+          "mean_us": 21.09145049553018,
+          "max_us": 63.717702384761886
+        },
+        "tx_refill": {
+          "count": 72,
+          "min_us": 11.277469448630422,
+          "mean_us": 23.118812369692364,
+          "max_us": 64.84544932962491
+        },
+        "command_setup": {
+          "count": 18,
+          "min_us": 1046.5491648329032,
+          "mean_us": 1060.771306859787,
+          "max_us": 1086.0203079031096
+        },
+        "command_hold": {
+          "count": 18,
+          "min_us": 720.630297767484,
+          "mean_us": 759.537567365259,
+          "max_us": 855.9599311510491
+        },
+        "byte_deadline_us": 78.94228614041295,
+        "rx_byte_deadline_us": 78.94228614041295,
+        "deadline_misses": {
+          "rx": 0,
+          "tx": 0,
+          "tx_gaps": 0
+        },
+        "critic_deferral_bound": {
+          "count": 18,
+          "min_us": 31142.37946147264,
+          "mean_us": 134713.49197286955,
+          "max_us": 675992.5935219396,
+          "median_us": 89212.11369380825,
+          "p95_us": 675992.5935219396,
+          "p99_us": 675992.5935219396
+        },
+        "post_to_worker": {
+          "count": 18,
+          "min_us": 688.9828991272648,
+          "mean_us": 1925.165845369291,
+          "max_us": 7650.071400478447,
+          "median_us": 952.3118107527852,
+          "p95_us": 7650.071400478447,
+          "p99_us": 7650.071400478447
+        },
+        "post_to_sector_collection_upper_bound": {
+          "count": 18,
+          "min_us": 3519.9801516537705,
+          "mean_us": 7155.064891655628,
+          "max_us": 21680.08920478334,
+          "median_us": 3857.5289090880897,
+          "p95_us": 21680.08920478334,
+          "p99_us": 21680.08920478334
+        },
+        "post_to_sector_collection": {
+          "count": 18,
+          "min_us": 3519.9801516537705,
+          "mean_us": 7155.064891655628,
+          "max_us": 21680.08920478334,
+          "median_us": 3857.5289090880897,
+          "p95_us": 21680.08920478334,
+          "p99_us": 21680.08920478334
+        },
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 252,
+              "min_us": 20.722350111858397,
+              "mean_us": 27.018377822390907,
+              "max_us": 66.46658556286556,
+              "median_us": 23.541717474016007,
+              "p95_us": 55.18911611423513,
+              "p99_us": 65.8322279063801
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 583,
+              "min_us": 5.568250540261271,
+              "mean_us": 23.20960760506888,
+              "max_us": 74.85420346528443,
+              "median_us": 20.158476639426876,
+              "p95_us": 45.532782898845326,
+              "p99_us": 63.57673401665401
+            },
+            "cancelled_or_terminal": {
+              "count": 1,
+              "min_us": 39.11872214993677,
+              "mean_us": 39.11872214993677,
+              "max_us": 39.11872214993677,
+              "median_us": 39.11872214993677,
+              "p95_us": 39.11872214993677,
+              "p99_us": 39.11872214993677
+            }
+          }
+        },
+        "forbid": {
+          "count": 489,
+          "min_us": 53.07459059261693,
+          "mean_us": 1038.411628851412,
+          "max_us": 33137.081870199145,
+          "median_us": 192.56279083536444,
+          "p95_us": 2870.8208165169817,
+          "p99_us": 5515.669338957032
+        },
+        "active_masked_max_us": 3924.6298523074406,
+        "longest_transaction_mask": {
+          "start_tick": 4300911803.125,
+          "end_tick": 4300918763.25,
+          "duration_us": 3924.6298523074406,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false,
+          "transaction": 5,
+          "overlap_us": 3924.6298523074406
+        },
+        "longest_resident_mask": {
+          "start_tick": 4304433269.125,
+          "end_tick": 4304467893.25,
+          "duration_us": 19523.62559365304,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false
+        },
+        "resident_masked_max_us": 19523.62559365304,
+        "wire_transactions": 18,
+        "verified_wire_bytes": 2358
+      }
+    },
+    "route_peak": 6
+  },
+  "loaded_image": {
+    "image_sha256": "a3004a1a898af4525712ee975a286f8481d2bc88c0a830aeb70c58cb29f1e915",
+    "xex_sha256": "c2983627f426a0e134f722f548b08f83b3d5172b0622d54885237a36fe14255b",
+    "exec_build": {
+      "revision": "2bca1c8a3852923e55b3ccb8081f0bfb15893300",
+      "dirty": false,
+      "display": "2bca1c8",
+      "actionc_pin": "5f62c9fdd02e29f9de3807ce9436047b2745c7a6",
+      "task_capacity": 8,
+      "stack_checks": true,
+      "mount": null,
+      "strings": {
+        "banner": "Exec816 (2bca1c8)\n\n",
+        "slots": "exec: 8 task slots\n",
+        "stackChecks": "exec: stack checks enabled\n",
+        "version": "Exec816 (2bca1c8)\nactionc pin: 5f62c9f\n",
+        "sioReady": "",
+        "mountStart": "SYS: no system volume configured\n"
+      }
+    }
+  },
+  "loaded_fixture_note": "Wait for both console interaction and first disk read; console can now finish first. Keyboard/DOS.Read overlap, original latency limits and bounded native execution remain checked.",
+  "footprint": {
+    "baseline": {
+      "CONSOLECORE": 2798,
+      "CONSOLEDISPLAY": 5048,
+      "CONSOLEDRIVER": 9619,
+      "CONSOLEINPUT": 3261,
+      "CONSOLEFOREGROUND": 7892,
+      "CONSOLE": 4675,
+      "CONSOLEWINDOWS": 3048,
+      "CONSOLETILING": 5755,
+      "TASKPOLICY_CONSOLE": 17374,
+      "console_total": 59470,
+      "whole_action_routines": 479859,
+      "routine_banks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "whole_segments_loaded_bytes": 492370,
+      "segment_count": 1022,
+      "xex_bytes": 507070,
+      "IORESIDENT": 785,
+      "TASKMEMORY": 0,
+      "A816MEMORY": 0,
+      "DOSRAW": 10554,
+      "DOSCOOKED": 6430,
+      "COOKEDLINE": 3984,
+      "console_native_instructions": 1519,
+      "native_memory": 0
+    },
+    "final": {
+      "CONSOLECORE": 3001,
+      "CONSOLEDISPLAY": 6871,
+      "CONSOLEDRIVER": 22320,
+      "CONSOLEINPUT": 3261,
+      "CONSOLEFOREGROUND": 7917,
+      "CONSOLE": 4666,
+      "CONSOLEWINDOWS": 3559,
+      "CONSOLETILING": 6163,
+      "TASKPOLICY_CONSOLE": 2798,
+      "console_total": 60556,
+      "whole_action_routines": 480792,
+      "routine_banks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "whole_segments_loaded_bytes": 493778,
+      "segment_count": 1014,
+      "xex_bytes": 508444,
+      "IORESIDENT": 1141,
+      "TASKMEMORY": 631,
+      "A816MEMORY": 0,
+      "DOSRAW": 10554,
+      "DOSCOOKED": 6430,
+      "COOKEDLINE": 3984,
+      "console_native_instructions": 1563,
+      "native_memory": 403
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "bank_zero_reserved": {
+    "fixed_runtime": 10560,
+    "idle": 1056,
+    "loading_excluding_os": 20368,
+    "loading_including_os": 57232,
+    "public": [
+      2080,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568
+    ],
+    "runtime_excluding_os": 24672,
+    "runtime_including_os": 61536
+  },
+  "upper_memory_delta": {
+    "console_arena": 48,
+    "extra_instance_allocation": 16,
+    "native_code_subregion": 512,
+    "task_arena": 0,
+    "framebuffers": 0
+  },
+  "host_checks": 235,
+  "native_records": [
+    {
+      "path": "build/development/console-refactor/c1-core-opt/results.json",
+      "sha256": "287c780a4e62e284e3417475fdc1882ec930b2a857d1c5869694a495f812dcca",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c1-core-raw/results.json",
+      "sha256": "476484da44db1f93aa55078914922ebae5faa4e844e434bb5b2413abdb68d740",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c1-cancel-opt/results.json",
+      "sha256": "946728d6b763ca4e3f93adea44c82268d9c74dce2412c57090882a5645d25707",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c2-display-opt/results.json",
+      "sha256": "17f28342571f74e1db95107f07b1a856a3d14488979bc81e2bb4fbff48c21e5c",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c2-display-raw/results.json",
+      "sha256": "48cf38716f0c09748fd1dc0298b70068dabcc5f860ab9dbeb06609d317ed67a1",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c3-display-opt/results.json",
+      "sha256": "e4c52d979a03441d487aed620783f75a0ba1170f687a4fe72fd0331e0c512b34",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c3-display-raw/results.json",
+      "sha256": "3bc8747ecc4191b782c44d436fad0cdda261d8da39d27f9cc92de61da4d35923",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c4-core-opt/results.json",
+      "sha256": "9e9ce4be9acec0df99410f4020b1799b60c81c69e18ae5ba825e8839ea7d0fac",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c4-core-raw/results.json",
+      "sha256": "88d94b95b7a2bf6ffc16ee6c269ccff55b63b28e63bbbf6a8495bb9ff9da4cf0",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c5a-device-opt/results.json",
+      "sha256": "ede1a73bd3c24f1944891cafe85fa540eeac4ededd3c477ad2a1ae54ee59bb6e",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c5a-device-raw/results.json",
+      "sha256": "cc0941a841a18acb76778f338fcf3c8d88789e8aaa1074481d7298cfa86ee4d9",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c5a-cancel-opt/results.json",
+      "sha256": "ee661d19cd6eb78c03c7f5d9037eb72dccf1fc534e9a0d8f3a5481e203f195f7",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c5b-lifetime-opt/results.json",
+      "sha256": "e93a2a0b75203a3d2c4eb3bd7784c80c188a88ad29dd488f7ca425428f010ad9",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c5b-lifetime-raw/results.json",
+      "sha256": "f34ba7d51654ee275a1d335be1fe9ca7d77c440088779d4056717a4250054681",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c5b-windows-raw/results.json",
+      "sha256": "41a3434b70aa429b7a2316457f007fce6620b55997aff8f35fa0b7a02965ee78",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c5b-focus-opt/results.json",
+      "sha256": "4004b36a954d07d429d5f5f482d1f9fdccaca39eaa66ca5e8271f23f9066e8a1",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/c5b-device-opt/results.json",
+      "sha256": "455d3b8b6815cc708d35f88aaeae938041c0832b80c102d82f297d37797fa170",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/final-scroll-opt/results.json",
+      "sha256": "e62fd0400d3c67564da812e8a7805157e2e8e27e736c29969aa8cde0abe98aa1",
+      "status": "pass"
+    },
+    {
+      "path": "build/development/console-refactor/final-fairness-opt/results.json",
+      "sha256": "86672c8b362e49f403fb6fc6bd974f233389ecad6044e1874fa24b005385e7af",
+      "status": "pass"
+    }
+  ],
+  "play_image": {
+    "status": "pass",
+    "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+    "bundle_manifest_sha256": "d0c75104fea8d51d9e900b67e5aba671c59d5cf0fe4a81f94d5feed9138e588d",
+    "xex_sha256": "1b04688ad756f3b8b69b4d806f4b69a385e2f5cb57b055edd0fd469066e28b02",
+    "media_sha256": "417cdc611fa2582a64e93a0d1e1a4ade785914ad5278673f0325553d0e8153bd",
+    "runner_sha256": "7dbfe8e489c3325768fffa2caf4ae940cac203e36ec5a66891c542d7c27f6ff6",
+    "observations": [
+      {
+        "stage": "startup",
+        "prime_frames": 1,
+        "prime_count": 26,
+        "guest_frame": 247
+      },
+      {
+        "stage": "system-volume",
+        "prime_frames": 1,
+        "prime_count": 26,
+        "guest_frame": 248
+      },
+      {
+        "stage": "MOUNT",
+        "prime_frames": 1,
+        "prime_count": 26,
+        "guest_frame": 281
+      },
+      {
+        "stage": "CD SYS:WORK",
+        "prime_frames": 3,
+        "prime_count": 62,
+        "guest_frame": 371
+      },
+      {
+        "stage": "CD",
+        "prime_frames": 3,
+        "prime_count": 62,
+        "guest_frame": 385
+      },
+      {
+        "stage": "SYS:HELLO",
+        "prime_frames": 5,
+        "prime_count": 95,
+        "guest_frame": 492
+      },
+      {
+        "stage": "TYPE D1:STORY.TXT",
+        "prime_frames": 8,
+        "prime_count": 139,
+        "guest_frame": 635
+      },
+      {
+        "stage": "TYPE SYS:STORY.TXT",
+        "prime_frames": 10,
+        "prime_count": 168,
+        "guest_frame": 731
+      },
+      {
+        "stage": "SYS:CAT SYS:STORY.TXT | SYS:WC",
+        "prime_frames": 20,
+        "prime_count": 303,
+        "guest_frame": 1246
+      },
+      {
+        "stage": "CD SYS:",
+        "prime_frames": 20,
+        "prime_count": 303,
+        "guest_frame": 1281
+      },
+      {
+        "stage": "CD",
+        "prime_frames": 21,
+        "prime_count": 317,
+        "guest_frame": 1296
+      },
+      {
+        "stage": "HELLO",
+        "prime_frames": 22,
+        "prime_count": 327,
+        "guest_frame": 1343
+      },
+      {
+        "stage": "boot-smoke",
+        "prime_frames": 22,
+        "prime_count": 327,
+        "guest_frame": 1347
+      }
+    ],
+    "cache": {
+      "requested": 512,
+      "blocks": 512,
+      "captured": 512
+    },
+    "sys_cache": {
+      "physical": {
+        "hits": 6,
+        "misses": 20
+      },
+      "system": {
+        "hits": 16,
+        "misses": 20
+      }
+    }
+  },
+  "play_artifacts": {
+    "program.xex": {
+      "path": "build/demo/program.xex",
+      "sha256": "1b04688ad756f3b8b69b4d806f4b69a385e2f5cb57b055edd0fd469066e28b02"
+    },
+    "sdfs.atr": {
+      "path": "build/demo/sdfs.atr",
+      "sha256": "417cdc611fa2582a64e93a0d1e1a4ade785914ad5278673f0325553d0e8153bd"
+    },
+    "demo-manifest.json": {
+      "path": "build/demo/demo-manifest.json",
+      "sha256": "d0c75104fea8d51d9e900b67e5aba671c59d5cf0fe4a81f94d5feed9138e588d"
+    },
+    "console-refactor-smoke.json": {
+      "path": "build/demo/console-refactor-smoke.json",
+      "sha256": "18ccb5563f9829c4bb4169119a1ab68912db218c3a4286fc645af317ee82daa9"
+    }
+  },
+  "source_inputs": {
+    "platform/altirraos/hosted.s": "559bf93202fb4b64de297298bc8bc18db45827bbfaf3212ea536c001af456b4a",
+    "platform/altirraos/layout.inc": "54910fcc103ff50721dab6a2a03f66dc83e31585ddd2cb2b45ff0f8b832d75e0",
+    "platform/altirraos/hosted.cfg": "381c9142b71a2eff92a1af49bd30029e0458b3ab7030ff6bba2bfda696df6112",
+    "lib/exec/execos.act": "27ff16d71d7d79335b001df19426ba652c3124eefc14bfa3877e5202f77162bc",
+    "abi/exec816-v1.json": "c38d1ddaedeb89a57c0614ba8702f6f6f93adda4e2d78f7ff582ac47b54fe1c5",
+    "platform/altirraos/exec-abi.inc": "22eb93b3da8cefecad66aeab9cecfe21f53032b848f65b0b928f16e1655d04be",
+    "platform/altirraos/cooperative.s": "2728e5a353fe1cdab907477141067cc562e50a6388dffd9e2a1220105c92c8c5",
+    "lib/exec/exec-abi.inc": "bdb408417c878b2662170135b8d395a68f3a3b39c9f27047a4947acfb0d168c9",
+    "platform/altirraos/cooperative-probe.s": "54cbbe92eb52a89b8bd4a8ef55b694a11269274d3a5ded7c3009863794a19f74",
+    "platform/altirraos/preemptive.s": "9f16a897205e863a33a8bdc6e67c512a008cf1969f0c6b208ea2ca6ea811bd11",
+    "lib/exec/exec.act": "289c73efe87684a967d5c3561c839afbe53c2070d04bbd118664a97dfba66a1d",
+    "lib/exec/execpolicy.act": "fafbd7c17823c70f5cd927a4018e95d05c1f0fcf50c9664ce8a4bb26b9a60cc5",
+    "tools/library_paths.py": "d243a25c433202747dbcdc5dc9999904d4451eaaf89b67c54e465e954558319b",
+    "abi/filesystems.json": "9e5290ec558167c8a9ccadeea70f8f20eda3e40ef4d6cdc76c9f21e2c94e5f34",
+    "tools/generate_filesystem_formats.py": "6d9fdbf0efe397fc9055f9703578c14567f084c363c8a17d580d7e54c3775009",
+    "tools/filesystem_formats.py": "30be68087078ed7df1e3c52c42f85433d227189eed53fb927ee01b668e34f744",
+    "lib/spartados/sdfs.act": "156c5a17f9053af4334257aecd3c7e41c65aa6ae85345a18352d6b8a27fd4c4a",
+    "lib/spartados/sdfstypes.act": "233e14bd1850e27ced090512854286d26cd1f3370950cc5bb31f3ec930a8a3cf",
+    "lib/spartados/sdfsfile.act": "69d89367b1b1a1306f7e99174d59f6e7e9e515264115ca93961c5a961a516ae0",
+    "lib/spartados/sdfsdir.act": "be1873ac87e288bfa6672e33ed2162d9700eee4416aa98c0af83866161bbb044",
+    "lib/spartados/sdfsname.act": "307cc81df6050c3d9cb53d72f8e24acc790cb40f84cd935a3e0331550c485e82",
+    "lib/spartados/sdfsdate.act": "6704c3841ca14ccc7eb84e8fabdf5ac71d30aed90f477c562ffc3ef5d9dbca6d",
+    "lib/fs/fsformats.act": "8f1857557b04d9315adf3bae853afc42aef3761a824013873e0823310539e317",
+    "lib/fs/fsbtypes.act": "daf467d8e81be7be3a80d48cbb41851144912e6fa48a09c0d49a9b2029623394",
+    "lib/fs/fsbackend.act": "d617bc7c4f310e1b1d90e6a96ca5ce3d9c09db8293a81bb35f315fc62e898fe7",
+    "abi/process.json": "586d0e5d3d5cbf823e79d2b3f1f3b9329035f0fb122b801dcc862c3af94a9013",
+    "tools/generate_process.py": "b9411313aa2813ba5bf43ea946aea2e5c79f928071e186bb0e57e9b4f54645f8",
+    "lib/dos/process.act": "5786dc5b494b45e312a2ab8495bb2bdd6e0b36ac1a6620022f3215bae04bb224",
+    "lib/dos/processstate.act": "33125de3065a1c9ee2d88cd2ac682706efc9c882762f0c3c75e6b345a013d527",
+    "lib/dos/dosprocess.act": "87332056900ea81d5be6b5dbd1963413b0842c5fef243de2b4192470ff88b937",
+    "lib/dos/dosinherit.act": "7ed142767432476d022b77463e3035a25544f2ae05b0a79fbdad9d1d38e0eaae",
+    "lib/fs/fsfiles.act": "15402b416fb472a43781aef8fc11820a591671db1af2e960e5d4ac5e13f81eff",
+    "lib/dos/process-types.inc": "1aac165a965a4b88f1b152e698ff117685006a8a9fbd3d164bec56c0b1605f86",
+    "lib/dos/task-process.inc": "7b1e3b9d1df7fc6c76122793771fe3f24e5ffb8796b44bd0d8363cd2c19c2498",
+    "tools/generate_build_info.py": "4e016e53185375cdb9b7ec3178999fe9f8aa45077f29fafa726fdb85d50f989d",
+    "lib/exec/taskinspect.act": "e2ab09c7601b9c8e4da03e4afbfaccbfadfd53277e3ea4708e528e2a4c1ce576",
+    "lib/io/deviceinspect.act": "667fa24690ec8df96ef625e0f77fdb1bf094db9aff2d6055ab3d00e2071934e9",
+    "lib/fs/fsinspect.act": "bfaa9f8f67b3933d25ab725f1b906e1cec700764a815d6d45c72e5b166858956",
+    "lib/fs/fsactive.act": "17b01a670bc7dee90e7f1dd0a184a7a1eaa9f3b56eb84b946f0d378c817fa75b",
+    "lib/fs/fsabort.act": "7ebd4bc64fdca8f7fa4b2d78f5e57aac76aad7284935961ec8e8bf9cdcf9d2d1",
+    "lib/fs/fsoperation.act": "9ccd3e61dd3bc40ee9ae55f9481fbd081c4b9c54222c7f3f143dfd4c22957186",
+    "lib/io/blockio.act": "7c64a4fcc80a72a53bb07109dfecb9f3b09e692a1f6abe7e6ac8795112215ad4",
+    "lib/io/blockcache.act": "67c7ecd0847db035bca7743ef15742f9fa9182ab9f1dcf27fb8aded8b6fcb63d",
+    "lib/io/blockwire.act": "1f1734fa78b9d7726b5a360904d18b92a4b68a8569796fed13b0dab6899f7390",
+    "lib/io/blocktypes.act": "f2de58e40da527ed9a3c225d46c0ad9dc898e92e9bd533c4e4f85a63f3f57635",
+    "lib/mydos/mydosfile.act": "d39c2c45809f413bf0837e2fd4e0ec45f42c320366bff27e75d8edc8920e2a5f",
+    "lib/mydos/mydos.act": "6753872f6e26924054d29b5c9346d613214675dc7f1e4e8fce00ca39d607076e",
+    "lib/mydos/mydosnames.act": "a9afdc8c1ec41dfb98ae296d990c9f90dacc9305d63cd7bfc3057e00442f4355",
+    "lib/mydos/mydostypes.act": "27356579ed43d33f8b7e8955695652894c21e8f914218ba1d6d9367ba351893a",
+    "lib/dos/dosstreams.act": "8b2c4c0e5b51ae3ec5cc899c051e29857103a88d1506f001f1713202a8475d08",
+    "lib/dos/dosgroup.act": "874ee15cab2b73a0b7119e0243c150602f03fd094c15404d037652d95287daaf",
+    "lib/dos/pipeline.act": "4d3474c1d1e8410a286899ee6b65600248ca84849a54a7bd52fef38f0d52d0c4",
+    "lib/dos/dospipe.act": "84078c81920b9da126207a84867d0628ba2a55d95f22559eb1a90355d1c58863",
+    "lib/dos/dosraw.act": "8401725a5b0e5876d845a7fbb7295fc239550897647055d8eea0b105d027a68f",
+    "lib/dos/doscancel.act": "e447cfc4f11e2da549031537ac0d7b35c9a906d66a1c489c29fc9f1ce111b586",
+    "lib/dos/dosbreak.act": "aecc6a5292f9d87c0d629a13b8a626a5d870ae26081e229215fbdd4936d31bbe",
+    "lib/dos/dosbreaktypes.act": "afe9ccd719707e10ea0112697cf37a88b45316ebc50939141ac8d58e8eacda0b",
+    "lib/dos/doscooked.act": "073168627f7d011176bb405c25112a9c6e94826d206a064a5b65597c22a64be3",
+    "lib/dos/cookedline.act": "3c87fb9de13326c2ef88f317c6e7a3956e3f6cef9d53408f0932f3b46fd24455",
+    "lib/dos/dos-cooked-types.inc": "8632ee0c078c972b89d1596f8486784b2cd0ab1c384ac0e871c6ee53c5b53cbc",
+    "lib/dos/dosobjects.act": "535c9981daa906dc9335314bf29a198c115437fb7c1873f6b9d45fa28cf41b59",
+    "lib/fs/fsmux.act": "d1df71693b54b5c689ccc51b59023228244dde41de6c17c356e8b13ef065803f",
+    "lib/fs/fsmount.act": "0458c19d6ba975e7de4b96a0be7c4b820f06e515a7740fa9c06c8ce54f06edc6",
+    "lib/fs/fsmanager.act": "50032a3701d101f904fe90d390343f1cad6028882340d4404a5178d838f5fc7c",
+    "lib/fs/fspacket.act": "6804614f2d73ce24bba1ace062e37908b03754c864da864aa2469eea629fe3f1",
+    "lib/fs/fsdirectory.act": "01d3b944ca4dee1187d7fc265b0d6615789dabb2ac4d5445f061c5f932074598",
+    "lib/fs/fslocks.act": "ee3bde13e3b9a7f184a414c9b6225014c16a46daf7afde87bb6452328eaeebab",
+    "lib/fs/fsrelative.act": "ff1883963176c20ae308ebdb1d53164816014c292f3e2c08b8a9521502c7cacc",
+    "lib/fs/fsinfo.act": "cf6088bddce107bb52978c8a1e8cc6eb2dc2bc4617f421b631e5a6b630010d2d",
+    "lib/dos/dos-implementation.inc": "0f2f9a32cefe72b5feac4e3790c88fdf5bb9885b2ae6a8993f5f32dc571811fc",
+    "lib/dos/doscalls.act": "1a25f538284c56aeee148a6f50ee50de59a9b1bd92318c7a64118531b631ee14",
+    "lib/fs/fsio.act": "14106d7269fcb1b93339682ccf6bb07d278678d10a6a431a31ae42664b7ea279",
+    "lib/fs/fsboot.act": "5b7d36591862dc64d70d8217b6922a16f77fa39569e2c5dc568a85745022d422",
+    "lib/fs/fsworker.act": "48795d8db9d818a3f5c1a2d15a9e7885b5a2abe2309b0daa7c9c946a24421832",
+    "lib/fs/fsinit.act": "7a0c1beaa4085846182ba8e8d5c0ac3466c6c4d38284cef7d92663fd7839250f",
+    "lib/fs/fsregistry.act": "b0fb283da87719a5456d4a05008e097851e3bacf7d2e0e9cb58ab24e1c662220",
+    "lib/fs/fsnames.act": "895da50dc67c9a6c80cbbe1cf19d247d47a29d636ce4056efba2e52c0cbdc1b2",
+    "lib/fs/fssystem.act": "f5bb126126d6894925dfa924eae79a457718d604239c6a2b5610620c43228358",
+    "lib/fs/fsports.act": "de28d89be5844fcb6f094b634ea700387e3511f9b80b935ae0a154382fa2f09b",
+    "lib/fs/fstypes.act": "112af882a8269690d488b68f6c192b57a235af6060fc7d84091dadf1e06ac2ff",
+    "lib/fs/fshandler.act": "65b1625e00bede1f0410dd9e23188d6d8019fda1f7fb4013761ec4fb3a800e14",
+    "lib/dos/dos-registry-types.inc": "8c9f84802afc4c99ce3ea0886dcf2de3e6a18df1c5ac0481fcca480266e939ec",
+    "lib/dos/doscore.act": "9f69969509eddb82da912c9e726b0fd3355f4794562d195381f2b1b95edc82fe",
+    "lib/dos/dos-core-types.inc": "54f49dc97b1a245dc2e246a5c56e6dbbbf12f6c07c384d0fedfc9456a174e491",
+    "lib/dos/dosclient.act": "efee96ea362768a838c3e694bfc68a564ff53d318469484e68892a2d1143da84",
+    "lib/dos/task-dos.inc": "896def24554a5a824e67503615057839e361fd4dbd5183219322bea99daf37a5",
+    "platform/altirraos/dos.s": "6ae4e062e818b60046dfc957a3c4bbd46046603de954e010dd936ed45e8b41a6",
+    "abi/dos.json": "f507524bba8812693392f8138fd500f340bcb692f8657d894615e9a6db477705",
+    "lib/dos/dos.act": "44a1ddd8894a9dbd02f46722d1d2d07bec276fe5854a205249d694b1b154fb27",
+    "lib/dos/dos-types.inc": "fa99c517bad5396b4a188c31e6c2c2ab1363c557fff77bedfdd7c6ce030f2184",
+    "lib/dos/dos-packets.inc": "6c9311b0351fce4e38cc598ddd48981677eabd309166e6faa2d3bad3f81307fe",
+    "lib/dos/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+    "tools/generate_dos.py": "d7599a390dc9071c9fd764f1179c146a755d3092d53d3f189d93584b989657f2",
+    "lib/io/siodriver.act": "1d7a172b7f2a8244a19cebfa6dc3fd56ee5202c7070e2c13635e4eb8ee01fdb8",
+    "lib/io/sio-requests.inc": "c3b49b00f757b6208b05ff59f0ee36caa20afe12a5a9f65d29144413b3b1fdd1",
+    "lib/io/iotestdriver.act": "a4c1e2e264735d8e66e1d6acf94424d4dcfe5d0013a2c9f259b6bd7c6fbf4fb6",
+    "lib/io/sio-lifetime.inc": "d8420d85cae248344d85ee2fe3a2366507090a9ad15155b1346de2e491346257",
+    "lib/exec/task-lifetime.inc": "6b41bdf99fdf87ca5ed0d14b0265d93194810f54d32e547f3de373ec93a4a8ea",
+    "lib/exec/execproducer.act": "a480b176031b2c5ac84c2027a638e16668a41b7f510015a795ba3d1212cfc647",
+    "lib/io/iocore.act": "54622b21665aadcd49384c01ed20c2a7dcd370fe0f460b92dd7ddcd3e6f4fc72",
+    "lib/io/task-io.inc": "afba8ac64b79563625fd6eaeb1ab9306a0357f1b4d32e1f41ea0df06f223d39f",
+    "lib/io/io-call-types.inc": "a0c415936f7ef142210488059bf6f28a3541ee53dc2608d470e8f5570c103693",
+    "platform/altirraos/io.s": "810a0d5ea0d2f36bf3a320a5ae0955452c9b73bae1541851b408a390fc59bd16",
+    "abi/io.json": "9b0aafa6d5a9cf7c1c7ed241bdd94d73507fdfd19b2d31e327adf77d8972bfaa",
+    "abi/sio.json": "862e15af348cae93ca595db9db44ce96956d71832e1c5012946bdacc67cd221a",
+    "lib/exec/exec-io-types.inc": "89ac75effdc603a8004640860cad0e76bdcc9b7de9785c19c563f126eb62184f",
+    "tools/generate_io.py": "56769573cfc3e9048155f5452965c3cc44950f3c703b3c08d77ffd04f3e99968",
+    "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+    "lib/exec/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+    "lib/exec/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+    "tools/generate_ports.py": "ff78bceaed90faffa60684d707130152a5c975e176a3689a21cd5e6591791767",
+    "lib/exec/task-ports.inc": "746cd698653b9c932b48a9aed7a0afc30110109a66ed95a0d0ca5db539c340cb",
+    "lib/exec/portcore.act": "ba95856f128f5524637424b23d4b8d4c4bef88458eb21d9d1831583dd74315b6",
+    "platform/altirraos/ports.s": "406c78b3d919d879c3c360d7dc9246a90b39c6cd2204ee6553067eabd3311c76",
+    "abi/tasks.json": "d286a20d0f21a7dfe80f15c17520c29144c4e4b3d9be421b9cdb428fb036ee88",
+    "lib/exec/taskpolicy.act": "011182204cc5cc3670333a04c73e6cb94291896a45ee33a46baf37f8002a36ba",
+    "lib/exec/taskmemory.act": "71ef135da1d08f1c72ed49bd0884269eb317bb2147fb454c65ab1104a896c823",
+    "lib/exec/task-signals.inc": "51c3e2b8d14c798d5533182de1685f46ede5ead0d0ec0e36a78e5e4d6437ea15",
+    "lib/exec/task-wakes.inc": "f1bc4671e28f58d8c81b4868be8e6c8cda84ffcc39d955b70ecb36be79ce3a25",
+    "abi/sio-adapter.json": "9956429bb06da48333484adf6ef7951db894cc85118d2e7709473289fbc7f8c5",
+    "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+    "platform/altirraos/sio.s": "83c0e50912d802acf0e2f8c7c8f03cd085161ef752fe4b02a1939a766b49670d",
+    "platform/altirraos/sio-state.inc": "4d870a66d1fd6e28587fa8df5030eab8b27a3c245510aa9f6ae2998931427a0c",
+    "lib/io/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+    "platform/altirraos/signal-irq.s": "b40298318e7344427d896ca8f2f17b30c57a5711fa875713edd6a666aefea678",
+    "platform/altirraos/signal-atomic.s": "f19c7fb2f493ccf0c4d1730aa168b1706f911569a329dd04797e1fe15d1e7138",
+    "platform/altirraos/fast-services.s": "e1cc07c8e96d04a1e03f9c2068c6b965edd73ed311008d73a3667d7842c9c181",
+    "platform/altirraos/fast-getmsg.inc": "01b1d2b7e453c300399ebb0f6509192ff9f5807c6d7167a46841ef3c6165e127",
+    "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+    "platform/altirraos/heap.s": "c3fa1a661bd5b5a5df3bbd60901f62c82a4832505243bd6297397579b70cd936",
+    "platform/altirraos/heap-probe.s": "1b2e348fbccd59d78eafb11cd856a56af22b36cee78770bb545c41719d6b6cde",
+    "lib/exec/task-memory.inc": "dd240c1847dba532032e1054a11bff40e93f60b1931631339550ce6403a38e5c",
+    "lib/exec/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+    "lib/exec/heappolicy.act": "4b29cd864b128dee5d3072a256ced38c6adcc640d38d792257b72ef8796294f0",
+    "lib/exec/heap-system.inc": "1219f3995299f919fcd61bdf85f2b1f7d1f63ed655ca98624ae6051d8c201d1a",
+    "lib/exec/heapcore.act": "73611062e1fe9b055986d20f267f772c71e465f2de57c606d897281f901e93df",
+    "lib/exec/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+    "lib/exec/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+    "tools/generate_heap.py": "c88c707e0c63d3463564e50fb491441d893cae350e3c51f9790c6370060d59e9",
+    "lib/exec/exec-task-types.inc": "a00da2c9022615ee624fb2aa96965573c95c49ddf651216eaa3d5fd904af8489",
+    "lib/exec/execlists.act": "c42cc9e83be4d0dc980aba011b3e2a3484f0e8ded3abd0a30002de82b3f58543",
+    "tools/generate_tasks.py": "979e5246131cd1096a247c6dece25d068a319e9665ae8b418d2a5362698e4142",
+    "platform/altirraos/tasks.s": "79d228a1374e6ac61bf609b11e2405f6a5d73d00c5510ee85701efaaab4868b7",
+    "abi/console.json": "dd66de5654410da9b13cfd2291bd9c9f047c9b9c762b210622d29699159fa258",
+    "tools/generate_console.py": "011c6e65bd6eea046b4e5205bd73c386017604b9e7c783f96a39ea12e5553b39",
+    "lib/console/console.act": "158a656d1e9f652f1451717d1515e13378326c6665254cccc77d99c1589db02c",
+    "lib/console/consolewindows.act": "4bcf308f4b832adf9fe48309904fba995514c60e78e2878246d260e72f2cad60",
+    "lib/console/consoletiling.act": "797ee815e8a825594147e77ebce337084065456b8ebf7b05d41c2755a8d440b5",
+    "lib/console/consoleforeground.act": "04980644fa73efa4cd1c6c49de526ccdff9541fa01174b740580800268dd88d8",
+    "lib/console/consoledisplay.act": "dad11b0d6bbb9790f0be6deb272038823f8ec4d615b94c34c7e0e1f90ba64146",
+    "lib/console/consoletypes.act": "351d1cef3f01b2a10ad372e80d6a81e62970df255735eb6c493caad23e70fa85",
+    "lib/console/consolecore.act": "30550b333bd0fccd9f62811a1f757511ce75a2d8800d3791aa21de6975dd97bf",
+    "lib/console/consoledriver.act": "e1c64896962232df1f480cdcd4d5d743ccf8e05802ddde0a868b27a4745654b8",
+    "lib/console/console-requests.inc": "938e77c426377d57ea0b15f473bfb97313cdb70b518d80c66351dfef11969f51",
+    "lib/console/console-lifetime.inc": "1e35cf0d2ae78025f72609793f11952c69d77fbedfa79b4846ecaf0f9a7c1b0b",
+    "lib/console/consoleadapter.act": "efc765739ef83ab901bffb73a6ffe31d20b235ebbc55b99768d3d1f930b49cc9",
+    "lib/console/consolecapture.act": "9e1cf0ceb41d66c6b3d09a78812c44bd19392335e39040aab83a35cca717247f",
+    "lib/console/consoleinput.act": "ff2d8224d1ab761e6e579924bdf9a61f62869f75df21b56e16aae60c9dcf221e",
+    "lib/console/task-console.inc": "23b3cba8a136503d99a8ea37404d08e69e6c05af234d53fd62e2aa5bd3b7d444",
+    "platform/altirraos/console-layout.inc": "76150b0a164452f5f88a8c2c2cc22a0ef60675c0026676254ec1ce2d872fe5a1",
+    "platform/altirraos/console.s": "ff4ed9356239bb00c32866cc362633f91efcfd97ddaebd23e047586510b29406"
+  },
+  "host_tool_inputs": {
+    "tools/test_demo.py": "7dbfe8e489c3325768fffa2caf4ae940cac203e36ec5a66891c542d7c27f6ff6",
+    "tools/measure_command_loading.py": "b2c09d9e2e7d53058f8f35f363488bbf9e730c41393943d1691e34da8d0746ba",
+    "tools/test_console_fairness.py": "ffe7652ba2267412d39da4d46209cd47e07e1a4030d02b514a687222b2bc7387",
+    "tools/test_console_scroll.py": "ccf1fa11043b9520c8c08e01dd830605c1f9acc0741f62718e86a85411b93f00",
+    "tools/console_scroll_trace.py": "3289b5f8b5b4807e60ec99e48685ae5e0a6693b32c7d49f92b6f579f3f91a714"
+  },
+  "baseline_record": {
+    "path": "docs/development/console-refactor-baseline.json",
+    "sha256": "5770bc52ab4d7dd858479c79d25425fd3da08e355f7043c05d170d6c02ccc258"
+  }
+}

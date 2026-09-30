@@ -1,0 +1,326 @@
+MODULE CONSOLEWINDOWTEST
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE HEAPCORE
+USE DOS
+USE DOSRAW
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE CONSOLE
+USE CONSOLEWINDOWS
+USE CONSOLEDRIVER
+USE CONSOLEINPUT
+USE CONSOLETYPES
+USE WINDOWPROBE
+CARD checks
+BYTE mode,peerReady,peerGo,peerDone
+LONGCARD first,second,third,retired,baseline
+EXEC.Task peer
+PROC POINTER absent()
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER one,two,extra
+CONSOLETYPES.Instance POINTER a,b
+BYTE ARRAY device=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY text=[65 66 67 68 69 70 71 72 73 74 75 76]
+BYTE ARRAY shortText=[120 121]
+BYTE ARRAY inputA(4),inputB(4),name(13)
+TYPE Chunk=[
+  BYTE POINTER next
+  LONGCARD bytes
+]
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e700+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC UnitName(LONGCARD unit BYTE cooked)
+  BYTE index,value
+
+  IF cooked<>0 THEN
+    name(0)=67
+    name(1)=79
+    name(2)=78
+  ELSE
+    name(0)=82
+    name(1)=65
+    name(2)=87
+  FI
+
+  name(3)=58
+  name(12)=0
+  FOR index=0 TO 7 DO
+    value=BYTE((unit RSH ((7-index) LSH 2)) & 15)
+    IF value<10 THEN
+      name(index+4)=value+48
+    ELSE
+      name(index+4)=value+87
+    FI
+  OD
+
+RETURN
+
+PROC Request(EXEC.IOStdReq POINTER request CARD command BYTE POINTER bytes
+    LONGCARD count)
+
+  request.io_Command=command
+  request.io_Data=bytes
+  request.io_Length=count
+  request.io_Offset=0
+  request.io_Flags=0
+  EXEC.SendIO(EXEC.IORequest POINTER(request))
+
+RETURN
+
+PROC Collect(EXEC.IOStdReq POINTER request INT error LONGCARD count)
+
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(request))=error)
+  Require(request.io_Actual=count
+      AND request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+
+RETURN
+
+PROC PeerEntry()
+  DOS.FileHandle POINTER file
+
+  Require(CONSOLE.Destroy(first)=0)
+  UnitName(first,0)
+  file=DOS.Open(name,DOS.MODE_READWRITE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  peerReady=1
+  WHILE peerGo=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+  peerDone=1
+
+RETURN
+
+PROC PeerChecks()
+
+  peer.tc_Node.ln_Type=EXEC.NT_TASK
+  peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  peer.tc_SPReg=peer.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@peer.tc_MemEntry)
+  Require(EXEC.AddTask(@peer,@PeerEntry,absent)=@peer)
+  WHILE peerReady=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(CONSOLE.Destroy(first)=0)
+  peerGo=1
+  WHILE peerDone=0 OR peer.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC DeviceChecks()
+  CARD index
+  CONSOLETYPES.Service POINTER service
+
+  service=CONSOLEDRIVER.GetService()
+  port=EXEC.CreateMsgPort()
+  Require(port<>EXEC.MsgPort POINTER(0))
+  one=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  two=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  extra=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(one<>EXEC.IOStdReq POINTER(0) AND two<>EXEC.IOStdReq POINTER(0)
+      AND extra<>EXEC.IOStdReq POINTER(0))
+  Require(EXEC.OpenDevice(device,first,EXEC.IORequest POINTER(one),0)=0)
+  Require(EXEC.OpenDevice(device,second,EXEC.IORequest POINTER(two),0)=0)
+  a=CONSOLETYPES.Instance POINTER(one.io_Unit)
+  b=CONSOLETYPES.Instance POINTER(two.io_Unit)
+  Require(a<>b AND a.cells<>b.cells AND a.fifo<>b.fifo)
+  Require(CONSOLE.Destroy(first)=0 AND CONSOLEDRIVER.Stop()=0)
+  Request(one,EXEC.CMD_WRITE,text,12)
+  Request(two,EXEC.CMD_WRITE,shortText,2)
+  Collect(one,0,12)
+  Collect(two,0,2)
+  FOR index=0 TO 11 DO
+    Require(a.cells(index)=text(index))
+  OD
+
+  FOR index=12 TO 23 DO
+    Require(a.cells(index)=32)
+  OD
+
+  Require(a.row=1 AND a.column=4 AND b.row=0 AND b.column=2)
+  Require(b.cells(0)=120 AND b.cells(1)=121)
+  Request(one,EXEC.CMD_READ,inputA,4)
+  Request(two,EXEC.CMD_READ,inputB,4)
+  WHILE a.readReady<>2 OR b.readReady<>2 DO
+    EXEC.Yield()
+  OD
+
+  Require(EXEC.CheckIO(EXEC.IORequest POINTER(one))=EXEC.IORequest POINTER(0))
+  Require(EXEC.CheckIO(EXEC.IORequest POINTER(two))=EXEC.IORequest POINTER(0))
+  IF mode=2 THEN
+    EXEC.CloseDevice(EXEC.IORequest POINTER(one))
+    HEAPCORE.Abort($e7fe)
+  FI
+
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(a,$0001003f)
+  CONSOLEINPUT.Deliver(b,$00020015)
+  EXEC.Signal(@service.task,$40000000)
+  EXEC.Permit()
+  Collect(one,0,1)
+  Collect(two,0,1)
+  Require(inputA(0)=97 AND inputB(0)=98)
+  Request(two,EXEC.CMD_READ,inputB,4)
+  WHILE b.readReady<>2 DO
+    EXEC.Yield()
+  OD
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(one))
+  Require(CONSOLE.Destroy(first)<>0)
+  retired=first
+  first=0
+  Require(EXEC.CheckIO(EXEC.IORequest POINTER(two))=EXEC.IORequest POINTER(0))
+  EXEC.AbortIO(EXEC.IORequest POINTER(two))
+  Collect(two,EXEC.IOERR_ABORTED,0)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(two))
+  Require(EXEC.OpenDevice(device,retired,EXEC.IORequest POINTER(extra),
+      0)=EXEC.IOERR_OPENFAIL)
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(extra))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(two))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(one))
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+PROC DosChecks()
+  DOS.FileHandle POINTER raw,con,other
+  DOSRAW.RawEndpoint POINTER endpoint
+  DOSBREAKTYPES.Scope POINTER scope
+  DOSRAW.StreamRegistry POINTER registry
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Window POINTER entry
+  CONSOLETYPES.Instance POINTER instance
+  LONGCARD oldEpoch
+
+  UnitName(first,0)
+  raw=DOS.Open(name,DOS.MODE_READWRITE)
+  UnitName(first,1)
+  con=DOS.Open(name,DOS.MODE_READWRITE)
+  UnitName(second,0)
+  other=DOS.Open(name,DOS.MODE_READWRITE)
+  Require(raw<>DOS.FileHandle POINTER(0) AND con<>DOS.FileHandle POINTER(0)
+      AND other<>DOS.FileHandle POINTER(0))
+  registry=DOSRAW.UnitRegistry(first)
+  endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+  Require(endpoint.unit=first AND endpoint.references=2)
+  Require(DOS.IsInteractive(raw)<>0 AND DOS.IsInteractive(con)<>0)
+  Require(DOS.BeginForeground(con)<>0)
+  scope=DOSBREAK.Current()
+  Require(scope.unit=first)
+  Require(DOS.EndForeground()<>0)
+  ; Begin near the right edge of a narrow instance: the cleanup newline must
+  ; recalculate its tail width, preserving an unused final column.
+  Require(DOS.Write(raw,text,7)=7)
+  entry=CONSOLEWINDOWS.Find(first)
+  instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(instance,$0064003f)
+  CONSOLEINPUT.Deliver(instance,$00650015)
+  CONSOLEINPUT.Deliver(instance,$0066000c)
+  EXEC.Permit()
+  Require(DOS.Read(con,inputA,4)=3 AND inputA(0)=97 AND inputA(1)=98
+      AND inputA(2)=10)
+  Require(instance.cells(8)=32 AND instance.cells(9)=97
+      AND instance.cells(10)=98 AND instance.cells(15)=32)
+  Require(DOS.Write(raw,shortText,2)=2 AND DOS.Write(other,text,3)=3)
+  Require(DOS.Close(raw)<>0 AND DOS.Close(con)<>0 AND DOS.Close(other)<>0)
+  UnitName(third,1)
+  con=DOS.Open(name,DOS.MODE_READWRITE)
+  Require(con<>DOS.FileHandle POINTER(0))
+  Require(DOS.Read(con,inputA,1)=-1 AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Require(DOS.Close(con)<>0)
+  UnitName(retired,0)
+  Require(DOS.Open(name,DOS.MODE_READWRITE)=DOS.FileHandle POINTER(0))
+  UnitName(first,0)
+  name(11)=103
+  Require(DOS.Open(name,DOS.MODE_READWRITE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  UnitName(first,1)
+  name(11)=0
+  Require(DOS.Open(name,DOS.MODE_READWRITE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  Require(DOS.ReleaseContext()<>0)
+  windows=CONSOLEWINDOWS.Registry()
+  oldEpoch=windows.epoch
+  windows.epoch=$3fffffff
+  Require(CONSOLE.Create(1,1)=0)
+  windows.epoch=oldEpoch
+
+RETURN
+
+PROC FailureChecks()
+  LONGCARD available,unit
+  BYTE index
+
+  available=EXEC.AvailMem(0)
+  FOR index=1 TO 4 DO
+    WINDOWPROBE.calls=0
+    WINDOWPROBE.failAt=index
+    Require(CONSOLE.Create(8,3)=0 AND EXEC.AvailMem(0)=available)
+  OD
+
+  WINDOWPROBE.failAt=0
+  unit=CONSOLE.Create(8,3)
+  Require(unit<>0 AND CONSOLE.Destroy(unit)<>0)
+  Require(EXEC.AvailMem(0)=available)
+
+RETURN
+
+; Exercise dynamic window identity, device binding and cleanup.
+PROC Main()
+  BYTE index
+
+  baseline=EXEC.AvailMem(0)
+  Require(CONSOLE.Create(0,1)=0 AND CONSOLE.Create(41,1)=0 AND CONSOLE.Create(1,
+      25)=0)
+  Require(CONSOLE.Destroy(0)=0)
+  FailureChecks()
+  first=CONSOLE.Create(8,3)
+  Require(first<>0)
+  IF mode=1 THEN
+    EXEC.RemTask(EXEC.Task POINTER(0))
+    HEAPCORE.Abort($e7ff)
+  FI
+
+  second=CONSOLE.Create(5,2)
+  third=CONSOLE.Create(1,1)
+  Require(second<>0 AND third<>0 AND first<>second AND first<>third
+      AND second<>third)
+  Require(CONSOLE.Create(1,1)=0)
+  DeviceChecks()
+  first=CONSOLE.Create(8,3)
+  Require(first<>0 AND first<>retired)
+  PeerChecks()
+  DosChecks()
+  Require(CONSOLE.Destroy(first)<>0 AND CONSOLE.Destroy(second)<>0
+      AND CONSOLE.Destroy(third)<>0)
+  FOR index=0 TO 15 DO
+    first=CONSOLE.Create(40,24)
+    Require(first<>0 AND CONSOLE.Destroy(first)<>0)
+    Require(CONSOLE.Destroy(first)=0)
+  OD
+
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+ENDMODULE

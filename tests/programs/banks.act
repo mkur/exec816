@@ -1,0 +1,180 @@
+MODULE BANKTEST
+USE EXECMEMORY
+INCLUDE "memory-action.inc"
+
+CARD failures,checks,selected,count
+EXECMEMORY.BankRecord observed
+BYTE ARRAY table(M_TABLE_BYTES)=M_TABLE
+BYTE ARRAY snapshot(M_TABLE_BYTES)=$9000
+BYTE bootReady=M_READY,bootIdentity=M_ID
+CARD bootVersion=M_MANIFEST+M_HEADER_VERSION
+
+PROC Expect(CARD actual CARD expected)
+
+  checks==+1
+  IF actual<>expected THEN
+    failures==+1
+  FI
+
+RETURN
+
+PROC Save()
+  CARD i
+
+  FOR i=0 TO M_TABLE_BYTES-1 DO
+    snapshot(i)=table(i)
+  OD
+
+RETURN
+
+PROC Unchanged()
+  CARD i
+
+  FOR i=0 TO M_TABLE_BYTES-1 DO
+    IF table(i)<>snapshot(i) THEN
+      failures==+1
+    FI
+  OD
+
+  checks==+M_TABLE_BYTES
+
+RETURN
+
+PROC BootChecks()
+
+  Save()
+  bootReady=0
+  Expect(EXECMEMORY.Adopt(),M_ERROR_BOOT)
+  bootReady=1
+  bootVersion=0
+  Expect(EXECMEMORY.Adopt(),M_ERROR_BOOT)
+  bootVersion=M_VERSION
+  bootIdentity=255
+  Expect(EXECMEMORY.Adopt(),M_ERROR_BOOT)
+  bootIdentity=0
+  table(0)=M_STATE_FREE
+  Expect(EXECMEMORY.Adopt(),M_ERROR_BOOT)
+  table(0)=M_STATE_RESERVED
+  Expect(EXECMEMORY.Query(0,@observed),M_ERROR_BOOT)
+  Unchanged()
+
+RETURN
+
+PROC InitialChecks()
+
+  selected=$beef
+  Save()
+  Expect(EXECMEMORY.Query(0,@observed),M_ERROR_BOOT)
+  Unchanged()
+  Expect(EXECMEMORY.Adopt(),0)
+  Expect(EXECMEMORY.Query(0,@observed),0)
+  Expect(observed.state,M_STATE_RESERVED)
+  Expect(observed.owner,M_OWNER_SYSTEM)
+  Save()
+  Expect(EXECMEMORY.Query(M_MAX_BANKS,@observed),M_ERROR_BANK)
+  Expect(EXECMEMORY.Query($ffff,@observed),M_ERROR_BANK)
+  Expect(observed.state,M_STATE_RESERVED)
+  Expect(observed.owner,M_OWNER_SYSTEM)
+  Expect(EXECMEMORY.Acquire(0,@selected),M_ERROR_OWNER)
+  Expect(EXECMEMORY.Acquire(5,@selected),M_ERROR_OWNER)
+  Expect(selected,$beef)
+  Expect(EXECMEMORY.Release(0,1),M_ERROR_RESERVED)
+  Expect(EXECMEMORY.ReserveExact(0,2),M_ERROR_RESERVED)
+  Unchanged()
+
+RETURN
+
+PROC OwnedChecks()
+  CARD first
+
+  IF M_MAX_BANKS>1 THEN
+    Expect(EXECMEMORY.Acquire(3,@selected),0)
+    first=selected
+    Expect(first,1)
+    Expect(EXECMEMORY.Query(first,@observed),0)
+    Expect(observed.state,M_STATE_OWNED)
+    Expect(observed.owner,3)
+    Save()
+    Expect(EXECMEMORY.Release(first,4),M_ERROR_OWNERSHIP)
+    Expect(EXECMEMORY.ReserveExact(first,3),M_ERROR_CONFLICT)
+    Unchanged()
+    Expect(EXECMEMORY.Release(first,3),0)
+    Save()
+    Expect(EXECMEMORY.Release(first,3),M_ERROR_CONFLICT)
+    Unchanged()
+    Expect(EXECMEMORY.ReserveExact(first,2),0)
+    Save()
+    Expect(EXECMEMORY.ReserveExact(first,2),M_ERROR_RESERVED)
+    Expect(EXECMEMORY.Release(first,2),M_ERROR_RESERVED)
+    Unchanged()
+  FI
+
+RETURN
+
+PROC ExhaustionChecks()
+  CARD i,status
+  ; Bank 2 is unavailable. The 256-index inventory also pins 4..254 so
+  ; acquisition must scan past reservations to reach the final valid index.
+  IF M_MAX_BANKS>2 THEN
+    Save()
+    Expect(EXECMEMORY.ReserveExact(2,2),M_ERROR_UNAVAILABLE)
+    Expect(EXECMEMORY.Release(2,2),M_ERROR_UNAVAILABLE)
+    Unchanged()
+  FI
+
+  count=0
+  status=EXECMEMORY.Acquire(4,@selected)
+  WHILE status=0 DO
+    count==+1
+    IF M_MAX_BANKS=256 AND count=2 THEN
+      Expect(selected,255)
+    ELSE
+      Expect(selected,2+count)
+    FI
+
+    status=EXECMEMORY.Acquire(4,@selected)
+  OD
+
+  Expect(status,M_ERROR_EXHAUSTED)
+  IF M_MAX_BANKS>2 THEN
+    IF M_MAX_BANKS=256 THEN
+      Expect(count,2)
+    ELSE
+      Expect(count,M_MAX_BANKS-3)
+    FI
+
+    Expect(selected,M_MAX_BANKS-1)
+  ELSE
+    Expect(count,0)
+  FI
+
+  Save()
+  Expect(EXECMEMORY.Acquire(4,@selected),M_ERROR_EXHAUSTED)
+  Unchanged()
+  IF M_MAX_BANKS=256 THEN
+    Expect(EXECMEMORY.Release(3,4),0)
+    Expect(EXECMEMORY.Query(255,@observed),0)
+    Expect(observed.state,M_STATE_OWNED)
+    Expect(observed.owner,4)
+    Expect(EXECMEMORY.Release(255,4),0)
+  ELSE
+    i=3
+    WHILE i<M_MAX_BANKS DO
+      Expect(EXECMEMORY.Release(i,4),0)
+      i==+1
+    OD
+  FI
+
+RETURN
+
+; Exercise bank ownership, exhaustion and rejection without mutation.
+PROC Main()
+
+  BootChecks()
+  InitialChecks()
+  OwnedChecks()
+  ExhaustionChecks()
+
+RETURN
+
+ENDMODULE

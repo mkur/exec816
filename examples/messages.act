@@ -1,0 +1,115 @@
+MODULE MESSAGES
+USE EXEC
+
+TYPE Request=[
+  EXEC.Message message
+  CARD value
+]
+
+CONST NO_REPLY_PORT=1,NO_MESSAGE=2,NO_TASK=3,NO_SERVICE_PORT=4,NO_SIGNAL=5
+CONST WORKER_STACK_SIZE=1536
+
+BYTE ARRAY serviceName=c"ECHO"
+EXEC.Task POINTER parent
+EXEC.MsgPort POINTER service
+LONGCARD readyMask,doneMask
+BYTE completed,failureCode
+
+; Publish a named service, reply to its one client, then retire the port.
+PROC WorkerEntry()
+  EXEC.Message POINTER msg
+  Request POINTER req
+
+  service=EXEC.CreateMsgPort()
+  IF service<>NULL THEN
+    service.mp_Node.ln_Name=serviceName
+    EXEC.AddPort(service)
+  FI
+  EXEC.Signal(parent,readyMask)
+
+  IF service<>NULL THEN
+    msg=EXEC.WaitPort(service)
+    msg=EXEC.GetMsg(service)
+    req=Request POINTER(msg)
+    req.value==+1
+    EXEC.ReplyMsg(msg)
+    ; The single client has submitted its only request. No producer remains.
+    EXEC.RemPort(service)
+    EXEC.DeleteMsgPort(service)
+  FI
+
+  EXEC.Forbid()
+  EXEC.Signal(parent,doneMask)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+; Retain the caller-owned message until its reply and the receiver's retirement.
+PROC Exchange()
+  LONGCARD notified
+  EXEC.Message POINTER msg
+
+  LET replies=EXEC.CreateMsgPort()
+  IF replies=NULL THEN
+    failureCode=NO_REPLY_PORT
+    RETURN
+  FI
+
+  LET req=Request POINTER(EXEC.AllocMem(SIZEOF(Request),EXEC.MEMF_PUBLIC
+      OR EXEC.MEMF_CLEAR))
+  IF req=NULL THEN
+    EXEC.DeleteMsgPort(replies)
+    failureCode=NO_MESSAGE
+    RETURN
+  FI
+
+  req.message.mn_Length=SIZEOF(Request)
+  req.message.mn_ReplyPort=replies
+  req.value=41
+  LET added=EXEC.CreateTask(c"echo receiver",0,@WorkerEntry,WORKER_STACK_SIZE)
+  IF added=NULL THEN
+    failureCode=NO_TASK
+  ELSE
+    notified=EXEC.Wait(readyMask)
+    IF service=NULL THEN
+      failureCode=NO_SERVICE_PORT
+    ELSE
+      BEGIN
+        ; Keep discovery and immediate use in one Forbid region.
+        EXEC.Forbid()
+        LET destination=EXEC.FindPort(serviceName)
+        EXEC.PutMsg(destination,@req.message)
+        EXEC.Permit()
+        msg=EXEC.WaitPort(replies)
+        msg=EXEC.GetMsg(replies)
+        IF msg=@req.message AND req.value=42 THEN
+          completed=1
+        FI
+      END
+    FI
+    notified=EXEC.Wait(doneMask)
+  FI
+
+  EXEC.FreeMem(BYTE POINTER(req),SIZEOF(Request))
+  EXEC.DeleteMsgPort(replies)
+
+RETURN
+
+; Allocate notification bits before admission and release them after retirement.
+PROC Main()
+
+  parent=EXEC.FindTask(NULL)
+  LET readyBit=EXEC.AllocSignal($ff)
+  LET doneBit=EXEC.AllocSignal($ff)
+  IF readyBit=$ff OR doneBit=$ff THEN
+    failureCode=NO_SIGNAL
+  ELSE
+    readyMask=LONGCARD(1) LSH readyBit
+    doneMask=LONGCARD(1) LSH doneBit
+    Exchange()
+  FI
+  EXEC.FreeSignal(doneBit)
+  EXEC.FreeSignal(readyBit)
+
+RETURN
+ENDMODULE

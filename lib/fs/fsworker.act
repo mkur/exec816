@@ -1,0 +1,132 @@
+MODULE FSWORKER
+USE FSSTATUS
+USE EXEC
+USE DOSCORE
+USE FSTYPES
+USE FSREGISTRY
+USE FSINIT
+USE FSHANDLER
+USE FSIO
+USE BLOCKWIRE
+USE FSOPERATION
+USE FSACTIVE
+USE FSABORT
+USE BLOCKIO
+USE BLOCKTYPES
+USE FSBACKEND
+BYTE ARRAY workerName=[100 111 115 46 102 105 108 101 115 121 115 116 101 109 0]
+
+; Drive bounded filesystem steps and sleep when neither packets nor I/O are
+; ready.
+PUBLIC PROC Worker()
+  EXEC.Task POINTER self
+  DOSCORE.DosRegistry POINTER registry
+  FSTYPES.Service POINTER service
+  BYTE action,registered,stopBit
+  LONGCARD received
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  EXEC.Forbid()
+  self.tc_Node.ln_Name=workerName
+  EXEC.Permit()
+  registry=DOSCORE.GetRegistry()
+  service=FSTYPES.Service POINTER(registry.runtime)
+  stopBit=EXEC.AllocSignal(29)
+  registered=0
+  IF stopBit<>255 THEN
+    registered=EXEC.RegisterResident(LONGCARD($20000000))
+  FI
+
+  IF registered=0 THEN
+    IF stopBit<>255 THEN
+      EXEC.FreeSignal(stopBit)
+    FI
+
+    Finish(registry,service,FSSTATUS.STOP)
+    RETURN
+  FI
+
+  received=0
+  DO
+    IF ((self.tc_SigRecvd OR received) & LONGCARD($20000000))<>0 THEN
+      received=EXEC.SetSignal(0,LONGCARD($20000000))
+      EXEC.Forbid()
+      registry.stop=1
+      IF service.stage>=10 THEN
+        registry.state=FSTYPES.STATE_STOPPING
+      FI
+
+      EXEC.Permit()
+    FI
+
+    received=0
+    FSOPERATION.Pump(registry)
+    IF service.stage>=10 AND registry.stop<>0 THEN
+      EXIT
+    FI
+
+    IF FSABORT.Checkpoint(service)<>0 THEN
+      action=FSSTATUS.MORE
+    ELSE
+      action=service.nextStep(BYTE POINTER(service))
+    FI
+
+    IF action=FSSTATUS.STOP THEN
+      EXIT
+    FI
+
+    IF action=FSSTATUS.NEED_IO THEN
+      IF FSABORT.Checkpoint(service)<>0 THEN
+        action=FSSTATUS.MORE
+      FI
+    FI
+
+    IF action=FSSTATUS.NEED_IO THEN
+      service.resultState=FSIO.Begin(service)
+      IF service.resultState=FSSTATUS.NEED_IO THEN
+        service.ioResult=LONGINT(BLOCKWIRE.Transfer(service.adapter.request,
+            registry,FSACTIVE.CurrentScope(service)))
+        service.resultState=FSIO.Complete(service)
+      FI
+    FI
+
+    IF action=FSSTATUS.MORE THEN
+      ; CPU progress needs no I/O result. Centralize readiness so pending
+      ; backend statuses can reach this checkpoint without translation.
+      service.resultState=FSSTATUS.DONE
+    FI
+
+    IF action=FSSTATUS.OPEN_VOLUME THEN
+      service.resultState=BLOCKIO.OpenVolume(service.adapter,
+          service.selected.block)<>BLOCKTYPES.Volume POINTER(0)
+    FI
+
+    IF action=FSSTATUS.IDLE THEN
+      received=EXEC.Wait(registry.mask OR LONGCARD($20000000))
+    FI
+  OD
+
+  registered=EXEC.UnregisterResident()
+  EXEC.FreeSignal(29)
+  Finish(registry,service,action)
+
+RETURN
+
+; Retire worker resources and publish the terminal service state.
+PROC Finish(DOSCORE.DosRegistry POINTER registry FSTYPES.Service POINTER service
+    BYTE action)
+
+  registry.error=service.error
+  FSINIT.Cleanup(service)
+  EXEC.FreeMem(BYTE POINTER(service),SIZEOF(FSTYPES.Service))
+  registry.runtime=BYTE POINTER(0)
+  registry.mask=0
+  IF action=FSSTATUS.STOP THEN
+    registry.state=FSTYPES.STATE_FAILED
+  ELSE
+    registry.state=FSTYPES.STATE_STOPPED
+  FI
+
+RETURN
+
+ENDMODULE

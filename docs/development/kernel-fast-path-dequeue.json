@@ -1,0 +1,401 @@
+{
+  "tier": "development",
+  "host_tests": 197,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "modes": {
+    "raw": {
+      "xex_sha256": "5988735f9ea448a88b5f0aa39b8858fe7c966c72edfe05c8a9d615737937b80b",
+      "native_inputs": {
+        "platform/altirraos/fast-services.s": "e1cc07c8e96d04a1e03f9c2068c6b965edd73ed311008d73a3667d7842c9c181",
+        "platform/altirraos/fast-getmsg.inc": "01b1d2b7e453c300399ebb0f6509192ff9f5807c6d7167a46841ef3c6165e127"
+      },
+      "timing": {
+        "paths": {
+          "dispatch_call": 34,
+          "fast_complete": 112,
+          "fast_general": 2
+        },
+        "calls": {
+          "tasks_forbid": {
+            "count": 32,
+            "min_cpu_cycles": 645.0,
+            "median_cpu_cycles": 675.0,
+            "max_cpu_cycles": 8380.0,
+            "median_us": 47.57682423640959
+          },
+          "ports_get_msg": {
+            "count": 48,
+            "min_cpu_cycles": 997.0,
+            "median_cpu_cycles": 1094.0,
+            "max_cpu_cycles": 1173.0,
+            "median_us": 77.10969735501051
+          },
+          "tasks_permit": {
+            "count": 32,
+            "min_cpu_cycles": 650.0,
+            "median_cpu_cycles": 676.0,
+            "max_cpu_cycles": 8747.0,
+            "median_us": 47.64730842046353
+          }
+        }
+      },
+      "coordination_cases": 2,
+      "identical_image_replays": 2,
+      "native_context_cases": 19
+    },
+    "opt": {
+      "xex_sha256": "471e710479f141e80dc826d745e862d13615d670bbe9c87c13f89608df7d7d9f",
+      "native_inputs": {
+        "platform/altirraos/fast-services.s": "e1cc07c8e96d04a1e03f9c2068c6b965edd73ed311008d73a3667d7842c9c181",
+        "platform/altirraos/fast-getmsg.inc": "01b1d2b7e453c300399ebb0f6509192ff9f5807c6d7167a46841ef3c6165e127"
+      },
+      "timing": {
+        "paths": {
+          "dispatch_call": 34,
+          "fast_complete": 112,
+          "fast_general": 2
+        },
+        "calls": {
+          "tasks_forbid": {
+            "count": 32,
+            "min_cpu_cycles": 644.0,
+            "median_cpu_cycles": 674.0,
+            "max_cpu_cycles": 9514.0,
+            "median_us": 47.506340052355654
+          },
+          "ports_get_msg": {
+            "count": 48,
+            "min_cpu_cycles": 997.0,
+            "median_cpu_cycles": 1092.5,
+            "max_cpu_cycles": 1179.0,
+            "median_us": 77.0039710789296
+          },
+          "tasks_permit": {
+            "count": 32,
+            "min_cpu_cycles": 651.0,
+            "median_cpu_cycles": 679.5,
+            "max_cpu_cycles": 8449.0,
+            "median_us": 47.894003064652324
+          }
+        }
+      },
+      "coordination_cases": 2,
+      "identical_image_replays": 2,
+      "native_context_cases": 19
+    }
+  },
+  "ports": [
+    {
+      "suite": "queues",
+      "platform": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+          "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+          "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+          "build_record": "toolchain/altirra-build.json"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 15,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        }
+      },
+      "cases": [
+        "queues-raw",
+        "queues-opt"
+      ]
+    },
+    {
+      "suite": "queue-context",
+      "platform": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+          "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+          "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+          "build_record": "toolchain/altirra-build.json"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 15,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        }
+      },
+      "cases": [
+        "context-0-raw",
+        "context-1-raw",
+        "context-2-raw",
+        "context-0-opt",
+        "context-1-opt",
+        "context-2-opt"
+      ]
+    },
+    {
+      "suite": "queue-crossing",
+      "platform": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+          "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+          "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+          "build_record": "toolchain/altirra-build.json"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 15,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        }
+      },
+      "cases": [
+        "queue-crossing-raw",
+        "queue-crossing-opt"
+      ]
+    },
+    {
+      "suite": "queue-races",
+      "platform": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+          "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+          "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+          "build_record": "toolchain/altirra-build.json"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 15,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        }
+      },
+      "cases": [
+        "queue-races-raw",
+        "queue-races-opt"
+      ]
+    },
+    {
+      "suite": "queue-handoff",
+      "platform": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+          "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+          "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+          "build_record": "toolchain/altirra-build.json"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 15,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        }
+      },
+      "cases": [
+        "queue-handoff-raw",
+        "queue-handoff-opt"
+      ]
+    },
+    {
+      "suite": "wait-gap",
+      "platform": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+          "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+          "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+          "build_record": "toolchain/altirra-build.json"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 15,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        }
+      },
+      "cases": [
+        "wait-gap-raw",
+        "wait-gap-opt"
+      ]
+    }
+  ],
+  "nmi": [
+    {
+      "checkpoint": 22,
+      "mode": "opt",
+      "xex_sha256": "81ca9208471553b1a2c939d0ed2a555934aea690ccf0173a8fb1aa9eb83696f5",
+      "cases": 2,
+      "identical_image_replays": 2
+    },
+    {
+      "checkpoint": 24,
+      "mode": "raw",
+      "xex_sha256": "1441f41851c45e4cff1fad97f4e3a80090c1a663001e19d51d14a4d187a207f8",
+      "cases": 2,
+      "identical_image_replays": 2
+    }
+  ],
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    }
+  },
+  "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+  "far_tasks": {
+    "platform": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      }
+    },
+    "cases": [
+      "far-raw",
+      "far-opt"
+    ]
+  }
+}

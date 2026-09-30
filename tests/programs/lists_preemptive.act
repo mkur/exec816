@@ -1,0 +1,231 @@
+MODULE LISTSPREEMPT
+USE EXEC
+USE EXECOS
+USE EXECMEMORY
+USE EXECLISTS
+USE LISTSPROBE
+INCLUDE "lists-mode.inc"
+
+TYPE Group=[
+  EXECLISTS.MinList queue
+  BYTE guard
+  EXECLISTS.MinNode ARRAY entries(4)
+  BYTE tail
+]
+
+CARD ARRAY failures(2),rounds(2),outputStatus(2),pendingProof(2)
+VOLATILE BYTE ARRAY finished(2)
+VOLATILE BYTE peerStarted
+VOLATILE BYTE sharedGate
+BYTE ARRAY text0=[76 48 155]
+BYTE ARRAY text1=[76 49 155]
+
+Group POINTER FUNC Storage(BYTE id)
+
+  IF T_SHARED<>0 OR id=0 THEN
+    RETURN(Group POINTER($048D01))
+  FI
+
+RETURN(Group POINTER($058D01))
+
+PUBLIC CARD FUNC KernelInit()
+  CARD status
+  Group POINTER area
+
+  status=EXECMEMORY.Adopt()
+  IF status<>0 THEN
+    RETURN(status)
+  FI
+
+  area=Storage(0)
+  EXECLISTS.NewMinList(@area.queue)
+  IF T_SHARED=0 THEN
+    area=Storage(1)
+    EXECLISTS.NewMinList(@area.queue)
+  FI
+
+  LISTSPROBE.sharedMode=T_SHARED
+  LISTSPROBE.enabled=T_PROBE
+
+RETURN(0)
+
+PROC CheckOrder(BYTE id EXECLISTS.List POINTER chain EXECLISTS.Node POINTER a,b,c,d)
+
+  IF chain.lh_Head<>b OR chain.lh_TailPred<>c THEN
+    failures(id)==+1
+  FI
+
+  IF b.ln_Succ<>d OR d.ln_Succ<>a OR a.ln_Succ<>c THEN
+    failures(id)==+1
+  FI
+
+  IF c.ln_Pred<>a OR a.ln_Pred<>d OR d.ln_Pred<>b THEN
+    failures(id)==+1
+  FI
+
+RETURN
+
+PROC ExerciseEnds(Group POINTER area)
+  EXECLISTS.List POINTER chain
+  EXECLISTS.Node POINTER first,last,item
+
+  chain=EXECLISTS.List POINTER(@area.queue)
+  first=EXECLISTS.Node POINTER(@area.entries(0))
+  last=EXECLISTS.Node POINTER(@area.entries(1))
+  EXECLISTS.AddTail(chain,first)
+  EXECLISTS.Insert(chain,last,first)
+  item=EXECLISTS.RemTail(chain)
+  item=EXECLISTS.RemHead(chain)
+  ; Exercise the ordinary predecessor path and both explicit sentinel forms.
+  EXECLISTS.Insert(chain,first,EXECLISTS.Node POINTER(@chain.lh_Head))
+  EXECLISTS.Insert(chain,last,EXECLISTS.Node POINTER(@chain.lh_Tail))
+  item=EXECLISTS.RemTail(chain)
+  item=EXECLISTS.RemHead(chain)
+
+RETURN
+
+PROC Fill(BYTE id Group POINTER area)
+  EXECLISTS.List POINTER chain
+  EXECLISTS.Node POINTER a,b,c,d,item
+
+  chain=EXECLISTS.List POINTER(@area.queue)
+  a=EXECLISTS.Node POINTER(@area.entries(0))
+  b=EXECLISTS.Node POINTER(@area.entries(1))
+  c=EXECLISTS.Node POINTER(@area.entries(2))
+  d=EXECLISTS.Node POINTER(@area.entries(3))
+  EXECLISTS.NewList(chain)
+  EXECLISTS.AddHead(chain,a)
+  EXECLISTS.AddHead(chain,b)
+  EXECLISTS.AddTail(chain,c)
+  EXECLISTS.Insert(chain,d,b)
+  ; b,d,a,c in both directions while every local pointer remains live.
+  CheckOrder(id,chain,a,b,c,d)
+
+RETURN
+
+PROC Drain(BYTE id Group POINTER area)
+  EXECLISTS.List POINTER chain
+  EXECLISTS.Node POINTER a,b,c,d,item
+
+  chain=EXECLISTS.List POINTER(@area.queue)
+  a=EXECLISTS.Node POINTER(@area.entries(0))
+  b=EXECLISTS.Node POINTER(@area.entries(1))
+  c=EXECLISTS.Node POINTER(@area.entries(2))
+  d=EXECLISTS.Node POINTER(@area.entries(3))
+  EXECLISTS.Remove(a)
+  item=EXECLISTS.RemHead(chain)
+  IF item<>b THEN
+    failures(id)==+1
+  FI
+
+  item=EXECLISTS.RemTail(chain)
+  IF item<>c THEN
+    failures(id)==+1
+  FI
+
+  item=EXECLISTS.RemHead(chain)
+  IF item<>d OR EXECLISTS.IsListEmpty(chain)<>1 THEN
+    failures(id)==+1
+  FI
+
+  IF EXECLISTS.RemTail(chain)<>EXECLISTS.Node POINTER(0) THEN
+    failures(id)==+1
+  FI
+
+  IF area.guard<>$A5 OR area.tail<>$A5 THEN
+    failures(id)==+1
+  FI
+
+  rounds(id)==+1
+
+RETURN
+
+PROC Exercise(BYTE id)
+  Group POINTER area
+
+  area=Storage(id)
+  ExerciseEnds(area)
+  Fill(id,area)
+  Drain(id,area)
+
+RETURN
+
+; Exercise list integrity while Tasks are preempted.
+PROC Main()
+  BYTE id
+  CARD start,prior,status,index
+
+  id=BYTE(EXEC.TaskId())
+  IF T_SHARED<>0 THEN
+    ; Task 1 may first run before task 0 reaches Lock. Publish the gate only
+    ; once task 0 owns access, so the pending-delivery check is deterministic.
+    IF id=1 THEN
+      WHILE sharedGate=0 DO
+      OD
+    FI
+
+    status=EXEC.Lock()
+    IF status<>0 THEN
+      failures(id)==+1
+      RETURN
+    FI
+
+    status=EXEC.Lock()
+    IF status<>0 THEN
+      failures(id)==+1
+      RETURN
+    FI
+
+    IF id=0 THEN
+      sharedGate=1
+    ELSE
+      peerStarted=1
+    FI
+
+    prior=LISTSPROBE.mutations
+    Exercise(id)
+    status=EXEC.Unlock()
+    IF status<>0 THEN
+      failures(id)==+1
+    FI
+
+    start=LISTSPROBE.ticks
+    WHILE LISTSPROBE.ticks-start<2 DO
+    OD
+
+    IF LISTSPROBE.mutations<>prior THEN
+      failures(id)==+1
+    FI
+
+    IF id=0 AND peerStarted<>0 THEN
+      failures(id)==+1
+    FI
+
+    LISTSPROBE.mutations==+1
+    status=EXEC.Unlock()
+    IF status<>0 THEN
+      failures(id)==+1
+    FI
+
+    IF id=0 THEN
+      pendingProof(id)=CARD(peerStarted)
+    FI
+  ELSE
+    FOR index=0 TO T_ROUNDS-1 DO
+      Exercise(id)
+    OD
+  FI
+
+  finished(id)=1
+  WHILE finished(id XOR 1)=0 DO
+  OD
+
+  IF id=0 THEN
+    outputStatus(id)=EXECOS.Write(BYTE POINTER(text0),3)
+  ELSE
+    outputStatus(id)=EXECOS.Write(BYTE POINTER(text1),3)
+  FI
+
+RETURN
+
+ENDMODULE

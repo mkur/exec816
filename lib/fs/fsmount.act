@@ -1,0 +1,124 @@
+; Private management packets. Public applications keep the ordinary DOS API.
+MODULE FSMOUNT
+USE FSSTATUS
+USE EXEC
+USE DOSCORE
+USE FSTYPES
+USE FSPACKET
+USE FSREGISTRY
+USE FSINIT
+INCLUDE "../dos/dos-types.inc"
+PUBLIC CONST UNMOUNT=-100, MOUNT=-101, QUIESCE=-102
+
+; Initialize a management request without borrowing an ordinary file handle.
+PUBLIC BYTE FUNC Dispatch(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+  DOSCORE.DosRegistry POINTER registry
+  LONGINT action,index
+
+  service=FSTYPES.Service POINTER(raw)
+  FSPACKET.Identity(service)
+  service.packet.sp_Pkt.dp_Res1=0
+  service.packet.sp_Pkt.dp_Res2=0
+  service.work.error=0
+  service.work.ioError=0
+  service.nextStep=@SelectStep
+
+RETURN(FSSTATUS.MORE)
+
+; Handle quiescence or select the configured mount slot to be changed.
+BYTE FUNC SelectStep(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+  DOSCORE.DosRegistry POINTER registry
+  LONGINT action,index
+
+  service=FSTYPES.Service POINTER(raw)
+  registry=DOSCORE.GetRegistry()
+  action=service.packet.sp_Pkt.dp_Type
+  IF action=QUIESCE THEN
+    EXEC.Forbid()
+    registry.state=FSTYPES.STATE_STOPPING
+    registry.error=ERROR_OBJECT_IN_USE
+    EXEC.Permit()
+    service.packet.sp_Pkt.dp_Res1=-1
+    FSPACKET.Reply(service)
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  index=service.packet.sp_Pkt.dp_Arg1
+  IF index<0 OR index>=LONGINT(service.count) THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+  FI
+
+  service.index=BYTE(index)
+  service.selected=service.mounts(service.index).item
+  service.nextStep=@CommandStep
+
+RETURN(FSSTATUS.MORE)
+
+; Choose mounting or removal after validating the management request.
+BYTE FUNC CommandStep(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+  DOSCORE.DosRegistry POINTER registry
+  LONGINT action
+
+  service=FSTYPES.Service POINTER(raw)
+  registry=DOSCORE.GetRegistry()
+  action=service.packet.sp_Pkt.dp_Type
+  IF action=UNMOUNT THEN
+    service.nextStep=@RemoveStep
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  IF action=MOUNT THEN
+    IF registry.state<>FSTYPES.STATE_READY
+        OR service.selected<>FSTYPES.Mount POINTER(0) THEN
+      RETURN(FSPACKET.Error(service,ERROR_OBJECT_IN_USE))
+    FI
+
+    service.nextStep=@FSINIT.MountStep
+    RETURN(FSSTATUS.MORE)
+  FI
+
+RETURN(FSPACKET.Error(service,ERROR_ACTION_NOT_KNOWN))
+
+; Withdraw an idle mount atomically so new callers cannot retain it.
+BYTE FUNC RemoveStep(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+  BYTE busy
+
+  service=FSTYPES.Service POINTER(raw)
+  IF service.selected=FSTYPES.Mount POINTER(0) THEN
+    RETURN(FSPACKET.Error(service,ERROR_DEVICE_NOT_MOUNTED))
+  FI
+
+  busy=0
+  EXEC.Forbid()
+  IF service.selected.references<>0 THEN
+    busy=1
+  ELSE
+    service.selected.published=0
+    service.mounts(service.index).item=FSTYPES.Mount POINTER(0)
+  FI
+
+  EXEC.Permit()
+  IF busy<>0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_OBJECT_IN_USE))
+  FI
+
+  service.nextStep=@DestroyStep
+
+RETURN(FSSTATUS.MORE)
+
+; Finish teardown before acknowledging a successful unmount.
+BYTE FUNC DestroyStep(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+
+  service=FSTYPES.Service POINTER(raw)
+  FSINIT.DestroyMount(service,service.selected)
+  service.packet.sp_Pkt.dp_Res1=-1
+  FSPACKET.Reply(service)
+
+RETURN(FSSTATUS.MORE)
+
+ENDMODULE

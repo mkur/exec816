@@ -1,0 +1,53 @@
+MODULE FLOW
+USE COMMAND
+BYTE ARRAY buffer(512)
+
+; Exercise control flow through the loaded-command entry point.
+LONGINT FUNC Main()
+  CSTRING argument
+  BYTE mode
+  LONGINT count,error
+
+  argument=COMMAND.GetArgStr()
+  mode=argument(0)
+  IF mode=81 THEN
+    RETURN(COMMAND.RETURN_OK)
+  FI
+
+  DO
+    IF COMMAND.BreakPending()<>0 THEN
+      COMMAND.SetIoErr(304)
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF mode=66 THEN
+      COMMAND.Yield()
+    ELSE
+      count=512
+      IF mode=67 OR mode=70 THEN
+        count=COMMAND.Read(COMMAND.Input(),buffer,512)
+        error=COMMAND.IoErr()
+        IF error<>0 THEN
+          COMMAND.SetIoErr(error)
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+
+        IF count=0 THEN
+          RETURN(COMMAND.RETURN_OK)
+        FI
+      FI
+
+      IF mode<>67 THEN
+        count=COMMAND.Write(COMMAND.Output(),buffer,count)
+        error=COMMAND.IoErr()
+        IF error<>0 THEN
+          COMMAND.SetIoErr(error)
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+      FI
+    FI
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+ENDMODULE

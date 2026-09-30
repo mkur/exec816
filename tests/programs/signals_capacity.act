@@ -1,0 +1,245 @@
+MODULE SIGNALCAPACITY
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE EXECSIGNALIRQ
+USE PRODUCERPROBE
+USE EXECMEMORY
+USE TASKSTACKS
+
+EXEC.Task POINTER parent
+VOLATILE BYTE mask=$10,irqen=$d20e,skctl=$d20f,skshadow=$232,nmien=$d40e
+VOLATILE BYTE freq3=$d204,vol3=$d205,freq4=$d206,vol4=$d207,audctl=$d208,
+    stimer=$d209,skreset=$d20a,serout=$d20d
+VOLATILE CARD irqs=$2004,ticks=$2034
+VOLATILE BYTE readyCount,finished,stage
+BYTE index,oldsk
+CARD ARRAY checks(16)
+LONGCARD ARRAY results(16)
+CARD ARRAY progress(16)
+PROC POINTER missing()
+
+EXEC.Task POINTER FUNC TaskAt(BYTE slot)
+
+RETURN(EXEC.Task POINTER(ADDRESS($05ffb1)+(SIZE(slot) LSH 6)-(SIZE(slot) LSH 1)))
+
+PROC Prepare(BYTE slot)
+  EXEC.Task POINTER item
+  BYTE POINTER bytes
+  BYTE n
+
+  item=TaskAt(slot)
+  bytes=BYTE POINTER(item)
+  FOR n=0 TO EXEC.TASK_SIZE-1 DO
+    bytes(n)=0
+  OD
+
+  item.tc_Node.ln_Type=EXEC.NT_TASK
+  item.tc_Node.ln_Pri=slot
+  item.tc_UserData=SIZE(slot)
+  item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@item.tc_MemEntry)
+
+RETURN
+
+PROC WorkerEntry()
+  EXEC.Task POINTER self
+  BYTE id
+  CARD status
+  BYTE POINTER buffer
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  id=BYTE(self.tc_UserData)
+  buffer=BYTE POINTER(ADDRESS($068000)+(SIZE(id) LSH 8))
+  buffer(0)=id
+  buffer(255)=id XOR $ff
+  EXEC.Forbid()
+  readyCount==+1
+  EXEC.Permit()
+  ; Filesystem/device stand-ins own static work buffers and block on signals.
+  IF id=TASKSTACKS.CAPACITY-1 THEN
+    status=EXECTASKS.Sleep(32)
+    progress(id)=1
+  FI
+
+  results(id)=EXEC.Wait(LONGCARD($80000001))
+  progress(id)=CARD(buffer(0)=id AND buffer(255)=(id XOR $ff))
+  EXEC.Forbid()
+  finished==+1
+  EXEC.Permit()
+
+RETURN
+
+; Fill the configured Task slots with independently waiting signal consumers.
+PROC AdmitAll()
+  BYTE slot
+  EXEC.Task POINTER item
+  CARD status
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  EXEC.Forbid()
+  FOR slot=1 TO TASKSTACKS.CAPACITY-1 DO
+    Prepare(slot)
+    item=EXEC.AddTask(TaskAt(slot),@WorkerEntry,missing)
+    IF item=TaskAt(slot) THEN
+      checks(0)==+1
+    FI
+  OD
+
+  EXEC.Permit()
+  WHILE readyCount<>TASKSTACKS.CAPACITY-1 DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  checks(1)=CARD(readyCount)
+  item=TaskAt(TASKSTACKS.CAPACITY-1)
+  WHILE item.tc_State<>EXEC.TS_WAIT DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  checks(10)=CARD(item.tc_SigWait=0)
+  FOR slot=1 TO TASKSTACKS.CAPACITY-1 DO
+    item=TaskAt(slot)
+    IF item.tc_ExecPrivate<>0 THEN
+      checks(11)==+1
+    FI
+  OD
+
+RETURN
+
+; Reject admission beyond capacity without disturbing existing Task ownership.
+PROC Overflow()
+  EXEC.Task POINTER extra,item
+  BYTE POINTER before,after
+  BYTE n,same
+
+  extra=TaskAt(TASKSTACKS.CAPACITY)
+  before=BYTE POINTER($06a000)
+  after=BYTE POINTER(extra)
+  FOR n=0 TO EXEC.TASK_SIZE-1 DO
+    after(n)=0
+  OD
+
+  extra.tc_Node.ln_Type=EXEC.NT_TASK
+  extra.tc_SPLower=ADDRESS(TASKSTACKS.LOWER1)
+  extra.tc_SPUpper=ADDRESS(TASKSTACKS.UPPER1)
+  extra.tc_SPReg=extra.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@extra.tc_MemEntry)
+  FOR n=0 TO EXEC.TASK_SIZE-1 DO
+    before(n)=after(n)
+  OD
+
+  item=EXEC.AddTask(extra,@WorkerEntry,missing)
+  same=1
+  FOR n=0 TO EXEC.TASK_SIZE-1 DO
+    IF before(n)<>after(n) THEN
+      same=0
+    FI
+  OD
+
+  checks(2)=CARD(item=EXEC.Task POINTER(0) AND same=1)
+
+RETURN
+
+; Feed the public interrupt producer while preserving its required Task lease.
+PROC SerialPost(EXEC.Task POINTER item)
+  CARD before,deadline
+
+  checks(3)=CARD(PRODUCERPROBE.Bind(item,LONGCARD($80000000)))
+  oldsk=skshadow
+  skctl=0
+  freq3=6
+  vol3=0
+  freq4=0
+  vol4=0
+  audctl=$28
+  skshadow=$23
+  skctl=$23
+  skreset=$23
+  stimer=$23
+  before=irqs
+  deadline=ticks+8
+  mask=mask % $10
+  irqen=mask
+  serout=$5a
+  WHILE irqs=before AND ticks<>deadline DO
+  OD
+
+  checks(4)=CARD(irqs<>before)
+  mask=mask & $ef
+  irqen=mask
+  skctl=0
+  PRODUCERPROBE.Release()
+  skshadow=oldsk
+  skctl=oldsk
+  audctl=0
+
+RETURN
+
+; Observe delivery to every admitted consumer before reusing their slots.
+PROC Deliver()
+  BYTE slot
+  EXEC.Task POINTER item
+  CARD status
+
+  EXEC.Forbid()
+  SerialPost(TaskAt(1))
+  item=TaskAt(1)
+  checks(5)=CARD(item.tc_State=EXEC.TS_READY)
+  FOR slot=1 TO TASKSTACKS.CAPACITY-1 DO
+    item=TaskAt(slot)
+    EXEC.Signal(item,1)
+  OD
+
+  checks(6)=CARD(finished=0)
+  EXEC.Permit()
+  WHILE finished<>TASKSTACKS.CAPACITY-1 DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  FOR slot=1 TO TASKSTACKS.CAPACITY-1 DO
+    item=TaskAt(slot)
+    WHILE item.tc_State<>EXEC.TS_REMOVED DO
+      status=EXECTASKS.Sleep(1)
+    OD
+  OD
+
+  checks(7)=CARD(finished)
+
+RETURN
+
+PROC Reuse()
+  EXEC.Task POINTER item
+  CARD status
+  BYTE was
+
+  was=readyCount
+  Prepare(1)
+  item=EXEC.AddTask(TaskAt(1),@WorkerEntry,missing)
+  WHILE readyCount=was DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  checks(8)=CARD(item.tc_SigRecvd=0 AND item.tc_SigAlloc=LONGCARD($ffff))
+  EXEC.Signal(item,1)
+  WHILE item.tc_State<>EXEC.TS_REMOVED DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  checks(9)=CARD(item.tc_ExecPrivate=0 AND finished=TASKSTACKS.CAPACITY)
+
+RETURN
+
+; Exercise signal ownership and reuse at Task capacity.
+PROC Main()
+
+  AdmitAll()
+  Overflow()
+  Deliver()
+  Reuse()
+
+RETURN
+
+ENDMODULE

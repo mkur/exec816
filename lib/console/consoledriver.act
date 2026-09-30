@@ -1,0 +1,432 @@
+; One resident console worker; public calls use the unchanged Exec IOStdReq.
+MODULE CONSOLEDRIVER
+USE EXEC
+USE TASKSTACKS
+USE A816MEMORY
+USE EXECLISTS
+USE EXECMEMORY
+USE TASKMEMORY
+USE HEAPCORE
+USE SYS
+USE CONSOLETYPES
+USE CONSOLECORE
+USE CONSOLEWINDOWS
+USE CONSOLEFOREGROUND
+USE CONSOLECAPTURE
+USE CONSOLEINPUT
+USE CONSOLEADAPTER
+USE CONSOLEDISPLAY
+INCLUDE "console-storage-action.inc"
+
+PUBLIC CONSOLETYPES.Service POINTER FUNC GetService()
+
+RETURN(CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE)))
+
+PUBLIC CONSOLETYPES.Instance POINTER FUNC GetInstance()
+
+RETURN(CONSOLETYPES.Instance POINTER(ADDRESS(CS_INSTANCE)))
+
+; Require a complete writable extent before the worker borrows caller storage.
+BYTE FUNC Mapped(BYTE POINTER buffer LONGCARD bytes)
+  EXECMEMORY.BankRecord info
+  CARD first,last,index
+
+  IF buffer=BYTE POINTER(0)
+      OR bytes>LONGCARD($1000000)-LONGCARD(ADDRESS(buffer)) THEN
+    RETURN(0)
+  FI
+
+  first=CARD(ADDRESS(buffer) RSH 16)
+  last=CARD((LONGCARD(ADDRESS(buffer))+bytes-1) RSH 16)
+  ; Task images and AllocMem payloads use upper RAM in this initial profile.
+  ; Bank-zero spans are checked by protected admission against writable images.
+  IF first=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=first TO last DO
+    IF EXECMEMORY.Query(index,@info)<>0 THEN
+      RETURN(0)
+    FI
+
+    IF info.state=0 THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; Check retained terminal geometry and storage before admitting it to service.
+BYTE FUNC Validate(EXEC.IOStdReq POINTER request)
+
+  IF request.io_Offset<>0 THEN
+    RETURN(BYTE(EXEC.IOERR_BADADDRESS))
+  FI
+
+  IF request.io_Command=EXEC.CMD_WRITE
+      AND request.io_Length=LONGCARD($ffffffff) THEN
+    RETURN(BYTE(EXEC.IOERR_BADLENGTH))
+  FI
+
+  IF request.io_Length<>0 THEN
+    IF request.io_Data=BYTE POINTER(0)
+        OR request.io_Length>LONGCARD($1000000)-LONGCARD(ADDRESS(
+        request.io_Data)) THEN
+      RETURN(BYTE(EXEC.IOERR_BADADDRESS))
+    FI
+
+    IF (ADDRESS(request.io_Data) RSH 16)=0 THEN
+      IF TASKMEMORY.Writable(ADDRESS(request.io_Data),
+          SIZE(request.io_Length))=0 THEN
+        RETURN(BYTE(EXEC.IOERR_BADADDRESS))
+      FI
+
+      RETURN(0)
+    FI
+
+    IF Mapped(request.io_Data,request.io_Length)=0 THEN
+      RETURN(BYTE(EXEC.IOERR_BADADDRESS))
+    FI
+  FI
+
+RETURN(0)
+
+INCLUDE "console-requests.inc"
+INCLUDE "console-lifetime.inc"
+
+; Advance one write by a bounded amount while retaining request ownership.
+PROC WriteQuantum(CONSOLETYPES.Instance POINTER instance
+    CONSOLETYPES.Presentation POINTER view)
+  EXEC.IOStdReq POINTER request
+  LONGCARD remaining
+  CARD consumed,limit
+  BYTE error
+
+  request=EXEC.IOStdReq POINTER(instance.write)
+  IF request=EXEC.IOStdReq POINTER(0) THEN
+    request=ClaimWrite(instance)
+    IF request=EXEC.IOStdReq POINTER(0) THEN
+      RETURN
+    FI
+
+    error=Validate(request)
+    IF error<>0 THEN
+      request.io_Error=error
+      FinishWrite(instance,request)
+      RETURN
+    FI
+  FI
+
+  IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
+    CONSOLEDISPLAY.Edit(view,instance)
+    IF instance.operation=CONSOLETYPES.OP_IDLE THEN
+      IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
+        FinishWrite(instance,request)
+      FI
+    FI
+
+    RETURN
+  FI
+
+  IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
+    FinishWrite(instance,request)
+    RETURN
+  FI
+
+  remaining=request.io_Length-request.io_Actual
+  limit=CONSOLETYPES.SOURCE_QUANTUM
+  IF remaining<LONGCARD(limit) THEN
+    limit=CARD(remaining)
+  FI
+
+  consumed=CONSOLECORE.Feed(instance,
+      BYTE POINTER(ADDRESS(request.io_Data)+SIZE(request.io_Actual)),limit)
+  request.io_Actual==+LONGCARD(consumed)
+  ; Cells retain the committed bytes; display no longer needs the source.
+  ; Do not keep a completed short write through another scheduler turn.
+  IF request.io_Actual=request.io_Length
+      AND instance.operation=CONSOLETYPES.OP_IDLE THEN
+    FinishWrite(instance,request)
+  FI
+
+RETURN
+
+; Complete available input or cancellation without blocking the console
+; worker.
+PROC ReadQuantum(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
+    POINTER instance)
+  EXEC.IOStdReq POINTER request
+  CARD count,limit
+  LONGCARD ignored
+
+  request=EXEC.IOStdReq POINTER(instance.read)
+  IF request=EXEC.IOStdReq POINTER(0) OR instance.readReady=0 THEN
+    RETURN
+  FI
+
+  IF instance.readReady=1 THEN
+    request.io_Error=Validate(request)
+    instance.readReady=2
+  FI
+
+  IF instance.readCancel<>0 THEN
+    request.io_Error=BYTE(EXEC.IOERR_ABORTED)
+  FI
+
+  IF request.io_Error=0 THEN
+    IF instance.inputCount=0 AND instance.inputLost=0 THEN
+      RETURN
+    FI
+
+    limit=64
+    IF request.io_Length<64 THEN
+      limit=CARD(request.io_Length)
+    FI
+
+    count=CONSOLEINPUT.Read(instance,request.io_Data,limit)
+    IF count=$ffff THEN
+      request.io_Error=CONSOLETYPES.CONERR_INPUTOVERFLOW
+    ELSE
+      request.io_Actual=LONGCARD(count)
+    FI
+  FI
+
+  FinishRead(instance,request)
+
+RETURN
+
+; Acquire console storage and the OS display before publishing readiness.
+BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
+    POINTER instance)
+  BYTE POINTER cells,fifo
+  CONSOLETYPES.Presentation POINTER view
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Window POINTER entry
+  BYTE registered
+
+  windows=CONSOLEWINDOWS.Registry()
+  entry=@windows.items(0)
+  entry.unit=0
+  entry.owner=BYTE POINTER(0)
+  entry.instance=BYTE POINTER(instance)
+  entry.view=BYTE POINTER(ADDRESS(CS_PRESENTATION))
+  entry.state=CONSOLETYPES.WIN_CREATING
+  cells=EXEC.AllocMem(960,EXEC.MEMF_PUBLIC)
+  fifo=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC)
+  instance.cells=cells
+  instance.fifo=fifo
+  IF cells=BYTE POINTER(0) OR fifo=BYTE POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF CONSOLECORE.Init(instance,cells,40,24,960)=0 THEN
+    RETURN(0)
+  FI
+
+  WHILE instance.operation<>CONSOLETYPES.OP_IDLE DO
+    CONSOLECORE.EditQuantum(instance)
+    EXEC.Yield()
+  OD
+
+  CONSOLEINPUT.Init(instance,fifo)
+  view=CONSOLETYPES.Presentation POINTER(ADDRESS(CS_PRESENTATION))
+  service.presentation=BYTE POINTER(view)
+  service.snapshot=EXEC.AllocMem(960,EXEC.MEMF_PUBLIC)
+  IF service.snapshot=BYTE POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF CONSOLEDISPLAY.Claim(view,instance,service.snapshot)=0 THEN
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  registered=CONSOLEFOREGROUND.Register(entry)
+  IF registered<>0 THEN
+    entry.state=CONSOLETYPES.WIN_LIVE
+    windows.liveCount=1
+    windows.focusSlot=0
+    CONSOLECAPTURE.Publish(entry.route)
+  FI
+
+  EXEC.Permit()
+  IF registered=0 THEN
+    RETURN(0)
+  FI
+
+  IF EXEC.AllocSignal(30)<>30 THEN
+    RETURN(0)
+  FI
+
+  IF EXEC.AllocSignal(31)<>31 THEN
+    EXEC.FreeSignal(30)
+    RETURN(0)
+  FI
+
+  IF CONSOLEADAPTER.Bind(EXEC.FindTask(BYTE POINTER(0)),$40000000)=0 THEN
+    EXEC.FreeSignal(31)
+    EXEC.FreeSignal(30)
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Release driver allocations after requests and display ownership have
+; retired.
+PROC FreeStorage(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
+    POINTER instance)
+  CONSOLETYPES.Presentation POINTER view
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Window POINTER entry
+
+  windows=CONSOLEWINDOWS.Registry()
+  entry=@windows.items(0)
+  EXEC.Forbid()
+  windows.liveCount=0
+  entry.state=CONSOLETYPES.WIN_RETIRING
+  CONSOLEFOREGROUND.Unregister(entry)
+  EXEC.Permit()
+  view=CONSOLETYPES.Presentation POINTER(ADDRESS(CS_PRESENTATION))
+  CONSOLEDISPLAY.Release(view)
+  IF service.snapshot<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(service.snapshot,960)
+    service.snapshot=BYTE POINTER(0)
+    view.snapshot=BYTE POINTER(0)
+  FI
+
+  IF instance.cells<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(instance.cells,960)
+    instance.cells=BYTE POINTER(0)
+  FI
+
+  IF instance.fifo<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(instance.fifo,128)
+    instance.fifo=BYTE POINTER(0)
+  FI
+
+  EXEC.Forbid()
+  CONSOLEWINDOWS.Retired(entry)
+  EXEC.Permit()
+
+RETURN
+
+; One bounded turn per borrowed instance. No request or instance pointer remains
+; borrowed across Yield/Wait, and replies publish ownership exactly once.
+PUBLIC PROC Worker()
+  LONGCARD bits
+  CARD pumped
+  BYTE again,writing,registered,stopping,accepted
+  CONSOLETYPES.Instance POINTER instance
+  CONSOLETYPES.Window POINTER entry
+
+  EXEC.Forbid()
+  LET service=GetService()
+  LET defaultInstance=GetInstance()
+  LET self=EXEC.FindTask(NULL)
+  IF service.worker<>BYTE POINTER(self) OR service.state<>1
+      OR service.lease.task<>self THEN
+    EXEC.Permit()
+    RETURN
+  FI
+
+  EXEC.Permit()
+
+  IF Initialize(service,defaultInstance)=0 THEN
+    FreeStorage(service,defaultInstance)
+    service.error=CARD(EXEC.IOERR_OPENFAIL)
+    EXEC.Forbid()
+    RetireWorker(service)
+    RETURN
+  FI
+
+  registered=0
+  IF EXEC.AllocSignal(29)=29 THEN
+    registered=EXEC.RegisterResident($20000000)
+    IF registered=0 THEN
+      EXEC.FreeSignal(29)
+    FI
+  FI
+
+  IF registered=0 THEN
+    CONSOLEADAPTER.Release()
+    EXEC.FreeSignal(30)
+    EXEC.FreeSignal(31)
+    FreeStorage(service,defaultInstance)
+    service.error=CARD(EXEC.IOERR_OPENFAIL)
+    EXEC.Forbid()
+    RetireWorker(service)
+    RETURN
+  FI
+
+  EXEC.Forbid()
+  IF service.stop=0 THEN
+    service.state=2
+  ELSE
+    service.state=3
+  FI
+
+  Notify(service)
+  EXEC.Permit()
+
+  bits=0
+  stopping=0
+  WHILE service.stop=0 DO
+    IF ((self.tc_SigRecvd OR bits) & $20000000)<>0 THEN
+      bits=EXEC.SetSignal(0,$20000000)
+      stopping=1
+    FI
+
+    bits=0
+    IF stopping<>0 THEN
+      EXEC.Forbid()
+      accepted=RequestStop(service)
+      EXEC.Permit()
+      IF service.stop<>0 THEN
+        EXIT
+      FI
+    FI
+
+    IF CONSOLEINPUT.Pending()<>0 THEN
+      EXEC.Forbid()
+      pumped=CONSOLEINPUT.Pump(defaultInstance)
+      EXEC.Permit()
+    FI
+
+    Arrival(service)
+    entry=CONSOLEWINDOWS.Take()
+    again=0
+    writing=0
+    IF entry<>NULL THEN
+      instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      ReadQuantum(service,instance)
+      WriteQuantum(instance,CONSOLETYPES.Presentation POINTER(entry.view))
+      CONSOLEDISPLAY.Present(CONSOLETYPES.Presentation POINTER(entry.view),instance)
+      writing=instance.write<>NULL
+      again=writing<>0 AND instance.writeCancel<>0
+      entry.busy=0
+    FI
+
+    IF again=0 THEN
+      IF writing<>0 THEN
+        EXEC.Yield()
+      ELSEIF Runnable(service)=0 THEN
+        ; Never clear the request/input signals between this hint and Wait.
+        bits=EXEC.Wait($e0000000)
+      ELSE
+        EXEC.Yield()
+      FI
+    FI
+  OD
+
+  registered=EXEC.UnregisterResident()
+  EXEC.FreeSignal(29)
+  CONSOLEADAPTER.Release()
+  EXEC.FreeSignal(30)
+  EXEC.FreeSignal(31)
+  FreeStorage(service,defaultInstance)
+  EXEC.Forbid()
+  RetireWorker(service)
+
+RETURN
+
+ENDMODULE

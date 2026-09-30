@@ -1,0 +1,241 @@
+; Resolve from a protected caller lock. Parent lookup is a bounded worker
+; state machine; no helper frame remains live across physical I/O.
+MODULE FSRELATIVE
+USE FSSTATUS
+USE FSTYPES
+USE DOSOBJECTS
+USE DOSWIRE
+USE FSREGISTRY
+USE FSPACKET
+USE FSLOCKS
+USE FSBACKEND
+USE FSBTYPES
+USE FSCORE
+INCLUDE "../dos/dos-types.inc"
+
+; Require a directory on the selected mount before borrowing its state.
+LONGINT FUNC Validate(FSTYPES.Service POINTER service FSTYPES.LockObject POINTER base)
+
+  IF base.common.mount<>service.selected THEN
+    RETURN(ERROR_INVALID_LOCK)
+  FI
+
+  IF (base.state.entry.flags & FSBTYPES.DIR)=0 THEN
+    RETURN(ERROR_OBJECT_WRONG_TYPE)
+  FI
+
+RETURN(FSBACKEND.ValidateBase(service.work,@base.state))
+
+; Restore the base lock's ancestry and canonical name into the worker
+; workspace.
+PROC Seed(FSTYPES.Service POINTER service FSTYPES.LockObject POINTER base)
+  BYTE index
+  CARD position
+  FSLOCKS.Name POINTER name
+  BYTE POINTER text
+
+  FSCORE.CopyEntry(@service.work.entry,@base.state.entry)
+  service.work.depth=base.state.depth
+  service.work.directory=base.state.entry.start
+  FOR index=0 TO base.state.depth DO
+    service.work.ancestors(index)=base.state.ancestors(index)
+  OD
+
+  name=FSLOCKS.Trailer(base)
+  text=FSLOCKS.Text(base)
+  service.nameLength=name.length
+  FOR position=0 TO name.length DO
+    service.name(position)=text(position)
+  OD
+
+RETURN
+
+; Remove one canonical component without crossing the volume prefix.
+PROC Trim(FSTYPES.Service POINTER service)
+
+  WHILE service.nameLength<>0 DO
+    IF service.name(service.nameLength-1)=58 THEN
+      EXIT
+    FI
+
+    IF service.name(service.nameLength-1)=47 THEN
+      service.nameLength==-1
+      EXIT
+    FI
+
+    service.nameLength==-1
+  OD
+
+  service.name(service.nameLength)=0
+
+RETURN
+
+; Restart lookup at the selected volume root.
+BYTE FUNC Root(FSTYPES.Service POINTER service BYTE POINTER path)
+
+  FSLOCKS.Root(service)
+  IF FSBACKEND.StartResolve(service.work,path)=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  service.nextStep=service.resolveReady
+
+RETURN(FSSTATUS.MORE)
+
+; Interpret root and parent prefixes against the caller's protected base lock.
+PUBLIC BYTE FUNC Begin(FSTYPES.Service POINTER service)
+  FSTYPES.LockObject POINTER base
+  LONGINT identity,error
+  BYTE status,index,depth
+  BYTE POINTER path
+
+  IF service.packet.sp_Pkt.dp_Type=8 THEN
+    identity=service.packet.sp_Pkt.dp_Arg1
+  ELSE
+    identity=service.packet.sp_Pkt.dp_Arg2
+  FI
+
+  IF DOSWIRE.IsPointer(identity)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_INVALID_LOCK))
+  FI
+
+  path=service.work.path
+  IF identity=0 THEN
+    RETURN(Root(service,path))
+  FI
+
+  base=FSTYPES.LockObject POINTER(FSREGISTRY.FindObject(service.owner,
+      BYTE POINTER(ADDRESS(identity)),DOSOBJECTS.KIND_LOCK))
+  IF base=FSTYPES.LockObject POINTER(0) THEN
+    RETURN(FSPACKET.Error(service,ERROR_INVALID_LOCK))
+  FI
+
+  error=Validate(service,base)
+  IF error<>0 THEN
+    RETURN(FSPACKET.Error(service,error))
+  FI
+
+  IF path^=58 THEN
+    RETURN(Root(service,BYTE POINTER(ADDRESS(path)+SIZE(1))))
+  FI
+
+  status=FSBACKEND.StartResolve(service.work,path)
+  IF status=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  Seed(service,base)
+  depth=base.state.depth
+  WHILE service.work.pathOffset<service.work.pathLength DO
+    IF path(service.work.pathOffset)<>47 THEN
+      EXIT
+    FI
+
+    service.work.pathOffset==+1
+    IF depth<>0 THEN
+      depth==-1
+    FI
+  OD
+
+  IF service.work.pathOffset=0 THEN
+    service.nextStep=service.resolveReady
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  IF depth=0 THEN
+    RETURN(Root(service,BYTE POINTER(ADDRESS(path)+SIZE(service.work.pathOffset))))
+  FI
+
+  ; Reconstruct the target leaf from its actual parent directory. Its cached
+  ; ancestors still constrain the scan and subsequent child traversal.
+  FOR index=depth TO base.state.depth DO
+    Trim(service)
+  OD
+
+  service.parentStart=base.state.ancestors(depth)
+  service.work.depth=depth-1
+  service.work.matchCount=0
+  service.work.directory=base.state.ancestors(depth-1)
+  service.work.index=0
+  service.nextStep=@ParentBegin
+
+RETURN(FSSTATUS.MORE)
+
+; Accept a parent reconstruction only when its directory identity is unique.
+BYTE FUNC ParentDone(FSTYPES.Service POINTER service)
+
+  IF service.work.matchCount<>1 THEN
+    RETURN(FSPACKET.Error(service,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  FSCORE.CopyEntry(@service.work.entry,@service.work.found)
+  IF FSBACKEND.Descend(service.work)=0 OR FSLOCKS.Append(service)=0 THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  service.nextStep=service.resolveReady
+
+RETURN(FSSTATUS.MORE)
+
+; Resume the bounded directory scan needed to reconstruct a parent path.
+BYTE FUNC ParentBegin(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+  BYTE status
+
+  service=FSTYPES.Service POINTER(raw)
+  status=FSBACKEND.BeginEntry(service.work,service.work.directory,
+      service.work.index)
+  IF status=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  IF status=FSSTATUS.END_DIR THEN
+    RETURN(ParentDone(service))
+  FI
+
+  service.nextStep=@ParentResult
+
+RETURN(status)
+
+; Match the retained ancestor against real directory entries before descent.
+BYTE FUNC ParentResult(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+  BYTE status
+
+  service=FSTYPES.Service POINTER(raw)
+  IF service.resultState=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  status=FSBACKEND.BufferedEntry(service.work)
+  IF status=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  IF status=FSSTATUS.NEED_IO OR status=FSSTATUS.MORE THEN
+    RETURN(status)
+  FI
+
+  IF status=FSSTATUS.END_DIR THEN
+    RETURN(ParentDone(service))
+  FI
+
+  IF status=FSSTATUS.DONE AND service.work.entry.start=service.parentStart THEN
+    IF (service.work.entry.flags & FSBTYPES.DIR)=0 THEN
+      RETURN(FSPACKET.Error(service,ERROR_DISK_NOT_VALIDATED))
+    FI
+
+    IF service.work.matchCount<>0 THEN
+      RETURN(FSPACKET.Error(service,ERROR_DISK_NOT_VALIDATED))
+    FI
+
+    service.work.matchCount=1
+    FSCORE.CopyEntry(@service.work.found,@service.work.entry)
+  FI
+
+  service.work.index==+1
+  service.nextStep=@ParentBegin
+
+RETURN(FSSTATUS.MORE)
+
+ENDMODULE

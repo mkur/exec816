@@ -1,0 +1,70 @@
+; Backend-independent metadata and worker protocol. All storage is upper RAM.
+MODULE FSBTYPES
+
+USE BLOCKTYPES
+
+; Covers the MyDOS chain and SDFS map layouts, checked by native fixtures.
+PUBLIC CONST CURSOR_STORAGE_BYTES=28
+
+PUBLIC TYPE Volume=[
+  BLOCKTYPES.Volume POINTER block
+  BYTE POINTER state
+  CARD root
+  BYTE format,mounted
+]
+
+; key is opaque backend identity. flags contains only DIR/PROTECTED below.
+; length/known are the only byte-extent metadata, including inside a cursor.
+; An unknown length is not an empty file; only validated metadata sets known.
+PUBLIC TYPE Entry=[
+  LONGCARD key
+  LONGINT count,length
+  BYTE flags,known
+  CARD start,parent
+  BYTE ARRAY name(11)
+  LONGINT days,minutes,ticks
+]
+
+PUBLIC TYPE Workspace=[
+  Volume POINTER volume
+  Entry entry,found
+  BYTE ARRAY wanted(11)
+  CARD ARRAY ancestors(17)
+  BYTE depth
+  LONGCARD index
+  CARD matchCount
+  BYTE exactFound
+  CARD directory,pathOffset,pathLength,neededSector
+  BYTE POINTER path
+  LONGINT error,ioError
+  LONGCARD operations
+  BYTE POINTER extra
+]
+
+; Locks retain metadata and ancestry, without any read/seek traversal state.
+PUBLIC TYPE LockState=[
+  Entry entry
+  CARD ARRAY ancestors(17)
+  BYTE depth
+]
+
+; Traversal owns position and storage; metadata stays in entry without mirrors.
+; No per-handle sector buffers. storage is interpreted only by its backend.
+PUBLIC TYPE Cursor=[
+  Entry entry
+  CARD ARRAY ancestors(17)
+  BYTE depth
+  LONGINT position
+  BYTE ARRAY storage(CURSOR_STORAGE_BYTES)
+]
+
+PUBLIC TYPE Operation=[
+  Workspace POINTER work
+  Cursor POINTER file
+  BYTE POINTER output
+  LONGINT start,requested,remaining,completed,target,offset,mode,result
+  BYTE kind,stage
+]
+
+PUBLIC CONST DIR=$10, PROTECTED=$20
+ENDMODULE

@@ -1,0 +1,309 @@
+MODULE DOSCOOKEDTEST
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSRAW
+USE DOSCOOKED
+USE COOKEDLINE
+USE CONSOLEDRIVER
+USE CONSOLEINPUT
+USE CONSOLETYPES
+USE FSBOOT
+USE HEAPCORE
+CARD checks,peerChecks
+VOLATILE BYTE phase,gate,peerDone,injectLoss
+EXEC.Task peer
+PROC POINTER absent()
+DOS.FileHandle POINTER con,raw,nil,previous
+DOSCLIENT.ClientContext POINTER client
+DOSRAW.RawEndpoint POINTER endpoint
+DOSRAW.StreamRegistry POINTER registry
+CONSOLETYPES.Service POINTER service
+CONSOLETYPES.Instance POINTER instance
+BYTE ARRAY conName=[67 79 78 58 0],rawName=[82 65 87 58 0],nilName=[78 73 76 58 0]
+BYTE ARRAY path=[68 49 58 84 79 79 76 83 47 83 85 66 47 68 65 84 65 46 66 73 78 0]
+BYTE ARRAY prompt=[62 32]
+BYTE ARRAY buffer(260)
+BYTE ARRAY peerData(8)
+LONGCARD baseline
+LONGINT peerResult,peerError
+TYPE Chunk=[
+  BYTE POINTER next
+  LONGCARD bytes
+]
+
+Chunk POINTER held
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ea00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Keep peer failures distinguishable from the main Task's assertions.
+PROC PeerRequire(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($eb00+(peerChecks & 255))
+  FI
+
+  peerChecks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+  CARD ticks
+
+  gate=0
+  phase=number
+  WHILE gate=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+PROC Fill()
+  CARD index
+
+  FOR index=0 TO 259 DO
+    buffer(index)=$a5
+  OD
+
+RETURN
+
+PROC Idle()
+
+  Require(client.busy=0
+      AND client.request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  Require(client.request.io_Device=BYTE POINTER(0)
+      AND client.request.io_Data=BYTE POINTER(0))
+  Require(endpoint.active=0 AND endpoint.reader=BYTE POINTER(0)
+      AND EXEC.GetMsg(client.port)=EXEC.Message POINTER(0))
+
+RETURN
+
+; Hold available allocations so the next operation must exercise its failure
+; path.
+PROC Exhaust()
+  Chunk POINTER item
+  LONGCARD size
+
+  DO
+    size=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    IF size<8 THEN
+      EXIT
+    FI
+
+    item=Chunk POINTER(EXEC.AllocMem(size,EXEC.MEMF_UPPER))
+    Require(item<>Chunk POINTER(0))
+    item.next=BYTE POINTER(held)
+    item.bytes=size
+    held=item
+  OD
+
+RETURN
+
+; Return the allocations retained to force memory exhaustion.
+PROC ReleaseHeld()
+  Chunk POINTER next
+  LONGCARD size
+
+  WHILE held<>Chunk POINTER(0) DO
+    next=Chunk POINTER(held.next)
+    size=held.bytes
+    EXEC.FreeMem(BYTE POINTER(held),size)
+    held=next
+  OD
+
+RETURN
+
+PROC FailOpen(CARD spareBytes)
+  BYTE POINTER spare
+  LONGCARD before
+
+  before=EXEC.AvailMem(0)
+  spare=BYTE POINTER(0)
+  IF spareBytes<>0 THEN
+    spare=EXEC.AllocMem(LONGCARD(spareBytes),EXEC.MEMF_UPPER)
+    Require(spare<>BYTE POINTER(0))
+  FI
+
+  Exhaust()
+  IF spare<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(spare,LONGCARD(spareBytes))
+  FI
+
+  Require(DOS.Open(conName,DOS.MODE_READWRITE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(client.busy=0 AND client.objects=0 AND registry.state=DOSRAW.CLOSED)
+  ReleaseHeld()
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+PROC PeerEntry()
+  DOS.FileHandle POINTER file,other
+  BYTE POINTER diskData
+  CARD ticks
+
+  other=DOS.Open(rawName,DOS.MODE_READWRITE)
+  PeerRequire(other<>DOS.FileHandle POINTER(0))
+  WHILE endpoint.reader=BYTE POINTER(0) DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  peerResult=DOS.Read(other,peerData,1)
+  peerError=DOS.IoErr()
+  PeerRequire(peerResult=-1 AND peerError=DOS.ERROR_OBJECT_IN_USE)
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  peerError=DOS.IoErr()
+  PeerRequire(file<>DOS.FileHandle POINTER(0))
+  diskData=EXEC.AllocMem(8,EXEC.MEMF_UPPER)
+  PeerRequire(diskData<>BYTE POINTER(0))
+  peerResult=DOS.Read(file,diskData,8)
+  peerError=DOS.IoErr()
+  PeerRequire(peerResult=8)
+  EXEC.FreeMem(diskData,8)
+  PeerRequire(DOS.Close(file)<>0 AND DOS.Close(other)<>0
+      AND DOS.ReleaseContext()<>0)
+  peerDone=1
+  WHILE injectLoss=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  WHILE endpoint.reader=BYTE POINTER(0) DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  EXEC.Forbid()
+  CONSOLEINPUT.Lose(instance)
+  EXEC.Permit()
+  EXEC.Signal(EXEC.Task POINTER(@service.task),$40000000)
+  injectLoss=2
+
+RETURN
+
+PROC BeginPeer()
+
+  peer.tc_Node.ln_Type=EXEC.NT_TASK
+  peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  peer.tc_SPReg=peer.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@peer.tc_MemEntry)
+  Require(EXEC.AddTask(@peer,@PeerEntry,absent)=@peer)
+
+RETURN
+
+PROC Lines()
+
+  Fill()
+  Pause(1)
+  Require(DOS.Write(con,prompt,2)=2)
+  Require(DOS.Read(con,@buffer(2),2)=2 AND buffer(2)=97 AND buffer(3)=99)
+  Require(peerDone=1)
+  Require(DOS.Read(con,BYTE POINTER(0),0)=0)
+  Require(DOS.Read(con,@buffer(4),256)=3 AND buffer(4)=100 AND buffer(5)=32
+      AND buffer(6)=10)
+  Require(buffer(0)=$a5 AND buffer(1)=$a5 AND buffer(7)=$a5 AND buffer(259)=$a5)
+  Idle()
+  Pause(2)
+  Require(DOS.Read(con,buffer,256)=2 AND buffer(0)=120 AND buffer(1)=121)
+  Require(DOS.Read(con,BYTE POINTER(0),0)=0 AND DOS.Read(con,buffer,1)=0
+      AND DOS.IoErr()=0)
+  Pause(3)
+  Require(DOS.Read(con,buffer,256)=0 AND DOS.IoErr()=0)
+  Idle()
+  Pause(4)
+  Require(DOS.Read(con,buffer,256)=-1 AND DOS.IoErr()=DOS.ERROR_BREAK)
+  Idle()
+  Pause(5)
+  Require(DOS.Read(con,buffer,256)=-1 AND DOS.IoErr()=DOS.ERROR_LINE_TOO_LONG)
+  Idle()
+  Pause(6)
+  injectLoss=1
+  Require(DOS.Read(con,buffer,256)=-1 AND DOS.IoErr()=DOS.ERROR_BUFFER_OVERFLOW)
+  Idle()
+  Pause(7)
+  Require(DOS.Read(con,buffer,256)=3 AND buffer(0)=111 AND buffer(1)=107
+      AND buffer(2)=10)
+  Idle()
+  Pause(8)
+  DOSCOOKED.failEcho=1
+  Require(DOS.Read(con,buffer,256)=-1
+      AND DOS.IoErr()=LONGINT(EXEC.IOERR_BADADDRESS))
+  Idle()
+  Pause(9)
+  Require(DOS.Read(con,buffer,256)=-1
+      AND DOS.IoErr()=LONGINT(EXEC.IOERR_BADADDRESS))
+  Idle()
+  Pause(10)
+  Require(DOS.Read(con,buffer,256)=2 AND buffer(0)=122 AND buffer(1)=10)
+  Idle()
+
+RETURN
+
+; Exercise shared cooked input, error handling and reader ownership.
+PROC Main()
+  CARD ticks
+  LONGCARD available
+
+  baseline=EXEC.AvailMem(0)
+  instance=CONSOLEDRIVER.GetInstance()
+  registry=DOSRAW.GetRegistry()
+  service=CONSOLEDRIVER.GetService()
+  client=DOSCLIENT.Ensure()
+  Require(client<>DOSCLIENT.ClientContext POINTER(0))
+  FailOpen(0)
+  FailOpen(400)
+  FailOpen(424)
+  con=DOS.Open(conName,DOS.MODE_READWRITE)
+  Require(con<>DOS.FileHandle POINTER(0) AND DOS.IsInteractive(con)=-1)
+  endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+  raw=DOS.Open(rawName,DOS.MODE_OLDFILE)
+  Require(raw<>DOS.FileHandle POINTER(0) AND endpoint.references=2)
+  Require(DOS.Close(raw)<>0 AND endpoint.references=1)
+  available=EXEC.AvailMem(0)
+  Exhaust()
+  Require(DOS.Read(con,buffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(client.request=EXEC.IOStdReq POINTER(0) AND client.busy=0
+      AND endpoint.active=0 AND endpoint.reader=BYTE POINTER(0))
+  ReleaseHeld()
+  Require(EXEC.AvailMem(0)=available)
+  Require(DOS.Seek(con,0,DOS.OFFSET_BEGINNING)=-1
+      AND DOS.IoErr()=DOS.ERROR_SEEK_ERROR)
+  nil=DOS.Open(nilName,DOS.MODE_NEWFILE)
+  previous=DOS.SelectOutput(nil)
+  Require(nil<>DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
+  BeginPeer()
+  Lines()
+  WHILE peer.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  previous=DOS.SelectInput(con)
+  Require(DOS.IoErr()=0)
+  Require(DOS.Close(con)<>0 AND DOS.Input()=DOS.FileHandle POINTER(0))
+  Require(DOS.Close(nil)<>0 AND DOS.Output()=DOS.FileHandle POINTER(0)
+      AND DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+  con=DOS.Open(conName,DOS.MODE_OLDFILE)
+  Require(con<>DOS.FileHandle POINTER(0))
+  Require(DOS.Close(con)<>0 AND DOS.ReleaseContext()<>0
+      AND EXEC.AvailMem(0)=baseline)
+  phase=11
+
+RETURN
+
+ENDMODULE

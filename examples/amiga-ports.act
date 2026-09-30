@@ -1,0 +1,159 @@
+; A bounded Action! adaptation of the Amiga port1/port2 message exchange.
+; Source and build instructions: docs/guides/messages.md.
+MODULE AMIGAPORTS
+
+USE EXEC
+
+INCLUDE "example-output.inc"
+
+TYPE XYMessage=[
+  EXEC.Message message
+  CARD x,y
+]
+
+CONST NO_REPLY_PORT=1,NO_MESSAGE=2,NO_TASK=3,NO_SERVICE_PORT=4
+CONST NO_SIGNAL=5,WORKER_STACK_SIZE=1536
+
+EXEC.Task POINTER parent
+EXEC.MsgPort POINTER service
+LONGCARD readyMask,doneMask
+BYTE readyBit,doneBit
+BYTE completed,failureCode,sameMessage
+CARD receivedX,receivedY
+
+BYTE ARRAY sending=c"Send: 10,20\n"
+BYTE ARRAY received=c"Reply: 00,00\n"
+BYTE ARRAY finished=c"Message returned; resources released.\n"
+BYTE ARRAY failed=c"Message example failed.\n"
+
+; Accept one request, update its payload, and give ownership back to the sender.
+PROC Receiver()
+
+  service=EXEC.CreateMsgPort()
+  EXEC.Signal(parent,readyMask)
+  IF service<>NULL THEN
+    BEGIN
+      LET pending=EXEC.WaitPort(service)
+      LET message=EXEC.GetMsg(service)
+      LET request=XYMessage POINTER(message)
+      request.x==+50
+      request.y==+50
+      EXEC.ReplyMsg(message)
+
+      ; This example has one sender and exactly one request.
+      EXEC.DeleteMsgPort(service)
+    END
+  FI
+
+  ; Parent must resume only after this Task has stopped using shared state.
+  EXEC.Forbid()
+  EXEC.Signal(parent,doneMask)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+; Keep the message and reply port alive until the exchange and receiver finish.
+PROC Exchange()
+  LONGCARD notified
+
+  LET replies=EXEC.CreateMsgPort()
+  IF replies=NULL THEN
+    failureCode=NO_REPLY_PORT
+    RETURN
+  FI
+
+  LET request=XYMessage POINTER(EXEC.AllocMem(SIZEOF(XYMessage),EXEC.MEMF_PUBLIC
+      OR EXEC.MEMF_CLEAR))
+  IF request=NULL THEN
+    EXEC.DeleteMsgPort(replies)
+    failureCode=NO_MESSAGE
+    RETURN
+  FI
+
+  request.message.mn_ReplyPort=replies
+  request.message.mn_Length=SIZEOF(XYMessage)
+  request.x=10
+  request.y=20
+
+  LET added=EXEC.CreateTask(c"receiver",0,@Receiver,WORKER_STACK_SIZE)
+
+  IF added=NULL THEN
+    failureCode=NO_TASK
+  ELSE
+    notified=EXEC.Wait(readyMask)
+
+    IF service=NULL THEN
+      failureCode=NO_SERVICE_PORT
+    ELSE
+      BEGIN
+        Print(sending)
+        EXEC.PutMsg(service,@request.message)
+
+        ; The sender must not inspect the request until it collects the reply.
+        LET pending=EXEC.WaitPort(replies)
+        LET message=EXEC.GetMsg(replies)
+        sameMessage=(message=@request.message)
+        receivedX=request.x
+        receivedY=request.y
+        completed=1
+      END
+    FI
+
+    notified=EXEC.Wait(doneMask)
+  FI
+
+  EXEC.FreeMem(BYTE POINTER(request),SIZEOF(XYMessage))
+  EXEC.DeleteMsgPort(replies)
+
+RETURN
+
+; Reserve notifications before creation; no child can outlive these bits.
+BYTE FUNC Notifications()
+
+  parent=EXEC.FindTask(NULL)
+  readyBit=EXEC.AllocSignal($ff)
+  IF readyBit=$ff THEN
+    RETURN(0)
+  FI
+  doneBit=EXEC.AllocSignal($ff)
+  IF doneBit=$ff THEN
+    EXEC.FreeSignal(readyBit)
+    RETURN(0)
+  FI
+  readyMask=LONGCARD(1) LSH readyBit
+  doneMask=LONGCARD(1) LSH doneBit
+
+RETURN(1)
+
+; Demonstrate the Amiga-style PutMsg, WaitPort, GetMsg and ReplyMsg ownership
+; cycle.
+PROC Main()
+
+  IF OpenConsole()=0 THEN
+    RETURN
+  FI
+
+  IF Notifications()<>0 THEN
+    Exchange()
+    EXEC.FreeSignal(doneBit)
+    EXEC.FreeSignal(readyBit)
+  ELSE
+    failureCode=NO_SIGNAL
+  FI
+  IF failureCode<>0 THEN
+    Print(failed)
+  ELSE
+    ; The sample's two results fit in two decimal digits.
+    received(7)=ASCII.DIGIT_ZERO+BYTE(receivedX/10)
+    received(8)=ASCII.DIGIT_ZERO+BYTE(receivedX MOD 10)
+    received(10)=ASCII.DIGIT_ZERO+BYTE(receivedY/10)
+    received(11)=ASCII.DIGIT_ZERO+BYTE(receivedY MOD 10)
+    Print(received)
+    Print(finished)
+  FI
+
+  CloseConsole()
+
+RETURN
+
+ENDMODULE

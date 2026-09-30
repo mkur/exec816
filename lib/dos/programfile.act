@@ -1,0 +1,95 @@
+MODULE PROGRAMFILE
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE O65TYPES
+USE PROGRAM
+USE PROGRAMIMAGE
+
+; The complete, immutable file is staged before validation. Ordinary DOS calls
+; retain their cancellation/retirement protocol; no loader worker is created.
+PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER path)
+  DOS.FileHandle POINTER file
+  PROGRAMIMAGE.Image POINTER image
+  BYTE POINTER bytes
+  LONGINT length,count,position,error,closed
+
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  IF file=DOS.FileHandle POINTER(0) THEN
+    RETURN(PROGRAMIMAGE.Image POINTER(0))
+  FI
+
+  bytes=BYTE POINTER(0)
+  image=PROGRAMIMAGE.Image POINTER(0)
+  error=0
+  position=DOS.Seek(file,0,DOS.OFFSET_END)
+  IF position<0 THEN
+    error=DOS.IoErr()
+  ELSE
+    length=DOS.Seek(file,0,DOS.OFFSET_BEGINNING)
+    IF length<0 THEN
+      error=DOS.IoErr()
+    ELSEIF length=0 THEN
+      error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+    ELSEIF LONGCARD(length)>O65TYPES.LIMIT_FILE THEN
+      error=LONGINT(O65TYPES.ERROR_RESOURCE_LIMIT)
+    ELSE
+      bytes=EXEC.AllocMem(SIZE(length),EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+      IF bytes=BYTE POINTER(0) THEN
+        error=LONGINT(O65TYPES.ERROR_NO_FREE_STORE)
+      ELSE
+        position=0
+        WHILE position<length AND error=0 DO
+          IF DOS.BreakPending()<>0 THEN
+            error=DOS.ERROR_BREAK
+          ELSE
+            ; The worker checks cancellation between sectors within this read.
+            count=length-position
+            IF count>4096 THEN
+              count=4096
+            FI
+
+            count=DOS.Read(file,bytes+SIZE(position),count)
+            IF count<0 THEN
+              error=DOS.IoErr()
+            ELSEIF count=0 OR count>length-position THEN
+              error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+            ELSE
+              position==+count
+            FI
+          FI
+        OD
+      FI
+    FI
+  FI
+
+  ; Preserve the causal read/seek error across close and allocator cleanup.
+  closed=DOS.Close(file)
+  IF closed=0 AND error=0 THEN
+    error=DOS.IoErr()
+  FI
+
+  IF error=0 AND DOS.BreakPending()<>0 THEN
+    error=DOS.ERROR_BREAK
+  FI
+
+  IF error=0 THEN
+    image=PROGRAM.Load(bytes,LONGCARD(length))
+    error=DOS.IoErr()
+  FI
+
+  IF bytes<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(bytes,SIZE(length))
+  FI
+
+  IF image<>PROGRAMIMAGE.Image POINTER(0) AND DOS.BreakPending()<>0 THEN
+    PROGRAM.Unload(image)
+    image=PROGRAMIMAGE.Image POINTER(0)
+    error=DOS.ERROR_BREAK
+  FI
+
+  DOSCLIENT.SetError(error)
+
+RETURN(image)
+
+ENDMODULE

@@ -1,0 +1,50 @@
+MODULE LISTSPROBE
+; Test-only observations. Production EXECLISTS has no dependency on this module.
+PUBLIC VOLATILE CARD ticks=$2034
+VOLATILE BYTE current=$2023
+PUBLIC VOLATILE BYTE enabled,sharedMode
+PUBLIC VOLATILE CARD mutations
+PUBLIC CARD ARRAY probeVisits(2),probeFailures(2),probeOverlaps(2)
+PUBLIC CARD ARRAY sites(32)
+VOLATILE BYTE ARRAY inside(2)
+
+PUBLIC PROC Checkpoint(BYTE site)
+  BYTE id
+  CARD start,prior
+
+  IF enabled=0 THEN
+    RETURN
+  FI
+
+  id=current
+  prior=mutations
+  inside(id)=1
+  IF inside(id XOR 1)<>0 THEN
+    probeOverlaps(id)==+1
+  FI
+
+  start=ticks
+  WHILE ticks=start DO
+  OD
+
+  IF current<>id THEN
+    probeFailures(id)==+1
+  FI
+
+  IF sharedMode<>0 AND mutations<>prior THEN
+    probeFailures(id)==+1
+  FI
+
+  IF inside(id XOR 1)<>0 THEN
+    probeOverlaps(id)==+1
+  FI
+
+  inside(id)=0
+  probeVisits(id)==+1
+  ; In the private case peers can update the same counter. Per-task counters
+  ; above are the authority there; site coverage is checked in shared mode.
+  sites(site)==+1
+
+RETURN
+
+ENDMODULE

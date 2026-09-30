@@ -1,0 +1,268 @@
+; One presentation transaction pauses worker borrows, with IRQs enabled.
+MODULE CONSOLETILING
+USE EXEC
+USE HEAPCORE
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLEDRIVER
+USE CONSOLEDISPLAY
+USE CONSOLECAPTURE
+
+; Pause new worker borrows and wait for existing ones before changing
+; presentation.
+PUBLIC BYTE FUNC Lock()
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Service POINTER service
+  BYTE POINTER owner
+  BYTE index
+
+  IF CONSOLEDRIVER.State()<>2 THEN
+    RETURN(0)
+  FI
+
+  windows=CONSOLEWINDOWS.Registry()
+  service=CONSOLEDRIVER.GetService()
+  owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0)))
+  EXEC.Forbid()
+  IF windows.presenting<>0 OR service.state<>2 OR service.stop<>0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  IF EXEC.RetainTask(EXEC.Task POINTER(owner),@windows.presenter)=0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  windows.presenting=1
+  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    IF windows.items(index).state=CONSOLETYPES.WIN_LIVE THEN
+      windows.items(index).state=CONSOLETYPES.WIN_PRESENTING
+    FI
+  OD
+
+  EXEC.Permit()
+  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    WHILE windows.items(index).busy<>0 DO
+      EXEC.Yield()
+    OD
+  OD
+
+RETURN(1)
+
+; Publish the new presentation and wake the worker after releasing its owner
+; lease.
+PUBLIC PROC Unlock()
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Service POINTER service
+  BYTE index
+
+  windows=CONSOLEWINDOWS.Registry()
+  service=CONSOLEDRIVER.GetService()
+  EXEC.Forbid()
+  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    IF windows.items(index).state=CONSOLETYPES.WIN_PRESENTING THEN
+      windows.items(index).state=CONSOLETYPES.WIN_LIVE
+    FI
+  OD
+
+  IF EXEC.ReleaseTask(@windows.presenter)=0 THEN
+    HEAPCORE.Abort(4)
+  FI
+
+  windows.presenting=0
+  EXEC.Signal(@service.task,$80000000)
+  EXEC.Permit()
+
+RETURN
+
+; Permit presentation changes only for the base console or the owning Task.
+PUBLIC BYTE FUNC Owned(CONSOLETYPES.Window POINTER entry)
+
+  IF entry=CONSOLETYPES.Window POINTER(0) THEN
+    RETURN(0)
+  FI
+
+RETURN(entry.unit=0 OR entry.owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0))))
+
+; Caller owns the presentation transaction and has drained worker borrows.
+PUBLIC PROC Select(CONSOLETYPES.Window POINTER entry)
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Presentation POINTER view
+
+  windows=CONSOLEWINDOWS.Registry()
+  IF windows.focusSlot<CONSOLETYPES.WINDOW_SLOTS THEN
+    view=CONSOLETYPES.Presentation POINTER(windows.items(windows.focusSlot).view)
+    CONSOLEDISPLAY.RemoveCursor(view)
+    view.focused=0
+    view.index=$ffff
+  FI
+
+  EXEC.Forbid()
+  windows.focusSlot=255
+  IF entry=CONSOLETYPES.Window POINTER(0) THEN
+    CONSOLECAPTURE.Publish(0)
+  ELSE
+    view=CONSOLETYPES.Presentation POINTER(entry.view)
+    view.focused=1
+    view.index=$ffff
+    windows.focusSlot=BYTE(entry.unit & 3)
+    CONSOLECAPTURE.Publish(entry.route)
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
+; Erase a window and choose replacement focus within a presentation
+; transaction.
+PUBLIC PROC HideLocked(CONSOLETYPES.Window POINTER entry)
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Presentation POINTER view
+  CONSOLETYPES.Window POINTER next
+  BYTE index
+
+  view=CONSOLETYPES.Presentation POINTER(entry.view)
+  IF view.visible=0 THEN
+    RETURN
+  FI
+
+  CONSOLEDISPLAY.Erase(view)
+  view.visible=0
+  windows=CONSOLEWINDOWS.Registry()
+  IF windows.focusSlot<>BYTE(entry.unit & 3) THEN
+    RETURN
+  FI
+
+  next=CONSOLETYPES.Window POINTER(0)
+  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    IF CONSOLEWINDOWS.Live(@windows.items(index))<>0 THEN
+      view=CONSOLETYPES.Presentation POINTER(windows.items(index).view)
+      IF view.visible<>0 THEN
+        next=@windows.items(index)
+        EXIT
+      FI
+    FI
+  OD
+
+  Select(next)
+
+RETURN
+
+; Admit a non-overlapping screen rectangle before exposing a retained
+; terminal.
+PUBLIC BYTE FUNC Show(LONGCARD unit CARD left,top)
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Window POINTER entry
+  CONSOLETYPES.Presentation POINTER view,other,base
+  CONSOLETYPES.Instance POINTER instance
+  BYTE index,okay
+
+  IF Lock()=0 THEN
+    RETURN(0)
+  FI
+
+  entry=CONSOLEWINDOWS.Find(unit)
+  IF Owned(entry)=0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  windows=CONSOLEWINDOWS.Registry()
+  view=CONSOLETYPES.Presentation POINTER(entry.view)
+  instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  IF left>=40 OR top>=24 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  IF instance.width>40-left OR instance.height>24-top THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  IF view.visible<>0 THEN
+    okay=view.left=left AND view.top=top
+    Unlock()
+    RETURN(okay)
+  FI
+
+  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    IF CONSOLEWINDOWS.Live(@windows.items(index))<>0 THEN
+      other=CONSOLETYPES.Presentation POINTER(windows.items(index).view)
+      IF other.visible<>0 THEN
+        IF left<other.left+other.width AND left+instance.width>other.left THEN
+          IF top<other.top+other.height AND top+instance.height>other.top THEN
+            Unlock()
+            RETURN(0)
+          FI
+        FI
+      FI
+    FI
+  OD
+
+  base=CONSOLETYPES.Presentation POINTER(windows.items(0).view)
+  view.left=left
+  view.top=top
+  view.screen=base.screen
+  view.claimed=1
+  view.visible=1
+  view.index=$ffff
+  view.cursorOn=0
+  view.focused=0
+  instance.dirtyFirst=0
+  instance.dirtyEnd=instance.count
+  IF windows.focusSlot=255 THEN
+    Select(entry)
+  FI
+
+  Unlock()
+
+RETURN(1)
+
+; Hide an owned terminal while serializing against worker presentation.
+PUBLIC BYTE FUNC Hide(LONGCARD unit)
+  CONSOLETYPES.Window POINTER entry
+
+  IF Lock()=0 THEN
+    RETURN(0)
+  FI
+
+  entry=CONSOLEWINDOWS.Find(unit)
+  IF Owned(entry)=0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  HideLocked(entry)
+  Unlock()
+
+RETURN(1)
+
+; Route keyboard input only to a visible terminal the caller may control.
+PUBLIC BYTE FUNC Focus(LONGCARD unit)
+  CONSOLETYPES.Window POINTER entry
+  CONSOLETYPES.Presentation POINTER view
+
+  IF Lock()=0 THEN
+    RETURN(0)
+  FI
+
+  entry=CONSOLEWINDOWS.Find(unit)
+  IF Owned(entry)=0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  view=CONSOLETYPES.Presentation POINTER(entry.view)
+  IF view.visible=0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  Select(entry)
+  Unlock()
+
+RETURN(1)
+
+ENDMODULE

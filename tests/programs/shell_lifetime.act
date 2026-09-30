@@ -1,0 +1,464 @@
+MODULE SHELLAPP
+USE HEAPCORE
+USE DOSCORE
+USE DOSCLIENT
+USE DOSRAW
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+USE FSBOOT
+USE FSREGISTRY
+USE FSTYPES
+USE SHELLFAULTCONTROL
+INCLUDE "shell-lifetime.inc"
+
+TYPE Chunk=[
+  BYTE POINTER next
+  LONGCARD size
+]
+
+Chunk POINTER held
+CARD checks,commands,events
+BYTE scenario,finished
+LONGCARD baseline,steady
+LONGCARD commandGeneration
+DOS.FileLock POINTER originalDirectory
+BYTE ARRAY cdTools=[67 68 32 84 79 79 76 83 0]
+BYTE ARRAY cdOther=[67 68 32 68 50 58 0]
+BYTE ARRAY echoNil=[69 67 72 79 32 120 32 62 78 73 76 58 0]
+BYTE ARRAY badOpen=[69 67 72 79 32 120 32 60 78 73 76 58 32 62 67 79 78 83 79 76 69 58 0]
+BYTE ARRAY showCd=[67 68 0]
+BYTE ARRAY quit=[69 88 73 84 0]
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($ea00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Observe a selected shell ownership boundary for deterministic fault
+; injection.
+PROC Event(BYTE tag)
+  BYTE POINTER row
+  LONGINT POINTER numbers
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+  DOSRAW.StreamRegistry POINTER registry
+  DOSRAW.RawEndpoint POINTER endpoint
+
+  IF events=64 THEN
+    HEAPCORE.Abort($eaff)
+  FI
+
+  row=BYTE POINTER(ADDRESS($e1000)+(SIZE(events) LSH 5))
+  events==+1
+  row(0)=tag
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  IF shell<>ShellState POINTER(0) THEN
+    numbers=LONGINT POINTER(ADDRESS(row)+SIZE(1))
+    numbers(0)=shell.status
+    numbers(1)=shell.error
+    row(9)=shell.done
+    row(10)=shell.redirectActive
+    row(11)=shell.restoreFailure
+    row(12)=BYTE(shell.tempInput<>DOS.FileHandle POINTER(0))
+    row(13)=BYTE(shell.tempOutput<>DOS.FileHandle POINTER(0))
+    row(14)=BYTE(DOS.Input()=shell.console)
+    row(15)=BYTE(DOS.Output()=shell.console)
+  FI
+
+  IF client<>DOSCLIENT.ClientContext POINTER(0) THEN
+    row(16)=BYTE(client.objects)
+    row(17)=client.busy
+    row(18)=BYTE(client.directory<>BYTE POINTER(0))
+  FI
+
+  registry=DOSRAW.GetRegistry()
+  IF registry.endpoint<>BYTE POINTER(0) THEN
+    endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+    row(19)=BYTE(endpoint.references)
+    row(20)=BYTE(endpoint.active)
+  FI
+
+RETURN
+
+DOS.FileLock POINTER FUNC TestDirectory(DOS.FileLock POINTER lock)
+
+  IF SHELLFAULTCONTROL.failCurrent<>0 AND lock<>shell.directory THEN
+    SHELLFAULTCONTROL.failCurrent=0
+    DOSCLIENT.SetError(DOS.ERROR_OBJECT_IN_USE)
+    RETURN(DOS.FileLock POINTER(0))
+  FI
+
+RETURN(DOS.CurrentDir(lock))
+
+DOS.FileHandle POINTER FUNC TestOutput(DOS.FileHandle POINTER file)
+
+  IF SHELLFAULTCONTROL.failRestore<>0 AND shell.redirectActive=2
+      AND file=shell.oldOutput THEN
+    SHELLFAULTCONTROL.failRestore=0
+    DOSCLIENT.SetError(DOS.ERROR_OBJECT_IN_USE)
+    RETURN(DOS.FileHandle POINTER(0))
+  FI
+
+RETURN(DOS.SelectOutput(file))
+
+LONGINT FUNC TestClose(DOS.FileHandle POINTER file)
+
+  IF SHELLFAULTCONTROL.failClose<>0 AND (file=shell.tempInput
+      OR file=shell.tempOutput) THEN
+    SHELLFAULTCONTROL.failClose=0
+    DOSCLIENT.SetError(DOS.ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+RETURN(DOS.Close(file))
+
+; Hold available allocations so the next operation must exercise its failure
+; path.
+PROC Exhaust(BYTE unused)
+  LONGCARD size
+  Chunk POINTER item
+
+  DO
+    size=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    IF size<8 THEN
+      EXIT
+    FI
+
+    item=Chunk POINTER(EXEC.AllocMem(size,EXEC.MEMF_UPPER))
+    Check(item<>Chunk POINTER(0))
+    item.next=BYTE POINTER(held)
+    item.size=size
+    held=item
+  OD
+
+RETURN
+
+; Return the allocations retained to force memory exhaustion.
+PROC ReleaseHeld(BYTE unused)
+  Chunk POINTER next
+  LONGCARD size
+
+  WHILE held<>Chunk POINTER(0) DO
+    next=Chunk POINTER(held.next)
+    size=held.size
+    EXEC.FreeMem(BYTE POINTER(held),size)
+    held=next
+  OD
+
+RETURN
+
+; Check foreground handoff outcomes without losing the shell's retained
+; resources.
+LONGINT FUNC TestForeground(DOS.FileHandle POINTER console)
+  EXEC.Task POINTER task
+  LONGCARD mask
+  LONGINT result,error
+  CARD index
+
+  IF scenario<>5 AND scenario<>6 THEN
+    RETURN(DOS.BeginForeground(console))
+  FI
+
+  task=EXEC.FindTask(BYTE POINTER(0))
+  mask=task.tc_SigAlloc
+  IF scenario=5 THEN
+    FOR index=0 TO 31 DO
+      IF (mask & (LONGCARD(1) LSH index))=0 THEN
+        Check(EXEC.AllocSignal(INT(index))=INT(index))
+      FI
+    OD
+  ELSE
+    Exhaust(0)
+  FI
+
+  result=DOS.BeginForeground(console)
+  error=DOS.IoErr()
+  IF scenario=5 THEN
+    FOR index=0 TO 31 DO
+      IF (mask & (LONGCARD(1) LSH index))=0 THEN
+        EXEC.FreeSignal(INT(index))
+      FI
+    OD
+  ELSE
+    ReleaseHeld(0)
+  FI
+
+  Check(result=0 AND error=DOS.ERROR_NO_FREE_STORE AND task.tc_SigAlloc=mask)
+  DOSCLIENT.SetError(error)
+
+RETURN(result)
+
+PROC TestDispatch(BYTE unused)
+  DOSBREAKTYPES.Scope POINTER scope
+
+  scope=DOSBREAK.Current()
+  commandGeneration=scope.generation
+  ShellDispatch()
+
+RETURN
+
+; Deliver an interruption after command completion and check scope retirement.
+PROC LateBreak(BYTE unused)
+  DOSBREAKTYPES.Scope POINTER scope
+  BYTE bound
+
+  scope=DOSBREAK.Current()
+  Check(scope.generation<>commandGeneration AND DOS.BreakPending()=0)
+  EXEC.Forbid()
+  bound=CONSOLEFOREGROUND.Deliver(commandGeneration)
+  EXEC.Permit()
+  Check(bound<>0 AND DOS.BreakPending()=0)
+  EXEC.Signal(EXEC.FindTask(BYTE POINTER(0)),scope.mask)
+  Run(echoNil,0,0)
+  Stable(0)
+
+RETURN
+
+; Fail session startup and require every acquired resource to be returned.
+PROC StartFailure(LONGCARD spare BYTE attempts,ports)
+  BYTE POINTER block
+  DOSCORE.DosSlot POINTER owner
+
+  block=BYTE POINTER(0)
+  IF spare<>0 THEN
+    block=EXEC.AllocMem(spare,EXEC.MEMF_UPPER)
+    Check(block<>BYTE POINTER(0))
+  FI
+
+  Exhaust(0)
+  IF spare<>0 THEN
+    EXEC.FreeMem(block,spare)
+  FI
+
+  SHELLFAULTCONTROL.contextAttempts=0
+  SHELLFAULTCONTROL.portAttempts=0
+  Check(ShellStart(shellRoot)=0)
+  Check(SHELLFAULTCONTROL.contextAttempts=attempts
+      AND SHELLFAULTCONTROL.portAttempts=ports)
+  Event(1)
+  Check(ShellFinish()=20)
+  owner=DOSCORE.Current()
+  Check(owner.context=BYTE POINTER(0) AND owner.active=0)
+  ReleaseHeld(0)
+  Check(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC SignalFailure(BYTE unused)
+  EXEC.Task POINTER task
+  LONGCARD mask
+  CARD index
+
+  task=EXEC.FindTask(BYTE POINTER(0))
+  mask=task.tc_SigAlloc
+  FOR index=0 TO 31 DO
+    IF (mask & (LONGCARD(1) LSH index))=0 THEN
+      Check(EXEC.AllocSignal(INT(index))=INT(index))
+    FI
+  OD
+
+  Check(ShellStart(shellRoot)=0 AND shell.error=DOS.ERROR_NO_FREE_STORE)
+  Check(ShellFinish()=20 AND EXEC.AvailMem(0)=baseline)
+  FOR index=0 TO 31 DO
+    IF (mask & (LONGCARD(1) LSH index))=0 THEN
+      EXEC.FreeSignal(INT(index))
+    FI
+  OD
+
+  Check(task.tc_SigAlloc=mask)
+  Event(2)
+
+RETURN
+
+PROC Run(BYTE POINTER command LONGINT status,error)
+  BYTE POINTER line
+  CARD index
+
+  line=ShellLine()
+  index=0
+  DO
+    line(index)=command(index)
+    IF command(index)=0 THEN
+      EXIT
+    FI
+
+    index==+1
+  OD
+
+  shell.length=index
+  ShellCommand()
+  commands==+1
+  Check(shell.lastStatus=status AND shell.lastError=error)
+
+RETURN
+
+PROC Stable(BYTE unused)
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+  DOSRAW.StreamRegistry POINTER registry
+  DOSRAW.RawEndpoint POINTER endpoint
+
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  registry=DOSRAW.GetRegistry()
+  endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+  Check(shell.directory=originalDirectory
+      AND client.directory=BYTE POINTER(originalDirectory))
+  Check(client.objects=2 AND owner.active=0 AND client.busy=0
+      AND endpoint.references=1 AND endpoint.active=0)
+  Check(shell.tempInput=DOS.FileHandle POINTER(0)
+      AND shell.tempOutput=DOS.FileHandle POINTER(0)
+      AND shell.retiredDirectory=DOS.FileLock POINTER(0))
+  Check(DOS.Input()=shell.console AND DOS.Output()=shell.console
+      AND EXEC.AvailMem(0)=steady)
+
+RETURN
+
+; Reject directory changes while preserving the shell's previous base and
+; ownership.
+PROC DirectoryFailures(BYTE unused)
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+  DOSCORE.DosRegistry POINTER registry
+  FSTYPES.Service POINTER service
+  FSTYPES.Mount POINTER mount
+  LONGCARD generation
+  DOS.FileLock POINTER ignored
+
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  registry=DOSCORE.GetRegistry()
+  service=FSREGISTRY.Service()
+  mount=service.mounts(0).item
+  SHELLFAULTCONTROL.failLock=1
+  Run(cdTools,10,DOS.ERROR_NO_FREE_STORE)
+  Stable(0)
+  Event(3)
+  SHELLFAULTCONTROL.failCurrent=1
+  Run(cdOther,10,DOS.ERROR_OBJECT_IN_USE)
+  Stable(0)
+  Check(service.mounts(1).item.references=0)
+  Event(4)
+  mount.references=$ffff
+  Run(cdTools,10,DOS.ERROR_OBJECT_IN_USE)
+  Check(mount.references=$ffff)
+  mount.references=1
+  Stable(0)
+  Event(5)
+  generation=registry.generation
+  registry.generation=LONGCARD($ffffffff)
+  Run(cdTools,10,DOS.ERROR_NO_FREE_STORE)
+  registry.generation=generation
+  Stable(0)
+  Event(6)
+  client.busy=1
+  Check(DOS.CurrentDir(DOS.FileLock POINTER(0))=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Check(DOS.SelectOutput(DOS.FileHandle POINTER(0))=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Check(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  client.busy=0
+  DOS.UnLock(shell.directory)
+  Check(DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Check(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Stable(0)
+  Event(7)
+  mount.offline=1
+  mount.error=DOS.ERROR_DISK_NOT_VALIDATED
+  Run(showCd,0,0)
+  Run(cdTools,10,DOS.ERROR_DISK_NOT_VALIDATED)
+  Stable(0)
+  Event(8)
+; Final normal cleanup intentionally detaches/unlocks the offline selection.
+RETURN
+
+PROC FatalUnwind(BYTE unused)
+  CARD count
+
+  IF scenario=1 THEN
+    SHELLFAULTCONTROL.failRestore=1
+    Run(echoNil,20,DOS.ERROR_OBJECT_IN_USE)
+    Check(shell.restoreFailure=1 AND shell.redirectActive=2
+        AND shell.tempOutput<>DOS.FileHandle POINTER(0))
+    Check(DOS.Input()=shell.console AND DOS.Output()=shell.tempOutput)
+  ELSE
+    SHELLFAULTCONTROL.failClose=1
+    Run(badOpen,20,DOS.ERROR_ACTION_NOT_KNOWN)
+    Check(shell.redirectActive=1 AND shell.tempInput<>DOS.FileHandle POINTER(0))
+    Check(DOS.Input()=shell.console AND DOS.Output()=shell.console)
+  FI
+
+  Check(shell.done=1)
+  Event(9)
+  count=commands
+  Run(quit,20,shell.error)
+  Check(shell.done=1 AND commands=count+1)
+  Event(10)
+  Check(ShellFinish()=20 AND shell=ShellState POINTER(0))
+
+RETURN
+
+; Exercise shell failure paths, foreground ownership and final cleanup.
+PROC Main()
+
+  baseline=EXEC.AvailMem(0)
+  IF scenario=5 OR scenario=6 THEN
+    Check(ShellStart(shellRoot)=0 AND shell.error=DOS.ERROR_NO_FREE_STORE)
+    Event(11)
+    Check(shell.initialized=2 AND shell.console<>DOS.FileHandle POINTER(0))
+    Check(ShellFinish()=20 AND shell=ShellState POINTER(0))
+    Check(EXEC.AvailMem(0)=baseline)
+    finished=1
+    RETURN
+  FI
+
+  IF scenario=0 THEN
+    StartFailure(0,0,0)
+    StartFailure(1288,1,0)
+    StartFailure(1376,1,1)
+    SignalFailure(0)
+  FI
+
+  IF scenario=4 THEN
+    Check(FSBOOT.Ensure()<>0)
+  FI
+
+  Check(ShellStart(shellRoot)<>0 AND shell.directory<>DOS.FileLock POINTER(0))
+  originalDirectory=shell.directory
+  steady=EXEC.AvailMem(0)
+  Event(0)
+  IF scenario=7 THEN
+    Run(echoNil,0,0)
+    LateBreak(0)
+    Check(ShellFinish()=0 AND FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+    finished=1
+    RETURN
+  FI
+
+  IF scenario=3 THEN
+    RETURN
+  FI
+
+  IF scenario=1 OR scenario=2 THEN
+    FatalUnwind(0)
+  ELSE
+    DirectoryFailures(0)
+    shell.status=0
+    shell.error=0
+    Check(ShellFinish()=0)
+  FI
+
+  Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+
+ENDMODULE

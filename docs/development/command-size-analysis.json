@@ -1,0 +1,522 @@
+{
+  "schema_version": 1,
+  "measured_on": "2026-09-25",
+  "exec_revision": "bbb8f2c72ad238201e83528a5ad90cc4f95e7b39",
+  "compiler_revisions": {
+    "pinned": "47cd55b2dac510922949832332b7a2c3220885be",
+    "current": "7b078ea157e8986b0bfcfa281ea6312abf4d9bd3"
+  },
+  "source_sha256": {
+    "examples/commands/hello.act": "1b42bffc51b0dc8fcd252dbb3fca762c2f100819151f3a0fbdb13a54acd1aae2",
+    "examples/commands/cat.act": "85540c29ca0938fcea583ec5fd9ae373ce0febc9e077cbecdeb255c5737d2441",
+    "lib/dos/command.act": "1100c85368a3ec62c6b93d91dfcec6e3a84d08d80a48eb5fd30f3be070d0f7b9",
+    "lib/dos/programplace.act": "94e786d4765ecb58e7957a5cd799eec98c923a7eddd651efb4df9841019cd648",
+    "lib/dos/programimage.act": "bba1976ceeaf090b9aa4de44341ffb23b14fb72186f3cc44989810e8c192f3a0",
+    "lib/dos/o65relocations.act": "903cd47ec9748ee4b2e4ba2adc8bb8a3a9acbcf99b3eab225cd4383f7a705924"
+  },
+  "profile": "actionc.o65.experimental.v1",
+  "notes": [
+    "Analysis only; current is a local compiler override. Exec pin unchanged.",
+    "All sizes are bytes. BSS is not serialized.",
+    "guard_bytes counts full recognized sequences, including frame-entry stack arithmetic. body_bytes is code_bytes minus those ranges, not a measured unchecked build.",
+    "image_heap_payload_bytes = round8(text_bytes+65535)+round8(data_bytes)+round8(bss_bytes)+48.",
+    "Image accounting excludes allocator metadata, Process/DOS objects, arguments, streams, transient validation/file staging and task stack/direct-page resources.",
+    "Diagnostic links use placeholder provider addresses and were not executed. No runtime qualification was performed."
+  ],
+  "packaged_artifacts": [
+    {
+      "file": "build/demo/media/HELLO",
+      "app": "hello",
+      "sha256": "8372b8f0308ae28ea5b087332f168fe9da8d7f9d82d0d187d83b862353a2ac8b",
+      "file_bytes": 2359
+    },
+    {
+      "file": "build/demo/media/CAT",
+      "app": "cat",
+      "sha256": "80303f419dd3b3e8dc6d8de7c32a2b02265071a1c9a64903c5333475d66b6e02",
+      "file_bytes": 7759
+    }
+  ],
+  "measurements": [
+    {
+      "compiler": "pinned",
+      "app": "hello",
+      "mode": "raw",
+      "sha256": "187c75821671b13f571a108e8bf6715a6065b0e33a257c4fb4b0c922ea907f30",
+      "file_bytes": 2443,
+      "text_bytes": 2086,
+      "data_bytes": 18,
+      "bss_bytes": 0,
+      "code_bytes": 1013,
+      "guard_bytes": 243,
+      "body_bytes": 770,
+      "descriptor_bytes": 1073,
+      "header_bytes": 45,
+      "wire_imports_bytes": 102,
+      "wire_relocations_bytes": 140,
+      "wire_exports_bytes": 52,
+      "descriptor_header_counts": 36,
+      "descriptor_routines": 88,
+      "descriptor_objects": 97,
+      "descriptor_imports": 388,
+      "descriptor_relocations": 464,
+      "text_other_bytes": 0,
+      "resident_sections_bytes": 2104,
+      "image_heap_payload_bytes": 67696,
+      "debug_name_bytes": 70,
+      "contract_abi_string_bytes": 126,
+      "relocations": 29,
+      "overflow_relocations": 9,
+      "routines": [
+        {
+          "id": 4,
+          "name": "M_HELLO_MAIN_17024158",
+          "offset": 0,
+          "size": 1013,
+          "frame": 22
+        }
+      ],
+      "imports": [
+        "__a816_stack_overflow_v1",
+        "exec816_write_v1",
+        "exec816_output_v1",
+        "exec816_ioerr_v1",
+        "exec816_setresult_v1"
+      ]
+    },
+    {
+      "compiler": "pinned",
+      "app": "hello",
+      "mode": "opt",
+      "sha256": "8372b8f0308ae28ea5b087332f168fe9da8d7f9d82d0d187d83b862353a2ac8b",
+      "file_bytes": 2359,
+      "text_bytes": 2002,
+      "data_bytes": 18,
+      "bss_bytes": 0,
+      "code_bytes": 929,
+      "guard_bytes": 243,
+      "body_bytes": 686,
+      "descriptor_bytes": 1073,
+      "header_bytes": 45,
+      "wire_imports_bytes": 102,
+      "wire_relocations_bytes": 140,
+      "wire_exports_bytes": 52,
+      "descriptor_header_counts": 36,
+      "descriptor_routines": 88,
+      "descriptor_objects": 97,
+      "descriptor_imports": 388,
+      "descriptor_relocations": 464,
+      "text_other_bytes": 0,
+      "resident_sections_bytes": 2020,
+      "image_heap_payload_bytes": 67616,
+      "debug_name_bytes": 70,
+      "contract_abi_string_bytes": 126,
+      "relocations": 29,
+      "overflow_relocations": 9,
+      "routines": [
+        {
+          "id": 4,
+          "name": "M_HELLO_MAIN_17024158",
+          "offset": 0,
+          "size": 929,
+          "frame": 16
+        }
+      ],
+      "imports": [
+        "__a816_stack_overflow_v1",
+        "exec816_write_v1",
+        "exec816_output_v1",
+        "exec816_ioerr_v1",
+        "exec816_setresult_v1"
+      ]
+    },
+    {
+      "compiler": "pinned",
+      "app": "cat",
+      "mode": "raw",
+      "sha256": "3b579197ec1f379314d827fda9d57588f2018a6870f0008b316a23808a684b38",
+      "file_bytes": 8394,
+      "text_bytes": 7661,
+      "data_bytes": 0,
+      "bss_bytes": 772,
+      "code_bytes": 4666,
+      "guard_bytes": 648,
+      "body_bytes": 4018,
+      "descriptor_bytes": 2995,
+      "header_bytes": 45,
+      "wire_imports_bytes": 239,
+      "wire_relocations_bytes": 397,
+      "wire_exports_bytes": 52,
+      "descriptor_header_counts": 36,
+      "descriptor_routines": 274,
+      "descriptor_objects": 134,
+      "descriptor_imports": 919,
+      "descriptor_relocations": 1632,
+      "text_other_bytes": 0,
+      "resident_sections_bytes": 8433,
+      "image_heap_payload_bytes": 74024,
+      "debug_name_bytes": 123,
+      "contract_abi_string_bytes": 315,
+      "relocations": 102,
+      "overflow_relocations": 24,
+      "routines": [
+        {
+          "id": 11,
+          "name": "M_CAT_FILENAME_44E0ABBE",
+          "offset": 0,
+          "size": 1206,
+          "frame": 20
+        },
+        {
+          "id": 12,
+          "name": "M_CAT_COPY_4022E054",
+          "offset": 1206,
+          "size": 2117,
+          "frame": 36
+        },
+        {
+          "id": 13,
+          "name": "M_CAT_MAIN_6C930344",
+          "offset": 3323,
+          "size": 1343,
+          "frame": 26
+        }
+      ],
+      "imports": [
+        "__a816_stack_overflow_v1",
+        "exec816_open_v1",
+        "exec816_read_v1",
+        "exec816_write_v1",
+        "exec816_close_v1",
+        "exec816_input_v1",
+        "exec816_output_v1",
+        "exec816_ioerr_v1",
+        "exec816_arguments_v1",
+        "exec816_argumentlength_v1",
+        "exec816_setresult_v1",
+        "exec816_breakpending_v1"
+      ]
+    },
+    {
+      "compiler": "pinned",
+      "app": "cat",
+      "mode": "opt",
+      "sha256": "80303f419dd3b3e8dc6d8de7c32a2b02265071a1c9a64903c5333475d66b6e02",
+      "file_bytes": 7759,
+      "text_bytes": 7012,
+      "data_bytes": 0,
+      "bss_bytes": 772,
+      "code_bytes": 3889,
+      "guard_bytes": 648,
+      "body_bytes": 3241,
+      "descriptor_bytes": 3123,
+      "header_bytes": 45,
+      "wire_imports_bytes": 239,
+      "wire_relocations_bytes": 411,
+      "wire_exports_bytes": 52,
+      "descriptor_header_counts": 36,
+      "descriptor_routines": 274,
+      "descriptor_objects": 134,
+      "descriptor_imports": 919,
+      "descriptor_relocations": 1760,
+      "text_other_bytes": 0,
+      "resident_sections_bytes": 7784,
+      "image_heap_payload_bytes": 73376,
+      "debug_name_bytes": 123,
+      "contract_abi_string_bytes": 315,
+      "relocations": 110,
+      "overflow_relocations": 24,
+      "routines": [
+        {
+          "id": 11,
+          "name": "M_CAT_FILENAME_44E0ABBE",
+          "offset": 0,
+          "size": 1136,
+          "frame": 20
+        },
+        {
+          "id": 12,
+          "name": "M_CAT_COPY_4022E054",
+          "offset": 1136,
+          "size": 1608,
+          "frame": 24
+        },
+        {
+          "id": 13,
+          "name": "M_CAT_MAIN_6C930344",
+          "offset": 2744,
+          "size": 1145,
+          "frame": 22
+        }
+      ],
+      "imports": [
+        "__a816_stack_overflow_v1",
+        "exec816_open_v1",
+        "exec816_read_v1",
+        "exec816_write_v1",
+        "exec816_close_v1",
+        "exec816_input_v1",
+        "exec816_output_v1",
+        "exec816_ioerr_v1",
+        "exec816_arguments_v1",
+        "exec816_argumentlength_v1",
+        "exec816_setresult_v1",
+        "exec816_breakpending_v1"
+      ]
+    },
+    {
+      "compiler": "current",
+      "app": "hello",
+      "mode": "raw",
+      "sha256": "187c75821671b13f571a108e8bf6715a6065b0e33a257c4fb4b0c922ea907f30",
+      "file_bytes": 2443,
+      "text_bytes": 2086,
+      "data_bytes": 18,
+      "bss_bytes": 0,
+      "code_bytes": 1013,
+      "guard_bytes": 243,
+      "body_bytes": 770,
+      "descriptor_bytes": 1073,
+      "header_bytes": 45,
+      "wire_imports_bytes": 102,
+      "wire_relocations_bytes": 140,
+      "wire_exports_bytes": 52,
+      "descriptor_header_counts": 36,
+      "descriptor_routines": 88,
+      "descriptor_objects": 97,
+      "descriptor_imports": 388,
+      "descriptor_relocations": 464,
+      "text_other_bytes": 0,
+      "resident_sections_bytes": 2104,
+      "image_heap_payload_bytes": 67696,
+      "debug_name_bytes": 70,
+      "contract_abi_string_bytes": 126,
+      "relocations": 29,
+      "overflow_relocations": 9,
+      "routines": [
+        {
+          "id": 4,
+          "name": "M_HELLO_MAIN_17024158",
+          "offset": 0,
+          "size": 1013,
+          "frame": 22
+        }
+      ],
+      "imports": [
+        "__a816_stack_overflow_v1",
+        "exec816_write_v1",
+        "exec816_output_v1",
+        "exec816_ioerr_v1",
+        "exec816_setresult_v1"
+      ]
+    },
+    {
+      "compiler": "current",
+      "app": "hello",
+      "mode": "opt",
+      "sha256": "8372b8f0308ae28ea5b087332f168fe9da8d7f9d82d0d187d83b862353a2ac8b",
+      "file_bytes": 2359,
+      "text_bytes": 2002,
+      "data_bytes": 18,
+      "bss_bytes": 0,
+      "code_bytes": 929,
+      "guard_bytes": 243,
+      "body_bytes": 686,
+      "descriptor_bytes": 1073,
+      "header_bytes": 45,
+      "wire_imports_bytes": 102,
+      "wire_relocations_bytes": 140,
+      "wire_exports_bytes": 52,
+      "descriptor_header_counts": 36,
+      "descriptor_routines": 88,
+      "descriptor_objects": 97,
+      "descriptor_imports": 388,
+      "descriptor_relocations": 464,
+      "text_other_bytes": 0,
+      "resident_sections_bytes": 2020,
+      "image_heap_payload_bytes": 67616,
+      "debug_name_bytes": 70,
+      "contract_abi_string_bytes": 126,
+      "relocations": 29,
+      "overflow_relocations": 9,
+      "routines": [
+        {
+          "id": 4,
+          "name": "M_HELLO_MAIN_17024158",
+          "offset": 0,
+          "size": 929,
+          "frame": 16
+        }
+      ],
+      "imports": [
+        "__a816_stack_overflow_v1",
+        "exec816_write_v1",
+        "exec816_output_v1",
+        "exec816_ioerr_v1",
+        "exec816_setresult_v1"
+      ],
+      "body_instruction_bytes": {
+        "other": 370,
+        "mode changes": 68,
+        "stack-relative accesses": 202,
+        "calls": 32,
+        "branches": 14
+      },
+      "body_instruction_counts": {
+        "other": 212,
+        "mode changes": 34,
+        "stack-relative accesses": 101,
+        "calls": 8,
+        "branches": 6
+      }
+    },
+    {
+      "compiler": "current",
+      "app": "cat",
+      "mode": "raw",
+      "sha256": "c989694b090d9e1918abe69663f15c47a7be5fae5b1581dd974175968fdc2714",
+      "file_bytes": 8342,
+      "text_bytes": 7609,
+      "data_bytes": 0,
+      "bss_bytes": 772,
+      "code_bytes": 4614,
+      "guard_bytes": 648,
+      "body_bytes": 3966,
+      "descriptor_bytes": 2995,
+      "header_bytes": 45,
+      "wire_imports_bytes": 239,
+      "wire_relocations_bytes": 397,
+      "wire_exports_bytes": 52,
+      "descriptor_header_counts": 36,
+      "descriptor_routines": 274,
+      "descriptor_objects": 134,
+      "descriptor_imports": 919,
+      "descriptor_relocations": 1632,
+      "text_other_bytes": 0,
+      "resident_sections_bytes": 8381,
+      "image_heap_payload_bytes": 73968,
+      "debug_name_bytes": 123,
+      "contract_abi_string_bytes": 315,
+      "relocations": 102,
+      "overflow_relocations": 24,
+      "routines": [
+        {
+          "id": 11,
+          "name": "M_CAT_FILENAME_44E0ABBE",
+          "offset": 0,
+          "size": 1206,
+          "frame": 20
+        },
+        {
+          "id": 12,
+          "name": "M_CAT_COPY_4022E054",
+          "offset": 1206,
+          "size": 2065,
+          "frame": 36
+        },
+        {
+          "id": 13,
+          "name": "M_CAT_MAIN_6C930344",
+          "offset": 3271,
+          "size": 1343,
+          "frame": 26
+        }
+      ],
+      "imports": [
+        "__a816_stack_overflow_v1",
+        "exec816_open_v1",
+        "exec816_read_v1",
+        "exec816_write_v1",
+        "exec816_close_v1",
+        "exec816_input_v1",
+        "exec816_output_v1",
+        "exec816_ioerr_v1",
+        "exec816_arguments_v1",
+        "exec816_argumentlength_v1",
+        "exec816_setresult_v1",
+        "exec816_breakpending_v1"
+      ]
+    },
+    {
+      "compiler": "current",
+      "app": "cat",
+      "mode": "opt",
+      "sha256": "d14ceae230c2e13a7ba8fea857eef205c65950eeb6069ad0a3dc03fc79df8a96",
+      "file_bytes": 7403,
+      "text_bytes": 6680,
+      "data_bytes": 0,
+      "bss_bytes": 772,
+      "code_bytes": 3749,
+      "guard_bytes": 648,
+      "body_bytes": 3101,
+      "descriptor_bytes": 2931,
+      "header_bytes": 45,
+      "wire_imports_bytes": 239,
+      "wire_relocations_bytes": 387,
+      "wire_exports_bytes": 52,
+      "descriptor_header_counts": 36,
+      "descriptor_routines": 274,
+      "descriptor_objects": 134,
+      "descriptor_imports": 919,
+      "descriptor_relocations": 1568,
+      "text_other_bytes": 0,
+      "resident_sections_bytes": 7452,
+      "image_heap_payload_bytes": 73040,
+      "debug_name_bytes": 123,
+      "contract_abi_string_bytes": 315,
+      "relocations": 98,
+      "overflow_relocations": 24,
+      "routines": [
+        {
+          "id": 11,
+          "name": "M_CAT_FILENAME_44E0ABBE",
+          "offset": 0,
+          "size": 1136,
+          "frame": 20
+        },
+        {
+          "id": 12,
+          "name": "M_CAT_COPY_4022E054",
+          "offset": 1136,
+          "size": 1485,
+          "frame": 24
+        },
+        {
+          "id": 13,
+          "name": "M_CAT_MAIN_6C930344",
+          "offset": 2621,
+          "size": 1128,
+          "frame": 22
+        }
+      ],
+      "imports": [
+        "__a816_stack_overflow_v1",
+        "exec816_open_v1",
+        "exec816_read_v1",
+        "exec816_write_v1",
+        "exec816_close_v1",
+        "exec816_input_v1",
+        "exec816_output_v1",
+        "exec816_ioerr_v1",
+        "exec816_arguments_v1",
+        "exec816_argumentlength_v1",
+        "exec816_setresult_v1",
+        "exec816_breakpending_v1"
+      ],
+      "body_instruction_bytes": {
+        "other": 1343,
+        "mode changes": 382,
+        "stack-relative accesses": 962,
+        "calls": 84,
+        "branches": 330
+      },
+      "body_instruction_counts": {
+        "other": 729,
+        "mode changes": 191,
+        "stack-relative accesses": 481,
+        "calls": 21,
+        "branches": 159
+      }
+    }
+  ]
+}

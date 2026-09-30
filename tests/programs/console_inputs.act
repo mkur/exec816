@@ -1,0 +1,16 @@
+MODULE CONSOLEINPUTS
+USE EXECOS
+CARD banked, outside, crossing, oversized, empty
+
+; Exercise translation and delivery of captured console input.
+PROC Main()
+
+  banked=EXECOS.Write(BYTE POINTER($018000),1)
+  outside=EXECOS.Write(BYTE POINTER($2200),1)
+  crossing=EXECOS.Write(BYTE POINTER($8fff),2)
+  oversized=EXECOS.Write(BYTE POINTER($8000),256)
+  empty=EXECOS.Write(BYTE POINTER(0),0)
+
+RETURN
+
+ENDMODULE

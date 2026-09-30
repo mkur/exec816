@@ -1,0 +1,23 @@
+MODULE DEMO
+INCLUDE "demo-session.inc"
+LONGINT exitStatus
+BYTE started
+
+; Run the shared shell alongside the background prime-search demonstration.
+PROC Main()
+
+  started=DemoStart()
+  IF started<>0 THEN
+    WHILE shell.done=0 DO
+      ShellReadStep()
+    OD
+  FI
+
+  exitStatus=DemoFinish()
+  IF started=0 AND exitStatus=0 THEN
+    exitStatus=20
+  FI
+
+RETURN
+
+ENDMODULE

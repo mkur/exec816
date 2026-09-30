@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "source_revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+  "scope": "Passive 24-bit instruction markers and POKEY serial timestamps, plus diagnostic CPU/ROM settings in REGS; no guest instructions/cycles added",
+  "binary_sha256": "5597b28d9388040217e1a3c8a45116df318abc51dfb04ce6d81aa154db4e0b46",
+  "patch": "toolchain/patches/altirra-signals-observer.patch",
+  "patch_sha256": "a2a5af6e6d75e5b21de42f19e0e495d6f8e9ef8555fcdeb9336b4cd24daa1ecc",
+  "build_options": "Same as toolchain/altirra-build.json, build/latency target AltirraBridgeServer"
+}

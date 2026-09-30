@@ -1,0 +1,28 @@
+diff --git a/src/AltirraBridgeServer/main_bridge.cpp b/src/AltirraBridgeServer/main_bridge.cpp
+index f9f47216..ce733e84 100644
+--- a/src/AltirraBridgeServer/main_bridge.cpp
++++ b/src/AltirraBridgeServer/main_bridge.cpp
+@@ -199,19 +199,11 @@ bool ATBridgeDispatchBoot(ATSimulator& sim, const std::string& path) {
+ bool ATBridgeDispatchMount(ATSimulator& sim, int drive, const std::string& path) {
+ 	if (path.empty() || drive < 0 || drive > 14) return false;
+ 	try {
+-		ATMediaLoadContext ctx;
++		ATImageLoadContext ctx;
++		ctx.mLoadType = kATImageType_Disk;
++		ctx.mLoadIndex = drive;
+ 		const VDStringW wpath = VDTextU8ToW(VDStringSpanA(path.c_str()));
+-		ctx.mOriginalPath = wpath.c_str();
+-		ctx.mImageName = wpath.c_str();
+-		ctx.mWriteMode = kATMediaWriteMode_RW;
+-		// MOUNT targets a specific drive — use the cart load context
+-		// to express it. Phase 1 of the headless build uses Load()
+-		// which dispatches by file type; an .atr image goes to a
+-		// disk drive selected by the loader. For drive-specific
+-		// mounting we'd need to call lower-level disk APIs; defer
+-		// to a follow-up if needed.
+-		(void)drive;
+-		if (!sim.Load(ctx)) {
++		if (!sim.Load(wpath.c_str(), kATMediaWriteMode_RW, &ctx)) {
+ 			BRIDGE_LOG_ERROR("BridgeServer", "MOUNT load failed: %s", path.c_str());
+ 			return false;
+ 		}

@@ -1,0 +1,15 @@
+MODULE DOSCORE
+USE EXEC
+INCLUDE "dos-core-types.inc"
+INCLUDE "dos-registry-types.inc"
+
+PUBLIC EXTERNAL BYTE POINTER FUNC Control(BYTE operation BYTE POINTER argument)
+
+PUBLIC EXTERNAL DosSlot POINTER FUNC Current()
+  INCLUDE "dos-storage-action.inc"
+
+PUBLIC DosRegistry POINTER FUNC GetRegistry()
+
+RETURN(DosRegistry POINTER(ADDRESS(DS_SHARED)))
+
+ENDMODULE

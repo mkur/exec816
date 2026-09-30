@@ -1,0 +1,325 @@
+; Bounded Read/Seek and map-only accounting use FSSTATUS throughout.
+; MORE requests a CPU checkpoint; NEED_IO requests work.neededSector.
+MODULE SDFSFILE
+USE FSSTATUS
+USE SDFS
+USE SDFSTYPES
+USE FSBTYPES
+USE FSCORE
+USE BLOCKTYPES
+USE BLOCKIO
+INCLUDE "../dos/dos-types.inc"
+
+CONST TRAVERSING=3
+
+; Admit a regular file and initialize its map cursor from validated metadata.
+PUBLIC BYTE FUNC Open(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER file)
+  BYTE index
+
+  work.error=0
+  work.ioError=0
+  IF (work.entry.flags & FSBTYPES.DIR)<>0 THEN
+    work.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(0)
+  FI
+
+  IF work.entry.known=0 OR work.entry.length<0
+      OR work.entry.length>LONGINT($ffffff) THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(0)
+  FI
+
+  IF work.entry.start=0 AND work.entry.length<>0 THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(0)
+  FI
+
+  FSCORE.CopyEntry(@file.entry,@work.entry)
+  file.position=0
+  file.depth=work.depth
+  FOR index=0 TO work.depth DO
+    file.ancestors(index)=work.ancestors(index)
+  OD
+
+  SDFS.Restart(file)
+  IF file.entry.start<>0 THEN
+    IF SDFS.SectorAllowed(work,file,file.entry.start,1)=0 THEN
+      work.error=ERROR_DISK_NOT_VALIDATED
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
+; Retire a failed file operation without losing its original error.
+PUBLIC BYTE FUNC Fail(FSBTYPES.Operation POINTER op LONGINT error)
+
+  op.work.error=error
+  op.file.position=op.start
+  op.result=-1
+  op.stage=0
+  SDFS.Restart(op.file)
+  SDFS.Invalidate(op.work)
+
+RETURN(FSSTATUS.ERROR)
+
+; Stop an active operation at a safe worker boundary.
+PUBLIC BYTE FUNC Cancel(FSBTYPES.Operation POINTER op)
+  BYTE ignored
+
+  ignored=Fail(op,ERROR_BREAK)
+  IF op.kind=FSCORE.READ AND op.completed<>0 THEN
+    op.file.position=op.start+op.completed
+    op.result=op.completed
+  FI
+
+RETURN(FSSTATUS.ERROR)
+
+; Validate the requested logical position before starting map traversal.
+PUBLIC BYTE FUNC BeginSeek(FSBTYPES.Operation POINTER op)
+  LONGINT base
+
+  FSCORE.BeginOperation(op,FSCORE.SEEK,TRAVERSING)
+  IF op.mode=OFFSET_BEGINNING THEN
+    base=0
+  ELSEIF op.mode=OFFSET_CURRENT THEN
+    base=op.start
+  ELSEIF op.mode=OFFSET_END THEN
+    base=op.file.entry.length
+  ELSE
+    RETURN(Fail(op,ERROR_SEEK_ERROR))
+  FI
+
+  IF op.offset < -base OR op.offset>op.file.entry.length-base THEN
+    RETURN(Fail(op,ERROR_SEEK_ERROR))
+  FI
+
+  op.target=base+op.offset
+
+RETURN(FSCORE.FinishOperation(op))
+
+; Validate the requested read before borrowing its output buffer.
+PUBLIC BYTE FUNC BeginRead(FSBTYPES.Operation POINTER op)
+
+  FSCORE.BeginOperation(op,FSCORE.READ,TRAVERSING)
+  op.remaining=op.requested
+  IF op.requested<0 THEN
+    RETURN(Fail(op,ERROR_BAD_NUMBER))
+  FI
+
+  IF op.requested=0 THEN
+    RETURN(FSCORE.FinishOperation(op))
+  FI
+
+  IF op.requested>LONGINT($7fffffff)-op.start OR BLOCKIO.Mapped(op.output,
+      LONGCARD(op.requested))=0 THEN
+    RETURN(Fail(op,ERROR_BAD_NUMBER))
+  FI
+
+  ; Regular files have an exact extent. Only directory-header bootstrap reads
+  ; start with an unknown extent; their request is limited to the header size.
+  IF op.file.entry.known<>0 THEN
+    IF op.remaining>op.file.entry.length-op.start THEN
+      op.remaining=op.file.entry.length-op.start
+    FI
+  FI
+
+  IF op.remaining=0 THEN
+    RETURN(FSCORE.FinishOperation(op))
+  FI
+
+RETURN(FSSTATUS.MORE)
+
+; Apply buffered map or payload bytes to the active file operation.
+BYTE FUNC Consume(FSBTYPES.Operation POINTER op BYTE sparse)
+  BLOCKTYPES.Adapter POINTER adapter
+  BYTE POINTER output
+  CARD amount,offset,index,sectorBytes
+
+  sectorBytes=op.work.volume.block.dataBytes
+  offset=CARD((op.start+op.completed) & LONGINT(sectorBytes-1))
+  amount=sectorBytes-offset
+  IF LONGINT(amount)>op.remaining THEN
+    amount=CARD(op.remaining)
+  FI
+
+  adapter=BLOCKTYPES.Adapter POINTER(op.work.volume.block.adapter)
+  output=op.output+SIZE(op.completed)
+  FOR index=0 TO amount-1 DO
+    IF sparse<>0 THEN
+      output(index)=0
+    ELSE
+      output(index)=adapter.buffer(offset+index)
+    FI
+  OD
+
+  op.completed==+LONGINT(amount)
+  op.remaining==-LONGINT(amount)
+  op.stage=TRAVERSING
+  IF op.remaining=0 THEN
+    RETURN(FSCORE.FinishOperation(op))
+  FI
+
+RETURN(FSSTATUS.MORE)
+
+; Advance bounded map traversal until completion or another sector is needed.
+BYTE FUNC Drive(FSBTYPES.Operation POINTER op)
+  SDFSTYPES.MapCursor POINTER cursor
+  SDFSTYPES.Volume POINTER volume
+  SDFSTYPES.BackendState POINTER state
+  LONGCARD logical
+  CARD sector,slot
+
+  cursor=SDFS.Map(op.file)
+  volume=SDFSTYPES.Volume POINTER(op.work.volume.state)
+  state=SDFS.GetState(op.work)
+  logical=LONGCARD(op.start+op.completed) RSH 7
+  IF op.work.volume.block.dataBytes=256 THEN
+    logical=logical RSH 1
+  FI
+
+  IF logical<cursor.base THEN
+    SDFS.Restart(op.file)
+  FI
+
+  IF SDFS.SectorAllowed(op.work,op.file,cursor.page,1)=0 THEN
+    RETURN(Fail(op,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  IF SDFS.Cached(op.work,cursor.page)=0 THEN
+    op.work.neededSector=cursor.page
+    op.stage=1
+    RETURN(FSSTATUS.NEED_IO)
+  FI
+
+  IF cursor.valid=0 THEN
+    IF SDFS.ValidateMap(op.work,op.file)=0 THEN
+      RETURN(Fail(op,ERROR_DISK_NOT_VALIDATED))
+    FI
+  FI
+
+  IF logical>=cursor.base+LONGCARD(volume.capacity) THEN
+    IF SDFS.Advance(op.work,op.file)=0 THEN
+      RETURN(Fail(op,op.work.error))
+    FI
+
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  slot=4+(CARD(logical-cursor.base) LSH 1)
+  sector=SDFS.Word(state.map,slot)
+  IF sector=0 THEN
+    IF (op.file.entry.flags & FSBTYPES.DIR)<>0 THEN
+      RETURN(Fail(op,ERROR_DISK_NOT_VALIDATED))
+    FI
+
+    RETURN(Consume(op,1))
+  FI
+
+  op.work.neededSector=sector
+  op.stage=2
+
+RETURN(FSSTATUS.NEED_IO)
+
+; Resume the active operation after the worker supplies sector data.
+PUBLIC BYTE FUNC ContinueOperation(FSBTYPES.Operation POINTER op)
+
+  IF op.stage=1 THEN
+    SDFS.Cache(op.work,op.work.neededSector)
+    IF SDFS.ValidateMap(op.work,op.file)=0 THEN
+      RETURN(Fail(op,ERROR_DISK_NOT_VALIDATED))
+    FI
+
+    op.stage=TRAVERSING
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  IF op.stage=2 THEN
+    RETURN(Consume(op,0))
+  FI
+
+RETURN(Drive(op))
+
+; Measurement counts allocated map and data sectors, including preallocation.
+; It never fetches regular-file payload. The caller seeds directory metadata.
+PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file BYTE received)
+  SDFSTYPES.MapCursor POINTER cursor
+  SDFSTYPES.BackendState POINTER state
+  SDFSTYPES.Volume POINTER volume
+  CARD index,sector
+  LONGCARD capacity,needed
+  BYTE ancestor
+
+  state=SDFS.GetState(work)
+  volume=SDFSTYPES.Volume POINTER(work.volume.state)
+  IF received=0 THEN
+    FSCORE.CopyEntry(@file.entry,@work.entry)
+    file.depth=work.depth
+    file.entry.count=0
+    FOR ancestor=0 TO work.depth DO
+      file.ancestors(ancestor)=work.ancestors(ancestor)
+    OD
+
+    SDFS.Restart(file)
+    IF file.entry.start=0 THEN
+      IF file.entry.length<>0 THEN
+        work.error=ERROR_DISK_NOT_VALIDATED
+        RETURN(FSSTATUS.ERROR)
+      FI
+
+      RETURN(FSSTATUS.DONE)
+    FI
+
+    work.neededSector=file.entry.start
+    RETURN(FSSTATUS.NEED_IO)
+  FI
+
+  cursor=SDFS.Map(file)
+  SDFS.Cache(work,work.neededSector)
+  IF SDFS.ValidateMap(work,file)=0 THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    SDFS.Invalidate(work)
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  file.entry.count==+1
+  FOR index=4 TO work.volume.block.dataBytes-2 STEP 2 DO
+    sector=SDFS.Word(state.map,index)
+    IF sector<>0 THEN
+      file.entry.count==+1
+    ELSEIF (file.entry.flags & FSBTYPES.DIR)<>0 THEN
+      capacity=(cursor.base+LONGCARD((index-4) RSH 1))*LONGCARD(
+          work.volume.block.dataBytes)
+      IF capacity<LONGCARD(file.entry.length) THEN
+        work.error=ERROR_DISK_NOT_VALIDATED
+        RETURN(FSSTATUS.ERROR)
+      FI
+    FI
+  OD
+
+  IF LONGCARD(file.entry.count)>work.volume.block.sectors THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF cursor.next=0 THEN
+    capacity=(cursor.base+LONGCARD(volume.capacity))*LONGCARD(
+        work.volume.block.dataBytes)
+    IF capacity<LONGCARD(file.entry.length) THEN
+      work.error=ERROR_DISK_NOT_VALIDATED
+      RETURN(FSSTATUS.ERROR)
+    FI
+
+    RETURN(FSSTATUS.DONE)
+  FI
+
+  IF SDFS.Advance(work,file)=0 THEN
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  work.neededSector=cursor.page
+
+RETURN(FSSTATUS.NEED_IO)
+
+ENDMODULE

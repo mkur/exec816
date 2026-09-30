@@ -1,0 +1,89 @@
+MODULE LISTSNAMED
+USE EXEC
+USE EXECMEMORY
+USE EXECLISTS
+INCLUDE "lists-named.inc"
+
+ADDRESS ARRAY ordered(8),removed(8),found(12)
+CARD completed
+
+EXECLISTS.List POINTER FUNC Header()
+
+RETURN(EXECLISTS.List POINTER(T_HEADER))
+
+EXECLISTS.Node POINTER FUNC Item(BYTE id)
+
+RETURN(EXECLISTS.Node POINTER(nodeAddresses(id)))
+
+BYTE POINTER FUNC Query(BYTE id)
+
+RETURN(BYTE POINTER(ADDRESS($078D00)+(SIZE(id) LSH 4)))
+
+PUBLIC CARD FUNC KernelInit()
+  CARD status
+
+  status=EXECMEMORY.Adopt()
+  IF status<>0 THEN
+    RETURN(status)
+  FI
+
+  EXECLISTS.NewList(Header())
+
+RETURN(0)
+
+PROC SearchDuplicates()
+  EXECLISTS.Node POINTER cursor
+
+  cursor=EXECLISTS.FindName(Header(),Query(0))
+  found(1)=ADDRESS(cursor)
+  cursor=EXECLISTS.FindName(EXECLISTS.List POINTER(cursor),Query(0))
+  found(2)=ADDRESS(cursor)
+  cursor=EXECLISTS.FindName(EXECLISTS.List POINTER(cursor),Query(0))
+  found(3)=ADDRESS(cursor)
+
+RETURN
+
+PROC SearchNames()
+  BYTE index
+
+  FOR index=1 TO 8 DO
+    found(index+3)=ADDRESS(EXECLISTS.FindName(Header(),Query(index)))
+  OD
+
+RETURN
+
+; Exercise named-node search, duplicate names and list identity.
+PROC Main()
+  BYTE index
+  EXECLISTS.List POINTER chain
+  EXECLISTS.Node POINTER cursor
+
+  IF EXEC.TaskId()<>0 THEN
+    RETURN
+  FI
+
+  chain=Header()
+  found(0)=ADDRESS(EXECLISTS.FindName(chain,Query(0)))
+  FOR index=0 TO 7 DO
+    EXECLISTS.Enqueue(chain,Item(index))
+  OD
+
+  cursor=chain.lh_Head
+  FOR index=0 TO 7 DO
+    ordered(index)=ADDRESS(cursor)
+    cursor=cursor.ln_Succ
+  OD
+
+  SearchDuplicates()
+  SearchNames()
+  FOR index=0 TO 7 DO
+    removed(index)=ADDRESS(EXECLISTS.RemHead(chain))
+  OD
+
+  IF EXECLISTS.IsListEmpty(chain)<>0 THEN
+    completed=1
+  FI
+
+RETURN
+
+ENDMODULE

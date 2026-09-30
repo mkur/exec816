@@ -1,0 +1,149 @@
+diff --git a/src/ATAudio/source/pokey.cpp b/src/ATAudio/source/pokey.cpp
+index 34ae4f2f..f4a30bcb 100644
+--- a/src/ATAudio/source/pokey.cpp
++++ b/src/ATAudio/source/pokey.cpp
+@@ -20,6 +20,15 @@
+ 
+ #include <stdafx.h>
+ #include <float.h>
++#include <cstdio>
++#include <cstdlib>
++
++// Disposable, observational Exec816 latency trace; never changes emulated state.
++static bool Exec816LatencyTrace() {
++    static const bool enabled = std::getenv("EXEC816_LATENCY_TRACE") != nullptr;
++    return enabled;
++}
++
+ #include <math.h>
+ #include <vd2/system/bitmath.h>
+ #include <vd2/system/binary.h>
+@@ -1066,6 +1075,8 @@ void ATPokeyEmulator::OnSerialOutputTick() {
+ 				mpCassette->PokeyBeginCassetteData(mSKCTL);
+ 
+ 			const uint32 cyclesPerBit = GetSerialCyclesPerBitSend();
++			if (Exec816LatencyTrace())
++				std::fprintf(stderr, "[SIOPOC] ready %llu %u %u %u\n", (unsigned long long)mpScheduler->GetTick64(), (unsigned)mSEROUT, cyclesPerBit, (unsigned)mIRQEN);
+ 			for(IATPokeySIODevice *dev : mDevices)
+ 				dev->PokeyBeginWriteSIO(mSerialOutputShiftRegister, mbCommandLineState, cyclesPerBit);
+ 
+@@ -1074,8 +1085,11 @@ void ATPokeyEmulator::OnSerialOutputTick() {
+ 
+ 			if (mIRQEN & 0x10)
+ 				mIRQST &= ~0x10;
+-		} else
++		} else {
+ 			mIRQST &= ~0x08;
++			if (Exec816LatencyTrace())
++				std::fprintf(stderr, "[SIOPOC] idle %llu\n", (unsigned long long)mpScheduler->GetTick64());
++		}
+ 
+ 		if (mIRQEN & ~mIRQST)
+ 			AssertIrq(false);
+@@ -2818,6 +2832,8 @@ void ATPokeyEmulator::WriteByte(uint8 reg, uint8 value) {
+ 			StartPotScan();
+ 			break;
+ 		case 0x0D:	// $D20D SEROUT
++			if (Exec816LatencyTrace())
++				std::fprintf(stderr, "[SIOPOC] write %llu %u %u %u\n", (unsigned long long)mpScheduler->GetTick64(), (unsigned)value, (unsigned)mIRQST, (unsigned)mbSerOutValid);
+ 			if (mbTraceSIO)
+ 				(*mpConsoleOut)("POKEY: Sending serial byte %02X", value);
+ 
+diff --git a/src/Altirra/h/cpumachine.inl b/src/Altirra/h/cpumachine.inl
+index 37904518..f168576d 100644
+--- a/src/Altirra/h/cpumachine.inl
++++ b/src/Altirra/h/cpumachine.inl
+@@ -122,6 +122,21 @@ for(;;) {
+ 
+ 	uint8 readData;
+ 
++    // Sample between microstates, not only opcodes: RTI can unmask and take
++    // another IRQ before any I=0 opcode executes. No emulated state is changed.
++    if (mbHistoryActive && Exec816MaskChanged(mP)) {
++        ATCPUHistoryEntry stamp = {};
++        mpCallbacks->CPUGetHistoryTimes(&stamp);
++        unsigned subcycle = 0;
++#ifdef AT_CPU_MACHINE_65C816_HISPEED
++        subcycle = mSubCycles - mSubCyclesLeft;
++#endif
++        std::fprintf(stderr, "[SIOPOC] mask %u %u %u %06x %02x %u %06x %02x %u %u\n",
++            stamp.mCycle, subcycle, mSubCycles, mPC | ((unsigned)mK << 16),
++            (unsigned)mP, (unsigned)mbEmulationFlag, mInsnPC | ((unsigned)mK << 16),
++            (unsigned)mOpcode, (unsigned)mbMarkHistoryIRQ, (unsigned)mbMarkHistoryNMI);
++    }
++
+ 	switch(*mpNextState++) {
+ 		case kStateNop:
+ 			break;
+diff --git a/src/Altirra/source/cpu.cpp b/src/Altirra/source/cpu.cpp
+index ab395d74..49a365a0 100644
+--- a/src/Altirra/source/cpu.cpp
++++ b/src/Altirra/source/cpu.cpp
+@@ -16,6 +16,39 @@
+ //	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ 
+ #include <stdafx.h>
++#include <cstdio>
++#include <cstdlib>
++
++// Selected instruction observations on the existing history path, no guest cycles.
++static bool Exec816LatencyPC(unsigned pc) {
++    struct Selection {
++        bool selected[1 << 24] = {};
++        Selection() {
++            const char *p = std::getenv("EXEC816_LATENCY_PCS");
++            while (p && *p) {
++                char *end;
++                const unsigned long address = std::strtoul(p, &end, 16);
++                if (end == p || address > 0xffffff) break;
++                selected[address] = true;
++                p = *end == ","[0] ? end + 1 : end;
++            }
++        }
++    };
++    static const Selection selection;
++    return selection.selected[pc & 0xffffff];
++}
++
++// Passive observer state, shared across native/emulation CPU dispatch paths.
++static bool Exec816MaskChanged(unsigned p) {
++    static const bool enabled = std::getenv("EXEC816_MASK_TRACE") != nullptr;
++    if (!enabled) return false;
++    static int previousI = -1;
++    const int masked = (p & 4) != 0;
++    if (masked == previousI) return false;
++    previousI = masked;
++    return true;
++}
++
+ #include <vd2/system/binary.h>
+ #include <at/atcore/enumparseimpl.h>
+ #include <at/atcore/serialization.h>
+@@ -1845,6 +1878,13 @@ void ATCPUEmulator::AddHistoryEntry(bool slowFlag) {
+ 		he->mD = 0;
+ 	}
+ 
++	if (Exec816LatencyPC(he->mPC | ((unsigned)he->mK << 16)))
++		std::fprintf(stderr, "[SIOPOC] cpu %u %u %u %06x %04x %04x %04x %04x %04x %02x %02x %u\n",
++			he->mCycle, (unsigned)he->mSubCycle, mSubCycles, he->mPC | ((unsigned)he->mK << 16),
++			(unsigned)(mA | (mAH << 8)), (unsigned)(mX | (mXH << 8)),
++			(unsigned)(mY | (mYH << 8)), (unsigned)(mS | (mSH << 8)),
++			(unsigned)mDP, (unsigned)mB, (unsigned)mP, (unsigned)mbEmulationFlag);
++
+ 	mbMarkHistoryIRQ = false;
+ 	mbMarkHistoryNMI = false;
+ 
+diff --git a/src/AltirraSDL/source/bridge/bridge_commands_state.cpp b/src/AltirraSDL/source/bridge/bridge_commands_state.cpp
+index 689181ed..59b85b02 100644
+--- a/src/AltirraSDL/source/bridge/bridge_commands_state.cpp
++++ b/src/AltirraSDL/source/bridge/bridge_commands_state.cpp
+@@ -131,6 +131,9 @@ std::string BuildCpuPayload(ATSimulator& sim) {
+ 	body += flagStr;
+ 	body += "\",";
+ 	AddU32(body, "cycles", sim.GetCpuCycleCounter());
++	// Observations for the disposable Exec816 serial latency experiment.
++	AddU32(body, "clock_multiplier", cpu.GetSubCycles());
++	AddField(body, "shadow_rom", sim.GetShadowROMEnabled() ? "true" : "false");
+ 
+ 	const ATCPUMode mode = cpu.GetCPUMode();
+ 	const char* modeStr =

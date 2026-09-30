@@ -1,0 +1,77 @@
+MODULE PROGRAMAPI
+USE EXEC
+USE DOSCALLS
+USE DOSCLIENT
+USE DOSBREAK
+USE PROCESS
+USE DOSARGS
+
+; Explicit task-only providers. Opaque handles keep the external contract free
+; of resident implementation records. Dispatch directly to their shared
+; implementation, retaining each checked entry and its command signature.
+PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
+
+RETURN(DOSCALLS.Open(name,mode))
+
+PUBLIC LONGINT FUNC Read(BYTE POINTER handle,buffer LONGINT length)
+
+RETURN(DOSCALLS.Read(handle,buffer,length))
+
+PUBLIC LONGINT FUNC Write(BYTE POINTER handle,buffer LONGINT length)
+
+RETURN(DOSCALLS.Write(handle,buffer,length))
+
+PUBLIC LONGINT FUNC Seek(BYTE POINTER handle LONGINT offset,mode)
+
+RETURN(DOSCALLS.Seek(handle,offset,mode))
+
+PUBLIC LONGINT FUNC Close(BYTE POINTER handle)
+
+RETURN(DOSCALLS.Close(handle))
+
+PUBLIC BYTE POINTER FUNC Input()
+
+RETURN(DOSCALLS.Selected(0))
+
+PUBLIC BYTE POINTER FUNC Output()
+
+RETURN(DOSCALLS.Selected(1))
+
+PUBLIC LONGINT FUNC IoErr()
+
+RETURN(DOSCLIENT.IoErr())
+
+PUBLIC CSTRING FUNC GetArgStr()
+
+RETURN(PROCESS.GetArgStr())
+
+; Decode this command's argument string using caller-supplied result storage.
+PUBLIC LONGINT FUNC ReadArgs(CSTRING template ADDRESS POINTER values
+    CARD valueCapacity
+                            BYTE POINTER storage CARD storageCapacity)
+
+  LET error=DOSARGS.Parse(PROCESS.GetArgStr(),template,values,valueCapacity,
+      storage,storageCapacity)
+  DOSCLIENT.SetIoErr(error)
+  IF error=0 THEN
+    RETURN(-1)
+  FI
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC SetIoErr(LONGINT error)
+
+RETURN(DOSCLIENT.SetIoErr(error))
+
+PUBLIC LONGINT FUNC BreakPending()
+
+RETURN(DOSBREAK.Pending())
+
+; Give other Tasks a scheduling opportunity through the command ABI.
+PUBLIC PROC Yield()
+
+  EXEC.Yield()
+
+RETURN
+
+ENDMODULE

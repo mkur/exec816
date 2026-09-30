@@ -1,0 +1,958 @@
+From a62ee9e7ec525b31c0376d2358030a1e6670bb33 Mon Sep 17 00:00:00 2001
+From: Michal Kurcewicz <1001406+mkur@users.noreply.github.com>
+Date: Sat, 26 Sep 2026 13:28:36 +0200
+Subject: [PATCH] Add compact checked Task o65 profile and host metadata
+ reports
+
+---
+ docs/MIR65816_O65_PROFILE.md   |  43 +++++
+ src/bin/actionc-65816.rs       |  20 ++-
+ src/compiler/native65816.rs    |  17 +-
+ src/mir65816/o65/compact.rs    | 310 +++++++++++++++++++++++++++++++++
+ src/mir65816/o65/mod.rs        |  15 ++
+ src/mir65816/o65/prepare.rs    |   7 +-
+ src/mir65816/o65/profile.rs    |  20 ++-
+ src/mir65816/o65/relocate.rs   |  16 +-
+ src/mir65816/o65/write.rs      |  10 +-
+ tests/actionc_65816_o65_cli.rs |  67 +++++++
+ tests/mir65816_o65.rs          | 126 ++++++++++++++
+ 11 files changed, 625 insertions(+), 26 deletions(-)
+ create mode 100644 src/mir65816/o65/compact.rs
+
+diff --git a/docs/MIR65816_O65_PROFILE.md b/docs/MIR65816_O65_PROFILE.md
+index dc38f5f9..b24818c6 100644
+--- a/docs/MIR65816_O65_PROFILE.md
++++ b/docs/MIR65816_O65_PROFILE.md
+@@ -157,3 +157,46 @@ call chain, relative to its initial S; they are fixture measurements, not genera
+ task bounds. The pointer probe takes 773 / 669 VM cycles. Descriptor redundancy
+ is a substantial cost for small programs. Reducing it needs a separate profile
+ change that preserves validation of complete address values and ABI maps.
++
++## Compact checked Task applications
++
++`actionc.o65.compact.v1` uses the same standard o65 header, section payloads,
++import names and relocation streams. Its two exports are `__a816_entry_v1`
++and `__a816_o65_compact_v1`, both text offsets. The latter marks an exact
++trailer of **8 + 4 × import count bytes**:
++
++| Bytes | Meaning |
++| --- | --- |
++| 0–3 | ASCII `A8C1`, compact profile v1 |
++| 4–5 | little-endian native ABI revision, 1 (`action65816.native.v1`) |
++| 6–7 | reserved flags, zero |
++| 8 onward | little-endian 32-bit signature per standard import, in order |
++
++No count, symbol name, entry offset or relocation record is duplicated.
++The first import is `__a816_stack_overflow_v1`, signature zero. Ordinary
++imports are checked Task-only routines with zero unchecked stack allowance
++and preserved IRQ state. The entry is checked `PROC()`; extra NMI stack
++allowance, arithmetic-fault imports and absolute storage are unsupported.
++The compiler rejects contracts outside this profile instead of discarding
++incompatible attributes. Runtime stack checks remain in the emitted code.
++
++Before emitting, the compiler checks complete routine/frame and object maps,
++aliases, complete relocation targets and zero-extension containers. Use
++`--o65-report host.json` to retain those maps, names, full ABI descriptions and
++relocation proofs as a host artifact. The loader does not need the report.
++
++The compact inspector checks framing, exact trailer size/version, symbols,
++entry bounds, nonoverlapping relocation sites outside the trailer, import
++indices and zero import addends. Bank/long targets must fit their sections;
++placement must fit 24 bits. Standard low/high records only contain the low
++8/16 addend bits and are patched modulo that width: complete symbolic target
++bounds remain a compiler check. There is no redundant proof stream.
++The trailer is excluded from loaded text. Routine bank containment is a
++compiler check; loaders place text at a bank boundary. Neither profile proves
++that arbitrary native code obeys its declarations or provides isolation.
++
++The `compact::inspect` API returns entry, loaded text size and import
++signatures without fabricating unavailable physical argument or debug maps.
++`compact::relocate` is the host reference for this profile; `validate` accepts
++both the compact and detailed profiles. Existing detailed profile inspection
++and relocation APIs retain their original meaning.
+diff --git a/src/bin/actionc-65816.rs b/src/bin/actionc-65816.rs
+index 7953de64..ca1f6b20 100644
+--- a/src/bin/actionc-65816.rs
++++ b/src/bin/actionc-65816.rs
+@@ -18,6 +18,7 @@ fn run() -> Result<(), String> {
+     let mut layout = None;
+     let mut format = "json".to_string();
+     let mut o65_options = None;
++    let mut o65_report = None;
+     let mut output = None;
+     let mut input = None;
+     let mut optimize = true;
+@@ -27,7 +28,7 @@ fn run() -> Result<(), String> {
+         match arg.as_str() {
+             "--help" | "-h" => {
+                 println!(
+-                    "usage: actionc-65816 --layout <layout.json> [-o <image.a816.json>] [--no-opt] [--module-path <dir>] <source.act>\n       actionc-65816 --format o65-experimental --o65-options <options.json> [-o <program.o65>] [--no-opt] <source.act>\n       actionc-65816 --emit-interfaces <source.act>\n\nEmits a freestanding action65816.native.v1 scalar image. The platform supplies\nABI entry state, stack/direct-page domains and a raw stack-overflow adapter.\nLayout specifies code_origin, data_origin, stack_overflow, nmi_extra_stack and imports."
++                    "usage: actionc-65816 --layout <layout.json> [-o <image.a816.json>] [--no-opt] [--module-path <dir>] <source.act>\n       actionc-65816 --format o65-experimental --o65-options <options.json> [-o <program.o65>] [--o65-report <host.json>] [--no-opt] <source.act>\n       actionc-65816 --emit-interfaces <source.act>\n\nEmits a freestanding action65816.native.v1 scalar image. The platform supplies\nABI entry state, stack/direct-page domains and a raw stack-overflow adapter.\nLayout specifies code_origin, data_origin, stack_overflow, nmi_extra_stack and imports."
+                 );
+                 return Ok(());
+             }
+@@ -44,6 +45,11 @@ fn run() -> Result<(), String> {
+                     args.next().ok_or("--o65-options requires a file")?,
+                 ))
+             }
++            "--o65-report" => {
++                o65_report = Some(PathBuf::from(
++                    args.next().ok_or("--o65-report requires a file")?,
++                ))
++            }
+             "--layout" => {
+                 layout = Some(PathBuf::from(
+                     args.next().ok_or("--layout requires a file")?,
+@@ -64,7 +70,12 @@ fn run() -> Result<(), String> {
+     let prepared =
+         native65816::prepare_file(&input, optimize, &modules).map_err(|e| e.to_string())?;
+     if interfaces {
+-        if layout.is_some() || output.is_some() || o65_options.is_some() || format != "json" {
++        if layout.is_some()
++            || output.is_some()
++            || o65_options.is_some()
++            || o65_report.is_some()
++            || format != "json"
++        {
+             return Err("--emit-interfaces does not accept --layout or -o".into());
+         }
+         let declarations = prepared.mir.routines.iter().filter(|r| r.entry.external).map(|r| {
+@@ -90,11 +101,14 @@ fn run() -> Result<(), String> {
+                 .map_err(|e| format!("invalid o65 options: {e}"))?;
+         let program = prepared.compile_o65(&options).map_err(|e| e.to_string())?;
+         let output = output.unwrap_or_else(|| input.with_extension("o65"));
++        if let Some(report) = &o65_report {
++            native65816::write_o65_report(&program, report, &[&input, &options_path, &output])?;
++        }
+         native65816::write_o65(&program, &output, &[&input, &options_path])?;
+         println!("wrote {} (experimental o65)", output.display());
+         return Ok(());
+     }
+-    if o65_options.is_some() {
++    if o65_options.is_some() || o65_report.is_some() {
+         return Err("--o65-options requires --format o65-experimental".into());
+     }
+     let layout_path = layout.ok_or("--layout is required: platform addresses must be explicit")?;
+diff --git a/src/compiler/native65816.rs b/src/compiler/native65816.rs
+index 18d9adf4..84bce815 100644
+--- a/src/compiler/native65816.rs
++++ b/src/compiler/native65816.rs
+@@ -25,6 +25,7 @@ pub struct Compiled {
+ #[derive(Debug, Clone)]
+ pub struct O65Compiled {
+     pub bytes: Vec<u8>,
++    pub profile: mir65816::o65::profile::Profile,
+     pub source_paths: Vec<PathBuf>,
+ }
+ 
+@@ -132,9 +133,10 @@ impl Prepared {
+     ) -> Result<O65Compiled, CompileError> {
+         let artifact = mir65816::o65::prepare(&self.mir, options).map_err(codegen)?;
+         let bytes = mir65816::o65::write(&artifact).map_err(codegen)?;
+-        mir65816::o65::inspect(&bytes).map_err(codegen)?;
++        mir65816::o65::validate(&bytes).map_err(codegen)?;
+         Ok(O65Compiled {
+             bytes,
++            profile: artifact.profile().clone(),
+             source_paths: self.source_paths.clone(),
+         })
+     }
+@@ -158,10 +160,19 @@ pub fn write(program: &Compiled, output: &Path, protected: &[&Path]) -> Result<(
+ }
+ 
+ pub fn write_o65(program: &O65Compiled, output: &Path, protected: &[&Path]) -> Result<(), String> {
+-    mir65816::o65::inspect(&program.bytes)?;
++    mir65816::o65::validate(&program.bytes)?;
+     publish(&program.bytes, &program.source_paths, output, protected)
+ }
+ 
++pub fn write_o65_report(
++    program: &O65Compiled,
++    output: &Path,
++    protected: &[&Path],
++) -> Result<(), String> {
++    let bytes = serde_json::to_vec_pretty(&program.profile).map_err(|e| e.to_string())?;
++    publish(&bytes, &program.source_paths, output, protected)
++}
++
+ fn publish(
+     bytes: &[u8],
+     source_paths: &[PathBuf],
+@@ -177,7 +188,7 @@ fn publish(
+         .map(PathBuf::as_path)
+         .chain(protected.iter().copied())
+     {
+-        if path.canonicalize().map_err(|e| e.to_string())? == destination {
++        if super::native::artifacts::destination(path)? == destination {
+             return Err("65816 output would overwrite an input".into());
+         }
+     }
+diff --git a/src/mir65816/o65/compact.rs b/src/mir65816/o65/compact.rs
+new file mode 100644
+index 00000000..621ced40
+--- /dev/null
++++ b/src/mir65816/o65/compact.rs
+@@ -0,0 +1,310 @@
++//! Compact checked Task application profile. Debug maps and complete contracts
++//! stay in the host report; standard o65 records are the only on-disk fixups.
++use super::{
++    Artifact, Placement, Region,
++    profile::*,
++    read,
++    relocate::{RangeIndex, disjoint},
++    wire,
++};
++use crate::mir65816::image::{Segment, ZeroFill};
++use std::collections::BTreeSet;
++
++const HEADER: &[u8; 8] = b"A8C1\x01\x00\x00\x00";
++
++pub(super) fn descriptor(p: &Profile) -> Vec<u8> {
++    let mut bytes = HEADER.to_vec();
++    for i in &p.imports {
++        bytes.extend(i.contract.signature.to_le_bytes());
++    }
++    bytes
++}
++
++fn ordinary(c: &Contract) -> bool {
++    c.abi == crate::mir65816::abi::generated::ABI_NAME
++        && c.kind == 0
++        && c.stack_peak == 0
++        && c.irq_effect == 0
++        && c.domains == 1
++}
++
++pub(super) fn admit(a: &Artifact) -> Result<(), String> {
++    let p = &a.profile;
++    let entry = p
++        .routines
++        .iter()
++        .find(|r| r.offset == p.entry)
++        .ok_or("missing compact entry")?;
++    if p.nmi_extra_stack != 0
++        || p.version != 1
++        || entry.contract.signature != 0xa27be3e4
++        || !entry.contract.arguments.is_empty()
++        || entry.contract.result != 0
++        || entry.contract.incoming != 1
++        || p.objects.iter().any(|o| o.location.section.is_none())
++        || p.imports.iter().skip(1).any(|i| !ordinary(&i.contract))
++    {
++        return Err("compact v1 requires a checked void Task entry, Task-only preserving imports, no absolute storage, arithmetic fault or extra NMI allowance".into());
++    }
++    // Run the rich host proof checks before omitting them from the file.
++    let file = wire::File {
++        mode: wire::MODE,
++        bases: [0; 4],
++        lengths: [a.text.len() as u32, a.data.len() as u32, a.bss, 0],
++        stack: 0,
++        text: a.text.clone(),
++        data: a.data.clone(),
++        imports: p.imports.iter().map(|i| i.name.clone()).collect(),
++        relocations: p
++            .relocations
++            .iter()
++            .map(|r| {
++                let mut r = r.clone();
++                r.value &= match r.encoding {
++                    Encoding::Low => 255,
++                    Encoding::High => 65535,
++                    _ => 0xffffff,
++                };
++                r
++            })
++            .collect(),
++        exports: vec![
++            wire::Export {
++                name: ENTRY.into(),
++                segment: 2,
++                value: p.entry,
++            },
++            wire::Export {
++                name: COMPACT_DESCRIPTOR.into(),
++                segment: 2,
++                value: a.text.len() as u32,
++            },
++        ],
++    };
++    super::relocate::validate_profile(&file, p, a.text.len() as u32)
++}
++
++#[derive(Debug, Clone)]
++pub struct Import {
++    pub name: String,
++    pub signature: u32,
++}
++#[derive(Debug, Clone)]
++pub struct Info {
++    pub entry: u32,
++    pub text_bytes: u32,
++    pub imports: Vec<Import>,
++}
++
++fn application(bytes: &[u8]) -> Result<(wire::File, Info), String> {
++    let mut f = read::decode(bytes)?;
++    if f.mode != wire::MODE
++        || f.bases != [0; 4]
++        || f.lengths[3] != 0
++        || f.stack != 0
++        || f.exports.len() != 2
++    {
++        return Err("unsupported compact o65 header".into());
++    }
++    let export = |name: &str| {
++        f.exports
++            .iter()
++            .find(|e| e.name == name && e.segment == 2)
++            .map(|e| e.value)
++            .ok_or("missing compact export")
++    };
++    let start = export(COMPACT_DESCRIPTOR)?;
++    let entry = export(ENTRY)?;
++    let raw = f
++        .text
++        .get(start as usize..)
++        .ok_or("compact descriptor outside text")?;
++    if raw.len() != 8 + 4 * f.imports.len()
++        || !raw.starts_with(HEADER)
++        || entry >= start
++        || f.imports.first().map(String::as_str) != Some(OVERFLOW)
++    {
++        return Err("invalid compact descriptor/entry".into());
++    }
++    let mut imports = vec![];
++    for (n, name) in f.imports.iter().enumerate() {
++        let signature = u32::from_le_bytes(raw[8 + 4 * n..12 + 4 * n].try_into().unwrap());
++        if !valid_name(name)
++            || (n == 0 && signature != 0)
++            || (n != 0
++                && (name == OVERFLOW
++                    || name == ARITHMETIC_FAULT
++                    || name == ENTRY
++                    || name.starts_with("__a816_o65_")))
++        {
++            return Err("invalid compact import".into());
++        }
++        imports.push(Import {
++            name: name.clone(),
++            signature,
++        });
++    }
++    // Metadata is not loaded. Bounds for relocation sites/targets use code and
++    // readonly objects only. Low/high records contain truncated addends; their
++    // complete symbolic targets and zero-extension containers are checked by
++    // admit(), not reconstructed from nonexistent runtime proofs.
++    f.text.truncate(start as usize);
++    f.lengths[0] = start;
++    for r in &f.relocations {
++        if r.encoding == Encoding::Word
++            || r.offset + r.encoding.width() > f.lengths[r.section.index()]
++        {
++            return Err("invalid compact relocation site/type".into());
++        }
++        match r.target {
++            Reference::Import(_) if r.value != 0 => return Err("compact import addend".into()),
++            Reference::Section(s)
++                if matches!(r.encoding, Encoding::Bank | Encoding::Long)
++                    && r.value > f.lengths[s.index()] =>
++            {
++                return Err("compact relocation target outside section".into());
++            }
++            _ => {}
++        }
++    }
++    Ok((
++        f,
++        Info {
++            entry,
++            text_bytes: start,
++            imports,
++        },
++    ))
++}
++
++pub fn inspect(bytes: &[u8]) -> Result<Info, String> {
++    Ok(application(bytes)?.1)
++}
++
++pub struct Image {
++    pub segments: Vec<Segment>,
++    pub zero_fill: Vec<ZeroFill>,
++    pub entry: u32,
++}
++
++pub fn relocate(bytes: &[u8], placement: &Placement) -> Result<Image, String> {
++    let (mut f, info) = application(bytes)?;
++    if placement.nmi_extra_stack != 0
++        || placement.providers.len() != info.imports.len()
++        || placement.allowed.len() > MAX_ITEMS
++        || placement.reserved.len() > MAX_ITEMS
++    {
++        return Err("invalid compact placement contract".into());
++    }
++    let allowed = RangeIndex::new(&placement.allowed)?;
++    let reserved = RangeIndex::new(&placement.reserved)?;
++    let mut allocations = vec![];
++    for i in 0..3 {
++        let region = Region {
++            address: placement.bases[i],
++            size: f.lengths[i],
++        };
++        region.end()?;
++        if region.size == 0 {
++            if region.address != 0 {
++                return Err("empty section must have zero base".into());
++            }
++        } else {
++            if region.address < 65536
++                || region.address % if i == 0 { 65536 } else { 4 } != 0
++                || !allowed.contains(region)
++                || reserved.overlaps(region)
++            {
++                return Err("invalid compact section placement".into());
++            }
++            allocations.push(region);
++        }
++    }
++    let mut names = BTreeSet::new();
++    for p in &placement.providers {
++        if !names.insert(&p.name) {
++            return Err("duplicate provider".into());
++        }
++    }
++    let mut addresses = vec![];
++    for (index, import) in info.imports.iter().enumerate() {
++        let p = placement
++            .providers
++            .iter()
++            .find(|p| p.name == import.name)
++            .ok_or("unresolved compact import")?;
++        p.contract.verify()?;
++        if p.contract.signature != import.signature
++            || (if index == 0 {
++                p.contract != Contract::overflow()
++            } else {
++                !ordinary(&p.contract)
++            })
++            || p.address == 0
++            || p.size == 0
++        {
++            return Err("incompatible compact provider".into());
++        }
++        let region = Region {
++            address: p.address,
++            size: p.size,
++        };
++        region.end()?;
++        if reserved.overlaps(region) {
++            return Err("provider overlaps reserved region".into());
++        }
++        allocations.push(region);
++        addresses.push(p.address);
++    }
++    disjoint(allocations)?;
++    for r in &f.relocations {
++        let base = match r.target {
++            Reference::Section(s) => placement.bases[s.index()],
++            Reference::Import(i) => addresses[i as usize],
++        };
++        let value = base + r.value;
++        if matches!(r.encoding, Encoding::Bank | Encoding::Long) && value >= LIMIT {
++            return Err("relocated address exceeds 24 bits".into());
++        }
++        let value = match r.encoding {
++            Encoding::High => value >> 8,
++            Encoding::Bank => value >> 16,
++            _ => value,
++        };
++        let target = if r.section == Section::Text {
++            &mut f.text
++        } else {
++            &mut f.data
++        };
++        target[r.offset as usize..(r.offset + r.encoding.width()) as usize]
++            .copy_from_slice(&value.to_le_bytes()[..r.encoding.width() as usize]);
++    }
++    let mut segments = vec![Segment {
++        address: placement.bases[0],
++        bytes: f.text,
++        writable: false,
++        executable: true,
++    }];
++    if !f.data.is_empty() {
++        segments.push(Segment {
++            address: placement.bases[1],
++            bytes: f.data,
++            writable: true,
++            executable: false,
++        });
++    }
++    let zero_fill = if f.lengths[2] == 0 {
++        vec![]
++    } else {
++        vec![ZeroFill {
++            address: placement.bases[2],
++            size: f.lengths[2],
++            writable: true,
++        }]
++    };
++    Ok(Image {
++        segments,
++        zero_fill,
++        entry: placement.bases[0] + info.entry,
++    })
++}
+diff --git a/src/mir65816/o65/mod.rs b/src/mir65816/o65/mod.rs
+index a30be1cb..40d15648 100644
+--- a/src/mir65816/o65/mod.rs
++++ b/src/mir65816/o65/mod.rs
+@@ -4,6 +4,21 @@ pub mod profile;
+ pub use prepare::{Artifact, prepare};
+ pub use profile::{Binding, Options};
+ 
++pub mod compact;
++/// Validate either supported application encoding without inventing debug maps
++/// or physical argument descriptions absent from compact files.
++pub fn validate(bytes: &[u8]) -> Result<(), String> {
++    let file = decode(bytes)?;
++    if file
++        .exports
++        .iter()
++        .any(|e| e.name == profile::COMPACT_DESCRIPTOR)
++    {
++        compact::inspect(bytes).map(|_| ())
++    } else {
++        inspect(bytes).map(|_| ())
++    }
++}
+ mod descriptor;
+ pub mod wire;
+ mod write;
+diff --git a/src/mir65816/o65/prepare.rs b/src/mir65816/o65/prepare.rs
+index 13d7bc9d..1f95af7d 100644
+--- a/src/mir65816/o65/prepare.rs
++++ b/src/mir65816/o65/prepare.rs
+@@ -8,6 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
+ /// Validated section contents and typed fixups. No load addresses are assigned.
+ #[derive(Debug, Clone)]
+ pub struct Artifact {
++    pub(crate) compact: bool,
+     pub(crate) text: Vec<u8>,
+     pub(crate) data: Vec<u8>,
+     pub(crate) bss: u32,
+@@ -76,7 +77,7 @@ fn extent(base: u32, size: u32) -> Result<u32, String> {
+ }
+ 
+ pub fn prepare(program: &Mir65816Program, options: &Options) -> Result<Artifact, String> {
+-    if options.profile != ID && options.profile != ID_V2 {
++    if options.profile != ID && options.profile != ID_V2 && options.profile != COMPACT_ID {
+         return Err("unsupported experimental o65 profile".into());
+     }
+     if u32::from(options.nmi_extra_stack) + 26 > 65535 {
+@@ -158,6 +159,7 @@ pub fn prepare(program: &Mir65816Program, options: &Options) -> Result<Artifact,
+         }
+     }
+     let mut artifact = Artifact {
++        compact: options.profile == COMPACT_ID,
+         text: vec![],
+         data: vec![],
+         bss: 0,
+@@ -396,5 +398,8 @@ pub fn prepare(program: &Mir65816Program, options: &Options) -> Result<Artifact,
+         .profile
+         .relocations
+         .sort_by_key(|r| (r.section as u8, r.offset));
++    if artifact.compact {
++        super::compact::admit(&artifact)?;
++    }
+     Ok(artifact)
+ }
+diff --git a/src/mir65816/o65/profile.rs b/src/mir65816/o65/profile.rs
+index ea84a7a8..61977034 100644
+--- a/src/mir65816/o65/profile.rs
++++ b/src/mir65816/o65/profile.rs
+@@ -1,6 +1,8 @@
+ //! Public contracts are independent of compiler IR and fixed-image JSON.
+ use serde::{Deserialize, Serialize};
+ 
++pub const COMPACT_ID: &str = "actionc.o65.compact.v1";
++pub const COMPACT_DESCRIPTOR: &str = "__a816_o65_compact_v1";
+ pub const ID_V2: &str = "actionc.o65.experimental.v2";
+ pub const DESCRIPTOR_V2: &str = "__a816_o65_profile_v2";
+ pub const ARITHMETIC_FAULT: &str = "__a816_arithmetic_fault_v1";
+@@ -45,7 +47,7 @@ fn both_domains() -> u8 {
+     3
+ }
+ 
+-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+ #[repr(u8)]
+ pub enum Section {
+     Text = 2,
+@@ -65,12 +67,12 @@ impl Section {
+         }
+     }
+ }
+-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct Location {
+     pub section: Option<Section>,
+     pub offset: u32,
+ }
+-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+ #[repr(u8)]
+ pub enum Encoding {
+     Low = 0x20,
+@@ -98,12 +100,12 @@ impl Encoding {
+         }
+     }
+ }
+-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+ pub enum Reference {
+     Section(Section),
+     Import(u32),
+ }
+-#[derive(Debug, Clone, PartialEq, Eq)]
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct Relocation {
+     pub section: Section,
+     pub offset: u32,
+@@ -203,12 +205,12 @@ impl Contract {
+         Ok(())
+     }
+ }
+-#[derive(Debug, Clone, PartialEq, Eq)]
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct Import {
+     pub name: String,
+     pub contract: Contract,
+ }
+-#[derive(Debug, Clone, PartialEq, Eq)]
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct Routine {
+     pub id: u32,
+     pub name: String,
+@@ -219,7 +221,7 @@ pub struct Routine {
+     pub spill: u16,
+     pub local_peak: u32,
+ }
+-#[derive(Debug, Clone, PartialEq, Eq)]
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct Object {
+     pub kind: u8,
+     pub id: u32,
+@@ -230,7 +232,7 @@ pub struct Object {
+     pub mutable: bool,
+     pub alias: bool,
+ }
+-#[derive(Debug, Clone, PartialEq, Eq)]
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct Profile {
+     pub version: u16,
+     pub nmi_extra_stack: u16,
+diff --git a/src/mir65816/o65/relocate.rs b/src/mir65816/o65/relocate.rs
+index 9bb4ac9b..a1f2d589 100644
+--- a/src/mir65816/o65/relocate.rs
++++ b/src/mir65816/o65/relocate.rs
+@@ -10,13 +10,13 @@ pub struct Region {
+     pub size: u32,
+ }
+ impl Region {
+-    fn end(self) -> Result<u32, String> {
++    pub(super) fn end(self) -> Result<u32, String> {
+         self.address
+             .checked_add(self.size)
+             .filter(|e| self.address < LIMIT && *e <= LIMIT)
+             .ok_or("region exceeds 24-bit address space".into())
+     }
+-    fn overlaps(self, other: Self) -> bool {
++    pub(super) fn overlaps(self, other: Self) -> bool {
+         self.size != 0
+             && other.size != 0
+             && u64::from(self.address) < u64::from(other.address) + u64::from(other.size)
+@@ -27,9 +27,9 @@ impl Region {
+ // every object/provider for every alias or binding in an untrusted file.
+ // Entries hold start, greatest containing end, and greatest nonempty end.
+ // Empty owners can contain empty aliases, but empty reservations occupy no RAM.
+-struct RangeIndex(Vec<(u32, u32, u32)>);
++pub(super) struct RangeIndex(Vec<(u32, u32, u32)>);
+ impl RangeIndex {
+-    fn new(regions: &[Region]) -> Result<Self, String> {
++    pub(super) fn new(regions: &[Region]) -> Result<Self, String> {
+         let mut ranges = regions
+             .iter()
+             .map(|r| Ok((r.address, r.end()?, 0)))
+@@ -47,11 +47,11 @@ impl RangeIndex {
+         }
+         Ok(Self(ranges))
+     }
+-    fn contains(&self, region: Region) -> bool {
++    pub(super) fn contains(&self, region: Region) -> bool {
+         let n = self.0.partition_point(|r| r.0 <= region.address);
+         n != 0 && u64::from(self.0[n - 1].1) >= u64::from(region.address) + u64::from(region.size)
+     }
+-    fn overlaps(&self, region: Region) -> bool {
++    pub(super) fn overlaps(&self, region: Region) -> bool {
+         let end = u64::from(region.address) + u64::from(region.size);
+         let n = self.0.partition_point(|r| u64::from(r.0) < end);
+         region.size != 0 && n != 0 && self.0[n - 1].2 > region.address
+@@ -180,7 +180,7 @@ impl RelocatedImage {
+         self.bases[0] + r.offset
+     }
+ }
+-fn disjoint(mut ranges: Vec<Region>) -> Result<(), String> {
++pub(super) fn disjoint(mut ranges: Vec<Region>) -> Result<(), String> {
+     ranges.retain(|r| r.size != 0);
+     ranges.sort_by_key(|r| r.address);
+     if ranges.windows(2).any(|r| r[0].overlaps(r[1])) {
+@@ -199,7 +199,7 @@ fn export(file: &wire::File, name: &str) -> Result<u32, String> {
+     }
+     Ok(e.value)
+ }
+-fn validate_profile(file: &wire::File, p: &Profile, start: u32) -> Result<(), String> {
++pub(super) fn validate_profile(file: &wire::File, p: &Profile, start: u32) -> Result<(), String> {
+     if file.mode != wire::MODE
+         || file.bases != [0; 4]
+         || file.lengths[3] != 0
+diff --git a/src/mir65816/o65/write.rs b/src/mir65816/o65/write.rs
+index b9207a6a..2a9ebf4e 100644
+--- a/src/mir65816/o65/write.rs
++++ b/src/mir65816/o65/write.rs
+@@ -3,7 +3,11 @@ use super::{Artifact, descriptor, profile::*, wire};
+ pub fn write(artifact: &Artifact) -> Result<Vec<u8>, String> {
+     let mut text = artifact.text.clone();
+     let descriptor_offset = text.len() as u32;
+-    text.extend(descriptor::encode(&artifact.profile)?);
++    text.extend(if artifact.compact {
++        super::compact::descriptor(&artifact.profile)
++    } else {
++        descriptor::encode(&artifact.profile)?
++    });
+     if text.len() >= LIMIT as usize {
+         return Err("o65 text exceeds 24 bits".into());
+     }
+@@ -33,7 +37,9 @@ pub fn write(artifact: &Artifact) -> Result<Vec<u8>, String> {
+                 value: artifact.profile.entry,
+             },
+             wire::Export {
+-                name: if artifact.profile.version == 2 {
++                name: if artifact.compact {
++                    COMPACT_DESCRIPTOR
++                } else if artifact.profile.version == 2 {
+                     DESCRIPTOR_V2
+                 } else {
+                     DESCRIPTOR
+diff --git a/tests/actionc_65816_o65_cli.rs b/tests/actionc_65816_o65_cli.rs
+index ecb44855..6d118409 100644
+--- a/tests/actionc_65816_o65_cli.rs
++++ b/tests/actionc_65816_o65_cli.rs
+@@ -184,3 +184,70 @@ fn canonical_input_aliases_cannot_be_overwritten() {
+     assert!(!d.run(&args).status.success());
+     assert_eq!(std::fs::read(d.0.join("main.act")).unwrap(), before);
+ }
++
++#[test]
++fn compact_cli_keeps_full_report_off_disk_and_rejects_contract_changes() {
++    for newline in ["\n", "\r\n"] {
++        for optimize in [false, true] {
++            let d=Directory::new(&"MODULE API\nPUBLIC EXTERNAL CARD FUNC Host(CARD value)\nCARD output\nPROC Main()\noutput=Host(7)\nRETURN\nENDMODULE\n".replace('\n',newline));
++            let interfaces = d.run(&["--emit-interfaces"]);
++            assert!(interfaces.status.success());
++            let interfaces: serde_json::Value = serde_json::from_slice(&interfaces.stdout).unwrap();
++            let options = serde_json::json!({"profile":o65::profile::COMPACT_ID,"nmi_extra_stack":0,"imports":[{"symbol":interfaces[0]["symbol"],"name":"Host","stack_peak":0,"checks_stack":true,"domains":1}]});
++            std::fs::write(
++                d.0.join("options.json"),
++                serde_json::to_vec(&options).unwrap(),
++            )
++            .unwrap();
++            let mut args = ARGS.to_vec();
++            args.extend(["--o65-report", "report.json"]);
++            if !optimize {
++                args.push("--no-opt");
++            }
++            let result = d.run(&args);
++            assert!(
++                result.status.success(),
++                "{}",
++                String::from_utf8_lossy(&result.stderr)
++            );
++            let bytes = std::fs::read(d.0.join("main.o65")).unwrap();
++            let info = o65::compact::inspect(&bytes).unwrap();
++            let report: serde_json::Value =
++                serde_json::from_slice(&std::fs::read(d.0.join("report.json")).unwrap()).unwrap();
++            assert_eq!(report["imports"][1]["contract"]["arguments"][0]["size"], 2);
++            assert_eq!(
++                report["imports"][1]["contract"]["signature"],
++                info.imports[1].signature
++            );
++            assert_eq!(
++                o65::decode(&bytes).unwrap().text.len() as u32 - info.text_bytes,
++                16
++            );
++            for (field, value) in [
++                ("domains", serde_json::json!(3)),
++                ("stack_peak", serde_json::json!(1)),
++                ("irq_effect", serde_json::json!("save_disable")),
++                ("checks_stack", serde_json::json!(false)),
++            ] {
++                let mut bad = options.clone();
++                bad["imports"][0][field] = value;
++                std::fs::write(d.0.join("options.json"), serde_json::to_vec(&bad).unwrap())
++                    .unwrap();
++                assert!(!d.run(&args).status.success());
++                assert_eq!(std::fs::read(d.0.join("main.o65")).unwrap(), bytes);
++            }
++            std::fs::write(
++                d.0.join("options.json"),
++                serde_json::to_vec(&options).unwrap(),
++            )
++            .unwrap();
++            for target in ["main.act", "options.json", "main.o65"] {
++                let before = std::fs::read(d.0.join(target)).unwrap();
++                let mut args = ARGS.to_vec();
++                args.extend(["--o65-report", target]);
++                assert!(!d.run(&args).status.success());
++                assert_eq!(std::fs::read(d.0.join(target)).unwrap(), before);
++            }
++        }
++    }
++}
+diff --git a/tests/mir65816_o65.rs b/tests/mir65816_o65.rs
+index 9bd5aca9..ec8c6099 100644
+--- a/tests/mir65816_o65.rs
++++ b/tests/mir65816_o65.rs
+@@ -470,3 +470,129 @@ fn corrupted_descriptors_and_late_streams_never_panic() {
+         assert!(o65::relocate(&corrupt, &p).is_err());
+     }
+ }
++
++#[test]
++fn compact_profile_keeps_proofs_on_host_and_matches_rich_relocation() {
++    use o65::profile::*;
++    for optimize in [false, true] {
++        let program = mir(
++            "CARD value,initial=[7] BYTE ARRAY table=[1 2 3] PROC Main() value=initial+CARD(table(1)) RETURN",
++            optimize,
++        );
++        let rich = o65::prepare(&program, &Default::default()).unwrap();
++        let compact = o65::prepare(
++            &program,
++            &o65::Options {
++                profile: COMPACT_ID.into(),
++                ..Default::default()
++            },
++        )
++        .unwrap();
++        assert_eq!(compact.profile(), rich.profile());
++        let bytes = o65::write(&compact).unwrap();
++        let file = o65::decode(&bytes).unwrap();
++        let info = o65::compact::inspect(&bytes).unwrap();
++        assert_eq!(file.text.len() as u32, compact.section_sizes()[0] + 12);
++        assert_eq!(info.text_bytes, compact.section_sizes()[0]);
++        assert_eq!(info.imports[0].signature, 0);
++        assert!(
++            serde_json::to_value(compact.profile()).unwrap()["routines"]
++                .as_array()
++                .unwrap()
++                .len()
++                > 0
++        );
++        for bases in [[0x20000, 0x4fffc, 0x6fffc], [0x80000, 0xa0000, 0xc0000]] {
++            let place = placement(bases, 0x3400);
++            let expected = o65::relocate(&o65::write(&rich).unwrap(), &place).unwrap();
++            let actual = o65::compact::relocate(&bytes, &place).unwrap();
++            for segment in &actual.segments {
++                assert_eq!(
++                    segment.bytes,
++                    loaded_bytes(&expected, segment.address, segment.bytes.len())
++                );
++            }
++        }
++        for n in 0..bytes.len() {
++            assert!(o65::compact::inspect(&bytes[..n]).is_err());
++        }
++        for offset in [0, 4, 6, 8] {
++            let mut f = file.clone();
++            f.text[info.text_bytes as usize + offset] ^= 1;
++            assert!(o65::compact::inspect(&o65::wire::encode(&f).unwrap()).is_err());
++        }
++        let mut f = file.clone();
++        f.exports[0].value = info.text_bytes;
++        assert!(o65::compact::inspect(&o65::wire::encode(&f).unwrap()).is_err());
++        let mut f = file.clone();
++        f.relocations[0].offset = info.text_bytes;
++        f.relocations.sort_by_key(|r| (r.section as u8, r.offset));
++        assert!(o65::compact::inspect(&o65::wire::encode(&f).unwrap()).is_err());
++        let mut options = o65::Options {
++            profile: COMPACT_ID.into(),
++            ..Default::default()
++        };
++        options.nmi_extra_stack = 1;
++        assert!(o65::prepare(&program, &options).is_err());
++        let absolute = mir(
++            "BYTE hardware=$d000 PROC Main() hardware=1 RETURN",
++            optimize,
++        );
++        assert!(
++            o65::prepare(
++                &absolute,
++                &o65::Options {
++                    profile: COMPACT_ID.into(),
++                    ..Default::default()
++                }
++            )
++            .is_err()
++        );
++    }
++}
++
++#[test]
++fn compact_standard_split_relocations_preserve_carries_and_bound_full_targets() {
++    use o65::profile::*;
++    let original = include_bytes!("../fixtures/o65/reference.o65");
++    let mut file = o65::decode(original).unwrap();
++    let start = file
++        .exports
++        .iter()
++        .find(|e| e.name == DESCRIPTOR)
++        .unwrap()
++        .value;
++    file.text.truncate(start as usize);
++    file.text.extend(b"A8C1\x01\0\0\0\0\0\0\0");
++    file.lengths[0] = file.text.len() as u32;
++    file.exports
++        .iter_mut()
++        .find(|e| e.name == DESCRIPTOR)
++        .unwrap()
++        .name = COMPACT_DESCRIPTOR.into();
++    let bytes = o65::wire::encode(&file).unwrap();
++    for bases in [[0x10000, 0x210000, 0x12fffc], [0x30000, 0x220100, 0x3410fc]] {
++        let place = placement(bases, 0x48000);
++        let expected = o65::relocate(original, &place).unwrap();
++        let actual = o65::compact::relocate(&bytes, &place).unwrap();
++        for segment in actual.segments {
++            assert_eq!(
++                segment.bytes,
++                loaded_bytes(&expected, segment.address, segment.bytes.len())
++            );
++        }
++    }
++    let site = file
++        .relocations
++        .iter()
++        .find(|r| r.encoding == Encoding::Long && matches!(r.target, Reference::Section(_)))
++        .unwrap()
++        .clone();
++    let data = if site.section == Section::Text {
++        &mut file.text
++    } else {
++        &mut file.data
++    };
++    data[site.offset as usize..site.offset as usize + 3].copy_from_slice(&[255; 3]);
++    assert!(o65::compact::inspect(&o65::wire::encode(&file).unwrap()).is_err());
++}
+-- 
+2.50.1 (Apple Git-155)
+

@@ -1,0 +1,373 @@
+; Immutable captured routes; IRQ never follows a Task or instance pointer.
+MODULE CONSOLEFOREGROUND
+USE EXEC
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLECAPTURE
+USE DOSBREAKTYPES
+INCLUDE "console-storage-action.inc"
+
+PUBLIC CONSOLETYPES.Routes POINTER FUNC Registry()
+
+RETURN(CONSOLETYPES.Routes POINTER(ADDRESS(CS_ROUTES)))
+
+; Caller holds Forbid; published/base tags of every admitted lifetime survive.
+PROC Reclaim(CONSOLETYPES.Routes POINTER routes)
+  CONSOLETYPES.Capture POINTER capture
+  CONSOLETYPES.Windows POINTER windows
+  BYTE index,slot,keep
+
+  capture=CONSOLETYPES.Capture POINTER(ADDRESS(CS_CAPTURE))
+  windows=CONSOLEWINDOWS.Registry()
+  IF capture.head<>capture.tail OR capture.breakPending<>0 OR capture.lost<>0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO 15 DO
+    keep=routes.items(index).tag=capture.route
+    FOR slot=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+      IF windows.items(slot).state<>CONSOLETYPES.WIN_FREE THEN
+        IF routes.items(index).tag=windows.items(slot).route
+            OR routes.items(index).tag=windows.items(slot).baseRoute THEN
+          keep=1
+        FI
+      FI
+    OD
+
+    IF keep=0 THEN
+      routes.items(index).tag=0
+      routes.items(index).scope=BYTE POINTER(0)
+    FI
+  OD
+
+RETURN
+
+; Issue a fresh route tag so captured input cannot target a reused scope.
+LONGCARD FUNC Allocate(LONGCARD unit BYTE POINTER scope BYTE bound)
+  CONSOLETYPES.Routes POINTER routes
+  CONSOLETYPES.Route POINTER route
+  BYTE index,used
+
+  routes=Registry()
+  Reclaim(routes)
+  IF routes.epoch=LONGCARD($0fffffff) THEN
+    RETURN(0)
+  FI
+
+  index=0
+  used=0
+  WHILE index<16 DO
+    IF routes.items(index).tag=0 THEN
+      EXIT
+    FI
+
+    index==+1
+  OD
+
+  IF index=16 THEN
+    RETURN(0)
+  FI
+
+  routes.epoch==+1
+  route=@routes.items(index)
+  route.tag=(routes.epoch LSH 4) OR LONGCARD(index)
+  route.scope=scope
+  route.unit=unit
+  route.bound=bound
+  route.retired=0
+  FOR index=0 TO 15 DO
+    IF routes.items(index).tag<>0 THEN
+      used==+1
+    FI
+  OD
+
+  IF used>routes.peak THEN
+    routes.peak=used
+  FI
+
+RETURN(route.tag)
+
+; Give a window a base input route before it accepts foreground commands.
+PUBLIC BYTE FUNC Register(CONSOLETYPES.Window POINTER entry)
+  LONGCARD tag
+
+  tag=Allocate(entry.unit,BYTE POINTER(0),0)
+  IF tag=0 THEN
+    RETURN(0)
+  FI
+
+  entry.route=tag
+  entry.baseRoute=tag
+
+RETURN(1)
+
+; Remove live routing before the window's storage can be retired.
+PUBLIC PROC Unregister(CONSOLETYPES.Window POINTER entry)
+  CONSOLETYPES.Windows POINTER windows
+
+  windows=CONSOLEWINDOWS.Registry()
+  IF windows.focusSlot=BYTE(entry.unit & 3) THEN
+    windows.focusSlot=255
+    CONSOLECAPTURE.Publish(0)
+  FI
+
+  entry.route=0
+  entry.baseRoute=0
+
+RETURN
+
+; Discard old raw BREAK bytes before a command gains a bound break scope.
+PROC RetireUnboundBreaks(CONSOLETYPES.Instance POINTER instance)
+  CARD read,write,count,left
+  BYTE value
+
+  read=instance.inputTail
+  write=read
+  count=0
+  left=instance.inputCount
+  WHILE left<>0 DO
+    value=instance.fifo(read)
+    read=(read+1) & 127
+    left==-1
+    IF value<>3 THEN
+      instance.fifo(write)=value
+      write=(write+1) & 127
+      count==+1
+    FI
+  OD
+
+  instance.inputHead=write
+  instance.inputCount=count
+
+RETURN
+
+; Bind a fresh foreground lifetime and prevent old input from interrupting it.
+PUBLIC BYTE FUNC Begin(DOSBREAKTYPES.Scope POINTER scope)
+  CONSOLETYPES.Window POINTER entry
+  CONSOLETYPES.Windows POINTER windows
+  LONGCARD ignored,tag
+
+  entry=CONSOLEWINDOWS.Find(scope.unit)
+  IF entry=CONSOLETYPES.Window POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF entry.scope<>BYTE POINTER(0) AND entry.scope<>BYTE POINTER(scope) THEN
+    RETURN(0)
+  FI
+
+  tag=Allocate(scope.unit,BYTE POINTER(scope),1)
+  IF tag=0 THEN
+    RETURN(0)
+  FI
+
+  IF entry.scope=BYTE POINTER(0) THEN
+    RetireUnboundBreaks(CONSOLETYPES.Instance POINTER(entry.instance))
+  FI
+
+  scope.generation=tag
+  scope.pending=0
+  scope.active=1
+  ignored=EXEC.SetSignal(0,scope.mask)
+  entry.scope=BYTE POINTER(scope)
+  entry.route=tag
+  windows=CONSOLEWINDOWS.Registry()
+  IF windows.focusSlot=BYTE(scope.unit & 3) THEN
+    CONSOLECAPTURE.Publish(tag)
+  FI
+
+RETURN(1)
+
+; Detach a finished scope from all routes before its owner may free it.
+PUBLIC PROC End(DOSBREAKTYPES.Scope POINTER scope)
+  CONSOLETYPES.Routes POINTER routes
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Window POINTER entry
+  LONGCARD ignored
+  BYTE index
+
+  routes=Registry()
+  windows=CONSOLEWINDOWS.Registry()
+  entry=CONSOLEWINDOWS.Find(scope.unit)
+  IF entry<>CONSOLETYPES.Window POINTER(0) THEN
+    IF entry.scope=BYTE POINTER(scope) THEN
+      entry.scope=BYTE POINTER(0)
+      entry.route=entry.baseRoute
+      IF windows.focusSlot=BYTE(scope.unit & 3) THEN
+        CONSOLECAPTURE.Publish(entry.route)
+      FI
+    FI
+  FI
+
+  scope.active=0
+  scope.pending=0
+  FOR index=0 TO 15 DO
+    IF routes.items(index).scope=BYTE POINTER(scope) THEN
+      routes.items(index).scope=BYTE POINTER(0)
+    FI
+  OD
+
+  ignored=EXEC.SetSignal(0,scope.mask)
+  Reclaim(routes)
+
+RETURN
+
+; Caller holds Forbid and both DOS contexts are idle. Old captured input is
+; retired before publishing a new owner; cooked session bytes are preserved.
+; previous=target renews a group route while retaining its owner and signal.
+PUBLIC BYTE FUNC Handoff(DOSBREAKTYPES.Scope POINTER previous,target BYTE carry)
+  CONSOLETYPES.Window POINTER entry
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Routes POINTER routes
+  CONSOLETYPES.Instance POINTER instance
+  LONGCARD tag
+  BYTE index,pending
+
+  entry=CONSOLEWINDOWS.Find(previous.unit)
+  IF entry=CONSOLETYPES.Window POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF entry.scope<>BYTE POINTER(previous) OR previous.active=0
+      OR target.unit<>previous.unit THEN
+    RETURN(0)
+  FI
+
+  CONSOLECAPTURE.ClearUnit(previous.unit)
+  tag=Allocate(target.unit,BYTE POINTER(target),1)
+  IF tag=0 THEN
+    RETURN(0)
+  FI
+
+  instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  instance.inputHead=0
+  instance.inputTail=0
+  instance.inputCount=0
+  instance.inputLost=0
+  instance.lastValid=0
+  pending=previous.pending AND carry
+  previous.active=0
+  previous.pending=0
+  routes=Registry()
+  FOR index=0 TO 15 DO
+    IF routes.items(index).scope=BYTE POINTER(previous)
+        AND routes.items(index).tag<>tag THEN
+      routes.items(index).scope=BYTE POINTER(0)
+      ; IRQ can capture another old-route key after ClearUnit snapshots head.
+      ; Keep its tag reserved until drained, but reject all later delivery.
+      routes.items(index).retired=1
+    FI
+  OD
+
+  target.generation=tag
+  target.pending=pending
+  target.active=1
+  entry.scope=BYTE POINTER(target)
+  entry.route=tag
+  windows=CONSOLEWINDOWS.Registry()
+  IF windows.focusSlot=BYTE(target.unit & 3) THEN
+    CONSOLECAPTURE.Publish(tag)
+  FI
+
+  IF pending<>0 THEN
+    EXEC.Signal(EXEC.Task POINTER(target.owner),target.mask)
+  FI
+
+RETURN(1)
+
+; Reject stale or retired route tags before returning a live window.
+PUBLIC CONSOLETYPES.Window POINTER FUNC Resolve(LONGCARD tag)
+  CONSOLETYPES.Routes POINTER routes
+  CONSOLETYPES.Route POINTER route
+
+  IF tag=0 THEN
+    RETURN(CONSOLETYPES.Window POINTER(0))
+  FI
+
+  routes=Registry()
+  route=@routes.items(BYTE(tag & 15))
+  IF route.tag<>tag OR route.retired<>0 THEN
+    RETURN(CONSOLETYPES.Window POINTER(0))
+  FI
+
+RETURN(CONSOLEWINDOWS.Find(route.unit))
+
+; Caller holds Forbid, covering member publication and scope retirement.
+PROC NotifyOne(DOSBREAKTYPES.Scope POINTER scope)
+
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN
+  FI
+
+  IF scope.active<>0 AND scope.pending=0 THEN
+    scope.pending=1
+    EXEC.Signal(EXEC.Task POINTER(scope.owner),scope.mask)
+  FI
+
+RETURN
+
+; Propagate BREAK to the foreground owner and its linked command followers.
+PUBLIC PROC Notify(DOSBREAKTYPES.Scope POINTER scope)
+
+  NotifyOne(scope)
+  NotifyOne(DOSBREAKTYPES.Scope POINTER(scope.followerA))
+  NotifyOne(DOSBREAKTYPES.Scope POINTER(scope.followerB))
+
+RETURN
+
+; True means a consumed bound/retired break; never also enqueue byte 03.
+PUBLIC BYTE FUNC Deliver(LONGCARD tag)
+  CONSOLETYPES.Routes POINTER routes
+  CONSOLETYPES.Route POINTER route
+  CONSOLETYPES.Window POINTER entry
+  DOSBREAKTYPES.Scope POINTER scope
+  BYTE bound
+
+  EXEC.Forbid()
+  entry=Resolve(tag)
+  IF entry=CONSOLETYPES.Window POINTER(0) THEN
+    EXEC.Permit()
+    RETURN(1)
+  FI
+
+  routes=Registry()
+  route=@routes.items(BYTE(tag & 15))
+  IF route.bound=0 THEN
+    bound=entry.scope<>BYTE POINTER(0)
+    EXEC.Permit()
+    RETURN(bound)
+  FI
+
+  scope=DOSBREAKTYPES.Scope POINTER(route.scope)
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) OR entry.scope<>BYTE POINTER(scope) THEN
+    EXEC.Permit()
+    RETURN(1)
+  FI
+
+  IF scope.active=0 OR scope.generation<>tag THEN
+    EXEC.Permit()
+    RETURN(1)
+  FI
+
+  Notify(scope)
+  EXEC.Permit()
+
+RETURN(1)
+
+; Drain a bounded batch of captured BREAK routes in worker context.
+PUBLIC PROC Pump()
+  LONGCARD tag
+  BYTE ignored,index
+
+  FOR index=0 TO 15 DO
+    tag=CONSOLECAPTURE.TakeBreak()
+    IF tag=0 THEN
+      EXIT
+    FI
+
+    ignored=Deliver(tag)
+  OD
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,47 @@
+; VBI preemption/ROM-CIO probe. For the public Task API see tasks.act.
+MODULE PREEMPTIVE
+USE EXEC
+USE EXECOS
+
+VOLATILE BYTE ARRAY progress(2)
+CARD ARRAY totals(2)
+CARD ARRAY outputStatus(2)
+BYTE ARRAY line0=[65 48 155]
+BYTE ARRAY line1=[66 48 155]
+
+; Both tasks enter this recursive routine with independent invocation locals.
+; The leaf waits for its peer using only volatile memory, with no kernel calls.
+CARD FUNC Shared(CARD id CARD round CARD depth)
+  CARD local
+
+  local=10+id+depth
+  IF depth<>0 THEN
+    RETURN(local+Shared(id,round,depth-1))
+  FI
+
+  progress(id)=BYTE(round)
+  WHILE progress(id XOR 1)<round DO
+  OD
+
+RETURN(local)
+
+; Demonstrate progress by independent Tasks under timer-driven scheduling.
+PROC Main()
+  CARD id,round,value
+
+  id=EXEC.TaskId()
+  FOR round=1 TO 4 DO
+    value=Shared(id,round,2)
+    totals(id)==+value
+    IF id=0 THEN
+      line0(1)=BYTE(47+round)
+      outputStatus(id)=EXECOS.Write(BYTE POINTER(line0),3)
+    ELSE
+      line1(1)=BYTE(47+round)
+      outputStatus(id)=EXECOS.Write(BYTE POINTER(line1),3)
+    FI
+  OD
+
+RETURN
+
+ENDMODULE

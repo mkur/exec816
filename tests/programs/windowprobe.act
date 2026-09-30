@@ -1,0 +1,15 @@
+; Inject one allocation failure into the test copy of CONSOLE.Create.
+MODULE WINDOWPROBE
+USE EXEC
+PUBLIC BYTE failAt,calls
+
+PUBLIC BYTE POINTER FUNC AllocMem(LONGCARD bytes,flags)
+
+  calls==+1
+  IF failAt<>0 AND calls=failAt THEN
+    RETURN(BYTE POINTER(0))
+  FI
+
+RETURN(EXEC.AllocMem(bytes,flags))
+
+ENDMODULE

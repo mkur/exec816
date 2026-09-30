@@ -1,0 +1,105 @@
+MODULE TASKSEXEC
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE EXECOS
+
+EXEC.Task ARRAY workers(3)
+ADDRESS ARRAY pointers(5)
+CARD ARRAY checks(8)
+VOLATILE BYTE ARRAY progress(3)
+VOLATILE CARD clockTicks=$2034
+BYTE ARRAY workerName=[119 111 114 107 101 114 0]
+BYTE ARRAY line=[84 65 83 75 83 32 69 88 69 67 32 79 75 155]
+PROC POINTER defaultFinalizer()
+
+PROC Prepare(EXEC.Task POINTER item CARD base)
+
+  item.tc_Node.ln_Type=EXEC.NT_TASK
+  item.tc_Node.ln_Name=BYTE POINTER(workerName)
+  item.tc_Node.ln_Pri=$80
+  item.tc_SPLower=ADDRESS(base)
+  item.tc_SPUpper=ADDRESS(base+$600)
+  item.tc_SPReg=ADDRESS(base+$5fe)
+  EXECLISTS.NewList(@item.tc_MemEntry)
+
+RETURN
+
+PROC First()
+
+  progress(0)=1
+
+RETURN
+
+PROC Second()
+
+  progress(1)=1
+  EXEC.RemTask(EXEC.Task POINTER(0))
+  progress(1)=$ff
+
+RETURN
+
+PROC Third()
+  CARD before
+
+  progress(2)=1
+  ; Require an interrupt opportunity outside the kernel; do not rely on
+  ; a particular image layout making one of the short workers straddle VBI.
+  before=clockTicks
+  WHILE clockTicks=before DO
+  OD
+
+RETURN
+
+PROC Finalizer()
+
+  progress(2)=2
+  EXEC.RemTask(EXEC.FindTask(BYTE POINTER(0)))
+  progress(2)=$ff
+
+RETURN
+
+PROC StartWorkers()
+  EXEC.Task POINTER found
+
+  checks(0)=EXEC.Version()
+  pointers(0)=ADDRESS(EXEC.FindTask(BYTE POINTER(0)))
+  Prepare(@workers(0),TASKSTACKS.LOWER1)
+  Prepare(@workers(1),TASKSTACKS.LOWER2)
+  Prepare(@workers(2),TASKSTACKS.LOWER3)
+  EXEC.Forbid()
+  pointers(1)=ADDRESS(EXEC.AddTask(@workers(0),@First,defaultFinalizer))
+  pointers(2)=ADDRESS(EXEC.AddTask(@workers(1),@Second,defaultFinalizer))
+  pointers(3)=ADDRESS(EXEC.AddTask(@workers(2),@Third,@Finalizer))
+  found=EXEC.FindTask(BYTE POINTER(workerName))
+  pointers(4)=ADDRESS(found)
+  checks(1)=CARD(EXEC.SetTaskPri(found,$7f))
+  EXEC.Yield()
+  checks(2)=CARD(progress(0))+CARD(progress(1))+CARD(progress(2))
+  EXEC.Permit()
+
+RETURN
+
+; Exercise Task admission, priority scheduling and explicit finalization.
+PROC Main()
+  CARD status
+
+  StartWorkers()
+  WHILE progress(0)=0 OR progress(1)=0 OR progress(2)<>2 DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  ; Removal state is kernel-maintained; Sleep lets final removals complete.
+  WHILE workers(0).tc_State<>EXEC.TS_REMOVED
+      OR workers(1).tc_State<>EXEC.TS_REMOVED
+      OR workers(2).tc_State<>EXEC.TS_REMOVED DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  checks(3)=CARD(EXEC.FindTask(BYTE POINTER(workerName))=EXEC.Task POINTER(0))
+  checks(4)=EXECOS.Write(BYTE POINTER(line),14)
+
+RETURN
+
+ENDMODULE

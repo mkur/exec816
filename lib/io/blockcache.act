@@ -1,0 +1,210 @@
+; One filesystem worker owns these tags and bytes. IRQs never inspect them.
+MODULE BLOCKCACHE
+USE EXEC
+USE BLOCKTYPES
+USE BOOTCONFIG
+
+CONST WAYS=4, BLOCK_BYTES=128, WORDS_PER_BLOCK=64
+CONST SHORT_SECTOR=0, FIRST_HALF=1, SECOND_HALF=2
+CONST ABSENT=$ffff
+
+SIZE FUNC MetadataBytes(CARD blocks)
+
+RETURN(SIZE(blocks)*SIZEOF(BLOCKTYPES.CacheTag)+SIZE(blocks RSH 2))
+
+; Capacity is optional; allocation failure leaves the scratch-sector path usable.
+PUBLIC PROC Create(BLOCKTYPES.Cache POINTER cache CARD blocks)
+
+  cache.requested=blocks
+  IF blocks=0 OR BOOTCONFIG.ValidBlocks(blocks)=0 THEN
+    RETURN
+  FI
+
+  LET payloadBytes=SIZE(blocks) LSH 7
+  cache.payload=EXEC.AllocMem(payloadBytes,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  IF cache.payload=NULL THEN
+    RETURN
+  FI
+
+  cache.tags=BLOCKTYPES.CacheTag POINTER(EXEC.AllocMem(
+      MetadataBytes(blocks),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF cache.tags=NULL THEN
+    EXEC.FreeMem(cache.payload,payloadBytes)
+    cache.payload=NULL
+    RETURN
+  FI
+
+  LET tagBytes=SIZE(blocks)*SIZEOF(BLOCKTYPES.CacheTag)
+  cache.victims=BYTE POINTER(ADDRESS(cache.tags)+tagBytes)
+  cache.blocks=blocks
+  cache.mask=(blocks RSH 2)-1
+
+RETURN
+
+; Release both cache arenas after the owning worker stops using them.
+PUBLIC PROC Destroy(BLOCKTYPES.Cache POINTER cache)
+
+  IF cache.blocks=0 THEN
+    RETURN
+  FI
+
+  EXEC.FreeMem(BYTE POINTER(cache.tags),MetadataBytes(cache.blocks))
+  EXEC.FreeMem(cache.payload,SIZE(cache.blocks) LSH 7)
+  cache.tags=NULL
+  cache.payload=NULL
+  cache.victims=NULL
+  cache.blocks=0
+
+RETURN
+
+; Drop mount identities before their storage can be reused. NULL drops all.
+PUBLIC PROC Invalidate(BLOCKTYPES.Cache POINTER cache
+    BLOCKTYPES.Volume POINTER volume)
+  CARD index
+
+  IF cache.blocks=0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO cache.blocks-1 DO
+    IF volume=NULL OR cache.tags(index).volume=volume THEN
+      cache.tags(index).volume=NULL
+    FI
+  OD
+
+RETURN
+
+; Consecutive halves use different sets, so filling one cannot evict the other.
+CARD FUNC SetIndex(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volume
+    CARD sector BYTE part)
+  CARD key
+
+  key=sector XOR (sector RSH 8)
+  IF part<>SHORT_SECTOR THEN
+    key=(key LSH 1)+CARD(part-FIRST_HALF)
+  FI
+
+  key=key XOR (CARD(volume.unit) LSH 3) XOR CARD(volume.generation)
+
+RETURN(key & cache.mask)
+
+; Accept only a matching volume incarnation, sector and sector half.
+CARD FUNC Find(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volume
+    CARD sector BYTE part CARD bucket)
+  CARD index
+
+  LET first=bucket LSH 2
+  FOR index=first TO first+WAYS-1 DO
+    BEGIN
+      LET tag=@cache.tags(index)
+      IF tag.volume=volume AND tag.generation=volume.generation
+          AND tag.sector=sector AND tag.part=part THEN
+        RETURN(index)
+      FI
+    END
+  OD
+
+RETURN(ABSENT)
+
+; Both addresses are aligned heap storage; far indexing propagates bank carry.
+PROC Copy(BYTE POINTER source,destination)
+  CARD index
+
+  LET origin=CARD POINTER(source)
+  LET target=CARD POINTER(destination)
+  FOR index=0 TO WORDS_PER_BLOCK-1 DO
+    target(index)=origin(index)
+  OD
+
+RETURN
+
+BYTE POINTER FUNC Payload(BLOCKTYPES.Cache POINTER cache CARD index)
+
+RETURN(cache.payload+(SIZE(index) LSH 7))
+
+; A physical read is a hit only when its entire sector is retained.
+PUBLIC BYTE FUNC Read(BLOCKTYPES.Cache POINTER cache
+    BLOCKTYPES.Volume POINTER volume CARD sector,bytes BYTE POINTER buffer)
+  CARD first,second
+  BYTE part
+
+  IF cache.blocks=0 THEN
+    RETURN(0)
+  FI
+
+  part=SHORT_SECTOR
+  IF bytes>BLOCK_BYTES THEN
+    part=FIRST_HALF
+  FI
+
+  first=Find(cache,volume,sector,part,SetIndex(cache,volume,sector,part))
+  second=ABSENT
+  IF first<>ABSENT AND bytes>BLOCK_BYTES THEN
+    second=Find(cache,volume,sector,SECOND_HALF,
+        SetIndex(cache,volume,sector,SECOND_HALF))
+  FI
+
+  IF first=ABSENT OR (bytes>BLOCK_BYTES AND second=ABSENT) THEN
+    cache.misses==+1
+    RETURN(0)
+  FI
+
+  Copy(Payload(cache,first),buffer)
+  IF bytes>BLOCK_BYTES THEN
+    Copy(Payload(cache,second),buffer+SIZE(BLOCK_BYTES))
+  FI
+
+  cache.hits==+1
+
+RETURN(1)
+
+; Choose a cache way and publish its tag only after the payload is complete.
+PROC Store(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volume
+    CARD sector BYTE part BYTE POINTER buffer)
+  CARD index,candidate
+
+  LET bucket=SetIndex(cache,volume,sector,part)
+  candidate=Find(cache,volume,sector,part,bucket)
+  IF candidate=ABSENT THEN
+    FOR index=bucket LSH 2 TO (bucket LSH 2)+WAYS-1 DO
+      IF cache.tags(index).volume=NULL THEN
+        candidate=index
+        EXIT
+      FI
+    OD
+
+    IF candidate=ABSENT THEN
+      candidate=(bucket LSH 2)+CARD(cache.victims(bucket))
+      cache.victims(bucket)=(cache.victims(bucket)+1) & (WAYS-1)
+      cache.evictions==+1
+    FI
+  FI
+
+  LET tag=@cache.tags(candidate)
+  tag.volume=NULL
+  Copy(buffer,Payload(cache,candidate))
+  tag.generation=volume.generation
+  tag.sector=sector
+  tag.part=part
+  tag.volume=volume
+
+RETURN
+
+; Call only after a successful, exact-length physical-sector transfer.
+PUBLIC PROC Write(BLOCKTYPES.Cache POINTER cache
+    BLOCKTYPES.Volume POINTER volume CARD sector,bytes BYTE POINTER buffer)
+
+  IF cache.blocks=0 THEN
+    RETURN
+  FI
+
+  IF bytes=BLOCK_BYTES THEN
+    Store(cache,volume,sector,SHORT_SECTOR,buffer)
+  ELSE
+    Store(cache,volume,sector,FIRST_HALF,buffer)
+    Store(cache,volume,sector,SECOND_HALF,buffer+SIZE(BLOCK_BYTES))
+  FI
+
+RETURN
+
+ENDMODULE

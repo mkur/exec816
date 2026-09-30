@@ -1,0 +1,32 @@
+; Private SDFS structures; no bank-zero or per-handle sector reservations.
+MODULE SDFSTYPES
+USE FSBTYPES
+
+PUBLIC TYPE Volume=[
+  CARD bitmap,bitmapEnd,capacity
+  BYTE revision
+]
+
+PUBLIC TYPE MapCursor=[
+  CARD page,previous,next
+  LONGCARD base,hops
+  BYTE valid
+]
+
+PUBLIC TYPE BackendState=[
+  FSBTYPES.Volume POINTER cached
+  LONGCARD generation
+  CARD sector
+  BYTE valid
+  BYTE ARRAY map(256)
+  BYTE ARRAY row(23)
+  FSBTYPES.Cursor directory
+  FSBTYPES.Operation operation
+  LONGINT ordinal,recordOffset
+  CARD parent
+  BYTE filled,phase,resolvePhase,measurePhase
+  FSBTYPES.Volume POINTER directoryVolume
+  LONGCARD directoryGeneration
+]
+
+ENDMODULE

@@ -1,0 +1,34 @@
+MODULE PENDING
+USE EXEC
+USE EXECOS
+INCLUDE "../../lib/exec/exec-abi.inc"
+VOLATILE BYTE osBusy=$2006
+TaskRecord task0=E816_TASK0
+BYTE phase,peerPhase
+CARD overflow,writeStatus
+BYTE ARRAY message=[80 155]
+
+; Exercise deferred scheduling across an exclusion boundary.
+PROC Main()
+  CARD id
+
+  id=EXEC.TaskId()
+  IF id=0 THEN
+    task0.lockDepth=$ffff
+    overflow=EXEC.Lock()
+    task0.lockDepth=0
+    osBusy=1
+    phase=1
+    EXEC.Yield()
+    ; Clearing the guard alone must not switch; the OS-return Poll delivers it.
+    osBusy=0
+    phase=2
+    writeStatus=EXECOS.Write(BYTE POINTER(message),2)
+    EXEC.ExitTask(CARD(peerPhase))
+  FI
+
+  peerPhase=phase
+
+RETURN
+
+ENDMODULE

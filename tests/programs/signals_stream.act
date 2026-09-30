@@ -1,0 +1,136 @@
+MODULE SIGNALSTREAM
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE EXECSIGNALIRQ
+USE PRODUCERPROBE
+USE TASKSTACKS
+EXEC.Task worker,extraA,extraB
+EXEC.Task POINTER parent
+VOLATILE BYTE mask=$10,irqen=$d20e,skctl=$d20f,skshadow=$232,nmien=$d40e
+VOLATILE BYTE freq3=$d204,vol3=$d205,freq4=$d206,vol4=$d207,audctl=$d208,
+    stimer=$d209,skreset=$d20a,serout=$d20d,irqst=$d20e
+VOLATILE BYTE finished
+BYTE variant,oldsk
+CARD byteCount,sent,waits,background
+LONGCARD badResult
+PROC POINTER missing()
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC Bystander()
+  LONGCARD ignored
+
+  ignored=EXEC.Wait(0)
+
+RETURN
+
+PROC StreamStart()
+  EXEC.Task POINTER self
+  BYTE claimed
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  claimed=PRODUCERPROBE.Bind(self,1)
+  IF claimed=0 THEN
+    badResult=$ffffffff
+    RETURN
+  FI
+
+  oldsk=skshadow
+  skctl=0
+  freq3=0
+  vol3=0
+  freq4=0
+  vol4=0
+  audctl=$28
+  skshadow=$23
+  skctl=$23
+  skreset=$23
+  stimer=$23
+  mask=mask % $10
+  irqen=mask
+
+RETURN
+
+PROC Refill()
+
+  serout=BYTE(sent)
+  sent==+1
+
+RETURN
+
+PROC StreamWorker()
+  LONGCARD received
+
+  StreamStart()
+  Refill()
+  DO
+    received=EXEC.Wait(1)
+    waits==+1
+    IF received<>1 THEN
+      badResult=received
+    FI
+
+    IF sent=byteCount THEN
+      EXIT
+    FI
+
+    Refill()
+  OD
+
+  WHILE (irqst & 8)<>0 DO
+  OD
+
+  mask=mask & $c7
+  irqen=mask
+  PRODUCERPROBE.Release()
+  skshadow=oldsk
+  skctl=oldsk
+  audctl=0
+  finished=1
+  EXEC.Signal(parent,2)
+
+RETURN
+
+PROC MoreTasks()
+  EXEC.Task POINTER item
+  CARD status
+
+  PrepareTask(@extraA,TASKSTACKS.LOWER2,BYTE POINTER(0))
+  PrepareTask(@extraB,TASKSTACKS.LOWER3,BYTE POINTER(0))
+  item=EXEC.AddTask(@extraA,@Bystander,missing)
+  item=EXEC.AddTask(@extraB,@Bystander,missing)
+  WHILE extraA.tc_State<>EXEC.TS_WAIT OR extraB.tc_State<>EXEC.TS_WAIT DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+; Exercise sustained notification alongside unrelated Tasks.
+PROC Main()
+  EXEC.Task POINTER item
+  LONGCARD received
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  IF variant=2 THEN
+    MoreTasks()
+  FI
+
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  item=EXEC.AddTask(@worker,@StreamWorker,missing)
+  IF variant=1 THEN
+    received=EXEC.Wait(2)
+  ELSE
+    WHILE finished=0 DO
+      background==+1
+    OD
+  FI
+
+  AwaitRemoval(@worker)
+  IF variant=2 THEN
+    EXEC.RemTask(@extraA)
+    EXEC.RemTask(@extraB)
+  FI
+
+RETURN
+
+ENDMODULE

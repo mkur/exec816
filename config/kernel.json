@@ -1,0 +1,9 @@
+{
+  "max_banks": 16,
+  "max_extents": 64,
+  "staging_bytes": 1024,
+  "kernel_bank": 1,
+  "console": false,
+  "cache_blocks": 512,
+  "stack_checks": true
+}

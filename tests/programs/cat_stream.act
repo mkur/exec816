@@ -1,0 +1,172 @@
+MODULE COMMAND
+USE DOSARGS
+INCLUDE "../../lib/dos/command-results.inc"
+INCLUDE "../../lib/dos/command-errors.inc"
+INCLUDE "../../lib/dos/command-args.inc"
+INCLUDE "../../lib/dos/command-modes.inc"
+
+PUBLIC TYPE Scenario=[
+  LONGCARD length,breakAt
+  CARD chunk,writeChunk,argumentLength,readFail,writeFail,openError,closeError,
+      zeroWrite
+  BYTE ARRAY argument(32)
+]
+
+PUBLIC Scenario POINTER current
+PUBLIC LONGCARD position,written
+PUBLIC LONGINT primary,secondary,error
+PUBLIC CARD reads,writes,opens,closes,mismatch
+PUBLIC BYTE ARRAY openedName(32)
+BYTE token
+
+PUBLIC PROC Reset()
+  CARD index
+
+  position=0
+  written=0
+  primary=0
+  secondary=0
+  error=0
+  reads=0
+  writes=0
+  opens=0
+  closes=0
+  mismatch=0
+  FOR index=0 TO 31 DO
+    openedName(index)=0
+  OD
+
+RETURN
+
+PUBLIC BYTE POINTER FUNC Input()
+
+RETURN(@token)
+
+PUBLIC BYTE POINTER FUNC Output()
+
+RETURN(@token)
+
+PUBLIC CSTRING FUNC GetArgStr()
+
+RETURN(CSTRING(@current.argument(0)))
+
+PUBLIC LONGINT FUNC ReadArgs(CSTRING template ADDRESS POINTER values
+    CARD valueCapacity
+                            BYTE POINTER storage CARD storageCapacity)
+
+  error=DOSARGS.Parse(GetArgStr(),template,values,valueCapacity,storage,
+      storageCapacity)
+  IF error=0 THEN
+    RETURN(-1)
+  FI
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC IoErr()
+
+RETURN(error)
+
+PUBLIC LONGINT FUNC BreakPending()
+
+RETURN(LONGINT(position>=current.breakAt))
+
+PUBLIC LONGINT FUNC SetIoErr(LONGINT cause)
+  LONGINT previous
+
+  previous=error
+  error=cause
+
+RETURN(previous)
+
+PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
+  CARD index
+
+  opens==+1
+  error=LONGINT(current.openError)
+  IF mode<>1005 THEN
+    mismatch==+1
+  FI
+
+  index=0
+  WHILE name(index)<>0 AND index<31 DO
+    openedName(index)=name(index)
+    index==+1
+  OD
+
+  IF error<>0 THEN
+    RETURN(BYTE POINTER(0))
+  FI
+
+RETURN(@token)
+
+PUBLIC LONGINT FUNC Close(BYTE POINTER handle)
+
+  closes==+1
+  error=LONGINT(current.closeError)
+  IF error<>0 THEN
+    RETURN(0)
+  FI
+
+RETURN(-1)
+
+PUBLIC LONGINT FUNC Read(BYTE POINTER handle,buffer LONGINT length)
+  CARD count,index
+
+  reads==+1
+  error=0
+  IF reads=current.readFail THEN
+    error=226
+    RETURN(-1)
+  FI
+
+  count=current.chunk
+  IF LONGINT(count)>length THEN
+    count=CARD(length)
+  FI
+
+  IF LONGCARD(count)>current.length-position THEN
+    count=CARD(current.length-position)
+  FI
+
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      buffer(index)=BYTE(position+LONGCARD(index))
+    OD
+  FI
+
+  position==+LONGCARD(count)
+
+RETURN(LONGINT(count))
+
+PUBLIC LONGINT FUNC Write(BYTE POINTER handle,buffer LONGINT length)
+  CARD count,index
+
+  writes==+1
+  error=0
+  IF writes=current.writeFail THEN
+    error=214
+    RETURN(-1)
+  FI
+
+  IF current.zeroWrite<>0 THEN
+    RETURN(0)
+  FI
+
+  count=current.writeChunk
+  IF LONGINT(count)>length THEN
+    count=CARD(length)
+  FI
+
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      IF buffer(index)<>BYTE(written+LONGCARD(index)) THEN
+        mismatch==+1
+      FI
+    OD
+  FI
+
+  written==+LONGCARD(count)
+
+RETURN(LONGINT(count))
+
+ENDMODULE

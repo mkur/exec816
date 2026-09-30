@@ -1,0 +1,1278 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "scope": "Repeated filesystem/SIO path work and loader DOS-read granularity; same-profile HELLO measurements and focused cancellation/ownership regressions.",
+  "baseline_records": [
+    {
+      "path": "docs/experiments/spartados-dos-comparison.json",
+      "sha256": "24b14fecd384566a8f0adf4ed0e6ab9835166ab94f2a4cdaa0db92c1271f0b40"
+    },
+    {
+      "path": "docs/experiments/spartados-prime-control.json",
+      "sha256": "ac8880765b378e540ec35cbc02a0edf4fb44120fd1e65d413d95456d5be9ed8f"
+    }
+  ],
+  "inputs": {
+    "lib/dos/programfile.act": "2354feafbf9b05a73a30482dce3b759950aea25631b5a54eae698b01319416da",
+    "lib/fs/fsactive.act": "17b01a670bc7dee90e7f1dd0a184a7a1eaa9f3b56eb84b946f0d378c817fa75b",
+    "lib/fs/fsoperation.act": "9ccd3e61dd3bc40ee9ae55f9481fbd081c4b9c54222c7f3f143dfd4c22957186",
+    "lib/fs/fsworker.act": "497358a200485e03b8fdfd9835c5fcf264ed28572bbb5605ac20eec4f6620817",
+    "lib/io/blockio.act": "03f83d5b50bf72ca6a9e7713a17269ebdb819f22f45495255b0677fac4331c19",
+    "lib/io/blockwire.act": "4ac05ada380f204060b243764c3a35e5ca84a87e5c8216573cfbf02df1dddf34",
+    "tests/fixtures/block/blockwire.act": "8c153b9a1ae9889e1e8dcf26efa94d083020a9d7d7310a0d376621d51976645a",
+    "tests/fixtures/mydos/blockwire.act": "c53f348cb349974dd1ae11f1f20f306c8e7881d44d9d5d98a38732ad46431b1a",
+    "tests/programs/fscancelprobe.act": "4b27f4ff8d7e63f74bca1fd07aec691419b78236cbfe0795c60ea29ee45a12ba",
+    "tools/measure_command_loading.py": "ddda767b0adfd77379239e4767d121003a60791de2eca621a0d69a47c9eb96ac",
+    "tools/test_filesystem_active_cancel.py": "4e0f1f1b532202fd1dfdd9d1db7d8f19fe2dba73b113eb71b0b368b73ab00e80",
+    "tools/test_demo.py": "d1f10236b07634adb0a1f398433865f62b3e58847d8885c2326ab6df27120df3"
+  },
+  "compiler": "47cd55b2dac510922949832332b7a2c3220885be",
+  "compiler_override": false,
+  "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 15,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": false,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "off",
+    "exeloadmode": "default",
+    "kernel_id": "$eeca81434d995c35",
+    "actual_kernel_id": "$eeca81434d995c35",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "bundle_manifest": {
+    "path": "build/development/sio-hot-path/measurement/bundle/demo-manifest.json",
+    "sha256": "0b39b8c4fc8cf3c93d167765ac3ddda42c017e76ba3e37d1b1ec4364b48d7ca8"
+  },
+  "xex_sha256": "a21b7827fb8fafdce87e846e8b71cb3848d96e2b26f175136074046171ece0af",
+  "media_sha256": "2522811285c360cf6eb9473223dd3ef24b2c0a420f928a6f6592e30a8dc80efc",
+  "hello_bytes": 2359,
+  "payload_sha256": "8372b8f0308ae28ea5b087332f168fe9da8d7f9d82d0d187d83b862353a2ac8b",
+  "observer": {
+    "loadprobe.act": "ad0280e3fb30ef8763e8bbbe6d96dec6732458055c0858affa824bcb8f8b2da3",
+    "programfile.act": "08c1831e919c212231fbd8ac7ba494dbcc3f6ab72a245de9931c04ac0563fc1a",
+    "blockwire.act": "f94f8c6c952310a80f42503216d9af4dd83ce30b01f43e2517b2f1d2725fe5ee"
+  },
+  "loader_read_limit": {
+    "before": 512,
+    "after": 4096
+  },
+  "hello_dos_reads": {
+    "before": 5,
+    "after": 1,
+    "basis": "2359-byte immutable payload and the loader request limit; successful complete loading checked in emitted code"
+  },
+  "runs": {
+    "active": {
+      "result": {
+        "path": "build/development/sio-hot-path/measurement-active/results.json",
+        "sha256": "227a1c848905f5db544fdeeacc590371ad047e81f0e41f0ca71464497b1a980f"
+      },
+      "baseline": {
+        "open": {
+          "frames": 25,
+          "seconds": 0.5,
+          "reads": 3
+        },
+        "size_query_rewind_allocate": {
+          "frames": 6,
+          "seconds": 0.12,
+          "reads": 0
+        },
+        "payload": {
+          "frames": 172,
+          "seconds": 3.44,
+          "reads": 20
+        },
+        "close": {
+          "frames": 2,
+          "seconds": 0.04,
+          "reads": 0
+        },
+        "open_through_close": {
+          "frames": 205,
+          "seconds": 4.1,
+          "reads": 23
+        },
+        "relocate": {
+          "frames": 38,
+          "seconds": 0.76,
+          "reads": 0
+        },
+        "open_through_prompt": {
+          "frames": 260,
+          "seconds": 5.2,
+          "reads": 23
+        }
+      },
+      "after": {
+        "open": {
+          "frames": 25,
+          "seconds": 0.5,
+          "reads": 3
+        },
+        "size_query_rewind_allocate": {
+          "frames": 5,
+          "seconds": 0.1,
+          "reads": 0
+        },
+        "payload": {
+          "frames": 121,
+          "seconds": 2.42,
+          "reads": 20
+        },
+        "close": {
+          "frames": 1,
+          "seconds": 0.02,
+          "reads": 0
+        },
+        "open_through_close": {
+          "frames": 152,
+          "seconds": 3.04,
+          "reads": 23
+        },
+        "relocate": {
+          "frames": 38,
+          "seconds": 0.76,
+          "reads": 0
+        },
+        "open_through_prompt": {
+          "frames": 207,
+          "seconds": 4.14,
+          "reads": 23
+        }
+      },
+      "serial_before": {
+        "sectors": [
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88
+        ],
+        "read_count": 19,
+        "clock_hz": 1773447.5,
+        "tx_cycles_per_bit": [
+          30
+        ],
+        "rx_cycles_per_bit": [
+          31
+        ],
+        "span_ticks": 5329226,
+        "span_seconds": 3.0050091699923454,
+        "between_requests_ticks": [
+          47579,
+          47103,
+          47510,
+          150593,
+          47513,
+          47052,
+          46754,
+          113372,
+          40706,
+          39522,
+          39100,
+          153045,
+          46124,
+          57354,
+          56593,
+          144409,
+          47526,
+          68238
+        ],
+        "between_requests_seconds": 0.6992555460480223,
+        "mean_between_requests_ms": 38.84753033600124,
+        "log_sha256": "371c7eb0096251d89c6dc29cd862509935d65b5711f3d11d6350489843901273"
+      },
+      "serial_after": {
+        "sectors": [
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88
+        ],
+        "read_count": 19,
+        "clock_hz": 1773447.5,
+        "tx_cycles_per_bit": [
+          30
+        ],
+        "rx_cycles_per_bit": [
+          31
+        ],
+        "span_ticks": 3852640,
+        "span_seconds": 2.1724014948285753,
+        "between_requests_ticks": [
+          36210,
+          35462,
+          35529,
+          31242,
+          31231,
+          30338,
+          48842,
+          29855,
+          30195,
+          36441,
+          36654,
+          36229,
+          36675,
+          36694,
+          36457,
+          36679,
+          65162,
+          36754
+        ],
+        "between_requests_seconds": 0.3759056865230011,
+        "mean_between_requests_ms": 20.88364925127784,
+        "log_sha256": "950f71259d26ca1ef31b67d8780f8a0bbb78126c871ce59f6e7cfa7fd505303e"
+      },
+      "samples": [
+        {
+          "phase": "open",
+          "frame": 349,
+          "transfers": 1,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 0,
+            "map": 0,
+            "data": 0
+          }
+        },
+        {
+          "phase": "seek_end",
+          "frame": 374,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "rewind",
+          "frame": 377,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "payload",
+          "frame": 379,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "close",
+          "frame": 500,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "relocate",
+          "frame": 501,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "loaded",
+          "frame": 539,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "returned",
+          "frame": 540,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "prompt",
+          "frame": 556,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        }
+      ],
+      "directory": {
+        "start_frame": 568,
+        "start_transfers": 24,
+        "start_reads_by_kind": {
+          "other": 1,
+          "directory": 2,
+          "map": 2,
+          "data": 19
+        },
+        "frames": 279,
+        "transfers": 22,
+        "reads_by_kind": {
+          "other": 0,
+          "directory": 7,
+          "map": 15,
+          "data": 0
+        }
+      },
+      "prime_worker": {
+        "mode": "active",
+        "before": {
+          "live_tasks": 5,
+          "frames": 1,
+          "pass_number": 1,
+          "candidate": 102,
+          "count": 26
+        },
+        "after_commands": {
+          "live_tasks": 5,
+          "frames": 10,
+          "pass_number": 1,
+          "candidate": 1002,
+          "count": 168
+        }
+      },
+      "reductions_percent": {
+        "payload": 29.651162790697672,
+        "open_through_prompt": 20.38461538461539,
+        "inter_request_gap_sum": 46.24201571978877
+      }
+    },
+    "stopped": {
+      "result": {
+        "path": "build/development/sio-hot-path/measurement/results.json",
+        "sha256": "d3f37059527a02f5fd776c3f166a4f0a9de00ff6bf030fec0dc8d1c287c7660c"
+      },
+      "baseline": {
+        "open": {
+          "frames": 31,
+          "seconds": 0.62,
+          "reads": 3
+        },
+        "size_query_rewind_allocate": {
+          "frames": 4,
+          "seconds": 0.08,
+          "reads": 0
+        },
+        "payload": {
+          "frames": 142,
+          "seconds": 2.84,
+          "reads": 20
+        },
+        "close": {
+          "frames": 2,
+          "seconds": 0.04,
+          "reads": 0
+        },
+        "open_through_close": {
+          "frames": 179,
+          "seconds": 3.58,
+          "reads": 23
+        },
+        "relocate": {
+          "frames": 34,
+          "seconds": 0.68,
+          "reads": 0
+        },
+        "open_through_prompt": {
+          "frames": 226,
+          "seconds": 4.52,
+          "reads": 23
+        }
+      },
+      "after": {
+        "open": {
+          "frames": 32,
+          "seconds": 0.64,
+          "reads": 3
+        },
+        "size_query_rewind_allocate": {
+          "frames": 2,
+          "seconds": 0.04,
+          "reads": 0
+        },
+        "payload": {
+          "frames": 123,
+          "seconds": 2.46,
+          "reads": 20
+        },
+        "close": {
+          "frames": 2,
+          "seconds": 0.04,
+          "reads": 0
+        },
+        "open_through_close": {
+          "frames": 159,
+          "seconds": 3.18,
+          "reads": 23
+        },
+        "relocate": {
+          "frames": 34,
+          "seconds": 0.68,
+          "reads": 0
+        },
+        "open_through_prompt": {
+          "frames": 205,
+          "seconds": 4.1,
+          "reads": 23
+        }
+      },
+      "serial_before": {
+        "sectors": [
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88
+        ],
+        "read_count": 19,
+        "clock_hz": 1773447.5,
+        "tx_cycles_per_bit": [
+          30
+        ],
+        "rx_cycles_per_bit": [
+          31
+        ],
+        "span_ticks": 4588091,
+        "span_seconds": 2.5871028040018103,
+        "between_requests_ticks": [
+          45247,
+          45265,
+          45252,
+          132942,
+          45272,
+          44802,
+          44510,
+          108562,
+          44318,
+          44194,
+          43959,
+          135150,
+          44608,
+          44197,
+          44214,
+          106600,
+          45328,
+          44559
+        ],
+        "between_requests_seconds": 0.6253238395836358,
+        "mean_between_requests_ms": 34.740213310201995,
+        "log_sha256": "ae9fc96e031c638340ca1fca75653e7a694d16af52373b5f50ba77f9c6debe43"
+      },
+      "serial_after": {
+        "sectors": [
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88
+        ],
+        "read_count": 19,
+        "clock_hz": 1773447.5,
+        "tx_cycles_per_bit": [
+          30
+        ],
+        "rx_cycles_per_bit": [
+          31
+        ],
+        "span_ticks": 3859849,
+        "span_seconds": 2.1764664586913343,
+        "between_requests_ticks": [
+          30379,
+          30547,
+          30096,
+          34377,
+          33589,
+          33591,
+          33596,
+          33619,
+          33392,
+          29984,
+          30242,
+          30253,
+          30022,
+          30270,
+          30070,
+          30296,
+          30295,
+          30301
+        ],
+        "between_requests_seconds": 0.3185428381725425,
+        "mean_between_requests_ms": 17.696824342919026,
+        "log_sha256": "ffb56fd511d7fca894443d87b217ab3b1c33c3eba450c67b4340f4b39027ff33"
+      },
+      "samples": [
+        {
+          "phase": "open",
+          "frame": 353,
+          "transfers": 1,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 0,
+            "map": 0,
+            "data": 0
+          }
+        },
+        {
+          "phase": "seek_end",
+          "frame": 385,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "rewind",
+          "frame": 386,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "payload",
+          "frame": 387,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "close",
+          "frame": 510,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "relocate",
+          "frame": 512,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "loaded",
+          "frame": 546,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "returned",
+          "frame": 546,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "prompt",
+          "frame": 558,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        }
+      ],
+      "directory": {
+        "start_frame": 570,
+        "start_transfers": 24,
+        "start_reads_by_kind": {
+          "other": 1,
+          "directory": 2,
+          "map": 2,
+          "data": 19
+        },
+        "frames": 255,
+        "transfers": 22,
+        "reads_by_kind": {
+          "other": 0,
+          "directory": 7,
+          "map": 15,
+          "data": 0
+        }
+      },
+      "prime_worker": {
+        "mode": "stopped",
+        "before": {
+          "live_tasks": 5,
+          "frames": 1,
+          "pass_number": 1,
+          "candidate": 102,
+          "count": 26
+        },
+        "stopped": {
+          "live_tasks": 4,
+          "frames": 1,
+          "pass_number": 1,
+          "candidate": 102,
+          "count": 26
+        },
+        "stop_flag_address": 36074,
+        "after_commands": {
+          "live_tasks": 4,
+          "frames": 1,
+          "pass_number": 1,
+          "candidate": 102,
+          "count": 26
+        }
+      },
+      "reductions_percent": {
+        "payload": 13.380281690140839,
+        "open_through_prompt": 9.292035398230091,
+        "inter_request_gap_sum": 49.05954035198141
+      }
+    }
+  },
+  "validation": {
+    "active-raw": {
+      "record": {
+        "path": "build/development/sio-hot-path/active-raw/results.json",
+        "sha256": "be7d832298a87d8fc1f28ce883780c814d040404c0063fe75a50cd63b652dffa"
+      },
+      "xex_sha256": "5a32f6968ccff22c06342493e7a3c05d4e57c7fcb4237d36d681201a8d4716ae",
+      "checks": null,
+      "cases": [
+        {
+          "name": "before-send",
+          "status": "pass",
+          "checks": [
+            2393
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "wire",
+          "status": "pass",
+          "checks": [
+            2394
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              1
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              5
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "final",
+          "status": "pass",
+          "checks": [
+            1625
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              3,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "copy",
+          "status": "pass",
+          "checks": [
+            2265
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "preparing",
+          "status": "pass",
+          "checks": [
+            2394
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              1
+            ],
+            "accepted": [
+              1
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "terminal",
+          "status": "pass",
+          "checks": [
+            2393
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "scope": "Controlled Task-side injection through the real foreground delivery function; unchanged production collection/abort/checkpoint logic. Scheduling hooks are not latency evidence."
+    },
+    "active-opt": {
+      "record": {
+        "path": "build/development/sio-hot-path/active-opt/results.json",
+        "sha256": "b20e868fa34f2b71b8006b9d5b4c16c8bd2594e647c305c47757d37887db98b1"
+      },
+      "xex_sha256": "50f8b8fcd7e8a936234ab02c0ed9e949674be18959ea61142d0e19b67eb9a5cc",
+      "checks": null,
+      "cases": [
+        {
+          "name": "before-send",
+          "status": "pass",
+          "checks": [
+            2393
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "wire",
+          "status": "pass",
+          "checks": [
+            2394
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              1
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              5
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "final",
+          "status": "pass",
+          "checks": [
+            1625
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              3,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "copy",
+          "status": "pass",
+          "checks": [
+            2265
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "preparing",
+          "status": "pass",
+          "checks": [
+            2394
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              1
+            ],
+            "accepted": [
+              1
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "terminal",
+          "status": "pass",
+          "checks": [
+            2393
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "scope": "Controlled Task-side injection through the real foreground delivery function; unchanged production collection/abort/checkpoint logic. Scheduling hooks are not latency evidence."
+    },
+    "queued-opt": {
+      "record": {
+        "path": "build/development/sio-hot-path/queued-opt/results.json",
+        "sha256": "29a18b7d3ceb28d4bbb2d302d6a68e039efb38882d27e198cee84df47cd65856"
+      },
+      "xex_sha256": "cd7acc85ea50a980521bcabe21f66ef4c73ae80f6ce8e5876c02e1580d5f7df5",
+      "checks": [
+        77
+      ],
+      "cases": [],
+      "scope": "Queued cancellation during a 70003-byte peer read; claim/reply ordering"
+    },
+    "block-opt": {
+      "record": {
+        "path": "build/development/sio-hot-path/block-opt/results.json",
+        "sha256": "867b1568764712a517125b7026f989990496bb33531df457d913ff9daf827791"
+      },
+      "xex_sha256": "2cda55abc0f7789bf03eb745986e516dca069423524f7fc6863573b9722738b8",
+      "checks": [
+        1868
+      ],
+      "cases": [],
+      "scope": "Standalone real-SIO block adapter"
+    },
+    "loading_smoke": {
+      "record": {
+        "path": "build/development/sio-hot-path/measurement/bundle/loading-results.json",
+        "sha256": "ecaec38ebe1681fb246bedc2d39a3f18ad0965492056723f307b5ed06f3245ba"
+      },
+      "scope": "Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration",
+      "baseline_memory": [
+        186440,
+        65536,
+        186440,
+        186400
+      ],
+      "baseline_ownership": {
+        "live": 5,
+        "processes": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "objects": [
+          2,
+          0,
+          0,
+          0,
+          3,
+          0,
+          0,
+          0
+        ]
+      },
+      "observations": [
+        {
+          "stage": "startup",
+          "prime_frames": 1,
+          "prime_count": 26,
+          "guest_frame": 327
+        },
+        {
+          "stage": "HELLO",
+          "prime_frames": 5,
+          "prime_count": 95,
+          "guest_frame": 557
+        },
+        {
+          "stage": "CAT STORY.TXT | WC",
+          "prime_frames": 25,
+          "prime_count": 367,
+          "guest_frame": 1699
+        },
+        {
+          "stage": "MEM",
+          "prime_frames": 26,
+          "prime_count": 378,
+          "guest_frame": 1739
+        },
+        {
+          "stage": "break-loading",
+          "prime_frames": 28,
+          "prime_count": 408,
+          "guest_frame": 1862
+        },
+        {
+          "stage": "HELLO",
+          "prime_frames": 33,
+          "prime_count": 464,
+          "guest_frame": 2104
+        },
+        {
+          "stage": "MEM",
+          "prime_frames": 34,
+          "prime_count": 478,
+          "guest_frame": 2160
+        }
+      ]
+    },
+    "host": {
+      "tests": 193,
+      "status": "pass",
+      "log": {
+        "path": "build/development/sio-hot-path-host-final.log",
+        "sha256": "564133d6af887db48a51b1bb79ccf90258d738c44ea2428ee8c74e0ade336335"
+      }
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "memory_map_equal_to_shipped_demo": true
+  },
+  "caveats": [
+    "Phase timings have 20-ms VBI resolution; gap timings use passive hardware-event master clocks.",
+    "Both measurements use a diagnostic image with bounded loader/sector counters. The shipped build/demo bundle is unchanged.",
+    "Generic57600 models rotating media: changing request timing changes rotational waits. These are workload observations, not fixed per-call savings or a general claim of matching SpartaDOS throughput.",
+    "No scheduler, interrupt gateway, serial engine, compiler qualification or full release matrix changes."
+  ]
+}

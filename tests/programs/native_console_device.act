@@ -1,0 +1,410 @@
+MODULE NATIVECONSOLEDEVICE
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE HEAPCORE
+USE CONSOLEDRIVER
+USE CONSOLEIDLEPROBE
+USE CONSOLEINPUT
+USE CONSOLETYPES
+CARD checks
+BYTE inputReady,writerDone,phase
+EXEC.Task POINTER writer
+PROC POINTER absent()
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER first,second,third
+EXEC.Message unrelated
+BYTE POINTER large
+CONSOLETYPES.Instance POINTER instance
+CONSOLETYPES.Service POINTER service
+BYTE ARRAY name=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY message=[72 101 108 108 111 10]
+BYTE ARRAY scroll(64)
+BYTE ARRAY input(64)
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Borrow the fixture's admitted device binding for request-validation checks.
+PROC CopyBinding(EXEC.IOStdReq POINTER target)
+
+  target.io_Device=first.io_Device
+  target.io_Unit=first.io_Unit
+
+RETURN
+
+PROC Prepare(EXEC.IOStdReq POINTER request CARD command BYTE POINTER buffer
+    LONGCARD length)
+
+  request.io_Command=command
+  request.io_Data=buffer
+  request.io_Length=length
+  request.io_Offset=0
+
+RETURN
+
+; Check the terminal reply before allowing its request storage to be reused.
+PROC Collected(EXEC.IOStdReq POINTER request INT expected LONGCARD actual)
+  INT error
+
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(request))
+  Require(error=expected AND request.io_Actual=actual)
+  Require(request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+
+RETURN
+
+PROC Setup()
+  INT error
+
+  port=EXEC.CreateMsgPort()
+  Require(port<>EXEC.MsgPort POINTER(0))
+  first=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  second=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  third=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(first<>EXEC.IOStdReq POINTER(0) AND second<>EXEC.IOStdReq POINTER(0)
+      AND third<>EXEC.IOStdReq POINTER(0))
+  error=EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(first),0)
+  Require(error=EXEC.IOERR_OPENFAIL)
+  Require(CONSOLEDRIVER.Start()=1)
+  instance=CONSOLEDRIVER.GetInstance()
+  service=CONSOLEDRIVER.GetService()
+  error=EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(first),0)
+  Require(error=0)
+  error=EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(second),0)
+  Require(error=EXEC.IOERR_UNITBUSY)
+  CopyBinding(second)
+  CopyBinding(third)
+
+RETURN
+
+PROC BadOpen(LONGCARD unit,flags CARD size INT expected)
+  EXEC.IORequest POINTER request
+  INT error
+
+  request=EXEC.CreateIORequest(port,LONGCARD(size))
+  Require(request<>EXEC.IORequest POINTER(0))
+  error=EXEC.OpenDevice(name,unit,request,flags)
+  Require(error=expected AND request.io_Device=BYTE POINTER(0)
+      AND request.io_Unit=BYTE POINTER(0))
+  EXEC.DeleteIORequest(request)
+
+RETURN
+
+PROC Immediate(CARD command LONGCARD length,offset INT expected)
+
+  Prepare(second,command,BYTE POINTER(0),length)
+  second.io_Offset=offset
+  second.io_Flags=EXEC.IOF_QUICK
+  second.io_Actual=123
+  EXEC.BeginIO(EXEC.IORequest POINTER(second))
+  Require(second.io_Error=BYTE(expected) AND second.io_Actual=0)
+  Require(second.io_Data=BYTE POINTER(0) AND second.io_Length=length
+      AND second.io_Offset=offset)
+  Require(second.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+      AND second.io_Flags=EXEC.IOF_QUICK)
+
+RETURN
+
+; Reject malformed requests before they acquire worker queue ownership.
+PROC ImmediateCases()
+
+  BadOpen($10000,0,42,EXEC.IOERR_OPENFAIL)
+  BadOpen(0,$10000,42,EXEC.IOERR_OPENFAIL)
+  BadOpen(0,0,26,EXEC.IOERR_BADLENGTH)
+  Immediate(EXEC.CMD_READ,0,0,0)
+  Immediate(EXEC.CMD_WRITE,0,0,0)
+  Immediate(EXEC.CMD_WRITE,$ffffffff,0,EXEC.IOERR_BADLENGTH)
+  Immediate(EXEC.CMD_READ,2,0,EXEC.IOERR_BADADDRESS)
+  Immediate(EXEC.CMD_WRITE,0,$10000,EXEC.IOERR_BADADDRESS)
+  Immediate(EXEC.CMD_RESET,0,0,EXEC.IOERR_NOCMD)
+
+RETURN
+
+; Require pending requests to return exactly once through their reply port.
+PROC PendingAndReplies()
+  INT error
+
+  Prepare(first,EXEC.CMD_READ,input,64)
+  EXEC.SendIO(EXEC.IORequest POINTER(first))
+  Prepare(third,EXEC.CMD_READ,input,64)
+  EXEC.SendIO(EXEC.IORequest POINTER(third))
+  Collected(third,EXEC.IOERR_UNITBUSY,0)
+  unrelated.mn_Length=EXEC.MESSAGE_SIZE
+  unrelated.mn_ReplyPort=port
+  EXEC.ReplyMsg(@unrelated)
+  Prepare(second,EXEC.CMD_WRITE,message,6)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(second))
+  Require(error=0 AND second.io_Actual=6)
+  Require(second.io_Data=message AND second.io_Length=6)
+  Require(EXEC.GetMsg(port)=@unrelated
+      AND EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+  Require(EXEC.CheckIO(EXEC.IORequest POINTER(first))=EXEC.IORequest POINTER(0))
+  Require(instance.cells(0)=72 AND instance.cells(4)=111 AND instance.row=1
+      AND instance.column=0)
+  EXEC.AbortIO(EXEC.IORequest POINTER(first))
+  Collected(first,EXEC.IOERR_ABORTED,0)
+
+RETURN
+
+; Cancel requests that have not yet been claimed by the worker.
+PROC QueuedCancel()
+
+  Prepare(first,EXEC.CMD_WRITE,message,6)
+  Prepare(second,EXEC.CMD_WRITE,message,6)
+  EXEC.Forbid()
+  EXEC.SendIO(EXEC.IORequest POINTER(first))
+  EXEC.SendIO(EXEC.IORequest POINTER(second))
+  EXEC.AbortIO(EXEC.IORequest POINTER(second))
+  EXEC.Permit()
+  Collected(first,0,6)
+  Collected(second,EXEC.IOERR_ABORTED,0)
+  Require(EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+  ; SendIO must reply even for zero-length operations.
+  Prepare(second,EXEC.CMD_WRITE,BYTE POINTER(0),0)
+  second.io_Flags=EXEC.IOF_QUICK
+  EXEC.SendIO(EXEC.IORequest POINTER(second))
+  Require((second.io_Flags & EXEC.IOF_QUICK)=0)
+  Collected(second,0,0)
+
+RETURN
+
+; Retire cancellation without leaving retained scrolling state unfinished.
+PROC ScrollCancel()
+  CARD index
+  LONGCARD actual
+  INT error
+
+  FOR index=0 TO 63 DO
+    scroll(index)=10
+  OD
+
+  Prepare(first,EXEC.CMD_WRITE,scroll,64)
+  EXEC.SendIO(EXEC.IORequest POINTER(first))
+  WHILE instance.operation<>CONSOLETYPES.OP_SCROLL DO
+    Require(EXEC.CheckIO(EXEC.IORequest POINTER(first))=EXEC.IORequest POINTER(0))
+    EXEC.Yield()
+  OD
+
+  EXEC.AbortIO(EXEC.IORequest POINTER(first))
+  Require(EXEC.CheckIO(EXEC.IORequest POINTER(first))=EXEC.IORequest POINTER(0))
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(first))
+  actual=first.io_Actual
+  Require(error=EXEC.IOERR_ABORTED AND actual>0 AND actual<64)
+  Require(instance.operation=CONSOLETYPES.OP_IDLE AND instance.row=23)
+  FOR index=0 TO 63 DO
+    scroll(index)=255
+  OD
+
+  EXEC.AbortIO(EXEC.IORequest POINTER(first))
+  Require(first.io_Error=BYTE(EXEC.IOERR_ABORTED) AND first.io_Actual=actual)
+
+RETURN
+
+; Check transfer progress across multiple bounded console write quanta.
+PROC LargeWrite()
+  INT error
+
+  large=EXEC.AllocMem(65560,EXEC.MEMF_PUBLIC OR EXEC.MEMF_LINEAR OR EXEC.MEMF_CLEAR)
+  Require(large<>BYTE POINTER(0))
+  large(0)=12
+  large(1)=65
+  large(65535)=66
+  large(65536)=67
+  large(65559)=90
+  Prepare(first,EXEC.CMD_WRITE,large,65560)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=0 AND first.io_Actual=65560)
+  Require(first.io_Data=large AND first.io_Length=65560)
+  Require(instance.column=4 AND instance.row=0)
+  Require(instance.cells(0)=65 AND instance.cells(1)=66 AND instance.cells(2)=67
+      AND instance.cells(3)=90)
+  EXEC.FreeMem(large,65560)
+  large=BYTE POINTER(0)
+  ; Subsequent work uses retained cells after source release.
+  Prepare(second,EXEC.CMD_WRITE,message,6)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(second))
+  Require(error=0)
+  Require(instance.cells(0)=65 AND instance.cells(3)=90 AND instance.cells(4)=72)
+
+RETURN
+
+PROC FillLoss(CARD firstTick)
+  CARD index
+
+  EXEC.Forbid()
+  FOR index=firstTick TO firstTick+128 DO
+    CONSOLEINPUT.Deliver(instance,(LONGCARD(index) LSH 16) OR $3f)
+  OD
+
+  EXEC.Permit()
+
+RETURN
+
+PROC LossRead()
+
+  FillLoss(1)
+  Require(instance.inputLost=1)
+  Immediate(EXEC.CMD_READ,0,0,0)
+  Require(instance.inputLost=1)
+  Prepare(first,EXEC.CMD_READ,input,64)
+  EXEC.SendIO(EXEC.IORequest POINTER(first))
+  Collected(first,EXEC.CONERR_INPUTOVERFLOW,0)
+  Require(instance.inputLost=0 AND instance.inputCount=0)
+
+RETURN
+
+; Exercise CLEAR while other console requests retain their own ownership.
+PROC ClearPending()
+  LONGCARD bits
+
+  Prepare(first,EXEC.CMD_READ,input,64)
+  EXEC.SendIO(EXEC.IORequest POINTER(first))
+  WHILE instance.readReady<>2 OR service.task.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+
+  EXEC.Forbid()
+  FillLoss(200)
+  Prepare(second,EXEC.CMD_CLEAR,BYTE POINTER($ffffff),$ffffffff)
+  EXEC.SendIO(EXEC.IORequest POINTER(second))
+  EXEC.Permit()
+  Collected(second,0,0)
+  Require(instance.inputLost=0 AND instance.inputCount=0)
+  Require(EXEC.CheckIO(EXEC.IORequest POINTER(first))=EXEC.IORequest POINTER(0))
+  Require(instance.cells(0)=65)
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(instance,$02000015)
+  EXEC.Signal(@service.task,$40000000)
+  EXEC.Permit()
+  Collected(first,0,1)
+  Require(input(0)=98)
+
+RETURN
+
+; Keep a second Task writing while the main client checks input progress.
+PROC WriterEntry()
+  EXEC.MsgPort POINTER ownPort
+  EXEC.IOStdReq POINTER request
+  INT error
+
+  ownPort=EXEC.CreateMsgPort()
+  Require(ownPort<>EXEC.MsgPort POINTER(0))
+  request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(ownPort,42))
+  Require(request<>EXEC.IOStdReq POINTER(0))
+  CopyBinding(request)
+  Prepare(request,EXEC.CMD_WRITE,message,6)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=6)
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(ownPort)
+  writerDone=1
+
+RETURN
+
+PROC StartWriter()
+  EXEC.Task POINTER added
+
+  writer=EXEC.Task POINTER($0d0000)
+  writer.tc_Node.ln_Type=EXEC.NT_TASK
+  writer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  writer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  writer.tc_SPReg=writer.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@writer.tc_MemEntry)
+  added=EXEC.AddTask(writer,@WriterEntry,absent)
+  Require(added=writer)
+
+RETURN
+
+PROC PhysicalRead(BYTE stage,expected)
+
+  Prepare(first,EXEC.CMD_READ,input,64)
+  EXEC.SendIO(EXEC.IORequest POINTER(first))
+  IF stage=1 THEN
+    StartWriter()
+  FI
+
+  inputReady=stage
+  Collected(first,0,1)
+  Require(input(0)=expected)
+
+RETURN
+
+PROC Cleanup()
+  CARD ticks
+
+  WHILE writer.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(writerDone=1)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(first))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(first))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(second))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(third))
+  EXEC.DeleteMsgPort(port)
+  Require(CONSOLEDRIVER.Stop()=1)
+
+RETURN
+
+; Deliver work in the worker's empty-check-to-wait window.
+PROC IdleArrival(BYTE unused)
+
+  WHILE service.task.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+
+  CONSOLEIDLEPROBE.armed=1
+  EXEC.Signal(@service.task,$80000000)
+  WHILE CONSOLEIDLEPROBE.arrived=0 DO
+    EXEC.Yield()
+  OD
+
+  ; The worker has already found no work. This new post must survive Wait.
+  Prepare(first,EXEC.CMD_CLEAR,NULL,0)
+  EXEC.SendIO(EXEC.IORequest POINTER(first))
+  CONSOLEIDLEPROBE.release=1
+  Collected(first,0,0)
+  Require(EXEC.GetMsg(port)=NULL)
+
+RETURN
+
+; Exercise console device admission, completion and cancellation.
+PROC Main()
+
+  phase=1
+  Setup()
+  IdleArrival(0)
+  phase=2
+  ImmediateCases()
+  phase=3
+  PendingAndReplies()
+  phase=4
+  QueuedCancel()
+  phase=5
+  ScrollCancel()
+  phase=6
+  LargeWrite()
+  phase=7
+  LossRead()
+  phase=8
+  ClearPending()
+  phase=9
+  PhysicalRead(1,97)
+  PhysicalRead(2,10)
+  PhysicalRead(3,3)
+  phase=10
+  Cleanup()
+
+RETURN
+
+ENDMODULE

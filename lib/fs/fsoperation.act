@@ -1,0 +1,275 @@
+; Private packet ownership. The foreground scope owns cancellation linkage;
+; the queued packet is never reused to submit a cancellation request.
+MODULE FSOPERATION
+USE EXEC
+USE EXECLISTS
+USE DOSCORE
+USE DOSBREAKTYPES
+USE HEAPCORE
+INCLUDE "../dos/dos-types.inc"
+INCLUDE "../dos/dos-packets.inc"
+
+PUBLIC TYPE WirePacket=[
+  EXEC.Message sp_Msg
+  DosPacket sp_Pkt
+]
+
+PUBLIC CONST PREPARED=1,QUEUED=2,ACTIVE=3,REPLIED=4,COLLECTED=5
+
+PUBLIC BYTE FUNC Cancellable(LONGINT action)
+
+RETURN(action=8 OR action=23 OR action=24 OR action=82 OR action=1005
+    OR action=1008)
+
+; Called while Forbid serializes publication with worker claim/reply.
+PUBLIC LONGINT FUNC Prepare(DOSBREAKTYPES.Scope POINTER scope DOSCORE.DosSlot
+    POINTER slot WirePacket POINTER packet EXEC.MsgPort POINTER handler)
+
+  IF scope.active=0 OR scope.client<>slot.context
+      OR scope.owner<>BYTE POINTER(slot.owner) THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  IF scope.opState<>0 AND scope.opState<>COLLECTED THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  IF scope.pending<>0 THEN
+    RETURN(ERROR_BREAK)
+  FI
+
+  IF scope.sequence=LONGCARD($ffffffff) THEN
+    RETURN(ERROR_NO_FREE_STORE)
+  FI
+
+  scope.sequence==+1
+  scope.command=scope.generation
+  scope.slot=BYTE POINTER(slot)
+  scope.packet=BYTE POINTER(packet)
+  scope.handler=BYTE POINTER(handler)
+  scope.opState=PREPARED
+  scope.cancel=0
+  scope.enqueued=0
+  scope.next=BYTE POINTER(0)
+
+RETURN(0)
+
+; Check that cancellation still refers to the same caller and packet lifetime.
+BYTE FUNC Authority(DOSBREAKTYPES.Scope POINTER scope)
+  DOSCORE.DosSlot POINTER slot
+  WirePacket POINTER packet
+
+  IF scope.active=0 OR scope.sequence=0 OR scope.command<>scope.generation THEN
+    RETURN(0)
+  FI
+
+  slot=DOSCORE.DosSlot POINTER(scope.slot)
+  IF slot=DOSCORE.DosSlot POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF slot.context<>scope.client OR BYTE POINTER(slot.owner)<>scope.owner THEN
+    RETURN(0)
+  FI
+
+  IF ADDRESS(scope.packet)<>ADDRESS(scope.client)+SIZE(6) THEN
+    RETURN(0)
+  FI
+
+  packet=WirePacket POINTER(scope.packet)
+
+RETURN(packet.sp_Pkt.dp_Arg7=LONGINT(ADDRESS(slot))
+    AND packet.sp_Pkt.dp_Link=@packet.sp_Msg
+    AND packet.sp_Pkt.dp_Port=packet.sp_Msg.mn_ReplyPort)
+
+; Report cancellation only for an active operation with intact ownership.
+PUBLIC BYTE FUNC Canceled(DOSBREAKTYPES.Scope POINTER scope)
+
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF scope.opState<>ACTIVE OR (scope.cancel=0 AND scope.pending=0) THEN
+    RETURN(0)
+  FI
+
+  IF Authority(scope)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+RETURN(1)
+
+; Transfer a matching queued operation to worker ownership.
+PUBLIC PROC Claim(DOSBREAKTYPES.Scope POINTER scope WirePacket POINTER packet)
+
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN
+  FI
+
+  IF scope.packet<>BYTE POINTER(packet) THEN
+    RETURN
+  FI
+
+  IF scope.opState<>QUEUED OR Authority(scope)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  scope.opState=ACTIVE
+
+RETURN
+
+; Publish a durable cancellation notification without reusing the I/O packet.
+PUBLIC PROC Request(DOSBREAKTYPES.Scope POINTER scope)
+  DOSCORE.DosRegistry POINTER registry
+  BYTE POINTER bytes
+
+  EXEC.Forbid()
+  IF scope.opState=QUEUED OR scope.opState=ACTIVE THEN
+    IF Authority(scope)=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    scope.cancel=1
+    IF scope.enqueued=0 THEN
+      registry=DOSCORE.GetRegistry()
+      IF registry.cancelReady=0 THEN
+        HEAPCORE.Abort($ff94)
+      FI
+
+      scope.next=registry.cancelHead
+      registry.cancelHead=BYTE POINTER(scope)
+      scope.enqueued=1
+      bytes=registry.task
+      EXEC.Signal(EXEC.Task POINTER(bytes),LONGCARD(1) LSH registry.cancelSignal)
+    FI
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
+; Remove a notification before publishing the terminal packet reply. Nothing
+; may retain a pointer into a scope after its caller collects that reply.
+PROC Unlink(DOSCORE.DosRegistry POINTER registry DOSBREAKTYPES.Scope POINTER scope)
+  DOSBREAKTYPES.Scope POINTER item,previous
+  BYTE count
+
+  item=DOSBREAKTYPES.Scope POINTER(registry.cancelHead)
+  previous=DOSBREAKTYPES.Scope POINTER(0)
+  count=0
+  WHILE item<>DOSBREAKTYPES.Scope POINTER(0) DO
+    count==+1
+    IF count>8 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    IF item=scope THEN
+      IF previous=DOSBREAKTYPES.Scope POINTER(0) THEN
+        registry.cancelHead=item.next
+      ELSE
+        previous.next=item.next
+      FI
+
+      item.next=BYTE POINTER(0)
+      item.enqueued=0
+      RETURN
+    FI
+
+    previous=item
+    item=DOSBREAKTYPES.Scope POINTER(item.next)
+  OD
+
+  IF scope.enqueued<>0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+RETURN
+
+; Retire cancellation linkage before allowing the packet to be collected.
+PUBLIC PROC ReplyReady(DOSBREAKTYPES.Scope POINTER scope WirePacket POINTER packet)
+
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN
+  FI
+
+  IF scope.packet<>BYTE POINTER(packet) THEN
+    RETURN
+  FI
+
+  IF (scope.opState<>ACTIVE AND scope.opState<>QUEUED) OR Authority(scope)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  Unlink(DOSCORE.GetRegistry(),scope)
+  scope.opState=REPLIED
+
+RETURN
+
+; Forget packet references after the caller has received the terminal reply.
+PUBLIC PROC Collect(DOSBREAKTYPES.Scope POINTER scope)
+
+  IF scope.opState<>REPLIED OR scope.enqueued<>0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  scope.opState=COLLECTED
+  scope.packet=BYTE POINTER(0)
+  scope.handler=BYTE POINTER(0)
+  scope.slot=BYTE POINTER(0)
+  scope.cancel=0
+  scope.command=0
+
+RETURN
+
+; The worker alone claims/removes/replies. Each pass is bounded by Task capacity.
+; Active operations keep their request and adapter until normal/B4 retirement.
+PUBLIC PROC Pump(DOSCORE.DosRegistry POINTER registry)
+  DOSBREAKTYPES.Scope POINTER scope
+  WirePacket POINTER packet
+  BYTE count
+  ; This is only an advisory empty test, never a borrowed queue pointer.
+  ; Producers publish under Forbid and post a durable worker signal. An arrival
+  ; during this test is handled at the next bounded checkpoint or wakes Wait.
+  ; Reload the head under Forbid before inspecting or changing any scope.
+  IF registry.cancelHead=BYTE POINTER(0) THEN
+    RETURN
+  FI
+
+  count=0
+  DO
+    EXEC.Forbid()
+    scope=DOSBREAKTYPES.Scope POINTER(registry.cancelHead)
+    IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+      EXEC.Permit()
+      EXIT
+    FI
+
+    count==+1
+    IF count>8 OR Authority(scope)=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    registry.cancelHead=scope.next
+    scope.next=BYTE POINTER(0)
+    scope.enqueued=0
+    IF scope.opState=QUEUED THEN
+      packet=WirePacket POINTER(scope.packet)
+      EXECLISTS.Remove(@packet.sp_Msg.mn_Node)
+      packet.sp_Pkt.dp_Res1=0
+      packet.sp_Pkt.dp_Res2=ERROR_BREAK
+      IF packet.sp_Pkt.dp_Type=82 OR packet.sp_Pkt.dp_Type=1008 THEN
+        packet.sp_Pkt.dp_Res1=-1
+      FI
+
+      scope.opState=REPLIED
+      EXEC.ReplyMsg(@packet.sp_Msg)
+    ELSEIF scope.opState<>ACTIVE THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    EXEC.Permit()
+  OD
+
+RETURN
+
+ENDMODULE

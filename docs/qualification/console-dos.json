@@ -1,0 +1,2071 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-21",
+  "status": "pass",
+  "scope": "Slice 7: resident command-loop example, physical line editing and one real DOS.Read while a separate client receives/echoes keys. Five live public Tasks; integrated eight-task timing remains slice 8.",
+  "source_revision_before_change": "5871102",
+  "inputs": {
+    "examples/console.act": "b687f679d60bf3e21a5a45aae8ca06b41f21935270789f525a5642040810932b",
+    "examples/console-session.inc": "2715304b08b60b6451156040e13545d73e677eac10c9959fa27cd0ccfcda5ad4",
+    "tests/programs/native_console_dos.act": "2964da8332ec7b8906373afdd1d7a95d981a6fcb3a2745e31d1e91907f0738e6",
+    "tools/test_console_dos.py": "140f454437b6cdda472f695b1d0a9f56c4a79ec6929a66c533f9878301bff28a",
+    "docs/console-example.md": "df8acdd79acc1c0d7bf33720e914dad7b927e0b2610ca303178c605c1b465651"
+  },
+  "compiler_pin": "toolchain/actionc.json",
+  "platform_pin": "toolchain/altirra-console.json",
+  "platform_pin_sha256": "9de15dcfe3cb25bb3746cf62024a9bce02e0e231be267cd2418448fb1423077c",
+  "limits": {
+    "checkpoint_host_seconds": 120,
+    "checkpoint_guest_frames": 6000,
+    "large_read_host_seconds": 1800,
+    "large_read_guest_frames": 30000,
+    "line_characters": 36,
+    "requested_file_bytes": 70003
+  },
+  "cases": [
+    {
+      "name": "final128-raw",
+      "artifact": "build/console-slice7/final128-raw/results.json",
+      "artifact_sha256": "ebefee160677908c2910f3e9405dccca8946c1cfff79c9492af96add3642bb1b",
+      "source_inputs": {
+        "examples/console.act": "b687f679d60bf3e21a5a45aae8ca06b41f21935270789f525a5642040810932b",
+        "examples/console-session.inc": "7ff2ac5c0b1fa33de9faacc5f1ed3f16ff40199c0366077ec8700b7c1ad85e95",
+        "tests/programs/native_console_dos.act": "2964da8332ec7b8906373afdd1d7a95d981a6fcb3a2745e31d1e91907f0738e6",
+        "tools/test_console_dos.py": "2287424d4d4c9f0599d9fa365fb718ec038198e9b29a280f77f1af032c8c388f"
+      },
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "image_sha256": "a5c1b771d6af5c4ef25d5e5ff8010a73813622ececaa67bc68dd60f50be6ad76",
+      "xex_sha256": "14047c1f24cad49cd3d21760cfc9bc192494bc40c74fb61607fb3f97bd859df6",
+      "media_sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+      "sector_bytes": 128,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "counters": {
+        "typed": 56,
+        "duringRead": 5,
+        "lines": 7,
+        "textReads": 2,
+        "errors": 1,
+        "verified": 777
+      },
+      "interaction": [
+        {
+          "key": "BACKSPACE",
+          "start_frame": 269,
+          "consumed_frame": 272,
+          "during_read": false
+        },
+        {
+          "key": "R",
+          "start_frame": 277,
+          "consumed_frame": 279,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 284,
+          "consumed_frame": 286,
+          "during_read": false
+        },
+        {
+          "key": "A",
+          "start_frame": 408,
+          "consumed_frame": 410,
+          "during_read": true
+        },
+        {
+          "key": "B",
+          "start_frame": 415,
+          "consumed_frame": 417,
+          "during_read": true
+        },
+        {
+          "key": "BACKSPACE",
+          "start_frame": 422,
+          "consumed_frame": 425,
+          "during_read": true
+        },
+        {
+          "key": "C",
+          "start_frame": 430,
+          "consumed_frame": 431,
+          "during_read": true
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 436,
+          "consumed_frame": 438,
+          "during_read": true
+        },
+        {
+          "key": "X",
+          "start_frame": 458,
+          "consumed_frame": 460,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 465,
+          "consumed_frame": 466,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 471,
+          "consumed_frame": 472,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 477,
+          "consumed_frame": 479,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 484,
+          "consumed_frame": 486,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 491,
+          "consumed_frame": 493,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 498,
+          "consumed_frame": 500,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 505,
+          "consumed_frame": 506,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 511,
+          "consumed_frame": 512,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 517,
+          "consumed_frame": 519,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 524,
+          "consumed_frame": 526,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 531,
+          "consumed_frame": 533,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 538,
+          "consumed_frame": 540,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 545,
+          "consumed_frame": 546,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 551,
+          "consumed_frame": 552,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 557,
+          "consumed_frame": 559,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 564,
+          "consumed_frame": 566,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 571,
+          "consumed_frame": 573,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 578,
+          "consumed_frame": 580,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 585,
+          "consumed_frame": 586,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 591,
+          "consumed_frame": 592,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 597,
+          "consumed_frame": 599,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 604,
+          "consumed_frame": 606,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 611,
+          "consumed_frame": 613,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 618,
+          "consumed_frame": 620,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 625,
+          "consumed_frame": 626,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 631,
+          "consumed_frame": 632,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 637,
+          "consumed_frame": 639,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 644,
+          "consumed_frame": 646,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 651,
+          "consumed_frame": 653,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 658,
+          "consumed_frame": 660,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 665,
+          "consumed_frame": 666,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 671,
+          "consumed_frame": 672,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 677,
+          "consumed_frame": 679,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 684,
+          "consumed_frame": 686,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 691,
+          "consumed_frame": 693,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 698,
+          "consumed_frame": 700,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 705,
+          "consumed_frame": 706,
+          "during_read": false
+        },
+        {
+          "key": "BACKSPACE",
+          "start_frame": 712,
+          "consumed_frame": 714,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 720,
+          "consumed_frame": 721,
+          "during_read": false
+        },
+        {
+          "key": "T",
+          "start_frame": 726,
+          "consumed_frame": 727,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 732,
+          "consumed_frame": 734,
+          "during_read": false
+        },
+        {
+          "key": "E",
+          "start_frame": 854,
+          "consumed_frame": 855,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 860,
+          "consumed_frame": 862,
+          "during_read": false
+        },
+        {
+          "key": "T",
+          "start_frame": 925,
+          "consumed_frame": 926,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 931,
+          "consumed_frame": 932,
+          "during_read": false
+        },
+        {
+          "key": "Q",
+          "start_frame": 1071,
+          "consumed_frame": 1073,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 1078,
+          "consumed_frame": 1080,
+          "during_read": false
+        }
+      ],
+      "observations": [
+        {
+          "stage": "console-open",
+          "live": 3,
+          "created": 2
+        },
+        {
+          "stage": "first-read",
+          "live": 5,
+          "created": 4
+        },
+        {
+          "stage": "echo",
+          "live": 5,
+          "created": 4,
+          "cells_sha256": "4bfb3c3908dd78fc39f3bf54f5c6bca7f215622b50d3032c25c5c8195a780e92",
+          "screen_sha256": "58010c30bf7ae91d1df5f1432dfb65caa3df02c7b6d1ba16c7724e97f199eb4b"
+        },
+        {
+          "stage": "files",
+          "live": 5,
+          "created": 4,
+          "cells_sha256": "61091e51a6a0447626fa7419f3a3106aa55d7d5062a830b1176eb13db8c08097",
+          "screen_sha256": "9cc344d1c2e3c8387801c736452a852f1a29f7fb8e50ea48fbb7261439c7abf1",
+          "atascii_preview_sha256": "fc4340bf649ea094948f882066d2ddfdd78f77fce26c3b432e5d467a68d188b3"
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 4,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 1250,
+            "untouched_above_floor": 30
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 730,
+            "untouched_above_floor": 38
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 760,
+            "untouched_above_floor": 8
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 724,
+            "untouched_above_floor": 44
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 656,
+            "untouched_above_floor": 112
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1205,
+          "untouched_from_base": 331,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        "os_calls": 0,
+        "vbi_count": 901
+      }
+    },
+    {
+      "name": "final128-opt",
+      "artifact": "build/console-slice7/final128-opt/results.json",
+      "artifact_sha256": "f51dbe7df8d0698f4d68034ad70133b160436fc8752f9a096e6050b528de1ce2",
+      "source_inputs": {
+        "examples/console.act": "b687f679d60bf3e21a5a45aae8ca06b41f21935270789f525a5642040810932b",
+        "examples/console-session.inc": "7ff2ac5c0b1fa33de9faacc5f1ed3f16ff40199c0366077ec8700b7c1ad85e95",
+        "tests/programs/native_console_dos.act": "2964da8332ec7b8906373afdd1d7a95d981a6fcb3a2745e31d1e91907f0738e6",
+        "tools/test_console_dos.py": "2287424d4d4c9f0599d9fa365fb718ec038198e9b29a280f77f1af032c8c388f"
+      },
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "image_sha256": "fd990a50cb0d0c7f9faee38c31e14b0cd0195589ec5fe400907c674d94f2e457",
+      "xex_sha256": "a3f29336ed25a37b4719dcd43bca366360bc45e60266d4e5c0cc611bb79822fc",
+      "media_sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+      "sector_bytes": 128,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "counters": {
+        "typed": 56,
+        "duringRead": 5,
+        "lines": 7,
+        "textReads": 2,
+        "errors": 1,
+        "verified": 777
+      },
+      "interaction": [
+        {
+          "key": "BACKSPACE",
+          "start_frame": 248,
+          "consumed_frame": 250,
+          "during_read": false
+        },
+        {
+          "key": "R",
+          "start_frame": 255,
+          "consumed_frame": 256,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 261,
+          "consumed_frame": 264,
+          "during_read": false
+        },
+        {
+          "key": "A",
+          "start_frame": 383,
+          "consumed_frame": 384,
+          "during_read": true
+        },
+        {
+          "key": "B",
+          "start_frame": 389,
+          "consumed_frame": 390,
+          "during_read": true
+        },
+        {
+          "key": "BACKSPACE",
+          "start_frame": 395,
+          "consumed_frame": 396,
+          "during_read": true
+        },
+        {
+          "key": "C",
+          "start_frame": 401,
+          "consumed_frame": 403,
+          "during_read": true
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 408,
+          "consumed_frame": 411,
+          "during_read": true
+        },
+        {
+          "key": "X",
+          "start_frame": 432,
+          "consumed_frame": 434,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 439,
+          "consumed_frame": 440,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 445,
+          "consumed_frame": 446,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 451,
+          "consumed_frame": 452,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 457,
+          "consumed_frame": 459,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 464,
+          "consumed_frame": 466,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 471,
+          "consumed_frame": 472,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 477,
+          "consumed_frame": 478,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 483,
+          "consumed_frame": 484,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 489,
+          "consumed_frame": 491,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 496,
+          "consumed_frame": 498,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 503,
+          "consumed_frame": 504,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 509,
+          "consumed_frame": 510,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 515,
+          "consumed_frame": 516,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 521,
+          "consumed_frame": 523,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 528,
+          "consumed_frame": 530,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 535,
+          "consumed_frame": 536,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 541,
+          "consumed_frame": 542,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 547,
+          "consumed_frame": 548,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 553,
+          "consumed_frame": 555,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 560,
+          "consumed_frame": 562,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 567,
+          "consumed_frame": 568,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 573,
+          "consumed_frame": 574,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 579,
+          "consumed_frame": 580,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 585,
+          "consumed_frame": 587,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 592,
+          "consumed_frame": 594,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 599,
+          "consumed_frame": 600,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 605,
+          "consumed_frame": 606,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 611,
+          "consumed_frame": 612,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 617,
+          "consumed_frame": 619,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 624,
+          "consumed_frame": 626,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 631,
+          "consumed_frame": 632,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 637,
+          "consumed_frame": 638,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 643,
+          "consumed_frame": 644,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 649,
+          "consumed_frame": 651,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 656,
+          "consumed_frame": 658,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 663,
+          "consumed_frame": 664,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 669,
+          "consumed_frame": 670,
+          "during_read": false
+        },
+        {
+          "key": "BACKSPACE",
+          "start_frame": 676,
+          "consumed_frame": 678,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 684,
+          "consumed_frame": 685,
+          "during_read": false
+        },
+        {
+          "key": "T",
+          "start_frame": 690,
+          "consumed_frame": 691,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 696,
+          "consumed_frame": 697,
+          "during_read": false
+        },
+        {
+          "key": "E",
+          "start_frame": 816,
+          "consumed_frame": 817,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 822,
+          "consumed_frame": 823,
+          "during_read": false
+        },
+        {
+          "key": "T",
+          "start_frame": 888,
+          "consumed_frame": 889,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 894,
+          "consumed_frame": 895,
+          "during_read": false
+        },
+        {
+          "key": "Q",
+          "start_frame": 1030,
+          "consumed_frame": 1032,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 1037,
+          "consumed_frame": 1038,
+          "during_read": false
+        }
+      ],
+      "observations": [
+        {
+          "stage": "console-open",
+          "live": 3,
+          "created": 2
+        },
+        {
+          "stage": "first-read",
+          "live": 5,
+          "created": 4
+        },
+        {
+          "stage": "echo",
+          "live": 5,
+          "created": 4,
+          "cells_sha256": "4bfb3c3908dd78fc39f3bf54f5c6bca7f215622b50d3032c25c5c8195a780e92",
+          "screen_sha256": "58010c30bf7ae91d1df5f1432dfb65caa3df02c7b6d1ba16c7724e97f199eb4b"
+        },
+        {
+          "stage": "files",
+          "live": 5,
+          "created": 4,
+          "cells_sha256": "61091e51a6a0447626fa7419f3a3106aa55d7d5062a830b1176eb13db8c08097",
+          "screen_sha256": "9cc344d1c2e3c8387801c736452a852f1a29f7fb8e50ea48fbb7261439c7abf1",
+          "atascii_preview_sha256": "fc4340bf649ea094948f882066d2ddfdd78f77fce26c3b432e5d467a68d188b3"
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 4,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 988,
+            "untouched_above_floor": 292
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 560,
+            "untouched_above_floor": 208
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 610,
+            "untouched_above_floor": 158
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 562,
+            "untouched_above_floor": 206
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 504,
+            "untouched_above_floor": 264
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1131,
+          "untouched_from_base": 405,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        "os_calls": 0,
+        "vbi_count": 873
+      }
+    },
+    {
+      "name": "final256-raw",
+      "artifact": "build/console-slice7/final256-raw/results.json",
+      "artifact_sha256": "bcf5472f602b6cbbced4360168857570f4047dcfaa58bf0395ea76276f8dbb19",
+      "source_inputs": {
+        "examples/console.act": "b687f679d60bf3e21a5a45aae8ca06b41f21935270789f525a5642040810932b",
+        "examples/console-session.inc": "7ff2ac5c0b1fa33de9faacc5f1ed3f16ff40199c0366077ec8700b7c1ad85e95",
+        "tests/programs/native_console_dos.act": "2964da8332ec7b8906373afdd1d7a95d981a6fcb3a2745e31d1e91907f0738e6",
+        "tools/test_console_dos.py": "2287424d4d4c9f0599d9fa365fb718ec038198e9b29a280f77f1af032c8c388f"
+      },
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "image_sha256": "13497fd529b277bb037f1028eedba1f0683f8eaf3cfbda5c1e861e98d5ddd005",
+      "xex_sha256": "ac549e12c1dbbab31a0bd5290d2f7c6c5cdeb717b2a2d7084b1e1dabc8f24554",
+      "media_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "sector_bytes": 256,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "counters": {
+        "typed": 56,
+        "duringRead": 5,
+        "lines": 7,
+        "textReads": 2,
+        "errors": 1,
+        "verified": 70003
+      },
+      "interaction": [
+        {
+          "key": "BACKSPACE",
+          "start_frame": 269,
+          "consumed_frame": 272,
+          "during_read": false
+        },
+        {
+          "key": "R",
+          "start_frame": 277,
+          "consumed_frame": 279,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 284,
+          "consumed_frame": 286,
+          "during_read": false
+        },
+        {
+          "key": "A",
+          "start_frame": 401,
+          "consumed_frame": 404,
+          "during_read": true
+        },
+        {
+          "key": "B",
+          "start_frame": 409,
+          "consumed_frame": 410,
+          "during_read": true
+        },
+        {
+          "key": "BACKSPACE",
+          "start_frame": 415,
+          "consumed_frame": 418,
+          "during_read": true
+        },
+        {
+          "key": "C",
+          "start_frame": 423,
+          "consumed_frame": 424,
+          "during_read": true
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 429,
+          "consumed_frame": 431,
+          "during_read": true
+        },
+        {
+          "key": "X",
+          "start_frame": 2835,
+          "consumed_frame": 2838,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2843,
+          "consumed_frame": 2845,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2850,
+          "consumed_frame": 2852,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2857,
+          "consumed_frame": 2858,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2863,
+          "consumed_frame": 2864,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2869,
+          "consumed_frame": 2871,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2876,
+          "consumed_frame": 2878,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2883,
+          "consumed_frame": 2885,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2890,
+          "consumed_frame": 2892,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2897,
+          "consumed_frame": 2898,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2903,
+          "consumed_frame": 2904,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2909,
+          "consumed_frame": 2911,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2916,
+          "consumed_frame": 2918,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2923,
+          "consumed_frame": 2925,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2930,
+          "consumed_frame": 2932,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2937,
+          "consumed_frame": 2938,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2943,
+          "consumed_frame": 2944,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2949,
+          "consumed_frame": 2951,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2956,
+          "consumed_frame": 2958,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2963,
+          "consumed_frame": 2965,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2970,
+          "consumed_frame": 2972,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2977,
+          "consumed_frame": 2978,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2983,
+          "consumed_frame": 2984,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2989,
+          "consumed_frame": 2991,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2996,
+          "consumed_frame": 2998,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3003,
+          "consumed_frame": 3005,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3010,
+          "consumed_frame": 3012,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3017,
+          "consumed_frame": 3018,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3023,
+          "consumed_frame": 3024,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3029,
+          "consumed_frame": 3031,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3036,
+          "consumed_frame": 3038,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3043,
+          "consumed_frame": 3045,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3050,
+          "consumed_frame": 3052,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3057,
+          "consumed_frame": 3058,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3063,
+          "consumed_frame": 3064,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3069,
+          "consumed_frame": 3071,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3076,
+          "consumed_frame": 3078,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3083,
+          "consumed_frame": 3085,
+          "during_read": false
+        },
+        {
+          "key": "BACKSPACE",
+          "start_frame": 3091,
+          "consumed_frame": 3092,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 3098,
+          "consumed_frame": 3099,
+          "during_read": false
+        },
+        {
+          "key": "T",
+          "start_frame": 3104,
+          "consumed_frame": 3106,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 3111,
+          "consumed_frame": 3112,
+          "during_read": false
+        },
+        {
+          "key": "E",
+          "start_frame": 3242,
+          "consumed_frame": 3244,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 3249,
+          "consumed_frame": 3250,
+          "during_read": false
+        },
+        {
+          "key": "T",
+          "start_frame": 3328,
+          "consumed_frame": 3330,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 3335,
+          "consumed_frame": 3336,
+          "during_read": false
+        },
+        {
+          "key": "Q",
+          "start_frame": 3491,
+          "consumed_frame": 3492,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 3497,
+          "consumed_frame": 3498,
+          "during_read": false
+        }
+      ],
+      "observations": [
+        {
+          "stage": "console-open",
+          "live": 3,
+          "created": 2
+        },
+        {
+          "stage": "first-read",
+          "live": 5,
+          "created": 4
+        },
+        {
+          "stage": "echo",
+          "live": 5,
+          "created": 4,
+          "cells_sha256": "46ee60ccb59cc20e811e5a045d174e932438ee8c1ee77bd980b449fb6267a661",
+          "screen_sha256": "648ead8a7cd0ae986b7fd615f67e2aa72e1539cb51321a64bc63c48b81000a58"
+        },
+        {
+          "stage": "files",
+          "live": 5,
+          "created": 4,
+          "cells_sha256": "61091e51a6a0447626fa7419f3a3106aa55d7d5062a830b1176eb13db8c08097",
+          "screen_sha256": "9cc344d1c2e3c8387801c736452a852f1a29f7fb8e50ea48fbb7261439c7abf1",
+          "atascii_preview_sha256": "fc4340bf649ea094948f882066d2ddfdd78f77fce26c3b432e5d467a68d188b3"
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 4,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 1250,
+            "untouched_above_floor": 30
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 722,
+            "untouched_above_floor": 46
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 760,
+            "untouched_above_floor": 8
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 724,
+            "untouched_above_floor": 44
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 664,
+            "untouched_above_floor": 104
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1179,
+          "untouched_from_base": 357,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        "os_calls": 0,
+        "vbi_count": 3545
+      }
+    },
+    {
+      "name": "final256-opt",
+      "artifact": "build/console-slice7/final256-opt/results.json",
+      "artifact_sha256": "55fbb968eea8642b9ed63b1e6d479243e120bc261dd85e5e5fd2beb859674b71",
+      "source_inputs": {
+        "examples/console.act": "b687f679d60bf3e21a5a45aae8ca06b41f21935270789f525a5642040810932b",
+        "examples/console-session.inc": "7ff2ac5c0b1fa33de9faacc5f1ed3f16ff40199c0366077ec8700b7c1ad85e95",
+        "tests/programs/native_console_dos.act": "2964da8332ec7b8906373afdd1d7a95d981a6fcb3a2745e31d1e91907f0738e6",
+        "tools/test_console_dos.py": "140f454437b6cdda472f695b1d0a9f56c4a79ec6929a66c533f9878301bff28a"
+      },
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "image_sha256": "90e3884b63f1ffbbdee97143d849b59af86d573bca40574d6c7022e7176c41a0",
+      "xex_sha256": "a963f8707b7a1bd8910ed7c6f63b39e511ff2f471dbcc7593f8372a4cbc14892",
+      "media_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "sector_bytes": 256,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "counters": {
+        "typed": 56,
+        "duringRead": 5,
+        "lines": 7,
+        "textReads": 2,
+        "errors": 1,
+        "verified": 70003
+      },
+      "interaction": [
+        {
+          "key": "BACKSPACE",
+          "start_frame": 248,
+          "consumed_frame": 250,
+          "during_read": false
+        },
+        {
+          "key": "R",
+          "start_frame": 255,
+          "consumed_frame": 256,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 261,
+          "consumed_frame": 264,
+          "during_read": false
+        },
+        {
+          "key": "A",
+          "start_frame": 376,
+          "consumed_frame": 377,
+          "during_read": true
+        },
+        {
+          "key": "B",
+          "start_frame": 382,
+          "consumed_frame": 383,
+          "during_read": true
+        },
+        {
+          "key": "BACKSPACE",
+          "start_frame": 388,
+          "consumed_frame": 390,
+          "during_read": true
+        },
+        {
+          "key": "C",
+          "start_frame": 395,
+          "consumed_frame": 397,
+          "during_read": true
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 402,
+          "consumed_frame": 405,
+          "during_read": true
+        },
+        {
+          "key": "X",
+          "start_frame": 2811,
+          "consumed_frame": 2813,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2818,
+          "consumed_frame": 2819,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2824,
+          "consumed_frame": 2826,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2831,
+          "consumed_frame": 2832,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2837,
+          "consumed_frame": 2838,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2843,
+          "consumed_frame": 2844,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2849,
+          "consumed_frame": 2851,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2856,
+          "consumed_frame": 2858,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2863,
+          "consumed_frame": 2864,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2869,
+          "consumed_frame": 2870,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2875,
+          "consumed_frame": 2876,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2881,
+          "consumed_frame": 2883,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2888,
+          "consumed_frame": 2890,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2895,
+          "consumed_frame": 2896,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2901,
+          "consumed_frame": 2902,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2907,
+          "consumed_frame": 2908,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2913,
+          "consumed_frame": 2915,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2920,
+          "consumed_frame": 2922,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2927,
+          "consumed_frame": 2928,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2933,
+          "consumed_frame": 2934,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2939,
+          "consumed_frame": 2940,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2945,
+          "consumed_frame": 2947,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2952,
+          "consumed_frame": 2954,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2959,
+          "consumed_frame": 2960,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2965,
+          "consumed_frame": 2966,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2971,
+          "consumed_frame": 2972,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2977,
+          "consumed_frame": 2979,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2984,
+          "consumed_frame": 2986,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2991,
+          "consumed_frame": 2992,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 2997,
+          "consumed_frame": 2998,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3003,
+          "consumed_frame": 3004,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3009,
+          "consumed_frame": 3011,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3016,
+          "consumed_frame": 3018,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3023,
+          "consumed_frame": 3024,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3029,
+          "consumed_frame": 3030,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3035,
+          "consumed_frame": 3036,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3041,
+          "consumed_frame": 3043,
+          "during_read": false
+        },
+        {
+          "key": "X",
+          "start_frame": 3048,
+          "consumed_frame": 3050,
+          "during_read": false
+        },
+        {
+          "key": "BACKSPACE",
+          "start_frame": 3056,
+          "consumed_frame": 3057,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 3063,
+          "consumed_frame": 3064,
+          "during_read": false
+        },
+        {
+          "key": "T",
+          "start_frame": 3069,
+          "consumed_frame": 3071,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 3076,
+          "consumed_frame": 3077,
+          "during_read": false
+        },
+        {
+          "key": "E",
+          "start_frame": 3205,
+          "consumed_frame": 3207,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 3212,
+          "consumed_frame": 3213,
+          "during_read": false
+        },
+        {
+          "key": "T",
+          "start_frame": 3292,
+          "consumed_frame": 3293,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 3298,
+          "consumed_frame": 3300,
+          "during_read": false
+        },
+        {
+          "key": "Q",
+          "start_frame": 3451,
+          "consumed_frame": 3452,
+          "during_read": false
+        },
+        {
+          "key": "RETURN",
+          "start_frame": 3457,
+          "consumed_frame": 3459,
+          "during_read": false
+        }
+      ],
+      "observations": [
+        {
+          "stage": "console-open",
+          "live": 3,
+          "created": 2
+        },
+        {
+          "stage": "first-read",
+          "live": 5,
+          "created": 4
+        },
+        {
+          "stage": "echo",
+          "live": 5,
+          "created": 4,
+          "cells_sha256": "4bfb3c3908dd78fc39f3bf54f5c6bca7f215622b50d3032c25c5c8195a780e92",
+          "screen_sha256": "58010c30bf7ae91d1df5f1432dfb65caa3df02c7b6d1ba16c7724e97f199eb4b"
+        },
+        {
+          "stage": "files",
+          "live": 5,
+          "created": 4,
+          "cells_sha256": "61091e51a6a0447626fa7419f3a3106aa55d7d5062a830b1176eb13db8c08097",
+          "screen_sha256": "9cc344d1c2e3c8387801c736452a852f1a29f7fb8e50ea48fbb7261439c7abf1",
+          "atascii_preview_sha256": "fc4340bf649ea094948f882066d2ddfdd78f77fce26c3b432e5d467a68d188b3"
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 4,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 988,
+            "untouched_above_floor": 292
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 560,
+            "untouched_above_floor": 208
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 610,
+            "untouched_above_floor": 158
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 562,
+            "untouched_above_floor": 206
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 504,
+            "untouched_above_floor": 264
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1131,
+          "untouched_from_base": 405,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        "os_calls": 0,
+        "vbi_count": 3467
+      }
+    }
+  ],
+  "example_builds": [
+    {
+      "name": "example-raw",
+      "artifact": "build/console-slice7/example-raw/build.json",
+      "artifact_sha256": "8a6cf8969ea69427112d6e631b58e53a70b0dfb6877a71e8422ea73805553ff0",
+      "image_sha256": "701546f779e3020a822e8c19a0acd50eb00c127ac072d98136c2affcd44b629b",
+      "xex_sha256": "b8578a89266f7ef5b20570df8cbecc029ab8a0a6f3663359a4f700990fbcf401",
+      "scope": "Standalone example builds; emitted execution uses the identical shared session plus fixture assertions."
+    },
+    {
+      "name": "example-opt",
+      "artifact": "build/console-slice7/example-opt/build.json",
+      "artifact_sha256": "fd931df9f45a248518b346eab74f2873c5bc590b3845a041f39873c7dac6aeb5",
+      "image_sha256": "a595e02b65b0080bdbec10918ff61fae8046599ffd060a65da4454c69a0a65bb",
+      "xex_sha256": "f2ced1bb3a981c8eef2d80ed279063b5088bba2fbb659bdebab18b633960e268",
+      "scope": "Standalone example builds; emitted execution uses the identical shared session plus fixture assertions."
+    }
+  ],
+  "memory": {
+    "fixed_bank_zero_reserved_delta": 0,
+    "per_task_bank_zero_reserved_delta": 0,
+    "loading_including_os": 57232,
+    "runtime_including_os": 61536,
+    "existing_slots_used": 5,
+    "existing_slot_bytes": 1568,
+    "example_static_near_bytes": 293,
+    "example_heap_buffers": 70303,
+    "console_heap_payload": 2048
+  },
+  "coverage": [
+    "Real physical keys are handled and echoed during the single large Read on a separate persistent client; actual bytes verified: 777 on original 128-byte media and 70003 on original 256-byte media",
+    "Exclusive console open shared by separate READ and WRITE requests; durable reply checks prevent a shared-port lost wake while output replies are collected",
+    "56 physical key presses per case: BS at empty line, r Return, a b BS c Return, 38 x presses (clamped to 36), BS Return, t Return, e Return, t Return, q Return",
+    "Exact 259-byte ATASCII preview conversion checked on host; original media unchanged; repeated text opens and missing-file error preserve usability",
+    "Three Tasks after console/reader admission; first DOS open raises live count to five/created count four (root is not in created counter); repeated opens/display operations keep those counts",
+    "Reader termination, all borrowed request collection and one CloseDevice before exit; automatic console/DOS/SIO retirement, exact screen/mask/cursor restoration, heap baseline and all stack/domain guards",
+    "Both raw and optimized pinned compiler output, unchanged bank-zero reservations, standalone example builds and visual screenshot inspection"
+  ],
+  "failed_diagnostics": [
+    {
+      "name": "dos128-raw",
+      "reason": "Original all-in-one reader helper hit the checked stack floor during DOS client allocation, before transfer. Natural open/transfer/close helpers reduce its live frame; final raw runs leave 8 bytes above the untouched 256-byte interrupt reserve."
+    },
+    {
+      "name": "initial-package",
+      "reason": "Many separate small globals exceeded the existing 64-extent manifest capacity; grouped example state and text constants fit without changing that limit."
+    }
+  ],
+  "limitations": [
+    "128-byte fixture has a 777-byte file and therefore returns a short prefix of the same 70003-byte request; only the 256-byte fixture contains the full 70003-byte file",
+    "No serial deadline or eight-task qualification claim from these five-task unobserved runs",
+    "Raw reader stack headroom above the 256-byte interrupt reserve is only 8 bytes in these runs; further call depth needs fresh measurement",
+    "No complete shell, DOS CON handler, loader, key repeat or multiple windows"
+  ],
+  "screenshots": [
+    {
+      "path": "docs/qualification/images/console-dos-echo.png",
+      "sha256": "c0b169f09876e34dbd284f0a812b98475b53fdf6f12f3ca6580f114ef0dd041a"
+    },
+    {
+      "path": "docs/qualification/images/console-dos-files.png",
+      "sha256": "0a2577d77a10b5201b08a691bbfc607cbf27a665ef4815da7fbb5982458df64d"
+    }
+  ]
+}

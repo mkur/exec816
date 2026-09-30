@@ -1,0 +1,52 @@
+MODULE TASKROOT
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+
+EXEC.Task survivor,replacement
+VOLATILE BYTE phase
+CARD ARRAY checks(6)
+ADDRESS initialRoot,freshRoot
+PROC POINTER missing()
+
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC RunReplacement()
+
+  freshRoot=ADDRESS(EXEC.FindTask(BYTE POINTER(0)))
+  phase=3
+
+RETURN
+
+PROC RunSurvivor()
+  EXEC.Task POINTER item
+
+  checks(0)=CARD(phase)
+  item=EXEC.Task POINTER(initialRoot)
+  checks(1)=CARD(item.tc_State)
+  PrepareTask(@replacement,TASKSTACKS.LOWER0,BYTE POINTER(0))
+  item=EXEC.AddTask(@replacement,@RunReplacement,missing)
+  checks(2)=CARD(item=@replacement)
+  AwaitRemoval(item)
+  checks(3)=CARD(phase)
+  checks(4)=CARD(freshRoot=ADDRESS(@replacement))
+  checks(5)=CARD(initialRoot<>freshRoot)
+
+RETURN
+
+; Exercise root Task replacement while another Task survives.
+PROC Main()
+  EXEC.Task POINTER item
+
+  initialRoot=ADDRESS(EXEC.FindTask(BYTE POINTER(0)))
+  PrepareTask(@survivor,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  EXEC.Forbid()
+  item=EXEC.AddTask(@survivor,@RunSurvivor,missing)
+  phase=2
+  EXEC.RemTask(EXEC.Task POINTER(0))
+  phase=$ff
+
+RETURN
+
+ENDMODULE

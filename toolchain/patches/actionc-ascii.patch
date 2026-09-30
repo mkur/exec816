@@ -1,0 +1,47 @@
+diff --git a/docs/ascii.md b/docs/ascii.md
+new file mode 100644
+index 00000000..34e5f754
+--- /dev/null
++++ b/docs/ascii.md
+@@ -0,0 +1,16 @@
++# Character constants
++
++`USE ASCII` provides named character codes without runtime code, data or imports.
++
++| Constants | Values |
++| --- | --- |
++| `NUL` | 0 |
++| `TAB`, `LF`, `VT`, `FF`, `CR` | 9, 10, 11, 12, 13 |
++| `SPACE`, `DOUBLE_QUOTE`, `ASTERISK` | 32, 34, 42 |
++| `DIGIT_ZERO`, `DIGIT_NINE` | 48, 57 |
++| `ATASCII_EOL` | $9b (Atari end-of-line, an extension to ASCII) |
++
++Names are qualified, for example `ASCII.SPACE` or `ASCII.ATASCII_EOL`.
++The Atari constant lives in the same module for convenience; it does not change
++the standard ASCII values. This module supplies constants only, with no string
++operations or character classification calls.
+diff --git a/embedded/modules/ascii.act b/embedded/modules/ascii.act
+new file mode 100644
+index 00000000..330e6c2d
+--- /dev/null
++++ b/embedded/modules/ascii.act
+@@ -0,0 +1,19 @@
++; Character codes only: no runtime storage or imports.
++MODULE ASCII
++
++PUBLIC CONST NUL=0
++PUBLIC CONST TAB=9
++PUBLIC CONST LF=10
++PUBLIC CONST VT=11
++PUBLIC CONST FF=12
++PUBLIC CONST CR=13
++PUBLIC CONST SPACE=32
++PUBLIC CONST DOUBLE_QUOTE=34
++PUBLIC CONST ASTERISK=42
++PUBLIC CONST DIGIT_ZERO=48
++PUBLIC CONST DIGIT_NINE=57
++
++; Atari extension, kept here for character handling alongside ASCII.
++PUBLIC CONST ATASCII_EOL=$9b
++
++ENDMODULE

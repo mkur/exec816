@@ -1,0 +1,107 @@
+MODULE DOSCAPTEST
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE FSREGISTRY
+USE FSTYPES
+USE HEAPCORE
+EXEC.Task ARRAY tasks(7)
+VOLATILE BYTE ARRAY started(8)
+VOLATILE BYTE finish
+BYTE count
+CARD checks
+LONGINT expected
+LONGCARD before
+DOS.FileHandle POINTER file
+DOSCLIENT.ClientContext POINTER client
+DOSCORE.DosRegistry POINTER registry
+PROC POINTER absent()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Child()
+  EXEC.Task POINTER self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  started(CARD(self.tc_UserData))=1
+  WHILE finish=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Admit(BYTE index)
+  EXEC.Task POINTER task
+
+  task=@tasks(index)
+  task.tc_Node.ln_Type=EXEC.NT_TASK
+  task.tc_UserData=ADDRESS(index+1)
+  task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(index+1))
+  task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(index+1))
+  task.tc_SPReg=task.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@task.tc_MemEntry)
+  EXEC.AddTask(task,@Child,absent)
+  Require(task.tc_State<>EXEC.TS_INVALID)
+
+RETURN
+
+PROC Failure()
+  CARD ticks
+
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file=DOS.FileHandle POINTER(0) AND DOS.IoErr()=expected)
+  WHILE registry.worker<>BYTE POINTER(0) DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(registry.runtime=BYTE POINTER(0) AND registry.state=FSTYPES.STATE_FAILED)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Exercise DOS context capacity and ownership after failed admission.
+PROC Main()
+  BYTE index
+  CARD ticks
+
+  client=DOSCLIENT.Ensure()
+  Require(client<>DOSCLIENT.ClientContext POINTER(0))
+  before=EXEC.AvailMem(0)
+  registry=DOSCORE.GetRegistry()
+  FOR index=0 TO count-1 DO
+    Admit(index)
+  OD
+
+  FOR index=1 TO count DO
+    WHILE started(index)=0 DO
+      ticks=EXECTASKS.Sleep(1)
+    OD
+  OD
+
+  Failure()
+  finish=1
+  FOR index=0 TO count-1 DO
+    WHILE tasks(index).tc_State<>EXEC.TS_REMOVED DO
+      ticks=EXECTASKS.Sleep(1)
+    OD
+  OD
+
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

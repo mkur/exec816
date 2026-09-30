@@ -1,0 +1,117 @@
+MODULE FSINFO
+USE FSTYPES
+USE FSBTYPES
+INCLUDE "../dos/dos-types.inc"
+; Kept in the caller's FIB reserved bytes, so each lock/info pair walks alone.
+PUBLIC TYPE Enumeration=[
+  LONGCARD magic
+  BYTE POINTER lock,info
+  LONGCARD generation
+  LONGCARD next
+]
+
+PUBLIC CONST ENUM_MAGIC=$38424946
+
+PUBLIC Enumeration POINTER FUNC EnumerationState(FileInfoBlock POINTER info)
+  BYTE POINTER bytes
+
+  bytes=info.fib_Reserved
+
+RETURN(Enumeration POINTER(bytes))
+
+; Start each public file-information result with deterministic reserved bytes.
+PUBLIC PROC Clear(FileInfoBlock POINTER info)
+  BYTE POINTER bytes
+  CARD index
+
+  bytes=BYTE POINTER(info)
+  FOR index=0 TO FILEINFOBLOCK_SIZE-1 DO
+    bytes(index)=0
+  OD
+
+RETURN
+
+; Expose a terminated display name, including the physical alias for a root.
+PUBLIC PROC Name(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry
+    FSTYPES.Mount POINTER mount)
+  BYTE index,length
+
+  IF entry.parent=0 THEN
+    FOR index=0 TO 31 DO
+      info.fib_FileName(index)=mount.spec.alias(index)
+      IF mount.spec.alias(index)=0 THEN
+        EXIT
+      FI
+    OD
+
+    RETURN
+  FI
+
+  length=0
+  FOR index=0 TO 7 DO
+    IF entry.name(index)=32 THEN
+      EXIT
+    FI
+
+    info.fib_FileName(length)=entry.name(index)
+    length==+1
+  OD
+
+  IF entry.name(8)<>32 THEN
+    info.fib_FileName(length)=46
+    length==+1
+    FOR index=8 TO 10 DO
+      IF entry.name(index)=32 THEN
+        EXIT
+      FI
+
+      info.fib_FileName(length)=entry.name(index)
+      length==+1
+    OD
+  FI
+
+  info.fib_FileName(length)=0
+
+RETURN
+
+; Translate backend metadata into DOS file types, dates and protection flags.
+PUBLIC PROC Fill(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry)
+
+  info.fib_EntryType=ST_FILE
+  info.fib_Size=entry.length
+  IF (entry.flags & $10)<>0 THEN
+    info.fib_EntryType=ST_USERDIR
+    info.fib_Size=0
+    IF entry.parent=0 THEN
+      info.fib_EntryType=ST_ROOT
+    FI
+  FI
+
+  info.fib_Date.ds_Days=entry.days
+  info.fib_Date.ds_Minute=entry.minutes
+  info.fib_Date.ds_Tick=entry.ticks
+  info.fib_DirEntryType=info.fib_EntryType
+  info.fib_NumBlocks=entry.count
+  IF (entry.flags & $20)<>0 THEN
+    info.fib_Protection=FIBF_WRITE OR FIBF_DELETE
+  FI
+
+RETURN
+
+; Bind enumeration progress to this exact lock and caller-owned information
+; block.
+PUBLIC PROC Save(FileInfoBlock POINTER info FSTYPES.LockObject POINTER lock
+    LONGCARD next)
+  Enumeration POINTER state
+
+  state=EnumerationState(info)
+  state.magic=LONGCARD(ENUM_MAGIC)
+  state.lock=BYTE POINTER(lock)
+  state.info=BYTE POINTER(info)
+  state.generation=lock.ticket
+  state.next=next
+  info.fib_DiskKey=LONGINT(next)
+
+RETURN
+
+ENDMODULE

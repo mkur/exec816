@@ -1,0 +1,63 @@
+{
+  "status": "development-pass",
+  "slice": "C3",
+  "host_tests": 231,
+  "results_sha256": "f81e6501d7792f6d29c92e55d12551296aca4a5ef111bc2e088c6996fc3689d1",
+  "xex_sha256": "4b0bb42fc85d5592fb44e5450c7b7bd75ded38d1e93a32f33447faf862d2827a",
+  "forth_bytes": 21842,
+  "adapter_bytes": 1059,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "cases": [
+    {
+      "route": "autoboot",
+      "cache": {
+        "requested": 512,
+        "blocks": 512,
+        "captured": 512
+      },
+      "boot_guards": "intact",
+      "os_restored_at_handoff": true,
+      "shell_status": "pass"
+    },
+    {
+      "route": "forth-command",
+      "cache": {
+        "requested": 128,
+        "blocks": 128,
+        "captured": 128
+      },
+      "boot_guards": "intact",
+      "os_restored_at_handoff": true,
+      "shell_status": "pass"
+    }
+  ],
+  "invalid_values": [
+    65536,
+    -1,
+    513
+  ],
+  "exit_cases": [
+    {
+      "case": "bye",
+      "status": "pass",
+      "os_restored": true,
+      "cancel": {
+        "key": "RETURN",
+        "delay_frames": 240,
+        "held_frames": 2,
+        "seconds_remaining": 1,
+        "cancelled": true,
+        "key_consumed": true,
+        "stays_in_forth": true
+      }
+    },
+    {
+      "case": "occupied-iocb",
+      "status": "pass",
+      "os_restored": true
+    }
+  ]
+}

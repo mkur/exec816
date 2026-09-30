@@ -1,0 +1,249 @@
+; Allocation-free implementation behind COMMAND.ReadArgs. No Process or I/O
+; dependency here: callers supply immutable source and private output storage.
+MODULE DOSARGS
+
+USE ASCII
+INCLUDE "command-errors.inc"
+INCLUDE "command-args.inc"
+
+; Leave no tentative argument pointers visible after an unsuccessful parse.
+PROC Clear(ADDRESS POINTER values CARD capacity)
+  CARD index
+
+  IF capacity<>0 THEN
+    FOR index=0 TO capacity-1 DO
+      values(index)=0
+    OD
+  FI
+
+RETURN
+
+; Detect missing termination without scanning beyond the supported argument
+; bound.
+CARD FUNC BoundedLength(CSTRING text CARD limit)
+  CARD index
+
+  index=0
+  WHILE index<=limit DO
+    IF text(index)=ASCII.NUL THEN
+      RETURN(index)
+    FI
+
+    index==+1
+  OD
+
+RETURN(index)
+
+BYTE FUNC Letter(BYTE value)
+
+RETURN((value>='A AND value<='Z) OR (value>='a AND value<='z) OR value='_)
+
+; Return the number of fields, or -1 for an invalid/unsupported template.
+INT FUNC CountFields(CSTRING text BYTE POINTER required)
+  CARD index,length
+  BYTE fields,bit,value
+
+  index=0
+  fields=0
+  bit=1
+  required^=0
+  length=BoundedLength(text,ARGS_MAX_TEMPLATE)
+  IF length>ARGS_MAX_TEMPLATE THEN
+    RETURN(-1)
+  FI
+
+  WHILE index<length DO
+    IF fields=ARGS_MAX_FIELDS OR Letter(text(index))=0 THEN
+      RETURN(-1)
+    FI
+
+    fields==+1
+    index==+1
+    WHILE index<length DO
+      value=text(index)
+      IF Letter(value)=0 AND (value<'0 OR value>'9) THEN
+        EXIT
+      FI
+
+      index==+1
+    OD
+
+    IF text(index)='/ THEN
+      index==+1
+      IF text(index)<>'A AND text(index)<>'a THEN
+        RETURN(-1)
+      FI
+
+      required^=required^ OR bit
+      index==+1
+    FI
+
+    bit=bit LSH 1
+    IF index=length THEN
+      EXIT
+    FI
+
+    IF text(index)<>', THEN
+      RETURN(-1)
+    FI
+
+    index==+1
+    IF index=length THEN
+      RETURN(-1)
+    FI
+  OD
+
+RETURN(INT(fields))
+
+; A nonzero result is a shared DOS error. Parse clears tentative slots on error.
+CARD FUNC Decode(CSTRING text ADDRESS POINTER values CARD fields
+                BYTE required BYTE POINTER storage CARD capacity)
+  CARD index,length,used,field,start
+  BYTE value,quoted,bit
+
+  index=0
+  used=0
+  field=0
+  bit=1
+  length=BoundedLength(text,ARGS_MAX_TEXT)
+  IF length>ARGS_MAX_TEXT THEN
+    RETURN(ERROR_LINE_TOO_LONG)
+  FI
+
+  DO
+    WHILE text(index)=ASCII.SPACE OR text(index)=ASCII.TAB DO
+      index==+1
+    OD
+
+    IF index=length THEN
+      EXIT
+    FI
+
+    IF field=fields THEN
+      RETURN(ERROR_TOO_MANY_ARGS)
+    FI
+
+    start=used
+    quoted=0
+    IF text(index)=ASCII.DOUBLE_QUOTE THEN
+      quoted=1
+      index==+1
+    FI
+
+    DO
+      value=text(index)
+      IF quoted<>0 THEN
+        IF value=ASCII.NUL THEN
+          RETURN(ERROR_UNMATCHED_QUOTES)
+        FI
+
+        IF value=ASCII.DOUBLE_QUOTE THEN
+          index==+1
+          value=text(index)
+          IF value<>ASCII.NUL AND value<>ASCII.SPACE AND value<>ASCII.TAB THEN
+            RETURN(ERROR_BAD_ARGUMENTS)
+          FI
+
+          EXIT
+        FI
+
+        IF value=ASCII.ASTERISK THEN
+          index==+1
+          value=text(index)
+          IF value=ASCII.NUL THEN
+            RETURN(ERROR_UNMATCHED_QUOTES)
+          FI
+
+          IF value<>ASCII.ASTERISK AND value<>ASCII.DOUBLE_QUOTE THEN
+            RETURN(ERROR_BAD_ARGUMENTS)
+          FI
+        FI
+      ELSE
+        IF value=ASCII.NUL OR value=ASCII.SPACE OR value=ASCII.TAB THEN
+          EXIT
+        FI
+
+        IF value=ASCII.DOUBLE_QUOTE THEN
+          RETURN(ERROR_BAD_ARGUMENTS)
+        FI
+      FI
+
+      IF used=capacity THEN
+        RETURN(ERROR_BUFFER_OVERFLOW)
+      FI
+
+      storage(used)=value
+      used==+1
+      index==+1
+    OD
+
+    IF used=capacity THEN
+      RETURN(ERROR_BUFFER_OVERFLOW)
+    FI
+
+    storage(used)=ASCII.NUL
+    used==+1
+    values(field)=ADDRESS(storage+SIZE(start))
+    field==+1
+    bit=bit LSH 1
+  OD
+
+  WHILE field<fields DO
+    IF (required & bit)<>0 THEN
+      RETURN(ERROR_REQUIRED_ARG_MISSING)
+    FI
+
+    field==+1
+    bit=bit LSH 1
+  OD
+
+RETURN(0)
+
+; Validate template and caller capacities before exposing decoded argument
+; values.
+PUBLIC CARD FUNC Parse(CSTRING text,template ADDRESS POINTER values
+                      CARD valueCapacity BYTE POINTER storage CARD storageCapacity)
+  BYTE required
+  INT fields
+  CARD error
+
+  ; Capacities describe valid caller storage, capped to the published limits.
+  ; Invalid pointer/capacity pairs cannot promise writable result slots.
+  IF valueCapacity>ARGS_MAX_FIELDS THEN
+    RETURN(ERROR_BAD_NUMBER)
+  FI
+
+  IF valueCapacity<>0 AND values=ADDRESS POINTER(0) THEN
+    RETURN(ERROR_BAD_NUMBER)
+  FI
+
+  Clear(values,valueCapacity)
+  IF storageCapacity<>0 AND storage=BYTE POINTER(0) THEN
+    RETURN(ERROR_BAD_NUMBER)
+  FI
+
+  IF template=CSTRING(0) THEN
+    RETURN(ERROR_BAD_TEMPLATE)
+  FI
+
+  fields=CountFields(template,@required)
+  IF fields<0 THEN
+    RETURN(ERROR_BAD_TEMPLATE)
+  FI
+
+  IF CARD(fields)>valueCapacity THEN
+    RETURN(ERROR_BUFFER_OVERFLOW)
+  FI
+
+  IF text=CSTRING(0) THEN
+    RETURN(ERROR_BAD_ARGUMENTS)
+  FI
+
+  error=Decode(text,values,CARD(fields),required,storage,storageCapacity)
+  IF error<>0 THEN
+    Clear(values,valueCapacity)
+  FI
+
+RETURN(error)
+
+ENDMODULE

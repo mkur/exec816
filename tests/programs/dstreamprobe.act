@@ -1,0 +1,32 @@
+; Private fixture state and pauses. Only the qualification build imports this.
+MODULE DSTREAMPROBE
+USE EXEC
+
+PUBLIC TYPE State=[
+  BYTE armed,hit,gate,zeroActual,count
+  BYTE ARRAY events(16)
+]
+
+PUBLIC State POINTER FUNC Get()
+
+RETURN(State POINTER($d2000))
+
+PUBLIC PROC Checkpoint(BYTE tag)
+  State POINTER probe
+
+  probe=Get()
+  IF probe.armed<>tag THEN
+    RETURN
+  FI
+
+  probe.armed=0
+  probe.hit=tag
+  probe.events(probe.count)=tag
+  probe.count==+1
+  WHILE probe.gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+ENDMODULE

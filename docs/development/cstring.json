@@ -1,0 +1,820 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "scope": "Native CSTRING language/library and direct resident imports for disk commands",
+  "compiler": {
+    "revision": "91c57696da808b8aca568ceea7ee34c6936713d7",
+    "previous_revision": "f3ad9693247b4a918b84e8ec81f0683cb6cc90b9",
+    "patch": "toolchain/patches/actionc-cstring.patch",
+    "patch_sha256": "7c2823625a2596bf39209d0405c3005769bb5dc9789e021dded0b06620347166",
+    "checks": {
+      "full_cargo_test": 3548,
+      "nir_snapshot": 1,
+      "nir_sweep_fixtures": 51,
+      "focused_frontend": 3,
+      "native_vm": [
+        "raw/optimized byte semantics, bounds, canaries and independent invocations",
+        "65,538-byte bank-crossing scan",
+        "raw/optimized compact-o65 at two placements"
+      ],
+      "source_line_endings": [
+        "LF",
+        "CRLF"
+      ]
+    }
+  },
+  "host_tests": {
+    "unique_passed": 215,
+    "scope": "Initial host suite: 214 passed; missing Path import fixed and all five provider tests passed. Unchanged passing results reused."
+  },
+  "generated_checks": [
+    "program",
+    "compiler cstring interface"
+  ],
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "bank_zero_budget": {
+    "fixed_runtime": 10560,
+    "public": [
+      2080,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568
+    ],
+    "idle": 1056,
+    "runtime_excluding_os": 24672,
+    "loading_excluding_os": 20368,
+    "runtime_including_os": 61536,
+    "loading_including_os": 57232
+  },
+  "library_metrics": {
+    "raw": {
+      "code_bytes": 3497,
+      "routines": [
+        {
+          "name": "M_CSTRING_IMPL_STRLEN_EB4E5981",
+          "signature": 1818637244,
+          "size": 189,
+          "local_stack_peak": 12
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRNLEN_AC461397",
+          "signature": 1904729536,
+          "size": 309,
+          "local_stack_peak": 12
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRCMP_87478B58",
+          "signature": 3031792884,
+          "size": 353,
+          "local_stack_peak": 14
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRNCMP_6395B42E",
+          "signature": 565784175,
+          "size": 436,
+          "local_stack_peak": 14
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRCHR_2037DF45",
+          "signature": 1156764685,
+          "size": 219,
+          "local_stack_peak": 12
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRLCPY_C7039D62",
+          "signature": 3599940068,
+          "size": 785,
+          "local_stack_peak": 18
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRLCAT_C4908C8C",
+          "signature": 3599940068,
+          "size": 1206,
+          "local_stack_peak": 30
+        }
+      ],
+      "library_data": [],
+      "imports": []
+    },
+    "opt": {
+      "code_bytes": 3248,
+      "routines": [
+        {
+          "name": "M_CSTRING_IMPL_STRLEN_EB4E5981",
+          "signature": 1818637244,
+          "size": 183,
+          "local_stack_peak": 12
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRNLEN_AC461397",
+          "signature": 1904729536,
+          "size": 303,
+          "local_stack_peak": 12
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRCMP_87478B58",
+          "signature": 3031792884,
+          "size": 273,
+          "local_stack_peak": 12
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRNCMP_6395B42E",
+          "signature": 565784175,
+          "size": 370,
+          "local_stack_peak": 12
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRCHR_2037DF45",
+          "signature": 1156764685,
+          "size": 194,
+          "local_stack_peak": 14
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRLCPY_C7039D62",
+          "signature": 3599940068,
+          "size": 745,
+          "local_stack_peak": 18
+        },
+        {
+          "name": "M_CSTRING_IMPL_STRLCAT_C4908C8C",
+          "signature": 3599940068,
+          "size": 1180,
+          "local_stack_peak": 30
+        }
+      ],
+      "library_data": [],
+      "imports": []
+    }
+  },
+  "provider_manifest": {
+    "format": "EPV2",
+    "entries": 21,
+    "bytes_before": 479,
+    "bytes_after": 707,
+    "reserved_before": 1664,
+    "reserved_after": 1664
+  },
+  "compact_metadata": {
+    "header_bytes": 8,
+    "bytes_per_import": 4
+  },
+  "native": [
+    {
+      "mode": "raw",
+      "result_path": "build/cstring/raw/results.json",
+      "result_sha256": "47a47dfe1e739b56c76263f663bcbc77156d73a01be0279c4d55404e84dc1f5c",
+      "xex_sha256": "f80d96a29579b36bc537656c270f2463f8b77f806531c550e65949ab72ca98e5",
+      "image_sha256": "04a09fa39375f010506b1b50cea0e45746ee0ad2cde7e86773234c76b49a48f0",
+      "compiler_binary_sha256": "b20e55302018458f0b8060f19389b7e4a7ef79052490506897bce8041a26d9df",
+      "checks": 91,
+      "placements": [
+        720896,
+        786432,
+        0,
+        0
+      ],
+      "command_bytes": 5141,
+      "imports": [
+        "__a816_stack_overflow_v1",
+        "exec816_open_v1",
+        "exec816_read_v1",
+        "exec816_write_v1",
+        "exec816_close_v1",
+        "exec816_output_v1",
+        "exec816_arguments_v1",
+        "exec816_setioerr_v1",
+        "exec816_yield_v1",
+        "cstring_strlen_v1",
+        "cstring_strnlen_v1",
+        "cstring_strcmp_v1",
+        "cstring_strncmp_v1",
+        "cstring_strchr_v1",
+        "cstring_strlcpy_v1",
+        "cstring_strlcat_v1"
+      ],
+      "direct_library_relocations": 10,
+      "resident_code_bytes": 3497,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1323,
+        "native_irq_count": 31169,
+        "os_busy": 0,
+        "return_s": 18430,
+        "return_d": 8704,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 156,
+        "clock_end": 199,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 1159,
+        "gateway_calls": 15059,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 1323,
+        "vbi_dispatches": 107,
+        "irq_depth": 0,
+        "live_tasks": 0,
+        "idle_runs": 9859,
+        "created": 5,
+        "signal_nmi_checkpoints": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 438,
+            "untouched_above_floor": 842
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 257,
+            "untouched_above_floor": 511
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 176,
+            "untouched_above_floor": 592
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 382,
+            "untouched_above_floor": 386
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 382,
+            "untouched_above_floor": 386
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 288,
+          "untouched_from_base": 1248,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 15,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        },
+        "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+        },
+        "observer": {
+          "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ]
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "mode": "opt",
+      "result_path": "build/cstring/opt/results.json",
+      "result_sha256": "18bf75d30ebf1172256ec3a536302bd0129735100b5b3dc852b4904b5083b4f8",
+      "xex_sha256": "233ae6127afe52e482d727ca3e9c3d68a5e2fbd59636eaa527669f4d07d1bf85",
+      "image_sha256": "5f280f03486571a881bd7a02494530d4eb735c5ac48bb46bca421ac2db42ab98",
+      "compiler_binary_sha256": "b20e55302018458f0b8060f19389b7e4a7ef79052490506897bce8041a26d9df",
+      "checks": 91,
+      "placements": [
+        655360,
+        720896,
+        0,
+        0
+      ],
+      "command_bytes": 4747,
+      "imports": [
+        "__a816_stack_overflow_v1",
+        "exec816_open_v1",
+        "exec816_read_v1",
+        "exec816_write_v1",
+        "exec816_close_v1",
+        "exec816_output_v1",
+        "exec816_arguments_v1",
+        "exec816_setioerr_v1",
+        "exec816_yield_v1",
+        "cstring_strlen_v1",
+        "cstring_strnlen_v1",
+        "cstring_strcmp_v1",
+        "cstring_strncmp_v1",
+        "cstring_strchr_v1",
+        "cstring_strlcpy_v1",
+        "cstring_strlcat_v1"
+      ],
+      "direct_library_relocations": 10,
+      "resident_code_bytes": 3248,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1248,
+        "native_irq_count": 29326,
+        "os_busy": 0,
+        "return_s": 18430,
+        "return_d": 8704,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 144,
+        "clock_end": 112,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 1089,
+        "gateway_calls": 15270,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 1248,
+        "vbi_dispatches": 127,
+        "irq_depth": 0,
+        "live_tasks": 0,
+        "idle_runs": 9903,
+        "created": 5,
+        "signal_nmi_checkpoints": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 398,
+            "untouched_above_floor": 882
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 239,
+            "untouched_above_floor": 529
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 370,
+            "untouched_above_floor": 398
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 370,
+            "untouched_above_floor": 398
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 278,
+          "untouched_from_base": 1258,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 15,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        },
+        "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+        },
+        "observer": {
+          "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ]
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    }
+  ],
+  "play": {
+    "result_path": "build/demo/loading-results.json",
+    "result_sha256": "fb5b01236877c23f8596a5f3783450ff2ae00c61ad707ff39a687521f76fcf88",
+    "manifest_sha256": "f5acd28f7e9575b2e2d6bd46fcb2e26d7abdebb7be7cb347143243f8600b7712",
+    "artifacts": {
+      "program.xex": "05a7b4ad781a783563ac1dbc7bab03119b2507c3d32c4bb84f3127cb17f9a2b0",
+      "sdfs.atr": "9a582bccbdb275403de13e3154f6e5b1626ba26c8c12e5d1d54fe54d9f916330",
+      "README.md": "4d0d20efffcd8f762328119264d5602f304b2f35d9b40202772048b95403cc8a",
+      "sdfs.verification.json": "6492bc87ac42eaa7047fc28511ea5a3a07f31d6c0f4f3c084b4dd8b949fbd59c"
+    },
+    "commands": {
+      "HELLO": {
+        "before_bytes": 991,
+        "after_bytes": 517,
+        "sha256": "a7afce9b53799a5cc5336586f9144cc1d20414c9b9425c96a881b1b9b8d6cee5"
+      },
+      "CAT": {
+        "before_bytes": 4569,
+        "after_bytes": 4569,
+        "sha256": "2f1339d71daa6b62c5126a7552b3fb6567339f3e4a0f9fcd60768b16df2d5857"
+      },
+      "WC": {
+        "before_bytes": 4163,
+        "after_bytes": 4163,
+        "sha256": "c832b56d16c3061e4aa95ae01aa7c88df30cb5afbe82d00714c36703575a03bf"
+      }
+    },
+    "runtime": {
+      "status": 0,
+      "native_nmi_count": 1392,
+      "native_irq_count": 19676,
+      "os_busy": 0,
+      "return_s": 22014,
+      "return_d": 9216,
+      "return_p": 0,
+      "fault_required": 0,
+      "fault_s": 0,
+      "clock_start": 183,
+      "clock_end": 39,
+      "return_dbr": 0,
+      "return_e": 0,
+      "current": 8,
+      "switching": 0,
+      "switches": 3822,
+      "gateway_calls": 16414,
+      "os_calls": 0,
+      "forwarded_cops": 0,
+      "os_owner": 255,
+      "tick_pending": 0,
+      "vbi_count": 1392,
+      "vbi_dispatches": 520,
+      "irq_depth": 0,
+      "live_tasks": 0,
+      "idle_runs": 6059,
+      "created": 8,
+      "signal_nmi_checkpoints": 0,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 510,
+          "untouched_above_floor": 770
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 192,
+          "untouched_above_floor": 576
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 134,
+          "untouched_above_floor": 634
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 239,
+          "untouched_above_floor": 529
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 327,
+          "untouched_above_floor": 441
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 391,
+          "untouched_above_floor": 377
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 391,
+          "untouched_above_floor": 377
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 52,
+          "untouched_above_floor": 204
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 347,
+        "untouched_from_base": 1189,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "scope": "Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration"
+  },
+  "limitations": [
+    "Native 65816 only",
+    "No near/far qualifiers or allocating strings",
+    "Public text API migration deferred; existing COMMAND signatures unchanged",
+    "Development validation; full release matrix not run"
+  ],
+  "source_inputs": {
+    "tools/test_cstring.py": "89bc5a9fcf8b2aef6ad53cab249c05a05bdbbdba25a7e86064a28738ad29bb7e",
+    "tests/programs/cstring_command.act": "2103ccb6be1d1d09d937e87ef3d5b8c53e375015aa7894567de434000dd46b94",
+    "tests/programs/cstring_resident.act": "440c0c4935648558216ef43c96c7e81cd991c5b18f94b7d4b1bd53429f7a474e",
+    "tools/generate_program.py": "92c2fdc31dd1d96b32581e3edecba05546b593f4031a30d662d9fe20fa8f0c57",
+    "tools/build_command.py": "1c36b38d52925df90fa5c3493ed2f0ad3af45ad2f89fd3bbb48b6b7039387213",
+    "tools/native_program.py": "af99a553569a31cf8bb1f6e7b83ea8625dea3fffc0c7eee610d019c8f94d5d2c",
+    "tools/generate_tasks.py": "5b767c3372b9ae310e4eb7cf212e8353e9667c5c8ef4154f51bddebf5f3b1a4c",
+    "lib/dos/programlibraries.act": "275ebe903d0bdaa05c068742e965b5b49bebb86652b1636d004c5481a502d3a4",
+    "lib/dos/programproviders.act": "e8e20497c6e23a58bc096145e1d5a0c6ccfcd63a2514a46c77f075d806d829b8",
+    "examples/commands/hello.act": "80bbde99140eae259c6986595166abde663c5b3db8ce9f8fdafdbf72597c1d7d",
+    "toolchain/actionc.json": "33752720d950549376b036500694a0ac8624c1f28fdd988ae51d99ceb760cb18"
+  }
+}

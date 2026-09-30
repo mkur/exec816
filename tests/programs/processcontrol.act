@@ -1,0 +1,4 @@
+MODULE PROCESSCONTROL
+; Used only by the emitted fixture's recorded fault-injection module copies.
+PUBLIC BYTE fault
+ENDMODULE

@@ -1,0 +1,168 @@
+MODULE O65WIRE
+USE EXEC
+USE O65MEMORY
+USE O65TYPES
+USE O65READ
+
+BYTE ARRAY entryName="__a816_entry_v2"
+BYTE ARRAY descriptorName="__a816_o65_compact_v3"
+
+; Validate the supported o65 profile before exposing segment locations.
+PUBLIC PROC Header(O65TYPES.Validation POINTER validation)
+  O65TYPES.Cursor POINTER cursor
+  LONGCARD base,bytes,count,index
+  CARD previous
+  BYTE option
+
+  cursor=@validation.wire
+  IF O65READ.U16(cursor)<>1 OR O65READ.U32(cursor)<>LONGCARD($0035366f) THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+    RETURN
+  FI
+
+  IF O65READ.U16(cursor)<>$a202 THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_UNSUPPORTED))
+    RETURN
+  FI
+
+  FOR index=0 TO 3 DO
+    base=O65READ.U32(cursor)
+    bytes=O65READ.U32(cursor)
+    IF base<>0 OR (index=3 AND bytes<>0) THEN
+      O65READ.Fail(cursor,CARD(O65TYPES.ERROR_UNSUPPORTED))
+      RETURN
+    FI
+
+    IF (index=0 AND bytes>O65TYPES.LIMIT_TEXT) OR (index<>0
+        AND bytes>O65TYPES.LIMIT_DATA) THEN
+      O65READ.Fail(cursor,CARD(O65TYPES.ERROR_RESOURCE_LIMIT))
+      RETURN
+    FI
+
+    CASE index OF
+    WHEN 0 THEN
+      validation.textBytes=bytes
+    WHEN 1 THEN
+      validation.dataBytes=bytes
+    WHEN 2 THEN
+      validation.bssBytes=bytes
+    ESAC
+  OD
+
+  IF O65READ.U32(cursor)<>0 THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_UNSUPPORTED))
+    RETURN
+  FI
+
+  DO
+    option=O65READ.U8(cursor)
+    IF option=0 OR cursor.error<>0 THEN
+      EXIT
+    FI
+
+    IF option<2 THEN
+      O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+      RETURN
+    FI
+
+    IF O65READ.Take(cursor,LONGCARD(option)-1)=0 THEN
+      RETURN
+    FI
+  OD
+
+  validation.textAt=cursor.at
+  IF O65READ.Take(cursor,validation.textBytes)=0 THEN
+    RETURN
+  FI
+
+  validation.dataAt=cursor.at
+  IF O65READ.Take(cursor,validation.dataBytes)=0 THEN
+    RETURN
+  FI
+
+  count=O65READ.Count(cursor,O65TYPES.LIMIT_IMPORTS,2)
+  IF cursor.error<>0 THEN
+    RETURN
+  FI
+
+  IF count=0 THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+    RETURN
+  FI
+
+  validation.importCount=CARD(count)
+  validation.imports=O65TYPES.Import POINTER(O65MEMORY.Allocate(SIZE(
+      count)*SIZEOF(O65TYPES.Import)))
+  IF validation.imports=O65TYPES.Import POINTER(0) THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_NO_FREE_STORE))
+    RETURN
+  FI
+
+  index=0
+  WHILE index<count AND cursor.error=0 DO
+    O65READ.Name(cursor,@validation.imports(SIZE(index)).name)
+    previous=0
+    WHILE previous<index DO
+      IF O65READ.Literal(@validation.imports(previous).name,
+          validation.imports(SIZE(index)).name.bytes,
+          validation.imports(SIZE(index)).name.length)<>0 THEN
+        O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+        RETURN
+      FI
+
+      previous==+1
+    OD
+
+    index==+1
+  OD
+
+  validation.relocationAt=cursor.at
+
+RETURN
+
+; Validate exported symbols against their declared sections and bounds.
+PUBLIC PROC Exports(O65TYPES.Validation POINTER validation)
+  O65TYPES.Cursor POINTER cursor
+  O65TYPES.Span name
+  LONGCARD value
+  BYTE index,seen,tag
+
+  cursor=@validation.wire
+  IF O65READ.U32(cursor)<>2 THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+    RETURN
+  FI
+
+  seen=0
+  FOR index=0 TO 1 DO
+    O65READ.Name(cursor,@name)
+    tag=O65READ.U8(cursor)
+    value=O65READ.U32(cursor)
+    IF cursor.error<>0 THEN
+      RETURN
+    FI
+
+    IF tag<>2 OR value>=validation.textBytes THEN
+      O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+      RETURN
+    FI
+
+    IF O65READ.Literal(@name,@entryName(1),15)<>0 AND (seen & 1)=0 THEN
+      validation.entry=value
+      seen=seen OR 1
+    ELSEIF O65READ.Literal(@name,@descriptorName(1),21)<>0 AND (seen & 2)=0 THEN
+      validation.descriptorAt=value
+      seen=seen OR 2
+    ELSE
+      O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+      RETURN
+    FI
+  OD
+
+  IF seen<>3 OR cursor.at<>cursor.limit THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+  FI
+
+RETURN
+
+ENDMODULE

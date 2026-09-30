@@ -1,0 +1,20 @@
+MODULE HEAPIMPORTS
+USE EXEC
+BYTE POINTER block
+LONGCARD count
+
+; Exercise linkage of the public memory-service imports.
+PROC Main()
+
+  block=EXEC.AllocMem(LONGCARD($10000),EXEC.MEMF_PUBLIC)
+  EXEC.FreeMem(block,LONGCARD($10000))
+  block=EXEC.AllocVec(LONGCARD($10001),EXEC.MEMF_LINEAR OR EXEC.MEMF_CLEAR)
+  EXEC.FreeVec(block)
+  count=EXEC.AvailMem(EXEC.MEMF_LARGEST)
+  count=EXEC.TypeOfMem(block)
+  block=EXEC.Allocate(EXEC.MemHeader POINTER($040010),LONGCARD($80010001))
+  EXEC.Deallocate(EXEC.MemHeader POINTER($040010),block,LONGCARD($80010001))
+
+RETURN
+
+ENDMODULE

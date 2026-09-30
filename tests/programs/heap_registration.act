@@ -1,0 +1,87 @@
+MODULE HEAPREGISTRATION
+USE EXEC
+USE EXECMEMORY
+USE HEAPPOLICY
+USE HEAPCORE
+INCLUDE "ports-storage-action.inc"
+CONST COUNT=16
+CARD ARRAY checks(12)
+BYTE ARRAY snapshots(384)
+LONGCARD ARRAY regions(32)
+
+PROC Snapshot(BYTE phase)
+  CARD bank,result
+  EXECMEMORY.BankRecord item
+  SIZE offset
+
+  FOR bank=0 TO COUNT-1 DO
+    result=EXECMEMORY.Query(bank,@item)
+    offset=(SIZE(phase) LSH 6)+(SIZE(bank) LSH 2)
+    snapshots(offset)=item.state
+    snapshots(offset+1)=item.reserved
+    snapshots(offset+2)=BYTE(item.owner)
+    snapshots(offset+3)=BYTE(item.owner RSH 8)
+  OD
+
+RETURN
+
+PROC InspectRegions()
+  HEAPPOLICY.HeapState POINTER state
+  HEAPCORE.MemHeader POINTER pool
+  CARD index
+
+  state=HEAPPOLICY.GetState()
+  checks(0)=state.count
+  checks(1)=state.ready
+  FOR index=0 TO state.count DO
+    IF index<state.count THEN
+      pool=HEAPPOLICY.Header(index)
+      HEAPCORE.Validate(pool)
+      regions(SIZE(index) LSH 1)=LONGCARD(ADDRESS(pool.mh_Lower))
+      regions((SIZE(index) LSH 1)+1)=pool.mh_Upper
+    FI
+  OD
+
+RETURN
+
+; Exercise registered heap regions and their reported extents.
+PROC Main()
+  BYTE POINTER damaged
+  HEAPPOLICY.HeapState POINTER state
+  HEAPCORE.MemHeader POINTER pool
+
+  EXEC.Forbid()
+  InspectRegions()
+  Snapshot(0)
+  HEAPPOLICY.Shutdown()
+  Snapshot(1)
+  checks(2)=HEAPPOLICY.Start(0,$ffff)
+  Snapshot(2)
+  HEAPPOLICY.Shutdown()
+  checks(3)=HEAPPOLICY.Start(15,1)
+  Snapshot(3)
+  HEAPPOLICY.Shutdown()
+  checks(4)=HEAPPOLICY.Start(15,$ffff)
+  Snapshot(4)
+  checks(5)=HEAPPOLICY.Start(15,$ffff)
+  Snapshot(5)
+  state=HEAPPOLICY.GetState()
+  checks(6)=state.count
+  checks(7)=state.ready
+  ; Final native cleanup must work even when the first free-list link is bad.
+  IF state.count<>0 THEN
+    pool=HEAPPOLICY.Header(0)
+    pool.mh_First=HEAPCORE.MemChunk POINTER($ffffff)
+  FI
+
+  ; Shutdown must not follow registry/name/message links either.
+  damaged=BYTE POINTER(ADDRESS(PS_BASE))
+  damaged^=$ff
+  damaged(1)=$ff
+  damaged(2)=$ff
+  checks(8)=1
+  EXEC.Permit()
+
+RETURN
+
+ENDMODULE

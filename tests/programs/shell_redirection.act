@@ -1,0 +1,124 @@
+MODULE SHELLAPP
+USE HEAPCORE
+USE FSBOOT
+USE DOSCORE
+USE DOSCLIENT
+USE DOSRAW
+USE EXECLISTS
+INCLUDE "shell-observed.inc"
+CARD checks,executed
+BYTE stage,gate
+LONGCARD before,steady
+BYTE ARRAY nil=[78 73 76 58 0]
+DOS.FileHandle POINTER savedInput,savedOutput
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e900+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+
+  stage=number
+  gate=0
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Balanced()
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+  DOSRAW.StreamRegistry POINTER registry
+  DOSRAW.RawEndpoint POINTER endpoint
+
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  registry=DOSRAW.GetRegistry()
+  endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+  Check(client.busy=0 AND owner.active=0 AND client.objects=2)
+  Check(client.input=BYTE POINTER(savedInput)
+      AND client.output=BYTE POINTER(savedOutput))
+  Check(client.directory=BYTE POINTER(shell.directory)
+      AND owner.objects<>BYTE POINTER(0))
+  Check(shell.retiredDirectory=DOS.FileLock POINTER(0)
+      AND shell.commandInput=DOS.FileHandle POINTER(0))
+  Check(shell.tempInput=DOS.FileHandle POINTER(0)
+      AND shell.tempOutput=DOS.FileHandle POINTER(0) AND shell.redirectActive=0
+      AND shell.restoreFailure=0)
+  Check(endpoint.references=1 AND endpoint.active=0
+      AND endpoint.reader=BYTE POINTER(0))
+  Check(EXECLISTS.IsListEmpty(@client.port.mp_MsgList)<>0)
+  Check(client.request.io_Device=BYTE POINTER(0)
+      AND client.request.io_Unit=BYTE POINTER(0))
+
+RETURN
+
+PROC Run(CARD offset LONGINT status,error BYTE done)
+  BYTE POINTER source,target
+  CARD index
+
+  source=BYTE POINTER(ADDRESS($e0000)+SIZE(offset))
+  target=ShellLine()
+  index=0
+  DO
+    target(index)=source(index)
+    IF source(index)=0 THEN
+      EXIT
+    FI
+
+    index==+1
+    IF index=256 THEN
+      HEAPCORE.Abort($e9f0)
+    FI
+  OD
+
+  shell.length=index
+  savedInput=DOS.Input()
+  savedOutput=DOS.Output()
+  ShellCommand()
+  Check(shell.lastStatus=status AND shell.lastError=error AND shell.done=done)
+  Balanced()
+  executed==+1
+
+RETURN
+
+PROC MissingOutput(CARD offset)
+  DOS.FileHandle POINTER previous,ignored
+
+  previous=DOS.SelectOutput(DOS.FileHandle POINTER(0))
+  Check(previous=shell.console AND DOS.IoErr()=0)
+  Run(offset,10,DOS.ERROR_BAD_STREAM_NAME,0)
+  ignored=DOS.SelectOutput(previous)
+  Check(ignored=DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
+
+RETURN
+
+INCLUDE "shell-redirection-cases.inc"
+
+; Exercise stream restoration after redirected commands and open failures.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  Check(ShellStart(shellRoot)<>0 AND SIZEOF(ShellState)=128)
+  steady=EXEC.AvailMem(0)
+  Cases()
+  Check(EXEC.AvailMem(0)=steady)
+  shell.status=0
+  shell.error=0
+  Check(ShellFinish()=0 AND FSBOOT.Stop()<>0)
+  Check(EXEC.AvailMem(0)=before)
+  stage=3
+
+RETURN
+
+ENDMODULE

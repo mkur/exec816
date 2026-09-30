@@ -1,0 +1,487 @@
+From c384bc8da9e62a280ecb4998e4d275bc6e45935f Mon Sep 17 00:00:00 2001
+From: Michal Kurcewicz <1001406+mkur@users.noreply.github.com>
+Date: Sun, 27 Sep 2026 22:33:47 +0200
+Subject: [PATCH] Preserve native-v1 context in historical qualification
+ reports
+
+---
+ docs/MIR65816_ARITHMETIC_HELPERS_PLAN.md          |  9 ++++++---
+ docs/MIR65816_CODE_QUALITY_PLAN.md                |  5 ++++-
+ docs/MIR65816_CONTROL_FLOW_IMPLEMENTATION_PLAN.md |  5 ++++-
+ docs/MIR65816_EMISSION_CONTRACT.md                | 15 ++++++++-------
+ docs/MIR65816_EXEC_ACCEPTANCE.md                  |  9 ++++++---
+ docs/MIR65816_EXEC_READINESS_REQUIREMENTS.md      |  7 +++++--
+ docs/MIR65816_EXEC_READINESS_REVIEW.md            |  5 ++++-
+ docs/MIR65816_FRAME_FORWARDING.md                 |  5 ++++-
+ docs/MIR65816_IMPLEMENTATION_PLAN.md              |  7 +++++--
+ .../MIR65816_LOCAL_ACCUMULATOR_FORWARDING_PLAN.md |  5 ++++-
+ docs/MIR65816_O65_ASSESSMENT.md                   |  5 ++++-
+ docs/MIR65816_O65_IMPLEMENTATION_PLAN.md          |  9 ++++++---
+ docs/MIR65816_STATE_TRACKER_DESIGN.md             |  5 ++++-
+ docs/MIR65816_VBCC_COMPARISON.md                  |  5 ++++-
+ docs/MIR65816_WORD_ARITHMETIC_PLAN.md             |  5 ++++-
+ docs/MIR65816_WORD_RETURNS_PLAN.md                |  5 ++++-
+ docs/NATIVE_DP_PARTITION.md                       |  8 +++++++-
+ ...I_AND_AUTOMATIC_STORAGE_IMPLEMENTATION_PLAN.md |  5 ++++-
+ 18 files changed, 87 insertions(+), 32 deletions(-)
+
+diff --git a/docs/MIR65816_ARITHMETIC_HELPERS_PLAN.md b/docs/MIR65816_ARITHMETIC_HELPERS_PLAN.md
+index 17cbf222..c14f6d37 100644
+--- a/docs/MIR65816_ARITHMETIC_HELPERS_PLAN.md
++++ b/docs/MIR65816_ARITHMETIC_HELPERS_PLAN.md
+@@ -1,5 +1,8 @@
+ # Native 65816 integer arithmetic helpers
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Status: implemented and qualified on 2026-09-24.
+ Baseline: `c99cd07b`. Target: `wdc-65816-native`.
+ 
+@@ -12,7 +15,7 @@ images and relocatable o65 applications, including calls from tasks and IRQ
+ dispatchers under the existing context bridge.
+ 
+ Use native 16-bit operations for the arithmetic core. Preserve physical ABI
+-`action65816.native.v2`, source integer promotion, explicit casts, argument
++`action65816.native.v1`, source integer promotion, explicit casts, argument
+ evaluation order, stack guards and per-domain ownership. Prioritize linked code
+ size, with execution cycles as the secondary measure. Record both; do not claim
+ a size or speed improvement before measurement.
+@@ -146,7 +149,7 @@ Allocate working state only within the existing D+$00..$3F scratch region or
+ checked invocation storage. Prefer zero-frame leaf helpers with bounded loops
+ and no further calls. Publish each body's exact scratch map, modes, stack peak
+ and clobbers. D+$40 and above remain protected domain metadata/reservations.
+-The [physical ABI](MIR65816_PHYSICAL_ABI_V2.md) already permits all 64 scratch
++The [physical ABI](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md) already permits all 64 scratch
+ bytes to be clobbered by an ordinary call; allocation must enforce that boundary
+ even when a particular helper touches fewer bytes.
+ 
+@@ -188,7 +191,7 @@ near bank ends; execution must never depend on PC wrapping into another bank.
+ ## Division-by-zero adapter and artifact compatibility
+ 
+ Add a distinct raw non-returning platform entry,
+-`__a816_arithmetic_fault_v2`. Proposed entry contract:
++`__a816_arithmetic_fault_v1`. Proposed entry contract:
+ 
+ - A16 contains native reason 1 = DivisionByZero. This is an explicit native
+   adapter code, not an enum ordinal or Atari Error number.
+diff --git a/docs/MIR65816_CODE_QUALITY_PLAN.md b/docs/MIR65816_CODE_QUALITY_PLAN.md
+index b0777b9c..0d336b60 100644
+--- a/docs/MIR65816_CODE_QUALITY_PLAN.md
++++ b/docs/MIR65816_CODE_QUALITY_PLAN.md
+@@ -1,5 +1,8 @@
+ # Native 65816 code-quality improvement plan
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Status: refreshed after the
+ [emission simplification](MIR65816_EMISSION_SIMPLIFICATION.md),
+ preserving bounded X loop increments `1ce9624` and their output. Native word selection, copy
+@@ -447,7 +450,7 @@ For each slice:
+    Update the relevant contract, save qualification evidence and commit the
+    completed slice while preserving unrelated local changes.
+ 
+-Preserve [physical ABI v1](MIR65816_PHYSICAL_ABI_V2.md), image v3, the
++Preserve [physical ABI v1](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md), image v3, the
+ [o65 profile](MIR65816_O65_PROFILE.md), public argument/result placement and stack
+ guards. Frame sizes may shrink only with verified accounting. No slice reduces
+ the platform's interrupt headroom or changes Exec816's compiler pin; adopting
+diff --git a/docs/MIR65816_CONTROL_FLOW_IMPLEMENTATION_PLAN.md b/docs/MIR65816_CONTROL_FLOW_IMPLEMENTATION_PLAN.md
+index 8b3aff2a..f00f4fcd 100644
+--- a/docs/MIR65816_CONTROL_FLOW_IMPLEMENTATION_PLAN.md
++++ b/docs/MIR65816_CONTROL_FLOW_IMPLEMENTATION_PLAN.md
+@@ -1,5 +1,8 @@
+ # Native 65816 control-flow implementation plan: 3a–3c
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Status: all three slices implemented and qualified as of 2026-09-22:
+ 3a (`55579fd`), 3b (`7a2f616`) and 3c (`fc43602`). See
+ [results](MIR65816_CONTROL_FLOW.md). Originally proposed against main `a9e3c0b`
+@@ -18,7 +21,7 @@ Implement, qualify and commit these improvements in order:
+ | 3b | Omit a terminal JML to the physically following MIR block. | Emit every edge assignment first; retain block order and conditional dispatch. |
+ | 3c | Replace eligible conditional dispatch with a short branch. | Ordinary and fused MIR terminators, same-routine labels, signed-byte displacement; retain the existing long fallback. |
+ 
+-Keep the public [physical ABI v1](MIR65816_PHYSICAL_ABI_V2.md), image v3,
++Keep the public [physical ABI v1](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md), image v3,
+ [o65 profile v1](MIR65816_O65_PROFILE.md), call/return conventions, allocation,
+ temporary homes/stores, copy scheduling/staging, stack guards and interrupt
+ headroom unchanged. No broader accumulator forwarding, source-memory caching,
+diff --git a/docs/MIR65816_EMISSION_CONTRACT.md b/docs/MIR65816_EMISSION_CONTRACT.md
+index bd73413d..b8750f9b 100644
+--- a/docs/MIR65816_EMISSION_CONTRACT.md
++++ b/docs/MIR65816_EMISSION_CONTRACT.md
+@@ -6,8 +6,9 @@ fixups for a separate relocatable output path. Its
+ 
+ The compiler emits freestanding machine code for `wdc-65816-native` under
+ [`action65816.native.v2`](MIR65816_PHYSICAL_ABI_V2.md).
+-[Initial Exec acceptance](MIR65816_EXEC_ACCEPTANCE.md) covers the subset below
+-on the VM's independent 24-bit bus, including context switching and interrupts.
++[Initial Exec acceptance](MIR65816_EXEC_ACCEPTANCE.md) records the original
++native-v1 subset on the VM's independent 24-bit bus. Current native-v2 checks
++are recorded in the [DP migration](NATIVE_DP_PARTITION.md).
+ 
+ Native integer MUL/DIV/MOD support and its qualification contract are recorded
+ in the [arithmetic helper plan](MIR65816_ARITHMETIC_HELPERS_PLAN.md).
+@@ -103,11 +104,11 @@ regions, BSS and ABI/maps through `RelocatedImage` accessors. It does not write
+ guest memory, allocate task contexts or implement an Exec816 application loader.
+ See the [profile](MIR65816_O65_PROFILE.md) for the admitted subset and rejections.
+ 
+-The [o65 qualification](abi/action65816-o65-qualification.json) executes raw and
+-optimized files at two independent text/data/BSS placements, including imports,
++The historical native-v1 [o65 qualification](abi/action65816-o65-qualification.json)
++executes raw and optimized files at two independent text/data/BSS placements, including imports,
+ multi-bank code, stack failures and preempted tasks. The complete 44-test native
+-suite passes in debug and release. JSON transport v3, physical ABI v2 and
+-generated stack checks are unchanged.
++suite passed in debug and release. That change retained JSON transport v3,
++physical ABI v1 and generated stack checks. It does not qualify native-v2.
+ 
+ ## Instruction state boundary
+ 
+@@ -1011,7 +1012,7 @@ not a whole-task bound, particularly with recursion. The earlier abstract MIR
+ plan remains explicitly unallocated.
+ 
+ The loader/platform must establish native mode, M=X=0, decimal clear, DBR=0,
+-an aligned per-domain direct page, even entry S and valid v1 arguments/return
++an aligned per-domain direct page, even entry S and valid native arguments/return
+ bytes. It must reserve task headroom `26 + nmi_extra_stack` or IRQ headroom
+ `13 + nmi_extra_stack` when initializing the domain's floor. Emitted checks
+ preserve I. Failure transfers by JML to the configured nonreturning
+diff --git a/docs/MIR65816_EXEC_ACCEPTANCE.md b/docs/MIR65816_EXEC_ACCEPTANCE.md
+index 81e53e20..c2fb539b 100644
+--- a/docs/MIR65816_EXEC_ACCEPTANCE.md
++++ b/docs/MIR65816_EXEC_ACCEPTANCE.md
+@@ -1,7 +1,10 @@
+ # Native 65816 acceptance for initial Exec work
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Updated: 2026-09-17 (initial acceptance 2026-09-16). **G1–G6 pass for the initial subset described here**, using
+-`wdc-65816-native`, ABI `action65816.native.v2`, image format version 3, and
++`wdc-65816-native`, ABI `action65816.native.v1`, image format version 3, and
+ both raw and optimized NIR. Ordinary standalone Exec implementation can begin
+ on this boundary. The next platform milestone is a real-machine bootstrap and
+ interrupt smoke test; these results establish emulator execution only.
+@@ -29,7 +32,7 @@ source operations and output. The initial kernel subset includes:
+ - Checked native frames, assembly imports/exports, distinct code/read-only/
+   writable/zero-fill placement, allocated frame maps and disassembly.
+ 
+-[Physical ABI v1](MIR65816_PHYSICAL_ABI_V2.md) and the
++[Physical ABI v1](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md) and the
+ [context interface](MIR65816_CONTEXT_INTERFACE.md) define stack/domain ownership,
+ first-task fabrication, task exit, IRQ/COP dispatch and bounded assembly NMI.
+ The initial frame limit is 254 bytes including spills; every incoming/outgoing
+@@ -92,7 +95,7 @@ Each successful native run stores a manifest under
+ revision and source/fixture hashes, VM base/patch, tool versions, command, seeds
+ and artifact hashes. Context tests also save source, the linked image, assembled
+ bridge and memory layout. The checked-in
+-[acceptance record](abi/action65816-native-v2-qualification.json) identifies the
++[acceptance record](abi/action65816-native-v1-qualification.json) identifies the
+ two-context images and the compiler source tree used for this result.
+ 
+ Local toolchain: Rust 1.95.0, ca65/ld65 2.18, macOS ARM64. Original acceptance results:
+diff --git a/docs/MIR65816_EXEC_READINESS_REQUIREMENTS.md b/docs/MIR65816_EXEC_READINESS_REQUIREMENTS.md
+index d16b2179..5c2bf9b1 100644
+--- a/docs/MIR65816_EXEC_READINESS_REQUIREMENTS.md
++++ b/docs/MIR65816_EXEC_READINESS_REQUIREMENTS.md
+@@ -1,5 +1,8 @@
+ # Action! 65816 compiler requirements before Exec
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ ## Purpose and readiness decision
+ 
+ Exec will be a standalone, preemptively multitasking system for custom Atari
+@@ -67,8 +70,8 @@ Preserve existing Action! evaluation, conversion and overflow rules.
+ 
+ ### R2. A complete, versioned ABI that assembly can implement
+ 
+-The selected contract is now [physical ABI v1](MIR65816_PHYSICAL_ABI_V2.md),
+-with [machine-readable layouts](abi/action65816-native-v2.json). This specifies
++The selected contract is now [physical ABI v1](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md),
++with [machine-readable layouts](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/abi/action65816-native-v1.json). This specifies
+ the decisions below; the acceptance result supplies implementation and G2–G4 evidence.
+ 
+ Publish the physical application binary interface (ABI): argument and result
+diff --git a/docs/MIR65816_EXEC_READINESS_REVIEW.md b/docs/MIR65816_EXEC_READINESS_REVIEW.md
+index 225841d3..efeffd73 100644
+--- a/docs/MIR65816_EXEC_READINESS_REVIEW.md
++++ b/docs/MIR65816_EXEC_READINESS_REVIEW.md
+@@ -1,5 +1,8 @@
+ # MIR65816 Exec readiness review
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Date: 2026-09-15. Compiler baseline:
+ `c73818d91a2b458aa0d65fcb30d2e3ca844699ec`.
+ 
+@@ -84,7 +87,7 @@ lowering correction now covers both cases permanently.
+ 
+ ## Physical ABI decisions
+ 
+-[Physical ABI v1](MIR65816_PHYSICAL_ABI_V2.md) now fixes these decisions:
++[Physical ABI v1](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md) now fixes these decisions:
+ 
+ - Far JSL/RTL calls, naturally aligned stack arguments, odd outgoing extents,
+   even entry/body S, and caller cleanup that preserves A/X results.
+diff --git a/docs/MIR65816_FRAME_FORWARDING.md b/docs/MIR65816_FRAME_FORWARDING.md
+index bc1cf884..74a45fbc 100644
+--- a/docs/MIR65816_FRAME_FORWARDING.md
++++ b/docs/MIR65816_FRAME_FORWARDING.md
+@@ -1,5 +1,8 @@
+ # Direct native frame store/load forwarding
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ The emitter forwards a stored word in A16 into the next load's retained temporary
+ capture. Selection is independent of frontend optimization mode. This implements
+ the first recommendation from the [movement inventory](MIR65816_MOVEMENT_INVENTORY.md).
+@@ -33,7 +36,7 @@ STA $0C,S
+ 
+ Both stores and all homes remain. The rule does not allocate registers across
+ calls or joins, change DP use, move memory effects or remove stack guards.
+-The ABI remains `action65816.native.v2`, image version 3 and o65 profile version 1.
++The ABI remains `action65816.native.v1`, image version 3 and o65 profile version 1.
+ 
+ ## Qualification
+ 
+diff --git a/docs/MIR65816_IMPLEMENTATION_PLAN.md b/docs/MIR65816_IMPLEMENTATION_PLAN.md
+index 2bd8cd05..3151ac18 100644
+--- a/docs/MIR65816_IMPLEMENTATION_PLAN.md
++++ b/docs/MIR65816_IMPLEMENTATION_PLAN.md
+@@ -1,7 +1,10 @@
+ # MIR65816 implementation slices
+ 
+-The [physical ABI v1](MIR65816_PHYSICAL_ABI_V2.md) and its
+-[layout manifest](abi/action65816-native-v2.json) define the machine contract.
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
++The [physical ABI v1](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md) and its
++[layout manifest](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/abi/action65816-native-v1.json) define the machine contract.
+ The [Exec readiness requirements](MIR65816_EXEC_READINESS_REQUIREMENTS.md)
+ define acceptance. Completing a planning slice does not qualify emitted code.
+ 
+diff --git a/docs/MIR65816_LOCAL_ACCUMULATOR_FORWARDING_PLAN.md b/docs/MIR65816_LOCAL_ACCUMULATOR_FORWARDING_PLAN.md
+index aadca420..deabc353 100644
+--- a/docs/MIR65816_LOCAL_ACCUMULATOR_FORWARDING_PLAN.md
++++ b/docs/MIR65816_LOCAL_ACCUMULATOR_FORWARDING_PLAN.md
+@@ -1,5 +1,8 @@
+ # Native 65816 local accumulator forwarding implementation plan
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Status: completed on 2026-09-21 against main `0e8248c`, after direct single-word
+ edge copies. Baseline/probes: `5c8fe62`; checked selection: `d946c33`. See the
+ [results and qualification](MIR65816_LOCAL_ACCUMULATOR_FORWARDING.md).
+@@ -26,7 +29,7 @@ track values through arbitrary intervening instructions, across block entries,
+ or through edge assignments. It establishes the value/width/flags proof needed
+ before broadening register retention.
+ 
+-Preserve [physical ABI v1](MIR65816_PHYSICAL_ABI_V2.md), image v3, the
++Preserve [physical ABI v1](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md), image v3, the
+ [o65 profile](MIR65816_O65_PROFILE.md), public argument/result placement, all
+ stores, complete frame maps, staging reservations, stack checks, interrupt
+ headroom and Exec816's compiler pin. No NIR change, home coalescing, frame
+diff --git a/docs/MIR65816_O65_ASSESSMENT.md b/docs/MIR65816_O65_ASSESSMENT.md
+index b1d3029f..3f2ff1eb 100644
+--- a/docs/MIR65816_O65_ASSESSMENT.md
++++ b/docs/MIR65816_O65_ASSESSMENT.md
+@@ -1,5 +1,8 @@
+ # o65 suitability for native 65816 applications
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Assessment: 2026-09-21, actionc `f9eb285`. This is a format assessment and
+ proposed qualification slice, not an implemented output format or loader.
+ 
+@@ -148,7 +151,7 @@ it is not a guest execution or a runtime-loader qualification.
+ - **Entry and ABI:** Define an entry symbol or descriptor, profile version,
+   Action ABI version, and import contracts. Symbol names alone do not describe
+   signatures, register widths, DBR, D, or helper clobbers. Preserve the
+-  [native ABI](MIR65816_PHYSICAL_ABI_V2.md). In the inspected vlink source,
++  [native ABI](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md). In the inspected vlink source,
+   header options other than filename are skipped on input: do not depend on
+   custom ABI options surviving an ordinary relink. A retained data descriptor
+   or metadata attached after final linking is safer.
+diff --git a/docs/MIR65816_O65_IMPLEMENTATION_PLAN.md b/docs/MIR65816_O65_IMPLEMENTATION_PLAN.md
+index 273670fa..ae13caef 100644
+--- a/docs/MIR65816_O65_IMPLEMENTATION_PLAN.md
++++ b/docs/MIR65816_O65_IMPLEMENTATION_PLAN.md
+@@ -1,5 +1,8 @@
+ # Experimental native 65816 o65 writer and reference relocator
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Status: all five slices implemented and qualified on 2026-09-21. See the
+ [profile and measured costs](MIR65816_O65_PROFILE.md) and
+ [qualification record](abi/action65816-o65-qualification.json).
+@@ -60,7 +63,7 @@ writer, but must not call compiler placement or patching helpers.
+ ## Experimental profile decisions
+ 
+ Use the identity `actionc.o65.experimental.v1`. Its version is independent of
+-both the o65 header version and `action65816.native.v2`. Freeze its binary
++both the o65 header version and `action65816.native.v1`. Freeze its binary
+ descriptor and option schemas in a new `MIR65816_O65_PROFILE.md` in slice 1.
+ 
+ ### Container and placement
+@@ -101,7 +104,7 @@ fixed-address objects into a huge payload.
+ ### Entry, bindings and ABI metadata
+ 
+ Export `__a816_o65_profile_v1` for a length-delimited readonly descriptor in
+-text and `__a816_entry_v2` for the existing MIR program entry. The entry keeps
++text and `__a816_entry_v1` for the existing MIR program entry. The entry keeps
+ its declared native signature; the host caller supplies that signature's
+ arguments. The experiment does not invent a process-startup calling convention.
+ 
+@@ -142,7 +145,7 @@ extra or incompatible bindings. Initially admit declared external routines
+ whose physical interface is retained; diagnose runtime bindings without that
+ information rather than consulting SemIR or weakening checks.
+ 
+-Always represent `__a816_stack_overflow_v2` as a distinct required raw,
++Always represent `__a816_stack_overflow_v1` as a distinct required raw,
+ nonreturning import. Its contract is not an ordinary Action procedure's
+ contract. User bindings cannot redefine reserved profile names. Preserve
+ the existing rules for ordinary calls and the two explicit IRQ-state helpers.
+diff --git a/docs/MIR65816_STATE_TRACKER_DESIGN.md b/docs/MIR65816_STATE_TRACKER_DESIGN.md
+index 4e9bcdc1..613fca39 100644
+--- a/docs/MIR65816_STATE_TRACKER_DESIGN.md
++++ b/docs/MIR65816_STATE_TRACKER_DESIGN.md
+@@ -1,5 +1,8 @@
+ # Native 65816 processor-state tracking
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Status: stages 1–2 implemented and qualified on 2026-09-21. The
+ [implementation results](MIR65816_STATE_TRACKER.md) record the byte-identical
+ integration. Broader forwarding, width omission across blocks, register
+@@ -26,7 +29,7 @@ actually emitted and answers explicit proof queries. It must not look into
+ SemIR, parse printed IR, rediscover aliases from names, allocate registers or
+ change the selected addressing strategy.
+ 
+-Keep [physical ABI v1](MIR65816_PHYSICAL_ABI_V2.md), image v3, the
++Keep [physical ABI v1](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md), image v3, the
+ [o65 profile](MIR65816_O65_PROFILE.md), source accesses, temporary stores and
+ homes, stack checks and interrupt headroom unchanged in the initial stages.
+ Exec816's compiler pin and loader qualification are separate. This is support
+diff --git a/docs/MIR65816_VBCC_COMPARISON.md b/docs/MIR65816_VBCC_COMPARISON.md
+index 404673d3..252746f3 100644
+--- a/docs/MIR65816_VBCC_COMPARISON.md
++++ b/docs/MIR65816_VBCC_COMPARISON.md
+@@ -1,5 +1,8 @@
+ # Native 65816: actionc versus vbcc
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ On this simple-program corpus, vbcc produces substantially smaller and faster
+ code for all 12 kernels whose optimized outputs are correct in both compilers.
+ Actionc passes all 13 kernels in both modes. Optimized vbcc fails the remaining
+@@ -164,7 +167,7 @@ compiler workaround or correction was included in this comparison slice.
+ ## ABI and measurement boundaries
+ 
+ The benchmark preserves the
+-[Action native ABI](MIR65816_PHYSICAL_ABI_V2.md) and all stack guards. Action
++[Action native ABI](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md) and all stack guards. Action
+ passes every argument on the stack, including padding; vbcc passes the first
+ argument in A or A/X. For example, add has five incoming stack argument bytes
+ in Action and two in C. The CSV records those separately. Caller instruction
+diff --git a/docs/MIR65816_WORD_ARITHMETIC_PLAN.md b/docs/MIR65816_WORD_ARITHMETIC_PLAN.md
+index 87e82600..7f7ba322 100644
+--- a/docs/MIR65816_WORD_ARITHMETIC_PLAN.md
++++ b/docs/MIR65816_WORD_ARITHMETIC_PLAN.md
+@@ -1,5 +1,8 @@
+ # Native 16-bit ADD/SUB implementation plan
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Status: completed on 2026-09-21. Baseline/coverage is committed in `7907b77`,
+ emission in `7803040`, and qualification in the commit containing the
+ [results and validation report](MIR65816_WORD_ARITHMETIC.md). ADD and SUB each
+@@ -16,7 +19,7 @@ For a verified two-byte integer ADD or SUB, load the left operand into 16-bit A,
+ perform one native ADC/SBC, and write the result to its existing allocated stack
+ home. Both raw and optimized compilation use this target selection.
+ 
+-Preserve `action65816.native.v2`, image v3, the experimental o65 profile, stack
++Preserve `action65816.native.v1`, image v3, the experimental o65 profile, stack
+ guards, fixed frames, temporary homes, outgoing argument layouts, and call
+ barriers. No SemIR/NIR change, allocator change, persistent CPU/DP allocation,
+ return-marshalling optimization, branch relaxation, or pointer-arithmetic
+diff --git a/docs/MIR65816_WORD_RETURNS_PLAN.md b/docs/MIR65816_WORD_RETURNS_PLAN.md
+index 5fb8769a..7a96dd59 100644
+--- a/docs/MIR65816_WORD_RETURNS_PLAN.md
++++ b/docs/MIR65816_WORD_RETURNS_PLAN.md
+@@ -1,5 +1,8 @@
+ # Native 16-bit return implementation plan
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Status: implemented on 2026-09-21. Baseline/coverage is committed in `5010b78`,
+ selection in `cac8aeb`, and qualification in the commit containing the
+ [results report](MIR65816_WORD_RETURNS.md). Identity measures 63 bytes / 71 VM
+@@ -32,7 +35,7 @@ is 26 bytes and performs six DP byte writes and four DP byte reads.
+ 
+ `routine` already requests A16 at every terminator. `release(extent, true)`
+ preserves A through Y while restoring S, leaves X alone, and emits nothing when
+-the extent is zero. The [ABI definition](abi/action65816-native-v2.json) requires
++the extent is zero. The [ABI definition](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/abi/action65816-native-v1.json) requires
+ only A16 for a word result; [ResultLocation](../src/mir65816/abi/mod.rs) leaves
+ unspecified registers/flags caller-clobbered. Clearing X is unnecessary here.
+ The BYTE high A byte and the three-byte result's high X byte must still be zero.
+diff --git a/docs/NATIVE_DP_PARTITION.md b/docs/NATIVE_DP_PARTITION.md
+index 79d50c51..357e0ffd 100644
+--- a/docs/NATIVE_DP_PARTITION.md
++++ b/docs/NATIVE_DP_PARTITION.md
+@@ -31,7 +31,13 @@ Development checks (2026-09-27):
+ Tests use the runner-pinned actionc-vm revision
+ `56ddc5c5de41f0e7294e87c440869550eaf53292` plus its committed status-timing patch.
+ This is backend development evidence, not hosted Exec or release qualification.
+-Historical qualification JSON remains unchanged.
++Historical qualification JSON remains unchanged; historical plans and reports
++retain their original native-v1 identities and link to the archived contract.
++
++The compact header revision is derived from native ABI_VERSION (2). Follow-up
++o65/CLI checks passed (13 + 7 cases), including the exact eight-byte header and
++rejection of a stale revision 1. The final documentation correction changes no
++compiler, runtime, ABI-manifest or fixture bytes; passing execution is reused.
+ 
+ Bank-zero reservation delta: **0 fixed bytes; 0 bytes per task**. Page size,
+ alignment, guards, task stride and unused reserved capacity are unchanged.
+diff --git a/docs/NATIVE_ROUTINE_ABI_AND_AUTOMATIC_STORAGE_IMPLEMENTATION_PLAN.md b/docs/NATIVE_ROUTINE_ABI_AND_AUTOMATIC_STORAGE_IMPLEMENTATION_PLAN.md
+index df7d56d4..66d8e3b9 100644
+--- a/docs/NATIVE_ROUTINE_ABI_AND_AUTOMATIC_STORAGE_IMPLEMENTATION_PLAN.md
++++ b/docs/NATIVE_ROUTINE_ABI_AND_AUTOMATIC_STORAGE_IMPLEMENTATION_PLAN.md
+@@ -1,5 +1,8 @@
+ # Native Routine ABI and Automatic Storage Implementation Plan
+ 
++Historical native-v1 plan/results. The current contract and development checks
++are recorded in the [native-v2 DP migration](NATIVE_DP_PARTITION.md).
++
+ Snapshot date: 2026-09-03.
+ 
+ Status: complete. Slices 0 through 10 were implemented and verified on
+@@ -223,7 +226,7 @@ Those are MIR65816 decisions. NIR exposes sizes, alignments, liveness,
+ address-taking, call signatures, and storage duration, but no `S`, `D`, `DBR`,
+ `PBR`, M, or X concepts.
+ 
+-The subsequent [65816 physical ABI v1](MIR65816_PHYSICAL_ABI_V2.md) selects the
++The subsequent [65816 physical ABI v1](https://github.com/mkur/actionc/blob/ad55b414b6859cd464800add9a463124369d9ac9/docs/MIR65816_PHYSICAL_ABI_V1.md) selects the
+ native model's concrete machine convention and shared assembly layouts. The
+ completed abstract frame migration in this plan does not establish that the
+ current 65816 planner or emitter implements that physical contract.
+-- 
+2.50.1 (Apple Git-155)
+

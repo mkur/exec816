@@ -1,0 +1,109 @@
+MODULE PROGRAMIMAGE
+USE EXEC
+USE HEAPCORE
+
+PUBLIC CONST MAGIC=LONGCARD($31474d49)
+
+PUBLIC TYPE Image=[
+  LONGCARD magic,references
+  BYTE ownerHeld,running
+  BYTE POINTER backing,data,bss
+  LONGCARD backingBytes,textBytes,dataBytes,bssBytes
+  ADDRESS text
+  LONGINT FUNC POINTER entry()
+]
+
+; Release all segment allocations belonging to an unloaded program image.
+PUBLIC PROC Free(Image POINTER item)
+
+  IF item.backing<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(item.backing,item.backingBytes)
+  FI
+
+  IF item.data<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(item.data,item.dataBytes)
+  FI
+
+  IF item.bss<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(item.bss,item.bssBytes)
+  FI
+
+  item.magic=0
+  EXEC.FreeMem(BYTE POINTER(item),SIZEOF(Image))
+
+RETURN
+
+; Only the owner may start its instance. Each load has private mutable storage;
+; a second concurrent instance is made by loading the same serialized program.
+PUBLIC BYTE FUNC Attach(Image POINTER item)
+  BYTE accepted
+
+  IF item=Image POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  accepted=0
+  EXEC.Forbid()
+  IF item.magic=MAGIC AND item.ownerHeld=1 AND item.running=0
+      AND item.references=1 THEN
+    item.running=1
+    item.references=2
+    accepted=1
+  FI
+
+  EXEC.Permit()
+
+RETURN(accepted)
+
+; Retire an image owner's reference before deciding whether the image can be
+; freed.
+PUBLIC PROC DropOwner(Image POINTER item)
+  BYTE release
+
+  IF item=Image POINTER(0) THEN
+    RETURN
+  FI
+
+  release=0
+  EXEC.Forbid()
+  IF item.magic<>MAGIC OR item.ownerHeld<>1 OR item.references=0 THEN
+    HEAPCORE.Abort($ff96)
+  FI
+
+  item.ownerHeld=0
+  item.references==-1
+  IF item.references=0 THEN
+    release=1
+  FI
+
+  EXEC.Permit()
+  IF release<>0 THEN
+    Free(item)
+  FI
+
+RETURN
+
+; Called only on an unlaunched rollback or after the kernel retirement ACK.
+PUBLIC PROC Detach(Image POINTER item)
+  BYTE release
+
+  release=0
+  EXEC.Forbid()
+  IF item.magic<>MAGIC OR item.running<>1 OR item.references=0 THEN
+    HEAPCORE.Abort($ff96)
+  FI
+
+  item.running=0
+  item.references==-1
+  IF item.references=0 THEN
+    release=1
+  FI
+
+  EXEC.Permit()
+  IF release<>0 THEN
+    Free(item)
+  FI
+
+RETURN
+
+ENDMODULE

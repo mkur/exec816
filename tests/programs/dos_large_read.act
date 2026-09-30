@@ -1,0 +1,75 @@
+; One sequential Read; setup, byte verification and teardown are not timed.
+MODULE DOSLARGEREAD
+USE EXEC
+USE DOS
+USE FSBOOT
+USE HEAPCORE
+DOS.FileHandle POINTER file
+BYTE POINTER buffer
+LONGINT received,ioError
+LONGCARD before,verified
+CARD checks
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fd90)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Setup()
+
+  before=EXEC.AvailMem(0)
+  buffer=EXEC.AllocMem(70003,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  Require(buffer<>BYTE POINTER(0))
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+
+RETURN
+
+PROC ReadOne()
+
+  received=DOS.Read(file,buffer,70003)
+  ioError=DOS.IoErr()
+
+RETURN
+
+PROC Verify()
+  LONGINT index
+
+  Require(received=70003 AND ioError=0)
+  FOR index=0 TO 70002 DO
+    IF buffer(SIZE(index))<>(BYTE(index) XOR 129) THEN
+      HEAPCORE.Abort($fde0)
+    FI
+  OD
+
+  verified=70003
+
+RETURN
+
+PROC Cleanup()
+
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  EXEC.FreeMem(buffer,70003)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+PROC Main()
+
+  Setup()
+  ReadOne()
+  Verify()
+  Cleanup()
+
+RETURN
+
+ENDMODULE

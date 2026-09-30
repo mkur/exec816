@@ -1,0 +1,475 @@
+MODULE SIOCONCURRENT
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+
+TYPE ClientState=[
+  EXEC.Task POINTER task
+  EXEC.MsgPort shared
+  EXEC.MsgPort POINTER reply
+  EXEC.IOSIOReq POINTER first,second
+  BYTE POINTER buffer
+  BYTE ready
+  BYTE done
+  CARD rounds
+]
+
+BYTE POINTER clients,registries
+EXEC.MsgPort inbox,replies
+EXEC.Message ARRAY messages(2)
+BYTE ARRAY submittedOrder(72)
+BYTE ARRAY collectedOrder(72)
+BYTE go,speed,activeMirror
+CARD checks,submitted,collected,outstanding,peakOutstanding,peakTasks
+CARD sectorSize
+CARD workRounds,activeWork,registryRounds,heapRounds,portRounds,signalRounds
+LONGCARD before,rootSignals
+EXEC.Task POINTER parent
+PROC POINTER absent()
+INCLUDE "io-names.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff99)
+  FI
+
+  checks==+1
+
+RETURN
+
+ClientState POINTER FUNC Client(BYTE slot)
+
+RETURN(ClientState POINTER(ADDRESS(clients)+(SIZE(slot) LSH 8)))
+
+EXEC.MsgPort POINTER FUNC Registry(BYTE slot)
+
+RETURN(EXEC.MsgPort POINTER(ADDRESS(registries)+(SIZE(slot) LSH 8)))
+
+PROC Manual(EXEC.MsgPort POINTER port BYTE action,bit, EXEC.Task POINTER owner)
+
+  port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  port.mp_Flags=action
+  port.mp_SigTask=owner
+  port.mp_SigBit=bit
+  EXECLISTS.NewList(@port.mp_MsgList)
+
+RETURN
+
+PROC Prepare(EXEC.IOSIOReq POINTER req BYTE slot,round,lane BYTE POINTER buffer)
+
+  req.io_Command=EXEC.SIOCMD_TRANSACTION
+  req.io_Length=LONGCARD(sectorSize)
+  req.io_Data=buffer
+  req.io_Offset=0
+  IF lane<>0 THEN
+    req.io_Data=BYTE POINTER(ADDRESS(buffer)+SIZE(sectorSize))
+  FI
+
+  req.sio_Command=$52
+  IF round=1 AND sectorSize=128 THEN
+    req.sio_Command=$50
+  FI
+
+  req.sio_Aux1=slot+4
+  req.sio_Aux2=0
+  req.sio_Direction=EXEC.SIODIR_READ
+  IF round=1 AND sectorSize=128 THEN
+    req.sio_Direction=EXEC.SIODIR_WRITE
+  FI
+
+  req.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  IF speed<>0 THEN
+    req.sio_Profile=EXEC.SIO_PROFILE_STOCK810
+  FI
+
+  IF speed=2 THEN
+    req.sio_Profile=EXEC.SIO_PROFILE_HAPPY1050
+    req.sio_Command=$51
+    req.sio_Direction=EXEC.SIODIR_NONE
+    req.io_Length=0
+  FI
+
+  req.sio_TimeoutUS=0
+
+RETURN
+
+PROC ClientOpen(BYTE slot)
+  ClientState POINTER state
+  INT error
+
+  state=Client(slot)
+  state.reply=EXEC.CreateMsgPort()
+  Require(state.reply<>EXEC.MsgPort POINTER(0))
+  Manual(@state.shared,EXEC.PA_SIGNAL,state.reply.mp_SigBit,state.task)
+  state.first=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(state.reply,52))
+  state.second=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(@state.shared,52))
+  state.buffer=EXEC.AllocMem(LONGCARD(sectorSize) LSH 1,EXEC.MEMF_PUBLIC
+      OR EXEC.MEMF_CLEAR)
+  Require(state.first<>EXEC.IOSIOReq POINTER(0)
+      AND state.second<>EXEC.IOSIOReq POINTER(0) AND state.buffer<>BYTE POINTER(0))
+  error=EXEC.OpenDevice(sioName,LONGCARD(49+(slot & 1)),
+      EXEC.IORequest POINTER(state.first),0)
+  Require(error=0)
+  error=EXEC.OpenDevice(sioName,LONGCARD(49+(slot & 1)),
+      EXEC.IORequest POINTER(state.second),0)
+  Require(error=0)
+  state.ready=1
+
+RETURN
+
+PROC Verify(BYTE slot,round)
+  ClientState POINTER state
+  CARD index
+  BYTE seed
+
+  state=Client(slot)
+  IF speed=2 THEN
+    Require(state.first.io_Actual=0 AND state.second.io_Actual=0)
+    RETURN
+  FI
+
+  Require(state.first.io_Actual=LONGCARD(sectorSize)
+      AND state.second.io_Actual=LONGCARD(sectorSize))
+  seed=BYTE(((CARD(slot)+4) LSH 4)-(CARD(slot)+4))
+  IF round<>0 AND sectorSize=128 THEN
+    seed=slot XOR $a7
+  FI
+
+  FOR index=0 TO sectorSize-1 DO
+    Require(state.buffer(index)=(BYTE(index) XOR seed))
+    Require(state.buffer(index+sectorSize)=state.buffer(index))
+  OD
+
+RETURN
+
+; Keep multiple caller-owned requests outstanding on the same serialized bus.
+PROC SubmitBatch(ClientState POINTER state BYTE identity)
+
+  EXEC.Forbid()
+  submittedOrder(submitted)=identity
+  submitted==+1
+  EXEC.SendIO(EXEC.IORequest POINTER(state.first))
+  submittedOrder(submitted)=identity OR 1
+  submitted==+1
+  EXEC.SendIO(EXEC.IORequest POINTER(state.second))
+  outstanding==+2
+  IF outstanding>peakOutstanding THEN
+    peakOutstanding=outstanding
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
+PROC CollectBatch(ClientState POINTER state BYTE identity)
+  INT error
+  ; Two ports share one signal bit; collect the second specific request first.
+  Require(EXEC.WaitPort(@state.shared)=EXEC.Message POINTER(state.second))
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(state.second))
+  Require(error=0)
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(state.first))
+  Require(error=0)
+  Require(EXEC.GetMsg(state.reply)=EXEC.Message POINTER(0)
+      AND EXEC.GetMsg(@state.shared)=EXEC.Message POINTER(0))
+  RecordCollection(state,identity)
+
+RETURN
+
+PROC RecordCollection(ClientState POINTER state BYTE identity)
+
+  EXEC.Forbid()
+  collectedOrder(collected)=identity OR 1
+  collected==+1
+  collectedOrder(collected)=identity
+  collected==+1
+  outstanding==-2
+  EXEC.Permit()
+
+RETURN
+
+; Account for every submitted request through completion and caller
+; collection.
+PROC Batch(BYTE slot,round)
+  ClientState POINTER state
+  CARD index
+  INT error
+  BYTE identity
+
+  state=Client(slot)
+  IF round=1 AND sectorSize=128 THEN
+    FOR index=0 TO 127 DO
+      state.buffer(index)=BYTE(index) XOR slot XOR $a7
+      state.buffer(index+128)=state.buffer(index)
+    OD
+  FI
+
+  Prepare(state.first,slot,round,0,state.buffer)
+  Prepare(state.second,slot,round,1,state.buffer)
+  identity=(slot LSH 1) OR (round LSH 4)
+  SubmitBatch(state,identity)
+  CollectBatch(state,identity)
+  Verify(slot,round)
+  state.rounds==+1
+
+RETURN
+
+PROC ClientClose(BYTE slot)
+  ClientState POINTER state
+
+  state=Client(slot)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(state.first))
+  EXEC.CloseDevice(EXEC.IORequest POINTER(state.second))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(state.first))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(state.second))
+  EXEC.FreeMem(state.buffer,LONGCARD(sectorSize) LSH 1)
+  EXEC.DeleteMsgPort(state.reply)
+  Require(state.task.tc_SigAlloc=LONGCARD($ffff))
+  state.done=1
+
+RETURN
+
+PROC ClientEntry()
+  EXEC.Task POINTER self
+  BYTE slot,round
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  slot=self.tc_Node.ln_Pri
+  ClientOpen(slot)
+  WHILE go=0 DO
+    EXEC.Yield()
+  OD
+
+  FOR round=0 TO 2 DO
+    Batch(slot,round)
+  OD
+
+  ClientClose(slot)
+
+RETURN
+
+PROC RegistryPrepare()
+  EXEC.MsgPort POINTER port
+  BYTE i,j
+
+  FOR i=0 TO 3 DO
+    port=Registry(i)
+    Manual(port,EXEC.PA_IGNORE,255,EXEC.Task POINTER(0))
+    port.mp_Node.ln_Name=BYTE POINTER(ADDRESS(port)+SIZE(64))
+    FOR j=0 TO 62 DO
+      port.mp_Node.ln_Name(j)=120
+    OD
+
+    port.mp_Node.ln_Name(63)=65+i
+    port.mp_Node.ln_Name(64)=0
+  OD
+
+RETURN
+
+PROC RegistryWork()
+  EXEC.MsgPort POINTER port,found
+  BYTE i
+
+  FOR i=0 TO 3 DO
+    port=Registry(i)
+    EXEC.AddPort(port)
+  OD
+
+  EXEC.Forbid()
+  port=Registry(3)
+  found=EXEC.FindPort(port.mp_Node.ln_Name)
+  Require(found=port)
+  EXEC.Permit()
+  FOR i=0 TO 3 DO
+    port=Registry(i)
+    EXEC.RemPort(port)
+  OD
+
+  registryRounds==+1
+
+RETURN
+
+; Keep allocation work runnable while serial clients wait for device progress.
+PROC HeapWork()
+  BYTE POINTER a,b,c,clear
+
+  a=EXEC.AllocMem(24,0)
+  b=EXEC.AllocMem(96,0)
+  c=EXEC.AllocMem(40,0)
+  Require(a<>BYTE POINTER(0) AND b<>BYTE POINTER(0) AND c<>BYTE POINTER(0))
+  EXEC.FreeMem(b,96)
+  clear=EXEC.AllocMem(4097,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR)
+  Require(clear<>BYTE POINTER(0) AND clear^=0 AND clear(4096)=0)
+  EXEC.FreeMem(clear,4097)
+  EXEC.FreeMem(a,24)
+  EXEC.FreeMem(c,40)
+  heapRounds==+1
+
+RETURN
+
+PROC PortWork()
+  EXEC.Message POINTER msg
+  BYTE i
+
+  FOR i=0 TO 1 DO
+    messages(i).mn_Length=EXEC.MESSAGE_SIZE
+    messages(i).mn_ReplyPort=@replies
+    EXEC.PutMsg(@inbox,@messages(i))
+  OD
+
+  FOR i=0 TO 1 DO
+    msg=EXEC.GetMsg(@inbox)
+    Require(msg=@messages(i))
+    EXEC.ReplyMsg(msg)
+  OD
+
+  FOR i=0 TO 1 DO
+    msg=EXEC.GetMsg(@replies)
+    Require(msg=@messages(i))
+  OD
+
+  portRounds==+1
+
+RETURN
+
+; Provide independent CPU and kernel activity alongside serial transactions.
+PROC Background()
+  LONGCARD bits
+  BYTE POINTER phase
+  CARD status
+
+  phase=BYTE POINTER($0f0801)
+  activeMirror=0
+  IF phase^<>0 AND phase^<>13 AND phase^<>15 THEN
+    activeMirror=1
+    activeWork==+1
+  FI
+
+  HeapWork()
+  RegistryWork()
+  PortWork()
+  EXEC.Signal(parent,LONGCARD($20000000))
+  bits=EXEC.Wait(LONGCARD($20000000))
+  Require(bits=LONGCARD($20000000))
+  signalRounds==+1
+  workRounds==+1
+  status=EXECTASKS.Sleep(1)
+
+RETURN
+
+PROC StartDevice()
+  ClientState POINTER state
+  ; Explicit first ordinary open admits the resident before assigning client slots.
+  state=Client(0)
+  state.reply=EXEC.CreateMsgPort()
+  state.first=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(state.reply,52))
+  Require(EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(state.first),0)=0)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(state.first))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(state.first))
+  EXEC.DeleteMsgPort(state.reply)
+
+RETURN
+
+PROC Setup()
+  ClientState POINTER state
+  EXEC.Task POINTER added
+  BYTE slot,bit
+
+  before=EXEC.AvailMem(0)
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  rootSignals=parent.tc_SigAlloc
+  clients=EXEC.AllocMem(1536,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR)
+  registries=EXEC.AllocMem(1024,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR)
+  Require(clients<>BYTE POINTER(0) AND registries<>BYTE POINTER(0)
+      AND SIZEOF(ClientState)<=256)
+  bit=EXEC.AllocSignal(29)
+  Require(bit=29)
+  Manual(@inbox,EXEC.PA_IGNORE,255,EXEC.Task POINTER(0))
+  Manual(@replies,EXEC.PA_IGNORE,255,EXEC.Task POINTER(0))
+  RegistryPrepare()
+  StartDevice()
+  StartClients()
+
+RETURN
+
+PROC StartClients()
+  ClientState POINTER state
+  EXEC.Task POINTER added
+  BYTE slot
+
+  FOR slot=0 TO TASKSTACKS.CAPACITY-3 DO
+    state=Client(slot)
+    state.task=EXEC.Task POINTER(ADDRESS($0d0000)+(SIZE(slot) LSH 6))
+    state.task.tc_Node.ln_Type=EXEC.NT_TASK
+    state.task.tc_Node.ln_Pri=slot
+    state.task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot+2))
+    state.task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot+2))
+    state.task.tc_SPReg=state.task.tc_SPUpper-SIZE(2)
+    EXECLISTS.NewList(@state.task.tc_MemEntry)
+    added=EXEC.AddTask(state.task,@ClientEntry,absent)
+    Require(added=state.task)
+  OD
+
+  FOR slot=0 TO TASKSTACKS.CAPACITY-3 DO
+    state=Client(slot)
+    WHILE state.ready=0 DO
+      EXEC.Yield()
+    OD
+  OD
+
+  FOR slot=0 TO TASKSTACKS.CAPACITY-3 DO
+    state=Client(slot)
+    Require(state.task.tc_State<>EXEC.TS_REMOVED)
+  OD
+
+  Require(EXEC.FindTask(sioName)<>EXEC.Task POINTER(0))
+  peakTasks=TASKSTACKS.CAPACITY
+  go=1
+
+RETURN
+
+PROC Finish()
+  ClientState POINTER state
+  BYTE slot
+  CARD status
+
+  FOR slot=0 TO TASKSTACKS.CAPACITY-3 DO
+    state=Client(slot)
+    WHILE state.task.tc_State<>EXEC.TS_REMOVED DO
+      status=EXECTASKS.Sleep(1)
+    OD
+
+    Require(state.done=1 AND state.rounds=3)
+  OD
+
+  Require(submitted=collected AND outstanding=0 AND activeWork<>0
+      AND peakOutstanding>=4)
+  EXEC.FreeMem(clients,1536)
+  EXEC.FreeMem(registries,1024)
+  EXEC.FreeSignal(29)
+  Require(EXEC.AvailMem(0)=before AND parent.tc_SigAlloc=rootSignals)
+
+RETURN
+
+; Exercise queued serial requests from independent clients.
+PROC Main()
+
+  IF sectorSize=0 THEN
+    sectorSize=128
+  FI
+
+  Setup()
+  WHILE collected<CARD(((TASKSTACKS.CAPACITY-2) LSH 2)+((
+      TASKSTACKS.CAPACITY-2) LSH 1)) DO
+    Background()
+  OD
+
+  Finish()
+
+RETURN
+
+ENDMODULE

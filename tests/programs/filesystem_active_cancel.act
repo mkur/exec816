@@ -1,0 +1,317 @@
+MODULE FILESYSTEMACTIVETEST
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE FSBOOT
+USE FSREGISTRY
+USE FSOPERATION
+USE FSINSPECT
+USE FSACTIVEPROBE
+USE CONSOLEFOREGROUND
+USE SIODRIVER
+USE HEAPCORE
+CARD checks,scenario,sectorBytes
+BYTE phase,cleanupReached
+BYTE warm
+LONGINT result,error,position
+LONGCARD baseline,operationBaseline
+BYTE POINTER buffer
+DOS.FileHandle POINTER con,file
+DOS.FileLock POINTER lock
+DOS.FileInfoBlock POINTER info
+DOSCLIENT.ClientContext POINTER client
+DOSBREAKTYPES.Scope POINTER scope
+BYTE ARRAY conName=[67 79 78 58 0]
+BYTE ARRAY path=[68 49 58 84 79 79 76 83 47 83 85 66 47 68 65 84 65 46 66 73 78 0]
+BYTE ARRAY directory=[68 49 58 0]
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($eb00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC StartScope(BYTE point LONGINT threshold)
+
+  Require(DOS.BeginForeground(con)<>0)
+  scope=DOSBREAK.Current()
+  FSACTIVEPROBE.target=scope
+  FSACTIVEPROBE.mode=point
+  FSACTIVEPROBE.threshold=threshold
+  FSACTIVEPROBE.fired=0
+  FSACTIVEPROBE.attempts=0
+  FSACTIVEPROBE.accepted=0
+
+RETURN
+
+; Check the terminal reply before allowing its request storage to be reused.
+PROC Collected()
+  DOSCORE.DosRegistry POINTER registry
+
+  registry=DOSCORE.GetRegistry()
+  Require(FSACTIVEPROBE.fired=1 AND DOS.BreakPending()<>0)
+  Require(client.busy=0 AND scope.opState=FSOPERATION.COLLECTED
+      AND scope.enqueued=0)
+  Require(scope.packet=BYTE POINTER(0) AND registry.cancelHead=BYTE POINTER(0))
+  Require(EXEC.GetMsg(client.port)=EXEC.Message POINTER(0))
+
+RETURN
+
+; Interrupt a read at the selected checkpoint and verify committed progress.
+PROC ReadCase()
+  CARD index,ticks
+  LONGINT wanted,got,threshold
+  BYTE point
+  FSINSPECT.CacheInfo cache
+  LONGCARD warmMisses,warmHits
+
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  IF warm<>0 THEN
+    Require(DOS.Read(file,buffer,777)=777)
+    Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=777)
+    Require(FSINSPECT.CacheStatus(@cache)<>0 AND cache.blocks<>0)
+    warmMisses=cache.misses
+    warmHits=cache.hits
+  FI
+
+  FOR index=0 TO 799 DO
+    buffer(index)=$a5
+  OD
+
+  point=1
+  threshold=0
+  IF scenario=2 THEN
+    threshold=250
+  FI
+
+  IF scenario=3 THEN
+    threshold=750
+  FI
+
+  IF scenario=4 THEN
+    point=2
+  FI
+
+  IF scenario=5 THEN
+    point=3
+  FI
+
+  IF scenario=12 THEN
+    point=8
+  FI
+
+  IF scenario=15 THEN
+    point=9
+  FI
+
+  IF scenario=16 THEN
+    point=10
+  FI
+
+  StartScope(point,threshold)
+  result=DOS.Read(file,buffer+SIZE(8),777)
+  error=DOS.IoErr()
+  Collected()
+  Require(error=DOS.ERROR_BREAK)
+  IF warm<>0 THEN
+    Require(FSINSPECT.CacheStatus(@cache)<>0)
+    Require(cache.misses=warmMisses AND cache.hits>warmHits)
+  FI
+
+  wanted=FSACTIVEPROBE.committed
+  IF scenario=12 THEN
+    wanted=LONGINT(sectorBytes-3)
+  FI
+
+  IF wanted=0 THEN
+    Require(result=-1)
+  ELSE
+    Require(result=wanted)
+  FI
+
+  FOR index=0 TO 799 DO
+    IF index>=8 AND LONGINT(index)<wanted+8 THEN
+      Require(buffer(index)=(BYTE(index-8) XOR 83))
+    ELSE
+      Require(buffer(index)=$a5)
+    FI
+
+    buffer(index)=$a5
+  OD
+
+  ticks=EXECTASKS.Sleep(3)
+  FOR index=0 TO 799 DO
+    Require(buffer(index)=$a5)
+  OD
+
+  IF scenario=5 THEN
+    Require(FSACTIVEPROBE.attempts=1 AND FSACTIVEPROBE.accepted=0
+        AND FSACTIVEPROBE.wirePhase<>0)
+  FI
+
+  IF scenario=15 THEN
+    Require(FSACTIVEPROBE.attempts=1 AND FSACTIVEPROBE.accepted=1)
+  FI
+
+  FSACTIVEPROBE.mode=0
+  DOS.ClearBreak()
+  Require(DOS.Seek(file,0,DOS.OFFSET_CURRENT)=wanted)
+  got=DOS.Read(file,buffer,777-wanted)
+  Require(got=777-wanted AND DOS.IoErr()=0)
+  FOR index=0 TO CARD(got)-1 DO
+    Require(buffer(index)=(BYTE(LONGINT(index)+wanted) XOR 83))
+  OD
+
+  Require(DOS.Read(file,buffer,1)=0 AND DOS.Close(file)<>0)
+
+RETURN
+
+PROC ObjectCase()
+  BYTE point
+
+  point=4
+  IF scenario>=8 THEN
+    point=5
+  FI
+
+  IF scenario=17 THEN
+    point=12
+  FI
+
+  StartScope(point,0)
+  operationBaseline=EXEC.AvailMem(0)
+  IF scenario=6 OR scenario=8 OR scenario=17 THEN
+    file=DOS.Open(path,DOS.MODE_OLDFILE)
+    error=DOS.IoErr()
+    IF point<>5 THEN
+      Require(file=DOS.FileHandle POINTER(0) AND error=DOS.ERROR_BREAK)
+    ELSE
+      Require(file<>DOS.FileHandle POINTER(0) AND error=0)
+    FI
+
+    Collected()
+    IF file<>DOS.FileHandle POINTER(0) THEN
+      Require(DOS.Close(file)<>0)
+    FI
+  ELSE
+    lock=DOS.Lock(path,DOS.SHARED_LOCK)
+    error=DOS.IoErr()
+    IF point<>5 THEN
+      Require(lock=DOS.FileLock POINTER(0) AND error=DOS.ERROR_BREAK)
+    ELSE
+      Require(lock<>DOS.FileLock POINTER(0) AND error=0)
+    FI
+
+    Collected()
+    IF lock<>DOS.FileLock POINTER(0) THEN
+      DOS.UnLock(lock)
+    FI
+  FI
+
+  Require(EXEC.AvailMem(0)=operationBaseline)
+
+RETURN
+
+; Cancel enumeration without publishing a partially prepared information
+; result.
+PROC DirectoryCase()
+  BYTE point
+
+  lock=DOS.Lock(directory,DOS.SHARED_LOCK)
+  Require(lock<>DOS.FileLock POINTER(0))
+  Require(DOS.Examine(lock,info)<>0)
+  point=6
+  IF scenario=11 THEN
+    point=7
+  FI
+
+  IF scenario=14 THEN
+    point=11
+  FI
+
+  StartScope(point,0)
+  result=DOS.ExNext(lock,info)
+  error=DOS.IoErr()
+  Collected()
+  IF point<>7 THEN
+    Require(result=0 AND error=DOS.ERROR_BREAK)
+    FSACTIVEPROBE.mode=0
+    DOS.ClearBreak()
+    Require(DOS.ExNext(lock,info)<>0 AND info.fib_FileName(0)=84)
+  ELSE
+    Require(result<>0 AND error=0 AND info.fib_FileName(0)=84)
+  FI
+
+  DOS.UnLock(lock)
+
+RETURN
+
+; Cancel active seek traversal while preserving the cursor's committed
+; position.
+PROC SeekCase()
+
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  Require(DOS.Read(file,buffer,10)=10)
+  StartScope(1,0)
+  result=DOS.Seek(file,0,DOS.OFFSET_END)
+  error=DOS.IoErr()
+  Collected()
+  Require(result=-1 AND error=DOS.ERROR_BREAK)
+  FSACTIVEPROBE.mode=0
+  DOS.ClearBreak()
+  Require(DOS.Seek(file,0,DOS.OFFSET_CURRENT)=10)
+  Require(DOS.Read(file,buffer,1)=1 AND buffer(0)=(10 XOR 83))
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+; Exercise cancellation at active filesystem operation boundaries.
+PROC Main()
+
+  baseline=EXEC.AvailMem(0)
+  con=DOS.Open(conName,DOS.MODE_READWRITE)
+  Require(con<>DOS.FileHandle POINTER(0))
+  client=DOSCLIENT.Ensure()
+  buffer=EXEC.AllocMem(800,EXEC.MEMF_UPPER)
+  info=DOS.FileInfoBlock POINTER(EXEC.AllocMem(DOS.FILEINFOBLOCK_SIZE,
+      EXEC.MEMF_UPPER))
+  Require(buffer<>BYTE POINTER(0) AND info<>DOS.FileInfoBlock POINTER(0))
+  ; Start the common filesystem outside the cancellation/allocation baseline.
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0) AND DOS.Close(file)<>0)
+  IF scenario=17 THEN
+    ObjectCase()
+  ELSEIF scenario=14 THEN
+    DirectoryCase()
+  ELSEIF scenario<=5 OR scenario=12 OR scenario>=15 THEN
+    ReadCase()
+  ELSEIF scenario<=9 THEN
+    ObjectCase()
+  ELSEIF scenario<=11 THEN
+    DirectoryCase()
+  ELSE
+    SeekCase()
+  FI
+
+  Require(DOS.EndForeground()<>0 AND DOS.Close(con)<>0
+      AND DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  EXEC.FreeMem(buffer,800)
+  EXEC.FreeMem(BYTE POINTER(info),DOS.FILEINFOBLOCK_SIZE)
+  Require(EXEC.AvailMem(0)=baseline)
+  cleanupReached=1
+
+RETURN
+
+ENDMODULE

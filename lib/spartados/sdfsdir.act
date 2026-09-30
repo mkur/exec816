@@ -1,0 +1,301 @@
+; Directory records use the shared 23-byte scratch and FSSTATUS results.
+; File traversal progress passes through unchanged.
+MODULE SDFSDIR
+USE FSSTATUS
+USE SDFS
+USE SDFSFILE
+USE SDFSTYPES
+USE FSBTYPES
+USE SDFSDATE
+USE FS83
+INCLUDE "../dos/dos-types.inc"
+
+; Invalidate cached directory state when decoding can no longer continue
+; safely.
+BYTE FUNC Error(FSBTYPES.Workspace POINTER work LONGINT error)
+
+  work.error=error
+  SDFS.Invalidate(work)
+
+RETURN(FSSTATUS.ERROR)
+
+; Prepare a directory cursor using its map identity and ancestry.
+PROC Seed(FSBTYPES.Workspace POINTER work CARD directory)
+  SDFSTYPES.BackendState POINTER state
+  FSBTYPES.Cursor POINTER file
+  BYTE index
+
+  state=SDFS.GetState(work)
+  file=@state.directory
+  file.entry.start=directory
+  file.entry.flags=FSBTYPES.DIR
+  ; The header read is bounded by requested, before the true extent is known.
+  file.entry.length=0
+  file.entry.known=0
+  file.depth=work.depth
+  file.position=0
+  FOR index=0 TO work.depth DO
+    file.ancestors(index)=work.ancestors(index)
+  OD
+
+  SDFS.Restart(file)
+  state.operation.work=work
+  state.operation.file=file
+  state.operation.output=state.row
+  state.operation.requested=23
+
+RETURN
+
+; Cache validated directory length/parent for this read-only mount generation.
+; The cursor persists across entries; another directory replaces this one slot.
+PUBLIC BYTE FUNC BeginEntry(FSBTYPES.Workspace POINTER work CARD directory
+    LONGCARD ordinal)
+  SDFSTYPES.BackendState POINTER state
+  LONGINT offset
+
+  state=SDFS.GetState(work)
+  work.error=0
+  work.ioError=0
+  IF work.volume.mounted=0 THEN
+    RETURN(Error(work,ERROR_NOT_A_DOS_DISK))
+  FI
+
+  IF ordinal>LONGCARD(729442) THEN
+    RETURN(FSSTATUS.END_DIR)
+  FI
+
+  state.ordinal=LONGINT(ordinal)
+  state.phase=0
+  work.directory=directory
+  work.index=ordinal
+  IF state.directoryVolume=work.volume
+      AND state.directoryGeneration=work.volume.block.generation
+      AND state.directory.entry.start=directory THEN
+    IF ValidateParent(work)=0 THEN
+      RETURN(FSSTATUS.ERROR)
+    FI
+
+    offset=(state.ordinal+1)*23
+    IF offset>=state.directory.entry.length THEN
+      RETURN(FSSTATUS.END_DIR)
+    FI
+
+    state.phase=1
+    state.directory.position=offset
+  ELSE
+    state.directoryVolume=FSBTYPES.Volume POINTER(0)
+    Seed(work,directory)
+  FI
+
+RETURN(SDFSFILE.BeginRead(@state.operation))
+
+; Reject directory metadata that contradicts the expected parent relationship.
+BYTE FUNC ValidateParent(FSBTYPES.Workspace POINTER work)
+  SDFSTYPES.BackendState POINTER state
+  CARD expected
+  BYTE depth
+
+  state=SDFS.GetState(work)
+  expected=0
+  depth=work.depth
+  IF state.directory.entry.start<>work.volume.root THEN
+    expected=work.ancestors(depth)
+    IF state.directory.entry.start=expected THEN
+      IF depth=0 THEN
+        RETURN(Error(work,ERROR_DISK_NOT_VALIDATED))
+      FI
+
+      expected=work.ancestors(depth-1)
+    FI
+  FI
+
+  IF state.parent<>expected THEN
+    RETURN(Error(work,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+RETURN(1)
+
+; Validate a directory header before accepting its recorded extent.
+BYTE FUNC Header(FSBTYPES.Workspace POINTER work)
+  SDFSTYPES.BackendState POINTER state
+  LONGINT length
+
+  state=SDFS.GetState(work)
+  length=SDFS.Length(state.row,3)
+  IF length<23 OR length MOD 23<>0 THEN
+    RETURN(Error(work,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  state.parent=SDFS.Word(state.row,1)
+  IF ValidateParent(work)=0 THEN
+    RETURN(0)
+  FI
+
+  state.directory.entry.length=length
+  state.directory.entry.known=1
+  state.directoryVolume=work.volume
+  state.directoryGeneration=work.volume.block.generation
+  SDFSDATE.Decode(@state.directory.entry,state.row)
+
+RETURN(1)
+
+; Translate one buffered directory record into backend-neutral metadata.
+BYTE FUNC Decode(FSBTYPES.Workspace POINTER work)
+  SDFSTYPES.BackendState POINTER state
+  BYTE flags,index
+
+  state=SDFS.GetState(work)
+  flags=state.row(0)
+  IF flags=0 THEN
+    RETURN(FSSTATUS.END_DIR)
+  FI
+
+  IF (flags & $10)<>0 THEN
+    RETURN(FSSTATUS.SKIP_ENTRY)
+  FI
+
+  IF (flags & $c8)<>8 THEN
+    RETURN(Error(work,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  work.entry.key=work.index
+  work.entry.start=SDFS.Word(state.row,1)
+  work.entry.length=SDFS.Length(state.row,3)
+  work.entry.parent=work.directory
+  work.entry.known=1
+  work.entry.count=0
+  work.entry.flags=0
+  IF (flags & $20)<>0 THEN
+    work.entry.flags=FSBTYPES.DIR
+    work.entry.known=0
+    work.entry.length=0
+  FI
+
+  IF (flags & 1)<>0 THEN
+    work.entry.flags=work.entry.flags OR FSBTYPES.PROTECTED
+  FI
+
+  FOR index=0 TO 10 DO
+    work.entry.name(index)=state.row(index+6)
+  OD
+
+  IF FS83.Stored(work.entry.name)=0 THEN
+    RETURN(Error(work,ERROR_INVALID_COMPONENT_NAME))
+  FI
+
+  IF work.entry.start=0 THEN
+    IF work.entry.length<>0 OR (flags & $20)<>0 THEN
+      RETURN(Error(work,ERROR_DISK_NOT_VALIDATED))
+    FI
+  ELSEIF SDFS.Allowed(work.volume,work.entry.start)=0 THEN
+    RETURN(Error(work,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  SDFSDATE.Decode(@work.entry,state.row)
+
+RETURN(FSSTATUS.DONE)
+
+; Resume directory record decoding using the current sector buffer.
+PUBLIC BYTE FUNC BufferedEntry(FSBTYPES.Workspace POINTER work)
+  SDFSTYPES.BackendState POINTER state
+  BYTE status
+  LONGINT offset
+
+  state=SDFS.GetState(work)
+  IF state.phase=2 THEN
+    RETURN(FSSTATUS.DONE)
+  FI
+
+  status=SDFSFILE.ContinueOperation(@state.operation)
+  IF status<>FSSTATUS.DONE THEN
+    RETURN(status)
+  FI
+
+  IF state.operation.result<>23 THEN
+    RETURN(Error(work,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  IF state.phase=0 THEN
+    IF Header(work)=0 THEN
+      RETURN(FSSTATUS.ERROR)
+    FI
+
+    IF state.ordinal<0 THEN
+      RETURN(FSSTATUS.DONE)
+    FI
+
+    offset=(state.ordinal+1)*23
+    IF offset>=state.directory.entry.length THEN
+      RETURN(FSSTATUS.END_DIR)
+    FI
+
+    state.phase=1
+    state.directory.position=offset
+    RETURN(SDFSFILE.BeginRead(@state.operation))
+  FI
+
+RETURN(Decode(work))
+
+; Start bounded traversal to the directory header needed for lookup.
+PUBLIC BYTE FUNC BeginHeader(FSBTYPES.Workspace POINTER work CARD directory)
+  SDFSTYPES.BackendState POINTER state
+  BYTE status
+
+  state=SDFS.GetState(work)
+  IF state.directoryVolume=work.volume
+      AND state.directoryGeneration=work.volume.block.generation
+      AND state.directory.entry.start=directory THEN
+    IF ValidateParent(work)=0 THEN
+      RETURN(FSSTATUS.ERROR)
+    FI
+
+    state.phase=2
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  status=BeginEntry(work,directory,0)
+  state.ordinal=-1
+
+RETURN(status)
+
+; Resolve directory or file extent information through the shared worker
+; protocol.
+PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file BYTE received)
+  SDFSTYPES.BackendState POINTER state
+  BYTE status
+
+  state=SDFS.GetState(work)
+  IF (work.entry.flags & FSBTYPES.DIR)=0 THEN
+    RETURN(SDFSFILE.Measure(work,file,received))
+  FI
+
+  IF received=0 THEN
+    state.measurePhase=0
+    status=BeginHeader(work,work.entry.start)
+  ELSEIF state.measurePhase=0 THEN
+    status=BufferedEntry(work)
+  ELSE
+    RETURN(SDFSFILE.Measure(work,file,1))
+  FI
+
+  IF status<>FSSTATUS.DONE THEN
+    RETURN(status)
+  FI
+
+  IF work.entry.known<>0 AND work.entry.length<>state.directory.entry.length THEN
+    RETURN(Error(work,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  work.entry.length=state.directory.entry.length
+  work.entry.known=1
+  state.measurePhase=1
+  IF work.entry.parent=0 THEN
+    work.entry.days=state.directory.entry.days
+    work.entry.minutes=state.directory.entry.minutes
+    work.entry.ticks=state.directory.entry.ticks
+  FI
+
+RETURN(SDFSFILE.Measure(work,file,0))
+
+ENDMODULE

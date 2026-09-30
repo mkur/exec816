@@ -1,0 +1,85 @@
+{
+  "abi": "exec816.memory.v1",
+  "version": 1,
+  "record_size": 4,
+  "states": {
+    "UNAVAILABLE": 0,
+    "FREE": 1,
+    "RESERVED": 2,
+    "OWNED": 3
+  },
+  "errors": {
+    "OK": 0,
+    "BANK": 1,
+    "OWNER": 2,
+    "UNAVAILABLE": 3,
+    "RESERVED": 4,
+    "CONFLICT": 5,
+    "OWNERSHIP": 6,
+    "EXHAUSTED": 7,
+    "BOOT": 8
+  },
+  "owners": {
+    "SYSTEM": 1,
+    "IMAGE": 2,
+    "CLIENT_A": 3,
+    "CLIENT_B": 4,
+    "HEAP": 5
+  },
+  "manifest": {
+    "header_size": 32,
+    "extent_size": 8,
+    "magic": "EBM1",
+    "copy": 0,
+    "zero": 1,
+    "executable": 2,
+    "fields": {
+      "magic": 0,
+      "version": 4,
+      "banks": 6,
+      "extents": 8,
+      "entry": 10,
+      "reserved": 13,
+      "size": 14,
+      "identity": 16
+    },
+    "extent_fields": {
+      "address": 0,
+      "kind": 3,
+      "size": 4,
+      "owner": 6
+    }
+  },
+  "record": {
+    "size": 8,
+    "extent": 0,
+    "offset": 2,
+    "count": 4,
+    "kind": 6,
+    "reserved": 7
+  },
+  "bank_fields": {
+    "state": 0,
+    "reserved": 1,
+    "owner": 2
+  },
+  "boot_errors": {
+    "BOUNDS": 1,
+    "MANIFEST": 2,
+    "RECORD": 3,
+    "INCOMPLETE": 4
+  },
+  "boot_fields": {
+    "READY": 0,
+    "ERROR": 1,
+    "NEXT": 2,
+    "OFFSET": 4,
+    "LEFT": 6,
+    "OLD_MEMLO": 8,
+    "ADOPTED": 10,
+    "ID": 16,
+    "CALLS": 32,
+    "ENTERED": 34,
+    "WORK": 40
+  }
+}

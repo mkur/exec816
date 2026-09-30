@@ -1,0 +1,111 @@
+MODULE CONSOLETX
+USE EXEC
+USE HEAPCORE
+EXEC.MsgPort POINTER replies
+EXEC.IOStdReq POINTER console
+EXEC.IOSIOReq POINTER serial
+BYTE POINTER buffer
+BYTE checkpoint
+BYTE ARRAY consoleName=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY sioName=[115 105 111 46 100 101 118 105 99 101 0]
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f790)
+  FI
+
+RETURN
+
+PROC Setup()
+  INT error
+  CARD index
+
+  replies=EXEC.CreateMsgPort()
+  buffer=EXEC.AllocMem(168,EXEC.MEMF_PUBLIC)
+  Check(replies<>EXEC.MsgPort POINTER(0) AND buffer<>BYTE POINTER(0))
+  console=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(replies,42))
+  serial=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(replies,52))
+  Check(console<>EXEC.IOStdReq POINTER(0) AND serial<>EXEC.IOSIOReq POINTER(0))
+  error=EXEC.OpenDevice(consoleName,0,EXEC.IORequest POINTER(console),0)
+  Check(error=0)
+  error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(serial),0)
+  Check(error=0)
+  FOR index=0 TO 127 DO
+    buffer(index)=BYTE(index XOR $a7)
+  OD
+
+  FOR index=128 TO 167 DO
+    buffer(index)=35
+  OD
+
+RETURN
+
+PROC Transfer(BYTE writing)
+  INT error
+
+  serial.io_Command=EXEC.SIOCMD_TRANSACTION
+  serial.io_Data=buffer
+  serial.io_Length=128
+  serial.sio_Aux1=4
+  serial.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  IF writing<>0 THEN
+    serial.sio_Command=$50
+    serial.sio_Direction=EXEC.SIODIR_WRITE
+  ELSE
+    serial.sio_Command=$52
+    serial.sio_Direction=EXEC.SIODIR_READ
+  FI
+
+  EXEC.SendIO(EXEC.IORequest POINTER(serial))
+  console.io_Command=EXEC.CMD_WRITE
+  console.io_Data=BYTE POINTER(ADDRESS(buffer)+SIZE(128))
+  console.io_Length=40
+  error=EXEC.DoIO(EXEC.IORequest POINTER(console))
+  Check(error=0 AND console.io_Actual=40)
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(serial))
+  Check(error=0 AND serial.io_Actual=128)
+
+RETURN
+
+PROC Verify()
+  CARD index
+  INT error
+
+  FOR index=0 TO 127 DO
+    Check(buffer(index)=BYTE(index XOR $a7))
+  OD
+
+  console.io_Command=EXEC.CMD_READ
+  console.io_Data=BYTE POINTER(ADDRESS(buffer)+SIZE(128))
+  console.io_Length=1
+  error=EXEC.DoIO(EXEC.IORequest POINTER(console))
+  Check(error=0 AND console.io_Actual=1 AND buffer(128)=97)
+
+RETURN
+
+PROC Cleanup()
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(serial))
+  EXEC.CloseDevice(EXEC.IORequest POINTER(console))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(serial))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(console))
+  EXEC.DeleteMsgPort(replies)
+  EXEC.FreeMem(buffer,168)
+
+RETURN
+
+; Exercise console output completion and exact transferred bytes.
+PROC Main()
+
+  Setup()
+  Transfer(1)
+  Transfer(0)
+  Verify()
+  Cleanup()
+  checkpoint=1
+
+RETURN
+
+ENDMODULE

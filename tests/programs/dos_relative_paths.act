@@ -1,0 +1,365 @@
+MODULE DOSRELATIVE
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE FSTYPES
+USE FSBOOT
+USE HEAPCORE
+CARD checks
+BYTE finished
+LONGCARD before
+DOS.FileLock POINTER cwd
+DOS.FileHandle POINTER retained
+DOSCORE.DosSlot POINTER owner
+DOSCLIENT.ClientContext POINTER client
+EXEC.Task child
+PROC POINTER absent()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e900+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+BYTE POINTER FUNC Name(CARD offset)
+
+RETURN(BYTE POINTER(ADDRESS($d1000)+SIZE(offset)))
+
+PROC Same(BYTE POINTER first,second)
+  CARD index
+
+  index=0
+  DO
+    IF first(index)<>second(index) THEN
+      HEAPCORE.Abort($e9f0)
+    FI
+
+    IF first(index)=0 THEN
+      EXIT
+    FI
+
+    index==+1
+    IF index=256 THEN
+      HEAPCORE.Abort($e9f1)
+    FI
+  OD
+
+RETURN
+
+PROC CurrentName(CARD offset)
+
+  Require(DOS.NameFromLock(cwd,BYTE POINTER($d3000),256)<>0)
+  Same(BYTE POINTER($d3000),Name(offset))
+
+RETURN
+
+PROC Change(CARD offset)
+  DOS.FileLock POINTER candidate,old
+
+  candidate=DOS.Lock(Name(offset),DOS.SHARED_LOCK)
+  Require(candidate<>DOS.FileLock POINTER(0))
+  old=DOS.CurrentDir(candidate)
+  Require(DOS.IoErr()=0 AND old=cwd)
+  cwd=candidate
+  DOS.UnLock(old)
+
+RETURN
+
+PROC ReadFile(CARD offset BYTE seed)
+  DOS.FileHandle POINTER file
+  BYTE POINTER buffer
+  CARD index
+
+  buffer=BYTE POINTER($d4000)
+  file=DOS.Open(Name(offset),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  Require(DOS.Read(file,buffer,777)=777 AND DOS.IoErr()=0)
+  FOR index=0 TO 776 DO
+    IF buffer(index)<>(BYTE(index) XOR seed) THEN
+      HEAPCORE.Abort($e9f2)
+    FI
+  OD
+
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC VerifyRetained()
+  BYTE POINTER buffer
+  CARD index
+
+  buffer=BYTE POINTER($d4000)
+  Require(DOS.Read(retained,buffer,777)=777 AND DOS.Close(retained)<>0)
+  FOR index=0 TO 776 DO
+    IF buffer(index)<>(BYTE(index) XOR 83) THEN
+      HEAPCORE.Abort($e9f9)
+    FI
+  OD
+
+RETURN
+
+PROC Missing()
+
+  owner=DOSCORE.Current()
+  Require(DOS.Open(Name(96),DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_NO_DEFAULT_DIR)
+  Require(DOS.Lock(Name(128),DOS.SHARED_LOCK)=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_NO_DEFAULT_DIR)
+  Require(owner.context=BYTE POINTER(0) AND EXEC.AvailMem(0)=before)
+
+RETURN
+
+PROC Metadata()
+  DOS.FileLock POINTER duplicate
+  DOS.FileInfoBlock POINTER info
+
+  info=DOS.FileInfoBlock POINTER($d3200)
+  duplicate=DOS.Lock(Name(128),DOS.SHARED_LOCK)
+  Require(duplicate<>DOS.FileLock POINTER(0) AND duplicate<>cwd)
+  Require(DOS.Examine(duplicate,info)<>0 AND info.fib_DirEntryType=DOS.ST_USERDIR)
+  Require(DOS.ExNext(duplicate,info)<>0 AND info.fib_DirEntryType=DOS.ST_USERDIR)
+  Same(info.fib_FileName,Name(416))
+  Require(DOS.ExNext(duplicate,info)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  DOS.UnLock(duplicate)
+
+RETURN
+
+PROC Errors()
+  DOS.FileLock POINTER candidate
+  FSTYPES.LockObject POINTER item
+  CARD references
+  LONGCARD generation
+
+  candidate=DOS.Lock(Name(448),DOS.SHARED_LOCK)
+  Require(candidate=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  candidate=DOS.Lock(Name(480),DOS.SHARED_LOCK)
+  Require(candidate=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND)
+  Require(DOS.Open(Name(128),DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Require(client.directory=BYTE POINTER(cwd))
+  client.busy=1
+  Require(DOS.Open(Name(96),DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  client.busy=0
+  owner.active=1
+  Require(DOS.Lock(Name(128),DOS.SHARED_LOCK)=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  owner.active=0
+  item=FSTYPES.LockObject POINTER(cwd)
+  references=item.common.mount.references
+  item.common.mount.references=$ffff
+  Require(DOS.Open(Name(96),DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  item.common.mount.references=references
+  generation=item.common.generation
+  item.common.generation=0
+  Require(DOS.Open(Name(96),DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  item.common.generation=generation
+
+RETURN
+
+PROC Other()
+  DOS.FileLock POINTER local,old
+  DOS.FileHandle POINTER file
+
+  IF DOS.Open(Name(96),DOS.MODE_OLDFILE)<>DOS.FileHandle POINTER(0)
+      OR DOS.IoErr()<>DOS.ERROR_NO_DEFAULT_DIR THEN
+    HEAPCORE.Abort($e9f3)
+  FI
+
+  IF DOS.CurrentDir(cwd)<>DOS.FileLock POINTER(0)
+      OR DOS.IoErr()<>DOS.ERROR_INVALID_LOCK THEN
+    HEAPCORE.Abort($e9f4)
+  FI
+
+  local=DOS.Lock(Name(32),DOS.SHARED_LOCK)
+  IF local=DOS.FileLock POINTER(0) THEN
+    HEAPCORE.Abort($e9f5)
+  FI
+
+  old=DOS.CurrentDir(local)
+  file=DOS.Open(Name(64),DOS.MODE_OLDFILE)
+  IF old<>DOS.FileLock POINTER(0) OR file=DOS.FileHandle POINTER(0) THEN
+    HEAPCORE.Abort($e9f6)
+  FI
+
+  IF DOS.Close(file)=0 THEN
+    HEAPCORE.Abort($e9f7)
+  FI
+
+  old=DOS.CurrentDir(DOS.FileLock POINTER(0))
+  DOS.UnLock(old)
+  IF DOS.ReleaseContext()=0 THEN
+    HEAPCORE.Abort($e9f8)
+  FI
+
+RETURN
+
+; Verify that separate callers retain independent relative-path bases.
+PROC Independent()
+  CARD status,index
+  BYTE POINTER bytes
+  LONGCARD available
+
+  available=EXEC.AvailMem(0)
+  bytes=BYTE POINTER(@child)
+  FOR index=0 TO EXEC.TASK_SIZE-1 DO
+    bytes(index)=0
+  OD
+
+  child.tc_Node.ln_Type=EXEC.NT_TASK
+  child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+  child.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
+  child.tc_SPReg=child.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@child.tc_MemEntry)
+  Require(EXEC.AddTask(@child,@Other,absent)=@child)
+  WHILE child.tc_State<>EXEC.TS_REMOVED DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  Require(EXEC.AvailMem(0)=available AND client.directory=BYTE POINTER(cwd))
+
+RETURN
+
+; Exercise the handler boundary with an explicitly constructed relative-path
+; request.
+PROC Packet(LONGINT identity,action,error)
+  FSTYPES.LockObject POINTER base
+  BYTE POINTER result
+
+  base=FSTYPES.LockObject POINTER(cwd)
+  result=BYTE POINTER(0)
+  client.packet.sp_Pkt.dp_Arg1=identity
+  client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(Name(128)))
+  client.packet.sp_Pkt.dp_Arg3=DOS.SHARED_LOCK
+  IF action=1005 THEN
+    client.packet.sp_Pkt.dp_Arg1=LONGINT(ADDRESS(@result))
+    client.packet.sp_Pkt.dp_Arg2=identity
+    client.packet.sp_Pkt.dp_Arg3=LONGINT(ADDRESS(Name(128)))
+  FI
+
+  client.packet.sp_Pkt.dp_Arg4=0
+  client.packet.sp_Pkt.dp_Arg5=0
+  client.packet.sp_Pkt.dp_Arg6=0
+  client.packet.sp_Pkt.dp_Arg7=LONGINT(ADDRESS(owner))
+  Require(DOSCLIENT.Call(DOSCORE.Current(),client,base.common.mount.port,action)=0
+      AND DOS.IoErr()=error)
+  Require(client.busy=0 AND result=BYTE POINTER(0))
+
+RETURN
+
+; Require base-lock ownership even when another caller can name the same
+; directory.
+PROC PrivateBases()
+  DOS.FileLock POINTER other
+  DOS.FileHandle POINTER file
+  FSTYPES.LockObject POINTER base
+  LONGCARD generation,available
+  LONGINT count
+  BYTE depth,flags
+
+  other=DOS.Lock(Name(0),DOS.SHARED_LOCK)
+  file=DOS.Open(Name(96),DOS.MODE_OLDFILE)
+  Require(other<>DOS.FileLock POINTER(0) AND file<>DOS.FileHandle POINTER(0))
+  base=FSTYPES.LockObject POINTER(cwd)
+  available=EXEC.AvailMem(0)
+  Packet(LONGINT($1000000),8,DOS.ERROR_INVALID_LOCK)
+  Packet(LONGINT($1000000),1005,DOS.ERROR_INVALID_LOCK)
+  Packet(LONGINT($ffffff),8,DOS.ERROR_INVALID_LOCK)
+  Packet(LONGINT(ADDRESS(other)),8,DOS.ERROR_INVALID_LOCK)
+  Packet(LONGINT(ADDRESS(file)),1005,DOS.ERROR_INVALID_LOCK)
+  generation=base.common.generation
+  base.common.generation=0
+  Packet(LONGINT(ADDRESS(cwd)),8,DOS.ERROR_INVALID_LOCK)
+  base.common.generation=generation
+  count=base.state.entry.count
+  base.state.entry.count=0
+  Packet(LONGINT(ADDRESS(cwd)),8,DOS.ERROR_INVALID_LOCK)
+  base.state.entry.count=count
+  depth=base.state.depth
+  base.state.depth=17
+  Packet(LONGINT(ADDRESS(cwd)),8,DOS.ERROR_INVALID_LOCK)
+  base.state.depth=depth
+  flags=base.state.entry.flags
+  base.state.entry.flags=$42
+  Packet(LONGINT(ADDRESS(cwd)),8,DOS.ERROR_OBJECT_WRONG_TYPE)
+  base.state.entry.flags=flags
+  Packet(LONGINT(ADDRESS(cwd)),1005,DOS.ERROR_OBJECT_WRONG_TYPE)
+  Require(EXEC.AvailMem(0)=available AND client.objects=3
+      AND base.common.mount.references=2)
+  Require(DOS.Close(file)<>0)
+  DOS.UnLock(other)
+
+RETURN
+
+; Preserve the retained base identity while reporting unavailable media.
+PROC Offline()
+  FSTYPES.LockObject POINTER item
+  DOS.FileLock POINTER old
+
+  item=FSTYPES.LockObject POINTER(cwd)
+  item.common.mount.offline=1
+  item.common.mount.error=DOS.ERROR_NO_DISK
+  Require(DOS.Open(Name(96),DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_NO_DISK)
+  old=DOS.CurrentDir(DOS.FileLock POINTER(0))
+  Require(old=cwd AND DOS.IoErr()=0)
+  DOS.UnLock(old)
+  cwd=DOS.FileLock POINTER(0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+; Exercise relative paths, independent bases and retained directory identity.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  Missing()
+  Change(0)
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  CurrentName(0)
+  ReadFile(160,83)
+  Change(192)
+  CurrentName(224)
+  ReadFile(96,83)
+  retained=DOS.Open(Name(96),DOS.MODE_OLDFILE)
+  Require(retained<>DOS.FileHandle POINTER(0))
+  Change(256)
+  CurrentName(32)
+  Metadata()
+  ReadFile(64,83)
+  Change(288)
+  CurrentName(224)
+  Change(320)
+  CurrentName(0)
+  Change(352)
+  CurrentName(224)
+  Change(384)
+  CurrentName(0)
+  Change(512)
+  CurrentName(512)
+  VerifyRetained()
+  ReadFile(96,67)
+  Errors()
+  PrivateBases()
+  Independent()
+  CurrentName(512)
+  Offline()
+
+RETURN
+
+ENDMODULE

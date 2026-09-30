@@ -1,0 +1,197 @@
+MODULE CSTRINGCOMMAND
+USE COMMAND
+USE CSTRING AS STR
+USE A816ABI
+; File Read uses upper-RAM buffers; each loaded image owns this BSS array.
+BYTE ARRAY bytes(12)
+
+; Test-only assembly: TDC; RTL. No pushes, scratch or kernel service.
+; Its typed indirect caller checks the transfer stack space.
+BYTE ARRAY readDpCode=[$7b $6b]
+CARD FUNC POINTER readDp()
+
+BYTE POINTER FUNC BeginWorkspace()
+  CARD index
+
+  LET slot=ADDRESS POINTER(@readDp)
+  slot^=ADDRESS(readDpCode)
+  LET page=BYTE POINTER(ADDRESS(readDp()))
+  LET pattern=BYTE(ADDRESS(page) RSH 8)
+  FOR index=0 TO A816ABI.DP_CALLER_WORKSPACE_SIZE-1 DO
+    page(index)=BYTE(index) XOR pattern
+  OD
+
+RETURN(page)
+
+BYTE FUNC Preserved(BYTE POINTER page)
+  CARD index
+
+  LET pattern=BYTE(ADDRESS(page) RSH 8)
+  FOR index=0 TO A816ABI.DP_CALLER_WORKSPACE_SIZE-1 DO
+    IF page(index)<>(BYTE(index) XOR pattern) THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; Exercise C-string command imports and caller workspace preservation.
+LONGINT FUNC Main()
+  BYTE ARRAY path(24),argumentStorage(3)
+  ADDRESS ARRAY values(1)
+  BYTE ARRAY success=c"CSTRING ok\n"
+  BYTE ARRAY full=c"CSTRING full\n"
+  BYTE POINTER file
+  CSTRING arguments,colon
+  SIZE required
+  LONGINT count,ignored
+  BYTE identity
+
+  LET page=BeginWorkspace()
+  arguments=COMMAND.GetArgStr()
+  IF STR.strlen(arguments)<>2 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  values(0)=$abcdef
+  IF COMMAND.ReadArgs(c"IDENT/N",values,1,argumentStorage,
+      SIZEOF(argumentStorage))<>0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF COMMAND.IoErr()<>COMMAND.ERROR_BAD_TEMPLATE OR values(0)<>0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF COMMAND.ReadArgs(c"IDENT/A",values,1,argumentStorage,
+      SIZEOF(argumentStorage))=0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF COMMAND.IoErr()<>0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF values(0)<>ADDRESS(argumentStorage) THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF STR.strcmp(CSTRING(argumentStorage),arguments)<>0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  identity=arguments(0)-'0
+  required=STR.strlcpy(path,c"D1:",SIZEOF(path))
+  IF identity=3 THEN
+    required=STR.strlcat(path,c"filename-will-not-fit",8)
+    IF required<8 THEN
+      RETURN(COMMAND.RETURN_FAIL)
+    FI
+
+    count=COMMAND.Write(COMMAND.Output(),full,SIZEOF(full)-1)
+    IF count<>SIZEOF(full)-1 THEN
+      RETURN(COMMAND.RETURN_FAIL)
+    FI
+
+    IF Preserved(page)=0 THEN
+      RETURN(COMMAND.RETURN_FAIL)
+    FI
+
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  required=STR.strlcat(path,c"DATA.TXT",SIZEOF(path))
+  IF required>=SIZEOF(path) THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF STR.strcmp(CSTRING(path),c"D1:DATA.TXT")<>0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  required=STR.u32toa($ffffffff,bytes,SIZEOF(bytes))
+  IF required<>10 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF STR.strcmp(CSTRING(bytes),c"4294967295")<>0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  colon=STR.strchr(CSTRING(path),':)
+  IF colon=CSTRING(0) THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF STR.strlen(colon)<>9 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF STR.strnlen(path,SIZEOF(path))<>11 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  file=COMMAND.Open(path,COMMAND.MODE_OLDFILE)
+  IF file=BYTE POINTER(0) THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  count=COMMAND.Read(file,bytes,9)
+  ignored=COMMAND.Close(file)
+  IF count<>9 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  bytes(9)=0
+  bytes(10)=identity
+  IF STR.strncmp(CSTRING(bytes),c"cstrings\n",9)<>0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  required=STR.u32toa(LONGCARD(identity),bytes,SIZEOF(bytes))
+  IF required<>1 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  ; Announce readiness through the pipe, leaving the borrowed argument text alone.
+  bytes(11)=identity
+  count=COMMAND.Write(COMMAND.Output(),@bytes(11),1)
+  IF count<>1 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  WHILE arguments(1)='w DO
+    COMMAND.Yield()
+  OD
+
+  ; Both loaded callers retain their own buffers across suspension.
+  IF argumentStorage(0)<>identity+'0 OR argumentStorage(1)<>'w
+      OR argumentStorage(2)<>0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF bytes(10)<>identity THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF bytes(0)<>identity+'0 OR bytes(1)<>0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  IF STR.strcmp(CSTRING(path),c"D1:DATA.TXT")<>0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  count=COMMAND.Write(COMMAND.Output(),success,SIZEOF(success)-1)
+  IF count<>SIZEOF(success)-1 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+  ignored=COMMAND.SetIoErr(identity)
+  IF Preserved(page)=0 THEN
+    RETURN(COMMAND.RETURN_FAIL)
+  FI
+
+RETURN(COMMAND.RETURN_OK)
+
+ENDMODULE

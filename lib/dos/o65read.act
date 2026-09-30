@@ -1,0 +1,192 @@
+MODULE O65READ
+USE O65TYPES
+
+; Latch the first decoding error so later reads cannot hide its cause.
+PUBLIC PROC Fail(O65TYPES.Cursor POINTER cursor CARD error)
+
+  IF cursor.error=0 THEN
+    cursor.error=error
+  FI
+
+RETURN
+
+; Reserve a bounded input span before any parser reads its bytes.
+PUBLIC BYTE FUNC Take(O65TYPES.Cursor POINTER cursor LONGCARD count)
+
+  IF cursor.error<>0 THEN
+    RETURN(0)
+  FI
+
+  IF cursor.at>cursor.limit OR count>cursor.limit-cursor.at THEN
+    Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+    RETURN(0)
+  FI
+
+  cursor.at==+count
+
+RETURN(1)
+
+; Read one byte through the shared bounds and error checks.
+PUBLIC BYTE FUNC U8(O65TYPES.Cursor POINTER cursor)
+
+  IF Take(cursor,1)=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(cursor.bytes(SIZE(cursor.at-1)))
+
+; Decode a little-endian word while retaining the first read failure.
+PUBLIC CARD FUNC U16(O65TYPES.Cursor POINTER cursor)
+  CARD value
+
+  value=U8(cursor)
+
+RETURN(value OR (CARD(U8(cursor)) LSH 8))
+
+; Decode a little-endian long word without depending on host or record layout.
+PUBLIC LONGCARD FUNC U32(O65TYPES.Cursor POINTER cursor)
+  LONGCARD value
+
+  value=U16(cursor)
+
+RETURN(value OR (LONGCARD(U16(cursor)) LSH 16))
+
+; Reject table counts that exceed resource limits or the remaining wire bytes.
+PUBLIC LONGCARD FUNC Count(O65TYPES.Cursor POINTER cursor LONGCARD maximum,minimum)
+  LONGCARD count
+
+  count=U32(cursor)
+  IF count>maximum THEN
+    Fail(cursor,CARD(O65TYPES.ERROR_RESOURCE_LIMIT))
+    RETURN(0)
+  FI
+
+  IF count*minimum>cursor.limit-cursor.at THEN
+    Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+    RETURN(0)
+  FI
+
+RETURN(count)
+
+; Compare binary spans without interpreting termination or character encoding.
+PUBLIC BYTE FUNC Equal(BYTE POINTER first,second LONGCARD count)
+  LONGCARD index
+
+  index=0
+  WHILE index<count DO
+    IF first(SIZE(index))<>second(SIZE(index)) THEN
+      RETURN(0)
+    FI
+
+    index==+1
+  OD
+
+RETURN(1)
+
+; Require both exact length and exact bytes for a wire-format identifier.
+PUBLIC BYTE FUNC Literal(O65TYPES.Span POINTER span BYTE POINTER text CARD length)
+
+  IF span.length<>length THEN
+    RETURN(0)
+  FI
+
+RETURN(Equal(span.bytes,text,LONGCARD(length)))
+
+; Accept symbol spelling without allowing a digit in its first position.
+BYTE FUNC NameByte(BYTE value CARD index)
+
+  IF value=95 OR (value>=65 AND value<=90) OR (value>=97 AND value<=122) THEN
+    RETURN(1)
+  FI
+
+RETURN(index<>0 AND value>=48 AND value<=57)
+
+; Borrow a validated terminated symbol name from the immutable input image.
+PUBLIC PROC Name(O65TYPES.Cursor POINTER cursor O65TYPES.Span POINTER span)
+  BYTE value
+
+  span.bytes=@cursor.bytes(SIZE(cursor.at))
+  span.length=0
+  DO
+    value=U8(cursor)
+    IF cursor.error<>0 THEN
+      RETURN
+    FI
+
+    IF value=0 THEN
+      EXIT
+    FI
+
+    IF span.length=O65TYPES.LIMIT_STRING THEN
+      Fail(cursor,CARD(O65TYPES.ERROR_RESOURCE_LIMIT))
+      RETURN
+    FI
+
+    IF NameByte(value,span.length)=0 THEN
+      Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+      RETURN
+    FI
+
+    span.length==+1
+  OD
+
+  IF span.length=0 THEN
+    Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+  FI
+
+RETURN
+
+; Borrow a validated length-prefixed symbol span without allocating a copy.
+PUBLIC PROC String(O65TYPES.Cursor POINTER cursor O65TYPES.Span POINTER span)
+  LONGCARD length
+  CARD index
+
+  length=U32(cursor)
+  IF length>O65TYPES.LIMIT_STRING THEN
+    Fail(cursor,CARD(O65TYPES.ERROR_RESOURCE_LIMIT))
+    RETURN
+  FI
+
+  span.bytes=@cursor.bytes(SIZE(cursor.at))
+  span.length=CARD(length)
+  IF Take(cursor,length)=0 THEN
+    RETURN
+  FI
+
+  IF length=0 THEN
+    Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+    RETURN
+  FI
+
+  index=0
+  WHILE index<span.length DO
+    IF NameByte(span.bytes(index),index)=0 THEN
+      Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+      RETURN
+    FI
+
+    index==+1
+  OD
+
+RETURN
+
+; Map an o65 section identity to its validated loaded extent.
+PUBLIC LONGCARD FUNC SectionSize(O65TYPES.Validation POINTER validation
+    BYTE section)
+
+  CASE section OF
+  WHEN 2 THEN
+    RETURN(validation.textBytes)
+  WHEN 3 THEN
+    RETURN(validation.dataBytes)
+  WHEN 4 THEN
+    RETURN(validation.bssBytes)
+  ESAC
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Extent(LONGCARD start,length,bound)
+
+RETURN(start<=bound AND length<=bound-start)
+
+ENDMODULE

@@ -1,0 +1,85 @@
+MODULE PORTCROSSING
+USE EXEC
+USE EXECLISTS
+USE HEAPCORE
+EXEC.MsgPort destination
+EXECLISTS.List pending
+CARD ARRAY checks(8)
+
+EXEC.MsgPort POINTER port
+EXEC.Message POINTER msg
+
+PROC Setup()
+  EXEC.Task POINTER self
+  BYTE bit
+
+  port=EXEC.MsgPort POINTER($4fff3)
+  msg=EXEC.Message POINTER($6fff4)
+  self=EXEC.FindTask(BYTE POINTER(0))
+  bit=EXEC.AllocSignal(31)
+  port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  port.mp_Flags=EXEC.PA_IGNORE
+  port.mp_SigBit=$ff
+  port.mp_SigTask=EXEC.Task POINTER($ffffff)
+  EXECLISTS.NewList(@port.mp_MsgList)
+  destination.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  destination.mp_SigTask=self
+  destination.mp_SigBit=31
+  EXECLISTS.NewList(@destination.mp_MsgList)
+  EXECLISTS.NewList(@pending)
+  msg.mn_ReplyPort=EXEC.MsgPort POINTER(0)
+  msg.mn_Length=$ffff
+
+RETURN
+
+PROC Transfers()
+  BYTE i
+  EXEC.Message POINTER received
+
+  FOR i=0 TO 7 DO
+    EXEC.PutMsg(port,msg)
+    received=EXEC.GetMsg(port)
+    IF received<>msg THEN
+      HEAPCORE.Abort($ff84)
+    FI
+
+    EXECLISTS.AddTail(@pending,@received.mn_Node)
+    EXECLISTS.Remove(@received.mn_Node)
+    EXEC.PutMsg(@destination,received)
+    received=EXEC.GetMsg(@destination)
+    IF received<>msg THEN
+      HEAPCORE.Abort($ff84)
+    FI
+
+    EXEC.ReplyMsg(received)
+  OD
+
+RETURN
+
+PROC Inspect()
+  LONGCARD bits
+
+  bits=EXEC.SetSignal(0,0)
+  checks(0)=CARD(bits=LONGCARD($80000000))
+  checks(1)=CARD(msg.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  checks(2)=CARD(msg.mn_Length=$ffff)
+  checks(3)=CARD(EXECLISTS.IsListEmpty(@pending))
+  checks(4)=CARD(EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+  checks(5)=CARD(EXEC.GetMsg(@destination)=EXEC.Message POINTER(0))
+  bits=EXEC.Wait(LONGCARD($80000000))
+  checks(6)=CARD(bits=LONGCARD($80000000))
+  EXEC.FreeSignal(31)
+  checks(7)=1
+
+RETURN
+
+; Exercise message and port fields crossing a bank boundary.
+PROC Main()
+
+  Setup()
+  Transfers()
+  Inspect()
+
+RETURN
+
+ENDMODULE

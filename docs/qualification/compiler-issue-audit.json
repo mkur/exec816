@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "date": "2026-09-20",
+  "scope": "Audit of compiler defects and source adaptations encountered by Exec816. Correctness fixes verified in the existing Exec pin; missing parser correction integrated into local actionc main. No Exec compiler migration, hosted-system replay or physical-hardware claim.",
+  "exec_compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 2,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc",
+    "local_bundle": {
+      "path": "toolchain/actionc-comma-groups.bundle",
+      "sha256": "3e536e01ba92629bf357df1bfa489d10b7f1947577497eef0d22bb97d7b6dfb8",
+      "base_revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+      "scope": "Parser comma-group correction; bundled local commit, not asserted published upstream"
+    }
+  },
+  "compiler_repository": "https://github.com/mkur/actionc.git",
+  "compiler_base_revision": "ea010597db5849fed32d79b95306b0431e817521",
+  "compiler_revision": "90bd73e2d79d3ccc826990106bbd0c5319edc6de",
+  "integration": "Fast-forwarded local actionc main; no remote push. Pre-existing worktree/index changes and untracked paths preserved, verified by checksums.",
+  "defects": [
+    {
+      "issue": "Native absolute-array base lost pointer type",
+      "fix": "f088ab9d0a4175481751bd41cc78a0f07b80fd8f",
+      "status": "fixed_in_exec_pin_and_current_compiler",
+      "evidence": "docs/qualification/compiler-memory-fix.json"
+    },
+    {
+      "issue": "Named record-pointer conversion misparsed",
+      "fix": "e7266982c22527040dfc2a46508be8475581fe8f",
+      "status": "fixed_in_exec_pin_and_current_compiler",
+      "evidence": "docs/qualification/compiler-lists-fix.json"
+    },
+    {
+      "issue": "Scalar comma group before contextual/named type misparsed",
+      "exec_pin_fix": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "current_compiler_fix": "90bd73e2d79d3ccc826990106bbd0c5319edc6de",
+      "status": "fixed_in_exec_pin_and_current_compiler"
+    }
+  ],
+  "baseline": {
+    "revision": "ea010597db5849fed32d79b95306b0431e817521",
+    "command": "cargo test --test actionc_65816_cli native_cli_keeps_comma_group_widths_before_contextual_types",
+    "status": "expected_failure",
+    "diagnostic": "expected parameter declaration (and 1 more diagnostic)",
+    "log_sha256": "d34b430a7f1fd8bc480b5c70b35e6e21ca0227306a2a1f4fd7b251b851db116d"
+  },
+  "pinned_checks": [
+    {
+      "command": "cargo test --lib comma_groups_before_named_types_in_parameters_and_fields",
+      "passed": 1,
+      "status": "pass"
+    },
+    {
+      "command": "cargo test --test named_pointer_casts --test nir_absolute_arrays",
+      "passed": 4,
+      "status": "pass"
+    }
+  ],
+  "checks": [
+    {
+      "command": "cargo test --test actionc_65816_cli --test native_type_surface --test native_integer_integration --test named_pointer_casts --test nir_absolute_arrays",
+      "status": "pass",
+      "log_sha256": "1a4488e5f75bb6b9a4936f39d93524a8f7cfefc08c2cd39846e08cf24e314f1a",
+      "passed": 40,
+      "ignored": 0,
+      "failed": 0
+    },
+    {
+      "command": "cargo test nir_fixtures_match_snapshots",
+      "status": "pass",
+      "log_sha256": "6f22a50db5b53429f1c2f514804b6ac646a5dd099e3791227915451fd60c6b28",
+      "passed": 1,
+      "ignored": 0,
+      "failed": 0
+    },
+    {
+      "command": "cargo run --bin actionc-nir-sweep -- fixtures/nir",
+      "status": "pass",
+      "log_sha256": "b0964f8b93be3698b81dddb9ca242d675b2924a66d053c490dba8147f62d30c8"
+    },
+    {
+      "command": "cargo test",
+      "status": "pass",
+      "log_sha256": "ec50a2834a7091ad18a4229c7880ef30623f7d2d2da37554c57f69bf0092fc00",
+      "passed": 3263,
+      "ignored": 24,
+      "failed": 0
+    },
+    {
+      "command": "python3 tools/native65816-runtime-tests/qualify.py --test comma_groups --test memory --test interop",
+      "status": "pass",
+      "log_sha256": "5a0bb5c3f3113b1aff67542635360fa791781d774a6503c77fb4bcad72108cff",
+      "passed": 10,
+      "ignored": 0,
+      "failed": 0
+    }
+  ],
+  "nir_sweep": {
+    "fixtures": 51,
+    "load_failed": 0,
+    "semantic_failed": 0,
+    "lower_failed": 0,
+    "verify_failed": 0,
+    "optimize_failed": 0
+  },
+  "native_execution": {
+    "tests": 10,
+    "new_regression_executions": 8,
+    "optimization": [
+      false,
+      true
+    ],
+    "line_endings": [
+      "LF",
+      "CRLF"
+    ],
+    "entry_irq_mask": [
+      0,
+      4
+    ],
+    "record_address": "12FFF9",
+    "expected_record_bytes": 14,
+    "checks": [
+      "independent mixed-width argument and field values",
+      "bank-crossing record and adjacent canaries",
+      "full-width signed return",
+      "native context/stack/domain guards"
+    ],
+    "vm_base": "56ddc5c5de41f0e7294e87c440869550eaf53292",
+    "vm_patch_sha256": "afd5efebc9f0d153ef928c953af657af24cc5f059a1dca7482e3a3fa325f4cac",
+    "manifest_sha256": "d93b7fa4f14d1ece9ba78e600f9c6e830815d4ef9f0f81bdcf865b9a2342360a",
+    "manifest_base_revision": "ea010597db5849fed32d79b95306b0431e817521",
+    "matched_source_inputs": 339,
+    "scope": "Debug host build; both raw and optimized emitted programs. No new full native corpus or release qualification."
+  },
+  "compiler_changed_inputs": {
+    "src/parser.rs": "df62f7d79d6a5ff346090aac6f2a630937606c589d11eef926fafe59fab3f288",
+    "tests/actionc_65816_cli.rs": "6b3cfc15e3e11419e729907aa657474206627ba1e39273b9a78b34d160627b50",
+    "tools/native65816-runtime-tests/tests/comma_groups.rs": "538c64e9982fff9a64f70c4b749263278a7f17001a35b1c9a8d70632dc7275de",
+    "tools/native65816-runtime-tests/README.md": "074062e390d1f059586719fdf042d7dd207f501df378ad925315004c1c68e3a0"
+  },
+  "exec_inputs": {
+    "toolchain/actionc.json": "f24bb0535b27d746473c353d30d41784b03c5cd1e4e5f08fbce2a5b36e4f8a28",
+    "toolchain/actionc-comma-groups.bundle": "3e536e01ba92629bf357df1bfa489d10b7f1947577497eef0d22bb97d7b6dfb8",
+    "docs/qualification/compiler-memory-fix.json": "5c95246f0bfd2c57b288e04252d2e2db0c28da840b4bb001b819ad278636266f",
+    "docs/qualification/compiler-lists-fix.json": "c7e730d65773abbde322408b7072460b7771e264645afe626e8c7716d98fe6f1"
+  },
+  "remaining_limitations": [
+    "254-byte even fixed frame and 8-bit stack-relative displacements",
+    "General temporary stack-slot reuse is absent; current main only has narrower pointer-leaf allocation",
+    "Shared bare declaration-address resolver remains 16-bit; wide numeric aliases are rejected by native driver",
+    "Native multiply/divide/remainder remain explicitly unsupported"
+  ],
+  "memory": {
+    "exec_reserved_bank_zero_delta": 0,
+    "exec_per_task_bank_zero_delta": 0
+  },
+  "validation_notes": [
+    "The first broad test build exhausted disk space while linking, before completing the checks. Only this audit worktree compiler build cache was removed; all required checks then passed with CARGO_PROFILE_DEV_DEBUG=0, CARGO_PROFILE_TEST_DEBUG=0 and CARGO_INCREMENTAL=0.",
+    "The earlier TN failures remain historical evidence; current full cargo test passes, including the catalog and sample parsing tests.",
+    "Exec retains native image v2 at its existing pin. The current actionc line uses image v3; adopting it is a separate system qualification task."
+  ]
+}

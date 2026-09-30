@@ -1,0 +1,298 @@
+; Header checks and a single tagged map cache. No routine performs device I/O.
+MODULE SDFS
+USE FSSTATUS
+USE EXEC
+USE FSBTYPES
+USE SDFSTYPES
+USE BLOCKTYPES
+INCLUDE "../dos/dos-types.inc"
+
+PUBLIC CARD FUNC Word(BYTE POINTER bytes CARD offset)
+
+RETURN(CARD(bytes(offset))+(CARD(bytes(offset+1)) LSH 8))
+
+PUBLIC LONGINT FUNC Length(BYTE POINTER bytes CARD offset)
+
+RETURN(LONGINT(Word(bytes,offset))+(LONGINT(bytes(offset+2)) LSH 16))
+
+PUBLIC SDFSTYPES.BackendState POINTER FUNC GetState(FSBTYPES.Workspace POINTER work)
+
+RETURN(SDFSTYPES.BackendState POINTER(work.extra))
+
+; Allocate the worker's shared SpartaDOS map and directory scratch state.
+PUBLIC BYTE FUNC CreateWork(FSBTYPES.Workspace POINTER work)
+
+  work.extra=EXEC.AllocMem(SIZEOF(SDFSTYPES.BackendState),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR)
+
+RETURN(work.extra<>BYTE POINTER(0))
+
+; Release format-specific worker state after outstanding parsing work ends.
+PUBLIC PROC DestroyWork(FSBTYPES.Workspace POINTER work)
+
+  IF work.extra<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(work.extra,SIZEOF(SDFSTYPES.BackendState))
+    work.extra=BYTE POINTER(0)
+  FI
+
+RETURN
+
+; Allocate immutable mount metadata independently of the shared workspace.
+PUBLIC BYTE FUNC CreateVolume(FSBTYPES.Volume POINTER volume)
+
+  volume.state=EXEC.AllocMem(SIZEOF(SDFSTYPES.Volume),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR)
+
+RETURN(volume.state<>BYTE POINTER(0))
+
+; Release format-specific metadata after the volume is detached.
+PUBLIC PROC DestroyVolume(FSBTYPES.Volume POINTER volume)
+
+  IF volume.state<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(volume.state,SIZEOF(SDFSTYPES.Volume))
+    volume.state=BYTE POINTER(0)
+  FI
+
+RETURN
+
+; Forget cached map and directory identities before their mounts can be
+; reused.
+PUBLIC PROC Invalidate(FSBTYPES.Workspace POINTER work)
+  SDFSTYPES.BackendState POINTER state
+
+  state=GetState(work)
+  state.valid=0
+  state.cached=FSBTYPES.Volume POINTER(0)
+  state.directoryVolume=FSBTYPES.Volume POINTER(0)
+
+RETURN
+
+; Exclude boot and bitmap sectors from ordinary map and file traversal.
+PUBLIC BYTE FUNC Allowed(FSBTYPES.Volume POINTER volume CARD sector)
+  SDFSTYPES.Volume POINTER native
+
+  native=SDFSTYPES.Volume POINTER(volume.state)
+  IF sector<4 OR LONGCARD(sector)>volume.block.sectors THEN
+    RETURN(0)
+  FI
+
+  IF sector>=native.bitmap AND sector<=native.bitmapEnd THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Reset recognition state before requesting the SpartaDOS header sector.
+PUBLIC BYTE FUNC BeginMount(FSBTYPES.Workspace POINTER work)
+
+  work.error=0
+  work.ioError=0
+  work.volume.mounted=0
+  work.neededSector=1
+  Invalidate(work)
+
+RETURN(FSSTATUS.NEED_IO)
+
+; Validate supported SpartaDOS geometry before trusting its root and bitmap
+; extents.
+BYTE FUNC Header(FSBTYPES.Workspace POINTER work BYTE POINTER bytes)
+  SDFSTYPES.Volume POINTER volume
+  CARD size,root,bitmap,count,total
+  LONGCARD last,coverage
+
+  volume=SDFSTYPES.Volume POINTER(work.volume.state)
+  size=work.volume.block.dataBytes
+  IF (size<>128 AND size<>256) OR work.volume.block.boot<>1 THEN
+    RETURN(0)
+  FI
+
+  IF bytes(6)<>$4c OR bytes(7)<>$80 OR bytes(8)<>$30 THEN
+    RETURN(0)
+  FI
+
+  IF bytes(32)<>$20 AND bytes(32)<>$21 THEN
+    RETURN(0)
+  FI
+
+  IF bytes(31)<>BYTE(size) THEN
+    RETURN(0)
+  FI
+
+  volume.capacity=(size-4) RSH 1
+  volume.revision=bytes(32)
+  IF bytes(32)=$21 THEN
+    IF Word(bytes,33)<>size OR Word(bytes,35)<>volume.capacity OR bytes(37)<>1 THEN
+      RETURN(0)
+    FI
+  FI
+
+  total=Word(bytes,11)
+  root=Word(bytes,9)
+  bitmap=Word(bytes,16)
+  count=CARD(bytes(15))
+  IF LONGCARD(total)<>work.volume.block.sectors OR total<5 OR Word(bytes,
+      13)>total OR count=0 OR bitmap<4 THEN
+    RETURN(0)
+  FI
+
+  last=LONGCARD(bitmap)+LONGCARD(count)-1
+  coverage=LONGCARD(count)*LONGCARD(size)*8
+  IF last>LONGCARD(total) OR coverage<=LONGCARD(total) THEN
+    RETURN(0)
+  FI
+
+  volume.bitmap=bitmap
+  volume.bitmapEnd=CARD(last)
+  IF Allowed(work.volume,root)=0 THEN
+    RETURN(0)
+  FI
+
+  work.volume.root=root
+
+RETURN(1)
+
+; Publish recognition only after the buffered disk header passes validation.
+PUBLIC BYTE FUNC MountBuffered(FSBTYPES.Workspace POINTER work)
+  BLOCKTYPES.Adapter POINTER adapter
+
+  adapter=BLOCKTYPES.Adapter POINTER(work.volume.block.adapter)
+  IF Header(work,adapter.buffer)=0 THEN
+    work.error=ERROR_NOT_A_DOS_DISK
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  work.volume.mounted=1
+
+RETURN(FSSTATUS.DONE)
+
+PUBLIC SDFSTYPES.MapCursor POINTER FUNC Map(FSBTYPES.Cursor POINTER file)
+
+RETURN(SDFSTYPES.MapCursor POINTER(@file.storage(0)))
+
+; Restart map traversal without discarding the file's logical identity.
+PUBLIC PROC Restart(FSBTYPES.Cursor POINTER file)
+  SDFSTYPES.MapCursor POINTER cursor
+
+  cursor=Map(file)
+  cursor.page=file.entry.start
+  cursor.previous=0
+  cursor.next=0
+  cursor.base=0
+  cursor.hops=0
+  cursor.valid=0
+
+RETURN
+
+; Accept a map page only for the same mounted volume incarnation.
+PUBLIC BYTE FUNC Cached(FSBTYPES.Workspace POINTER work CARD sector)
+  SDFSTYPES.BackendState POINTER state
+
+  state=GetState(work)
+
+RETURN(state.valid<>0 AND state.cached=work.volume
+    AND state.generation=work.volume.block.generation AND state.sector=sector)
+
+; Retain a complete map sector and its volume-generation tag.
+PUBLIC PROC Cache(FSBTYPES.Workspace POINTER work CARD sector)
+  SDFSTYPES.BackendState POINTER state
+  BLOCKTYPES.Adapter POINTER adapter
+  CARD index
+
+  state=GetState(work)
+  adapter=BLOCKTYPES.Adapter POINTER(work.volume.block.adapter)
+  FOR index=0 TO work.volume.block.dataBytes-1 DO
+    state.map(index)=adapter.buffer(index)
+  OD
+
+  state.cached=work.volume
+  state.generation=work.volume.block.generation
+  state.sector=sector
+  state.valid=1
+
+RETURN
+
+; Reject map or data references that alias protected ancestor structures.
+PUBLIC BYTE FUNC SectorAllowed(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file CARD sector BYTE mapPage)
+  BYTE index
+
+  IF Allowed(work.volume,sector)=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO file.depth DO
+    IF sector=file.ancestors(index) THEN
+      IF mapPage=0 OR (file.entry.flags & FSBTYPES.DIR)=0
+          OR sector<>file.entry.start THEN
+        RETURN(0)
+      FI
+    FI
+  OD
+
+RETURN(1)
+
+; Validate links and payload references before trusting a buffered map page.
+PUBLIC BYTE FUNC ValidateMap(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file)
+  SDFSTYPES.MapCursor POINTER cursor
+  SDFSTYPES.BackendState POINTER state
+  CARD next,sector,index
+
+  cursor=Map(file)
+  state=GetState(work)
+  IF SectorAllowed(work,file,cursor.page,1)=0 OR Word(state.map,
+      2)<>cursor.previous THEN
+    RETURN(0)
+  FI
+
+  next=Word(state.map,0)
+  IF next<>0 THEN
+    IF next=cursor.page OR next=file.entry.start OR SectorAllowed(work,file,
+        next,1)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF cursor.valid=0 THEN
+    cursor.hops==+1
+    IF cursor.hops>work.volume.block.sectors THEN
+      RETURN(0)
+    FI
+  FI
+
+  FOR index=4 TO work.volume.block.dataBytes-2 STEP 2 DO
+    sector=Word(state.map,index)
+    IF sector<>0 THEN
+      IF sector=cursor.page OR sector=next OR sector=file.entry.start
+          OR SectorAllowed(work,file,sector,0)=0 THEN
+        RETURN(0)
+      FI
+    FI
+  OD
+
+  cursor.next=next
+  cursor.valid=1
+
+RETURN(1)
+
+; Move to the next map page, rejecting an unexpectedly terminated chain.
+PUBLIC BYTE FUNC Advance(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file)
+  SDFSTYPES.MapCursor POINTER cursor
+  SDFSTYPES.Volume POINTER volume
+
+  cursor=Map(file)
+  volume=SDFSTYPES.Volume POINTER(work.volume.state)
+  IF cursor.next=0 THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(0)
+  FI
+
+  cursor.previous=cursor.page
+  cursor.page=cursor.next
+  cursor.base==+LONGCARD(volume.capacity)
+  cursor.valid=0
+
+RETURN(1)
+
+ENDMODULE

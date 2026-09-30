@@ -1,0 +1,19 @@
+MODULE IOSHORT
+USE EXEC
+EXEC.IORequest POINTER item
+BYTE reached
+CARD checks
+INCLUDE "io-names.inc"
+
+; Exercise rejection of undersized I/O request storage.
+PROC Main()
+  INT error
+
+  item=EXEC.IORequest POINTER($4fff0)
+  item.io_Message.mn_Length=16
+  error=EXEC.OpenDevice(immediateName,0,item,0)
+  reached=1
+
+RETURN
+
+ENDMODULE

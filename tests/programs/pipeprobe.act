@@ -1,0 +1,24 @@
+MODULE PIPEPROBE
+USE EXEC
+PUBLIC BYTE failAlloc,failSignal
+
+PUBLIC BYTE POINTER FUNC Alloc(LONGCARD bytes,flags)
+
+  IF failAlloc<>0 THEN
+    failAlloc==-1
+    IF failAlloc=0 THEN
+      RETURN(BYTE POINTER(0))
+    FI
+  FI
+
+RETURN(EXEC.AllocMem(bytes,flags))
+
+PUBLIC BYTE FUNC Signal()
+
+  IF failSignal<>0 THEN
+    RETURN($ff)
+  FI
+
+RETURN(EXEC.AllocSignal($ff))
+
+ENDMODULE

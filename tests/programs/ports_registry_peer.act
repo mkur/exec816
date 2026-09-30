@@ -1,0 +1,120 @@
+MODULE PORTREGPEER
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+
+TYPE Request=[
+  EXEC.Message header
+  CARD sequence
+]
+
+EXEC.Task worker
+EXEC.MsgPort POINTER service
+Request packet
+BYTE ARRAY serviceName=[112 101 101 114 0]
+CARD misses,received,checks
+LONGCARD before,after
+PROC POINTER absent()
+INCLUDE "tasks_exec_helpers.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff88)
+  FI
+
+RETURN
+
+PROC Send()
+  EXEC.MsgPort POINTER port
+
+  DO
+    EXEC.Forbid()
+    port=EXEC.FindPort(@serviceName)
+    IF port<>EXEC.MsgPort POINTER(0) THEN
+      EXEC.PutMsg(port,@packet.header)
+      EXEC.Permit()
+      EXIT
+    FI
+
+    EXEC.Permit()
+    misses==+1
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC WorkerEntry()
+  EXEC.MsgPort POINTER replies
+  EXEC.Message POINTER msg
+  CARD i
+
+  replies=EXEC.CreateMsgPort()
+  Require(replies<>EXEC.MsgPort POINTER(0))
+  packet.header.mn_ReplyPort=replies
+  FOR i=0 TO 7 DO
+    packet.sequence=i
+    Send()
+    msg=EXEC.WaitPort(replies)
+    msg=EXEC.GetMsg(replies)
+    Require(msg=@packet.header AND msg.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+  OD
+
+  EXEC.DeleteMsgPort(replies)
+
+RETURN
+
+PROC Exchanges()
+  EXEC.Message POINTER msg
+  CARD i,previous
+
+  FOR i=0 TO 7 DO
+    msg=EXEC.WaitPort(service)
+    msg=EXEC.GetMsg(service)
+    Require(msg=@packet.header AND packet.sequence=i)
+    received==+1
+    EXEC.Forbid()
+    EXEC.RemPort(service)
+    previous=misses
+    EXEC.Permit()
+    EXEC.ReplyMsg(msg)
+    IF i<>7 THEN
+      WHILE misses=previous DO
+        EXEC.Yield()
+      OD
+
+      EXEC.Forbid()
+      EXEC.AddPort(service)
+      EXEC.Permit()
+    FI
+  OD
+
+RETURN
+
+; Exercise named-port exchanges with a concurrent peer.
+PROC Main()
+  EXEC.Task POINTER added
+
+  before=EXEC.AvailMem(0)
+  service=EXEC.CreateMsgPort()
+  Require(service<>EXEC.MsgPort POINTER(0))
+  service.mp_Node.ln_Name=@serviceName
+  EXEC.AddPort(service)
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  added=EXEC.AddTask(@worker,@WorkerEntry,absent)
+  Require(added=@worker)
+  Exchanges()
+  AwaitRemoval(@worker)
+  EXEC.DeleteMsgPort(service)
+  after=EXEC.AvailMem(0)
+  Require(after=before)
+  Require(received=8 AND misses>=7)
+  checks=1
+
+RETURN
+
+ENDMODULE

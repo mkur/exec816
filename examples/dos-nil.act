@@ -1,0 +1,37 @@
+MODULE DOSNILEXAMPLE
+USE EXEC
+USE DOS
+USE HEAPCORE
+DOS.FileHandle POINTER stream,previous
+BYTE ARRAY name=[78 73 76 58 0]
+BYTE ARRAY message=[78 73 76 32 115 116 114 101 97 109 10]
+CARD checks
+
+; Stop at the first unexpected NIL stream result so the example is executable
+; evidence.
+PROC Check(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($f791)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Demonstrate EOF and discard semantics through an owned NIL stream.
+PROC Main()
+
+  stream=DOS.Open(name,DOS.MODE_READWRITE)
+  Check(stream<>DOS.FileHandle POINTER(0))
+  previous=DOS.SelectInput(stream)
+  Check(previous=DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
+  previous=DOS.SelectOutput(stream)
+  Check(previous=DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
+  Check(DOS.Read(DOS.Input(),message,11)=0)
+  Check(DOS.Write(DOS.Output(),message,11)=11 AND DOS.IsInteractive(stream)=0)
+  Check(DOS.Close(stream)<>0 AND DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

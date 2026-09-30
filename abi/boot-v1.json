@@ -1,0 +1,9 @@
+{
+  "abi": "exec816.boot.v1",
+  "magic": 16965,
+  "version": 1,
+  "size": 8,
+  "boot_state_offset": 128,
+  "fields": {"magic": 0, "version": 2, "size": 3, "cache_blocks": 4, "system_drive": 6, "reserved": 7},
+  "cache": {"default": 512, "minimum": 16, "maximum": 2048, "block_bytes": 128}
+}

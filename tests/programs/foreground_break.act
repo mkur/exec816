@@ -1,0 +1,371 @@
+MODULE FOREGROUNDBREAKTEST
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+USE CONSOLECAPTURE
+USE CONSOLEDRIVER
+USE CONSOLEINPUT
+USE CONSOLETYPES
+USE HEAPCORE
+INCLUDE "console-storage-action.inc"
+CARD checks
+VOLATILE BYTE phase,gate,peerDone
+BYTE peerMode,publicationMode,removeMode
+BYTE publishStage,publishGate
+VOLATILE LONGCARD computes
+EXEC.Task peer
+PROC POINTER absent()
+DOS.FileHandle POINTER con,raw,nil,selected
+DOSCLIENT.ClientContext POINTER client
+DOSBREAKTYPES.Scope POINTER scope
+CONSOLETYPES.Capture POINTER capture
+CONSOLETYPES.Instance POINTER instance
+BYTE ARRAY conName=[67 79 78 58 0],rawName=[82 65 87 58 0],nilName=[78 73 76 58 0]
+BYTE ARRAY signals(32),buffer(4)
+LONGCARD baseline,mask,oldTag
+TYPE Chunk=[
+  BYTE POINTER next
+  LONGCARD bytes
+]
+
+Chunk POINTER held
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+  CARD ticks
+
+  gate=0
+  phase=number
+  WHILE gate=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+PROC Acknowledge()
+  LONGCARD bits
+
+  Require(DOS.BreakPending()=-1)
+  DOSCLIENT.SetError(219)
+  DOS.ClearBreak()
+  Require(DOS.BreakPending()=0 AND DOS.IoErr()=219)
+  bits=EXEC.SetSignal(0,0)
+  Require((bits & mask)=0)
+
+RETURN
+
+; Verify that BREAK reaches the bound foreground scope without becoming
+; ordinary input.
+PROC BoundChecks()
+  LONGCARD bits
+
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(instance,$007b0100)
+  Require(instance.inputCount=1)
+  capture.events(0).key=0
+  capture.events(0).kind=1
+  capture.events(0).tick=124
+  capture.events(0).route=0
+  capture.tail=0
+  capture.head=1
+  Require(DOS.BeginForeground(con)<>0)
+  Require(instance.inputCount=0)
+  EXEC.Permit()
+  scope=DOSBREAK.Current()
+  mask=scope.mask
+  oldTag=scope.generation
+  IF publicationMode<>0 THEN
+    Pause(20)
+    Acknowledge()
+  FI
+
+  IF removeMode<>0 THEN
+    EXEC.RemTask(EXEC.Task POINTER(0))
+    HEAPCORE.Abort($e9ff)
+  FI
+
+  Require(scope.owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0)))
+      AND SIZEOF(DOSBREAKTYPES.Scope)=DOSBREAKTYPES.SCOPE_SIZE)
+  Require(SIZEOF(DOSCLIENT.ClientContext)=86 AND DOSCLIENT.CLIENT_SIZE=88)
+  Require(DOS.Close(con)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  bits=EXEC.SetSignal(mask,mask)
+  Require(DOS.BreakPending()=0)
+  DOS.ClearBreak()
+  bits=EXEC.SetSignal(0,0)
+  Require((bits & mask)=0)
+
+RETURN
+
+; Retain available memory to force the fixture's allocation-failure path.
+PROC ExhaustMemory()
+  Chunk POINTER item,next
+  LONGCARD bytes,before,allocated
+
+  before=EXEC.AvailMem(0)
+  allocated=client.owner.tc_SigAlloc
+  DO
+    bytes=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    IF bytes<8 THEN
+      EXIT
+    FI
+
+    item=Chunk POINTER(EXEC.AllocMem(bytes,EXEC.MEMF_UPPER))
+    Require(item<>Chunk POINTER(0))
+    item.next=BYTE POINTER(held)
+    item.bytes=bytes
+    held=item
+  OD
+
+  Require(DOS.BeginForeground(con)=0 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(client.foreground=BYTE POINTER(0) AND client.owner.tc_SigAlloc=allocated)
+  WHILE held<>Chunk POINTER(0) DO
+    next=Chunk POINTER(held.next)
+    bytes=held.bytes
+    EXEC.FreeMem(BYTE POINTER(held),bytes)
+    held=next
+  OD
+
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+PROC ExhaustSignals()
+  BYTE count,number,index
+  LONGCARD before
+
+  before=EXEC.AvailMem(0)
+  count=0
+  DO
+    number=EXEC.AllocSignal(255)
+    IF number=255 THEN
+      EXIT
+    FI
+
+    signals(count)=number
+    count==+1
+  OD
+
+  Require(DOS.BeginForeground(con)=0 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(client.foreground=BYTE POINTER(0) AND EXEC.AvailMem(0)=before)
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      EXEC.FreeSignal(signals(index))
+    OD
+  FI
+
+RETURN
+
+; Exercise captured route identities across foreground handoff and retirement.
+PROC RouteChecks()
+  CONSOLETYPES.Routes POINTER routes
+  LONGCARD tag,epoch
+  BYTE index,bound
+
+  routes=CONSOLEFOREGROUND.Registry()
+  EXEC.Forbid()
+  ; Retain a captured old route throughout 14 successive scope renewals.
+  capture.events(0).key=$92
+  capture.events(0).kind=0
+  capture.events(0).tick=1
+  capture.events(0).route=oldTag
+  capture.tail=0
+  capture.head=1
+  FOR index=0 TO 13 DO
+    Require(DOS.BeginForeground(con)<>0)
+  OD
+
+  tag=scope.generation
+  Require(DOS.BeginForeground(con)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(scope.generation=tag AND capture.route=tag)
+  bound=CONSOLEFOREGROUND.Deliver(oldTag)
+  Require(bound<>0 AND scope.pending=0)
+  CONSOLECAPTURE.ResetInput()
+  Require(DOS.BeginForeground(con)<>0 AND scope.generation<>tag)
+  epoch=routes.epoch
+  routes.epoch=$0fffffff
+  tag=scope.generation
+  Require(DOS.BeginForeground(con)=0 AND scope.generation=tag AND capture.route=tag)
+  routes.epoch=epoch
+  EXEC.Permit()
+
+RETURN
+
+PROC PeerEntry()
+  DOS.FileHandle POINTER file
+  BYTE ignored
+
+  file=DOS.Open(conName,DOS.MODE_READWRITE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  IF peerMode=0 THEN
+    Require(DOS.BeginForeground(file)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  ELSE
+    Require(DOS.BeginForeground(file)<>0)
+    EXEC.Forbid()
+    ignored=CONSOLEFOREGROUND.Deliver(oldTag)
+    EXEC.Permit()
+    Require(ignored<>0 AND DOS.BreakPending()=0)
+    Require(DOS.EndForeground()<>0)
+  FI
+
+  Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+  peerDone=1
+
+RETURN
+
+; Report an invariant failure in the concurrent peer rather than hiding it in
+; root results.
+PROC PeerCheck()
+  CARD ticks,index
+  BYTE POINTER bytes
+
+  bytes=BYTE POINTER(@peer)
+  FOR index=0 TO EXEC.TASK_SIZE-1 DO
+    bytes(index)=0
+  OD
+
+  peerDone=0
+  peer.tc_Node.ln_Type=EXEC.NT_TASK
+  peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  peer.tc_SPReg=peer.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@peer.tc_MemEntry)
+  Require(EXEC.AddTask(@peer,@PeerEntry,absent)=@peer)
+  WHILE peer.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(peerDone<>0)
+
+RETURN
+
+; Exercise foreground BREAK routing, resource exhaustion and scope ownership.
+PROC Main()
+  LONGCARD bits,available
+  BYTE ignored
+  CONSOLETYPES.Routes POINTER routes
+
+  baseline=EXEC.AvailMem(0)
+  capture=CONSOLETYPES.Capture POINTER(ADDRESS(CS_CAPTURE))
+  instance=CONSOLEDRIVER.GetInstance()
+  Require(DOS.BreakPending()=0)
+  DOS.ClearBreak()
+  con=DOS.Open(conName,DOS.MODE_READWRITE)
+  raw=DOS.Open(rawName,DOS.MODE_READWRITE)
+  nil=DOS.Open(nilName,DOS.MODE_OLDFILE)
+  Require(con<>DOS.FileHandle POINTER(0) AND raw<>DOS.FileHandle POINTER(0)
+      AND nil<>DOS.FileHandle POINTER(0))
+  client=DOSCLIENT.Ensure()
+  Require(DOS.BeginForeground(raw)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  ExhaustSignals()
+  ExhaustMemory()
+  IF publicationMode<>0 THEN
+    routes=CONSOLEFOREGROUND.Registry()
+    routes.epoch=$fff
+  FI
+
+  BoundChecks()
+  RouteChecks()
+  PeerCheck()
+  selected=DOS.SelectInput(nil)
+  Require(DOS.IoErr()=0)
+  Pause(1)
+  ; No yield or Read: preemption must run the existing console worker.
+  WHILE DOS.BreakPending()=0 DO
+    computes==+1
+  OD
+
+  Require(computes<>0 AND instance.inputCount=0)
+  Acknowledge()
+  Pause(2)
+  bits=EXEC.Wait(mask)
+  Pause(21)
+  Require((bits & mask)<>0 AND instance.inputCount=0)
+  Acknowledge()
+  Pause(3)
+  EXEC.Forbid()
+  CONSOLEINPUT.Lose(instance)
+  gate=0
+  phase=4
+  WHILE gate=0 DO
+  OD
+
+  EXEC.Permit()
+  WHILE DOS.BreakPending()=0 DO
+    computes==+1
+  OD
+
+  Require(instance.inputLost<>0 AND instance.inputCount=0)
+  Acknowledge()
+  CONSOLEINPUT.Clear(instance)
+  Pause(5)
+  EXEC.Forbid()
+  capture.tail=0
+  capture.head=64
+  gate=0
+  phase=6
+  WHILE gate=0 DO
+  OD
+
+  Require(capture.breakPending<>0 AND capture.lost<>0)
+  EXEC.Permit()
+  WHILE DOS.BreakPending()=0 DO
+    computes==+1
+  OD
+
+  Require(instance.inputCount=0)
+  Acknowledge()
+  CONSOLEINPUT.Clear(instance)
+  Pause(7)
+  EXEC.Forbid()
+  gate=0
+  phase=8
+  WHILE gate=0 DO
+  OD
+
+  oldTag=scope.generation
+  Require(capture.breakPending<>0)
+  Require(DOS.BeginForeground(con)<>0 AND scope.generation<>oldTag)
+  EXEC.Permit()
+  Pause(9)
+  Require(DOS.BreakPending()=0 AND instance.inputCount=0)
+  oldTag=scope.generation
+  available=EXEC.AvailMem(0)
+  Require(DOS.EndForeground()<>0 AND client.foreground=BYTE POINTER(0))
+  Require(EXEC.AvailMem(0)=available+48)
+  EXEC.Forbid()
+  ignored=CONSOLEFOREGROUND.Deliver(oldTag)
+  EXEC.Permit()
+  Require(ignored<>0 AND DOS.BreakPending()=0)
+  peerMode=1
+  PeerCheck()
+  Pause(10)
+  Require(DOS.Read(raw,buffer,1)=1 AND buffer(0)=3)
+  Require(DOS.Close(nil)<>0 AND DOS.Close(raw)<>0 AND DOS.Close(con)<>0
+      AND DOS.ReleaseContext()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+  phase=11
+
+RETURN
+
+ENDMODULE

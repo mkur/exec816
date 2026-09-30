@@ -1,0 +1,299 @@
+{
+  "abi": "exec816.io",
+  "revision": 1,
+  "resident_dispatch": {
+    "tag": 131072,
+    "residents": {
+      "SIO": {
+        "id": 1,
+        "module": "SIODRIVER",
+        "device_offset": 64,
+        "name_offset": 224,
+        "test_only": false,
+        "task_offset": 160,
+        "lease_offset": 108
+      },
+      "IMMEDIATE": {
+        "id": 2,
+        "module": "IOTESTDRIVER",
+        "device_offset": 0,
+        "name_offset": 32,
+        "test_only": true
+      },
+      "CONSOLE": {
+        "id": 3,
+        "module": "CONSOLEDRIVER",
+        "storage": "console_storage",
+        "device_offset": 0,
+        "name_offset": 107,
+        "test_only": false,
+        "task_offset": 36,
+        "lease_offset": 136
+      }
+    }
+  },
+  "services": {
+    "OPEN_DEVICE": 40,
+    "CLOSE_DEVICE": 41,
+    "BEGIN_IO": 42,
+    "CHECK_IO": 43,
+    "WAIT_REQUEST": 44,
+    "ABORT_IO": 45,
+    "SEND_IO": 46,
+    "CREATE_CHECK": 47,
+    "DELETE_CHECK": 48,
+    "DO_IO": 49,
+    "TEST_STEP": 50
+  },
+  "errors": {
+    "MISUSE": 65424
+  },
+  "constants": {
+    "IOF_QUICK": 1,
+    "CMD_INVALID": 0,
+    "CMD_RESET": 1,
+    "CMD_READ": 2,
+    "CMD_WRITE": 3,
+    "CMD_UPDATE": 4,
+    "CMD_CLEAR": 5,
+    "CMD_STOP": 6,
+    "CMD_START": 7,
+    "CMD_FLUSH": 8,
+    "CMD_NONSTD": 9
+  },
+  "io_errors": {
+    "IOERR_OPENFAIL": -1,
+    "IOERR_ABORTED": -2,
+    "IOERR_NOCMD": -3,
+    "IOERR_BADLENGTH": -4,
+    "IOERR_BADADDRESS": -5,
+    "IOERR_UNITBUSY": -6,
+    "IOERR_SELFTEST": -7
+  },
+  "records": {
+    "IORequest": {
+      "size": 26,
+      "alignment": 2,
+      "fields": [
+        [
+          "io_Message",
+          "Message",
+          0
+        ],
+        [
+          "io_Device",
+          "BYTE POINTER",
+          16
+        ],
+        [
+          "io_Unit",
+          "BYTE POINTER",
+          19
+        ],
+        [
+          "io_Command",
+          "CARD",
+          22
+        ],
+        [
+          "io_Flags",
+          "BYTE",
+          24
+        ],
+        [
+          "io_Error",
+          "BYTE",
+          25
+        ]
+      ]
+    },
+    "IOStdReq": {
+      "size": 42,
+      "alignment": 2,
+      "fields": [
+        [
+          "io_Message",
+          "Message",
+          0
+        ],
+        [
+          "io_Device",
+          "BYTE POINTER",
+          16
+        ],
+        [
+          "io_Unit",
+          "BYTE POINTER",
+          19
+        ],
+        [
+          "io_Command",
+          "CARD",
+          22
+        ],
+        [
+          "io_Flags",
+          "BYTE",
+          24
+        ],
+        [
+          "io_Error",
+          "BYTE",
+          25
+        ],
+        [
+          "io_Actual",
+          "LONGCARD",
+          26
+        ],
+        [
+          "io_Length",
+          "LONGCARD",
+          30
+        ],
+        [
+          "io_Data",
+          "BYTE POINTER",
+          34
+        ],
+        [
+          "io_Offset",
+          "LONGCARD",
+          38
+        ]
+      ]
+    }
+  },
+  "imports": {
+    "CreateIORequest": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 3
+    },
+    "DeleteIORequest": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "OpenDevice": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        },
+        {
+          "alignment": 1,
+          "offset": 8,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 12,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 17,
+      "result_bytes": 2
+    },
+    "CloseDevice": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "BeginIO": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "SendIO": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "DoIO": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 2
+    },
+    "CheckIO": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 3
+    },
+    "WaitIO": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 2
+    },
+    "AbortIO": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    }
+  }
+}

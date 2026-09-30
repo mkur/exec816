@@ -1,0 +1,126 @@
+MODULE SIGNALABI
+USE EXEC
+USE EXECLISTS
+INCLUDE "task-types.inc"
+
+Task ARRAY records(2)
+TaskControl ARRAY contexts(2)
+SignalBinding ARRAY bindings(2)
+ADDRESS ARRAY facts(22)
+LONGCARD ARRAY masks(8)
+BYTE ARRAY numbers(2)
+ADDRESS oldCop
+ADDRESS copVector=$256
+Task POINTER target
+BYTE freed
+
+; Ordinary emitted functions qualify native call shapes, not signal policy.
+; The runner also redirects these entries through the generated COP wrappers.
+BYTE FUNC AllocSignal(BYTE number)
+
+RETURN(number XOR $ff)
+
+PROC FreeSignal(BYTE number)
+
+  freed=number
+
+RETURN
+
+LONGCARD FUNC SetSignal(LONGCARD signals LONGCARD mask)
+
+RETURN(signals XOR mask)
+
+PROC Signal(Task POINTER item LONGCARD signals)
+
+  target=item
+  masks(6)=signals
+
+RETURN
+
+LONGCARD FUNC Wait(LONGCARD mask)
+
+RETURN(mask XOR LONGCARD($12345678))
+
+PROC Layout0()
+
+  facts(0)=ADDRESS(@records(1))-ADDRESS(@records(0))
+  facts(1)=ADDRESS(@records(0).tc_Node)-ADDRESS(@records(0))
+  facts(2)=ADDRESS(@records(0).tc_Flags)-ADDRESS(@records(0))
+  facts(3)=ADDRESS(@records(0).tc_State)-ADDRESS(@records(0))
+  facts(4)=ADDRESS(@records(0).tc_IDNestCnt)-ADDRESS(@records(0))
+  facts(5)=ADDRESS(@records(0).tc_TDNestCnt)-ADDRESS(@records(0))
+
+RETURN
+
+PROC Layout1()
+
+  facts(6)=ADDRESS(@records(0).tc_SigAlloc)-ADDRESS(@records(0))
+  facts(7)=ADDRESS(@records(0).tc_SigWait)-ADDRESS(@records(0))
+  facts(8)=ADDRESS(@records(0).tc_SigRecvd)-ADDRESS(@records(0))
+  facts(9)=ADDRESS(@records(0).tc_SigExcept)-ADDRESS(@records(0))
+  facts(10)=ADDRESS(@records(0).tc_SPReg)-ADDRESS(@records(0))
+  facts(11)=ADDRESS(@records(0).tc_SPLower)-ADDRESS(@records(0))
+
+RETURN
+
+PROC Layout2()
+
+  facts(12)=ADDRESS(@records(0).tc_SPUpper)-ADDRESS(@records(0))
+  facts(13)=ADDRESS(@records(0).tc_MemEntry)-ADDRESS(@records(0))
+  facts(14)=ADDRESS(@records(0).tc_UserData)-ADDRESS(@records(0))
+  facts(15)=ADDRESS(@records(0).tc_ExecPrivate)-ADDRESS(@records(0))
+
+RETURN
+
+PROC LayoutPrivate()
+
+  facts(16)=ADDRESS(@contexts(1))-ADDRESS(@contexts(0))
+  facts(17)=ADDRESS(@contexts(0).wakeNode)-ADDRESS(@contexts(0))
+  facts(18)=ADDRESS(@contexts(0).waitReason)-ADDRESS(@contexts(0))
+  facts(19)=ADDRESS(@contexts(0).queued)-ADDRESS(@contexts(0))
+  facts(20)=ADDRESS(@bindings(1))-ADDRESS(@bindings(0))
+  facts(21)=ADDRESS(@bindings(0).mask)-ADDRESS(@bindings(0))
+
+RETURN
+
+PROC Fields()
+  Task POINTER item
+
+  item=Task POINTER($04ffef)
+  item.tc_SigAlloc=LONGCARD($ffffffff)
+  item.tc_SigWait=LONGCARD($80000001)
+  item.tc_SigRecvd=LONGCARD($ab1234cd)
+  item.tc_SigExcept=0
+  item.tc_ExecPrivate=$0f0040
+  masks(0)=item.tc_SigAlloc
+  masks(1)=item.tc_SigWait
+  masks(2)=item.tc_SigRecvd
+  masks(3)=item.tc_SigExcept
+
+RETURN
+
+PROC Calls()
+
+  numbers(0)=AllocSignal(0)
+  numbers(1)=AllocSignal($ff)
+  FreeSignal($a9)
+  masks(4)=SetSignal(LONGCARD($89123456),LONGCARD($7654fedc))
+  masks(5)=Wait(LONGCARD($edcba987))
+  Signal(Task POINTER($04ffef),LONGCARD($80123456))
+  masks(7)=LONGCARD(ADDRESS(target))
+
+RETURN
+
+; Exercise signal-service signatures and packed Task fields.
+PROC Main()
+
+  Layout0()
+  Layout1()
+  Layout2()
+  LayoutPrivate()
+  Fields()
+  Calls()
+
+RETURN
+
+ENDMODULE

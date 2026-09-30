@@ -1,0 +1,16 @@
+HELP lists the built-in commands.
+DIR lists the current directory.
+TYPE prints a text file.
+CD DOCS selects a directory.
+CD / goes to the parent directory.
+CD : returns to the volume root.
+ECHO HELLO prints a greeting.
+MEM displays available memory.
+TASKS lists live tasks and their states.
+MOUNT lists mounted filesystems.
+DEVICES lists drivers and their states.
+VER prints Exec816 and actionc commits.
+EXIT ends the session.
+
+Ctrl-C clears a prompt line. It does
+not cancel a command already running.

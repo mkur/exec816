@@ -1,0 +1,388 @@
+; Eight simultaneous public Tasks: console client, reader, three services,
+; allocator/message producer, signal peer and message receiver; private idle.
+MODULE CONSOLECONCURRENT
+USE CONSOLETYPES
+USE CONSOLEDRIVER
+INCLUDE "../../examples/console-session.inc"
+
+TYPE MixedState=[
+  BYTE readyA
+  BYTE readyB
+  BYTE readyC
+  BYTE stopA
+  BYTE stopPeers
+  EXEC.MsgPort POINTER replies
+  EXEC.MsgPort POINTER destination
+  EXEC.Message POINTER message
+  EXEC.IOStdReq POINTER output
+  BYTE POINTER flood
+  CARD floods
+  LONGCARD allocations
+  LONGCARD signals
+  LONGCARD messages
+]
+
+MixedState mix
+TYPE ProbeState=[
+  LONGCARD expected
+  LONGCARD verified
+  BYTE seed
+  BYTE phase
+  BYTE go
+  BYTE finish
+  CARD collected
+  CARD visible
+  CARD duringRead
+  LONGCARD initialAlloc
+  LONGCARD finalAlloc
+]
+
+ProbeState probe
+
+EXEC.Task POINTER FUNC WorkTask(BYTE index)
+
+RETURN(EXEC.Task POINTER(ADDRESS($e0000)+(SIZE(index) LSH 6)))
+
+PROC PrepareWork(EXEC.Task POINTER task BYTE slot)
+
+  task.tc_Node.ln_Type=EXEC.NT_TASK
+  task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  task.tc_SPReg=task.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@task.tc_MemEntry)
+
+RETURN
+
+PROC AllocateCycle(BYTE unused)
+  BYTE POINTER block
+  CARD index
+
+  block=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR)
+  Check(block<>BYTE POINTER(0))
+  FOR index=0 TO 127 DO
+    Check(block(index)=0)
+    block(index)=BYTE(index XOR 83)
+  OD
+
+  FOR index=0 TO 127 DO
+    Check(block(index)=BYTE(index XOR 83))
+  OD
+
+  EXEC.FreeMem(block,128)
+  mix.allocations==+1
+
+RETURN
+
+PROC MessageCycle(BYTE unused)
+  EXEC.Message POINTER reply
+  LONGCARD bits
+
+  EXEC.PutMsg(mix.destination,mix.message)
+  reply=EXEC.WaitPort(mix.replies)
+  reply=EXEC.GetMsg(mix.replies)
+  Check(reply=mix.message)
+  EXEC.Signal(WorkTask(1),$10000)
+  bits=EXEC.Wait($10000)
+
+RETURN
+
+PROC Flood(BYTE unused)
+  INT error
+
+  mix.output.io_Command=EXEC.CMD_WRITE
+  mix.output.io_Data=mix.flood
+  mix.output.io_Length=40
+  error=EXEC.DoIO(EXEC.IORequest POINTER(mix.output))
+  Check(error=0 AND mix.output.io_Actual=40)
+  mix.floods==+1
+
+RETURN
+
+; Prepare the independent work peers before starting concurrent console
+; interaction.
+PROC ProducerSetup(BYTE unused)
+  CARD index
+
+  Check(EXEC.AllocSignal(16)=16)
+  mix.replies=EXEC.CreateMsgPort()
+  Check(mix.replies<>EXEC.MsgPort POINTER(0))
+  mix.message=EXEC.Message POINTER(EXEC.AllocMem(SIZEOF(EXEC.Message),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  mix.output=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(mix.replies,42))
+  mix.flood=EXEC.AllocMem(40,EXEC.MEMF_PUBLIC)
+  Check(mix.message<>EXEC.Message POINTER(0)
+      AND mix.output<>EXEC.IOStdReq POINTER(0) AND mix.flood<>BYTE POINTER(0))
+  mix.message.mn_ReplyPort=mix.replies
+  mix.message.mn_Length=SIZEOF(EXEC.Message)
+  mix.output.io_Device=inputRequest.io_Device
+  mix.output.io_Unit=inputRequest.io_Unit
+  FOR index=0 TO 39 DO
+    mix.flood(index)=35
+  OD
+
+RETURN
+
+PROC ProducerCleanup(BYTE unused)
+
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(mix.output))
+  EXEC.DeleteMsgPort(mix.replies)
+  EXEC.FreeMem(BYTE POINTER(mix.message),SIZEOF(EXEC.Message))
+  EXEC.FreeMem(mix.flood,40)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+PROC ProducerEntry()
+  LONGCARD bits
+  CARD ticks
+
+  ProducerSetup(0)
+  mix.readyA=1
+  bits=EXEC.Wait($10000)
+  WHILE mix.stopA=0 DO
+    AllocateCycle(0)
+    MessageCycle(0)
+    IF mix.floods<30 THEN
+      Flood(0)
+      ticks=EXECTASKS.Sleep(5)
+    ELSE
+      ticks=EXECTASKS.Sleep(1)
+    FI
+  OD
+
+  ProducerCleanup(0)
+
+RETURN
+
+PROC SignalEntry()
+  LONGCARD bits
+
+  Check(EXEC.AllocSignal(16)=16)
+  mix.readyB=1
+  DO
+    bits=EXEC.Wait($10000)
+    IF mix.stopPeers<>0 THEN
+      EXIT
+    FI
+
+    mix.signals==+1
+    EXEC.Signal(WorkTask(0),$10000)
+  OD
+
+  EXEC.FreeSignal(16)
+
+RETURN
+
+PROC ReceiverEntry()
+  EXEC.Message POINTER message
+  LONGCARD bits,mask
+
+  mix.destination=EXEC.CreateMsgPort()
+  Check(mix.destination<>EXEC.MsgPort POINTER(0))
+  mask=LONGCARD(1) LSH mix.destination.mp_SigBit
+  mix.readyC=1
+  DO
+    message=EXEC.GetMsg(mix.destination)
+    IF message<>EXEC.Message POINTER(0) THEN
+      Check(message=mix.message)
+      mix.messages==+1
+      EXEC.ReplyMsg(message)
+    ELSE
+      IF mix.stopPeers<>0 THEN
+        EXIT
+      FI
+
+      bits=EXEC.Wait(mask)
+    FI
+  OD
+
+  EXEC.DeleteMsgPort(mix.destination)
+
+RETURN
+
+PROC StartWork(BYTE unused)
+
+  PrepareWork(WorkTask(0),5)
+  PrepareWork(WorkTask(1),6)
+  PrepareWork(WorkTask(2),7)
+  Check(EXEC.AddTask(WorkTask(0),@ProducerEntry,absent)=WorkTask(0))
+  Check(EXEC.AddTask(WorkTask(1),@SignalEntry,absent)=WorkTask(1))
+  Check(EXEC.AddTask(WorkTask(2),@ReceiverEntry,absent)=WorkTask(2))
+  WHILE mix.readyA=0 OR mix.readyB=0 OR mix.readyC=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; Retire the background work peers before checking final shared ownership.
+PROC StopWork(BYTE unused)
+  CARD ticks
+  EXEC.Task POINTER task
+
+  mix.stopA=1
+  task=WorkTask(0)
+  WHILE task.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  EXEC.Forbid()
+  mix.stopPeers=1
+  EXEC.Signal(WorkTask(1),$10000)
+  EXEC.Signal(WorkTask(2),LONGCARD(1) LSH mix.destination.mp_SigBit)
+  EXEC.Permit()
+  task=WorkTask(1)
+  WHILE task.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  task=WorkTask(2)
+  WHILE task.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Check(mix.allocations=mix.signals AND mix.signals=mix.messages AND mix.floods=30)
+
+RETURN
+
+PROC WarmFilesystem(BYTE unused)
+  DOS.FileHandle POINTER file
+  LONGINT okay
+
+  file=DOS.Open(readPath,DOS.MODE_OLDFILE)
+  Check(file<>DOS.FileHandle POINTER(0))
+  okay=DOS.Close(file)
+  Check(okay<>0)
+  okay=DOS.ReleaseContext()
+  Check(okay<>0)
+
+RETURN
+
+; Passive CPU marker after public WaitIO has collected the specific read reply.
+PROC ReadCollected()
+
+  probe.collected==+1
+  IF reader.active<>0 THEN
+    probe.duringRead==+1
+  FI
+
+RETURN
+
+; Passive marker after the task has observed the unique glyph in screen RAM.
+; This is an upper bound on visibility, not an instrumented renderer hook.
+PROC EchoVisible()
+
+  probe.visible==+1
+
+RETURN
+
+BYTE FUNC HasGlyph(BYTE value)
+  CONSOLETYPES.Service POINTER service
+  CONSOLETYPES.Presentation POINTER view
+  BYTE POINTER screen
+  CARD index
+
+  service=CONSOLEDRIVER.GetService()
+  view=CONSOLETYPES.Presentation POINTER(service.presentation)
+  screen=view.screen
+  FOR index=0 TO 959 DO
+    IF (screen(index) & $7f)=value THEN
+      RETURN(1)
+    FI
+  OD
+
+RETURN(0)
+
+PROC EchoOne(BYTE expected)
+  INT error
+
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(inputRequest))
+  Check(error=0 AND inputRequest.io_Actual=1 AND inputByte^=expected)
+  ReadCollected()
+  Print(inputByte,1)
+  WHILE HasGlyph(expected)=0 DO
+    EXEC.Yield()
+  OD
+
+  EchoVisible()
+
+RETURN
+
+; Keep foreground input responsive while the fixture's other Tasks remain
+; active.
+PROC Interaction(BYTE unused)
+  BYTE index
+  CARD ticks
+
+  EXEC.Signal(WorkTask(0),$10000)
+  ; Reach the bottom row before the measured file read so keyboard/SIO activity
+  ; overlaps real scrolling, even on the shorter 128-byte fixture.
+  WHILE mix.floods<25 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  probe.initialAlloc=mix.allocations
+  reader.busy=1
+  EXEC.Signal(@readerTask,$10000)
+  probe.phase=2
+  FOR index=0 TO 7 DO
+    ArmRead(0)
+    EchoOne(97+index)
+  OD
+
+  WHILE reader.busy<>0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  probe.finalAlloc=mix.allocations
+  Check(probe.finalAlloc>probe.initialAlloc AND probe.duringRead<>0)
+
+RETURN
+
+PROC VerifyPayload(BYTE unused)
+  LONGCARD index
+
+  Check(reader.reads=1 AND reader.received=LONGINT(probe.expected)
+      AND reader.error=0)
+  FOR index=0 TO probe.expected-1 DO
+    IF readBuffer(SIZE(index))<>(BYTE(index) XOR probe.seed) THEN
+      HEAPCORE.Abort($f782)
+    FI
+  OD
+
+  probe.verified=probe.expected
+
+RETURN
+
+; Exercise the shared eight-Task workload and verify final resource ownership.
+PROC Main()
+
+  OpenConsole(0)
+  AllocateReader(0)
+  StartReader(0)
+  StartWork(0)
+  WarmFilesystem(0)
+  probe.phase=1
+  WHILE probe.go=0 DO
+    EXEC.Yield()
+  OD
+
+  Interaction(0)
+  VerifyPayload(0)
+  JoinReader(0)
+  ; Finish the bounded flood if the small file completed earlier.
+  WHILE mix.floods<30 DO
+    EXEC.Yield()
+  OD
+
+  StopWork(0)
+  probe.phase=3
+  WHILE probe.finish=0 DO
+    EXEC.Yield()
+  OD
+
+  Cleanup(0)
+  probe.phase=4
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,410 @@
+MODULE DOSPROCESS
+USE EXEC
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE DOSINHERIT
+USE DOSCALLS
+USE DOSBREAK
+USE DOSGROUP
+USE DOSBREAKTYPES
+USE FSOPERATION
+USE CONSOLEFOREGROUND
+USE PROCESSSTATE
+USE HEAPCORE
+INCLUDE "dos-types.inc"
+
+CONST PREPARED=1,TRANSFERRED=2,RESTORED=3
+
+; Release a prepared child DOS context that will not be adopted.
+PUBLIC BYTE FUNC Discard(PROCESSSTATE.Entry POINTER process)
+
+  IF process.console=process.input OR process.console=process.output THEN
+    process.console=BYTE POINTER(0)
+  FI
+
+  IF DOSINHERIT.Discard(process.console)=0 THEN
+    RETURN(0)
+  FI
+
+  process.console=BYTE POINTER(0)
+  IF DOSINHERIT.Discard(process.directory)=0 THEN
+    RETURN(0)
+  FI
+
+  process.directory=BYTE POINTER(0)
+  IF process.output=process.input THEN
+    process.output=BYTE POINTER(0)
+  FI
+
+  IF DOSINHERIT.Discard(process.output)=0 THEN
+    RETURN(0)
+  FI
+
+  process.output=BYTE POINTER(0)
+  IF DOSINHERIT.Discard(process.input)=0 THEN
+    RETURN(0)
+  FI
+
+  process.input=BYTE POINTER(0)
+
+RETURN(1)
+
+; Retain the parent's selections before preparing the child's context.
+BYTE FUNC Snapshot(PROCESSSTATE.Entry POINTER process DOSCORE.DosSlot
+    POINTER owner DOSCLIENT.ClientContext POINTER client DOSBREAKTYPES.Scope
+    POINTER scope)
+
+  process.input=DOSINHERIT.Clone(owner,client.input,DOSOBJECTS.KIND_FILE)
+  IF client.input<>BYTE POINTER(0) AND process.input=BYTE POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF client.output=client.input THEN
+    process.output=process.input
+  ELSE
+    process.output=DOSINHERIT.Clone(owner,client.output,DOSOBJECTS.KIND_FILE)
+  FI
+
+  IF client.output<>BYTE POINTER(0) AND process.output=BYTE POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  process.directory=DOSINHERIT.Clone(owner,client.directory,DOSOBJECTS.KIND_LOCK)
+  IF client.directory<>BYTE POINTER(0) AND process.directory=BYTE POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+    IF scope.handle=client.input THEN
+      process.console=process.input
+    ELSEIF scope.handle=client.output THEN
+      process.console=process.output
+    ELSE
+      process.console=DOSINHERIT.Clone(owner,scope.handle,DOSOBJECTS.KIND_FILE)
+    FI
+
+    IF process.console=BYTE POINTER(0) THEN
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
+; Prepare inherited DOS ownership before the child Task is launched.
+PUBLIC BYTE FUNC Prepare(PROCESSSTATE.Entry POINTER process BYTE foreground)
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+  DOSBREAKTYPES.Scope POINTER scope
+  BYTE okay
+  LONGINT error
+
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  scope=DOSBREAKTYPES.Scope POINTER(0)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    IF foreground=0 THEN
+      RETURN(1)
+    FI
+
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(0)
+  FI
+
+  IF owner.active<>0 OR client.busy<>0 OR client.suspended<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  IF foreground<>0 THEN
+    scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+    IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+      DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+      RETURN(0)
+    FI
+
+    IF scope.active=0 OR scope.groupActive<>0 OR (scope.opState<>0
+        AND scope.opState<>FSOPERATION.COLLECTED) THEN
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+      RETURN(0)
+    FI
+  FI
+
+  client.busy=1
+  okay=Snapshot(process,owner,client,scope)
+  error=DOSCLIENT.IoErr()
+  IF okay=0 THEN
+    IF Discard(process)=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    client.busy=0
+    DOSCLIENT.SetError(error)
+    RETURN(0)
+  FI
+
+  IF foreground<>0 THEN
+    process.parentClient=BYTE POINTER(client)
+    process.parentScope=BYTE POINTER(scope)
+    process.foreground=PREPARED
+    client.suspended=1
+  FI
+
+  client.busy=0
+
+RETURN(1)
+
+; Prepare a child context attached to the parent's foreground command group.
+PUBLIC BYTE FUNC PrepareGroup(PROCESSSTATE.Entry POINTER process BYTE
+    POINTER identity)
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+  DOSBREAKTYPES.Scope POINTER scope
+  BYTE okay
+  LONGINT error
+
+  scope=DOSBREAKTYPES.Scope POINTER(identity)
+  IF DOSGROUP.Valid(scope)=0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  IF scope.groupRefs>=2 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  client=DOSCLIENT.Ensure()
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  owner=DOSCORE.Current()
+  client.busy=1
+  okay=Snapshot(process,owner,client,scope)
+  error=DOSCLIENT.IoErr()
+  IF okay=0 THEN
+    IF Discard(process)=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+  ELSE
+    EXEC.Forbid()
+    scope.groupRefs==+1
+    process.groupScope=identity
+    EXEC.Permit()
+  FI
+
+  client.busy=0
+  DOSCLIENT.SetError(error)
+
+RETURN(okay)
+
+; Hand console interruption routing to the admitted child context.
+BYTE FUNC EnterForeground(PROCESSSTATE.Entry POINTER process
+    DOSCLIENT.ClientContext POINTER client BYTE POINTER console)
+  DOSBREAKTYPES.Scope POINTER previous,scope
+  BYTE okay
+  LONGCARD ignored
+
+  previous=DOSBREAKTYPES.Scope POINTER(process.parentScope)
+  scope=DOSBREAK.Allocate(client,console)
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  scope.unit=previous.unit
+  ignored=EXEC.SetSignal(0,scope.mask)
+  EXEC.Forbid()
+  okay=CONSOLEFOREGROUND.Handoff(previous,scope,1)
+  IF okay<>0 THEN
+    client.foreground=BYTE POINTER(scope)
+    client.foregroundLoan=1
+    process.foreground=TRANSFERRED
+  FI
+
+  EXEC.Permit()
+  IF okay=0 THEN
+    DOSBREAK.Free(scope)
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Attach prepared DOS ownership when the child begins execution.
+PUBLIC BYTE FUNC Adopt(PROCESSSTATE.Entry POINTER process
+    DOSCLIENT.ClientContext POINTER client)
+  DOSCORE.DosSlot POINTER owner
+  BYTE POINTER console
+
+  owner=DOSCORE.Current()
+  console=process.console
+  EXEC.Forbid()
+  DOSINHERIT.Adopt(owner,process.input)
+  IF process.output<>process.input THEN
+    DOSINHERIT.Adopt(owner,process.output)
+  FI
+
+  IF console<>process.input AND console<>process.output THEN
+    DOSINHERIT.Adopt(owner,console)
+  FI
+
+  DOSINHERIT.Adopt(owner,process.directory)
+  client.input=process.input
+  client.output=process.output
+  client.directory=process.directory
+  process.input=BYTE POINTER(0)
+  process.output=BYTE POINTER(0)
+  process.directory=BYTE POINTER(0)
+  process.console=BYTE POINTER(0)
+  EXEC.Permit()
+  IF process.groupScope<>BYTE POINTER(0) THEN
+    RETURN(DOSGROUP.Join(DOSBREAKTYPES.Scope POINTER(process.groupScope),client,
+        console))
+  FI
+
+  IF process.foreground=PREPARED THEN
+    RETURN(EnterForeground(process,client,console))
+  FI
+
+RETURN(1)
+
+; Return console routing to the retained parent after child completion.
+BYTE FUNC RestoreForeground(PROCESSSTATE.Entry POINTER process
+    DOSCLIENT.ClientContext POINTER client)
+  DOSBREAKTYPES.Scope POINTER scope,parent
+  BYTE okay
+
+  scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+  parent=DOSBREAKTYPES.Scope POINTER(process.parentScope)
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) OR client.foregroundLoan=0 THEN
+    RETURN(0)
+  FI
+
+  IF scope.opState<>0 AND scope.opState<>FSOPERATION.COLLECTED THEN
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  okay=CONSOLEFOREGROUND.Handoff(scope,parent,0)
+  IF okay<>0 THEN
+    client.foreground=BYTE POINTER(0)
+    client.foregroundLoan=0
+    process.foreground=RESTORED
+  FI
+
+  EXEC.Permit()
+  IF okay=0 THEN
+    RETURN(0)
+  FI
+
+  DOSBREAK.Free(scope)
+
+RETURN(1)
+
+; Retire child DOS resources before process storage becomes collectible.
+PUBLIC BYTE FUNC Cleanup(PROCESSSTATE.Entry POINTER process)
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+  DOSOBJECTS.Header POINTER item
+  BYTE POINTER identity
+
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(Discard(process))
+  FI
+
+  ; Public DOS operations return only after their exact I/O/packet reply is
+  ; collected, including cooperative cancellation. A retained busy operation
+  ; is a teardown failure, never permission to free its buffers or scope.
+  IF owner.active<>0 OR client.busy<>0 OR client.suspended<>0 THEN
+    RETURN(0)
+  FI
+
+  IF process.groupScope<>BYTE POINTER(0) THEN
+    IF DOSGROUP.Leave(DOSBREAKTYPES.Scope POINTER(process.groupScope),client)=0 THEN
+      RETURN(0)
+    FI
+  ELSEIF process.foreground=TRANSFERRED THEN
+    IF RestoreForeground(process,client)=0 THEN
+      RETURN(0)
+    FI
+  ELSE
+    IF DOSBREAK.End()=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  client.input=BYTE POINTER(0)
+  client.output=BYTE POINTER(0)
+  client.directory=BYTE POINTER(0)
+  WHILE owner.objects<>BYTE POINTER(0) DO
+    identity=owner.objects
+    item=DOSOBJECTS.Header POINTER(identity)
+    IF item.owner<>owner THEN
+      RETURN(0)
+    FI
+
+    CASE item.kind OF
+    WHEN DOSOBJECTS.KIND_FILE THEN
+      IF DOSCALLS.Close(identity)=0 THEN
+        RETURN(0)
+      FI
+    WHEN DOSOBJECTS.KIND_LOCK THEN
+      DOSCALLS.UnLock(identity)
+      IF DOSOBJECTS.Find(owner,identity,
+          DOSOBJECTS.KIND_LOCK)<>DOSOBJECTS.Header POINTER(0) THEN
+        RETURN(0)
+      FI
+    ELSE
+      RETURN(0)
+    ESAC
+
+    IF owner.objects=identity THEN
+      RETURN(0)
+    FI
+  OD
+
+  IF DOSCLIENT.ReleaseContext()=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(Discard(process))
+
+; Only the parent calls this after kernel-acknowledged retirement, or while
+; rolling back an unpublished start. Its context could not be released while
+; suspended, and no inherited wrapper still depends on the parent's handles.
+PUBLIC PROC ReleaseParent(PROCESSSTATE.Entry POINTER process)
+  DOSCLIENT.ClientContext POINTER client
+  DOSBREAKTYPES.Scope POINTER scope
+
+  client=DOSCLIENT.ClientContext POINTER(process.parentClient)
+  IF client<>DOSCLIENT.ClientContext POINTER(0) THEN
+    scope=DOSBREAKTYPES.Scope POINTER(process.parentScope)
+    IF client.foreground<>BYTE POINTER(scope) OR scope.active=0
+        OR process.foreground=TRANSFERRED THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    client.suspended=0
+  FI
+
+  process.parentClient=BYTE POINTER(0)
+  process.parentScope=BYTE POINTER(0)
+  process.foreground=0
+  IF process.groupScope<>BYTE POINTER(0) THEN
+    scope=DOSBREAKTYPES.Scope POINTER(process.groupScope)
+    EXEC.Forbid()
+    IF scope.groupRefs=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    scope.groupRefs==-1
+    process.groupScope=BYTE POINTER(0)
+    EXEC.Permit()
+  FI
+
+RETURN
+
+ENDMODULE

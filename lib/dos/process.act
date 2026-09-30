@@ -1,0 +1,349 @@
+MODULE PROCESS
+USE EXEC
+USE DOSCORE
+USE DOSCLIENT
+USE DOSPROCESS
+USE DOSGROUP
+USE DOSBREAKTYPES
+USE PROCESSSTATE
+USE HEAPCORE
+USE PROGRAMIMAGE
+INCLUDE "process-types.inc"
+INCLUDE "command-results.inc"
+
+TYPE Admission=[
+  LONGINT FUNC POINTER entry()
+  PROC POINTER trampoline(),finalizer()
+]
+
+PROCESSSTATE.Entry POINTER FUNC Control(BYTE operation BYTE POINTER argument)
+
+RETURN(PROCESSSTATE.Entry POINTER(DOSCORE.Control(operation,argument)))
+
+PROCESSSTATE.Entry POINTER FUNC Current()
+
+RETURN(Control(PROCESSSTATE.OP_CURRENT,BYTE POINTER(0)))
+
+; Expose the current process's retained argument text to its command entry.
+PUBLIC CSTRING FUNC GetArgStr()
+  PROCESSSTATE.Entry POINTER process
+
+  process=Current()
+  IF process=PROCESSSTATE.Entry POINTER(0) THEN
+    RETURN(CSTRING(0))
+  FI
+
+RETURN(CSTRING(process.arguments))
+
+; The kernel admits this resident entry. The dynamic target remains private to
+; a retained Image; ordinary AddTask never gains arbitrary loaded entry points.
+PUBLIC LONGINT FUNC ExecuteImage()
+  PROCESSSTATE.Entry POINTER process
+  PROGRAMIMAGE.Image POINTER image
+
+  process=Current()
+  IF process=PROCESSSTATE.Entry POINTER(0) THEN
+    HEAPCORE.Abort($ff96)
+  FI
+
+  image=PROGRAMIMAGE.Image POINTER(process.image)
+  IF image=PROGRAMIMAGE.Image POINTER(0) THEN
+    HEAPCORE.Abort($ff96)
+  FI
+
+  IF image.magic<>PROGRAMIMAGE.MAGIC OR image.running<>1 THEN
+    HEAPCORE.Abort($ff96)
+  FI
+
+RETURN(image.entry())
+
+; Registered resident entry/finalizer. Completion is published by the kernel
+; only after this Task has stopped using its stack and direct-page domain.
+PUBLIC PROC Run()
+  PROCESSSTATE.Entry POINTER process
+  DOSCLIENT.ClientContext POINTER client
+
+  process=Current()
+  IF process=PROCESSSTATE.Entry POINTER(0) THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  client=DOSCLIENT.Ensure()
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    process.primary=RETURN_FAIL
+    process.secondary=DOSCLIENT.IoErr()
+    RETURN
+  FI
+
+  IF DOSPROCESS.Adopt(process,client)=0 THEN
+    process.primary=RETURN_FAIL
+    process.secondary=DOSCLIENT.IoErr()
+    RETURN
+  FI
+
+  DOSCLIENT.SetError(0)
+  process.primary=process.entry()
+  process.secondary=DOSCLIENT.IoErr()
+
+RETURN
+
+; Publish the command result after retiring its process-owned DOS state.
+PUBLIC PROC Finish()
+  PROCESSSTATE.Entry POINTER process,accepted
+
+  process=Current()
+  IF process=PROCESSSTATE.Entry POINTER(0) THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  accepted=Control(PROCESSSTATE.OP_QUIESCE,BYTE POINTER(process))
+  IF accepted<>process THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  IF DOSPROCESS.Cleanup(process)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  accepted=Control(PROCESSSTATE.OP_RETIRE_READY,BYTE POINTER(process))
+  IF accepted<>process THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  EXEC.RemTask(EXEC.Task POINTER(0))
+
+RETURN
+
+; Free arguments and process allocations after execution ownership has ended.
+PROC ReleaseStorage(PROCESSSTATE.Entry POINTER process)
+  LONGCARD ignored
+
+  IF DOSPROCESS.Discard(process)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  DOSPROCESS.ReleaseParent(process)
+  IF process.arguments<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(process.arguments,SIZE(process.length)+1)
+    process.arguments=BYTE POINTER(0)
+  FI
+
+  IF process.mask<>0 THEN
+    ignored=EXEC.SetSignal(0,process.mask)
+    EXEC.FreeSignal(process.signalBit)
+    process.mask=0
+  FI
+
+  IF process.image<>BYTE POINTER(0) THEN
+    PROGRAMIMAGE.Detach(PROGRAMIMAGE.Image POINTER(process.image))
+    process.image=BYTE POINTER(0)
+  FI
+
+RETURN
+
+; Prepare process resources before making its Task runnable.
+LONGCARD FUNC StartInternal(LONGINT FUNC POINTER entry() BYTE POINTER arguments
+    CARD length BYTE foreground PROGRAMIMAGE.Image POINTER image BYTE POINTER group)
+  Admission admission
+  PROCESSSTATE.Entry POINTER process,accepted
+  CARD index
+  LONGCARD identity
+  LONGINT error
+
+  IF length>ARGUMENT_LIMIT OR (length<>0 AND arguments=BYTE POINTER(0)) THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+  IF image<>PROGRAMIMAGE.Image POINTER(0) THEN
+    IF PROGRAMIMAGE.Attach(image)=0 THEN
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+      RETURN(0)
+    FI
+  FI
+
+  admission.entry=entry
+  admission.trampoline=@Run
+  admission.finalizer=@Finish
+  process=Control(PROCESSSTATE.OP_RESERVE,BYTE POINTER(@admission))
+  IF process=PROCESSSTATE.Entry POINTER(0) THEN
+    IF image<>PROGRAMIMAGE.Image POINTER(0) THEN
+      PROGRAMIMAGE.Detach(image)
+    FI
+
+    RETURN(0)
+  FI
+
+  process.image=BYTE POINTER(image)
+  identity=process.identity
+  process.length=length
+  process.arguments=EXEC.AllocMem(SIZE(length)+1,EXEC.MEMF_UPPER)
+  IF process.arguments<>BYTE POINTER(0) THEN
+    IF length<>0 THEN
+      FOR index=0 TO length-1 DO
+        process.arguments(index)=arguments(index)
+        IF process.arguments(index)=0 THEN
+          ; Reject embedded NUL before publishing the command or borrowing I/O.
+          ReleaseStorage(process)
+          accepted=Control(PROCESSSTATE.OP_ROLLBACK,BYTE POINTER(process))
+          DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+          RETURN(0)
+        FI
+      OD
+    FI
+
+    process.arguments(length)=0
+    process.signalBit=EXEC.AllocSignal($ff)
+    IF process.signalBit<>$ff THEN
+      process.mask=LONGCARD(1) LSH process.signalBit
+      IF group<>BYTE POINTER(0) THEN
+        IF DOSPROCESS.PrepareGroup(process,group)<>0 THEN
+          RETURN(identity)
+        FI
+      ELSEIF DOSPROCESS.Prepare(process,foreground)<>0 THEN
+        accepted=Control(PROCESSSTATE.OP_LAUNCH,BYTE POINTER(process))
+        IF accepted=process THEN
+          RETURN(identity)
+        FI
+      FI
+
+      error=DOSCLIENT.IoErr()
+    ELSE
+      error=ERROR_NO_FREE_STORE
+    FI
+  ELSE
+    error=ERROR_NO_FREE_STORE
+  FI
+
+  ReleaseStorage(process)
+  accepted=Control(PROCESSSTATE.OP_ROLLBACK,BYTE POINTER(process))
+  IF accepted<>process THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  DOSCLIENT.SetError(error)
+
+RETURN(0)
+
+PUBLIC LONGCARD FUNC Start(LONGINT FUNC POINTER entry() BYTE POINTER arguments
+    CARD length)
+
+RETURN(StartInternal(entry,arguments,length,0,PROGRAMIMAGE.Image POINTER(0),
+    BYTE POINTER(0)))
+
+PUBLIC LONGCARD FUNC StartForeground(LONGINT FUNC POINTER entry() BYTE
+    POINTER arguments CARD length)
+
+RETURN(StartInternal(entry,arguments,length,1,PROGRAMIMAGE.Image POINTER(0),
+    BYTE POINTER(0)))
+
+; Start a process from an already loaded image with inherited DOS state.
+PUBLIC LONGCARD FUNC StartLoaded(BYTE POINTER image,arguments CARD length
+    BYTE foreground)
+
+  IF image=BYTE POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(StartInternal(@ExecuteImage,arguments,length,foreground,
+    PROGRAMIMAGE.Image POINTER(image),BYTE POINTER(0)))
+
+; Reserve a loaded command for a later coordinated launch.
+PUBLIC LONGCARD FUNC PrepareLoaded(BYTE POINTER image,arguments CARD length BYTE
+    POINTER group)
+
+  IF image=BYTE POINTER(0) OR group=BYTE POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(StartInternal(@ExecuteImage,arguments,length,0,
+    PROGRAMIMAGE.Image POINTER(image),group))
+
+; Launch a prepared process only after its admission checks still hold.
+PUBLIC BYTE FUNC StartPrepared(LONGCARD identity)
+  PROCESSSTATE.Entry POINTER process,accepted
+
+  process=Control(PROCESSSTATE.OP_PREPARED,BYTE POINTER(@identity))
+  IF process=PROCESSSTATE.Entry POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF DOSGROUP.Ready(DOSBREAKTYPES.Scope POINTER(process.groupScope))=0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  accepted=Control(PROCESSSTATE.OP_LAUNCH,BYTE POINTER(process))
+
+RETURN(accepted=process)
+
+; Undo a prepared process that never became runnable.
+PUBLIC BYTE FUNC DiscardPrepared(LONGCARD identity)
+  PROCESSSTATE.Entry POINTER process,accepted
+
+  process=Control(PROCESSSTATE.OP_PREPARED,BYTE POINTER(@identity))
+  IF process=PROCESSSTATE.Entry POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  ReleaseStorage(process)
+  accepted=Control(PROCESSSTATE.OP_ROLLBACK,BYTE POINTER(process))
+  IF accepted<>process THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+RETURN(1)
+
+; Collect a finished child's result before releasing retained process
+; ownership.
+PUBLIC LONGINT FUNC Collect(LONGCARD identity Result POINTER outcome)
+  PROCESSSTATE.Entry POINTER process,accepted
+
+  IF outcome=Result POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+  process=Control(PROCESSSTATE.OP_CLAIM,BYTE POINTER(@identity))
+  IF process=PROCESSSTATE.Entry POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  outcome.primary=process.primary
+  outcome.secondary=process.secondary
+  ReleaseStorage(process)
+  accepted=Control(PROCESSSTATE.OP_RELEASE,BYTE POINTER(process))
+  IF accepted<>process THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+RETURN(-1)
+
+; Wait for a child to finish and return its collected command result.
+PUBLIC LONGINT FUNC Wait(LONGCARD identity Result POINTER outcome)
+  PROCESSSTATE.Entry POINTER process
+  LONGCARD received
+
+  IF outcome=Result POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+  DO
+    process=Control(PROCESSSTATE.OP_FIND,BYTE POINTER(@identity))
+    IF process=PROCESSSTATE.Entry POINTER(0) THEN
+      RETURN(0)
+    FI
+
+    IF process.state=PROCESSSTATE.STATE_RETIRED THEN
+      RETURN(Collect(identity,outcome))
+    FI
+
+    received=EXEC.Wait(process.mask)
+  OD
+
+RETURN(0)
+
+ENDMODULE

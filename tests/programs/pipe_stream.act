@@ -1,0 +1,256 @@
+MODULE PIPETEST
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DOSCORE
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+USE PROCESS
+USE PIPEPROBE
+USE HEAPCORE
+
+DOS.PipePair pair
+DOS.FileHandle POINTER nil,console,ignored
+EXEC.Task POINTER root,peer
+DOSBREAKTYPES.Scope POINTER cancelScope
+LONGCARD baseline,identity,childBytes,parentBytes
+CARD checks,completed
+BYTE kind
+BYTE ARRAY parentBuffer(512),childBuffer(512)
+BYTE ARRAY nilName=[78 73 76 58 0],conName=[67 79 78 58 0]
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  EXEC.Forbid()
+  IF okay=0 THEN
+    HEAPCORE.Abort($ec00+(checks & 255))
+  FI
+
+  checks==+1
+  EXEC.Permit()
+
+RETURN
+
+LONGINT FUNC Child()
+  LONGINT count,error
+  CARD index
+  BYTE accepted
+
+  peer=EXEC.FindTask(BYTE POINTER(0))
+  CASE kind OF
+  WHEN 1,4 THEN
+    DO
+      count=DOS.Read(DOS.Input(),childBuffer,257)
+      Require(count>=0)
+      IF count=0 THEN
+        EXIT
+      FI
+
+      FOR index=0 TO CARD(count)-1 DO
+        Require(childBuffer(index)=BYTE(childBytes+LONGCARD(index)))
+      OD
+
+      childBytes==+LONGCARD(count)
+    OD
+  WHEN 2 THEN
+    WHILE childBytes<4097 DO
+      count=512
+      IF 4097-childBytes<512 THEN
+        count=LONGINT(4097-childBytes)
+      FI
+
+      FOR index=0 TO CARD(count)-1 DO
+        childBuffer(index)=BYTE(childBytes+LONGCARD(index))
+      OD
+
+      Require(DOS.Write(DOS.Output(),childBuffer,count)=count)
+      childBytes==+LONGCARD(count)
+    OD
+  WHEN 3 THEN
+    Require(DOS.Write(DOS.Output(),childBuffer,512)=512)
+    Require(DOS.Write(DOS.Output(),childBuffer,512)=512)
+    count=DOS.Write(DOS.Output(),childBuffer,1)
+    error=DOS.IoErr()
+    Require(count=-1 AND error=DOS.ERROR_BROKEN_PIPE)
+  WHEN 5 THEN
+    WHILE root.tc_State<>EXEC.TS_WAIT DO
+      EXEC.Yield()
+    OD
+
+    EXEC.Forbid()
+    accepted=CONSOLEFOREGROUND.Deliver(cancelScope.generation)
+    EXEC.Permit()
+  ESAC
+
+RETURN(PROCESS.RETURN_OK)
+
+PROC Setup(BYTE value)
+  LONGCARD before
+
+  kind=value
+  peer=EXEC.Task POINTER(0)
+  childBytes=0
+  parentBytes=0
+  Require(DOS.Pipe(@pair)<>0)
+  nil=DOS.Open(nilName,DOS.MODE_READWRITE)
+  Require(nil<>DOS.FileHandle POINTER(0))
+  IF kind=1 OR kind=4 THEN
+    ignored=DOS.SelectInput(pair.reader)
+    ignored=DOS.SelectOutput(nil)
+  ELSE
+    ignored=DOS.SelectInput(nil)
+    ignored=DOS.SelectOutput(pair.writer)
+  FI
+
+  IF kind=1 THEN
+    before=EXEC.AvailMem(0)
+    PIPEPROBE.failAlloc=1
+    Require(PROCESS.Start(@Child,BYTE POINTER(0),0)=0
+        AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+    Require(EXEC.AvailMem(0)=before)
+  FI
+
+  identity=PROCESS.Start(@Child,BYTE POINTER(0),0)
+  Require(identity<>0)
+  ignored=DOS.SelectInput(DOS.FileHandle POINTER(0))
+  ignored=DOS.SelectOutput(DOS.FileHandle POINTER(0))
+
+RETURN
+
+PROC Collect()
+  PROCESS.Result result
+
+  Require(PROCESS.Wait(identity,@result)<>0 AND result.primary=0)
+  Require(DOS.Close(nil)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+  completed==+1
+
+RETURN
+
+; Exercise pipe transfer, endpoint retirement and peer progress.
+PROC Main()
+  PROCESS.Result result
+  LONGINT count,error
+  CARD index
+  BYTE fault
+
+  root=EXEC.FindTask(BYTE POINTER(0))
+  baseline=EXEC.AvailMem(0)
+  FOR fault=1 TO 3 DO
+    PIPEPROBE.failAlloc=fault
+    Require(DOS.Pipe(@pair)=0 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+    Require(pair.reader=DOS.FileHandle POINTER(0)
+        AND pair.writer=DOS.FileHandle POINTER(0))
+    Require(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=baseline)
+  OD
+
+  Setup(1)
+  Require(DOS.Close(pair.reader)<>0)
+  WHILE parentBytes<4097 DO
+    count=512
+    IF 4097-parentBytes<512 THEN
+      count=LONGINT(4097-parentBytes)
+    FI
+
+    FOR index=0 TO CARD(count)-1 DO
+      parentBuffer(index)=BYTE(parentBytes+LONGCARD(index))
+    OD
+
+    Require(DOS.Write(pair.writer,parentBuffer,count)=count)
+    parentBytes==+LONGCARD(count)
+  OD
+
+  Require(DOS.Close(pair.writer)<>0)
+  Collect()
+  Require(childBytes=4097)
+  Setup(2)
+  Require(DOS.Close(pair.writer)<>0)
+  DO
+    count=DOS.Read(pair.reader,parentBuffer,19)
+    Require(count>=0)
+    IF count=0 THEN
+      EXIT
+    FI
+
+    FOR index=0 TO CARD(count)-1 DO
+      Require(parentBuffer(index)=BYTE(parentBytes+LONGCARD(index)))
+    OD
+
+    parentBytes==+LONGCARD(count)
+  OD
+
+  Require(parentBytes=4097 AND DOS.Close(pair.reader)<>0)
+  Collect()
+  Setup(3)
+  Require(DOS.Close(pair.writer)<>0)
+  WHILE peer=EXEC.Task POINTER(0) DO
+    EXEC.Yield()
+  OD
+
+  WHILE peer.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+
+  Require(DOS.Close(pair.reader)<>0)
+  Collect()
+  Setup(4)
+  Require(DOS.Close(pair.reader)<>0)
+  WHILE peer=EXEC.Task POINTER(0) DO
+    EXEC.Yield()
+  OD
+
+  WHILE peer.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+
+  Require(DOS.Close(pair.writer)<>0)
+  Collect()
+  Require(childBytes=0)
+  Require(DOS.Pipe(@pair)<>0)
+  Require(DOS.Read(pair.writer,parentBuffer,1)=-1
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Require(DOS.Write(pair.reader,parentBuffer,1)=-1
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Require(DOS.Seek(pair.reader,0,0)=-1 AND DOS.IoErr()=DOS.ERROR_SEEK_ERROR)
+  Require(DOS.Read(pair.reader,parentBuffer,0)=0)
+  PIPEPROBE.failSignal=1
+  count=DOS.Read(pair.reader,parentBuffer,1)
+  error=DOS.IoErr()
+  Require(count=-1 AND error=DOS.ERROR_NO_FREE_STORE)
+  PIPEPROBE.failSignal=0
+  Require(DOS.Close(pair.reader)<>0 AND DOS.Close(pair.writer)<>0)
+  Require(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=baseline)
+  console=DOS.Open(conName,DOS.MODE_READWRITE)
+  Require(console<>DOS.FileHandle POINTER(0))
+  Require(DOS.BeginForeground(console)<>0)
+  cancelScope=DOSBREAK.Current()
+  Require(DOS.Pipe(@pair)<>0)
+  kind=5
+  identity=PROCESS.Start(@Child,BYTE POINTER(0),0)
+  Require(identity<>0)
+  count=DOS.Read(pair.reader,parentBuffer,1)
+  error=DOS.IoErr()
+  Require(count=-1 AND error=DOS.ERROR_BREAK AND DOS.BreakPending()<>0)
+  Require(PROCESS.Wait(identity,@result)<>0 AND result.primary=0)
+  DOS.ClearBreak()
+  Require(DOS.Write(pair.writer,parentBuffer,512)=512 AND DOS.Write(pair.writer,
+      parentBuffer,512)=512)
+  identity=PROCESS.Start(@Child,BYTE POINTER(0),0)
+  Require(identity<>0)
+  count=DOS.Write(pair.writer,parentBuffer,1)
+  error=DOS.IoErr()
+  Require(count=-1 AND error=DOS.ERROR_BREAK)
+  Require(PROCESS.Wait(identity,@result)<>0 AND result.primary=0)
+  DOS.ClearBreak()
+  Require(DOS.Close(pair.reader)<>0 AND DOS.Close(pair.writer)<>0)
+  Require(DOS.EndForeground()<>0 AND DOS.Close(console)<>0)
+  Require(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=baseline)
+  completed==+2
+
+RETURN
+
+ENDMODULE

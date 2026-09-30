@@ -1,0 +1,104 @@
+; Measure the actual SDFS Consume routine with resident input and no disk work.
+; Records and buffers are in a test-only upper-RAM image reservation.
+MODULE SECTORCOPY
+USE FSSTATUS
+USE EXEC
+USE HEAPCORE
+USE SDFSFILE
+USE FSBTYPES
+USE BLOCKTYPES
+
+CARD checks
+BYTE finished
+FSBTYPES.Workspace POINTER work
+FSBTYPES.Volume POINTER volume
+FSBTYPES.Cursor POINTER file
+FSBTYPES.Operation POINTER operation
+BLOCKTYPES.Volume POINTER block
+BLOCKTYPES.Adapter POINTER adapter
+BYTE POINTER source,output
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f700+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Measure(CARD sectorBytes,amount BYTE final)
+  CARD repeat,index
+  BYTE status
+
+  block.dataBytes=sectorBytes
+  FOR repeat=0 TO 31 DO
+    FOR index=0 TO 257 DO
+      output(index)=$a5
+    OD
+
+    operation.start=0
+    operation.completed=0
+    operation.remaining=LONGINT(amount)
+    IF final=0 THEN
+      operation.remaining==+1
+    FI
+
+    operation.kind=1
+    operation.stage=2
+    operation.result=-1
+    status=SDFSFILE.ContinueOperation(operation)
+    Require(operation.completed=LONGINT(amount))
+    IF final<>0 THEN
+      Require(status=FSSTATUS.DONE AND operation.remaining=0 AND operation.stage=0)
+      Require(file.position=LONGINT(amount) AND operation.result=LONGINT(amount))
+    ELSE
+      Require(status=FSSTATUS.MORE AND operation.remaining=1 AND operation.stage=3)
+    FI
+
+    Require(output(0)=$a5 AND output(amount+1)=$a5 AND output(257)=$a5)
+    FOR index=0 TO amount-1 DO
+      Require(output(index+1)=(BYTE(index) XOR $5a))
+    OD
+  OD
+
+RETURN
+
+; Measure buffered SpartaDOS payload copying independently of disk and loader
+; work.
+PROC Main()
+  CARD index
+
+  work=FSBTYPES.Workspace POINTER($a0000)
+  file=FSBTYPES.Cursor POINTER($a0200)
+  volume=FSBTYPES.Volume POINTER($a0400)
+  block=BLOCKTYPES.Volume POINTER($a0500)
+  adapter=BLOCKTYPES.Adapter POINTER($a0600)
+  operation=FSBTYPES.Operation POINTER($a0700)
+  source=BYTE POINTER($a0800)
+  output=BYTE POINTER($a0a00)
+  Require(SIZEOF(FSBTYPES.Workspace)<=512 AND SIZEOF(FSBTYPES.Cursor)<=512)
+  Require(SIZEOF(FSBTYPES.Volume)<=256 AND SIZEOF(BLOCKTYPES.Volume)<=256)
+  Require(SIZEOF(BLOCKTYPES.Adapter)<=256 AND SIZEOF(FSBTYPES.Operation)<=256)
+  volume.block=block
+  work.volume=volume
+  block.adapter=BYTE POINTER(adapter)
+  adapter.buffer=source
+  operation.work=work
+  operation.file=file
+  operation.output=output+SIZE(1)
+  FOR index=0 TO 255 DO
+    source(index)=BYTE(index) XOR $5a
+  OD
+
+  Measure(128,128,0)
+  Measure(128,55,1)
+  Measure(256,256,0)
+  finished=1
+
+RETURN
+
+ENDMODULE

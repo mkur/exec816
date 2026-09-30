@@ -1,0 +1,63 @@
+MODULE SIGNALFAULTS
+USE EXEC
+EXEC.Task stray
+EXEC.Task POINTER self
+BYTE variant,reached
+BYTE number
+
+; Exercise rejection of invalid signal operations.
+PROC Main()
+
+  IF variant=0 THEN
+    EXEC.FreeSignal(0)
+  FI
+
+  IF variant=1 THEN
+    EXEC.FreeSignal(32)
+  FI
+
+  IF variant=2 THEN
+    EXEC.FreeSignal(31)
+  FI
+
+  IF variant=3 THEN
+    number=EXEC.AllocSignal(31)
+    EXEC.FreeSignal(number)
+    EXEC.FreeSignal(number)
+  FI
+
+  IF variant=4 THEN
+    EXEC.Signal(EXEC.Task POINTER(0),1)
+  FI
+
+  IF variant=5 THEN
+    EXEC.Signal(EXEC.Task POINTER(0),0)
+  FI
+
+  IF variant=6 THEN
+    EXEC.Signal(@stray,1)
+  FI
+
+  IF variant>=7 THEN
+    self=EXEC.FindTask(BYTE POINTER(0))
+    stray.tc_ExecPrivate=self.tc_ExecPrivate
+    IF variant=8 THEN
+      stray.tc_ExecPrivate==+SIZE(1)
+    FI
+
+    IF variant=9 THEN
+      stray.tc_ExecPrivate==+SIZE(256)
+    FI
+
+    IF variant=10 THEN
+      stray.tc_ExecPrivate==+SIZE($10000)
+    FI
+
+    EXEC.Signal(@stray,1)
+  FI
+
+  reached=1
+
+RETURN
+
+ENDMODULE

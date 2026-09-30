@@ -1,0 +1,4365 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Slice 2 native I/O ABI; all production device imports rejected",
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 1,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false
+    }
+  },
+  "inputs": {
+    "abi/io.json": "403de471cde988d7f34c1ca4e4c5ebc3d2e19a1ed951e7b12cd628de8759316e",
+    "abi/sio.json": "864e1f5838155d4091fc81f6d4cdfea9fad45b864912eb6c5e18dd2f58323dbd",
+    "lib/exec-io-types.inc": "20d5b2f9857432a41e32530fbbe4f95dfd595d58cdd79fc83f1f68a16e29a472",
+    "tools/generate_io.py": "821fdb5820ef6165efaf0bf161c1382da1735a512e12b66327f07dcf55d9267d",
+    "tools/generate_tasks.py": "2cd4ccc1fd18998fe8a18ddbe28cc515f4eb5723a220827e201acbfe5cd9b730",
+    "tools/native_program.py": "237d34ad23624fd121404e38af4079ee65895a6c33fa76d1524e34309031ef93",
+    "tools/test_io.py": "609678c46f588974fec287d988267e622d6f509f59f70d0fe52f786569eff6b1",
+    "tests/programs/io_abi.act": "d5992c405dec36a775baa3fe7cb9aad34ed72b18612a39588325e924270a3ceb",
+    "tests/programs/io_imports.act": "c9084b3808c553bd852488494ee6f385ab02de377686755c797c85d7b5b35bc8"
+  },
+  "interfaces": {
+    "CreateIORequest": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "name": "EXEC.CreateIORequest",
+      "outgoing_bytes": 9,
+      "result": "Some(NativeResult(A16X8ZeroExtended))",
+      "signature": 816573120,
+      "symbol": 2454213767
+    },
+    "DeleteIORequest": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "name": "EXEC.DeleteIORequest",
+      "outgoing_bytes": 3,
+      "result": "None",
+      "signature": 2701236345,
+      "symbol": 776212114
+    },
+    "OpenDevice": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        },
+        {
+          "alignment": 1,
+          "offset": 8,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 12,
+          "size": 4
+        }
+      ],
+      "name": "EXEC.OpenDevice",
+      "outgoing_bytes": 17,
+      "result": "Some(NativeResult(A16))",
+      "signature": 4085282538,
+      "symbol": 249590248
+    },
+    "CloseDevice": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "name": "EXEC.CloseDevice",
+      "outgoing_bytes": 3,
+      "result": "None",
+      "signature": 2701236345,
+      "symbol": 671349684
+    },
+    "BeginIO": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "name": "EXEC.BeginIO",
+      "outgoing_bytes": 3,
+      "result": "None",
+      "signature": 2701236345,
+      "symbol": 593869771
+    },
+    "SendIO": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "name": "EXEC.SendIO",
+      "outgoing_bytes": 3,
+      "result": "None",
+      "signature": 2701236345,
+      "symbol": 3577611248
+    },
+    "DoIO": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "name": "EXEC.DoIO",
+      "outgoing_bytes": 3,
+      "result": "Some(NativeResult(A16))",
+      "signature": 3123292381,
+      "symbol": 4069425211
+    },
+    "CheckIO": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "name": "EXEC.CheckIO",
+      "outgoing_bytes": 3,
+      "result": "Some(NativeResult(A16X8ZeroExtended))",
+      "signature": 1275021557,
+      "symbol": 1810721062
+    },
+    "WaitIO": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "name": "EXEC.WaitIO",
+      "outgoing_bytes": 3,
+      "result": "Some(NativeResult(A16))",
+      "signature": 3123292381,
+      "symbol": 1108630651
+    },
+    "AbortIO": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "name": "EXEC.AbortIO",
+      "outgoing_bytes": 3,
+      "result": "None",
+      "signature": 2701236345,
+      "symbol": 2364373420
+    }
+  },
+  "cases": [
+    {
+      "name": "abi-raw",
+      "status": "pass",
+      "build": {
+        "revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "be923241e910dee3310aab0d77e7f7c3372d1b086f5116149bb887cbbd13cfe5",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "abi_assembly_sha256": "ba00a5bfa74d656f5d6d7f1fe566d399c6788ed745ba6a58c99fb336fc95afdb",
+        "source": "io_abi.act",
+        "source_sha256": "d5992c405dec36a775baa3fe7cb9aad34ed72b18612a39588325e924270a3ceb",
+        "platform_inputs": {
+          "platform/altirraos/hosted.s": "4195caf83a5d87b47b11eeee49ccd878bff08a5a0dcb631f9ef87a76372ffc79",
+          "platform/altirraos/layout.inc": "54910fcc103ff50721dab6a2a03f66dc83e31585ddd2cb2b45ff0f8b832d75e0",
+          "platform/altirraos/hosted.cfg": "381c9142b71a2eff92a1af49bd30029e0458b3ab7030ff6bba2bfda696df6112",
+          "lib/execos.act": "62266f93b89c563d3b97cc56fc8482f6f5f8e6add6458ede727b90fb65fece31",
+          "abi/exec816-v1.json": "c38d1ddaedeb89a57c0614ba8702f6f6f93adda4e2d78f7ff582ac47b54fe1c5",
+          "platform/altirraos/exec-abi.inc": "22eb93b3da8cefecad66aeab9cecfe21f53032b848f65b0b928f16e1655d04be",
+          "platform/altirraos/cooperative.s": "d83579f94d76b46bb61e25aee8a0f9528ce7d3d7a73e1ae8b8ffc85fd0faecf6",
+          "lib/exec-abi.inc": "bdb408417c878b2662170135b8d395a68f3a3b39c9f27047a4947acfb0d168c9",
+          "platform/altirraos/cooperative-probe.s": "54cbbe92eb52a89b8bd4a8ef55b694a11269274d3a5ded7c3009863794a19f74",
+          "platform/altirraos/preemptive.s": "3f5a778f0f191b2e3a9dfbadfba8b90dc327afab8e7d188ebd5d10551e2ea61c",
+          "lib/exec.act": "97d6a431afee161073d052f7eede9b4851f99a776313e965cba8e54884eb3192",
+          "lib/execpolicy.act": "86bdab3ebe27a383f0aa91365d4aded7fd174efd016399e32c3fdd537e883fba"
+        },
+        "optimize": false,
+        "probe_nmi": 0,
+        "initial_i": 0,
+        "cooperative": true,
+        "preemptive": false,
+        "probe_flags": 256,
+        "forward_signature": 0,
+        "image_sha256": "c5d00563d2cc2ac23a868e584bd56b29a317bc05d74cbceb2b94f76b8ca02af7",
+        "xex_sha256": "20499dbfc82d9534cc033105b550cecc8a7c2622b53f88edac9ea80e493a6846",
+        "banked": true,
+        "memory": {
+          "abi": {
+            "abi": "exec816.memory.v1",
+            "version": 1,
+            "record_size": 4,
+            "states": {
+              "UNAVAILABLE": 0,
+              "FREE": 1,
+              "RESERVED": 2,
+              "OWNED": 3
+            },
+            "errors": {
+              "OK": 0,
+              "BANK": 1,
+              "OWNER": 2,
+              "UNAVAILABLE": 3,
+              "RESERVED": 4,
+              "CONFLICT": 5,
+              "OWNERSHIP": 6,
+              "EXHAUSTED": 7,
+              "BOOT": 8
+            },
+            "owners": {
+              "SYSTEM": 1,
+              "IMAGE": 2,
+              "CLIENT_A": 3,
+              "CLIENT_B": 4,
+              "HEAP": 5
+            },
+            "manifest": {
+              "header_size": 32,
+              "extent_size": 8,
+              "magic": "EBM1",
+              "copy": 0,
+              "zero": 1,
+              "executable": 2,
+              "fields": {
+                "magic": 0,
+                "version": 4,
+                "banks": 6,
+                "extents": 8,
+                "entry": 10,
+                "reserved": 13,
+                "size": 14,
+                "identity": 16
+              },
+              "extent_fields": {
+                "address": 0,
+                "kind": 3,
+                "size": 4,
+                "owner": 6
+              }
+            },
+            "record": {
+              "size": 8,
+              "extent": 0,
+              "offset": 2,
+              "count": 4,
+              "kind": 6,
+              "reserved": 7
+            },
+            "bank_fields": {
+              "state": 0,
+              "reserved": 1,
+              "owner": 2
+            },
+            "boot_errors": {
+              "BOUNDS": 1,
+              "MANIFEST": 2,
+              "RECORD": 3,
+              "INCOMPLETE": 4
+            },
+            "boot_fields": {
+              "READY": 0,
+              "ERROR": 1,
+              "NEXT": 2,
+              "OFFSET": 4,
+              "LEFT": 6,
+              "OLD_MEMLO": 8,
+              "ADOPTED": 10,
+              "ID": 16,
+              "CALLS": 32,
+              "ENTERED": 34,
+              "WORK": 40
+            }
+          },
+          "config": {
+            "max_banks": 16,
+            "max_extents": 64,
+            "staging_bytes": 1024,
+            "kernel_bank": 1
+          },
+          "profile": {
+            "name": "altirraos-1m",
+            "pin": "toolchain/altirra-1m.json",
+            "usable_banks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "code_origin": 65536,
+            "data_origin": 34816,
+            "image_near": [
+              34816,
+              36864
+            ],
+            "memlo_limit": 8192,
+            "memtop_required": 36864,
+            "regions": [
+              {
+                "name": "os-low",
+                "address": 0,
+                "size": 8192
+              },
+              {
+                "name": "state",
+                "address": 8192,
+                "size": 256
+              },
+              {
+                "name": "task0-dp",
+                "address": 8688,
+                "size": 288
+              },
+              {
+                "name": "task1-dp",
+                "address": 9200,
+                "size": 288
+              },
+              {
+                "name": "kernel-dp",
+                "address": 9712,
+                "size": 288
+              },
+              {
+                "name": "table",
+                "address": 10240,
+                "size": 1024
+              },
+              {
+                "name": "boot-state",
+                "address": 11264,
+                "size": 256
+              },
+              {
+                "name": "resident",
+                "address": 12288,
+                "size": 4096
+              },
+              {
+                "name": "task0-stack",
+                "address": 16880,
+                "size": 1568
+              },
+              {
+                "name": "kernel-stack",
+                "address": 18928,
+                "size": 1568
+              },
+              {
+                "name": "task1-stack",
+                "address": 20976,
+                "size": 1568
+              },
+              {
+                "name": "manifest",
+                "address": 24576,
+                "size": 2048
+              },
+              {
+                "name": "loader",
+                "address": 26624,
+                "size": 5120
+              },
+              {
+                "name": "staging",
+                "address": 31744,
+                "size": 1040
+              },
+              {
+                "name": "os-high",
+                "address": 36864,
+                "size": 28672
+              }
+            ]
+          },
+          "constants": {
+            "VERSION": 1,
+            "KERNEL_BANK": 1,
+            "MAX_BANKS": 16,
+            "TABLE": 10240,
+            "TABLE_BYTES": 64,
+            "MANIFEST": 24576,
+            "MANIFEST_CAPACITY": 2048,
+            "MAX_EXTENTS": 64,
+            "EXTENTS": 24672,
+            "LOADER": 26624,
+            "LOADER_BYTES": 5120,
+            "STAGE": 31744,
+            "PAYLOAD": 31752,
+            "CHUNK": 1024,
+            "NEAR_BASE": 34816,
+            "NEAR_END": 36864,
+            "MEMLO_LIMIT": 8192,
+            "MEMTOP_REQUIRED": 36864,
+            "READY": 11264,
+            "ERROR": 11265,
+            "NEXT": 11266,
+            "OFFSET": 11268,
+            "LEFT": 11270,
+            "OLD_MEMLO": 11272,
+            "ADOPTED": 11274,
+            "ID": 11280,
+            "CALLS": 11296,
+            "ENTERED": 11298,
+            "WORK": 11304,
+            "STATE_UNAVAILABLE": 0,
+            "STATE_FREE": 1,
+            "STATE_RESERVED": 2,
+            "STATE_OWNED": 3,
+            "ERROR_OK": 0,
+            "ERROR_BANK": 1,
+            "ERROR_OWNER": 2,
+            "ERROR_UNAVAILABLE": 3,
+            "ERROR_RESERVED": 4,
+            "ERROR_CONFLICT": 5,
+            "ERROR_OWNERSHIP": 6,
+            "ERROR_EXHAUSTED": 7,
+            "ERROR_BOOT": 8,
+            "OWNER_SYSTEM": 1,
+            "OWNER_IMAGE": 2,
+            "OWNER_CLIENT_A": 3,
+            "OWNER_CLIENT_B": 4,
+            "OWNER_HEAP": 5,
+            "BOOT_ERROR_BOUNDS": 1,
+            "BOOT_ERROR_MANIFEST": 2,
+            "BOOT_ERROR_RECORD": 3,
+            "BOOT_ERROR_INCOMPLETE": 4,
+            "HEADER_BYTES": 32,
+            "EXTENT_BYTES": 8,
+            "RECORD_BYTES": 8,
+            "RECORD_EXTENT": 0,
+            "RECORD_OFFSET": 2,
+            "RECORD_COUNT": 4,
+            "RECORD_KIND": 6,
+            "RECORD_RESERVED": 7,
+            "HEADER_MAGIC": 0,
+            "HEADER_VERSION": 4,
+            "HEADER_BANKS": 6,
+            "HEADER_EXTENTS": 8,
+            "HEADER_ENTRY": 10,
+            "HEADER_RESERVED": 13,
+            "HEADER_SIZE": 14,
+            "HEADER_IDENTITY": 16,
+            "EXTENT_ADDRESS": 0,
+            "EXTENT_KIND": 3,
+            "EXTENT_SIZE": 4,
+            "EXTENT_OWNER": 6
+          },
+          "upper_reservations": [],
+          "regions": {
+            "os-low": [
+              0,
+              8192
+            ],
+            "state": [
+              8192,
+              8448
+            ],
+            "task0-dp": [
+              8688,
+              8976
+            ],
+            "task1-dp": [
+              9200,
+              9488
+            ],
+            "kernel-dp": [
+              9712,
+              10000
+            ],
+            "table": [
+              10240,
+              10304
+            ],
+            "boot-state": [
+              11264,
+              11520
+            ],
+            "resident": [
+              12288,
+              16384
+            ],
+            "task0-stack": [
+              16880,
+              18448
+            ],
+            "kernel-stack": [
+              18928,
+              20496
+            ],
+            "task1-stack": [
+              20976,
+              22544
+            ],
+            "manifest": [
+              24576,
+              26624
+            ],
+            "loader": [
+              26624,
+              31744
+            ],
+            "staging": [
+              31744,
+              32784
+            ],
+            "os-high": [
+              36864,
+              65536
+            ]
+          },
+          "usable_banks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "memory_sha256": "509395304e01bd0a0e1dee277b6db320feb129ff6a8d4aeb08ebc05df105784a",
+        "manifest_sha256": "419229187844d5760673e95a6d5da378e4be97b96e24761923517e1d77b95620",
+        "kernel_init": 74785,
+        "banked_inputs": {
+          "abi/memory-v1.json": "7e418a4a5771d744c3694dc7160f811af57d7c0bf8ae7aa795c2390cb3ea763d",
+          "lib/execmemory.act": "c7e03ca0fae8e4201611852aeed7acdd1cdab8fdd7c22244a5dad9d1329684dd",
+          "platform/altirraos/loader.s": "547b160e5604510e921dda38b3418628b3bcc79327afddbd16c04e4d935d9470",
+          "tools/generate_memory.py": "5b8a8afeefd200c142c30daa8074b0a6f85eedb8f92f37d115b808e968965dfa",
+          "tools/task_capacity.py": "370d8a8d68bc1a2da63c177f94a70b329d208efa6595d7d14a772dcd739cdff2",
+          "tools/banked_image.py": "be64c46309cab085602facfda29076deb73050b7e036c78c99a310530769b86d",
+          "tools/native_program.py": "237d34ad23624fd121404e38af4079ee65895a6c33fa76d1524e34309031ef93"
+        },
+        "generated_sha256": {
+          "memory.inc": "e7cbaed8064f51bcc649cb11a3eb13aa37fc56dc40e7ee21f450693733eb54bd",
+          "memory-action.inc": "a9331e6464cfb77e975cd0b9172852041069f9f98cf9b9c3a7403dcaeee4cb0e",
+          "memory.json": "509395304e01bd0a0e1dee277b6db320feb129ff6a8d4aeb08ebc05df105784a",
+          "loader-image.inc": "d15f2bbebf238b2f4c87f649d9cba7d8285a0a1e2af6682cfb8f1738d2e7c491",
+          "loader.cfg": "1251fcb75c39eee933c79033f23aa1a32f7b2a134b313cf91d04ec02afb03882",
+          "loader.bin": "7a3f7cd58a1ed89fb24c432fce91041d7f8131ed507ce3267c1f933d006d7531"
+        },
+        "loader_probe": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 7,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 22526,
+        "return_d": 9216,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 221,
+        "clock_end": 229,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 1,
+        "switching": 0,
+        "switches": 1,
+        "gateway_calls": 4,
+        "os_calls": 2,
+        "forwarded_cops": 2,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 0,
+        "vbi_dispatches": 0,
+        "irq_depth": 0,
+        "tasks": [
+          241,
+          71,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          241,
+          87,
+          2,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact"
+      },
+      "routines": {
+        "CreateIORequest": {
+          "name": "M_IOABI_CREATEIOREQUEST_62077312",
+          "address": 88636,
+          "size": 399,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 30,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 4,
+              "body_displacement": 34,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 9,
+          "result_bytes": 3,
+          "fixed_frame": 26,
+          "local_stack_peak": 26,
+          "calls": []
+        },
+        "DeleteIORequest": {
+          "name": "M_IOABI_DELETEIOREQUEST_78299F07",
+          "address": 89035,
+          "size": 228,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18,
+          "calls": []
+        },
+        "OpenDevice": {
+          "name": "M_IOABI_OPENDEVICE_A20B102D",
+          "address": 89263,
+          "size": 805,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 56,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 4,
+              "body_displacement": 60,
+              "size": 4,
+              "alignment": 2
+            },
+            {
+              "offset": 8,
+              "body_displacement": 64,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 12,
+              "body_displacement": 68,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 17,
+          "result_bytes": 2,
+          "fixed_frame": 52,
+          "local_stack_peak": 58,
+          "calls": [
+            {
+              "outgoing": 3,
+              "transfer_peak": 3
+            }
+          ]
+        },
+        "CloseDevice": {
+          "name": "M_IOABI_CLOSEDEVICE_4C974DE5",
+          "address": 90068,
+          "size": 228,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18,
+          "calls": []
+        },
+        "BeginIO": {
+          "name": "M_IOABI_BEGINIO_9C780514",
+          "address": 90296,
+          "size": 228,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18,
+          "calls": []
+        },
+        "SendIO": {
+          "name": "M_IOABI_SENDIO_6001A09F",
+          "address": 90524,
+          "size": 228,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18,
+          "calls": []
+        },
+        "DoIO": {
+          "name": "M_IOABI_DOIO_9106C628",
+          "address": 91108,
+          "size": 366,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 28,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 2,
+          "fixed_frame": 24,
+          "local_stack_peak": 30,
+          "calls": [
+            {
+              "outgoing": 3,
+              "transfer_peak": 3
+            }
+          ]
+        },
+        "CheckIO": {
+          "name": "M_IOABI_CHECKIO_54292C75",
+          "address": 91474,
+          "size": 274,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 24,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 3,
+          "fixed_frame": 20,
+          "local_stack_peak": 20,
+          "calls": []
+        },
+        "WaitIO": {
+          "name": "M_IOABI_WAITIO_62B3179C",
+          "address": 91748,
+          "size": 366,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 28,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 2,
+          "fixed_frame": 24,
+          "local_stack_peak": 30,
+          "calls": [
+            {
+              "outgoing": 3,
+              "transfer_peak": 3
+            }
+          ]
+        },
+        "AbortIO": {
+          "name": "M_IOABI_ABORTIO_89E0E3B9",
+          "address": 92114,
+          "size": 228,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18,
+          "calls": []
+        }
+      },
+      "facts": [
+        26,
+        0,
+        16,
+        19,
+        22,
+        24,
+        25,
+        42,
+        0,
+        16,
+        19,
+        22,
+        24,
+        25,
+        26,
+        30,
+        34,
+        38,
+        52,
+        0,
+        16,
+        19,
+        22,
+        24,
+        25,
+        26,
+        30,
+        34,
+        38,
+        42,
+        43,
+        44,
+        45,
+        46,
+        48
+      ],
+      "seen": [
+        70196,
+        4294967295,
+        463412,
+        16711679,
+        2309737967,
+        70196,
+        4294967295,
+        463412,
+        70196,
+        463412,
+        327667,
+        0,
+        458724,
+        16777215,
+        4294967295,
+        2147483648
+      ],
+      "readback": [
+        70196,
+        463412,
+        9,
+        255,
+        16711679,
+        11211316,
+        65535,
+        13439540,
+        15667764,
+        65535,
+        165,
+        254,
+        463412,
+        70196,
+        5,
+        128,
+        11272191,
+        11206656,
+        42,
+        70196,
+        463412,
+        2,
+        1,
+        9,
+        4294967295,
+        2147483648,
+        16711679,
+        4275878552,
+        589824,
+        524288,
+        6,
+        127,
+        13500415,
+        15663104,
+        52,
+        11211316,
+        13439540,
+        9,
+        254,
+        255,
+        2271560481,
+        4294967295,
+        524288,
+        2147483648,
+        255,
+        129,
+        254,
+        2,
+        65535,
+        4294967295
+      ],
+      "errors": [
+        -1,
+        -2,
+        9
+      ],
+      "returns": [
+        11211316,
+        458752,
+        0
+      ],
+      "guarded_buffers": {
+        "04fff3": "a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a534120134120709fffffffe3412abffff3412cd3412efffffa5fea5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+        "06ffe4": "a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a53412073412010580ffffab0000ab2a0034120134120702000109ffffffff00000080fffffea598badcfea5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+        "08ffce": "a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000009000008067fffffcd0000ef34003412ab3412cd0900feff21436587ffffffff000008a500000080ff81fe02ffffffffffffa5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5"
+      },
+      "generated": {
+        "io.inc": "6a8b25620ad96e2ea6286bf424cb7e6d4a43bca1aeeb3812c1969c7c0e2cefd0",
+        "io-action.inc": "6f48586cf1aa0e4474b05710c7a5891aa4e1924716b0a6d5b534fed31522c4f0",
+        "ports-action.inc": "f0bb3e004e263740d04a43a37e6a0b57d30c92da59250a066f3a9b19acaedb93"
+      }
+    },
+    {
+      "name": "abi-opt",
+      "status": "pass",
+      "build": {
+        "revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "be923241e910dee3310aab0d77e7f7c3372d1b086f5116149bb887cbbd13cfe5",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "abi_assembly_sha256": "ba00a5bfa74d656f5d6d7f1fe566d399c6788ed745ba6a58c99fb336fc95afdb",
+        "source": "io_abi.act",
+        "source_sha256": "d5992c405dec36a775baa3fe7cb9aad34ed72b18612a39588325e924270a3ceb",
+        "platform_inputs": {
+          "platform/altirraos/hosted.s": "4195caf83a5d87b47b11eeee49ccd878bff08a5a0dcb631f9ef87a76372ffc79",
+          "platform/altirraos/layout.inc": "54910fcc103ff50721dab6a2a03f66dc83e31585ddd2cb2b45ff0f8b832d75e0",
+          "platform/altirraos/hosted.cfg": "381c9142b71a2eff92a1af49bd30029e0458b3ab7030ff6bba2bfda696df6112",
+          "lib/execos.act": "62266f93b89c563d3b97cc56fc8482f6f5f8e6add6458ede727b90fb65fece31",
+          "abi/exec816-v1.json": "c38d1ddaedeb89a57c0614ba8702f6f6f93adda4e2d78f7ff582ac47b54fe1c5",
+          "platform/altirraos/exec-abi.inc": "22eb93b3da8cefecad66aeab9cecfe21f53032b848f65b0b928f16e1655d04be",
+          "platform/altirraos/cooperative.s": "d83579f94d76b46bb61e25aee8a0f9528ce7d3d7a73e1ae8b8ffc85fd0faecf6",
+          "lib/exec-abi.inc": "bdb408417c878b2662170135b8d395a68f3a3b39c9f27047a4947acfb0d168c9",
+          "platform/altirraos/cooperative-probe.s": "54cbbe92eb52a89b8bd4a8ef55b694a11269274d3a5ded7c3009863794a19f74",
+          "platform/altirraos/preemptive.s": "3f5a778f0f191b2e3a9dfbadfba8b90dc327afab8e7d188ebd5d10551e2ea61c",
+          "lib/exec.act": "97d6a431afee161073d052f7eede9b4851f99a776313e965cba8e54884eb3192",
+          "lib/execpolicy.act": "86bdab3ebe27a383f0aa91365d4aded7fd174efd016399e32c3fdd537e883fba"
+        },
+        "optimize": true,
+        "probe_nmi": 0,
+        "initial_i": 0,
+        "cooperative": true,
+        "preemptive": false,
+        "probe_flags": 256,
+        "forward_signature": 0,
+        "image_sha256": "21e096a794e3f32eaf9d68e82a33a8abb5a8914940c0b8f2a4bd298b719b85a1",
+        "xex_sha256": "c09b7c61d6200e57910590ddd655b85d3c7bca3f17e985a2ff69b0b79e1a7179",
+        "banked": true,
+        "memory": {
+          "abi": {
+            "abi": "exec816.memory.v1",
+            "version": 1,
+            "record_size": 4,
+            "states": {
+              "UNAVAILABLE": 0,
+              "FREE": 1,
+              "RESERVED": 2,
+              "OWNED": 3
+            },
+            "errors": {
+              "OK": 0,
+              "BANK": 1,
+              "OWNER": 2,
+              "UNAVAILABLE": 3,
+              "RESERVED": 4,
+              "CONFLICT": 5,
+              "OWNERSHIP": 6,
+              "EXHAUSTED": 7,
+              "BOOT": 8
+            },
+            "owners": {
+              "SYSTEM": 1,
+              "IMAGE": 2,
+              "CLIENT_A": 3,
+              "CLIENT_B": 4,
+              "HEAP": 5
+            },
+            "manifest": {
+              "header_size": 32,
+              "extent_size": 8,
+              "magic": "EBM1",
+              "copy": 0,
+              "zero": 1,
+              "executable": 2,
+              "fields": {
+                "magic": 0,
+                "version": 4,
+                "banks": 6,
+                "extents": 8,
+                "entry": 10,
+                "reserved": 13,
+                "size": 14,
+                "identity": 16
+              },
+              "extent_fields": {
+                "address": 0,
+                "kind": 3,
+                "size": 4,
+                "owner": 6
+              }
+            },
+            "record": {
+              "size": 8,
+              "extent": 0,
+              "offset": 2,
+              "count": 4,
+              "kind": 6,
+              "reserved": 7
+            },
+            "bank_fields": {
+              "state": 0,
+              "reserved": 1,
+              "owner": 2
+            },
+            "boot_errors": {
+              "BOUNDS": 1,
+              "MANIFEST": 2,
+              "RECORD": 3,
+              "INCOMPLETE": 4
+            },
+            "boot_fields": {
+              "READY": 0,
+              "ERROR": 1,
+              "NEXT": 2,
+              "OFFSET": 4,
+              "LEFT": 6,
+              "OLD_MEMLO": 8,
+              "ADOPTED": 10,
+              "ID": 16,
+              "CALLS": 32,
+              "ENTERED": 34,
+              "WORK": 40
+            }
+          },
+          "config": {
+            "max_banks": 16,
+            "max_extents": 64,
+            "staging_bytes": 1024,
+            "kernel_bank": 1
+          },
+          "profile": {
+            "name": "altirraos-1m",
+            "pin": "toolchain/altirra-1m.json",
+            "usable_banks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "code_origin": 65536,
+            "data_origin": 34816,
+            "image_near": [
+              34816,
+              36864
+            ],
+            "memlo_limit": 8192,
+            "memtop_required": 36864,
+            "regions": [
+              {
+                "name": "os-low",
+                "address": 0,
+                "size": 8192
+              },
+              {
+                "name": "state",
+                "address": 8192,
+                "size": 256
+              },
+              {
+                "name": "task0-dp",
+                "address": 8688,
+                "size": 288
+              },
+              {
+                "name": "task1-dp",
+                "address": 9200,
+                "size": 288
+              },
+              {
+                "name": "kernel-dp",
+                "address": 9712,
+                "size": 288
+              },
+              {
+                "name": "table",
+                "address": 10240,
+                "size": 1024
+              },
+              {
+                "name": "boot-state",
+                "address": 11264,
+                "size": 256
+              },
+              {
+                "name": "resident",
+                "address": 12288,
+                "size": 4096
+              },
+              {
+                "name": "task0-stack",
+                "address": 16880,
+                "size": 1568
+              },
+              {
+                "name": "kernel-stack",
+                "address": 18928,
+                "size": 1568
+              },
+              {
+                "name": "task1-stack",
+                "address": 20976,
+                "size": 1568
+              },
+              {
+                "name": "manifest",
+                "address": 24576,
+                "size": 2048
+              },
+              {
+                "name": "loader",
+                "address": 26624,
+                "size": 5120
+              },
+              {
+                "name": "staging",
+                "address": 31744,
+                "size": 1040
+              },
+              {
+                "name": "os-high",
+                "address": 36864,
+                "size": 28672
+              }
+            ]
+          },
+          "constants": {
+            "VERSION": 1,
+            "KERNEL_BANK": 1,
+            "MAX_BANKS": 16,
+            "TABLE": 10240,
+            "TABLE_BYTES": 64,
+            "MANIFEST": 24576,
+            "MANIFEST_CAPACITY": 2048,
+            "MAX_EXTENTS": 64,
+            "EXTENTS": 24672,
+            "LOADER": 26624,
+            "LOADER_BYTES": 5120,
+            "STAGE": 31744,
+            "PAYLOAD": 31752,
+            "CHUNK": 1024,
+            "NEAR_BASE": 34816,
+            "NEAR_END": 36864,
+            "MEMLO_LIMIT": 8192,
+            "MEMTOP_REQUIRED": 36864,
+            "READY": 11264,
+            "ERROR": 11265,
+            "NEXT": 11266,
+            "OFFSET": 11268,
+            "LEFT": 11270,
+            "OLD_MEMLO": 11272,
+            "ADOPTED": 11274,
+            "ID": 11280,
+            "CALLS": 11296,
+            "ENTERED": 11298,
+            "WORK": 11304,
+            "STATE_UNAVAILABLE": 0,
+            "STATE_FREE": 1,
+            "STATE_RESERVED": 2,
+            "STATE_OWNED": 3,
+            "ERROR_OK": 0,
+            "ERROR_BANK": 1,
+            "ERROR_OWNER": 2,
+            "ERROR_UNAVAILABLE": 3,
+            "ERROR_RESERVED": 4,
+            "ERROR_CONFLICT": 5,
+            "ERROR_OWNERSHIP": 6,
+            "ERROR_EXHAUSTED": 7,
+            "ERROR_BOOT": 8,
+            "OWNER_SYSTEM": 1,
+            "OWNER_IMAGE": 2,
+            "OWNER_CLIENT_A": 3,
+            "OWNER_CLIENT_B": 4,
+            "OWNER_HEAP": 5,
+            "BOOT_ERROR_BOUNDS": 1,
+            "BOOT_ERROR_MANIFEST": 2,
+            "BOOT_ERROR_RECORD": 3,
+            "BOOT_ERROR_INCOMPLETE": 4,
+            "HEADER_BYTES": 32,
+            "EXTENT_BYTES": 8,
+            "RECORD_BYTES": 8,
+            "RECORD_EXTENT": 0,
+            "RECORD_OFFSET": 2,
+            "RECORD_COUNT": 4,
+            "RECORD_KIND": 6,
+            "RECORD_RESERVED": 7,
+            "HEADER_MAGIC": 0,
+            "HEADER_VERSION": 4,
+            "HEADER_BANKS": 6,
+            "HEADER_EXTENTS": 8,
+            "HEADER_ENTRY": 10,
+            "HEADER_RESERVED": 13,
+            "HEADER_SIZE": 14,
+            "HEADER_IDENTITY": 16,
+            "EXTENT_ADDRESS": 0,
+            "EXTENT_KIND": 3,
+            "EXTENT_SIZE": 4,
+            "EXTENT_OWNER": 6
+          },
+          "upper_reservations": [],
+          "regions": {
+            "os-low": [
+              0,
+              8192
+            ],
+            "state": [
+              8192,
+              8448
+            ],
+            "task0-dp": [
+              8688,
+              8976
+            ],
+            "task1-dp": [
+              9200,
+              9488
+            ],
+            "kernel-dp": [
+              9712,
+              10000
+            ],
+            "table": [
+              10240,
+              10304
+            ],
+            "boot-state": [
+              11264,
+              11520
+            ],
+            "resident": [
+              12288,
+              16384
+            ],
+            "task0-stack": [
+              16880,
+              18448
+            ],
+            "kernel-stack": [
+              18928,
+              20496
+            ],
+            "task1-stack": [
+              20976,
+              22544
+            ],
+            "manifest": [
+              24576,
+              26624
+            ],
+            "loader": [
+              26624,
+              31744
+            ],
+            "staging": [
+              31744,
+              32784
+            ],
+            "os-high": [
+              36864,
+              65536
+            ]
+          },
+          "usable_banks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "memory_sha256": "509395304e01bd0a0e1dee277b6db320feb129ff6a8d4aeb08ebc05df105784a",
+        "manifest_sha256": "83f31e132b8c8c074a8560c155210d3b099c873e4d927ec56f583c4f9a48261d",
+        "kernel_init": 74316,
+        "banked_inputs": {
+          "abi/memory-v1.json": "7e418a4a5771d744c3694dc7160f811af57d7c0bf8ae7aa795c2390cb3ea763d",
+          "lib/execmemory.act": "c7e03ca0fae8e4201611852aeed7acdd1cdab8fdd7c22244a5dad9d1329684dd",
+          "platform/altirraos/loader.s": "547b160e5604510e921dda38b3418628b3bcc79327afddbd16c04e4d935d9470",
+          "tools/generate_memory.py": "5b8a8afeefd200c142c30daa8074b0a6f85eedb8f92f37d115b808e968965dfa",
+          "tools/task_capacity.py": "370d8a8d68bc1a2da63c177f94a70b329d208efa6595d7d14a772dcd739cdff2",
+          "tools/banked_image.py": "be64c46309cab085602facfda29076deb73050b7e036c78c99a310530769b86d",
+          "tools/native_program.py": "237d34ad23624fd121404e38af4079ee65895a6c33fa76d1524e34309031ef93"
+        },
+        "generated_sha256": {
+          "memory.inc": "e7cbaed8064f51bcc649cb11a3eb13aa37fc56dc40e7ee21f450693733eb54bd",
+          "memory-action.inc": "a9331e6464cfb77e975cd0b9172852041069f9f98cf9b9c3a7403dcaeee4cb0e",
+          "memory.json": "509395304e01bd0a0e1dee277b6db320feb129ff6a8d4aeb08ebc05df105784a",
+          "loader-image.inc": "c28b472660d29e910f58f36895ec8b0bd29b558038dcdee633ea5ab4deab8a6c",
+          "loader.cfg": "1251fcb75c39eee933c79033f23aa1a32f7b2a134b313cf91d04ec02afb03882",
+          "loader.bin": "b5a0e35e12c9b43d620fb93c14859c59671c76b8716f25f7817d5be049daae7c"
+        },
+        "loader_probe": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 8,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 22526,
+        "return_d": 9216,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 218,
+        "clock_end": 226,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 1,
+        "switching": 0,
+        "switches": 1,
+        "gateway_calls": 4,
+        "os_calls": 2,
+        "forwarded_cops": 2,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 0,
+        "vbi_dispatches": 0,
+        "irq_depth": 0,
+        "tasks": [
+          241,
+          71,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          241,
+          87,
+          2,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact"
+      },
+      "routines": {
+        "CreateIORequest": {
+          "name": "M_IOABI_CREATEIOREQUEST_62077312",
+          "address": 87787,
+          "size": 399,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 30,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 4,
+              "body_displacement": 34,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 9,
+          "result_bytes": 3,
+          "fixed_frame": 26,
+          "local_stack_peak": 26,
+          "calls": []
+        },
+        "DeleteIORequest": {
+          "name": "M_IOABI_DELETEIOREQUEST_78299F07",
+          "address": 88186,
+          "size": 228,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18,
+          "calls": []
+        },
+        "OpenDevice": {
+          "name": "M_IOABI_OPENDEVICE_A20B102D",
+          "address": 88414,
+          "size": 805,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 56,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 4,
+              "body_displacement": 60,
+              "size": 4,
+              "alignment": 2
+            },
+            {
+              "offset": 8,
+              "body_displacement": 64,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 12,
+              "body_displacement": 68,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 17,
+          "result_bytes": 2,
+          "fixed_frame": 52,
+          "local_stack_peak": 58,
+          "calls": [
+            {
+              "outgoing": 3,
+              "transfer_peak": 3
+            }
+          ]
+        },
+        "CloseDevice": {
+          "name": "M_IOABI_CLOSEDEVICE_4C974DE5",
+          "address": 89219,
+          "size": 228,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18,
+          "calls": []
+        },
+        "BeginIO": {
+          "name": "M_IOABI_BEGINIO_9C780514",
+          "address": 89447,
+          "size": 228,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18,
+          "calls": []
+        },
+        "SendIO": {
+          "name": "M_IOABI_SENDIO_6001A09F",
+          "address": 89675,
+          "size": 228,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18,
+          "calls": []
+        },
+        "DoIO": {
+          "name": "M_IOABI_DOIO_9106C628",
+          "address": 90235,
+          "size": 366,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 28,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 2,
+          "fixed_frame": 24,
+          "local_stack_peak": 30,
+          "calls": [
+            {
+              "outgoing": 3,
+              "transfer_peak": 3
+            }
+          ]
+        },
+        "CheckIO": {
+          "name": "M_IOABI_CHECKIO_54292C75",
+          "address": 90601,
+          "size": 274,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 24,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 3,
+          "fixed_frame": 20,
+          "local_stack_peak": 20,
+          "calls": []
+        },
+        "WaitIO": {
+          "name": "M_IOABI_WAITIO_62B3179C",
+          "address": 90875,
+          "size": 366,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 28,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 2,
+          "fixed_frame": 24,
+          "local_stack_peak": 30,
+          "calls": [
+            {
+              "outgoing": 3,
+              "transfer_peak": 3
+            }
+          ]
+        },
+        "AbortIO": {
+          "name": "M_IOABI_ABORTIO_89E0E3B9",
+          "address": 91241,
+          "size": 228,
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18,
+          "calls": []
+        }
+      },
+      "facts": [
+        26,
+        0,
+        16,
+        19,
+        22,
+        24,
+        25,
+        42,
+        0,
+        16,
+        19,
+        22,
+        24,
+        25,
+        26,
+        30,
+        34,
+        38,
+        52,
+        0,
+        16,
+        19,
+        22,
+        24,
+        25,
+        26,
+        30,
+        34,
+        38,
+        42,
+        43,
+        44,
+        45,
+        46,
+        48
+      ],
+      "seen": [
+        70196,
+        4294967295,
+        463412,
+        16711679,
+        2309737967,
+        70196,
+        4294967295,
+        463412,
+        70196,
+        463412,
+        327667,
+        0,
+        458724,
+        16777215,
+        4294967295,
+        2147483648
+      ],
+      "readback": [
+        70196,
+        463412,
+        9,
+        255,
+        16711679,
+        11211316,
+        65535,
+        13439540,
+        15667764,
+        65535,
+        165,
+        254,
+        463412,
+        70196,
+        5,
+        128,
+        11272191,
+        11206656,
+        42,
+        70196,
+        463412,
+        2,
+        1,
+        9,
+        4294967295,
+        2147483648,
+        16711679,
+        4275878552,
+        589824,
+        524288,
+        6,
+        127,
+        13500415,
+        15663104,
+        52,
+        11211316,
+        13439540,
+        9,
+        254,
+        255,
+        2271560481,
+        4294967295,
+        524288,
+        2147483648,
+        255,
+        129,
+        254,
+        2,
+        65535,
+        4294967295
+      ],
+      "errors": [
+        -1,
+        -2,
+        9
+      ],
+      "returns": [
+        11211316,
+        458752,
+        0
+      ],
+      "guarded_buffers": {
+        "04fff3": "a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a534120134120709fffffffe3412abffff3412cd3412efffffa5fea5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+        "06ffe4": "a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a53412073412010580ffffab0000ab2a0034120134120702000109ffffffff00000080fffffea598badcfea5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+        "08ffce": "a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000009000008067fffffcd0000ef34003412ab3412cd0900feff21436587ffffffff000008a500000080ff81fe02ffffffffffffa5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5"
+      },
+      "generated": {
+        "io.inc": "6a8b25620ad96e2ea6286bf424cb7e6d4a43bca1aeeb3812c1969c7c0e2cefd0",
+        "io-action.inc": "6f48586cf1aa0e4474b05710c7a5891aa4e1924716b0a6d5b534fed31522c4f0",
+        "ports-action.inc": "f0bb3e004e263740d04a43a37e6a0b57d30c92da59250a066f3a9b19acaedb93"
+      }
+    }
+  ],
+  "production_rejections": [
+    {
+      "name": "CreateIORequest",
+      "status": "rejected",
+      "reason": "Unimplemented device I/O import: EXEC.CreateIORequest"
+    },
+    {
+      "name": "DeleteIORequest",
+      "status": "rejected",
+      "reason": "Unimplemented device I/O import: EXEC.DeleteIORequest"
+    },
+    {
+      "name": "OpenDevice",
+      "status": "rejected",
+      "reason": "Unimplemented device I/O import: EXEC.OpenDevice"
+    },
+    {
+      "name": "CloseDevice",
+      "status": "rejected",
+      "reason": "Unimplemented device I/O import: EXEC.CloseDevice"
+    },
+    {
+      "name": "BeginIO",
+      "status": "rejected",
+      "reason": "Unimplemented device I/O import: EXEC.BeginIO"
+    },
+    {
+      "name": "SendIO",
+      "status": "rejected",
+      "reason": "Unimplemented device I/O import: EXEC.SendIO"
+    },
+    {
+      "name": "DoIO",
+      "status": "rejected",
+      "reason": "Unimplemented device I/O import: EXEC.DoIO"
+    },
+    {
+      "name": "CheckIO",
+      "status": "rejected",
+      "reason": "Unimplemented device I/O import: EXEC.CheckIO"
+    },
+    {
+      "name": "WaitIO",
+      "status": "rejected",
+      "reason": "Unimplemented device I/O import: EXEC.WaitIO"
+    },
+    {
+      "name": "AbortIO",
+      "status": "rejected",
+      "reason": "Unimplemented device I/O import: EXEC.AbortIO"
+    }
+  ],
+  "bank_zero": {
+    "before": {
+      "four": {
+        "fixed_runtime": 11824,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 21104,
+        "runtime_including_os": 57968,
+        "loading_excluding_os": 21696,
+        "loading_including_os": 58560
+      },
+      "eight": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      }
+    },
+    "after": {
+      "four": {
+        "fixed_runtime": 11824,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 21104,
+        "runtime_including_os": 57968,
+        "loading_excluding_os": 21696,
+        "loading_including_os": 58560
+      },
+      "eight": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      }
+    },
+    "fixed_delta": 0,
+    "per_task_delta": 0,
+    "diagnostic_delta": 0,
+    "accounting": "Generated maps; full guards, near arena, table slack and retained legacy contexts; unchanged pools."
+  },
+  "reservation_delta": {
+    "fixed_bank_zero": 0,
+    "per_task_bank_zero": 0
+  },
+  "diagnostic_upper_bytes": 216,
+  "abi_qualified": true,
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "on",
+    "burstio": false,
+    "accuratedisk": false,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 15,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": true,
+    "diskemu": "generic",
+    "vbxe": false,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "off",
+    "exeloadmode": "default",
+    "kernel_id": "$eeca81434d995c35",
+    "actual_kernel_id": "$eeca81434d995c35",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "regressions": {
+    "named_message_example": {
+      "path": "build/io-abi/ports-regression/results.json",
+      "sha256": "fc945933335e54d6322f10c38fe5729dba5f97e722b1c2208671dece4324449e",
+      "status": "pass",
+      "cases": [
+        {
+          "name": "example-raw",
+          "status": "pass",
+          "build": {
+            "revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+            "changes": [],
+            "override": false,
+            "binary_sha256": "be923241e910dee3310aab0d77e7f7c3372d1b086f5116149bb887cbbd13cfe5",
+            "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+            "abi_assembly_sha256": "ba00a5bfa74d656f5d6d7f1fe566d399c6788ed745ba6a58c99fb336fc95afdb",
+            "source": "messages.act",
+            "source_sha256": "b3d75359e2b02d068df3675388a54b533ff87aebf60c5a5f6f5e4f34500cbeed",
+            "platform_inputs": {
+              "platform/altirraos/hosted.s": "4195caf83a5d87b47b11eeee49ccd878bff08a5a0dcb631f9ef87a76372ffc79",
+              "platform/altirraos/layout.inc": "54910fcc103ff50721dab6a2a03f66dc83e31585ddd2cb2b45ff0f8b832d75e0",
+              "platform/altirraos/hosted.cfg": "381c9142b71a2eff92a1af49bd30029e0458b3ab7030ff6bba2bfda696df6112",
+              "lib/execos.act": "62266f93b89c563d3b97cc56fc8482f6f5f8e6add6458ede727b90fb65fece31",
+              "abi/exec816-v1.json": "c38d1ddaedeb89a57c0614ba8702f6f6f93adda4e2d78f7ff582ac47b54fe1c5",
+              "platform/altirraos/exec-abi.inc": "22eb93b3da8cefecad66aeab9cecfe21f53032b848f65b0b928f16e1655d04be",
+              "platform/altirraos/cooperative.s": "d83579f94d76b46bb61e25aee8a0f9528ce7d3d7a73e1ae8b8ffc85fd0faecf6",
+              "lib/exec-abi.inc": "bdb408417c878b2662170135b8d395a68f3a3b39c9f27047a4947acfb0d168c9",
+              "platform/altirraos/cooperative-probe.s": "54cbbe92eb52a89b8bd4a8ef55b694a11269274d3a5ded7c3009863794a19f74",
+              "platform/altirraos/preemptive.s": "3f5a778f0f191b2e3a9dfbadfba8b90dc327afab8e7d188ebd5d10551e2ea61c",
+              "lib/exec.act": "97d6a431afee161073d052f7eede9b4851f99a776313e965cba8e54884eb3192",
+              "lib/execpolicy.act": "86bdab3ebe27a383f0aa91365d4aded7fd174efd016399e32c3fdd537e883fba"
+            },
+            "optimize": false,
+            "probe_nmi": 0,
+            "initial_i": 0,
+            "cooperative": true,
+            "preemptive": true,
+            "probe_flags": 256,
+            "forward_signature": 0,
+            "image_sha256": "46de894179c4215fe33201cf489669e863a977ab8dc1e4ff2c5f2ff2d68d9722",
+            "xex_sha256": "0dbb26188646bb2a62a5c1771eaa0dd272c73e053281dfdc6c111e642463febf",
+            "tasks": true,
+            "heap_probe": false,
+            "task_init": 157828,
+            "task_entries": [
+              232056,
+              229686,
+              231022
+            ],
+            "task_storage": {
+              "VERSION": 1280,
+              "TASK_SIZE": 62,
+              "NT_TASK": 1,
+              "TASK_TC_NODE": 0,
+              "TASK_TC_FLAGS": 11,
+              "TASK_TC_STATE": 12,
+              "TASK_TC_IDNESTCNT": 13,
+              "TASK_TC_TDNESTCNT": 14,
+              "TASK_TC_SIGALLOC": 16,
+              "TASK_TC_SIGWAIT": 20,
+              "TASK_TC_SIGRECVD": 24,
+              "TASK_TC_SIGEXCEPT": 28,
+              "TASK_TC_SPREG": 32,
+              "TASK_TC_SPLOWER": 36,
+              "TASK_TC_SPUPPER": 40,
+              "TASK_TC_MEMENTRY": 43,
+              "TASK_TC_USERDATA": 54,
+              "TASK_TC_EXECPRIVATE": 58,
+              "TCB_ITEM": 0,
+              "TCB_WAITREASON": 3,
+              "TCB_INITIALS": 4,
+              "TCB_SAVEDS": 6,
+              "TCB_STATE": 8,
+              "TCB_ID": 9,
+              "TCB_LOCKDEPTH": 10,
+              "TCB_PENDING": 12,
+              "TCB_QUEUED": 13,
+              "TCB_RESERVEDWORD": 14,
+              "TCB_DP": 16,
+              "TCB_STACKFLOOR": 18,
+              "TCB_STACKTOP": 20,
+              "TCB_ENTRY": 22,
+              "TCB_ENTRYPAD": 25,
+              "TCB_FINALPC": 26,
+              "TCB_FINALPAD": 29,
+              "TCB_WAKE": 30,
+              "TCB_WAKENODE": 32,
+              "TCB_PADDING0": 38,
+              "TCB_PADDING1": 40,
+              "TCB_PADDING2": 42,
+              "TCB_PADDING3": 44,
+              "TCB_PADDING4": 46,
+              "TCB_PADDING5": 48,
+              "TCB_PADDING6": 50,
+              "TCB_PADDING7": 52,
+              "TCB_PADDING8": 54,
+              "TCB_PADDING9": 56,
+              "TCB_PADDING10": 58,
+              "TCB_PADDING11": 60,
+              "TCB_PADDING12": 62,
+              "META_READYQUEUE": 0,
+              "META_WAKEQUEUE": 9,
+              "META_LIVE": 18,
+              "META_TIMERPENDING": 19,
+              "META_IDLERUNS": 20,
+              "META_ENTRYCOUNT": 22,
+              "META_CREATED": 24,
+              "BINDING_TASK": 0,
+              "BINDING_CONTEXT": 3,
+              "BINDING_MASK": 6,
+              "BINDING_ACTIVE": 10,
+              "BINDING_PAD": 11,
+              "SERVICE_ADD_TASK": 17,
+              "SERVICE_REM_TASK": 18,
+              "SERVICE_FIND_TASK": 19,
+              "SERVICE_SET_TASK_PRI": 20,
+              "SERVICE_FORBID": 21,
+              "SERVICE_PERMIT": 22,
+              "SERVICE_SLEEP": 11,
+              "SERVICE_ALLOC_SIGNAL": 23,
+              "SERVICE_FREE_SIGNAL": 24,
+              "SERVICE_SET_SIGNAL": 25,
+              "SERVICE_SIGNAL": 26,
+              "SERVICE_WAIT": 27,
+              "TS_INVALID": 0,
+              "TS_ADDED": 1,
+              "TS_RUN": 2,
+              "TS_READY": 3,
+              "TS_WAIT": 4,
+              "TS_EXCEPT": 5,
+              "TS_REMOVED": 6,
+              "ERROR_TICKS": 65304,
+              "STATE_FREE": 0,
+              "STATE_READY": 1,
+              "STATE_RUNNING": 3,
+              "STATE_SLEEPING": 4,
+              "STATE_SIGNAL_WAIT": 5,
+              "WAIT_NONE": 0,
+              "WAIT_SIGNAL": 1,
+              "WAIT_SLEEP": 2,
+              "FRAME_DBR": 1,
+              "FRAME_D": 2,
+              "FRAME_Y": 4,
+              "FRAME_X": 6,
+              "FRAME_A_FULL": 8,
+              "FRAME_P": 10,
+              "FRAME_PC": 11,
+              "FRAME_PBR": 13,
+              "CAPACITY": 4,
+              "IDLE": 4,
+              "READY_BYTES": 9,
+              "ENTRY_CAPACITY": 16,
+              "BINDINGS_BYTES": 58,
+              "FAULT": 65535,
+              "SIZE": 64,
+              "SHIFT": 6,
+              "WAKE_BYTES": 9,
+              "BINDING_BYTES": 12,
+              "USER_SIGNAL_FIRST": 16,
+              "SIGNAL_COUNT": 32,
+              "PROFILE_TAG": 1280,
+              "WAKE_LINKED": 1,
+              "WAKE_CLAIMED": 2,
+              "PUBLIC_CONTEXT_BYTES": 256,
+              "BASE": 983040,
+              "READY": 983360,
+              "WAKE": 983369,
+              "LIVE": 983378,
+              "TIMER_PENDING": 983379,
+              "IDLE_RUNS": 983380,
+              "ENTRY_COUNT": 983382,
+              "CREATED": 983384,
+              "ENTRIES": 983386,
+              "WRITABLE_COUNT": 983434,
+              "WRITABLE_POINTER": 983436,
+              "SERIAL_BINDING": 983440,
+              "ROOT": 983452,
+              "SERIAL_STATE": 983514,
+              "SLEEPERS": 983518,
+              "METADATA_END": 983552,
+              "METADATA_BYTES": 512,
+              "WAKE_PENDING": 8250,
+              "IRQ_ALLOW": 8251,
+              "PRIVATE_BIND": 240,
+              "PRIVATE_RELEASE": 241,
+              "PRIVATE_DRAIN": 242
+            },
+            "signal_probe": 0,
+            "signal_irq_probe": 0,
+            "manual_wake": false,
+            "pump_count": null,
+            "task_inputs": {
+              "abi/io.json": "403de471cde988d7f34c1ca4e4c5ebc3d2e19a1ed951e7b12cd628de8759316e",
+              "abi/sio.json": "864e1f5838155d4091fc81f6d4cdfea9fad45b864912eb6c5e18dd2f58323dbd",
+              "lib/exec-io-types.inc": "20d5b2f9857432a41e32530fbbe4f95dfd595d58cdd79fc83f1f68a16e29a472",
+              "tools/generate_io.py": "821fdb5820ef6165efaf0bf161c1382da1735a512e12b66327f07dcf55d9267d",
+              "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+              "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+              "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+              "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+              "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+              "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+              "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+              "abi/tasks.json": "c176d6d560078a7f4d72c84d702ffd7d8529cd0c65a3e1504b57cc51bff1d579",
+              "lib/taskpolicy.act": "4836490b90d995ec31850995f9010654f74df9d1d8836b1600e547629769ee64",
+              "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+              "lib/task-wakes.inc": "c6c9f8d3ce268fba5d15391a760bab6092fe76cff55db1e98b8f8df220b4ef13",
+              "platform/altirraos/signal-irq.s": "16df26352b30a0c8591cacae24936f899e0c4aba89f2e0d2124b75af8b81027c",
+              "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+              "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+              "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+              "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+              "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+              "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+              "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+              "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+              "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+              "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+              "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+              "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+              "lib/exec-task-types.inc": "2c4c1c4fe1c59719a354e97b9ddc5db47d980fe8f9ce6344d6a5328a220ad796",
+              "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+              "tools/generate_tasks.py": "2cd4ccc1fd18998fe8a18ddbe28cc515f4eb5723a220827e201acbfe5cd9b730",
+              "platform/altirraos/tasks.s": "eddf2459394e376c8f12f66fe58c598385e0ccf1a4223f6a57479d897724f02c"
+            },
+            "task_generated": {
+              "io.inc": "6a8b25620ad96e2ea6286bf424cb7e6d4a43bca1aeeb3812c1969c7c0e2cefd0",
+              "io-action.inc": "6f48586cf1aa0e4474b05710c7a5891aa4e1924716b0a6d5b534fed31522c4f0",
+              "ports.inc": "31429fb819f79f4ad64b0d5167beb1543c9ae318e47d9e38b71b724a6fae9483",
+              "ports-action.inc": "f0bb3e004e263740d04a43a37e6a0b57d30c92da59250a066f3a9b19acaedb93",
+              "port-packets.inc": "3db8f3075db83e21b03f3f5ced5c5eeb06178d257c6ed1a101ab71b2e48a5366",
+              "ports-storage.inc": "c6ffd9110ca265cf3812659a5443b6d20ad4e36c99a4c8351b71bd8e3650e7c6",
+              "ports-storage-action.inc": "e6f6bffa4af346601562730ff65408df3b062ddbf49eca61ec81050c5370ea13",
+              "heappolicy.act": "41ba32aa59926008e76f3db05ada0316715e86d740675a5a53a912f90b09236a",
+              "heap-storage.inc": "0c4295f03f7e77f25eb54093b57c3c6ebe812d2787d7f198ef4345fb28780001",
+              "heap.inc": "b82c94cc14b7cee47c714dbe3bbaf14805a771923612101cef2bb66c800a3b71",
+              "heap-action.inc": "d23fca22b4d80fd8e2f38bf3ddf9b75eafb24c4833c3c2591df63c196783f155",
+              "heap.json": "b8375194f43fde3b43e6a1d63a51d65daba77a43d725635197c07cce4cb11520",
+              "tasks.inc": "bd850e6c82b930ab9196078703449b7217f4ccf9b76364625d6d18297f45dbc0",
+              "tasks-action.inc": "6c522038c2b5e00298f68a590b882ecd2632177ea44b7af904391745bbb6aa7c",
+              "tasks-bindings.inc": "783343545b22e1dd9f1514f8ded10d65b7ce99ef41ede7e770d30f8b7655ef9d",
+              "signal-gateway.inc": "4f44d0155c9f641f9571765e82d59808380454780830f8e554636609c2c24078",
+              "task-kernel/exec.act": "88cca2a1759cb13f7918aaccc1ceb933accab459f060ffdd68e9085f59c20160",
+              "task-kernel/taskpolicy.act": "7792e7bc8955fe1d51b4a14333428c4afb05665b4f610d82479f4cfb30065b51",
+              "task-kernel/task-wakes.inc": "c6c9f8d3ce268fba5d15391a760bab6092fe76cff55db1e98b8f8df220b4ef13",
+              "task-kernel/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+              "task-kernel/exectasks.act": "19f2d275536b53cb115bff286840a1e9258531b107b21ef618bf176aa2d9f2ab",
+              "task-kernel/taskstacks.act": "5d835b7dffd5ec18c8488059eb03ecc3dca4a3637d8110899b028a878576345f"
+            },
+            "banked": true,
+            "memory": {
+              "abi": {
+                "abi": "exec816.memory.v1",
+                "version": 1,
+                "record_size": 4,
+                "states": {
+                  "UNAVAILABLE": 0,
+                  "FREE": 1,
+                  "RESERVED": 2,
+                  "OWNED": 3
+                },
+                "errors": {
+                  "OK": 0,
+                  "BANK": 1,
+                  "OWNER": 2,
+                  "UNAVAILABLE": 3,
+                  "RESERVED": 4,
+                  "CONFLICT": 5,
+                  "OWNERSHIP": 6,
+                  "EXHAUSTED": 7,
+                  "BOOT": 8
+                },
+                "owners": {
+                  "SYSTEM": 1,
+                  "IMAGE": 2,
+                  "CLIENT_A": 3,
+                  "CLIENT_B": 4,
+                  "HEAP": 5
+                },
+                "manifest": {
+                  "header_size": 32,
+                  "extent_size": 8,
+                  "magic": "EBM1",
+                  "copy": 0,
+                  "zero": 1,
+                  "executable": 2,
+                  "fields": {
+                    "magic": 0,
+                    "version": 4,
+                    "banks": 6,
+                    "extents": 8,
+                    "entry": 10,
+                    "reserved": 13,
+                    "size": 14,
+                    "identity": 16
+                  },
+                  "extent_fields": {
+                    "address": 0,
+                    "kind": 3,
+                    "size": 4,
+                    "owner": 6
+                  }
+                },
+                "record": {
+                  "size": 8,
+                  "extent": 0,
+                  "offset": 2,
+                  "count": 4,
+                  "kind": 6,
+                  "reserved": 7
+                },
+                "bank_fields": {
+                  "state": 0,
+                  "reserved": 1,
+                  "owner": 2
+                },
+                "boot_errors": {
+                  "BOUNDS": 1,
+                  "MANIFEST": 2,
+                  "RECORD": 3,
+                  "INCOMPLETE": 4
+                },
+                "boot_fields": {
+                  "READY": 0,
+                  "ERROR": 1,
+                  "NEXT": 2,
+                  "OFFSET": 4,
+                  "LEFT": 6,
+                  "OLD_MEMLO": 8,
+                  "ADOPTED": 10,
+                  "ID": 16,
+                  "CALLS": 32,
+                  "ENTERED": 34,
+                  "WORK": 40
+                }
+              },
+              "config": {
+                "max_banks": 16,
+                "max_extents": 64,
+                "staging_bytes": 1024,
+                "kernel_bank": 1
+              },
+              "profile": {
+                "name": "altirraos-1m",
+                "pin": "toolchain/altirra-1m.json",
+                "usable_banks": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10,
+                  11,
+                  12,
+                  13,
+                  14,
+                  15
+                ],
+                "code_origin": 66064,
+                "data_origin": 34816,
+                "image_near": [
+                  34816,
+                  36864
+                ],
+                "memlo_limit": 8192,
+                "memtop_required": 36864,
+                "regions": [
+                  {
+                    "name": "os-low",
+                    "address": 0,
+                    "size": 8192
+                  },
+                  {
+                    "name": "state",
+                    "address": 8192,
+                    "size": 256
+                  },
+                  {
+                    "name": "task0-dp",
+                    "address": 8688,
+                    "size": 288
+                  },
+                  {
+                    "name": "task1-dp",
+                    "address": 9200,
+                    "size": 288
+                  },
+                  {
+                    "name": "kernel-dp",
+                    "address": 9712,
+                    "size": 288
+                  },
+                  {
+                    "name": "table",
+                    "address": 10240,
+                    "size": 1024
+                  },
+                  {
+                    "name": "boot-state",
+                    "address": 11264,
+                    "size": 256
+                  },
+                  {
+                    "name": "resident",
+                    "address": 12288,
+                    "size": 4096
+                  },
+                  {
+                    "name": "task0-stack",
+                    "address": 16880,
+                    "size": 1568
+                  },
+                  {
+                    "name": "kernel-stack",
+                    "address": 18928,
+                    "size": 1568
+                  },
+                  {
+                    "name": "task1-stack",
+                    "address": 20976,
+                    "size": 1568
+                  },
+                  {
+                    "name": "manifest",
+                    "address": 24576,
+                    "size": 2048
+                  },
+                  {
+                    "name": "loader",
+                    "address": 26624,
+                    "size": 5120
+                  },
+                  {
+                    "name": "staging",
+                    "address": 31744,
+                    "size": 1040
+                  },
+                  {
+                    "name": "os-high",
+                    "address": 36864,
+                    "size": 28672
+                  }
+                ]
+              },
+              "constants": {
+                "VERSION": 1,
+                "KERNEL_BANK": 1,
+                "MAX_BANKS": 16,
+                "TABLE": 10240,
+                "TABLE_BYTES": 64,
+                "MANIFEST": 24576,
+                "MANIFEST_CAPACITY": 2048,
+                "MAX_EXTENTS": 64,
+                "EXTENTS": 24672,
+                "LOADER": 26624,
+                "LOADER_BYTES": 5120,
+                "STAGE": 31744,
+                "PAYLOAD": 31752,
+                "CHUNK": 1024,
+                "NEAR_BASE": 34816,
+                "NEAR_END": 36864,
+                "MEMLO_LIMIT": 8192,
+                "MEMTOP_REQUIRED": 36864,
+                "READY": 11264,
+                "ERROR": 11265,
+                "NEXT": 11266,
+                "OFFSET": 11268,
+                "LEFT": 11270,
+                "OLD_MEMLO": 11272,
+                "ADOPTED": 11274,
+                "ID": 11280,
+                "CALLS": 11296,
+                "ENTERED": 11298,
+                "WORK": 11304,
+                "STATE_UNAVAILABLE": 0,
+                "STATE_FREE": 1,
+                "STATE_RESERVED": 2,
+                "STATE_OWNED": 3,
+                "ERROR_OK": 0,
+                "ERROR_BANK": 1,
+                "ERROR_OWNER": 2,
+                "ERROR_UNAVAILABLE": 3,
+                "ERROR_RESERVED": 4,
+                "ERROR_CONFLICT": 5,
+                "ERROR_OWNERSHIP": 6,
+                "ERROR_EXHAUSTED": 7,
+                "ERROR_BOOT": 8,
+                "OWNER_SYSTEM": 1,
+                "OWNER_IMAGE": 2,
+                "OWNER_CLIENT_A": 3,
+                "OWNER_CLIENT_B": 4,
+                "OWNER_HEAP": 5,
+                "BOOT_ERROR_BOUNDS": 1,
+                "BOOT_ERROR_MANIFEST": 2,
+                "BOOT_ERROR_RECORD": 3,
+                "BOOT_ERROR_INCOMPLETE": 4,
+                "HEADER_BYTES": 32,
+                "EXTENT_BYTES": 8,
+                "RECORD_BYTES": 8,
+                "RECORD_EXTENT": 0,
+                "RECORD_OFFSET": 2,
+                "RECORD_COUNT": 4,
+                "RECORD_KIND": 6,
+                "RECORD_RESERVED": 7,
+                "HEADER_MAGIC": 0,
+                "HEADER_VERSION": 4,
+                "HEADER_BANKS": 6,
+                "HEADER_EXTENTS": 8,
+                "HEADER_ENTRY": 10,
+                "HEADER_RESERVED": 13,
+                "HEADER_SIZE": 14,
+                "HEADER_IDENTITY": 16,
+                "EXTENT_ADDRESS": 0,
+                "EXTENT_KIND": 3,
+                "EXTENT_SIZE": 4,
+                "EXTENT_OWNER": 6
+              },
+              "upper_reservations": [
+                {
+                  "name": "heap-metadata",
+                  "address": 65536,
+                  "size": 512
+                },
+                {
+                  "name": "port-registry",
+                  "address": 66048,
+                  "size": 16
+                }
+              ],
+              "regions": {
+                "os-low": [
+                  0,
+                  8192
+                ],
+                "state": [
+                  8192,
+                  8448
+                ],
+                "task0-dp": [
+                  8688,
+                  8976
+                ],
+                "task1-dp": [
+                  9200,
+                  9488
+                ],
+                "kernel-dp": [
+                  9712,
+                  10000
+                ],
+                "table": [
+                  10240,
+                  10304
+                ],
+                "boot-state": [
+                  11264,
+                  11520
+                ],
+                "resident": [
+                  12288,
+                  16384
+                ],
+                "task0-stack": [
+                  16880,
+                  18448
+                ],
+                "kernel-stack": [
+                  18928,
+                  20496
+                ],
+                "task1-stack": [
+                  20976,
+                  22544
+                ],
+                "manifest": [
+                  24576,
+                  26624
+                ],
+                "loader": [
+                  26624,
+                  31744
+                ],
+                "staging": [
+                  31744,
+                  32784
+                ],
+                "os-high": [
+                  36864,
+                  65536
+                ]
+              },
+              "usable_banks": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ],
+              "heap_storage": {
+                "BASE": 65536,
+                "CLAIMS": 65552,
+                "HEADERS": 65568,
+                "CAPACITY": 15,
+                "BYTES": 512
+              },
+              "ports_storage": {
+                "BASE": 66048,
+                "BYTES": 16,
+                "ACTIVE_BYTES": 11
+              },
+              "task_pools": [
+                {
+                  "dp": 8704,
+                  "stack_base": 16896
+                },
+                {
+                  "dp": 9216,
+                  "stack_base": 20992
+                },
+                {
+                  "dp": 11776,
+                  "stack_base": 26880
+                },
+                {
+                  "dp": 23040,
+                  "stack_base": 28928
+                },
+                {
+                  "dp": 23552,
+                  "stack_base": 30976
+                }
+              ],
+              "reclaimed_after_adopt": [
+                "loader",
+                "staging"
+              ]
+            },
+            "memory_sha256": "82715f6eff6478239d6befb64828c0474446a0a679d8f4f12c1640f32eb2aac6",
+            "manifest_sha256": "b70a379817219401a02c887ec2c49871496eb0fb0bba8be45fbcd4bbbb4104f3",
+            "kernel_init": 75313,
+            "banked_inputs": {
+              "abi/memory-v1.json": "7e418a4a5771d744c3694dc7160f811af57d7c0bf8ae7aa795c2390cb3ea763d",
+              "lib/execmemory.act": "c7e03ca0fae8e4201611852aeed7acdd1cdab8fdd7c22244a5dad9d1329684dd",
+              "platform/altirraos/loader.s": "547b160e5604510e921dda38b3418628b3bcc79327afddbd16c04e4d935d9470",
+              "tools/generate_memory.py": "5b8a8afeefd200c142c30daa8074b0a6f85eedb8f92f37d115b808e968965dfa",
+              "tools/task_capacity.py": "370d8a8d68bc1a2da63c177f94a70b329d208efa6595d7d14a772dcd739cdff2",
+              "tools/banked_image.py": "be64c46309cab085602facfda29076deb73050b7e036c78c99a310530769b86d",
+              "tools/native_program.py": "237d34ad23624fd121404e38af4079ee65895a6c33fa76d1524e34309031ef93"
+            },
+            "generated_sha256": {
+              "memory.inc": "e7cbaed8064f51bcc649cb11a3eb13aa37fc56dc40e7ee21f450693733eb54bd",
+              "memory-action.inc": "a9331e6464cfb77e975cd0b9172852041069f9f98cf9b9c3a7403dcaeee4cb0e",
+              "memory.json": "82715f6eff6478239d6befb64828c0474446a0a679d8f4f12c1640f32eb2aac6",
+              "loader-image.inc": "8f0ae2d6839cf2cad32dd153d4e590e2221161defb049202c7a10c17e833195e",
+              "loader.cfg": "1251fcb75c39eee933c79033f23aa1a32f7b2a134b313cf91d04ec02afb03882",
+              "loader.bin": "eac742793ac0ed300f0cab405dcedc9cfc910e0aeee9e4e72a25f5438e6ae6a3"
+            }
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 55,
+            "native_irq_count": 0,
+            "os_busy": 0,
+            "return_s": 18430,
+            "return_d": 8704,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "clock_start": 39,
+            "clock_end": 94,
+            "return_dbr": 0,
+            "return_e": 0,
+            "current": 4,
+            "switching": 0,
+            "switches": 25,
+            "gateway_calls": 38,
+            "os_calls": 0,
+            "forwarded_cops": 0,
+            "os_owner": 255,
+            "tick_pending": 1,
+            "vbi_count": 55,
+            "vbi_dispatches": 2,
+            "irq_depth": 0,
+            "tasks": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_records": [
+              [
+                0,
+                0,
+                0,
+                0,
+                254,
+                71,
+                241,
+                71,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                0,
+                67,
+                254,
+                71,
+                120,
+                138,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                254,
+                87,
+                241,
+                87,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                36,
+                0,
+                83,
+                254,
+                87,
+                54,
+                129,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                254,
+                110,
+                237,
+                110,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                46,
+                0,
+                106,
+                254,
+                110,
+                120,
+                138,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                254,
+                118,
+                237,
+                118,
+                0,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                90,
+                0,
+                114,
+                254,
+                118,
+                120,
+                138,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                254,
+                126,
+                237,
+                126,
+                3,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                92,
+                0,
+                122,
+                254,
+                126,
+                120,
+                138,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            ],
+            "ready_queue": [
+              67,
+              1,
+              15,
+              0,
+              0,
+              0,
+              64,
+              1,
+              15
+            ],
+            "live_tasks": 0,
+            "idle_runs": 1,
+            "created": 1,
+            "signal_nmi_checkpoints": 0,
+            "wake_queue": [
+              76,
+              1,
+              15,
+              0,
+              0,
+              0,
+              73,
+              1,
+              15
+            ],
+            "root_task": [
+              67,
+              1,
+              15,
+              64,
+              1,
+              15,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              255,
+              255,
+              0,
+              255,
+              255,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              241,
+              71,
+              0,
+              0,
+              0,
+              66,
+              0,
+              0,
+              0,
+              72,
+              0,
+              202,
+              1,
+              15,
+              0,
+              0,
+              0,
+              199,
+              1,
+              15,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "guards": "intact"
+          },
+          "completed": 1,
+          "error": 0
+        },
+        {
+          "name": "example-opt",
+          "status": "pass",
+          "build": {
+            "revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+            "changes": [],
+            "override": false,
+            "binary_sha256": "be923241e910dee3310aab0d77e7f7c3372d1b086f5116149bb887cbbd13cfe5",
+            "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+            "abi_assembly_sha256": "ba00a5bfa74d656f5d6d7f1fe566d399c6788ed745ba6a58c99fb336fc95afdb",
+            "source": "messages.act",
+            "source_sha256": "b3d75359e2b02d068df3675388a54b533ff87aebf60c5a5f6f5e4f34500cbeed",
+            "platform_inputs": {
+              "platform/altirraos/hosted.s": "4195caf83a5d87b47b11eeee49ccd878bff08a5a0dcb631f9ef87a76372ffc79",
+              "platform/altirraos/layout.inc": "54910fcc103ff50721dab6a2a03f66dc83e31585ddd2cb2b45ff0f8b832d75e0",
+              "platform/altirraos/hosted.cfg": "381c9142b71a2eff92a1af49bd30029e0458b3ab7030ff6bba2bfda696df6112",
+              "lib/execos.act": "62266f93b89c563d3b97cc56fc8482f6f5f8e6add6458ede727b90fb65fece31",
+              "abi/exec816-v1.json": "c38d1ddaedeb89a57c0614ba8702f6f6f93adda4e2d78f7ff582ac47b54fe1c5",
+              "platform/altirraos/exec-abi.inc": "22eb93b3da8cefecad66aeab9cecfe21f53032b848f65b0b928f16e1655d04be",
+              "platform/altirraos/cooperative.s": "d83579f94d76b46bb61e25aee8a0f9528ce7d3d7a73e1ae8b8ffc85fd0faecf6",
+              "lib/exec-abi.inc": "bdb408417c878b2662170135b8d395a68f3a3b39c9f27047a4947acfb0d168c9",
+              "platform/altirraos/cooperative-probe.s": "54cbbe92eb52a89b8bd4a8ef55b694a11269274d3a5ded7c3009863794a19f74",
+              "platform/altirraos/preemptive.s": "3f5a778f0f191b2e3a9dfbadfba8b90dc327afab8e7d188ebd5d10551e2ea61c",
+              "lib/exec.act": "97d6a431afee161073d052f7eede9b4851f99a776313e965cba8e54884eb3192",
+              "lib/execpolicy.act": "86bdab3ebe27a383f0aa91365d4aded7fd174efd016399e32c3fdd537e883fba"
+            },
+            "optimize": true,
+            "probe_nmi": 0,
+            "initial_i": 0,
+            "cooperative": true,
+            "preemptive": true,
+            "probe_flags": 256,
+            "forward_signature": 0,
+            "image_sha256": "e1a8e1ffb1e2c3ef79ec183891458ce5e0dfffad68adb2d980383736c7068d2c",
+            "xex_sha256": "0214d9e7b1ca44ce7578d50eb945cbc665dffcb458d5988c0b47ef19fefa1674",
+            "tasks": true,
+            "heap_probe": false,
+            "task_init": 151132,
+            "task_entries": [
+              223832,
+              221626,
+              222876
+            ],
+            "task_storage": {
+              "VERSION": 1280,
+              "TASK_SIZE": 62,
+              "NT_TASK": 1,
+              "TASK_TC_NODE": 0,
+              "TASK_TC_FLAGS": 11,
+              "TASK_TC_STATE": 12,
+              "TASK_TC_IDNESTCNT": 13,
+              "TASK_TC_TDNESTCNT": 14,
+              "TASK_TC_SIGALLOC": 16,
+              "TASK_TC_SIGWAIT": 20,
+              "TASK_TC_SIGRECVD": 24,
+              "TASK_TC_SIGEXCEPT": 28,
+              "TASK_TC_SPREG": 32,
+              "TASK_TC_SPLOWER": 36,
+              "TASK_TC_SPUPPER": 40,
+              "TASK_TC_MEMENTRY": 43,
+              "TASK_TC_USERDATA": 54,
+              "TASK_TC_EXECPRIVATE": 58,
+              "TCB_ITEM": 0,
+              "TCB_WAITREASON": 3,
+              "TCB_INITIALS": 4,
+              "TCB_SAVEDS": 6,
+              "TCB_STATE": 8,
+              "TCB_ID": 9,
+              "TCB_LOCKDEPTH": 10,
+              "TCB_PENDING": 12,
+              "TCB_QUEUED": 13,
+              "TCB_RESERVEDWORD": 14,
+              "TCB_DP": 16,
+              "TCB_STACKFLOOR": 18,
+              "TCB_STACKTOP": 20,
+              "TCB_ENTRY": 22,
+              "TCB_ENTRYPAD": 25,
+              "TCB_FINALPC": 26,
+              "TCB_FINALPAD": 29,
+              "TCB_WAKE": 30,
+              "TCB_WAKENODE": 32,
+              "TCB_PADDING0": 38,
+              "TCB_PADDING1": 40,
+              "TCB_PADDING2": 42,
+              "TCB_PADDING3": 44,
+              "TCB_PADDING4": 46,
+              "TCB_PADDING5": 48,
+              "TCB_PADDING6": 50,
+              "TCB_PADDING7": 52,
+              "TCB_PADDING8": 54,
+              "TCB_PADDING9": 56,
+              "TCB_PADDING10": 58,
+              "TCB_PADDING11": 60,
+              "TCB_PADDING12": 62,
+              "META_READYQUEUE": 0,
+              "META_WAKEQUEUE": 9,
+              "META_LIVE": 18,
+              "META_TIMERPENDING": 19,
+              "META_IDLERUNS": 20,
+              "META_ENTRYCOUNT": 22,
+              "META_CREATED": 24,
+              "BINDING_TASK": 0,
+              "BINDING_CONTEXT": 3,
+              "BINDING_MASK": 6,
+              "BINDING_ACTIVE": 10,
+              "BINDING_PAD": 11,
+              "SERVICE_ADD_TASK": 17,
+              "SERVICE_REM_TASK": 18,
+              "SERVICE_FIND_TASK": 19,
+              "SERVICE_SET_TASK_PRI": 20,
+              "SERVICE_FORBID": 21,
+              "SERVICE_PERMIT": 22,
+              "SERVICE_SLEEP": 11,
+              "SERVICE_ALLOC_SIGNAL": 23,
+              "SERVICE_FREE_SIGNAL": 24,
+              "SERVICE_SET_SIGNAL": 25,
+              "SERVICE_SIGNAL": 26,
+              "SERVICE_WAIT": 27,
+              "TS_INVALID": 0,
+              "TS_ADDED": 1,
+              "TS_RUN": 2,
+              "TS_READY": 3,
+              "TS_WAIT": 4,
+              "TS_EXCEPT": 5,
+              "TS_REMOVED": 6,
+              "ERROR_TICKS": 65304,
+              "STATE_FREE": 0,
+              "STATE_READY": 1,
+              "STATE_RUNNING": 3,
+              "STATE_SLEEPING": 4,
+              "STATE_SIGNAL_WAIT": 5,
+              "WAIT_NONE": 0,
+              "WAIT_SIGNAL": 1,
+              "WAIT_SLEEP": 2,
+              "FRAME_DBR": 1,
+              "FRAME_D": 2,
+              "FRAME_Y": 4,
+              "FRAME_X": 6,
+              "FRAME_A_FULL": 8,
+              "FRAME_P": 10,
+              "FRAME_PC": 11,
+              "FRAME_PBR": 13,
+              "CAPACITY": 4,
+              "IDLE": 4,
+              "READY_BYTES": 9,
+              "ENTRY_CAPACITY": 16,
+              "BINDINGS_BYTES": 58,
+              "FAULT": 65535,
+              "SIZE": 64,
+              "SHIFT": 6,
+              "WAKE_BYTES": 9,
+              "BINDING_BYTES": 12,
+              "USER_SIGNAL_FIRST": 16,
+              "SIGNAL_COUNT": 32,
+              "PROFILE_TAG": 1280,
+              "WAKE_LINKED": 1,
+              "WAKE_CLAIMED": 2,
+              "PUBLIC_CONTEXT_BYTES": 256,
+              "BASE": 983040,
+              "READY": 983360,
+              "WAKE": 983369,
+              "LIVE": 983378,
+              "TIMER_PENDING": 983379,
+              "IDLE_RUNS": 983380,
+              "ENTRY_COUNT": 983382,
+              "CREATED": 983384,
+              "ENTRIES": 983386,
+              "WRITABLE_COUNT": 983434,
+              "WRITABLE_POINTER": 983436,
+              "SERIAL_BINDING": 983440,
+              "ROOT": 983452,
+              "SERIAL_STATE": 983514,
+              "SLEEPERS": 983518,
+              "METADATA_END": 983552,
+              "METADATA_BYTES": 512,
+              "WAKE_PENDING": 8250,
+              "IRQ_ALLOW": 8251,
+              "PRIVATE_BIND": 240,
+              "PRIVATE_RELEASE": 241,
+              "PRIVATE_DRAIN": 242
+            },
+            "signal_probe": 0,
+            "signal_irq_probe": 0,
+            "manual_wake": false,
+            "pump_count": null,
+            "task_inputs": {
+              "abi/io.json": "403de471cde988d7f34c1ca4e4c5ebc3d2e19a1ed951e7b12cd628de8759316e",
+              "abi/sio.json": "864e1f5838155d4091fc81f6d4cdfea9fad45b864912eb6c5e18dd2f58323dbd",
+              "lib/exec-io-types.inc": "20d5b2f9857432a41e32530fbbe4f95dfd595d58cdd79fc83f1f68a16e29a472",
+              "tools/generate_io.py": "821fdb5820ef6165efaf0bf161c1382da1735a512e12b66327f07dcf55d9267d",
+              "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+              "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+              "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+              "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+              "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+              "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+              "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+              "abi/tasks.json": "c176d6d560078a7f4d72c84d702ffd7d8529cd0c65a3e1504b57cc51bff1d579",
+              "lib/taskpolicy.act": "4836490b90d995ec31850995f9010654f74df9d1d8836b1600e547629769ee64",
+              "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+              "lib/task-wakes.inc": "c6c9f8d3ce268fba5d15391a760bab6092fe76cff55db1e98b8f8df220b4ef13",
+              "platform/altirraos/signal-irq.s": "16df26352b30a0c8591cacae24936f899e0c4aba89f2e0d2124b75af8b81027c",
+              "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+              "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+              "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+              "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+              "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+              "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+              "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+              "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+              "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+              "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+              "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+              "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+              "lib/exec-task-types.inc": "2c4c1c4fe1c59719a354e97b9ddc5db47d980fe8f9ce6344d6a5328a220ad796",
+              "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+              "tools/generate_tasks.py": "2cd4ccc1fd18998fe8a18ddbe28cc515f4eb5723a220827e201acbfe5cd9b730",
+              "platform/altirraos/tasks.s": "eddf2459394e376c8f12f66fe58c598385e0ccf1a4223f6a57479d897724f02c"
+            },
+            "task_generated": {
+              "io.inc": "6a8b25620ad96e2ea6286bf424cb7e6d4a43bca1aeeb3812c1969c7c0e2cefd0",
+              "io-action.inc": "6f48586cf1aa0e4474b05710c7a5891aa4e1924716b0a6d5b534fed31522c4f0",
+              "ports.inc": "31429fb819f79f4ad64b0d5167beb1543c9ae318e47d9e38b71b724a6fae9483",
+              "ports-action.inc": "f0bb3e004e263740d04a43a37e6a0b57d30c92da59250a066f3a9b19acaedb93",
+              "port-packets.inc": "3db8f3075db83e21b03f3f5ced5c5eeb06178d257c6ed1a101ab71b2e48a5366",
+              "ports-storage.inc": "c6ffd9110ca265cf3812659a5443b6d20ad4e36c99a4c8351b71bd8e3650e7c6",
+              "ports-storage-action.inc": "e6f6bffa4af346601562730ff65408df3b062ddbf49eca61ec81050c5370ea13",
+              "heappolicy.act": "41ba32aa59926008e76f3db05ada0316715e86d740675a5a53a912f90b09236a",
+              "heap-storage.inc": "0c4295f03f7e77f25eb54093b57c3c6ebe812d2787d7f198ef4345fb28780001",
+              "heap.inc": "b82c94cc14b7cee47c714dbe3bbaf14805a771923612101cef2bb66c800a3b71",
+              "heap-action.inc": "d23fca22b4d80fd8e2f38bf3ddf9b75eafb24c4833c3c2591df63c196783f155",
+              "heap.json": "b8375194f43fde3b43e6a1d63a51d65daba77a43d725635197c07cce4cb11520",
+              "tasks.inc": "bd850e6c82b930ab9196078703449b7217f4ccf9b76364625d6d18297f45dbc0",
+              "tasks-action.inc": "6c522038c2b5e00298f68a590b882ecd2632177ea44b7af904391745bbb6aa7c",
+              "tasks-bindings.inc": "5987d3a8a9da8cb5717232616a5830d200dc3bdace7684cd813d36b74b3562bb",
+              "signal-gateway.inc": "4f44d0155c9f641f9571765e82d59808380454780830f8e554636609c2c24078",
+              "task-kernel/exec.act": "88cca2a1759cb13f7918aaccc1ceb933accab459f060ffdd68e9085f59c20160",
+              "task-kernel/taskpolicy.act": "4cdefbab0fc3b987f19b07f2e6058f027e6f247c6713bc191935c5c552fecede",
+              "task-kernel/task-wakes.inc": "c6c9f8d3ce268fba5d15391a760bab6092fe76cff55db1e98b8f8df220b4ef13",
+              "task-kernel/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+              "task-kernel/exectasks.act": "19f2d275536b53cb115bff286840a1e9258531b107b21ef618bf176aa2d9f2ab",
+              "task-kernel/taskstacks.act": "5d835b7dffd5ec18c8488059eb03ecc3dca4a3637d8110899b028a878576345f"
+            },
+            "banked": true,
+            "memory": {
+              "abi": {
+                "abi": "exec816.memory.v1",
+                "version": 1,
+                "record_size": 4,
+                "states": {
+                  "UNAVAILABLE": 0,
+                  "FREE": 1,
+                  "RESERVED": 2,
+                  "OWNED": 3
+                },
+                "errors": {
+                  "OK": 0,
+                  "BANK": 1,
+                  "OWNER": 2,
+                  "UNAVAILABLE": 3,
+                  "RESERVED": 4,
+                  "CONFLICT": 5,
+                  "OWNERSHIP": 6,
+                  "EXHAUSTED": 7,
+                  "BOOT": 8
+                },
+                "owners": {
+                  "SYSTEM": 1,
+                  "IMAGE": 2,
+                  "CLIENT_A": 3,
+                  "CLIENT_B": 4,
+                  "HEAP": 5
+                },
+                "manifest": {
+                  "header_size": 32,
+                  "extent_size": 8,
+                  "magic": "EBM1",
+                  "copy": 0,
+                  "zero": 1,
+                  "executable": 2,
+                  "fields": {
+                    "magic": 0,
+                    "version": 4,
+                    "banks": 6,
+                    "extents": 8,
+                    "entry": 10,
+                    "reserved": 13,
+                    "size": 14,
+                    "identity": 16
+                  },
+                  "extent_fields": {
+                    "address": 0,
+                    "kind": 3,
+                    "size": 4,
+                    "owner": 6
+                  }
+                },
+                "record": {
+                  "size": 8,
+                  "extent": 0,
+                  "offset": 2,
+                  "count": 4,
+                  "kind": 6,
+                  "reserved": 7
+                },
+                "bank_fields": {
+                  "state": 0,
+                  "reserved": 1,
+                  "owner": 2
+                },
+                "boot_errors": {
+                  "BOUNDS": 1,
+                  "MANIFEST": 2,
+                  "RECORD": 3,
+                  "INCOMPLETE": 4
+                },
+                "boot_fields": {
+                  "READY": 0,
+                  "ERROR": 1,
+                  "NEXT": 2,
+                  "OFFSET": 4,
+                  "LEFT": 6,
+                  "OLD_MEMLO": 8,
+                  "ADOPTED": 10,
+                  "ID": 16,
+                  "CALLS": 32,
+                  "ENTERED": 34,
+                  "WORK": 40
+                }
+              },
+              "config": {
+                "max_banks": 16,
+                "max_extents": 64,
+                "staging_bytes": 1024,
+                "kernel_bank": 1
+              },
+              "profile": {
+                "name": "altirraos-1m",
+                "pin": "toolchain/altirra-1m.json",
+                "usable_banks": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10,
+                  11,
+                  12,
+                  13,
+                  14,
+                  15
+                ],
+                "code_origin": 66064,
+                "data_origin": 34816,
+                "image_near": [
+                  34816,
+                  36864
+                ],
+                "memlo_limit": 8192,
+                "memtop_required": 36864,
+                "regions": [
+                  {
+                    "name": "os-low",
+                    "address": 0,
+                    "size": 8192
+                  },
+                  {
+                    "name": "state",
+                    "address": 8192,
+                    "size": 256
+                  },
+                  {
+                    "name": "task0-dp",
+                    "address": 8688,
+                    "size": 288
+                  },
+                  {
+                    "name": "task1-dp",
+                    "address": 9200,
+                    "size": 288
+                  },
+                  {
+                    "name": "kernel-dp",
+                    "address": 9712,
+                    "size": 288
+                  },
+                  {
+                    "name": "table",
+                    "address": 10240,
+                    "size": 1024
+                  },
+                  {
+                    "name": "boot-state",
+                    "address": 11264,
+                    "size": 256
+                  },
+                  {
+                    "name": "resident",
+                    "address": 12288,
+                    "size": 4096
+                  },
+                  {
+                    "name": "task0-stack",
+                    "address": 16880,
+                    "size": 1568
+                  },
+                  {
+                    "name": "kernel-stack",
+                    "address": 18928,
+                    "size": 1568
+                  },
+                  {
+                    "name": "task1-stack",
+                    "address": 20976,
+                    "size": 1568
+                  },
+                  {
+                    "name": "manifest",
+                    "address": 24576,
+                    "size": 2048
+                  },
+                  {
+                    "name": "loader",
+                    "address": 26624,
+                    "size": 5120
+                  },
+                  {
+                    "name": "staging",
+                    "address": 31744,
+                    "size": 1040
+                  },
+                  {
+                    "name": "os-high",
+                    "address": 36864,
+                    "size": 28672
+                  }
+                ]
+              },
+              "constants": {
+                "VERSION": 1,
+                "KERNEL_BANK": 1,
+                "MAX_BANKS": 16,
+                "TABLE": 10240,
+                "TABLE_BYTES": 64,
+                "MANIFEST": 24576,
+                "MANIFEST_CAPACITY": 2048,
+                "MAX_EXTENTS": 64,
+                "EXTENTS": 24672,
+                "LOADER": 26624,
+                "LOADER_BYTES": 5120,
+                "STAGE": 31744,
+                "PAYLOAD": 31752,
+                "CHUNK": 1024,
+                "NEAR_BASE": 34816,
+                "NEAR_END": 36864,
+                "MEMLO_LIMIT": 8192,
+                "MEMTOP_REQUIRED": 36864,
+                "READY": 11264,
+                "ERROR": 11265,
+                "NEXT": 11266,
+                "OFFSET": 11268,
+                "LEFT": 11270,
+                "OLD_MEMLO": 11272,
+                "ADOPTED": 11274,
+                "ID": 11280,
+                "CALLS": 11296,
+                "ENTERED": 11298,
+                "WORK": 11304,
+                "STATE_UNAVAILABLE": 0,
+                "STATE_FREE": 1,
+                "STATE_RESERVED": 2,
+                "STATE_OWNED": 3,
+                "ERROR_OK": 0,
+                "ERROR_BANK": 1,
+                "ERROR_OWNER": 2,
+                "ERROR_UNAVAILABLE": 3,
+                "ERROR_RESERVED": 4,
+                "ERROR_CONFLICT": 5,
+                "ERROR_OWNERSHIP": 6,
+                "ERROR_EXHAUSTED": 7,
+                "ERROR_BOOT": 8,
+                "OWNER_SYSTEM": 1,
+                "OWNER_IMAGE": 2,
+                "OWNER_CLIENT_A": 3,
+                "OWNER_CLIENT_B": 4,
+                "OWNER_HEAP": 5,
+                "BOOT_ERROR_BOUNDS": 1,
+                "BOOT_ERROR_MANIFEST": 2,
+                "BOOT_ERROR_RECORD": 3,
+                "BOOT_ERROR_INCOMPLETE": 4,
+                "HEADER_BYTES": 32,
+                "EXTENT_BYTES": 8,
+                "RECORD_BYTES": 8,
+                "RECORD_EXTENT": 0,
+                "RECORD_OFFSET": 2,
+                "RECORD_COUNT": 4,
+                "RECORD_KIND": 6,
+                "RECORD_RESERVED": 7,
+                "HEADER_MAGIC": 0,
+                "HEADER_VERSION": 4,
+                "HEADER_BANKS": 6,
+                "HEADER_EXTENTS": 8,
+                "HEADER_ENTRY": 10,
+                "HEADER_RESERVED": 13,
+                "HEADER_SIZE": 14,
+                "HEADER_IDENTITY": 16,
+                "EXTENT_ADDRESS": 0,
+                "EXTENT_KIND": 3,
+                "EXTENT_SIZE": 4,
+                "EXTENT_OWNER": 6
+              },
+              "upper_reservations": [
+                {
+                  "name": "heap-metadata",
+                  "address": 65536,
+                  "size": 512
+                },
+                {
+                  "name": "port-registry",
+                  "address": 66048,
+                  "size": 16
+                }
+              ],
+              "regions": {
+                "os-low": [
+                  0,
+                  8192
+                ],
+                "state": [
+                  8192,
+                  8448
+                ],
+                "task0-dp": [
+                  8688,
+                  8976
+                ],
+                "task1-dp": [
+                  9200,
+                  9488
+                ],
+                "kernel-dp": [
+                  9712,
+                  10000
+                ],
+                "table": [
+                  10240,
+                  10304
+                ],
+                "boot-state": [
+                  11264,
+                  11520
+                ],
+                "resident": [
+                  12288,
+                  16384
+                ],
+                "task0-stack": [
+                  16880,
+                  18448
+                ],
+                "kernel-stack": [
+                  18928,
+                  20496
+                ],
+                "task1-stack": [
+                  20976,
+                  22544
+                ],
+                "manifest": [
+                  24576,
+                  26624
+                ],
+                "loader": [
+                  26624,
+                  31744
+                ],
+                "staging": [
+                  31744,
+                  32784
+                ],
+                "os-high": [
+                  36864,
+                  65536
+                ]
+              },
+              "usable_banks": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ],
+              "heap_storage": {
+                "BASE": 65536,
+                "CLAIMS": 65552,
+                "HEADERS": 65568,
+                "CAPACITY": 15,
+                "BYTES": 512
+              },
+              "ports_storage": {
+                "BASE": 66048,
+                "BYTES": 16,
+                "ACTIVE_BYTES": 11
+              },
+              "task_pools": [
+                {
+                  "dp": 8704,
+                  "stack_base": 16896
+                },
+                {
+                  "dp": 9216,
+                  "stack_base": 20992
+                },
+                {
+                  "dp": 11776,
+                  "stack_base": 26880
+                },
+                {
+                  "dp": 23040,
+                  "stack_base": 28928
+                },
+                {
+                  "dp": 23552,
+                  "stack_base": 30976
+                }
+              ],
+              "reclaimed_after_adopt": [
+                "loader",
+                "staging"
+              ]
+            },
+            "memory_sha256": "82715f6eff6478239d6befb64828c0474446a0a679d8f4f12c1640f32eb2aac6",
+            "manifest_sha256": "617c43014c2b52de99e1276b510c7d3913f9e20e8ecb00053a9d2f66de71f85c",
+            "kernel_init": 74844,
+            "banked_inputs": {
+              "abi/memory-v1.json": "7e418a4a5771d744c3694dc7160f811af57d7c0bf8ae7aa795c2390cb3ea763d",
+              "lib/execmemory.act": "c7e03ca0fae8e4201611852aeed7acdd1cdab8fdd7c22244a5dad9d1329684dd",
+              "platform/altirraos/loader.s": "547b160e5604510e921dda38b3418628b3bcc79327afddbd16c04e4d935d9470",
+              "tools/generate_memory.py": "5b8a8afeefd200c142c30daa8074b0a6f85eedb8f92f37d115b808e968965dfa",
+              "tools/task_capacity.py": "370d8a8d68bc1a2da63c177f94a70b329d208efa6595d7d14a772dcd739cdff2",
+              "tools/banked_image.py": "be64c46309cab085602facfda29076deb73050b7e036c78c99a310530769b86d",
+              "tools/native_program.py": "237d34ad23624fd121404e38af4079ee65895a6c33fa76d1524e34309031ef93"
+            },
+            "generated_sha256": {
+              "memory.inc": "e7cbaed8064f51bcc649cb11a3eb13aa37fc56dc40e7ee21f450693733eb54bd",
+              "memory-action.inc": "a9331e6464cfb77e975cd0b9172852041069f9f98cf9b9c3a7403dcaeee4cb0e",
+              "memory.json": "82715f6eff6478239d6befb64828c0474446a0a679d8f4f12c1640f32eb2aac6",
+              "loader-image.inc": "8f0ae2d6839cf2cad32dd153d4e590e2221161defb049202c7a10c17e833195e",
+              "loader.cfg": "1251fcb75c39eee933c79033f23aa1a32f7b2a134b313cf91d04ec02afb03882",
+              "loader.bin": "d0de061a01399a8f51f60ffe3bf72e2b1901afcb16ef6980f2f1dc5bf3bfd00d"
+            }
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 49,
+            "native_irq_count": 0,
+            "os_busy": 0,
+            "return_s": 18430,
+            "return_d": 8704,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "clock_start": 11,
+            "clock_end": 60,
+            "return_dbr": 0,
+            "return_e": 0,
+            "current": 4,
+            "switching": 0,
+            "switches": 25,
+            "gateway_calls": 38,
+            "os_calls": 0,
+            "forwarded_cops": 0,
+            "os_owner": 255,
+            "tick_pending": 0,
+            "vbi_count": 49,
+            "vbi_dispatches": 0,
+            "irq_depth": 0,
+            "tasks": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_records": [
+              [
+                0,
+                0,
+                0,
+                0,
+                254,
+                71,
+                241,
+                71,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                0,
+                67,
+                254,
+                71,
+                88,
+                106,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                254,
+                87,
+                241,
+                87,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                36,
+                0,
+                83,
+                254,
+                87,
+                186,
+                97,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                254,
+                110,
+                237,
+                110,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                46,
+                0,
+                106,
+                254,
+                110,
+                88,
+                106,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                254,
+                118,
+                237,
+                118,
+                0,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                90,
+                0,
+                114,
+                254,
+                118,
+                88,
+                106,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                254,
+                126,
+                237,
+                126,
+                3,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                92,
+                0,
+                122,
+                254,
+                126,
+                88,
+                106,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            ],
+            "ready_queue": [
+              67,
+              1,
+              15,
+              0,
+              0,
+              0,
+              64,
+              1,
+              15
+            ],
+            "live_tasks": 0,
+            "idle_runs": 1,
+            "created": 1,
+            "signal_nmi_checkpoints": 0,
+            "wake_queue": [
+              76,
+              1,
+              15,
+              0,
+              0,
+              0,
+              73,
+              1,
+              15
+            ],
+            "root_task": [
+              67,
+              1,
+              15,
+              64,
+              1,
+              15,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              255,
+              255,
+              0,
+              255,
+              255,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              241,
+              71,
+              0,
+              0,
+              0,
+              66,
+              0,
+              0,
+              0,
+              72,
+              0,
+              202,
+              1,
+              15,
+              0,
+              0,
+              0,
+              199,
+              1,
+              15,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "guards": "intact"
+          },
+          "completed": 1,
+          "error": 0
+        }
+      ]
+    },
+    "sio": {
+      "record": "docs/qualification/sio-feasibility.json",
+      "sha256": "8fa820e348bc359f21be04e6789e53d8971ad3617f0299f58b1579001d193659",
+      "cases": 13,
+      "timing": "unchanged from slice 1"
+    }
+  },
+  "diagnostic_reservations": {
+    "mapped_regions_including_os": 55312,
+    "unlisted_table_arena_slack": 960,
+    "near_image_arena_capacity": 2048,
+    "bank_zero_before_inspection": 58320,
+    "post_probe_inspection_code": {
+      "address": 33024,
+      "bytes": 1536
+    },
+    "post_probe_inspection_buffer": {
+      "address": 36864,
+      "bytes": 8192,
+      "already_counted_in": "os-high; borrowed only after probe in the isolated cold-launch fixture"
+    },
+    "bank_zero_with_inspection": 59856,
+    "upper_record_fixtures_including_canaries": 216,
+    "new_production_fixed_bank_zero": 0,
+    "new_production_per_task_bank_zero": 0
+  }
+}

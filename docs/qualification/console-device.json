@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-21",
+  "status": "pass",
+  "scope": "Slice 4: fixture-enabled public console device requests and one worker; physical display and ordinary publication remain pending.",
+  "source_revision_before_change": "9d12b8d",
+  "inputs": {
+    "abi/console.json": "d9593ca16784b1d545fa48cbedff4c24b11afbe6a60f2029464c3af7787179c9",
+    "lib/consolecapture.act": "203ea1eefb0266b668568b1dbc069f3395516eda24eb3f54489ac0ff94570c4e",
+    "lib/consoleadapter.act": "efc765739ef83ab901bffb73a6ffe31d20b235ebbc55b99768d3d1f930b49cc9",
+    "lib/consoledriver.act": "b1cf0ec243aea26b9298da9fd2f0d29d52693e926cb94a5bf8155fd8c124e97c",
+    "lib/task-console.inc": "93c8f55bc5606d73f974eede3604cd22c6bd5b835d4ddfa51de592a635337f81",
+    "lib/task-io.inc": "173dc1c124a9325cfda7de73b2aae06d52c8470ab6c416cd979741da3133298c",
+    "lib/task-wakes.inc": "9fc22d4dec44c71e29c8a1dedeedc2de1834fe3cb944be71bdc2978e956539f4",
+    "lib/taskpolicy.act": "e8b4c32670da4b8d878abdaa6b353e100d31452295dd8e9e0c44e329fcc0b8bb",
+    "tools/generate_console.py": "4d1dfae02d61b836c4509a3e1ba710c0fd1480bf1a66f84ad81ee3ca919b5a0a",
+    "tools/generate_io.py": "10d4334c03c0f3cb5e295180d9db1f443039347f5a4be65363b83dc540b9f40a",
+    "tools/generate_tasks.py": "de7cb532fb6e5666c50d21b9b4245a07e9e509d01f93167f4b332b3a05fcdb63",
+    "tools/native_program.py": "a69a5183b12cd40b6c9006b6045d3dea899a46f74a2a033df8e1db6898771d1b",
+    "platform/altirraos/console.s": "f29d5d3c1421b12abe5864ff99d129316f09f2bc91514da38998857e4983912c",
+    "tests/programs/native_console_device.act": "bb99278bc32980f4d12bcb2d8ea4f55755ef4830e9ebbdbbf6732436a0ccdb22",
+    "tools/test_console_device.py": "1dc1c664c303ec7d2109657fa352dfbd1ae2b4083e238884d5bbb18b88c41fb7"
+  },
+  "pin": "toolchain/altirra-console.json",
+  "pin_sha256": "9de15dcfe3cb25bb3746cf62024a9bce02e0e231be267cd2418448fb1423077c",
+  "limits": {
+    "host_seconds": 240,
+    "guest_frames": 12000,
+    "source_bytes_per_quantum": 64,
+    "edited_cells_per_quantum": 40
+  },
+  "memory": {
+    "fixed_bank_zero_reserved_delta": 0,
+    "per_task_bank_zero_reserved_delta": 0,
+    "loading_including_os": 57232,
+    "runtime_including_os": 61536,
+    "upper_metadata": 256,
+    "service": 136,
+    "instance": 62,
+    "presentation": 26,
+    "padding_unused": 32,
+    "capture_existing_arena": 288,
+    "boot_existing_arena": 16,
+    "resident_heap_payload": 1088,
+    "resident_task_slots": 1,
+    "existing_slot_bytes": 1568
+  },
+  "cases": [
+    {
+      "name": "ordered-raw",
+      "status": "pass",
+      "artifact": "build/console-slice4/ordered-raw/results.json",
+      "artifact_sha256": "4445abfded920f23faed31a8c4eb13cbc0af962aa567d92b979b9ce107e6bc34",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "image_sha256": "7c8fe4aa4a03c8e35cf4d8a83a02b926ae9916c1abe18d829fe1dc93b8c9042f",
+      "xex_sha256": "57bea15721695cddf0d192b1100537f861ee7af223ffd2e6e2eda5f381bd2de1",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": [
+        90
+      ],
+      "hardware_restored": {
+        "mask": "c0",
+        "skctl": "03",
+        "key": "c6fe",
+        "break": "07ff"
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 492,
+            "untouched_above_floor": 788
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 698,
+            "untouched_above_floor": 70
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 266,
+            "untouched_above_floor": 502
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 37,
+            "untouched_above_floor": 219
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1200,
+          "untouched_from_base": 336,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        "gateway_calls": 5788,
+        "switches": 95,
+        "os_calls": 0
+      },
+      "native_helper_bytes": 7422
+    },
+    {
+      "name": "ordered-opt",
+      "status": "pass",
+      "artifact": "build/console-slice4/ordered-opt/results.json",
+      "artifact_sha256": "11693730c70372b9484a1863de28105efe2d4aaa267d083df4217830b8ed81d6",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "image_sha256": "025ece03e0f157409f3a14542b4d34193a76da9a4e01d74a56f09c932e4331dc",
+      "xex_sha256": "e21c4d09ef9fa893b2a0f270eef3562f1261495ad2abf5d273a01ff8a1cbe4ec",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": [
+        90
+      ],
+      "hardware_restored": {
+        "mask": "c0",
+        "skctl": "03",
+        "key": "c6fe",
+        "break": "07ff"
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 428,
+            "untouched_above_floor": 852
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 552,
+            "untouched_above_floor": 216
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 196,
+            "untouched_above_floor": 572
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 37,
+            "untouched_above_floor": 219
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1105,
+          "untouched_from_base": 431,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        "gateway_calls": 5792,
+        "switches": 91,
+        "os_calls": 0
+      },
+      "native_helper_bytes": 7422
+    }
+  ],
+  "regressions": [
+    {
+      "name": "core-opt",
+      "status": "pass",
+      "artifact": "build/console-slice4/core-opt/results.json",
+      "artifact_sha256": "22628dd83c883efd3cfd1f72e820afbf34de0fb623209af5a53b3c34837ad8a3",
+      "cases": 1
+    },
+    {
+      "name": "sio-raw",
+      "status": "pass",
+      "artifact": "build/console-slice4/sio-raw/results.json",
+      "artifact_sha256": "38bf5ad574a08434cf004e9b826ccebf8f7ca66206ffd58dda3dd0abe469fcd9",
+      "cases": 1
+    },
+    {
+      "name": "sio-opt",
+      "status": "pass",
+      "artifact": "build/console-slice4/sio-opt/results.json",
+      "artifact_sha256": "6cb9934a4b9756a4ae47146c003839fee6ed4ede44624b812c990e5adaec3f16",
+      "cases": 1
+    },
+    {
+      "name": "input-regression",
+      "status": "pass",
+      "artifact": "build/console-slice4/input-regression/results.json",
+      "artifact_sha256": "17d0eb85246cf28ba888cde4109c44344e7e4b04509c66df5e794aee14c802ab",
+      "cases": 1
+    },
+    {
+      "name": "io-raw",
+      "status": "pass",
+      "artifact": "build/console-slice4/io-raw/results.json",
+      "artifact_sha256": "267e31a8d26864fc0ee9cf72d3d9471b701814981d0fb2e6f61876e2776abe3b",
+      "cases": 1
+    },
+    {
+      "name": "io-opt",
+      "status": "pass",
+      "artifact": "build/console-slice4/io-opt/results.json",
+      "artifact_sha256": "5297b8fc8bcb777f5fc8aadc03af7aeba61001547a87205621d3084ee006b272",
+      "cases": 1
+    },
+    {
+      "name": "io-queues-fast",
+      "status": "pass",
+      "artifact": "build/console-slice4/io-queues-fast/results.json",
+      "artifact_sha256": "e7847b9c2ea0c5d866cd1bba9ee1d8a051f1c10b132899b28cbf2c041964b6a6",
+      "cases": 8
+    }
+  ],
+  "coverage": [
+    "Exclusive unit 0; full-width unit/flags; undersized request rejection",
+    "Quick zero/error completion, SendIO always replied, specific WaitIO and unrelated shared-port replies",
+    "One pending read does not stall another task writing through its own port",
+    "Queued abort and active abort finishing an in-progress logical scroll; one terminal reply",
+    "65,560-byte linear write crosses banks and is not length-narrowed; source freed before subsequent retained-cell checks",
+    "Controlled FIFO overflow, zero read retaining loss, next nonempty read reporting error/zero, CLEAR ordering with waiting read",
+    "Physical POKEY A/RETURN/BREAK delivered as 97/10/3 through public READ",
+    "Heap ownership, full stack/domain guards, untouched interrupt reserves and safe native input release"
+  ],
+  "limitations": [
+    "No screen presentation yet; input is not echoed by the device",
+    "OpenDevice does not start the service; explicit private fixture startup only",
+    "Close requires caller collection of every borrowed request; queued/active requests are checked, no per-request collection ledger",
+    "Controlled FIFO-loss fixtures supplement separately qualified hardware capture; do not claim those synthetic cases are physical input",
+    "Eight simultaneously live Tasks remain unqualified"
+  ]
+}

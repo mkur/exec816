@@ -1,0 +1,146 @@
+MODULE TASKABI
+USE EXEC
+USE EXECLISTS
+INCLUDE "task-types.inc"
+
+Task ARRAY records(2)
+ADDRESS ARRAY facts(18)
+BYTE ARRAY previous(256)
+BYTE nesting,created
+LONGCARD ARRAY creation(2)
+PROC POINTER missing()
+
+; These ordinary emitted calls test representations, not scheduler policy.
+Task POINTER FUNC AddTask(Task POINTER item PROC POINTER initialPC() PROC
+    POINTER finalPC())
+
+  facts(11)=ADDRESS(initialPC)
+  facts(12)=ADDRESS(finalPC)
+
+RETURN(item)
+
+Task POINTER FUNC CreateTask(CSTRING name LONGINT priority PROC POINTER initialPC()
+    LONGCARD stackSize)
+
+  creation(0)=LONGCARD(priority)
+  creation(1)=stackSize
+  created=(BYTE POINTER(name)^=65 AND initialPC=@Entry)
+
+RETURN(@records(0))
+
+PROC RemTask(Task POINTER item)
+
+  item.tc_State=T_TS_REMOVED
+
+RETURN
+
+Task POINTER FUNC FindTask(BYTE POINTER name)
+
+RETURN(Task POINTER(name))
+
+BYTE FUNC SetTaskPri(Task POINTER item BYTE priority)
+  BYTE old
+
+  old=item.tc_Node.ln_Pri
+  item.tc_Node.ln_Pri=priority
+
+RETURN(old)
+
+PROC Forbid()
+
+  nesting==+1
+
+RETURN
+
+PROC Permit()
+
+  nesting==-1
+
+RETURN
+
+PROC Entry()
+
+RETURN
+
+PROC Finalizer()
+
+RETURN
+
+PROC Layout()
+
+  facts(0)=ADDRESS(@records(1))-ADDRESS(@records(0))
+  facts(1)=ADDRESS(@records(0).tc_Node)-ADDRESS(@records(0))
+  facts(2)=ADDRESS(@records(0).tc_Flags)-ADDRESS(@records(0))
+  facts(3)=ADDRESS(@records(0).tc_State)-ADDRESS(@records(0))
+  facts(4)=ADDRESS(@records(0).tc_IDNestCnt)-ADDRESS(@records(0))
+
+RETURN
+
+PROC LayoutStack()
+
+  facts(5)=ADDRESS(@records(0).tc_TDNestCnt)-ADDRESS(@records(0))
+  facts(6)=ADDRESS(@records(0).tc_SPReg)-ADDRESS(@records(0))
+  facts(7)=ADDRESS(@records(0).tc_SPLower)-ADDRESS(@records(0))
+  facts(8)=ADDRESS(@records(0).tc_SPUpper)-ADDRESS(@records(0))
+
+RETURN
+
+PROC LayoutTail()
+
+  facts(9)=ADDRESS(@records(0).tc_MemEntry)-ADDRESS(@records(0))
+  facts(10)=ADDRESS(@records(0).tc_UserData)-ADDRESS(@records(0))
+
+RETURN
+
+PROC Calls()
+  Task POINTER item,result
+  CARD index
+
+  result=CreateTask(c"ABI",-128,@Entry,LONGCARD($12345678))
+  created=created AND result=@records(0)
+  item=Task POINTER($04ffef)
+  result=AddTask(item,@Entry,@Finalizer)
+  facts(13)=ADDRESS(result)
+  item.tc_Node.ln_Name=BYTE POINTER($05ffff)
+  item.tc_Node.ln_Type=T_NT_TASK
+  item.tc_Node.ln_Pri=$ff
+  item.tc_Flags=0
+  item.tc_IDNestCnt=$ff
+  item.tc_TDNestCnt=$ff
+  item.tc_SPReg=$57fe
+  item.tc_SPLower=$5200
+  item.tc_SPUpper=$5800
+  item.tc_UserData=$bc4567
+  EXECLISTS.NewList(@item.tc_MemEntry)
+  item.tc_MemEntry.lh_Type=0
+  item.tc_MemEntry.lh_Pad=0
+  FOR index=0 TO 255 DO
+    previous(index)=SetTaskPri(item,BYTE(index))
+  OD
+
+  facts(14)=ADDRESS(FindTask(item.tc_Node.ln_Name))
+  RemTask(item)
+  facts(15)=ADDRESS(item.tc_State)
+  result=AddTask(@records(0),@Entry,missing)
+  facts(16)=ADDRESS(result)-ADDRESS(@records(0))
+  facts(17)=facts(12)
+  ; Restore the nonnull finalizer observation for the host's address check.
+  result=AddTask(item,@Entry,@Finalizer)
+  Forbid()
+  Forbid()
+  Permit()
+  Permit()
+
+RETURN
+
+; Exercise Task-service signatures, stack metadata and public record layout.
+PROC Main()
+
+  Layout()
+  LayoutStack()
+  LayoutTail()
+  Calls()
+
+RETURN
+
+ENDMODULE

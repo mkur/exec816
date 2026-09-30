@@ -1,0 +1,33 @@
+; The existing hosted startup owns the machine; C runs as an ordinary Task.
+MODULE CALYPSI
+USE EXEC
+INCLUDE "../../examples/example-output.inc"
+INCLUDE "c-image.inc"
+INCLUDE "dos-bridge.inc"
+
+CARD FUNC POINTER cMain()
+BYTE ARRAY failed=c"C example failed.\n"
+
+; Lend standard output to C; the launcher retains console ownership.
+PROC Main()
+
+  IF OpenConsole()=0 THEN
+    RETURN
+  FI
+
+  BindDos()
+  LET previous=DOS.SelectOutput(console)
+  LET entry=ADDRESS POINTER(@cMain)
+  entry^=C_MAIN
+  LET result=cMain()
+  LET selected=DOS.SelectOutput(previous)
+
+  IF result<>0 THEN
+    Print(failed)
+  FI
+
+  CloseConsole()
+
+RETURN
+
+ENDMODULE

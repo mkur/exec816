@@ -1,0 +1,126 @@
+MODULE HEAPAPI
+USE EXEC
+USE HEAPCORE
+LONGCARD ARRAY facts(28)
+CARD checks
+EXEC.MemHeader privatePool
+
+PROC Need(BYTE POINTER p)
+
+  IF p=BYTE POINTER(0) THEN
+    HEAPCORE.Abort($ff70)
+  FI
+
+RETURN
+
+; Check public allocation sizes, memory classes and matching release.
+PROC Ordinary()
+  BYTE POINTER p
+
+  facts(0)=EXEC.AvailMem(0)
+  facts(1)=EXEC.AvailMem(EXEC.MEMF_TOTAL)
+  facts(2)=EXEC.AvailMem(EXEC.MEMF_LARGEST)
+  facts(3)=LONGCARD(ADDRESS(EXEC.AllocMem(0,0)))
+  facts(4)=LONGCARD(ADDRESS(EXEC.AllocMem(LONGCARD(65537),0)))
+  facts(5)=LONGCARD(ADDRESS(EXEC.AllocMem(8,EXEC.MEMF_CHIP)))
+  p=EXEC.AllocMem(LONGCARD(65536),0)
+  Need(p)
+  facts(6)=LONGCARD(ADDRESS(p))
+  facts(7)=EXEC.TypeOfMem(p)
+  p^=$3c
+  p(SIZE($ffff))=$a7
+  EXEC.FreeMem(p,LONGCARD(65536))
+  facts(8)=EXEC.AvailMem(0)
+
+RETURN
+
+; Exercise vector allocation's hidden size bookkeeping and cleanup.
+PROC Vectors()
+  BYTE POINTER p
+  LONGCARD POINTER prefix
+
+  p=EXEC.AllocVec(9,EXEC.MEMF_CLEAR)
+  Need(p)
+  facts(9)=LONGCARD(p(0)+p(8))
+  prefix=LONGCARD POINTER(ADDRESS(p)-SIZE(8))
+  facts(10)=prefix(0)
+  facts(11)=prefix(1)
+  EXEC.FreeVec(p)
+  facts(24)=EXEC.AvailMem(0)
+  facts(25)=EXEC.AvailMem(EXEC.MEMF_LARGEST)
+  p=EXEC.AllocVec(LONGCARD($fff8),0)
+  Need(p)
+  facts(12)=LONGCARD(ADDRESS(p))
+  p^=$27
+  p(SIZE($fff7))=$74
+  EXEC.FreeVec(p)
+  facts(13)=LONGCARD(ADDRESS(EXEC.AllocVec(LONGCARD($fff9),0)))
+  p=EXEC.AllocMem(LONGCARD(65537),EXEC.MEMF_LINEAR)
+  Need(p)
+  facts(14)=LONGCARD(ADDRESS(p))
+  p^=$38
+  p(SIZE($10000))=$91
+  EXEC.FreeMem(p,LONGCARD(65537))
+  facts(15)=EXEC.AvailMem(0)
+
+RETURN
+
+; Keep private-header allocation distinct from the system heap's ownership.
+PROC Private()
+  BYTE POINTER memoryBlock,p
+
+  memoryBlock=EXEC.AllocMem(LONGCARD(131080),EXEC.MEMF_LINEAR)
+  Need(memoryBlock)
+  privatePool.mh_Lower=memoryBlock
+  privatePool.mh_Upper=LONGCARD(ADDRESS(memoryBlock))+LONGCARD(131080)
+  privatePool.mh_Free=LONGCARD(131080)
+  privatePool.mh_First=EXEC.MemChunk POINTER(memoryBlock)
+  privatePool.mh_First.mc_Next=EXEC.MemChunk POINTER(0)
+  privatePool.mh_First.mc_Bytes=LONGCARD(131080)
+  p=EXEC.Allocate(@privatePool,LONGCARD(65537))
+  Need(p)
+  facts(16)=LONGCARD(ADDRESS(p))
+  facts(17)=privatePool.mh_Free
+  EXEC.Deallocate(@privatePool,p,LONGCARD(65537))
+  facts(18)=privatePool.mh_Free
+  EXEC.FreeMem(memoryBlock,LONGCARD(131080))
+
+RETURN
+
+; Check memory services while the caller holds scheduler exclusion.
+PROC Exclusion()
+  BYTE POINTER p
+  EXEC.Task POINTER self
+
+  EXEC.Forbid()
+  EXEC.Forbid()
+  self=EXEC.FindTask(BYTE POINTER(0))
+  p=EXEC.AllocMem(17,EXEC.MEMF_CLEAR OR EXEC.MEMF_NO_EXPUNGE)
+  Need(p)
+  facts(19)=LONGCARD(self.tc_TDNestCnt)
+  facts(20)=LONGCARD(p(0)+p(16))
+  EXEC.FreeMem(p,17)
+  EXEC.Permit()
+  EXEC.Permit()
+  EXEC.FreeMem(BYTE POINTER(0),0)
+  EXEC.FreeVec(BYTE POINTER(0))
+  facts(21)=EXEC.AvailMem(0)
+  facts(22)=LONGCARD(EXEC.Version())
+  facts(23)=EXEC.TypeOfMem(BYTE POINTER($10000))
+  facts(26)=LONGCARD(ADDRESS(EXEC.AllocMem(LONGCARD($ffffffff),EXEC.MEMF_LINEAR)))
+  facts(27)=LONGCARD(ADDRESS(EXEC.AllocVec(0,0)))
+
+RETURN
+
+; Exercise public allocation, vectors, private headers and exclusion.
+PROC Main()
+
+  Ordinary()
+  Vectors()
+  Private()
+  Exclusion()
+  checks=1
+
+RETURN
+
+ENDMODULE

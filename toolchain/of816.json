@@ -1,0 +1,6 @@
+{
+  "repository": "https://github.com/mgcaret/of816.git",
+  "revision": "8c923624520fab2196d5c75a97ab94da599d420a",
+  "license": "BSD-2-Clause",
+  "scope": "Pinned Forth core for the experimental AltirraOS XEX boot monitor"
+}

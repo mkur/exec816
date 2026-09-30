@@ -1,0 +1,81 @@
+; File positions belong to shared backing; the one filesystem worker serializes
+; Read/Seek against that cursor. Locks own separate metadata records.
+MODULE FSFILES
+USE EXEC
+USE FSTYPES
+USE HEAPCORE
+USE DOSOBJECTS
+
+; Allocate a detached wrapper; backing is created or retained by its caller.
+PUBLIC FSTYPES.FileObject POINTER FUNC Allocate()
+
+  LET item=FSTYPES.FileObject POINTER(EXEC.AllocMem(
+      SIZEOF(FSTYPES.FileObject),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF item<>NULL THEN
+    item.common.header.kind=DOSOBJECTS.KIND_FILE
+  FI
+
+RETURN(item)
+
+; Give a new file its own position and reference-counted backing.
+PUBLIC BYTE FUNC Create(FSTYPES.FileObject POINTER item)
+  FSTYPES.FileBacking POINTER state
+
+  state=FSTYPES.FileBacking POINTER(EXEC.AllocMem(SIZEOF(FSTYPES.FileBacking),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF state=NULL THEN
+    RETURN(0)
+  FI
+
+  state.references=1
+  item.backing=state
+
+RETURN(1)
+
+; Share the file position with another handle without losing its lifetime.
+PUBLIC BYTE FUNC Retain(FSTYPES.FileObject POINTER source,target)
+  FSTYPES.FileBacking POINTER state
+
+  state=source.backing
+  IF state=NULL THEN
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  IF state.references=0 OR state.references=$ffff THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  state.references==+1
+  target.backing=state
+  EXEC.Permit()
+
+RETURN(1)
+
+; Drop this handle's reference; the last handle owns freeing the backing.
+PUBLIC PROC Release(FSTYPES.FileObject POINTER item)
+  FSTYPES.FileBacking POINTER state
+  BYTE last
+
+  state=item.backing
+  IF state=NULL THEN
+    RETURN
+  FI
+
+  EXEC.Forbid()
+  IF state.references=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  state.references==-1
+  last=state.references=0
+  item.backing=NULL
+  EXEC.Permit()
+  IF last<>0 THEN
+    EXEC.FreeMem(BYTE POINTER(state),SIZEOF(FSTYPES.FileBacking))
+  FI
+
+RETURN
+
+ENDMODULE

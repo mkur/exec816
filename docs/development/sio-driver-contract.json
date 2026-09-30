@@ -1,0 +1,68 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "cases": [
+    {
+      "mode": "raw",
+      "status": "pass",
+      "checks": [
+        19
+      ],
+      "results": "build/development/sio-driver/s1-raw/results.json",
+      "results_sha256": "27755b7e8d42711d7d9d3443fa94f5a20e9df4adf0c8d0e3db70d335a4600110",
+      "xex_sha256": "46bbdde3dee6a8af08bedd847c88d85689e4d9fa195466bca44af617b8d3820a",
+      "compiler": "47cd55b2dac510922949832332b7a2c3220885be",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "scope": "Public dequeue/claim exclusion, signal-before-Wait, immediate reply reuse/free, guards and ownership restoration"
+    },
+    {
+      "mode": "opt",
+      "status": "pass",
+      "checks": [
+        19
+      ],
+      "results": "build/development/sio-driver/s1-opt/results.json",
+      "results_sha256": "5accd77521787e5e34b9a51abeb093050b3dc615dbe0786de617946cd547c7d8",
+      "xex_sha256": "25ffeb3f07a08f3516b7d9fef6bb9a5d38c3132cfa0f31ff71b601a7a047aef7",
+      "compiler": "47cd55b2dac510922949832332b7a2c3220885be",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "scope": "Public dequeue/claim exclusion, signal-before-Wait, immediate reply reuse/free, guards and ownership restoration"
+    }
+  ],
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    }
+  },
+  "host_tests": 199,
+  "bank_zero_reservation_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "memory_maps_equal_to_g3": true
+}

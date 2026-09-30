@@ -1,0 +1,354 @@
+MODULE NATIVECONSOLECORE
+USE EXEC
+USE HEAPCORE
+USE CONSOLECORE
+USE CONSOLETYPES
+INCLUDE "console-storage-action.inc"
+CARD checks,quanta,used
+CONSOLETYPES.Instance POINTER first,second,full
+BYTE POINTER firstCells,secondCells,fullCells,output
+BYTE ARRAY input(130)
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+BYTE POINTER FUNC Guarded(CARD bytes)
+  BYTE POINTER buffer
+  CARD index
+
+  buffer=EXEC.AllocMem(LONGCARD(bytes+32),EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR)
+  Require(buffer<>BYTE POINTER(0))
+  FOR index=0 TO 15 DO
+    buffer(index)=$a5
+    buffer(index+bytes+16)=$a5
+  OD
+
+RETURN(buffer+16)
+
+PROC FreeGuarded(BYTE POINTER buffer CARD bytes)
+  BYTE POINTER origin
+  CARD index
+
+  origin=buffer-16
+  FOR index=0 TO 15 DO
+    Require(origin(index)=$a5 AND origin(index+bytes+16)=$a5)
+  OD
+
+  EXEC.FreeMem(origin,LONGCARD(bytes+32))
+
+RETURN
+
+PROC Finish(CONSOLETYPES.Instance POINTER instance)
+
+  IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
+    CONSOLECORE.EditQuantum(instance)
+    Require(instance.operation=CONSOLETYPES.OP_IDLE)
+    quanta==+1
+  FI
+
+RETURN
+
+PROC Initialize()
+
+  first=CONSOLETYPES.Instance POINTER(Guarded(CONSOLETYPES.INSTANCE_SIZE))
+  second=CONSOLETYPES.Instance POINTER(Guarded(CONSOLETYPES.INSTANCE_SIZE))
+  full=CONSOLETYPES.Instance POINTER(Guarded(CONSOLETYPES.INSTANCE_SIZE))
+  firstCells=Guarded(24)
+  secondCells=Guarded(10)
+  fullCells=Guarded(960)
+  Require(CONSOLECORE.Init(first,firstCells,8,3,24)=1)
+  Require(CONSOLECORE.Init(second,secondCells,5,2,10)=1)
+  Require(CONSOLECORE.Init(full,fullCells,40,24,960)=1)
+  Finish(first)
+  Finish(second)
+  Finish(full)
+
+RETURN
+
+PROC Offset(BYTE POINTER base,field CARD expected)
+
+  Require(LONGCARD(ADDRESS(field))-LONGCARD(ADDRESS(base))=LONGCARD(expected))
+
+RETURN
+
+PROC Layouts()
+
+  Offset(BYTE POINTER(first),BYTE POINTER(@first.column),
+      CONSOLETYPES.INSTANCE_COLUMN)
+  Offset(BYTE POINTER(first),BYTE POINTER(@first.writes),
+      CONSOLETYPES.INSTANCE_WRITES)
+  Offset(BYTE POINTER(first),BYTE POINTER(@first.opens),CONSOLETYPES.INSTANCE_OPENS)
+  Offset(BYTE POINTER(first),BYTE POINTER(@first.lineStart),
+      CONSOLETYPES.INSTANCE_LINESTART)
+
+RETURN
+
+PROC ServiceLayout()
+  CONSOLETYPES.Service POINTER service
+  CONSOLETYPES.Presentation POINTER presentation
+
+  service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
+  presentation=CONSOLETYPES.Presentation POINTER(ADDRESS(CS_PRESENTATION))
+  Offset(BYTE POINTER(service),BYTE POINTER(@service.task),
+      CONSOLETYPES.SERVICE_TASK)
+  Offset(BYTE POINTER(service),BYTE POINTER(@service.keyboardMask),
+      CONSOLETYPES.SERVICE_KEYBOARDMASK)
+  Offset(BYTE POINTER(presentation),BYTE POINTER(@presentation.height),
+      CONSOLETYPES.PRESENTATION_HEIGHT)
+
+RETURN
+
+PROC CaptureLayout()
+  CONSOLETYPES.Capture POINTER capture
+  EXEC.IOStdReq request
+
+  capture=CONSOLETYPES.Capture POINTER(ADDRESS(CS_CAPTURE))
+  Offset(BYTE POINTER(capture),BYTE POINTER(@capture.binding.mask),
+      CONSOLETYPES.CAPTURE_BINDING+CONSOLETYPES.BINDING_MASK)
+  Offset(BYTE POINTER(capture),BYTE POINTER(@capture.events(63).tick),
+      CONSOLETYPES.CAPTURE_EVENTS+63*CONSOLETYPES.RAWEVENT_SIZE+CONSOLETYPES.RAWEVENT_TICK)
+  Offset(BYTE POINTER(@request),BYTE POINTER(@request.io_Offset),38)
+  Require(EXEC.IOSTDREQ_SIZE=42)
+
+RETURN
+
+PROC RejectExtents()
+
+  Require(CONSOLECORE.Init(first,firstCells,0,3,24)=0)
+  Require(CONSOLECORE.Init(first,firstCells,8,0,24)=0)
+  Require(CONSOLECORE.Init(first,firstCells,$ffff,$ffff,24)=0)
+  Require(CONSOLECORE.Init(first,firstCells,8,3,23)=0)
+  Require(CONSOLECORE.Init(first,BYTE POINTER(ADDRESS($fffff0)),8,3,24)=0)
+  Require(CONSOLECORE.Init(first,BYTE POINTER(ADDRESS($8000)),8,3,24)=0)
+  Require(CONSOLECORE.Init(first,BYTE POINTER(first),8,3,24)=0)
+  Require(first.width=8 AND first.height=3 AND first.cells=firstCells)
+
+RETURN
+
+; Keep edits to one retained terminal from changing another instance's cells.
+PROC Isolation()
+  CARD index
+
+  input(0)=65
+  input(1)=66
+  input(2)=67
+  input(3)=8
+  input(4)=68
+  input(5)=9
+  used=CONSOLECORE.Feed(first,input,6)
+  Require(used=6)
+  Require(first.column=0 AND first.row=1)
+  FOR index=0 TO 6 DO
+    input(index)=BYTE(49+index)
+  OD
+
+  used=CONSOLECORE.Feed(second,input,7)
+  Require(used=7)
+  Require(second.column=2 AND second.row=1)
+  input(0)=69
+  input(1)=13
+  input(2)=90
+  input(3)=10
+  input(4)=81
+  input(5)=$80
+  used=CONSOLECORE.Feed(first,input,6)
+  Require(used=6)
+  Require(first.column=2 AND first.row=2)
+
+RETURN
+
+; Exercise supported text controls at cursor and row boundaries.
+PROC Controls()
+  CARD index
+
+  input(0)=0
+  input(1)=7
+  input(2)=11
+  input(3)=14
+  input(4)=27
+  input(5)=127
+  used=CONSOLECORE.Feed(first,input,6)
+  Require(used=6)
+  Require(first.column=2 AND first.row=2)
+  FOR index=0 TO 7 DO
+    input(index)=8
+  OD
+
+  used=CONSOLECORE.Feed(first,input,8)
+  Require(used=8)
+  Require(first.column=0 AND first.row=2)
+
+RETURN
+
+; Check scrolling in a small terminal where every shifted cell can be
+; inspected.
+PROC SmallScroll()
+  CARD index
+
+  input(0)=10
+  input(1)=88
+  used=CONSOLECORE.Feed(second,input,2)
+  Require(used=1)
+  Require(second.operation=CONSOLETYPES.OP_SCROLL)
+  used=CONSOLECORE.Feed(second,@input(1),1)
+  Require(used=0)
+  Require(second.operation=0 AND secondCells(0)=54 AND secondCells(1)=55)
+  FOR index=0 TO 23 DO
+    output(index)=firstCells(index)
+  OD
+
+  FOR index=0 TO 9 DO
+    output(index+32)=secondCells(index)
+  OD
+
+  input(0)=12
+  used=CONSOLECORE.Feed(second,input,1)
+  Require(used=1)
+  Finish(second)
+  FOR index=0 TO 9 DO
+    Require(secondCells(index)=32)
+  OD
+
+  Require(second.column=0 AND second.row=0 AND first.row=2)
+
+RETURN
+
+PROC FullScreen()
+  CARD index,row,column
+
+  FOR index=0 TO 129 DO
+    input(index)=65
+  OD
+
+  used=CONSOLECORE.Feed(full,input,130)
+  Require(used=64)
+  Require(full.row=1 AND full.column=24)
+  ; Seed rows independently, then trigger a scroll by wrapping the last cell.
+  index=0
+  FOR row=0 TO 23 DO
+    FOR column=0 TO 39 DO
+      fullCells(index)=BYTE(65+row)
+      index==+1
+    OD
+  OD
+
+RETURN
+
+; Verify full-size scrolling, blank-row contents and resulting dirty bounds.
+PROC FullScroll()
+  CARD index,before
+
+  full.row=23
+  full.column=39
+  full.lineStart=920
+  input(0)=33
+  used=CONSOLECORE.Feed(full,input,1)
+  Require(used=1)
+  Require(full.operation=CONSOLETYPES.OP_SCROLL AND full.column=0 AND full.row=23)
+  before=quanta
+  Finish(full)
+  Require(quanta-before=1)
+  FOR index=0 TO 959 DO
+    output(index+64)=fullCells(index)
+  OD
+
+  Require(fullCells(0)=66 AND fullCells(919)=33 AND fullCells(920)=32)
+
+RETURN
+
+PROC FullClear()
+  CARD index,before
+
+  before=quanta
+  input(0)=12
+  used=CONSOLECORE.Feed(full,input,1)
+  Require(used=1)
+  Finish(full)
+  Require(quanta-before=1)
+  FOR index=0 TO 959 DO
+    Require(fullCells(index)=32)
+  OD
+
+  Require(full.row=0 AND full.column=0)
+
+RETURN
+
+PROC Cleanup()
+
+  FreeGuarded(firstCells,24)
+  FreeGuarded(secondCells,10)
+  FreeGuarded(fullCells,960)
+  FreeGuarded(BYTE POINTER(first),CONSOLETYPES.INSTANCE_SIZE)
+  FreeGuarded(BYTE POINTER(second),CONSOLETYPES.INSTANCE_SIZE)
+  FreeGuarded(BYTE POINTER(full),CONSOLETYPES.INSTANCE_SIZE)
+
+RETURN
+
+; Bank-spanning odd rows and a one-row terminal use the same complete edit.
+PROC EdgeScroll()
+  CONSOLETYPES.Instance edge
+  CARD index
+
+  LET cells=BYTE POINTER($afffd)
+  Require(CONSOLECORE.Init(@edge,cells,3,1,3)=1)
+  Finish(@edge)
+  input(0)=65
+  input(1)=66
+  input(2)=67
+  used=CONSOLECORE.Feed(@edge,input,3)
+  Require(used=3 AND edge.operation=CONSOLETYPES.OP_SCROLL)
+  Finish(@edge)
+  FOR index=0 TO 2 DO
+    Require(cells(index)=32)
+  OD
+
+  Require(CONSOLECORE.Init(@edge,cells,3,3,9)=1)
+  Finish(@edge)
+  FOR index=0 TO 8 DO
+    cells(index)=BYTE(65+index)
+  OD
+
+  edge.operation=CONSOLETYPES.OP_SCROLL
+  Finish(@edge)
+  FOR index=0 TO 5 DO
+    Require(cells(index)=BYTE(68+index))
+  OD
+
+  FOR index=6 TO 8 DO
+    Require(cells(index)=32)
+  OD
+
+  Require((cells-1)^=$a5 AND cells(9)=$a5)
+
+RETURN
+
+; Exercise retained terminal layout, bounds, controls and scrolling.
+PROC Main()
+
+  output=BYTE POINTER(ADDRESS($d0010))
+  Initialize()
+  Layouts()
+  ServiceLayout()
+  CaptureLayout()
+  RejectExtents()
+  Isolation()
+  Controls()
+  SmallScroll()
+  FullScreen()
+  FullScroll()
+  FullClear()
+  EdgeScroll()
+  Cleanup()
+
+RETURN
+
+ENDMODULE

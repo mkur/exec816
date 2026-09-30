@@ -1,0 +1,1732 @@
+{
+  "status": "pass",
+  "clock_hz": 1773447.5,
+  "markers": {
+    "fs_worker": 522163,
+    "fs_begin": 506018,
+    "fs_complete": 506771,
+    "fs_checkpoint": 520457,
+    "fs_pump": 283171,
+    "fs_file_step": 519974,
+    "sdfs_consume": 434771,
+    "sdfs_drive": 436141,
+    "sdfs_continue": 438991,
+    "fs_reply": 370349,
+    "blockwire": 293761,
+    "block_begin": 304705,
+    "block_finish": 305404,
+    "block_prepare": 302676,
+    "driver_request": 257867,
+    "driver_validate": 254132,
+    "driver_prepare": 255963,
+    "driver_deadline": 255445,
+    "io_wait": 262980,
+    "sio_finish_policy": 154475,
+    "sio_take_policy": 153917,
+    "sio_enqueue_policy": 151006,
+    "io_complete_policy": 137963,
+    "dos_call": 288600,
+    "sio_start": 991263,
+    "sio_terminal": 993454,
+    "signal_post": 987542,
+    "sio_retire": 991609,
+    "sio_recovered": 991691,
+    "io_send_io": 990628,
+    "io_wait_io": 990811,
+    "io_check_io": 990646,
+    "tasks_forbid": 15121,
+    "tasks_permit": 15130,
+    "dos_submit": 290345,
+    "dos_dispatch": 517811,
+    "dos_collect": 290499,
+    "fs_worker_after_blockwire": 523257,
+    "fs_worker_after_fs_begin": 523090,
+    "fs_worker_after_fs_complete": 523370,
+    "fs_worker_after_fs_pump": 522568,
+    "fs_worker_after_fs_checkpoint0": 522692,
+    "fs_worker_after_fs_checkpoint1": 522980,
+    "driver_request_after_driver_validate": 258168,
+    "driver_request_after_driver_prepare": 258382,
+    "driver_request_after_sio_start": 258509,
+    "driver_request_after_sio_retire": 259007,
+    "driver_request_after_sio_recovered": 259317,
+    "sdfs_continue_after_sdfs_consume": 439621,
+    "sdfs_continue_after_sdfs_drive": 439716,
+    "driver_prepare_after_driver_deadline": 256453,
+    "blockwire_after_io_wait_io": 295014,
+    "blockwire_after_io_send_io": 294491,
+    "fs_pump_after_tasks_forbid": 283314,
+    "fs_pump_after_tasks_permit0": 283411,
+    "fs_pump_after_tasks_permit1": 284267
+  },
+  "trace_sha256": "8f0d08b22e3ed18e4628a635e4619a44fd1e87d27b3ea3b99e7cedfa524064e5",
+  "results_sha256": "28ac95a7733fbc4e336deba820d05e16608872643f8a54d767261fcea4cfa7dd",
+  "gaps": {
+    "count": 18,
+    "mean_ms": 34.740213310201995,
+    "min_ms": 24.787313974617234,
+    "max_ms": 76.20749979912007,
+    "sum_ms": 625.3238395836358
+  },
+  "ordinary_gaps": {
+    "count": 14,
+    "mean_ms": 25.202123466943824,
+    "min_ms": 24.787313974617234,
+    "max_ms": 25.55925675837599,
+    "sum_ms": 352.82972853721355
+  },
+  "read_boundary_gaps": {
+    "count": 4,
+    "mean_ms": 68.12352776160557,
+    "min_ms": 60.10891216120015,
+    "max_ms": 76.20749979912007,
+    "sum_ms": 272.4941110464223
+  },
+  "phases": {
+    "completion_to_worker": {
+      "count": 18,
+      "mean_ms": 1.090272853674364,
+      "min_ms": 0.8656162643664388,
+      "max_ms": 1.2604686634366116,
+      "sum_ms": 19.62491136613855
+    },
+    "retire_reply_collect": {
+      "count": 18,
+      "mean_ms": 3.950685505679381,
+      "min_ms": 3.8198198706192317,
+      "max_ms": 4.006321021625958,
+      "sum_ms": 71.11233910222886
+    },
+    "finish_cache_and_first_checkpoint": {
+      "count": 18,
+      "mean_ms": 3.342818155034192,
+      "min_ms": 2.473642439373029,
+      "max_ms": 5.898046037449657,
+      "sum_ms": 60.170726790615454
+    },
+    "consume_inclusive": {
+      "count": 18,
+      "mean_ms": 4.269642101675472,
+      "min_ms": 3.199981956048882,
+      "max_ms": 6.695927000940259,
+      "sum_ms": 76.8535578301585
+    },
+    "next_step_or_dos_packet_roundtrip": {
+      "count": 18,
+      "mean_ms": 12.326575623029282,
+      "min_ms": 2.2187716298339812,
+      "max_ms": 55.03200686797889,
+      "sum_ms": 221.87836121452708
+    },
+    "map_lookup_and_block_prepare": {
+      "count": 18,
+      "mean_ms": 1.2134204705806064,
+      "min_ms": 0.9878358395159709,
+      "max_ms": 4.464045312872244,
+      "sum_ms": 21.841568470450916
+    },
+    "blockwire_before_send": {
+      "count": 18,
+      "mean_ms": 2.952927059363816,
+      "min_ms": 2.1999523526915796,
+      "max_ms": 5.2660143590379755,
+      "sum_ms": 53.15268706854869
+    },
+    "send_to_driver_request": {
+      "count": 18,
+      "mean_ms": 3.89304510627527,
+      "min_ms": 3.725582516539114,
+      "max_ms": 3.918145307374478,
+      "sum_ms": 70.07481191295486
+    },
+    "driver_validate_prepare_start": {
+      "count": 18,
+      "mean_ms": 1.7008264348896085,
+      "min_ms": 1.6573651038443484,
+      "max_ms": 1.726228151665048,
+      "sum_ms": 30.614875828012952
+    }
+  },
+  "empty_pumps": {
+    "count": 68,
+    "mean_ms": 2.3072064771150704,
+    "min_ms": 1.9611519371168302,
+    "max_ms": 5.0530816390110225,
+    "sum_ms": 156.8900404438248
+  },
+  "empty_pump_phases": {
+    "registry_lookup_and_setup": {
+      "count": 68,
+      "mean_ms": 0.6858266588266142,
+      "min_ms": 0.6152564426068434,
+      "max_ms": 3.6376887390238504,
+      "sum_ms": 46.63621280020976
+    },
+    "forbid": {
+      "count": 68,
+      "mean_ms": 0.6959950389085134,
+      "min_ms": 0.6662869918618961,
+      "max_ms": 0.7718018153906444,
+      "sum_ms": 47.327662645778915
+    },
+    "empty_queue_check": {
+      "count": 68,
+      "mean_ms": 0.011474410551134078,
+      "min_ms": 0.01099553271241466,
+      "max_ms": 0.012546184761601345,
+      "sum_ms": 0.7802599174771173
+    },
+    "permit": {
+      "count": 68,
+      "mean_ms": 0.913910368828809,
+      "min_ms": 0.6678376439110828,
+      "max_ms": 3.5041916944256877,
+      "sum_ms": 62.145905080359015
+    }
+  },
+  "interpretation": "Wall-clock intervals include preemption and other system workers; consume is not exclusive copy CPU time. Pump totals overlap phase totals.",
+  "schema_version": 1,
+  "scope": "Passive SIO/filesystem path analysis of retained optimized HELLO; prime worker stopped; no production changes.",
+  "baseline_record": {
+    "path": "docs/experiments/spartados-prime-control.json",
+    "sha256": "ac8880765b378e540ec35cbc02a0edf4fb44120fd1e65d413d95456d5be9ed8f"
+  },
+  "inputs": {
+    "tools/trace_command_io.py": "2cddbbc4611ab7f656703b30301d03cb19c890c5f7cec7bbd63f7749160debce",
+    "tools/measure_command_loading.py": "70c1468e0cc872f687e5206ce987f8186c2ac8f87d47b96f268a58dbdb81a2a6",
+    "tools/sio_transaction_trace.py": "f35e2eb3c4285740f3d1062070c4b16456ae18353193600f569933383e5b1c8b",
+    "lib/io/siodriver.act": "b2a773ea02e217612d438f643bb1bc8c2db1e691062642934c13678eba0caf1f",
+    "lib/io/blockwire.act": "e0e024a35f3b5b0460abe4b3606e83cdf562f2452d95f255c83303c46e52c1a3",
+    "lib/fs/fsworker.act": "6cdd67e681508d9762a5ccd6f7fd5d929a8188ae00bf59b934f9548a29ebe968",
+    "lib/fs/fsoperation.act": "a13238217c1b21f0cbbbec924f78d68765c72f3bc4c29aa36e86d20ef8b33230",
+    "lib/spartados/sdfsfile.act": "69d89367b1b1a1306f7e99174d59f6e7e9e515264115ca93961c5a961a516ae0",
+    "lib/dos/programfile.act": "1ebd78896e373e32d3bc00c67ea5b07a44d6286e7f3f5a787949f62f4eaf420f",
+    "lib/exec/taskpolicy.act": "99c0d5174ce148de51691acf4f632919c6cc69f53af3475cd80777d142861b6a"
+  },
+  "xex_sha256": "8b6475243e718952756cf98f7b66a57d2b87695e1b4da2a9dccb41bb23592116",
+  "media_sha256": "2522811285c360cf6eb9473223dd3ef24b2c0a420f928a6f6592e30a8dc80efc",
+  "compiler": "47cd55b2dac510922949832332b7a2c3220885be",
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "samples": [
+    {
+      "after_sector": 70,
+      "next_sector": 71,
+      "read_boundary": false,
+      "begin": 4308258301,
+      "end": 4308303548,
+      "phases_ms": {
+        "completion_to_worker": 1.110125898849557,
+        "retire_reply_collect": 3.968541498973045,
+        "finish_cache_and_first_checkpoint": 2.51748360185458,
+        "consume_inclusive": 6.67626191358921,
+        "next_step_or_dos_packet_roundtrip": 2.2631061816039098,
+        "map_lookup_and_block_prepare": 1.038302515298592,
+        "blockwire_before_send": 2.311599300233021,
+        "send_to_driver_request": 3.918145307374478,
+        "driver_validate_prepare_start": 1.7100167893326417
+      },
+      "milliseconds": 25.513583007109034
+    },
+    {
+      "after_sector": 71,
+      "next_sector": 72,
+      "read_boundary": false,
+      "begin": 4308472639,
+      "end": 4308517904,
+      "phases_ms": {
+        "completion_to_worker": 1.1233769254516979,
+        "retire_reply_collect": 3.9674137520281825,
+        "finish_cache_and_first_checkpoint": 2.492038811411107,
+        "consume_inclusive": 6.676473366141371,
+        "next_step_or_dos_packet_roundtrip": 2.289114845519814,
+        "map_lookup_and_block_prepare": 1.0392188096912933,
+        "blockwire_before_send": 2.311528816048967,
+        "send_to_driver_request": 3.9177928864542086,
+        "driver_validate_prepare_start": 1.7067745168661603
+      },
+      "milliseconds": 25.5237327296128
+    },
+    {
+      "after_sector": 72,
+      "next_sector": 73,
+      "read_boundary": false,
+      "begin": 4308650986,
+      "end": 4308696238,
+      "phases_ms": {
+        "completion_to_worker": 1.1175267381752207,
+        "retire_reply_collect": 3.9675547203962904,
+        "finish_cache_and_first_checkpoint": 2.4787877848089668,
+        "consume_inclusive": 6.689231003455135,
+        "next_step_or_dos_packet_roundtrip": 2.2883395194952207,
+        "map_lookup_and_block_prepare": 1.0387959045869697,
+        "blockwire_before_send": 2.3139957624908547,
+        "send_to_driver_request": 3.917863370638263,
+        "driver_validate_prepare_start": 1.7043075704242725
+      },
+      "milliseconds": 25.51640237447119
+    },
+    {
+      "after_sector": 73,
+      "next_sector": 74,
+      "read_boundary": true,
+      "begin": 4309059846,
+      "end": 4309192788,
+      "phases_ms": {
+        "completion_to_worker": 1.1683458348781117,
+        "retire_reply_collect": 3.8198198706192317,
+        "finish_cache_and_first_checkpoint": 2.545536307108048,
+        "consume_inclusive": 3.423628272052034,
+        "next_step_or_dos_packet_roundtrip": 55.03200686797889,
+        "map_lookup_and_block_prepare": 1.0390778413231854,
+        "blockwire_before_send": 2.311458331864913,
+        "send_to_driver_request": 3.9179338548223166,
+        "driver_validate_prepare_start": 1.7046599913445422
+      },
+      "milliseconds": 74.96246717199128
+    },
+    {
+      "after_sector": 74,
+      "next_sector": 75,
+      "read_boundary": false,
+      "begin": 4309611062,
+      "end": 4309656334,
+      "phases_ms": {
+        "completion_to_worker": 1.1273945239427725,
+        "retire_reply_collect": 3.9676252045803446,
+        "finish_cache_and_first_checkpoint": 2.4852018455578753,
+        "consume_inclusive": 6.684579047307575,
+        "next_step_or_dos_packet_roundtrip": 2.287916614390897,
+        "map_lookup_and_block_prepare": 1.0388663887710237,
+        "blockwire_before_send": 2.3139957624908547,
+        "send_to_driver_request": 3.9154669083804285,
+        "driver_validate_prepare_start": 1.7066335484980524
+      },
+      "milliseconds": 25.527679843919824
+    },
+    {
+      "after_sector": 75,
+      "next_sector": 76,
+      "read_boundary": false,
+      "begin": 4309825400,
+      "end": 4309870202,
+      "phases_ms": {
+        "completion_to_worker": 0.8656162643664388,
+        "retire_reply_collect": 3.9651582581384566,
+        "finish_cache_and_first_checkpoint": 2.473642439373029,
+        "consume_inclusive": 6.695927000940259,
+        "next_step_or_dos_packet_roundtrip": 2.2905950133849466,
+        "map_lookup_and_block_prepare": 1.0388663887710237,
+        "blockwire_before_send": 2.311458331864913,
+        "send_to_driver_request": 3.91800433900637,
+        "driver_validate_prepare_start": 1.7033912760315713
+      },
+      "milliseconds": 25.262659311877005
+    },
+    {
+      "after_sector": 76,
+      "next_sector": 77,
+      "read_boundary": false,
+      "begin": 4310003747,
+      "end": 4310048257,
+      "phases_ms": {
+        "completion_to_worker": 1.1333151954033036,
+        "retire_reply_collect": 3.965651647426834,
+        "finish_cache_and_first_checkpoint": 2.5521618204091183,
+        "consume_inclusive": 3.199981956048882,
+        "next_step_or_dos_packet_roundtrip": 5.2762345657257965,
+        "map_lookup_and_block_prepare": 1.0388663887710237,
+        "blockwire_before_send": 2.311528816048967,
+        "send_to_driver_request": 3.9179338548223166,
+        "driver_validate_prepare_start": 1.702334013270762
+      },
+      "milliseconds": 25.098008257927003
+    },
+    {
+      "after_sector": 77,
+      "next_sector": 78,
+      "read_boundary": true,
+      "begin": 4310218086,
+      "end": 4310326648,
+      "phases_ms": {
+        "completion_to_worker": 1.2604686634366116,
+        "retire_reply_collect": 3.9593080708619794,
+        "finish_cache_and_first_checkpoint": 5.363282533032413,
+        "consume_inclusive": 3.310924061749784,
+        "next_step_or_dos_packet_roundtrip": 38.359818940228,
+        "map_lookup_and_block_prepare": 1.0059502748178337,
+        "blockwire_before_send": 2.3139957624908547,
+        "send_to_driver_request": 3.915255455828267,
+        "driver_validate_prepare_start": 1.726228151665048
+      },
+      "milliseconds": 61.215231914110795
+    },
+    {
+      "after_sector": 78,
+      "next_sector": 79,
+      "read_boundary": false,
+      "begin": 4310396433,
+      "end": 4310440751,
+      "phases_ms": {
+        "completion_to_worker": 1.161297416472718,
+        "retire_reply_collect": 3.951695778984154,
+        "finish_cache_and_first_checkpoint": 5.362789143744036,
+        "consume_inclusive": 3.26130319617581,
+        "next_step_or_dos_packet_roundtrip": 2.287916614390897,
+        "map_lookup_and_block_prepare": 1.0388663887710237,
+        "blockwire_before_send": 2.3139957624908547,
+        "send_to_driver_request": 3.9154669083804285,
+        "driver_validate_prepare_start": 1.6964133418102314
+      },
+      "milliseconds": 24.989744551220152
+    },
+    {
+      "after_sector": 79,
+      "next_sector": 80,
+      "read_boundary": false,
+      "begin": 4310610771,
+      "end": 4310654965,
+      "phases_ms": {
+        "completion_to_worker": 1.1156941493898185,
+        "retire_reply_collect": 3.927449219669598,
+        "finish_cache_and_first_checkpoint": 5.362930112112143,
+        "consume_inclusive": 3.285056366201988,
+        "next_step_or_dos_packet_roundtrip": 2.2870708041822496,
+        "map_lookup_and_block_prepare": 1.0384434836667,
+        "blockwire_before_send": 2.313925278306801,
+        "send_to_driver_request": 3.91567836093259,
+        "driver_validate_prepare_start": 1.6735764661767545
+      },
+      "milliseconds": 24.919824240638643
+    },
+    {
+      "after_sector": 80,
+      "next_sector": 81,
+      "read_boundary": false,
+      "begin": 4310789118,
+      "end": 4310833077,
+      "phases_ms": {
+        "completion_to_worker": 0.990232301773805,
+        "retire_reply_collect": 3.9188501492150176,
+        "finish_cache_and_first_checkpoint": 5.362084301903495,
+        "consume_inclusive": 3.2919638162392744,
+        "next_step_or_dos_packet_roundtrip": 2.288621456231436,
+        "map_lookup_and_block_prepare": 1.039571230611563,
+        "blockwire_before_send": 2.312163173705452,
+        "send_to_driver_request": 3.9179338548223166,
+        "driver_validate_prepare_start": 1.665893690114875
+      },
+      "milliseconds": 24.787313974617234
+    },
+    {
+      "after_sector": 81,
+      "next_sector": 82,
+      "read_boundary": true,
+      "begin": 4311003456,
+      "end": 4311138606,
+      "phases_ms": {
+        "completion_to_worker": 1.109068636088748,
+        "retire_reply_collect": 3.887696139863176,
+        "finish_cache_and_first_checkpoint": 5.898046037449657,
+        "consume_inclusive": 3.4096019194253,
+        "next_step_or_dos_packet_roundtrip": 53.122872258693874,
+        "map_lookup_and_block_prepare": 0.9882587446202946,
+        "blockwire_before_send": 2.1999523526915796,
+        "send_to_driver_request": 3.881564015850483,
+        "driver_validate_prepare_start": 1.710439694436965
+      },
+      "milliseconds": 76.20749979912007
+    },
+    {
+      "after_sector": 82,
+      "next_sector": 83,
+      "read_boundary": false,
+      "begin": 4311554672,
+      "end": 4311599280,
+      "phases_ms": {
+        "completion_to_worker": 1.1806100829034973,
+        "retire_reply_collect": 3.9672022994760208,
+        "finish_cache_and_first_checkpoint": 2.545959212212372,
+        "consume_inclusive": 3.3652673676553717,
+        "next_step_or_dos_packet_roundtrip": 2.287775646022789,
+        "map_lookup_and_block_prepare": 0.9970692676270372,
+        "blockwire_before_send": 5.264675159540951,
+        "send_to_driver_request": 3.8344100967183974,
+        "driver_validate_prepare_start": 1.7102987260688574
+      },
+      "milliseconds": 25.15326785822529
+    },
+    {
+      "after_sector": 83,
+      "next_sector": 84,
+      "read_boundary": false,
+      "begin": 4311769011,
+      "end": 4311813208,
+      "phases_ms": {
+        "completion_to_worker": 0.9427964459055033,
+        "retire_reply_collect": 3.9688939198933153,
+        "finish_cache_and_first_checkpoint": 2.545888728028318,
+        "consume_inclusive": 3.3630823579496996,
+        "next_step_or_dos_packet_roundtrip": 2.283335142427391,
+        "map_lookup_and_block_prepare": 0.9881882604362408,
+        "blockwire_before_send": 5.2660143590379755,
+        "send_to_driver_request": 3.8471677340321606,
+        "driver_validate_prepare_start": 1.7161489133453345
+      },
+      "milliseconds": 24.921515861055937
+    },
+    {
+      "after_sector": 84,
+      "next_sector": 85,
+      "read_boundary": false,
+      "begin": 4311947358,
+      "end": 4311991572,
+      "phases_ms": {
+        "completion_to_worker": 0.9614042704957434,
+        "retire_reply_collect": 3.9655106790587262,
+        "finish_cache_and_first_checkpoint": 2.5451134020037243,
+        "consume_inclusive": 3.366254146232127,
+        "next_step_or_dos_packet_roundtrip": 2.2676876535674158,
+        "map_lookup_and_block_prepare": 0.9878358395159709,
+        "blockwire_before_send": 5.2660143590379755,
+        "send_to_driver_request": 3.8625332861559194,
+        "driver_validate_prepare_start": 1.7087480740196708
+      },
+      "milliseconds": 24.931101710087276
+    },
+    {
+      "after_sector": 85,
+      "next_sector": 86,
+      "read_boundary": true,
+      "begin": 4312161696,
+      "end": 4312268296,
+      "phases_ms": {
+        "completion_to_worker": 0.9883997129884026,
+        "retire_reply_collect": 3.9650877739544024,
+        "finish_cache_and_first_checkpoint": 2.5470164749731805,
+        "consume_inclusive": 3.422993914395549,
+        "next_step_or_dos_packet_roundtrip": 40.44953402905922,
+        "map_lookup_and_block_prepare": 1.0330162014945465,
+        "blockwire_before_send": 2.3199164339513856,
+        "send_to_driver_request": 3.725582516539114,
+        "driver_validate_prepare_start": 1.6573651038443484
+      },
+      "milliseconds": 60.10891216120015
+    },
+    {
+      "after_sector": 86,
+      "next_sector": 87,
+      "read_boundary": false,
+      "begin": 4312340043,
+      "end": 4312385371,
+      "phases_ms": {
+        "completion_to_worker": 1.1565749761411037,
+        "retire_reply_collect": 3.97255909746412,
+        "finish_cache_and_first_checkpoint": 2.5463821173166954,
+        "consume_inclusive": 3.3648444625510483,
+        "next_step_or_dos_packet_roundtrip": 2.2187716298339812,
+        "map_lookup_and_block_prepare": 4.464045312872244,
+        "blockwire_before_send": 2.2163046833920936,
+        "send_to_driver_request": 3.9179338548223166,
+        "driver_validate_prepare_start": 1.7018406239823847
+      },
+      "milliseconds": 25.55925675837599
+    },
+    {
+      "after_sector": 87,
+      "next_sector": 88,
+      "read_boundary": false,
+      "begin": 4312554381,
+      "end": 4312598940,
+      "phases_ms": {
+        "completion_to_worker": 1.112663329475499,
+        "retire_reply_collect": 4.006321021625958,
+        "finish_cache_and_first_checkpoint": 2.5463821173166954,
+        "consume_inclusive": 3.366183662048073,
+        "next_step_or_dos_packet_roundtrip": 2.2976434317903407,
+        "map_lookup_and_block_prepare": 0.9883292288043486,
+        "blockwire_before_send": 5.180164622860277,
+        "send_to_driver_request": 3.918145307374478,
+        "driver_validate_prepare_start": 1.7098053367804797
+      },
+      "milliseconds": 25.125638058076145
+    }
+  ],
+  "representative_timelines": [
+    {
+      "after_sector": 70,
+      "next_sector": 71,
+      "read_boundary": false,
+      "begin": 4308258301,
+      "end": 4308303548,
+      "phases_ms": {
+        "completion_to_worker": 1.110125898849557,
+        "retire_reply_collect": 3.968541498973045,
+        "finish_cache_and_first_checkpoint": 2.51748360185458,
+        "consume_inclusive": 6.67626191358921,
+        "next_step_or_dos_packet_roundtrip": 2.2631061816039098,
+        "map_lookup_and_block_prepare": 1.038302515298592,
+        "blockwire_before_send": 2.311599300233021,
+        "send_to_driver_request": 3.918145307374478,
+        "driver_validate_prepare_start": 1.7100167893326417
+      },
+      "milliseconds": 25.513583007109034,
+      "cpu_markers": [
+        {
+          "offset_ms": 0.011206985264576483,
+          "name": "sio_terminal",
+          "dp": 0
+        },
+        {
+          "offset_ms": 0.023400749105908124,
+          "name": "signal_post",
+          "dp": 0
+        },
+        {
+          "offset_ms": 1.110125898849557,
+          "name": "sio_retire",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 1.129156628544121,
+          "name": "driver_request_after_sio_retire",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 1.7538579518141926,
+          "name": "sio_finish_policy",
+          "dp": 9728
+        },
+        {
+          "offset_ms": 1.865152478435364,
+          "name": "io_complete_policy",
+          "dp": 9728
+        },
+        {
+          "offset_ms": 3.0668373323709894,
+          "name": "io_check_io",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 3.971995223991689,
+          "name": "io_wait_io",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 3.9803828418941074,
+          "name": "io_wait",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.072112368705586,
+          "name": "blockwire_after_io_wait_io",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.078667397822603,
+          "name": "fs_worker_after_blockwire",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.091847940240689,
+          "name": "fs_complete",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.143301394600066,
+          "name": "block_finish",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.3850621459050805,
+          "name": "fs_worker_after_fs_complete",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.397749299034789,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 6.044371203545636,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 6.746675613459096,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 6.758164535459888,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.440944826390406,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.443200320280132,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.456169410146058,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.516080966591907,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.536309927415387,
+          "name": "fs_file_step",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.577190754166673,
+          "name": "sdfs_continue",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.5961509996771825,
+          "name": "sdfs_consume",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 9.580210296611543,
+          "name": "sio_recovered",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 9.59642165894395,
+          "name": "driver_request_after_sio_recovered",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 10.987074610328188,
+          "name": "sio_take_policy",
+          "dp": 9728
+        },
+        {
+          "offset_ms": 14.272412913266393,
+          "name": "sdfs_continue_after_sdfs_consume",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 14.333170279920887,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 14.95836499247934,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 15.657991003398745,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 15.669973314687919,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 16.372348208785432,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 16.374956123595425,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 16.389757802246752,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 16.45284114697503,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 16.47356349708689,
+          "name": "fs_file_step",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 16.516699817727897,
+          "name": "sdfs_continue",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 16.535519094870303,
+          "name": "sdfs_drive",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 16.990705955490647,
+          "name": "sdfs_continue_after_sdfs_drive",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 17.04441490373975,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 17.107145827547757,
+          "name": "fs_worker_after_fs_checkpoint1",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 17.11708409749936,
+          "name": "fs_begin",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 17.174528707503324,
+          "name": "block_begin",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 17.44300296456478,
+          "name": "block_prepare",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 17.553733617713522,
+          "name": "fs_worker_after_fs_begin",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 17.573821610168896,
+          "name": "blockwire",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 19.885420910401916,
+          "name": "io_send_io",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 20.774155987138048,
+          "name": "sio_enqueue_policy",
+          "dp": 9728
+        },
+        {
+          "offset_ms": 23.46756811239126,
+          "name": "sio_take_policy",
+          "dp": 9728
+        },
+        {
+          "offset_ms": 23.803566217776392,
+          "name": "driver_request",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 23.818931769900153,
+          "name": "driver_validate",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 24.08832232135431,
+          "name": "driver_request_after_driver_validate",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 24.106295788288065,
+          "name": "driver_prepare",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 24.176991424894165,
+          "name": "driver_deadline",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 24.49614381029041,
+          "name": "driver_prepare_after_driver_deadline",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 24.60757930527969,
+          "name": "driver_request_after_driver_prepare",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 25.4646669833756,
+          "name": "sio_start",
+          "dp": 10240
+        }
+      ]
+    },
+    {
+      "after_sector": 73,
+      "next_sector": 74,
+      "read_boundary": true,
+      "begin": 4309059846,
+      "end": 4309192788,
+      "phases_ms": {
+        "completion_to_worker": 1.1683458348781117,
+        "retire_reply_collect": 3.8198198706192317,
+        "finish_cache_and_first_checkpoint": 2.545536307108048,
+        "consume_inclusive": 3.423628272052034,
+        "next_step_or_dos_packet_roundtrip": 55.03200686797889,
+        "map_lookup_and_block_prepare": 1.0390778413231854,
+        "blockwire_before_send": 2.311458331864913,
+        "send_to_driver_request": 3.9179338548223166,
+        "driver_validate_prepare_start": 1.7046599913445422
+      },
+      "milliseconds": 74.96246717199128,
+      "cpu_markers": [
+        {
+          "offset_ms": 0.007259870957555834,
+          "name": "sio_terminal",
+          "dp": 0
+        },
+        {
+          "offset_ms": 0.019453634798887478,
+          "name": "signal_post",
+          "dp": 0
+        },
+        {
+          "offset_ms": 1.1683458348781117,
+          "name": "sio_retire",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 1.1863193018118665,
+          "name": "driver_request_after_sio_retire",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 1.781276299411175,
+          "name": "sio_finish_policy",
+          "dp": 9728
+        },
+        {
+          "offset_ms": 1.8866501545718155,
+          "name": "io_complete_policy",
+          "dp": 9728
+        },
+        {
+          "offset_ms": 3.028423452061592,
+          "name": "io_check_io",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 3.8913613174339807,
+          "name": "io_wait_io",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 3.89939651441613,
+          "name": "io_wait",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 4.981751644748435,
+          "name": "blockwire_after_io_wait_io",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 4.988165705497344,
+          "name": "fs_worker_after_blockwire",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.0016986688357,
+          "name": "fs_complete",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.0525177655385916,
+          "name": "block_finish",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.296252073997116,
+          "name": "fs_worker_after_fs_complete",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.309432616415203,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 5.956125005110103,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 6.656667310422215,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 6.669213495183816,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.371658873465383,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.3740553357232175,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.38787023579779,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.450530675421742,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.471041572981439,
+          "name": "fs_file_step",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.514389346174612,
+          "name": "sdfs_continue",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 7.533702012605391,
+          "name": "sdfs_consume",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 10.957330284657425,
+          "name": "sdfs_continue_after_sdfs_consume",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 11.036554507534055,
+          "name": "fs_reply",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 11.049594081584035,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 13.90744580823509,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 14.91403044070941,
+          "name": "sio_recovered",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 14.930241803041815,
+          "name": "driver_request_after_sio_recovered",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 16.391026517559723,
+          "name": "sio_take_policy",
+          "dp": 9728
+        },
+        {
+          "offset_ms": 18.479120470157703,
+          "name": "dos_collect",
+          "dp": 8704
+        },
+        {
+          "offset_ms": 18.646097502181483,
+          "name": "tasks_forbid",
+          "dp": 8704
+        },
+        {
+          "offset_ms": 19.34438431360387,
+          "name": "tasks_permit",
+          "dp": 8704
+        },
+        {
+          "offset_ms": 20.317629927020675,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 20.933520727284005,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 21.5998077191459,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 21.610803251858318,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 22.27920476924183,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 22.28153074731561,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 22.294499837181533,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 22.304367622949087,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 23.16885614037066,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 24.619561616568856,
+          "name": "dos_dispatch",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 24.628090202839385,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 26.9816275925845,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 27.6283199812794,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 28.330553907008806,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 28.34232476574581,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 29.04378336545063,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 29.04617982770846,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 29.059642306862763,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 29.069510092630317,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 29.978826551110195,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 31.47837756685777,
+          "name": "dos_dispatch",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 31.48739954241668,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 36.15183139055427,
+          "name": "tasks_forbid",
+          "dp": 8704
+        },
+        {
+          "offset_ms": 36.84983626524045,
+          "name": "tasks_permit",
+          "dp": 8704
+        },
+        {
+          "offset_ms": 37.647858197099154,
+          "name": "dos_call",
+          "dp": 8704
+        },
+        {
+          "offset_ms": 38.483518683242664,
+          "name": "tasks_forbid",
+          "dp": 8704
+        },
+        {
+          "offset_ms": 39.3408882980748,
+          "name": "dos_submit",
+          "dp": 8704
+        },
+        {
+          "offset_ms": 40.47018589498702,
+          "name": "tasks_permit",
+          "dp": 8704
+        },
+        {
+          "offset_ms": 41.50292015974536,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 42.11817660235219,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 42.785097951870576,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 42.796163968767054,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 43.46407209686218,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 43.46632759075191,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 43.47943764898594,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 43.48965785567376,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 44.364930453255596,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 45.887388828820704,
+          "name": "dos_dispatch",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 46.338487606765916,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 47.07011343724582,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 47.71659437338856,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 48.41911023585418,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 48.430881094591186,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 49.132128241743835,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 49.13459518818572,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 49.14897396173273,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 49.21149343298857,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 49.55848707108612,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 50.20496800722886,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 50.907272417142316,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 50.918549886590945,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 51.62036090721603,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 51.62261640110576,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 51.63558549097168,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 51.69831641477969,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 52.56414413169829,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 53.21076603620913,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 53.91060349968071,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 53.92230387423366,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 54.62622942038036,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 54.628696366822254,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 54.64222933016061,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 54.704960253968615,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 54.78094220437875,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 55.42735265633744,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 56.12993900298712,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 56.14135744080385,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 56.82653419399221,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 56.82878968788194,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 56.841758777747856,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 56.90167033419371,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 57.17507848413894,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 57.79068734766606,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 58.56234819468859,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 58.57334372740101,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 60.30267318316443,
+          "name": "dos_collect",
+          "dp": 8704
+        },
+        {
+          "offset_ms": 61.13861560604416,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 61.14087109993389,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 61.153910673983866,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 61.21375174624566,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 61.33984795151816,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 61.95573875178149,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 62.622025743643384,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 62.633091760539855,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 63.30163424629147,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 63.3038897401812,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 63.31685883004713,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 63.37677038649298,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 63.78536720145367,
+          "name": "fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 64.41218305024536,
+          "name": "tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 65.11223196626908,
+          "name": "fs_pump_after_tasks_forbid",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 65.12343895153366,
+          "name": "tasks_permit",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 65.82757595023253,
+          "name": "fs_pump_after_tasks_permit0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 65.82983144412226,
+          "name": "fs_worker_after_fs_pump",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 65.84280053398818,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 65.90553145779617,
+          "name": "fs_worker_after_fs_checkpoint0",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 65.92766349158913,
+          "name": "fs_file_step",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 65.9694606127331,
+          "name": "sdfs_continue",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 65.98933715263631,
+          "name": "sdfs_drive",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 66.44501740254505,
+          "name": "sdfs_continue_after_sdfs_drive",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 66.49773957221738,
+          "name": "fs_checkpoint",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 66.56032952765729,
+          "name": "fs_worker_after_fs_checkpoint1",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 66.57125457618565,
+          "name": "fs_begin",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 66.62799434434908,
+          "name": "block_begin",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 66.89752586417134,
+          "name": "block_prepare",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 67.00649441271874,
+          "name": "fs_worker_after_fs_begin",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 67.0284149939595,
+          "name": "blockwire",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 69.33987332582441,
+          "name": "io_send_io",
+          "dp": 10752
+        },
+        {
+          "offset_ms": 70.22755113979974,
+          "name": "sio_enqueue_policy",
+          "dp": 9728
+        },
+        {
+          "offset_ms": 72.92032890739647,
+          "name": "sio_take_policy",
+          "dp": 9728
+        },
+        {
+          "offset_ms": 73.25780718064672,
+          "name": "driver_request",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 73.27324321695455,
+          "name": "driver_validate",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 73.5432681260652,
+          "name": "driver_request_after_driver_validate",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 73.55919755166137,
+          "name": "driver_prepare",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 73.62996367245155,
+          "name": "driver_deadline",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 73.94890460529561,
+          "name": "driver_prepare_after_driver_deadline",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 74.0618907523341,
+          "name": "driver_request_after_driver_prepare",
+          "dp": 10240
+        },
+        {
+          "offset_ms": 74.91785068348514,
+          "name": "sio_start",
+          "dp": 10240
+        }
+      ]
+    }
+  ],
+  "serial_trace": {
+    "sectors": [
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88
+    ],
+    "read_count": 19,
+    "clock_hz": 1773447,
+    "tx_cycles_per_bit": [
+      30
+    ],
+    "rx_cycles_per_bit": [
+      31
+    ],
+    "span_ticks": 4588091,
+    "span_seconds": 2.5871035334013364,
+    "between_requests_ticks": [
+      45247,
+      45265,
+      45252,
+      132942,
+      45272,
+      44802,
+      44510,
+      108562,
+      44318,
+      44194,
+      43959,
+      135150,
+      44608,
+      44197,
+      44214,
+      106600,
+      45328,
+      44559
+    ],
+    "between_requests_seconds": 0.625324015885448,
+    "mean_between_requests_ms": 34.74022310474711,
+    "log_sha256": "8f0d08b22e3ed18e4628a635e4619a44fd1e87d27b3ea3b99e7cedfa524064e5"
+  },
+  "validation": {
+    "relative_phase_durations_and_reads_match_untraced": true,
+    "wire_intervals_identical": true,
+    "marker_regeneration_identical": true,
+    "ordered_intervals_account_for_entire_gap": true,
+    "hello_dir_exit_replay": "pass",
+    "stack_and_ownership_checks": "pass"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  }
+}

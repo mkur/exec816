@@ -1,0 +1,134 @@
+MODULE DRIVERBOUNDARY
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+
+EXEC.Task worker
+EXEC.Task POINTER parent
+EXEC.MsgPort POINTER input,reply
+EXEC.Message POINTER active,item
+PROC POINTER absent()
+CARD checks,claims,reuses
+BYTE stage,finished
+INCLUDE "tasks_exec_helpers.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff90)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise driver work as an ordinary Task using the public kernel services.
+PROC WorkerEntry()
+  EXEC.Message POINTER request
+  LONGCARD bits
+  BYTE signal,index
+
+  signal=EXEC.AllocSignal(16)
+  Require(signal=16)
+  input=EXEC.CreateMsgPort()
+  Require(input<>EXEC.MsgPort POINTER(0))
+  ; The sender publishes both notifications after this empty check and before
+  ; the request-port Wait. The first Wait is a deterministic test rendezvous.
+  Require(EXEC.GetMsg(input)=EXEC.Message POINTER(0))
+  EXEC.Signal(parent,LONGCARD($10000))
+  bits=EXEC.Wait(LONGCARD($10000))
+  bits=EXEC.Wait(LONGCARD(1) LSH input.mp_SigBit)
+  Require(bits<>0)
+  FOR index=0 TO 1 DO
+    request=EXEC.Message POINTER(0)
+    WHILE request=EXEC.Message POINTER(0) DO
+      EXEC.Forbid()
+      request=EXEC.GetMsg(input)
+      IF request<>EXEC.Message POINTER(0) THEN
+        stage=1
+        EXEC.Yield()
+        Require(stage=1 AND active=EXEC.Message POINTER(0))
+        active=request
+        stage=2
+        claims==+1
+      FI
+
+      EXEC.Permit()
+      IF request=EXEC.Message POINTER(0) THEN
+        bits=EXEC.Wait(LONGCARD(1) LSH input.mp_SigBit)
+      FI
+    OD
+
+    EXEC.Forbid()
+    Require(active=request AND request.mn_Node.ln_Type=EXEC.NT_MESSAGE)
+    active=EXEC.Message POINTER(0)
+    stage=0
+    EXEC.ReplyMsg(request)
+    ; No request access after publication. The recipient can reuse/free now.
+    EXEC.Permit()
+  OD
+
+  EXEC.DeleteMsgPort(input)
+  input=EXEC.MsgPort POINTER(0)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+; Exercise the public kernel boundary used by ordinary driver Tasks.
+PROC Main()
+  EXEC.Task POINTER added
+  EXEC.Message POINTER received
+  LONGCARD bits
+  BYTE signal,index
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  signal=EXEC.AllocSignal(16)
+  Require(signal=16)
+  reply=EXEC.CreateMsgPort()
+  Require(reply<>EXEC.MsgPort POINTER(0))
+  item=EXEC.Message POINTER(EXEC.AllocMem(EXEC.MESSAGE_SIZE,EXEC.MEMF_PUBLIC
+      OR EXEC.MEMF_CLEAR))
+  Require(item<>EXEC.Message POINTER(0))
+  item.mn_ReplyPort=reply
+  item.mn_Length=EXEC.MESSAGE_SIZE
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  added=EXEC.AddTask(@worker,@WorkerEntry,absent)
+  Require(added=@worker)
+  bits=EXEC.Wait(LONGCARD($10000))
+  EXEC.Forbid()
+  EXEC.PutMsg(input,item)
+  EXEC.Signal(@worker,LONGCARD($10000))
+  EXEC.Permit()
+  FOR index=0 TO 1 DO
+    received=EXEC.Message POINTER(0)
+    WHILE received=EXEC.Message POINTER(0) DO
+      Require(stage<>1)
+      received=EXEC.GetMsg(reply)
+      IF received=EXEC.Message POINTER(0) THEN
+        bits=EXEC.Wait(LONGCARD(1) LSH reply.mp_SigBit)
+      FI
+    OD
+
+    Require(received=item AND active=EXEC.Message POINTER(0) AND stage=0)
+    IF index=0 THEN
+      reuses==+1
+      EXEC.PutMsg(input,item)
+    ELSE
+      EXEC.FreeMem(BYTE POINTER(item),EXEC.MESSAGE_SIZE)
+      item=EXEC.Message POINTER(0)
+    FI
+  OD
+
+  AwaitRemoval(@worker)
+  Require(claims=2 AND reuses=1)
+  EXEC.DeleteMsgPort(reply)
+  EXEC.FreeSignal(16)
+  finished=1
+
+RETURN
+
+ENDMODULE

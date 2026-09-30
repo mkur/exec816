@@ -1,0 +1,734 @@
+{
+  "abi": "exec816.tasks",
+  "version": 2048,
+  "services": {
+    "ADD_TASK": 17,
+    "REM_TASK": 18,
+    "FIND_TASK": 19,
+    "SET_TASK_PRI": 20,
+    "FORBID": 21,
+    "PERMIT": 22,
+    "SLEEP": 11,
+    "ALLOC_SIGNAL": 23,
+    "FREE_SIGNAL": 24,
+    "SET_SIGNAL": 25,
+    "SIGNAL": 26,
+    "WAIT": 27,
+    "RETAIN_TASK": 54,
+    "RELEASE_TASK": 55,
+    "REGISTER_RESIDENT": 56,
+    "UNREGISTER_RESIDENT": 57,
+    "BIND_PRODUCER": 58,
+    "RELEASE_PRODUCER": 59,
+    "DRAIN_PRODUCER": 60,
+    "CREATE_TASK": 61
+  },
+  "errors": {
+    "TICKS": 65304
+  },
+  "states": {
+    "INVALID": 0,
+    "ADDED": 1,
+    "RUN": 2,
+    "READY": 3,
+    "WAIT": 4,
+    "EXCEPT": 5,
+    "REMOVED": 6
+  },
+  "node_type": 1,
+  "task": {
+    "size": 62,
+    "fields": [
+      [
+        "tc_Node",
+        "EXECLISTS.Node",
+        0
+      ],
+      [
+        "tc_Flags",
+        "BYTE",
+        11
+      ],
+      [
+        "tc_State",
+        "BYTE",
+        12
+      ],
+      [
+        "tc_IDNestCnt",
+        "BYTE",
+        13
+      ],
+      [
+        "tc_TDNestCnt",
+        "BYTE",
+        14
+      ],
+      [
+        "tc_SigAlloc",
+        "LONGCARD",
+        16
+      ],
+      [
+        "tc_SigWait",
+        "LONGCARD",
+        20
+      ],
+      [
+        "tc_SigRecvd",
+        "LONGCARD",
+        24
+      ],
+      [
+        "tc_SigExcept",
+        "LONGCARD",
+        28
+      ],
+      [
+        "tc_SPReg",
+        "ADDRESS",
+        32
+      ],
+      [
+        "tc_SPLower",
+        "ADDRESS",
+        36
+      ],
+      [
+        "tc_SPUpper",
+        "ADDRESS",
+        40
+      ],
+      [
+        "tc_MemEntry",
+        "EXECLISTS.List",
+        43
+      ],
+      [
+        "tc_UserData",
+        "ADDRESS",
+        54
+      ],
+      [
+        "tc_ExecPrivate",
+        "ADDRESS",
+        58
+      ]
+    ]
+  },
+  "imports": {
+    "AddTask": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 6,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 3
+    },
+    "RemTask": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "FindTask": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 3
+    },
+    "SetTaskPri": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 1
+        }
+      ],
+      "outgoing_bytes": 5,
+      "result_bytes": 1
+    },
+    "Forbid": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 0
+    },
+    "Permit": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 0
+    },
+    "AllocSignal": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 1
+        }
+      ],
+      "outgoing_bytes": 1,
+      "result_bytes": 1
+    },
+    "FreeSignal": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 1
+        }
+      ],
+      "outgoing_bytes": 1,
+      "result_bytes": 0
+    },
+    "SetSignal": {
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 4
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 4
+    },
+    "Signal": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 0
+    },
+    "Wait": {
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 5,
+      "result_bytes": 4
+    },
+    "RetainTask": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
+      "result_bytes": 1
+    },
+    "ReleaseTask": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 1
+    },
+    "RegisterResident": {
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 5,
+      "result_bytes": 1
+    },
+    "UnregisterResident": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 1
+    },
+    "CreateTask": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        },
+        {
+          "alignment": 1,
+          "offset": 8,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 12,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 17,
+      "result_bytes": 3
+    }
+  },
+  "raw": {
+    "widths": {
+      "m": 0,
+      "x": 0
+    },
+    "add_task_packet": {
+      "size": 9,
+      "task": 0,
+      "initial_pc": 3,
+      "final_pc": 6
+    },
+    "pointer_input": {
+      "low": "x",
+      "bank": "y"
+    },
+    "pointer_result": {
+      "low": "a",
+      "bank": "x"
+    },
+    "priority_input": "a_high",
+    "signal_arguments": {
+      "low": "x",
+      "bank": "y",
+      "layout": "native outgoing argument packet"
+    },
+    "mask_result": {
+      "low": "a",
+      "high": "x"
+    },
+    "profile_tag": {
+      "register": "y_high",
+      "value": 6,
+      "services": "Core Task, signal, lifetime and public platform producer calls; Version/Yield/Poll/Sleep retain their ABI. The packet tag is independent of the feature version."
+    }
+  },
+  "pools": [
+    {
+      "dp": 8704,
+      "stack_base": 16896
+    },
+    {
+      "dp": 9216,
+      "stack_base": 20992
+    },
+    {
+      "dp": 11776,
+      "stack_base": 26880
+    },
+    {
+      "dp": 23040,
+      "stack_base": 28928
+    },
+    {
+      "dp": 23552,
+      "stack_base": 30976
+    }
+  ],
+  "constants": {
+    "CAPACITY": 4,
+    "IDLE": 4,
+    "READY_BYTES": 9,
+    "ENTRY_CAPACITY": 16,
+    "BINDINGS_BYTES": 58,
+    "FAULT": 65535,
+    "SIZE": 64,
+    "SHIFT": 6,
+    "WAKE_BYTES": 9,
+    "BINDING_BYTES": 12,
+    "USER_SIGNAL_FIRST": 16,
+    "SIGNAL_COUNT": 32,
+    "PROFILE_TAG": 1536,
+    "WAKE_LINKED": 1,
+    "WAKE_CLAIMED": 2,
+    "MANAGED_STRIDE": 64
+  },
+  "context": {
+    "size": 64,
+    "fields": [
+      [
+        "item",
+        "Task POINTER",
+        0
+      ],
+      [
+        "waitReason",
+        "BYTE",
+        3
+      ],
+      [
+        "initialS",
+        "CARD",
+        4
+      ],
+      [
+        "savedS",
+        "CARD",
+        6
+      ],
+      [
+        "state",
+        "BYTE",
+        8
+      ],
+      [
+        "id",
+        "BYTE",
+        9
+      ],
+      [
+        "lockDepth",
+        "CARD",
+        10
+      ],
+      [
+        "pending",
+        "BYTE",
+        12
+      ],
+      [
+        "queued",
+        "BYTE",
+        13
+      ],
+      [
+        "reservedWord",
+        "CARD",
+        14
+      ],
+      [
+        "dp",
+        "CARD",
+        16
+      ],
+      [
+        "stackFloor",
+        "CARD",
+        18
+      ],
+      [
+        "stackTop",
+        "CARD",
+        20
+      ],
+      [
+        "entry",
+        "ADDRESS",
+        22
+      ],
+      [
+        "entryPad",
+        "BYTE",
+        25
+      ],
+      [
+        "finalPC",
+        "ADDRESS",
+        26
+      ],
+      [
+        "finalPad",
+        "BYTE",
+        29
+      ],
+      [
+        "wake",
+        "CARD",
+        30
+      ],
+      [
+        "wakeNode",
+        "EXECLISTS.MinNode",
+        32
+      ],
+      [
+        "holds",
+        "CARD",
+        38
+      ],
+      [
+        "incarnation",
+        "LONGCARD",
+        40
+      ],
+      [
+        "residentMask",
+        "LONGCARD",
+        44
+      ],
+      [
+        "lifetimePad",
+        "CARD",
+        48
+      ],
+      [
+        "padding6",
+        "CARD",
+        50
+      ],
+      [
+        "padding7",
+        "CARD",
+        52
+      ],
+      [
+        "padding8",
+        "CARD",
+        54
+      ],
+      [
+        "padding9",
+        "CARD",
+        56
+      ],
+      [
+        "padding10",
+        "CARD",
+        58
+      ],
+      [
+        "padding11",
+        "CARD",
+        60
+      ],
+      [
+        "padding12",
+        "CARD",
+        62
+      ]
+    ]
+  },
+  "context_states": {
+    "FREE": 0,
+    "READY": 1,
+    "RUNNING": 3,
+    "SLEEPING": 4,
+    "SIGNAL_WAIT": 5
+  },
+  "compiler_frame": {
+    "dbr": 1,
+    "d": 2,
+    "y": 4,
+    "x": 6,
+    "a_full": 8,
+    "p": 10,
+    "pc": 11,
+    "pbr": 13
+  },
+  "wait_reasons": {
+    "NONE": 0,
+    "SIGNAL": 1,
+    "SLEEP": 2
+  },
+  "metadata": {
+    "placement": "highest usable upper bank",
+    "alignment": 64,
+    "binding_fields": [
+      [
+        "task",
+        "Task POINTER",
+        0
+      ],
+      [
+        "context",
+        "TaskControl POINTER",
+        3
+      ],
+      [
+        "mask",
+        "LONGCARD",
+        6
+      ],
+      [
+        "active",
+        "BYTE",
+        10
+      ],
+      [
+        "pad",
+        "BYTE",
+        11
+      ]
+    ],
+    "header": {
+      "size": 26,
+      "fields": [
+        [
+          "readyQueue",
+          "EXECLISTS.MinList",
+          0
+        ],
+        [
+          "wakeQueue",
+          "EXECLISTS.MinList",
+          9
+        ],
+        [
+          "live",
+          "BYTE",
+          18
+        ],
+        [
+          "timerPending",
+          "BYTE",
+          19
+        ],
+        [
+          "idleRuns",
+          "CARD",
+          20
+        ],
+        [
+          "entryCount",
+          "CARD",
+          22
+        ],
+        [
+          "created",
+          "CARD",
+          24
+        ]
+      ]
+    }
+  },
+  "producer_imports": {
+    "Bind": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 1
+    },
+    "Release": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 0
+    },
+    "Drain": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 0
+    }
+  },
+  "lease": {
+    "size": 12,
+    "fields": [
+      [
+        "task",
+        "Task POINTER",
+        0
+      ],
+      [
+        "pad",
+        "BYTE",
+        3
+      ],
+      [
+        "incarnation",
+        "LONGCARD",
+        4
+      ],
+      [
+        "identity",
+        "ADDRESS",
+        8
+      ],
+      [
+        "pad2",
+        "BYTE",
+        11
+      ]
+    ]
+  },
+  "registered_entries": [
+    "SIODRIVER.Worker",
+    "CONSOLEDRIVER.Worker"
+  ],
+  "create_packet": {
+    "size": 16,
+    "fields": [
+      [
+        "name",
+        "CSTRING",
+        0
+      ],
+      [
+        "priority",
+        "LONGINT",
+        4
+      ],
+      [
+        "entry",
+        "BYTE POINTER",
+        8
+      ],
+      [
+        "stackSize",
+        "LONGCARD",
+        12
+      ]
+    ]
+  }
+}

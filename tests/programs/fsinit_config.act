@@ -1,0 +1,64 @@
+; The native admission gate must reject malformed descriptors independently.
+MODULE FSINITCONFIG
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE FSBOOT
+USE FSTYPES
+USE HEAPCORE
+USE SYS
+
+CARD checks
+BYTE count,exhausted
+LONGINT expected
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE attempt
+  CARD ticks
+
+  LET client=DOSCLIENT.Ensure()
+  Require(client<>NULL)
+  LET registry=DOSCORE.GetRegistry()
+  registry.count=count
+  IF exhausted<>0 THEN
+    registry.generation=SYS.MAXLONGCARD
+  FI
+
+  LET generation=registry.generation
+  LET available=EXEC.AvailMem(0)
+  FOR attempt=0 TO 1 DO
+    IF expected=0 THEN
+      Require(FSBOOT.Ensure()<>0)
+      Require(FSBOOT.Stop()<>0)
+    ELSE
+      Require(FSBOOT.Ensure()=0 AND registry.error=expected)
+      WHILE registry.worker<>NULL DO
+        ticks=EXECTASKS.Sleep(1)
+      OD
+
+      ; Every rejection precedes mount allocation and device opening.
+      ; An empty configuration is rejected by Ensure before starting a worker.
+      Require((registry.state=FSTYPES.STATE_FAILED OR count=0)
+          AND registry.generation=generation)
+    FI
+
+    Require(registry.runtime=NULL AND EXEC.AvailMem(0)=available)
+  OD
+
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

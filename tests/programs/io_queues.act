@@ -1,0 +1,305 @@
+MODULE IOQUEUES
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+USE IOPROBE
+EXEC.Task worker
+EXEC.Task POINTER parent
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq ARRAY requests(3)
+EXEC.Message unrelated
+BYTE ARRAY buffers(3)
+BYTE action,ready,stop,autoRun
+LONGCARD reply,baseline,oldSignals
+CARD checks,progress
+PROC POINTER absent()
+INCLUDE "io-names.inc"
+INCLUDE "tasks_exec_helpers.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fe00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC WorkerEntry()
+  LONGCARD bits,value
+  BYTE operation,bit
+
+  EXEC.Forbid()
+  bit=EXEC.AllocSignal(31)
+  value=IOPROBE.Advance(0)
+  ready=1
+  WHILE stop=0 DO
+    bits=EXEC.Wait(LONGCARD($80000000))
+    IF autoRun<>0 THEN
+      value=IOPROBE.Advance(1)
+      IF value<>0 THEN
+        value=IOPROBE.Advance(2)
+        value=IOPROBE.Advance(3)
+        progress==+1
+      FI
+    ELSE
+      operation=action
+      IF operation<>0 THEN
+        action=0
+        reply=IOPROBE.Advance(operation)
+        progress==+1
+        EXEC.Signal(parent,LONGCARD($40000000))
+      FI
+    FI
+  OD
+
+  value=IOPROBE.Advance(4)
+  EXEC.FreeSignal(31)
+  EXEC.Permit()
+
+RETURN
+
+PROC Command(BYTE operation)
+  LONGCARD bits
+
+  action=operation
+  EXEC.Signal(@worker,LONGCARD($80000000))
+  bits=EXEC.Wait(LONGCARD($40000000))
+
+RETURN
+
+PROC Prepare(BYTE index)
+  EXEC.IOStdReq POINTER req
+
+  req=@requests(index)
+  req.io_Message.mn_Length=EXEC.IOSTDREQ_SIZE
+  req.io_Message.mn_ReplyPort=port
+  req.io_Device=requests(0).io_Device
+  req.io_Unit=requests(0).io_Unit
+  req.io_Command=EXEC.CMD_READ
+  req.io_Data=@buffers(index)
+  req.io_Length=1
+  req.io_Actual=0
+  req.io_Flags=0
+  req.io_Error=0
+  buffers(index)=$a5
+
+RETURN
+
+PROC Setup()
+  EXEC.Task POINTER added
+  INT error
+  BYTE bit
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  oldSignals=parent.tc_SigAlloc
+  baseline=EXEC.AvailMem(0)
+  port=EXEC.CreateMsgPort()
+  bit=EXEC.AllocSignal(30)
+  requests(0).io_Message.mn_Length=42
+  requests(0).io_Message.mn_ReplyPort=port
+  error=EXEC.OpenDevice(queuedName,0,EXEC.IORequest POINTER(@requests(0)),0)
+  Require(error=0)
+  Prepare(0)
+  Prepare(1)
+  Prepare(2)
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  added=EXEC.AddTask(@worker,@WorkerEntry,absent)
+  WHILE ready=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; Require immediate completion to avoid an unnecessary reply message.
+PROC Quick()
+  INT error
+
+  requests(0).io_Command=EXEC.CMD_RESET
+  requests(0).io_Flags=$fe
+  error=EXEC.DoIO(EXEC.IORequest POINTER(@requests(0)))
+  Require(error=0 AND requests(0).io_Flags=EXEC.IOF_QUICK)
+  Require(requests(0).io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+      AND EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+  requests(0).io_Command=EXEC.CMD_INVALID
+  error=EXEC.DoIO(EXEC.IORequest POINTER(@requests(0)))
+  Require(error=EXEC.IOERR_NOCMD)
+  requests(0).io_Command=EXEC.CMD_WRITE
+  error=EXEC.DoIO(EXEC.IORequest POINTER(@requests(0)))
+  Require(error=9)
+  ; Queued READ refuses quick even when validation completes it immediately.
+  Prepare(0)
+  requests(0).io_Length=0
+  error=EXEC.DoIO(EXEC.IORequest POINTER(@requests(0)))
+  Require(error=EXEC.IOERR_BADLENGTH AND requests(0).io_Flags=0)
+
+RETURN
+
+; Collect independent requests from one reply port without confusing
+; ownership.
+PROC SharedReplies()
+  INT error
+  EXEC.Message POINTER msg
+  LONGCARD bits
+
+  Prepare(0)
+  Prepare(1)
+  EXEC.PutMsg(port,@unrelated)
+  EXEC.SendIO(EXEC.IORequest POINTER(@requests(0)))
+  EXEC.SendIO(EXEC.IORequest POINTER(@requests(1)))
+  Require(EXEC.CheckIO(EXEC.IORequest POINTER(@requests(
+      0)))=EXEC.IORequest POINTER(0))
+  Command(1)
+  Require(reply=LONGCARD(ADDRESS(@requests(0))))
+  Command(2)
+  Command(3)
+  Command(1)
+  Require(reply=LONGCARD(ADDRESS(@requests(1))))
+  Command(2)
+  Command(3)
+  ; Coalesced arrivals share one bit; collect a known reply behind two others.
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(@requests(1)))
+  Require(error=0 AND port.mp_MsgList.lh_Head=@unrelated.mn_Node)
+  Require(requests(1).io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  msg=EXEC.GetMsg(port)
+  Require(msg=@unrelated)
+  msg=EXEC.GetMsg(port)
+  Require(msg=@requests(0).io_Message AND msg.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+  Require(EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+  bits=EXEC.SetSignal(0,0)
+  Require((bits & (LONGCARD(1) LSH port.mp_SigBit))<>0)
+
+RETURN
+
+; Cancel a request before the worker has claimed it.
+PROC QueuedAbort()
+  INT error
+
+  Prepare(0)
+  Prepare(1)
+  Prepare(2)
+  EXEC.SendIO(EXEC.IORequest POINTER(@requests(0)))
+  EXEC.SendIO(EXEC.IORequest POINTER(@requests(1)))
+  EXEC.SendIO(EXEC.IORequest POINTER(@requests(2)))
+  EXEC.AbortIO(EXEC.IORequest POINTER(@requests(1)))
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(@requests(1)))
+  Require(error=EXEC.IOERR_ABORTED AND buffers(1)=$a5 AND requests(1).io_Actual=0)
+  EXEC.AbortIO(EXEC.IORequest POINTER(@requests(1)))
+  Command(1)
+  Require(reply=LONGCARD(ADDRESS(@requests(0))))
+  Command(2)
+  Command(3)
+  Command(1)
+  Require(reply=LONGCARD(ADDRESS(@requests(2))))
+  Command(2)
+  Command(3)
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(@requests(0)))
+  Require(error=0)
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(@requests(2)))
+  Require(error=0)
+
+RETURN
+
+; Cancel worker-owned I/O and wait for its terminal completion.
+PROC ActiveAbort(BYTE preparing)
+  INT error
+
+  Prepare(0)
+  EXEC.SendIO(EXEC.IORequest POINTER(@requests(0)))
+  Command(1)
+  IF preparing=0 THEN
+    Command(2)
+  FI
+
+  EXEC.AbortIO(EXEC.IORequest POINTER(@requests(0)))
+  Require(EXEC.CheckIO(EXEC.IORequest POINTER(@requests(
+      0)))=EXEC.IORequest POINTER(0) AND buffers(0)=$a5)
+  IF preparing<>0 THEN
+    Command(2)
+    Require(reply=1)
+  FI
+
+  Command(3)
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(@requests(0)))
+  Require(error=EXEC.IOERR_ABORTED AND requests(0).io_Actual=0 AND buffers(0)=$a5)
+  EXEC.AbortIO(EXEC.IORequest POINTER(@requests(0)))
+
+RETURN
+
+; Require a settled completion to remain authoritative when cancellation
+; arrives late.
+PROC CompletionWins()
+  INT error
+
+  Prepare(0)
+  EXEC.SendIO(EXEC.IORequest POINTER(@requests(0)))
+  Command(1)
+  Command(2)
+  Command(3)
+  EXEC.AbortIO(EXEC.IORequest POINTER(@requests(0)))
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(@requests(0)))
+  Require(error=0 AND buffers(0)=$5a AND requests(0).io_Actual=1)
+  Require(EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+
+RETURN
+
+; Check that synchronous I/O waits allow the completing Task to run.
+PROC Blocking()
+  INT error
+  CARD before
+  LONGCARD bits
+
+  Prepare(0)
+  autoRun=1
+  before=progress
+  EXEC.Forbid()
+  EXEC.Forbid()
+  ; Deliberately stale signal: the first Wait consumes it and checks again.
+  EXEC.Signal(parent,LONGCARD(1) LSH port.mp_SigBit)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(@requests(0)))
+  Require(error=0 AND progress>before AND buffers(0)=$5a)
+  Require(requests(0).io_Flags=0
+      AND requests(0).io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  Require(parent.tc_TDNestCnt=1)
+  requests(0).io_Command=EXEC.CMD_RESET
+  error=EXEC.DoIO(EXEC.IORequest POINTER(@requests(0)))
+  Require(error=0 AND parent.tc_TDNestCnt=1)
+  EXEC.Permit()
+  EXEC.Permit()
+  autoRun=0
+
+RETURN
+
+PROC Cleanup()
+
+  stop=1
+  EXEC.Signal(@worker,LONGCARD($80000000))
+  AwaitRemoval(@worker)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(@requests(0)))
+  EXEC.FreeSignal(30)
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=baseline AND parent.tc_SigAlloc=oldSignals)
+
+RETURN
+
+; Exercise quick completion, reply queues, cancellation and blocking I/O.
+PROC Main()
+
+  Setup()
+  Quick()
+  SharedReplies()
+  QueuedAbort()
+  ActiveAbort(1)
+  ActiveAbort(0)
+  CompletionWins()
+  Blocking()
+  Cleanup()
+
+RETURN
+
+ENDMODULE

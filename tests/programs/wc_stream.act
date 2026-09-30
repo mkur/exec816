@@ -1,0 +1,127 @@
+; In-memory COMMAND implementation for focused emitted-code WC tests.
+MODULE COMMAND
+USE DOSARGS
+INCLUDE "../../lib/dos/command-results.inc"
+INCLUDE "../../lib/dos/command-errors.inc"
+INCLUDE "../../lib/dos/command-args.inc"
+PUBLIC BYTE ARRAY pattern(16),captured(33)
+PUBLIC CARD patternLength,chunk,argumentBytes,readFailure,readCalls,outputBytes
+PUBLIC LONGCARD length,position,breakAfter
+PUBLIC LONGINT primary,secondary,error,writeError
+CARD patternAt
+
+PUBLIC PROC Reset()
+  CARD index
+
+  position=0
+  patternAt=0
+  readCalls=0
+  outputBytes=0
+  primary=0
+  secondary=0
+  error=0
+  FOR index=0 TO 32 DO
+    captured(index)=$a5
+  OD
+
+RETURN
+
+PUBLIC BYTE POINTER FUNC Input()
+
+RETURN(@pattern(0))
+
+PUBLIC BYTE POINTER FUNC Output()
+
+RETURN(@captured(0))
+
+PUBLIC CSTRING FUNC GetArgStr()
+
+  IF argumentBytes<>0 THEN
+    RETURN(c"x")
+  FI
+
+RETURN(c"")
+
+PUBLIC LONGINT FUNC ReadArgs(CSTRING template ADDRESS POINTER values
+    CARD valueCapacity
+                            BYTE POINTER storage CARD storageCapacity)
+
+  error=DOSARGS.Parse(GetArgStr(),template,values,valueCapacity,storage,
+      storageCapacity)
+  IF error=0 THEN
+    RETURN(-1)
+  FI
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC IoErr()
+
+RETURN(error)
+
+PUBLIC LONGINT FUNC BreakPending()
+
+RETURN(LONGINT(position>=breakAfter))
+
+PUBLIC LONGINT FUNC SetIoErr(LONGINT cause)
+  LONGINT previous
+
+  previous=error
+  error=cause
+
+RETURN(previous)
+
+PUBLIC LONGINT FUNC Read(BYTE POINTER handle,buffer LONGINT requested)
+  CARD count,index
+
+  readCalls==+1
+  IF readCalls=readFailure THEN
+    error=226
+    RETURN(-1)
+  FI
+
+  count=chunk
+  IF LONGINT(count)>requested THEN
+    count=CARD(requested)
+  FI
+
+  IF LONGCARD(count)>length-position THEN
+    count=CARD(length-position)
+  FI
+
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      buffer(index)=pattern(patternAt)
+      patternAt==+1
+      IF patternAt=patternLength THEN
+        patternAt=0
+      FI
+    OD
+  FI
+
+  position==+LONGCARD(count)
+
+RETURN(LONGINT(count))
+
+PUBLIC LONGINT FUNC Write(BYTE POINTER handle,buffer LONGINT requested)
+  CARD index
+
+  IF writeError<>0 THEN
+    error=writeError
+    RETURN(-1)
+  FI
+
+  IF requested<0 OR requested>33 THEN
+    error=303
+    RETURN(-1)
+  FI
+
+  outputBytes=CARD(requested)
+  IF outputBytes<>0 THEN
+    FOR index=0 TO outputBytes-1 DO
+      captured(index)=buffer(index)
+    OD
+  FI
+
+RETURN(requested)
+
+ENDMODULE

@@ -1,0 +1,171 @@
+{
+  "tier": "development",
+  "status": "pass",
+  "scope": "Remove unused alias routines and move blocking block-I/O wrappers to test support. Sector-byte fixture execution; no timing or release-qualification claim.",
+  "baseline_commit": "b988aea822577bd00a94a115f43e78260d4e064c",
+  "size": {
+    "compiler_revision": "bcabe0a4cbb8bb57b389a8596aa8fd72cb9ee0c7",
+    "compiler_binary_sha256": "b25ac48ec3e9643b83520ff38bda79faf8fd706a56c1d7327f32c5ff8d36c4f3",
+    "compiler_override": false,
+    "optimize": true,
+    "stack_checks": true,
+    "baseline_image_sha256": "094e8775ad49d65b2b592f706e31d0ceb2390eab39656384dad19330b291defd",
+    "image_sha256": "112ce0d998e0e346d0dd7b0e67dbec369cf0067b9178ab7a65130dce7fa338fc",
+    "before_code_bytes": 483692,
+    "after_code_bytes": 481245,
+    "saved_code_bytes": 2447,
+    "removed_routines": {
+      "M_BLOCKIO_ATTACH_A1159825": 786,
+      "M_BLOCKIO_FETCH_124BDACE": 365,
+      "M_BLOCKIO_READSECTOR_D918C668": 691,
+      "M_FSNAMES_ALIAS_A2F2B006": 296,
+      "M_FSNAMES_SAMEALIAS_76260CCC": 309
+    },
+    "added_routines": {},
+    "changed_routine_sizes": {},
+    "code_banks_before": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "code_banks_after": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "bank_zero": {
+      "fixed_delta": 0,
+      "per_task_delta": 0
+    },
+    "upper_reservations_unchanged": true
+  },
+  "platform_pin": "toolchain/altirra-sio-queued.json",
+  "platform_pin_sha256": "d65d3f9ae8adf8f94f39111d5d4b06b752dd2391a2ec87f13bafad00fc262609",
+  "host": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_*.py'",
+    "passed": 234,
+    "seconds": 9.736
+  },
+  "native": [
+    {
+      "name": "block-raw",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/test_block_io.py --case raw --backend fixture --output build/development/fs-helper-removal/block-raw",
+      "status": "pass",
+      "optimize": false,
+      "check_counter": 26831,
+      "image_sha256": "cc45b152562fb1276c75696d81c6759115c354d42f98afd759ca83f84080bdff",
+      "source_sha256": "a395559eccf8076b5630f94d49549f5f4197b0c5833f7ea9c64486c6f79a3185",
+      "block_driver_sha256": "0bdf2c2ce3e7331b460442ce16faa643030ab0fa3163ec698fe27ef604a408f3",
+      "ownership_check": "test_heap_api.clean_ownership",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "os_busy": 0,
+        "live_tasks": 0,
+        "created": 1,
+        "native_nmi_count": 605,
+        "native_irq_count": 0
+      },
+      "backend": "fixture",
+      "override_sha256": "8c153b9a1ae9889e1e8dcf26efa94d083020a9d7d7310a0d376621d51976645a"
+    },
+    {
+      "name": "block-opt",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/test_block_io.py --case opt --backend fixture --output build/development/fs-helper-removal/block-opt",
+      "status": "pass",
+      "optimize": true,
+      "check_counter": 26831,
+      "image_sha256": "9b11e68b26447d54793d7690682b7ce8ec88861efebe6699bb2b88a841ab0890",
+      "source_sha256": "a395559eccf8076b5630f94d49549f5f4197b0c5833f7ea9c64486c6f79a3185",
+      "block_driver_sha256": "0bdf2c2ce3e7331b460442ce16faa643030ab0fa3163ec698fe27ef604a408f3",
+      "ownership_check": "test_heap_api.clean_ownership",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "os_busy": 0,
+        "live_tasks": 0,
+        "created": 1,
+        "native_nmi_count": 515,
+        "native_irq_count": 0
+      },
+      "backend": "fixture",
+      "override_sha256": "8c153b9a1ae9889e1e8dcf26efa94d083020a9d7d7310a0d376621d51976645a",
+      "host_seconds": 139.46
+    },
+    {
+      "name": "volume-failure",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/test_block_io.py --case opt --fault volume --output build/development/fs-helper-removal/volume-failure",
+      "status": "pass",
+      "optimize": true,
+      "check_counter": 5,
+      "image_sha256": "80c76186e4bc70cd378902aa54f9b744b33a15d1429fdca7b2bc2198842e5cea",
+      "source_sha256": "4b54b22d6c06774dfaa1dd721f919a54140cad6a9e6d22c3f4c20757a08a6f6e",
+      "block_driver_sha256": "0bdf2c2ce3e7331b460442ce16faa643030ab0fa3163ec698fe27ef604a408f3",
+      "ownership_check": "test_heap_api.clean_ownership",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "os_busy": 0,
+        "live_tasks": 0,
+        "created": 0,
+        "native_nmi_count": 2,
+        "native_irq_count": 0
+      },
+      "fault": "volume",
+      "override_sha256": "f8f40b91ef487bb4b2f7e80f835c05ad9989dd93953ba6aebd30c409192d65cf",
+      "host_seconds": 45.41
+    },
+    {
+      "name": "mydos-files-opt128",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/test_mydos_files.py --case opt --size 128 --output build/development/fs-helper-removal/mydos-files-opt128",
+      "status": "pass",
+      "optimize": true,
+      "check_counter": 768,
+      "image_sha256": "9e6aaad42ddb658636e515ffb9a7a057afc07a17c6ae4deccdb4084191daaba2",
+      "source_sha256": "196ada232a2dd765108c9a71c7c4ea75a8e1eac843277dc69f45021cf162d39f",
+      "block_driver_sha256": "0bdf2c2ce3e7331b460442ce16faa643030ab0fa3163ec698fe27ef604a408f3",
+      "ownership_check": "test_heap_api.clean_ownership",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "os_busy": 0,
+        "live_tasks": 0,
+        "created": 1,
+        "native_nmi_count": 209,
+        "native_irq_count": 0
+      },
+      "sector_bytes": 128,
+      "fixture_provider_sha256": "c53f348cb349974dd1ae11f1f20f306c8e7881d44d9d5d98a38732ad46431b1a",
+      "driver_sha256": "4c97a4d7c1676681bccec06fb67ba4abacde1c2b337e11745eb5c63e0e100054",
+      "fixture_sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+      "host_seconds": 91.61
+    }
+  ],
+  "inputs": {
+    "lib/fs/fsnames.act": "895da50dc67c9a6c80cbbe1cf19d247d47a29d636ce4056efba2e52c0cbdc1b2",
+    "lib/io/blockio.act": "7c64a4fcc80a72a53bb07109dfecb9f3b09e692a1f6abe7e6ac8795112215ad4",
+    "tests/fixtures/block/driver.inc": "0bdf2c2ce3e7331b460442ce16faa643030ab0fa3163ec698fe27ef604a408f3",
+    "tests/fixtures/mydos/driver.inc": "4c97a4d7c1676681bccec06fb67ba4abacde1c2b337e11745eb5c63e0e100054",
+    "tests/programs/block_allocation.act": "18f9709af24219b406dbb8fd823363b9b9e143483b653f268b1b70ae753b6412",
+    "tests/programs/block_io.act": "a395559eccf8076b5630f94d49549f5f4197b0c5833f7ea9c64486c6f79a3185",
+    "tests/programs/mydos_files.act": "1353378ff9916f944610c11169ed120fc5163fd28358f601d517cf87d71aa1e4",
+    "tests/programs/mydos_metadata.act": "fb26cf71a5254b2fbea6030051bed416bfd0b8ff309c2c992b48be69557b0521",
+    "tools/block_io_record.py": "53624c2563962b753aa5d141f6df1ac2133d5970617202951114664c9992d080",
+    "tools/mydos_files_record.py": "a4204bce1e31c0fe667c691588ba5646af7880d5b9b24d6357ac0a3d612f7bd2",
+    "tools/mydos_metadata_record.py": "152479fff38c9c0c026cc47c84f94ce04b3b24e634aa4dec8a493a2de3420433",
+    "tools/test_block_io.py": "d53393f38de0c8232acdb24164d5091c006c3f5e36262901f7c4b8168552fe84",
+    "tools/test_mydos.py": "275e5db5c021e533f0e2197d15dfb2d526bd1dc671e813077e60e8e48f8ed46f",
+    "tools/test_mydos_files.py": "94948f20c96fe9f2b38cdf5d98557dacfb52fa5edb19fb27f2c00a2509485cd6"
+  },
+  "build_command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/native_program.py --compiler-dir build/actionc --source examples/demo.act --tasks --task-capacity 8 --console --dos-mounts config/shell-sdfs.json --output build/development/fs-helper-removal/system"
+}

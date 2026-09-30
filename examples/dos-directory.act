@@ -1,0 +1,51 @@
+; Supply an explicit D1 MyDOS mount. Stable media and no raw writes while
+; mounted are required. FileInfoBlock is upper-RAM storage, not a stack array.
+MODULE DOSDIRECTORY
+USE EXEC
+USE DOS
+BYTE ARRAY path=[68 49 58 84 79 79 76 83 47 83 85 66 0]
+BYTE completed
+LONGINT error,entries
+
+; Enumerate a locked directory, distinguishing end-of-directory from an I/O
+; error.
+PROC Main()
+  DOS.FileLock POINTER lock
+  DOS.FileInfoBlock POINTER info
+  LONGINT okay
+
+  lock=DOS.Lock(path,DOS.SHARED_LOCK)
+  IF lock=DOS.FileLock POINTER(0) THEN
+    error=DOS.IoErr()
+  ELSE
+    info=DOS.FileInfoBlock POINTER(EXEC.AllocMem(SIZEOF(DOS.FileInfoBlock),
+        EXEC.MEMF_UPPER))
+    IF info=DOS.FileInfoBlock POINTER(0) THEN
+      error=DOS.ERROR_NO_FREE_STORE
+    ELSE
+      okay=DOS.Examine(lock,info)
+      IF okay=0 THEN
+        error=DOS.IoErr()
+      ELSE
+        WHILE DOS.ExNext(lock,info)<>0 DO
+          entries==+1
+        OD
+
+        IF DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES THEN
+          completed=1
+        ELSE
+          error=DOS.IoErr()
+        FI
+      FI
+
+      EXEC.FreeMem(BYTE POINTER(info),SIZEOF(DOS.FileInfoBlock))
+    FI
+
+    DOS.UnLock(lock)
+  FI
+
+  okay=DOS.ReleaseContext()
+
+RETURN
+
+ENDMODULE

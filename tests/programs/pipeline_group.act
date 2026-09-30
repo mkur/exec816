@@ -1,0 +1,241 @@
+MODULE GROUPTEST
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE DOSGROUP
+USE PROCESS
+USE PIPELINE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE CONSOLEFOREGROUND
+USE FSOPERATION
+USE GROUPPROBE
+USE HEAPCORE
+INCLUDE "pipeline-fixture.inc"
+
+DOS.FileHandle POINTER console,nil,file,ignored
+DOS.PipePair sink
+PROGRAMIMAGE.Image POINTER firstImage,secondImage
+DOSBREAKTYPES.Scope POINTER parentScope
+PIPELINE.Outcome outcome
+LONGCARD baseline,withImages,pulseId,cancelId,progress,oldTag
+LONGCARD beats
+BYTE stop,cancelKind,firstMode,secondMode,finished
+LONGINT warmRead,warmError,warmClose
+CARD checks,cancellations
+BYTE ARRAY nilName=[78 73 76 58 0],conName=[67 79 78 58 0]
+BYTE ARRAY fileName=[68 49 58 76 79 78 71 46 84 88 84 0]
+BYTE POINTER bytes
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($eb00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+LONGINT FUNC Pulse()
+  CARD slept
+
+  WHILE stop=0 DO
+    beats==+1
+    slept=EXECTASKS.Sleep(1)
+  OD
+
+RETURN(PROCESS.RETURN_OK)
+
+LONGINT FUNC Cancel()
+  DOSBREAKTYPES.Scope POINTER left,right
+  EXEC.Task POINTER target
+  CARD slept
+  BYTE ready,accepted
+
+  DO
+    ready=0
+    EXEC.Forbid()
+    IF parentScope.groupActive<>0 AND parentScope.followerA<>BYTE POINTER(0)
+        AND parentScope.followerB<>BYTE POINTER(0) THEN
+      left=DOSBREAKTYPES.Scope POINTER(parentScope.followerA)
+      right=DOSBREAKTYPES.Scope POINTER(parentScope.followerB)
+      ; Publication order can differ from command order. A pipe waiter on
+      ; either side is sufficient for the full/empty scenarios.
+      IF cancelKind=3 THEN
+        ready=left.opState=FSOPERATION.ACTIVE OR right.opState=FSOPERATION.ACTIVE
+      ELSE
+        target=EXEC.Task POINTER(left.owner)
+        ready=target.tc_State=EXEC.TS_WAIT
+        target=EXEC.Task POINTER(right.owner)
+        ready=ready OR target.tc_State=EXEC.TS_WAIT
+      FI
+    FI
+
+    IF ready<>0 THEN
+      oldTag=parentScope.generation
+      accepted=CONSOLEFOREGROUND.Deliver(oldTag)
+      cancellations==+1
+      EXEC.Permit()
+      RETURN(PROCESS.RETURN_OK)
+    FI
+
+    EXEC.Permit()
+    slept=EXECTASKS.Sleep(1)
+  OD
+
+RETURN(PROCESS.RETURN_OK)
+
+LONGINT FUNC Single()
+
+  DOS.SetIoErr(11)
+
+RETURN(7)
+
+PROC Load(BYTE flow)
+
+  IF flow=0 THEN
+    firstImage=PROGRAM.Load(BYTE POINTER($e0000),HELLO_BYTES)
+    secondImage=PROGRAM.Load(BYTE POINTER($e4000),WC_BYTES)
+  ELSE
+    firstImage=PROGRAM.Load(BYTE POINTER($e8000),FLOW_BYTES)
+    secondImage=PROGRAM.Load(BYTE POINTER($e8000),FLOW_BYTES)
+  FI
+
+  Require(firstImage<>PROGRAMIMAGE.Image POINTER(0)
+      AND secondImage<>PROGRAMIMAGE.Image POINTER(0))
+  withImages=EXEC.AvailMem(0)
+
+RETURN
+
+PROC Unload()
+
+  PROGRAM.Unload(firstImage)
+  PROGRAM.Unload(secondImage)
+  firstImage=PROGRAMIMAGE.Image POINTER(0)
+  secondImage=PROGRAMIMAGE.Image POINTER(0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Retire a pipeline when its peer cannot complete the normal stream protocol.
+PROC Broken(BYTE number)
+  PROCESS.Result result
+
+  cancelKind=number
+  progress=beats
+  cancelId=PROCESS.Start(@Cancel,BYTE POINTER(0),0)
+  Require(cancelId<>0)
+  Require(PIPELINE.Run(BYTE POINTER(firstImage),BYTE POINTER(secondImage),
+      @firstMode,@secondMode,1,1,@outcome)<>0)
+  Require(outcome.primary=10 AND outcome.first.secondary=DOS.ERROR_BREAK
+      AND outcome.second.secondary=DOS.ERROR_BREAK)
+  Require(PROCESS.Wait(cancelId,@result)<>0 AND result.primary=0)
+  Require(beats>progress AND parentScope.groupActive=0 AND DOS.BreakPending()=0)
+  EXEC.Forbid()
+  number=CONSOLEFOREGROUND.Deliver(oldTag)
+  EXEC.Permit()
+  Require(DOS.BreakPending()=0 AND EXEC.AvailMem(0)=withImages)
+
+RETURN
+
+; Exercise foreground pipeline setup, cancellation and broken-pipe cleanup.
+PROC Main()
+  PROCESS.Result result
+  LONGCARD identity
+  LONGINT count
+  BYTE index
+
+  bytes=EXEC.AllocMem(16,EXEC.MEMF_UPPER)
+  Require(bytes<>BYTE POINTER(0))
+  ; Warm the real filesystem/SIO services before the ownership baseline.
+  file=DOS.Open(fileName,DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  warmRead=DOS.Read(file,bytes,1)
+  warmError=DOS.IoErr()
+  warmClose=DOS.Close(file)
+  Require(warmRead=1 AND warmClose<>0)
+  console=DOS.Open(conName,DOS.MODE_READWRITE)
+  nil=DOS.Open(nilName,DOS.MODE_READWRITE)
+  Require(console<>DOS.FileHandle POINTER(0) AND nil<>DOS.FileHandle POINTER(0))
+  Require(DOS.BeginForeground(console)<>0)
+  parentScope=DOSBREAK.Current()
+  ignored=DOS.SelectInput(nil)
+  ignored=DOS.SelectOutput(nil)
+  pulseId=PROCESS.Start(@Pulse,BYTE POINTER(0),0)
+  Require(pulseId<>0)
+  WHILE beats=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(DOS.Pipe(@sink)<>0)
+  baseline=EXEC.AvailMem(0)
+  Load(0)
+  ignored=DOS.SelectOutput(sink.writer)
+  FOR index=1 TO 2 DO
+    Require(PIPELINE.Run(BYTE POINTER(firstImage),BYTE POINTER(secondImage),
+        BYTE POINTER(0),BYTE POINTER(0),0,0,@outcome)<>0)
+    Require(outcome.primary=0 AND DOS.Read(sink.reader,bytes,16)=7)
+    Require(bytes(0)=49 AND bytes(1)=32 AND bytes(2)=51 AND bytes(3)=32
+        AND bytes(4)=49 AND bytes(5)=55 AND bytes(6)=10)
+    Require(EXEC.AvailMem(0)=withImages AND parentScope.groupActive=0)
+  OD
+
+  ignored=DOS.SelectOutput(nil)
+  FOR index=1 TO 2 DO
+    GROUPPROBE.failLaunch=index
+    Require(PIPELINE.Run(BYTE POINTER(firstImage),BYTE POINTER(secondImage),
+        BYTE POINTER(0),BYTE POINTER(0),0,0,@outcome)=0)
+    Require(outcome.primary=10 AND outcome.secondary=DOS.ERROR_NO_FREE_STORE
+        AND EXEC.AvailMem(0)=withImages)
+  OD
+
+  GROUPPROBE.failJoin=1
+  Require(PIPELINE.Run(BYTE POINTER(firstImage),BYTE POINTER(secondImage),
+      BYTE POINTER(0),BYTE POINTER(0),0,0,@outcome)<>0)
+  Require(outcome.primary<>0 AND EXEC.AvailMem(0)=withImages)
+  identity=PROCESS.StartForeground(@Single,BYTE POINTER(0),0)
+  Require(identity<>0 AND PROCESS.Wait(identity,@result)<>0 AND result.primary=7
+      AND result.secondary=11)
+  Require(EXEC.AvailMem(0)=withImages)
+  Unload()
+  Load(1)
+  firstMode=80
+  secondMode=81
+  Require(PIPELINE.Run(BYTE POINTER(firstImage),BYTE POINTER(secondImage),
+      @firstMode,@secondMode,1,1,@outcome)<>0)
+  Require(outcome.first.secondary=DOS.ERROR_BROKEN_PIPE AND outcome.primary=10
+      AND EXEC.AvailMem(0)=withImages)
+  firstMode=80
+  secondMode=66
+  Broken(1)
+  firstMode=66
+  secondMode=67
+  Broken(2)
+  file=DOS.Open(fileName,DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  ignored=DOS.SelectInput(file)
+  withImages=EXEC.AvailMem(0)
+  firstMode=70
+  secondMode=67
+  Broken(3)
+  ignored=DOS.SelectInput(nil)
+  Require(DOS.Close(file)<>0)
+  Unload()
+  stop=1
+  Require(PROCESS.Wait(pulseId,@result)<>0 AND result.primary=0)
+  Require(DOS.Close(sink.reader)<>0 AND DOS.Close(sink.writer)<>0)
+  ignored=DOS.SelectInput(DOS.FileHandle POINTER(0))
+  ignored=DOS.SelectOutput(DOS.FileHandle POINTER(0))
+  Require(DOS.EndForeground()<>0 AND DOS.Close(console)<>0 AND DOS.Close(nil)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  EXEC.FreeMem(bytes,16)
+  finished=1
+
+RETURN
+
+ENDMODULE

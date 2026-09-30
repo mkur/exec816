@@ -1,0 +1,536 @@
+; Eight public Tasks: resident shell, three services, reader and three work peers.
+MODULE CONSOLECONCURRENT
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE HEAPCORE
+USE FSBOOT
+USE CONSOLETYPES
+USE CONSOLEDRIVER
+INCLUDE "shell-observed.inc"
+DOS.FileHandle POINTER readerOutput
+DOS.FileLock POINTER readerDirectory
+EXEC.Task readerTask
+EXEC.Task ARRAY peers(3)
+EXEC.Task POINTER consoleTask
+PROC POINTER absent()
+BYTE POINTER readBuffer
+BYTE POINTER fixtureStorage
+BYTE ARRAY command0=[67 68 32 84 79 79 76 83 47 83 85 66 0]
+BYTE ARRAY command1=[84 89 80 69 32 68 65 84 65 46 66 73 78 32 62 78 73 76 58 0]
+BYTE ARRAY command2=[67 68 32 58 0]
+BYTE ARRAY command3=[68 73 82 32 84 79 79 76 83 32 62 78 73 76 58 0]
+TYPE ReaderState=[
+  BYTE ready
+  BYTE stop
+  BYTE busy
+  BYTE done
+  BYTE active
+  CARD wakes
+  CARD reads
+  LONGINT received
+  LONGINT error
+  DOS.FileHandle POINTER file
+]
+
+ReaderState reader
+BYTE ARRAY rawName=[82 65 87 58 0]
+BYTE ARRAY readPath=[68 65 84 65 46 66 73 78 0]
+BYTE ARRAY readBase=[68 49 58 84 79 79 76 83 47 83 85 66 0]
+BYTE ARRAY completion=[10 68 73 83 75 32 68 79 78 69 10]
+TYPE MixedState=[
+  BYTE readyA
+  BYTE readyB
+  BYTE readyC
+  BYTE stopA
+  BYTE stopPeers
+  EXEC.MsgPort POINTER replies
+  EXEC.MsgPort POINTER destination
+  EXEC.Message POINTER message
+  DOS.FileHandle POINTER output
+  BYTE POINTER flood
+  CARD floods
+  LONGCARD allocations
+  LONGCARD signals
+  LONGCARD messages
+]
+
+MixedState mix
+TYPE ProbeState=[
+  LONGCARD expected
+  LONGCARD verified
+  BYTE seed
+  BYTE phase
+  BYTE go
+  BYTE finish
+  CARD collected
+  CARD visible
+  CARD duringRead
+  LONGCARD initialAlloc
+  LONGCARD finalAlloc
+]
+
+ProbeState probe
+CARD commands,commandOverlap
+LONGCARD initialHeap
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($ed00+commands)
+  FI
+
+RETURN
+
+PROC AllocateReader(BYTE unused)
+
+  readBuffer=EXEC.AllocMem(70003,EXEC.MEMF_PUBLIC OR EXEC.MEMF_LINEAR)
+  Check(readBuffer<>BYTE POINTER(0))
+
+RETURN
+
+PROC ReaderOpen(BYTE unused)
+
+  reader.file=DOS.Open(readPath,DOS.MODE_OLDFILE)
+  reader.received=-1
+  reader.error=DOS.IoErr()
+
+RETURN
+
+PROC ReaderTransfer(BYTE unused)
+
+  reader.active=1
+  reader.received=DOS.Read(reader.file,readBuffer,70003)
+  reader.error=DOS.IoErr()
+  reader.active=0
+
+RETURN
+
+PROC ReaderClose(BYTE unused)
+  LONGINT okay
+
+  IF reader.file<>DOS.FileHandle POINTER(0) THEN
+    okay=DOS.Close(reader.file)
+    reader.file=DOS.FileHandle POINTER(0)
+    IF okay=0 THEN
+      reader.error=DOS.IoErr()
+    FI
+  FI
+
+RETURN
+
+PROC ReaderEntry()
+  LONGCARD bits
+  DOS.FileHandle POINTER previous
+  DOS.FileLock POINTER oldDirectory
+
+  Check(EXEC.AllocSignal(16)=16)
+  readerOutput=DOS.Open(rawName,DOS.MODE_NEWFILE)
+  Check(readerOutput<>DOS.FileHandle POINTER(0))
+  previous=DOS.SelectOutput(readerOutput)
+  Check(previous=DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
+  readerDirectory=DOS.Lock(readBase,DOS.SHARED_LOCK)
+  Check(readerDirectory<>DOS.FileLock POINTER(0))
+  oldDirectory=DOS.CurrentDir(readerDirectory)
+  Check(oldDirectory=DOS.FileLock POINTER(0) AND DOS.IoErr()=0)
+  reader.ready=1
+  DO
+    bits=EXEC.Wait($10000)
+    IF reader.stop<>0 THEN
+      EXIT
+    FI
+
+    reader.wakes==+1
+    ReaderOpen(0)
+    IF reader.file<>DOS.FileHandle POINTER(0) THEN
+      ReaderTransfer(0)
+    FI
+
+    ReaderClose(0)
+    Check(reader.error=0 AND reader.received>=0)
+    Check(DOS.Write(DOS.Output(),completion,11)=11)
+    reader.reads==+1
+    reader.busy=0
+    reader.done=1
+    EXEC.Signal(consoleTask,$10000)
+  OD
+
+  oldDirectory=DOS.CurrentDir(DOS.FileLock POINTER(0))
+  Check(oldDirectory=readerDirectory)
+  DOS.UnLock(oldDirectory)
+  Check(DOS.IoErr()=0)
+  Check(DOS.Close(readerOutput)<>0 AND DOS.ReleaseContext()<>0)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+PROC StartReader(BYTE unused)
+
+  readerTask.tc_Node.ln_Type=EXEC.NT_TASK
+  readerTask.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(4))
+  readerTask.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(4))
+  readerTask.tc_SPReg=readerTask.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@readerTask.tc_MemEntry)
+  Check(EXEC.AddTask(@readerTask,@ReaderEntry,absent)=@readerTask)
+  WHILE reader.ready=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC JoinReader(BYTE unused)
+  CARD ticks
+
+  WHILE reader.busy<>0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  reader.stop=1
+  EXEC.Signal(@readerTask,$10000)
+  WHILE readerTask.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+EXEC.Task POINTER FUNC WorkTask(BYTE index)
+
+RETURN(@peers(index))
+
+PROC PrepareWork(EXEC.Task POINTER task BYTE slot)
+
+  task.tc_Node.ln_Type=EXEC.NT_TASK
+  task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  task.tc_SPReg=task.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@task.tc_MemEntry)
+
+RETURN
+
+PROC AllocateCycle(BYTE unused)
+  BYTE POINTER block
+  CARD index
+
+  block=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR)
+  Check(block<>BYTE POINTER(0))
+  FOR index=0 TO 127 DO
+    Check(block(index)=0)
+    block(index)=BYTE(index XOR 83)
+  OD
+
+  FOR index=0 TO 127 DO
+    Check(block(index)=BYTE(index XOR 83))
+  OD
+
+  EXEC.FreeMem(block,128)
+  mix.allocations==+1
+
+RETURN
+
+PROC MessageCycle(BYTE unused)
+  EXEC.Message POINTER reply
+  LONGCARD bits
+
+  EXEC.PutMsg(mix.destination,mix.message)
+  reply=EXEC.WaitPort(mix.replies)
+  reply=EXEC.GetMsg(mix.replies)
+  Check(reply=mix.message)
+  EXEC.Signal(WorkTask(1),$10000)
+  bits=EXEC.Wait($10000)
+
+RETURN
+
+PROC Flood(BYTE unused)
+
+  Check(DOS.Output()=mix.output AND DOS.Write(DOS.Output(),mix.flood,40)=40)
+  mix.floods==+1
+
+RETURN
+
+; Prepare the independent work peers before starting concurrent console
+; interaction.
+PROC ProducerSetup(BYTE unused)
+  CARD index
+  DOS.FileHandle POINTER previous
+
+  Check(EXEC.AllocSignal(16)=16)
+  mix.replies=EXEC.CreateMsgPort()
+  Check(mix.replies<>EXEC.MsgPort POINTER(0))
+  mix.message=EXEC.Message POINTER(EXEC.AllocMem(SIZEOF(EXEC.Message),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  mix.output=DOS.Open(rawName,DOS.MODE_NEWFILE)
+  previous=DOS.SelectOutput(mix.output)
+  Check(previous=DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
+  mix.flood=EXEC.AllocMem(40,EXEC.MEMF_PUBLIC)
+  Check(mix.message<>EXEC.Message POINTER(0)
+      AND mix.output<>DOS.FileHandle POINTER(0) AND mix.flood<>BYTE POINTER(0))
+  mix.message.mn_ReplyPort=mix.replies
+  mix.message.mn_Length=SIZEOF(EXEC.Message)
+  FOR index=0 TO 39 DO
+    mix.flood(index)=35
+  OD
+
+RETURN
+
+PROC ProducerCleanup(BYTE unused)
+
+  Check(DOS.Close(mix.output)<>0 AND DOS.ReleaseContext()<>0)
+  EXEC.DeleteMsgPort(mix.replies)
+  EXEC.FreeMem(BYTE POINTER(mix.message),SIZEOF(EXEC.Message))
+  EXEC.FreeMem(mix.flood,40)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+PROC ProducerEntry()
+  LONGCARD bits
+  CARD ticks
+
+  ProducerSetup(0)
+  mix.readyA=1
+  bits=EXEC.Wait($10000)
+  WHILE mix.stopA=0 DO
+    AllocateCycle(0)
+    MessageCycle(0)
+    IF mix.floods<30 THEN
+      Flood(0)
+      ticks=EXECTASKS.Sleep(5)
+    ELSE
+      ticks=EXECTASKS.Sleep(1)
+    FI
+  OD
+
+  ProducerCleanup(0)
+
+RETURN
+
+PROC SignalEntry()
+  LONGCARD bits
+
+  Check(EXEC.AllocSignal(16)=16)
+  mix.readyB=1
+  DO
+    bits=EXEC.Wait($10000)
+    IF mix.stopPeers<>0 THEN
+      EXIT
+    FI
+
+    mix.signals==+1
+    EXEC.Signal(WorkTask(0),$10000)
+  OD
+
+  EXEC.FreeSignal(16)
+
+RETURN
+
+PROC ReceiverEntry()
+  EXEC.Message POINTER message
+  LONGCARD bits,mask
+
+  mix.destination=EXEC.CreateMsgPort()
+  Check(mix.destination<>EXEC.MsgPort POINTER(0))
+  mask=LONGCARD(1) LSH mix.destination.mp_SigBit
+  mix.readyC=1
+  DO
+    message=EXEC.GetMsg(mix.destination)
+    IF message<>EXEC.Message POINTER(0) THEN
+      Check(message=mix.message)
+      mix.messages==+1
+      EXEC.ReplyMsg(message)
+    ELSE
+      IF mix.stopPeers<>0 THEN
+        EXIT
+      FI
+
+      bits=EXEC.Wait(mask)
+    FI
+  OD
+
+  EXEC.DeleteMsgPort(mix.destination)
+
+RETURN
+
+PROC StartWork(BYTE unused)
+
+  PrepareWork(WorkTask(0),5)
+  PrepareWork(WorkTask(1),6)
+  PrepareWork(WorkTask(2),7)
+  Check(EXEC.AddTask(WorkTask(0),@ProducerEntry,absent)=WorkTask(0))
+  Check(EXEC.AddTask(WorkTask(1),@SignalEntry,absent)=WorkTask(1))
+  Check(EXEC.AddTask(WorkTask(2),@ReceiverEntry,absent)=WorkTask(2))
+  WHILE mix.readyA=0 OR mix.readyB=0 OR mix.readyC=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; Retire the background work peers before checking final shared ownership.
+PROC StopWork(BYTE unused)
+  CARD ticks
+  EXEC.Task POINTER task
+
+  mix.stopA=1
+  task=WorkTask(0)
+  WHILE task.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  EXEC.Forbid()
+  mix.stopPeers=1
+  EXEC.Signal(WorkTask(1),$10000)
+  EXEC.Signal(WorkTask(2),LONGCARD(1) LSH mix.destination.mp_SigBit)
+  EXEC.Permit()
+  task=WorkTask(1)
+  WHILE task.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  task=WorkTask(2)
+  WHILE task.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Check(mix.allocations=mix.signals AND mix.signals=mix.messages AND mix.floods=30)
+
+RETURN
+
+PROC CommandBegin(BYTE unused)
+
+  IF reader.active<>0 THEN
+    commandOverlap==+1
+  FI
+
+RETURN
+
+PROC CommandEnd(BYTE unused)
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+
+  Check(shell.lastStatus=0 AND shell.lastError=0 AND shell.done=0)
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  Check(client.input=BYTE POINTER(shell.console)
+      AND client.output=BYTE POINTER(shell.console)
+      AND client.directory=BYTE POINTER(shell.directory))
+  Check(client.busy=0 AND client.objects=2
+      AND shell.tempInput=DOS.FileHandle POINTER(0)
+      AND shell.tempOutput=DOS.FileHandle POINTER(0))
+  Check(EXECLISTS.IsListEmpty(@client.port.mp_MsgList)<>0
+      AND client.request.io_Device=BYTE POINTER(0)
+      AND client.request.io_Unit=BYTE POINTER(0))
+  commands==+1
+
+RETURN
+
+PROC Command(BYTE POINTER source)
+  BYTE POINTER line
+  CARD index
+
+  line=ShellLine()
+  index=0
+  DO
+    line(index)=source(index)
+    IF source(index)=0 THEN
+      EXIT
+    FI
+
+    index==+1
+  OD
+
+  shell.length=index
+  CommandBegin(0)
+  ShellCommand()
+  CommandEnd(0)
+
+RETURN
+
+; Keep foreground input responsive while the fixture's other Tasks remain
+; active.
+PROC Interaction(BYTE unused)
+  CARD ticks
+
+  EXEC.Signal(WorkTask(0),$10000)
+  WHILE mix.floods<25 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  probe.initialAlloc=mix.allocations
+  reader.busy=1
+  EXEC.Signal(@readerTask,$10000)
+  probe.phase=2
+  ; Eight physical characters plus Return execute ECHO through the real editor.
+  ShellReadStep()
+  CommandEnd(0)
+  Command(command0)
+  Command(command1)
+  Command(command2)
+  Command(command3)
+  WHILE reader.busy<>0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  probe.finalAlloc=mix.allocations
+  Check(probe.finalAlloc>probe.initialAlloc AND probe.duringRead<>0)
+
+RETURN
+
+PROC VerifyPayload(BYTE unused)
+  LONGCARD index
+
+  Check(reader.reads=1 AND reader.received=LONGINT(probe.expected)
+      AND reader.error=0)
+  FOR index=0 TO probe.expected-1 DO
+    IF readBuffer(SIZE(index))<>(BYTE(index) XOR probe.seed) THEN
+      HEAPCORE.Abort($f782)
+    FI
+  OD
+
+  probe.verified=probe.expected
+
+RETURN
+
+; Exercise the shared eight-Task workload and verify final resource ownership.
+PROC Main()
+
+  initialHeap=EXEC.AvailMem(0)
+  fixtureStorage=EXEC.AllocMem(8192,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  Check(fixtureStorage<>BYTE POINTER(0))
+  consoleTask=EXEC.FindTask(BYTE POINTER(0))
+  Check(EXEC.AllocSignal(16)=16)
+  Check(ShellStart(shellRoot)<>0)
+  AllocateReader(0)
+  StartReader(0)
+  StartWork(0)
+  probe.phase=1
+  WHILE probe.go=0 DO
+    EXEC.Yield()
+  OD
+
+  Interaction(0)
+  VerifyPayload(0)
+  JoinReader(0)
+  WHILE mix.floods<30 DO
+    EXEC.Yield()
+  OD
+
+  StopWork(0)
+  probe.phase=3
+  WHILE probe.finish=0 DO
+    EXEC.Yield()
+  OD
+
+  Check(ShellFinish()=0 AND FSBOOT.Stop()<>0)
+  EXEC.FreeMem(readBuffer,70003)
+  EXEC.FreeSignal(16)
+  EXEC.FreeMem(fixtureStorage,8192)
+  Check(EXEC.AvailMem(0)=initialHeap)
+  probe.phase=4
+
+RETURN
+
+ENDMODULE

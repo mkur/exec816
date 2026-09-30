@@ -1,0 +1,306 @@
+MODULE CONSOLEFOCUSTEST
+USE EXEC
+USE EXECLISTS
+USE HEAPCORE
+USE CONSOLE
+USE CONSOLEWINDOWS
+USE CONSOLEDRIVER
+USE CONSOLEFOREGROUND
+USE CONSOLEINPUT
+USE CONSOLETYPES
+USE DOSBREAKTYPES
+CARD checks
+BYTE phase,gate
+LONGCARD first,second,third,baseline
+CONSOLETYPES.Windows POINTER windows
+CONSOLETYPES.Window POINTER wa,wb,wc
+CONSOLETYPES.Instance POINTER a,b,c
+CONSOLETYPES.Capture POINTER capture
+DOSBREAKTYPES.Scope sa,sb
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER ra,rb,rc
+BYTE ARRAY device=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY textA=[65 65 65],textB=[98 98 98],textC=[67 67 67],
+    hidden=[72 73 68 68 69 78]
+BYTE ARRAY keys(64)
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e800+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+
+  gate=0
+  phase=number
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Write(EXEC.IOStdReq POINTER request BYTE POINTER bytes LONGCARD count)
+
+  request.io_Command=EXEC.CMD_WRITE
+  request.io_Data=bytes
+  request.io_Length=count
+  request.io_Offset=0
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0 AND request.io_Actual=count)
+
+RETURN
+
+PROC Clean(CONSOLETYPES.Window POINTER entry)
+  CONSOLETYPES.Presentation POINTER view
+  CONSOLETYPES.Instance POINTER instance
+
+  view=CONSOLETYPES.Presentation POINTER(entry.view)
+  instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  WHILE instance.dirtyEnd<>0 OR view.index<>instance.lineStart+instance.column
+      OR entry.busy<>0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Freeze()
+  BYTE index,busy
+
+  DO
+    EXEC.Forbid()
+    busy=0
+    FOR index=0 TO 3 DO
+      IF windows.items(index).busy<>0 THEN
+        busy=1
+      FI
+    OD
+
+    IF busy=0 THEN
+      EXIT
+    FI
+
+    EXEC.Permit()
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Read(EXEC.IOStdReq POINTER request BYTE value)
+
+  request.io_Command=EXEC.CMD_READ
+  request.io_Data=keys
+  request.io_Length=64
+  request.io_Offset=0
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0 AND request.io_Actual=1
+      AND keys(0)=value)
+
+RETURN
+
+PROC Setup()
+  CONSOLETYPES.Service POINTER service
+
+  Require(CONSOLEDRIVER.Start()<>0)
+  baseline=EXEC.AvailMem(EXEC.MEMF_UPPER)
+  first=CONSOLE.Create(20,12)
+  second=CONSOLE.Create(20,12)
+  third=CONSOLE.Create(40,12)
+  Require(first<>0 AND second<>0 AND third<>0)
+  windows=CONSOLEWINDOWS.Registry()
+  wa=CONSOLEWINDOWS.Find(first)
+  wb=CONSOLEWINDOWS.Find(second)
+  wc=CONSOLEWINDOWS.Find(third)
+  a=CONSOLETYPES.Instance POINTER(wa.instance)
+  b=CONSOLETYPES.Instance POINTER(wb.instance)
+  c=CONSOLETYPES.Instance POINTER(wc.instance)
+  service=CONSOLEDRIVER.GetService()
+  ; Capture is adjacent to the generated boot binding in the Task arena.
+  capture=CONSOLETYPES.Capture POINTER($0f0c00)
+  Require(CONSOLE.Show(first,0,0)=0 AND CONSOLE.Focus(first)=0)
+  Require(CONSOLE.Hide(0)<>0 AND windows.focusSlot=255)
+  Require(CONSOLE.Show(first,0,0)<>0 AND windows.focusSlot=BYTE(first & 3))
+  Require(CONSOLE.Show(second,19,0)=0 AND CONSOLE.Show(second,21,0)=0)
+  Require(CONSOLE.Show(second,20,0)<>0 AND CONSOLE.Show(third,0,12)<>0)
+  Require(CONSOLE.Show(first,0,0)<>0 AND CONSOLE.Show(first,0,1)=0)
+  Require(CONSOLE.Show(0,0,0)=0 AND CONSOLE.Focus($ffffffff)=0)
+  port=EXEC.CreateMsgPort()
+  Require(port<>EXEC.MsgPort POINTER(0))
+  ra=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  rb=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  rc=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(ra<>EXEC.IOStdReq POINTER(0) AND rb<>EXEC.IOStdReq POINTER(0)
+      AND rc<>EXEC.IOStdReq POINTER(0))
+  Require(EXEC.OpenDevice(device,first,EXEC.IORequest POINTER(ra),0)=0)
+  Require(EXEC.OpenDevice(device,second,EXEC.IORequest POINTER(rb),0)=0)
+  Require(EXEC.OpenDevice(device,third,EXEC.IORequest POINTER(rc),0)=0)
+  Write(ra,textA,3)
+  Write(rb,textB,3)
+  Write(rc,textC,3)
+  Clean(wa)
+  Clean(wb)
+  Clean(wc)
+  Require(EXEC.AllocSignal(20)=20 AND EXEC.AllocSignal(21)=21)
+  sa.owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0)))
+  sa.mask=$100000
+  sa.unit=first
+  sb.owner=sa.owner
+  sb.mask=$200000
+  sb.unit=second
+  EXEC.Forbid()
+  Require(CONSOLEFOREGROUND.Begin(@sa)<>0 AND CONSOLEFOREGROUND.Begin(@sb)<>0)
+  EXEC.Permit()
+
+RETURN
+
+; Keep captured input associated with the route active when the key arrived.
+PROC Queued()
+
+  Pause(1)
+  Freeze()
+  Pause(2)
+  Require(capture.breakPending<>0)
+  Require(CONSOLE.Focus(second)<>0)
+  Pause(3)
+  Require(capture.breakMask=((CARD(1) LSH CARD(sa.generation & 15))
+      OR (CARD(1) LSH CARD(sb.generation & 15))))
+  EXEC.Permit()
+  WHILE sa.pending=0 OR sb.pending=0 OR a.inputCount=0 OR b.inputCount=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(a.inputCount=1 AND b.inputCount=1 AND c.inputCount=0)
+  Read(ra,97)
+  Read(rb,98)
+  EXEC.Forbid()
+  CONSOLEFOREGROUND.End(@sa)
+  CONSOLEFOREGROUND.End(@sb)
+  EXEC.Permit()
+  Clean(wa)
+  Clean(wb)
+  Clean(wc)
+  Pause(4)
+
+RETURN
+
+; Require an explicit loss report instead of silently delivering a damaged
+; input sequence.
+PROC Overflow()
+  CARD index
+  LONGCARD bits
+
+  Freeze()
+  Require(CONSOLE.Focus(first)<>0)
+  capture.tail=0
+  capture.head=64
+  FOR index=0 TO 63 DO
+    capture.events(index).key=21
+    capture.events(index).kind=0
+    capture.events(index).tick=index
+    capture.events(index).route=wb.route
+  OD
+
+  Pause(5)
+  Require(capture.lostMask=(CARD(1) LSH CARD(wa.route & 15)))
+  Require(CONSOLE.Focus(second)<>0)
+  EXEC.Permit()
+  WHILE capture.tail<>capture.head OR a.inputLost=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(a.inputCount=0 AND b.inputCount=64 AND b.inputLost=0)
+  ra.io_Command=EXEC.CMD_READ
+  ra.io_Data=keys
+  ra.io_Length=64
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(
+      ra))=CONSOLETYPES.CONERR_INPUTOVERFLOW AND ra.io_Actual=0)
+  rb.io_Command=EXEC.CMD_READ
+  rb.io_Data=keys
+  rb.io_Length=64
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(rb))=0 AND rb.io_Actual=64)
+  FOR index=0 TO 63 DO
+    Require(keys(index)=98)
+  OD
+
+  Require(a.inputLost=0)
+  Clean(wa)
+  Clean(wb)
+  Pause(6)
+
+RETURN
+
+; Retire captured input before the same console storage can be reopened.
+PROC CloseCapture()
+
+  Freeze()
+  Require(CONSOLE.Focus(first)<>0)
+  Pause(7)
+  Require(CONSOLE.Focus(second)<>0)
+  Pause(8)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(ra))
+  Require(EXEC.OpenDevice(device,first,EXEC.IORequest POINTER(ra),0)=0)
+  EXEC.Permit()
+  WHILE capture.tail<>capture.head DO
+    EXEC.Yield()
+  OD
+
+  Require(a.inputCount=0 AND b.inputCount=1 AND a.inputLost=0 AND b.inputLost=0)
+  Read(rb,98)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(ra))
+  Require(CONSOLE.Destroy(first)<>0)
+  Require(windows.focusSlot=BYTE(second & 3))
+  Clean(wb)
+  Clean(wc)
+  Pause(9)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(rb))
+  Require(CONSOLE.Destroy(second)<>0)
+  Require(windows.focusSlot=BYTE(third & 3))
+  Clean(wc)
+  Pause(10)
+  Require(CONSOLE.Hide(third)<>0 AND windows.focusSlot=255)
+  Write(rc,hidden,6)
+  Require(c.column=9)
+  Pause(11)
+  Require(CONSOLE.Show(third,0,0)<>0)
+  Clean(wc)
+  Pause(12)
+
+RETURN
+
+PROC Cleanup()
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(rc))
+  Require(CONSOLE.Destroy(third)<>0)
+  Require(windows.focusSlot=255)
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(ra))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(rb))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(rc))
+  EXEC.DeleteMsgPort(port)
+  EXEC.FreeSignal(21)
+  EXEC.FreeSignal(20)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=baseline)
+  Require(CONSOLE.Show(0,0,0)<>0)
+  Clean(@windows.items(0))
+  Pause(13)
+  Require(CONSOLEDRIVER.Stop()<>0)
+
+RETURN
+
+; Exercise capture routing across focus changes and overflow.
+PROC Main()
+
+  Setup()
+  Queued()
+  Overflow()
+  CloseCapture()
+  Cleanup()
+
+RETURN
+
+ENDMODULE

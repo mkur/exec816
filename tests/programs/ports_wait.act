@@ -1,0 +1,98 @@
+MODULE PORTWAIT
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+EXEC.MsgPort target,shared
+EXEC.Message ARRAY messages(3)
+EXEC.Task worker
+EXEC.Task POINTER parent
+CARD ARRAY checks(14)
+BYTE phase
+PROC POINTER absent()
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC WorkerEntry()
+
+  checks(0)=CARD(parent.tc_State=EXEC.TS_WAIT AND parent.tc_TDNestCnt=1)
+  phase=1
+  ; A shared signal for a different queue wakes WaitPort spuriously.
+  EXEC.PutMsg(@shared,@messages(0))
+  checks(1)=CARD(parent.tc_State=EXEC.TS_WAIT)
+  EXEC.Forbid()
+  phase=2
+  EXEC.PutMsg(@target,@messages(1))
+  EXEC.PutMsg(@target,@messages(2))
+  EXEC.Signal(parent,1)
+  EXEC.Permit()
+
+RETURN
+
+PROC Setup()
+  BYTE bit
+  EXEC.Task POINTER added
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  bit=EXEC.AllocSignal(31)
+  target.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  target.mp_SigBit=31
+  target.mp_SigTask=parent
+  shared.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  shared.mp_SigBit=31
+  shared.mp_SigTask=parent
+  EXECLISTS.NewList(@target.mp_MsgList)
+  EXECLISTS.NewList(@shared.mp_MsgList)
+  EXEC.Forbid()
+  EXEC.Forbid()
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  added=EXEC.AddTask(@worker,@WorkerEntry,absent)
+  EXEC.Signal(parent,LONGCARD($80000000))
+
+RETURN
+
+PROC Receive()
+  EXEC.Message POINTER first,again,msg
+  LONGCARD bits
+
+  first=EXEC.WaitPort(@target)
+  checks(2)=CARD(first=@messages(1) AND phase=2)
+  checks(3)=CARD(parent.tc_TDNestCnt=1)
+  bits=EXEC.SetSignal(0,LONGCARD($80000000))
+  again=EXEC.WaitPort(@target)
+  checks(4)=CARD(first=again)
+  msg=EXEC.GetMsg(@target)
+  checks(5)=CARD(msg=first AND msg.mn_Node.ln_Type=EXEC.NT_MESSAGE)
+  again=EXEC.WaitPort(@target)
+  checks(6)=CARD(again=@messages(2))
+  msg=EXEC.GetMsg(@target)
+  checks(7)=CARD(msg=again)
+  checks(8)=CARD(EXEC.GetMsg(@target)=EXEC.Message POINTER(0))
+  msg=EXEC.GetMsg(@shared)
+  checks(9)=CARD(msg=@messages(0))
+  bits=EXEC.Wait(LONGCARD($80000001))
+  checks(10)=CARD(bits=1)
+
+RETURN
+
+PROC Finish()
+
+  checks(11)=CARD(parent.tc_TDNestCnt=1)
+  EXEC.Permit()
+  EXEC.Permit()
+  checks(12)=CARD(parent.tc_TDNestCnt=$ff)
+  AwaitRemoval(@worker)
+  EXEC.FreeSignal(31)
+  checks(13)=1
+
+RETURN
+
+; Exercise blocking port notification and reply collection.
+PROC Main()
+
+  Setup()
+  Receive()
+  Finish()
+
+RETURN
+
+ENDMODULE

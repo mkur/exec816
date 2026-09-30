@@ -1,0 +1,103 @@
+; Copy published runtime mounts without starting the service or doing disk I/O.
+MODULE FSINSPECT
+USE EXEC
+USE DOSCORE
+USE FSTYPES
+USE FSREGISTRY
+PUBLIC CONST CAPACITY=8
+
+PUBLIC TYPE Info=[
+  BYTE ARRAY name(32)
+  BYTE offline,format,readOnly
+]
+
+PUBLIC TYPE CacheInfo=[
+  CARD requested,blocks
+  LONGCARD hits,misses,evictions
+]
+
+; Diagnostics borrow no cache storage and never start the filesystem service.
+PUBLIC BYTE FUNC CacheStatus(CacheInfo POINTER info)
+  BYTE ready
+
+  IF info=NULL THEN
+    RETURN(0)
+  FI
+
+  LET registry=DOSCORE.GetRegistry()
+  ready=0
+  EXEC.Forbid()
+  IF registry.state=FSTYPES.STATE_READY AND registry.stop=0
+      AND registry.runtime<>NULL THEN
+    BEGIN
+      LET service=FSTYPES.Service POINTER(registry.runtime)
+      LET cache=@service.adapter.cache
+      info.requested=cache.requested
+      info.blocks=cache.blocks
+      info.hits=cache.hits
+      info.misses=cache.misses
+      info.evictions=cache.evictions
+      ready=1
+    END
+  FI
+
+  EXEC.Permit()
+
+RETURN(ready)
+
+; Copy mount diagnostics while protecting the registry's published identities.
+PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
+  DOSCORE.DosRegistry POINTER registry
+  FSTYPES.Service POINTER service
+  FSTYPES.Mount POINTER mount
+  CARD count
+  BYTE slot,index,value
+
+  IF rows=Info POINTER(0) OR limit<CAPACITY THEN
+    RETURN(0)
+  FI
+
+  registry=DOSCORE.GetRegistry()
+  count=0
+  EXEC.Forbid()
+  ; Starting/failed services have no published mounts. During shutdown their
+  ; allocations may already be retiring, so never follow those pointers.
+  IF registry.state=FSTYPES.STATE_READY AND registry.stop=0
+      AND registry.runtime<>BYTE POINTER(0) THEN
+    service=FSTYPES.Service POINTER(registry.runtime)
+    IF service.count<>0 THEN
+      FOR slot=0 TO service.count-1 DO
+        mount=service.mounts(slot).item
+        IF mount<>FSTYPES.Mount POINTER(0) THEN
+          IF mount.published<>0 THEN
+            index=0
+            WHILE index<31 DO
+              value=mount.spec.alias(index)
+              IF value=0 THEN
+                EXIT
+              FI
+
+              IF value<32 OR value>126 THEN
+                value=46
+              FI
+
+              rows(count).name(index)=value
+              index==+1
+            OD
+
+            rows(count).name(index)=0
+            rows(count).offline=mount.offline
+            rows(count).format=mount.spec.format
+            rows(count).readOnly=1
+            count==+1
+          FI
+        FI
+      OD
+    FI
+  FI
+
+  EXEC.Permit()
+
+RETURN(count)
+
+ENDMODULE

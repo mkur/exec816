@@ -1,0 +1,18 @@
+MODULE O65MEMORY
+USE EXEC
+
+BYTE POINTER FUNC Reserve(SIZE bytes LONGCARD flags)
+
+RETURN(EXEC.AllocMem(bytes,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR OR flags))
+
+PUBLIC BYTE POINTER FUNC Allocate(SIZE bytes)
+
+RETURN(Reserve(bytes,EXEC.MEMF_CLEAR))
+
+; Text/data are completely copied before publication. Do not clear the unused
+; alignment reservation, which can be much larger than the executable itself.
+PUBLIC BYTE POINTER FUNC Storage(SIZE bytes)
+
+RETURN(Reserve(bytes,0))
+
+ENDMODULE

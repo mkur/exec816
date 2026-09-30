@@ -1,0 +1,1469 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "s2_commit": "41edb6e",
+  "runtime_baseline": "2118201",
+  "change": "SIO owns worker admission, readiness, stop and restart; public Task leases, resident notifications and platform producer lifetime replace private SIO controls and scheduler hooks.",
+  "inputs": {
+    "abi/io.json": "797c88373e904e5d1674e321ece4fe5b41cb76e060f2693ecb60a44daa5d0303",
+    "abi/sio-adapter.json": "5db1a8370857556e156a9d965e44a3ffa8b4d254604e9ed4a7850ce49054c236",
+    "abi/tasks.json": "cdae822fae871b32fdc8502c773e715accd9af21963af5f7d42e2bc07167e357",
+    "lib/console/consoledriver.act": "6d3667165613700795718b608e81df066334a5aecdd5442e40d35531583de813",
+    "lib/console/task-console.inc": "30274a0499472a8cd0bf0174de499ed8d9c25fca402a67cd63b73e1f39025be5",
+    "lib/dos/task-dos.inc": "896def24554a5a824e67503615057839e361fd4dbd5183219322bea99daf37a5",
+    "lib/dos/task-process.inc": "00ee8171925c88abab1971e34b25b8b11729b4f73573d4068e915db589f056f2",
+    "lib/exec/exec-task-types.inc": "a00da2c9022615ee624fb2aa96965573c95c49ddf651216eaa3d5fd904af8489",
+    "lib/exec/task-wakes.inc": "be41e9ac93dd2debecdf8f3f35ec756f2bb0accaba87c8199e02d60a743ac24c",
+    "lib/exec/taskpolicy.act": "247d8df7435b06a7186ad780772c160a05fb13b5f38cfcc1d3d12b95ed03bd60",
+    "lib/fs/fsworker.act": "48795d8db9d818a3f5c1a2d15a9e7885b5a2abe2309b0daa7c9c946a24421832",
+    "lib/io/deviceinspect.act": "667fa24690ec8df96ef625e0f77fdb1bf094db9aff2d6055ab3d00e2071934e9",
+    "lib/io/io-call-types.inc": "a0c415936f7ef142210488059bf6f28a3541ee53dc2608d470e8f5570c103693",
+    "lib/io/sio-requests.inc": "c3b49b00f757b6208b05ff59f0ee36caa20afe12a5a9f65d29144413b3b1fdd1",
+    "lib/io/siodriver.act": "1d7a172b7f2a8244a19cebfa6dc3fd56ee5202c7070e2c13635e4eb8ee01fdb8",
+    "lib/io/task-io.inc": "cc7285d2e128a4ced431fc7e571b84202868b7be499c8ee5b371ded4ab95e382",
+    "platform/altirraos/io.s": "810a0d5ea0d2f36bf3a320a5ae0955452c9b73bae1541851b408a390fc59bd16",
+    "platform/altirraos/sio-state.inc": "4d870a66d1fd6e28587fa8df5030eab8b27a3c245510aa9f6ae2998931427a0c",
+    "platform/altirraos/tasks.s": "a1ae0962821815111efc49ea89e1073ecdbf54d208c2e15cae6a41401391ad5b",
+    "tests/programs/heap_races.act": "61b83c5468be23d74d86a0f517af510ed1b97b7f6d602c76fc457bb7a409d44b",
+    "tests/programs/ports_races.act": "4221143fd1e449102dab7004c93f110758ddff4236642f21dfeeae2244213ead",
+    "tests/programs/signals_atomic.act": "f09988bedd61cdb2f066d5fa959787a60a604aa5c5f49876da518c1c3ef1754f",
+    "tests/programs/signals_burst.act": "777651471a047b7798714108d59b328098c07eadc9d226e22ab25067d36c4495",
+    "tests/programs/signals_capacity.act": "1dce9490a2fc0dfbc062352d29d0dfdbfb8f0477e29f86dac3fe8430c45d7e45",
+    "tests/programs/signals_capacity_burst.act": "e3425fc75edba235e91ce81724b02d7811a85eae358823cb2ccfb9c212cebb7d",
+    "tests/programs/signals_concurrent.act": "f6e17fa1e15b4b13eb84d80293373e13be6f3670203f98b4e02bec52bff3248c",
+    "tests/programs/signals_irq.act": "c3f386589d718a8f406e3a4786a048fbb2fb3c1e311032dd52216269c4dd2021",
+    "tests/programs/signals_irq_targets.act": "0ca1c7d7c3081c309881ef5739738c4f107d4421d1c9c2ae99f8690df08820ce",
+    "tests/programs/signals_pump.act": "e653335a424ff0e18b9a076716185f495d34520a0b1518f43ad6783a98af04a4",
+    "tests/programs/signals_queue.act": "1e563d068d18bb0e37c6cbeadbc2078e253a1938e44567dc75c1916aec5cfd0e",
+    "tests/programs/signals_stream.act": "b6e99ec11088a7e9b793b7e5f27093776089954a0628d898c52c52d117e2c8c7",
+    "tests/programs/sio_adapter.act": "cdbabe87a5a0dc079d8b4f03f3338f9b6af2d295252e7dea5e60a4382b8aabeb",
+    "tests/programs/sio_recovery.act": "802f8b5845d08cca998ec8ea9cf302be4ac6a7e1407483edd3a6bd378675ae93",
+    "tests/programs/system_inspect.act": "43185bd3f15636b4c42753bcac75a973910e59f7c665e6d7559c6fe00d0bbb9b",
+    "tests/test_command_io_trace.py": "563615468218a6409a511fc2ed03b7c85ee5d6ba1b0b67c3f5f49a7e07759dd6",
+    "tests/test_dos_package.py": "3ff8a9e479222699ac0563c359d73b3a719348079a5ca11d1d12fa6c654f17ab",
+    "tests/test_heap_package.py": "eef5a663e6fdc56537e38a816a284c023fe66481cfe3994f213e3410ad9c8a71",
+    "tests/test_io_package.py": "779c0311d44d359b4536cab85b86322141564dc60e394563a81c45be35d8fb46",
+    "tests/test_ports_package.py": "e87acf5ec1423388c38e4672074b88bae088162496080e6c07ed05d320f43ea7",
+    "tests/test_tasks_package.py": "5f20d262a93efa8356b800694e4daef522ec2bc1334ad229af86d8e8438e29e8",
+    "tools/dos_lifetime_record.py": "b65cc9adf94d65e72cefcae952b6cedd2cb1af512507ed67f2a3dbfe949096af",
+    "tools/generate_dos.py": "a0e23db65626663d412ad18e140163ed7e6f329cd6e5de3e69fcde6732b2691a",
+    "tools/generate_heap.py": "7b85053839c03dc3428007767da65fbd3b704289fdd6ffb8915fdf14d8c14dc4",
+    "tools/generate_io.py": "116897ad1937474a324f19fe5f353c3a189c82e9ac0d9361f5d180b00c945497",
+    "tools/generate_ports.py": "ff78bceaed90faffa60684d707130152a5c975e176a3689a21cd5e6591791767",
+    "tools/generate_tasks.py": "83c43c3288b75da5d30adafa196e83446157ce846ec3dde55b1dc9b1481e95fe",
+    "tools/library_paths.py": "f14115d3268c6f165550ecfc64338380c9b0a1cd905ee00472468ccab62ad5fd",
+    "tools/native_program.py": "48c1ff4d1f6b25cabdb43ee1ddce5fbe8e0897935300fafadf90cb9602aacf7e",
+    "tools/test_sio_recovery.py": "042d9795a5f63d27aa3ae14ff2de360112aec51e84d08fb072028df9cce8c53f",
+    "tools/test_tasks_exec.py": "f9bbf45826eab21122453aaecba2e148108d95249fd8795cf2e57eca4747717a",
+    "tools/trace_command_io.py": "49ba70dec43f91f411f09a3f3ea40f4f1f78bd40e16000a9bb0f5ddadb2f16bb",
+    "lib/exec/execproducer.act": "82821bc7924e9185a2bc105e43a9e4ca7b68dc1f9ab3a7fab4363945386174e0",
+    "lib/exec/task-lifetime.inc": "b58ee4b9d26f0a72de45dc55deffc9605e1f551a910d0fe781d292cc47d7ca13",
+    "lib/io/sio-lifetime.inc": "d8420d85cae248344d85ee2fe3a2366507090a9ad15155b1346de2e491346257",
+    "tests/programs/producerprobe.act": "80f9e02f6d884fe3128294b2643c2b6cda44ab5daa5705f4cef21975a5f398ef",
+    "tests/programs/task_lifetime.act": "cd3f8df905b738185e6920aa18d6738bc324d8c74292735789b9a7ab5fde404b",
+    "tests/programs/sio_lifetime.act": "ecace205d8aa5dd64742edc345e5f57b57f55759591de7c8bd2f317ecd4f4ae0",
+    "tests/programs/sio_lifetime_probe.inc": "e1e66b7f5cb1a89b051d225c66ff795de433c4d2d1c38f4d181aa4dc513129d8",
+    "tools/test_task_lifetime.py": "17028f006842800efbce5fbc0b3fa4795c2d13b7ded536c974c66ebb02bb6ae4",
+    "tools/test_sio_lifetime.py": "a0dbea6a08d81a68086962c4d6ca2e2e8105eac53c29ecccc4cae7e773359f91"
+  },
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "47cd55b2dac510922949832332b7a2c3220885be",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "compiler_override": false,
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "public_abi": {
+    "feature_version": 1792,
+    "packet_tag": 1536,
+    "services": {
+      "ADD_TASK": 17,
+      "REM_TASK": 18,
+      "FIND_TASK": 19,
+      "SET_TASK_PRI": 20,
+      "FORBID": 21,
+      "PERMIT": 22,
+      "SLEEP": 11,
+      "ALLOC_SIGNAL": 23,
+      "FREE_SIGNAL": 24,
+      "SET_SIGNAL": 25,
+      "SIGNAL": 26,
+      "WAIT": 27,
+      "RETAIN_TASK": 54,
+      "RELEASE_TASK": 55,
+      "REGISTER_RESIDENT": 56,
+      "UNREGISTER_RESIDENT": 57,
+      "BIND_PRODUCER": 58,
+      "RELEASE_PRODUCER": 59,
+      "DRAIN_PRODUCER": 60
+    },
+    "task_bytes": 62,
+    "task_lease_bytes": 12
+  },
+  "native_case_count": 37,
+  "native": [
+    {
+      "name": "s3-final-lifetime-raw",
+      "results": {
+        "path": "build/development/sio-driver/s3-final-lifetime-raw/results.json",
+        "sha256": "d46af314f35ccf29b9f358d216c687682c09022dd82c16254e47134f45c322e5"
+      },
+      "optimize": false,
+      "xex_sha256": "221bb40209da79dfd255c6340b0b0db1696fa7df93a08749b1b99ef86a8c836a",
+      "image_sha256": "f31df6bfecd15e0ddda60e042d7a2d7d1adc523ecbb6327ab6fcf5c4c74460b5",
+      "cases": [
+        {
+          "name": "lifetime",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 5,
+            "native_irq_count": 0,
+            "gateway_calls": 49,
+            "switches": 6,
+            "return_d": 11776,
+            "return_s": 28414,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            33
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "held-removal",
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 1,
+            "native_irq_count": 0,
+            "gateway_calls": 13,
+            "switches": 0,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            10
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "resident-signal",
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 4,
+            "native_irq_count": 0,
+            "gateway_calls": 40,
+            "switches": 3,
+            "return_d": 9216,
+            "return_s": 22526,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            29
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "late-registration",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 1,
+            "native_irq_count": 0,
+            "gateway_calls": 16,
+            "switches": 2,
+            "return_d": 9216,
+            "return_s": 22526,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            6
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "hold-limit",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 5,
+            "native_irq_count": 0,
+            "gateway_calls": 50,
+            "switches": 6,
+            "return_d": 11776,
+            "return_s": 28414,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            34
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        }
+      ],
+      "platform": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "name": "s3-final-lifetime-opt",
+      "results": {
+        "path": "build/development/sio-driver/s3-final-lifetime-opt/results.json",
+        "sha256": "d554dab3d19d2b8c1a9e5c818518f6716ebe72089912bf3e1d9420d6f4b93ee4"
+      },
+      "optimize": true,
+      "xex_sha256": "4a79e71ec732c024246e359e2fa1189e3799e3af32e57d10a0d640aee8d70d9b",
+      "image_sha256": "e7503f0625ffbc08907fdb5caecfe72725263d06241648170be11499ff3ee726",
+      "cases": [
+        {
+          "name": "lifetime",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 4,
+            "native_irq_count": 0,
+            "gateway_calls": 49,
+            "switches": 6,
+            "return_d": 11776,
+            "return_s": 28414,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            33
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "held-removal",
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 1,
+            "native_irq_count": 0,
+            "gateway_calls": 13,
+            "switches": 0,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            10
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "resident-signal",
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 3,
+            "native_irq_count": 0,
+            "gateway_calls": 40,
+            "switches": 3,
+            "return_d": 9216,
+            "return_s": 22526,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            29
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "late-registration",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 1,
+            "native_irq_count": 0,
+            "gateway_calls": 16,
+            "switches": 2,
+            "return_d": 9216,
+            "return_s": 22526,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            6
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "hold-limit",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 5,
+            "native_irq_count": 0,
+            "gateway_calls": 52,
+            "switches": 9,
+            "return_d": 11776,
+            "return_s": 28414,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            34
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        }
+      ],
+      "platform": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "name": "s3-final-sio-lifetime-raw",
+      "results": {
+        "path": "build/development/sio-driver/s3-final-sio-lifetime-raw/results.json",
+        "sha256": "d2d805e4793034725dd62f23e975754b968227f1ccd68216112e70c28fb75c03"
+      },
+      "optimize": false,
+      "xex_sha256": "d3845cbb0192b5a0e41880ca7ad3cdf0137293b593f01b4cdc739f4d2840a0ff",
+      "image_sha256": "bfdcf39da1a0cebaf88eec430fea0aba88941c9d406a43876a0740f007d13147",
+      "cases": [
+        {
+          "name": "concurrent-open",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 7,
+            "native_irq_count": 0,
+            "gateway_calls": 122,
+            "switches": 17,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            10
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "prebind-removal",
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 2,
+            "native_irq_count": 0,
+            "gateway_calls": 31,
+            "switches": 6,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            4
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "released-removal",
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 2,
+            "native_irq_count": 0,
+            "gateway_calls": 47,
+            "switches": 7,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            4
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "stop-open",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 5,
+            "native_irq_count": 0,
+            "gateway_calls": 80,
+            "switches": 13,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            7
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "stop-restart",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 6,
+            "native_irq_count": 0,
+            "gateway_calls": 112,
+            "switches": 17,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            6
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "last-application",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 2,
+            "native_irq_count": 0,
+            "gateway_calls": 37,
+            "switches": 4,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            2
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        }
+      ],
+      "platform": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "name": "s3-final-sio-lifetime-opt",
+      "results": {
+        "path": "build/development/sio-driver/s3-final-sio-lifetime-opt/results.json",
+        "sha256": "ebd1baf4d5419862ba86b2eb32ca8913550ce4d24331414f0679c5e5593569b6"
+      },
+      "optimize": true,
+      "xex_sha256": "53b0bfac8772293a4bb181440a8a1d13a6e4769278e5daaf382fae7eb54dcafd",
+      "image_sha256": "f25cf5d19cd296a5daf4318e443181a13d0bac8e3be3b56c668b947920f067e0",
+      "cases": [
+        {
+          "name": "concurrent-open",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 7,
+            "native_irq_count": 0,
+            "gateway_calls": 128,
+            "switches": 18,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            10
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "prebind-removal",
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 2,
+            "native_irq_count": 0,
+            "gateway_calls": 31,
+            "switches": 6,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            4
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "released-removal",
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 2,
+            "native_irq_count": 0,
+            "gateway_calls": 47,
+            "switches": 7,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            4
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "stop-open",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 4,
+            "native_irq_count": 0,
+            "gateway_calls": 80,
+            "switches": 13,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            7
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "stop-restart",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 5,
+            "native_irq_count": 0,
+            "gateway_calls": 112,
+            "switches": 17,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            6
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        },
+        {
+          "name": "last-application",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 2,
+            "native_irq_count": 0,
+            "gateway_calls": 37,
+            "switches": 4,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            2
+          ],
+          "timing": null,
+          "cleanup_reached": null
+        }
+      ],
+      "platform": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "name": "s3-final-recovery-raw",
+      "results": {
+        "path": "build/development/sio-driver/s3-final-recovery-raw/results.json",
+        "sha256": "c970d678d53095010562b572ebf011988feb742a23d71366c7d27bf58bd4adbd"
+      },
+      "optimize": false,
+      "xex_sha256": "e5d37f7726fa653ddd750b11a52e7537d9908ce1abd9e1badf1c2d34c2729e09",
+      "image_sha256": "d30f57d194fb3c2eb9b7f7edbaace10e2dfc3d54b31e031cf840ce3882ac1757",
+      "cases": [
+        {
+          "name": "queued",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 33,
+            "native_irq_count": 397,
+            "gateway_calls": 340,
+            "switches": 28,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            138
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        },
+        {
+          "name": "active",
+          "runtime": {
+            "status": 65427,
+            "guards": "intact",
+            "native_nmi_count": 23,
+            "native_irq_count": 219,
+            "gateway_calls": 560,
+            "switches": 14,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            136
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        },
+        {
+          "name": "terminal",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 32,
+            "native_irq_count": 393,
+            "gateway_calls": 235,
+            "switches": 26,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            137
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        },
+        {
+          "name": "startup-binding",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 32,
+            "native_irq_count": 386,
+            "gateway_calls": 343,
+            "switches": 28,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            140
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        },
+        {
+          "name": "startup-capacity",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 33,
+            "native_irq_count": 382,
+            "gateway_calls": 337,
+            "switches": 46,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            141
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        },
+        {
+          "name": "bound-worker",
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 3,
+            "native_irq_count": 0,
+            "gateway_calls": 47,
+            "switches": 4,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            3
+          ],
+          "timing": null,
+          "cleanup_reached": false
+        },
+        {
+          "name": "duplicate-entry",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 31,
+            "native_irq_count": 386,
+            "gateway_calls": 301,
+            "switches": 26,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            139
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        }
+      ],
+      "platform": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "name": "s3-final-recovery-opt",
+      "results": {
+        "path": "build/development/sio-driver/s3-final-recovery-opt/results.json",
+        "sha256": "15fe424e847ed71693aee65b1609344fc732346cff99c1abfb5c3c55b89fbd67"
+      },
+      "optimize": true,
+      "xex_sha256": "e6c1def9fefffba665f3abef81f77b3b52de5c86bc107f60e7274a64ca0517ea",
+      "image_sha256": "44c12a8354f680ae65f04888410660941a6218619f326e612c33bc0dc04f3166",
+      "cases": [
+        {
+          "name": "queued",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 27,
+            "native_irq_count": 370,
+            "gateway_calls": 295,
+            "switches": 25,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            138
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        },
+        {
+          "name": "active",
+          "runtime": {
+            "status": 65427,
+            "guards": "intact",
+            "native_nmi_count": 24,
+            "native_irq_count": 229,
+            "gateway_calls": 634,
+            "switches": 13,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            136
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        },
+        {
+          "name": "terminal",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 33,
+            "native_irq_count": 399,
+            "gateway_calls": 225,
+            "switches": 25,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            137
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        },
+        {
+          "name": "startup-binding",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 34,
+            "native_irq_count": 396,
+            "gateway_calls": 350,
+            "switches": 26,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            140
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        },
+        {
+          "name": "startup-capacity",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 34,
+            "native_irq_count": 390,
+            "gateway_calls": 332,
+            "switches": 43,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            141
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        },
+        {
+          "name": "bound-worker",
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 2,
+            "native_irq_count": 0,
+            "gateway_calls": 41,
+            "switches": 2,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            3
+          ],
+          "timing": null,
+          "cleanup_reached": false
+        },
+        {
+          "name": "duplicate-entry",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 33,
+            "native_irq_count": 404,
+            "gateway_calls": 326,
+            "switches": 26,
+            "return_d": 8704,
+            "return_s": 18430,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            139
+          ],
+          "timing": null,
+          "cleanup_reached": true
+        }
+      ],
+      "platform": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "name": "s3-final-cancel-timing",
+      "results": {
+        "path": "build/development/sio-driver/s3-final-cancel-timing/results.json",
+        "sha256": "37052060dea1f676b3b5134e49189d76287bcb31fdf998d27d74e8d4da72b099"
+      },
+      "optimize": true,
+      "xex_sha256": "e6c1def9fefffba665f3abef81f77b3b52de5c86bc107f60e7274a64ca0517ea",
+      "image_sha256": "44c12a8354f680ae65f04888410660941a6218619f326e612c33bc0dc04f3166",
+      "cases": [
+        {
+          "name": "active",
+          "runtime": {
+            "status": 65427,
+            "guards": "intact",
+            "native_nmi_count": 18,
+            "native_irq_count": 195,
+            "gateway_calls": 409,
+            "switches": 13,
+            "return_d": 0,
+            "return_s": 0,
+            "os_busy": 0,
+            "os_owner": 255,
+            "irq_depth": 0
+          },
+          "checks": [
+            136
+          ],
+          "timing": {
+            "abort_entry_to_terminal_us": 157.8845722808259
+          },
+          "cleanup_reached": true
+        }
+      ],
+      "platform": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    }
+  ],
+  "host_validation": {
+    "status": "pass",
+    "count": 201,
+    "log": {
+      "path": "build/development/sio-driver/s3-host.log",
+      "sha256": "959afa11c8ead6498a86ac55ed733a74430414a5a1640acaf2b520c9b4d9b077"
+    }
+  },
+  "generators_checked": [
+    "tasks",
+    "io",
+    "sio_adapter"
+  ],
+  "diagnostic_image": {
+    "build": {
+      "path": "build/development/sio-driver/s3-integration/bundle/build.json",
+      "sha256": "bbc7a7400e986819a0a8067b64d3ec6c8d382133adcdc07571af0978f5bdf10e"
+    },
+    "manifest": {
+      "path": "build/development/sio-driver/s3-integration/bundle/demo-manifest.json",
+      "sha256": "98863d39e4812fd657fdff69268adf4a320c4853b029daf1a9e66d7de18fee90"
+    },
+    "xex": {
+      "path": "build/development/sio-driver/s3-integration/bundle/program.xex",
+      "sha256": "d6f05326e3abe5eb657d03c3d2616bd5a70477e7f0679d211947de96830e7494"
+    },
+    "media": {
+      "path": "build/development/sio-driver/s3-integration/bundle/sdfs.atr",
+      "sha256": "2522811285c360cf6eb9473223dd3ef24b2c0a420f928a6f6592e30a8dc80efc"
+    },
+    "loading_smoke": {
+      "path": "build/development/sio-driver/s3-integration/bundle/loading-results.json",
+      "sha256": "48120870f83beacde3f8a34e3e8f035df065a7b52b63e8e8cbeeb2a791a9df4f"
+    },
+    "smoke_scope": "Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration",
+    "peak_tasks": 7,
+    "observer": {
+      "loadprobe.act": "ad0280e3fb30ef8763e8bbbe6d96dec6732458055c0858affa824bcb8f8b2da3",
+      "programfile.act": "08c1831e919c212231fbd8ac7ba494dbcc3f6ab72a245de9931c04ac0563fc1a",
+      "blockwire.act": "4e4c921f407bfaae21dc946b3e04d1173ff9c4d8974f4a11e1f30e11af28f355"
+    },
+    "native_code_bytes": 8929,
+    "previous_native_code_bytes": 8887,
+    "native_region_bytes": 9216,
+    "action_routine_bytes": 659341,
+    "previous_action_routine_bytes": 649822
+  },
+  "reserved_bank_zero_delta": {
+    "fixed_bytes": 0,
+    "per_task_bytes": 0,
+    "complete_memory_maps_equal": true,
+    "includes": "All fixed and per-Task reservations, guards, alignment and unused capacity. No upper reservation grows.",
+    "context_bytes": 64,
+    "lifetime_state_bytes_in_former_padding": 10,
+    "lifetime_budget_bytes": 12,
+    "lifetime_padding_bytes": 2,
+    "sio_bus_reserved_bytes": 64,
+    "sio_bus_record_bytes": 60,
+    "sio_arena_bytes": 256
+  },
+  "stack": {
+    "before": {
+      "M_TASKPOLICY_SIOSTOP": {
+        "size": 646,
+        "fixed_frame": 8,
+        "local_stack_peak": 20
+      },
+      "M_SIODRIVER_WORKER": {
+        "size": 1193,
+        "fixed_frame": 12,
+        "local_stack_peak": 20
+      },
+      "M_SIODRIVER_START": {
+        "size": 399,
+        "fixed_frame": 8,
+        "local_stack_peak": 16
+      },
+      "M_SIODRIVER_STOP": {
+        "size": 272,
+        "fixed_frame": 6,
+        "local_stack_peak": 14
+      }
+    },
+    "after": {
+      "M_TASKPOLICY_LEASESTORAGE": {
+        "size": 966,
+        "fixed_frame": 18,
+        "local_stack_peak": 28
+      },
+      "M_TASKPOLICY_RETAIN": {
+        "size": 629,
+        "fixed_frame": 16,
+        "local_stack_peak": 22
+      },
+      "M_TASKPOLICY_RELEASE": {
+        "size": 698,
+        "fixed_frame": 16,
+        "local_stack_peak": 22
+      },
+      "M_SIODRIVER_WAITCHANGE": {
+        "size": 238,
+        "fixed_frame": 12,
+        "local_stack_peak": 20
+      },
+      "M_SIODRIVER_ADMITWORKER": {
+        "size": 1709,
+        "fixed_frame": 20,
+        "local_stack_peak": 32
+      },
+      "M_SIODRIVER_START": {
+        "size": 1336,
+        "fixed_frame": 38,
+        "local_stack_peak": 48
+      },
+      "M_SIODRIVER_STOP": {
+        "size": 1250,
+        "fixed_frame": 42,
+        "local_stack_peak": 54
+      },
+      "M_SIODRIVER_STOPPING": {
+        "size": 731,
+        "fixed_frame": 16,
+        "local_stack_peak": 28
+      },
+      "M_SIODRIVER_WORKER": {
+        "size": 1532,
+        "fixed_frame": 24,
+        "local_stack_peak": 38
+      }
+    },
+    "native_retained_call_frame_bytes": 0,
+    "guard_verdict": "intact in all selected native cases and the diagnostic loading smoke",
+    "scope": "Compiler-emitted routine-local peaks, including outgoing call transfer. Not transitive call-chain or whole-system stack high-water bounds. Waiters now occupy caller stack frames within unchanged guarded reservations."
+  },
+  "play_image_unchanged": {
+    "path": "build/demo/program.xex",
+    "sha256": "c89555bb96611ec87d27c3c6b9f4889c0959f01ff0e6f5d5db2662455fc8b84b"
+  },
+  "limits": [
+    "Development checks only; no compiler, release or physical-hardware qualification.",
+    "Final native fixtures and the diagnostic build match the recorded production source inputs.",
+    "Fatal ownership/offline cases deliberately retain the existing fault/reset-required result; successful cleanup cases assert OS ownership restoration.",
+    "Test-only SIO lifetime checkpoints use public Wait and are absent from production.",
+    "Diagnostic image includes load-phase observers; S4 compares identical-image traced/untraced runs and refreshes the uninstrumented play bundle.",
+    "Build banners identify 41edb6e-dirty; exact source and artifact hashes identify this slice."
+  ]
+}

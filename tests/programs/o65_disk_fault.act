@@ -1,0 +1,73 @@
+MODULE O65DISKFAULT
+USE EXEC
+USE DOS
+USE PROGRAMFILE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROCESS
+USE FSBOOT
+USE HEAPCORE
+USE O65FAULTPROBE
+BYTE ARRAY root=[68 49 58 0]
+BYTE ARRAY path=[68 49 58 72 69 76 76 79 0]
+BYTE ARRAY nil=[78 73 76 58 0]
+CARD checks
+LONGCARD baseline,warm
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($eb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise loader cleanup after an injected disk failure.
+PROC Main()
+  DOS.FileLock POINTER lock
+  DOS.FileHandle POINTER stream,previous
+  PROGRAMIMAGE.Image POINTER image
+  PROCESS.Result outcome
+  LONGCARD identity
+
+  baseline=EXEC.AvailMem(0)
+  lock=DOS.Lock(root,DOS.SHARED_LOCK)
+  Check(lock<>DOS.FileLock POINTER(0))
+  stream=DOS.Open(nil,DOS.MODE_READWRITE)
+  Check(stream<>DOS.FileHandle POINTER(0))
+  previous=DOS.SelectInput(stream)
+  previous=DOS.SelectOutput(stream)
+  warm=EXEC.AvailMem(0)
+  O65FAULTPROBE.armed=1
+  image=PROGRAMFILE.Load(path)
+  Check(image=PROGRAMIMAGE.Image POINTER(0) AND DOS.IoErr()=O65FAULTPROBE.expected)
+  Check(EXEC.AvailMem(0)=warm)
+  O65FAULTPROBE.Recovered(0)
+  image=PROGRAMFILE.Load(path)
+  IF O65FAULTPROBE.offline<>0 THEN
+    Check(image=PROGRAMIMAGE.Image POINTER(0)
+        AND DOS.IoErr()=O65FAULTPROBE.expected)
+  ELSE
+    Check(image<>PROGRAMIMAGE.Image POINTER(0))
+    identity=PROCESS.StartLoaded(BYTE POINTER(image),BYTE POINTER(0),0,0)
+    Check(identity<>0)
+    PROGRAM.Unload(image)
+    Check(PROCESS.Wait(identity,@outcome)<>0 AND outcome.primary=0
+        AND outcome.secondary=0)
+  FI
+
+  Check(EXEC.AvailMem(0)=warm)
+  previous=DOS.SelectInput(DOS.FileHandle POINTER(0))
+  previous=DOS.SelectOutput(DOS.FileHandle POINTER(0))
+  Check(DOS.Close(stream)<>0)
+  DOS.UnLock(lock)
+  Check(FSBOOT.Stop()<>0)
+  Check(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=baseline)
+  O65FAULTPROBE.finished=1
+
+RETURN
+
+ENDMODULE

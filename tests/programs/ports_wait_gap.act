@@ -1,0 +1,48 @@
+MODULE PORTWAITGAP
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+EXEC.MsgPort target
+EXEC.Message item
+EXEC.Task worker
+BYTE go
+CARD checkpoints
+CARD ARRAY checks(4)
+PROC POINTER absent()
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC WorkerEntry()
+
+  WHILE go=0 DO
+    EXEC.Yield()
+  OD
+
+  EXEC.PutMsg(@target,@item)
+
+RETURN
+
+; Exercise message arrival between the empty check and sleep.
+PROC Main()
+  BYTE bit
+  EXEC.Task POINTER added
+  EXEC.Message POINTER msg
+
+  bit=EXEC.AllocSignal(31)
+  target.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  target.mp_SigBit=31
+  target.mp_SigTask=EXEC.FindTask(BYTE POINTER(0))
+  EXECLISTS.NewList(@target.mp_MsgList)
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  added=EXEC.AddTask(@worker,@WorkerEntry,absent)
+  msg=EXEC.WaitPort(@target)
+  checks(0)=CARD(msg=@item AND checkpoints=1)
+  checks(1)=CARD(EXEC.GetMsg(@target)=@item)
+  checks(2)=CARD(EXEC.GetMsg(@target)=EXEC.Message POINTER(0))
+  AwaitRemoval(@worker)
+  EXEC.FreeSignal(31)
+  checks(3)=1
+
+RETURN
+
+ENDMODULE

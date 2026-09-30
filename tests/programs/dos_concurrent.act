@@ -1,0 +1,472 @@
+MODULE DOSCONCURRENT
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE DOS
+USE FSBOOT
+USE HEAPCORE
+
+TYPE ClientState=[
+  EXEC.Task POINTER task
+  DOS.FileHandle POINTER file
+  DOS.FileLock POINTER lock
+  BYTE POINTER buffer,name
+  DOS.FileInfoBlock POINTER info
+  LONGINT length
+  BYTE seed,ready,done,phase
+  CARD checks
+  LONGCARD bytes
+]
+
+EXEC.MsgPort inbox,replies
+EXEC.Message message
+EXEC.Task POINTER parent
+BYTE go,finish,activeMirror
+CARD checks,peakTasks,workRounds,activeWork,heapRounds,portRounds,signalRounds,
+    clientsDone,sectorSize
+LONGCARD before,rootSignals,liveAddress,totalBytes
+PROC POINTER absent()
+
+ClientState POINTER FUNC Client(BYTE slot)
+
+RETURN(ClientState POINTER(ADDRESS($d0400)+(SIZE(slot) LSH 7)))
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fd90)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Assert(BYTE slot,okay)
+  ClientState POINTER item
+
+  item=Client(slot)
+  IF okay=0 THEN
+    HEAPCORE.Abort($fd00+CARD(slot))
+  FI
+
+  item.checks==+1
+
+RETURN
+
+PROC Allocate(BYTE slot)
+  ClientState POINTER item
+  BYTE bit
+
+  item=Client(slot)
+  item.length=777
+  item.seed=83
+  IF slot=0 AND sectorSize=256 THEN
+    item.length=70003
+    item.seed=129
+  FI
+
+  item.buffer=EXEC.AllocMem(LONGCARD(item.length),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_LINEAR)
+  item.info=DOS.FileInfoBlock POINTER(EXEC.AllocMem(SIZEOF(DOS.FileInfoBlock),
+      EXEC.MEMF_UPPER))
+  bit=EXEC.AllocSignal(29)
+  Assert(slot,item.buffer<>BYTE POINTER(0)
+      AND item.info<>DOS.FileInfoBlock POINTER(0) AND bit=29)
+
+RETURN
+
+PROC SelectFile(BYTE slot)
+  ClientState POINTER item
+
+  item=Client(slot)
+  item.name=BYTE POINTER($d1000)
+  IF (slot & 1)<>0 THEN
+    item.name=BYTE POINTER($d1020)
+  FI
+
+  IF slot=0 AND sectorSize=256 THEN
+    item.name=BYTE POINTER($d1040)
+  FI
+
+RETURN
+
+PROC OpenFile(BYTE slot)
+  ClientState POINTER item
+
+  item=Client(slot)
+  item.file=DOS.Open(item.name,DOS.MODE_OLDFILE)
+
+RETURN
+
+PROC Ready(BYTE slot)
+  ClientState POINTER item
+
+  item=Client(slot)
+  Assert(slot,item.file<>DOS.FileHandle POINTER(0))
+  item.phase=1
+  item.ready=1
+
+RETURN
+
+PROC Bytes(BYTE slot LONGINT count,origin)
+  ClientState POINTER item
+  LONGINT index
+
+  item=Client(slot)
+  FOR index=0 TO count-1 DO
+    IF item.buffer(SIZE(index))<>(BYTE(origin+index) XOR item.seed) THEN
+      HEAPCORE.Abort($fde0+CARD(slot))
+    FI
+  OD
+
+  item.bytes==+LONGCARD(count)
+
+RETURN
+
+PROC LongRead(BYTE slot)
+  ClientState POINTER item
+  LONGINT result
+
+  item=Client(slot)
+  item.phase=2
+  result=DOS.Read(item.file,item.buffer,item.length)
+  Assert(slot,result=item.length AND DOS.IoErr()=0)
+  Bytes(slot,result,0)
+  Assert(slot,DOS.Read(item.file,item.buffer,1)=0 AND DOS.IoErr()=0)
+
+RETURN
+
+PROC Tail(BYTE slot)
+  ClientState POINTER item
+  LONGINT result
+
+  item=Client(slot)
+  item.phase=3
+  result=DOS.Seek(item.file,-16,DOS.OFFSET_END)
+  Assert(slot,result=item.length)
+  result=DOS.Read(item.file,item.buffer,16)
+  Assert(slot,result=16)
+  Bytes(slot,16,item.length-16)
+
+RETURN
+
+PROC ShortRead(BYTE slot)
+  ClientState POINTER item
+  BYTE index
+  LONGINT result
+
+  item=Client(slot)
+  item.phase=4
+  result=DOS.Seek(item.file,0,DOS.OFFSET_BEGINNING)
+  Assert(slot,result=item.length)
+  FOR index=0 TO 7 DO
+    result=DOS.Read(item.file,item.buffer,1)
+    Assert(slot,result=1)
+    Assert(slot,item.buffer^=(index XOR item.seed))
+    item.bytes==+1
+  OD
+
+  Assert(slot,DOS.Read(item.file,item.buffer,-1)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Assert(slot,DOS.Close(item.file)<>0 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  item.file=DOS.FileHandle POINTER(0)
+
+RETURN
+
+PROC OpenDirectory(BYTE slot)
+  ClientState POINTER item
+  BYTE POINTER name
+
+  item=Client(slot)
+  item.phase=5
+  name=BYTE POINTER($d1080)
+  IF (slot & 1)<>0 THEN
+    name=BYTE POINTER($d1060)
+  FI
+
+  item.lock=DOS.Lock(name,DOS.SHARED_LOCK)
+  Assert(slot,item.lock<>DOS.FileLock POINTER(0))
+
+RETURN
+
+PROC ExamineDirectory(BYTE slot)
+  ClientState POINTER item
+
+  item=Client(slot)
+  Assert(slot,DOS.Examine(item.lock,item.info)<>0 AND item.info.fib_DirEntryType=2)
+
+RETURN
+
+PROC Directory(BYTE slot)
+  ClientState POINTER item
+  BYTE index
+  BYTE POINTER expected
+
+  item=Client(slot)
+  expected=BYTE POINTER($d10c0)
+  item.phase=6
+  Assert(slot,DOS.ExNext(item.lock,item.info)<>0 AND item.info.fib_Size=777
+      AND item.info.fib_DirEntryType=-3)
+  FOR index=0 TO 8 DO
+    Assert(slot,item.info.fib_FileName(index)=expected(index))
+  OD
+
+  IF sectorSize=128 THEN
+    Assert(slot,item.info.fib_NumBlocks=7)
+  ELSE
+    Assert(slot,item.info.fib_NumBlocks=4)
+  FI
+
+RETURN
+
+PROC DirectoryEnd(BYTE slot)
+  ClientState POINTER item
+
+  item=Client(slot)
+  Assert(slot,DOS.ExNext(item.lock,item.info)=0
+      AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  DOS.UnLock(item.lock)
+  item.lock=DOS.FileLock POINTER(0)
+  Assert(slot,DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  Assert(slot,DOS.Open(BYTE POINTER($d1000),
+      DOS.MODE_NEWFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_DISK_WRITE_PROTECTED)
+
+RETURN
+
+PROC Release(BYTE slot)
+  ClientState POINTER item
+
+  item=Client(slot)
+  item.phase=7
+  Assert(slot,DOS.ReleaseContext()<>0)
+  EXEC.FreeMem(item.buffer,LONGCARD(item.length))
+  EXEC.FreeMem(BYTE POINTER(item.info),SIZEOF(DOS.FileInfoBlock))
+  item.buffer=BYTE POINTER(0)
+  item.info=DOS.FileInfoBlock POINTER(0)
+  item.done=1
+
+RETURN
+
+BYTE FUNC OwnSlot()
+  EXEC.Task POINTER self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+
+RETURN(self.tc_Node.ln_Pri)
+
+PROC AwaitGate(BYTE unused)
+  LONGCARD bits
+
+  bits=EXEC.Wait(LONGCARD($20000000))
+
+RETURN
+
+PROC ClientEntry()
+  BYTE slot
+
+  slot=OwnSlot()
+  Allocate(slot)
+  SelectFile(slot)
+  OpenFile(slot)
+  Ready(slot)
+  AwaitGate(0)
+  LongRead(slot)
+  Tail(slot)
+  ShortRead(slot)
+  OpenDirectory(slot)
+  ExamineDirectory(slot)
+  Directory(slot)
+  DirectoryEnd(slot)
+  Release(slot)
+  AwaitGate(0)
+  EXEC.FreeSignal(29)
+
+RETURN
+
+PROC Manual(EXEC.MsgPort POINTER port)
+
+  port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  port.mp_Flags=EXEC.PA_IGNORE
+  port.mp_SigBit=255
+  EXECLISTS.NewList(@port.mp_MsgList)
+
+RETURN
+
+PROC StartService()
+  DOS.FileLock POINTER lock
+  LONGINT okay
+
+  before=EXEC.AvailMem(0)
+  lock=DOS.Lock(BYTE POINTER($d10a0),DOS.SHARED_LOCK)
+  Require(lock<>DOS.FileLock POINTER(0))
+  DOS.UnLock(lock)
+  okay=DOS.ReleaseContext()
+  Require(okay<>0)
+
+RETURN
+
+PROC StartClients()
+  ClientState POINTER item
+  EXEC.Task POINTER added
+  BYTE slot
+
+  Require(SIZEOF(ClientState)<=128)
+  FOR slot=0 TO TASKSTACKS.CAPACITY-4 DO
+    item=Client(slot)
+    item.task=EXEC.Task POINTER(ADDRESS($d0000)+(SIZE(slot) LSH 6))
+    item.task.tc_Node.ln_Type=EXEC.NT_TASK
+    item.task.tc_Node.ln_Pri=slot
+    item.task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot+3))
+    item.task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot+3))
+    item.task.tc_SPReg=item.task.tc_SPUpper-SIZE(2)
+    EXECLISTS.NewList(@item.task.tc_MemEntry)
+    added=EXEC.AddTask(item.task,@ClientEntry,absent)
+    Require(added=item.task)
+  OD
+
+  FOR slot=0 TO TASKSTACKS.CAPACITY-4 DO
+    item=Client(slot)
+    WHILE item.ready=0 DO
+      EXEC.Yield()
+    OD
+  OD
+
+RETURN
+
+PROC BeginWork()
+  ClientState POINTER item
+  BYTE slot,bit
+  BYTE POINTER live
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  rootSignals=parent.tc_SigAlloc
+  bit=EXEC.AllocSignal(29)
+  Require(bit=29)
+  Manual(@inbox)
+  Manual(@replies)
+  live=BYTE POINTER(ADDRESS(liveAddress))
+  peakTasks=CARD(live^)
+  Require(peakTasks=TASKSTACKS.CAPACITY)
+  go=1
+  FOR slot=0 TO TASKSTACKS.CAPACITY-4 DO
+    item=Client(slot)
+    Require(item.task.tc_State<>EXEC.TS_REMOVED)
+    EXEC.Signal(item.task,LONGCARD($20000000))
+  OD
+
+RETURN
+
+PROC HeapWork()
+  BYTE POINTER first,second
+
+  first=EXEC.AllocMem(33,EXEC.MEMF_UPPER)
+  second=EXEC.AllocMem(4097,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  Require(first<>BYTE POINTER(0) AND second<>BYTE POINTER(0) AND second^=0
+      AND second(4096)=0)
+  EXEC.FreeMem(first,33)
+  EXEC.FreeMem(second,4097)
+  heapRounds==+1
+
+RETURN
+
+PROC PortWork()
+  EXEC.Message POINTER received
+
+  message.mn_Length=EXEC.MESSAGE_SIZE
+  message.mn_ReplyPort=@replies
+  EXEC.PutMsg(@inbox,@message)
+  received=EXEC.GetMsg(@inbox)
+  Require(received=@message)
+  EXEC.ReplyMsg(received)
+  received=EXEC.GetMsg(@replies)
+  Require(received=@message)
+  portRounds==+1
+
+RETURN
+
+PROC Background()
+  BYTE POINTER phase
+  LONGCARD bits
+  CARD ticks
+
+  phase=BYTE POINTER($f0801)
+  activeMirror=0
+  IF phase^<>0 AND phase^<>13 AND phase^<>15 THEN
+    activeMirror=1
+    activeWork==+1
+  FI
+
+  HeapWork()
+  PortWork()
+  EXEC.Signal(parent,LONGCARD($20000000))
+  bits=EXEC.Wait(LONGCARD($20000000))
+  Require(bits=LONGCARD($20000000))
+  signalRounds==+1
+  workRounds==+1
+  ticks=EXECTASKS.Sleep(1)
+
+RETURN
+
+PROC Progress()
+  ClientState POINTER item
+  BYTE slot
+
+  clientsDone=0
+  FOR slot=0 TO TASKSTACKS.CAPACITY-4 DO
+    item=Client(slot)
+    IF item.done<>0 THEN
+      clientsDone==+1
+    FI
+  OD
+
+RETURN
+
+PROC FinishWork()
+  ClientState POINTER item
+  BYTE slot
+  CARD ticks
+
+  FOR slot=0 TO TASKSTACKS.CAPACITY-4 DO
+    item=Client(slot)
+    EXEC.Signal(item.task,LONGCARD($20000000))
+  OD
+
+  FOR slot=0 TO TASKSTACKS.CAPACITY-4 DO
+    item=Client(slot)
+    WHILE item.task.tc_State<>EXEC.TS_REMOVED DO
+      ticks=EXECTASKS.Sleep(1)
+    OD
+
+    Require(item.done<>0 AND item.checks>=30)
+    totalBytes==+item.bytes
+  OD
+
+  EXEC.FreeSignal(29)
+  Require(parent.tc_SigAlloc=rootSignals)
+  Require(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+  Require(activeWork<>0 AND workRounds=heapRounds AND workRounds=portRounds
+      AND workRounds=signalRounds)
+
+RETURN
+
+; Exercise file and directory operations interleaved between callers.
+PROC Main()
+
+  StartService()
+  StartClients()
+  BeginWork()
+  DO
+    Background()
+    Progress()
+  UNTIL clientsDone=TASKSTACKS.CAPACITY-3
+  OD
+
+  FinishWork()
+
+RETURN
+
+ENDMODULE

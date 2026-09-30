@@ -1,0 +1,92 @@
+MODULE DEMOTEST
+USE HEAPCORE
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+INCLUDE "../../examples/demo-session.inc"
+BYTE stage,gate
+CARD checks,steps
+LONGCARD baseline,occupiedA,occupiedB,progress
+LONGINT exitStatus
+CONSOLETYPES.Instance POINTER topInstance,bottomInstance
+CONSOLETYPES.Presentation POINTER topView,bottomView
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ed00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE value)
+
+  gate=0
+  stage=value
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; Exercise the interactive demo's console lifecycle.
+PROC Main()
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Window POINTER entry
+  BYTE row
+
+  baseline=EXEC.AvailMem(0)
+  occupiedA=CONSOLE.Create(1,1)
+  occupiedB=CONSOLE.Create(1,1)
+  Require(occupiedA<>0 AND occupiedB<>0)
+  Require(DemoStart()=0 AND demoShellUnit<>0 AND demoPrimeUnit=0)
+  Require(DemoFinish()=0)
+  Require(CONSOLE.Destroy(occupiedB)<>0 AND CONSOLE.Destroy(occupiedA)<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+  Require(DemoStart()<>0)
+  entry=CONSOLEWINDOWS.Find(demoShellUnit)
+  topInstance=CONSOLETYPES.Instance POINTER(entry.instance)
+  topView=CONSOLETYPES.Presentation POINTER(entry.view)
+  entry=CONSOLEWINDOWS.Find(demoPrimeUnit)
+  bottomInstance=CONSOLETYPES.Instance POINTER(entry.instance)
+  bottomView=CONSOLETYPES.Presentation POINTER(entry.view)
+  WHILE demoFrames=0 DO
+    EXEC.Yield()
+  OD
+
+  FOR row=1 TO 20 DO
+    ShellText(shell.console,CSTRING(BYTE POINTER(@bootShellName)))
+    ShellByte(shell.console,10)
+  OD
+
+  Pause(1)
+  WHILE shell.done=0 DO
+    ShellReadStep()
+    steps==+1
+    IF steps=1 THEN
+      progress=demoFrames
+      Pause(2)
+    FI
+
+    IF steps=2 THEN
+      Require(demoFrames>progress)
+      Pause(3)
+    FI
+  OD
+
+  Require(steps=3)
+  Pause(4)
+  exitStatus=DemoFinish()
+  Require(exitStatus=0 AND demoChild=0 AND shell=ShellState POINTER(0))
+  windows=CONSOLEWINDOWS.Registry()
+  Require(windows.liveCount=1)
+  stage=5
+
+RETURN
+
+ENDMODULE

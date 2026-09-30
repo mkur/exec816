@@ -1,0 +1,303 @@
+MODULE CREATETASK
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+USE PROCESSSTATE
+USE DOSCORE
+USE EXECPRODUCER
+USE SYS
+
+CONST DONE=$10000
+EXEC.Task POINTER parent
+BYTE variant,finished
+CARD checks
+EXEC.Task borrowed
+EXEC.TaskLease lease
+TYPE Child=[EXEC.Task POINTER item]
+Child ARRAY children(7)
+EXECLISTS.Node memoryNode
+PROC POINTER absent(),bad()
+BYTE concurrentFinished
+VOLATILE CARD ticks=$2034
+
+; Keep the first failing invariant visible to the emulator observer.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff90)
+  FI
+  checks==+1
+
+RETURN
+
+; Notification is published under Forbid so the parent resumes after retirement.
+PROC Worker()
+
+  finished==+1
+  EXEC.Forbid()
+  EXEC.Signal(parent,DONE)
+  IF variant=1 THEN
+    EXEC.RemTask(NULL)
+  FI
+
+RETURN
+
+PROC Reuse(BYTE unused)
+  CARD iteration
+  EXEC.Task POINTER child
+
+  FOR iteration=0 TO 3 DO
+    EXEC.Forbid()
+    EXEC.Forbid()
+    child=EXEC.CreateTask(c"managed",-128,@Worker,
+        LONGCARD(TASKSTACKS.StackUpper(1)-TASKSTACKS.StackLower(1)))
+    Require(child<>NULL)
+    Require(child.tc_Node.ln_Pri=$80)
+    Require(EXEC.FindTask(BYTE POINTER(c"managed"))=child)
+    Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(1)))
+    EXEC.Permit()
+    Require(finished=BYTE(iteration))
+    EXEC.Permit()
+    Require(EXEC.Wait(DONE)=DONE)
+    ; A managed result is borrowed; inspect no Task fields after retirement.
+    Require(EXEC.FindTask(BYTE POINTER(c"managed"))=NULL)
+  OD
+
+  Require(finished=4)
+
+RETURN
+; Keep a live Task available for admission and external-removal checks.
+PROC Blocked()
+
+  LET ignored=EXEC.Wait(1)
+
+RETURN
+
+; Assert failed calls preserve the existing occupant and the following admission.
+PROC Boundaries(BYTE unused)
+  EXEC.Task POINTER child
+  ADDRESS POINTER invalid
+
+  EXEC.Forbid()
+  child=EXEC.CreateTask(NULL,127,@Blocked,1)
+  Require(child<>NULL)
+  Require(child.tc_Node.ln_Name=NULL AND child.tc_Node.ln_Pri=127)
+  child.tc_UserData=$123456
+  invalid=ADDRESS POINTER(@bad)
+  invalid^=ADDRESS(@Blocked)+SIZE(1)
+  Require(EXEC.CreateTask(NULL,-129,@Blocked,1)=NULL)
+  Require(EXEC.CreateTask(NULL,128,@Blocked,1)=NULL)
+  Require(EXEC.CreateTask(NULL,SYS.MAXLONGINT,@Blocked,1)=NULL)
+  Require(EXEC.CreateTask(NULL,SYS.MINLONGINT,@Blocked,1)=NULL)
+  Require(EXEC.CreateTask(NULL,0,@Blocked,0)=NULL)
+  Require(EXEC.CreateTask(NULL,0,@Blocked,LONGCARD($10000))=NULL)
+  Require(EXEC.CreateTask(NULL,0,@Blocked,SYS.MAXLONGCARD)=NULL)
+  Require(EXEC.CreateTask(NULL,0,@Blocked,SYS.MAXLONGCARD-1)=NULL)
+  Require(EXEC.CreateTask(NULL,0,absent,1)=NULL)
+  Require(EXEC.CreateTask(NULL,0,bad,1)=NULL)
+  Require(child.tc_UserData=$123456)
+  Require(EXEC.AddTask(child,@Blocked,absent)=NULL)
+  EXEC.RemTask(child)
+  ; A retired managed record still does not become caller-owned storage.
+  Require(EXEC.AddTask(child,@Blocked,absent)=NULL)
+  child=EXEC.CreateTask(NULL,-128,@Blocked,
+      LONGCARD(TASKSTACKS.StackUpper(1)-TASKSTACKS.StackLower(1)-1))
+  Require(child<>NULL)
+  Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(1)))
+  EXEC.RemTask(child)
+  EXEC.Permit()
+
+RETURN
+
+; Fill one shared pool with caller-owned and managed records, then reuse it.
+PROC Capacity(BYTE unused)
+  BYTE slot
+  EXEC.Task POINTER child
+
+  EXEC.Forbid()
+  borrowed.tc_Node.ln_Type=EXEC.NT_TASK
+  borrowed.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(1))
+  borrowed.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(1))
+  borrowed.tc_SPReg=borrowed.tc_SPUpper-SIZE(2)
+  borrowed.tc_UserData=$123456
+  EXECLISTS.NewList(@borrowed.tc_MemEntry)
+  Require(EXEC.AddTask(@borrowed,@Blocked,absent)=@borrowed)
+  FOR slot=2 TO PROCESSSTATE.CAPACITY-1 DO
+    children(slot-2).item=EXEC.CreateTask(NULL,0,@Blocked,1)
+    child=children(slot-2).item
+    Require(child<>NULL)
+    Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot)))
+  OD
+  Require(EXEC.CreateTask(NULL,0,@Blocked,1)=NULL)
+  EXEC.RemTask(@borrowed)
+  Require(borrowed.tc_UserData=$123456)
+  Require(borrowed.tc_State=EXEC.TS_REMOVED)
+  child=EXEC.CreateTask(NULL,0,@Blocked,1)
+  Require(child<>NULL)
+  Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(1)))
+  EXEC.RemTask(child)
+  FOR slot=2 TO PROCESSSTATE.CAPACITY-1 DO
+    EXEC.RemTask(children(slot-2).item)
+  OD
+  EXEC.Permit()
+
+RETURN
+
+; Inject private ownership states in the fixture, never in production policy.
+; A context can be FREE while Process collection or incarnation still owns it.
+PROC Reserved(BYTE unused)
+  EXEC.Task POINTER child
+  LONGCARD POINTER incarnation
+
+  EXEC.Forbid()
+  LET table=PROCESSSTATE.Registry()
+  table.entries(1).state=PROCESSSTATE.STATE_PREPARING
+  child=EXEC.CreateTask(NULL,0,@Blocked,1)
+  Require(child<>NULL)
+  Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2)))
+  EXEC.RemTask(child)
+  table.entries(1).state=PROCESSSTATE.STATE_RETIRED
+  child=EXEC.CreateTask(NULL,0,@Blocked,1)
+  Require(child<>NULL)
+  Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2)))
+  EXEC.RemTask(child)
+  table.entries(1).state=PROCESSSTATE.STATE_FREE
+  child=EXEC.CreateTask(NULL,0,@Blocked,1)
+  Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(1)))
+  ; Context offsets are supplied from the public machine-readable test ABI.
+  incarnation=LONGCARD POINTER(child.tc_ExecPrivate+SIZE(40))
+  EXEC.RemTask(child)
+  incarnation^=SYS.MAXLONGCARD
+  child=EXEC.CreateTask(NULL,0,@Blocked,1)
+  Require(child<>NULL)
+  Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2)))
+  EXEC.RemTask(child)
+  EXEC.Permit()
+
+RETURN
+
+; The existing removal gates apply to managed Tasks as well as borrowed ones.
+PROC RemovalFault(BYTE kind)
+
+  EXEC.Forbid()
+  LET child=EXEC.CreateTask(NULL,0,@Blocked,1)
+  Require(child<>NULL)
+  CASE kind OF
+  WHEN 5 THEN
+    Require(EXEC.RetainTask(child,@lease)=1)
+  WHEN 6 THEN
+    Require(EXEC.RetainTask(child,@lease)=1)
+    Require(EXECPRODUCER.Bind(child,1)=1)
+    Require(EXEC.ReleaseTask(@lease)=1)
+  WHEN 7 THEN
+    EXECLISTS.AddTail(@child.tc_MemEntry,@memoryNode)
+  WHEN 8 THEN
+    ; Give this Task a retained DOS context before attempting self-removal.
+    BEGIN
+      LET slot=DOSCORE.Current()
+      slot.context=BYTE POINTER(1)
+      EXEC.RemTask(NULL)
+    END
+  ESAC
+  EXEC.RemTask(child)
+  Require(0)
+
+RETURN
+
+PROC Grandchild()
+
+  LET self=EXEC.FindTask(NULL)
+  LET owner=EXEC.Task POINTER(self.tc_UserData)
+  EXEC.Forbid()
+  EXEC.Signal(owner,DONE)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+; Two creators contend for the remaining free pool and wait for their own child.
+PROC Creator()
+  EXEC.Task POINTER child
+  CARD ignored
+
+  LET self=EXEC.FindTask(NULL)
+  LET completion=LONGCARD(self.tc_UserData)
+  Require(EXEC.AllocSignal(16)=16)
+  DO
+    EXEC.Forbid()
+    child=EXEC.CreateTask(NULL,0,@Grandchild,1)
+    IF child<>NULL THEN
+      child.tc_UserData=ADDRESS(self)
+      EXEC.Permit()
+      EXIT
+    FI
+    EXEC.Permit()
+    ignored=EXECTASKS.Sleep(1)
+  OD
+  Require(EXEC.Wait(DONE)=DONE)
+  EXEC.FreeSignal(16)
+  EXEC.Forbid()
+  concurrentFinished==+1
+  EXEC.Signal(parent,completion)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+PROC Concurrent(BYTE unused)
+  LONGCARD received
+  CARD ignored
+  EXEC.Task POINTER child
+
+  Require(EXEC.AllocSignal(17)=17)
+  Require(EXEC.AllocSignal(18)=18)
+  EXEC.Forbid()
+  child=EXEC.CreateTask(NULL,0,@Creator,1)
+  Require(child<>NULL)
+  child.tc_UserData=$20000
+  child=EXEC.CreateTask(NULL,0,@Creator,1)
+  Require(child<>NULL)
+  child.tc_UserData=$40000
+  EXEC.Permit()
+  received=0
+  WHILE received<>LONGCARD($60000) DO
+    received=received % EXEC.Wait($60000)
+  OD
+  Require(concurrentFinished=2)
+  EXEC.FreeSignal(17)
+  EXEC.FreeSignal(18)
+  ; Wait through a real VBI with both creators and their children retired.
+  ignored=EXECTASKS.Sleep(1)
+
+RETURN
+
+PROC Main()
+
+  parent=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(16)=16)
+  CASE variant OF
+  WHEN 0,1 THEN
+    Reuse(0)
+  WHEN 2 THEN
+    Boundaries(0)
+  WHEN 3 THEN
+    Capacity(0)
+  WHEN 4 THEN
+    Reserved(0)
+  WHEN 5,6,7,8 THEN
+    RemovalFault(variant)
+  WHEN 9 THEN
+    Concurrent(0)
+  WHEN 10 THEN
+    ; CreateTask may return a pointer whose lifetime has already ended.
+    BEGIN
+      LET retired=EXEC.CreateTask(NULL,0,@Worker,1)
+      Require(retired<>NULL)
+      Require(finished=1)
+      Require(EXEC.Wait(DONE)=DONE)
+    END
+  ESAC
+  EXEC.FreeSignal(16)
+
+RETURN
+ENDMODULE

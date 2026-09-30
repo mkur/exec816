@@ -1,0 +1,36 @@
+MODULE SHELLSTARTFAILURE
+USE DOSCORE
+USE HEAPCORE
+INCLUDE "../../examples/shell/shell-session.inc"
+CARD checks
+BYTE finished
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e700+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise shell startup cleanup after injected failure.
+PROC Main()
+  LONGCARD before
+  DOSCORE.DosSlot POINTER owner
+
+  before=EXEC.AvailMem(0)
+  Check(ShellStart(shellRoot)=0)
+  Check(shell<>ShellState POINTER(0) AND shell.status=20
+      AND shell.error=DOS.ERROR_DEVICE_NOT_MOUNTED)
+  Check(ShellFinish()=20 AND shell=ShellState POINTER(0))
+  owner=DOSCORE.Current()
+  Check(owner.context=BYTE POINTER(0) AND owner.objects=BYTE POINTER(0))
+  Check(EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

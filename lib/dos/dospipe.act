@@ -1,0 +1,380 @@
+MODULE DOSPIPE
+USE EXEC
+USE A816MEMORY
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE DOSSTREAMS
+USE DOSBREAKTYPES
+USE HEAPCORE
+INCLUDE "dos-types.inc"
+
+PUBLIC TYPE Pair=[BYTE POINTER reader,writer]
+TYPE Waiter=[
+  BYTE POINTER next
+  EXEC.Task POINTER task
+  LONGCARD mask
+]
+
+TYPE Backing=[
+  CARD readers,writers,head,tail,used
+  BYTE POINTER waiters
+  BYTE ARRAY bytes(PIPE_BUFFER_BYTES)
+]
+
+PUBLIC TYPE Handle=[
+  DOSOBJECTS.Header header
+  Backing POINTER pipe
+  BYTE writing
+]
+
+; All list, reference and ring transitions hold Forbid. IRQs remain enabled.
+; Copies are limited to 64 bytes per critical section. No wait holds Forbid.
+PROC Wake(Backing POINTER pipe)
+  Waiter POINTER item
+
+  item=Waiter POINTER(pipe.waiters)
+  WHILE item<>Waiter POINTER(0) DO
+    EXEC.Signal(item.task,item.mask)
+    item=Waiter POINTER(item.next)
+  OD
+
+RETURN
+
+; Retire a registered pipe waiter before its Task lease can be released.
+PROC Unwait(Backing POINTER pipe Waiter POINTER item)
+  Waiter POINTER current,previous
+
+  previous=Waiter POINTER(0)
+  current=Waiter POINTER(pipe.waiters)
+  WHILE current<>Waiter POINTER(0) DO
+    IF current=item THEN
+      IF previous=Waiter POINTER(0) THEN
+        pipe.waiters=item.next
+      ELSE
+        previous.next=item.next
+      FI
+
+      item.next=BYTE POINTER(0)
+      RETURN
+    FI
+
+    previous=current
+    current=Waiter POINTER(current.next)
+  OD
+
+  HEAPCORE.Abort($ff94)
+
+RETURN
+
+; Allocate a bounded pipe and publish its paired reader and writer handles.
+PUBLIC LONGINT FUNC Create(Pair POINTER pair)
+  DOSCLIENT.ClientContext POINTER client
+  DOSCORE.DosSlot POINTER owner
+  Backing POINTER pipe
+  Handle POINTER reader,writer
+
+  IF DOSSTREAMS.ValidBuffer(BYTE POINTER(pair),LONGINT(SIZEOF(Pair)))=0 THEN
+    RETURN(0)
+  FI
+
+  pair.reader=BYTE POINTER(0)
+  pair.writer=BYTE POINTER(0)
+  client=DOSCLIENT.Ensure()
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  owner=DOSCORE.Current()
+  client.busy=1
+  pipe=Backing POINTER(EXEC.AllocMem(SIZEOF(Backing),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  reader=Handle POINTER(EXEC.AllocMem(SIZEOF(Handle),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  writer=Handle POINTER(EXEC.AllocMem(SIZEOF(Handle),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  IF pipe=Backing POINTER(0) OR reader=Handle POINTER(0)
+      OR writer=Handle POINTER(0) THEN
+    IF pipe<>Backing POINTER(0) THEN
+      EXEC.FreeMem(BYTE POINTER(pipe),SIZEOF(Backing))
+    FI
+
+    IF reader<>Handle POINTER(0) THEN
+      EXEC.FreeMem(BYTE POINTER(reader),SIZEOF(Handle))
+    FI
+
+    IF writer<>Handle POINTER(0) THEN
+      EXEC.FreeMem(BYTE POINTER(writer),SIZEOF(Handle))
+    FI
+
+    client.busy=0
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(0)
+  FI
+
+  pipe.readers=1
+  pipe.writers=1
+  reader.pipe=pipe
+  writer.pipe=pipe
+  writer.writing=1
+  reader.header.kind=DOSOBJECTS.KIND_FILE
+  reader.header.backend=DOSOBJECTS.BACKEND_PIPE
+  writer.header.kind=DOSOBJECTS.KIND_FILE
+  writer.header.backend=DOSOBJECTS.BACKEND_PIPE
+  DOSOBJECTS.Link(owner,@reader.header)
+  DOSOBJECTS.Link(owner,@writer.header)
+  pair.reader=BYTE POINTER(reader)
+  pair.writer=BYTE POINTER(writer)
+  client.busy=0
+  DOSCLIENT.SetError(0)
+
+RETURN(-1)
+
+; Give another context a wrapper retaining the same pipe endpoint.
+PUBLIC BYTE POINTER FUNC Clone(Handle POINTER source)
+  Handle POINTER item
+  Backing POINTER pipe
+  BYTE okay
+
+  item=Handle POINTER(EXEC.AllocMem(SIZEOF(Handle),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  IF item=Handle POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  pipe=source.pipe
+  okay=0
+  EXEC.Forbid()
+  IF source.writing<>0 THEN
+    IF pipe.writers<>$ffff THEN
+      pipe.writers==+1
+      okay=1
+    FI
+  ELSE
+    IF pipe.readers<>$ffff THEN
+      pipe.readers==+1
+      okay=1
+    FI
+  FI
+
+  EXEC.Permit()
+  IF okay=0 THEN
+    EXEC.FreeMem(BYTE POINTER(item),SIZEOF(Handle))
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  item.header.kind=DOSOBJECTS.KIND_FILE
+  item.header.backend=DOSOBJECTS.BACKEND_PIPE
+  item.pipe=pipe
+  item.writing=source.writing
+
+RETURN(BYTE POINTER(item))
+
+; Undo an unpublished pipe handle while preserving the other endpoint.
+PUBLIC PROC Discard(Handle POINTER item)
+  Backing POINTER pipe
+  BYTE release
+
+  pipe=item.pipe
+  EXEC.Forbid()
+  IF item.writing<>0 THEN
+    IF pipe.writers=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    pipe.writers==-1
+  ELSE
+    IF pipe.readers=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    pipe.readers==-1
+  FI
+
+  Wake(pipe)
+  release=pipe.readers=0 AND pipe.writers=0
+  IF release<>0 AND pipe.waiters<>BYTE POINTER(0) THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  EXEC.Permit()
+  IF release<>0 THEN
+    EXEC.FreeMem(BYTE POINTER(pipe),SIZEOF(Backing))
+  FI
+
+  EXEC.FreeMem(BYTE POINTER(item),SIZEOF(Handle))
+
+RETURN
+
+; Retire one endpoint reference and wake peers affected by EOF or closure.
+PUBLIC LONGINT FUNC Close(DOSCLIENT.ClientContext POINTER client Handle
+    POINTER item)
+
+  client.busy=1
+  DOSCLIENT.ClearSelections(client,BYTE POINTER(item))
+  IF DOSOBJECTS.Unlink(DOSCORE.Current(),@item.header)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  Discard(item)
+  client.busy=0
+  DOSCLIENT.SetError(0)
+
+RETURN(-1)
+
+; Move bounded spans, waiting only while the opposite endpoint can make
+; progress.
+PUBLIC LONGINT FUNC Transfer(DOSCLIENT.ClientContext POINTER client Handle
+    POINTER item BYTE POINTER buffer LONGINT length BYTE writing)
+  Backing POINTER pipe
+  DOSBREAKTYPES.Scope POINTER scope
+  Waiter waiter
+  LONGCARD mask,ignored
+  LONGINT done,error
+  CARD count,index,first
+  BYTE signal,blocked
+  BYTE POINTER cursor
+
+  IF item.writing<>writing THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(-1)
+  FI
+
+  IF DOSSTREAMS.ValidBuffer(buffer,length)=0 THEN
+    RETURN(-1)
+  FI
+
+  IF length=0 THEN
+    DOSCLIENT.SetError(0)
+    RETURN(0)
+  FI
+
+  client.busy=1
+  pipe=item.pipe
+  done=0
+  error=0
+  signal=$ff
+  scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+  waiter.task=client.owner
+  waiter.mask=0
+  waiter.next=BYTE POINTER(0)
+  DO
+    EXEC.Forbid()
+    IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+      IF scope.pending<>0 THEN
+        error=ERROR_BREAK
+        EXEC.Permit()
+        EXIT
+      FI
+    FI
+
+    IF writing<>0 THEN
+      IF pipe.readers=0 THEN
+        error=ERROR_BROKEN_PIPE
+        EXEC.Permit()
+        EXIT
+      FI
+
+      blocked=pipe.used=PIPE_BUFFER_BYTES
+      count=PIPE_BUFFER_BYTES-pipe.used
+    ELSE
+      IF pipe.used=0 AND pipe.writers=0 THEN
+        EXEC.Permit()
+        EXIT
+      FI
+
+      IF pipe.used=0 AND done<>0 THEN
+        EXEC.Permit()
+        EXIT
+      FI
+
+      blocked=pipe.used=0
+      count=pipe.used
+    FI
+
+    IF blocked<>0 THEN
+      IF signal=$ff THEN
+        EXEC.Permit()
+        signal=EXEC.AllocSignal($ff)
+        IF signal=$ff THEN
+          error=ERROR_NO_FREE_STORE
+          EXIT
+        FI
+
+        waiter.mask=LONGCARD(1) LSH signal
+      ELSE
+        ignored=EXEC.SetSignal(0,waiter.mask)
+        waiter.next=pipe.waiters
+        pipe.waiters=BYTE POINTER(@waiter)
+        mask=waiter.mask
+        IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+          mask=mask OR scope.mask
+        FI
+
+        EXEC.Permit()
+        ignored=EXEC.Wait(mask)
+        EXEC.Forbid()
+        Unwait(pipe,@waiter)
+        EXEC.Permit()
+      FI
+    ELSE
+      IF count>64 THEN
+        count=64
+      FI
+
+      IF LONGINT(count)>length-done THEN
+        count=CARD(length-done)
+      FI
+
+      cursor=buffer+SIZE(done)
+      ; One bounded quantum can cross the ring end once. Publish its count
+      ; only after both spans are copied, under the existing exclusion.
+      index=IF writing<>0 THEN pipe.head ELSE pipe.tail FI
+      first=PIPE_BUFFER_BYTES-index
+      IF first>count THEN
+        first=count
+      FI
+
+      IF writing<>0 THEN
+        A816MEMORY.Move(@pipe.bytes(index),cursor,SIZE(first))
+        IF first<count THEN
+          A816MEMORY.Move(pipe.bytes,cursor+SIZE(first),SIZE(count-first))
+        FI
+
+        pipe.head=(index+count) & (PIPE_BUFFER_BYTES-1)
+        pipe.used==+count
+      ELSE
+        A816MEMORY.Move(cursor,@pipe.bytes(index),SIZE(first))
+        IF first<count THEN
+          A816MEMORY.Move(cursor+SIZE(first),pipe.bytes,SIZE(count-first))
+        FI
+
+        pipe.tail=(index+count) & (PIPE_BUFFER_BYTES-1)
+        pipe.used==-count
+      FI
+
+      done==+LONGINT(count)
+      Wake(pipe)
+      EXEC.Permit()
+      IF done=length THEN
+        EXIT
+      FI
+    FI
+  OD
+
+  IF signal<>$ff THEN
+    ignored=EXEC.SetSignal(0,waiter.mask)
+    EXEC.FreeSignal(signal)
+  FI
+
+  client.busy=0
+  DOSCLIENT.SetError(error)
+  IF done=0 AND error<>0 THEN
+    RETURN(-1)
+  FI
+
+RETURN(done)
+
+ENDMODULE

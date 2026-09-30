@@ -1,0 +1,289 @@
+{
+  "status": "development-pass",
+  "slice": "C1",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "upper_reservation_bytes": 4,
+  "host_tests": 230,
+  "modes": {
+    "raw": {
+      "compiler": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+      "xex_sha256": "0572ee0616a81007671d9af5116da67a077b8df3b12d9337e7ed58b1c0834dbb",
+      "results_sha256": "218046b5d562473f25ed56d12abf27481fc5bb9221a8e310fd0c15b0ab3900a5",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "case": "default",
+          "facts": [
+            512,
+            0,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "disabled",
+          "facts": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "override",
+          "facts": [
+            128,
+            0,
+            2,
+            128
+          ]
+        },
+        {
+          "case": "magic",
+          "facts": [
+            512,
+            1,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "version",
+          "facts": [
+            512,
+            1,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "size",
+          "facts": [
+            512,
+            1,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "reserved",
+          "facts": [
+            512,
+            1,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "drive",
+          "facts": [
+            512,
+            1,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "capacity",
+          "facts": [
+            512,
+            2,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "wide",
+          "facts": [
+            512,
+            2,
+            0,
+            512
+          ]
+        }
+      ]
+    },
+    "opt": {
+      "compiler": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+      "xex_sha256": "866feb4e5b9fd99f568b6cde035129a7856cd0aa6e6db329c30d92282bad0e81",
+      "results_sha256": "d9aa7d2fd98c1ae6494dfb1925b47b0355692d09bfcf4b896dcc7e166fe1d400",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "case": "default",
+          "facts": [
+            512,
+            0,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "disabled",
+          "facts": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "override",
+          "facts": [
+            128,
+            0,
+            2,
+            128
+          ]
+        },
+        {
+          "case": "magic",
+          "facts": [
+            512,
+            1,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "version",
+          "facts": [
+            512,
+            1,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "size",
+          "facts": [
+            512,
+            1,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "reserved",
+          "facts": [
+            512,
+            1,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "drive",
+          "facts": [
+            512,
+            1,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "capacity",
+          "facts": [
+            512,
+            2,
+            0,
+            512
+          ]
+        },
+        {
+          "case": "wide",
+          "facts": [
+            512,
+            2,
+            0,
+            512
+          ]
+        }
+      ]
+    }
+  },
+  "inputs": {
+    "abi/boot-v1.json": "d003b5d3546353c999152de4d51cceb9361246930214b299ba68a3314ec92eee",
+    "tools/boot_config.py": "6da8f0af1a1ed60d857d37f5433c762795de8e7b3df0f4d29ab61443cdd1fef9",
+    "tools/generate_memory.py": "306c95ef796fe36c77952f4b930a3d5a737e62c76ffa47617c78473652ff3a86",
+    "tools/native_program.py": "12ddaec2f24459fbd821e1885678244df4ee5b55937bf3a0f7fbbf579cfecfc8",
+    "lib/exec/bootconfig.act": "fed89275c966067ade592d2bd985cfe1232d0552b7d325f3f47bed46b60a3a63",
+    "lib/exec/taskpolicy.act": "471418100153a05904731d91b8dbbebb4f967d3b59d743f8184ad1dd1ebdbac1",
+    "platform/altirraos/loader.s": "404e1eab7d7f369c134c4a271ed1e31b8b78a44ba50810736dbed6aef0282ea5",
+    "tests/programs/boot_config.act": "68d2da390e110e88813e9ed793e746420533220e484bd63318864d95d0daafcb",
+    "tools/test_boot_config.py": "69af05566ac181433ea42f9169843c78088bf73aa3e558110afd4c395fe01248"
+  }
+}

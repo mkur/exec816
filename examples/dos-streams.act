@@ -1,0 +1,19 @@
+MODULE DOSSTREAMSEXAMPLE
+INCLUDE "dos-streams-session.inc"
+
+; Run the stream-selection and redirection session with an independent reader
+; Task.
+PROC Main()
+
+  OpenConsole(0)
+  AllocateReader(0)
+  StartReader(0)
+  Check(Redirect(0)=4 AND commandError=0)
+  Check(Redirect(1)=-1 AND commandError=DOS.ERROR_BAD_NUMBER)
+  Session(0)
+  JoinReader(0)
+  Cleanup(0)
+
+RETURN
+
+ENDMODULE

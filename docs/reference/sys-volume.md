@@ -1,0 +1,66 @@
+# SYS: system volume
+
+`SYS:` names the root of the explicitly selected system volume. It does not
+identify where the kernel XEX came from. SYS and the physical name share one
+mount, generation, worker, cache and normal file/lock references.
+
+The standard configuration selects D1:
+
+```json
+{
+  "system_mount": "D1",
+  "mounts": [
+    {"alias":"D1", "unit":49, "sectors":720,
+     "sector_bytes":128, "profile":4, "format":2}
+  ]
+}
+```
+
+Selection is by name, independent of descriptor order. Only the selected
+mount must use D1..D8 matching its SIO unit. SYS is reserved and cannot be a
+separate mount. Omitting `system_mount` leaves explicit-volume access intact
+but makes SYS unavailable.
+
+Before handoff, OF816 can move the selected descriptor to another drive:
+
+```forth
+decimal
+2 SYSTEM-DRIVE!
+SYSTEM-DRIVE@ .
+EXEC816
+```
+
+The same companion disk must then be in D2. Its geometry, filesystem and SIO
+profile stay unchanged. SYS resolves to D2, and the old D1 name is absent.
+`SYSTEM-DRIVE!` accepts full-cell values 1..8, requires a selected descriptor,
+and rejects unit/name conflicts without changing the previous request.
+The getter reports the request, not a successful mount. Five-second autoboot
+uses the image's default. Settings last for one boot and freeze at handoff.
+
+The native startup path independently validates the shared eight-byte
+[boot record](platform.md#boot-service-settings). Malformed input
+uses build defaults with a diagnostic. A valid but conflicting drive fails
+before publishing any mounts. There is no fallback drive scan.
+
+Ordinary DOS callers can use case-insensitive paths such as `SYS:TOOLS/FILE`.
+SYS always starts at the selected root; relative paths and an initial colon
+retain their current-directory/current-volume meanings. `CurrentDir(NULL)`
+still removes the caller's default directory. `NameFromLock` returns canonical
+physical names, such as `D2:TOOLS`.
+
+SYS itself holds no reference. Busy unmount leaves it intact; successful
+unmount makes it unavailable until the same slot is remounted with a new
+generation. Service restart preserves selection, not old mount objects.
+Absent/unpublished selection reports `ERROR_DEVICE_NOT_MOUNTED`; offline media
+retains its causal error. This is one fixed alias, without general assigns,
+command search paths, C: or RAM:.
+
+The standard shell starts with a real SYS root lock and reports its mapping.
+`MOUNT` lists the physical volume once. From another directory, use explicit
+paths such as `SYS:HELLO` or `SYS:CAT SYS:STORY.TXT | SYS:WC`. Bare command
+lookup is unchanged. A failed initial mount leaves a usable console; after
+correcting media, `CD SYS:` retries filesystem startup. An offline SIO device
+after a transport timeout can still require a cold boot.
+
+Validation is focused development coverage; see the
+[implementation record](../plans/sys-volume-implementation-plan.md).

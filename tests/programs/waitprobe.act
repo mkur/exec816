@@ -1,0 +1,87 @@
+; Qualification-only scheduling windows; callers still use native requests.
+MODULE WAITPROBE
+USE EXEC
+USE CONSOLETYPES
+USE CONSOLEINPUT
+PUBLIC BYTE mode,stage,gate
+PUBLIC CARD sends,collections,aborts
+PUBLIC EXEC.IORequest POINTER target
+PUBLIC CONSOLETYPES.Instance POINTER unit
+
+PUBLIC PROC Before(EXEC.IORequest POINTER request)
+
+  IF request=target AND mode=2 THEN
+    EXEC.Forbid()
+  FI
+
+RETURN
+
+PUBLIC PROC Submitted(EXEC.IORequest POINTER request)
+
+  IF target<>EXEC.IORequest POINTER(0) AND request<>target THEN
+    RETURN
+  FI
+
+  sends==+1
+  IF mode=1 THEN
+    stage=1
+    WHILE gate=0 DO
+      EXEC.Yield()
+    OD
+  ELSEIF mode=2 THEN
+    stage=1
+    WHILE gate=0 DO
+    OD
+
+    EXEC.Permit()
+    WHILE stage<>2 DO
+      EXEC.Yield()
+    OD
+  FI
+
+RETURN
+
+PUBLIC PROC Aborted(EXEC.IORequest POINTER request)
+
+  IF target=EXEC.IORequest POINTER(0) OR request=target THEN
+    aborts==+1
+  FI
+
+RETURN
+
+; Check the terminal reply before allowing its request storage to be reused.
+PUBLIC PROC Collected(EXEC.IORequest POINTER request)
+
+  IF target<>EXEC.IORequest POINTER(0) AND request<>target THEN
+    RETURN
+  FI
+
+  collections==+1
+  IF mode=3 AND request.io_Error=BYTE(EXEC.IOERR_ABORTED) THEN
+    ; Queued typeahead at the cancellation boundary must be retired before a
+    ; fresh cooked line. This supplements the physical keys; it does not
+    ; synthesize or replace the real foreground BREAK.
+    EXEC.Forbid()
+    CONSOLEINPUT.Deliver(unit,$0123003f)
+    CONSOLEINPUT.Deliver(unit,$01240015)
+    EXEC.Permit()
+  FI
+
+RETURN
+
+PUBLIC PROC Copied(CONSOLETYPES.Instance POINTER instance EXEC.IOStdReq
+    POINTER request)
+
+  IF EXEC.IORequest POINTER(request)<>target OR mode<>2 THEN
+    RETURN
+  FI
+
+  stage=2
+  ; Model preemption after a committed prefix and before terminal reply.
+  WHILE instance.readCancel=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+ENDMODULE

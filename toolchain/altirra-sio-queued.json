@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "rom": {
+    "name": "AltirraOS 3.44 for 65C816",
+    "bytes": 16384,
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+    "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+    "cop0_after_xce": 50931
+  },
+  "emulator": {
+    "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+    "platform": "macOS arm64",
+    "sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989",
+    "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+    "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+    "build_record": "toolchain/altirra-build.json",
+    "additional_patch": "toolchain/patches/altirra-headless-mount.patch",
+    "additional_patch_sha256": "3ba17abf8b5037383457f85306bb3eaad973151701a3fa4221469c87ccefd1bd"
+  },
+  "machine": {
+    "model": "800XL",
+    "cpu": "65C816",
+    "clock_multiplier": 8,
+    "memory": "64K",
+    "high_banks": 15,
+    "video": "PAL",
+    "basic": false,
+    "dli": false,
+    "shadow_rom": true
+  },
+  "scope": "Queued SIO tests; drive-specific headless MOUNT fixed without changing CPU/peripheral emulation",
+  "peripherals": [
+    {
+      "name": "fastest-125k",
+      "diskemu": "fastest",
+      "divisor": 0,
+      "source": "src/Altirra/source/diskprofile.cpp",
+      "firmware": "built-in high-level model"
+    },
+    {
+      "name": "stock-810",
+      "diskemu": "810",
+      "divisor": 40,
+      "source": "src/Altirra/source/diskprofile.cpp",
+      "firmware": "built-in high-level model"
+    },
+    {
+      "name": "happy-none",
+      "diskemu": "happy1050",
+      "divisor": 40,
+      "source": "src/Altirra/source/disk.cpp",
+      "firmware": "built-in high-level model; quiet command only"
+    }
+  ],
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true
+  },
+  "limits": {
+    "command_setup_us": [
+      750,
+      1600
+    ],
+    "command_hold_us": [
+      650,
+      950
+    ],
+    "write_delay_us": [
+      1000,
+      1800
+    ],
+    "alarm_lateness_us": 100,
+    "active_max_us": 1020000,
+    "critic_max_us": 1020000
+  },
+  "alarm": {
+    "timer1_base_cycles": 224,
+    "timer2_base_cycles": 7168,
+    "timer2_count": 250,
+    "phase_counts": {
+      "setup": 8,
+      "hold": 7,
+      "write": 10
+    },
+    "stimer": "initialization/cleanup only"
+  },
+  "source_sha256": {
+    "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+    "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+    "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+  },
+  "write_delay_basis": "Figure 18 (1.0\u20131.8 ms); qualified only against these pinned disk models. Page 219 prose says 10\u201318 ms and is not used for these profiles.",
+  "timeout_policy": "One 250-tick active watchdog: ACK, result and data all inherit its remaining time; receiving a byte does not restart it. No separate phase or per-byte timeout in this disposable probe.",
+  "observer": {
+    "binary_sha256": "f5bb13fff27be8e89a8cb0a499d5c56bb31e609917eef8ce8999a59286f02922",
+    "patch": "toolchain/patches/altirra-sio-observer.patch",
+    "additional_patch": "toolchain/patches/altirra-headless-mount.patch"
+  },
+  "fault_responder": {
+    "binary_sha256": "c2eb067b68eea3dfb7c7c883b1aca0be0d74b3179bfa40f98a88557e5aecf60d",
+    "patch": "toolchain/patches/altirra-sio-fault-responder.patch",
+    "patch_sha256": "47cb3ca5fb473cd7561010dd8634a8295980204a1fc9c0facf65ab05029fa160",
+    "scope": "Explicit D8 protocol/stop-bit corruption, test-only environment selector; POKEY and guest execute normally. Includes passive observer and drive-specific MOUNT patches."
+  }
+}

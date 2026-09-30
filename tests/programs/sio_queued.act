@@ -1,0 +1,217 @@
+MODULE SIOQUEUED
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE SIODRIVER
+USE HEAPCORE
+EXEC.Task background
+EXEC.MsgPort POINTER replies
+EXEC.IOSIOReq POINTER first,second
+BYTE stop,speed
+CARD checks
+VOLATILE CARD progress
+PROC POINTER absent()
+INCLUDE "io-names.inc"
+INCLUDE "tasks_exec_helpers.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC BackgroundEntry()
+  BYTE POINTER phase
+
+  phase=BYTE POINTER($0f0801)
+  WHILE stop=0 DO
+    IF phase^<>0 AND phase^<>13 THEN
+      progress==+1
+    FI
+  OD
+
+RETURN
+
+PROC Prepare(EXEC.IOSIOReq POINTER request BYTE wire,direction CARD length BYTE
+    POINTER buffer)
+
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Length=LONGCARD(length)
+  request.io_Data=buffer
+  request.io_Offset=0
+  request.sio_Command=wire
+  request.sio_Aux1=4
+  request.sio_Aux2=0
+  request.sio_Direction=direction
+  request.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  IF speed<>0 THEN
+    request.sio_Profile=EXEC.SIO_PROFILE_STOCK810
+  FI
+
+  IF speed=3 THEN
+    request.sio_Profile=EXEC.SIO_PROFILE_GENERIC57600
+  FI
+
+  request.sio_TimeoutUS=0
+  request.io_Actual=0
+  request.io_Error=0
+
+RETURN
+
+PROC Setup()
+  EXEC.Task POINTER added
+  INT error
+  BYTE okay
+
+  replies=EXEC.CreateMsgPort()
+  first=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(replies,52))
+  second=EXEC.IOSIOReq POINTER($0afff0)
+  second.io_Message.mn_Length=52
+  second.io_Message.mn_ReplyPort=replies
+  error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(first),0)
+  Require(error=0)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(first))
+  okay=SIODRIVER.Start()
+  Require(okay=1)
+  okay=SIODRIVER.Start()
+  Require(okay=1)
+  error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(first),0)
+  Require(error=0)
+  error=EXEC.OpenDevice(sioName,50,EXEC.IORequest POINTER(second),0)
+  Require(error=0)
+  Require(first.io_Device=second.io_Device AND first.io_Unit<>second.io_Unit)
+  Require(EXEC.FindTask(sioName)<>EXEC.Task POINTER(0))
+  PrepareTask(@background,TASKSTACKS.LOWER2,BYTE POINTER(0))
+  added=EXEC.AddTask(@background,@BackgroundEntry,absent)
+  Require(added=@background)
+
+RETURN
+
+; Verify independent queued transfers and their caller-owned result buffers.
+PROC ReadBoth()
+  INT error
+  CARD index
+  BYTE POINTER a,b
+
+  a=BYTE POINTER($08ffc0)
+  b=BYTE POINTER($0cffc0)
+  Prepare(first,$52,1,128,a)
+  Prepare(second,$52,1,128,b)
+  EXEC.SendIO(EXEC.IORequest POINTER(first))
+  EXEC.SendIO(EXEC.IORequest POINTER(second))
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(second))
+  Require(error=0)
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(first))
+  Require(error=0)
+  Require(first.io_Actual=128 AND second.io_Actual=128)
+  FOR index=0 TO 127 DO
+    Require(a(index)=BYTE(index XOR 60) AND b(index)=a(index))
+  OD
+
+RETURN
+
+; Exercise the fixture's explicit write path and check its returned transfer
+; result.
+PROC WriteBack()
+  INT error
+  CARD index
+  BYTE POINTER allocation,buffer
+
+  allocation=EXEC.AllocMem(65664,EXEC.MEMF_PUBLIC OR EXEC.MEMF_LINEAR)
+  Require(allocation<>BYTE POINTER(0))
+  buffer=BYTE POINTER(ADDRESS(allocation)+SIZE($ffc0))
+  FOR index=0 TO 127 DO
+    buffer(index)=BYTE(index XOR $a7)
+  OD
+
+  Prepare(first,$50,2,128,buffer)
+  EXEC.Forbid()
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=0)
+  EXEC.Permit()
+  Require(first.io_Actual=128)
+  Prepare(first,$52,1,128,buffer)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=0 AND first.io_Actual=128)
+  FOR index=0 TO 127 DO
+    Require(buffer(index)=BYTE(index XOR $a7))
+  OD
+
+  EXEC.FreeMem(allocation,65664)
+
+RETURN
+
+; Reject malformed transactions before they can acquire the serial hardware.
+PROC InvalidRequests()
+  INT error
+
+  Prepare(first,$52,1,0,BYTE POINTER($08ffc0))
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  first.io_Length=129
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  first.io_Length=128
+  first.sio_Direction=3
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  first.sio_Direction=1
+  first.sio_Profile=$ffff
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=EXEC.SIOERR_BADPROFILE)
+  first.sio_Profile=1
+  first.io_Data=BYTE POINTER($fffff0)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=EXEC.IOERR_BADADDRESS)
+  first.io_Data=BYTE POINTER($110000)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=EXEC.IOERR_BADADDRESS)
+
+RETURN
+
+PROC Quiet()
+  INT error
+
+  IF speed<>2 THEN
+    RETURN
+  FI
+
+  Prepare(first,$51,0,0,BYTE POINTER(0))
+  first.sio_Profile=EXEC.SIO_PROFILE_HAPPY1050
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=0 AND first.io_Actual=0)
+
+RETURN
+
+; Exercise queued transactions, invalid requests and bus quiescence.
+PROC Main()
+
+  Setup()
+  IF speed=2 THEN
+    Quiet()
+  ELSE
+    ReadBoth()
+    WriteBack()
+  FI
+
+  InvalidRequests()
+  Require(progress<>0)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(first))
+  EXEC.CloseDevice(EXEC.IORequest POINTER(second))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(first))
+  EXEC.DeleteMsgPort(replies)
+  SIODRIVER.Stop()
+  Require(EXEC.FindTask(sioName)=EXEC.Task POINTER(0))
+  stop=1
+  AwaitRemoval(@background)
+
+RETURN
+
+ENDMODULE

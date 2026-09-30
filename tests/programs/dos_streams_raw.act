@@ -1,0 +1,366 @@
+MODULE DOSRAWTEST
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSRAW
+USE DOSSTREAMS
+USE CONSOLEDRIVER
+USE CONSOLETYPES
+USE FSBOOT
+USE HEAPCORE
+CARD checks,otherChecks
+VOLATILE BYTE phase,gate,readStage,childReady,childGo,childDone,writerDone
+EXEC.Task child
+PROC POINTER absent()
+DOS.FileHandle POINTER first,second,third,childHandle
+DOSCLIENT.ClientContext POINTER client
+DOSRAW.StreamRegistry POINTER registry
+DOSRAW.RawEndpoint POINTER endpoint
+CONSOLETYPES.Instance POINTER instance
+BYTE ARRAY nearBuffer(8)
+BYTE POINTER large
+LONGCARD before,freeBefore
+TYPE Chunk=[
+  BYTE POINTER next
+  LONGCARD size
+]
+
+Chunk POINTER held
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e400+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Keep the peer Task's failure accounting separate from the main client.
+PROC OtherRequire(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e500+otherChecks)
+  FI
+
+  otherChecks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+  CARD ticks
+
+  gate=0
+  phase=number
+  WHILE gate=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+; Hold available allocations so the next operation must exercise its failure
+; path.
+PROC Exhaust()
+  LONGCARD size
+  Chunk POINTER item
+
+  DO
+    size=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    IF size<8 THEN
+      EXIT
+    FI
+
+    item=Chunk POINTER(EXEC.AllocMem(size,EXEC.MEMF_UPPER))
+    IF item=Chunk POINTER(0) THEN
+      HEAPCORE.Abort($e4fe)
+    FI
+
+    item.next=BYTE POINTER(held)
+    item.size=size
+    held=item
+  OD
+
+RETURN
+
+; Return the allocations retained to force memory exhaustion.
+PROC ReleaseHeld()
+  Chunk POINTER next
+  LONGCARD size
+
+  WHILE held<>Chunk POINTER(0) DO
+    next=Chunk POINTER(held.next)
+    size=held.size
+    EXEC.FreeMem(BYTE POINTER(held),size)
+    held=next
+  OD
+
+RETURN
+
+; Check exclusion between a directly opened console and the DOS raw endpoint.
+PROC DirectConflict()
+  EXEC.MsgPort POINTER port
+  EXEC.IORequest POINTER request
+  INT error
+
+  port=EXEC.CreateMsgPort()
+  request=EXEC.CreateIORequest(port,42)
+  Require(port<>EXEC.MsgPort POINTER(0) AND request<>EXEC.IORequest POINTER(0))
+  error=EXEC.OpenDevice(BYTE POINTER($d1040),0,request,0)
+  Require(error=0)
+  first=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(first=DOS.FileHandle POINTER(0) AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(registry.state=DOSRAW.CLOSED AND registry.endpoint=BYTE POINTER(0))
+  EXEC.CloseDevice(request)
+  EXEC.DeleteIORequest(request)
+  EXEC.DeleteMsgPort(port)
+  Require(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Force endpoint setup to fail without retaining partial device ownership.
+PROC FailEndpoint()
+  BYTE POINTER spare
+
+  client=DOSCLIENT.Ensure()
+  Require(client<>DOSCLIENT.ClientContext POINTER(0))
+  freeBefore=EXEC.AvailMem(0)
+  spare=EXEC.AllocMem(16,EXEC.MEMF_UPPER)
+  Require(spare<>BYTE POINTER(0))
+  Exhaust()
+  EXEC.FreeMem(spare,16)
+  first=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(first=DOS.FileHandle POINTER(0) AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(registry.state=DOSRAW.CLOSED AND registry.endpoint=BYTE POINTER(0)
+      AND client.busy=0 AND client.objects=0)
+  ReleaseHeld()
+  Require(EXEC.AvailMem(0)=freeBefore)
+
+RETURN
+
+PROC OpenFirst()
+
+  first=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(first<>DOS.FileHandle POINTER(0) AND DOS.IsInteractive(first)=-1
+      AND DOS.IoErr()=0)
+  endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+  Require(SIZEOF(DOSRAW.StreamRegistry)=16 AND SIZEOF(DOSRAW.RawEndpoint)=102
+      AND SIZEOF(DOSSTREAMS.Handle)=16)
+  Require(ADDRESS(@endpoint.port)-ADDRESS(endpoint)=42
+      AND ADDRESS(@endpoint.references)-ADDRESS(endpoint)=70)
+  Require(ADDRESS(@endpoint.active)-ADDRESS(endpoint)=72
+      AND ADDRESS(@endpoint.reader)-ADDRESS(endpoint)=74
+      AND ADDRESS(@endpoint.generation)-ADDRESS(endpoint)=78)
+  Require(endpoint.references=1 AND endpoint.active=0
+      AND endpoint.port.mp_Flags=EXEC.PA_IGNORE
+      AND endpoint.port.mp_SigTask=EXEC.Task POINTER(0))
+  Require(endpoint.owner.io_Message.mn_ReplyPort=@endpoint.port
+      AND endpoint.owner.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  freeBefore=EXEC.AvailMem(0)
+  Exhaust()
+  Require(DOS.Open(BYTE POINTER($d1000),
+      DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(endpoint.references=1 AND client.objects=1)
+  Require(DOS.Read(first,nearBuffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(endpoint.active=0 AND endpoint.reader=BYTE POINTER(0)
+      AND client.request=EXEC.IOStdReq POINTER(0) AND client.busy=0)
+  ReleaseHeld()
+  Require(EXEC.AvailMem(0)=freeBefore)
+  Require(DOS.Read(first,BYTE POINTER($ffffff),0)=0 AND DOS.Write(first,
+      BYTE POINTER(0),0)=0)
+  Require(client.request=EXEC.IOStdReq POINTER(0) AND EXEC.AvailMem(0)=freeBefore)
+  Require(DOS.Read(first,BYTE POINTER($400),1)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Write(first,BYTE POINTER(0),1)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Write(first,BYTE POINTER($ffffff),2)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Write(first,nearBuffer,-1)=-1 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Seek(first,0,DOS.OFFSET_BEGINNING)=-1
+      AND DOS.IoErr()=DOS.ERROR_SEEK_ERROR)
+
+RETURN
+
+; Check raw-stream access modes and input transfer through the selected
+; handle.
+PROC ModesAndInput()
+
+  Pause(1)
+  Require(instance.inputCount=1)
+  second=DOS.Open(BYTE POINTER($d1000),DOS.MODE_NEWFILE)
+  third=DOS.Open(BYTE POINTER($d1000),DOS.MODE_READWRITE)
+  Require(second<>DOS.FileHandle POINTER(0) AND third<>DOS.FileHandle POINTER(0)
+      AND endpoint.references=3 AND instance.inputCount=1)
+  Require(DOS.Read(first,BYTE POINTER(0),0)=0 AND instance.inputCount=1
+      AND client.request=EXEC.IOStdReq POINTER(0))
+  Require(DOS.Read(first,nearBuffer,8)=1 AND nearBuffer(0)=98 AND DOS.IoErr()=0)
+  Require(client.request<>EXEC.IOStdReq POINTER(0)
+      AND client.request.io_Device=BYTE POINTER(0)
+      AND client.request.io_Unit=BYTE POINTER(0))
+  Require(client.request.io_Message.mn_ReplyPort=client.port
+      AND client.request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+      AND EXEC.GetMsg(client.port)=EXEC.Message POINTER(0))
+  Require(DOS.Close(second)<>0 AND DOS.Close(third)<>0 AND endpoint.references=1)
+  Pause(2)
+
+RETURN
+
+PROC ChildEntry()
+  DOSCLIENT.ClientContext POINTER local
+  DOSCORE.DosSlot POINTER owner
+  CARD ticks
+
+  childHandle=DOS.Open(BYTE POINTER($d1000),DOS.MODE_READWRITE)
+  OtherRequire(childHandle<>DOS.FileHandle POINTER(0))
+  owner=DOSCORE.Current()
+  local=DOSCLIENT.ClientContext POINTER(owner.context)
+  OtherRequire(DOS.Read(childHandle,BYTE POINTER(0),0)=0
+      AND local.request=EXEC.IOStdReq POINTER(0))
+  childReady=1
+  WHILE childGo=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  readStage=1
+  OtherRequire(DOS.Read(childHandle,BYTE POINTER($dfffe),4)=1
+      AND BYTE POINTER($dfffe)^=97 AND DOS.IoErr()=0)
+  OtherRequire(writerDone=1 AND local.request.io_Device=BYTE POINTER(0)
+      AND endpoint.references=1)
+  OtherRequire(DOS.Write(childHandle,BYTE POINTER($d1060),6)=6)
+  Pause(4)
+  readStage=2
+  OtherRequire(DOS.Read(childHandle,BYTE POINTER($dfffe),4)=1
+      AND BYTE POINTER($dfffe)^=3)
+  readStage=3
+  OtherRequire(DOS.Read(childHandle,BYTE POINTER($dfffe),4)=1
+      AND BYTE POINTER($dfffe)^=3)
+  OtherRequire(DOS.Close(childHandle)<>0 AND DOS.ReleaseContext()<>0)
+  childDone=1
+
+RETURN
+
+; Exercise independent Task wrappers sharing one retained console endpoint.
+PROC Concurrent()
+  CARD ticks
+
+  child.tc_Node.ln_Type=EXEC.NT_TASK
+  child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  child.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  child.tc_SPReg=child.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@child.tc_MemEntry)
+  Require(EXEC.AddTask(@child,@ChildEntry,absent)=@child)
+  WHILE childReady=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(DOS.Close(first)<>0 AND DOS.ReleaseContext()<>0 AND endpoint.references=1)
+  first=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(first<>DOS.FileHandle POINTER(0))
+  childGo=1
+  WHILE endpoint.reader=BYTE POINTER(0) DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(DOS.Read(first,nearBuffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Write(first,BYTE POINTER($d1080),6)=6 AND readStage=1)
+  Require(DOS.Close(first)<>0 AND DOS.ReleaseContext()<>0
+      AND endpoint.references=1 AND endpoint.active=1)
+  writerDone=1
+  phase=3
+  WHILE child.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(childDone=1 AND registry.state=DOSRAW.CLOSED
+      AND registry.endpoint=BYTE POINTER(0))
+
+RETURN
+
+; Reuse a completed request only after its previous reply has been collected.
+PROC PacketReuse()
+  DOS.FileHandle POINTER file,nil
+  DOSCORE.DosSlot POINTER owner
+  EXEC.IOStdReq POINTER request
+
+  first=DOS.Open(BYTE POINTER($d1000),DOS.MODE_NEWFILE)
+  Require(first<>DOS.FileHandle POINTER(0))
+  Require(DOS.Write(first,BYTE POINTER($d10a0),12)=12)
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  request=client.request
+  file=DOS.Open(BYTE POINTER($d10c0),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0) AND DOS.Read(file,
+      BYTE POINTER($d1200),8)=8)
+  nil=DOS.Open(BYTE POINTER($d1020),DOS.MODE_OLDFILE)
+  Require(nil<>DOS.FileHandle POINTER(0) AND DOS.Write(nil,BYTE POINTER($d1200),
+      8)=8)
+  Require(DOS.Write(first,BYTE POINTER(0),0)=0 AND client.request=request
+      AND EXEC.GetMsg(client.port)=EXEC.Message POINTER(0))
+  Require(DOS.Close(file)<>0 AND DOS.Close(nil)<>0 AND FSBOOT.Stop()<>0)
+
+RETURN
+
+; Transfer output across multiple device quanta without losing bytes.
+PROC LargeWrite()
+  LONGCARD index
+  BYTE letter
+
+  large=EXEC.AllocMem(70003,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR OR EXEC.MEMF_CLEAR)
+  Require(large<>BYTE POINTER(0))
+  letter=65
+  index=1
+  WHILE index<69998 DO
+    large(SIZE(index))=letter
+    letter==+1
+    index==+32
+    IF letter=91 THEN
+      letter=65
+    FI
+  OD
+
+  large(65535)=88
+  large(65536)=89
+  large(0)=12
+  large(69998)=8
+  large(69999)=9
+  large(70000)=13
+  large(70001)=10
+  large(70002)=90
+  Require(DOS.Write(first,large,70003)=70003 AND DOS.IoErr()=0)
+  ; Release immediately after collection. Retained state must not depend on
+  ; the source while the presenter catches up.
+  EXEC.FreeMem(large,70003)
+  large=BYTE POINTER(0)
+  Pause(5)
+  Require(DOS.Close(first)<>0 AND DOS.ReleaseContext()<>0
+      AND EXEC.AvailMem(0)=before)
+  phase=6
+
+RETURN
+
+; Exercise shared raw-console endpoints, concurrency and request reuse.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  registry=DOSRAW.GetRegistry()
+  instance=CONSOLEDRIVER.GetInstance()
+  DirectConflict()
+  FailEndpoint()
+  OpenFirst()
+  ModesAndInput()
+  Concurrent()
+  PacketReuse()
+  LargeWrite()
+
+RETURN
+
+ENDMODULE

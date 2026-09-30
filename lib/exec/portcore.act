@@ -1,0 +1,53 @@
+MODULE PORTCORE
+
+USE EXEC
+USE EXECLISTS
+
+; Caller-context helpers reached through checked native thunks. Every local
+; belongs to the creating/deleting task, including across allocator dispatch.
+PUBLIC EXTERNAL BYTE FUNC DeleteCheck(EXEC.MsgPort POINTER port)
+
+; Create a caller-owned port and signal, rolling back allocation on failure.
+PUBLIC EXEC.MsgPort POINTER FUNC CreateMsgPort()
+  EXEC.MsgPort POINTER port
+
+  port=EXEC.MsgPort POINTER(EXEC.AllocMem(EXEC.MSGPORT_SIZE,EXEC.MEMF_PUBLIC
+      OR EXEC.MEMF_CLEAR))
+  IF port=NULL THEN
+    RETURN(port)
+  FI
+
+  LET bit=EXEC.AllocSignal($ff)
+  IF bit=$ff THEN
+    EXEC.FreeMem(BYTE POINTER(port),EXEC.MSGPORT_SIZE)
+    RETURN(NULL)
+  FI
+
+  port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  port.mp_Node.ln_Name=NULL
+  port.mp_Node.ln_Pri=0
+  port.mp_Flags=EXEC.PA_SIGNAL
+  port.mp_SigBit=bit
+  port.mp_SigTask=EXEC.FindTask(NULL)
+  EXECLISTS.NewList(@port.mp_MsgList)
+  port.mp_MsgList.lh_Type=0
+  port.mp_MsgList.lh_Pad=0
+
+RETURN(port)
+
+; Release an inactive owned port after validating its signal and empty queue.
+PUBLIC PROC DeleteMsgPort(EXEC.MsgPort POINTER port)
+
+  IF port=NULL THEN
+    RETURN
+  FI
+
+  ; The caller has stopped producers, settled requests and removed any name.
+  ; Check owner, retained signal and queue before freeing either resource.
+  LET bit=DeleteCheck(port)
+  EXEC.FreeSignal(bit)
+  EXEC.FreeMem(BYTE POINTER(port),EXEC.MSGPORT_SIZE)
+
+RETURN
+
+ENDMODULE

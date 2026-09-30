@@ -1,0 +1,4 @@
+; Fixture-only one-shot transport completion override, never in lib/.
+MODULE DOSFAULTCONTROL
+PUBLIC BYTE failNext
+ENDMODULE

@@ -1,0 +1,200 @@
+MODULE O65RELOCATIONS
+USE O65TYPES
+USE O65READ
+USE PROGRAMIMAGE
+
+; Map a relocation's section identity to its assigned load address.
+LONGCARD FUNC Base(PROGRAMIMAGE.Image POINTER image BYTE section)
+
+  CASE section OF
+  WHEN 2 THEN
+    RETURN(LONGCARD(image.text))
+  WHEN 3 THEN
+    RETURN(LONGCARD(ADDRESS(image.data)))
+  WHEN 4 THEN
+    RETURN(LONGCARD(ADDRESS(image.bss)))
+  ESAC
+
+RETURN(0)
+
+; All passes read the same standard o65 stream and immutable source payload.
+; Mode 0 locates exports, 1 validates loaded bounds, 2 preflights addresses,
+; and 3 patches private storage. No relocation table or proof copy is allocated.
+PROC Walk(O65TYPES.Validation POINTER validation PROGRAMIMAGE.Image
+    POINTER image BYTE mode)
+  O65TYPES.Cursor POINTER cursor
+  LONGCARD site,sectionBytes,sectionAt,lastEnd,count,value,importIndex
+  LONGCARD offset,width,targetAddress
+  BYTE section,delta,tag,encoding,target,skip
+  BYTE POINTER destination
+
+  cursor=@validation.wire
+  cursor.at=validation.relocationAt
+  count=0
+  FOR section=2 TO 3 DO
+    sectionBytes=O65READ.SectionSize(validation,section)
+    sectionAt=validation.textAt
+    IF section=3 THEN
+      sectionAt=validation.dataAt
+    FI
+
+    ; Biased by one so the first delta never needs signed arithmetic.
+    site=0
+    lastEnd=0
+    skip=0
+    DO
+      delta=O65READ.U8(cursor)
+      IF cursor.error<>0 THEN
+        RETURN
+      FI
+
+      IF delta=0 THEN
+        IF skip<>0 THEN
+          O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+        FI
+
+        EXIT
+      FI
+
+      IF delta=255 THEN
+        site==+254
+        skip=1
+      ELSE
+        site==+delta
+        skip=0
+      FI
+
+      IF site=0 OR site>sectionBytes THEN
+        O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+        RETURN
+      FI
+
+      IF skip=0 THEN
+        offset=site-1
+        tag=O65READ.U8(cursor)
+        encoding=tag & $e0
+        target=tag & $1f
+        width=1
+        CASE encoding OF
+        WHEN $20 THEN
+        WHEN $40 THEN
+        WHEN $a0 THEN
+        WHEN $c0 THEN
+          width=3
+        ELSE
+          O65READ.Fail(cursor,CARD(O65TYPES.ERROR_UNSUPPORTED))
+          RETURN
+        ESAC
+
+        importIndex=0
+        IF target=0 THEN
+          importIndex=O65READ.U32(cursor)
+          IF importIndex>=validation.importCount THEN
+            O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+            RETURN
+          FI
+        ELSEIF target<2 OR target>4 THEN
+          O65READ.Fail(cursor,CARD(O65TYPES.ERROR_UNSUPPORTED))
+          RETURN
+        FI
+
+        IF offset<lastEnd OR O65READ.Extent(offset,width,sectionBytes)=0 THEN
+          O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+          RETURN
+        FI
+
+        value=LONGCARD(cursor.bytes(SIZE(sectionAt+offset)))
+        IF width=3 THEN
+          value=value
+              OR (LONGCARD(cursor.bytes(SIZE(sectionAt+offset+1))) LSH 8)
+              OR (LONGCARD(cursor.bytes(SIZE(sectionAt+offset+2))) LSH 16)
+        FI
+
+        IF encoding=$40 THEN
+          value=(value LSH 8) OR LONGCARD(O65READ.U8(cursor))
+        FI
+
+        IF encoding=$a0 THEN
+          value=(value LSH 16) OR LONGCARD(O65READ.U16(cursor))
+        FI
+
+        IF cursor.error<>0 THEN
+          RETURN
+        FI
+
+        IF mode<>0 THEN
+          IF target=0 THEN
+            IF value<>0 THEN
+              O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+              RETURN
+            FI
+          ELSEIF encoding=$a0 OR encoding=$c0 THEN
+            IF value>O65READ.SectionSize(validation,target) THEN
+              O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+              RETURN
+            FI
+          FI
+        FI
+
+        IF mode>=2 THEN
+          IF target=0 THEN
+            targetAddress=LONGCARD(validation.imports(SIZE(importIndex)).address)
+          ELSE
+            targetAddress=Base(image,target)
+          FI
+
+          ; Low/high records retain only low 8/16 bits of their addend. Their
+          ; complete symbolic bounds are checked by the compiler on the host.
+          IF (encoding=$a0 OR encoding=$c0) AND value>=$1000000-targetAddress THEN
+            O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+            RETURN
+          FI
+
+          value==+targetAddress
+          IF mode=3 THEN
+            destination=BYTE POINTER(ADDRESS(Base(image,section)+offset))
+            CASE encoding OF
+            WHEN $20 THEN
+              destination^=BYTE(value)
+            WHEN $40 THEN
+              destination^=BYTE(value RSH 8)
+            WHEN $a0 THEN
+              destination^=BYTE(value RSH 16)
+            WHEN $c0 THEN
+              destination(0)=BYTE(value)
+              destination(1)=BYTE(value RSH 8)
+              destination(2)=BYTE(value RSH 16)
+            ESAC
+          FI
+        FI
+
+        lastEnd=offset+width
+        count==+1
+      FI
+    OD
+  OD
+
+  IF mode=0 THEN
+    validation.relocationCount=count
+  ELSEIF count<>validation.relocationCount THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+  FI
+
+RETURN
+
+; Walk relocation metadata without modifying loaded program storage.
+PUBLIC PROC Read(O65TYPES.Validation POINTER validation BYTE verify)
+
+  Walk(validation,PROGRAMIMAGE.Image POINTER(0),verify)
+
+RETURN
+
+; Preflight or apply relocations using the same checked stream walker.
+PUBLIC BYTE FUNC Patches(O65TYPES.Validation POINTER validation
+    PROGRAMIMAGE.Image POINTER image BYTE apply)
+
+  Walk(validation,image,2+apply)
+
+RETURN(validation.wire.error=0)
+
+ENDMODULE

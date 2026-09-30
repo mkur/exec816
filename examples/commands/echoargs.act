@@ -1,0 +1,23 @@
+MODULE ECHOARGS
+
+USE COMMAND
+USE CSTRING AS STR
+
+; Echo the original argument text without consuming redirected standard input.
+LONGINT FUNC Main()
+
+  LET output=COMMAND.Output()
+  LET arguments=COMMAND.GetArgStr()
+  LET length=STR.strlen(arguments)
+  LET count=COMMAND.Write(output,BYTE POINTER(arguments),length)
+  IF count<>length THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET newline=c"\n"
+  LET newlineLength=STR.strlen(newline)
+  LET written=COMMAND.Write(output,BYTE POINTER(newline),newlineLength)
+
+RETURN(IF written=newlineLength THEN COMMAND.RETURN_OK ELSE COMMAND.RETURN_ERROR FI)
+
+ENDMODULE

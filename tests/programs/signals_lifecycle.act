@@ -1,0 +1,130 @@
+MODULE SIGNALLIFE
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+
+EXEC.Task worker
+EXEC.Task POINTER parent
+BYTE ARRAY name=[119 97 105 116 0]
+VOLATILE BYTE phase
+CARD ARRAY checks(16)
+LONGCARD ARRAY values(3)
+PROC POINTER missing()
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC Park()
+  LONGCARD result
+
+  phase=1
+  result=EXEC.Wait(0)
+  phase=$ff
+
+RETURN
+
+PROC Sleeper()
+  CARD status,before
+  VOLATILE CARD ticks=$2034
+
+  phase=2
+  before=ticks
+  status=EXECTASKS.Sleep(6)
+  checks(6)=ticks-before
+  values(0)=EXEC.Wait(LONGCARD($80000000))
+  phase=3
+
+RETURN
+
+PROC Fresh()
+  CARD status
+  EXEC.Task POINTER self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  checks(9)=CARD(self.tc_SigRecvd=0 AND self.tc_SigWait=0
+      AND self.tc_SigAlloc=LONGCARD($ffff))
+  phase=4
+  values(1)=EXEC.Wait(1)
+  status=EXECTASKS.Sleep(2)
+  checks(13)=CARD(parent.tc_State=EXEC.TS_WAIT)
+  EXEC.Signal(parent,2)
+
+RETURN
+
+; Retire a waiting Task without leaving a stale wake target behind.
+PROC ParkAndRemove()
+  EXEC.Task POINTER item
+  CARD status
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(name))
+  item=EXEC.AddTask(@worker,@Park,missing)
+  WHILE worker.tc_State<>EXEC.TS_WAIT DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  EXEC.Forbid()
+  EXEC.Signal(item,LONGCARD($ffffffff))
+  checks(0)=CARD(worker.tc_State=EXEC.TS_WAIT)
+  checks(1)=CARD(worker.tc_SigRecvd=LONGCARD($ffffffff))
+  checks(2)=CARD(EXEC.FindTask(BYTE POINTER(name))=item)
+  EXEC.RemTask(item)
+  checks(3)=CARD(worker.tc_ExecPrivate=0 AND phase=1)
+  EXEC.Permit()
+
+RETURN
+
+; Keep one Task's timed sleep independent of another Task's signals.
+PROC SleepIsolation()
+  EXEC.Task POINTER item
+  CARD status
+
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(name))
+  item=EXEC.AddTask(@worker,@Sleeper,missing)
+  WHILE worker.tc_State<>EXEC.TS_WAIT DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  EXEC.Forbid()
+  EXEC.Signal(item,LONGCARD($80000000))
+  checks(4)=CARD(worker.tc_State=EXEC.TS_WAIT)
+  checks(5)=CARD(worker.tc_SigWait=0)
+  EXEC.Permit()
+  AwaitRemoval(item)
+  checks(7)=CARD(phase=3)
+  checks(8)=CARD(worker.tc_ExecPrivate=0)
+
+RETURN
+
+; Require reused Task storage to begin with fresh signal ownership.
+PROC Reuse()
+  EXEC.Task POINTER item
+  CARD status
+
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(name))
+  item=EXEC.AddTask(@worker,@Fresh,missing)
+  WHILE worker.tc_State<>EXEC.TS_WAIT DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  EXEC.Forbid()
+  EXEC.Signal(item,1)
+  values(2)=EXEC.Wait(2)
+  checks(14)=CARD(parent.tc_TDNestCnt)
+  EXEC.Permit()
+  AwaitRemoval(item)
+  checks(10)=CARD(phase=4)
+  checks(11)=CARD(EXEC.FindTask(BYTE POINTER(name))=EXEC.Task POINTER(0))
+  checks(12)=CARD(parent.tc_SigWait=0)
+
+RETURN
+
+; Exercise signal isolation during parking, removal and Task reuse.
+PROC Main()
+
+  ParkAndRemove()
+  SleepIsolation()
+  Reuse()
+
+RETURN
+
+ENDMODULE

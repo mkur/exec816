@@ -1,0 +1,40 @@
+diff --git a/docs/resident_library.md b/docs/resident_library.md
+index 7cf98365..876499fc 100644
+--- a/docs/resident_library.md
++++ b/docs/resident_library.md
+@@ -1,3 +1,16 @@
++; ----------------------------------------------------------------------
++; Compile-time system constants (qualified access with USE SYS)
++; ----------------------------------------------------------------------
++
++; INT is signed 16-bit; LONGINT is signed 32-bit on every target.
++; SYS.MAXLONGCARD is the largest unsigned 32-bit value: 4294967295.
++; These constants add no runtime storage or imports.
++CONST INT MININT=-32768
++CONST INT MAXINT=32767
++CONST LONGINT MINLONGINT=-2147483648
++CONST LONGINT MAXLONGINT=2147483647
++CONST LONGCARD MAXLONGCARD=$ffffffff
++
+ ; ----------------------------------------------------------------------
+ ; Output routines
+ ; ----------------------------------------------------------------------
+diff --git a/embedded/modules/sys.act b/embedded/modules/sys.act
+index 2586ab71..4fe7b8db 100644
+--- a/embedded/modules/sys.act
++++ b/embedded/modules/sys.act
+@@ -2,6 +2,14 @@
+ ; addresses live in compiler-owned binding units, never in this public module.
+ MODULE SYS
+ 
++; Fixed-width integer limits; USE SYS and qualify each name with SYS.
++; These compile-time constants have no runtime storage or imports.
++PUBLIC CONST INT MININT=-32768
++PUBLIC CONST INT MAXINT=32767
++PUBLIC CONST LONGINT MINLONGINT=-2147483648
++PUBLIC CONST LONGINT MAXLONGINT=2147483647
++PUBLIC CONST LONGCARD MAXLONGCARD=$ffffffff
++
+ PUBLIC EXTERNAL PROC Zero(BYTE POINTER address, CARD size)
+ PUBLIC EXTERNAL PROC SetBlock(BYTE POINTER address, CARD size, BYTE value)
+ PUBLIC EXTERNAL PROC MoveBlock(BYTE POINTER destination, source, CARD size)

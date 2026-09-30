@@ -1,0 +1,3461 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-21",
+  "status": "pass",
+  "scope": "Slice 1 only: two live tasks, eight-slot reservations, kernel bank 1, pinned emulator. Ordinary console device remains unavailable.",
+  "source_revision_before_change": "fef1caf",
+  "inputs": {
+    "platform/altirraos/console-probe.s": "42740831165160917050a9d8cfe639780f5928b672260c2a3e6c3c8333d60dfd",
+    "platform/altirraos/sio.s": "7630c17c85f68a997652b47ee63b38d92ed3011432ba2f49d0d677ce1a9c15d3",
+    "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3",
+    "platform/altirraos/tasks.s": "def8236a0ee0b3fe8dffe7359112559f028e973aef4a214159ec5e5daea58f65",
+    "tools/native_program.py": "7bf0f8d41ca5bc257f806ddd5a54c0ad4e945951107986234b9b977e9a4c87f0",
+    "tests/programs/consoleprobe.act": "bc656b363a60cbbb2f79744a81cc737bfdab4777b8ba599f23cbdf462ed7fc48",
+    "tests/programs/native_console_probe.act": "b2eb3f7f01cd4b0a103e36d7b425f4f53b859a409ec719adb463fdb035620953",
+    "tools/test_console_coexistence.py": "aa5d92a6e559533cce03e746cee6402c4bbf541659f49c4b4ba143e9cca1f90b",
+    "tests/test_console_probe.py": "bdd7c4c1ce1a4daef33ee99540f2246a7db734a412253915605288fe63238bff",
+    "toolchain/actionc.json": "f24bb0535b27d746473c353d30d41784b03c5cd1e4e5f08fbce2a5b36e4f8a28",
+    "toolchain/altirra-console.json": "9de15dcfe3cb25bb3746cf62024a9bce02e0e231be267cd2418448fb1423077c",
+    "toolchain/patches/altirra-console-probe.patch": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2"
+  },
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Native console probe: physical keyboard-matrix input plus existing SIO instrumentation, no CPU/peripheral emulation change in this slice",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "bank_zero": {
+    "fixed_reserved_delta": 0,
+    "per_task_reserved_delta": 0,
+    "loading_including_os": 57232,
+    "runtime_including_os": 61536,
+    "callback_emitted_bytes": 36,
+    "callback_region_reserved_bytes": 512
+  },
+  "upper_probe": {
+    "offset": 3072,
+    "bytes": 288,
+    "arena_reserved_bytes": 4096,
+    "native_reserved_bytes": 8192
+  },
+  "limits": {
+    "breakpoint_host_seconds": 30,
+    "breakpoint_guest_frames": 600,
+    "completion_host_seconds": 120,
+    "completion_guest_frames": 6000,
+    "baud_divisor": 0,
+    "byte_deadline_us": 78.94228614041295,
+    "alarm_lateness_us": 100
+  },
+  "negative_controls": [
+    {
+      "name": "transaction-reset-held-key",
+      "artifact": "build/console-slice1/reset-baseline-opt/functional.json",
+      "artifact_sha256": "57974fc4f419f8c1770f38eb3e5bdfa3dd4ce1dd49579ea521f5bb57890bc484",
+      "captured": [
+        63,
+        63,
+        21,
+        127,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "failure": "Held-key duplicates; later Shift-A duplicate independent of initial admission checkpoint."
+    },
+    {
+      "name": "payload-keyboard-return-reentry",
+      "artifact": "build/console-slice1/payload-256-opt/results.json",
+      "artifact_sha256": "f5e42af5d92c58fb0ac66db1bb2b2dd3904f58f1a6115b05c3926d5535f0553f",
+      "failure": "SERIN byte 91 overwritten by byte 84 after a keyboard post and delayed IRQ re-entry",
+      "service_cycles": 144,
+      "deadline_cycles": 140,
+      "service_us": 81.19778003013903
+    }
+  ],
+  "cases": [
+    {
+      "name": "bounded-128-raw",
+      "status": "pass",
+      "mode": 1,
+      "order": 0,
+      "sector_size": 128,
+      "optimized": false,
+      "artifact": "build/console-slice1/bounded-128-raw/results.json",
+      "artifact_sha256": "d2b4aff4bc75ef5433ce1262d222bea4b6a16b758499289c3a780d3c228a5f5b",
+      "image_sha256": "ccd118634323eb87ee3890e22926e8aa8ca6391c64ab97513267647c6f6d1704",
+      "xex_sha256": "7a3ce5b18cc8ebc5546b6661e995e4f8b62c2cd1dc4978d5b065675d9522565f",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "media_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "captured": [
+        63,
+        21,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "injected": [
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 84
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 114
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 234
+        },
+        {
+          "key": "B",
+          "state": "down",
+          "frame": 241
+        },
+        {
+          "key": "B",
+          "state": "up",
+          "frame": 245
+        },
+        {
+          "key": "SHIFT",
+          "state": "down",
+          "frame": 252
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 252
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 256
+        },
+        {
+          "key": "SHIFT",
+          "state": "up",
+          "frame": 256
+        },
+        {
+          "key": "CTRL",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "CTRL",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "BREAK",
+          "state": "down",
+          "frame": 273
+        },
+        {
+          "key": "BREAK",
+          "state": "up",
+          "frame": 277
+        },
+        {
+          "key": "RETURN",
+          "state": "down",
+          "frame": 283
+        },
+        {
+          "key": "RETURN",
+          "state": "up",
+          "frame": 287
+        },
+        {
+          "key": "ESC",
+          "state": "down",
+          "frame": 291
+        },
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 298
+        }
+      ],
+      "transfers": 16,
+      "failures": 0,
+      "native_events": 7,
+      "emulation_events": 0,
+      "hardware_before": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "hardware_after": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "guards": "intact",
+      "stack": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 378,
+          "untouched_above_floor": 902
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 656,
+          "untouched_above_floor": 112
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 55,
+          "untouched_above_floor": 201
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 1173,
+        "untouched_from_base": 363,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "replay": {
+        "status": "identical",
+        "xex_sha256": "7a3ce5b18cc8ebc5546b6661e995e4f8b62c2cd1dc4978d5b065675d9522565f",
+        "emulator_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6"
+      },
+      "sources": {
+        "platform/altirraos/console-probe.s": "42740831165160917050a9d8cfe639780f5928b672260c2a3e6c3c8333d60dfd",
+        "platform/altirraos/sio.s": "7630c17c85f68a997652b47ee63b38d92ed3011432ba2f49d0d677ce1a9c15d3",
+        "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3"
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 2227,
+          "min_us": 6.2026081967467315,
+          "mean_us": 19.96167796118377,
+          "max_us": 60.89833502260428
+        },
+        "tx_refill": {
+          "count": 68,
+          "min_us": 11.277469448630422,
+          "mean_us": 22.803706605686514,
+          "max_us": 62.58995543989884
+        },
+        "command_setup": {
+          "count": 17,
+          "min_us": 1046.5491648329032,
+          "mean_us": 1062.3044530331956,
+          "max_us": 1093.914536517151
+        },
+        "command_hold": {
+          "count": 17,
+          "min_us": 722.3219181847785,
+          "mean_us": 749.1224926391709,
+          "max_us": 853.7044372613229
+        },
+        "masked_max_us": 3999.906960877049,
+        "byte_deadline_us": 78.94228614041295,
+        "combined_irq_routing": {
+          "count": 3262,
+          "min_us": 20.93380266402022,
+          "mean_us": 36.38522362512753,
+          "max_us": 127.2944364014159
+        },
+        "capture_sio_phases": [
+          10,
+          11,
+          11,
+          11,
+          11,
+          11,
+          10
+        ],
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 238,
+              "min_us": 20.722350111858397,
+              "mean_us": 25.06630814422476,
+              "max_us": 65.8322279063801
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 759,
+              "min_us": 8.881007190796458,
+              "mean_us": 23.59799338381401,
+              "max_us": 65.3388386180025
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "bounded-128-opt",
+      "status": "pass",
+      "mode": 1,
+      "order": 0,
+      "sector_size": 128,
+      "optimized": true,
+      "artifact": "build/console-slice1/bounded-128-opt/results.json",
+      "artifact_sha256": "71a474bad7a15c6b3d41d2ca35ba2ab2427cb4feba408b2d955653af296be26d",
+      "image_sha256": "866308f880e5772a0fec2c947876d2525c7b8cbd739a9d71fe365e1b749e31bc",
+      "xex_sha256": "7cfaed48bce0f409e1e2b27a562495076235abe56bb6859faf95a94b8478c307",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "media_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "captured": [
+        63,
+        21,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "injected": [
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 79
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 105
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 225
+        },
+        {
+          "key": "B",
+          "state": "down",
+          "frame": 231
+        },
+        {
+          "key": "B",
+          "state": "up",
+          "frame": 235
+        },
+        {
+          "key": "SHIFT",
+          "state": "down",
+          "frame": 241
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 241
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 245
+        },
+        {
+          "key": "SHIFT",
+          "state": "up",
+          "frame": 245
+        },
+        {
+          "key": "CTRL",
+          "state": "down",
+          "frame": 252
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 252
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 256
+        },
+        {
+          "key": "CTRL",
+          "state": "up",
+          "frame": 256
+        },
+        {
+          "key": "BREAK",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "BREAK",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "RETURN",
+          "state": "down",
+          "frame": 273
+        },
+        {
+          "key": "RETURN",
+          "state": "up",
+          "frame": 277
+        },
+        {
+          "key": "ESC",
+          "state": "down",
+          "frame": 281
+        },
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 287
+        }
+      ],
+      "transfers": 16,
+      "failures": 0,
+      "native_events": 7,
+      "emulation_events": 0,
+      "hardware_before": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "hardware_after": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "guards": "intact",
+      "stack": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 282,
+          "untouched_above_floor": 998
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 504,
+          "untouched_above_floor": 264
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 50,
+          "untouched_above_floor": 206
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 1052,
+        "untouched_from_base": 484,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "replay": {
+        "status": "identical",
+        "xex_sha256": "7cfaed48bce0f409e1e2b27a562495076235abe56bb6859faf95a94b8478c307",
+        "emulator_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6"
+      },
+      "sources": {
+        "platform/altirraos/console-probe.s": "42740831165160917050a9d8cfe639780f5928b672260c2a3e6c3c8333d60dfd",
+        "platform/altirraos/sio.s": "7630c17c85f68a997652b47ee63b38d92ed3011432ba2f49d0d677ce1a9c15d3",
+        "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3"
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 2227,
+          "min_us": 7.330355141609774,
+          "mean_us": 20.111065185581882,
+          "max_us": 64.84544932962491
+        },
+        "tx_refill": {
+          "count": 68,
+          "min_us": 10.149722503767379,
+          "mean_us": 23.127104626639888,
+          "max_us": 63.717702384761886
+        },
+        "command_setup": {
+          "count": 17,
+          "min_us": 1046.5491648329032,
+          "mean_us": 1058.0588174760642,
+          "max_us": 1089.9674222101303
+        },
+        "command_hold": {
+          "count": 17,
+          "min_us": 725.1412855469362,
+          "mean_us": 760.2009479210607,
+          "max_us": 856.5238046234806
+        },
+        "masked_max_us": 4006.4619899940653,
+        "byte_deadline_us": 78.94228614041295,
+        "combined_irq_routing": {
+          "count": 3265,
+          "min_us": 20.93380266402022,
+          "mean_us": 36.48136157361647,
+          "max_us": 125.60281598412134
+        },
+        "capture_sio_phases": [
+          10,
+          11,
+          11,
+          11,
+          11,
+          11,
+          10
+        ],
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 238,
+              "min_us": 20.22896082348082,
+              "mean_us": 24.21575950303604,
+              "max_us": 66.39610137881162
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 763,
+              "min_us": 5.497766356207331,
+              "mean_us": 23.595388916919465,
+              "max_us": 81.62068513446268
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "bounded-256-raw",
+      "status": "pass",
+      "mode": 1,
+      "order": 1,
+      "sector_size": 256,
+      "optimized": false,
+      "artifact": "build/console-slice1/bounded-256-raw/results.json",
+      "artifact_sha256": "6e26d20adf437a52547d3ed726c0e77485521be4b7418f6d4392705a06d05605",
+      "image_sha256": "ccd118634323eb87ee3890e22926e8aa8ca6391c64ab97513267647c6f6d1704",
+      "xex_sha256": "7a3ce5b18cc8ebc5546b6661e995e4f8b62c2cd1dc4978d5b065675d9522565f",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "media_sha256": "d18e5206185b5c0ae372c7b990ccc64a3414cef8e69d8d197b6286dec0a0d42d",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "captured": [
+        63,
+        21,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "injected": [
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 84
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 114
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 234
+        },
+        {
+          "key": "B",
+          "state": "down",
+          "frame": 241
+        },
+        {
+          "key": "B",
+          "state": "up",
+          "frame": 245
+        },
+        {
+          "key": "SHIFT",
+          "state": "down",
+          "frame": 251
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 251
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 255
+        },
+        {
+          "key": "SHIFT",
+          "state": "up",
+          "frame": 255
+        },
+        {
+          "key": "CTRL",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "CTRL",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "BREAK",
+          "state": "down",
+          "frame": 272
+        },
+        {
+          "key": "BREAK",
+          "state": "up",
+          "frame": 276
+        },
+        {
+          "key": "RETURN",
+          "state": "down",
+          "frame": 283
+        },
+        {
+          "key": "RETURN",
+          "state": "up",
+          "frame": 287
+        },
+        {
+          "key": "ESC",
+          "state": "down",
+          "frame": 291
+        },
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 298
+        }
+      ],
+      "transfers": 16,
+      "failures": 0,
+      "native_events": 7,
+      "emulation_events": 0,
+      "hardware_before": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "hardware_after": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "guards": "intact",
+      "stack": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 378,
+          "untouched_above_floor": 902
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 656,
+          "untouched_above_floor": 112
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 50,
+          "untouched_above_floor": 206
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 1173,
+        "untouched_from_base": 363,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "replay": {
+        "status": "identical",
+        "xex_sha256": "7a3ce5b18cc8ebc5546b6661e995e4f8b62c2cd1dc4978d5b065675d9522565f",
+        "emulator_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6"
+      },
+      "sources": {
+        "platform/altirraos/console-probe.s": "42740831165160917050a9d8cfe639780f5928b672260c2a3e6c3c8333d60dfd",
+        "platform/altirraos/sio.s": "7630c17c85f68a997652b47ee63b38d92ed3011432ba2f49d0d677ce1a9c15d3",
+        "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3"
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 4403,
+          "min_us": 6.2026081967467315,
+          "mean_us": 20.082373570839,
+          "max_us": 67.10094321935101
+        },
+        "tx_refill": {
+          "count": 68,
+          "min_us": 10.713595976198901,
+          "mean_us": 23.51684070317344,
+          "max_us": 64.2815758571934
+        },
+        "command_setup": {
+          "count": 17,
+          "min_us": 1046.5491648329032,
+          "mean_us": 1056.6325492810904,
+          "max_us": 1063.465369005849
+        },
+        "command_hold": {
+          "count": 17,
+          "min_us": 725.7051590193677,
+          "mean_us": 762.3901037552066,
+          "max_us": 857.0876780959121
+        },
+        "masked_max_us": 4002.1624547667748,
+        "byte_deadline_us": 78.94228614041295,
+        "combined_irq_routing": {
+          "count": 5345,
+          "min_us": 20.863318479966278,
+          "mean_us": 38.296173700068,
+          "max_us": 122.78344862196373
+        },
+        "capture_sio_phases": [
+          10,
+          11,
+          11,
+          11,
+          11,
+          11,
+          10
+        ],
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 238,
+              "min_us": 20.722350111858397,
+              "mean_us": 24.56847657533958,
+              "max_us": 65.8322279063801
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 714,
+              "min_us": 5.568250540261271,
+              "mean_us": 24.306085873357265,
+              "max_us": 88.38716680364094
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "bounded-256-opt",
+      "status": "pass",
+      "mode": 1,
+      "order": 1,
+      "sector_size": 256,
+      "optimized": true,
+      "artifact": "build/console-slice1/bounded-256-opt/results.json",
+      "artifact_sha256": "35d947c37f4f2022424fa81b54d1418e018f7a850990c5996571f966b7b9e7a6",
+      "image_sha256": "866308f880e5772a0fec2c947876d2525c7b8cbd739a9d71fe365e1b749e31bc",
+      "xex_sha256": "7cfaed48bce0f409e1e2b27a562495076235abe56bb6859faf95a94b8478c307",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "media_sha256": "d18e5206185b5c0ae372c7b990ccc64a3414cef8e69d8d197b6286dec0a0d42d",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "captured": [
+        63,
+        21,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "injected": [
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 79
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 105
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 225
+        },
+        {
+          "key": "B",
+          "state": "down",
+          "frame": 230
+        },
+        {
+          "key": "B",
+          "state": "up",
+          "frame": 234
+        },
+        {
+          "key": "SHIFT",
+          "state": "down",
+          "frame": 241
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 241
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 245
+        },
+        {
+          "key": "SHIFT",
+          "state": "up",
+          "frame": 245
+        },
+        {
+          "key": "CTRL",
+          "state": "down",
+          "frame": 251
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 251
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 255
+        },
+        {
+          "key": "CTRL",
+          "state": "up",
+          "frame": 255
+        },
+        {
+          "key": "BREAK",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "BREAK",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "RETURN",
+          "state": "down",
+          "frame": 272
+        },
+        {
+          "key": "RETURN",
+          "state": "up",
+          "frame": 276
+        },
+        {
+          "key": "ESC",
+          "state": "down",
+          "frame": 280
+        },
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 287
+        }
+      ],
+      "transfers": 16,
+      "failures": 0,
+      "native_events": 7,
+      "emulation_events": 0,
+      "hardware_before": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "hardware_after": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "guards": "intact",
+      "stack": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 282,
+          "untouched_above_floor": 998
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 504,
+          "untouched_above_floor": 264
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 1052,
+        "untouched_from_base": 484,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "replay": {
+        "status": "identical",
+        "xex_sha256": "7cfaed48bce0f409e1e2b27a562495076235abe56bb6859faf95a94b8478c307",
+        "emulator_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6"
+      },
+      "sources": {
+        "platform/altirraos/console-probe.s": "42740831165160917050a9d8cfe639780f5928b672260c2a3e6c3c8333d60dfd",
+        "platform/altirraos/sio.s": "7630c17c85f68a997652b47ee63b38d92ed3011432ba2f49d0d677ce1a9c15d3",
+        "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3"
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 4403,
+          "min_us": 6.2026081967467315,
+          "mean_us": 20.049844871770727,
+          "max_us": 67.10094321935101
+        },
+        "tx_refill": {
+          "count": 68,
+          "min_us": 9.585849031335858,
+          "mean_us": 21.58474483440073,
+          "max_us": 63.717702384761886
+        },
+        "command_setup": {
+          "count": 17,
+          "min_us": 1051.624026084787,
+          "mean_us": 1064.692623034082,
+          "max_us": 1109.7029937452335
+        },
+        "command_hold": {
+          "count": 17,
+          "min_us": 721.758044712347,
+          "mean_us": 760.3667930600112,
+          "max_us": 853.1405637888914
+        },
+        "masked_max_us": 3959.3080708619796,
+        "byte_deadline_us": 78.94228614041295,
+        "combined_irq_routing": {
+          "count": 5361,
+          "min_us": 20.863318479966278,
+          "mean_us": 38.12213547743376,
+          "max_us": 125.3913634319595
+        },
+        "capture_sio_phases": [
+          10,
+          11,
+          11,
+          11,
+          11,
+          11,
+          10
+        ],
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 238,
+              "min_us": 20.722350111858397,
+              "mean_us": 25.322775805530274,
+              "max_us": 66.46658556286556
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 723,
+              "min_us": 4.933892883775809,
+              "mean_us": 24.125088646047512,
+              "max_us": 96.91575307416768
+            },
+            "cancelled_or_terminal": {
+              "count": 1,
+              "min_us": 23.612201658069946,
+              "mean_us": 23.612201658069946,
+              "max_us": 23.612201658069946
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "bounded-recovery-raw",
+      "status": "pass",
+      "mode": 3,
+      "order": 1,
+      "sector_size": 256,
+      "optimized": false,
+      "artifact": "build/console-slice1/bounded-recovery-raw/results.json",
+      "artifact_sha256": "00554c12fc791ce342697122052e946e4a6c2491148d8c625dc815d5d10bccc0",
+      "image_sha256": "ccd118634323eb87ee3890e22926e8aa8ca6391c64ab97513267647c6f6d1704",
+      "xex_sha256": "7a3ce5b18cc8ebc5546b6661e995e4f8b62c2cd1dc4978d5b065675d9522565f",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "media_sha256": "d18e5206185b5c0ae372c7b990ccc64a3414cef8e69d8d197b6286dec0a0d42d",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "captured": [
+        63,
+        21,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "injected": [
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 84
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 114
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 234
+        },
+        {
+          "key": "B",
+          "state": "down",
+          "frame": 241
+        },
+        {
+          "key": "B",
+          "state": "up",
+          "frame": 245
+        },
+        {
+          "key": "SHIFT",
+          "state": "down",
+          "frame": 251
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 251
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 255
+        },
+        {
+          "key": "SHIFT",
+          "state": "up",
+          "frame": 255
+        },
+        {
+          "key": "CTRL",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "CTRL",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "BREAK",
+          "state": "down",
+          "frame": 272
+        },
+        {
+          "key": "BREAK",
+          "state": "up",
+          "frame": 276
+        },
+        {
+          "key": "RETURN",
+          "state": "down",
+          "frame": 283
+        },
+        {
+          "key": "RETURN",
+          "state": "up",
+          "frame": 287
+        },
+        {
+          "key": "ESC",
+          "state": "down",
+          "frame": 291
+        },
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 298
+        }
+      ],
+      "transfers": 16,
+      "failures": 1,
+      "native_events": 7,
+      "emulation_events": 0,
+      "hardware_before": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "hardware_after": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "guards": "intact",
+      "stack": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 378,
+          "untouched_above_floor": 902
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 656,
+          "untouched_above_floor": 112
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 50,
+          "untouched_above_floor": 206
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 1173,
+        "untouched_from_base": 363,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "replay": {
+        "status": "identical",
+        "xex_sha256": "7a3ce5b18cc8ebc5546b6661e995e4f8b62c2cd1dc4978d5b065675d9522565f",
+        "emulator_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6"
+      },
+      "sources": {
+        "platform/altirraos/console-probe.s": "42740831165160917050a9d8cfe639780f5928b672260c2a3e6c3c8333d60dfd",
+        "platform/altirraos/sio.s": "7630c17c85f68a997652b47ee63b38d92ed3011432ba2f49d0d677ce1a9c15d3",
+        "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3"
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 4404,
+          "min_us": 5.638734724315211,
+          "mean_us": 20.06180895739105,
+          "max_us": 64.2815758571934
+        },
+        "tx_refill": {
+          "count": 72,
+          "min_us": 10.149722503767379,
+          "mean_us": 24.34836980263332,
+          "max_us": 64.2815758571934
+        },
+        "command_setup": {
+          "count": 18,
+          "min_us": 1046.5491648329032,
+          "mean_us": 1060.6146753396672,
+          "max_us": 1097.8616508241716
+        },
+        "command_hold": {
+          "count": 18,
+          "min_us": 726.2690324917992,
+          "mean_us": 752.8650646081526,
+          "max_us": 851.4489433715969
+        },
+        "masked_max_us": 18844.158059373058,
+        "byte_deadline_us": 78.94228614041295,
+        "combined_irq_routing": {
+          "count": 5361,
+          "min_us": 20.93380266402022,
+          "mean_us": 38.23772901337897,
+          "max_us": 122.78344862196373
+        },
+        "capture_sio_phases": [
+          15,
+          11,
+          11,
+          11,
+          11,
+          11,
+          10
+        ],
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 252,
+              "min_us": 20.722350111858397,
+              "mean_us": 24.7058253074783,
+              "max_us": 66.46658556286556
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 698,
+              "min_us": 5.568250540261271,
+              "mean_us": 24.07075277524608,
+              "max_us": 87.89377751526335
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "bounded-recovery-opt",
+      "status": "pass",
+      "mode": 3,
+      "order": 0,
+      "sector_size": 128,
+      "optimized": true,
+      "artifact": "build/console-slice1/bounded-recovery-opt/results.json",
+      "artifact_sha256": "0f90b4267dc48f7ff920c46fe26fbfd2a911c39e287cbf66e134dea3ffac3c26",
+      "image_sha256": "866308f880e5772a0fec2c947876d2525c7b8cbd739a9d71fe365e1b749e31bc",
+      "xex_sha256": "7cfaed48bce0f409e1e2b27a562495076235abe56bb6859faf95a94b8478c307",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "media_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "captured": [
+        63,
+        21,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "injected": [
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 79
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 105
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 225
+        },
+        {
+          "key": "B",
+          "state": "down",
+          "frame": 231
+        },
+        {
+          "key": "B",
+          "state": "up",
+          "frame": 235
+        },
+        {
+          "key": "SHIFT",
+          "state": "down",
+          "frame": 241
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 241
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 245
+        },
+        {
+          "key": "SHIFT",
+          "state": "up",
+          "frame": 245
+        },
+        {
+          "key": "CTRL",
+          "state": "down",
+          "frame": 252
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 252
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 256
+        },
+        {
+          "key": "CTRL",
+          "state": "up",
+          "frame": 256
+        },
+        {
+          "key": "BREAK",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "BREAK",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "RETURN",
+          "state": "down",
+          "frame": 273
+        },
+        {
+          "key": "RETURN",
+          "state": "up",
+          "frame": 277
+        },
+        {
+          "key": "ESC",
+          "state": "down",
+          "frame": 281
+        },
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 287
+        }
+      ],
+      "transfers": 15,
+      "failures": 1,
+      "native_events": 7,
+      "emulation_events": 0,
+      "hardware_before": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "hardware_after": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "guards": "intact",
+      "stack": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 282,
+          "untouched_above_floor": 998
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 504,
+          "untouched_above_floor": 264
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 53,
+          "untouched_above_floor": 203
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 1052,
+        "untouched_from_base": 484,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "replay": {
+        "status": "identical",
+        "xex_sha256": "7cfaed48bce0f409e1e2b27a562495076235abe56bb6859faf95a94b8478c307",
+        "emulator_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6"
+      },
+      "sources": {
+        "platform/altirraos/console-probe.s": "42740831165160917050a9d8cfe639780f5928b672260c2a3e6c3c8333d60dfd",
+        "platform/altirraos/sio.s": "7630c17c85f68a997652b47ee63b38d92ed3011432ba2f49d0d677ce1a9c15d3",
+        "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3"
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 2097,
+          "min_us": 7.894228614041295,
+          "mean_us": 19.958485750003444,
+          "max_us": 64.84544932962491
+        },
+        "tx_refill": {
+          "count": 68,
+          "min_us": 11.841342921061942,
+          "mean_us": 22.297878931887652,
+          "max_us": 63.717702384761886
+        },
+        "command_setup": {
+          "count": 17,
+          "min_us": 1047.6769117777662,
+          "mean_us": 1060.0489591434696,
+          "max_us": 1101.8087651311923
+        },
+        "command_hold": {
+          "count": 17,
+          "min_us": 724.5774120745047,
+          "mean_us": 747.0991819439754,
+          "max_us": 845.8102086472817
+        },
+        "masked_max_us": 18964.8269824734,
+        "byte_deadline_us": 78.94228614041295,
+        "combined_irq_routing": {
+          "count": 3134,
+          "min_us": 20.863318479966278,
+          "mean_us": 36.151504428503294,
+          "max_us": 125.60281598412134
+        },
+        "capture_sio_phases": [
+          15,
+          11,
+          11,
+          11,
+          11,
+          11,
+          10
+        ],
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 238,
+              "min_us": 20.722350111858397,
+              "mean_us": 25.10895403709773,
+              "max_us": 65.8322279063801
+            },
+            "cancelled_or_terminal": {
+              "count": 1,
+              "min_us": 0.0,
+              "mean_us": 0.0,
+              "max_us": 0.0
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 754,
+              "min_us": 8.881007190796458,
+              "mean_us": 23.86366380011915,
+              "max_us": 81.62068513446268
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "idle-raw",
+      "status": "pass",
+      "mode": 0,
+      "order": 1,
+      "sector_size": 128,
+      "optimized": false,
+      "artifact": "build/console-slice1/idle-raw/results.json",
+      "artifact_sha256": "9eadc94e2fb4cd1d95ebdd8eb5cc11cb28eef66f0791a39d008406c7906deb90",
+      "image_sha256": "74899a966e52962e0a66dca27f1002d66c128a5a88aa812876ff64971d1e49b7",
+      "xex_sha256": "42c186009e4387d24b316d371ddb3cb640ff255fdc43988430ba6275ffd270f1",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "media_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "captured": [
+        63,
+        21,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "injected": [
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 84
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 114
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 234
+        },
+        {
+          "key": "B",
+          "state": "down",
+          "frame": 238
+        },
+        {
+          "key": "B",
+          "state": "up",
+          "frame": 242
+        },
+        {
+          "key": "SHIFT",
+          "state": "down",
+          "frame": 246
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 246
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 250
+        },
+        {
+          "key": "SHIFT",
+          "state": "up",
+          "frame": 250
+        },
+        {
+          "key": "CTRL",
+          "state": "down",
+          "frame": 254
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 254
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 258
+        },
+        {
+          "key": "CTRL",
+          "state": "up",
+          "frame": 258
+        },
+        {
+          "key": "BREAK",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "BREAK",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "RETURN",
+          "state": "down",
+          "frame": 270
+        },
+        {
+          "key": "RETURN",
+          "state": "up",
+          "frame": 274
+        },
+        {
+          "key": "ESC",
+          "state": "down",
+          "frame": 278
+        },
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 282
+        }
+      ],
+      "transfers": 0,
+      "failures": 0,
+      "native_events": 7,
+      "emulation_events": 0,
+      "hardware_before": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "hardware_after": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "guards": "intact",
+      "stack": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 378,
+          "untouched_above_floor": 902
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 142,
+          "untouched_above_floor": 626
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 40,
+          "untouched_above_floor": 216
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 1166,
+        "untouched_from_base": 370,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "replay": null,
+      "sources": {
+        "platform/altirraos/console-probe.s": "8545de336600128fcbac4fdeaad576d6b073b76d50044c7883213c81273b6f5a",
+        "platform/altirraos/sio.s": "36c7534e3c7c739e742040324030e2531e64fd307fa0406e55e070f9bb43c236",
+        "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3"
+      }
+    },
+    {
+      "name": "idle-opt",
+      "status": "pass",
+      "mode": 0,
+      "order": 0,
+      "sector_size": 128,
+      "optimized": true,
+      "artifact": "build/console-slice1/idle-opt/results.json",
+      "artifact_sha256": "617878f76583e37d5d1e9c99633056bd27369c56c2fdb3f09809904d14f45cfb",
+      "image_sha256": "dc3e02565d9b8f178743ef59ee7f35770bb888089c996e0d6bf11149be4510ae",
+      "xex_sha256": "4e7276fad66183db567d92783b70b645f032142edddfbcdd9872540eb6dacef4",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "media_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "captured": [
+        63,
+        21,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "injected": [
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 79
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 105
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 225
+        },
+        {
+          "key": "B",
+          "state": "down",
+          "frame": 229
+        },
+        {
+          "key": "B",
+          "state": "up",
+          "frame": 233
+        },
+        {
+          "key": "SHIFT",
+          "state": "down",
+          "frame": 237
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 237
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 241
+        },
+        {
+          "key": "SHIFT",
+          "state": "up",
+          "frame": 241
+        },
+        {
+          "key": "CTRL",
+          "state": "down",
+          "frame": 245
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 245
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 249
+        },
+        {
+          "key": "CTRL",
+          "state": "up",
+          "frame": 249
+        },
+        {
+          "key": "BREAK",
+          "state": "down",
+          "frame": 253
+        },
+        {
+          "key": "BREAK",
+          "state": "up",
+          "frame": 257
+        },
+        {
+          "key": "RETURN",
+          "state": "down",
+          "frame": 261
+        },
+        {
+          "key": "RETURN",
+          "state": "up",
+          "frame": 265
+        },
+        {
+          "key": "ESC",
+          "state": "down",
+          "frame": 269
+        },
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 272
+        }
+      ],
+      "transfers": 0,
+      "failures": 0,
+      "native_events": 7,
+      "emulation_events": 0,
+      "hardware_before": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "hardware_after": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "guards": "intact",
+      "stack": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 282,
+          "untouched_above_floor": 998
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 106,
+          "untouched_above_floor": 662
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 40,
+          "untouched_above_floor": 216
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 1052,
+        "untouched_from_base": 484,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "replay": null,
+      "sources": {
+        "platform/altirraos/console-probe.s": "8545de336600128fcbac4fdeaad576d6b073b76d50044c7883213c81273b6f5a",
+        "platform/altirraos/sio.s": "36c7534e3c7c739e742040324030e2531e64fd307fa0406e55e070f9bb43c236",
+        "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3"
+      }
+    },
+    {
+      "name": "emulation-raw",
+      "status": "pass",
+      "mode": 2,
+      "order": 1,
+      "sector_size": 128,
+      "optimized": false,
+      "artifact": "build/console-slice1/emulation-raw/results.json",
+      "artifact_sha256": "7e8b17c4634776d24d9e2139338ef27b396718d30439d0384c81da22a8b3e48d",
+      "image_sha256": "74899a966e52962e0a66dca27f1002d66c128a5a88aa812876ff64971d1e49b7",
+      "xex_sha256": "42c186009e4387d24b316d371ddb3cb640ff255fdc43988430ba6275ffd270f1",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "media_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "captured": [
+        63,
+        21,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "injected": [
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 84
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 114
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 234
+        },
+        {
+          "key": "B",
+          "state": "down",
+          "frame": 238
+        },
+        {
+          "key": "B",
+          "state": "up",
+          "frame": 242
+        },
+        {
+          "key": "SHIFT",
+          "state": "down",
+          "frame": 246
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 246
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 250
+        },
+        {
+          "key": "SHIFT",
+          "state": "up",
+          "frame": 250
+        },
+        {
+          "key": "CTRL",
+          "state": "down",
+          "frame": 254
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 254
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 258
+        },
+        {
+          "key": "CTRL",
+          "state": "up",
+          "frame": 258
+        },
+        {
+          "key": "BREAK",
+          "state": "down",
+          "frame": 262
+        },
+        {
+          "key": "BREAK",
+          "state": "up",
+          "frame": 266
+        },
+        {
+          "key": "RETURN",
+          "state": "down",
+          "frame": 270
+        },
+        {
+          "key": "RETURN",
+          "state": "up",
+          "frame": 274
+        },
+        {
+          "key": "ESC",
+          "state": "down",
+          "frame": 278
+        },
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 282
+        }
+      ],
+      "transfers": 0,
+      "failures": 0,
+      "native_events": 6,
+      "emulation_events": 1,
+      "hardware_before": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "hardware_after": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "guards": "intact",
+      "stack": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 378,
+          "untouched_above_floor": 902
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 142,
+          "untouched_above_floor": 626
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 40,
+          "untouched_above_floor": 216
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 1166,
+        "untouched_from_base": 370,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "replay": null,
+      "sources": {
+        "platform/altirraos/console-probe.s": "8545de336600128fcbac4fdeaad576d6b073b76d50044c7883213c81273b6f5a",
+        "platform/altirraos/sio.s": "36c7534e3c7c739e742040324030e2531e64fd307fa0406e55e070f9bb43c236",
+        "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3"
+      }
+    },
+    {
+      "name": "emulation-opt",
+      "status": "pass",
+      "mode": 2,
+      "order": 0,
+      "sector_size": 128,
+      "optimized": true,
+      "artifact": "build/console-slice1/emulation-opt/results.json",
+      "artifact_sha256": "320ac44fc15fbe75b462a20aa23268d313435970e6c0bb88159818952eb0a8e2",
+      "image_sha256": "dc3e02565d9b8f178743ef59ee7f35770bb888089c996e0d6bf11149be4510ae",
+      "xex_sha256": "4e7276fad66183db567d92783b70b645f032142edddfbcdd9872540eb6dacef4",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "media_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "captured": [
+        63,
+        21,
+        127,
+        191,
+        447,
+        12,
+        28
+      ],
+      "injected": [
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 79
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 105
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 225
+        },
+        {
+          "key": "B",
+          "state": "down",
+          "frame": 229
+        },
+        {
+          "key": "B",
+          "state": "up",
+          "frame": 233
+        },
+        {
+          "key": "SHIFT",
+          "state": "down",
+          "frame": 237
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 237
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 241
+        },
+        {
+          "key": "SHIFT",
+          "state": "up",
+          "frame": 241
+        },
+        {
+          "key": "CTRL",
+          "state": "down",
+          "frame": 245
+        },
+        {
+          "key": "A",
+          "state": "down",
+          "frame": 245
+        },
+        {
+          "key": "A",
+          "state": "up",
+          "frame": 249
+        },
+        {
+          "key": "CTRL",
+          "state": "up",
+          "frame": 249
+        },
+        {
+          "key": "BREAK",
+          "state": "down",
+          "frame": 253
+        },
+        {
+          "key": "BREAK",
+          "state": "up",
+          "frame": 257
+        },
+        {
+          "key": "RETURN",
+          "state": "down",
+          "frame": 261
+        },
+        {
+          "key": "RETURN",
+          "state": "up",
+          "frame": 265
+        },
+        {
+          "key": "ESC",
+          "state": "down",
+          "frame": 269
+        },
+        {
+          "key": "ALL",
+          "state": "up",
+          "frame": 272
+        }
+      ],
+      "transfers": 0,
+      "failures": 0,
+      "native_events": 6,
+      "emulation_events": 1,
+      "hardware_before": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "hardware_after": {
+        "irq_mask": "c0",
+        "skctl_shadow": "03",
+        "vectors": "c6fe5aeaa3eadcea57c057c0",
+        "break_vector": "07ff"
+      },
+      "guards": "intact",
+      "stack": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 282,
+          "untouched_above_floor": 998
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 106,
+          "untouched_above_floor": 662
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 40,
+          "untouched_above_floor": 216
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 1052,
+        "untouched_from_base": 484,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "replay": null,
+      "sources": {
+        "platform/altirraos/console-probe.s": "8545de336600128fcbac4fdeaad576d6b073b76d50044c7883213c81273b6f5a",
+        "platform/altirraos/sio.s": "36c7534e3c7c739e742040324030e2531e64fd307fa0406e55e070f9bb43c236",
+        "platform/altirraos/signal-irq.s": "908d8397dcce84b274fa26724a68ed9c1588a3250580241d2233241ec56f69b3"
+      }
+    }
+  ],
+  "regressions": [
+    {
+      "name": "recovery-raw",
+      "status": "pass",
+      "artifact": "build/console-slice1/recovery-raw/results.json",
+      "artifact_sha256": "fb39e4ebbcbff56c458c1a1dde552f27c09c34fe11f754b0a585059fb119e1e0",
+      "cases": [
+        {
+          "name": "queued",
+          "status": "pass"
+        },
+        {
+          "name": "preparing",
+          "status": "pass"
+        },
+        {
+          "name": "active",
+          "status": "pass"
+        },
+        {
+          "name": "terminal",
+          "status": "pass"
+        },
+        {
+          "name": "wrap",
+          "status": "pass"
+        },
+        {
+          "name": "nak",
+          "status": "pass"
+        },
+        {
+          "name": "absent",
+          "status": "pass"
+        },
+        {
+          "name": "overrun",
+          "status": "pass"
+        },
+        {
+          "name": "bound-worker",
+          "status": "pass"
+        },
+        {
+          "name": "startup-binding",
+          "status": "pass"
+        },
+        {
+          "name": "startup-capacity",
+          "status": "pass"
+        },
+        {
+          "name": "private-entry",
+          "status": "pass"
+        },
+        {
+          "name": "device",
+          "status": "pass"
+        },
+        {
+          "name": "checksum",
+          "status": "pass"
+        },
+        {
+          "name": "short",
+          "status": "pass"
+        },
+        {
+          "name": "firstcause",
+          "status": "pass"
+        },
+        {
+          "name": "extra",
+          "status": "pass"
+        },
+        {
+          "name": "late",
+          "status": "pass"
+        },
+        {
+          "name": "framing",
+          "status": "pass"
+        },
+        {
+          "name": "protocol",
+          "status": "pass"
+        },
+        {
+          "name": "late-preparing",
+          "status": "pass"
+        },
+        {
+          "name": "reuse",
+          "status": "pass"
+        }
+      ],
+      "timing": {},
+      "replay": null
+    },
+    {
+      "name": "recovery-opt",
+      "status": "pass",
+      "artifact": "build/console-slice1/recovery-opt/results.json",
+      "artifact_sha256": "8edbc3339a0753c52138b890a33a6c90d9b6343cc5025b05efa6d49ad98e2ad5",
+      "cases": [
+        {
+          "name": "queued",
+          "status": "pass"
+        },
+        {
+          "name": "preparing",
+          "status": "pass"
+        },
+        {
+          "name": "active",
+          "status": "pass"
+        },
+        {
+          "name": "terminal",
+          "status": "pass"
+        },
+        {
+          "name": "wrap",
+          "status": "pass"
+        },
+        {
+          "name": "nak",
+          "status": "pass"
+        },
+        {
+          "name": "absent",
+          "status": "pass"
+        },
+        {
+          "name": "overrun",
+          "status": "pass"
+        },
+        {
+          "name": "bound-worker",
+          "status": "pass"
+        },
+        {
+          "name": "startup-binding",
+          "status": "pass"
+        },
+        {
+          "name": "startup-capacity",
+          "status": "pass"
+        },
+        {
+          "name": "private-entry",
+          "status": "pass"
+        },
+        {
+          "name": "device",
+          "status": "pass"
+        },
+        {
+          "name": "checksum",
+          "status": "pass"
+        },
+        {
+          "name": "short",
+          "status": "pass"
+        },
+        {
+          "name": "firstcause",
+          "status": "pass"
+        },
+        {
+          "name": "extra",
+          "status": "pass"
+        },
+        {
+          "name": "late",
+          "status": "pass"
+        },
+        {
+          "name": "framing",
+          "status": "pass"
+        },
+        {
+          "name": "protocol",
+          "status": "pass"
+        },
+        {
+          "name": "late-preparing",
+          "status": "pass"
+        },
+        {
+          "name": "reuse",
+          "status": "pass"
+        }
+      ],
+      "timing": {},
+      "replay": null
+    },
+    {
+      "name": "sio-eight-opt",
+      "status": "pass",
+      "artifact": "build/console-slice1/sio-eight-opt/results.json",
+      "artifact_sha256": "7108400c351dad963934176f757e68d80dd7bf855c7887d8bee6e98954243dcb",
+      "cases": [],
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 3180,
+          "min_us": 5.638734724315211,
+          "mean_us": 19.849055504397633,
+          "max_us": 60.89833502260428
+        },
+        "tx_refill": {
+          "count": 1680,
+          "min_us": 7.330355141609774,
+          "mean_us": 23.85419735665514,
+          "max_us": 71.61193099880317
+        },
+        "command_setup": {
+          "count": 36,
+          "min_us": 1046.5491648329032,
+          "mean_us": 1063.8099583501125,
+          "max_us": 1093.914536517151
+        },
+        "command_hold": {
+          "count": 36,
+          "min_us": 724.5774120745047,
+          "mean_us": 792.1795761582392,
+          "max_us": 856.5238046234806
+        },
+        "byte_deadline_us": 78.94228614041295,
+        "rx_byte_deadline_us": 78.94228614041295,
+        "active_background_entries": 1301,
+        "active_masked_max_us": 3932.7355334736435,
+        "resident_masked_max_us": 15839.558261521697,
+        "critic_deferral_bound": {
+          "count": 36,
+          "min_us": 51982.36767651707,
+          "mean_us": 163784.14155980872,
+          "max_us": 324134.8418828299
+        },
+        "post_to_worker": {
+          "count": 36,
+          "min_us": 1604.783902540109,
+          "mean_us": 5271.660925338297,
+          "max_us": 36375.47770655742
+        },
+        "post_to_next_start": {
+          "count": 35,
+          "min_us": 15983.698417912005,
+          "mean_us": 34941.20914208061,
+          "max_us": 68018.71777991737
+        },
+        "post_to_client_collection": {
+          "count": 36,
+          "min_us": 14504.869752276287,
+          "mean_us": 127040.76578089976,
+          "max_us": 255704.28501548537
+        },
+        "forbid": {
+          "count": 99,
+          "min_us": 1144.451696483826,
+          "mean_us": 10488.809809906152,
+          "max_us": 20289.013348294775
+        },
+        "alarms": {
+          "sio_alarm": {
+            "count": 624,
+            "min_us": 20.722350111858397,
+            "mean_us": 26.56576006294563,
+            "max_us": 81.12729584608509,
+            "cancelled": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "count": 1392,
+            "min_us": 4.933892883775809,
+            "mean_us": 23.142205827330955,
+            "max_us": 72.59870957555835,
+            "cancelled": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        },
+        "write_delay": {
+          "count": 12,
+          "min_us": 1236.0106515698942,
+          "mean_us": 1263.0765782466071,
+          "max_us": 1366.8292971740073
+        },
+        "tx_bytes": 1728,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "4d21a49965fb6a5494f44dfe15a7d4f4a03ce373d39f04ff85d2223c51325629"
+      },
+      "replay": {
+        "status": "identical",
+        "xex_sha256": "9ace060b677e251114f999309d1aa5329908e0441ea16ba97dfd6a394f864f01",
+        "emulator_sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989"
+      }
+    },
+    {
+      "name": "sio-eight-256-raw",
+      "status": "pass",
+      "artifact": "build/console-slice1/sio-eight-256-raw/results.json",
+      "artifact_sha256": "1ee426e542c4ac6a8882fbcb344656d36b655d85cf7eebc938c7d95977749422",
+      "cases": [],
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 9324,
+          "min_us": 5.638734724315211,
+          "mean_us": 19.828401412857676,
+          "max_us": 65.97319627448798
+        },
+        "tx_refill": {
+          "count": 144,
+          "min_us": 11.277469448630422,
+          "mean_us": 24.242643526552413,
+          "max_us": 64.84544932962491
+        },
+        "command_setup": {
+          "count": 36,
+          "min_us": 1046.5491648329032,
+          "mean_us": 1060.1291176272957,
+          "max_us": 1093.914536517151
+        },
+        "command_hold": {
+          "count": 36,
+          "min_us": 720.630297767484,
+          "mean_us": 754.8072954576389,
+          "max_us": 856.5238046234806
+        },
+        "byte_deadline_us": 78.94228614041295,
+        "rx_byte_deadline_us": 78.94228614041295,
+        "active_background_entries": 1188,
+        "active_masked_max_us": 3661.582877418136,
+        "resident_masked_max_us": 7368.0641800786325,
+        "critic_deferral_bound": {
+          "count": 36,
+          "min_us": 49535.79116382075,
+          "mean_us": 179986.36444301598,
+          "max_us": 344869.52672689775
+        },
+        "post_to_worker": {
+          "count": 36,
+          "min_us": 1658.3518824211037,
+          "mean_us": 5293.485569772998,
+          "max_us": 29646.705075848033
+        },
+        "post_to_next_start": {
+          "count": 35,
+          "min_us": 14592.129172135066,
+          "mean_us": 38468.20750463232,
+          "max_us": 67067.74516866161
+        },
+        "post_to_client_collection": {
+          "count": 36,
+          "min_us": 15001.430828936294,
+          "mean_us": 138041.68661760655,
+          "max_us": 273197.5432032806
+        },
+        "forbid": {
+          "count": 95,
+          "min_us": 1143.253465354909,
+          "mean_us": 13386.717559709934,
+          "max_us": 30051.636713237916
+        },
+        "alarms": {
+          "sio_alarm": {
+            "count": 504,
+            "min_us": 20.722350111858397,
+            "mean_us": 25.528000938536067,
+            "max_us": 66.46658556286556,
+            "cancelled": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "count": 1538,
+            "min_us": 4.933892883775809,
+            "mean_us": 23.09805207360886,
+            "max_us": 81.12729584608509,
+            "cancelled": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        },
+        "write_delay": {
+          "count": 0,
+          "max_us": null
+        },
+        "tx_bytes": 180,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "082bc4cc62ffdff92fa30bf186ceb6e5feb0de980c0aa6d3f50b0bdf80686e38"
+      },
+      "replay": {
+        "status": "identical",
+        "xex_sha256": "8de372daacdc68939a6bb77aab820bd6e22355193ba20d62a420e6a8c8987e33",
+        "emulator_sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989"
+      }
+    },
+    {
+      "name": "stock-opt",
+      "status": "pass",
+      "artifact": "build/console-slice1/stock-opt/results.json",
+      "artifact_sha256": "83a0ac25c37f4e0761ab6ff51b57c2b28cf81849bc1cc5f6edb8d1cdce9c51b1",
+      "cases": [
+        {
+          "name": "stock-opt",
+          "status": "pass"
+        }
+      ],
+      "timing": {},
+      "replay": null
+    }
+  ],
+  "interpretation": [
+    "Whole-run masked maxima include WAI/idle and ROM intervals; the independent receive/transfer oracle enforces the actual byte deadline.",
+    "IRQ-routing duration can include two RX services after the bounded recheck.",
+    "Touched-stack watermarks are observed lower bounds; native stack/domain guards and reserved interrupt headroom also pass.",
+    "Idle/emulation evidence predates the payload-only second RX opportunity; individual source hashes are retained.",
+    "This does not qualify a production console worker, eight simultaneous console Tasks, windows or physical hardware."
+  ]
+}

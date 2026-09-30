@@ -1,0 +1,48 @@
+; Exact request collection with cooperative foreground cancellation.
+MODULE DOSCANCEL
+USE EXEC
+USE DOSBREAKTYPES
+INCLUDE "dos-types.inc"
+
+; Wait for a device request while forwarding foreground cancellation safely.
+PUBLIC INT FUNC Transfer(EXEC.IORequest POINTER request DOSBREAKTYPES.Scope
+    POINTER scope)
+  LONGCARD bits,mask
+  INT error
+  ; Before publication the request and caller buffer remain wholly ours.
+  IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+    IF scope.pending<>0 THEN
+      RETURN(INT(ERROR_BREAK))
+    FI
+  FI
+
+  EXEC.SendIO(request)
+  mask=LONGCARD(1) LSH request.io_Message.mn_ReplyPort.mp_SigBit
+  IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+    mask=mask OR scope.mask
+  FI
+
+  DO
+    ; Completion is durable; a notification alone never establishes ownership.
+    IF EXEC.CheckIO(request)<>EXEC.IORequest POINTER(0) THEN
+      RETURN(EXEC.WaitIO(request))
+    FI
+
+    IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+      IF scope.pending<>0 THEN
+        EXEC.AbortIO(request)
+        error=EXEC.WaitIO(request)
+        IF error=EXEC.IOERR_ABORTED THEN
+          RETURN(INT(ERROR_BREAK))
+        FI
+
+        RETURN(error)
+      FI
+    FI
+
+    bits=EXEC.Wait(mask)
+  OD
+
+RETURN(0)
+
+ENDMODULE

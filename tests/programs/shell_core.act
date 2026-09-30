@@ -1,0 +1,58 @@
+MODULE SHELLAPP
+USE HEAPCORE
+USE FSBOOT
+USE DOSCLIENT
+USE DOSCORE
+INCLUDE "../../examples/shell/shell-session.inc"
+BYTE stage,gate
+CARD checks
+LONGINT exitStatus
+LONGCARD before
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e500+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+
+  stage=number
+  gate=0
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; Exercise the shared shell session through its public console path.
+PROC Main()
+  DOSCORE.DosSlot POINTER owner
+
+  before=EXEC.AvailMem(0)
+  Check(SIZEOF(ShellState)=128)
+  Check(ShellStart(shellRoot)<>0)
+  Check(ADDRESS(shell)>=ADDRESS($10000))
+  Pause(1)
+  WHILE shell.done=0 DO
+    ShellReadStep()
+  OD
+
+  Pause(2)
+  exitStatus=ShellFinish()
+  Check(shell=ShellState POINTER(0) AND exitStatus=0)
+  owner=DOSCORE.Current()
+  Check(owner.context=BYTE POINTER(0))
+  Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+  stage=3
+
+RETURN
+
+ENDMODULE

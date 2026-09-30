@@ -1,0 +1,510 @@
+MODULE DOSRAW
+USE EXEC
+USE EXECLISTS
+USE DOSCORE
+USE TASKMEMORY
+USE DOSCLIENT
+USE DOSOBJECTS
+USE DOSSTREAMS
+USE DOSBREAKTYPES
+USE HEAPCORE
+INCLUDE "dos-types.inc"
+INCLUDE "dos-storage-action.inc"
+
+PUBLIC TYPE StreamRegistry=[
+  BYTE state
+  BYTE POINTER endpoint
+  LONGCARD generation
+  BYTE ARRAY reserved(8)
+]
+
+PUBLIC TYPE RawEndpoint=[
+  EXEC.IOStdReq owner
+  EXEC.MsgPort port
+  CARD references,active
+  BYTE POINTER reader
+  LONGCARD generation
+  BYTE ARRAY name(15)
+  LONGCARD unit
+]
+
+PUBLIC CONST CLOSED=0,OPENING=1,READY=2,CLOSING=3
+
+PUBLIC StreamRegistry POINTER FUNC GetRegistry()
+
+RETURN(StreamRegistry POINTER(ADDRESS(DS_STREAMS)))
+
+PUBLIC StreamRegistry POINTER FUNC UnitRegistry(LONGCARD unit)
+
+RETURN(StreamRegistry POINTER(ADDRESS(DS_STREAMS)+(SIZE(unit & 3) LSH 4)))
+
+; Decode the console unit suffix without accepting an ambiguous stream name.
+PUBLIC BYTE FUNC Unit(BYTE POINTER suffix LONGCARD POINTER result)
+  BYTE index,value
+
+  result^=0
+  IF suffix(0)=0 THEN
+    RETURN(1)
+  FI
+
+  FOR index=0 TO 7 DO
+    value=suffix(index)
+    IF value>=48 AND value<=57 THEN
+      value==-48
+    ELSEIF value>=65 AND value<=70 THEN
+      value==-55
+    ELSEIF value>=97 AND value<=102 THEN
+      value==-87
+    ELSE
+      RETURN(0)
+    FI
+
+    result^=(result^ LSH 4) OR LONGCARD(value)
+  OD
+
+RETURN(suffix(8)=0)
+
+; Require a live wrapper and endpoint before borrowing device state.
+PUBLIC BYTE FUNC Live(DOSSTREAMS.Handle POINTER item)
+  StreamRegistry POINTER registry
+  RawEndpoint POINTER endpoint
+  BYTE index
+
+  IF item.endpoint=BYTE POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO DS_STREAM_SLOTS-1 DO
+    registry=UnitRegistry(LONGCARD(index))
+    IF registry.state=READY AND registry.endpoint=item.endpoint
+        AND item.generation=registry.generation THEN
+      endpoint=RawEndpoint POINTER(item.endpoint)
+      RETURN(endpoint.generation=item.generation AND endpoint.references<>0)
+    FI
+  OD
+
+RETURN(0)
+
+; Prepare a shared endpoint and its independent request/reply resources.
+PROC Initialize(RawEndpoint POINTER endpoint LONGCARD generation,unit)
+  BYTE POINTER name
+
+  EXECLISTS.NewList(@endpoint.port.mp_MsgList)
+  endpoint.port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  endpoint.port.mp_Flags=EXEC.PA_IGNORE
+  endpoint.owner.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+  endpoint.owner.io_Message.mn_ReplyPort=@endpoint.port
+  endpoint.owner.io_Message.mn_Length=EXEC.IOSTDREQ_SIZE
+  endpoint.references=1
+  endpoint.generation=generation
+  endpoint.unit=unit
+  name=endpoint.name
+  name(0)=99
+  name(1)=111
+  name(2)=110
+  name(3)=115
+  name(4)=111
+  name(5)=108
+  name(6)=101
+  name(7)=46
+  name(8)=100
+  name(9)=101
+  name(10)=118
+  name(11)=105
+  name(12)=99
+  name(13)=101
+  name(14)=0
+
+RETURN
+
+; Undo a partially initialized endpoint without publishing it to callers.
+PROC Rollback(StreamRegistry POINTER registry)
+
+  EXEC.Forbid()
+  registry.endpoint=BYTE POINTER(0)
+  registry.state=CLOSED
+  EXEC.Permit()
+
+RETURN
+
+; Retain an admitted endpoint for a new caller-owned stream wrapper.
+RawEndpoint POINTER FUNC Acquire(LONGCARD unit)
+  StreamRegistry POINTER registry
+  RawEndpoint POINTER endpoint
+  LONGCARD generation
+  INT error
+
+  registry=UnitRegistry(unit)
+  EXEC.Forbid()
+  IF registry.state=READY THEN
+    endpoint=RawEndpoint POINTER(registry.endpoint)
+    IF endpoint.unit<>unit THEN
+      EXEC.Permit()
+      DOSCLIENT.SetError(ERROR_BAD_STREAM_NAME)
+      RETURN(RawEndpoint POINTER(0))
+    FI
+
+    IF endpoint.references=$ffff THEN
+      EXEC.Permit()
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+      RETURN(RawEndpoint POINTER(0))
+    FI
+
+    endpoint.references==+1
+    EXEC.Permit()
+    RETURN(endpoint)
+  FI
+
+  IF registry.state<>CLOSED OR registry.generation=LONGCARD($ffffffff) THEN
+    EXEC.Permit()
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(RawEndpoint POINTER(0))
+  FI
+
+  registry.state=OPENING
+  registry.generation==+1
+  generation=registry.generation
+  EXEC.Permit()
+  endpoint=RawEndpoint POINTER(EXEC.AllocMem(SIZEOF(RawEndpoint),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  IF endpoint=RawEndpoint POINTER(0) THEN
+    Rollback(registry)
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(endpoint)
+  FI
+
+  Initialize(endpoint,generation,unit)
+  error=EXEC.OpenDevice(endpoint.name,unit,
+      EXEC.IORequest POINTER(@endpoint.owner),0)
+  IF error<>0 THEN
+    EXEC.FreeMem(BYTE POINTER(endpoint),SIZEOF(RawEndpoint))
+    Rollback(registry)
+    IF error=EXEC.IOERR_UNITBUSY THEN
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    ELSEIF error=EXEC.IOERR_OPENFAIL THEN
+      DOSCLIENT.SetError(ERROR_DEVICE_NOT_MOUNTED)
+    ELSE
+      DOSCLIENT.SetError(LONGINT(error))
+    FI
+
+    RETURN(RawEndpoint POINTER(0))
+  FI
+
+  EXEC.Forbid()
+  registry.endpoint=BYTE POINTER(endpoint)
+  registry.state=READY
+  EXEC.Permit()
+
+RETURN(endpoint)
+
+; Allocate a raw or extended console wrapper around the shared endpoint.
+PUBLIC BYTE POINTER FUNC OpenSized(DOSCLIENT.ClientContext POINTER client
+    BYTE backend CARD bytes LONGCARD unit)
+  DOSSTREAMS.Handle POINTER item
+  RawEndpoint POINTER endpoint
+
+  client.busy=1
+  item=DOSSTREAMS.Handle POINTER(EXEC.AllocMem(LONGCARD(bytes),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  IF item=DOSSTREAMS.Handle POINTER(0) THEN
+    client.busy=0
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  endpoint=Acquire(unit)
+  IF endpoint=RawEndpoint POINTER(0) THEN
+    EXEC.FreeMem(BYTE POINTER(item),LONGCARD(bytes))
+    client.busy=0
+    RETURN(BYTE POINTER(0))
+  FI
+
+  item.header.kind=DOSOBJECTS.KIND_FILE
+  item.header.backend=backend
+  item.endpoint=BYTE POINTER(endpoint)
+  item.generation=endpoint.generation
+  DOSOBJECTS.Link(DOSCORE.Current(),@item.header)
+  DOSCLIENT.SetError(0)
+  client.busy=0
+
+RETURN(BYTE POINTER(item))
+
+PUBLIC BYTE POINTER FUNC Open(DOSCLIENT.ClientContext POINTER client LONGCARD unit)
+
+RETURN(OpenSized(client,DOSOBJECTS.BACKEND_RAW,SIZEOF(DOSSTREAMS.Handle),unit))
+
+; Check the complete caller buffer before submitting console I/O.
+PUBLIC BYTE FUNC ValidExtent(BYTE POINTER buffer LONGINT length)
+
+  IF DOSSTREAMS.ValidBuffer(buffer,length)=0 THEN
+    RETURN(0)
+  FI
+
+  IF length<>0 AND ADDRESS(buffer)<ADDRESS($10000) THEN
+    IF TASKMEMORY.Writable(ADDRESS(buffer),SIZE(length))=0 THEN
+      DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
+; Drop active-operation ownership after its request has settled.
+PROC ReleaseOperation(RawEndpoint POINTER endpoint DOSCLIENT.ClientContext
+    POINTER client BYTE reading)
+
+  EXEC.Forbid()
+  IF endpoint.active=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  IF reading<>0 THEN
+    IF endpoint.reader<>BYTE POINTER(client) THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    endpoint.reader=BYTE POINTER(0)
+  FI
+
+  endpoint.active==-1
+  EXEC.Permit()
+
+RETURN
+
+; Returns before SendIO/WaitIO: no preparation frame stays on a blocked stack.
+; Null plus IoErr=0 denotes a validated zero-length operation.
+PUBLIC EXEC.IOStdReq POINTER FUNC Prepare(DOSCLIENT.ClientContext POINTER client
+    DOSSTREAMS.Handle POINTER item BYTE POINTER buffer LONGINT length BYTE reading)
+  RawEndpoint POINTER endpoint
+  EXEC.IOStdReq POINTER request
+
+  client.busy=1
+  IF Live(item)=0 THEN
+    client.busy=0
+    DOSCLIENT.SetError(ERROR_BAD_STREAM_NAME)
+    RETURN(EXEC.IOStdReq POINTER(0))
+  FI
+
+  IF ValidExtent(buffer,length)=0 THEN
+    client.busy=0
+    RETURN(EXEC.IOStdReq POINTER(0))
+  FI
+
+  IF length=0 THEN
+    DOSCLIENT.SetError(0)
+    client.busy=0
+    RETURN(EXEC.IOStdReq POINTER(0))
+  FI
+
+  endpoint=RawEndpoint POINTER(item.endpoint)
+  EXEC.Forbid()
+  IF endpoint.active=$ffff OR (reading<>0 AND endpoint.reader<>BYTE POINTER(0)) THEN
+    EXEC.Permit()
+    client.busy=0
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(EXEC.IOStdReq POINTER(0))
+  FI
+
+  endpoint.active==+1
+  IF reading<>0 THEN
+    endpoint.reader=BYTE POINTER(client)
+  FI
+
+  EXEC.Permit()
+  request=client.request
+  IF request=EXEC.IOStdReq POINTER(0) THEN
+    request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(client.port,
+        EXEC.IOSTDREQ_SIZE))
+    IF request=EXEC.IOStdReq POINTER(0) THEN
+      ReleaseOperation(endpoint,client,reading)
+      client.busy=0
+      DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+      RETURN(request)
+    FI
+
+    client.request=request
+  FI
+
+  request.io_Device=endpoint.owner.io_Device
+  request.io_Unit=endpoint.owner.io_Unit
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(length)
+  request.io_Actual=0
+  request.io_Offset=0
+  request.io_Flags=0
+  IF reading<>0 THEN
+    request.io_Command=EXEC.CMD_READ
+  ELSE
+    request.io_Command=EXEC.CMD_WRITE
+  FI
+
+RETURN(request)
+
+; Complete a raw transfer while preserving the device result and error.
+PUBLIC PROC Finish(DOSCLIENT.ClientContext POINTER client DOSSTREAMS.Handle
+    POINTER item BYTE reading)
+  EXEC.IOStdReq POINTER request
+
+  request=client.request
+  IF request.io_Message.mn_Node.ln_Type<>EXEC.NT_FREEMSG THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  request.io_Device=BYTE POINTER(0)
+  request.io_Unit=BYTE POINTER(0)
+  request.io_Data=BYTE POINTER(0)
+  request.io_Length=0
+  request.io_Actual=0
+  request.io_Offset=0
+  ReleaseOperation(RawEndpoint POINTER(item.endpoint),client,reading)
+  client.busy=0
+
+RETURN
+
+; Retire a device request before releasing its endpoint borrow.
+PUBLIC LONGINT FUNC Complete(DOSCLIENT.ClientContext POINTER client
+    DOSSTREAMS.Handle POINTER item INT error)
+  EXEC.IOStdReq POINTER request
+  RawEndpoint POINTER endpoint
+  LONGCARD actual,length
+  LONGINT secondary
+  BYTE reading
+
+  request=client.request
+  endpoint=RawEndpoint POINTER(item.endpoint)
+  IF request.io_Message.mn_Node.ln_Type<>EXEC.NT_FREEMSG THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  actual=request.io_Actual
+  length=request.io_Length
+  reading=request.io_Command=EXEC.CMD_READ
+  secondary=LONGINT(error)
+  IF error=EXEC.CONERR_INPUTOVERFLOW THEN
+    secondary=ERROR_BUFFER_OVERFLOW
+  FI
+
+  IF error=EXEC.IOERR_UNITBUSY THEN
+    secondary=ERROR_OBJECT_IN_USE
+  FI
+
+  IF actual>length THEN
+    secondary=LONGINT(EXEC.IOERR_BADLENGTH)
+  FI
+
+  IF error=0 THEN
+    IF actual>length OR (reading<>0 AND actual=0) OR (reading=0
+        AND actual<>length) THEN
+      secondary=LONGINT(EXEC.IOERR_BADLENGTH)
+    FI
+  FI
+
+  Finish(client,item,reading)
+  DOSCLIENT.SetError(secondary)
+  IF secondary=ERROR_BREAK AND actual<>0 THEN
+    RETURN(LONGINT(actual))
+  FI
+
+  IF secondary<>0 THEN
+    RETURN(-1)
+  FI
+
+RETURN(LONGINT(actual))
+
+; Keep the shared endpoint alive for an inherited stream wrapper.
+PUBLIC BYTE FUNC Retain(DOSSTREAMS.Handle POINTER item)
+  RawEndpoint POINTER endpoint
+
+  EXEC.Forbid()
+  IF Live(item)=0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  endpoint=RawEndpoint POINTER(item.endpoint)
+  IF endpoint.references=$ffff THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  endpoint.references==+1
+  EXEC.Permit()
+
+RETURN(1)
+
+; Reject a busy final close before changing ownership. CloseDevice itself
+; cannot fail; keep CLOSING published through endpoint reclamation.
+; Detached inheritance wrappers use this same reference transaction.
+PUBLIC LONGINT FUNC ReleaseEndpoint(DOSSTREAMS.Handle POINTER item)
+  StreamRegistry POINTER registry
+  RawEndpoint POINTER endpoint
+
+  IF Live(item)=0 THEN
+    RETURN(ERROR_BAD_STREAM_NAME)
+  FI
+
+  endpoint=RawEndpoint POINTER(item.endpoint)
+  registry=UnitRegistry(endpoint.unit)
+  EXEC.Forbid()
+  IF endpoint.references>1 THEN
+    endpoint.references==-1
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  IF endpoint.active<>0 OR endpoint.reader<>BYTE POINTER(0) THEN
+    EXEC.Permit()
+    RETURN(ERROR_OBJECT_IN_USE)
+  FI
+
+  registry.state=CLOSING
+  EXEC.Permit()
+  EXEC.CloseDevice(EXEC.IORequest POINTER(@endpoint.owner))
+  EXEC.Forbid()
+  registry.endpoint=BYTE POINTER(0)
+  EXEC.Permit()
+  EXEC.FreeMem(BYTE POINTER(endpoint),SIZEOF(RawEndpoint))
+  EXEC.Forbid()
+  registry.state=CLOSED
+  EXEC.Permit()
+
+RETURN(0)
+
+; Reject busy ownership before consuming a wrapper's final reference.
+PUBLIC LONGINT FUNC CloseSized(DOSCLIENT.ClientContext POINTER client
+    DOSSTREAMS.Handle POINTER item CARD bytes)
+  LONGINT error
+  DOSBREAKTYPES.Scope POINTER scope
+
+  scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+  IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+    IF scope.handle=BYTE POINTER(item) THEN
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+      RETURN(0)
+    FI
+  FI
+
+  client.busy=1
+  error=ReleaseEndpoint(item)
+  IF error<>0 THEN
+    client.busy=0
+    DOSCLIENT.SetError(error)
+    RETURN(0)
+  FI
+
+  DOSCLIENT.ClearSelections(client,BYTE POINTER(item))
+  IF DOSOBJECTS.Unlink(DOSCORE.Current(),@item.header)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  EXEC.FreeMem(BYTE POINTER(item),LONGCARD(bytes))
+  client.busy=0
+
+RETURN(-1)
+
+PUBLIC LONGINT FUNC Close(DOSCLIENT.ClientContext POINTER client
+    DOSSTREAMS.Handle POINTER item)
+
+RETURN(CloseSized(client,item,SIZEOF(DOSSTREAMS.Handle)))
+
+ENDMODULE

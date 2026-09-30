@@ -1,0 +1,156 @@
+MODULE HEAPABI
+USE EXEC
+USE EXECOS
+USE EXECLISTS
+INCLUDE "heap-action.inc"
+MemHeader ARRAY headers(2)
+MemChunk ARRAY chunks(2)
+VecPrefix ARRAY prefixes(2)
+LONGCARD ARRAY facts(22),seen(15)
+BYTE ARRAY line=[72 69 65 80 32 65 66 73 155]
+CARD writeStatus
+
+; Test-only native signatures. No allocation service is implemented here.
+BYTE POINTER FUNC AllocMem(LONGCARD byteSize LONGCARD attributes)
+
+  seen(0)=byteSize
+  seen(1)=attributes
+
+RETURN(BYTE POINTER($ab1234))
+
+PROC FreeMem(BYTE POINTER memoryBlock LONGCARD byteSize)
+
+  seen(2)=LONGCARD(ADDRESS(memoryBlock))
+  seen(3)=byteSize
+
+RETURN
+
+BYTE POINTER FUNC AllocVec(LONGCARD byteSize LONGCARD attributes)
+
+  seen(4)=byteSize
+  seen(5)=attributes
+
+RETURN(BYTE POINTER($fefff8))
+
+PROC FreeVec(BYTE POINTER memoryBlock)
+
+  seen(6)=LONGCARD(ADDRESS(memoryBlock))
+
+RETURN
+
+LONGCARD FUNC AvailMem(LONGCARD attributes)
+
+  seen(7)=attributes
+
+RETURN(LONGCARD($80010001))
+
+LONGCARD FUNC TypeOfMem(BYTE POINTER location)
+
+  seen(8)=LONGCARD(ADDRESS(location))
+
+RETURN(LONGCARD($80000011))
+
+BYTE POINTER FUNC Allocate(MemHeader POINTER memHeader LONGCARD byteSize)
+
+  seen(9)=LONGCARD(ADDRESS(memHeader))
+  seen(10)=byteSize
+
+RETURN(BYTE POINTER($06fff8))
+
+PROC Deallocate(MemHeader POINTER memHeader BYTE POINTER memoryBlock
+    LONGCARD byteSize)
+
+  seen(11)=LONGCARD(ADDRESS(memHeader))
+  seen(12)=LONGCARD(ADDRESS(memoryBlock))
+  seen(13)=byteSize
+
+RETURN
+
+PROC Layout()
+
+  facts(0)=LONGCARD(ADDRESS(@headers(1))-ADDRESS(@headers(0)))
+  facts(1)=LONGCARD(ADDRESS(@chunks(1))-ADDRESS(@chunks(0)))
+  facts(2)=LONGCARD(ADDRESS(@prefixes(1))-ADDRESS(@prefixes(0)))
+
+RETURN
+
+PROC HeaderLayout()
+
+  facts(3)=LONGCARD(ADDRESS(@headers(0).mh_Node)-ADDRESS(@headers(0)))
+  facts(4)=LONGCARD(ADDRESS(@headers(0).mh_Attributes)-ADDRESS(@headers(0)))
+  facts(5)=LONGCARD(ADDRESS(@headers(0).mh_First)-ADDRESS(@headers(0)))
+  facts(6)=LONGCARD(ADDRESS(@headers(0).mh_Lower)-ADDRESS(@headers(0)))
+  facts(7)=LONGCARD(ADDRESS(@headers(0).mh_Upper)-ADDRESS(@headers(0)))
+  facts(8)=LONGCARD(ADDRESS(@headers(0).mh_Free)-ADDRESS(@headers(0)))
+
+RETURN
+
+PROC ChunkLayout()
+
+  facts(9)=LONGCARD(ADDRESS(@chunks(0).mc_Next)-ADDRESS(@chunks(0)))
+  facts(10)=LONGCARD(ADDRESS(@chunks(0).mc_Pad)-ADDRESS(@chunks(0)))
+  facts(11)=LONGCARD(ADDRESS(@chunks(0).mc_Bytes)-ADDRESS(@chunks(0)))
+
+RETURN
+
+PROC Calls()
+
+  facts(12)=LONGCARD(ADDRESS(AllocMem(LONGCARD($fe123456),LONGCARD($80010001))))
+  FreeMem(BYTE POINTER($ab1234),LONGCARD($fe123456))
+  facts(13)=LONGCARD(ADDRESS(AllocVec(LONGCARD($ffffffff),LONGCARD($80100001))))
+  FreeVec(BYTE POINTER($cdffff))
+
+RETURN
+
+PROC QueryCalls()
+
+  facts(14)=AvailMem(LONGCARD($80120001))
+  facts(15)=TypeOfMem(BYTE POINTER($ffffff))
+  facts(16)=LONGCARD(ADDRESS(Allocate(MemHeader POINTER($04ffeb),
+      LONGCARD($80010001))))
+  Deallocate(MemHeader POINTER($04ffeb),BYTE POINTER($abffff),LONGCARD($80010001))
+
+RETURN
+
+PROC Records()
+  MemHeader POINTER header
+  MemChunk POINTER chunk
+  VecPrefix POINTER prefix
+
+  header=MemHeader POINTER($04ffeb)
+  chunk=MemChunk POINTER($060010)
+  prefix=VecPrefix POINTER($060020)
+  header.mh_Node.ln_Type=H_NT_MEMORY
+  header.mh_Attributes=H_FLAG_PUBLIC OR H_FLAG_UPPER
+  header.mh_First=chunk
+  header.mh_Lower=BYTE POINTER($ff0000)
+  header.mh_Upper=LONGCARD($01000000)
+  header.mh_Free=LONGCARD($43210000)
+  chunk.mc_Next=MemChunk POINTER($abfff8)
+  chunk.mc_Pad=0
+  chunk.mc_Bytes=LONGCARD($100000)
+  prefix.backing=LONGCARD($12345678)
+  prefix.requested=LONGCARD($87654321)
+  facts(17)=header.mh_Upper
+  facts(18)=header.mh_Free
+  facts(19)=chunk.mc_Bytes
+  facts(20)=(LONGCARD($10001)+7) & LONGCARD($fffffff8)
+  facts(21)=H_MAX_BANKS
+  seen(14)=prefix.requested
+
+RETURN
+
+; Exercise memory-service signatures and packed allocator records.
+PROC Main()
+
+  Layout()
+  HeaderLayout()
+  ChunkLayout()
+  Calls()
+  QueryCalls()
+  Records()
+  writeStatus=EXECOS.Write(BYTE POINTER(line),9)
+
+RETURN
+
+ENDMODULE

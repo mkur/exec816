@@ -1,0 +1,53 @@
+MODULE DOSSTREAMSEXAMPLE
+USE CONSOLEDRIVER
+USE CONSOLETYPES
+INCLUDE "../../examples/dos-streams-session.inc"
+BYTE phase,gate
+LONGCARD verified
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+
+  gate=0
+  phase=number
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Verify(BYTE unused)
+  LONGCARD index
+
+  Check(reader.received=70003 AND reader.error=0 AND reader.reads=1)
+  FOR index=0 TO 70002 DO
+    Check(readBuffer(SIZE(index))=(BYTE(index) XOR 129))
+  OD
+
+  verified=70003
+
+RETURN
+
+; Exercise the public DOS stream example and its restored state.
+PROC Main()
+
+  OpenConsole(0)
+  AllocateReader(0)
+  StartReader(0)
+  Check(Redirect(0)=4 AND commandError=0)
+  Check(Redirect(1)=-1 AND commandError=DOS.ERROR_BAD_NUMBER)
+  Check(redirected=2 AND DOS.Input()=consoleHandle AND DOS.Output()=consoleHandle)
+  Pause(1)
+  phase=2
+  Session(0)
+  Check(inputByte^=113 AND reader.done=1 AND typed=2 AND duringRead=1)
+  Verify(0)
+  JoinReader(0)
+  Pause(4)
+  Cleanup(0)
+  phase=5
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,164 @@
+MODULE SHELLAPP
+USE HEAPCORE
+USE FSBOOT
+USE DOSCORE
+USE DOSCLIENT
+INCLUDE "shell-observed.inc"
+CARD checks,executed
+BYTE stage,gate
+LONGCARD before,steady
+DOS.FileHandle POINTER sink,borrowedOutput,borrowedInput
+TYPE MemoryQueries=[LONGCARD total,largest,linear,linearLargest]
+MemoryQueries memBefore,memDuring,memAfter
+BYTE ARRAY nil=[78 73 76 58 0]
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+
+  stage=number
+  gate=0
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Run(CARD offset LONGINT status,error)
+  BYTE POINTER source,target
+  CARD index
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+
+  source=BYTE POINTER(ADDRESS($e0000)+SIZE(offset))
+  target=ShellLine()
+  index=0
+  DO
+    target(index)=source(index)
+    IF source(index)=0 THEN
+      EXIT
+    FI
+
+    index==+1
+    IF index=256 THEN
+      HEAPCORE.Abort($e8f0)
+    FI
+  OD
+
+  shell.length=index
+  ShellCommand()
+  Check(shell.lastStatus=status AND shell.lastError=error AND shell.done=0)
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  Check(shell.retiredDirectory=DOS.FileLock POINTER(0)
+      AND shell.commandInput=DOS.FileHandle POINTER(0))
+  Check(client.busy=0 AND client.objects=3 AND EXEC.AvailMem(0)=steady)
+  executed==+1
+
+RETURN
+
+PROC Queries(MemoryQueries POINTER values)
+
+  values.total=EXEC.AvailMem(0)
+  values.largest=EXEC.AvailMem(EXEC.MEMF_LARGEST)
+  values.linear=EXEC.AvailMem(EXEC.MEMF_LINEAR)
+  values.linearLargest=EXEC.AvailMem(EXEC.MEMF_LINEAR OR EXEC.MEMF_LARGEST)
+
+RETURN
+
+PROC Memory(CARD offset)
+  BYTE POINTER block
+
+  Queries(@memBefore)
+  Run(offset,0,0)
+  block=EXEC.AllocMem(513,EXEC.MEMF_PUBLIC)
+  Check(block<>BYTE POINTER(0)
+      AND (ADDRESS(block) RSH 16)=((ADDRESS(block)+SIZE(512)) RSH 16))
+  steady=EXEC.AvailMem(0)
+  Queries(@memDuring)
+  Run(offset,0,0)
+  EXEC.FreeMem(block,513)
+  steady=EXEC.AvailMem(0)
+  Queries(@memAfter)
+  Run(offset,0,0)
+  Check(memBefore.total=memAfter.total AND memBefore.largest=memAfter.largest)
+  Check(memBefore.linear=memAfter.linear
+      AND memBefore.linearLargest=memAfter.linearLargest)
+  Check(memBefore.total-memDuring.total=520)
+
+RETURN
+
+PROC DefaultInput(CARD offset)
+  DOS.FileHandle POINTER ignored
+
+  borrowedInput=DOS.SelectInput(sink)
+  Check(borrowedInput=shell.console AND DOS.IoErr()=0)
+  Run(offset,0,0)
+  ignored=DOS.SelectInput(borrowedInput)
+  Check(ignored=sink AND DOS.IoErr()=0)
+
+RETURN
+
+PROC RawText(CARD offset)
+  DOS.FileHandle POINTER ignored
+
+  ignored=DOS.SelectOutput(shell.console)
+  Check(ignored=sink AND DOS.IoErr()=0)
+  Run(offset,0,0)
+  Pause(2)
+  ignored=DOS.SelectOutput(sink)
+  Check(ignored=shell.console AND DOS.IoErr()=0)
+
+RETURN
+
+PROC Numbers(CARD unused)
+
+  ShellNumber(DOS.Output(),SYS.MINLONGINT)
+  ShellByte(DOS.Output(),ASCII.SPACE)
+  ShellNumber(DOS.Output(),-1)
+  ShellByte(DOS.Output(),ASCII.SPACE)
+  ShellNumber(DOS.Output(),0)
+  ShellByte(DOS.Output(),ASCII.SPACE)
+  ShellNumber(DOS.Output(),SYS.MAXLONGINT)
+  ShellByte(DOS.Output(),ASCII.LF)
+  Check(shell.status=PROCESS.RETURN_OK AND EXEC.AvailMem(0)=steady)
+  executed==+1
+
+RETURN
+
+INCLUDE "shell-command-cases.inc"
+
+; Exercise resident shell commands, parsing and borrowed standard input.
+PROC Main()
+  DOS.FileHandle POINTER ignored
+
+  before=EXEC.AvailMem(0)
+  Check(ShellStart(shellRoot)<>0 AND SIZEOF(ShellState)=128)
+  sink=DOS.Open(nil,DOS.MODE_READWRITE)
+  Check(sink<>DOS.FileHandle POINTER(0))
+  borrowedOutput=DOS.SelectOutput(sink)
+  Check(borrowedOutput=shell.console AND DOS.IoErr()=0)
+  steady=EXEC.AvailMem(0)
+  Cases()
+  ignored=DOS.SelectOutput(borrowedOutput)
+  Check(ignored=sink AND DOS.IoErr()=0 AND DOS.Close(sink)<>0)
+  shell.status=0
+  shell.error=0
+  Check(ShellFinish()=0 AND FSBOOT.Stop()<>0)
+  Check(EXEC.AvailMem(0)=before)
+  stage=3
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,40 @@
+; Explicit host-served sector provider. The host supplies bytes only; all
+; geometry, metadata, path and chain decisions execute in the guest library.
+MODULE BLOCKWIRE
+USE EXEC
+USE DOSCORE
+USE DOSBREAKTYPES
+VOLATILE BYTE ready
+CARD sector,length,actual
+BYTE error
+BYTE ARRAY staging(256)
+
+; Supply host-controlled sector bytes while keeping all filesystem
+; interpretation in guest code.
+PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
+    POINTER registry DOSBREAKTYPES.Scope POINTER scope)
+  CARD index
+
+  sector=CARD(request.sio_Aux1)+(CARD(request.sio_Aux2) LSH 8)
+  length=CARD(request.io_Length)
+  actual=length
+  error=0
+  ready=1
+  WHILE ready<>2 DO
+  OD
+
+  request.io_Actual=0
+  request.io_Error=error
+  IF error=0 THEN
+    FOR index=0 TO length-1 DO
+      request.io_Data(index)=staging(index)
+    OD
+
+    request.io_Actual=LONGCARD(actual)
+  FI
+
+  ready=0
+
+RETURN(INT(error))
+
+ENDMODULE

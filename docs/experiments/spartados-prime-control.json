@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Focused optimized replay with the demo prime worker stopped; no production changes or compiler rebuild.",
+  "baseline_record": {
+    "path": "docs/experiments/spartados-dos-comparison.json",
+    "sha256": "24b14fecd384566a8f0adf4ed0e6ab9835166ab94f2a4cdaa0db92c1271f0b40"
+  },
+  "inputs": {
+    "tools/measure_command_loading.py": "c7b6bd812b622afa1f4cb9e473ddba334c13216a0c11d8bb09b4246d71bac1e8",
+    "tools/measure_spartados.py": "a8eed20cc3e348ad9e422631817a444b61c74282b5a137c6e330c1a3bf98b724",
+    "examples/demo-session.inc": "faab68d6540d2d152803a50a69db7607a5ce5f12174e9d39fbe68a1d0076748b"
+  },
+  "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "xex_sha256": "8b6475243e718952756cf98f7b66a57d2b87695e1b4da2a9dccb41bb23592116",
+  "media_sha256": "2522811285c360cf6eb9473223dd3ef24b2c0a420f928a6f6592e30a8dc80efc",
+  "payload_sha256": "8372b8f0308ae28ea5b087332f168fe9da8d7f9d82d0d187d83b862353a2ac8b",
+  "bundle_manifest_sha256": "1f1351ed3fb9de966cdca232b073bc70db9611ef6cf8d90e22cd5074c3c67787",
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "intervention": {
+    "mode": "stopped",
+    "before": {
+      "live_tasks": 5,
+      "frames": 1,
+      "pass_number": 1,
+      "candidate": 102,
+      "count": 26
+    },
+    "stopped": {
+      "live_tasks": 4,
+      "frames": 1,
+      "pass_number": 1,
+      "candidate": 102,
+      "count": 26
+    },
+    "stop_flag_address": 36074,
+    "after_commands": {
+      "live_tasks": 4,
+      "frames": 1,
+      "pass_number": 1,
+      "candidate": 102,
+      "count": 26
+    }
+  },
+  "phases": {
+    "open": {
+      "frames": 31,
+      "seconds": 0.62,
+      "reads": 3
+    },
+    "size_query_rewind_allocate": {
+      "frames": 4,
+      "seconds": 0.08,
+      "reads": 0
+    },
+    "payload": {
+      "frames": 142,
+      "seconds": 2.84,
+      "reads": 20
+    },
+    "close": {
+      "frames": 2,
+      "seconds": 0.04,
+      "reads": 0
+    },
+    "open_through_close": {
+      "frames": 179,
+      "seconds": 3.58,
+      "reads": 23
+    },
+    "relocate": {
+      "frames": 34,
+      "seconds": 0.68,
+      "reads": 0
+    },
+    "open_through_prompt": {
+      "frames": 226,
+      "seconds": 4.52,
+      "reads": 23
+    }
+  },
+  "samples": [
+    {
+      "phase": "open",
+      "frame": 354,
+      "transfers": 1,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 0,
+        "map": 0,
+        "data": 0
+      }
+    },
+    {
+      "phase": "seek_end",
+      "frame": 385,
+      "transfers": 4,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 1,
+        "data": 0
+      }
+    },
+    {
+      "phase": "rewind",
+      "frame": 386,
+      "transfers": 4,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 1,
+        "data": 0
+      }
+    },
+    {
+      "phase": "payload",
+      "frame": 389,
+      "transfers": 4,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 1,
+        "data": 0
+      }
+    },
+    {
+      "phase": "close",
+      "frame": 531,
+      "transfers": 24,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 2,
+        "data": 19
+      }
+    },
+    {
+      "phase": "relocate",
+      "frame": 533,
+      "transfers": 24,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 2,
+        "data": 19
+      }
+    },
+    {
+      "phase": "loaded",
+      "frame": 567,
+      "transfers": 24,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 2,
+        "data": 19
+      }
+    },
+    {
+      "phase": "returned",
+      "frame": 567,
+      "transfers": 24,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 2,
+        "data": 19
+      }
+    },
+    {
+      "phase": "prompt",
+      "frame": 580,
+      "transfers": 24,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 2,
+        "data": 19
+      }
+    }
+  ],
+  "traced_samples": [
+    {
+      "phase": "open",
+      "frame": 354,
+      "transfers": 1,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 0,
+        "map": 0,
+        "data": 0
+      }
+    },
+    {
+      "phase": "seek_end",
+      "frame": 385,
+      "transfers": 4,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 1,
+        "data": 0
+      }
+    },
+    {
+      "phase": "rewind",
+      "frame": 386,
+      "transfers": 4,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 1,
+        "data": 0
+      }
+    },
+    {
+      "phase": "payload",
+      "frame": 389,
+      "transfers": 4,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 1,
+        "data": 0
+      }
+    },
+    {
+      "phase": "close",
+      "frame": 531,
+      "transfers": 24,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 2,
+        "data": 19
+      }
+    },
+    {
+      "phase": "relocate",
+      "frame": 533,
+      "transfers": 24,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 2,
+        "data": 19
+      }
+    },
+    {
+      "phase": "loaded",
+      "frame": 567,
+      "transfers": 24,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 2,
+        "data": 19
+      }
+    },
+    {
+      "phase": "returned",
+      "frame": 567,
+      "transfers": 24,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 2,
+        "data": 19
+      }
+    },
+    {
+      "phase": "prompt",
+      "frame": 580,
+      "transfers": 24,
+      "reads_by_kind": {
+        "other": 1,
+        "directory": 2,
+        "map": 2,
+        "data": 19
+      }
+    }
+  ],
+  "serial_trace": {
+    "sectors": [
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88
+    ],
+    "read_count": 19,
+    "clock_hz": 1773447,
+    "tx_cycles_per_bit": [
+      30
+    ],
+    "rx_cycles_per_bit": [
+      31
+    ],
+    "span_ticks": 4588091,
+    "span_seconds": 2.5871035334013364,
+    "between_requests_ticks": [
+      45247,
+      45265,
+      45252,
+      132942,
+      45272,
+      44802,
+      44510,
+      108562,
+      44318,
+      44194,
+      43959,
+      135150,
+      44608,
+      44197,
+      44214,
+      106600,
+      45328,
+      44559
+    ],
+    "between_requests_seconds": 0.625324015885448,
+    "mean_between_requests_ms": 34.74022310474711,
+    "log_sha256": "ae9fc96e031c638340ca1fca75653e7a694d16af52373b5f50ba77f9c6debe43"
+  },
+  "comparison": {
+    "payload_phase_reduction_fraction": 0.17441860465116277,
+    "data_sector_span_reduction_fraction": 0.13906991371730149,
+    "remaining_inter_request_gap_fraction": 0.894270832913338,
+    "gap_reduction_ms": 4.107318183803137,
+    "stopped_to_sdx_data_span_ratio": 1.1747897877252265
+  },
+  "validation": {
+    "traced_untraced_samples_identical": true,
+    "worker_remained_stopped": true,
+    "same_instruction_image": true,
+    "same_disk_and_payload": true,
+    "same_sector_counts_and_order": true,
+    "same_serial_bit_rates": true,
+    "hello_dir_exit_replay": "pass",
+    "stack_and_ownership_checks": "pass"
+  },
+  "evidence_files": {
+    "build/development/spartados-comparison/exec816-prime-stopped/results.json": "2e5253f77dffe75374945be8bb4e8552a36b15fc432745735a41fe1d092399ac",
+    "build/development/spartados-comparison/exec816-prime-stopped-traced/results.json": "2e5253f77dffe75374945be8bb4e8552a36b15fc432745735a41fe1d092399ac"
+  },
+  "caveats": [
+    "Worker stops normally and its Task is removed; this removes its computation, output and periodic wakeups.",
+    "Changing request timing also changes floppy rotational waits; elapsed-time improvement is not pure prime CPU cost.",
+    "SIO, filesystem, copying and scheduling overhead have not been separated."
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  }
+}

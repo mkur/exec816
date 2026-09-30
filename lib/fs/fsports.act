@@ -1,0 +1,32 @@
+MODULE FSPORTS
+USE EXEC
+USE EXECLISTS
+; Construct caller-owned private ports with one shared arrival signal. Delete
+; only the port allocation; the service retires the shared signal once at exit.
+PUBLIC EXEC.MsgPort POINTER FUNC Create(BYTE bit)
+  EXEC.MsgPort POINTER port
+
+  port=EXEC.MsgPort POINTER(EXEC.AllocMem(EXEC.MSGPORT_SIZE,EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  IF port=EXEC.MsgPort POINTER(0) THEN
+    RETURN(port)
+  FI
+
+  port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  port.mp_Flags=EXEC.PA_SIGNAL
+  port.mp_SigTask=EXEC.FindTask(BYTE POINTER(0))
+  port.mp_SigBit=bit
+  EXECLISTS.NewList(@port.mp_MsgList)
+
+RETURN(port)
+
+; Free an empty worker port; outstanding messages still own its lifetime.
+PUBLIC PROC Delete(EXEC.MsgPort POINTER port)
+
+  IF port<>EXEC.MsgPort POINTER(0) THEN
+    EXEC.FreeMem(BYTE POINTER(port),EXEC.MSGPORT_SIZE)
+  FI
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,125 @@
+MODULE CONSOLESERVICES
+USE EXEC
+USE DOS
+USE FSBOOT
+USE SIODRIVER
+USE CONSOLEDRIVER
+USE HEAPCORE
+BYTE mode,checkpoint
+CARD checks
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER output
+EXEC.IOSIOReq POINTER request
+DOS.FileHandle POINTER file
+BYTE POINTER buffer
+BYTE ARRAY consoleName=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY sioName=[115 105 111 46 100 101 118 105 99 101 0]
+BYTE ARRAY text=[67 111 110 115 111 108 101 32 97 110 100 32 83 73 79 10]
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC ConsoleWrite()
+  INT error
+
+  output=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,42))
+  Require(output<>EXEC.IOStdReq POINTER(0))
+  error=EXEC.OpenDevice(consoleName,0,EXEC.IORequest POINTER(output),0)
+  Require(error=0)
+  output.io_Command=EXEC.CMD_WRITE
+  output.io_Data=text
+  output.io_Length=16
+  error=EXEC.DoIO(EXEC.IORequest POINTER(output))
+  Require(error=0 AND output.io_Actual=16)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(output))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(output))
+
+RETURN
+
+PROC SerialRead()
+  INT error
+  CARD index
+
+  request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,52))
+  Require(request<>EXEC.IOSIOReq POINTER(0))
+  error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(request),0)
+  Require(error=0)
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Data=buffer
+  request.io_Length=128
+  request.sio_Command=$52
+  request.sio_Aux1=4
+  request.sio_Direction=EXEC.SIODIR_READ
+  request.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=128)
+  FOR index=0 TO 127 DO
+    Require(buffer(index)=BYTE(index XOR 60))
+  OD
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+
+RETURN
+
+PROC FileRead()
+  CARD index
+
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  Require(DOS.Read(file,buffer,778)=777 AND DOS.IoErr()=0)
+  FOR index=0 TO 776 DO
+    Require(buffer(index)=(BYTE(index) XOR 83))
+  OD
+
+  Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+
+RETURN
+
+; Exercise console progress alongside serial and filesystem services.
+PROC Main()
+
+  port=EXEC.CreateMsgPort()
+  buffer=EXEC.AllocMem(800,EXEC.MEMF_PUBLIC)
+  Require(port<>EXEC.MsgPort POINTER(0) AND buffer<>BYTE POINTER(0))
+  IF mode>=2 AND mode<=3 THEN
+    Require(CONSOLEDRIVER.Stop()=1)
+  FI
+
+  IF mode<4 THEN
+    Require(SIODRIVER.Start()=1)
+    IF mode>=2 THEN
+      Require(CONSOLEDRIVER.Start()=1)
+    FI
+
+    SerialRead()
+    ConsoleWrite()
+    IF (mode & 1)=0 THEN
+      SIODRIVER.Stop()
+      Require(CONSOLEDRIVER.Stop()=1)
+    ELSE
+      Require(CONSOLEDRIVER.Stop()=1)
+      SIODRIVER.Stop()
+    FI
+  ELSE
+    FileRead()
+    ConsoleWrite()
+  ; All three resident workers retire automatically after this last client.
+  FI
+
+  EXEC.FreeMem(buffer,800)
+  EXEC.DeleteMsgPort(port)
+  checkpoint=1
+
+RETURN
+
+ENDMODULE

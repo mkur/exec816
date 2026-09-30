@@ -1,0 +1,167 @@
+MODULE NATIVECONSOLEPROBE
+USE EXEC
+USE HEAPCORE
+USE CONSOLEPROBE
+USE SIODRIVER
+USE SIOPROBE
+BYTE mode,order,ready,finished,active
+CARD sectorBytes,checks,received,transfers,failures
+CARD ARRAY events(64)
+EXEC.MsgPort POINTER port
+EXEC.IOSIOReq POINTER request
+BYTE POINTER buffer
+INCLUDE "io-names.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC CollectKeys()
+  CARD event
+
+  DO
+    event=CONSOLEPROBE.Take()
+    IF event=$ffff THEN
+      EXIT
+    FI
+
+    Require(received<64)
+    events(received)=event
+    received==+1
+    IF event=$1c THEN
+      finished=1
+    FI
+  OD
+
+RETURN
+
+PROC Setup()
+  INT error
+
+  Require(EXEC.AllocSignal(16)=16)
+  IF order=0 THEN
+    CONSOLEPROBE.Claim()
+  FI
+
+  port=EXEC.CreateMsgPort()
+  Require(port<>EXEC.MsgPort POINTER(0))
+  request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSIOREQ_SIZE))
+  Require(request<>EXEC.IOSIOReq POINTER(0))
+  buffer=EXEC.AllocMem(256,EXEC.MEMF_PUBLIC)
+  Require(buffer<>BYTE POINTER(0))
+  error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(request),0)
+  Require(error=0)
+  IF order<>0 THEN
+    CONSOLEPROBE.Claim()
+  FI
+
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Offset=0
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(sectorBytes)
+  request.sio_Command=$52
+  request.sio_Aux1=4
+  request.sio_Aux2=0
+  request.sio_Direction=EXEC.SIODIR_READ
+  request.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  request.sio_TimeoutUS=0
+
+RETURN
+
+PROC CollectIO()
+  INT error
+  CARD index
+
+  IF active=0 THEN
+    RETURN
+  FI
+
+  IF EXEC.CheckIO(EXEC.IORequest POINTER(request))=EXEC.IORequest POINTER(0) THEN
+    RETURN
+  FI
+
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(request))
+  IF mode=3 AND failures=0 THEN
+    Require(error<>0)
+    failures=1
+    request.sio_Aux1=4
+    request.sio_Aux2=0
+  ELSE
+    Require(error=0)
+    Require(request.io_Actual=LONGCARD(sectorBytes))
+    FOR index=0 TO sectorBytes-1 DO
+      Require(buffer(index)=(BYTE(index) XOR 60))
+    OD
+
+    transfers==+1
+  FI
+
+  active=0
+
+RETURN
+
+PROC Cleanup()
+  INT error
+
+  IF active<>0 THEN
+    error=EXEC.WaitIO(EXEC.IORequest POINTER(request))
+    Require(error=0)
+  FI
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  EXEC.FreeMem(buffer,256)
+  IF order=0 THEN
+    SIODRIVER.Stop()
+    CONSOLEPROBE.Release()
+  ELSE
+    CONSOLEPROBE.Release()
+    SIODRIVER.Stop()
+  FI
+
+  EXEC.FreeSignal(16)
+
+RETURN
+
+; Exercise captured input and native console request completion.
+PROC Main()
+  LONGCARD bits,mask
+
+  Setup()
+  IF mode=3 THEN
+    request.sio_Aux1=$ff
+    request.sio_Aux2=$ff
+  FI
+
+  mask=LONGCARD($10000) OR (LONGCARD(1) LSH port.mp_SigBit)
+  active=0
+  ready=1
+  WHILE finished=0 DO
+    IF (mode=1 OR mode=3) AND active=0 THEN
+      EXEC.SendIO(EXEC.IORequest POINTER(request))
+      active=1
+    FI
+
+    IF mode=2 THEN
+      SIOPROBE.Emulation()
+    FI
+
+    bits=EXEC.Wait(mask)
+    CollectKeys()
+    CollectIO()
+  OD
+
+  Cleanup()
+
+RETURN
+
+ENDMODULE

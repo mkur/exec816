@@ -1,0 +1,106 @@
+{
+  "name": "altirraos-1m",
+  "pin": "toolchain/altirra-1m.json",
+  "usable_banks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "code_origin": 65536,
+  "data_origin": 34816,
+  "image_near": [
+    34816,
+    36864
+  ],
+  "memlo_limit": 8192,
+  "memtop_required": 36864,
+  "regions": [
+    {
+      "name": "os-low",
+      "address": 0,
+      "size": 8192
+    },
+    {
+      "name": "state",
+      "address": 8192,
+      "size": 256
+    },
+    {
+      "name": "task0-dp",
+      "address": 8688,
+      "size": 288
+    },
+    {
+      "name": "task1-dp",
+      "address": 9200,
+      "size": 288
+    },
+    {
+      "name": "kernel-dp",
+      "address": 9712,
+      "size": 288
+    },
+    {
+      "name": "table",
+      "address": 10240,
+      "size": 1024
+    },
+    {
+      "name": "boot-state",
+      "address": 11264,
+      "size": 256
+    },
+    {
+      "name": "resident",
+      "address": 12288,
+      "size": 4096
+    },
+    {
+      "name": "task0-stack",
+      "address": 16880,
+      "size": 1568
+    },
+    {
+      "name": "kernel-stack",
+      "address": 18928,
+      "size": 1568
+    },
+    {
+      "name": "task1-stack",
+      "address": 20976,
+      "size": 1568
+    },
+    {
+      "name": "manifest",
+      "address": 24576,
+      "size": 2048
+    },
+    {
+      "name": "loader",
+      "address": 26624,
+      "size": 5120
+    },
+    {
+      "name": "staging",
+      "address": 31744,
+      "size": 1040
+    },
+    {
+      "name": "os-high",
+      "address": 36864,
+      "size": 28672
+    }
+  ]
+}

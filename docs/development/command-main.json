@@ -1,0 +1,419 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "scope": "Command function entries, returned Process status and Task-local secondary error",
+  "compiler": {
+    "revision": "f3ad9693247b4a918b84e8ec81f0683cb6cc90b9",
+    "previous_revision": "a62ee9e7ec525b31c0376d2358030a1e6670bb33",
+    "patch": "toolchain/patches/actionc-command-main.patch",
+    "patch_sha256": "0b4ca267235ba72143997ff6521e2d7a969c9a607b10a49cfb1e8032c4f6ba7c",
+    "checks": {
+      "focused_o65": 20,
+      "nir_snapshot": 1,
+      "nir_sweep_fixtures": 51,
+      "full_cargo_test": 3545
+    }
+  },
+  "host_tests": {
+    "passed": 214
+  },
+  "generated_checks": [
+    "dos",
+    "process",
+    "program"
+  ],
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "process_record_bytes": 128,
+  "resident_entry_descriptor": {
+    "reserved_bytes_before": 128,
+    "reserved_bytes_after": 128,
+    "count_offset": 17,
+    "entries_offset": 18,
+    "capacity": 36,
+    "play_used_bytes": 13
+  },
+  "compact_metadata": {
+    "header_bytes": 8,
+    "bytes_per_import": 4
+  },
+  "native": [
+    {
+      "suite": "process",
+      "mode": "raw",
+      "result_path": "build/command-main/process/raw/results.json",
+      "result_sha256": "a641fe7946b0ae6c974580032179bb92941c68b4f6b8125aabbc168f4bae176b",
+      "image_sha256": "ce563d2126d140ba907ab9a5161422621d9bd1942abb10f92df8d5fd85c7d50c",
+      "xex_sha256": "c36986c7505baeab76833cb5ffe3081b96dd35e51ba7ed506a8a0d2cf7ef8bc8",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "f959471ea917c8935167cc0743dc9406b28b6bf1c736e6a25276aa742d368abf",
+      "guards": "intact",
+      "checks": [
+        8117
+      ],
+      "created": 273,
+      "native_nmi_count": 892,
+      "native_irq_count": 0,
+      "status": 0
+    },
+    {
+      "suite": "process",
+      "mode": "opt",
+      "result_path": "build/command-main/process/opt/results.json",
+      "result_sha256": "f20c47eeb4c27fdfcd9a57e83d638c75592808c093e47f8d076bf081da5a894f",
+      "image_sha256": "e002f3cc4b12b449ba3ef60fff693e39c91aa93caf8f7abe452f7f0da09e09c3",
+      "xex_sha256": "ef20e1490a582b1aab40c7ea17859a4347f97dd898e24ada76fa601ac26d45bf",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "f959471ea917c8935167cc0743dc9406b28b6bf1c736e6a25276aa742d368abf",
+      "guards": "intact",
+      "checks": [
+        8117
+      ],
+      "created": 273,
+      "native_nmi_count": 794,
+      "native_irq_count": 0,
+      "status": 0
+    },
+    {
+      "suite": "cat",
+      "mode": "raw",
+      "result_path": "build/command-main/cat/raw/results.json",
+      "result_sha256": "0c2699230e85ea04489d44dc2b36c4443713f2be9eaaf7b7e0da515c05f04b7b",
+      "image_sha256": "f40211a8986ab9039618147bfb092001ae0899806882245130b3ace2b2805813",
+      "xex_sha256": "23fe36582488e86b095c80cb554585a74a3a949ccdd29a0ff6158c20672a4ee4",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "28782a6a34829e637c84574066f046b2ccb803d8aca9662a97693384d9a3d7d4",
+      "guards": "intact",
+      "cases": 15,
+      "native_nmi_count": 37,
+      "native_irq_count": 0,
+      "status": 0
+    },
+    {
+      "suite": "cat",
+      "mode": "opt",
+      "result_path": "build/command-main/cat/opt/results.json",
+      "result_sha256": "270af9ac6153c09f5e175623615d4b8e0ea6dc30b48a24203da999220f711165",
+      "image_sha256": "68c236589b88fa7300e8f46c247bdc777b0c67734206e81be644953e763cf05c",
+      "xex_sha256": "98accab21b679ea3c727a8b8b98bf9e374b7fa6e5785f976dacdae2ec49ac368",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "28782a6a34829e637c84574066f046b2ccb803d8aca9662a97693384d9a3d7d4",
+      "guards": "intact",
+      "cases": 15,
+      "native_nmi_count": 31,
+      "native_irq_count": 0,
+      "status": 0
+    },
+    {
+      "suite": "wc",
+      "mode": "raw",
+      "result_path": "build/command-main/wc/raw/results.json",
+      "result_sha256": "ce42d835f732e5b66dba3674db6fc40966e6b3871789b887744202abe9baff60",
+      "image_sha256": "1525ae94b247e342bd61f0c209b3386b8757002da457e706bd550c8d97910a35",
+      "xex_sha256": "32b873dc2803187f4f988d1630c6128b20407e19481a87ee78a0d5393055803b",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "0296413162793d9231b86be156ad5a2987521ab2fc299d6f61a8d973ad79b4a6",
+      "guards": "intact",
+      "cases": 16,
+      "native_nmi_count": 1514,
+      "native_irq_count": 0,
+      "status": 0
+    },
+    {
+      "suite": "wc",
+      "mode": "opt",
+      "result_path": "build/command-main/wc/opt/results.json",
+      "result_sha256": "694bb029a8c7458153eed1949bb222ee5159ce4b47fe2721ea9c19399ec8626a",
+      "image_sha256": "0cdcf7a83f75d64302480a33a18a0fb3c0e16e81835741220108425e769bc454",
+      "xex_sha256": "b27cf1cab9a3d3669772cefb9c2ac3e8829ea943a75606c4d28f6ff6882ba52e",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "0296413162793d9231b86be156ad5a2987521ab2fc299d6f61a8d973ad79b4a6",
+      "guards": "intact",
+      "cases": 16,
+      "native_nmi_count": 1658,
+      "native_irq_count": 0,
+      "status": 0
+    },
+    {
+      "suite": "o65_validation",
+      "mode": "raw",
+      "result_path": "build/command-main/o65_validation/raw/results.json",
+      "result_sha256": "6db8d28b93ee87dc51528cd46a4786cb7e5a7a2d90e3b06518370ca6e8c49fa4",
+      "image_sha256": "e1771a3423cad7a9a6dcfb43a041b14426dfa06924e6919da0c4382fad3434d8",
+      "xex_sha256": "ee8345e1aaeca90b626ff73a269b6ab67bbb937ca8c82dad8e7389d3185fd12d",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "97a7035f3d45990f6178bd17a6f90e882f27a09bb83bc19d26bdb58c7bbd1abe",
+      "guards": "intact",
+      "checks": 1418,
+      "truncated_prefixes": 442,
+      "mutations": 25,
+      "allocation_failures": 2,
+      "created": 0,
+      "native_nmi_count": 467,
+      "native_irq_count": 0,
+      "status": 0
+    },
+    {
+      "suite": "o65_validation",
+      "mode": "opt",
+      "result_path": "build/command-main/o65_validation/opt/results.json",
+      "result_sha256": "57ff5908c85ce0c8c476def2cb2efe208a4064a9577033512f6f28c757694c10",
+      "image_sha256": "205cce3b2d46e3a97213325e46084174de6fe77c794563fd2b8976f1466078d7",
+      "xex_sha256": "99721ea855fb779a164a024c8770511a3fae55278094be8f3dac15ba1821b0fe",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "e200cbc4907f336661268e8f4251c218f3a37aa34e5bc340cebe93d29f680384",
+      "guards": "intact",
+      "checks": 1385,
+      "truncated_prefixes": 431,
+      "mutations": 25,
+      "allocation_failures": 2,
+      "created": 0,
+      "native_nmi_count": 406,
+      "native_irq_count": 0,
+      "status": 0
+    },
+    {
+      "suite": "o65_execution",
+      "mode": "raw",
+      "result_path": "build/command-main/o65_execution/raw/results.json",
+      "result_sha256": "649bdf59d261c021d94e9e79b58a9f583eb99d8ce168164ac75b817b74e65e11",
+      "image_sha256": "ebfa838968015972318ac0167ab1bb9658aebc0cd3204962fd72fc1b707c7e2d",
+      "xex_sha256": "a78e6b7ec635ee111de690a7edf71cf3837825ec5d2baf171f3ec0332e1b34b8",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "ae878f228404b6f2c4d79f0e0a78389cfdef3f61c65fe47c2cb206dcf7d6316a",
+      "guards": "intact",
+      "checks": 98,
+      "allocation_failures": 6,
+      "provider_checks": 17,
+      "native_processes": 6,
+      "created": 6,
+      "native_nmi_count": 212,
+      "native_irq_count": 0,
+      "status": 0
+    },
+    {
+      "suite": "o65_execution",
+      "mode": "opt",
+      "result_path": "build/command-main/o65_execution/opt/results.json",
+      "result_sha256": "0a330b923f2754a71c83d9ec79f85c6f5a5967a1567e6b66dae820893721d158",
+      "image_sha256": "f1124ac86145d41a80c27419c9bfa1c66b4c69ce8b4ea6359e160f02af346e73",
+      "xex_sha256": "ba294b6e6c0f44a20ae4c026d722caf4325b6881e056ae1a407c84a11b950e03",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "7b030abf5c4f6f7fc0bdd677e9e26aed0536c0e4cc90bc56a741919bea7c0764",
+      "guards": "intact",
+      "checks": 98,
+      "allocation_failures": 6,
+      "provider_checks": 17,
+      "native_processes": 6,
+      "created": 6,
+      "native_nmi_count": 185,
+      "native_irq_count": 0,
+      "status": 0
+    },
+    {
+      "suite": "shell",
+      "mode": "raw",
+      "result_path": "build/command-main/shell/raw/results.json",
+      "result_sha256": "1d47dd7874fae4fbc59abedb0602ac345ecb262304f939e1cd4991deeca2ea23",
+      "image_sha256": "886773513edfe03ed1b1f74e7eeef6b9b71b0d2977998cc871da5012bc4f23d6",
+      "xex_sha256": "687f1c2b8a3b7b1144b28fdba49f2d357014c95a060ab7771d2f27ecb3bfe9b8",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "1a6dc3fe8e5df37fec2088a1dba9fec3aff28d4e791b235dc807bca190714de8",
+      "guards": "intact",
+      "created": 18,
+      "native_nmi_count": 4498,
+      "native_irq_count": 15066,
+      "status": 0
+    },
+    {
+      "suite": "shell",
+      "mode": "opt",
+      "result_path": "build/command-main/shell/opt/results.json",
+      "result_sha256": "ad5f63d9d59720295dbe6fab6457731a8972a99141fdea64f09d01fe4ae6f632",
+      "image_sha256": "9b2580f6e3aac92ad80e74a26cf552a0e77af81c1f44680c7bcff75fa7c04098",
+      "xex_sha256": "61807f98cdf569ddb5ea35506471b3c0ff55d297f9df1e97f898ac0dccc477f5",
+      "compiler_binary_sha256": "3faee0ec313d895a3a596c6097c67f16279087d483d837f56be4d22221d0e42d",
+      "source_sha256": "1a6dc3fe8e5df37fec2088a1dba9fec3aff28d4e791b235dc807bca190714de8",
+      "guards": "intact",
+      "created": 20,
+      "native_nmi_count": 5686,
+      "native_irq_count": 45953,
+      "status": 0
+    }
+  ],
+  "integration_status": "pass",
+  "release_qualification": "Not run; development checks do not qualify the hosted platform.",
+  "machine_pins": {
+    "toolchain/altirra-shell-console.json": {
+      "sha256": "310ff2eeed7966bb76474164b23c601e85e9d678ea8b4c5be903e381a81b0f4d",
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6831df8ce90c5112b26250c03aeb4b9fa729961f7048eee407ae16a3b8f59802",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789"
+      }
+    },
+    "toolchain/altirra-shell-paced.json": {
+      "sha256": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068",
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      }
+    }
+  },
+  "implementation_inputs": {
+    "toolchain/actionc.json": "caf0c1ee0824deeedde6eecc29f8fe2d59d59ea213cdfaf6fa6a816be6c01eab",
+    "abi/process.json": "eccc0ab9136b7636de8d926e21957c3af00820be01ba6bf704eedd068bb4c1c6",
+    "abi/program.json": "c97fc84d096fc146a9cf0f81f2eef2d50827b1a4b4063dc35f090b7bb5cf0e43",
+    "abi/dos.json": "6c718874b495c652666c9732cdfb270f7fb316e91811b03140e3a36dbe3d0123",
+    "lib/dos/process.act": "65b1c40bff7d5c32be17424a03eace37cf5705f9249b768a9df5dee45e1a36a9",
+    "lib/dos/processstate.act": "33125de3065a1c9ee2d88cd2ac682706efc9c882762f0c3c75e6b345a013d527",
+    "lib/dos/task-process.inc": "7b1e3b9d1df7fc6c76122793771fe3f24e5ffb8796b44bd0d8363cd2c19c2498",
+    "lib/dos/dosclient.act": "efee96ea362768a838c3e694bfc68a564ff53d318469484e68892a2d1143da84",
+    "lib/dos/dos-implementation.inc": "0f2f9a32cefe72b5feac4e3790c88fdf5bb9885b2ae6a8993f5f32dc571811fc",
+    "lib/dos/command.act": "e19bba5f8b05964791a53f6f23874dda4d535455801dce8882ad48579f084a01",
+    "lib/dos/programapi.act": "0a2dd6198433f2921e1df7b5971c57e0526eef20e320803203b6f9b4c519a34a",
+    "lib/dos/programimage.act": "b9d95cb08face6b770882e1b6911bc9c938629716784878e46cf6a9eb1b11828",
+    "lib/dos/o65wire.act": "6003d6e884d188a1e7837e2eb06d6ebdce6b27d7723f89bc931b62499e4d9ccb",
+    "lib/dos/o65.act": "34569a52268c25c929189902fcd3c8b4e98c305f789971114b98ab5dd89b9e40",
+    "tools/generate_process.py": "65df8b772d9b641b8fef8074f16e65b42d03fa1d4e1b3acfd9468709e38af190",
+    "tools/generate_tasks.py": "3e0f34e5eb7a0ac6011be5215dc0d619798999e6f89b633fd9b588e58accfb7c",
+    "tools/native_program.py": "b6ee99355c7a016414e5a872fc1ecaa3f40a4a28ac4529000d434129c580e7e9",
+    "tools/generate_program.py": "144fbde0014aa984f5520bab0a439412754e032649b41fc662a5a60597560600",
+    "tools/generate_dos.py": "5544613908dbda2d39a93608bd34034f854e18f45cef6c22bc38abfa355a15c9",
+    "tools/build_command.py": "afb64a74835fc828c623062f902b16c25b82f48f19e48d413a5f5fe9c735476b"
+  },
+  "optimized_wrapper_stack": {
+    "Run": {
+      "fixed_frame": 18,
+      "local_stack_peak": 28
+    },
+    "ExecuteImage": {
+      "fixed_frame": 14,
+      "local_stack_peak": 21
+    }
+  },
+  "play": {
+    "directory": "build/demo",
+    "manifest_sha256": "c2ae7cf56be61095765c963524b9e6f5d2167e2bae2126bae357331eb8f30c5e",
+    "artifacts": {
+      "program.xex": "28ce5b72ee1e73a06ae2420b509e2eaf1fc842c162822170dcfb65b1b3a30f1e",
+      "sdfs.atr": "98d9f9056b9a4e42204601a7cf080ea17275c6ff170a3c15abf4640f8cc29b36",
+      "README.md": "4d0d20efffcd8f762328119264d5602f304b2f35d9b40202772048b95403cc8a",
+      "sdfs.verification.json": "0322a928080e8b53189c285e4822de54f16f5e310f50e82b7d011e473872ef8d"
+    },
+    "loading_smoke_sha256": "b457df6245f5f8c21735e3a723b452bff9fbde444749d4be5a83d4a63cc0dfca",
+    "loading_smoke_scope": "Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration",
+    "guards": "intact",
+    "filesystem": "sdfs",
+    "sector_bytes": 128,
+    "compiler_revision": "f3ad9693247b4a918b84e8ec81f0683cb6cc90b9",
+    "resident_entry_count": 4,
+    "commands": {
+      "HELLO": {
+        "bytes": 991,
+        "sha256": "e2923668395c826619af9981d19eff445a2bd99e52b6e461fb11074262510e86",
+        "previous_compact_bytes": 1314,
+        "previous_compact_sha256": "eb6cfe62381641f09e26c04b795fa355eaedbc68802a070d85e04e2cb224d380"
+      },
+      "CAT": {
+        "bytes": 4569,
+        "sha256": "2f1339d71daa6b62c5126a7552b3fb6567339f3e4a0f9fcd60768b16df2d5857",
+        "previous_compact_bytes": 4692,
+        "previous_compact_sha256": "6cff27549e637772d740af7522d0abc0f134af45126420cb56c9205166cae3af"
+      },
+      "WC": {
+        "bytes": 4163,
+        "sha256": "c832b56d16c3061e4aa95ae01aa7c88df30cb5afbe82d00714c36703575a03bf",
+        "previous_compact_bytes": 4449,
+        "previous_compact_sha256": "d1a97c861bb0b30374177cfc5b3e4eff9a84cf6d8fe0a838667daead7b07a82a"
+      }
+    },
+    "checks": [
+      "HELLO",
+      "CAT STORY.TXT|WC: 24 133 746",
+      "MEM baseline",
+      "physical BREAK during command loading",
+      "HELLO recovery",
+      "heap and ownership restoration",
+      "EXIT/background Process teardown"
+    ],
+    "previous_compact_compiler_revision": "a62ee9e7ec525b31c0376d2358030a1e6670bb33"
+  },
+  "exec_implementation_commit": "47df5a1",
+  "integration_runner": {
+    "path": "tools/test_o65_shell.py",
+    "sha256": "1b673940a6c0e0a48432f7c605b6e440f3f8da0dc4a63b6778fad2c941ad9851",
+    "pin": "toolchain/altirra-shell-paced.json",
+    "raw": "Full serial shell command, arguments, redirection, failure, foreground BREAK, recovery, exact writes/screen, ownership and OS restoration checks. Reused the unchanged native kernel image.",
+    "opt": "Same serial checks plus CAT STORY.TXT|WC, with primary/secondary collection and subsequent slot reuse.",
+    "optimized_runner_archive": {
+      "path": "build/command-main/shell/attempts/runner-with-unconditional-pipeline.py",
+      "sha256": "3e291170e93c23b7ed407c63cc9a4051646f9bda9ec4cee53a982b99de97cedf",
+      "note": "Called test_shell_core.run with Commands(), opt, altirra-shell-paced.json and build/shell-paced-bridge. The archived runner ran the pipeline unconditionally; the final runner retains the same optimized command sequence and limits, and excludes that added case from raw mode because its instrumented image lacks heap capacity."
+    }
+  },
+  "integration_attempts": [
+    {
+      "mode": "raw",
+      "pin": "toolchain/altirra-shell-console.json",
+      "result": "timeout at added pipeline checkpoint",
+      "log": "build/command-main/shell/attempts/raw-pipeline-unpaced.log",
+      "note": "This run did not pass; no new compatibility claim is made for this older unpaced emulator.",
+      "log_sha256": "adf96b41ee431de41ef2b6f3e364b6b1f730f8d10390f1026175ac77463d93f4"
+    },
+    {
+      "mode": "raw",
+      "pin": "toolchain/altirra-shell-paced.json",
+      "result": "pipeline returned primary 10, secondary 103 (no free store)",
+      "log": "build/command-main/shell/attempts/raw-pipeline-paced.log",
+      "unchanged_native_image": true,
+      "heap_budget": {
+        "free_banks": [
+          12,
+          13,
+          14
+        ],
+        "maximum_heap_bytes": 196608,
+        "console_observer_bytes": 81920,
+        "raw_cat_text_bytes": 4520,
+        "raw_wc_text_bytes": 3379,
+        "alignment_reservation_per_image": 65535,
+        "minimum_observer_plus_two_images_bytes": 220889
+      },
+      "resolution": "Retain all original serial checks in raw mode. Exercise the added pipeline in the optimized shell and the play image; do not change target heap reservations, observer bounds or existing assertions.",
+      "log_sha256": "285a00b3ecfa13fb85ecd5f4132446ae6794ac926848cb2823831e1e89d0cbec"
+    }
+  ]
+}

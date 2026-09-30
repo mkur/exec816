@@ -1,0 +1,419 @@
+MODULE IOABI
+USE EXEC
+USE EXECOS
+USE EXECLISTS
+INCLUDE "exec-task-types.inc"
+INCLUDE "ports-action.inc"
+INCLUDE "io-action.inc"
+IORequest ARRAY requests(2)
+IOStdReq ARRAY standards(2)
+IOSIOReq ARRAY serials(2)
+LONGCARD ARRAY facts(35),seen(16),readback(50),returns(3)
+INT ARRAY errors(3)
+BYTE ARRAY line=[73 79 32 65 66 73 155]
+CARD writeStatus
+
+; These local callees exercise the native ABI; they are never EXEC bindings.
+IORequest POINTER FUNC CreateIORequest(MsgPort POINTER replyPort LONGCARD size)
+
+  seen(0)=LONGCARD(ADDRESS(replyPort))
+  seen(1)=size
+
+RETURN(IORequest POINTER($ab1234))
+
+PROC DeleteIORequest(IORequest POINTER request)
+
+  seen(2)=LONGCARD(ADDRESS(request))
+
+RETURN
+
+INT FUNC OpenDevice(BYTE POINTER name LONGCARD unit IORequest POINTER request
+    LONGCARD flags)
+
+  seen(3)=LONGCARD(ADDRESS(name))
+  seen(4)=unit
+  seen(5)=LONGCARD(ADDRESS(request))
+  seen(6)=flags
+
+RETURN(ErrorResult(IORequest POINTER($08ffce)))
+
+PROC CloseDevice(IORequest POINTER request)
+
+  seen(7)=LONGCARD(ADDRESS(request))
+
+RETURN
+
+PROC BeginIO(IORequest POINTER request)
+
+  seen(8)=LONGCARD(ADDRESS(request))
+
+RETURN
+
+PROC SendIO(IORequest POINTER request)
+
+  seen(9)=LONGCARD(ADDRESS(request))
+
+RETURN
+
+INT FUNC ErrorResult(IORequest POINTER request)
+  INT result
+
+  result=INT(request.io_Error)
+  IF result>=128 THEN
+    result=result-256
+  FI
+
+RETURN(result)
+
+INT FUNC DoIO(IORequest POINTER request)
+
+  seen(10)=LONGCARD(ADDRESS(request))
+
+RETURN(ErrorResult(request))
+
+IORequest POINTER FUNC CheckIO(IORequest POINTER request)
+
+  seen(11)=LONGCARD(ADDRESS(request))
+
+RETURN(request)
+
+INT FUNC WaitIO(IORequest POINTER request)
+
+  seen(12)=LONGCARD(ADDRESS(request))
+
+RETURN(ErrorResult(request))
+
+PROC AbortIO(IORequest POINTER request)
+
+  seen(13)=LONGCARD(ADDRESS(request))
+
+RETURN
+
+PROC Calls()
+
+  returns(0)=LONGCARD(ADDRESS(CreateIORequest(MsgPort POINTER($011234),
+      LONGCARD($ffffffff))))
+  DeleteIORequest(IORequest POINTER($071234))
+  errors(0)=OpenDevice(BYTE POINTER($feffff),LONGCARD($ffffffff),
+      IORequest POINTER($011234),LONGCARD($80000000))
+  seen(14)=seen(4)
+  seen(15)=seen(6)
+  errors(0)=OpenDevice(BYTE POINTER($feffff),LONGCARD($89abcdef),
+      IORequest POINTER($011234),LONGCARD($ffffffff))
+  CloseDevice(IORequest POINTER($071234))
+  BeginIO(IORequest POINTER($011234))
+  SendIO(IORequest POINTER($071234))
+
+RETURN
+
+PROC CompletionCalls()
+
+  errors(1)=DoIO(IORequest POINTER($04fff3))
+  returns(1)=LONGCARD(ADDRESS(CheckIO(IORequest POINTER($070000))))
+  errors(2)=WaitIO(IORequest POINTER($06ffe4))
+  AbortIO(IORequest POINTER($ffffff))
+  returns(2)=LONGCARD(ADDRESS(CheckIO(IORequest POINTER(0))))
+
+RETURN
+
+PROC RequestFields()
+  IORequest POINTER item
+
+  item=IORequest POINTER($04fff3)
+  item.io_Message.mn_Node.ln_Succ=EXECLISTS.Node POINTER($011234)
+  item.io_Message.mn_Node.ln_Pred=EXECLISTS.Node POINTER($071234)
+  item.io_Message.mn_Node.ln_Type=IO_CMD_NONSTD
+  item.io_Message.mn_Node.ln_Pri=$ff
+  item.io_Message.mn_Node.ln_Name=BYTE POINTER($feffff)
+  item.io_Message.mn_ReplyPort=MsgPort POINTER($ab1234)
+  item.io_Message.mn_Length=$ffff
+  item.io_Device=BYTE POINTER($cd1234)
+  item.io_Unit=BYTE POINTER($ef1234)
+  item.io_Command=$ffff
+  item.io_Flags=$a5
+  item.io_Error=BYTE(IO_IOERR_ABORTED)
+
+RETURN
+
+PROC StandardFields()
+  IOStdReq POINTER item
+
+  item=IOStdReq POINTER($06ffe4)
+  item.io_Message.mn_Node.ln_Succ=EXECLISTS.Node POINTER($071234)
+  item.io_Message.mn_Node.ln_Pred=EXECLISTS.Node POINTER($011234)
+  item.io_Message.mn_Node.ln_Type=5
+  item.io_Message.mn_Node.ln_Pri=$80
+  item.io_Message.mn_Node.ln_Name=BYTE POINTER($abffff)
+  item.io_Message.mn_ReplyPort=MsgPort POINTER($ab0000)
+  item.io_Message.mn_Length=42
+  item.io_Device=BYTE POINTER($011234)
+  item.io_Unit=BYTE POINTER($071234)
+  item.io_Command=IO_CMD_READ
+  item.io_Flags=IO_IOF_QUICK
+  item.io_Error=IO_SIOERR_BADPROFILE
+  item.io_Actual=LONGCARD($ffffffff)
+  item.io_Length=LONGCARD($80000000)
+  item.io_Data=BYTE POINTER($feffff)
+  item.io_Offset=LONGCARD($fedcba98)
+
+RETURN
+
+PROC SerialFields()
+  IOSIOReq POINTER item
+
+  item=IOSIOReq POINTER($08ffce)
+  item.io_Message.mn_Node.ln_Succ=EXECLISTS.Node POINTER($090000)
+  item.io_Message.mn_Node.ln_Pred=EXECLISTS.Node POINTER($080000)
+  item.io_Message.mn_Node.ln_Type=6
+  item.io_Message.mn_Node.ln_Pri=$7f
+  item.io_Message.mn_Node.ln_Name=BYTE POINTER($cdffff)
+  item.io_Message.mn_ReplyPort=MsgPort POINTER($ef0000)
+  item.io_Message.mn_Length=52
+  item.io_Device=BYTE POINTER($ab1234)
+  item.io_Unit=BYTE POINTER($cd1234)
+  item.io_Command=IO_SIOCMD_TRANSACTION
+  item.io_Flags=$fe
+  item.io_Error=BYTE(IO_IOERR_OPENFAIL)
+  item.io_Actual=LONGCARD($87654321)
+  item.io_Length=LONGCARD($ffffffff)
+  item.io_Data=BYTE POINTER($080000)
+  item.io_Offset=LONGCARD($80000000)
+  item.sio_Command=$ff
+  item.sio_Aux1=$81
+  item.sio_Aux2=$fe
+  item.sio_Direction=IO_SIODIR_WRITE
+  item.sio_Profile=$ffff
+  item.sio_TimeoutUS=LONGCARD($ffffffff)
+
+RETURN
+
+PROC LayoutIORequest0()
+
+  facts(0)=LONGCARD(ADDRESS(@requests(1))-ADDRESS(@requests(0)))
+  facts(1)=LONGCARD(ADDRESS(@requests(0).io_Message)-ADDRESS(@requests(0)))
+  facts(2)=LONGCARD(ADDRESS(@requests(0).io_Device)-ADDRESS(@requests(0)))
+  facts(3)=LONGCARD(ADDRESS(@requests(0).io_Unit)-ADDRESS(@requests(0)))
+
+RETURN
+
+PROC LayoutIORequest1()
+
+  facts(4)=LONGCARD(ADDRESS(@requests(0).io_Command)-ADDRESS(@requests(0)))
+  facts(5)=LONGCARD(ADDRESS(@requests(0).io_Flags)-ADDRESS(@requests(0)))
+  facts(6)=LONGCARD(ADDRESS(@requests(0).io_Error)-ADDRESS(@requests(0)))
+
+RETURN
+
+PROC LayoutIOStdReq0()
+
+  facts(7)=LONGCARD(ADDRESS(@standards(1))-ADDRESS(@standards(0)))
+  facts(8)=LONGCARD(ADDRESS(@standards(0).io_Message)-ADDRESS(@standards(0)))
+  facts(9)=LONGCARD(ADDRESS(@standards(0).io_Device)-ADDRESS(@standards(0)))
+  facts(10)=LONGCARD(ADDRESS(@standards(0).io_Unit)-ADDRESS(@standards(0)))
+
+RETURN
+
+PROC LayoutIOStdReq1()
+
+  facts(11)=LONGCARD(ADDRESS(@standards(0).io_Command)-ADDRESS(@standards(0)))
+  facts(12)=LONGCARD(ADDRESS(@standards(0).io_Flags)-ADDRESS(@standards(0)))
+  facts(13)=LONGCARD(ADDRESS(@standards(0).io_Error)-ADDRESS(@standards(0)))
+  facts(14)=LONGCARD(ADDRESS(@standards(0).io_Actual)-ADDRESS(@standards(0)))
+
+RETURN
+
+PROC LayoutIOStdReq2()
+
+  facts(15)=LONGCARD(ADDRESS(@standards(0).io_Length)-ADDRESS(@standards(0)))
+  facts(16)=LONGCARD(ADDRESS(@standards(0).io_Data)-ADDRESS(@standards(0)))
+  facts(17)=LONGCARD(ADDRESS(@standards(0).io_Offset)-ADDRESS(@standards(0)))
+
+RETURN
+
+PROC LayoutIOSIOReq0()
+
+  facts(18)=LONGCARD(ADDRESS(@serials(1))-ADDRESS(@serials(0)))
+  facts(19)=LONGCARD(ADDRESS(@serials(0).io_Message)-ADDRESS(@serials(0)))
+  facts(20)=LONGCARD(ADDRESS(@serials(0).io_Device)-ADDRESS(@serials(0)))
+  facts(21)=LONGCARD(ADDRESS(@serials(0).io_Unit)-ADDRESS(@serials(0)))
+
+RETURN
+
+PROC LayoutIOSIOReq1()
+
+  facts(22)=LONGCARD(ADDRESS(@serials(0).io_Command)-ADDRESS(@serials(0)))
+  facts(23)=LONGCARD(ADDRESS(@serials(0).io_Flags)-ADDRESS(@serials(0)))
+  facts(24)=LONGCARD(ADDRESS(@serials(0).io_Error)-ADDRESS(@serials(0)))
+  facts(25)=LONGCARD(ADDRESS(@serials(0).io_Actual)-ADDRESS(@serials(0)))
+
+RETURN
+
+PROC LayoutIOSIOReq2()
+
+  facts(26)=LONGCARD(ADDRESS(@serials(0).io_Length)-ADDRESS(@serials(0)))
+  facts(27)=LONGCARD(ADDRESS(@serials(0).io_Data)-ADDRESS(@serials(0)))
+  facts(28)=LONGCARD(ADDRESS(@serials(0).io_Offset)-ADDRESS(@serials(0)))
+  facts(29)=LONGCARD(ADDRESS(@serials(0).sio_Command)-ADDRESS(@serials(0)))
+
+RETURN
+
+PROC LayoutIOSIOReq3()
+
+  facts(30)=LONGCARD(ADDRESS(@serials(0).sio_Aux1)-ADDRESS(@serials(0)))
+  facts(31)=LONGCARD(ADDRESS(@serials(0).sio_Aux2)-ADDRESS(@serials(0)))
+  facts(32)=LONGCARD(ADDRESS(@serials(0).sio_Direction)-ADDRESS(@serials(0)))
+  facts(33)=LONGCARD(ADDRESS(@serials(0).sio_Profile)-ADDRESS(@serials(0)))
+
+RETURN
+
+PROC LayoutIOSIOReq4()
+
+  facts(34)=LONGCARD(ADDRESS(@serials(0).sio_TimeoutUS)-ADDRESS(@serials(0)))
+
+RETURN
+
+PROC ReadIORequest0()
+  IORequest POINTER item
+
+  item=IORequest POINTER($04fff3)
+  readback(0)=LONGCARD(ADDRESS(item.io_Message.mn_Node.ln_Succ))
+  readback(1)=LONGCARD(ADDRESS(item.io_Message.mn_Node.ln_Pred))
+  readback(2)=LONGCARD(item.io_Message.mn_Node.ln_Type)
+  readback(3)=LONGCARD(item.io_Message.mn_Node.ln_Pri)
+  readback(4)=LONGCARD(ADDRESS(item.io_Message.mn_Node.ln_Name))
+  readback(5)=LONGCARD(ADDRESS(item.io_Message.mn_ReplyPort))
+
+RETURN
+
+PROC ReadIORequest1()
+  IORequest POINTER item
+
+  item=IORequest POINTER($04fff3)
+  readback(6)=LONGCARD(item.io_Message.mn_Length)
+  readback(7)=LONGCARD(ADDRESS(item.io_Device))
+  readback(8)=LONGCARD(ADDRESS(item.io_Unit))
+  readback(9)=LONGCARD(item.io_Command)
+  readback(10)=LONGCARD(item.io_Flags)
+  readback(11)=LONGCARD(item.io_Error)
+
+RETURN
+
+PROC ReadIOStdReq0()
+  IOStdReq POINTER item
+
+  item=IOStdReq POINTER($06ffe4)
+  readback(12)=LONGCARD(ADDRESS(item.io_Message.mn_Node.ln_Succ))
+  readback(13)=LONGCARD(ADDRESS(item.io_Message.mn_Node.ln_Pred))
+  readback(14)=LONGCARD(item.io_Message.mn_Node.ln_Type)
+  readback(15)=LONGCARD(item.io_Message.mn_Node.ln_Pri)
+  readback(16)=LONGCARD(ADDRESS(item.io_Message.mn_Node.ln_Name))
+  readback(17)=LONGCARD(ADDRESS(item.io_Message.mn_ReplyPort))
+
+RETURN
+
+PROC ReadIOStdReq1()
+  IOStdReq POINTER item
+
+  item=IOStdReq POINTER($06ffe4)
+  readback(18)=LONGCARD(item.io_Message.mn_Length)
+  readback(19)=LONGCARD(ADDRESS(item.io_Device))
+  readback(20)=LONGCARD(ADDRESS(item.io_Unit))
+  readback(21)=LONGCARD(item.io_Command)
+  readback(22)=LONGCARD(item.io_Flags)
+  readback(23)=LONGCARD(item.io_Error)
+
+RETURN
+
+PROC ReadIOStdReq2()
+  IOStdReq POINTER item
+
+  item=IOStdReq POINTER($06ffe4)
+  readback(24)=LONGCARD(item.io_Actual)
+  readback(25)=LONGCARD(item.io_Length)
+  readback(26)=LONGCARD(ADDRESS(item.io_Data))
+  readback(27)=LONGCARD(item.io_Offset)
+
+RETURN
+
+PROC ReadIOSIOReq0()
+  IOSIOReq POINTER item
+
+  item=IOSIOReq POINTER($08ffce)
+  readback(28)=LONGCARD(ADDRESS(item.io_Message.mn_Node.ln_Succ))
+  readback(29)=LONGCARD(ADDRESS(item.io_Message.mn_Node.ln_Pred))
+  readback(30)=LONGCARD(item.io_Message.mn_Node.ln_Type)
+  readback(31)=LONGCARD(item.io_Message.mn_Node.ln_Pri)
+  readback(32)=LONGCARD(ADDRESS(item.io_Message.mn_Node.ln_Name))
+  readback(33)=LONGCARD(ADDRESS(item.io_Message.mn_ReplyPort))
+
+RETURN
+
+PROC ReadIOSIOReq1()
+  IOSIOReq POINTER item
+
+  item=IOSIOReq POINTER($08ffce)
+  readback(34)=LONGCARD(item.io_Message.mn_Length)
+  readback(35)=LONGCARD(ADDRESS(item.io_Device))
+  readback(36)=LONGCARD(ADDRESS(item.io_Unit))
+  readback(37)=LONGCARD(item.io_Command)
+  readback(38)=LONGCARD(item.io_Flags)
+  readback(39)=LONGCARD(item.io_Error)
+
+RETURN
+
+PROC ReadIOSIOReq2()
+  IOSIOReq POINTER item
+
+  item=IOSIOReq POINTER($08ffce)
+  readback(40)=LONGCARD(item.io_Actual)
+  readback(41)=LONGCARD(item.io_Length)
+  readback(42)=LONGCARD(ADDRESS(item.io_Data))
+  readback(43)=LONGCARD(item.io_Offset)
+  readback(44)=LONGCARD(item.sio_Command)
+  readback(45)=LONGCARD(item.sio_Aux1)
+
+RETURN
+
+PROC ReadIOSIOReq3()
+  IOSIOReq POINTER item
+
+  item=IOSIOReq POINTER($08ffce)
+  readback(46)=LONGCARD(item.sio_Aux2)
+  readback(47)=LONGCARD(item.sio_Direction)
+  readback(48)=LONGCARD(item.sio_Profile)
+  readback(49)=LONGCARD(item.sio_TimeoutUS)
+
+RETURN
+
+; Exercise device-service signatures and request record layout.
+PROC Main()
+
+  LayoutIORequest0()
+  LayoutIORequest1()
+  LayoutIOStdReq0()
+  LayoutIOStdReq1()
+  LayoutIOStdReq2()
+  LayoutIOSIOReq0()
+  LayoutIOSIOReq1()
+  LayoutIOSIOReq2()
+  LayoutIOSIOReq3()
+  LayoutIOSIOReq4()
+  RequestFields()
+  StandardFields()
+  SerialFields()
+  ReadIORequest0()
+  ReadIORequest1()
+  ReadIOStdReq0()
+  ReadIOStdReq1()
+  ReadIOStdReq2()
+  ReadIOSIOReq0()
+  ReadIOSIOReq1()
+  ReadIOSIOReq2()
+  ReadIOSIOReq3()
+  Calls()
+  CompletionCalls()
+  writeStatus=EXECOS.Write(BYTE POINTER(line),7)
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,109 @@
+MODULE HEAPRACES
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE EXECSIGNALIRQ
+USE PRODUCERPROBE
+USE TASKSTACKS
+USE HEAPCORE
+EXEC.Task worker
+VOLATILE CARD wakes,irqReads,checkpoints
+VOLATILE BYTE active,stopping
+VOLATILE BYTE skctl=$d20f,skshadow=$232,audctl=$d208
+BYTE oldsk
+CARD checks
+LONGCARD before,after
+PROC POINTER absent()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE condition)
+
+  IF condition=0 THEN
+    HEAPCORE.Abort($ff75)
+  FI
+
+RETURN
+
+PROC WorkerEntry()
+  LONGCARD received
+
+  DO
+    received=EXEC.Wait(1)
+    IF stopping<>0 THEN
+      EXIT
+    FI
+
+    Require(received=1)
+    wakes==+1
+  OD
+
+RETURN
+
+PROC AwaitWake(CARD count)
+  CARD ignored
+
+  WHILE wakes<count OR worker.tc_State<>EXEC.TS_WAIT DO
+    ignored=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+; Exercise allocator ownership across deterministic scheduling windows.
+PROC Main()
+  BYTE POINTER buffer,p
+  CARD POINTER words
+  CARD index,ignored
+  LONGCARD largest
+
+  before=EXEC.AvailMem(0)
+  oldsk=skshadow
+  buffer=EXEC.AllocMem(8,0)
+  Require(buffer<>BYTE POINTER(0))
+  words=CARD POINTER(buffer)
+  FOR index=0 TO 3 DO
+    words(index)=$a55a
+  OD
+
+  worker.tc_Node.ln_Type=EXEC.NT_TASK
+  worker.tc_SPLower=ADDRESS(TASKSTACKS.LOWER1)
+  worker.tc_SPUpper=ADDRESS(TASKSTACKS.UPPER1)
+  worker.tc_SPReg=worker.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@worker.tc_MemEntry)
+  Require(EXEC.AddTask(@worker,@WorkerEntry,absent)=@worker)
+  AwaitWake(0)
+  Require(PRODUCERPROBE.Bind(@worker,1))
+  active=1
+  p=EXEC.AllocMem(24,0)
+  Require(p<>BYTE POINTER(0))
+  AwaitWake(1)
+  EXEC.FreeMem(p,24)
+  AwaitWake(2)
+  largest=EXEC.AvailMem(EXEC.MEMF_LARGEST)
+  Require(largest=LONGCARD($10000))
+  AwaitWake(3)
+  active=0
+  ; Release disables the hardware source before the IRQ's buffer is freed.
+  PRODUCERPROBE.Release()
+  skshadow=oldsk
+  skctl=oldsk
+  audctl=0
+  stopping=1
+  EXEC.Signal(@worker,1)
+  WHILE worker.tc_State<>EXEC.TS_REMOVED DO
+    ignored=EXECTASKS.Sleep(1)
+  OD
+
+  Require(irqReads=3 AND checkpoints=7 AND wakes=3)
+  FOR index=0 TO 3 DO
+    Require(words(index)=$a55a)
+  OD
+
+  EXEC.FreeMem(buffer,8)
+  after=EXEC.AvailMem(0)
+  Require(after=before)
+  checks=1
+
+RETURN
+
+ENDMODULE

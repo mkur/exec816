@@ -1,0 +1,19 @@
+MODULE OVERFLOW
+USE COMMAND
+
+LONGINT FUNC Recurse(CARD remaining)
+  VOLATILE BYTE ARRAY frame(160)
+
+  frame(0)=BYTE(remaining)
+  IF remaining<>0 THEN
+    Recurse(remaining-1)
+  FI
+
+RETURN(LONGINT(frame(0)))
+
+; Exercise command stack-overflow handling.
+LONGINT FUNC Main()
+
+RETURN(Recurse(20))
+
+ENDMODULE

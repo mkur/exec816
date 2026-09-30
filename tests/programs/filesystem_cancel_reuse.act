@@ -1,0 +1,133 @@
+MODULE FILESYSTEMCANCELTEST
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+USE FSBOOT
+USE FSREGISTRY
+USE FSOPERATION
+USE FSCANCELPROBE
+USE HEAPCORE
+CARD checks
+VOLATILE BYTE phase,gate,done
+BYTE round
+EXEC.Task participant
+PROC POINTER absent()
+DOS.FileHandle POINTER con
+DOSBREAKTYPES.Scope POINTER scope
+BYTE POINTER buffer,oldClient,oldScope
+LONGCARD oldTag,baseline
+BYTE ARRAY conName=[67 79 78 58 0]
+BYTE ARRAY path=[68 49 58 84 79 79 76 83 47 83 85 66 47 68 65 84 65 46 66 73 78 0]
+LONGINT ARRAY results(8),errors(8)
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($ea00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Reuse caller resources while checking that old cancellation state cannot
+; reach them.
+PROC ParticipantEntry()
+  DOS.FileHandle POINTER terminal,file
+  DOSCLIENT.ClientContext POINTER client
+  DOSCORE.DosRegistry POINTER registry
+  BYTE ignored
+
+  terminal=DOS.Open(conName,DOS.MODE_READWRITE)
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(terminal<>DOS.FileHandle POINTER(0) AND file<>DOS.FileHandle POINTER(0))
+  Require(DOS.BeginForeground(terminal)<>0)
+  scope=DOSBREAK.Current()
+  client=DOSCLIENT.Ensure()
+  IF round=1 THEN
+    oldClient=BYTE POINTER(client)
+    oldScope=BYTE POINTER(scope)
+  ELSE
+    Require(BYTE POINTER(client)=oldClient AND BYTE POINTER(scope)=oldScope)
+    Require(scope.generation<>oldTag)
+    ignored=CONSOLEFOREGROUND.Deliver(oldTag)
+    Require(DOS.BreakPending()=0 AND scope.opState=0)
+  FI
+
+  FSCANCELPROBE.target=scope
+  FSCANCELPROBE.mode=3
+  FSCANCELPROBE.stage=0
+  FSCANCELPROBE.gate=0
+  phase=round
+  results(round)=DOS.Read(file,buffer,16)
+  errors(round)=DOS.IoErr()
+  Require(results(round)=-1 AND errors(round)=DOS.ERROR_BREAK
+      AND DOS.BreakPending()<>0)
+  Require(scope.opState=FSOPERATION.COLLECTED AND scope.enqueued=0)
+  registry=DOSCORE.GetRegistry()
+  Require(registry.cancelHead=BYTE POINTER(0))
+  oldTag=scope.generation
+  Require(DOS.EndForeground()<>0 AND DOS.Close(file)<>0
+      AND DOS.Close(terminal)<>0 AND DOS.ReleaseContext()<>0)
+  done=1
+
+RETURN
+
+; Admit the next participant with a fresh Task lifetime for the reuse
+; scenario.
+PROC Spawn()
+  CARD ticks,index
+  BYTE POINTER bytes
+
+  bytes=BYTE POINTER(@participant)
+  FOR index=0 TO EXEC.TASK_SIZE-1 DO
+    bytes(index)=0
+  OD
+
+  participant.tc_Node.ln_Type=EXEC.NT_TASK
+  participant.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(4))
+  participant.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(4))
+  participant.tc_SPReg=participant.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@participant.tc_MemEntry)
+  Require(EXEC.AddTask(@participant,@ParticipantEntry,absent)=@participant)
+  WHILE participant.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(done=1)
+  done=0
+
+RETURN
+
+; Exercise cancellation identity across Task and request reuse.
+PROC Main()
+  DOS.FileHandle POINTER file
+
+  baseline=EXEC.AvailMem(0)
+  con=DOS.Open(conName,DOS.MODE_READWRITE)
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(con<>DOS.FileHandle POINTER(0) AND file<>DOS.FileHandle POINTER(0)
+      AND DOS.Close(file)<>0)
+  buffer=EXEC.AllocMem(16,EXEC.MEMF_UPPER)
+  Require(buffer<>BYTE POINTER(0))
+  round=1
+  Spawn()
+  round=2
+  Spawn()
+  Require(DOS.Close(con)<>0 AND DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  EXEC.FreeMem(buffer,16)
+  Require(EXEC.AvailMem(0)=baseline)
+  phase=3
+
+RETURN
+
+ENDMODULE

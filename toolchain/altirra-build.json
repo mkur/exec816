@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ilmenit/AltirraSDL.git",
+  "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+  "local_revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+  "patch": "toolchain/patches/altirra-native-irq-mask.patch",
+  "patch_sha256": "7f3327256c2b5a503c5686ac4995f9bb2179236c2d31f726a8392c9d07754633",
+  "binary_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+  "platform": "macOS arm64",
+  "compiler": "Apple clang version 17.0.0 (clang-1700.6.4.2)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin",
+  "cmake": "cmake version 4.4.2",
+  "configure_options": [
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DALTIRRA_BRIDGE_SERVER=ON",
+    "-DALTIRRA_STATIC_SDL3=OFF",
+    "-DALTIRRA_SKIP_SDL3_IMAGE=ON",
+    "-DENABLE_LIBRASHADER=OFF",
+    "-DALTIRRA_CPU_TESTS=ON"
+  ],
+  "configure_cache_override": {
+    "FETCHCONTENT_SOURCE_DIR_IMGUI": "/Users/michalkurcewicz/atari/AltirraSDL/build/macos-release/_deps/imgui-src"
+  },
+  "sdk_source": "AltirraBridge-nightly-macos-arm64 at the original pinned revision; Python SDK unchanged",
+  "test_command": "build/irq-fix/src/AltirraBridgeServer/AltirraBridgeServer --cpu-test-interrupt-mask",
+  "before": [
+    "interrupt-mask mode=0 nmi=0: FAIL (IRQ=0 NMI=0 S=3FE0 P=04)",
+    "interrupt-mask mode=0 nmi=1: FAIL (IRQ=0 NMI=0 S=3FE0 P=04)",
+    "interrupt-mask mode=1 nmi=0: FAIL (IRQ=0 NMI=0 S=3FE0 P=14)",
+    "interrupt-mask mode=1 nmi=1: FAIL (IRQ=0 NMI=0 S=3FE0 P=14)",
+    "interrupt-mask mode=2 nmi=0: FAIL (IRQ=0 NMI=0 S=3FE0 P=24)",
+    "interrupt-mask mode=2 nmi=1: FAIL (IRQ=0 NMI=0 S=3FE0 P=24)",
+    "interrupt-mask mode=3 nmi=0: FAIL (IRQ=0 NMI=0 S=3FE0 P=34)",
+    "interrupt-mask mode=3 nmi=1: FAIL (IRQ=0 NMI=0 S=3FE0 P=34)",
+    "interrupt-mask mode=4 nmi=0: PASS (IRQ=1 NMI=0 S=01ED P=34)",
+    "interrupt-mask mode=4 nmi=1: PASS (IRQ=0 NMI=1 S=01ED P=34)"
+  ],
+  "after": [
+    "interrupt-mask mode=0 nmi=0: PASS (IRQ=1 NMI=0 S=3FFC P=04)",
+    "interrupt-mask mode=0 nmi=1: PASS (IRQ=0 NMI=1 S=3FFC P=04)",
+    "interrupt-mask mode=1 nmi=0: PASS (IRQ=1 NMI=0 S=3FFC P=14)",
+    "interrupt-mask mode=1 nmi=1: PASS (IRQ=0 NMI=1 S=3FFC P=14)",
+    "interrupt-mask mode=2 nmi=0: PASS (IRQ=1 NMI=0 S=3FFC P=24)",
+    "interrupt-mask mode=2 nmi=1: PASS (IRQ=0 NMI=1 S=3FFC P=24)",
+    "interrupt-mask mode=3 nmi=0: PASS (IRQ=1 NMI=0 S=3FFC P=34)",
+    "interrupt-mask mode=3 nmi=1: PASS (IRQ=0 NMI=1 S=3FFC P=34)",
+    "interrupt-mask mode=4 nmi=0: PASS (IRQ=1 NMI=0 S=01ED P=34)",
+    "interrupt-mask mode=4 nmi=1: PASS (IRQ=0 NMI=1 S=01ED P=34)"
+  ]
+}

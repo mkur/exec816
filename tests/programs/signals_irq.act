@@ -1,0 +1,112 @@
+MODULE SIGNALIRQ
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE EXECSIGNALIRQ
+USE PRODUCERPROBE
+USE TASKSTACKS
+
+EXEC.Task worker
+EXEC.Task POINTER parent
+VOLATILE BYTE mask=$10,irqen=$d20e,skctl=$d20f,skshadow=$232,nmien=$d40e
+VOLATILE BYTE freq3=$d204,vol3=$d205,freq4=$d206,vol4=$d207,audctl=$d208,
+    stimer=$d209,skreset=$d20a,serout=$d20d
+VOLATILE CARD ticks=$2034
+VOLATILE BYTE phase
+BYTE variant,oldsk
+CARD ARRAY checks(8)
+LONGCARD result
+PROC POINTER missing()
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC WorkerEntry()
+
+  result=EXEC.Wait(LONGCARD($80000001))
+  phase=1
+  ; Quiesce and retire this binding before returning/removing the worker.
+  mask=mask & $ef
+  irqen=mask
+  skctl=0
+  PRODUCERPROBE.Release()
+  EXEC.Signal(parent,2)
+
+RETURN
+
+PROC Setup()
+  EXEC.Task POINTER item
+  CARD status
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  item=EXEC.AddTask(@worker,@WorkerEntry,missing)
+  WHILE worker.tc_State<>EXEC.TS_WAIT DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  oldsk=skshadow
+  checks(0)=CARD(PRODUCERPROBE.Bind(item,LONGCARD($80000001)))
+  skctl=0
+  freq3=$ff
+  vol3=0
+  freq4=8
+  vol4=0
+  audctl=$28
+  skshadow=$23
+  skctl=$23
+  skreset=$23
+  stimer=$23
+
+RETURN
+
+; Exercise interrupt-produced notification of a waiting Task.
+PROC Main()
+  CARD before
+  LONGCARD got
+
+  Setup()
+  nmien=0
+  before=ticks
+  IF variant=1 THEN
+    EXEC.Forbid()
+  FI
+
+  IF variant=3 THEN
+    EXECSIGNALIRQ.IRQContext()
+    checks(1)=CARD(phase=1)
+  ELSE
+    mask=mask % $10
+    irqen=mask
+    serout=$5a
+  FI
+
+  IF variant=1 THEN
+    ; Readiness can advance under Forbid; execution waits for Permit.
+    WHILE worker.tc_State<>EXEC.TS_READY DO
+      EXEC.Poll()
+    OD
+
+    checks(1)=CARD(phase=0)
+    EXEC.Permit()
+  ELSEIF variant=2 THEN
+    got=EXEC.Wait(2)
+    checks(1)=CARD(got=2)
+  ELSEIF variant=0 THEN
+    ; No cooperative boundary and no VBI: the outer serial IRQ must switch.
+    WHILE phase=0 DO
+    OD
+
+    checks(1)=1
+  FI
+
+  checks(2)=CARD(ticks=before)
+  checks(3)=CARD(result=LONGCARD($80000001))
+  nmien=$40
+  skshadow=oldsk
+  skctl=oldsk
+  audctl=0
+  AwaitRemoval(@worker)
+  checks(4)=CARD(worker.tc_ExecPrivate=0)
+
+RETURN
+
+ENDMODULE

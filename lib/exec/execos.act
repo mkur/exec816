@@ -1,0 +1,10 @@
+MODULE EXECOS
+
+; ROM console bridge for bootstrap and OS-coexistence probes.
+; Applications use DOS.Write (or COMMAND.Write in disk commands).
+; Native v1. Status 1 means success; $80-$ff are CIO errors.
+; $ff01: invalid buffer/length; $ff02: OS call already active.
+; 0..255 ATASCII bytes, wholly within the launcher's bank-zero image arena.
+PUBLIC EXTERNAL CARD FUNC Write(BYTE POINTER buffer CARD length)
+
+  ENDMODULE

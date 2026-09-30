@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "rom": {
+    "name": "AltirraOS 3.44 for 65C816",
+    "bytes": 16384,
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+    "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+    "cop0_after_xce": 50931
+  },
+  "emulator": {
+    "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+    "platform": "macOS arm64",
+    "sha256": "6831df8ce90c5112b26250c03aeb4b9fa729961f7048eee407ae16a3b8f59802",
+    "source_patch": "toolchain/patches/altirra-console-probe.patch",
+    "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+    "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+    "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+    "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789"
+  },
+  "machine": {
+    "model": "800XL",
+    "cpu": "65C816",
+    "clock_multiplier": 8,
+    "memory": "64K",
+    "high_banks": 15,
+    "video": "PAL",
+    "basic": false,
+    "dli": false,
+    "shadow_rom": true
+  },
+  "scope": "Console qualification plus three bridge KEY names for existing Atari matrix keys; unchanged CPU/peripheral semantics.",
+  "peripherals": [
+    {
+      "name": "fastest-125k",
+      "diskemu": "fastest",
+      "divisor": 0,
+      "source": "src/Altirra/source/diskprofile.cpp",
+      "firmware": "built-in high-level model"
+    },
+    {
+      "name": "stock-810",
+      "diskemu": "810",
+      "divisor": 40,
+      "source": "src/Altirra/source/diskprofile.cpp",
+      "firmware": "built-in high-level model"
+    },
+    {
+      "name": "happy-none",
+      "diskemu": "happy1050",
+      "divisor": 40,
+      "source": "src/Altirra/source/disk.cpp",
+      "firmware": "built-in high-level model; quiet command only"
+    }
+  ],
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true
+  },
+  "source_sha256": {
+    "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+    "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+    "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+  },
+  "observer": {
+    "binary_sha256": "6831df8ce90c5112b26250c03aeb4b9fa729961f7048eee407ae16a3b8f59802",
+    "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+  },
+  "keyboard_input": {
+    "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+    "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+    "initialization": "KEY ALL up enables scan mode before modifier changes",
+    "added_keys": {
+      "ASTERISK": 7,
+      "LESS": 54,
+      "GREATER": 55
+    },
+    "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+    "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+  },
+  "serial_regression_pins": [
+    "toolchain/altirra-sio-queued.json",
+    "toolchain/altirra-sio-sectors.json"
+  ]
+}

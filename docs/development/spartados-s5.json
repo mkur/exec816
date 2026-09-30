@@ -1,0 +1,1635 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "S5 focused development checks, real emulated SIO. Raw/optimized 128-byte mixed mounts; exact optimized image replay with explicit 256-byte geometry override. General qualification remains separate.",
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "47cd55b2dac510922949832332b7a2c3220885be",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "platforms": {
+    "altirra-shell-paced.json": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068"
+  },
+  "inputs": {
+    "lib/spartados/sdfs.act": "156c5a17f9053af4334257aecd3c7e41c65aa6ae85345a18352d6b8a27fd4c4a",
+    "lib/spartados/sdfstypes.act": "233e14bd1850e27ced090512854286d26cd1f3370950cc5bb31f3ec930a8a3cf",
+    "lib/spartados/sdfsfile.act": "69d89367b1b1a1306f7e99174d59f6e7e9e515264115ca93961c5a961a516ae0",
+    "lib/spartados/sdfsdir.act": "be1873ac87e288bfa6672e33ed2162d9700eee4416aa98c0af83866161bbb044",
+    "lib/spartados/sdfsname.act": "307cc81df6050c3d9cb53d72f8e24acc790cb40f84cd935a3e0331550c485e82",
+    "lib/spartados/sdfsdate.act": "6704c3841ca14ccc7eb84e8fabdf5ac71d30aed90f477c562ffc3ef5d9dbca6d",
+    "lib/fs/fsformats.act": "8f1857557b04d9315adf3bae853afc42aef3761a824013873e0823310539e317",
+    "lib/fs/fsbtypes.act": "8fcdfe6f5ae66a746cbb9dd023059e520cd7965996020219e0d685d3456b6deb",
+    "lib/fs/fsbackend.act": "b18a83dfb00910a15ddde3458e56c4622071d922f5b35ddf93188fe6481223c6",
+    "lib/mydos/fsmydos.act": "4c17e4e82de27f33482b99f6496f912960eb7f0738c9945c22217d7188066e04",
+    "lib/fs/fsfiles.act": "15402b416fb472a43781aef8fc11820a591671db1af2e960e5d4ac5e13f81eff",
+    "lib/fs/fsinspect.act": "c0e890ba262d9009274f4edd120f5ad6fe085f6078289ad53d0a9d6ba2d5e70d",
+    "lib/fs/fsactive.act": "89c31b93c2c0fd99ac12c3a251c9c7bf531405b9e092a72ca17eec3c9e45a785",
+    "lib/fs/fsabort.act": "7ebd4bc64fdca8f7fa4b2d78f5e57aac76aad7284935961ec8e8bf9cdcf9d2d1",
+    "lib/fs/fsoperation.act": "a13238217c1b21f0cbbbec924f78d68765c72f3bc4c29aa36e86d20ef8b33230",
+    "lib/mydos/mydosfile.act": "bfbbdd9e05e24f7a2b02d61276bfc6f6cea244a5531adaa375dca6b89ae2bb87",
+    "lib/mydos/mydosfiletypes.act": "076969b89f045047ae761e2ccda59dce57076a413db57c590812705d7ec41f1b",
+    "lib/mydos/mydos.act": "d9a40a0b89d1c265fb80af87ea3222dd7aa91f7b53c8f6167767c503c486685e",
+    "lib/mydos/mydosnames.act": "4a1da3a980a9e2838160a706bf3073dcc965d6dbff07571d47b9e2c0f83e7d94",
+    "lib/mydos/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+    "lib/fs/fsmux.act": "d1df71693b54b5c689ccc51b59023228244dde41de6c17c356e8b13ef065803f",
+    "lib/fs/fsmount.act": "0458c19d6ba975e7de4b96a0be7c4b820f06e515a7740fa9c06c8ce54f06edc6",
+    "lib/fs/fsmanager.act": "50032a3701d101f904fe90d390343f1cad6028882340d4404a5178d838f5fc7c",
+    "lib/fs/fspacket.act": "8e551f4567d109ff1cefb73f43936cffab71ea3b893a4f87890c10a1c474c359",
+    "lib/fs/fsdirectory.act": "c63a5103f0e968a5f0b07bc0b2306195dda4367ec6cc0f45298d2da668eb1766",
+    "lib/fs/fslocks.act": "ee3bde13e3b9a7f184a414c9b6225014c16a46daf7afde87bb6452328eaeebab",
+    "lib/fs/fsrelative.act": "ff1883963176c20ae308ebdb1d53164816014c292f3e2c08b8a9521502c7cacc",
+    "lib/fs/fsinfo.act": "cf6088bddce107bb52978c8a1e8cc6eb2dc2bc4617f421b631e5a6b630010d2d",
+    "lib/fs/fsio.act": "ca97eec396589fd5fe5b243b93949f887b02079740336e77a258511216e6fa25",
+    "lib/fs/fsboot.act": "5b7d36591862dc64d70d8217b6922a16f77fa39569e2c5dc568a85745022d422",
+    "lib/fs/fsworker.act": "6cdd67e681508d9762a5ccd6f7fd5d929a8188ae00bf59b934f9548a29ebe968",
+    "lib/fs/fsinit.act": "28f6c69a0bbfbc8b021a8d43ca179d55b7ed9ab0d07cabd5c722ab80c3fb8c57",
+    "lib/fs/fsregistry.act": "ba730ab22e464baf3ed8fea29a6422bd8ce01bd64baa0677e550aee2a6fb5eba",
+    "lib/fs/fsnames.act": "b3111201adb514e20f3c7be6c93cded918f2930b076d56d35a49e451d3a8e9f5",
+    "lib/fs/fsports.act": "de28d89be5844fcb6f094b634ea700387e3511f9b80b935ae0a154382fa2f09b",
+    "lib/fs/fstypes.act": "112af882a8269690d488b68f6c192b57a235af6060fc7d84091dadf1e06ac2ff",
+    "lib/fs/fshandler.act": "6b23f2131c09751ee605b038c99dc573e1d650b302c2f3bd2e5211bbbdafc45a",
+    "tools/test_sdfs_dos.py": "a24591e0bf94f6c1cbef4c839f26a92efaa4b998a0739bda7f2258ce57657459",
+    "tests/programs/sdfs_dos.act": "55b3b5a26f8a799f3e4156a1acf34ace731a01ed8120c139cad2ff248361f774",
+    "tools/test_dos_startup.py": "d409d802c25fb6365330f0bed35207f87cc0f0bd6b346079399df5ddbb4b8466",
+    "tools/test_filesystem_active_cancel.py": "d0f7be6d50d8cfbb39b2eff46fe745bc68aef8d876b77bc72bd7ff81e91bbef1",
+    "tests/programs/filesystem_active_cancel.act": "be92a2f28e9ef918bf478a815a55aada2ca0c5a9d1ee47c49615d312ec2374f8",
+    "tests/programs/fsactiveprobe.act": "7abfefc1e52eba8577a5c506a0a73ec1a7ed23da27ed6fc6729ff01d04fcba61"
+  },
+  "cases": [
+    {
+      "mode": "raw",
+      "sector_bytes": 128,
+      "mounts": [
+        {
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 2000,
+          "sector_bytes": 128,
+          "profile": 4,
+          "format": 2
+        },
+        {
+          "alias": "D2",
+          "unit": 50,
+          "sectors": 720,
+          "sector_bytes": 128,
+          "profile": 4,
+          "format": 1
+        }
+      ],
+      "checks": [
+        118
+      ],
+      "media": [
+        "cdf13335979095072576b952668a4458b4970c3fa6527c5baafa12573c70da42",
+        "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d"
+      ],
+      "name": "raw128/results.json",
+      "status": "pass",
+      "result_sha256": "3a1eb7c1b438ff191ea9c3a3979fd898d9074d2ed07b45182f01b84339e98d87",
+      "image_sha256": "f302c699152d052e74693aaa128bc826fc52038f9fa75331735182212b42850d",
+      "xex_sha256": "1ca970f41570b57fe8860b2c8b77cef4320ef051ff82641b7859824c813a3ecc",
+      "source_sha256": "55b3b5a26f8a799f3e4156a1acf34ace731a01ed8120c139cad2ff248361f774",
+      "optimize": false,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 3,
+        "live_tasks": 0,
+        "native_nmi_count": 685,
+        "native_irq_count": 19861,
+        "stack_touched_bytes": [
+          332,
+          294,
+          170,
+          222,
+          18,
+          18,
+          18,
+          18,
+          52
+        ],
+        "stack_headroom_untouched_bytes": [
+          948,
+          474,
+          598,
+          546,
+          750,
+          750,
+          750,
+          750,
+          204
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 332,
+          "untouched_from_base": 1204,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "emitted_module_bytes": {
+        "FSMYDOS": 15197,
+        "SDFS": 10540,
+        "SDFSFILE": 15399,
+        "SDFSDATE": 2373,
+        "SDFSDIR": 10975,
+        "SDFSNAME": 8910,
+        "FSBACKEND": 6582,
+        "SDFSDOSTEST": 17137
+      }
+    },
+    {
+      "mode": "opt",
+      "sector_bytes": 128,
+      "mounts": [
+        {
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 2000,
+          "sector_bytes": 128,
+          "profile": 4,
+          "format": 2
+        },
+        {
+          "alias": "D2",
+          "unit": 50,
+          "sectors": 720,
+          "sector_bytes": 128,
+          "profile": 4,
+          "format": 1
+        }
+      ],
+      "geometry_override": null,
+      "replay": false,
+      "checks": [
+        118
+      ],
+      "media": [
+        "cdf13335979095072576b952668a4458b4970c3fa6527c5baafa12573c70da42",
+        "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d"
+      ],
+      "name": "opt128/results-128.json",
+      "status": "pass",
+      "result_sha256": "753c431b3063d4e2d3f8fd8a8a264a9bf1864926a9ee4d58532767ca6acdfe08",
+      "image_sha256": "e104b6dfd8daeadc00f8e6bc243e35b4f13c84fc1638cd5175d7b861ff48e7ed",
+      "xex_sha256": "bdc5960c1b2c0a483ece67af594ce372902d309906d49a4b659f81265f1553c0",
+      "source_sha256": "55b3b5a26f8a799f3e4156a1acf34ace731a01ed8120c139cad2ff248361f774",
+      "optimize": true,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 3,
+        "live_tasks": 0,
+        "native_nmi_count": 628,
+        "native_irq_count": 19852,
+        "stack_touched_bytes": [
+          312,
+          263,
+          122,
+          214,
+          18,
+          18,
+          18,
+          18,
+          50
+        ],
+        "stack_headroom_untouched_bytes": [
+          968,
+          505,
+          646,
+          554,
+          750,
+          750,
+          750,
+          750,
+          206
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 303,
+          "untouched_from_base": 1233,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "emitted_module_bytes": {
+        "FSMYDOS": 14079,
+        "SDFS": 9703,
+        "SDFSFILE": 14418,
+        "SDFSDATE": 2359,
+        "SDFSDIR": 10329,
+        "SDFSNAME": 8709,
+        "FSBACKEND": 6512,
+        "SDFSDOSTEST": 15049
+      }
+    },
+    {
+      "mode": "opt",
+      "sector_bytes": 256,
+      "mounts": [
+        {
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 2000,
+          "sector_bytes": 256,
+          "profile": 4,
+          "format": 2
+        },
+        {
+          "alias": "D2",
+          "unit": 50,
+          "sectors": 720,
+          "sector_bytes": 128,
+          "profile": 4,
+          "format": 1
+        }
+      ],
+      "geometry_override": 256,
+      "replay": true,
+      "checks": [
+        118
+      ],
+      "media": [
+        "1fdbef44ad3ff73d51d798ca8c2622bf71153490e99e4832ae91b347b68e3145",
+        "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d"
+      ],
+      "name": "opt128/results-256.json",
+      "status": "pass",
+      "result_sha256": "30d27a6794da8a0d97a7ffa1fec35f866a6df6149c9443e182bfde558e47dc17",
+      "image_sha256": "e104b6dfd8daeadc00f8e6bc243e35b4f13c84fc1638cd5175d7b861ff48e7ed",
+      "xex_sha256": "bdc5960c1b2c0a483ece67af594ce372902d309906d49a4b659f81265f1553c0",
+      "source_sha256": "55b3b5a26f8a799f3e4156a1acf34ace731a01ed8120c139cad2ff248361f774",
+      "optimize": true,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 3,
+        "live_tasks": 0,
+        "native_nmi_count": 666,
+        "native_irq_count": 25274,
+        "stack_touched_bytes": [
+          312,
+          263,
+          121,
+          214,
+          18,
+          18,
+          18,
+          18,
+          50
+        ],
+        "stack_headroom_untouched_bytes": [
+          968,
+          505,
+          647,
+          554,
+          750,
+          750,
+          750,
+          750,
+          206
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 303,
+          "untouched_from_base": 1233,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "emitted_module_bytes": {
+        "FSMYDOS": 14079,
+        "SDFS": 9703,
+        "SDFSFILE": 14418,
+        "SDFSDATE": 2359,
+        "SDFSDIR": 10329,
+        "SDFSNAME": 8709,
+        "FSBACKEND": 6512,
+        "SDFSDOSTEST": 15049
+      }
+    },
+    {
+      "sector_bytes": 128,
+      "media_sha256": "cdf13335979095072576b952668a4458b4970c3fa6527c5baafa12573c70da42",
+      "observers": {
+        "fsworker.act": "4a47df4e9649d5c887e89e5a94e78a01edf2c774cf17ec605798adb5ad38bcb3",
+        "blockwire.act": "c2b11f35b7173039bb8086de421cfef49a2b5d88a3e48fea9aa2d0ed7a3bbf8a",
+        "fshandler.act": "c9103846cae2eeeb0078882b749c0cacba365539bb5715792ac2545cfdc73b68",
+        "fspacket.act": "4b2803223917f05cd2e3f3400eeee1d400a7a5f3d4c760b6b625e5441db60031",
+        "fsdirectory.act": "5af0c12c5b0c9fc6c5f9ecccf20848890b170db06844de862adbecf07ea00d0d",
+        "siodriver.act": "4d461cb045b4a14de1bf3bf0e7651feaaa5456b2a4889434309059d30be6cde6",
+        "sdfsfile.act": "2106eb56eb66259176852b6567609e4bfb6287c8c25166e5386ad9103c33c8c6",
+        "fsactiveprobe.act": "7abfefc1e52eba8577a5c506a0a73ec1a7ed23da27ed6fc6729ff01d04fcba61"
+      },
+      "filesystem": "sdfs",
+      "name": "cancel-raw/results.json",
+      "status": "pass",
+      "result_sha256": "74670baa7376d06320a79c8f053afce1ede2c1d29321a60d1dad68046f9e46da",
+      "image_sha256": "a7de25f9542ff247ae4b80141ce724b093db374208f57b053f93bcba2ed1b445",
+      "xex_sha256": "4013c9ddcc4a15143baa68c39a1615f6a92f7c735d8ffe866106693b18d76dfb",
+      "source_sha256": "cec4b2562c49b7018577a82227e17b6bc5e550b38f1f8affa65b7fcc8d32108e",
+      "optimize": false,
+      "scenarios": [
+        {
+          "status": "pass",
+          "name": "middle",
+          "checks": [
+            2137
+          ],
+          "result": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 197,
+            "native_irq_count": 2756,
+            "stack_touched_bytes": [
+              274,
+              182,
+              251,
+              162,
+              18,
+              18,
+              18,
+              18,
+              46
+            ],
+            "stack_headroom_untouched_bytes": [
+              1006,
+              586,
+              517,
+              606,
+              750,
+              750,
+              750,
+              750,
+              210
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 325,
+              "untouched_from_base": 1211,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "wire",
+          "checks": [
+            2394
+          ],
+          "result": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              1
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              5
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 180,
+            "native_irq_count": 2539,
+            "stack_touched_bytes": [
+              274,
+              182,
+              251,
+              162,
+              18,
+              18,
+              18,
+              18,
+              50
+            ],
+            "stack_headroom_untouched_bytes": [
+              1006,
+              586,
+              517,
+              606,
+              750,
+              750,
+              750,
+              750,
+              206
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 325,
+              "untouched_from_base": 1211,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "open-allocation",
+          "checks": [
+            12
+          ],
+          "result": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 114,
+            "native_irq_count": 1193,
+            "stack_touched_bytes": [
+              272,
+              182,
+              251,
+              162,
+              18,
+              18,
+              18,
+              18,
+              50
+            ],
+            "stack_headroom_untouched_bytes": [
+              1008,
+              586,
+              517,
+              606,
+              750,
+              750,
+              750,
+              750,
+              206
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 325,
+              "untouched_from_base": 1211,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "directory-scan",
+          "checks": [
+            14
+          ],
+          "result": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 127,
+            "native_irq_count": 1347,
+            "stack_touched_bytes": [
+              270,
+              182,
+              251,
+              162,
+              18,
+              18,
+              18,
+              18,
+              46
+            ],
+            "stack_headroom_untouched_bytes": [
+              1010,
+              586,
+              517,
+              606,
+              750,
+              750,
+              750,
+              750,
+              210
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 325,
+              "untouched_from_base": 1211,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "directory-accounting",
+          "checks": [
+            14
+          ],
+          "result": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 148,
+            "native_irq_count": 1865,
+            "stack_touched_bytes": [
+              270,
+              182,
+              251,
+              162,
+              18,
+              18,
+              18,
+              18,
+              46
+            ],
+            "stack_headroom_untouched_bytes": [
+              1010,
+              586,
+              517,
+              606,
+              750,
+              750,
+              750,
+              750,
+              210
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 325,
+              "untouched_from_base": 1211,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "lookup",
+          "checks": [
+            12
+          ],
+          "result": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 90,
+            "native_irq_count": 807,
+            "stack_touched_bytes": [
+              288,
+              182,
+              251,
+              162,
+              18,
+              18,
+              18,
+              18,
+              46
+            ],
+            "stack_headroom_untouched_bytes": [
+              992,
+              586,
+              517,
+              606,
+              750,
+              750,
+              750,
+              750,
+              210
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 325,
+              "untouched_from_base": 1211,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "copy",
+          "checks": [
+            2265
+          ],
+          "result": [
+            128,
+            0,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 190,
+            "native_irq_count": 2722,
+            "stack_touched_bytes": [
+              274,
+              182,
+              289,
+              162,
+              18,
+              18,
+              18,
+              18,
+              50
+            ],
+            "stack_headroom_untouched_bytes": [
+              1006,
+              586,
+              479,
+              606,
+              750,
+              750,
+              750,
+              750,
+              206
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 325,
+              "untouched_from_base": 1211,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        }
+      ],
+      "emitted_module_bytes": {
+        "FSMYDOS": 15197,
+        "SDFS": 10540,
+        "SDFSFILE": 15488,
+        "SDFSDATE": 2373,
+        "SDFSDIR": 10975,
+        "SDFSNAME": 8910,
+        "FSBACKEND": 6582
+      }
+    },
+    {
+      "sector_bytes": 128,
+      "media_sha256": "cdf13335979095072576b952668a4458b4970c3fa6527c5baafa12573c70da42",
+      "observers": {
+        "fsworker.act": "4a47df4e9649d5c887e89e5a94e78a01edf2c774cf17ec605798adb5ad38bcb3",
+        "blockwire.act": "c2b11f35b7173039bb8086de421cfef49a2b5d88a3e48fea9aa2d0ed7a3bbf8a",
+        "fshandler.act": "c9103846cae2eeeb0078882b749c0cacba365539bb5715792ac2545cfdc73b68",
+        "fspacket.act": "4b2803223917f05cd2e3f3400eeee1d400a7a5f3d4c760b6b625e5441db60031",
+        "fsdirectory.act": "5af0c12c5b0c9fc6c5f9ecccf20848890b170db06844de862adbecf07ea00d0d",
+        "siodriver.act": "4d461cb045b4a14de1bf3bf0e7651feaaa5456b2a4889434309059d30be6cde6",
+        "sdfsfile.act": "2106eb56eb66259176852b6567609e4bfb6287c8c25166e5386ad9103c33c8c6",
+        "fsactiveprobe.act": "7abfefc1e52eba8577a5c506a0a73ec1a7ed23da27ed6fc6729ff01d04fcba61"
+      },
+      "filesystem": "sdfs",
+      "name": "cancel-opt/results.json",
+      "status": "pass",
+      "result_sha256": "ce6df5577c943629750994665ac981e62b7fb5035aff36216c1e33691b7eac65",
+      "image_sha256": "cdd120e1f3860c7915754e17f83f27f597612c2741dadb33ff1c5b46e5225c8c",
+      "xex_sha256": "eb5333b5443445979871a3084f2e27d3c08967c755520f9d69176448bdcfd23c",
+      "source_sha256": "cec4b2562c49b7018577a82227e17b6bc5e550b38f1f8affa65b7fcc8d32108e",
+      "optimize": true,
+      "scenarios": [
+        {
+          "status": "pass",
+          "name": "middle",
+          "checks": [
+            2137
+          ],
+          "result": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 193,
+            "native_irq_count": 2784,
+            "stack_touched_bytes": [
+              264,
+              170,
+              233,
+              122,
+              18,
+              18,
+              18,
+              18,
+              50
+            ],
+            "stack_headroom_untouched_bytes": [
+              1016,
+              598,
+              535,
+              646,
+              750,
+              750,
+              750,
+              750,
+              206
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 303,
+              "untouched_from_base": 1233,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "wire",
+          "checks": [
+            2394
+          ],
+          "result": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              1
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              5
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 178,
+            "native_irq_count": 2582,
+            "stack_touched_bytes": [
+              265,
+              170,
+              242,
+              121,
+              18,
+              18,
+              18,
+              18,
+              48
+            ],
+            "stack_headroom_untouched_bytes": [
+              1015,
+              598,
+              526,
+              647,
+              750,
+              750,
+              750,
+              750,
+              208
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 303,
+              "untouched_from_base": 1233,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "open-allocation",
+          "checks": [
+            12
+          ],
+          "result": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 113,
+            "native_irq_count": 1215,
+            "stack_touched_bytes": [
+              272,
+              170,
+              233,
+              121,
+              18,
+              18,
+              18,
+              18,
+              48
+            ],
+            "stack_headroom_untouched_bytes": [
+              1008,
+              598,
+              535,
+              647,
+              750,
+              750,
+              750,
+              750,
+              208
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 303,
+              "untouched_from_base": 1233,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "directory-scan",
+          "checks": [
+            14
+          ],
+          "result": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 126,
+            "native_irq_count": 1368,
+            "stack_touched_bytes": [
+              254,
+              170,
+              233,
+              121,
+              18,
+              18,
+              18,
+              18,
+              48
+            ],
+            "stack_headroom_untouched_bytes": [
+              1026,
+              598,
+              535,
+              647,
+              750,
+              750,
+              750,
+              750,
+              208
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 303,
+              "untouched_from_base": 1233,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "directory-accounting",
+          "checks": [
+            14
+          ],
+          "result": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 147,
+            "native_irq_count": 1896,
+            "stack_touched_bytes": [
+              254,
+              170,
+              233,
+              121,
+              18,
+              18,
+              18,
+              18,
+              50
+            ],
+            "stack_headroom_untouched_bytes": [
+              1026,
+              598,
+              535,
+              647,
+              750,
+              750,
+              750,
+              750,
+              206
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 303,
+              "untouched_from_base": 1233,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "lookup",
+          "checks": [
+            12
+          ],
+          "result": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 87,
+            "native_irq_count": 824,
+            "stack_touched_bytes": [
+              272,
+              170,
+              233,
+              121,
+              18,
+              18,
+              18,
+              18,
+              48
+            ],
+            "stack_headroom_untouched_bytes": [
+              1008,
+              598,
+              535,
+              647,
+              750,
+              750,
+              750,
+              750,
+              208
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 303,
+              "untouched_from_base": 1233,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        {
+          "status": "pass",
+          "name": "copy",
+          "checks": [
+            2265
+          ],
+          "result": [
+            128,
+            0,
+            0,
+            0
+          ],
+          "error": [
+            48,
+            1,
+            0,
+            0
+          ],
+          "probe": {
+            "fired": [
+              1
+            ],
+            "attempts": [
+              0
+            ],
+            "accepted": [
+              0
+            ],
+            "wirePhase": [
+              0
+            ],
+            "committed": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "live_tasks": 0,
+            "native_nmi_count": 188,
+            "native_irq_count": 2774,
+            "stack_touched_bytes": [
+              264,
+              170,
+              246,
+              121,
+              18,
+              18,
+              18,
+              18,
+              48
+            ],
+            "stack_headroom_untouched_bytes": [
+              1016,
+              598,
+              522,
+              647,
+              750,
+              750,
+              750,
+              750,
+              208
+            ],
+            "kernel_stack": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 303,
+              "untouched_from_base": 1233,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        }
+      ],
+      "emitted_module_bytes": {
+        "FSMYDOS": 14079,
+        "SDFS": 9703,
+        "SDFSFILE": 14500,
+        "SDFSDATE": 2359,
+        "SDFSDIR": 10329,
+        "SDFSNAME": 8709,
+        "FSBACKEND": 6512
+      }
+    },
+    {
+      "fault": "sdfs-work",
+      "expected_error": 103,
+      "checks": [
+        8
+      ],
+      "media_sha256": "cdf13335979095072576b952668a4458b4970c3fa6527c5baafa12573c70da42",
+      "overrides": {
+        "sdfs.act": "327fd22a18f0b415c16b2cc1bcf78d514a7bdb79e4e6f9673707a4273c2bd9b2"
+      },
+      "filesystem": "sdfs",
+      "name": "startup-work-opt/results.json",
+      "status": "pass",
+      "result_sha256": "97d63ed73906f6f4b8efaa5c3e920c5346c814471b31d55adbb3027d4d586f6a",
+      "image_sha256": "11b98b7d3f0adde839217af52f3e4560b0c31e7a27e6db299c73f4a7c4da5c66",
+      "xex_sha256": "972986c9113b8445c34f703bc179ad1c55145c727e6a49a01e6075dcda6e6d23",
+      "source_sha256": "fbe3ca05aa0d016d0f13bcf7e1cb5a3257e8477eef2ef37415b3048d3a04afba",
+      "optimize": true,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 2,
+        "live_tasks": 0,
+        "native_nmi_count": 8,
+        "native_irq_count": 0,
+        "stack_touched_bytes": [
+          224,
+          146,
+          18,
+          18,
+          18,
+          18,
+          18,
+          18,
+          24
+        ],
+        "stack_headroom_untouched_bytes": [
+          1056,
+          622,
+          750,
+          750,
+          750,
+          750,
+          750,
+          750,
+          232
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 266,
+          "untouched_from_base": 1270,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "emitted_module_bytes": {
+        "FSMYDOS": 14079,
+        "SDFS": 9628,
+        "SDFSFILE": 14418,
+        "SDFSDATE": 2359,
+        "SDFSDIR": 10329,
+        "SDFSNAME": 8709,
+        "FSBACKEND": 6512
+      }
+    },
+    {
+      "fault": "sdfs-volume",
+      "expected_error": 103,
+      "checks": [
+        8
+      ],
+      "media_sha256": "cdf13335979095072576b952668a4458b4970c3fa6527c5baafa12573c70da42",
+      "overrides": {
+        "sdfs.act": "1a1297168e60ccdaae80566bb351b08273e57cccc088a476b1084c39dd744e54"
+      },
+      "filesystem": "sdfs",
+      "name": "startup-volume-raw/results.json",
+      "status": "pass",
+      "result_sha256": "0dc1919e1e047de150df9f0f8cccacbf70d635c0a6493daee3c83af15c53b316",
+      "image_sha256": "e46b464d8212d5b9f2cc88f79eb540e04d5ad1354549c3491926257224138b28",
+      "xex_sha256": "8890c6ebf2403289349cc032d62189d94cfdadc885df9696325826455c162efb",
+      "source_sha256": "fbe3ca05aa0d016d0f13bcf7e1cb5a3257e8477eef2ef37415b3048d3a04afba",
+      "optimize": false,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 2,
+        "live_tasks": 0,
+        "native_nmi_count": 13,
+        "native_irq_count": 0,
+        "stack_touched_bytes": [
+          246,
+          160,
+          18,
+          18,
+          18,
+          18,
+          18,
+          18,
+          24
+        ],
+        "stack_headroom_untouched_bytes": [
+          1034,
+          608,
+          750,
+          750,
+          750,
+          750,
+          750,
+          750,
+          232
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 274,
+          "untouched_from_base": 1262,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "emitted_module_bytes": {
+        "FSMYDOS": 15197,
+        "SDFS": 10397,
+        "SDFSFILE": 15399,
+        "SDFSDATE": 2373,
+        "SDFSDIR": 10975,
+        "SDFSNAME": 8910,
+        "FSBACKEND": 6582
+      }
+    },
+    {
+      "fault": "format",
+      "expected_error": 225,
+      "checks": [
+        8
+      ],
+      "media_sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+      "overrides": {},
+      "filesystem": "sdfs",
+      "name": "format-opt/results.json",
+      "status": "pass",
+      "result_sha256": "7323d0099a22f62acda77fd1d1c1ec4a9ffb609acb4c0b5ca4809580d5ad2847",
+      "image_sha256": "981a731c5d9c1dcbd0b545579017f795bd12d6120b7567123e54ec712159cdf3",
+      "xex_sha256": "12a423a61b89a2a153c87488ed2866e91e58d5af7de98c68a22e37c681c0d5e3",
+      "source_sha256": "fbe3ca05aa0d016d0f13bcf7e1cb5a3257e8477eef2ef37415b3048d3a04afba",
+      "optimize": true,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 3,
+        "live_tasks": 0,
+        "native_nmi_count": 21,
+        "native_irq_count": 302,
+        "stack_touched_bytes": [
+          224,
+          176,
+          121,
+          18,
+          18,
+          18,
+          18,
+          18,
+          31
+        ],
+        "stack_headroom_untouched_bytes": [
+          1056,
+          592,
+          647,
+          750,
+          750,
+          750,
+          750,
+          750,
+          225
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 303,
+          "untouched_from_base": 1233,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "emitted_module_bytes": {
+        "FSMYDOS": 14079,
+        "SDFS": 9703,
+        "SDFSFILE": 14418,
+        "SDFSDATE": 2359,
+        "SDFSDIR": 10329,
+        "SDFSNAME": 8709,
+        "FSBACKEND": 6512
+      }
+    }
+  ],
+  "host_checks": 193,
+  "bank_zero": {
+    "fixed_delta": 0,
+    "per_task_delta": 0
+  },
+  "upper_heap": {
+    "new_sdfs_worker_context": 544,
+    "sdfs_backend_volume": 8,
+    "common_volume": 16,
+    "common_workspace": 176,
+    "new_per_handle_bytes": 0,
+    "new_fixed_bytes": 0
+  }
+}

@@ -1,0 +1,6388 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Metadata parser with sector-byte provider; root caller, four-slot profile. Sparse 65535-sector metadata is parser-only. No public DOS API, filesystem worker or hardware claim.",
+  "inputs": {
+    "lib/mydos.act": "2889efcb3453e635a4a23ce153c7f2e34fcc0a5348d130a89bfbac84b2a0af45",
+    "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+    "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+    "tools/mydos_cases.py": "089be1b78fdbd15a3fb2ee2311152a53aa08cdf5f725a9b2e20f2e07cfa72918",
+    "tools/test_mydos.py": "c7078b90f77057dcedb751ab8bfd0ac53e17d72a2aecd264ede69b796a6c6b74",
+    "tools/mydos_fixtures.py": "42ebc12b38af7a2bb0f48855cb79b4f16dc89d3ea28d36be99c02c8eee99882b",
+    "tools/mydos_producer.py": "14e16446708646a33eb86d516917b25da04cfd67138ead052e8671858f254037",
+    "tools/mydos_metadata_record.py": "9ef277876293070cfcc20ed6083e6fee173be868e68a1e05d0e3de600b5812bb",
+    "tests/programs/mydos_metadata.act": "62857f70607a7b97e76996a872feaf126e42f83aeae791f4b04e1d51280d4df2",
+    "tests/fixtures/mydos/blockwire.act": "ce19baf42bfc62cf473901d0a99d5b9e9bc820464c90c22c83835ef3e4288037",
+    "tests/fixtures/mydos/manifest.json": "343ac86a42162dd649687bce860edfee9f77f0e8fd574101f0883b2a3e1ff024"
+  },
+  "cases": [
+    {
+      "status": "pass",
+      "build": {
+        "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "source_sha256": "d2dd33f1316e765bfe94d34c30f17eaeb0746c2b0b2bc8ad1eb27321b4f9779d",
+        "image_sha256": "483883a5105aedd06b993ee02f3a0074b17a496a7ad27980ed78ffd352d96969",
+        "xex_sha256": "a246eed81eb66a36872f04348e7c448ba4c8b32c6cf6fdf70d158996e90430f8",
+        "optimize": false,
+        "task_inputs": {
+          "lib/blockio.act": "bfd2e92954157e937cd93b53a4c10ef3cec36ed7d40449b7e0825cc36a3c34c4",
+          "lib/blockwire.act": "86074640ce3c7dacb9c24fc59e1a635e763081cb800e1a033d9cb2e1d4812aa2",
+          "lib/blocktypes.act": "913292e9b9a0451b6c61fa1ff0fe19812e015b74596a9f466814439efa9afb28",
+          "lib/mydos.act": "2889efcb3453e635a4a23ce153c7f2e34fcc0a5348d130a89bfbac84b2a0af45",
+          "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+          "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+          "lib/doscore.act": "3dc83e7875109ceafa1299c8feda38d111d90a118a0a6b856abfb7b01b338ca9",
+          "lib/dos-core-types.inc": "1ff75917d2ae80ac03ab41fa55929026b42b99c05591d9f19344c54f5cd72a22",
+          "lib/dosclient.act": "df28128889da37a246cf25684b69ae1ae66fc7402208121634dd498ddf42922c",
+          "lib/task-dos.inc": "87ea7622eae7d351e44816e732aa4c963c9ae685fe606ba08456b30957ebde80",
+          "platform/altirraos/dos.s": "6693418023dbd2b88d01e1f5cc59d16098094ac21a0dc6d3b2d59f51a41f865f",
+          "abi/dos.json": "67e22b3ce249d1b844aadb0c5749e06712f073e7b931ad2af629a85418a10c8d",
+          "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+          "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+          "lib/dos-packets.inc": "9f4684f36680d7eca364d1fd7b5d4f0b7a233217fadd9403cc70a68c37958a70",
+          "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+          "tools/generate_dos.py": "98096e37826051df80326fb2ce24ae87e757cd7208e7c7a8401d1e8d60532736",
+          "lib/siodriver.act": "271dd4359b55f1ad7ac1763378d2d07d9440de861dfeb0f8b56834ee9b4ffad9",
+          "lib/task-sio.inc": "87d59dffd7181fdf1341c88af32fe6d7a26818495fb4ecad085282260bb7fb0f",
+          "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+          "lib/task-io.inc": "2d970dcb2de53091a3d23338c38d832157370d962ad3a7ba8964b36ddbece875",
+          "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+          "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+          "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+          "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+          "lib/exec-io-types.inc": "e21b39c3c4fce74163e6230f3abbf73eeb932bf25b565909fed04a3c8387bbdf",
+          "tools/generate_io.py": "c261b28e3722702b882e7251b0d1f05c94db2956b4508e2d1a5b309d4e9da3b1",
+          "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+          "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+          "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+          "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+          "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+          "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+          "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+          "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+          "lib/taskpolicy.act": "2390c023f25c528d7fa8197c1e830b5b544ebe702942db60b068b324a3cac549",
+          "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "lib/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+          "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+          "platform/altirraos/sio.s": "e26287bae010cb99161864a03b4b85c2392c68813bb1fbb2baf1ab14cf46fb32",
+          "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+          "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+          "platform/altirraos/signal-irq.s": "d0f18ff9d829ffe48690151fbdb7ecb8253daf5f354f52901f77ea3c5d5b129a",
+          "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+          "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+          "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+          "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+          "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+          "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+          "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+          "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+          "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+          "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+          "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+          "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+          "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+          "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+          "tools/generate_tasks.py": "318e3378b82c1f6f1d6351786a2927142d4041d26d61709aa3c0839b3121f3f1",
+          "platform/altirraos/tasks.s": "5eed313ca495622b18aa5d773e4f7a1ae1b3c5c757739c1a0712ef415e6d9120"
+        },
+        "kernel_bank": 1
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "live_tasks": 0,
+        "native_nmi_count": 258,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0
+      },
+      "checks": [
+        1099
+      ],
+      "sector_bytes": 128,
+      "requests": [
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 10,
+          "sector": 361
+        },
+        {
+          "phase": 10,
+          "sector": 362
+        },
+        {
+          "phase": 10,
+          "sector": 363
+        },
+        {
+          "phase": 10,
+          "sector": 364
+        },
+        {
+          "phase": 10,
+          "sector": 365
+        },
+        {
+          "phase": 10,
+          "sector": 366
+        },
+        {
+          "phase": 10,
+          "sector": 367
+        },
+        {
+          "phase": 10,
+          "sector": 368
+        },
+        {
+          "phase": 11,
+          "sector": 361
+        },
+        {
+          "phase": 11,
+          "sector": 362
+        },
+        {
+          "phase": 11,
+          "sector": 363
+        },
+        {
+          "phase": 11,
+          "sector": 364
+        },
+        {
+          "phase": 11,
+          "sector": 365
+        },
+        {
+          "phase": 11,
+          "sector": 366
+        },
+        {
+          "phase": 11,
+          "sector": 367
+        },
+        {
+          "phase": 11,
+          "sector": 368
+        },
+        {
+          "phase": 12,
+          "sector": 361
+        },
+        {
+          "phase": 13,
+          "sector": 361
+        },
+        {
+          "phase": 14,
+          "sector": 361
+        },
+        {
+          "phase": 15,
+          "sector": 361
+        },
+        {
+          "phase": 16,
+          "sector": 361
+        },
+        {
+          "phase": 16,
+          "sector": 362
+        },
+        {
+          "phase": 16,
+          "sector": 363
+        },
+        {
+          "phase": 16,
+          "sector": 364
+        },
+        {
+          "phase": 16,
+          "sector": 365
+        },
+        {
+          "phase": 16,
+          "sector": 366
+        },
+        {
+          "phase": 16,
+          "sector": 367
+        },
+        {
+          "phase": 16,
+          "sector": 368
+        },
+        {
+          "phase": 16,
+          "sector": 369
+        },
+        {
+          "phase": 17,
+          "sector": 361
+        },
+        {
+          "phase": 17,
+          "sector": 362
+        },
+        {
+          "phase": 17,
+          "sector": 363
+        },
+        {
+          "phase": 17,
+          "sector": 364
+        },
+        {
+          "phase": 17,
+          "sector": 365
+        },
+        {
+          "phase": 17,
+          "sector": 366
+        },
+        {
+          "phase": 17,
+          "sector": 367
+        },
+        {
+          "phase": 17,
+          "sector": 368
+        },
+        {
+          "phase": 17,
+          "sector": 369
+        },
+        {
+          "phase": 18,
+          "sector": 361
+        },
+        {
+          "phase": 18,
+          "sector": 362
+        },
+        {
+          "phase": 18,
+          "sector": 363
+        },
+        {
+          "phase": 18,
+          "sector": 364
+        },
+        {
+          "phase": 18,
+          "sector": 365
+        },
+        {
+          "phase": 18,
+          "sector": 366
+        },
+        {
+          "phase": 18,
+          "sector": 367
+        },
+        {
+          "phase": 18,
+          "sector": 368
+        },
+        {
+          "phase": 18,
+          "sector": 369
+        },
+        {
+          "phase": 19,
+          "sector": 361
+        },
+        {
+          "phase": 19,
+          "sector": 362
+        },
+        {
+          "phase": 20,
+          "sector": 361
+        },
+        {
+          "phase": 20,
+          "sector": 362
+        },
+        {
+          "phase": 20,
+          "sector": 363
+        },
+        {
+          "phase": 20,
+          "sector": 364
+        },
+        {
+          "phase": 20,
+          "sector": 365
+        },
+        {
+          "phase": 20,
+          "sector": 366
+        },
+        {
+          "phase": 20,
+          "sector": 367
+        },
+        {
+          "phase": 20,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 361
+        },
+        {
+          "phase": 21,
+          "sector": 362
+        },
+        {
+          "phase": 21,
+          "sector": 363
+        },
+        {
+          "phase": 21,
+          "sector": 364
+        },
+        {
+          "phase": 21,
+          "sector": 365
+        },
+        {
+          "phase": 21,
+          "sector": 366
+        },
+        {
+          "phase": 21,
+          "sector": 367
+        },
+        {
+          "phase": 21,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 500
+        },
+        {
+          "phase": 21,
+          "sector": 508
+        },
+        {
+          "phase": 21,
+          "sector": 516
+        },
+        {
+          "phase": 21,
+          "sector": 524
+        },
+        {
+          "phase": 21,
+          "sector": 532
+        },
+        {
+          "phase": 21,
+          "sector": 540
+        },
+        {
+          "phase": 21,
+          "sector": 548
+        },
+        {
+          "phase": 21,
+          "sector": 556
+        },
+        {
+          "phase": 21,
+          "sector": 564
+        },
+        {
+          "phase": 21,
+          "sector": 572
+        },
+        {
+          "phase": 21,
+          "sector": 580
+        },
+        {
+          "phase": 21,
+          "sector": 588
+        },
+        {
+          "phase": 21,
+          "sector": 596
+        },
+        {
+          "phase": 21,
+          "sector": 604
+        },
+        {
+          "phase": 21,
+          "sector": 612
+        },
+        {
+          "phase": 21,
+          "sector": 361
+        },
+        {
+          "phase": 21,
+          "sector": 362
+        },
+        {
+          "phase": 21,
+          "sector": 363
+        },
+        {
+          "phase": 21,
+          "sector": 364
+        },
+        {
+          "phase": 21,
+          "sector": 365
+        },
+        {
+          "phase": 21,
+          "sector": 366
+        },
+        {
+          "phase": 21,
+          "sector": 367
+        },
+        {
+          "phase": 21,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 500
+        },
+        {
+          "phase": 21,
+          "sector": 508
+        },
+        {
+          "phase": 21,
+          "sector": 516
+        },
+        {
+          "phase": 21,
+          "sector": 524
+        },
+        {
+          "phase": 21,
+          "sector": 532
+        },
+        {
+          "phase": 21,
+          "sector": 540
+        },
+        {
+          "phase": 21,
+          "sector": 548
+        },
+        {
+          "phase": 21,
+          "sector": 556
+        },
+        {
+          "phase": 21,
+          "sector": 564
+        },
+        {
+          "phase": 21,
+          "sector": 572
+        },
+        {
+          "phase": 21,
+          "sector": 580
+        },
+        {
+          "phase": 21,
+          "sector": 588
+        },
+        {
+          "phase": 21,
+          "sector": 596
+        },
+        {
+          "phase": 21,
+          "sector": 604
+        },
+        {
+          "phase": 21,
+          "sector": 612
+        },
+        {
+          "phase": 21,
+          "sector": 620
+        },
+        {
+          "phase": 22,
+          "sector": 361
+        },
+        {
+          "phase": 23,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 1,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 2,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 3,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 4,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 5,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 30,
+          "sector": 360
+        },
+        {
+          "phase": 30,
+          "sector": 361
+        },
+        {
+          "phase": 30,
+          "sector": 65520
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        }
+      ],
+      "cases": [
+        {
+          "phase": 0,
+          "path": "",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS/SUB/DATA.BIN",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "tools/sub/data.bin",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "CASE.TXT",
+          "error": 0,
+          "ordinal": 5
+        },
+        {
+          "phase": 0,
+          "path": "case.txt",
+          "error": 0,
+          "ordinal": 6
+        },
+        {
+          "phase": 0,
+          "path": "CaSe.TxT",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "A@_`.BIN",
+          "error": 0,
+          "ordinal": 7
+        },
+        {
+          "phase": 0,
+          "path": "MISSING",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.TXT/CHILD",
+          "error": 212,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "/TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS/",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS//SUB",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "D1:TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLONG99",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.LONG",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "A.B.C",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 10,
+          "path": "TOOLS",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 11,
+          "path": "TEXT.TXT",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 12,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 13,
+          "path": "TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 14,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 15,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 16,
+          "path": "TOOLS/SUB",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 17,
+          "path": "TOOLS/SUB",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 18,
+          "path": "TOOLS/SUB",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 19,
+          "path": "F55.BIN",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 20,
+          "path": "TRAP.BIN",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 21,
+          "path": "TOOLS/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 21,
+          "path": "TOOLS/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D",
+          "error": 217,
+          "ordinal": 0
+        },
+        {
+          "phase": 22,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 23,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        }
+      ],
+      "fixture_provider_sha256": "ce19baf42bfc62cf473901d0a99d5b9e9bc820464c90c22c83835ef3e4288037",
+      "fixture_sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+      "frames": {
+        "M_MYDOSNAMES_LEGAL_C9AD70C6": 12,
+        "M_MYDOSNAMES_FOLD_297622C6": 8,
+        "M_MYDOSNAMES_STORED_9F1E578A": 46,
+        "M_MYDOSNAMES_MATCH_52630F12": 38,
+        "M_MYDOSNAMES_COMPONENT_FF2F5328": 176,
+        "M_MYDOS_READPHYSICAL_AF05229A": 110,
+        "M_MYDOS_DATASECTOR_95277D3B": 64,
+        "M_MYDOS_VALIDDIRECTORY_1CF8F62E": 88,
+        "M_MYDOS_EXTENT_5BCD29B5": 214,
+        "M_MYDOS_HEADER_A95A323A": 130,
+        "M_MYDOS_MOUNT_2B42A118": 108,
+        "M_MYDOS_COPYENTRY_C5D8D89C": 38,
+        "M_MYDOS_DECODE_69B6DF25": 84,
+        "M_MYDOS_LIVE_1E4E1377": 88,
+        "M_MYDOS_BUFFEREDENTRY_DC465C80": 114,
+        "M_MYDOS_GETENTRY_7D00AFBD": 112,
+        "M_MYDOS_SELECTMATCH_8984C9A2": 82,
+        "M_MYDOS_CHOOSE_61B23C5E": 66,
+        "M_MYDOS_STARTDIRECTORY_E432AEF2": 24,
+        "M_MYDOS_DESCEND_C497F8DD": 162,
+        "M_MYDOS_ROOTENTRY_E3F00029": 46,
+        "M_MYDOS_BEGINRESOLVE_3F47247C": 162,
+        "M_MYDOS_RESOLVESTEP_4ADA26D9": 106,
+        "M_MYDOS_RESOLVE_25FA7BCB": 42
+      }
+    },
+    {
+      "status": "pass",
+      "build": {
+        "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "source_sha256": "d2dd33f1316e765bfe94d34c30f17eaeb0746c2b0b2bc8ad1eb27321b4f9779d",
+        "image_sha256": "27be63cb2a69ccb22908b1c241f6bc0043a2276c15f8e638172bf75b6944ca03",
+        "xex_sha256": "7729ce40467b92b939c49f3d1096108608cc5ae35a4539bbbdba07792609af7a",
+        "optimize": false,
+        "task_inputs": {
+          "lib/blockio.act": "bfd2e92954157e937cd93b53a4c10ef3cec36ed7d40449b7e0825cc36a3c34c4",
+          "lib/blockwire.act": "86074640ce3c7dacb9c24fc59e1a635e763081cb800e1a033d9cb2e1d4812aa2",
+          "lib/blocktypes.act": "913292e9b9a0451b6c61fa1ff0fe19812e015b74596a9f466814439efa9afb28",
+          "lib/mydos.act": "2889efcb3453e635a4a23ce153c7f2e34fcc0a5348d130a89bfbac84b2a0af45",
+          "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+          "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+          "lib/doscore.act": "3dc83e7875109ceafa1299c8feda38d111d90a118a0a6b856abfb7b01b338ca9",
+          "lib/dos-core-types.inc": "1ff75917d2ae80ac03ab41fa55929026b42b99c05591d9f19344c54f5cd72a22",
+          "lib/dosclient.act": "df28128889da37a246cf25684b69ae1ae66fc7402208121634dd498ddf42922c",
+          "lib/task-dos.inc": "87ea7622eae7d351e44816e732aa4c963c9ae685fe606ba08456b30957ebde80",
+          "platform/altirraos/dos.s": "6693418023dbd2b88d01e1f5cc59d16098094ac21a0dc6d3b2d59f51a41f865f",
+          "abi/dos.json": "67e22b3ce249d1b844aadb0c5749e06712f073e7b931ad2af629a85418a10c8d",
+          "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+          "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+          "lib/dos-packets.inc": "9f4684f36680d7eca364d1fd7b5d4f0b7a233217fadd9403cc70a68c37958a70",
+          "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+          "tools/generate_dos.py": "98096e37826051df80326fb2ce24ae87e757cd7208e7c7a8401d1e8d60532736",
+          "lib/siodriver.act": "271dd4359b55f1ad7ac1763378d2d07d9440de861dfeb0f8b56834ee9b4ffad9",
+          "lib/task-sio.inc": "87d59dffd7181fdf1341c88af32fe6d7a26818495fb4ecad085282260bb7fb0f",
+          "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+          "lib/task-io.inc": "2d970dcb2de53091a3d23338c38d832157370d962ad3a7ba8964b36ddbece875",
+          "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+          "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+          "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+          "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+          "lib/exec-io-types.inc": "e21b39c3c4fce74163e6230f3abbf73eeb932bf25b565909fed04a3c8387bbdf",
+          "tools/generate_io.py": "c261b28e3722702b882e7251b0d1f05c94db2956b4508e2d1a5b309d4e9da3b1",
+          "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+          "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+          "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+          "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+          "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+          "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+          "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+          "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+          "lib/taskpolicy.act": "2390c023f25c528d7fa8197c1e830b5b544ebe702942db60b068b324a3cac549",
+          "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "lib/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+          "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+          "platform/altirraos/sio.s": "e26287bae010cb99161864a03b4b85c2392c68813bb1fbb2baf1ab14cf46fb32",
+          "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+          "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+          "platform/altirraos/signal-irq.s": "d0f18ff9d829ffe48690151fbdb7ecb8253daf5f354f52901f77ea3c5d5b129a",
+          "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+          "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+          "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+          "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+          "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+          "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+          "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+          "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+          "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+          "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+          "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+          "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+          "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+          "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+          "tools/generate_tasks.py": "318e3378b82c1f6f1d6351786a2927142d4041d26d61709aa3c0839b3121f3f1",
+          "platform/altirraos/tasks.s": "5eed313ca495622b18aa5d773e4f7a1ae1b3c5c757739c1a0712ef415e6d9120"
+        },
+        "kernel_bank": 1
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "live_tasks": 0,
+        "native_nmi_count": 333,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0
+      },
+      "checks": [
+        1099
+      ],
+      "sector_bytes": 256,
+      "requests": [
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 10,
+          "sector": 361
+        },
+        {
+          "phase": 10,
+          "sector": 362
+        },
+        {
+          "phase": 10,
+          "sector": 363
+        },
+        {
+          "phase": 10,
+          "sector": 364
+        },
+        {
+          "phase": 10,
+          "sector": 365
+        },
+        {
+          "phase": 10,
+          "sector": 366
+        },
+        {
+          "phase": 10,
+          "sector": 367
+        },
+        {
+          "phase": 10,
+          "sector": 368
+        },
+        {
+          "phase": 11,
+          "sector": 361
+        },
+        {
+          "phase": 11,
+          "sector": 362
+        },
+        {
+          "phase": 11,
+          "sector": 363
+        },
+        {
+          "phase": 11,
+          "sector": 364
+        },
+        {
+          "phase": 11,
+          "sector": 365
+        },
+        {
+          "phase": 11,
+          "sector": 366
+        },
+        {
+          "phase": 11,
+          "sector": 367
+        },
+        {
+          "phase": 11,
+          "sector": 368
+        },
+        {
+          "phase": 12,
+          "sector": 361
+        },
+        {
+          "phase": 13,
+          "sector": 361
+        },
+        {
+          "phase": 14,
+          "sector": 361
+        },
+        {
+          "phase": 15,
+          "sector": 361
+        },
+        {
+          "phase": 16,
+          "sector": 361
+        },
+        {
+          "phase": 16,
+          "sector": 362
+        },
+        {
+          "phase": 16,
+          "sector": 363
+        },
+        {
+          "phase": 16,
+          "sector": 364
+        },
+        {
+          "phase": 16,
+          "sector": 365
+        },
+        {
+          "phase": 16,
+          "sector": 366
+        },
+        {
+          "phase": 16,
+          "sector": 367
+        },
+        {
+          "phase": 16,
+          "sector": 368
+        },
+        {
+          "phase": 16,
+          "sector": 369
+        },
+        {
+          "phase": 17,
+          "sector": 361
+        },
+        {
+          "phase": 17,
+          "sector": 362
+        },
+        {
+          "phase": 17,
+          "sector": 363
+        },
+        {
+          "phase": 17,
+          "sector": 364
+        },
+        {
+          "phase": 17,
+          "sector": 365
+        },
+        {
+          "phase": 17,
+          "sector": 366
+        },
+        {
+          "phase": 17,
+          "sector": 367
+        },
+        {
+          "phase": 17,
+          "sector": 368
+        },
+        {
+          "phase": 17,
+          "sector": 369
+        },
+        {
+          "phase": 18,
+          "sector": 361
+        },
+        {
+          "phase": 18,
+          "sector": 362
+        },
+        {
+          "phase": 18,
+          "sector": 363
+        },
+        {
+          "phase": 18,
+          "sector": 364
+        },
+        {
+          "phase": 18,
+          "sector": 365
+        },
+        {
+          "phase": 18,
+          "sector": 366
+        },
+        {
+          "phase": 18,
+          "sector": 367
+        },
+        {
+          "phase": 18,
+          "sector": 368
+        },
+        {
+          "phase": 18,
+          "sector": 369
+        },
+        {
+          "phase": 19,
+          "sector": 361
+        },
+        {
+          "phase": 19,
+          "sector": 362
+        },
+        {
+          "phase": 20,
+          "sector": 361
+        },
+        {
+          "phase": 20,
+          "sector": 362
+        },
+        {
+          "phase": 20,
+          "sector": 363
+        },
+        {
+          "phase": 20,
+          "sector": 364
+        },
+        {
+          "phase": 20,
+          "sector": 365
+        },
+        {
+          "phase": 20,
+          "sector": 366
+        },
+        {
+          "phase": 20,
+          "sector": 367
+        },
+        {
+          "phase": 20,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 361
+        },
+        {
+          "phase": 21,
+          "sector": 362
+        },
+        {
+          "phase": 21,
+          "sector": 363
+        },
+        {
+          "phase": 21,
+          "sector": 364
+        },
+        {
+          "phase": 21,
+          "sector": 365
+        },
+        {
+          "phase": 21,
+          "sector": 366
+        },
+        {
+          "phase": 21,
+          "sector": 367
+        },
+        {
+          "phase": 21,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 500
+        },
+        {
+          "phase": 21,
+          "sector": 508
+        },
+        {
+          "phase": 21,
+          "sector": 516
+        },
+        {
+          "phase": 21,
+          "sector": 524
+        },
+        {
+          "phase": 21,
+          "sector": 532
+        },
+        {
+          "phase": 21,
+          "sector": 540
+        },
+        {
+          "phase": 21,
+          "sector": 548
+        },
+        {
+          "phase": 21,
+          "sector": 556
+        },
+        {
+          "phase": 21,
+          "sector": 564
+        },
+        {
+          "phase": 21,
+          "sector": 572
+        },
+        {
+          "phase": 21,
+          "sector": 580
+        },
+        {
+          "phase": 21,
+          "sector": 588
+        },
+        {
+          "phase": 21,
+          "sector": 596
+        },
+        {
+          "phase": 21,
+          "sector": 604
+        },
+        {
+          "phase": 21,
+          "sector": 612
+        },
+        {
+          "phase": 21,
+          "sector": 361
+        },
+        {
+          "phase": 21,
+          "sector": 362
+        },
+        {
+          "phase": 21,
+          "sector": 363
+        },
+        {
+          "phase": 21,
+          "sector": 364
+        },
+        {
+          "phase": 21,
+          "sector": 365
+        },
+        {
+          "phase": 21,
+          "sector": 366
+        },
+        {
+          "phase": 21,
+          "sector": 367
+        },
+        {
+          "phase": 21,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 500
+        },
+        {
+          "phase": 21,
+          "sector": 508
+        },
+        {
+          "phase": 21,
+          "sector": 516
+        },
+        {
+          "phase": 21,
+          "sector": 524
+        },
+        {
+          "phase": 21,
+          "sector": 532
+        },
+        {
+          "phase": 21,
+          "sector": 540
+        },
+        {
+          "phase": 21,
+          "sector": 548
+        },
+        {
+          "phase": 21,
+          "sector": 556
+        },
+        {
+          "phase": 21,
+          "sector": 564
+        },
+        {
+          "phase": 21,
+          "sector": 572
+        },
+        {
+          "phase": 21,
+          "sector": 580
+        },
+        {
+          "phase": 21,
+          "sector": 588
+        },
+        {
+          "phase": 21,
+          "sector": 596
+        },
+        {
+          "phase": 21,
+          "sector": 604
+        },
+        {
+          "phase": 21,
+          "sector": 612
+        },
+        {
+          "phase": 21,
+          "sector": 620
+        },
+        {
+          "phase": 22,
+          "sector": 361
+        },
+        {
+          "phase": 23,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 1,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 2,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 3,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 4,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 5,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 30,
+          "sector": 360
+        },
+        {
+          "phase": 30,
+          "sector": 361
+        },
+        {
+          "phase": 30,
+          "sector": 65520
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        }
+      ],
+      "cases": [
+        {
+          "phase": 0,
+          "path": "",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS/SUB/DATA.BIN",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "tools/sub/data.bin",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "CASE.TXT",
+          "error": 0,
+          "ordinal": 5
+        },
+        {
+          "phase": 0,
+          "path": "case.txt",
+          "error": 0,
+          "ordinal": 6
+        },
+        {
+          "phase": 0,
+          "path": "CaSe.TxT",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "A@_`.BIN",
+          "error": 0,
+          "ordinal": 7
+        },
+        {
+          "phase": 0,
+          "path": "MISSING",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.TXT/CHILD",
+          "error": 212,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "/TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS/",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS//SUB",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "D1:TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLONG99",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.LONG",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "A.B.C",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 10,
+          "path": "TOOLS",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 11,
+          "path": "TEXT.TXT",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 12,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 13,
+          "path": "TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 14,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 15,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 16,
+          "path": "TOOLS/SUB",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 17,
+          "path": "TOOLS/SUB",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 18,
+          "path": "TOOLS/SUB",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 19,
+          "path": "F55.BIN",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 20,
+          "path": "TRAP.BIN",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 21,
+          "path": "TOOLS/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 21,
+          "path": "TOOLS/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D",
+          "error": 217,
+          "ordinal": 0
+        },
+        {
+          "phase": 22,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 23,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        }
+      ],
+      "fixture_provider_sha256": "ce19baf42bfc62cf473901d0a99d5b9e9bc820464c90c22c83835ef3e4288037",
+      "fixture_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "frames": {
+        "M_MYDOSNAMES_LEGAL_C9AD70C6": 12,
+        "M_MYDOSNAMES_FOLD_297622C6": 8,
+        "M_MYDOSNAMES_STORED_9F1E578A": 46,
+        "M_MYDOSNAMES_MATCH_52630F12": 38,
+        "M_MYDOSNAMES_COMPONENT_FF2F5328": 176,
+        "M_MYDOS_READPHYSICAL_AF05229A": 110,
+        "M_MYDOS_DATASECTOR_95277D3B": 64,
+        "M_MYDOS_VALIDDIRECTORY_1CF8F62E": 88,
+        "M_MYDOS_EXTENT_5BCD29B5": 214,
+        "M_MYDOS_HEADER_A95A323A": 130,
+        "M_MYDOS_MOUNT_2B42A118": 108,
+        "M_MYDOS_COPYENTRY_C5D8D89C": 38,
+        "M_MYDOS_DECODE_69B6DF25": 84,
+        "M_MYDOS_LIVE_1E4E1377": 88,
+        "M_MYDOS_BUFFEREDENTRY_DC465C80": 114,
+        "M_MYDOS_GETENTRY_7D00AFBD": 112,
+        "M_MYDOS_SELECTMATCH_8984C9A2": 82,
+        "M_MYDOS_CHOOSE_61B23C5E": 66,
+        "M_MYDOS_STARTDIRECTORY_E432AEF2": 24,
+        "M_MYDOS_DESCEND_C497F8DD": 162,
+        "M_MYDOS_ROOTENTRY_E3F00029": 46,
+        "M_MYDOS_BEGINRESOLVE_3F47247C": 162,
+        "M_MYDOS_RESOLVESTEP_4ADA26D9": 106,
+        "M_MYDOS_RESOLVE_25FA7BCB": 42
+      }
+    },
+    {
+      "status": "pass",
+      "build": {
+        "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "source_sha256": "d2dd33f1316e765bfe94d34c30f17eaeb0746c2b0b2bc8ad1eb27321b4f9779d",
+        "image_sha256": "a10421ea4f76e1da1368ce1ac1500bf989974ee5d68161baa2e311228ec88bc1",
+        "xex_sha256": "6ae5a17d525ebd7afcf69a3be226744998a50fdbd5b8f5fd1ad1e7511afe266f",
+        "optimize": true,
+        "task_inputs": {
+          "lib/blockio.act": "bfd2e92954157e937cd93b53a4c10ef3cec36ed7d40449b7e0825cc36a3c34c4",
+          "lib/blockwire.act": "86074640ce3c7dacb9c24fc59e1a635e763081cb800e1a033d9cb2e1d4812aa2",
+          "lib/blocktypes.act": "913292e9b9a0451b6c61fa1ff0fe19812e015b74596a9f466814439efa9afb28",
+          "lib/mydos.act": "2889efcb3453e635a4a23ce153c7f2e34fcc0a5348d130a89bfbac84b2a0af45",
+          "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+          "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+          "lib/doscore.act": "3dc83e7875109ceafa1299c8feda38d111d90a118a0a6b856abfb7b01b338ca9",
+          "lib/dos-core-types.inc": "1ff75917d2ae80ac03ab41fa55929026b42b99c05591d9f19344c54f5cd72a22",
+          "lib/dosclient.act": "df28128889da37a246cf25684b69ae1ae66fc7402208121634dd498ddf42922c",
+          "lib/task-dos.inc": "87ea7622eae7d351e44816e732aa4c963c9ae685fe606ba08456b30957ebde80",
+          "platform/altirraos/dos.s": "6693418023dbd2b88d01e1f5cc59d16098094ac21a0dc6d3b2d59f51a41f865f",
+          "abi/dos.json": "67e22b3ce249d1b844aadb0c5749e06712f073e7b931ad2af629a85418a10c8d",
+          "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+          "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+          "lib/dos-packets.inc": "9f4684f36680d7eca364d1fd7b5d4f0b7a233217fadd9403cc70a68c37958a70",
+          "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+          "tools/generate_dos.py": "98096e37826051df80326fb2ce24ae87e757cd7208e7c7a8401d1e8d60532736",
+          "lib/siodriver.act": "271dd4359b55f1ad7ac1763378d2d07d9440de861dfeb0f8b56834ee9b4ffad9",
+          "lib/task-sio.inc": "87d59dffd7181fdf1341c88af32fe6d7a26818495fb4ecad085282260bb7fb0f",
+          "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+          "lib/task-io.inc": "2d970dcb2de53091a3d23338c38d832157370d962ad3a7ba8964b36ddbece875",
+          "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+          "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+          "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+          "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+          "lib/exec-io-types.inc": "e21b39c3c4fce74163e6230f3abbf73eeb932bf25b565909fed04a3c8387bbdf",
+          "tools/generate_io.py": "c261b28e3722702b882e7251b0d1f05c94db2956b4508e2d1a5b309d4e9da3b1",
+          "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+          "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+          "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+          "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+          "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+          "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+          "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+          "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+          "lib/taskpolicy.act": "2390c023f25c528d7fa8197c1e830b5b544ebe702942db60b068b324a3cac549",
+          "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "lib/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+          "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+          "platform/altirraos/sio.s": "e26287bae010cb99161864a03b4b85c2392c68813bb1fbb2baf1ab14cf46fb32",
+          "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+          "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+          "platform/altirraos/signal-irq.s": "d0f18ff9d829ffe48690151fbdb7ecb8253daf5f354f52901f77ea3c5d5b129a",
+          "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+          "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+          "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+          "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+          "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+          "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+          "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+          "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+          "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+          "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+          "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+          "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+          "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+          "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+          "tools/generate_tasks.py": "318e3378b82c1f6f1d6351786a2927142d4041d26d61709aa3c0839b3121f3f1",
+          "platform/altirraos/tasks.s": "5eed313ca495622b18aa5d773e4f7a1ae1b3c5c757739c1a0712ef415e6d9120"
+        },
+        "kernel_bank": 1
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "live_tasks": 0,
+        "native_nmi_count": 237,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0
+      },
+      "checks": [
+        1099
+      ],
+      "sector_bytes": 128,
+      "requests": [
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 10,
+          "sector": 361
+        },
+        {
+          "phase": 10,
+          "sector": 362
+        },
+        {
+          "phase": 10,
+          "sector": 363
+        },
+        {
+          "phase": 10,
+          "sector": 364
+        },
+        {
+          "phase": 10,
+          "sector": 365
+        },
+        {
+          "phase": 10,
+          "sector": 366
+        },
+        {
+          "phase": 10,
+          "sector": 367
+        },
+        {
+          "phase": 10,
+          "sector": 368
+        },
+        {
+          "phase": 11,
+          "sector": 361
+        },
+        {
+          "phase": 11,
+          "sector": 362
+        },
+        {
+          "phase": 11,
+          "sector": 363
+        },
+        {
+          "phase": 11,
+          "sector": 364
+        },
+        {
+          "phase": 11,
+          "sector": 365
+        },
+        {
+          "phase": 11,
+          "sector": 366
+        },
+        {
+          "phase": 11,
+          "sector": 367
+        },
+        {
+          "phase": 11,
+          "sector": 368
+        },
+        {
+          "phase": 12,
+          "sector": 361
+        },
+        {
+          "phase": 13,
+          "sector": 361
+        },
+        {
+          "phase": 14,
+          "sector": 361
+        },
+        {
+          "phase": 15,
+          "sector": 361
+        },
+        {
+          "phase": 16,
+          "sector": 361
+        },
+        {
+          "phase": 16,
+          "sector": 362
+        },
+        {
+          "phase": 16,
+          "sector": 363
+        },
+        {
+          "phase": 16,
+          "sector": 364
+        },
+        {
+          "phase": 16,
+          "sector": 365
+        },
+        {
+          "phase": 16,
+          "sector": 366
+        },
+        {
+          "phase": 16,
+          "sector": 367
+        },
+        {
+          "phase": 16,
+          "sector": 368
+        },
+        {
+          "phase": 16,
+          "sector": 369
+        },
+        {
+          "phase": 17,
+          "sector": 361
+        },
+        {
+          "phase": 17,
+          "sector": 362
+        },
+        {
+          "phase": 17,
+          "sector": 363
+        },
+        {
+          "phase": 17,
+          "sector": 364
+        },
+        {
+          "phase": 17,
+          "sector": 365
+        },
+        {
+          "phase": 17,
+          "sector": 366
+        },
+        {
+          "phase": 17,
+          "sector": 367
+        },
+        {
+          "phase": 17,
+          "sector": 368
+        },
+        {
+          "phase": 17,
+          "sector": 369
+        },
+        {
+          "phase": 18,
+          "sector": 361
+        },
+        {
+          "phase": 18,
+          "sector": 362
+        },
+        {
+          "phase": 18,
+          "sector": 363
+        },
+        {
+          "phase": 18,
+          "sector": 364
+        },
+        {
+          "phase": 18,
+          "sector": 365
+        },
+        {
+          "phase": 18,
+          "sector": 366
+        },
+        {
+          "phase": 18,
+          "sector": 367
+        },
+        {
+          "phase": 18,
+          "sector": 368
+        },
+        {
+          "phase": 18,
+          "sector": 369
+        },
+        {
+          "phase": 19,
+          "sector": 361
+        },
+        {
+          "phase": 19,
+          "sector": 362
+        },
+        {
+          "phase": 20,
+          "sector": 361
+        },
+        {
+          "phase": 20,
+          "sector": 362
+        },
+        {
+          "phase": 20,
+          "sector": 363
+        },
+        {
+          "phase": 20,
+          "sector": 364
+        },
+        {
+          "phase": 20,
+          "sector": 365
+        },
+        {
+          "phase": 20,
+          "sector": 366
+        },
+        {
+          "phase": 20,
+          "sector": 367
+        },
+        {
+          "phase": 20,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 361
+        },
+        {
+          "phase": 21,
+          "sector": 362
+        },
+        {
+          "phase": 21,
+          "sector": 363
+        },
+        {
+          "phase": 21,
+          "sector": 364
+        },
+        {
+          "phase": 21,
+          "sector": 365
+        },
+        {
+          "phase": 21,
+          "sector": 366
+        },
+        {
+          "phase": 21,
+          "sector": 367
+        },
+        {
+          "phase": 21,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 500
+        },
+        {
+          "phase": 21,
+          "sector": 508
+        },
+        {
+          "phase": 21,
+          "sector": 516
+        },
+        {
+          "phase": 21,
+          "sector": 524
+        },
+        {
+          "phase": 21,
+          "sector": 532
+        },
+        {
+          "phase": 21,
+          "sector": 540
+        },
+        {
+          "phase": 21,
+          "sector": 548
+        },
+        {
+          "phase": 21,
+          "sector": 556
+        },
+        {
+          "phase": 21,
+          "sector": 564
+        },
+        {
+          "phase": 21,
+          "sector": 572
+        },
+        {
+          "phase": 21,
+          "sector": 580
+        },
+        {
+          "phase": 21,
+          "sector": 588
+        },
+        {
+          "phase": 21,
+          "sector": 596
+        },
+        {
+          "phase": 21,
+          "sector": 604
+        },
+        {
+          "phase": 21,
+          "sector": 612
+        },
+        {
+          "phase": 21,
+          "sector": 361
+        },
+        {
+          "phase": 21,
+          "sector": 362
+        },
+        {
+          "phase": 21,
+          "sector": 363
+        },
+        {
+          "phase": 21,
+          "sector": 364
+        },
+        {
+          "phase": 21,
+          "sector": 365
+        },
+        {
+          "phase": 21,
+          "sector": 366
+        },
+        {
+          "phase": 21,
+          "sector": 367
+        },
+        {
+          "phase": 21,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 500
+        },
+        {
+          "phase": 21,
+          "sector": 508
+        },
+        {
+          "phase": 21,
+          "sector": 516
+        },
+        {
+          "phase": 21,
+          "sector": 524
+        },
+        {
+          "phase": 21,
+          "sector": 532
+        },
+        {
+          "phase": 21,
+          "sector": 540
+        },
+        {
+          "phase": 21,
+          "sector": 548
+        },
+        {
+          "phase": 21,
+          "sector": 556
+        },
+        {
+          "phase": 21,
+          "sector": 564
+        },
+        {
+          "phase": 21,
+          "sector": 572
+        },
+        {
+          "phase": 21,
+          "sector": 580
+        },
+        {
+          "phase": 21,
+          "sector": 588
+        },
+        {
+          "phase": 21,
+          "sector": 596
+        },
+        {
+          "phase": 21,
+          "sector": 604
+        },
+        {
+          "phase": 21,
+          "sector": 612
+        },
+        {
+          "phase": 21,
+          "sector": 620
+        },
+        {
+          "phase": 22,
+          "sector": 361
+        },
+        {
+          "phase": 23,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 1,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 2,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 3,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 4,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 5,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 30,
+          "sector": 360
+        },
+        {
+          "phase": 30,
+          "sector": 361
+        },
+        {
+          "phase": 30,
+          "sector": 65520
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        }
+      ],
+      "cases": [
+        {
+          "phase": 0,
+          "path": "",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS/SUB/DATA.BIN",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "tools/sub/data.bin",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "CASE.TXT",
+          "error": 0,
+          "ordinal": 5
+        },
+        {
+          "phase": 0,
+          "path": "case.txt",
+          "error": 0,
+          "ordinal": 6
+        },
+        {
+          "phase": 0,
+          "path": "CaSe.TxT",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "A@_`.BIN",
+          "error": 0,
+          "ordinal": 7
+        },
+        {
+          "phase": 0,
+          "path": "MISSING",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.TXT/CHILD",
+          "error": 212,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "/TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS/",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS//SUB",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "D1:TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLONG99",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.LONG",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "A.B.C",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 10,
+          "path": "TOOLS",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 11,
+          "path": "TEXT.TXT",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 12,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 13,
+          "path": "TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 14,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 15,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 16,
+          "path": "TOOLS/SUB",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 17,
+          "path": "TOOLS/SUB",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 18,
+          "path": "TOOLS/SUB",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 19,
+          "path": "F55.BIN",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 20,
+          "path": "TRAP.BIN",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 21,
+          "path": "TOOLS/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 21,
+          "path": "TOOLS/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D",
+          "error": 217,
+          "ordinal": 0
+        },
+        {
+          "phase": 22,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 23,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        }
+      ],
+      "fixture_provider_sha256": "ce19baf42bfc62cf473901d0a99d5b9e9bc820464c90c22c83835ef3e4288037",
+      "fixture_sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+      "frames": {
+        "M_MYDOSNAMES_LEGAL_C9AD70C6": 12,
+        "M_MYDOSNAMES_FOLD_297622C6": 8,
+        "M_MYDOSNAMES_STORED_9F1E578A": 48,
+        "M_MYDOSNAMES_MATCH_52630F12": 40,
+        "M_MYDOSNAMES_COMPONENT_FF2F5328": 150,
+        "M_MYDOS_READPHYSICAL_AF05229A": 98,
+        "M_MYDOS_DATASECTOR_95277D3B": 52,
+        "M_MYDOS_VALIDDIRECTORY_1CF8F62E": 84,
+        "M_MYDOS_EXTENT_5BCD29B5": 160,
+        "M_MYDOS_HEADER_A95A323A": 120,
+        "M_MYDOS_MOUNT_2B42A118": 82,
+        "M_MYDOS_COPYENTRY_C5D8D89C": 40,
+        "M_MYDOS_DECODE_69B6DF25": 84,
+        "M_MYDOS_LIVE_1E4E1377": 70,
+        "M_MYDOS_BUFFEREDENTRY_DC465C80": 114,
+        "M_MYDOS_GETENTRY_7D00AFBD": 94,
+        "M_MYDOS_SELECTMATCH_8984C9A2": 82,
+        "M_MYDOS_CHOOSE_61B23C5E": 58,
+        "M_MYDOS_STARTDIRECTORY_E432AEF2": 20,
+        "M_MYDOS_DESCEND_C497F8DD": 124,
+        "M_MYDOS_ROOTENTRY_E3F00029": 40,
+        "M_MYDOS_BEGINRESOLVE_3F47247C": 130,
+        "M_MYDOS_RESOLVESTEP_4ADA26D9": 94,
+        "M_MYDOS_RESOLVE_25FA7BCB": 40
+      }
+    },
+    {
+      "status": "pass",
+      "build": {
+        "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "source_sha256": "d2dd33f1316e765bfe94d34c30f17eaeb0746c2b0b2bc8ad1eb27321b4f9779d",
+        "image_sha256": "a2289304a821a90dadadfe9572a600196143b4f2f3dd26f0d2e584e246347e63",
+        "xex_sha256": "54fb8d9ee6810f3670d87be31c8df57d6a2220fe269c7c68c8d26bb0fed6caa8",
+        "optimize": true,
+        "task_inputs": {
+          "lib/blockio.act": "bfd2e92954157e937cd93b53a4c10ef3cec36ed7d40449b7e0825cc36a3c34c4",
+          "lib/blockwire.act": "86074640ce3c7dacb9c24fc59e1a635e763081cb800e1a033d9cb2e1d4812aa2",
+          "lib/blocktypes.act": "913292e9b9a0451b6c61fa1ff0fe19812e015b74596a9f466814439efa9afb28",
+          "lib/mydos.act": "2889efcb3453e635a4a23ce153c7f2e34fcc0a5348d130a89bfbac84b2a0af45",
+          "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+          "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+          "lib/doscore.act": "3dc83e7875109ceafa1299c8feda38d111d90a118a0a6b856abfb7b01b338ca9",
+          "lib/dos-core-types.inc": "1ff75917d2ae80ac03ab41fa55929026b42b99c05591d9f19344c54f5cd72a22",
+          "lib/dosclient.act": "df28128889da37a246cf25684b69ae1ae66fc7402208121634dd498ddf42922c",
+          "lib/task-dos.inc": "87ea7622eae7d351e44816e732aa4c963c9ae685fe606ba08456b30957ebde80",
+          "platform/altirraos/dos.s": "6693418023dbd2b88d01e1f5cc59d16098094ac21a0dc6d3b2d59f51a41f865f",
+          "abi/dos.json": "67e22b3ce249d1b844aadb0c5749e06712f073e7b931ad2af629a85418a10c8d",
+          "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+          "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+          "lib/dos-packets.inc": "9f4684f36680d7eca364d1fd7b5d4f0b7a233217fadd9403cc70a68c37958a70",
+          "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+          "tools/generate_dos.py": "98096e37826051df80326fb2ce24ae87e757cd7208e7c7a8401d1e8d60532736",
+          "lib/siodriver.act": "271dd4359b55f1ad7ac1763378d2d07d9440de861dfeb0f8b56834ee9b4ffad9",
+          "lib/task-sio.inc": "87d59dffd7181fdf1341c88af32fe6d7a26818495fb4ecad085282260bb7fb0f",
+          "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+          "lib/task-io.inc": "2d970dcb2de53091a3d23338c38d832157370d962ad3a7ba8964b36ddbece875",
+          "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+          "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+          "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+          "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+          "lib/exec-io-types.inc": "e21b39c3c4fce74163e6230f3abbf73eeb932bf25b565909fed04a3c8387bbdf",
+          "tools/generate_io.py": "c261b28e3722702b882e7251b0d1f05c94db2956b4508e2d1a5b309d4e9da3b1",
+          "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+          "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+          "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+          "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+          "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+          "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+          "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+          "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+          "lib/taskpolicy.act": "2390c023f25c528d7fa8197c1e830b5b544ebe702942db60b068b324a3cac549",
+          "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "lib/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+          "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+          "platform/altirraos/sio.s": "e26287bae010cb99161864a03b4b85c2392c68813bb1fbb2baf1ab14cf46fb32",
+          "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+          "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+          "platform/altirraos/signal-irq.s": "d0f18ff9d829ffe48690151fbdb7ecb8253daf5f354f52901f77ea3c5d5b129a",
+          "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+          "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+          "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+          "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+          "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+          "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+          "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+          "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+          "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+          "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+          "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+          "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+          "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+          "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+          "tools/generate_tasks.py": "318e3378b82c1f6f1d6351786a2927142d4041d26d61709aa3c0839b3121f3f1",
+          "platform/altirraos/tasks.s": "5eed313ca495622b18aa5d773e4f7a1ae1b3c5c757739c1a0712ef415e6d9120"
+        },
+        "kernel_bank": 1
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "live_tasks": 0,
+        "native_nmi_count": 305,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0
+      },
+      "checks": [
+        1099
+      ],
+      "sector_bytes": 256,
+      "requests": [
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 369
+        },
+        {
+          "phase": 0,
+          "sector": 377
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 0,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 362
+        },
+        {
+          "phase": 0,
+          "sector": 363
+        },
+        {
+          "phase": 0,
+          "sector": 364
+        },
+        {
+          "phase": 0,
+          "sector": 365
+        },
+        {
+          "phase": 0,
+          "sector": 366
+        },
+        {
+          "phase": 0,
+          "sector": 367
+        },
+        {
+          "phase": 0,
+          "sector": 368
+        },
+        {
+          "phase": 10,
+          "sector": 361
+        },
+        {
+          "phase": 10,
+          "sector": 362
+        },
+        {
+          "phase": 10,
+          "sector": 363
+        },
+        {
+          "phase": 10,
+          "sector": 364
+        },
+        {
+          "phase": 10,
+          "sector": 365
+        },
+        {
+          "phase": 10,
+          "sector": 366
+        },
+        {
+          "phase": 10,
+          "sector": 367
+        },
+        {
+          "phase": 10,
+          "sector": 368
+        },
+        {
+          "phase": 11,
+          "sector": 361
+        },
+        {
+          "phase": 11,
+          "sector": 362
+        },
+        {
+          "phase": 11,
+          "sector": 363
+        },
+        {
+          "phase": 11,
+          "sector": 364
+        },
+        {
+          "phase": 11,
+          "sector": 365
+        },
+        {
+          "phase": 11,
+          "sector": 366
+        },
+        {
+          "phase": 11,
+          "sector": 367
+        },
+        {
+          "phase": 11,
+          "sector": 368
+        },
+        {
+          "phase": 12,
+          "sector": 361
+        },
+        {
+          "phase": 13,
+          "sector": 361
+        },
+        {
+          "phase": 14,
+          "sector": 361
+        },
+        {
+          "phase": 15,
+          "sector": 361
+        },
+        {
+          "phase": 16,
+          "sector": 361
+        },
+        {
+          "phase": 16,
+          "sector": 362
+        },
+        {
+          "phase": 16,
+          "sector": 363
+        },
+        {
+          "phase": 16,
+          "sector": 364
+        },
+        {
+          "phase": 16,
+          "sector": 365
+        },
+        {
+          "phase": 16,
+          "sector": 366
+        },
+        {
+          "phase": 16,
+          "sector": 367
+        },
+        {
+          "phase": 16,
+          "sector": 368
+        },
+        {
+          "phase": 16,
+          "sector": 369
+        },
+        {
+          "phase": 17,
+          "sector": 361
+        },
+        {
+          "phase": 17,
+          "sector": 362
+        },
+        {
+          "phase": 17,
+          "sector": 363
+        },
+        {
+          "phase": 17,
+          "sector": 364
+        },
+        {
+          "phase": 17,
+          "sector": 365
+        },
+        {
+          "phase": 17,
+          "sector": 366
+        },
+        {
+          "phase": 17,
+          "sector": 367
+        },
+        {
+          "phase": 17,
+          "sector": 368
+        },
+        {
+          "phase": 17,
+          "sector": 369
+        },
+        {
+          "phase": 18,
+          "sector": 361
+        },
+        {
+          "phase": 18,
+          "sector": 362
+        },
+        {
+          "phase": 18,
+          "sector": 363
+        },
+        {
+          "phase": 18,
+          "sector": 364
+        },
+        {
+          "phase": 18,
+          "sector": 365
+        },
+        {
+          "phase": 18,
+          "sector": 366
+        },
+        {
+          "phase": 18,
+          "sector": 367
+        },
+        {
+          "phase": 18,
+          "sector": 368
+        },
+        {
+          "phase": 18,
+          "sector": 369
+        },
+        {
+          "phase": 19,
+          "sector": 361
+        },
+        {
+          "phase": 19,
+          "sector": 362
+        },
+        {
+          "phase": 20,
+          "sector": 361
+        },
+        {
+          "phase": 20,
+          "sector": 362
+        },
+        {
+          "phase": 20,
+          "sector": 363
+        },
+        {
+          "phase": 20,
+          "sector": 364
+        },
+        {
+          "phase": 20,
+          "sector": 365
+        },
+        {
+          "phase": 20,
+          "sector": 366
+        },
+        {
+          "phase": 20,
+          "sector": 367
+        },
+        {
+          "phase": 20,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 361
+        },
+        {
+          "phase": 21,
+          "sector": 362
+        },
+        {
+          "phase": 21,
+          "sector": 363
+        },
+        {
+          "phase": 21,
+          "sector": 364
+        },
+        {
+          "phase": 21,
+          "sector": 365
+        },
+        {
+          "phase": 21,
+          "sector": 366
+        },
+        {
+          "phase": 21,
+          "sector": 367
+        },
+        {
+          "phase": 21,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 500
+        },
+        {
+          "phase": 21,
+          "sector": 508
+        },
+        {
+          "phase": 21,
+          "sector": 516
+        },
+        {
+          "phase": 21,
+          "sector": 524
+        },
+        {
+          "phase": 21,
+          "sector": 532
+        },
+        {
+          "phase": 21,
+          "sector": 540
+        },
+        {
+          "phase": 21,
+          "sector": 548
+        },
+        {
+          "phase": 21,
+          "sector": 556
+        },
+        {
+          "phase": 21,
+          "sector": 564
+        },
+        {
+          "phase": 21,
+          "sector": 572
+        },
+        {
+          "phase": 21,
+          "sector": 580
+        },
+        {
+          "phase": 21,
+          "sector": 588
+        },
+        {
+          "phase": 21,
+          "sector": 596
+        },
+        {
+          "phase": 21,
+          "sector": 604
+        },
+        {
+          "phase": 21,
+          "sector": 612
+        },
+        {
+          "phase": 21,
+          "sector": 361
+        },
+        {
+          "phase": 21,
+          "sector": 362
+        },
+        {
+          "phase": 21,
+          "sector": 363
+        },
+        {
+          "phase": 21,
+          "sector": 364
+        },
+        {
+          "phase": 21,
+          "sector": 365
+        },
+        {
+          "phase": 21,
+          "sector": 366
+        },
+        {
+          "phase": 21,
+          "sector": 367
+        },
+        {
+          "phase": 21,
+          "sector": 368
+        },
+        {
+          "phase": 21,
+          "sector": 500
+        },
+        {
+          "phase": 21,
+          "sector": 508
+        },
+        {
+          "phase": 21,
+          "sector": 516
+        },
+        {
+          "phase": 21,
+          "sector": 524
+        },
+        {
+          "phase": 21,
+          "sector": 532
+        },
+        {
+          "phase": 21,
+          "sector": 540
+        },
+        {
+          "phase": 21,
+          "sector": 548
+        },
+        {
+          "phase": 21,
+          "sector": 556
+        },
+        {
+          "phase": 21,
+          "sector": 564
+        },
+        {
+          "phase": 21,
+          "sector": 572
+        },
+        {
+          "phase": 21,
+          "sector": 580
+        },
+        {
+          "phase": 21,
+          "sector": 588
+        },
+        {
+          "phase": 21,
+          "sector": 596
+        },
+        {
+          "phase": 21,
+          "sector": 604
+        },
+        {
+          "phase": 21,
+          "sector": 612
+        },
+        {
+          "phase": 21,
+          "sector": 620
+        },
+        {
+          "phase": 22,
+          "sector": 361
+        },
+        {
+          "phase": 23,
+          "sector": 361
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 1,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 2,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 3,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 4,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 5,
+          "sector": 360
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        },
+        {
+          "phase": 30,
+          "sector": 360
+        },
+        {
+          "phase": 30,
+          "sector": 361
+        },
+        {
+          "phase": 30,
+          "sector": 65520
+        },
+        {
+          "phase": 0,
+          "sector": 360
+        }
+      ],
+      "cases": [
+        {
+          "phase": 0,
+          "path": "",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS/SUB/DATA.BIN",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "tools/sub/data.bin",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "CASE.TXT",
+          "error": 0,
+          "ordinal": 5
+        },
+        {
+          "phase": 0,
+          "path": "case.txt",
+          "error": 0,
+          "ordinal": 6
+        },
+        {
+          "phase": 0,
+          "path": "CaSe.TxT",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "A@_`.BIN",
+          "error": 0,
+          "ordinal": 7
+        },
+        {
+          "phase": 0,
+          "path": "MISSING",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.TXT/CHILD",
+          "error": 212,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "/TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS/",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLS//SUB",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "D1:TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TOOLONG99",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.LONG",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "TEXT.",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "A.B.C",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 0,
+          "path": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 10,
+          "path": "TOOLS",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 11,
+          "path": "TEXT.TXT",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 12,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 13,
+          "path": "TOOLS",
+          "error": 210,
+          "ordinal": 0
+        },
+        {
+          "phase": 14,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 15,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 16,
+          "path": "TOOLS/SUB",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 17,
+          "path": "TOOLS/SUB",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 18,
+          "path": "TOOLS/SUB",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 19,
+          "path": "F55.BIN",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 20,
+          "path": "TRAP.BIN",
+          "error": 205,
+          "ordinal": 0
+        },
+        {
+          "phase": 21,
+          "path": "TOOLS/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D",
+          "error": 0,
+          "ordinal": 0
+        },
+        {
+          "phase": 21,
+          "path": "TOOLS/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D/D",
+          "error": 217,
+          "ordinal": 0
+        },
+        {
+          "phase": 22,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        },
+        {
+          "phase": 23,
+          "path": "TOOLS",
+          "error": 213,
+          "ordinal": 0
+        }
+      ],
+      "fixture_provider_sha256": "ce19baf42bfc62cf473901d0a99d5b9e9bc820464c90c22c83835ef3e4288037",
+      "fixture_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "frames": {
+        "M_MYDOSNAMES_LEGAL_C9AD70C6": 12,
+        "M_MYDOSNAMES_FOLD_297622C6": 8,
+        "M_MYDOSNAMES_STORED_9F1E578A": 48,
+        "M_MYDOSNAMES_MATCH_52630F12": 40,
+        "M_MYDOSNAMES_COMPONENT_FF2F5328": 150,
+        "M_MYDOS_READPHYSICAL_AF05229A": 98,
+        "M_MYDOS_DATASECTOR_95277D3B": 52,
+        "M_MYDOS_VALIDDIRECTORY_1CF8F62E": 84,
+        "M_MYDOS_EXTENT_5BCD29B5": 160,
+        "M_MYDOS_HEADER_A95A323A": 120,
+        "M_MYDOS_MOUNT_2B42A118": 82,
+        "M_MYDOS_COPYENTRY_C5D8D89C": 40,
+        "M_MYDOS_DECODE_69B6DF25": 84,
+        "M_MYDOS_LIVE_1E4E1377": 70,
+        "M_MYDOS_BUFFEREDENTRY_DC465C80": 114,
+        "M_MYDOS_GETENTRY_7D00AFBD": 94,
+        "M_MYDOS_SELECTMATCH_8984C9A2": 82,
+        "M_MYDOS_CHOOSE_61B23C5E": 58,
+        "M_MYDOS_STARTDIRECTORY_E432AEF2": 20,
+        "M_MYDOS_DESCEND_C497F8DD": 124,
+        "M_MYDOS_ROOTENTRY_E3F00029": 40,
+        "M_MYDOS_BEGINRESOLVE_3F47247C": 130,
+        "M_MYDOS_RESOLVESTEP_4ADA26D9": 94,
+        "M_MYDOS_RESOLVE_25FA7BCB": 40
+      }
+    }
+  ],
+  "fixtures": [
+    {
+      "path": "tests/fixtures/mydos/mydos450-128.atr",
+      "sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+      "sector_bytes": 128,
+      "sectors": 720,
+      "vtoc": "02c40268020000000000",
+      "producer": {
+        "status": "pass",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "on",
+          "burstio": false,
+          "accuratedisk": false,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 15,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": true,
+          "diskemu": "generic",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$eeca81434d995c35",
+          "actual_kernel_id": "$eeca81434d995c35",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "profile": {
+          "schema_version": 1,
+          "rom": {
+            "name": "AltirraOS 3.44 for 65C816",
+            "bytes": 16384,
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+            "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+            "cop0_after_xce": 50931
+          },
+          "emulator": {
+            "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+            "platform": "macOS arm64",
+            "sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989",
+            "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+            "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+            "build_record": "toolchain/altirra-build.json",
+            "additional_patch": "toolchain/patches/altirra-headless-mount.patch",
+            "additional_patch_sha256": "3ba17abf8b5037383457f85306bb3eaad973151701a3fa4221469c87ccefd1bd"
+          },
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 15,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true
+          },
+          "scope": "Queued SIO tests; drive-specific headless MOUNT fixed without changing CPU/peripheral emulation",
+          "peripherals": [
+            {
+              "name": "fastest-125k",
+              "diskemu": "fastest",
+              "divisor": 0,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "stock-810",
+              "diskemu": "810",
+              "divisor": 40,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "happy-none",
+              "diskemu": "happy1050",
+              "divisor": 40,
+              "source": "src/Altirra/source/disk.cpp",
+              "firmware": "built-in high-level model; quiet command only"
+            }
+          ],
+          "configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true
+          },
+          "limits": {
+            "command_setup_us": [
+              750,
+              1600
+            ],
+            "command_hold_us": [
+              650,
+              950
+            ],
+            "write_delay_us": [
+              1000,
+              1800
+            ],
+            "alarm_lateness_us": 100,
+            "active_max_us": 1020000,
+            "critic_max_us": 1020000
+          },
+          "alarm": {
+            "timer1_base_cycles": 224,
+            "timer2_base_cycles": 7168,
+            "timer2_count": 250,
+            "phase_counts": {
+              "setup": 8,
+              "hold": 7,
+              "write": 10
+            },
+            "stimer": "initialization/cleanup only"
+          },
+          "source_sha256": {
+            "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+            "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+            "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+          },
+          "write_delay_basis": "Figure 18 (1.0\u20131.8 ms); qualified only against these pinned disk models. Page 219 prose says 10\u201318 ms and is not used for these profiles.",
+          "timeout_policy": "One 250-tick active watchdog: ACK, result and data all inherit its remaining time; receiving a byte does not restart it. No separate phase or per-byte timeout in this disposable probe.",
+          "observer": {
+            "binary_sha256": "f5bb13fff27be8e89a8cb0a499d5c56bb31e609917eef8ce8999a59286f02922",
+            "patch": "toolchain/patches/altirra-sio-observer.patch",
+            "additional_patch": "toolchain/patches/altirra-headless-mount.patch"
+          },
+          "fault_responder": {
+            "binary_sha256": "c2eb067b68eea3dfb7c7c883b1aca0be0d74b3179bfa40f98a88557e5aecf60d",
+            "patch": "toolchain/patches/altirra-sio-fault-responder.patch",
+            "patch_sha256": "47cb3ca5fb473cd7561010dd8634a8295980204a1fc9c0facf65ab05029fa160",
+            "scope": "Explicit D8 protocol/stop-bit corruption, test-only environment selector; POKEY and guest execute normally. Includes passive observer and drive-specific MOUNT patches."
+          }
+        },
+        "overrides": {
+          "siopatch": "on",
+          "diskemu": "fastest"
+        },
+        "emulator_sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989",
+        "sector_bytes": 128,
+        "sectors": 720,
+        "media_sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+        "boot_sha256": "ef4d834efd86a0be86ac661618c0316684dd1da1e4e85da83708293109ab13d8",
+        "producer_sha256": "b19c3a74f9804b7045eeea60ce5eb23e48f54635147f1c9c34b919e8cb492e7c",
+        "jobs": [
+          {
+            "op": 34,
+            "name": "D2:TOOLS"
+          },
+          {
+            "op": 34,
+            "name": "D2:TOOLS:SUB"
+          },
+          {
+            "op": 3,
+            "name": "D2:TOOLS:SUB:DATA.BIN",
+            "size": 777,
+            "seed": 83,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:EMPTY",
+            "size": 0,
+            "seed": 0,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:TEXT.TXT",
+            "size": 259,
+            "seed": 34,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:LOCKED.BIN",
+            "size": 17,
+            "seed": 155,
+            "flags": 32
+          },
+          {
+            "op": 3,
+            "name": "D2:EXT.BIN",
+            "size": 600,
+            "seed": 49,
+            "flags": 4
+          },
+          {
+            "op": 3,
+            "name": "D2:CASE.TXT",
+            "size": 9,
+            "seed": 17,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:case.txt",
+            "size": 11,
+            "seed": 18,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:A@_`.BIN",
+            "size": 5,
+            "seed": 19,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F00.BIN",
+            "size": 0,
+            "seed": 0,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F01.BIN",
+            "size": 1,
+            "seed": 1,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F02.BIN",
+            "size": 2,
+            "seed": 2,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F03.BIN",
+            "size": 3,
+            "seed": 3,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F04.BIN",
+            "size": 4,
+            "seed": 4,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F05.BIN",
+            "size": 0,
+            "seed": 5,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F06.BIN",
+            "size": 1,
+            "seed": 6,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F07.BIN",
+            "size": 2,
+            "seed": 7,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F08.BIN",
+            "size": 3,
+            "seed": 8,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F09.BIN",
+            "size": 4,
+            "seed": 9,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F10.BIN",
+            "size": 0,
+            "seed": 10,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F11.BIN",
+            "size": 1,
+            "seed": 11,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F12.BIN",
+            "size": 2,
+            "seed": 12,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F13.BIN",
+            "size": 3,
+            "seed": 13,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F14.BIN",
+            "size": 4,
+            "seed": 14,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F15.BIN",
+            "size": 0,
+            "seed": 15,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F16.BIN",
+            "size": 1,
+            "seed": 16,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F17.BIN",
+            "size": 2,
+            "seed": 17,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F18.BIN",
+            "size": 3,
+            "seed": 18,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F19.BIN",
+            "size": 4,
+            "seed": 19,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F20.BIN",
+            "size": 0,
+            "seed": 20,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F21.BIN",
+            "size": 1,
+            "seed": 21,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F22.BIN",
+            "size": 2,
+            "seed": 22,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F23.BIN",
+            "size": 3,
+            "seed": 23,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F24.BIN",
+            "size": 4,
+            "seed": 24,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F25.BIN",
+            "size": 0,
+            "seed": 25,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F26.BIN",
+            "size": 1,
+            "seed": 26,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F27.BIN",
+            "size": 2,
+            "seed": 27,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F28.BIN",
+            "size": 3,
+            "seed": 28,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F29.BIN",
+            "size": 4,
+            "seed": 29,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F30.BIN",
+            "size": 0,
+            "seed": 30,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F31.BIN",
+            "size": 1,
+            "seed": 31,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F32.BIN",
+            "size": 2,
+            "seed": 32,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F33.BIN",
+            "size": 3,
+            "seed": 33,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F34.BIN",
+            "size": 4,
+            "seed": 34,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F35.BIN",
+            "size": 0,
+            "seed": 35,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F36.BIN",
+            "size": 1,
+            "seed": 36,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F37.BIN",
+            "size": 2,
+            "seed": 37,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F38.BIN",
+            "size": 3,
+            "seed": 38,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F39.BIN",
+            "size": 4,
+            "seed": 39,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F40.BIN",
+            "size": 0,
+            "seed": 40,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F41.BIN",
+            "size": 1,
+            "seed": 41,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F42.BIN",
+            "size": 2,
+            "seed": 42,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F43.BIN",
+            "size": 3,
+            "seed": 43,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F44.BIN",
+            "size": 4,
+            "seed": 44,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F45.BIN",
+            "size": 0,
+            "seed": 45,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F46.BIN",
+            "size": 1,
+            "seed": 46,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F47.BIN",
+            "size": 2,
+            "seed": 47,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F48.BIN",
+            "size": 3,
+            "seed": 48,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F49.BIN",
+            "size": 4,
+            "seed": 49,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F50.BIN",
+            "size": 0,
+            "seed": 50,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F51.BIN",
+            "size": 1,
+            "seed": 51,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F52.BIN",
+            "size": 2,
+            "seed": 52,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F53.BIN",
+            "size": 3,
+            "seed": 53,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F54.BIN",
+            "size": 4,
+            "seed": 54,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F55.BIN",
+            "size": 0,
+            "seed": 55,
+            "flags": 0
+          }
+        ],
+        "original_sha256": "0c13eb9175975636e231be335341eb91fd143dc19e090efa995c09374ff313a1"
+      }
+    },
+    {
+      "path": "tests/fixtures/mydos/mydos450-256.atr",
+      "sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "sector_bytes": 256,
+      "sectors": 2000,
+      "vtoc": "04c3070e020000000000",
+      "producer": {
+        "status": "pass",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "on",
+          "burstio": false,
+          "accuratedisk": false,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 15,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": true,
+          "diskemu": "generic",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$eeca81434d995c35",
+          "actual_kernel_id": "$eeca81434d995c35",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "profile": {
+          "schema_version": 1,
+          "rom": {
+            "name": "AltirraOS 3.44 for 65C816",
+            "bytes": 16384,
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+            "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+            "cop0_after_xce": 50931
+          },
+          "emulator": {
+            "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+            "platform": "macOS arm64",
+            "sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989",
+            "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+            "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+            "build_record": "toolchain/altirra-build.json",
+            "additional_patch": "toolchain/patches/altirra-headless-mount.patch",
+            "additional_patch_sha256": "3ba17abf8b5037383457f85306bb3eaad973151701a3fa4221469c87ccefd1bd"
+          },
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 15,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true
+          },
+          "scope": "Queued SIO tests; drive-specific headless MOUNT fixed without changing CPU/peripheral emulation",
+          "peripherals": [
+            {
+              "name": "fastest-125k",
+              "diskemu": "fastest",
+              "divisor": 0,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "stock-810",
+              "diskemu": "810",
+              "divisor": 40,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "happy-none",
+              "diskemu": "happy1050",
+              "divisor": 40,
+              "source": "src/Altirra/source/disk.cpp",
+              "firmware": "built-in high-level model; quiet command only"
+            }
+          ],
+          "configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true
+          },
+          "limits": {
+            "command_setup_us": [
+              750,
+              1600
+            ],
+            "command_hold_us": [
+              650,
+              950
+            ],
+            "write_delay_us": [
+              1000,
+              1800
+            ],
+            "alarm_lateness_us": 100,
+            "active_max_us": 1020000,
+            "critic_max_us": 1020000
+          },
+          "alarm": {
+            "timer1_base_cycles": 224,
+            "timer2_base_cycles": 7168,
+            "timer2_count": 250,
+            "phase_counts": {
+              "setup": 8,
+              "hold": 7,
+              "write": 10
+            },
+            "stimer": "initialization/cleanup only"
+          },
+          "source_sha256": {
+            "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+            "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+            "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+          },
+          "write_delay_basis": "Figure 18 (1.0\u20131.8 ms); qualified only against these pinned disk models. Page 219 prose says 10\u201318 ms and is not used for these profiles.",
+          "timeout_policy": "One 250-tick active watchdog: ACK, result and data all inherit its remaining time; receiving a byte does not restart it. No separate phase or per-byte timeout in this disposable probe.",
+          "observer": {
+            "binary_sha256": "f5bb13fff27be8e89a8cb0a499d5c56bb31e609917eef8ce8999a59286f02922",
+            "patch": "toolchain/patches/altirra-sio-observer.patch",
+            "additional_patch": "toolchain/patches/altirra-headless-mount.patch"
+          },
+          "fault_responder": {
+            "binary_sha256": "c2eb067b68eea3dfb7c7c883b1aca0be0d74b3179bfa40f98a88557e5aecf60d",
+            "patch": "toolchain/patches/altirra-sio-fault-responder.patch",
+            "patch_sha256": "47cb3ca5fb473cd7561010dd8634a8295980204a1fc9c0facf65ab05029fa160",
+            "scope": "Explicit D8 protocol/stop-bit corruption, test-only environment selector; POKEY and guest execute normally. Includes passive observer and drive-specific MOUNT patches."
+          }
+        },
+        "overrides": {
+          "siopatch": "on",
+          "diskemu": "fastest"
+        },
+        "emulator_sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989",
+        "sector_bytes": 256,
+        "sectors": 2000,
+        "media_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+        "boot_sha256": "fc5ea5c2099ead127478ea6a534174c987dccae64ccddd07455796d00b8ab49d",
+        "producer_sha256": "5979704edf6a305b2a0ab050f6042a8bd1f6a9fbfc8b8d0f13cbb77721a9504b",
+        "jobs": [
+          {
+            "op": 34,
+            "name": "D2:TOOLS"
+          },
+          {
+            "op": 34,
+            "name": "D2:TOOLS:SUB"
+          },
+          {
+            "op": 3,
+            "name": "D2:TOOLS:SUB:DATA.BIN",
+            "size": 777,
+            "seed": 83,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:EMPTY",
+            "size": 0,
+            "seed": 0,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:TEXT.TXT",
+            "size": 259,
+            "seed": 34,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:LOCKED.BIN",
+            "size": 17,
+            "seed": 155,
+            "flags": 32
+          },
+          {
+            "op": 3,
+            "name": "D2:EXT.BIN",
+            "size": 600,
+            "seed": 49,
+            "flags": 4
+          },
+          {
+            "op": 3,
+            "name": "D2:CASE.TXT",
+            "size": 9,
+            "seed": 17,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:case.txt",
+            "size": 11,
+            "seed": 18,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:A@_`.BIN",
+            "size": 5,
+            "seed": 19,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:HOLE.BIN",
+            "size": 2024,
+            "seed": 97,
+            "flags": 4
+          },
+          {
+            "op": 3,
+            "name": "D2:PAD.BIN",
+            "size": 278300,
+            "seed": 167,
+            "flags": 4
+          },
+          {
+            "op": 33,
+            "name": "D2:HOLE.BIN"
+          },
+          {
+            "op": 3,
+            "name": "D2:LARGE.BIN",
+            "size": 70003,
+            "seed": 129,
+            "flags": 4
+          },
+          {
+            "op": 3,
+            "name": "D2:F00.BIN",
+            "size": 0,
+            "seed": 0,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F01.BIN",
+            "size": 1,
+            "seed": 1,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F02.BIN",
+            "size": 2,
+            "seed": 2,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F03.BIN",
+            "size": 3,
+            "seed": 3,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F04.BIN",
+            "size": 4,
+            "seed": 4,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F05.BIN",
+            "size": 0,
+            "seed": 5,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F06.BIN",
+            "size": 1,
+            "seed": 6,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F07.BIN",
+            "size": 2,
+            "seed": 7,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F08.BIN",
+            "size": 3,
+            "seed": 8,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F09.BIN",
+            "size": 4,
+            "seed": 9,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F10.BIN",
+            "size": 0,
+            "seed": 10,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F11.BIN",
+            "size": 1,
+            "seed": 11,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F12.BIN",
+            "size": 2,
+            "seed": 12,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F13.BIN",
+            "size": 3,
+            "seed": 13,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F14.BIN",
+            "size": 4,
+            "seed": 14,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F15.BIN",
+            "size": 0,
+            "seed": 15,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F16.BIN",
+            "size": 1,
+            "seed": 16,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F17.BIN",
+            "size": 2,
+            "seed": 17,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F18.BIN",
+            "size": 3,
+            "seed": 18,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F19.BIN",
+            "size": 4,
+            "seed": 19,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F20.BIN",
+            "size": 0,
+            "seed": 20,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F21.BIN",
+            "size": 1,
+            "seed": 21,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F22.BIN",
+            "size": 2,
+            "seed": 22,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F23.BIN",
+            "size": 3,
+            "seed": 23,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F24.BIN",
+            "size": 4,
+            "seed": 24,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F25.BIN",
+            "size": 0,
+            "seed": 25,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F26.BIN",
+            "size": 1,
+            "seed": 26,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F27.BIN",
+            "size": 2,
+            "seed": 27,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F28.BIN",
+            "size": 3,
+            "seed": 28,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F29.BIN",
+            "size": 4,
+            "seed": 29,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F30.BIN",
+            "size": 0,
+            "seed": 30,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F31.BIN",
+            "size": 1,
+            "seed": 31,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F32.BIN",
+            "size": 2,
+            "seed": 32,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F33.BIN",
+            "size": 3,
+            "seed": 33,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F34.BIN",
+            "size": 4,
+            "seed": 34,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F35.BIN",
+            "size": 0,
+            "seed": 35,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F36.BIN",
+            "size": 1,
+            "seed": 36,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F37.BIN",
+            "size": 2,
+            "seed": 37,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F38.BIN",
+            "size": 3,
+            "seed": 38,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F39.BIN",
+            "size": 4,
+            "seed": 39,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F40.BIN",
+            "size": 0,
+            "seed": 40,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F41.BIN",
+            "size": 1,
+            "seed": 41,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F42.BIN",
+            "size": 2,
+            "seed": 42,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F43.BIN",
+            "size": 3,
+            "seed": 43,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F44.BIN",
+            "size": 4,
+            "seed": 44,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F45.BIN",
+            "size": 0,
+            "seed": 45,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F46.BIN",
+            "size": 1,
+            "seed": 46,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F47.BIN",
+            "size": 2,
+            "seed": 47,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F48.BIN",
+            "size": 3,
+            "seed": 48,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F49.BIN",
+            "size": 4,
+            "seed": 49,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F50.BIN",
+            "size": 0,
+            "seed": 50,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F51.BIN",
+            "size": 1,
+            "seed": 51,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F52.BIN",
+            "size": 2,
+            "seed": 52,
+            "flags": 0
+          },
+          {
+            "op": 3,
+            "name": "D2:F53.BIN",
+            "size": 3,
+            "seed": 53,
+            "flags": 0
+          }
+        ],
+        "original_sha256": "0c13eb9175975636e231be335341eb91fd143dc19e090efa995c09374ff313a1"
+      }
+    }
+  ],
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json",
+      "additional_patch": "toolchain/patches/altirra-headless-mount.patch",
+      "additional_patch_sha256": "3ba17abf8b5037383457f85306bb3eaad973151701a3fa4221469c87ccefd1bd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Queued SIO tests; drive-specific headless MOUNT fixed without changing CPU/peripheral emulation",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "limits": {
+      "command_setup_us": [
+        750,
+        1600
+      ],
+      "command_hold_us": [
+        650,
+        950
+      ],
+      "write_delay_us": [
+        1000,
+        1800
+      ],
+      "alarm_lateness_us": 100,
+      "active_max_us": 1020000,
+      "critic_max_us": 1020000
+    },
+    "alarm": {
+      "timer1_base_cycles": 224,
+      "timer2_base_cycles": 7168,
+      "timer2_count": 250,
+      "phase_counts": {
+        "setup": 8,
+        "hold": 7,
+        "write": 10
+      },
+      "stimer": "initialization/cleanup only"
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "write_delay_basis": "Figure 18 (1.0\u20131.8 ms); qualified only against these pinned disk models. Page 219 prose says 10\u201318 ms and is not used for these profiles.",
+    "timeout_policy": "One 250-tick active watchdog: ACK, result and data all inherit its remaining time; receiving a byte does not restart it. No separate phase or per-byte timeout in this disposable probe.",
+    "observer": {
+      "binary_sha256": "f5bb13fff27be8e89a8cb0a499d5c56bb31e609917eef8ce8999a59286f02922",
+      "patch": "toolchain/patches/altirra-sio-observer.patch",
+      "additional_patch": "toolchain/patches/altirra-headless-mount.patch"
+    },
+    "fault_responder": {
+      "binary_sha256": "c2eb067b68eea3dfb7c7c883b1aca0be0d74b3179bfa40f98a88557e5aecf60d",
+      "patch": "toolchain/patches/altirra-sio-fault-responder.patch",
+      "patch_sha256": "47cb3ca5fb473cd7561010dd8634a8295980204a1fc9c0facf65ab05029fa160",
+      "scope": "Explicit D8 protocol/stop-bit corruption, test-only environment selector; POKEY and guest execute normally. Includes passive observer and drive-specific MOUNT patches."
+    }
+  },
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 2,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc",
+    "local_bundle": {
+      "path": "toolchain/actionc-comma-groups.bundle",
+      "sha256": "3e536e01ba92629bf357df1bfa489d10b7f1947577497eef0d22bb97d7b6dfb8",
+      "base_revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+      "scope": "Parser comma-group correction; bundled local commit, not asserted published upstream"
+    }
+  },
+  "bank_zero": {
+    "before": {
+      "four": {
+        "fixed_runtime": 11824,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 21104,
+        "runtime_including_os": 57968,
+        "loading_excluding_os": 21696,
+        "loading_including_os": 58560
+      },
+      "eight": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      }
+    },
+    "after": {
+      "four": {
+        "fixed_runtime": 11824,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 21104,
+        "runtime_including_os": 57968,
+        "loading_excluding_os": 21696,
+        "loading_including_os": 58560
+      },
+      "eight": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      }
+    },
+    "fixed_delta": 0,
+    "per_task_delta": 0,
+    "diagnostic_delta": 0,
+    "accounting": "Generated maps; full guards, near arena, table slack and retained legacy contexts; unchanged pools."
+  },
+  "storage": {
+    "fixed_upper_delta": 0,
+    "per_parser_workspace": 116,
+    "workspace_heap": 120,
+    "per_volume_record": 14,
+    "volume_heap": 16,
+    "additional_tasks": 0,
+    "additional_signals": 0
+  },
+  "limits": {
+    "host_seconds": 240,
+    "frames": 12000,
+    "sector_requests": 4096,
+    "path_bytes": 255,
+    "components": 16,
+    "directory_entries": 64
+  },
+  "commands": [
+    "python3 tools/test_mydos.py --case raw --size 128 --output build/dos-slice5/meta-raw128",
+    "python3 tools/test_mydos.py --case raw --size 256 --output build/dos-slice5/meta-raw256",
+    "python3 tools/test_mydos.py --case opt --size 128 --output build/dos-slice5/meta-opt128",
+    "python3 tools/test_mydos.py --case opt --size 256 --output build/dos-slice5/meta-opt256",
+    "python3 tools/mydos_producer.py --size 128 --output build/dos-slice5/producer128",
+    "python3 tools/mydos_producer.py --size 256 --output build/dos-slice5/producer256",
+    "python3 tools/mydos_fixtures.py"
+  ]
+}

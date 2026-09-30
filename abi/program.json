@@ -1,0 +1,168 @@
+{
+  "abi": "exec816.program",
+  "version": 6,
+  "profile": "actionc.o65.compact.v3",
+  "native_abi": "action65816.native.v2",
+  "entry_signature": 684236356,
+  "provider_offset": 16384,
+  "provider_capacity": 1664,
+  "provider_operation": 3,
+  "result_codes": {
+    "OK": 0,
+    "ERROR": 10,
+    "FAIL": 20
+  },
+  "providers": {
+    "Open": {
+      "result": "BYTE POINTER",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "name"
+        ],
+        [
+          "LONGINT",
+          "mode"
+        ]
+      ]
+    },
+    "Read": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ],
+        [
+          "BYTE POINTER",
+          "buffer"
+        ],
+        [
+          "LONGINT",
+          "length"
+        ]
+      ]
+    },
+    "Write": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ],
+        [
+          "BYTE POINTER",
+          "buffer"
+        ],
+        [
+          "LONGINT",
+          "length"
+        ]
+      ]
+    },
+    "Seek": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ],
+        [
+          "LONGINT",
+          "offset"
+        ],
+        [
+          "LONGINT",
+          "mode"
+        ]
+      ]
+    },
+    "Close": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ]
+      ]
+    },
+    "Input": {
+      "result": "BYTE POINTER",
+      "arguments": []
+    },
+    "Output": {
+      "result": "BYTE POINTER",
+      "arguments": []
+    },
+    "IoErr": {
+      "result": "LONGINT",
+      "arguments": []
+    },
+    "GetArgStr": {
+      "result": "SYS.CSTRING",
+      "arguments": []
+    },
+    "SetIoErr": {
+      "arguments": [
+        [
+          "LONGINT",
+          "error"
+        ]
+      ],
+      "result": "LONGINT"
+    },
+    "BreakPending": {
+      "result": "LONGINT",
+      "arguments": []
+    },
+    "Yield": {
+      "result": "PROC",
+      "arguments": []
+    },
+    "ReadArgs": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "SYS.CSTRING",
+          "template"
+        ],
+        [
+          "ADDRESS POINTER",
+          "values"
+        ],
+        [
+          "CARD",
+          "valueCapacity"
+        ],
+        [
+          "BYTE POINTER",
+          "storage"
+        ],
+        [
+          "CARD",
+          "storageCapacity"
+        ]
+      ]
+    }
+  },
+  "limits": {
+    "FILE": 262144,
+    "TEXT": 131072,
+    "DATA": 65536,
+    "BSS": 65536,
+    "IMPORTS": 64,
+    "STRING": 4096
+  },
+  "errors": {
+    "NO_FREE_STORE": 103,
+    "BAD_FORMAT": 306,
+    "UNSUPPORTED": 307,
+    "RESOURCE_LIMIT": 308,
+    "BAD_PROVIDER": 309
+  },
+  "argument_limits": {
+    "FIELDS": 8,
+    "TEMPLATE": 255,
+    "TEXT": 255
+  }
+}

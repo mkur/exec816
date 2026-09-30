@@ -1,0 +1,19 @@
+MODULE O65SAMPLE
+CARD initial=[7],output
+BYTE ARRAY bytes(8)=[1 2 3]
+
+PROC Helper(CARD value)
+
+  output=value+initial
+
+RETURN
+
+; Exercise the minimal compiled o65 command path.
+LONGINT FUNC Main()
+
+  Helper(5)
+  bytes(3)=BYTE(output)
+
+RETURN(0)
+
+ENDMODULE

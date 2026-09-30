@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "verdict": "fail",
+  "violations": [
+    "alarm deadline sio_watchdog"
+  ],
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "ae1f555e77d0ae6caffbfc7453cbf06e3d098bee",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "optimize": true,
+  "watchdog_max_us": 100.29899390875681,
+  "deadline_misses": {
+    "rx": 0,
+    "tx": 0,
+    "tx_gaps": 0
+  },
+  "rx_byte_deadline_us": 78.94228614041295,
+  "file_read": {
+    "bytes": 70003,
+    "seconds": 48.88201652431211,
+    "bytes_per_second": 1432.0808546264268,
+    "mechanical_timing": true,
+    "scope": "JSL DOS.Read entry to return; excludes Open, payload verification and cleanup"
+  },
+  "native_status": 0,
+  "guards": "intact",
+  "trace_sha256": "669e704637c0a68146176f6f38833556af0ea9c9b4eeea19e9c173190e72e7e6",
+  "result_sha256": "ceefcb097c944dea6bed752cc6d0579d0cf0649d6000ff6093a07a21e3737bc3",
+  "xex_sha256": "925880e72a4d3afb9ba1239daa1606212a3e5a1c09ad314071770017a374dc3e",
+  "image_sha256": "9a69567e3fe1da55c0bd889bb51d92906760ff3e8fb302634a9fd2cabf0f72fd",
+  "platform_inputs": {
+    "platform/altirraos/hosted.s": "07045947a19df22c9c59dfe1a6e39857e17055132089dfca2eb2ea4111699e5d",
+    "platform/altirraos/layout.inc": "54910fcc103ff50721dab6a2a03f66dc83e31585ddd2cb2b45ff0f8b832d75e0",
+    "platform/altirraos/hosted.cfg": "381c9142b71a2eff92a1af49bd30029e0458b3ab7030ff6bba2bfda696df6112",
+    "lib/execos.act": "62266f93b89c563d3b97cc56fc8482f6f5f8e6add6458ede727b90fb65fece31",
+    "abi/exec816-v1.json": "c38d1ddaedeb89a57c0614ba8702f6f6f93adda4e2d78f7ff582ac47b54fe1c5",
+    "platform/altirraos/exec-abi.inc": "22eb93b3da8cefecad66aeab9cecfe21f53032b848f65b0b928f16e1655d04be",
+    "platform/altirraos/cooperative.s": "f937054aa30814a99e487a3988f6ae9f0c5ad59fb76dcea1eee9bf8a527f7b85",
+    "lib/exec-abi.inc": "bdb408417c878b2662170135b8d395a68f3a3b39c9f27047a4947acfb0d168c9",
+    "platform/altirraos/cooperative-probe.s": "54cbbe92eb52a89b8bd4a8ef55b694a11269274d3a5ded7c3009863794a19f74",
+    "platform/altirraos/preemptive.s": "9f16a897205e863a33a8bdc6e67c512a008cf1969f0c6b208ea2ca6ea811bd11",
+    "lib/exec.act": "97d6a431afee161073d052f7eede9b4851f99a776313e965cba8e54884eb3192",
+    "lib/execpolicy.act": "86bdab3ebe27a383f0aa91365d4aded7fd174efd016399e32c3fdd537e883fba"
+  },
+  "interval": {
+    "timer_tick": 4315514308,
+    "service_tick": 4315514485.875
+  },
+  "diagnosis": "Watchdog asserted after the route timer scan, during physical keyboard delivery. Two bounded RX checks and full IRQ return/re-entry delayed service to 100.298994 us. Payload, native cleanup and byte deadlines passed; the original 100 us watchdog gate rejected the run.",
+  "fix": "Console service checks at most one enabled pending watchdog after RX, both before its wake post and before IRQ return. No loop, state, ABI or bank-zero reservation added. The complete matrix, TX and real fault responders must be rebuilt and rerun.",
+  "evidence_scope": "Preserved pre-fix observation from slice 8, not a passing qualification or a modified trace."
+}

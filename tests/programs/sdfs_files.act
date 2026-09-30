@@ -1,0 +1,351 @@
+MODULE SDFSTEST
+USE FSSTATUS
+USE EXEC
+USE HEAPCORE
+USE FSBTYPES
+USE SDFSTYPES
+USE SDFS
+USE SDFSFILE
+USE BLOCKTYPES
+CARD checks,dataReads,mapReads
+BYTE phase,revision,finished
+FSBTYPES.Workspace work
+FSBTYPES.Volume volume
+FSBTYPES.Cursor file
+FSBTYPES.Operation operation
+BLOCKTYPES.Volume block
+BLOCKTYPES.Adapter adapter
+BYTE ARRAY buffer(256)
+CARD POINTER config
+LONGCARD before
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f700+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Supply the requested physical sector while tracking parser I/O accounting.
+PROC Fetch()
+  LONGCARD POINTER table
+  BYTE POINTER source
+  CARD index,sector,amount
+
+  sector=work.neededSector
+  table=LONGCARD POINTER($b0000)
+  Require(sector>0 AND sector<=2000)
+  source=BYTE POINTER(ADDRESS(table(sector)))
+  amount=block.dataBytes
+  IF sector<=3 THEN
+    amount=128
+  FI
+
+  FOR index=0 TO amount-1 DO
+    buffer(index)=source(index)
+  OD
+
+  work.operations==+1
+  IF sector=1 THEN
+    buffer(32)=revision
+    IF phase=1 THEN
+      buffer(32)=$11
+    FI
+
+    IF phase=2 THEN
+      buffer(31)=1
+    FI
+
+    IF phase=3 THEN
+      buffer(9)=1
+      buffer(10)=0
+    FI
+  FI
+
+  IF sector=config(3) THEN
+    IF phase=4 THEN
+      buffer(0)=BYTE(sector)
+      buffer(1)=BYTE(sector RSH 8)
+    FI
+
+    IF phase=5 THEN
+      buffer(2)=1
+    FI
+
+    IF phase=6 THEN
+      buffer(0)=0
+      buffer(1)=0
+    FI
+
+    IF phase=7 THEN
+      buffer(4)=1
+      buffer(5)=0
+    FI
+  FI
+
+RETURN
+
+PROC Setup()
+
+  config=CARD POINTER($a0800)
+  revision=33
+  before=EXEC.AvailMem(0)
+  block.sectors=2000
+  block.dataBytes=config(0)
+  block.boot=1
+  block.generation=1
+  block.adapter=BYTE POINTER(@adapter)
+  adapter.buffer=buffer
+  volume.block=@block
+  volume.format=2
+  work.volume=@volume
+  operation.work=@work
+  operation.file=@file
+  Require(SIZEOF(SDFSTYPES.MapCursor)<=FSBTYPES.CURSOR_STORAGE_BYTES
+      AND SDFS.CreateWork(@work)<>0 AND SDFS.CreateVolume(@volume)<>0)
+
+RETURN
+
+PROC Mount()
+
+  Require(SDFS.BeginMount(@work)=FSSTATUS.NEED_IO)
+  Fetch()
+  Require(SDFS.MountBuffered(@work)=1)
+  Require(volume.root=config(1))
+
+RETURN
+
+PROC OpenFile(CARD start LONGINT length)
+
+  work.depth=0
+  work.ancestors(0)=volume.root
+  work.entry.start=start
+  work.entry.length=length
+  work.entry.known=1
+  work.entry.flags=0
+  Require(SDFSFILE.Open(@work,@file)=1)
+
+RETURN
+
+BYTE FUNC Run(BYTE status)
+  CARD steps
+
+  steps=0
+  WHILE status=FSSTATUS.NEED_IO OR status=FSSTATUS.MORE DO
+    steps==+1
+    Require(steps<4096)
+    IF status=FSSTATUS.NEED_IO THEN
+      IF operation.stage=1 THEN
+        mapReads==+1
+      ELSE
+        dataReads==+1
+      FI
+
+      Fetch()
+    FI
+
+    status=SDFSFILE.ContinueOperation(@operation)
+  OD
+
+RETURN(status)
+
+LONGINT FUNC Read(LONGINT count)
+  BYTE status
+  BYTE POINTER output
+
+  output=BYTE POINTER($a0000)
+  output(0)=165
+  output(513)=165
+  operation.output=output+1
+  operation.requested=count
+  status=Run(SDFSFILE.BeginRead(@operation))
+  Require(output(0)=165 AND output(513)=165)
+
+RETURN(operation.result)
+
+PROC Bytes(LONGINT position,count BYTE seed,zero)
+  BYTE POINTER output
+  LONGINT index
+
+  output=BYTE POINTER($a0001)
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      IF zero<>0 THEN
+        IF output(SIZE(index))<>0 THEN
+          Require(0)
+        FI
+      ELSEIF output(SIZE(index))<>(BYTE(position+index) XOR seed) THEN
+        Require(0)
+      FI
+    OD
+
+    Require(1)
+  FI
+
+RETURN
+
+LONGINT FUNC Seek(LONGINT offset,mode)
+  LONGCARD prior
+  BYTE status
+
+  prior=work.operations
+  operation.offset=offset
+  operation.mode=mode
+  status=SDFSFILE.BeginSeek(@operation)
+  Require((status=FSSTATUS.ERROR OR status=FSSTATUS.DONE)
+      AND work.operations=prior)
+
+RETURN(operation.result)
+
+PROC Full(CARD start LONGINT length BYTE seed,zero)
+  LONGINT position,amount
+  CARD priorMaps
+
+  OpenFile(start,length)
+  priorMaps=mapReads
+  Require(Seek(0,1)=0 AND file.position=length)
+  Require(Seek(0,-1)=length AND file.position=0)
+  position=0
+  WHILE position<length DO
+    amount=length-position
+    IF amount>257 THEN
+      amount=257
+    FI
+
+    Require(Read(amount)=amount)
+    Bytes(position,amount,seed,zero)
+    position==+amount
+  OD
+
+  Require(Read(1)=0 AND file.position=length)
+  IF length=70003 THEN
+    Require(mapReads-priorMaps<=9)
+    Require(Seek($fffa,-1)=length AND Read(17)=17)
+    Bytes($fffa,17,seed,0)
+    Require(Seek(1,-1)=65547 AND Read(1)=1)
+    Bytes(1,1,seed,0)
+    Require(Seek(-2,-1)=-1 AND work.error=219 AND file.position=2)
+    Require(Seek(1,1)=-1 AND work.error=219 AND file.position=2)
+  FI
+
+RETURN
+
+PROC Accounting(CARD start LONGINT length,count)
+  BYTE status
+  CARD prior
+
+  OpenFile(start,length)
+  prior=dataReads
+  status=SDFSFILE.Measure(@work,@file,0)
+  WHILE status=FSSTATUS.NEED_IO DO
+    Fetch()
+    status=SDFSFILE.Measure(@work,@file,1)
+  OD
+
+  Require(status=FSSTATUS.DONE AND file.entry.count=count AND file.entry.length=length
+      AND dataReads=prior)
+
+RETURN
+
+PROC BadHeaders()
+
+  FOR phase=1 TO 3 DO
+    Require(SDFS.BeginMount(@work)=FSSTATUS.NEED_IO)
+    Fetch()
+    Require(SDFS.MountBuffered(@work)=0 AND work.error=225)
+  OD
+
+  phase=0
+  revision=32
+  Mount()
+  revision=33
+  Mount()
+
+RETURN
+
+PROC BadMaps()
+  LONGCARD prior
+
+  FOR phase=4 TO 7 DO
+    OpenFile(config(3),70003)
+    SDFS.Invalidate(@work)
+    prior=work.operations
+    IF phase=6 THEN
+      Require(Seek(70002,-1)=0)
+    FI
+
+    Require(Read(1)=-1 AND work.error=213 AND work.operations-prior<=2)
+  OD
+
+  phase=0
+
+RETURN
+
+; Discard parser state before reusing the fixture's volume identity.
+PROC Retirement()
+  BYTE status
+  LONGINT prior
+
+  OpenFile(config(3),70003)
+  SDFS.Invalidate(@work)
+  operation.output=BYTE POINTER($a0001)
+  operation.requested=512
+  status=SDFSFILE.BeginRead(@operation)
+  WHILE operation.completed=0 DO
+    IF status=FSSTATUS.NEED_IO THEN
+      Fetch()
+    FI
+
+    status=SDFSFILE.ContinueOperation(@operation)
+  OD
+
+  prior=operation.completed
+  Require(prior=LONGINT(block.dataBytes))
+  Require(SDFSFILE.Cancel(@operation)=0 AND operation.result=prior
+      AND file.position=prior AND work.error=304)
+  Require(Read(1)=1)
+  Bytes(prior,1,129,0)
+  operation.requested=512
+  status=SDFSFILE.BeginRead(@operation)
+  Require(SDFSFILE.Fail(@operation,213)=0 AND operation.result=-1
+      AND file.position=prior+1)
+  Require(Read(1)=1)
+  Bytes(prior+1,1,129,0)
+  work.entry.start=0
+  work.entry.length=1
+  Require(SDFSFILE.Open(@work,@file)=0 AND work.error=213)
+
+RETURN
+
+; Exercise SpartaDOS maps, file reads, seeks and malformed metadata.
+PROC Main()
+
+  Setup()
+  Mount()
+  BadHeaders()
+  phase=10
+  Full(config(2),777,83,0)
+  phase=11
+  Full(config(3),70003,129,0)
+  phase=12
+  Full(config(4),1024,0,1)
+  phase=13
+  Full(config(5),0,0,0)
+  phase=14
+  Accounting(config(3),70003,LONGINT(config(6)))
+  Accounting(config(4),1024,LONGINT(config(7)))
+  BadMaps()
+  Retirement()
+  SDFS.DestroyVolume(@volume)
+  SDFS.DestroyWork(@work)
+  Require(EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,12 @@
+--- a/src/AltirraSDL/source/bridge/bridge_commands_write.cpp
++++ b/src/AltirraSDL/source/bridge/bridge_commands_write.cpp
+@@ -637,6 +637,9 @@
+ 	{ "MINUS",  0x0E }, { "EQUALS", 0x0F },
+ 	{ "COMMA",  0x20 }, { "PERIOD", 0x22 }, { "SLASH",  0x26 },
+ 	{ "SEMICOLON", 0x02 },
++	// Native Atari matrix keys used by the resident shell.
++	// keyboard_keymap_sdl3.cpp maps these characters to the same codes.
++	{ "ASTERISK", 0x07 }, { "LESS", 0x36 }, { "GREATER", 0x37 },
+ 	{ "CAPS",   0x3C }, { "CAPSLOCK", 0x3C },
+ 	{ "HELP",   0x11 },
+ };

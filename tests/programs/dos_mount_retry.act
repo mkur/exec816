@@ -1,0 +1,76 @@
+MODULE DOSRETRYTEST
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE FSREGISTRY
+USE FSTYPES
+USE FSBOOT
+USE FSMANAGER
+USE HEAPCORE
+USE DOSFAULTCONTROL
+CARD checks
+LONGCARD baseline
+DOS.FileHandle POINTER file
+DOSCORE.DosRegistry POINTER registry
+FSTYPES.Service POINTER service
+DOSCLIENT.ClientContext POINTER client
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Startup(BYTE unused)
+  CARD ticks
+
+  client=DOSCLIENT.Ensure()
+  baseline=EXEC.AvailMem(0)
+  registry=DOSCORE.GetRegistry()
+  DOSFAULTCONTROL.failNext=1
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file=DOS.FileHandle POINTER(0) AND DOS.IoErr()=4)
+  WHILE registry.worker<>BYTE POINTER(0) DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(EXEC.AvailMem(0)=baseline AND registry.runtime=BYTE POINTER(0))
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Retry(BYTE unused)
+
+  Require(FSMANAGER.Unmount(0)<>0)
+  DOSFAULTCONTROL.failNext=1
+  Require(FSMANAGER.Mount(0)=0 AND DOS.IoErr()=4)
+  service=FSREGISTRY.Service()
+  Require(service.mounts(0).item=FSTYPES.Mount POINTER(0))
+  file=DOS.Open(BYTE POINTER($d1020),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  Require(DOS.Close(file)<>0)
+  Require(FSMANAGER.Mount(0)<>0)
+  Require(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+; Exercise mount recovery after a failed startup.
+PROC Main()
+
+  Startup(0)
+  Retry(0)
+
+RETURN
+
+ENDMODULE

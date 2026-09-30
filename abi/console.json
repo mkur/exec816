@@ -1,0 +1,836 @@
+{
+  "schema_version": 1,
+  "scope": "Private console records; public requests remain exec816.io IOStdReq",
+  "constants": {
+    "CONERR_INPUTOVERFLOW": 1,
+    "RAW_SLOTS": 64,
+    "INPUT_BYTES": 128,
+    "CELL_BYTES": 960,
+    "SOURCE_QUANTUM": 64,
+    "OP_IDLE": 0,
+    "OP_SCROLL": 1,
+    "OP_CLEAR": 2,
+    "MAX_WIDTH": 40,
+    "MAX_HEIGHT": 24,
+    "EVENT_EMPTY": 4294967295,
+    "EVENT_LOST": 4294967294,
+    "STARTUP_FAULT": 65429,
+    "WINDOW_SLOTS": 4,
+    "WIN_FREE": 0,
+    "WIN_CREATING": 1,
+    "WIN_LIVE": 2,
+    "WIN_RETIRING": 3,
+    "WIN_PRESENTING": 4
+  },
+  "storage": {
+    "service_offset": 0,
+    "instance_offset": 160,
+    "presentation_offset": 240,
+    "reserved_bytes": 720,
+    "capture_offset": 3072,
+    "glyph_offset": 3632,
+    "keymap_offset": 3760,
+    "routes_offset": 272,
+    "windows_offset": 544
+  },
+  "records": {
+    "Binding": {
+      "size": 12,
+      "alignment": 2,
+      "fields": [
+        [
+          "task",
+          "BYTE POINTER",
+          0
+        ],
+        [
+          "context",
+          "BYTE POINTER",
+          3
+        ],
+        [
+          "mask",
+          "LONGCARD",
+          6
+        ],
+        [
+          "active",
+          "BYTE",
+          10
+        ],
+        [
+          "pad",
+          "BYTE",
+          11
+        ]
+      ]
+    },
+    "RawEvent": {
+      "size": 8,
+      "alignment": 2,
+      "fields": [
+        [
+          "key",
+          "BYTE",
+          0
+        ],
+        [
+          "kind",
+          "BYTE",
+          1
+        ],
+        [
+          "tick",
+          "CARD",
+          2
+        ],
+        [
+          "route",
+          "LONGCARD",
+          4
+        ]
+      ]
+    },
+    "Capture": {
+      "size": 560,
+      "alignment": 2,
+      "fields": [
+        [
+          "active",
+          "BYTE",
+          0
+        ],
+        [
+          "head",
+          "BYTE",
+          1
+        ],
+        [
+          "tail",
+          "BYTE",
+          2
+        ],
+        [
+          "lost",
+          "BYTE",
+          3
+        ],
+        [
+          "savedMask",
+          "BYTE",
+          4
+        ],
+        [
+          "savedSkctl",
+          "BYTE",
+          5
+        ],
+        [
+          "keyVector",
+          "CARD",
+          6
+        ],
+        [
+          "breakVector",
+          "CARD",
+          8
+        ],
+        [
+          "nativeEvents",
+          "CARD",
+          10
+        ],
+        [
+          "emulationEvents",
+          "CARD",
+          12
+        ],
+        [
+          "errors",
+          "BYTE",
+          14
+        ],
+        [
+          "hardwareLost",
+          "BYTE",
+          15
+        ],
+        [
+          "binding",
+          "Binding",
+          16
+        ],
+        [
+          "route",
+          "LONGCARD",
+          28
+        ],
+        [
+          "takenRoute",
+          "LONGCARD",
+          32
+        ],
+        [
+          "breakRoute",
+          "LONGCARD",
+          36
+        ],
+        [
+          "breakPending",
+          "BYTE",
+          40
+        ],
+        [
+          "pad",
+          "BYTE",
+          41
+        ],
+        [
+          "breakMask",
+          "CARD",
+          42
+        ],
+        [
+          "lostMask",
+          "CARD",
+          44
+        ],
+        [
+          "padding",
+          "BYTE[2]",
+          46
+        ],
+        [
+          "events",
+          "RawEvent[64]",
+          48
+        ]
+      ]
+    },
+    "Instance": {
+      "size": 74,
+      "alignment": 2,
+      "fields": [
+        [
+          "cells",
+          "BYTE POINTER",
+          0
+        ],
+        [
+          "width",
+          "CARD",
+          4
+        ],
+        [
+          "height",
+          "CARD",
+          6
+        ],
+        [
+          "count",
+          "CARD",
+          8
+        ],
+        [
+          "column",
+          "CARD",
+          10
+        ],
+        [
+          "row",
+          "CARD",
+          12
+        ],
+        [
+          "dirtyFirst",
+          "CARD",
+          14
+        ],
+        [
+          "dirtyEnd",
+          "CARD",
+          16
+        ],
+        [
+          "reserved",
+          "CARD",
+          18
+        ],
+        [
+          "operation",
+          "BYTE",
+          20
+        ],
+        [
+          "open",
+          "BYTE",
+          21
+        ],
+        [
+          "fifo",
+          "BYTE POINTER",
+          22
+        ],
+        [
+          "inputHead",
+          "CARD",
+          26
+        ],
+        [
+          "inputTail",
+          "CARD",
+          28
+        ],
+        [
+          "inputCount",
+          "CARD",
+          30
+        ],
+        [
+          "inputLost",
+          "BYTE",
+          32
+        ],
+        [
+          "caps",
+          "BYTE",
+          33
+        ],
+        [
+          "read",
+          "BYTE POINTER",
+          34
+        ],
+        [
+          "write",
+          "BYTE POINTER",
+          37
+        ],
+        [
+          "writes",
+          "EXECLISTS.MinList",
+          40
+        ],
+        [
+          "writeCancel",
+          "BYTE",
+          49
+        ],
+        [
+          "readCancel",
+          "BYTE",
+          50
+        ],
+        [
+          "readReady",
+          "BYTE",
+          51
+        ],
+        [
+          "opens",
+          "CARD",
+          52
+        ],
+        [
+          "lineStart",
+          "CARD",
+          54
+        ],
+        [
+          "lastKey",
+          "CARD",
+          56
+        ],
+        [
+          "lastTick",
+          "CARD",
+          58
+        ],
+        [
+          "lastValid",
+          "BYTE",
+          60
+        ],
+        [
+          "lease",
+          "EXEC.TaskLease",
+          62
+        ]
+      ]
+    },
+    "Presentation": {
+      "size": 30,
+      "alignment": 2,
+      "fields": [
+        [
+          "instance",
+          "BYTE POINTER",
+          0
+        ],
+        [
+          "screen",
+          "BYTE POINTER",
+          3
+        ],
+        [
+          "snapshot",
+          "BYTE POINTER",
+          6
+        ],
+        [
+          "index",
+          "CARD",
+          10
+        ],
+        [
+          "previousCursor",
+          "CARD",
+          12
+        ],
+        [
+          "cursorCell",
+          "CARD",
+          14
+        ],
+        [
+          "cursorOn",
+          "BYTE",
+          16
+        ],
+        [
+          "visible",
+          "BYTE",
+          17
+        ],
+        [
+          "left",
+          "CARD",
+          18
+        ],
+        [
+          "top",
+          "CARD",
+          20
+        ],
+        [
+          "width",
+          "CARD",
+          22
+        ],
+        [
+          "height",
+          "CARD",
+          24
+        ],
+        [
+          "claimed",
+          "BYTE",
+          26
+        ],
+        [
+          "savedCursor",
+          "BYTE",
+          27
+        ],
+        [
+          "savedAttract",
+          "BYTE",
+          28
+        ],
+        [
+          "focused",
+          "BYTE",
+          29
+        ]
+      ]
+    },
+    "Service": {
+      "size": 148,
+      "alignment": 2,
+      "fields": [
+        [
+          "state",
+          "BYTE",
+          0
+        ],
+        [
+          "stop",
+          "BYTE",
+          1
+        ],
+        [
+          "worker",
+          "BYTE POINTER",
+          2
+        ],
+        [
+          "waiters",
+          "BYTE POINTER",
+          5
+        ],
+        [
+          "port",
+          "EXEC.MsgPort",
+          8
+        ],
+        [
+          "task",
+          "EXEC.Task",
+          36
+        ],
+        [
+          "instance",
+          "BYTE POINTER",
+          98
+        ],
+        [
+          "presentation",
+          "BYTE POINTER",
+          101
+        ],
+        [
+          "snapshot",
+          "BYTE POINTER",
+          104
+        ],
+        [
+          "name",
+          "BYTE[15]",
+          107
+        ],
+        [
+          "error",
+          "CARD",
+          122
+        ],
+        [
+          "generation",
+          "CARD",
+          124
+        ],
+        [
+          "keyboardMask",
+          "LONGCARD",
+          126
+        ],
+        [
+          "arrival",
+          "BYTE POINTER",
+          130
+        ],
+        [
+          "arrivalCancel",
+          "BYTE",
+          133
+        ],
+        [
+          "reserved",
+          "BYTE",
+          134
+        ],
+        [
+          "lease",
+          "EXEC.TaskLease",
+          136
+        ]
+      ]
+    },
+    "Route": {
+      "size": 16,
+      "alignment": 2,
+      "fields": [
+        [
+          "tag",
+          "LONGCARD",
+          0
+        ],
+        [
+          "scope",
+          "BYTE POINTER",
+          4
+        ],
+        [
+          "unit",
+          "LONGCARD",
+          8
+        ],
+        [
+          "bound",
+          "BYTE",
+          12
+        ],
+        [
+          "retired",
+          "BYTE",
+          13
+        ],
+        [
+          "reserved",
+          "BYTE[2]",
+          14
+        ]
+      ]
+    },
+    "Routes": {
+      "size": 264,
+      "alignment": 2,
+      "fields": [
+        [
+          "epoch",
+          "LONGCARD",
+          0
+        ],
+        [
+          "peak",
+          "BYTE",
+          4
+        ],
+        [
+          "reserved",
+          "BYTE[3]",
+          5
+        ],
+        [
+          "items",
+          "Route[16]",
+          8
+        ]
+      ]
+    },
+    "Window": {
+      "size": 38,
+      "alignment": 2,
+      "fields": [
+        [
+          "unit",
+          "LONGCARD",
+          0
+        ],
+        [
+          "owner",
+          "BYTE POINTER",
+          4
+        ],
+        [
+          "state",
+          "BYTE",
+          7
+        ],
+        [
+          "instance",
+          "BYTE POINTER",
+          8
+        ],
+        [
+          "view",
+          "BYTE POINTER",
+          11
+        ],
+        [
+          "scope",
+          "BYTE POINTER",
+          14
+        ],
+        [
+          "busy",
+          "BYTE",
+          17
+        ],
+        [
+          "route",
+          "LONGCARD",
+          18
+        ],
+        [
+          "baseRoute",
+          "LONGCARD",
+          22
+        ],
+        [
+          "lease",
+          "EXEC.TaskLease",
+          26
+        ]
+      ]
+    },
+    "Windows": {
+      "size": 172,
+      "alignment": 2,
+      "fields": [
+        [
+          "epoch",
+          "LONGCARD",
+          0
+        ],
+        [
+          "focusSlot",
+          "BYTE",
+          4
+        ],
+        [
+          "nextSlot",
+          "BYTE",
+          5
+        ],
+        [
+          "liveCount",
+          "BYTE",
+          6
+        ],
+        [
+          "presenting",
+          "BYTE",
+          7
+        ],
+        [
+          "presenter",
+          "EXEC.TaskLease",
+          8
+        ],
+        [
+          "items",
+          "Window[4]",
+          20
+        ]
+      ]
+    }
+  },
+  "private_services": {
+    "BIND": 243,
+    "RELEASE": 244
+  },
+  "keymaps": {
+    "normal": [
+      108,
+      106,
+      59,
+      0,
+      0,
+      107,
+      43,
+      42,
+      111,
+      0,
+      112,
+      117,
+      10,
+      105,
+      45,
+      61,
+      118,
+      0,
+      99,
+      0,
+      0,
+      98,
+      120,
+      122,
+      52,
+      0,
+      51,
+      54,
+      27,
+      53,
+      50,
+      49,
+      44,
+      32,
+      46,
+      110,
+      0,
+      109,
+      47,
+      0,
+      114,
+      0,
+      101,
+      121,
+      9,
+      116,
+      119,
+      113,
+      57,
+      0,
+      48,
+      55,
+      8,
+      56,
+      60,
+      62,
+      102,
+      104,
+      100,
+      0,
+      0,
+      103,
+      115,
+      97
+    ],
+    "shifted": [
+      76,
+      74,
+      58,
+      0,
+      0,
+      75,
+      92,
+      94,
+      79,
+      0,
+      80,
+      85,
+      10,
+      73,
+      95,
+      124,
+      86,
+      0,
+      67,
+      0,
+      0,
+      66,
+      88,
+      90,
+      36,
+      0,
+      35,
+      38,
+      27,
+      37,
+      34,
+      33,
+      91,
+      32,
+      93,
+      78,
+      0,
+      77,
+      63,
+      0,
+      82,
+      0,
+      69,
+      89,
+      9,
+      84,
+      87,
+      81,
+      40,
+      0,
+      41,
+      39,
+      8,
+      64,
+      0,
+      0,
+      70,
+      72,
+      68,
+      0,
+      0,
+      71,
+      83,
+      65
+    ]
+  }
+}

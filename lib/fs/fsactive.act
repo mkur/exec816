@@ -1,0 +1,29 @@
+MODULE FSACTIVE
+USE FSTYPES
+USE DOSCLIENT
+USE DOSBREAKTYPES
+
+; Recover the active foreground scope for the worker's current packet.
+PUBLIC DOSBREAKTYPES.Scope POINTER FUNC CurrentScope(FSTYPES.Service
+    POINTER service)
+  DOSBREAKTYPES.Scope POINTER scope
+
+  IF service=FSTYPES.Service POINTER(0) THEN
+    RETURN(DOSBREAKTYPES.Scope POINTER(0))
+  FI
+
+  IF service.client=DOSCLIENT.ClientContext POINTER(0)
+      OR service.packet=FSTYPES.Packet POINTER(0) THEN
+    RETURN(DOSBREAKTYPES.Scope POINTER(0))
+  FI
+
+  scope=DOSBREAKTYPES.Scope POINTER(service.client.foreground)
+  IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+    IF scope.packet<>BYTE POINTER(service.packet) THEN
+      RETURN(DOSBREAKTYPES.Scope POINTER(0))
+    FI
+  FI
+
+RETURN(scope)
+
+ENDMODULE

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "rom": {
+    "name": "AltirraOS 3.44 for 65C816",
+    "bytes": 16384,
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+    "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+    "cop0_after_xce": 50931
+  },
+  "emulator": {
+    "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+    "platform": "macOS arm64",
+    "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+    "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+    "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+    "build_record": "toolchain/altirra-build.json"
+  },
+  "machine": {
+    "model": "800XL",
+    "cpu": "65C816",
+    "clock_multiplier": 8,
+    "memory": "64K",
+    "high_banks": 0,
+    "video": "PAL",
+    "basic": false,
+    "dli": false,
+    "shadow_rom": true
+  }
+}

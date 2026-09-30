@@ -1,0 +1,320 @@
+MODULE FSHANDLER
+USE FSSTATUS
+USE EXEC
+USE HEAPCORE
+USE DOSCORE
+USE DOSCLIENT
+USE DOSWIRE
+USE FSTYPES
+USE DOSOBJECTS
+USE FSREGISTRY
+USE FSNAMES
+USE FSLOCKS
+USE FSFILES
+USE FSOBJECTS
+USE FSRELATIVE
+USE FSDIRECTORY
+USE FSPACKET
+USE FSOPERATION
+USE DOSBREAKTYPES
+USE FSIO
+USE SIODRIVER
+USE FSBACKEND
+USE FSBTYPES
+INCLUDE "../dos/dos-types.inc"
+INCLUDE "../dos/dos-packets.inc"
+
+PUBLIC TYPE ResultCell=[BYTE POINTER handle]
+
+; Prepare an unpublished object completely before the worker's final break check.
+BYTE FUNC OpenResultStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_FINDINPUT AND
+      (service.work.entry.flags & FSBTYPES.DIR)<>0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_OBJECT_WRONG_TYPE))
+  FI
+
+  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_LOCATE_OBJECT THEN
+    service.object=FSTYPES.Object POINTER(FSLOCKS.Create(service))
+  ELSE
+    service.object=FSTYPES.Object POINTER(FSFILES.Allocate())
+  FI
+
+  IF service.object=NULL THEN
+    RETURN(FSPACKET.Error(service,ERROR_NO_FREE_STORE))
+  FI
+
+  ; The object kind is set before any failure or cancellation can free it.
+  LET lock=FSTYPES.LockObject POINTER(service.object)
+  LET file=FSTYPES.FileObject POINTER(service.object)
+  IF service.object.header.kind=DOSOBJECTS.KIND_LOCK THEN
+    IF FSREGISTRY.Stamp(lock)=0 THEN
+      FSOBJECTS.Free(service.object)
+      RETURN(FSPACKET.Error(service,ERROR_NO_FREE_STORE))
+    FI
+
+    FSDIRECTORY.InitLockState(service)
+
+  ELSE
+    IF FSFILES.Create(file)=0 THEN
+      FSOBJECTS.Free(service.object)
+      RETURN(FSPACKET.Error(service,ERROR_NO_FREE_STORE))
+    FI
+
+    IF FSBACKEND.Open(service.work,@file.backing.cursor)=0 THEN
+      FSOBJECTS.Free(service.object)
+      RETURN(FSPACKET.Error(service,service.work.error))
+    FI
+  FI
+
+  service.nextStep=@FSPACKET.PublishOpenStep
+
+RETURN(FSSTATUS.MORE)
+
+; Resolution can scan a directory; only its resumable work needs worker steps.
+BYTE FUNC BeginResolve(FSTYPES.Service POINTER service)
+
+  service.resolveReady=@ResolveReadyStep
+  service.stage=50
+
+RETURN(FSRELATIVE.Begin(service))
+
+; Validate an open request before allocating its unpublished file wrapper.
+BYTE FUNC Open(FSTYPES.Service POINTER service)
+
+  IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg1)=0 OR
+      DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg3)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+  FI
+
+  LET cell=ResultCell POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg1))
+  IF FSNAMES.Mapped(BYTE POINTER(cell),3)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+  FI
+
+  cell.handle=NULL
+  service.work.path=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg3))
+
+RETURN(BeginResolve(service))
+
+; Validate a lock request before starting path resolution.
+BYTE FUNC Lock(FSTYPES.Service POINTER service)
+
+  IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg2)=0 OR
+      service.packet.sp_Pkt.dp_Arg3<>SHARED_LOCK THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+  FI
+
+  service.work.path=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg2))
+
+RETURN(BeginResolve(service))
+
+; Turn a resolved path into a file or lock, or continue component lookup.
+BYTE FUNC ResolveReadyStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  IF service.work.pathOffset=service.work.pathLength THEN
+    RETURN(OpenResultStep(raw))
+  FI
+
+RETURN(ComponentStep(raw))
+
+; Each backend chunk returns to the worker, including copies from cached sectors.
+BYTE FUNC OperationResult(FSTYPES.Service POINTER service BYTE status)
+
+  IF status=FSSTATUS.NEED_IO OR status=FSSTATUS.MORE THEN
+    service.stage=60
+    service.nextStep=@FileStep
+    RETURN(status)
+  FI
+
+  service.packet.sp_Pkt.dp_Res1=service.operation.result
+  service.packet.sp_Pkt.dp_Res2=service.work.error
+  IF service.work.ioError<>0 THEN
+    service.packet.sp_Pkt.dp_Res2=service.work.ioError
+  FI
+
+  FSPACKET.Reply(service)
+
+RETURN(FSSTATUS.MORE)
+
+; Handle validation and argument setup are one bounded part of the request.
+BYTE FUNC File(FSTYPES.Service POINTER service)
+  BYTE status
+
+  IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg1)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_STREAM_NAME))
+  FI
+
+  service.object=FSREGISTRY.FindObject(service.owner,
+      BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg1)),DOSOBJECTS.KIND_FILE)
+  IF service.object=NULL THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_STREAM_NAME))
+  FI
+
+  IF service.object.mount<>service.selected THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_STREAM_NAME))
+  FI
+
+  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_END THEN
+    RETURN(FSPACKET.Close(service))
+  FI
+
+  LET file=FSTYPES.FileObject POINTER(service.object)
+  service.operation.file=@file.backing.cursor
+  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_READ THEN
+    IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg2)=0 THEN
+      RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+    FI
+
+    service.operation.output=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg2))
+    service.operation.requested=service.packet.sp_Pkt.dp_Arg3
+    status=FSBACKEND.BeginRead(service.operation)
+
+  ELSE
+    service.operation.offset=service.packet.sp_Pkt.dp_Arg2
+    service.operation.mode=service.packet.sp_Pkt.dp_Arg3
+    status=FSBACKEND.BeginSeek(service.operation)
+  FI
+
+RETURN(OperationResult(service,status))
+
+; Claim already validated the packet identity. Check media and dispatch directly.
+BYTE FUNC DispatchStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  LET action=service.packet.sp_Pkt.dp_Type
+  service.packet.sp_Pkt.dp_Res1=0
+  service.packet.sp_Pkt.dp_Res2=0
+  IF action=DOS_ACTION_READ OR action=DOS_ACTION_SEEK THEN
+    service.packet.sp_Pkt.dp_Res1=-1
+  FI
+
+  service.work.volume=service.selected.volume
+  service.work.error=0
+  service.work.ioError=0
+  IF action<>DOS_ACTION_END AND action<>DOS_ACTION_FREE_LOCK THEN
+    IF service.selected.offline<>0 THEN
+      RETURN(FSPACKET.Error(service,service.selected.error))
+    FI
+
+    IF SIODRIVER.Unavailable()<>0 THEN
+      service.work.ioError=EXEC.SIOERR_BUSUNAVAILABLE
+      FSIO.Offline(service)
+      RETURN(FSPACKET.Error(service,service.selected.error))
+    FI
+  FI
+
+  CASE action OF
+  WHEN DOS_ACTION_LOCATE_OBJECT THEN
+    RETURN(Lock(service))
+  WHEN DOS_ACTION_FINDINPUT THEN
+    RETURN(Open(service))
+  WHEN DOS_ACTION_FREE_LOCK,DOS_ACTION_EXAMINE_OBJECT,DOS_ACTION_EXAMINE_NEXT THEN
+    RETURN(FSDIRECTORY.Select(service))
+  WHEN DOS_ACTION_READ,DOS_ACTION_SEEK,DOS_ACTION_END THEN
+    RETURN(File(service))
+  ESAC
+
+RETURN(FSPACKET.Error(service,ERROR_ACTION_NOT_KNOWN))
+
+; Claim a mounted-volume packet and establish its caller identity.
+PUBLIC BYTE FUNC TakeStep(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+  BYTE scan
+  EXEC.Message POINTER message
+  FSTYPES.Mount POINTER mount
+
+  service=FSTYPES.Service POINTER(raw)
+  FOR scan=0 TO service.count-1 DO
+    service.index==+1
+    IF service.index=service.count THEN
+      service.index=0
+    FI
+
+    mount=service.mounts(service.index).item
+    IF mount<>FSTYPES.Mount POINTER(0) THEN
+      EXEC.Forbid()
+      message=EXEC.GetMsg(mount.port)
+      IF message<>EXEC.Message POINTER(0) THEN
+        service.selected=mount
+        service.packet=FSTYPES.Packet POINTER(message)
+        service.work.error=0
+        service.work.ioError=0
+        service.operation.stage=0
+        FSPACKET.Identity(service)
+        FSOPERATION.Claim(DOSBREAKTYPES.Scope POINTER(
+            service.client.foreground),FSOPERATION.WirePacket POINTER(message))
+        service.nextStep=@DispatchStep
+        service.stage=11
+        EXEC.Permit()
+        RETURN(FSSTATUS.MORE)
+      FI
+
+      EXEC.Permit()
+    FI
+  OD
+
+RETURN(FSSTATUS.IDLE)
+
+; Parse one component, then resume at its bounded backend lookup.
+BYTE FUNC ComponentStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  LET status=FSBACKEND.ResolveComponent(service.work)
+  IF status=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  service.nextStep=@ResolveStep
+
+RETURN(status)
+
+; Resume component lookup after the required sector becomes available.
+BYTE FUNC ResolveStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  IF service.resultState=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  LET status=FSBACKEND.ResolveStep(service.work)
+  IF status=FSSTATUS.DONE OR status=FSSTATUS.NEXT_COMPONENT THEN
+    IF FSLOCKS.Append(service)=0 THEN
+      RETURN(FSPACKET.Error(service,service.work.error))
+    FI
+  FI
+
+  IF status=FSSTATUS.NEXT_COMPONENT THEN
+    service.nextStep=@ComponentStep
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  IF status=FSSTATUS.NEED_IO OR status=FSSTATUS.MORE THEN
+    RETURN(status)
+  FI
+
+  IF status=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  service.nextStep=@OpenResultStep
+
+RETURN(FSSTATUS.MORE)
+
+; Validate a file request against its owning mount and shared cursor.
+BYTE FUNC FileStep(BYTE POINTER raw)
+  BYTE status
+
+  LET service=FSTYPES.Service POINTER(raw)
+  IF service.resultState=FSSTATUS.ERROR THEN
+    status=FSBACKEND.Fail(service.operation,service.work.error)
+
+  ELSE
+    status=FSBACKEND.ContinueOperation(service.operation)
+  FI
+
+RETURN(OperationResult(service,status))
+
+ENDMODULE

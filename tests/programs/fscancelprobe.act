@@ -1,0 +1,49 @@
+; Test-only scheduler rendezvous, excluded from ordinary production images.
+MODULE FSCANCELPROBE
+USE EXEC
+USE DOSBREAKTYPES
+USE FSOPERATION
+USE DOSCORE
+PUBLIC VOLATILE BYTE mode,stage,gate
+PUBLIC DOSBREAKTYPES.Scope POINTER target
+
+PUBLIC PROC BeforeTake()
+
+  IF mode<>1 AND mode<>3 THEN
+    RETURN
+  FI
+
+  IF target.opState<>FSOPERATION.QUEUED THEN
+    RETURN
+  FI
+
+  stage=1
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+  IF mode=3 THEN
+    FSOPERATION.Pump(DOSCORE.GetRegistry())
+  FI
+
+  mode=0
+
+RETURN
+
+PUBLIC PROC Submitted(DOSBREAKTYPES.Scope POINTER scope)
+
+  IF mode<>2 OR scope<>target THEN
+    RETURN
+  FI
+
+  stage=1
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+  FSOPERATION.Request(scope)
+  mode=0
+
+RETURN
+
+ENDMODULE

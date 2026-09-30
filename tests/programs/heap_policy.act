@@ -1,0 +1,192 @@
+MODULE HEAPPOLICYTEST
+USE EXEC
+USE HEAPPOLICY
+USE HEAPCORE
+USE EXECLISTS
+USE EXECMEMORY
+
+TYPE Operation=[
+  BYTE code
+  BYTE slot
+  CARD pad
+  LONGCARD bytes
+  LONGCARD flags
+  LONGCARD extra
+]
+
+VOLATILE BYTE switching=$2024
+CARD checks,completed
+BYTE ARRAY bankSnapshots(128)
+ADDRESS ARRAY handles(8)
+LONGCARD ARRAY lengths(8)
+
+PROC Banks(BYTE phase)
+  CARD bank,ignored
+  EXECMEMORY.BankRecord item
+  SIZE offset
+
+  FOR bank=0 TO 15 DO
+    ignored=EXECMEMORY.Query(bank,@item)
+    offset=(SIZE(phase) LSH 6)+(SIZE(bank) LSH 2)
+    bankSnapshots(offset)=item.state
+    bankSnapshots(offset+1)=item.reserved
+    bankSnapshots(offset+2)=BYTE(item.owner)
+    bankSnapshots(offset+3)=BYTE(item.owner RSH 8)
+  OD
+
+RETURN
+
+PROC Stamp(BYTE slot)
+  BYTE POINTER p
+
+  p=BYTE POINTER(handles(slot))
+  IF p<>BYTE POINTER(0) THEN
+    p^=slot+17
+    p=BYTE POINTER(ADDRESS(p)+SIZE(lengths(slot)-1))
+    p^=slot+17
+  FI
+
+RETURN
+
+PROC Payloads()
+  BYTE slot
+  BYTE POINTER p
+
+  FOR slot=0 TO 7 DO
+    p=BYTE POINTER(handles(slot))
+    IF p<>BYTE POINTER(0) THEN
+      IF p^<>slot+17 THEN
+        HEAPCORE.Abort($ff70)
+      FI
+
+      p=BYTE POINTER(ADDRESS(p)+SIZE(lengths(slot)-1))
+      IF p^<>slot+17 THEN
+        HEAPCORE.Abort($ff70)
+      FI
+    FI
+  OD
+
+RETURN
+
+PROC Queries(LONGCARD POINTER out LONGCARD result)
+
+  out(0)=result
+  out(1)=HEAPPOLICY.Avail(0)
+  out(2)=HEAPPOLICY.Avail(LONGCARD($20000))
+  out(3)=HEAPPOLICY.Avail(LONGCARD($120000))
+  out(4)=HEAPPOLICY.Avail(LONGCARD($80000))
+
+RETURN
+
+CARD FUNC Chunks(LONGCARD POINTER out HEAPCORE.MemHeader POINTER pool CARD cursor)
+  HEAPCORE.MemChunk POINTER chunk
+
+  chunk=pool.mh_First
+  WHILE chunk<>HEAPCORE.MemChunk POINTER(0) DO
+    IF cursor>60 THEN
+      HEAPCORE.Abort($ff71)
+    FI
+
+    out(cursor)=LONGCARD(ADDRESS(pool.mh_Lower))
+    out(cursor+1)=LONGCARD(ADDRESS(chunk))
+    out(cursor+2)=chunk.mc_Bytes
+    cursor==+3
+    chunk=chunk.mc_Next
+  OD
+
+RETURN(cursor)
+
+PROC Snapshot(CARD index LONGCARD result)
+  LONGCARD POINTER out
+  HEAPPOLICY.HeapState POINTER state
+  EXECLISTS.Node POINTER node,tail
+  CARD cursor
+
+  out=LONGCARD POINTER(ADDRESS($0e0000)+(SIZE(index) LSH 8))
+  Queries(out,result)
+  cursor=6
+  state=HEAPPOLICY.GetState()
+  node=state.regions.lh_Head
+  tail=EXECLISTS.Node POINTER(@state.regions.lh_Tail)
+  WHILE node<>tail DO
+    cursor=Chunks(out,HEAPCORE.MemHeader POINTER(node),cursor)
+    node=node.ln_Succ
+  OD
+
+  out(5)=LONGCARD(cursor)
+
+RETURN
+
+LONGCARD FUNC Apply(Operation POINTER op)
+  LONGCARD result
+  BYTE slot
+
+  slot=op.slot
+  result=0
+  IF op.code=0 THEN
+    handles(slot)=ADDRESS(HEAPPOLICY.Reserve(op.bytes,op.flags))
+    lengths(slot)=op.bytes
+    result=LONGCARD(ADDRESS(handles(slot)))
+    Stamp(slot)
+  FI
+
+  IF op.code=1 THEN
+    HEAPPOLICY.Free(BYTE POINTER(handles(slot)),lengths(slot))
+    handles(slot)=0
+  FI
+
+  IF op.code=2 THEN
+    result=HEAPPOLICY.Avail(op.flags)
+  FI
+
+  IF op.code=3 THEN
+    result=HEAPPOLICY.MemoryType(BYTE POINTER(ADDRESS(op.bytes)))
+  FI
+
+RETURN(result)
+
+PROC Prioritize()
+  HEAPPOLICY.HeapState POINTER state
+  HEAPCORE.MemHeader POINTER pool
+
+  state=HEAPPOLICY.GetState()
+  IF state.count>1 THEN
+    pool=HEAPPOLICY.Header(1)
+    EXECLISTS.Remove(@pool.mh_Node)
+    pool.mh_Node.ln_Pri=10
+    EXECLISTS.Enqueue(@state.regions,@pool.mh_Node)
+  FI
+
+RETURN
+
+; Exercise bank selection, allocation policy and query results.
+PROC Main()
+  CARD index
+  CARD POINTER count
+  Operation POINTER op
+  LONGCARD result
+
+  count=CARD POINTER($0d0000)
+  ; Qualification-only entry under the same scheduler guard. A single byte
+  ; store publishes it; no interrupt accesses heap state, and NMI defers all
+  ; scheduling/scratch use. Public services will enter through COP instead.
+  switching=1
+  Prioritize()
+  Banks(0)
+  HEAPPOLICY.Free(BYTE POINTER(0),0)
+  FOR index=0 TO count^-1 DO
+    op=Operation POINTER(ADDRESS($0d0010)+(SIZE(index) LSH 4))
+    result=Apply(op)
+    Payloads()
+    Snapshot(index,result)
+    completed==+1
+  OD
+
+  Banks(1)
+  switching=0
+  EXEC.Poll()
+  checks=1
+
+RETURN
+
+ENDMODULE

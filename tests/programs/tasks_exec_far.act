@@ -1,0 +1,95 @@
+MODULE TASKFAR
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+
+EXEC.Task second
+VOLATILE BYTE ARRAY progress(2)
+BYTE ARRAY previous(256)
+CARD ARRAY checks(12)
+BYTE ARRAY upperName=[70 97 114 0]
+BYTE ARRAY nearName=[102 97 114 0]
+PROC POINTER missing()
+
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC FirstWorker()
+  EXEC.Task POINTER item
+
+  item=EXEC.FindTask(BYTE POINTER(0))
+  EXEC.Forbid()
+  checks(8)=CARD(ADDRESS(item)=$04ffef AND item.tc_TDNestCnt=0)
+  EXEC.Permit()
+  checks(8)=checks(8) AND CARD(item.tc_TDNestCnt=$ff)
+  progress(0)=1
+  WHILE progress(1)=0 DO
+  OD
+
+  progress(0)=2
+
+RETURN
+
+PROC SecondWorker()
+
+  progress(1)=1
+  WHILE progress(0)=0 DO
+  OD
+
+  progress(1)=2
+
+RETURN
+
+PROC AdmitWorkers()
+  EXEC.Task POINTER item,result
+  BYTE POINTER name
+  CARD at
+
+  item=EXEC.Task POINTER($04ffef)
+  name=BYTE POINTER($05ffff)
+  name(0)=102
+  name(1)=97
+  name(2)=114
+  name(3)=0
+  PrepareTask(item,TASKSTACKS.LOWER1,name)
+  item.tc_Node.ln_Pri=$ff
+  item.tc_UserData=$bc4567
+  PrepareTask(@second,TASKSTACKS.LOWER2,BYTE POINTER(0))
+  EXEC.Forbid()
+  EXEC.Forbid()
+  result=EXEC.AddTask(item,@FirstWorker,missing)
+  checks(0)=CARD(result=item)
+  result=EXEC.AddTask(@second,@SecondWorker,missing)
+  checks(1)=CARD(EXEC.FindTask(BYTE POINTER(nearName))=item)
+  checks(2)=CARD(EXEC.FindTask(BYTE POINTER(upperName))=EXEC.Task POINTER(0))
+  FOR at=0 TO 255 DO
+    previous(at)=EXEC.SetTaskPri(item,BYTE(at))
+  OD
+
+  checks(3)=CARD(EXEC.SetTaskPri(@second,$7f))
+  EXEC.Yield()
+  checks(4)=CARD(progress(0))+CARD(progress(1))
+  EXEC.Permit()
+  checks(5)=CARD(progress(0))+CARD(progress(1))
+  result=EXEC.FindTask(BYTE POINTER(0))
+  checks(6)=CARD(result.tc_TDNestCnt)
+  EXEC.Permit()
+
+RETURN
+
+; Exercise Task entries and metadata in upper-memory banks.
+PROC Main()
+  EXEC.Task POINTER item
+
+  AdmitWorkers()
+  item=EXEC.Task POINTER($04ffef)
+  AwaitRemoval(item)
+  AwaitRemoval(@second)
+  checks(7)=CARD(EXEC.FindTask(BYTE POINTER(nearName))=EXEC.Task POINTER(0))
+  checks(9)=CARD(item.tc_UserData=$bc4567)
+  checks(10)=CARD(item.tc_Node.ln_Pri)
+  checks(11)=CARD(progress(0))+CARD(progress(1))
+
+RETURN
+
+ENDMODULE

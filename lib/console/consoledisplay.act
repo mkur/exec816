@@ -1,0 +1,365 @@
+; Borrow the pinned GRAPHICS 0 screen. Only this module writes display RAM.
+; All copies run in task context with interrupts and preemption enabled.
+MODULE CONSOLEDISPLAY
+USE A816MEMORY
+USE CONSOLETYPES
+USE CONSOLECORE
+INCLUDE "console-storage-action.inc"
+BYTE dindex=$57,crsinh=$2f0,attract=$4d,drkmsk=$4e,colrsh=$4f
+BYTE sdmctl=$22f,chbas=$2f4,chact=$2f3,gprior=$26f
+BYTE oldchr=$5d
+CARD savmsc=$58,sdlst=$230,oldadr=$5e
+
+CONST ROW_BUDGET=4, CELL_BUDGET=160
+
+; Platform leaf: exact source/destination extents, ordinary task DP scratch.
+PUBLIC EXTERNAL PROC Span(BYTE POINTER destination,source CARD length)
+
+; Translate a supported terminal byte to the pinned screen character set.
+PUBLIC BYTE FUNC Glyph(BYTE value)
+  BYTE POINTER glyphs
+
+  glyphs=BYTE POINTER(ADDRESS(CS_GLYPHS))
+  IF value>=128 THEN
+    RETURN(31)
+  FI
+
+RETURN(glyphs(value))
+
+; Require the exact GRAPHICS 0 display-list layout before borrowing its RAM.
+BYTE FUNC ListValid(CARD listBase,screen)
+  BYTE POINTER bytes
+  CARD index
+
+  IF listBase<$9000 OR listBase>$bfe0 THEN
+    RETURN(0)
+  FI
+
+  IF listBase<screen+960 AND listBase+32>screen THEN
+    RETURN(0)
+  FI
+
+  bytes=BYTE POINTER(ADDRESS(listBase))
+  IF bytes(0)<>$70 OR bytes(1)<>$70 OR bytes(2)<>$70 OR bytes(3)<>$42 THEN
+    RETURN(0)
+  FI
+
+  IF CARD(bytes(4))+(CARD(bytes(5)) LSH 8)<>screen THEN
+    RETURN(0)
+  FI
+
+  FOR index=6 TO 28 DO
+    IF bytes(index)<>2 THEN
+      RETURN(0)
+    FI
+  OD
+
+  IF bytes(29)<>$41 OR CARD(bytes(30))+(CARD(bytes(31)) LSH 8)<>listBase THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Reject an incompatible OS display instead of guessing its memory layout.
+PUBLIC BYTE FUNC Validate()
+  ; Both extents must be RAM inside the existing OS-high reservation, below
+  ; ROM/hardware, without overlap. The ROM/font itself is pinned by packaging.
+  IF dindex<>0 OR sdmctl<>$22 OR chbas<>$e0 OR chact<>2 OR gprior<>0 THEN
+    RETURN(0)
+  FI
+
+  IF attract>=128 OR drkmsk<>$fe OR colrsh<>0 THEN
+    RETURN(0)
+  FI
+
+  IF savmsc<$9000 OR savmsc>$bc40 THEN
+    RETURN(0)
+  FI
+
+  IF oldadr<savmsc OR oldadr>=savmsc+960 THEN
+    RETURN(0)
+  FI
+
+RETURN(ListValid(sdlst,savmsc))
+
+; Keep the visible rectangle inside both the screen and retained terminal.
+PUBLIC BYTE FUNC Geometry(CONSOLETYPES.Presentation POINTER view
+    CONSOLETYPES.Instance POINTER instance)
+
+  IF view.width=0 OR view.height=0 OR view.left>=40 OR view.top>=24 THEN
+    RETURN(0)
+  FI
+
+  IF view.width>40-view.left OR view.height>24-view.top THEN
+    RETURN(0)
+  FI
+
+  IF view.width>instance.width OR view.height>instance.height THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Save the OS display and cursor before granting the terminal ownership.
+PUBLIC BYTE FUNC Claim(CONSOLETYPES.Presentation POINTER view
+    CONSOLETYPES.Instance POINTER instance BYTE POINTER snapshot)
+  BYTE POINTER screen
+
+  IF view.claimed<>0 OR Validate()=0 THEN
+    RETURN(0)
+  FI
+
+  IF snapshot=BYTE POINTER(0) OR ADDRESS(snapshot)<$10000 THEN
+    RETURN(0)
+  FI
+
+  screen=BYTE POINTER(ADDRESS(savmsc))
+  view.instance=BYTE POINTER(instance)
+  view.screen=screen
+  view.snapshot=snapshot
+  view.left=0
+  view.top=0
+  view.width=40
+  view.height=24
+  IF Geometry(view,instance)=0 THEN
+    RETURN(0)
+  FI
+
+  ; Preserve the visible old cursor as part of the exact screen snapshot.
+  A816MEMORY.Move(snapshot,screen,SIZE(960))
+  view.savedCursor=crsinh
+  view.savedAttract=attract
+  crsinh=1
+  view.claimed=1
+  attract=0
+  screen(oldadr-savmsc)=oldchr
+  view.previousCursor=$ffff
+  view.index=$ffff
+  view.cursorOn=0
+  view.visible=1
+  view.focused=1
+  instance.dirtyFirst=0
+  instance.dirtyEnd=instance.count
+
+RETURN(1)
+
+; Restore the saved OS screen and cursor state after the final presentation.
+PUBLIC PROC Release(CONSOLETYPES.Presentation POINTER view)
+
+  IF view.claimed=0 THEN
+    RETURN
+  FI
+
+  view.visible=0
+  A816MEMORY.Move(view.screen,view.snapshot,SIZE(960))
+  crsinh=view.savedCursor
+  view.claimed=0
+  attract=view.savedAttract
+  view.cursorOn=0
+  view.previousCursor=$ffff
+
+RETURN
+
+CARD FUNC Position(CARD row,column)
+
+RETURN((row LSH 5)+(row LSH 3)+column)
+
+; Overlay a cursor only for a focused, settled cell inside the visible
+; rectangle.
+PROC Cursor(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
+    POINTER instance)
+  CARD index
+
+  view.index=instance.lineStart+instance.column
+  IF view.focused=0 THEN
+    RETURN
+  FI
+
+  IF instance.operation<>CONSOLETYPES.OP_IDLE OR instance.row>=view.height
+      OR instance.column>=view.width THEN
+    RETURN
+  FI
+
+  index=Position(view.top+instance.row,view.left+instance.column)
+  view.cursorCell=Glyph(instance.cells(view.index))
+  view.previousCursor=index
+  view.cursorOn=1
+  view.screen(index)=BYTE(view.cursorCell) XOR $80
+
+RETURN
+
+; Refresh a bounded dirty span so screen work leaves time for input and other
+; tasks.
+PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
+    POINTER instance)
+  CARD index,row,column,stop,rowEnd,visibleEnd,rows
+
+  index=instance.dirtyFirst
+  IF index>=instance.dirtyEnd THEN
+    RETURN
+  FI
+
+  LET width=instance.width
+  row=0
+  column=index
+  WHILE column>=width DO
+    column==-width
+    row==+1
+  OD
+
+  stop=index+CELL_BUDGET
+  IF stop>instance.dirtyEnd THEN
+    stop=instance.dirtyEnd
+  FI
+
+  rows=0
+  WHILE index<stop AND rows<ROW_BUDGET DO
+    rowEnd=index+width-column
+    IF rowEnd>stop THEN
+      rowEnd=stop
+    FI
+
+    IF column<view.width AND row<view.height THEN
+      visibleEnd=index+view.width-column
+      IF visibleEnd>rowEnd THEN
+        visibleEnd=rowEnd
+      FI
+
+      Span(view.screen+SIZE(Position(view.top+row,view.left+column)),
+          instance.cells+SIZE(index),visibleEnd-index)
+    FI
+
+    index=rowEnd
+    column=0
+    row==+1
+    rows==+1
+  OD
+
+  instance.dirtyFirst=index
+  IF index=instance.dirtyEnd THEN
+    instance.dirtyFirst=instance.count
+    instance.dirtyEnd=0
+  FI
+
+RETURN
+
+; Restore the underlying glyph before moving or hiding the cursor.
+PUBLIC PROC RemoveCursor(CONSOLETYPES.Presentation POINTER view)
+
+  IF view.cursorOn<>0 THEN
+    view.screen(view.previousCursor)=BYTE(view.cursorCell)
+    view.cursorOn=0
+  FI
+
+RETURN
+
+; Presentation admission prevents worker borrows while this bounded erase runs.
+PUBLIC PROC Erase(CONSOLETYPES.Presentation POINTER view)
+  CARD row
+
+  IF view.claimed=0 OR view.visible=0 THEN
+    RETURN
+  FI
+
+  RemoveCursor(view)
+  FOR row=0 TO view.height-1 DO
+    A816MEMORY.Clear(view.screen+SIZE(Position(view.top+row,view.left)),
+        SIZE(view.width))
+  OD
+
+RETURN
+
+; Complete retained and physical editing under the worker's existing borrow.
+; Only a complete, synchronized view can reuse its translated screen bytes.
+PUBLIC PROC Edit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
+    POINTER instance)
+  BYTE synchronized
+  CARD row
+
+  LET operation=instance.operation
+  synchronized=0
+  IF view.claimed<>0 AND view.visible<>0 AND view.width=instance.width
+      AND view.height=instance.height THEN
+    RemoveCursor(view)
+    IF operation=CONSOLETYPES.OP_CLEAR THEN
+      synchronized=1
+    ELSE
+      IF instance.dirtyEnd>instance.dirtyFirst THEN
+        IF instance.dirtyEnd-instance.dirtyFirst<=CELL_BUDGET THEN
+          Cells(view,instance)
+        FI
+      FI
+
+      synchronized=instance.dirtyEnd=0
+    FI
+  FI
+
+  CONSOLECORE.EditQuantum(instance)
+  IF synchronized=0 THEN
+    RETURN
+  FI
+
+  IF operation=CONSOLETYPES.OP_CLEAR THEN
+    Erase(view)
+  ELSEIF operation=CONSOLETYPES.OP_SCROLL THEN
+    BEGIN
+      LET destination=view.screen+SIZE(Position(view.top,view.left))
+      IF view.width=40 THEN
+        A816MEMORY.Move(destination,destination+SIZE(40),
+            SIZE(instance.count-instance.width))
+      ELSEIF view.height>1 THEN
+        FOR row=0 TO view.height-2 DO
+          A816MEMORY.Move(destination+SIZE(Position(row,0)),
+              destination+SIZE(Position(row+1,0)),SIZE(view.width))
+        OD
+      FI
+
+      A816MEMORY.Clear(destination+SIZE(Position(view.height-1,0)),
+          SIZE(view.width))
+    END
+  FI
+
+  instance.dirtyFirst=instance.count
+  instance.dirtyEnd=0
+
+RETURN
+
+; Worker borrows only presentations admitted by Claim/Show. Direct users keep
+; the checked Quantum entry below for clipped or independently built views.
+PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
+    POINTER instance)
+
+  IF view.claimed=0 OR view.visible=0 THEN
+    RETURN
+  FI
+
+  ; A clean, settled cursor needs no screen stores. Focus changes invalidate
+  ; view.index at the presentation transaction boundary.
+  IF instance.dirtyEnd=0 AND view.index=instance.lineStart+instance.column THEN
+    IF instance.operation=CONSOLETYPES.OP_IDLE THEN
+      IF (view.focused=0 AND view.cursorOn=0) OR
+          (view.focused<>0 AND view.cursorOn<>0 AND
+          view.previousCursor=Position(view.top+instance.row,
+              view.left+instance.column)) THEN
+        RETURN
+      FI
+    FI
+  FI
+
+  RemoveCursor(view)
+  Cells(view,instance)
+  Cursor(view,instance)
+
+RETURN
+
+; Validate a caller-built view before presenting its next bounded update.
+PUBLIC PROC Quantum(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
+    POINTER instance)
+
+  IF Geometry(view,instance)<>0 THEN
+    Present(view,instance)
+  FI
+
+RETURN
+
+ENDMODULE

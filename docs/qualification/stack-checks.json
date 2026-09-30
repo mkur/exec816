@@ -1,0 +1,489 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Compiler and assembly stack-check selection, default-on startup reporting, raw/optimized floor and recursion probes, and four complete resident shell sessions on pinned Altirra. Physical hardware and timing improvement are not qualified.",
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "2d73c03a0cb02e1f9d5b54d49679d6c2c4d8d78d",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "previous_compiler": "ae1f555e77d0ae6caffbfc7453cbf06e3d098bee",
+  "source_inputs": {
+    "config/kernel.json": "87dcd46af53a93b3049752c10fd56e427905df3182fb773f369f56957632e184",
+    "toolchain/actionc.json": "5a29de05706140adf10ccf7e6be1a659c1d94356838d318b21ecc8e28d4a9f57",
+    "tools/native_program.py": "5af015b9a44995b2584adb845dc6205c378229f604869cf6a664966b16863b47",
+    "tools/generate_build_info.py": "57fb3b2d6fab9c2d9e1e218c318672c8930cdb80b37a94bedf6381851f8a3770",
+    "tools/test_stack_checks.py": "86f59663fc6d935037ce9825998d6d05f4de3e67647aeec4fc7ce66619ab88db",
+    "tools/test_shell_entry.py": "4415d496404c2971418652fbf8455a0070c832504b64df2abdb182dab4d6072a",
+    "tests/programs/stack_checks.act": "e28636e57c0be38a264964055d62ec69820db6877609e0b1c780ab2e2965a7a2",
+    "tests/test_native_package.py": "7608a0c8c5d5ed06daf2698fd5df18417ad91952fd7f167ca9f7aef056038455",
+    "examples/shell-boot.inc": "cc75393b6cdfd9780972f276abe4681f13359df4be08042ca0287d081d02c78d",
+    "platform/altirraos/hosted.s": "b7b6d7e78717cbed0f66c0885594186eb4bfda2c7d9040b7c96774afa0a3ebb4",
+    "platform/altirraos/signal-irq.s": "fa59329500d3adaa8cc4ee3dca90ae12cb0436921d4ac1ac70ffb4f3f5c95196",
+    "platform/altirraos/signal-atomic.s": "f19c7fb2f493ccf0c4d1730aa168b1706f911569a329dd04797e1fe15d1e7138",
+    "platform/altirraos/heap.s": "080cfcc5c695fd9d639871290c59faf857f9ae57a5d8a2d93d9df294cb5d5778",
+    "platform/altirraos/heap-probe.s": "1c5e99ff78cc72e09f2c833fe002525c5f7297c94243dd19e4ee7be778a88870",
+    "platform/altirraos/ports.s": "e8b707764f6f8ed2d0519ee7c8632b1b8e622c477ff3c4815e8b07ee9dd21566"
+  },
+  "compiler_tests": {
+    "total": 56,
+    "targets": {
+      "actionc_65816_cli": 8,
+      "actionc_65816_o65_cli": 5,
+      "mir65816_emission": 23,
+      "mir65816_o65": 11,
+      "mir65816_abi": 8,
+      "mir65816_state_boundary": 1
+    },
+    "feature_for_abi_and_boundary": "native65816-state-proof"
+  },
+  "host_tests": {
+    "native_package_and_frame_maps": 9,
+    "task_bindings_and_package": 11,
+    "shell_disk": 1
+  },
+  "shell": [
+    {
+      "name": "shell-raw-on",
+      "status": "pass",
+      "stack_checks": true,
+      "compiler_sha256": "0d1cdf46a829329faef68c8c69213889e949b9bd000b25e64da17dcf4840f307",
+      "results": "build/stack-checks/shell-raw-on/results.json",
+      "results_sha256": "3ea8388d0bda8fb01e3d09eba5ed10dbf4f34e400d1717aeaf782c40020f5b9b",
+      "image_sha256": "a4b96c916b6b0969ffa209d6604dc7ccb9e1f1f42f5a4236a2bee34255c7829b",
+      "xex_sha256": "b84f3d3f166294427d0d14f722c4e96164c2b4265a7621a2ec98a3aae7686c2e",
+      "banner": "Exec816 (d788d44-dirty)\n\nexec: 8 task slots\nexec: stack checks enabled\nconsole.device: ready\nsio.device: ready, 57.6k profile\nD1: mounting...\nD1: ready, read-only\n\n",
+      "diskemu": "generic56k",
+      "command_count": 26,
+      "guards": "intact",
+      "native_nmi_count": 3750,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 498,
+          "untouched_above_floor": 782
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 174,
+          "untouched_above_floor": 594
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 170,
+          "untouched_above_floor": 598
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 199,
+          "untouched_above_floor": 569
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 46,
+          "untouched_above_floor": 210
+        }
+      ]
+    },
+    {
+      "name": "shell-opt-on",
+      "status": "pass",
+      "stack_checks": true,
+      "compiler_sha256": "0d1cdf46a829329faef68c8c69213889e949b9bd000b25e64da17dcf4840f307",
+      "results": "build/stack-checks/shell-opt-on/results.json",
+      "results_sha256": "29c95dbcdb334ec6774aece9bfa78887e6d6cb0f7eb52f4a92a8f053c53aeed0",
+      "image_sha256": "d0363bd9d2cd8c5e02b1aea7c1127778e603d4cf76561fcaf5bd345f0ff3d0e5",
+      "xex_sha256": "62bc84617a98cd834ccf8e6ff8a4660f54688ae6532e9d9f723adaf3e18ec77e",
+      "banner": "Exec816 (d788d44-dirty)\n\nexec: 8 task slots\nexec: stack checks enabled\nconsole.device: ready\nsio.device: ready, 57.6k profile\nD1: mounting...\nD1: ready, read-only\n\n",
+      "diskemu": "generic56k",
+      "command_count": 26,
+      "guards": "intact",
+      "native_nmi_count": 3520,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 461,
+          "untouched_above_floor": 819
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 150,
+          "untouched_above_floor": 618
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 122,
+          "untouched_above_floor": 646
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 177,
+          "untouched_above_floor": 591
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 44,
+          "untouched_above_floor": 212
+        }
+      ]
+    },
+    {
+      "name": "shell-raw-off",
+      "status": "pass",
+      "stack_checks": false,
+      "compiler_sha256": "0d1cdf46a829329faef68c8c69213889e949b9bd000b25e64da17dcf4840f307",
+      "results": "build/stack-checks/shell-raw-off/results.json",
+      "results_sha256": "7767f47405724a70da91ae411925449fd4bae19aaf8f8878b2458fd798f130c8",
+      "image_sha256": "008226510a92d85d5f909a18b6d75593515e9923e67a39218a8eb767b956f897",
+      "xex_sha256": "bbdf9ee8c5a681547043574c88f96aa6a3506ec5e3fd564cdb680b7fd4042978",
+      "banner": "Exec816 (d788d44-dirty)\n\nexec: 8 task slots\nexec: stack checks disabled\nconsole.device: ready\nsio.device: ready, 57.6k profile\nD1: mounting...\nD1: ready, read-only\n\n",
+      "diskemu": "generic56k",
+      "command_count": 26,
+      "guards": "intact",
+      "native_nmi_count": 3354,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 500,
+          "untouched_above_floor": 780
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 174,
+          "untouched_above_floor": 594
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 162,
+          "untouched_above_floor": 606
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 199,
+          "untouched_above_floor": 569
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 46,
+          "untouched_above_floor": 210
+        }
+      ]
+    },
+    {
+      "name": "shell-opt-off",
+      "status": "pass",
+      "stack_checks": false,
+      "compiler_sha256": "0d1cdf46a829329faef68c8c69213889e949b9bd000b25e64da17dcf4840f307",
+      "results": "build/stack-checks/shell-opt-off/results.json",
+      "results_sha256": "5ed87332669e5ca942973b3ede75456b9ace7a04a1b6c265433befbd937c5f08",
+      "image_sha256": "6298d1bb5540d494247710270b2ae53d42a2361b9627ba56e1688512cb82e779",
+      "xex_sha256": "4c8c374572f5a6d16cf2193d10ca0b5359e3e9bb55f85282b668b12807152eb6",
+      "banner": "Exec816 (d788d44-dirty)\n\nexec: 8 task slots\nexec: stack checks disabled\nconsole.device: ready\nsio.device: ready, 57.6k profile\nD1: mounting...\nD1: ready, read-only\n\n",
+      "diskemu": "generic56k",
+      "command_count": 26,
+      "guards": "intact",
+      "native_nmi_count": 3245,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 461,
+          "untouched_above_floor": 819
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 148,
+          "untouched_above_floor": 620
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 122,
+          "untouched_above_floor": 646
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 177,
+          "untouched_above_floor": 591
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 50,
+          "untouched_above_floor": 206
+        }
+      ]
+    }
+  ],
+  "platforms": {
+    "toolchain/altirra.json": "5ad56ae12ca012928cd322bc884bc77b1edab59313a16cd1133388d8dbfe4db6",
+    "toolchain/altirra-shell-paced.json": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068"
+  },
+  "bank_zero": {
+    "fixed_delta_bytes": 0,
+    "per_task_delta_bytes": 0,
+    "budget": {
+      "fixed_runtime": 10560,
+      "idle": 1056,
+      "loading_excluding_os": 20368,
+      "loading_including_os": 57232,
+      "public": [
+        2080,
+        1568,
+        1568,
+        1568,
+        1568,
+        1568,
+        1568,
+        1568
+      ],
+      "runtime_excluding_os": 24672,
+      "runtime_including_os": 61536
+    },
+    "identical_fields": [
+      "regions",
+      "runtime_reservations",
+      "task_pools",
+      "bank_zero_budget"
+    ]
+  },
+  "probes": {
+    "results": "build/stack-checks/config-probes/results.json",
+    "results_sha256": "0cc768b4c0d5da4762c17ad7d7a703a75b918189c9b172e5b565c9252c4b1a00",
+    "configuration": "false in kernel config; explicit true override for on probes; default config for recursive faults",
+    "cases": [
+      {
+        "mode": "raw",
+        "stack_checks": true,
+        "target": "compiler",
+        "status": 1,
+        "guards": "intact",
+        "fault_required": 0,
+        "fault_s": 18410
+      },
+      {
+        "mode": "raw",
+        "stack_checks": true,
+        "target": "assembly",
+        "status": 1,
+        "guards": "intact",
+        "fault_required": 10,
+        "fault_s": 18406
+      },
+      {
+        "mode": "raw",
+        "stack_checks": false,
+        "target": "compiler",
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "fault_s": 0
+      },
+      {
+        "mode": "raw",
+        "stack_checks": false,
+        "target": "assembly",
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "fault_s": 0
+      },
+      {
+        "mode": "opt",
+        "stack_checks": true,
+        "target": "compiler",
+        "status": 1,
+        "guards": "intact",
+        "fault_required": 0,
+        "fault_s": 18412
+      },
+      {
+        "mode": "opt",
+        "stack_checks": true,
+        "target": "assembly",
+        "status": 1,
+        "guards": "intact",
+        "fault_required": 10,
+        "fault_s": 18408
+      },
+      {
+        "mode": "opt",
+        "stack_checks": false,
+        "target": "compiler",
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "fault_s": 0
+      },
+      {
+        "mode": "opt",
+        "stack_checks": false,
+        "target": "assembly",
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "fault_s": 0
+      },
+      {
+        "mode": "raw",
+        "stack_checks": true,
+        "target": "recursion",
+        "status": 1,
+        "guards": "intact",
+        "fault_required": 6,
+        "fault_s": 17156
+      },
+      {
+        "mode": "opt",
+        "stack_checks": true,
+        "target": "recursion",
+        "status": 1,
+        "guards": "intact",
+        "fault_required": 6,
+        "fault_s": 17154
+      }
+    ]
+  },
+  "checked_compiler_comparison": {
+    "status": "pass",
+    "previous_compiler_sha256": "19c57d91e38785b130c510665138a8b2f6ca402145ad98ab54bdc11109e6246a",
+    "cases": [
+      {
+        "mode": "raw",
+        "compiler_emitted_bytes_and_maps_identical": true,
+        "compiler_image_sha256": "feedac6ba3097c0037417c672f533ddc2251ce061280d2a2cefa7b6c5952754b",
+        "packaged_image_sha256": "a4b96c916b6b0969ffa209d6604dc7ccb9e1f1f42f5a4236a2bee34255c7829b"
+      },
+      {
+        "mode": "opt",
+        "compiler_emitted_bytes_and_maps_identical": true,
+        "compiler_image_sha256": "eddf1d9365d1a454bf4003259da6951d32a40dc812f64229cd1bc22fd70ac6da",
+        "packaged_image_sha256": "d0363bd9d2cd8c5e02b1aea7c1127778e603d4cf76561fcaf5bd345f0ff3d0e5"
+      }
+    ]
+  },
+  "cli": {
+    "command": "python3 tools/native_program.py --compiler-dir build/actionc --source tests/programs/stack_checks.act --no-stack-checks --output build/stack-checks/cli-off",
+    "results_sha256": "9dc78a601029e53d58cdbf96f9ed768cd935893501d068083b3d3135f34bc935",
+    "stack_checks": false
+  }
+}

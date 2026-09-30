@@ -1,0 +1,249 @@
+MODULE PORTCAPACITY
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+
+TYPE Packet=[
+  EXEC.Message header
+  BYTE slot,lane
+  CARD sequence
+]
+
+EXEC.Task ARRAY workers(7)
+EXEC.MsgPort POINTER service
+EXEC.MsgPort secondary,handoffs
+EXEC.MsgPort ARRAY sharedReplies(7)
+VOLATILE BYTE go
+BYTE ARRAY ready(7),progress(7),seen(56)
+CARD checks,delivered,retained,peakTasks,portCount
+LONGCARD before,after,rootSignals
+PROC POINTER absent()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff89)
+  FI
+
+RETURN
+
+PROC Manual(EXEC.MsgPort POINTER port BYTE action,bit, EXEC.Task POINTER owner)
+
+  port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  port.mp_Flags=action
+  port.mp_SigTask=owner
+  port.mp_SigBit=bit
+  EXECLISTS.NewList(@port.mp_MsgList)
+
+RETURN
+
+Packet POINTER FUNC Allocate(BYTE slot,lane, EXEC.MsgPort POINTER reply)
+  Packet POINTER req
+
+  req=Packet POINTER(EXEC.AllocMem(LONGCARD(SIZEOF(Packet)),EXEC.MEMF_CLEAR))
+  Require(req<>Packet POINTER(0))
+  req.header.mn_Length=CARD(SIZEOF(Packet))
+  req.header.mn_ReplyPort=reply
+  req.slot=slot
+  req.lane=lane
+
+RETURN(req)
+
+PROC Replies(EXEC.MsgPort POINTER first EXEC.MsgPort POINTER second Packet
+    POINTER a Packet POINTER b)
+  EXEC.Message POINTER msg
+  LONGCARD bits
+  BYTE got
+
+  got=0
+  WHILE got<>3 DO
+    msg=EXEC.GetMsg(first)
+    IF msg<>EXEC.Message POINTER(0) THEN
+      Require(msg=@a.header AND (got & 1)=0
+          AND msg.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+      got=got OR 1
+    FI
+
+    msg=EXEC.GetMsg(second)
+    IF msg<>EXEC.Message POINTER(0) THEN
+      Require(msg=@b.header AND (got & 2)=0
+          AND msg.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+      got=got OR 2
+    FI
+
+    IF got<>3 THEN
+      bits=EXEC.Wait(LONGCARD(1) LSH first.mp_SigBit)
+    FI
+  OD
+
+RETURN
+
+PROC Client(BYTE slot)
+  EXEC.Task POINTER self
+  EXEC.MsgPort POINTER reply,shared
+  Packet POINTER a,b,gift
+  LONGCARD signals
+  CARD round
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  signals=self.tc_SigAlloc
+  reply=EXEC.CreateMsgPort()
+  Require(reply<>EXEC.MsgPort POINTER(0))
+  shared=@sharedReplies(slot)
+  Manual(shared,EXEC.PA_SIGNAL,reply.mp_SigBit,self)
+  a=Allocate(slot,0,reply)
+  b=Allocate(slot,1,shared)
+  ready(slot)=1
+  WHILE go=0 DO
+    EXEC.Yield()
+  OD
+
+  FOR round=0 TO 3 DO
+    a.sequence=round
+    b.sequence=round
+    EXEC.PutMsg(service,@a.header)
+    EXEC.PutMsg(@secondary,@b.header)
+    Replies(reply,shared,a,b)
+  OD
+
+  EXEC.FreeMem(BYTE POINTER(a),LONGCARD(SIZEOF(Packet)))
+  EXEC.FreeMem(BYTE POINTER(b),LONGCARD(SIZEOF(Packet)))
+  EXEC.DeleteMsgPort(reply)
+  Require(self.tc_SigAlloc=signals)
+  gift=Allocate(slot,2,EXEC.MsgPort POINTER(0))
+  gift.sequence=$816
+  EXEC.PutMsg(@handoffs,@gift.header)
+  ; Ownership is transferred; root retains the allocation past this task's exit.
+  progress(slot)=1
+
+RETURN
+
+PROC Worker()
+  EXEC.Task POINTER self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  Client(self.tc_Node.ln_Pri)
+
+RETURN
+
+BYTE FUNC Receive(EXEC.MsgPort POINTER port)
+  Packet POINTER req
+  CARD index
+
+  req=Packet POINTER(EXEC.GetMsg(port))
+  IF req=Packet POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  Require(req.slot<7 AND req.lane<2 AND req.sequence<4)
+  Require(req.header.mn_Node.ln_Type=EXEC.NT_MESSAGE)
+  index=(CARD(req.slot) LSH 3)+(req.sequence LSH 1)+CARD(req.lane)
+  Require(seen(index)=0)
+  seen(index)=1
+  delivered==+1
+  EXEC.ReplyMsg(@req.header)
+
+RETURN(1)
+
+PROC Start(BYTE unused)
+  CARD i
+  EXEC.Task POINTER item
+
+  FOR i=0 TO 6 DO
+    item=@workers(i)
+    item.tc_Node.ln_Type=EXEC.NT_TASK
+    item.tc_Node.ln_Pri=BYTE(i)
+    item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(BYTE(i+1)))
+    item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(BYTE(i+1)))
+    item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+    EXECLISTS.NewList(@item.tc_MemEntry)
+    Require(EXEC.AddTask(item,@Worker,absent)=item)
+  OD
+
+  FOR i=0 TO 6 DO
+    WHILE ready(i)=0 DO
+      EXEC.Yield()
+    OD
+  OD
+
+  FOR i=0 TO 6 DO
+    Require(workers(i).tc_State<>EXEC.TS_REMOVED)
+  OD
+
+  peakTasks=8
+  portCount=17
+  go=1
+
+RETURN
+
+PROC Finish(BYTE unused)
+  CARD i,status
+  Packet POINTER gift
+
+  FOR i=0 TO 6 DO
+    WHILE workers(i).tc_State<>EXEC.TS_REMOVED DO
+      status=EXECTASKS.Sleep(1)
+    OD
+
+    Require(progress(i)=1)
+  OD
+
+  FOR i=0 TO 6 DO
+    gift=Packet POINTER(EXEC.GetMsg(@handoffs))
+    Require(gift<>Packet POINTER(0))
+    Require(gift.slot<7 AND gift.lane=2 AND gift.sequence=$816
+        AND progress(gift.slot)=1)
+    progress(gift.slot)=2
+    EXEC.ReplyMsg(@gift.header)
+    Require(gift.header.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+    EXEC.FreeMem(BYTE POINTER(gift),LONGCARD(SIZEOF(Packet)))
+    retained==+1
+  OD
+
+  Require(EXEC.GetMsg(@handoffs)=EXEC.Message POINTER(0))
+  EXEC.DeleteMsgPort(service)
+
+RETURN
+
+; Exercise message-port allocation and replies at Task capacity.
+PROC Main()
+  EXEC.Task POINTER self
+  LONGCARD bits
+  CARD i
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  rootSignals=self.tc_SigAlloc
+  before=EXEC.AvailMem(0)
+  service=EXEC.CreateMsgPort()
+  Require(service<>EXEC.MsgPort POINTER(0))
+  Manual(@secondary,EXEC.PA_SIGNAL,service.mp_SigBit,self)
+  Manual(@handoffs,EXEC.PA_IGNORE,255,EXEC.Task POINTER(0))
+  Start(0)
+  WHILE delivered<56 DO
+    WHILE Receive(service)<>0 DO
+    OD
+
+    WHILE Receive(@secondary)<>0 DO
+    OD
+
+    IF delivered<56 THEN
+      bits=EXEC.Wait(LONGCARD(1) LSH service.mp_SigBit)
+    FI
+  OD
+
+  Finish(0)
+  FOR i=0 TO 55 DO
+    Require(seen(i)=1)
+  OD
+
+  after=EXEC.AvailMem(0)
+  Require(after=before AND self.tc_SigAlloc=rootSignals)
+  checks=1
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,597 @@
+MODULE DOSSTREAMLIFE
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE DOSRAW
+USE DOSSTREAMS
+USE DSTREAMPROBE
+USE CONSOLEDRIVER
+USE CONSOLETYPES
+USE CONSOLEINPUT
+USE FSBOOT
+USE HEAPCORE
+
+TYPE Chunk=[
+  BYTE POINTER next
+  LONGCARD size
+]
+
+Chunk POINTER held
+CARD checks,childChecks
+BYTE mode,stage
+VOLATILE BYTE command,done,childReady,childExit
+EXEC.Task child
+PROC POINTER absent()
+DOS.FileHandle POINTER handle,other,file,nil
+DOSCLIENT.ClientContext POINTER client,peer
+DOSRAW.StreamRegistry POINTER registry
+DOSRAW.RawEndpoint POINTER endpoint
+DSTREAMPROBE.State POINTER probe
+CONSOLETYPES.Instance POINTER instance
+LONGINT peerResult,peerError
+LONGCARD baseline,observedFree
+BYTE ARRAY buffer(8)
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE good)
+
+  IF good=0 THEN
+    observedFree=EXEC.AvailMem(0)
+    HEAPCORE.Abort($e600+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Report an invariant failure in the concurrent peer rather than hiding it in
+; root results.
+PROC PeerCheck(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($e700+childChecks)
+  FI
+
+  childChecks==+1
+
+RETURN
+
+; Hold available allocations so the next operation must exercise its failure
+; path.
+PROC Exhaust(BYTE unused)
+  LONGCARD size
+  Chunk POINTER item
+
+  DO
+    size=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    IF size<8 THEN
+      EXIT
+    FI
+
+    item=Chunk POINTER(EXEC.AllocMem(size,EXEC.MEMF_UPPER))
+    IF item=Chunk POINTER(0) THEN
+      HEAPCORE.Abort($e6fe)
+    FI
+
+    item.next=BYTE POINTER(held)
+    item.size=size
+    held=item
+  OD
+
+RETURN
+
+; Return the allocations retained to force memory exhaustion.
+PROC ReleaseHeld(BYTE unused)
+  Chunk POINTER next
+  LONGCARD size
+
+  WHILE held<>Chunk POINTER(0) DO
+    next=Chunk POINTER(held.next)
+    size=held.size
+    EXEC.FreeMem(BYTE POINTER(held),size)
+    held=next
+  OD
+
+RETURN
+
+PROC IdleRequest(DOSCLIENT.ClientContext POINTER owner)
+
+  Check(owner.busy=0 AND owner.request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  Check(owner.request.io_Device=BYTE POINTER(0)
+      AND owner.request.io_Unit=BYTE POINTER(0)
+      AND owner.request.io_Data=BYTE POINTER(0))
+  Check(EXEC.GetMsg(owner.port)=EXEC.Message POINTER(0))
+
+RETURN
+
+PROC Arm(BYTE tag)
+
+  probe.hit=0
+  probe.gate=0
+  probe.armed=tag
+
+RETURN
+
+PROC Hit(BYTE tag)
+
+  WHILE probe.hit<>tag DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Send(BYTE action)
+
+  done=0
+  command=action
+
+RETURN
+
+PROC WaitDone(BYTE unused)
+
+  WHILE done=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC ChildEntry()
+  DOSCORE.DosSlot POINTER owner
+  BYTE action
+
+  childReady=1
+  DO
+    WHILE command=0 DO
+      EXEC.Yield()
+    OD
+
+    action=command
+    IF action=1 THEN
+      other=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+      peerResult=LONGINT(ADDRESS(other))
+      owner=DOSCORE.Current()
+      peer=DOSCLIENT.ClientContext POINTER(owner.context)
+    ELSEIF action=2 THEN
+      peerResult=DOS.Close(other)
+    ELSEIF action=3 THEN
+      peerResult=DOS.Read(other,BYTE POINTER($d2100),8)
+    ELSEIF action=4 THEN
+      peerResult=DOS.Write(other,BYTE POINTER($d3000),256)
+    ELSEIF action=5 THEN
+      peerResult=DOS.ReleaseContext()
+    ELSEIF action=6 THEN
+      PeerCheck(DOS.ReleaseContext()<>0)
+      childExit=1
+      command=0
+      done=1
+      RETURN
+    FI
+
+    peerError=DOS.IoErr()
+    command=0
+    done=1
+  OD
+
+RETURN
+
+PROC Spawn(BYTE unused)
+  BYTE POINTER bytes
+  CARD index
+
+  bytes=BYTE POINTER(@child)
+  FOR index=0 TO EXEC.TASK_SIZE-1 DO
+    bytes(index)=0
+  OD
+
+  childReady=0
+  childExit=0
+  command=0
+  done=0
+  child.tc_Node.ln_Type=EXEC.NT_TASK
+  child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  child.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  child.tc_SPReg=child.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@child.tc_MemEntry)
+  Check(EXEC.AddTask(@child,@ChildEntry,absent)=@child)
+  WHILE childReady=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Retire(BYTE unused)
+
+  Send(6)
+  WHILE child.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Check(childExit=1)
+
+RETURN
+
+; Force each endpoint setup failure and require full ownership rollback.
+PROC AllocationFailures(BYTE unused)
+  BYTE POINTER spare
+  EXEC.Task POINTER task
+  LONGCARD oldMask
+  CARD index
+  DOSCORE.DosSlot POINTER owner
+
+  owner=DOSCORE.Current()
+  task=EXEC.FindTask(BYTE POINTER(0))
+  oldMask=task.tc_SigAlloc
+  Exhaust(0)
+  Check(DOS.Open(BYTE POINTER($d1000),
+      DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Check(owner.context=BYTE POINTER(0) AND owner.active=0
+      AND task.tc_SigAlloc=oldMask)
+  ReleaseHeld(0)
+  Check(EXEC.AvailMem(0)=baseline)
+  spare=EXEC.AllocMem(80,EXEC.MEMF_UPPER)
+  Check(spare<>BYTE POINTER(0))
+  Exhaust(0)
+  EXEC.FreeMem(spare,80)
+  Check(DOS.Open(BYTE POINTER($d1000),
+      DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Check(owner.context=BYTE POINTER(0) AND owner.active=0
+      AND task.tc_SigAlloc=oldMask)
+  ReleaseHeld(0)
+  Check(EXEC.AvailMem(0)=baseline)
+  FOR index=0 TO 31 DO
+    IF (oldMask & (LONGCARD(1) LSH index))=0 THEN
+      Check(EXEC.AllocSignal(INT(index))=INT(index))
+    FI
+  OD
+
+  Check(DOS.Open(BYTE POINTER($d1000),
+      DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Check(owner.context=BYTE POINTER(0) AND owner.active=0
+      AND EXEC.AvailMem(0)=baseline)
+  FOR index=0 TO 31 DO
+    IF (oldMask & (LONGCARD(1) LSH index))=0 THEN
+      EXEC.FreeSignal(INT(index))
+    FI
+  OD
+
+  Check(task.tc_SigAlloc=oldMask)
+
+RETURN
+
+PROC Inject(LONGCARD event)
+  CONSOLETYPES.Service POINTER service
+
+  service=CONSOLEDRIVER.GetService()
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(instance,event)
+  EXEC.Signal(@service.task,$40000000)
+  EXEC.Permit()
+
+RETURN
+
+; Exercise bounded reference counts and error paths without leaking stream
+; resources.
+PROC SaturationAndErrors(BYTE unused)
+  LONGCARD generation,freeBytes
+  DOS.FileHandle POINTER previous
+  INT index
+
+  client=DOSCLIENT.Ensure()
+  generation=registry.generation
+  registry.generation=LONGCARD($ffffffff)
+  Check(DOS.Open(BYTE POINTER($d1000),
+      DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Check(registry.state=DOSRAW.CLOSED AND registry.generation=LONGCARD($ffffffff)
+      AND client.objects=0)
+  registry.generation=generation
+  handle=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Check(handle<>DOS.FileHandle POINTER(0))
+  endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+  freeBytes=EXEC.AvailMem(0)
+  endpoint.references=$ffff
+  Check(DOS.Open(BYTE POINTER($d1000),
+      DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Check(endpoint.references=$ffff AND EXEC.AvailMem(0)=freeBytes
+      AND client.objects=1)
+  endpoint.references=1
+  endpoint.active=$ffff
+  Check(DOS.Write(handle,buffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Check(endpoint.active=$ffff AND client.request=EXEC.IOStdReq POINTER(0))
+  previous=DOS.SelectInput(handle)
+  previous=DOS.SelectOutput(handle)
+  Check(DOS.Close(handle)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Check(DOS.Input()=handle AND DOS.Output()=handle AND client.objects=1)
+  Check(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  endpoint.active=0
+  EXEC.Forbid()
+  CONSOLEINPUT.Lose(instance)
+  EXEC.Permit()
+  Check(DOS.Read(handle,buffer,8)=-1 AND DOS.IoErr()=DOS.ERROR_BUFFER_OVERFLOW)
+  IdleRequest(client)
+  Check(endpoint.active=0 AND endpoint.reader=BYTE POINTER(0))
+  Inject($1012f)
+  Check(DOS.Read(handle,buffer,8)=1 AND buffer(0)=3 AND DOS.IoErr()=0)
+  Inject($2012f)
+  probe.zeroActual=1
+  Check(DOS.Read(handle,buffer,8)=-1 AND DOS.IoErr()=LONGINT(EXEC.IOERR_BADLENGTH))
+  Check(probe.zeroActual=0)
+  IdleRequest(client)
+  ; A settled device close is infallible and consumes both selections.
+  Check(DOS.Close(handle)<>0)
+  Check(DOS.Input()=NULL AND DOS.Output()=NULL AND client.objects=0)
+  Check(registry.state=DOSRAW.CLOSED AND registry.endpoint=NULL)
+  Check(DOS.ReleaseContext()<>0)
+  Check(EXEC.AvailMem(0)=baseline)
+  FOR index=0 TO 3 DO
+    handle=DOS.Open(BYTE POINTER($d1000),DOS.MODE_NEWFILE)
+    Check(handle<>DOS.FileHandle POINTER(0) AND instance.inputCount=0)
+    client=DOSCLIENT.Ensure()
+    Check(DOS.Write(handle,BYTE POINTER($d1040),1)=1)
+    IdleRequest(client)
+    Check(DOS.Close(handle)<>0 AND DOS.ReleaseContext()<>0
+        AND EXEC.AvailMem(0)=baseline)
+  OD
+
+RETURN
+
+; Pause endpoint transitions while peers attempt conflicting operations.
+PROC TransitionRaces(BYTE unused)
+  LONGCARD freeBytes
+
+  Spawn(0)
+  client=DOSCLIENT.Ensure()
+  Arm(1)
+  Send(1)
+  Hit(1)
+  Check(registry.state=DOSRAW.OPENING AND registry.endpoint=BYTE POINTER(0))
+  freeBytes=EXEC.AvailMem(0)
+  Check(DOS.Open(BYTE POINTER($d1000),
+      DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Check(EXEC.AvailMem(0)=freeBytes AND client.objects=0)
+  Exhaust(0)
+  probe.gate=1
+  WaitDone(0)
+  Check(peerResult=0 AND peerError=DOS.ERROR_NO_FREE_STORE
+      AND registry.state=DOSRAW.CLOSED)
+  Check(peer.busy=0 AND peer.objects=0)
+  ReleaseHeld(0)
+  Send(1)
+  WaitDone(0)
+  Check(peerResult<>0)
+  Arm(2)
+  Send(2)
+  Hit(2)
+  Check(registry.state=DOSRAW.CLOSING AND registry.endpoint<>BYTE POINTER(0))
+  Check(DOS.Open(BYTE POINTER($d1000),
+      DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  probe.gate=1
+  WaitDone(0)
+  Check(peerResult<>0 AND registry.state=DOSRAW.CLOSED)
+  Send(1)
+  WaitDone(0)
+  Check(peerResult<>0)
+  Arm(6)
+  Send(2)
+  Hit(6)
+  Check(registry.state=DOSRAW.CLOSING AND registry.endpoint=BYTE POINTER(0))
+  Check(DOS.Open(BYTE POINTER($d1000),
+      DOS.MODE_OLDFILE)=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  probe.gate=1
+  WaitDone(0)
+  Check(peerResult<>0 AND registry.state=DOSRAW.CLOSED)
+  Retire(0)
+  Check(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Interleave completion and cancellation without returning request ownership
+; twice.
+PROC DeliveryRaces(BYTE unused)
+  EXEC.IOStdReq POINTER request
+  LONGCARD ignored,freeBytes
+  CARD tag
+
+  Spawn(0)
+  handle=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Check(handle<>DOS.FileHandle POINTER(0))
+  client=DOSCLIENT.Ensure()
+  Send(1)
+  WaitDone(0)
+  Check(peerResult<>0)
+  endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+  Arm(5)
+  Send(3)
+  Hit(5)
+  Check(endpoint.reader=BYTE POINTER(peer) AND endpoint.active=1
+      AND peer.request=EXEC.IOStdReq POINTER(0))
+  freeBytes=EXEC.AvailMem(0)
+  Check(DOS.Read(handle,buffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE
+      AND EXEC.AvailMem(0)=freeBytes)
+  probe.gate=1
+  WHILE instance.read=BYTE POINTER(0) DO
+    EXEC.Yield()
+  OD
+
+  EXEC.AbortIO(EXEC.IORequest POINTER(peer.request))
+  WaitDone(0)
+  Check(peerResult=-1 AND peerError=LONGINT(EXEC.IOERR_ABORTED))
+  IdleRequest(peer)
+  FOR tag=3 TO 4 DO
+    Arm(BYTE(tag))
+    Send(3)
+    Hit(BYTE(tag))
+    ; Tag 4 is reached after collection, so seed the read before waiting for it.
+    request=peer.request
+    IF tag=3 THEN
+      Inject($3012f)
+      WHILE request.io_Message.mn_Node.ln_Type<>EXEC.NT_REPLYMSG DO
+        EXEC.Yield()
+      OD
+    FI
+
+    Check(endpoint.reader=BYTE POINTER(peer) AND endpoint.active=1)
+    Check(DOS.Read(handle,buffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+    IF tag=3 THEN
+      Check(request.io_Message.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+    ELSE
+      Check(request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+    FI
+
+    ignored=EXEC.SetSignal(LONGCARD(1) LSH client.port.mp_SigBit,
+        LONGCARD(1) LSH client.port.mp_SigBit)
+    Check(DOS.Write(handle,BYTE POINTER($d1040),1)=1)
+    IdleRequest(client)
+    probe.gate=1
+    WaitDone(0)
+    Check(peerResult=1 AND peerError=0)
+    IdleRequest(peer)
+    Inject($4012f)
+  OD
+
+  ; First write is admitted before the root's whole second write; cancellation
+  ; below separately proves a failed partial prefix is never reported success.
+  Arm(3)
+  Send(4)
+  Hit(3)
+  request=peer.request
+  Check(DOS.Write(handle,BYTE POINTER($d1050),4)=4)
+  Check(request.io_Actual=256
+      AND request.io_Message.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+  Check(instance.cells(254)=65 AND instance.cells(255)=69
+      AND instance.cells(256)=78 AND instance.cells(257)=68
+      AND instance.cells(258)=33 AND instance.cells(259)=32)
+  probe.gate=1
+  WaitDone(0)
+  Check(peerResult=256 AND peerError=0)
+  Arm(3)
+  Send(4)
+  Hit(3)
+  request=peer.request
+  WHILE request.io_Actual=0 DO
+    EXEC.Yield()
+  OD
+
+  Check(request.io_Actual<256)
+  EXEC.AbortIO(EXEC.IORequest POINTER(request))
+  probe.gate=1
+  WaitDone(0)
+  Check(peerResult=-1 AND peerError=LONGINT(EXEC.IOERR_ABORTED))
+  IdleRequest(peer)
+  Check(DOS.Write(handle,BYTE POINTER($d1040),1)=1 AND DOS.IoErr()=0)
+  Send(2)
+  WaitDone(0)
+  Check(peerResult<>0)
+  Retire(0)
+  Check(DOS.Close(handle)<>0 AND DOS.ReleaseContext()<>0
+      AND EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Keep an inherited endpoint usable after its original opener exits.
+PROC OpenerExit(BYTE unused)
+  LONGCARD generation
+
+  Spawn(0)
+  Send(1)
+  WaitDone(0)
+  Check(peerResult<>0)
+  handle=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Check(handle<>DOS.FileHandle POINTER(0))
+  generation=registry.generation
+  endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+  Send(2)
+  WaitDone(0)
+  Check(peerResult<>0)
+  Retire(0)
+  Check(endpoint.references=1 AND registry.generation=generation)
+  Check(DOS.Write(handle,BYTE POINTER($d1050),4)=4)
+  Inject($5012f)
+  Check(DOS.Read(handle,buffer,8)=1 AND buffer(0)=3)
+  Check(DOS.Close(handle)<>0 AND DOS.ReleaseContext()<>0
+      AND EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Combine stream ownership with other resident services under the same
+; scheduler.
+PROC Mixed(BYTE unused)
+  EXEC.IOStdReq POINTER request
+  LONGCARD ignored
+  BYTE index
+
+  IF mode=1 THEN
+    Check(CONSOLEDRIVER.Stop()<>0)
+    file=DOS.Open(BYTE POINTER($d1060),DOS.MODE_OLDFILE)
+    Check(file<>DOS.FileHandle POINTER(0))
+    Check(CONSOLEDRIVER.Start()<>0)
+  FI
+
+  handle=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Check(handle<>DOS.FileHandle POINTER(0))
+  IF mode=0 THEN
+    file=DOS.Open(BYTE POINTER($d1060),DOS.MODE_OLDFILE)
+    Check(file<>DOS.FileHandle POINTER(0))
+  FI
+
+  nil=DOS.Open(BYTE POINTER($d1020),DOS.MODE_NEWFILE)
+  Check(nil<>DOS.FileHandle POINTER(0))
+  client=DOSCLIENT.Ensure()
+  FOR index=0 TO 2 DO
+    Check(DOS.Write(handle,BYTE POINTER($d1040),1)=1)
+    request=client.request
+    EXEC.Signal(client.owner,LONGCARD(1) LSH client.port.mp_SigBit)
+    Check(DOS.Read(file,BYTE POINTER($d2200),8)=8)
+    Check(DOS.Write(nil,BYTE POINTER($d2200),8)=8)
+    Check(client.request=request)
+    IdleRequest(client)
+  OD
+
+  Check(DOS.Close(file)<>0 AND DOS.Close(nil)<>0 AND FSBOOT.Stop()<>0)
+  Check(DOS.Close(handle)<>0 AND DOS.ReleaseContext()<>0
+      AND EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Exercise stream allocation failures and retained endpoint ownership.
+PROC Main()
+
+  baseline=EXEC.AvailMem(0)
+  registry=DOSRAW.GetRegistry()
+  probe=DSTREAMPROBE.Get()
+  instance=CONSOLEDRIVER.GetInstance()
+  IF mode=2 THEN
+    handle=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+    Check(handle<>DOS.FileHandle POINTER(0))
+    RETURN
+  FI
+
+  stage=1
+  AllocationFailures(0)
+  stage=2
+  SaturationAndErrors(0)
+  stage=3
+  TransitionRaces(0)
+  stage=4
+  DeliveryRaces(0)
+  stage=5
+  OpenerExit(0)
+  stage=6
+  IF mode<>3 THEN
+    Mixed(0)
+  FI
+
+RETURN
+
+ENDMODULE

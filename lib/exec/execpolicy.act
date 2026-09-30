@@ -1,0 +1,135 @@
+MODULE EXECPOLICY
+
+INCLUDE "exec-abi.inc"
+
+; Platform-owned state. Only Dispatch runs scheduler policy; its ordinary
+; native call uses the kernel stack/domain with IRQs masked. Interrupt adapters
+; can dispatch only after retiring OS frames and validating task ownership.
+BYTE current=E816_CURRENT
+CARD switches=E816_SWITCH_COUNT
+VOLATILE BYTE osBusy=$2006
+TaskRecord task0=E816_TASK0
+TaskRecord task1=E816_TASK1
+
+; Select a context in the retained two-task platform probe.
+TaskRecord POINTER FUNC RecordFor(BYTE id)
+  TaskRecord POINTER item
+
+  item=@task0
+  IF id<>0 THEN
+    item=@task1
+  FI
+
+RETURN(item)
+
+; Place a word result in the caller frame restored by the gateway.
+PROC Result(CARD saved CARD value)
+
+  LET result=CARD POINTER(ADDRESS(saved+E816_FRAME_A_FULL))
+  result^=value
+
+RETURN
+
+; Keep the probe task running while a lock, OS call or IRQ mask forbids
+; switching.
+BYTE FUNC Protected(TaskRecord POINTER task CARD saved)
+
+  LET flags=BYTE POINTER(ADDRESS(saved+E816_FRAME_P))
+
+RETURN(task.lockDepth<>0 OR osBusy<>0 OR (flags^ & 4)<>0)
+
+; Honor a pending probe switch only when the peer is ready and entry is safe.
+CARD FUNC Switch(TaskRecord POINTER task CARD saved)
+
+  IF task.pending=0 OR Protected(task,saved) THEN
+    RETURN(saved)
+  FI
+
+  task.pending=0
+  LET peer=RecordFor(current XOR 1)
+  IF peer.state=E816_STATE_READY THEN
+    current=peer.id
+    switches==+1
+    RETURN(peer.savedS)
+  FI
+
+RETURN(saved)
+
+; Maintain probe lock nesting and reconsider a deferred switch on unlock.
+CARD FUNC LockService(TaskRecord POINTER task CARD saved BYTE service)
+
+  IF service=E816_SERVICE_LOCK THEN
+    IF task.lockDepth=$ffff THEN
+      Result(saved,E816_ERROR_LOCK)
+      RETURN(saved)
+    FI
+
+    task.lockDepth==+1
+    Result(saved,0)
+    RETURN(saved)
+  FI
+
+  IF task.lockDepth=0 THEN
+    Result(saved,E816_ERROR_LOCK)
+    RETURN(saved)
+  FI
+
+  task.lockDepth==-1
+  Result(saved,0)
+
+RETURN(Switch(task,saved))
+
+; Retire the probe task and resume its peer, or return to the launcher.
+CARD FUNC ExitTask(TaskRecord POINTER task CARD saved)
+
+  IF Protected(task,saved) THEN
+    Result(saved,E816_ERROR_LOCK)
+    RETURN(saved)
+  FI
+
+  LET code=CARD POINTER(ADDRESS(saved+E816_FRAME_X))
+  task.exitCode=code^
+  task.pending=0
+  task.state=E816_STATE_EXITED
+  LET peer=RecordFor(current XOR 1)
+  IF peer.state=E816_STATE_READY THEN
+    current=peer.id
+    switches==+1
+    RETURN(peer.savedS)
+  FI
+
+RETURN(0)
+
+; Public so optimized compilation retains the entry called by assembly.
+PUBLIC CARD FUNC Dispatch(CARD saved BYTE service)
+
+  LET task=RecordFor(current)
+  task.savedS=saved
+  CASE service OF
+  WHEN E816_SERVICE_VERSION THEN
+    Result(saved,E816_VERSION)
+    RETURN(saved)
+
+  WHEN E816_SERVICE_TASK_ID THEN
+    Result(saved,CARD(current))
+    RETURN(saved)
+
+  WHEN E816_SERVICE_YIELD THEN
+    task.pending=1
+    RETURN(Switch(task,saved))
+
+  WHEN E816_SERVICE_POLL THEN
+    RETURN(Switch(task,saved))
+
+  WHEN E816_SERVICE_LOCK,E816_SERVICE_UNLOCK THEN
+    RETURN(LockService(task,saved,service))
+
+  WHEN E816_SERVICE_EXIT THEN
+    RETURN(ExitTask(task,saved))
+  ESAC
+
+  Result(saved,E816_ERROR_UNKNOWN)
+
+RETURN(saved)
+
+ENDMODULE

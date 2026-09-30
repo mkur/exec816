@@ -1,0 +1,421 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-24",
+  "slices": [
+    "P2",
+    "P3"
+  ],
+  "tier": "development",
+  "status": "pass",
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "32af3e2bbe4a48e85704b57370254b1846daa458",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "compiler_qualification": "deferred by request",
+  "release_qualification": "pending",
+  "host_tests": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "passed": 177
+  },
+  "generated_checks": [
+    "tools/generate_process.py --check",
+    "tools/generate_dos.py --check",
+    "tools/generate_console.py --check",
+    "tools/generate_tasks.py --check"
+  ],
+  "platform_pin": "toolchain/altirra-shell-console.json",
+  "platform_pin_sha256": "310ff2eeed7966bb76474164b23c601e85e9d678ea8b4c5be903e381a81b0f4d",
+  "rom": {
+    "name": "AltirraOS 3.44 for 65C816",
+    "bytes": 16384,
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+    "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+    "cop0_after_xce": 50931
+  },
+  "emulator": {
+    "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+    "platform": "macOS arm64",
+    "sha256": "6831df8ce90c5112b26250c03aeb4b9fa729961f7048eee407ae16a3b8f59802",
+    "source_patch": "toolchain/patches/altirra-console-probe.patch",
+    "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+    "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+    "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+    "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789"
+  },
+  "machine": {
+    "model": "800XL",
+    "cpu": "65C816",
+    "clock_multiplier": 8,
+    "memory": "64K",
+    "high_banks": 15,
+    "video": "PAL",
+    "basic": false,
+    "dli": false,
+    "shadow_rom": true
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "static_upper_delta_from_p1": 0,
+  "upper_process_table_bytes": 1028,
+  "reused_reservations": {
+    "process_row_bytes": 19,
+    "dos_context_bytes": 2,
+    "console_route_bytes": 1
+  },
+  "upper_heap_requests": {
+    "file_wrapper": 116,
+    "shared_file_backing": 94,
+    "lock_prefix": 116,
+    "lock_trailer": "name length + 3",
+    "nil_raw_wrapper": 16,
+    "con_wrapper": 20,
+    "cooked_session": 402,
+    "dos_context": 88,
+    "foreground_scope": 48
+  },
+  "scope": [
+    "Distinct inherited handles, alias preservation and independent DOS contexts/reply ports",
+    "Shared file position, retained directory cursor/name and parent-first/child-first close",
+    "Shared CON buffered line/EOF, busy-read/last-close refusal, RAW and NIL inheritance",
+    "Eight live Tasks: parent, console, filesystem, SIO and four children; filesystem progresses while CON Read waits",
+    "Transactional rollback at each wrapper allocation and child context, port, signal, scope and handoff failure",
+    "Foreground transfer with redirected Input/Output and a separately retained CON binding",
+    "Exact cancellation/WaitIO collection before scope restoration and final DOS-object cleanup",
+    "Injected old-route Return after the capture clear snapshot; retired input and stale breaks cannot reach the next owner",
+    "Automatic closure of inherited and newly opened DOS files/streams/locks",
+    "Rejected removal of live/uncollected parents and a running managed child",
+    "Failed restoration/final close retains the Process lease, arguments, DOS context/list and foreground/device ownership",
+    "Guarded retirement, double collection, repeated slot reuse, heap/signal/mount baseline restoration",
+    "Stack/DP guards, native return flags and OS vectors/memory reservation restoration"
+  ],
+  "deferred": [
+    "Complete raw/optimized-by-kernel-bank release matrix",
+    "Broader filesystem cancellation, transport/sector and console-window matrices",
+    "Full compiler qualification",
+    "o65 loading and shell external-command dispatch"
+  ],
+  "cases": [
+    {
+      "mode": "opt",
+      "kernel_bank": 1,
+      "artifact": "build/development/process-p23/opt/results.json",
+      "sha256": "a4e62be60c77b6c82d61059afd32373a1294c81b0f1780dfffb21843cbe77917",
+      "xex_sha256": "cde542fde52df37e9d0d1f12154b73288e7f00e070f251511be12a022630996f",
+      "fixture_sha256": "4ffd4cb8f28e4dde69fe763146c7bb8d9e018575599e1aaed3eed24b1fa92509",
+      "fixture_overrides": {
+        "dosinherit": "c17e2cbb8b764df4db13f9741837e04ba4bfe452c83d49e052cc7934c0037a95",
+        "dosclient": "d785a6e2421a4d0c4e562f77530f6d794874c01a9a2557933cfbf937f4e2690d",
+        "portcore": "ac336896bf51dd52dd70b3de6d8ddb9ac3517bd385f7d0a7cf874a9180273a63",
+        "dosbreak": "e9a8bdf73f0aba318676df81a815e786d580c7268bd7722edc6c2342d0867ca8",
+        "consoleforeground": "928c309ef8997df610e49f0ff451b7c4ee3ebd1ae27304d38e5de4bf01ded8a6",
+        "dosraw": "cc45072705218551794ce39fade3ac10daa0560cad294e02b15fbe7f26b7d509"
+      },
+      "bank_zero": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      },
+      "scenarios": [
+        {
+          "name": "inheritance-capacity-foreground",
+          "variant": 0,
+          "status": 0,
+          "assertions": 375,
+          "created": 25,
+          "native_nmi_count": 518,
+          "native_irq_count": 11534,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 206,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 321,
+            "untouched_from_base": 1215,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "remove-live-parent",
+          "variant": 1,
+          "status": 4,
+          "assertions": 8,
+          "created": 4,
+          "native_nmi_count": 17,
+          "native_irq_count": 149,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 238,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 303,
+            "untouched_from_base": 1233,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "remove-uncollected-parent",
+          "variant": 2,
+          "status": 4,
+          "assertions": 9,
+          "created": 4,
+          "native_nmi_count": 19,
+          "native_irq_count": 149,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 238,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 303,
+            "untouched_from_base": 1233,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "remove-running-child",
+          "variant": 3,
+          "status": 4,
+          "assertions": 9,
+          "created": 4,
+          "native_nmi_count": 18,
+          "native_irq_count": 149,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 238,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 303,
+            "untouched_from_base": 1233,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "restore-failure",
+          "variant": 4,
+          "status": 65428,
+          "assertions": 97,
+          "created": 13,
+          "native_nmi_count": 144,
+          "native_irq_count": 2991,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 208,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 321,
+            "untouched_from_base": 1215,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "final-close-failure",
+          "variant": 5,
+          "status": 65428,
+          "assertions": 10,
+          "created": 4,
+          "native_nmi_count": 20,
+          "native_irq_count": 149,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 238,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 303,
+            "untouched_from_base": 1233,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    {
+      "mode": "raw",
+      "kernel_bank": 3,
+      "artifact": "build/development/process-p23/raw-bank3/results.json",
+      "sha256": "38504f3ca95996cde4a995996bcbdf9d1742591fba73e22ecb397f1c633940e6",
+      "xex_sha256": "48b36b35380f982193609a1328d5fe4412b559f0840b71f203716bad8ad90fdc",
+      "fixture_sha256": "4ffd4cb8f28e4dde69fe763146c7bb8d9e018575599e1aaed3eed24b1fa92509",
+      "fixture_overrides": {
+        "dosinherit": "c17e2cbb8b764df4db13f9741837e04ba4bfe452c83d49e052cc7934c0037a95",
+        "dosclient": "d785a6e2421a4d0c4e562f77530f6d794874c01a9a2557933cfbf937f4e2690d",
+        "portcore": "ac336896bf51dd52dd70b3de6d8ddb9ac3517bd385f7d0a7cf874a9180273a63",
+        "dosbreak": "e9a8bdf73f0aba318676df81a815e786d580c7268bd7722edc6c2342d0867ca8",
+        "consoleforeground": "b2eebdb46831598193f91c0ea564f8e0bb8085ec93f9da3921287b13718e9d66",
+        "dosraw": "7f3532cb7caf96b30ae4fe95866ce6d579ae5607de29ec3bfe0ef30f5e5bac41"
+      },
+      "bank_zero": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      },
+      "scenarios": [
+        {
+          "name": "inheritance-capacity-foreground",
+          "variant": 0,
+          "status": 0,
+          "assertions": 375,
+          "created": 25,
+          "native_nmi_count": 562,
+          "native_irq_count": 11540,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 206,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 337,
+            "untouched_from_base": 1199,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "remove-live-parent",
+          "variant": 1,
+          "status": 4,
+          "assertions": 8,
+          "created": 4,
+          "native_nmi_count": 19,
+          "native_irq_count": 150,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 238,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 325,
+            "untouched_from_base": 1211,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "remove-uncollected-parent",
+          "variant": 2,
+          "status": 4,
+          "assertions": 9,
+          "created": 4,
+          "native_nmi_count": 21,
+          "native_irq_count": 150,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 238,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 325,
+            "untouched_from_base": 1211,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "remove-running-child",
+          "variant": 3,
+          "status": 4,
+          "assertions": 9,
+          "created": 4,
+          "native_nmi_count": 20,
+          "native_irq_count": 150,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 238,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 325,
+            "untouched_from_base": 1211,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "restore-failure",
+          "variant": 4,
+          "status": 65428,
+          "assertions": 97,
+          "created": 13,
+          "native_nmi_count": 158,
+          "native_irq_count": 2997,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 202,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 337,
+            "untouched_from_base": 1199,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "final-close-failure",
+          "variant": 5,
+          "status": 65428,
+          "assertions": 10,
+          "created": 4,
+          "native_nmi_count": 23,
+          "native_irq_count": 150,
+          "guards": "intact",
+          "minimum_untouched_stack_above_interrupt_floor": 238,
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 325,
+            "untouched_from_base": 1211,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    }
+  ],
+  "inputs": {
+    "abi/process.json": "bedeedc11be76ed093df68c5e2d7a43cc348c69da44d7a59a764500415e8d8db",
+    "abi/dos.json": "769c91fceeb35014bba176d6eda32a72e6b62c77862886e3f5414bb404164ace",
+    "abi/console.json": "2a578957e8d3891ee7c1d9ce3ff70643b5565f2651d995a596ece226823cc56a",
+    "lib/process.act": "3ecaaa90d12b373d7f405f512973872c29c189da422cf92c82bb1b298f66c717",
+    "lib/processstate.act": "bcae7dc72b303885d328ed9de9a7d5c32e637e20671ecf9414d94fe83c31c86b",
+    "lib/process-types.inc": "880683d4c570e1c845c2d9ec2d47703650a7018f4dc800148d7ccb868f8a682c",
+    "lib/task-process.inc": "cc9485982e686c59834f72660f0bbbebd7c2148990884387bdfeac9beeb02d53",
+    "lib/dosprocess.act": "89feae51cbff9a5f17fd7bb1f561d8a7a0c5a877f2d80823fae441a1e3eebf38",
+    "lib/dosinherit.act": "5c9ace9b8d42904ac0ace2b36cab9bdeff3928cd35a5adb91bc3257e8799d667",
+    "lib/fsfiles.act": "15402b416fb472a43781aef8fc11820a591671db1af2e960e5d4ac5e13f81eff",
+    "lib/fstypes.act": "d9174c9079165050b1fa87a0af9fecd1fa3ac84c10b25937dcf773c8fb6b5d84",
+    "lib/fslocks.act": "d60269230298b0e17e2f5b980c76ef27a092eaefb8ed5a684e15a262bf0a7783",
+    "lib/fsregistry.act": "c81dc2d66a47cf4c39c965c42c0b9b8ac9e0ace2900138ee816f0b5270dc8b84",
+    "lib/fshandler.act": "b0c1ebb360e5f3ce74b7d9de6c8cfb7d3c1bdc60e4eea4af5adfa31e1809290d",
+    "lib/fspacket.act": "7adf9fcb13b2daec86e9f7410123a90679611213c5867c26de81f9b06336d744",
+    "lib/fsabort.act": "e8e1e52a6f841b9ee2b4121824f42e5194bb0f4755805f85faf5fb22e248be06",
+    "lib/dosclient.act": "5a7ce152d63f9ec5e34ce690f3cf6b153f48552a8c2c3b7f39dd9703631b6b5e",
+    "lib/doscalls.act": "5e3cf6019f89c1d6cc00c585544fe18e8f21154722ecd9d5cf83533fe3088fbf",
+    "lib/dosbreak.act": "266cf2bfba77efb23748fa68d74041726a3e72b2a3c8f6a94e9ae8ed6d207496",
+    "lib/dosraw.act": "8401725a5b0e5876d845a7fbb7295fc239550897647055d8eea0b105d027a68f",
+    "lib/doscooked.act": "073168627f7d011176bb405c25112a9c6e94826d206a064a5b65597c22a64be3",
+    "lib/cookedline.act": "3c87fb9de13326c2ef88f317c6e7a3956e3f6cef9d53408f0932f3b46fd24455",
+    "lib/dos-cooked-types.inc": "8632ee0c078c972b89d1596f8486784b2cd0ab1c384ac0e871c6ee53c5b53cbc",
+    "lib/consoleforeground.act": "7b2e5e59d5ec67e1225b13b81571718def1bd17e13fe55575cbd78402dfbdfd0",
+    "lib/consoletypes.act": "f6aff2c28a882c15bf62712d6929c23953f31985a1a41163fb1aa4c4bdec491f",
+    "platform/altirraos/console-layout.inc": "b723f2be6426fa97a176123305f57e5eda7d14903ce9eb5f675df64d11add2a7",
+    "tools/generate_process.py": "9ecd198e33169090aa368e3d5e5e134c19418f218dc678390d6562bf5b317421",
+    "tools/generate_tasks.py": "2c51b92d446f0df46fad2ac1ce3af7f674ae37958fc334f95d275c49baa14bf1",
+    "tools/native_program.py": "17d1fb0a95687f8178cd75e169c18bfac0e24250a0259d01382a4cba0160194f",
+    "tools/test_process_inheritance.py": "909776af20cbd6724552bece3f1939a5d935cc2f80bbed651b62ebf65e9181ef",
+    "tests/programs/process_inheritance.act": "4ffd4cb8f28e4dde69fe763146c7bb8d9e018575599e1aaed3eed24b1fa92509",
+    "tests/programs/processprobe.act": "5a713ff09fa6a902ed563b5e5b21edbf84df72d97b8bc3ed4348196042cebd29"
+  },
+  "native_scenarios": 12,
+  "assertions": 1016
+}

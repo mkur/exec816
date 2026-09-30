@@ -1,0 +1,194 @@
+; SDFS path walking uses the established Exec 8.3 matching policy.
+MODULE SDFSNAME
+USE FSSTATUS
+USE FSBTYPES
+USE SDFSTYPES
+USE SDFS
+USE SDFSDIR
+USE FS83
+INCLUDE "../dos/dos-types.inc"
+
+; Enter a selected directory while retaining ancestry for cycle protection.
+PUBLIC BYTE FUNC Descend(FSBTYPES.Workspace POINTER work)
+  BYTE index
+
+  IF (work.entry.flags & FSBTYPES.DIR)=0 THEN
+    work.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF work.depth=16 THEN
+    work.error=ERROR_TOO_MANY_LEVELS
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF work.entry.parent<>work.ancestors(work.depth) THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  FOR index=0 TO work.depth DO
+    IF work.entry.start=work.ancestors(index) THEN
+      work.error=ERROR_DISK_NOT_VALIDATED
+      RETURN(FSSTATUS.ERROR)
+    FI
+  OD
+
+  work.depth==+1
+  work.ancestors(work.depth)=work.entry.start
+  work.directory=work.entry.start
+
+RETURN(FSSTATUS.DONE)
+
+; Require usable directory ancestry before resolving a relative path.
+PUBLIC LONGINT FUNC ValidateBase(FSBTYPES.Workspace POINTER work FSBTYPES.LockState
+    POINTER state)
+  BYTE index,other
+
+  IF state.depth>16 OR state.ancestors(0)<>work.volume.root
+      OR state.entry.start<>state.ancestors(state.depth) THEN
+    RETURN(ERROR_INVALID_LOCK)
+  FI
+
+  IF state.depth=0 THEN
+    IF state.entry.parent<>0 THEN
+      RETURN(ERROR_INVALID_LOCK)
+    FI
+  ELSEIF state.entry.parent<>state.ancestors(state.depth-1) THEN
+    RETURN(ERROR_INVALID_LOCK)
+  FI
+
+  FOR index=0 TO state.depth DO
+    IF SDFS.Allowed(work.volume,state.ancestors(index))=0 THEN
+      RETURN(ERROR_INVALID_LOCK)
+    FI
+
+    other=0
+    WHILE other<index DO
+      IF state.ancestors(other)=state.ancestors(index) THEN
+        RETURN(ERROR_INVALID_LOCK)
+      FI
+
+      other==+1
+    OD
+  OD
+
+RETURN(0)
+
+; Validate the path and initialize a fresh component lookup.
+PUBLIC BYTE FUNC StartResolve(FSBTYPES.Workspace POINTER work BYTE POINTER path)
+  BYTE index
+
+  IF FS83.StartResolve(work,path)=0 THEN
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF work.pathLength=0 THEN
+    work.entry.key=0
+    work.entry.start=work.volume.root
+    work.entry.parent=0
+    work.entry.flags=FSBTYPES.DIR
+    work.entry.count=0
+    work.entry.length=0
+    work.entry.known=0
+    work.entry.days=0
+    work.entry.minutes=0
+    work.entry.ticks=0
+    FOR index=0 TO 10 DO
+      work.entry.name(index)=32
+    OD
+
+    RETURN(FSSTATUS.DONE)
+  FI
+
+RETURN(FSSTATUS.NEXT_COMPONENT)
+
+; Start searching the current directory for the next component.
+PUBLIC BYTE FUNC ResolveComponent(FSBTYPES.Workspace POINTER work)
+  SDFSTYPES.BackendState POINTER state
+  BYTE status
+
+  IF FS83.Component(work)=0 THEN
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  state=SDFS.GetState(work)
+  state.resolvePhase=0
+  work.index=0
+  work.matchCount=0
+  work.exactFound=0
+  status=SDFSDIR.BeginEntry(work,work.directory,0)
+  IF status=FSSTATUS.END_DIR THEN
+    RETURN(Choose(work))
+  FI
+
+RETURN(status)
+
+; Finish resolution or descend before processing another component.
+BYTE FUNC Done(FSBTYPES.Workspace POINTER work)
+
+  IF (work.entry.flags & FSBTYPES.DIR)<>0 THEN
+    IF Descend(work)=0 THEN
+      RETURN(FSSTATUS.ERROR)
+    FI
+  ELSEIF work.pathOffset<>work.pathLength THEN
+    work.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF work.pathOffset=work.pathLength THEN
+    RETURN(FSSTATUS.DONE)
+  FI
+
+RETURN(FSSTATUS.NEXT_COMPONENT)
+
+; Select the unique matching entry or publish the lookup error.
+BYTE FUNC Choose(FSBTYPES.Workspace POINTER work)
+  SDFSTYPES.BackendState POINTER state
+
+  IF FS83.Choose(work)=0 THEN
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF (work.entry.flags & FSBTYPES.DIR)=0 THEN
+    RETURN(Done(work))
+  FI
+
+  state=SDFS.GetState(work)
+  state.resolvePhase=1
+RETURN(SDFSDIR.BeginHeader(work,work.entry.start))
+
+; Resume a directory search after its required sector becomes available.
+PUBLIC BYTE FUNC ResolveStep(FSBTYPES.Workspace POINTER work)
+  SDFSTYPES.BackendState POINTER state
+  BYTE status
+
+  state=SDFS.GetState(work)
+  status=SDFSDIR.BufferedEntry(work)
+  IF status=FSSTATUS.ERROR OR status=FSSTATUS.NEED_IO
+      OR status=FSSTATUS.MORE THEN
+    RETURN(status)
+  FI
+
+  IF state.resolvePhase=1 THEN
+    work.entry.length=state.directory.entry.length
+    work.entry.known=1
+    RETURN(Done(work))
+  FI
+
+  IF status=FSSTATUS.END_DIR THEN
+    RETURN(Choose(work))
+  FI
+
+  IF status=FSSTATUS.DONE THEN
+    FS83.SelectMatch(work)
+  FI
+
+  status=SDFSDIR.BeginEntry(work,work.directory,work.index+1)
+  IF status=FSSTATUS.END_DIR THEN
+    RETURN(Choose(work))
+  FI
+
+RETURN(status)
+
+ENDMODULE

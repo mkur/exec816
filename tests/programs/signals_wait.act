@@ -1,0 +1,82 @@
+MODULE SIGNALWAIT
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+
+EXEC.Task child
+EXEC.Task POINTER parent
+CARD ARRAY checks(14)
+LONGCARD ARRAY values(8)
+BYTE childReturned
+PROC POINTER missing()
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC ChildEntry()
+
+  checks(6)=CARD(parent.tc_State=EXEC.TS_WAIT)
+  checks(7)=CARD(parent.tc_TDNestCnt)
+  EXEC.Forbid()
+  EXEC.Signal(parent,LONGCARD($80000000))
+  checks(8)=CARD(parent.tc_State=EXEC.TS_READY)
+  EXEC.Signal(parent,LONGCARD($40000000))
+  EXEC.RemTask(EXEC.Task POINTER(0))
+  childReturned=1
+
+RETURN
+
+; Return already pending signals without losing unrelated bits.
+PROC Immediate()
+  BYTE number
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  number=EXEC.AllocSignal(31)
+  number=EXEC.AllocSignal(30)
+  EXEC.Signal(parent,LONGCARD($80000003))
+  EXEC.Signal(parent,LONGCARD($80000003))
+  values(0)=EXEC.Wait(LONGCARD($80000001))
+  values(1)=EXEC.SetSignal(0,0)
+  values(2)=EXEC.Wait(2)
+  values(3)=EXEC.SetSignal(0,0)
+  EXEC.Forbid()
+  EXEC.Forbid()
+  EXEC.Signal(parent,1)
+  values(4)=EXEC.Wait(1)
+  checks(0)=CARD(parent.tc_TDNestCnt)
+  EXEC.Permit()
+  checks(1)=CARD(parent.tc_TDNestCnt)
+
+RETURN
+
+; Wake a sleeping consumer only for signals included in its requested mask.
+PROC Blocking()
+  EXEC.Task POINTER result
+
+  PrepareTask(@child,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  result=EXEC.AddTask(@child,@ChildEntry,missing)
+  checks(2)=CARD(result=@child)
+  checks(3)=CARD(parent.tc_TDNestCnt)
+  values(5)=EXEC.Wait(LONGCARD($c0000000))
+  checks(4)=CARD(parent.tc_TDNestCnt)
+  checks(5)=CARD(childReturned)
+  values(6)=EXEC.SetSignal(0,0)
+  checks(9)=CARD(parent.tc_SigWait=0)
+  EXEC.Permit()
+  checks(10)=CARD(parent.tc_TDNestCnt)
+  checks(11)=CARD(child.tc_State=EXEC.TS_REMOVED)
+  checks(12)=CARD(child.tc_ExecPrivate=0)
+  EXEC.Signal(parent,0)
+  values(7)=EXEC.SetSignal(0,0)
+  checks(13)=CARD(EXEC.FindTask(BYTE POINTER(0))=parent)
+
+RETURN
+
+; Exercise immediate and blocking signal waits.
+PROC Main()
+
+  Immediate()
+  Blocking()
+
+RETURN
+
+ENDMODULE

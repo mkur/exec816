@@ -1,0 +1,238 @@
+; Public DOS integration, mixed-volume identity and repeated lifetime checks.
+MODULE SDFSDOSTEST
+USE EXEC
+USE HEAPCORE
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE FSBOOT
+USE FSMANAGER
+USE PROCESS
+USE FSTYPES
+USE FSBTYPES
+USE FSINFO
+USE FSINSPECT
+USE SDFSTYPES
+CONST WORK_BYTES=SIZEOF(FSBTYPES.Workspace), CURSOR_BYTES=SIZEOF(FSBTYPES.Cursor)
+CONST BACKING_BYTES=SIZEOF(FSTYPES.FileBacking), OBJECT_BYTES=SIZEOF(FSTYPES.Object)
+CONST SERVICE_BYTES=SIZEOF(FSTYPES.Service),
+    SDFS_BYTES=SIZEOF(SDFSTYPES.BackendState)
+CONST FILE_BYTES=SIZEOF(FSTYPES.FileObject), LOCK_BYTES=SIZEOF(FSTYPES.LockObject)
+CONST LOCK_STATE_BYTES=SIZEOF(FSBTYPES.LockState)
+CARD ARRAY storageSizes=[WORK_BYTES CURSOR_BYTES BACKING_BYTES OBJECT_BYTES
+    SERVICE_BYTES SDFS_BYTES FILE_BYTES LOCK_BYTES LOCK_STATE_BYTES]
+CARD checks
+BYTE finished
+LONGCARD before,warm
+DOS.FileHandle POINTER handle,second
+DOS.FileLock POINTER root,sub,other,old
+DOS.FileInfoBlock POINTER info,otherInfo
+BYTE POINTER output
+DOSCORE.DosSlot POINTER owner
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f600+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+BYTE POINTER FUNC Name(CARD offset)
+
+RETURN(BYTE POINTER(ADDRESS($d1000)+SIZE(offset)))
+
+PROC Bytes(LONGINT start,count BYTE seed)
+  LONGINT index
+
+  FOR index=0 TO count-1 DO
+    IF output(SIZE(index))<>(BYTE(start+index) XOR seed) THEN
+      Require(0)
+    FI
+  OD
+
+  Require(1)
+
+RETURN
+
+PROC ReadFile(CARD path LONGINT size BYTE seed)
+
+  handle=DOS.Open(Name(path),DOS.MODE_OLDFILE)
+  Require(handle<>DOS.FileHandle POINTER(0))
+  Require(DOS.Seek(handle,0,DOS.OFFSET_END)=0)
+  Require(DOS.Seek(handle,0,DOS.OFFSET_BEGINNING)=size)
+  Require(DOS.Read(handle,output,129)=129)
+  Bytes(0,129,seed)
+  Require(DOS.Seek(handle,-3,DOS.OFFSET_END)=129)
+  Require(DOS.Read(handle,output,8)=3)
+  Bytes(size-3,3,seed)
+  Require(DOS.Read(handle,output,1)=0 AND DOS.IoErr()=0)
+  Require(DOS.Close(handle)<>0)
+
+RETURN
+
+; Check SpartaDOS names through public DOS locks and canonical-name results.
+PROC Names()
+
+  root=DOS.Lock(Name(0),DOS.SHARED_LOCK)
+  Require(root<>DOS.FileLock POINTER(0))
+  sub=DOS.Lock(Name(32),DOS.SHARED_LOCK)
+  Require(sub<>DOS.FileLock POINTER(0))
+  Require(DOS.Examine(root,info)<>0 AND info.fib_EntryType=DOS.ST_ROOT
+      AND info.fib_Size=0 AND info.fib_NumBlocks>0)
+  old=DOS.CurrentDir(sub)
+  Require(old=DOS.FileLock POINTER(0) AND DOS.IoErr()=0)
+  ReadFile(64,259,34)
+  other=DOS.Lock(Name(96),DOS.SHARED_LOCK)
+  Require(other<>DOS.FileLock POINTER(0))
+  Require(DOS.NameFromLock(other,output,256)<>0)
+  Require(output(0)=68 AND output(1)=49 AND output(2)=58 AND output(3)=84
+      AND output(8)=0)
+  DOS.UnLock(other)
+  other=DOS.Lock(Name(128),DOS.SHARED_LOCK)
+  Require(other<>DOS.FileLock POINTER(0))
+  Require(DOS.NameFromLock(other,output,256)<>0 AND output(3)=0)
+  DOS.UnLock(other)
+  old=DOS.CurrentDir(DOS.FileLock POINTER(0))
+  Require(old=sub)
+  DOS.UnLock(old)
+
+RETURN
+
+; Enumerate metadata through caller-owned information blocks.
+PROC Entries()
+  CARD count
+  FSINFO.Enumeration POINTER state
+
+  other=DOS.Lock(Name(160),DOS.SHARED_LOCK)
+  Require(other<>DOS.FileLock POINTER(0))
+  Require(DOS.Examine(other,info)<>0 AND DOS.Examine(other,otherInfo)<>0)
+  Require(DOS.ExNext(other,otherInfo)<>0 AND otherInfo.fib_FileName(0)=70)
+  state=FSINFO.EnumerationState(FSINFO.FileInfoBlock POINTER(info))
+  state.next=254
+  Require(DOS.ExNext(other,info)<>0 AND info.fib_DiskKey=255 AND info.fib_Size=3
+      AND info.fib_NumBlocks=2)
+  Require(DOS.ExNext(other,info)<>0 AND info.fib_DiskKey=256 AND info.fib_Size=4)
+  state.next=299
+  Require(DOS.ExNext(other,info)<>0 AND info.fib_DiskKey=300 AND info.fib_Size=4)
+  Require(DOS.ExNext(other,info)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  Require(DOS.ExNext(other,otherInfo)<>0 AND otherInfo.fib_DiskKey=2)
+  Require(DOS.ExNext(root,otherInfo)=0 AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  state=FSINFO.EnumerationState(FSINFO.FileInfoBlock POINTER(otherInfo))
+  state.next=LONGCARD($ffffffff)
+  Require(DOS.ExNext(other,otherInfo)=0 AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  DOS.UnLock(other)
+
+RETURN
+
+; Reuse one FIB across files and directories from both backends. Publication
+; must consume the measured entry, including a length discovered by MyDOS.
+PROC Metadata()
+  DOS.FileLock POINTER item
+
+  item=DOS.Lock(Name(192),DOS.SHARED_LOCK)
+  Require(item<>NULL)
+  Require(DOS.Examine(item,info)<>0 AND info.fib_Size=777
+      AND info.fib_NumBlocks>0 AND info.fib_EntryType=DOS.ST_FILE)
+  DOS.UnLock(item)
+  item=DOS.Lock(Name(224),DOS.SHARED_LOCK)
+  Require(item<>NULL)
+  Require(DOS.Examine(item,info)<>0 AND info.fib_Size=777
+      AND info.fib_NumBlocks=7 AND info.fib_EntryType=DOS.ST_FILE)
+  DOS.UnLock(item)
+  item=DOS.Lock(BYTE POINTER(c"D2:"),DOS.SHARED_LOCK)
+  Require(item<>NULL)
+  Require(DOS.Examine(item,info)<>0 AND info.fib_Size=0
+      AND info.fib_NumBlocks=8 AND info.fib_EntryType=DOS.ST_ROOT)
+  DOS.UnLock(item)
+
+RETURN
+
+PROC Mixed()
+
+  ReadFile(192,777,83)
+  ReadFile(224,777,83)
+  ReadFile(256,70003,129)
+  Metadata()
+  handle=DOS.Open(Name(192),DOS.MODE_NEWFILE)
+  Require(handle=DOS.FileHandle POINTER(0) AND DOS.IoErr()<>0)
+
+RETURN
+
+LONGINT FUNC Child()
+  DOS.FileHandle POINTER inherited
+
+  inherited=DOS.Input()
+  Require(inherited<>handle AND inherited<>DOS.FileHandle POINTER(0))
+  Require(DOS.Read(inherited,output,4)=4)
+  Bytes(4,4,83)
+  DOS.SetIoErr(0)
+
+RETURN(42)
+
+; Use a retained SpartaDOS file or directory from a child process context.
+PROC Inherit()
+  DOS.FileHandle POINTER ignored
+  PROCESS.Result result
+  LONGCARD identity
+
+  handle=DOS.Open(Name(192),DOS.MODE_OLDFILE)
+  Require(handle<>DOS.FileHandle POINTER(0))
+  Require(DOS.Read(handle,output,4)=4)
+  ignored=DOS.SelectInput(handle)
+  identity=PROCESS.Start(@Child,BYTE POINTER(0),0)
+  Require(identity<>0)
+  Require(PROCESS.Wait(identity,@result)<>0 AND result.primary=42
+      AND result.secondary=0)
+  Require(DOS.Seek(handle,0,DOS.OFFSET_CURRENT)=8)
+  Require(DOS.Write(handle,output,1)=-1
+      AND DOS.IoErr()=DOS.ERROR_DISK_WRITE_PROTECTED)
+  Require(DOS.Close(handle)<>0)
+
+RETURN
+
+; Require mount and file ownership to settle across repeated service use.
+PROC Lifetime()
+  BYTE repeat
+  FSTYPES.Object POINTER item
+  FSINSPECT.Info POINTER rows
+
+  warm=EXEC.AvailMem(0)
+  FOR repeat=0 TO 2 DO
+    ReadFile(192,777,83)
+    Require(EXEC.AvailMem(0)=warm)
+  OD
+
+  item=FSTYPES.Object POINTER(root)
+  rows=FSINSPECT.Info POINTER($d5000)
+  Require(FSINSPECT.Snapshot(rows,8)=2 AND rows(0).format=2 AND rows(1).format=1
+      AND rows(0).readOnly=1)
+  Require(FSMANAGER.Unmount(0)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  DOS.UnLock(root)
+  Require(FSMANAGER.Unmount(0)<>0 AND FSMANAGER.Mount(0)<>0)
+  ReadFile(192,777,83)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+; Exercise public DOS operations on SpartaDOS and mixed-volume identities.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  output=BYTE POINTER($d2000)
+  info=DOS.FileInfoBlock POINTER($d3000)
+  otherInfo=DOS.FileInfoBlock POINTER($d3200)
+  Names()
+  Mixed()
+  Entries()
+  Inherit()
+  Lifetime()
+
+RETURN
+
+ENDMODULE

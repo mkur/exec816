@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-24",
+  "slice": "P1",
+  "tier": "development",
+  "status": "pass",
+  "baseline_revision": "622b13918f94d7a4b68cb75544246090d243316a",
+  "compiler_qualification": "deferred by request",
+  "release_qualification": "pending",
+  "host_tests": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "passed": 177
+  },
+  "generated_checks": [
+    "tools/generate_process.py --check",
+    "tools/generate_tasks.py --check"
+  ],
+  "platform_pin": "toolchain/altirra-shell-console.json",
+  "platform_pin_sha256": "310ff2eeed7966bb76474164b23c601e85e9d678ea8b4c5be903e381a81b0f4d",
+  "rom": {
+    "name": "AltirraOS 3.44 for 65C816",
+    "bytes": 16384,
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+    "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+    "cop0_after_xce": 50931
+  },
+  "emulator": {
+    "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+    "platform": "macOS arm64",
+    "sha256": "6831df8ce90c5112b26250c03aeb4b9fa729961f7048eee407ae16a3b8f59802",
+    "source_patch": "toolchain/patches/altirra-console-probe.patch",
+    "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+    "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+    "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+    "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789"
+  },
+  "machine": {
+    "model": "800XL",
+    "cpu": "65C816",
+    "clock_multiplier": 8,
+    "memory": "64K",
+    "high_banks": 15,
+    "video": "PAL",
+    "basic": false,
+    "dli": false,
+    "shadow_rom": true
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "upper_process_table_bytes": 1028,
+  "upper_console_alignment_delta": 12,
+  "scope": [
+    "255-byte copied arguments and 32-bit results",
+    "fresh child DOS contexts and normal finalization",
+    "260 repeated lifetimes and all eight slots occupied",
+    "preparing/retired slot leases exclude ordinary AddTask",
+    "argument/context/port/signal/admission failure rollback",
+    "wait before and after retirement; stale and foreign identities",
+    "kernel removal acknowledgment before resource reuse",
+    "nonzero-PBR command/callbacks and native entry/return flags",
+    "stack/DP guards, heap/bank ownership and OS restoration",
+    "existing shell and service admission smoke"
+  ],
+  "deferred": [
+    "P2 inheritance",
+    "P3 automatic DOS-object teardown and adversarial removal/cleanup matrix",
+    "alternate kernel placement and combined service qualification",
+    "compiler qualification",
+    "o65 loading"
+  ],
+  "cases": [
+    {
+      "case": "raw",
+      "artifact": "build/development/process-p1/raw/results.json",
+      "sha256": "f5f006c3a167fb6c14ef7dbc32d584fd97c1bc2a35f80aef1e498938a86765ac",
+      "xex_sha256": "e556facf24e4221a96429baf46cf7514fd063182d3d0d3804c6d4fffae8b15b9",
+      "compiler_revision": "32af3e2bbe4a48e85704b57370254b1846daa458",
+      "compiler_override": false,
+      "guards": "intact",
+      "created": 273,
+      "native_nmi_count": 801,
+      "assertions": 7841,
+      "fixture_sha256": "117a5496cb95df449e81dae529392049d09290f3662f305216ff72b257c0f071",
+      "fixture_overrides": {
+        "process.act": "37154560b40841746fa20efef3aca898d5d640d87e552ad0370603f3a0f71d7d",
+        "dosclient.act": "a67f73d8cc0eb20bbd3dd75ee21ef573386be3eadc16a4e9f1d2bd654258e93c",
+        "portcore.act": "a7bf96a9829c680f6def2b42da065e3bfbfbf7c880deddcc16e1dc9ad6802c44"
+      },
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 284,
+        "untouched_from_base": 1252,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 202,
+          "untouched_above_floor": 1078
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 151,
+          "untouched_above_floor": 617
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 148,
+          "untouched_above_floor": 620
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 148,
+          "untouched_above_floor": 620
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 148,
+          "untouched_above_floor": 620
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 148,
+          "untouched_above_floor": 620
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 148,
+          "untouched_above_floor": 620
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 148,
+          "untouched_above_floor": 620
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ]
+    },
+    {
+      "case": "opt",
+      "artifact": "build/development/process-p1/opt/results.json",
+      "sha256": "db4528f466e8668ad5ee973979fd88004a44b595dfbf3c43992ccacf465e6e57",
+      "xex_sha256": "0e1d9bd2b60efae22c7c3247e8de6c7e216cd30a40762c6f01dad73ab047d341",
+      "compiler_revision": "32af3e2bbe4a48e85704b57370254b1846daa458",
+      "compiler_override": false,
+      "guards": "intact",
+      "created": 273,
+      "native_nmi_count": 710,
+      "assertions": 7841,
+      "fixture_sha256": "117a5496cb95df449e81dae529392049d09290f3662f305216ff72b257c0f071",
+      "fixture_overrides": {
+        "process.act": "37154560b40841746fa20efef3aca898d5d640d87e552ad0370603f3a0f71d7d",
+        "dosclient.act": "a67f73d8cc0eb20bbd3dd75ee21ef573386be3eadc16a4e9f1d2bd654258e93c",
+        "portcore.act": "a7bf96a9829c680f6def2b42da065e3bfbfbf7c880deddcc16e1dc9ad6802c44"
+      },
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 282,
+        "untouched_from_base": 1254,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 183,
+          "untouched_above_floor": 1097
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 134,
+          "untouched_above_floor": 634
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 132,
+          "untouched_above_floor": 636
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 132,
+          "untouched_above_floor": 636
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 132,
+          "untouched_above_floor": 636
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 132,
+          "untouched_above_floor": 636
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 132,
+          "untouched_above_floor": 636
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 132,
+          "untouched_above_floor": 636
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ]
+    },
+    {
+      "case": "shell-smoke",
+      "artifact": "build/development/process-p1/shell-smoke/results.json",
+      "sha256": "e12f5c34ebc8b5ab7d599f00764d6431b9a727d59d80789803daff9529dc1086",
+      "xex_sha256": "4296da1a52b75c6c3a6868974224751403ebd6009f6e1554f11ed66b45a3cc15",
+      "compiler_revision": "32af3e2bbe4a48e85704b57370254b1846daa458",
+      "compiler_override": false,
+      "guards": "intact",
+      "created": 3,
+      "native_nmi_count": 167
+    }
+  ],
+  "inputs": {
+    "abi/process.json": "8398ecf2821f03fbd38d8eb795be67e252c2574244ebd6e009a3ea07d83c7880",
+    "lib/process.act": "dc5c46781554334c8d65b370a68f233c7f9a3e5956c078334d596212146b4bb0",
+    "lib/processstate.act": "55bdbf4759ecf10d0e691be925d349c8cbb0fcaf050eca3f5f2e904f94c69f54",
+    "lib/process-types.inc": "f9075aa2010f705e721f7cde32a927253a799e8095a7b849c93b21be819503ed",
+    "lib/task-process.inc": "c8c9991d7f0ff8a1e7579fc8a0a08666453cd92ff44cad03bd8d073f5584a7f2",
+    "lib/taskpolicy.act": "ce7c1784a0d21b0fbee5e442201d20881c8c4e0a3fe38aa5194b19738dab478a",
+    "lib/task-dos.inc": "c89eb6554cdb77e6359f5803ee1ac406d01cfb60228ef6221326bfabe0495284",
+    "lib/task-sio.inc": "84eecba2dc734c4ebb7b2ce1d6c1cad4e3309fa05fb801140977bbd455409a07",
+    "lib/task-console.inc": "477c3207a75f82269f202fc0922d3e3bcd91b103397916a2d848418d01e7d96a",
+    "platform/altirraos/tasks.s": "7467e7a5ad8dc7c9e423be29a3164718ffbbd04825f122d266749df2395e53df",
+    "tools/generate_process.py": "5e83e4f76390b3e65e9b9d2a270f1e1b4b9438d4109e8e2b9b397b851eeceb5f",
+    "tools/generate_tasks.py": "d72283496822b7deede4b3d534df504991d6bd4b7e1dceab5cd4d0d30edd6f0c",
+    "tools/native_program.py": "06fae21bb2175921cdabd69c9bd4d6bc9698b34cf6eb5d4db7f12a11375eb1e3",
+    "tools/test_process_lifetime.py": "557c0d86c16b1837914e02e9461105f1996a206cbb6eae879a63d162f1a66f9c",
+    "tests/programs/process_lifetime.act": "117a5496cb95df449e81dae529392049d09290f3662f305216ff72b257c0f071",
+    "tests/programs/processcontrol.act": "e5dad9740677d8f97d7657bb953cfc4b36484547ee6e1236842461b5d0f100e3",
+    "tests/test_process_bindings.py": "688545447920e65c27d5ca9d5c4e9a7f790798f7ac7f241c2ad8d1e409a6d762"
+  }
+}

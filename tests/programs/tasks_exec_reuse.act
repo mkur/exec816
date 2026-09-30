@@ -1,0 +1,99 @@
+MODULE TASKREUSE
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+
+EXEC.Task reusable
+CARD iterations,ran,finalized,failures
+CARD ARRAY checks(8)
+PROC POINTER missing()
+
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC NeverRun()
+
+  ran==+1
+
+RETURN
+
+PROC NeverFinalize()
+
+  finalized==+1
+  EXEC.RemTask(EXEC.Task POINTER(0))
+
+RETURN
+
+PROC SelfRemove()
+
+  EXEC.Forbid()
+  EXEC.Forbid()
+  EXEC.RemTask(EXEC.Task POINTER(0))
+  failures==+1
+
+RETURN
+
+PROC Cycle(CARD count)
+  EXEC.Task POINTER result
+
+  EXEC.Forbid()
+  PrepareTask(@reusable,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  result=EXEC.AddTask(@reusable,@NeverRun,@NeverFinalize)
+  IF result<>@reusable THEN
+    failures==+1
+  FI
+
+  EXEC.RemTask(result)
+  IF reusable.tc_State<>EXEC.TS_REMOVED THEN
+    failures==+1
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
+; Keep prepared-stack identity tied to the Task incarnation that owns it.
+PROC PreparedStack()
+  BYTE POINTER bytes
+  CARD at
+  EXEC.Task POINTER result
+
+  PrepareTask(@reusable,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  reusable.tc_SPReg=$57de
+  bytes=BYTE POINTER($57df)
+  FOR at=0 TO 32 DO
+    bytes(at)=BYTE(at+17)
+  OD
+
+  result=EXEC.AddTask(@reusable,@SelfRemove,missing)
+  AwaitRemoval(result)
+  FOR at=0 TO 32 DO
+    IF bytes(at)<>BYTE(at+17) THEN
+      failures==+1
+    FI
+  OD
+
+  checks(0)=CARD(result=@reusable)
+  checks(1)=CARD(reusable.tc_State)
+  checks(2)=CARD(reusable.tc_TDNestCnt)
+
+RETURN
+
+; Exercise Task record reuse and prepared-stack lifetime.
+PROC Main()
+
+  iterations=0
+  WHILE iterations<260 DO
+    Cycle(iterations)
+    iterations==+1
+  OD
+
+  PreparedStack()
+  checks(3)=ran
+  checks(4)=finalized
+  checks(5)=failures
+  checks(6)=iterations
+
+RETURN
+
+ENDMODULE

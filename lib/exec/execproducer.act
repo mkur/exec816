@@ -1,0 +1,12 @@
+; Public AltirraOS platform facility: one retained serial signal producer.
+MODULE EXECPRODUCER
+
+USE EXEC
+
+PUBLIC EXTERNAL BYTE FUNC Bind(EXEC.Task POINTER task LONGCARD bits)
+
+PUBLIC EXTERNAL PROC Release()
+
+PUBLIC EXTERNAL PROC Drain()
+
+  ENDMODULE

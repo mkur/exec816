@@ -1,0 +1,20 @@
+; Test-only rendezvous in the worker's empty-check/Wait gap.
+MODULE CONSOLEIDLEPROBE
+USE EXEC
+PUBLIC BYTE armed,arrived,release
+
+PUBLIC PROC Before(BYTE unused)
+
+  IF armed=0 THEN
+    RETURN
+  FI
+
+  armed=0
+  arrived=1
+  WHILE release=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+ENDMODULE

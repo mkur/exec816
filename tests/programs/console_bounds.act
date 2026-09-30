@@ -1,0 +1,23 @@
+MODULE CONSOLEBOUNDS
+USE EXECOS
+BYTE ARRAY buffer(255)
+BYTE last=$8fff
+CARD maximal, edge
+
+; Exercise console request extent rejection.
+PROC Main()
+  CARD index
+
+  FOR index=0 TO 254 DO
+    buffer(index)=65
+  OD
+
+  buffer(0)=125
+  buffer(254)=155
+  maximal=EXECOS.Write(BYTE POINTER(buffer),255)
+  last=66
+  edge=EXECOS.Write(BYTE POINTER($8fff),1)
+
+RETURN
+
+ENDMODULE

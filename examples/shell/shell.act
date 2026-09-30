@@ -1,0 +1,22 @@
+MODULE SHELLAPP
+
+INCLUDE "shell-session.inc"
+INCLUDE "shell-boot.inc"
+
+LONGINT exitStatus
+
+; Keep the resident shell available until exit or an unrecoverable failure,
+; then release the session and leave its result for the host.
+PROC Main()
+
+  IF ShellBootStart(shellCon)<>0 THEN
+    WHILE shell.done=0 DO
+      ShellReadStep()
+    OD
+  FI
+
+  exitStatus=ShellFinish()
+
+RETURN
+
+ENDMODULE

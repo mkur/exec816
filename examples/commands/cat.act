@@ -1,0 +1,141 @@
+MODULE CAT
+
+USE COMMAND
+USE ASCII
+
+CONST BUFFER_SIZE=512
+
+BYTE ARRAY buffer(BUFFER_SIZE)
+BYTE ARRAY path(COMMAND.ARGS_STORAGE_BYTES)
+LONGINT failure
+
+; Forward input in bounded chunks, honoring BREAK and partial writes.
+PROC Copy(BYTE POINTER input)
+  CARD used
+
+  DO
+    BEGIN
+      IF COMMAND.BreakPending()<>0 THEN
+        failure=COMMAND.ERROR_BREAK
+        RETURN
+      FI
+
+      LET count=COMMAND.Read(input,buffer,BUFFER_SIZE)
+      LET readError=COMMAND.IoErr()
+      IF count<0 THEN
+        failure=readError
+        IF failure=0 THEN
+          failure=COMMAND.ERROR_BAD_STREAM_NAME
+        FI
+
+        RETURN
+      FI
+
+      IF count=0 THEN
+        failure=readError
+        RETURN
+      FI
+
+      IF count>BUFFER_SIZE THEN
+        failure=COMMAND.ERROR_BAD_NUMBER
+        RETURN
+      FI
+
+      ; A canceled/error read may return a committed prefix. Forward it, then
+      ; retain that causal error even if output or cleanup also fails.
+      failure=readError
+      used=0
+      WHILE used<CARD(count) DO
+        BEGIN
+          IF COMMAND.BreakPending()<>0 THEN
+            IF failure=0 THEN
+              failure=COMMAND.ERROR_BREAK
+            FI
+
+            RETURN
+          FI
+
+          LET remaining=count-LONGINT(used)
+          LET written=COMMAND.Write(
+              COMMAND.Output(),@buffer(0)+SIZE(used),remaining)
+          LET error=COMMAND.IoErr()
+          IF written<=0 OR written>remaining THEN
+            IF failure=0 THEN
+              failure=error
+              IF failure=0 THEN
+                failure=COMMAND.ERROR_BAD_STREAM_NAME
+              FI
+            FI
+
+            RETURN
+          FI
+
+          used==+CARD(written)
+          IF error<>0 THEN
+            IF failure=0 THEN
+              failure=error
+            FI
+
+            RETURN
+          FI
+        END
+      OD
+
+      IF failure<>0 THEN
+        RETURN
+      FI
+    END
+  OD
+
+RETURN
+
+; Choose a named file or borrowed standard input and release only owned
+; handles.
+LONGINT FUNC Main()
+  BYTE POINTER input
+  ADDRESS ARRAY values(1)
+
+  failure=0
+  IF COMMAND.ReadArgs(c"FILE",values,1,path,SIZEOF(path))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET named=values(0)<>0
+  ; A quoted empty argument is present, but is not a filename.
+  IF named AND path(0)=ASCII.NUL THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_INVALID_COMPONENT_NAME)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF COMMAND.BreakPending()<>0 THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_BREAK)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF named<>0 THEN
+    input=COMMAND.Open(path,COMMAND.MODE_OLDFILE)
+    IF input=BYTE POINTER(0) THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+  ELSE
+    input=COMMAND.Input()
+  FI
+
+  Copy(input)
+  IF named<>0 THEN
+    BEGIN
+      LET closed=COMMAND.Close(input)
+      LET error=COMMAND.IoErr()
+      IF closed=0 AND failure=0 THEN
+        failure=error
+      FI
+    END
+  FI
+
+  IF failure<>0 THEN
+    COMMAND.SetIoErr(failure)
+  FI
+
+RETURN(IF failure=0 THEN COMMAND.RETURN_OK ELSE COMMAND.RETURN_ERROR FI)
+
+ENDMODULE

@@ -1,0 +1,44 @@
+MODULE O65PROFILE
+USE O65TYPES
+USE O65READ
+
+BYTE ARRAY overflowName="__a816_stack_overflow_v2"
+BYTE ARRAY arithmeticName="__a816_arithmetic_fault_v2"
+BYTE ARRAY reservedPrefix="__a816_o65_"
+BYTE ARRAY entryName="__a816_entry_v2"
+
+; Resolve the command's declared imports against the admitted resident
+; providers.
+PUBLIC PROC Imports(O65TYPES.Validation POINTER validation)
+  O65TYPES.Cursor POINTER cursor
+  O65TYPES.Import POINTER item
+  CARD index
+
+  cursor=@validation.descriptor
+  FOR index=0 TO validation.importCount-1 DO
+    item=@validation.imports(index)
+    item.signature=O65READ.U32(cursor)
+    IF index=0 THEN
+      IF O65READ.Literal(@item.name,@overflowName(1),24)=0 OR item.signature<>0 THEN
+        O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+        RETURN
+      FI
+    ELSE
+      IF O65READ.Literal(@item.name,@entryName(1),15)<>0 OR
+        O65READ.Literal(@item.name,@overflowName(1),24)<>0 OR
+        O65READ.Literal(@item.name,@arithmeticName(1),26)<>0 THEN
+        O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+        RETURN
+      FI
+
+      IF item.name.length>=11 AND O65READ.Equal(item.name.bytes,
+          @reservedPrefix(1),11)<>0 THEN
+        O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+        RETURN
+      FI
+    FI
+  OD
+
+RETURN
+
+ENDMODULE

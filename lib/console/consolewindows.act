@@ -1,0 +1,158 @@
+; Permanent registry entries outlive every borrowed instance pointer.
+MODULE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE EXEC
+USE HEAPCORE
+USE EXECLISTS
+INCLUDE "console-storage-action.inc"
+
+PUBLIC CONSOLETYPES.Windows POINTER FUNC Registry()
+
+RETURN(CONSOLETYPES.Windows POINTER(ADDRESS(CS_WINDOWS)))
+
+PUBLIC BYTE FUNC Live(CONSOLETYPES.Window POINTER entry)
+
+RETURN(entry.state=CONSOLETYPES.WIN_LIVE OR entry.state=CONSOLETYPES.WIN_PRESENTING)
+
+; Match a public unit to a live window incarnation.
+PUBLIC CONSOLETYPES.Window POINTER FUNC Find(LONGCARD unit)
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Window POINTER entry
+
+  windows=Registry()
+  entry=@windows.items(BYTE(unit & 3))
+  IF Live(entry)=0 OR entry.unit<>unit THEN
+    RETURN(CONSOLETYPES.Window POINTER(0))
+  FI
+
+RETURN(entry)
+
+; Resolve a device-bound instance without accepting a retired window slot.
+PUBLIC CONSOLETYPES.Window POINTER FUNC Bound(BYTE POINTER instance)
+  CONSOLETYPES.Windows POINTER windows
+  BYTE index
+
+  windows=Registry()
+  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    IF Live(@windows.items(index))<>0
+        AND windows.items(index).instance=instance THEN
+      RETURN(@windows.items(index))
+    FI
+  OD
+
+RETURN(CONSOLETYPES.Window POINTER(0))
+
+; Caller holds Forbid. A published owner prevents Task removal during allocation.
+PUBLIC CONSOLETYPES.Window POINTER FUNC Reserve(BYTE POINTER owner)
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Window POINTER entry
+  BYTE index
+
+  windows=Registry()
+  IF windows.epoch=LONGCARD($3fffffff) THEN
+    RETURN(CONSOLETYPES.Window POINTER(0))
+  FI
+
+  FOR index=1 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    entry=@windows.items(index)
+    IF entry.state=CONSOLETYPES.WIN_FREE THEN
+      IF EXEC.RetainTask(EXEC.Task POINTER(owner),@entry.lease)=0 THEN
+        RETURN(NULL)
+      FI
+
+      windows.epoch==+1
+      entry.unit=(windows.epoch LSH 2) OR LONGCARD(index)
+      entry.owner=owner
+      entry.state=CONSOLETYPES.WIN_CREATING
+      RETURN(entry)
+    FI
+  OD
+
+RETURN(CONSOLETYPES.Window POINTER(0))
+
+; Require the window's borrowed state to settle before freeing its storage.
+PUBLIC PROC Retired(CONSOLETYPES.Window POINTER entry)
+
+  IF entry.lease.task<>NULL THEN
+    IF EXEC.ReleaseTask(@entry.lease)=0 THEN
+      HEAPCORE.Abort(4)
+    FI
+  FI
+
+  entry.instance=BYTE POINTER(0)
+  entry.view=BYTE POINTER(0)
+  entry.scope=BYTE POINTER(0)
+  entry.route=0
+  entry.baseRoute=0
+  entry.owner=BYTE POINTER(0)
+  entry.state=CONSOLETYPES.WIN_FREE
+
+RETURN
+
+; Report retained work that can progress without waiting for more input.
+PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
+  CONSOLETYPES.Instance POINTER instance
+  CONSOLETYPES.Presentation POINTER view
+
+  instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  view=CONSOLETYPES.Presentation POINTER(entry.view)
+  IF instance.write<>BYTE POINTER(0)
+      OR EXECLISTS.IsMinListEmpty(@instance.writes)=0 THEN
+    RETURN(1)
+  FI
+
+  IF instance.readReady<>0 THEN
+    IF instance.readReady=1 OR instance.readCancel<>0 OR instance.inputCount<>0
+        OR instance.inputLost<>0 THEN
+      RETURN(1)
+    FI
+  FI
+
+  IF view.visible<>0 THEN
+    IF instance.dirtyFirst<instance.dirtyEnd
+        OR view.index<>instance.lineStart+instance.column THEN
+      RETURN(1)
+    FI
+  FI
+
+RETURN(0)
+
+; Set busy BEFORE checking state. Retirement stops new borrows and waits for
+; the previous quantum; no pointer survives clearing busy or a worker Yield.
+PUBLIC CONSOLETYPES.Window POINTER FUNC Take()
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Window POINTER entry
+  BYTE count,index
+
+  windows=Registry()
+  ; With only the permanent default instance, no other slot can be runnable.
+  IF windows.liveCount=1 THEN
+    entry=@windows.items(0)
+    entry.busy=1
+    IF entry.state=CONSOLETYPES.WIN_LIVE THEN
+      IF Runnable(entry)<>0 THEN
+        RETURN(entry)
+      FI
+    FI
+
+    entry.busy=0
+    RETURN(CONSOLETYPES.Window POINTER(0))
+  FI
+
+  FOR count=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    index=windows.nextSlot
+    windows.nextSlot=(index+1) & 3
+    entry=@windows.items(index)
+    entry.busy=1
+    IF entry.state=CONSOLETYPES.WIN_LIVE THEN
+      IF Runnable(entry)<>0 THEN
+        RETURN(entry)
+      FI
+    FI
+
+    entry.busy=0
+  OD
+
+RETURN(CONSOLETYPES.Window POINTER(0))
+
+ENDMODULE

@@ -1,0 +1,99 @@
+MODULE O65VALIDATION
+USE EXEC
+USE HEAPCORE
+USE DOSCLIENT
+USE O65
+USE O65READ
+USE O65TYPES
+USE O65CONTROL
+INCLUDE "o65-fixture.inc"
+
+LONGCARD checks,prefix,baseline
+CARD mutation
+BYTE POINTER staging,original
+O65TYPES.Validation POINTER validation
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f600+CARD(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC CopyBytes(BYTE POINTER target,source LONGCARD length)
+  LONGCARD index
+
+  index=0
+  WHILE index<length DO
+    target(SIZE(index))=source(SIZE(index))
+    index==+1
+  OD
+
+RETURN
+
+PROC Reject(LONGCARD length)
+
+  validation=O65.Validate(staging,length)
+  Require(validation=O65TYPES.Validation POINTER(0))
+  Require(DOSCLIENT.IoErr()<>0)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=baseline)
+
+RETURN
+
+; Exercise o65 bounds and malformed-image rejection.
+PROC Main()
+  BYTE saved,index
+  LONGCARD offset,length
+  BYTE POINTER mutations
+
+  original=BYTE POINTER(ADDRESS($d0000))
+  staging=EXEC.AllocMem(FIXTURE_BYTES,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  Require(staging<>BYTE POINTER(0))
+  CopyBytes(staging,original,FIXTURE_BYTES)
+  baseline=EXEC.AvailMem(EXEC.MEMF_UPPER)
+  validation=O65.Validate(staging,FIXTURE_BYTES)
+  Require(validation<>O65TYPES.Validation POINTER(0))
+  Require(validation.importCount=1
+      AND validation.textBytes=validation.descriptorAt
+      AND validation.descriptor.limit=12)
+  O65.Release(validation)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=baseline)
+  prefix=0
+  WHILE prefix<FIXTURE_BYTES DO
+    Reject(prefix)
+    prefix==+1
+  OD
+
+  mutations=BYTE POINTER(ADDRESS($d0000)+SIZE(FIXTURE_BYTES))
+  FOR mutation=0 TO MUTATION_COUNT-1 DO
+    offset=LONGCARD(mutations(mutation*5))
+        OR (LONGCARD(mutations(mutation*5+1)) LSH 8) OR
+          (LONGCARD(mutations(mutation*5+2)) LSH 16)
+              OR (LONGCARD(mutations(mutation*5+3)) LSH 24)
+    saved=staging(SIZE(offset))
+    staging(SIZE(offset))=mutations(mutation*5+4)
+    Reject(FIXTURE_BYTES)
+    staging(SIZE(offset))=saved
+  OD
+
+  FOR index=1 TO 2 DO
+    O65CONTROL.allocations=0
+    O65CONTROL.failAt=index
+    Reject(FIXTURE_BYTES)
+    Require(DOSCLIENT.IoErr()=103)
+  OD
+
+  O65CONTROL.failAt=0
+  Require(O65READ.Equal(staging,original,FIXTURE_BYTES)<>0)
+  Reject(O65TYPES.LIMIT_FILE+1)
+  Require(DOSCLIENT.IoErr()=LONGINT(O65TYPES.ERROR_RESOURCE_LIMIT))
+  EXEC.FreeMem(staging,FIXTURE_BYTES)
+
+RETURN
+
+ENDMODULE

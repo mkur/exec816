@@ -1,0 +1,92 @@
+MODULE IOQUEUEDHANDOFF
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+USE IOPROBE
+EXEC.MsgPort replies
+EXEC.Task worker
+EXEC.IOStdReq owner
+BYTE buffer
+EXEC.IORequest POINTER item
+BYTE published,sendReturned
+CARD checks
+INCLUDE "io-names.inc"
+PROC POINTER absent()
+INCLUDE "tasks_exec_helpers.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fe00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC WorkerEntry()
+  BYTE bit
+  LONGCARD bits,value
+  EXEC.Message POINTER msg
+
+  EXEC.Forbid()
+  bit=EXEC.AllocSignal(31)
+  replies.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  replies.mp_SigBit=31
+  replies.mp_SigTask=EXEC.FindTask(BYTE POINTER(0))
+  EXECLISTS.NewList(@replies.mp_MsgList)
+  value=IOPROBE.Advance(0)
+  published=1
+  bits=EXEC.Wait(LONGCARD($80000000))
+  value=IOPROBE.Advance(1)
+  value=IOPROBE.Advance(2)
+  value=IOPROBE.Advance(3)
+  msg=EXEC.GetMsg(@replies)
+  Require(msg=@item.io_Message AND sendReturned=0)
+  ; Free before the submitting SendIO returns. The owning open is separate.
+  EXEC.DeleteIORequest(item)
+  Require(sendReturned=0)
+  Require(buffer=$5a)
+  value=IOPROBE.Advance(4)
+  EXEC.FreeSignal(31)
+  EXEC.Permit()
+
+RETURN
+
+; Exercise request ownership during queued completion handoff.
+PROC Main()
+  EXEC.Task POINTER added
+  INT error
+  EXEC.IOStdReq POINTER standard
+
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  added=EXEC.AddTask(@worker,@WorkerEntry,absent)
+  WHILE published=0 DO
+    EXEC.Yield()
+  OD
+
+  owner.io_Message.mn_Length=42
+  owner.io_Message.mn_ReplyPort=@replies
+  error=EXEC.OpenDevice(queuedName,0,EXEC.IORequest POINTER(@owner),0)
+  Require(error=0)
+  item=EXEC.CreateIORequest(@replies,42)
+  item.io_Device=owner.io_Device
+  item.io_Unit=owner.io_Unit
+  item.io_Command=EXEC.CMD_READ
+  standard=EXEC.IOStdReq POINTER(item)
+  standard.io_Length=1
+  standard.io_Data=@buffer
+  buffer=$a5
+  EXEC.SendIO(item)
+  sendReturned=1
+  AwaitRemoval(@worker)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(@owner))
+  Require(checks=4)
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,293 @@
+MODULE O65EXECUTION
+USE EXEC
+USE HEAPCORE
+USE DOSCLIENT
+USE PROCESS
+USE PROCESSSTATE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROGRAMPLACE
+USE PROGRAMPROVIDERS
+USE DOSCORE
+USE O65CONTROL
+USE O65
+USE O65TYPES
+USE O65READ
+INCLUDE "o65-execution-fixture.inc"
+
+PROGRAMIMAGE.Image POINTER first,second
+LONGCARD firstId,secondId,baseline,checks
+LONGCARD ARRAY bases(6)
+BYTE argument,iteration
+BYTE POINTER staging
+CARD providerChecks
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f700+CARD(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROCESSSTATE.Entry POINTER FUNC Find(LONGCARD identity)
+  PROCESSSTATE.Table POINTER table
+  BYTE index
+
+  table=PROCESSSTATE.Registry()
+  FOR index=1 TO 7 DO
+    IF table.entries(index).identity=identity THEN
+      RETURN(@table.entries(index))
+    FI
+  OD
+
+RETURN(PROCESSSTATE.Entry POINTER(0))
+
+; Record image and memory ownership for comparison after command execution.
+PROC Snapshot(PROGRAMIMAGE.Image POINTER image BYTE index)
+  BYTE POINTER target
+  LONGCARD offset
+
+  offset=LONGCARD(index) LSH 13
+  target=BYTE POINTER(ADDRESS(SNAPSHOT_BASE)+SIZE(offset))
+  Require(image.textBytes+image.dataBytes+image.bssBytes<=8192)
+  Require(LONGCARD(image.text)>=LONGCARD(ADDRESS(image.backing)))
+  Require(LONGCARD(image.text)+image.textBytes<=LONGCARD(ADDRESS(
+      image.backing))+image.backingBytes)
+  PROGRAMPLACE.Copy(target,BYTE POINTER(image.text),image.textBytes)
+  PROGRAMPLACE.Copy(target+SIZE(image.textBytes),image.data,image.dataBytes)
+  PROGRAMPLACE.Copy(target+SIZE(image.textBytes+image.dataBytes),image.bss,
+      image.bssBytes)
+  bases(CARD(index)*3)=LONGCARD(image.text)
+  bases(CARD(index)*3+1)=LONGCARD(ADDRESS(image.data))
+  bases(CARD(index)*3+2)=LONGCARD(ADDRESS(image.bss))
+
+RETURN
+
+; Validate the resident exports used to satisfy loaded-command imports.
+PROC Providers()
+  O65TYPES.Validation POINTER validation
+  O65TYPES.Import POINTER item
+  O65TYPES.Cursor cursor
+  O65TYPES.Span name
+  BYTE POINTER manifest,tail,savedTail,changed
+  LONGCARD POINTER length
+  CARD POINTER count
+  ADDRESS POINTER addresses,target
+  LONGCARD freeBefore,originalLength,firstBytes,addressAt
+  CARD originalCount,imports,index,matches
+  BYTE saved
+
+  validation=O65.Validate(staging,FIXTURE_BYTES)
+  Require(validation<>O65TYPES.Validation POINTER(0))
+  imports=validation.importCount
+  Require(imports>1 AND imports<=64)
+  manifest=DOSCORE.Control(O65TYPES.PROVIDER_OPERATION,BYTE POINTER(0))
+  Require(manifest<>BYTE POINTER(0))
+  length=LONGCARD POINTER(ADDRESS(manifest)+SIZE(4))
+  count=CARD POINTER(ADDRESS(manifest)+SIZE(8))
+  originalLength=length^
+  originalCount=count^
+  addresses=ADDRESS POINTER(ADDRESS(SNAPSHOT_BASE)+SIZE($3e00))
+  savedTail=BYTE POINTER(ADDRESS(SNAPSHOT_BASE)+SIZE($3c00))
+  freeBefore=EXEC.AvailMem(EXEC.MEMF_UPPER)
+  Require(PROGRAMPROVIDERS.Resolve(validation)<>0)
+  providerChecks==+1
+  FOR index=0 TO imports-1 DO
+    addresses(index)=validation.imports(index).address
+    Require(addresses(index)<>ADDRESS(0))
+  OD
+
+  ; Reusing this Validation must discard its previous match state.
+  Require(PROGRAMPROVIDERS.Resolve(validation)<>0)
+  providerChecks==+1
+  FOR index=0 TO imports-1 DO
+    Require(validation.imports(index).address=addresses(index))
+  OD
+
+  ; A stale nonzero address must not hide a missing import late in the list.
+  item=@validation.imports(imports-1)
+  changed=item.name.bytes
+  saved=changed^
+  changed^=90
+  item.address=ADDRESS($aabbcc)
+  Require(PROGRAMPROVIDERS.Resolve(validation)=0)
+  providerChecks==+1
+  Require(item.address=ADDRESS(0))
+  changed^=saved
+  Require(PROGRAMPROVIDERS.Resolve(validation)<>0)
+  providerChecks==+1
+  ; All 32 signature bits matter, including high-byte changes.
+  item=@validation.imports(0)
+  item.signature==+1
+  Require(PROGRAMPROVIDERS.Resolve(validation)=0)
+  providerChecks==+1
+  item.signature==-1
+  item.signature=item.signature XOR LONGCARD($80000000)
+  Require(PROGRAMPROVIDERS.Resolve(validation)=0)
+  providerChecks==+1
+  item.signature=item.signature XOR LONGCARD($80000000)
+  ; Find the first (stack-overflow) provider's address and complete entry.
+  cursor.bytes=manifest
+  cursor.at=16
+  cursor.limit=originalLength
+  cursor.error=0
+  O65READ.String(@cursor,@name)
+  addressAt=cursor.at
+  Require(O65READ.Take(@cursor,11)<>0)
+  firstBytes=cursor.at-16
+  Require(firstBytes<=512 AND originalLength+firstBytes<=O65TYPES.PROVIDER_CAPACITY)
+  target=ADDRESS POINTER(ADDRESS(manifest)+SIZE(addressAt))
+  ; A later resolve observes the live manifest, not a prior address cache.
+  target^=ADDRESS(LONGCARD(target^)+1)
+  Require(PROGRAMPROVIDERS.Resolve(validation)<>0)
+  providerChecks==+1
+  matches=0
+  FOR index=0 TO imports-1 DO
+    IF validation.imports(index).address<>addresses(index) THEN
+      Require(validation.imports(index).address=target^)
+      Require(LONGCARD(addresses(index))+1=LONGCARD(target^))
+      matches==+1
+    FI
+  OD
+
+  Require(matches=1)
+  target^=ADDRESS(LONGCARD(target^)-1)
+  tail=manifest+SIZE(originalLength)
+  PROGRAMPLACE.Copy(savedTail,tail,firstBytes)
+  PROGRAMPLACE.Copy(tail,manifest+SIZE(16),firstBytes)
+  length^=originalLength+firstBytes
+  count^=originalCount+1
+  Require(PROGRAMPROVIDERS.Resolve(validation)=0)
+  providerChecks==+1
+  ; A valid unused entry is allowed, but malformed unused entries still fail
+  ; after every requested import has already been found.
+  tail(4)=90
+  Require(PROGRAMPROVIDERS.Resolve(validation)<>0)
+  providerChecks==+1
+  tail(4)=45
+  Require(PROGRAMPROVIDERS.Resolve(validation)=0)
+  providerChecks==+1
+  tail(4)=90
+  target=ADDRESS POINTER(ADDRESS(tail)+SIZE(addressAt-16))
+  target^=ADDRESS(0)
+  Require(PROGRAMPROVIDERS.Resolve(validation)=0)
+  providerChecks==+1
+  PROGRAMPLACE.Copy(tail,savedTail,firstBytes)
+  count^=originalCount
+  length^=originalLength-1
+  Require(PROGRAMPROVIDERS.Resolve(validation)=0)
+  providerChecks==+1
+  length^=originalLength+1
+  Require(PROGRAMPROVIDERS.Resolve(validation)=0)
+  providerChecks==+1
+  ; Zero-import loads retain the existing header-only behavior.
+  validation.importCount=0
+  Require(PROGRAMPROVIDERS.Resolve(validation)<>0)
+  providerChecks==+1
+  count^=0
+  Require(PROGRAMPROVIDERS.Resolve(validation)=0)
+  providerChecks==+1
+  count^=65
+  Require(PROGRAMPROVIDERS.Resolve(validation)=0)
+  providerChecks==+1
+  validation.importCount=imports
+  count^=originalCount
+  length^=originalLength
+  Require(PROGRAMPROVIDERS.Resolve(validation)<>0)
+  providerChecks==+1
+  FOR index=0 TO imports-1 DO
+    Require(validation.imports(index).address=addresses(index))
+  OD
+
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=freeBefore)
+  O65.Release(validation)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=baseline)
+
+RETURN
+
+; Exercise loaded command execution with admitted resident providers.
+PROC Main()
+  PROCESS.Result outcome
+  PROCESSSTATE.Entry POINTER row
+  BYTE saved,index
+  LONGCARD freeWithImages
+  DOSCLIENT.ClientContext POINTER client
+
+  client=DOSCLIENT.Ensure()
+  Require(client<>DOSCLIENT.ClientContext POINTER(0))
+  staging=EXEC.AllocMem(FIXTURE_BYTES,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  Require(staging<>BYTE POINTER(0))
+  PROGRAMPLACE.Copy(staging,BYTE POINTER(ADDRESS(FILE_BASE)),FIXTURE_BYTES)
+  baseline=EXEC.AvailMem(EXEC.MEMF_UPPER)
+  Providers()
+  first=PROGRAM.Load(staging,FIXTURE_BYTES)
+  Require(first<>PROGRAMIMAGE.Image POINTER(0))
+  Snapshot(first,0)
+  second=PROGRAM.Load(staging,FIXTURE_BYTES)
+  Require(second<>PROGRAMIMAGE.Image POINTER(0))
+  Snapshot(second,1)
+  Require(first.text<>second.text AND first.data<>second.data
+      AND first.bss<>second.bss)
+  freeWithImages=EXEC.AvailMem(EXEC.MEMF_UPPER)
+  argument=1
+  firstId=PROCESS.StartLoaded(BYTE POINTER(first),@argument,1,0)
+  secondId=PROCESS.StartLoaded(BYTE POINTER(second),@argument,1,0)
+  Require(firstId<>0 AND secondId<>0 AND firstId<>secondId)
+  Require(PROCESS.StartLoaded(BYTE POINTER(first),@argument,1,0)=0
+      AND DOSCLIENT.IoErr()=202)
+  Require(first.references=2 AND second.references=2)
+  PROGRAM.Unload(first)
+  PROGRAM.Unload(second)
+  Require(first.magic=PROGRAMIMAGE.MAGIC AND second.magic=PROGRAMIMAGE.MAGIC)
+  Require(first.references=1 AND second.references=1 AND first.ownerHeld=0
+      AND second.ownerHeld=0)
+  row=Find(firstId)
+  Require(row<>PROCESSSTATE.Entry POINTER(0))
+  Require(row.image=BYTE POINTER(first))
+  row.arguments(0)=2
+  Require(PROCESS.Wait(firstId,@outcome)<>0)
+  Require(outcome.primary=22 AND outcome.secondary=1)
+  Require(second.magic=PROGRAMIMAGE.MAGIC AND second.running=1)
+  row=Find(secondId)
+  row.arguments(0)=2
+  Require(PROCESS.Wait(secondId,@outcome)<>0)
+  Require(outcome.primary=22 AND outcome.secondary=1)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=baseline)
+  ; A valid file with a different import signature fails eagerly.
+  saved=staging(PROVIDER_SIGNATURE)
+  staging(PROVIDER_SIGNATURE)=saved XOR 1
+  first=PROGRAM.Load(staging,FIXTURE_BYTES)
+  Require(first=PROGRAMIMAGE.Image POINTER(0) AND DOSCLIENT.IoErr()=309)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=baseline)
+  staging(PROVIDER_SIGNATURE)=saved
+  FOR index=1 TO 6 DO
+    O65CONTROL.failAt=index
+    O65CONTROL.allocations=0
+    first=PROGRAM.Load(staging,FIXTURE_BYTES)
+    Require(first=PROGRAMIMAGE.Image POINTER(0) AND DOSCLIENT.IoErr()=103)
+    Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=baseline)
+  OD
+
+  O65CONTROL.failAt=0
+  argument=2
+  FOR iteration=0 TO 3 DO
+    first=PROGRAM.Load(staging,FIXTURE_BYTES)
+    Require(first<>PROGRAMIMAGE.Image POINTER(0))
+    firstId=PROCESS.StartLoaded(BYTE POINTER(first),@argument,1,0)
+    Require(firstId<>0)
+    PROGRAM.Unload(first)
+    Require(PROCESS.Wait(firstId,@outcome)<>0 AND outcome.primary=22)
+    Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=baseline)
+  OD
+
+  EXEC.FreeMem(staging,FIXTURE_BYTES)
+  Require(DOSCLIENT.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

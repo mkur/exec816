@@ -1,0 +1,159 @@
+MODULE IOLIFETIME
+USE EXEC
+USE EXECLISTS
+USE HEAPCORE
+CARD checks
+EXEC.MsgPort POINTER port
+EXEC.IORequest POINTER req,other
+EXEC.IOStdReq static
+ADDRESS ARRAY blocks(16)
+LONGCARD ARRAY sizes(16)
+LONGCARD before,signals
+
+INCLUDE "io-names.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fe00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Check request allocation shape and the reply-port ownership it retains.
+PROC Allocation()
+  EXEC.Task POINTER self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  signals=self.tc_SigAlloc
+  before=EXEC.AvailMem(0)
+  req=EXEC.CreateIORequest(port,16)
+  Require(req<>EXEC.IORequest POINTER(0) AND req.io_Message.mn_Length=16)
+  Require(req.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+      AND req.io_Message.mn_ReplyPort=port)
+  EXEC.DeleteIORequest(req)
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(0))
+  req=EXEC.CreateIORequest(port,15)
+  Require(req=EXEC.IORequest POINTER(0))
+  req=EXEC.CreateIORequest(port,LONGCARD($10000))
+  Require(req=EXEC.IORequest POINTER(0))
+  req=EXEC.CreateIORequest(EXEC.MsgPort POINTER(0),42)
+  Require(req=EXEC.IORequest POINTER(0))
+  req=EXEC.CreateIORequest(port,LONGCARD($ffff))
+  Require(req<>EXEC.IORequest POINTER(0))
+  EXEC.DeleteIORequest(req)
+
+RETURN
+
+; Require request allocation failure to leave the caller's existing resources
+; intact.
+PROC Exhaustion()
+  BYTE count
+  BYTE POINTER block
+  LONGCARD size
+  EXEC.Task POINTER self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  count=0
+  size=EXEC.AvailMem(EXEC.MEMF_LARGEST)
+  block=EXEC.AllocMem(size,0)
+  WHILE block<>BYTE POINTER(0) DO
+    blocks(count)=ADDRESS(block)
+    sizes(count)=size
+    count==+1
+    size=EXEC.AvailMem(EXEC.MEMF_LARGEST)
+    block=EXEC.AllocMem(size,0)
+  OD
+
+  req=EXEC.CreateIORequest(port,42)
+  Require(req=EXEC.IORequest POINTER(0))
+  WHILE count<>0 DO
+    count==-1
+    EXEC.FreeMem(BYTE POINTER(blocks(count)),sizes(count))
+  OD
+
+  Require(EXEC.AvailMem(0)=before AND self.tc_SigAlloc=signals)
+
+RETURN
+
+; Exercise device-open admission and binding lifetime across success and
+; failure.
+PROC Opens()
+  INT error
+
+  req=EXEC.CreateIORequest(port,26)
+  other=EXEC.CreateIORequest(port,26)
+  error=EXEC.OpenDevice(sioName,0,req,0)
+  Require(error=EXEC.IOERR_OPENFAIL)
+  Require(req.io_Device=BYTE POINTER(0) AND req.io_Unit=BYTE POINTER(0))
+  EXEC.CloseDevice(req)
+  error=EXEC.OpenDevice(wrongName,0,req,0)
+  Require(error=EXEC.IOERR_OPENFAIL)
+  error=EXEC.OpenDevice(immediateName,LONGCARD($10000),req,0)
+  Require(error=EXEC.IOERR_OPENFAIL)
+  error=EXEC.OpenDevice(immediateName,0,req,LONGCARD($10000))
+  Require(error=EXEC.IOERR_OPENFAIL)
+  error=EXEC.OpenDevice(immediateName,0,req,0)
+  Require(error=0)
+  error=EXEC.OpenDevice(immediateName,0,other,0)
+  Require(error=0)
+  Require(req.io_Device=other.io_Device AND req.io_Unit=other.io_Unit)
+  EXEC.CloseDevice(other)
+  EXEC.DeleteIORequest(other)
+
+RETURN
+
+; Check request ownership before dispatching operations to a resident.
+PROC Dispatches()
+  EXEC.Message POINTER msg
+
+  req.io_Command=EXEC.CMD_RESET
+  req.io_Flags=$81
+  EXEC.BeginIO(req)
+  Require(req.io_Flags=$81 AND req.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  Require(EXEC.CheckIO(req)=req AND EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+  req.io_Command=EXEC.CMD_READ
+  EXEC.SendIO(req)
+  Require(req.io_Flags=0 AND req.io_Error=BYTE(EXEC.IOERR_BADLENGTH))
+  Require(EXEC.CheckIO(req)=req AND EXEC.CheckIO(req)=req)
+  msg=EXEC.GetMsg(port)
+  Require(msg=@req.io_Message AND msg.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+  Require(EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+  static.io_Message.mn_Length=42
+  static.io_Message.mn_ReplyPort=port
+  static.io_Device=req.io_Device
+  static.io_Unit=req.io_Unit
+  static.io_Command=EXEC.CMD_WRITE
+  static.io_Flags=$fe
+  EXEC.BeginIO(EXEC.IORequest POINTER(@static))
+  Require(static.io_Flags=$fe AND static.io_Error=9 AND static.io_Actual=0)
+  Require(EXEC.GetMsg(port)=@static.io_Message)
+  req.io_Command=EXEC.CMD_INVALID
+  EXEC.SendIO(req)
+  Require(req.io_Error=BYTE(EXEC.IOERR_NOCMD) AND EXEC.GetMsg(port)=@req.io_Message)
+  EXEC.CloseDevice(req)
+  EXEC.DeleteIORequest(req)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Exercise request allocation, device opens and lifetime rejection.
+PROC Main()
+
+  port=EXEC.CreateMsgPort()
+  Allocation()
+  Exhaustion()
+  Opens()
+  Dispatches()
+  port.mp_Flags=EXEC.PA_IGNORE
+  Opens()
+  Dispatches()
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+ENDMODULE

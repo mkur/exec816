@@ -1,0 +1,140 @@
+MODULE HEAPCORETEST
+USE EXEC
+USE HEAPCORE
+
+TYPE Operation=[
+  BYTE code
+  BYTE slot
+  BYTE contained
+  BYTE pad
+  LONGCARD bytes
+  LONGCARD offset
+]
+
+HEAPCORE.MemHeader pool
+ADDRESS ARRAY handles(8)
+LONGCARD ARRAY sizes(8)
+BYTE ARRAY active(8)
+CARD checks,completed
+PUBLIC CONST COUNT=1
+
+PROC Init()
+
+  pool.mh_Lower=BYTE POINTER($040000)
+  pool.mh_Upper=LONGCARD($60000)
+  pool.mh_Free=LONGCARD($20000)
+  pool.mh_First=HEAPCORE.MemChunk POINTER($040000)
+  pool.mh_First.mc_Next=HEAPCORE.MemChunk POINTER(0)
+  pool.mh_First.mc_Pad=0
+  pool.mh_First.mc_Bytes=LONGCARD($20000)
+
+RETURN
+
+PROC Stamp(BYTE slot)
+  BYTE POINTER first,last
+
+  first=BYTE POINTER(handles(slot))
+  last=BYTE POINTER(handles(slot)+SIZE(sizes(slot)-1))
+  first^=$60+slot
+  last^=$60+slot
+
+RETURN
+
+PROC CheckLive()
+  BYTE slot
+  BYTE POINTER first,last
+
+  FOR slot=0 TO 7 DO
+    IF active(slot)<>0 THEN
+      first=BYTE POINTER(handles(slot))
+      last=BYTE POINTER(handles(slot)+SIZE(sizes(slot)-1))
+      IF first^<>$60+slot OR last^<>$60+slot THEN
+        HEAPCORE.Abort($ff63)
+      FI
+    FI
+  OD
+
+RETURN
+
+BYTE POINTER FUNC OperationAt(CARD index)
+  Operation POINTER op
+  BYTE POINTER result
+
+  op=Operation POINTER(ADDRESS($070000)+(SIZE(index) LSH 4))
+  result=BYTE POINTER(0)
+  IF op.code=0 THEN
+    IF op.contained=0 THEN
+      result=HEAPCORE.Allocate(@pool,op.bytes)
+    ELSE
+      result=HEAPCORE.Reserve(@pool,op.bytes,op.contained)
+    FI
+
+    handles(op.slot)=ADDRESS(result)
+    sizes(op.slot)=op.bytes
+    IF result<>BYTE POINTER(0) THEN
+      active(op.slot)=1
+      Stamp(op.slot)
+    FI
+  ELSEIF op.code=1 THEN
+    HEAPCORE.Deallocate(@pool,BYTE POINTER(handles(op.slot)),sizes(op.slot))
+    handles(op.slot)=0
+    active(op.slot)=0
+  ELSE
+    HEAPCORE.Deallocate(@pool,BYTE POINTER(handles(op.slot)+SIZE(op.offset)),
+        op.bytes)
+    active(op.slot)=0
+  FI
+
+RETURN(result)
+
+PROC Snapshot(CARD index BYTE POINTER result)
+  LONGCARD POINTER output
+  HEAPCORE.MemChunk POINTER chunk
+  CARD count,at
+
+  output=LONGCARD POINTER(ADDRESS($080000)+(SIZE(index) LSH 7))
+  output(0)=LONGCARD(ADDRESS(result))
+  output(1)=pool.mh_Free
+  chunk=pool.mh_First
+  count=0
+  at=3
+  WHILE chunk<>HEAPCORE.MemChunk POINTER(0) DO
+    IF count=9 THEN
+      HEAPCORE.Abort($ff64)
+    FI
+
+    output(at)=LONGCARD(ADDRESS(chunk))
+    output(at+1)=chunk.mc_Bytes
+    count==+1
+    at==+2
+    chunk=chunk.mc_Next
+  OD
+
+  output(2)=LONGCARD(count)
+
+RETURN
+
+; Exercise allocator operations against recorded live allocations and
+; snapshots.
+PROC Main()
+  CARD index
+  BYTE POINTER result
+  ; The minimal banked launcher enters Main in both cooperative contexts.
+  IF completed<>0 THEN
+    RETURN
+  FI
+
+  Init()
+  FOR index=0 TO COUNT-1 DO
+    result=OperationAt(index)
+    HEAPCORE.Validate(@pool)
+    CheckLive()
+    Snapshot(index,result)
+    completed==+1
+  OD
+
+  checks=1
+
+RETURN
+
+ENDMODULE

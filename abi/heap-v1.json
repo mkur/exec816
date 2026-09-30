@@ -1,0 +1,240 @@
+{
+  "abi": "exec816.heap",
+  "revision": 3,
+  "owner": 5,
+  "alignment": 8,
+  "bank_bytes": 65536,
+  "node_type": 10,
+  "services": {
+    "ALLOC_MEM": 15,
+    "FREE_MEM": 16,
+    "ALLOC_VEC": 28,
+    "FREE_VEC": 29,
+    "AVAIL_MEM": 30,
+    "TYPE_OF_MEM": 31
+  },
+  "errors": {
+    "CORRUPT": 65376,
+    "POINTER": 65377,
+    "BOOT": 65378
+  },
+  "flags": {
+    "ANY": 0,
+    "PUBLIC": 1,
+    "CHIP": 2,
+    "FAST": 4,
+    "BANK0": 8,
+    "UPPER": 16,
+    "LOCAL": 256,
+    "24BITDMA": 512,
+    "KICK": 1024,
+    "CLEAR": 65536,
+    "LARGEST": 131072,
+    "REVERSE": 262144,
+    "TOTAL": 524288,
+    "LINEAR": 1048576,
+    "NO_EXPUNGE": 2147483648
+  },
+  "compiler_frame": {
+    "dbr": 1,
+    "d": 2,
+    "y": 4,
+    "x": 6,
+    "a_full": 8,
+    "p": 10,
+    "pc": 11,
+    "pbr": 13
+  },
+  "records": {
+    "MemChunk": {
+      "size": 8,
+      "fields": [
+        [
+          "mc_Next",
+          "MemChunk POINTER",
+          0
+        ],
+        [
+          "mc_Pad",
+          "BYTE",
+          3
+        ],
+        [
+          "mc_Bytes",
+          "LONGCARD",
+          4
+        ]
+      ]
+    },
+    "MemHeader": {
+      "size": 28,
+      "fields": [
+        [
+          "mh_Node",
+          "EXECLISTS.Node",
+          0
+        ],
+        [
+          "mh_Attributes",
+          "CARD",
+          12
+        ],
+        [
+          "mh_First",
+          "MemChunk POINTER",
+          14
+        ],
+        [
+          "mh_Lower",
+          "BYTE POINTER",
+          17
+        ],
+        [
+          "mh_Upper",
+          "LONGCARD",
+          20
+        ],
+        [
+          "mh_Free",
+          "LONGCARD",
+          24
+        ]
+      ]
+    },
+    "VecPrefix": {
+      "size": 8,
+      "fields": [
+        [
+          "backing",
+          "LONGCARD",
+          0
+        ],
+        [
+          "requested",
+          "LONGCARD",
+          4
+        ]
+      ]
+    }
+  },
+  "imports": {
+    "AllocMem": {
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 4
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 3
+    },
+    "FreeMem": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 0
+    },
+    "AllocVec": {
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 4
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 3
+    },
+    "FreeVec": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "AvailMem": {
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 5,
+      "result_bytes": 4
+    },
+    "TypeOfMem": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 4
+    },
+    "Allocate": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 3
+    },
+    "Deallocate": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 6,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 11,
+      "result_bytes": 0
+    }
+  }
+}

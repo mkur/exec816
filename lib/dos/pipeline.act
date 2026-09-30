@@ -1,0 +1,176 @@
+; Two-stage foreground execution. Caller owns both Images until Run returns.
+MODULE PIPELINE
+USE DOS
+USE DOSGROUP
+USE DOSBREAKTYPES
+USE PROCESS
+
+PUBLIC TYPE Outcome=[
+  PROCESS.Result first,second
+  LONGINT primary,secondary
+]
+
+; Prepare both commands and their pipe before launching the foreground group.
+PUBLIC LONGINT FUNC Run(BYTE POINTER firstImage,secondImage,firstArgs,secondArgs
+    CARD firstLength,secondLength Outcome POINTER outcome)
+  DOS.PipePair pair
+  DOS.FileHandle POINTER input,output,ignored
+  DOSBREAKTYPES.Scope POINTER scope
+  LONGCARD first,second
+  LONGINT cause
+  BYTE firstStarted,secondStarted
+
+  outcome.primary=0
+  outcome.secondary=0
+  outcome.first.primary=0
+  outcome.first.secondary=0
+  outcome.second.primary=0
+  outcome.second.secondary=0
+  first=0
+  second=0
+  firstStarted=0
+  secondStarted=0
+  cause=0
+  pair.reader=DOS.FileHandle POINTER(0)
+  pair.writer=DOS.FileHandle POINTER(0)
+  input=DOS.Input()
+  output=DOS.Output()
+  scope=DOSGROUP.Begin()
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    outcome.primary=10
+    outcome.secondary=DOS.IoErr()
+    RETURN(0)
+  FI
+
+  IF DOS.Pipe(@pair)=0 THEN
+    cause=DOS.IoErr()
+  ELSE
+    ignored=DOS.SelectOutput(pair.writer)
+    cause=DOS.IoErr()
+    IF cause=0 THEN
+      first=PROCESS.PrepareLoaded(firstImage,firstArgs,firstLength,
+          BYTE POINTER(scope))
+      IF first=0 THEN
+        cause=DOS.IoErr()
+      FI
+    FI
+
+    IF cause=0 THEN
+      ignored=DOS.SelectInput(pair.reader)
+      cause=DOS.IoErr()
+      ignored=DOS.SelectOutput(output)
+      IF cause=0 THEN
+        cause=DOS.IoErr()
+      FI
+
+      IF cause=0 THEN
+        second=PROCESS.PrepareLoaded(secondImage,secondArgs,secondLength,
+            BYTE POINTER(scope))
+        IF second=0 THEN
+          cause=DOS.IoErr()
+        FI
+      FI
+    FI
+  FI
+
+  ignored=DOS.SelectInput(input)
+  IF DOS.IoErr()<>0 THEN
+    outcome.primary=20
+    outcome.secondary=DOS.IoErr()
+    RETURN(0)
+  FI
+
+  ignored=DOS.SelectOutput(output)
+  IF DOS.IoErr()<>0 THEN
+    outcome.primary=20
+    outcome.secondary=DOS.IoErr()
+    RETURN(0)
+  FI
+
+  IF pair.reader<>DOS.FileHandle POINTER(0) THEN
+    IF DOS.Close(pair.reader)=0 THEN
+      outcome.primary=20
+      outcome.secondary=DOS.IoErr()
+      RETURN(0)
+    FI
+  FI
+
+  IF pair.writer<>DOS.FileHandle POINTER(0) THEN
+    IF DOS.Close(pair.writer)=0 THEN
+      outcome.primary=20
+      outcome.secondary=DOS.IoErr()
+      RETURN(0)
+    FI
+  FI
+
+  IF cause=0 THEN
+    IF DOSGROUP.Seal(scope)=0 THEN
+      cause=DOS.IoErr()
+    ELSE
+      firstStarted=PROCESS.StartPrepared(first)
+      IF firstStarted=0 THEN
+        cause=DOS.IoErr()
+      ELSE
+        secondStarted=PROCESS.StartPrepared(second)
+        IF secondStarted=0 THEN
+          cause=DOS.IoErr()
+        FI
+      FI
+    FI
+  FI
+
+  IF cause<>0 THEN
+    DOSGROUP.Cancel(scope)
+  FI
+
+  IF first<>0 THEN
+    IF firstStarted<>0 THEN
+      IF PROCESS.Wait(first,@outcome.first)=0 THEN
+        outcome.primary=20
+        outcome.secondary=DOS.IoErr()
+        RETURN(0)
+      FI
+    ELSEIF PROCESS.DiscardPrepared(first)=0 THEN
+      outcome.primary=20
+      outcome.secondary=DOS.IoErr()
+      RETURN(0)
+    FI
+  FI
+
+  IF second<>0 THEN
+    IF secondStarted<>0 THEN
+      IF PROCESS.Wait(second,@outcome.second)=0 THEN
+        outcome.primary=20
+        outcome.secondary=DOS.IoErr()
+        RETURN(0)
+      FI
+    ELSEIF PROCESS.DiscardPrepared(second)=0 THEN
+      outcome.primary=20
+      outcome.secondary=DOS.IoErr()
+      RETURN(0)
+    FI
+  FI
+
+  IF DOSGROUP.End(scope)=0 THEN
+    outcome.primary=20
+    outcome.secondary=DOS.IoErr()
+    RETURN(0)
+  FI
+
+  IF cause<>0 THEN
+    outcome.primary=10
+    outcome.secondary=cause
+    RETURN(0)
+  FI
+
+  IF outcome.first.primary<>0 THEN
+    outcome.primary=outcome.first.primary
+    outcome.secondary=outcome.first.secondary
+  ELSE
+    outcome.primary=outcome.second.primary
+    outcome.secondary=outcome.second.secondary
+  FI
+
+RETURN(-1)
+
+ENDMODULE

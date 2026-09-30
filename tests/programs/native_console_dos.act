@@ -1,0 +1,48 @@
+MODULE CONSOLEDOSTEST
+INCLUDE "../../examples/console-session.inc"
+LONGCARD expectedBytes,verified
+BYTE seed,checkpoint,gate
+
+PROC Verify()
+  LONGCARD index
+
+  Check(reader.reads=1 AND reader.wakes=1
+      AND reader.received=LONGINT(expectedBytes) AND reader.error=0)
+  FOR index=0 TO expectedBytes-1 DO
+    IF readBuffer(SIZE(index))<>(BYTE(index) XOR seed) THEN
+      HEAPCORE.Abort($f781)
+    FI
+  OD
+
+  verified=expectedBytes
+  Check(editor.duringRead<>0 AND editor.textReads=2 AND editor.errors=1)
+  Check(editor.lineLength=0 AND line(36)=$a5 AND line(37)=$a5 AND line(38)=$a5
+      AND line(39)=$a5)
+
+RETURN
+
+; Exercise DOS use of the native console endpoint.
+PROC Main()
+
+  OpenConsole(0)
+  AllocateReader(0)
+  StartReader(0)
+  line(36)=$a5
+  line(37)=$a5
+  line(38)=$a5
+  line(39)=$a5
+  checkpoint=1
+  Session(0)
+  JoinReader(0)
+  Verify()
+  checkpoint=2
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+  Cleanup(0)
+  checkpoint=3
+
+RETURN
+
+ENDMODULE

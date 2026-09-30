@@ -1,0 +1,139 @@
+; Canonical names belong only to locks. One serialized service workspace builds
+; them from configured aliases and the entries actually selected by MyDOS.
+MODULE FSLOCKS
+USE EXEC
+USE FSTYPES
+USE DOSOBJECTS
+INCLUDE "../dos/dos-types.inc"
+
+PUBLIC TYPE Name=[CARD length]
+
+PUBLIC Name POINTER FUNC Trailer(FSTYPES.LockObject POINTER item)
+
+RETURN(Name POINTER(ADDRESS(item)+SIZEOF(FSTYPES.LockObject)))
+
+PUBLIC BYTE POINTER FUNC Text(FSTYPES.LockObject POINTER item)
+
+RETURN(BYTE POINTER(ADDRESS(item)+SIZEOF(FSTYPES.LockObject)+SIZE(2)))
+
+; Include a lock's canonical-name trailer when recovering its allocation size.
+PUBLIC SIZE FUNC Allocation(FSTYPES.LockObject POINTER item)
+  Name POINTER name
+
+  name=Trailer(item)
+
+RETURN(SIZEOF(FSTYPES.LockObject)+SIZE(name.length)+SIZE(3))
+
+; Seed the canonical path with the selected mount's physical alias.
+PUBLIC PROC Root(FSTYPES.Service POINTER service)
+  CARD index
+
+  index=0
+  WHILE service.selected.spec.alias(index)<>0 DO
+    service.name(index)=service.selected.spec.alias(index)
+    index==+1
+  OD
+
+  service.name(index)=58
+  index==+1
+  service.name(index)=0
+  service.nameLength=index
+
+RETURN
+
+; Keep the canonical-name buffer terminated and reject truncation.
+BYTE FUNC Add(FSTYPES.Service POINTER service BYTE value)
+
+  IF service.nameLength=255 THEN
+    service.work.error=ERROR_LINE_TOO_LONG
+    RETURN(0)
+  FI
+
+  service.name(service.nameLength)=value
+  service.nameLength==+1
+  service.name(service.nameLength)=0
+
+RETURN(1)
+
+; Extend the canonical path with the entry actually selected by the backend.
+PUBLIC BYTE FUNC Append(FSTYPES.Service POINTER service)
+  BYTE index
+
+  IF service.work.entry.parent=0 THEN
+    RETURN(1)
+  FI
+
+  IF service.name(service.nameLength-1)<>58 THEN
+    IF Add(service,47)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  FOR index=0 TO 7 DO
+    IF service.work.entry.name(index)=32 THEN
+      EXIT
+    FI
+
+    IF Add(service,service.work.entry.name(index))=0 THEN
+      RETURN(0)
+    FI
+  OD
+
+  IF service.work.entry.name(8)<>32 THEN
+    IF Add(service,46)=0 THEN
+      RETURN(0)
+    FI
+
+    FOR index=8 TO 10 DO
+      IF service.work.entry.name(index)=32 THEN
+        EXIT
+      FI
+
+      IF Add(service,service.work.entry.name(index))=0 THEN
+        RETURN(0)
+      FI
+    OD
+  FI
+
+RETURN(1)
+
+; Keep lock state and its complete canonical name in a single allocation.
+PUBLIC FSTYPES.LockObject POINTER FUNC Allocate(CARD length)
+
+  LET item=FSTYPES.LockObject POINTER(EXEC.AllocMem(
+      SIZEOF(FSTYPES.LockObject)+SIZE(length)+SIZE(3),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF item=NULL THEN
+    RETURN(NULL)
+  FI
+
+  item.common.header.kind=DOSOBJECTS.KIND_LOCK
+  LET name=Trailer(item)
+  name.length=length
+
+RETURN(item)
+
+; Copy the worker's canonical path into an unpublished lock.
+PUBLIC FSTYPES.LockObject POINTER FUNC Create(FSTYPES.Service POINTER service)
+  CARD index
+
+  LET item=Allocate(service.nameLength)
+  IF item=NULL THEN
+    RETURN(NULL)
+  FI
+
+  LET characters=Text(item)
+  FOR index=0 TO service.nameLength DO
+    characters(index)=service.name(index)
+  OD
+
+RETURN(item)
+
+; The name length remains valid until this whole lock is released.
+PUBLIC PROC Free(FSTYPES.LockObject POINTER item)
+
+  EXEC.FreeMem(BYTE POINTER(item),Allocation(item))
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,31 @@
+MODULE O65FAULTPROBE
+USE EXEC
+PUBLIC BYTE armed,phase,gate,offline,finished
+PUBLIC LONGINT expected
+
+PUBLIC PROC Opened(BYTE unused)
+
+  IF armed=0 THEN
+    RETURN
+  FI
+
+  armed=0
+  phase=1
+  gate=0
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PUBLIC PROC Recovered(BYTE unused)
+
+  phase=2
+  gate=0
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+ENDMODULE

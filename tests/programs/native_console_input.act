@@ -1,0 +1,317 @@
+MODULE NATIVECONSOLEINPUT
+USE EXEC
+USE HEAPCORE
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE CONSOLEADAPTER
+USE CONSOLECAPTURE
+USE CONSOLEINPUT
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLEFOREGROUND
+USE SIODRIVER
+USE SIOPROBE
+BYTE mode,order,ready,finished,active,gate,gateReady,losses,released,retireGate
+CARD sectorBytes,checks,received,transfers,failures
+CARD ARRAY events(64)
+EXEC.MsgPort POINTER port
+EXEC.IOSIOReq POINTER request
+BYTE POINTER buffer
+EXEC.Task POINTER reader,parent
+PROC POINTER absent()
+INCLUDE "io-names.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+CONSOLETYPES.Instance POINTER instance
+CONSOLETYPES.Window POINTER window
+BYTE POINTER fifo
+BYTE ARRAY translated(64)
+
+PROC Claim()
+
+  Require(CONSOLEADAPTER.Bind(EXEC.FindTask(BYTE POINTER(0)),0)=0)
+  Require(CONSOLEADAPTER.Bind(EXEC.FindTask(BYTE POINTER(0)),$80000)=0)
+  Require(CONSOLEADAPTER.Bind(EXEC.FindTask(BYTE POINTER(0)),$10000)=1)
+  Require(CONSOLEADAPTER.Bind(EXEC.FindTask(BYTE POINTER(0)),$10000)=0)
+
+RETURN
+
+PROC CollectKeys()
+  CARD pumped,count,index
+
+  pumped=CONSOLEINPUT.Pump(instance)
+  count=CONSOLEINPUT.Read(instance,translated,64)
+  IF count=$ffff THEN
+    Require(mode=4 OR mode=5)
+    losses==+1
+    RETURN
+  FI
+
+  IF count=0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO count-1 DO
+    Require(received<64)
+    events(received)=CARD(translated(index))
+    received==+1
+    IF translated(index)=27 THEN
+      finished=1
+    FI
+  OD
+
+RETURN
+
+PROC ReaderEntry()
+  LONGCARD bits
+
+  Require(EXEC.AllocSignal(16)=16 AND EXEC.AllocSignal(17)=17)
+  Require(EXEC.AllocSignal(18)=18)
+  Claim()
+  EXEC.Signal(parent,$10000)
+  IF mode=4 THEN
+    bits=EXEC.Wait($40000)
+    CollectKeys()
+  FI
+
+  WHILE finished=0 DO
+    bits=EXEC.Wait($10000)
+    CollectKeys()
+  OD
+
+  EXEC.Signal(parent,$10000)
+  bits=EXEC.Wait($20000)
+  CONSOLEADAPTER.Release()
+  EXEC.FreeSignal(18)
+  EXEC.FreeSignal(17)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+PROC StartReader()
+  EXEC.Task POINTER added
+  LONGCARD bits
+
+  reader=EXEC.Task POINTER($0d0000)
+  reader.tc_Node.ln_Type=EXEC.NT_TASK
+  reader.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  reader.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  reader.tc_SPReg=reader.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@reader.tc_MemEntry)
+  added=EXEC.AddTask(reader,@ReaderEntry,absent)
+  Require(added=reader)
+  bits=EXEC.Wait($10000)
+  WHILE reader.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC StopReader()
+  CARD status
+
+  EXEC.Signal(reader,$20000)
+  WHILE reader.tc_State<>EXEC.TS_REMOVED DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+INCLUDE "console_input_checks.inc"
+
+PROC Setup()
+  INT error
+  CONSOLETYPES.Windows POINTER windows
+
+  Require(EXEC.AllocSignal(16)=16)
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  instance=CONSOLETYPES.Instance POINTER(EXEC.AllocMem(
+      CONSOLETYPES.INSTANCE_SIZE,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  fifo=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC)
+  Require(instance<>CONSOLETYPES.Instance POINTER(0) AND fifo<>BYTE POINTER(0))
+  CONSOLEINPUT.Init(instance,fifo)
+  instance.open=1
+  ; This isolated adapter fixture has no resident console worker. Register
+  ; its retained instance through the same route identities used by the worker.
+  windows=CONSOLEWINDOWS.Registry()
+  window=@windows.items(0)
+  window.unit=0
+  window.instance=BYTE POINTER(instance)
+  window.state=CONSOLETYPES.WIN_CREATING
+  EXEC.Forbid()
+  Require(CONSOLEFOREGROUND.Register(window)<>0)
+  window.state=CONSOLETYPES.WIN_LIVE
+  windows.focusSlot=0
+  windows.liveCount=1
+  CONSOLECAPTURE.Publish(window.route)
+  EXEC.Permit()
+  TranslationChecks()
+  FifoChecks()
+  LossChecks()
+  RingChecks()
+  CONSOLEINPUT.Init(instance,fifo)
+  IF order=0 THEN
+    StartReader()
+  FI
+
+  port=EXEC.CreateMsgPort()
+  Require(port<>EXEC.MsgPort POINTER(0))
+  request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSIOREQ_SIZE))
+  Require(request<>EXEC.IOSIOReq POINTER(0))
+  buffer=EXEC.AllocMem(256,EXEC.MEMF_PUBLIC)
+  Require(buffer<>BYTE POINTER(0))
+  error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(request),0)
+  Require(error=0)
+  IF order<>0 THEN
+    StartReader()
+  FI
+
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Offset=0
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(sectorBytes)
+  request.sio_Command=$52
+  request.sio_Aux1=4
+  request.sio_Aux2=0
+  request.sio_Direction=EXEC.SIODIR_READ
+  request.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  request.sio_TimeoutUS=0
+
+RETURN
+
+PROC CollectIO()
+  INT error
+  CARD index
+
+  IF active=0 THEN
+    RETURN
+  FI
+
+  IF EXEC.CheckIO(EXEC.IORequest POINTER(request))=EXEC.IORequest POINTER(0) THEN
+    RETURN
+  FI
+
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(request))
+  IF mode=3 AND failures=0 THEN
+    Require(error<>0)
+    failures=1
+    request.sio_Aux1=4
+    request.sio_Aux2=0
+  ELSE
+    Require(error=0)
+    Require(request.io_Actual=LONGCARD(sectorBytes))
+    FOR index=0 TO sectorBytes-1 DO
+      Require(buffer(index)=(BYTE(index) XOR 60))
+    OD
+
+    transfers==+1
+  FI
+
+  active=0
+
+RETURN
+
+PROC Cleanup()
+  INT error
+  CARD status
+  CONSOLETYPES.Windows POINTER windows
+
+  IF active<>0 THEN
+    error=EXEC.WaitIO(EXEC.IORequest POINTER(request))
+    Require(error=0)
+  FI
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  EXEC.FreeMem(buffer,256)
+  IF order=0 THEN
+    SIODRIVER.Stop()
+    StopReader()
+  ELSE
+    StopReader()
+    SIODRIVER.Stop()
+  FI
+
+  released=1
+  WHILE retireGate=0 DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  EXEC.FreeSignal(16)
+  windows=CONSOLEWINDOWS.Registry()
+  EXEC.Forbid()
+  CONSOLEFOREGROUND.Unregister(window)
+  CONSOLEWINDOWS.Retired(window)
+  windows.liveCount=0
+  EXEC.Permit()
+  EXEC.FreeMem(fifo,128)
+  EXEC.FreeMem(BYTE POINTER(instance),CONSOLETYPES.INSTANCE_SIZE)
+
+RETURN
+
+; Mode 5 replaces this procedure with the checked assembly hold fixture.
+PROC HoldIRQs()
+
+  gateReady=1
+  WHILE gate=0 DO
+  OD
+
+RETURN
+
+; Exercise captured keyboard input delivered to a waiting Task.
+PROC Main()
+  LONGCARD bits,mask
+
+  Setup()
+  IF mode=3 THEN
+    request.sio_Aux1=$ff
+    request.sio_Aux2=$ff
+  FI
+
+  mask=LONGCARD($10000) OR (LONGCARD(1) LSH port.mp_SigBit)
+  active=0
+  ready=1
+  IF mode=4 THEN
+    WHILE gate=0 DO
+      EXEC.Yield()
+    OD
+
+    EXEC.Signal(reader,$40000)
+  FI
+
+  IF mode=5 THEN
+    HoldIRQs()
+  FI
+
+  WHILE finished=0 DO
+    IF (mode=1 OR mode=3) AND active=0 THEN
+      EXEC.SendIO(EXEC.IORequest POINTER(request))
+      active=1
+    FI
+
+    IF mode=2 THEN
+      SIOPROBE.Emulation()
+    FI
+
+    bits=EXEC.Wait(mask)
+    CollectIO()
+  OD
+
+  Cleanup()
+
+RETURN
+
+ENDMODULE

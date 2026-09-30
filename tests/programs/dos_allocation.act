@@ -1,0 +1,67 @@
+MODULE DOSALLOCATION
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE HEAPCORE
+BYTE variant
+BYTE ARRAY bits(16)
+CARD checks
+LONGCARD freeStart,maskStart
+EXEC.Task POINTER root
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f600+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise DOS context allocation failure and rollback.
+PROC Main()
+  DOSCLIENT.ClientContext POINTER client
+  DOSCORE.DosSlot POINTER slot
+  BYTE i
+
+  root=EXEC.FindTask(BYTE POINTER(0))
+  freeStart=EXEC.AvailMem(EXEC.MEMF_UPPER)
+  maskStart=root.tc_SigAlloc
+  Require(DOS.IoErr()=0 AND DOS.ReleaseContext()=-1)
+  IF variant=2 THEN
+    FOR i=0 TO 15 DO
+      bits(i)=EXEC.AllocSignal($ff)
+      Require(bits(i)<>$ff)
+    OD
+
+    Require(EXEC.AllocSignal($ff)=$ff)
+  FI
+
+  client=DOSCLIENT.Ensure()
+  Require(client=DOSCLIENT.ClientContext POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  slot=DOSCORE.Current()
+  Require(slot.context=BYTE POINTER(0) AND slot.active=0)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=freeStart)
+  IF variant=2 THEN
+    FOR i=0 TO 15 DO
+      EXEC.FreeSignal(bits(i))
+    OD
+  FI
+
+  Require(root.tc_SigAlloc=maskStart)
+  Require(DOS.ReleaseContext()=-1 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  IF variant=2 THEN
+    client=DOSCLIENT.Ensure()
+    Require(client<>DOSCLIENT.ClientContext POINTER(0))
+    Require(DOS.ReleaseContext()=-1)
+    Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=freeStart AND root.tc_SigAlloc=maskStart)
+  FI
+
+RETURN
+
+ENDMODULE

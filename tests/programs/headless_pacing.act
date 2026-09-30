@@ -1,0 +1,14 @@
+MODULE HEADLESSPACING
+USE EXECTASKS
+BYTE finished
+CARD slept
+
+; Exercise native execution under the pinned headless pacing profile.
+PROC Main()
+
+  slept=EXECTASKS.Sleep(50)
+  finished=1
+
+RETURN
+
+ENDMODULE

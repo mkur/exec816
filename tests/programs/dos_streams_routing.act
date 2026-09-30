@@ -1,0 +1,119 @@
+MODULE DOSSTREAMROUTING
+USE EXEC
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE FSBOOT
+USE FSREGISTRY
+USE FSTYPES
+USE HEAPCORE
+CARD checks
+LONGCARD before,savedGeneration
+DOS.FileHandle POINTER file
+DOS.FileLock POINTER lock
+DOSCORE.DosSlot POINTER owner
+DOSCLIENT.ClientContext POINTER client
+DOSOBJECTS.Header POINTER extra
+FSTYPES.Object POINTER item
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e100+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Layout()
+
+  item=FSTYPES.Object POINTER($d8000)
+  Require(SIZEOF(DOSOBJECTS.Header)=8 AND SIZEOF(FSTYPES.Object)=16)
+  Require(ADDRESS(@item.header)=ADDRESS(item))
+  Require(ADDRESS(@item.header.owner)-ADDRESS(item)=3)
+  Require(ADDRESS(@item.header.kind)-ADDRESS(item)=6)
+  Require(ADDRESS(@item.header.backend)-ADDRESS(item)=7)
+  Require(ADDRESS(@item.mount)-ADDRESS(item)=8)
+  Require(ADDRESS(@item.generation)-ADDRESS(item)=12)
+  LET file=FSTYPES.FileObject POINTER(item)
+  LET lock=FSTYPES.LockObject POINTER(item)
+  Require(SIZEOF(FSTYPES.FileObject)=20 AND SIZEOF(FSTYPES.LockObject)=98)
+  Require(ADDRESS(@file.common)=ADDRESS(item)
+      AND ADDRESS(@lock.common)=ADDRESS(item))
+  Require(ADDRESS(@file.backing)-ADDRESS(item)=16)
+  Require(ADDRESS(@lock.state)-ADDRESS(item)=16)
+  Require(ADDRESS(@lock.ticket)-ADDRESS(item)=94)
+
+RETURN
+
+PROC OpenObjects()
+
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  extra=DOSOBJECTS.Header POINTER(EXEC.AllocMem(SIZEOF(DOSOBJECTS.Header),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(extra<>DOSOBJECTS.Header POINTER(0))
+  extra.kind=DOSOBJECTS.KIND_FILE
+  extra.backend=DOSOBJECTS.BACKEND_NIL
+  DOSOBJECTS.Link(owner,extra)
+  lock=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  Require(lock<>DOS.FileLock POINTER(0) AND client.objects=3)
+  Require(DOSOBJECTS.Find(owner,BYTE POINTER(extra),DOSOBJECTS.KIND_FILE)=extra)
+  Require(FSREGISTRY.FindObject(owner,BYTE POINTER(extra),
+      DOSOBJECTS.KIND_FILE)=FSTYPES.Object POINTER(0))
+  Require(DOS.Close(DOS.FileHandle POINTER(lock))=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  Require(DOS.Read(DOS.FileHandle POINTER($ffffff),BYTE POINTER(0),0)=-1)
+  Require(DOS.Read(file,BYTE POINTER($d2000),1)=1 AND BYTE POINTER($d2000)^=83)
+
+RETURN
+
+; Reject invalid handle payloads at the common DOS ownership boundary.
+PROC RejectPayload()
+
+  item=FSTYPES.Object POINTER(file)
+  savedGeneration=item.generation
+  item.generation==+1
+  Require(DOS.Read(file,BYTE POINTER($d2000),1)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  item.generation=savedGeneration
+  extra.owner=DOSCORE.DosSlot POINTER(0)
+  Require(DOSOBJECTS.Find(owner,BYTE POINTER(extra),
+      DOSOBJECTS.KIND_FILE)=DOSOBJECTS.Header POINTER(0))
+  extra.owner=owner
+  Require(DOSOBJECTS.Find(owner,BYTE POINTER(lock),
+      DOSOBJECTS.KIND_FILE)=DOSOBJECTS.Header POINTER(0))
+  Require(DOSOBJECTS.Unlink(owner,extra)=1 AND client.objects=2)
+  Require(DOSOBJECTS.Unlink(owner,extra)=0 AND client.objects=2)
+  EXEC.FreeMem(BYTE POINTER(extra),SIZEOF(DOSOBJECTS.Header))
+
+RETURN
+
+PROC Finish()
+
+  Require(DOS.Close(file)<>0 AND client.objects=1)
+  DOS.UnLock(lock)
+  Require(client.objects=0 AND owner.objects=BYTE POINTER(0))
+  Require(FSBOOT.Stop()<>0)
+  Require(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Exercise stream dispatch without exposing foreign object payloads.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  Layout()
+  OpenObjects()
+  RejectPayload()
+  Finish()
+
+RETURN
+
+ENDMODULE

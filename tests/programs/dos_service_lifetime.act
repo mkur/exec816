@@ -1,0 +1,220 @@
+MODULE DOSLIFETEST
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE HEAPCORE
+USE FSTYPES
+USE FSREGISTRY
+USE FSBOOT
+USE FSMANAGER
+CARD checks
+BYTE autoStop
+LONGCARD before,generation,allocationBefore
+TYPE Chunk=[
+  BYTE POINTER next
+  LONGCARD size
+]
+
+Chunk POINTER chunks
+DOS.FileHandle POINTER file
+DOS.FileLock POINTER lock
+FSTYPES.Mount POINTER held
+FSTYPES.Service POINTER service
+DOSCORE.DosRegistry POINTER registry
+DOSCLIENT.ClientContext POINTER client
+DOSCORE.DosSlot POINTER slot
+TYPE ResultCell=[BYTE POINTER value]
+ResultCell result
+EXEC.Task other
+VOLATILE BYTE otherDone
+PROC POINTER absent()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC OtherEntry()
+
+  IF FSMANAGER.Unmount(0)<>0 OR DOS.IoErr()<>DOS.ERROR_OBJECT_IN_USE THEN
+    HEAPCORE.Abort($fae0)
+  FI
+
+  IF DOS.ReleaseContext()=0 THEN
+    HEAPCORE.Abort($fae1)
+  FI
+
+  otherDone=1
+
+RETURN
+
+; Interleave alias lookup with service lifetime changes without borrowing
+; freed mounts.
+PROC LookupRace()
+  CARD ticks
+  LONGINT success
+
+  held=FSREGISTRY.Lookup(BYTE POINTER($d1000),2)
+  Require(held<>FSTYPES.Mount POINTER(0))
+  other.tc_Node.ln_Type=EXEC.NT_TASK
+  other.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+  other.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
+  other.tc_SPReg=other.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@other.tc_MemEntry)
+  EXEC.AddTask(@other,@OtherEntry,absent)
+  Require(other.tc_State<>EXEC.TS_INVALID)
+  WHILE otherDone=0 OR other.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  client=DOSCLIENT.Ensure()
+  slot=DOSCORE.Current()
+  result.value=BYTE POINTER(0)
+  client.packet.sp_Pkt.dp_Arg1=LONGINT(ADDRESS(@result))
+  client.packet.sp_Pkt.dp_Arg2=0
+  client.packet.sp_Pkt.dp_Arg3=$d1003
+  client.packet.sp_Pkt.dp_Arg7=LONGINT(ADDRESS(slot))
+  success=DOSCLIENT.Call(DOSCORE.Current(),client,held.port,1005)
+  Require(success<>0 AND result.value<>BYTE POINTER(0))
+  file=DOS.FileHandle POINTER(result.value)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Start()
+
+  Require(SIZEOF(FSTYPES.Service)=454 AND SIZEOF(FSTYPES.Mount)=66)
+  before=EXEC.AvailMem(0)
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  Require(FSMANAGER.Unmount(0)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Close(file)<>0)
+  service=FSREGISTRY.Service()
+  generation=service.mounts(0).item.generation
+  EXEC.Forbid()
+  service.controls==+1
+  EXEC.Permit()
+  Require(FSBOOT.Stop()=0)
+  EXEC.Forbid()
+  service.controls==-1
+  EXEC.Permit()
+
+RETURN
+
+; Hold available allocations so the next operation must exercise its failure
+; path.
+PROC Exhaust(BYTE unused)
+  LONGCARD size
+  Chunk POINTER item
+  CARD count
+
+  allocationBefore=EXEC.AvailMem(0)
+  count=0
+  DO
+    size=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    IF size<8 THEN
+      EXIT
+    FI
+
+    item=Chunk POINTER(EXEC.AllocMem(size,EXEC.MEMF_UPPER))
+    Require(item<>Chunk POINTER(0))
+    item.next=BYTE POINTER(chunks)
+    item.size=size
+    chunks=item
+    count==+1
+    Require(count<128)
+  OD
+
+RETURN
+
+; Return the allocations retained to force memory exhaustion.
+PROC ReleaseHeld(BYTE unused)
+  Chunk POINTER next
+  LONGCARD size
+
+  WHILE chunks<>Chunk POINTER(0) DO
+    next=Chunk POINTER(chunks.next)
+    size=chunks.size
+    EXEC.FreeMem(BYTE POINTER(chunks),size)
+    chunks=next
+  OD
+
+  Require(EXEC.AvailMem(0)=allocationBefore)
+
+RETURN
+
+; Require fresh mount identity after the previous incarnation has been
+; withdrawn.
+PROC Remount()
+
+  Require(FSMANAGER.Unmount(0)<>0)
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_DEVICE_NOT_MOUNTED)
+  file=DOS.Open(BYTE POINTER($d1020),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  Require(DOS.Close(file)<>0)
+  Exhaust(0)
+  Require(FSMANAGER.Mount(0)=0 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(service.mounts(0).item=FSTYPES.Mount POINTER(0))
+  ReleaseHeld(0)
+  Require(FSMANAGER.Mount(0)<>0)
+  Require(service.mounts(0).item.generation>generation)
+  Require(FSMANAGER.Mount(0)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(FSMANAGER.Unmount(8)=0 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+
+RETURN
+
+; Stop new admission while allowing retained service ownership to settle.
+PROC Quiesce()
+
+  lock=DOS.Lock(BYTE POINTER($d1040),DOS.SHARED_LOCK)
+  Require(lock<>DOS.FileLock POINTER(0))
+  Require(FSMANAGER.Quiesce()<>0)
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file=DOS.FileHandle POINTER(0) AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(FSBOOT.Stop()=0)
+  DOS.UnLock(lock)
+  Require(FSBOOT.Stop()<>0)
+  Require(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=before)
+
+RETURN
+
+PROC Restart()
+
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  service=FSREGISTRY.Service()
+  Require(service.mounts(0).item.generation>generation)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  IF autoStop=0 THEN
+    Require(FSBOOT.Stop()<>0)
+    Require(EXEC.AvailMem(0)=before)
+  FI
+
+RETURN
+
+; Exercise filesystem startup, remount, quiescence and restart.
+PROC Main()
+
+  Start()
+  LookupRace()
+  Remount()
+  Quiesce()
+  Restart()
+
+RETURN
+
+ENDMODULE

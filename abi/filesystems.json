@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "formats": {"MYDOS": 1, "SDFS": 2},
+  "default": "MYDOS"
+}

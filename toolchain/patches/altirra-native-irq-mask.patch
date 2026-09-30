@@ -1,0 +1,127 @@
+diff --git a/src/Altirra/h/cpumachine.inl b/src/Altirra/h/cpumachine.inl
+index 92aee5a3..37904518 100644
+--- a/src/Altirra/h/cpumachine.inl
++++ b/src/Altirra/h/cpumachine.inl
+@@ -2567,6 +2567,10 @@ for(;;) {
+ 		case kState816_SetI_ClearD:
+ 			mP |= kFlagI;
+ 			mP &= ~kFlagD;
++			// Consume SEI/SEP/PLP's delayed mask on interrupt entry,
++			// as the emulation-mode vector states do. Otherwise an
++			// asserted IRQ can reenter before the first handler opcode.
++			mIntFlags &= ~kIntFlag_IRQSetPending;
+ 			break;
+ 
+ 		case kState816_LongAddrToPC:
+diff --git a/src/AltirraBridgeServer/CMakeLists.txt b/src/AltirraBridgeServer/CMakeLists.txt
+index 931c2446..a790d2b7 100644
+--- a/src/AltirraBridgeServer/CMakeLists.txt
++++ b/src/AltirraBridgeServer/CMakeLists.txt
+@@ -287,3 +287,13 @@ if(NOT MSVC AND CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64|AMD64)")
+         PROPERTIES COMPILE_FLAGS "-mssse3 -mpopcnt"
+     )
+ endif()
++
++# Optional CPU regression runner reuses the full-state conformance harness.
++if(ALTIRRA_CPU_TESTS)
++    target_sources(AltirraBridgeServer PRIVATE
++        ${ALTIRRA_SDL_DIR}/source/app/cputest_runner.cpp)
++    target_compile_definitions(AltirraBridgeServer PRIVATE ALTIRRA_CPU_TESTS_ENABLED=1)
++    enable_testing()
++    add_test(NAME cpu-native-interrupt-mask
++        COMMAND AltirraBridgeServer --cpu-test-interrupt-mask)
++endif()
+diff --git a/src/AltirraBridgeServer/main_bridge.cpp b/src/AltirraBridgeServer/main_bridge.cpp
+index 92e4deb3..f9f47216 100644
+--- a/src/AltirraBridgeServer/main_bridge.cpp
++++ b/src/AltirraBridgeServer/main_bridge.cpp
+@@ -431,7 +431,15 @@ static bool InitSimulator() {
+ // Main loop
+ // =========================================================================
+ 
++#ifdef ALTIRRA_CPU_TESTS_ENABLED
++#include "../AltirraSDL/source/app/cputest_runner.h"
++#endif
++
+ int main(int argc, char** argv) {
++#ifdef ALTIRRA_CPU_TESTS_ENABLED
++	if (argc == 2 && !strcmp(argv[1], "--cpu-test-interrupt-mask"))
++		return ATRunCPUInterruptTests();
++#endif
+ 	Args args;
+ 	if (!ParseArgs(argc, argv, args)) return 2;
+ 	if (args.printHelp) { PrintHelp(); return 0; }
+diff --git a/src/AltirraSDL/source/app/cputest_runner.cpp b/src/AltirraSDL/source/app/cputest_runner.cpp
+index e5685311..3b97ae83 100644
+--- a/src/AltirraSDL/source/app/cputest_runner.cpp
++++ b/src/AltirraSDL/source/app/cputest_runner.cpp
+@@ -973,3 +973,57 @@ int ATRunCPUTests(const ATCPUTestOptions& opts) {
+ 		return 2;
+ 	return (totalFail > 0) ? 1 : 0;
+ }
++
++// An IRQ recognized immediately after SEI may still enter once. The delayed
++// mask flag must be consumed by interrupt entry, before fetching the handler.
++// Otherwise an asserted IRQ repeatedly pushes frames at the vector despite I=1.
++int ATRunCPUInterruptTests() {
++	int failures = 0;
++	for (int mode = 0; mode < 5; ++mode) {
++		for (int nmi = 0; nmi < 2; ++nmi) {
++			ATCPUTestMemory mem;
++			mem.Init();
++			ATCPUTestCallbacks callbacks;
++			ATCPUTestHarness cpu;
++			cpu.Init(&mem, nullptr, &callbacks);
++			cpu.SetHistoryEnabled(false);
++			cpu.SetStopOnBRK(false);
++			cpu.SetCPUMode(kATCPUMode_65C816, 1);
++			cpu.ColdReset();
++			const bool emulation = mode == 4;
++			const uint8 flags = emulation ? 0x30 : (uint8)(mode << 4);
++			const uint16 stack = emulation ? 0x01F0 : 0x4000;
++			const uint8 bank = emulation ? 0 : 3;
++			uint8 *ram = mem.Ram();
++			const uint8 entry[] = { 0x78, 0xEA, 0x80, 0xFE }; // SEI; NOP; BRA self
++			const uint8 irq[] = { 0xEE, 0x00, 0x02, 0x80, 0xFE }; // INC $0200; BRA self
++			const uint8 nmiCode[] = { 0xEE, 0x02, 0x02, 0x80, 0xFE };
++			memcpy(ram + ((uint32)bank << 16) + 0x8000, entry, sizeof entry);
++			memcpy(ram + 0x9000, irq, sizeof irq);
++			memcpy(ram + 0xA000, nmiCode, sizeof nmiCode);
++			const uint16 irqVector = emulation ? 0xFFFE : 0xFFEE;
++			const uint16 nmiVector = emulation ? 0xFFFA : 0xFFEA;
++			ram[irqVector] = 0; ram[irqVector + 1] = 0x90;
++			ram[nmiVector] = 0; ram[nmiVector + 1] = 0xA0;
++			cpu.LoadTestState(0x8000, 0, 0, 0, stack, 0, 0, bank, flags, emulation);
++			callbacks.mCycle = 100;
++			cpu.AssertIRQ(-2); // recognized at the boundary after the real SEI
++			if (nmi)
++				cpu.AssertNMI(); // NMI wins that boundary with IRQ still asserted
++			for (int cycle = 0; cycle < 64; ++cycle) {
++				cpu.Advance65816();
++				++callbacks.mCycle;
++			}
++			const uint16 expectedS = stack - (emulation ? 3 : 4);
++			const bool pass = ram[0x200] == (nmi ? 0 : 1)
++				&& ram[0x202] == (nmi ? 1 : 0) && cpu.GetS16() == expectedS
++				&& (cpu.GetP() & 4) && cpu.GetK() == 0;
++			printf("interrupt-mask mode=%d nmi=%d: %s (IRQ=%u NMI=%u S=%04X P=%02X)\n",
++				mode, nmi, pass ? "PASS" : "FAIL", ram[0x200], ram[0x202],
++				cpu.GetS16(), cpu.GetP());
++			if (!pass)
++				++failures;
++		}
++	}
++	return failures ? 1 : 0;
++}
+diff --git a/src/AltirraSDL/source/app/cputest_runner.h b/src/AltirraSDL/source/app/cputest_runner.h
+index f2725e18..633fdf6d 100644
+--- a/src/AltirraSDL/source/app/cputest_runner.h
++++ b/src/AltirraSDL/source/app/cputest_runner.h
+@@ -63,4 +63,7 @@ struct ATCPUTestOptions {
+ // I/O or JSON parse error.
+ int ATRunCPUTests(const ATCPUTestOptions& opts);
+ 
++// Bounded native/emulation interrupt-entry regression using real CPU cycles.
++int ATRunCPUInterruptTests();
++
+ #endif	// f_AT_CPUTEST_RUNNER_H

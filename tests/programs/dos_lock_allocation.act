@@ -1,0 +1,66 @@
+MODULE DOSLOCKALLOCATION
+USE EXEC
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSFAULTCONTROL
+USE FSTYPES
+USE FSBOOT
+USE HEAPCORE
+CARD checks
+BYTE finished
+LONGCARD before,available
+DOSCLIENT.ClientContext POINTER client
+DOSCORE.DosSlot POINTER owner
+DOS.FileLock POINTER root,candidate
+FSTYPES.Object POINTER item
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e700+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise rollback when directory-lock allocation fails.
+PROC Main()
+
+  DOS.FileHandle POINTER file
+  BYTE point
+
+  before=EXEC.AvailMem(0)
+  root=DOS.Lock(BYTE POINTER($d1000),DOS.SHARED_LOCK)
+  Require(root<>DOS.FileLock POINTER(0))
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  item=FSTYPES.Object POINTER(root)
+  available=EXEC.AvailMem(0)
+  DOSFAULTCONTROL.failNext=1
+  candidate=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  Require(candidate=DOS.FileLock POINTER(0) AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(DOSFAULTCONTROL.failNext=0 AND EXEC.AvailMem(0)=available)
+  Require(client.objects=1 AND item.mount.references=1)
+  candidate=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  Require(candidate<>DOS.FileLock POINTER(0) AND client.objects=2)
+  DOS.UnLock(candidate)
+  ; Fresh opens can fail at either the wrapper or backing allocation.
+  FOR point=1 TO 2 DO
+    DOSFAULTCONTROL.failNext=point
+    file=DOS.Open(BYTE POINTER($d1040),DOS.MODE_OLDFILE)
+    Require(file=NULL AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+    Require(DOSFAULTCONTROL.failNext=0 AND EXEC.AvailMem(0)=available)
+    Require(client.objects=1 AND item.mount.references=1)
+  OD
+
+  DOS.UnLock(root)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

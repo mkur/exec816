@@ -1,0 +1,139 @@
+MODULE FSBOOT
+USE EXEC
+USE EXECTASKS
+USE DOSCORE
+USE FSTYPES
+USE FSWORKER
+USE FSINIT
+USE FSMUX
+USE FSREGISTRY
+INCLUDE "../dos/dos-types.inc"
+
+; Allocate the filesystem worker's Task and attach its service state.
+BYTE FUNC BeginService(DOSCORE.DosRegistry POINTER registry)
+  FSTYPES.Service POINTER service
+  BYTE POINTER worker
+
+  service=FSTYPES.Service POINTER(EXEC.AllocMem(SIZEOF(FSTYPES.Service),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF service=FSTYPES.Service POINTER(0) THEN
+    registry.error=ERROR_NO_FREE_STORE
+    registry.state=FSTYPES.STATE_FAILED
+    RETURN(0)
+  FI
+
+  service.arrival=255
+  service.nextStep=@FSINIT.First
+  service.readyStep=@FSMUX.Take
+  registry.runtime=BYTE POINTER(service)
+  worker=DOSCORE.Control(1,BYTE POINTER(@FSWORKER.Worker))
+  IF worker=BYTE POINTER(0) THEN
+    EXEC.FreeMem(BYTE POINTER(service),SIZEOF(FSTYPES.Service))
+    registry.runtime=BYTE POINTER(0)
+    registry.error=ERROR_NO_FREE_STORE
+    registry.state=FSTYPES.STATE_FAILED
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Start or join service startup, retaining the caller while it waits.
+PUBLIC BYTE FUNC Ensure()
+  DOSCORE.DosRegistry POINTER registry
+  BYTE start
+  CARD ticks
+
+  registry=DOSCORE.GetRegistry()
+  start=0
+  EXEC.Forbid()
+  IF registry.stop<>0 THEN
+    registry.error=ERROR_OBJECT_IN_USE
+  ELSEIF registry.state=0 OR ((registry.state=FSTYPES.STATE_FAILED
+      OR registry.state=FSTYPES.STATE_STOPPED)
+      AND registry.worker=BYTE POINTER(0)) THEN
+    IF registry.count=0 THEN
+      registry.error=ERROR_DEVICE_NOT_MOUNTED
+    ELSE
+      registry.state=FSTYPES.STATE_STARTING
+      start=1
+    FI
+  FI
+
+  EXEC.Permit()
+  IF start<>0 THEN
+    IF BeginService(registry)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  WHILE registry.state=FSTYPES.STATE_STARTING DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+RETURN(registry.state=FSTYPES.STATE_READY AND registry.stop=0)
+
+; Busy stop leaves publication unchanged. Quiesce separately stops new opens
+; while allowing clients to drain existing objects and accepted packets.
+PUBLIC BYTE FUNC Stop()
+  DOSCORE.DosRegistry POINTER registry
+  FSTYPES.Service POINTER service
+  EXEC.Task POINTER worker
+  BYTE POINTER bytes
+  BYTE index,busy
+  CARD ticks
+  LONGCARD mask
+
+  registry=DOSCORE.GetRegistry()
+  EXEC.Forbid()
+  IF registry.worker=BYTE POINTER(0) THEN
+    EXEC.Permit()
+    RETURN(1)
+  FI
+
+  IF registry.stop<>0 OR (registry.state<>FSTYPES.STATE_READY
+      AND registry.state<>FSTYPES.STATE_STOPPING) THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  service=FSTYPES.Service POINTER(registry.runtime)
+  busy=0
+  FOR index=0 TO service.count-1 DO
+    IF service.mounts(index).item<>FSTYPES.Mount POINTER(0) THEN
+      IF service.mounts(index).item.references<>0 THEN
+        busy=1
+      FI
+    FI
+  OD
+
+  IF service.controls<>0 THEN
+    busy=1
+  FI
+
+  IF busy=0 THEN
+    registry.stop=1
+    registry.state=FSTYPES.STATE_STOPPING
+  FI
+
+  EXEC.Permit()
+  IF busy<>0 THEN
+    RETURN(0)
+  FI
+
+  bytes=registry.task
+  worker=EXEC.Task POINTER(bytes)
+  mask=registry.mask
+  EXEC.Signal(worker,mask)
+  WHILE registry.worker<>BYTE POINTER(0) DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  ; Keep restart blocked until the stop owner has observed actual removal.
+  ; This avoids waiting on a different service that reused the same slot.
+  EXEC.Forbid()
+  registry.stop=0
+  EXEC.Permit()
+
+RETURN(1)
+
+ENDMODULE

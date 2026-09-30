@@ -1,0 +1,62 @@
+; DOS DateStamp conversion; invalid or pre-1978 dates remain all zero.
+MODULE SDFSDATE
+USE FSBTYPES
+
+BYTE FUNC Leap(CARD year)
+; Only 1978..2049 reaches this helper; 2000 is a leap year.
+RETURN((year & 3)=0)
+
+; Provide calendar bounds for validating an on-disk timestamp.
+CARD FUNC MonthDays(CARD year BYTE month)
+
+  IF month=2 THEN
+    RETURN(28+CARD(Leap(year)))
+  FI
+
+  IF month=4 OR month=6 OR month=9 OR month=11 THEN
+    RETURN(30)
+  FI
+
+RETURN(31)
+
+; Translate a valid SpartaDOS timestamp into the DOS date representation.
+PUBLIC PROC Decode(FSBTYPES.Entry POINTER entry BYTE POINTER bytes)
+  CARD year
+  BYTE month,day,index
+  LONGINT days
+
+  entry.days=0
+  entry.minutes=0
+  entry.ticks=0
+  day=bytes(17)
+  month=bytes(18)
+  year=CARD(bytes(19))
+  IF year>99 THEN
+    RETURN
+  FI
+
+  IF year>=50 THEN
+    year==+1900
+  ELSE
+    year==+2000
+  FI
+
+  IF year<1978 OR month=0 OR month>12 OR day=0 OR day>MonthDays(year,month)
+      OR bytes(20)>23 OR bytes(21)>59 OR bytes(22)>59 THEN
+    RETURN
+  FI
+
+  days=LONGINT(year-1978)*365+LONGINT((year-1) RSH 2)-494
+  IF month>1 THEN
+    FOR index=1 TO month-1 DO
+      days==+LONGINT(MonthDays(year,index))
+    OD
+  FI
+
+  entry.days=days+LONGINT(day)-1
+  entry.minutes=LONGINT(bytes(20))*60+LONGINT(bytes(21))
+  entry.ticks=LONGINT(bytes(22))*50
+
+RETURN
+
+ENDMODULE

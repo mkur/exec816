@@ -1,0 +1,1214 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Emitted native DOS ABI and fail-closed packaging; no filesystem implementation",
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json",
+      "additional_patch": "toolchain/patches/altirra-headless-mount.patch",
+      "additional_patch_sha256": "3ba17abf8b5037383457f85306bb3eaad973151701a3fa4221469c87ccefd1bd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Queued SIO tests; drive-specific headless MOUNT fixed without changing CPU/peripheral emulation",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "limits": {
+      "command_setup_us": [
+        750,
+        1600
+      ],
+      "command_hold_us": [
+        650,
+        950
+      ],
+      "write_delay_us": [
+        1000,
+        1800
+      ],
+      "alarm_lateness_us": 100,
+      "active_max_us": 1020000,
+      "critic_max_us": 1020000
+    },
+    "alarm": {
+      "timer1_base_cycles": 224,
+      "timer2_base_cycles": 7168,
+      "timer2_count": 250,
+      "phase_counts": {
+        "setup": 8,
+        "hold": 7,
+        "write": 10
+      },
+      "stimer": "initialization/cleanup only"
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "write_delay_basis": "Figure 18 (1.0\u20131.8 ms); qualified only against these pinned disk models. Page 219 prose says 10\u201318 ms and is not used for these profiles.",
+    "timeout_policy": "One 250-tick active watchdog: ACK, result and data all inherit its remaining time; receiving a byte does not restart it. No separate phase or per-byte timeout in this disposable probe.",
+    "observer": {
+      "binary_sha256": "f5bb13fff27be8e89a8cb0a499d5c56bb31e609917eef8ce8999a59286f02922",
+      "patch": "toolchain/patches/altirra-sio-observer.patch",
+      "additional_patch": "toolchain/patches/altirra-headless-mount.patch"
+    },
+    "fault_responder": {
+      "binary_sha256": "c2eb067b68eea3dfb7c7c883b1aca0be0d74b3179bfa40f98a88557e5aecf60d",
+      "patch": "toolchain/patches/altirra-sio-fault-responder.patch",
+      "patch_sha256": "47cb3ca5fb473cd7561010dd8634a8295980204a1fc9c0facf65ab05029fa160",
+      "scope": "Explicit D8 protocol/stop-bit corruption, test-only environment selector; POKEY and guest execute normally. Includes passive observer and drive-specific MOUNT patches."
+    }
+  },
+  "inputs": {
+    "abi/dos.json": "65a5325fa2320fca958129e271061f37cd6af629499713adadf0512ec43b0625",
+    "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+    "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+    "lib/dos-packets.inc": "d7f9c17c5e64bbc8606a3a3e958acc60c81bdbe5fdf9d832682bff2935d692f6",
+    "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+    "tools/generate_dos.py": "1e38eb7b49503b0c26584b5f097530de65d1ba1393a139b0d7527b18bba6992a",
+    "tools/generate_tasks.py": "ee55541ebbcd08c21813c0da4cb96b36c6b379de158d4540401289eda732391e",
+    "tools/native_program.py": "f2a0ebc69d2bb87f6b9c130563cdfd9f1a68e302394ee6f675a64eee0ff3f15c",
+    "tools/dos_abi_fixture.py": "a380248685ab13eae737fe5ef86f1854541523297d4c61cb167047fb9437353c",
+    "tools/test_dos_abi.py": "8596ad732e1177421a372a2a22100eb6bdae112fb9a7328555930bd779562f4b",
+    "tests/programs/dos_abi.act": "e949fe0688aa89dddafb41392d27bcd29a0776750814159e943fbaeccff11fcc"
+  },
+  "cases": [
+    {
+      "status": "pass",
+      "optimize": false,
+      "build": {
+        "revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "be923241e910dee3310aab0d77e7f7c3372d1b086f5116149bb887cbbd13cfe5",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "abi_assembly_sha256": "ba00a5bfa74d656f5d6d7f1fe566d399c6788ed745ba6a58c99fb336fc95afdb",
+        "source_sha256": "e949fe0688aa89dddafb41392d27bcd29a0776750814159e943fbaeccff11fcc",
+        "image_sha256": "0c4f7b4d29dec0dd1776e7b3c56bf04d5c6d91de8778bc8d28850665e08d1873",
+        "xex_sha256": "7c6525df41b3abf69323199f2b221d2a5beb66674b8b3e30ed77722d27eed4af",
+        "optimize": false,
+        "task_inputs": {
+          "abi/dos.json": "65a5325fa2320fca958129e271061f37cd6af629499713adadf0512ec43b0625",
+          "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+          "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+          "lib/dos-packets.inc": "d7f9c17c5e64bbc8606a3a3e958acc60c81bdbe5fdf9d832682bff2935d692f6",
+          "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+          "tools/generate_dos.py": "1e38eb7b49503b0c26584b5f097530de65d1ba1393a139b0d7527b18bba6992a",
+          "lib/siodriver.act": "271dd4359b55f1ad7ac1763378d2d07d9440de861dfeb0f8b56834ee9b4ffad9",
+          "lib/task-sio.inc": "87d59dffd7181fdf1341c88af32fe6d7a26818495fb4ecad085282260bb7fb0f",
+          "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+          "lib/task-io.inc": "2d970dcb2de53091a3d23338c38d832157370d962ad3a7ba8964b36ddbece875",
+          "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+          "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+          "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+          "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+          "lib/exec-io-types.inc": "e21b39c3c4fce74163e6230f3abbf73eeb932bf25b565909fed04a3c8387bbdf",
+          "tools/generate_io.py": "c261b28e3722702b882e7251b0d1f05c94db2956b4508e2d1a5b309d4e9da3b1",
+          "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+          "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+          "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+          "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+          "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+          "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+          "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+          "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+          "lib/taskpolicy.act": "769993c586e0d9acddc680bb5741ae89edc28e9c5f659a1890f6a0211bcea583",
+          "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "lib/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+          "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+          "platform/altirraos/sio.s": "e26287bae010cb99161864a03b4b85c2392c68813bb1fbb2baf1ab14cf46fb32",
+          "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+          "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+          "platform/altirraos/signal-irq.s": "d0f18ff9d829ffe48690151fbdb7ecb8253daf5f354f52901f77ea3c5d5b129a",
+          "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+          "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+          "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+          "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+          "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+          "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+          "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+          "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+          "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+          "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+          "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+          "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+          "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+          "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+          "tools/generate_tasks.py": "ee55541ebbcd08c21813c0da4cb96b36c6b379de158d4540401289eda732391e",
+          "platform/altirraos/tasks.s": "53c5538999a7707310b0d1bbafe8c5b9ff4d6d747dcdb30614d7bdbf36def7a6"
+        },
+        "task_generated": {
+          "dos.inc": "8a87a93a79676df171aedf583ebba5a7896547dfaca2a0248e077b4f40ea28ba",
+          "dos-action.inc": "299072820074038e7e1e6db35f1abe0e71f9cab52ac07d1ca6d1b36f28fa9789",
+          "io.inc": "497401e3fb059fc2b6fc4c16ab5e532a42b85bf7ddf9f5ffadcd8b6088d5ec56",
+          "io-action.inc": "100fe84e85d4a476e03702cc40d7442ba2370014a59bfd16ceb2b2dda7da4759",
+          "io-storage-action.inc": "3a61eba1ad816c3d0f7d69640b08df0c2c07ac853a313c20d53cd12acd4714be",
+          "sio-storage-action.inc": "b74d61549ea93cbbaf55d3cf3f6d345cc66a726520ec2eb985f5a8efc9768f18",
+          "ports.inc": "31429fb819f79f4ad64b0d5167beb1543c9ae318e47d9e38b71b724a6fae9483",
+          "ports-action.inc": "f0bb3e004e263740d04a43a37e6a0b57d30c92da59250a066f3a9b19acaedb93",
+          "port-packets.inc": "3db8f3075db83e21b03f3f5ced5c5eeb06178d257c6ed1a101ab71b2e48a5366",
+          "ports-storage.inc": "c6ffd9110ca265cf3812659a5443b6d20ad4e36c99a4c8351b71bd8e3650e7c6",
+          "ports-storage-action.inc": "e6f6bffa4af346601562730ff65408df3b062ddbf49eca61ec81050c5370ea13",
+          "heappolicy.act": "41ba32aa59926008e76f3db05ada0316715e86d740675a5a53a912f90b09236a",
+          "heap-storage.inc": "0c4295f03f7e77f25eb54093b57c3c6ebe812d2787d7f198ef4345fb28780001",
+          "heap.inc": "b82c94cc14b7cee47c714dbe3bbaf14805a771923612101cef2bb66c800a3b71",
+          "heap-action.inc": "d23fca22b4d80fd8e2f38bf3ddf9b75eafb24c4833c3c2591df63c196783f155",
+          "heap.json": "b8375194f43fde3b43e6a1d63a51d65daba77a43d725635197c07cce4cb11520",
+          "tasks.inc": "ee23fa9d7ee170662eb3759519280a609283614f92442a5fb98d10c2d54c7e3d",
+          "tasks-action.inc": "1e9b439c7d811ec598ada71e168681523bc24f8373deab9b9168e464d25616d4",
+          "tasks-bindings.inc": "06aefe81c1df2d703809d39e201964b23d985a2a99f7f881df2ce12de21e27af",
+          "signal-gateway.inc": "4f44d0155c9f641f9571765e82d59808380454780830f8e554636609c2c24078",
+          "task-kernel/exec.act": "76b5a9db525fe66769812c245aa56e7ca9bc6439cdb3d890ef38cf2a2874a22e",
+          "task-kernel/taskpolicy.act": "3d56e8a48f15d85b06b04ecbab44d6d8c7684f329d7072d14d7d1a605c4b783c",
+          "task-kernel/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "task-kernel/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "task-kernel/exectasks.act": "19f2d275536b53cb115bff286840a1e9258531b107b21ef618bf176aa2d9f2ab",
+          "task-kernel/taskstacks.act": "5d835b7dffd5ec18c8488059eb03ecc3dca4a3637d8110899b028a878576345f"
+        },
+        "kernel_bank": 1
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 1,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0,
+        "switches": 1,
+        "live_tasks": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "facts": [
+        12,
+        0,
+        4,
+        8,
+        260,
+        0,
+        4,
+        8,
+        116,
+        120,
+        124,
+        128,
+        132,
+        144,
+        224,
+        226,
+        228,
+        46,
+        0,
+        3,
+        6,
+        10,
+        14,
+        18,
+        22,
+        26,
+        30,
+        34,
+        38,
+        42,
+        62,
+        0,
+        16
+      ],
+      "seen": [
+        393215,
+        1005,
+        0,
+        0,
+        0,
+        458752,
+        4294897294,
+        4294967295,
+        458752,
+        393215,
+        4294967294,
+        589824,
+        589824,
+        458736,
+        589824,
+        458736,
+        655359,
+        70001,
+        458752
+      ],
+      "returns": [
+        458752,
+        70001,
+        4294897294,
+        4294967295,
+        70000,
+        589824,
+        4294967295,
+        0,
+        4294967295,
+        0
+      ],
+      "routines": {
+        "Open": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 34,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 4,
+              "body_displacement": 38,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 9,
+          "result_bytes": 3,
+          "fixed_frame": 30,
+          "local_stack_peak": 30
+        },
+        "Read": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 54,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 3,
+              "body_displacement": 57,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 6,
+              "body_displacement": 60,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 11,
+          "result_bytes": 4,
+          "fixed_frame": 50,
+          "local_stack_peak": 50
+        },
+        "Seek": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 50,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 4,
+              "body_displacement": 54,
+              "size": 4,
+              "alignment": 2
+            },
+            {
+              "offset": 8,
+              "body_displacement": 58,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 13,
+          "result_bytes": 4,
+          "fixed_frame": 46,
+          "local_stack_peak": 46
+        },
+        "Close": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 30,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 4,
+          "fixed_frame": 26,
+          "local_stack_peak": 26
+        },
+        "IoErr": {
+          "arguments": [],
+          "outgoing_bytes": 1,
+          "result_bytes": 4,
+          "fixed_frame": 0,
+          "local_stack_peak": 0
+        },
+        "Lock": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 34,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 4,
+              "body_displacement": 38,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 9,
+          "result_bytes": 3,
+          "fixed_frame": 30,
+          "local_stack_peak": 30
+        },
+        "UnLock": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18
+        },
+        "Examine": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 46,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 3,
+              "body_displacement": 49,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 7,
+          "result_bytes": 4,
+          "fixed_frame": 42,
+          "local_stack_peak": 42
+        },
+        "ExNext": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 38,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 3,
+              "body_displacement": 41,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 7,
+          "result_bytes": 4,
+          "fixed_frame": 34,
+          "local_stack_peak": 34
+        },
+        "ReleaseContext": {
+          "arguments": [],
+          "outgoing_bytes": 1,
+          "result_bytes": 4,
+          "fixed_frame": 10,
+          "local_stack_peak": 10
+        }
+      },
+      "checks": [
+        271
+      ],
+      "guarded_record_bytes": 508,
+      "fixture_sha256": "43942978c7b90f9919dedf0239854de97cd14091b1f79f41e2d839adb51b09d4"
+    },
+    {
+      "status": "pass",
+      "optimize": true,
+      "build": {
+        "revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "be923241e910dee3310aab0d77e7f7c3372d1b086f5116149bb887cbbd13cfe5",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "abi_assembly_sha256": "ba00a5bfa74d656f5d6d7f1fe566d399c6788ed745ba6a58c99fb336fc95afdb",
+        "source_sha256": "e949fe0688aa89dddafb41392d27bcd29a0776750814159e943fbaeccff11fcc",
+        "image_sha256": "099edf410f07e5b27a857c95f79ba1a5da484fbbd6221e0b0b1f28afd9b22984",
+        "xex_sha256": "0206268e12b60e67e38f4af6bd73034a05d0e8933bad75bdf6351551ef2255db",
+        "optimize": true,
+        "task_inputs": {
+          "abi/dos.json": "65a5325fa2320fca958129e271061f37cd6af629499713adadf0512ec43b0625",
+          "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+          "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+          "lib/dos-packets.inc": "d7f9c17c5e64bbc8606a3a3e958acc60c81bdbe5fdf9d832682bff2935d692f6",
+          "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+          "tools/generate_dos.py": "1e38eb7b49503b0c26584b5f097530de65d1ba1393a139b0d7527b18bba6992a",
+          "lib/siodriver.act": "271dd4359b55f1ad7ac1763378d2d07d9440de861dfeb0f8b56834ee9b4ffad9",
+          "lib/task-sio.inc": "87d59dffd7181fdf1341c88af32fe6d7a26818495fb4ecad085282260bb7fb0f",
+          "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+          "lib/task-io.inc": "2d970dcb2de53091a3d23338c38d832157370d962ad3a7ba8964b36ddbece875",
+          "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+          "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+          "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+          "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+          "lib/exec-io-types.inc": "e21b39c3c4fce74163e6230f3abbf73eeb932bf25b565909fed04a3c8387bbdf",
+          "tools/generate_io.py": "c261b28e3722702b882e7251b0d1f05c94db2956b4508e2d1a5b309d4e9da3b1",
+          "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+          "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+          "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+          "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+          "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+          "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+          "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+          "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+          "lib/taskpolicy.act": "769993c586e0d9acddc680bb5741ae89edc28e9c5f659a1890f6a0211bcea583",
+          "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "lib/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+          "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+          "platform/altirraos/sio.s": "e26287bae010cb99161864a03b4b85c2392c68813bb1fbb2baf1ab14cf46fb32",
+          "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+          "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+          "platform/altirraos/signal-irq.s": "d0f18ff9d829ffe48690151fbdb7ecb8253daf5f354f52901f77ea3c5d5b129a",
+          "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+          "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+          "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+          "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+          "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+          "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+          "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+          "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+          "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+          "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+          "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+          "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+          "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+          "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+          "tools/generate_tasks.py": "ee55541ebbcd08c21813c0da4cb96b36c6b379de158d4540401289eda732391e",
+          "platform/altirraos/tasks.s": "53c5538999a7707310b0d1bbafe8c5b9ff4d6d747dcdb30614d7bdbf36def7a6"
+        },
+        "task_generated": {
+          "dos.inc": "8a87a93a79676df171aedf583ebba5a7896547dfaca2a0248e077b4f40ea28ba",
+          "dos-action.inc": "299072820074038e7e1e6db35f1abe0e71f9cab52ac07d1ca6d1b36f28fa9789",
+          "io.inc": "497401e3fb059fc2b6fc4c16ab5e532a42b85bf7ddf9f5ffadcd8b6088d5ec56",
+          "io-action.inc": "100fe84e85d4a476e03702cc40d7442ba2370014a59bfd16ceb2b2dda7da4759",
+          "io-storage-action.inc": "3a61eba1ad816c3d0f7d69640b08df0c2c07ac853a313c20d53cd12acd4714be",
+          "sio-storage-action.inc": "b74d61549ea93cbbaf55d3cf3f6d345cc66a726520ec2eb985f5a8efc9768f18",
+          "ports.inc": "31429fb819f79f4ad64b0d5167beb1543c9ae318e47d9e38b71b724a6fae9483",
+          "ports-action.inc": "f0bb3e004e263740d04a43a37e6a0b57d30c92da59250a066f3a9b19acaedb93",
+          "port-packets.inc": "3db8f3075db83e21b03f3f5ced5c5eeb06178d257c6ed1a101ab71b2e48a5366",
+          "ports-storage.inc": "c6ffd9110ca265cf3812659a5443b6d20ad4e36c99a4c8351b71bd8e3650e7c6",
+          "ports-storage-action.inc": "e6f6bffa4af346601562730ff65408df3b062ddbf49eca61ec81050c5370ea13",
+          "heappolicy.act": "41ba32aa59926008e76f3db05ada0316715e86d740675a5a53a912f90b09236a",
+          "heap-storage.inc": "0c4295f03f7e77f25eb54093b57c3c6ebe812d2787d7f198ef4345fb28780001",
+          "heap.inc": "b82c94cc14b7cee47c714dbe3bbaf14805a771923612101cef2bb66c800a3b71",
+          "heap-action.inc": "d23fca22b4d80fd8e2f38bf3ddf9b75eafb24c4833c3c2591df63c196783f155",
+          "heap.json": "b8375194f43fde3b43e6a1d63a51d65daba77a43d725635197c07cce4cb11520",
+          "tasks.inc": "ee23fa9d7ee170662eb3759519280a609283614f92442a5fb98d10c2d54c7e3d",
+          "tasks-action.inc": "1e9b439c7d811ec598ada71e168681523bc24f8373deab9b9168e464d25616d4",
+          "tasks-bindings.inc": "f820749b9ae9bfd154460608419d574babfc9e89902a4e5a0a91a72f75b9b3f0",
+          "signal-gateway.inc": "4f44d0155c9f641f9571765e82d59808380454780830f8e554636609c2c24078",
+          "task-kernel/exec.act": "76b5a9db525fe66769812c245aa56e7ca9bc6439cdb3d890ef38cf2a2874a22e",
+          "task-kernel/taskpolicy.act": "a3e16ef00477f8c016bb3c14edeb94dddf1bd42ebd649be1a525499cab20e7a6",
+          "task-kernel/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "task-kernel/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "task-kernel/exectasks.act": "19f2d275536b53cb115bff286840a1e9258531b107b21ef618bf176aa2d9f2ab",
+          "task-kernel/taskstacks.act": "5d835b7dffd5ec18c8488059eb03ecc3dca4a3637d8110899b028a878576345f"
+        },
+        "kernel_bank": 1
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 1,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0,
+        "switches": 1,
+        "live_tasks": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "facts": [
+        12,
+        0,
+        4,
+        8,
+        260,
+        0,
+        4,
+        8,
+        116,
+        120,
+        124,
+        128,
+        132,
+        144,
+        224,
+        226,
+        228,
+        46,
+        0,
+        3,
+        6,
+        10,
+        14,
+        18,
+        22,
+        26,
+        30,
+        34,
+        38,
+        42,
+        62,
+        0,
+        16
+      ],
+      "seen": [
+        393215,
+        1005,
+        0,
+        0,
+        0,
+        458752,
+        4294897294,
+        4294967295,
+        458752,
+        393215,
+        4294967294,
+        589824,
+        589824,
+        458736,
+        589824,
+        458736,
+        655359,
+        70001,
+        458752
+      ],
+      "returns": [
+        458752,
+        70001,
+        4294897294,
+        4294967295,
+        70000,
+        589824,
+        4294967295,
+        0,
+        4294967295,
+        0
+      ],
+      "routines": {
+        "Open": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 34,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 4,
+              "body_displacement": 38,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 9,
+          "result_bytes": 3,
+          "fixed_frame": 30,
+          "local_stack_peak": 30
+        },
+        "Read": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 54,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 3,
+              "body_displacement": 57,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 6,
+              "body_displacement": 60,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 11,
+          "result_bytes": 4,
+          "fixed_frame": 50,
+          "local_stack_peak": 50
+        },
+        "Seek": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 50,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 4,
+              "body_displacement": 54,
+              "size": 4,
+              "alignment": 2
+            },
+            {
+              "offset": 8,
+              "body_displacement": 58,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 13,
+          "result_bytes": 4,
+          "fixed_frame": 46,
+          "local_stack_peak": 46
+        },
+        "Close": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 4,
+          "fixed_frame": 18,
+          "local_stack_peak": 18
+        },
+        "IoErr": {
+          "arguments": [],
+          "outgoing_bytes": 1,
+          "result_bytes": 4,
+          "fixed_frame": 0,
+          "local_stack_peak": 0
+        },
+        "Lock": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 34,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 4,
+              "body_displacement": 38,
+              "size": 4,
+              "alignment": 2
+            }
+          ],
+          "outgoing_bytes": 9,
+          "result_bytes": 3,
+          "fixed_frame": 30,
+          "local_stack_peak": 30
+        },
+        "UnLock": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 22,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 3,
+          "result_bytes": 0,
+          "fixed_frame": 18,
+          "local_stack_peak": 18
+        },
+        "Examine": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 38,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 3,
+              "body_displacement": 41,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 7,
+          "result_bytes": 4,
+          "fixed_frame": 34,
+          "local_stack_peak": 34
+        },
+        "ExNext": {
+          "arguments": [
+            {
+              "offset": 0,
+              "body_displacement": 38,
+              "size": 3,
+              "alignment": 1
+            },
+            {
+              "offset": 3,
+              "body_displacement": 41,
+              "size": 3,
+              "alignment": 1
+            }
+          ],
+          "outgoing_bytes": 7,
+          "result_bytes": 4,
+          "fixed_frame": 34,
+          "local_stack_peak": 34
+        },
+        "ReleaseContext": {
+          "arguments": [],
+          "outgoing_bytes": 1,
+          "result_bytes": 4,
+          "fixed_frame": 0,
+          "local_stack_peak": 0
+        }
+      },
+      "checks": [
+        271
+      ],
+      "guarded_record_bytes": 508,
+      "fixture_sha256": "43942978c7b90f9919dedf0239854de97cd14091b1f79f41e2d839adb51b09d4"
+    }
+  ],
+  "production_rejections": [
+    {
+      "name": "Open",
+      "status": "rejected"
+    },
+    {
+      "name": "Read",
+      "status": "rejected"
+    },
+    {
+      "name": "Seek",
+      "status": "rejected"
+    },
+    {
+      "name": "Close",
+      "status": "rejected"
+    },
+    {
+      "name": "IoErr",
+      "status": "rejected"
+    },
+    {
+      "name": "Lock",
+      "status": "rejected"
+    },
+    {
+      "name": "UnLock",
+      "status": "rejected"
+    },
+    {
+      "name": "Examine",
+      "status": "rejected"
+    },
+    {
+      "name": "ExNext",
+      "status": "rejected"
+    },
+    {
+      "name": "ReleaseContext",
+      "status": "rejected"
+    }
+  ],
+  "bank_zero": {
+    "before": {
+      "four": {
+        "fixed_runtime": 11824,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 21104,
+        "runtime_including_os": 57968,
+        "loading_excluding_os": 21696,
+        "loading_including_os": 58560
+      },
+      "eight": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      }
+    },
+    "after": {
+      "four": {
+        "fixed_runtime": 11824,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 21104,
+        "runtime_including_os": 57968,
+        "loading_excluding_os": 21696,
+        "loading_including_os": 58560
+      },
+      "eight": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      }
+    },
+    "fixed_delta": 0,
+    "per_task_delta": 0,
+    "diagnostic_delta": 0,
+    "accounting": "Generated maps; full guards, near arena, table slack and retained legacy contexts; unchanged pools."
+  },
+  "completion_limits": {
+    "host_seconds": 180,
+    "frames": 6000
+  },
+  "interfaces": {
+    "Open": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "name": "DOS.Open",
+      "outgoing_bytes": 9,
+      "result": "Some(NativeResult(A16X8ZeroExtended))",
+      "signature": 1120344978,
+      "symbol": 589518781
+    },
+    "Read": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 6,
+          "size": 4
+        }
+      ],
+      "name": "DOS.Read",
+      "outgoing_bytes": 11,
+      "result": "Some(NativeResult(A16X16))",
+      "signature": 1914480337,
+      "symbol": 1604387665
+    },
+    "Seek": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        },
+        {
+          "alignment": 2,
+          "offset": 8,
+          "size": 4
+        }
+      ],
+      "name": "DOS.Seek",
+      "outgoing_bytes": 13,
+      "result": "Some(NativeResult(A16X16))",
+      "signature": 841625591,
+      "symbol": 1897031277
+    },
+    "Close": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "name": "DOS.Close",
+      "outgoing_bytes": 3,
+      "result": "Some(NativeResult(A16X16))",
+      "signature": 3097848193,
+      "symbol": 4153533407
+    },
+    "IoErr": {
+      "abi": "action65816.native.v1",
+      "arguments": [],
+      "name": "DOS.IoErr",
+      "outgoing_bytes": 1,
+      "result": "Some(NativeResult(A16X16))",
+      "signature": 684236356,
+      "symbol": 3958707052
+    },
+    "Lock": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "name": "DOS.Lock",
+      "outgoing_bytes": 9,
+      "result": "Some(NativeResult(A16X8ZeroExtended))",
+      "signature": 2637265875,
+      "symbol": 1599540670
+    },
+    "UnLock": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "name": "DOS.UnLock",
+      "outgoing_bytes": 3,
+      "result": "None",
+      "signature": 3254948016,
+      "symbol": 2065193457
+    },
+    "Examine": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "name": "DOS.Examine",
+      "outgoing_bytes": 7,
+      "result": "Some(NativeResult(A16X16))",
+      "signature": 2135909272,
+      "symbol": 2835132284
+    },
+    "ExNext": {
+      "abi": "action65816.native.v1",
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "name": "DOS.ExNext",
+      "outgoing_bytes": 7,
+      "result": "Some(NativeResult(A16X16))",
+      "signature": 2135909272,
+      "symbol": 341337093
+    },
+    "ReleaseContext": {
+      "abi": "action65816.native.v1",
+      "arguments": [],
+      "name": "DOS.ReleaseContext",
+      "outgoing_bytes": 1,
+      "result": "Some(NativeResult(A16X16))",
+      "signature": 684236356,
+      "symbol": 3449486493
+    }
+  },
+  "commands": [
+    "python3 tools/test_dos_abi.py --case raw --output build/dos-slice2/final-raw",
+    "python3 tools/test_dos_abi.py --case opt --output build/dos-slice2/final-opt"
+  ]
+}

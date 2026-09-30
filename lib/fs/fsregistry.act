@@ -1,0 +1,158 @@
+MODULE FSREGISTRY
+USE EXEC
+USE DOSCORE
+USE DOSOBJECTS
+USE FSTYPES
+USE FSNAMES
+USE FSSYSTEM
+INCLUDE "../dos/dos-types.inc"
+
+PUBLIC FSTYPES.Service POINTER FUNC Service()
+  DOSCORE.DosRegistry POINTER registry
+
+  registry=DOSCORE.GetRegistry()
+
+RETURN(FSTYPES.Service POINTER(registry.runtime))
+
+; Keep a mount alive while a caller owns a reference to it.
+PUBLIC BYTE FUNC Retain(FSTYPES.Mount POINTER mount)
+  BYTE okay
+
+  okay=0
+  EXEC.Forbid()
+  IF mount.references<>$ffff THEN
+    mount.references==+1
+    okay=1
+  FI
+
+  EXEC.Permit()
+
+RETURN(okay)
+
+; Retain a relative-path base only while its mount still accepts work.
+PUBLIC LONGINT FUNC RetainBase(FSTYPES.Mount POINTER mount)
+  DOSCORE.DosRegistry POINTER registry
+  LONGINT error
+
+  registry=DOSCORE.GetRegistry()
+  error=ERROR_DEVICE_NOT_MOUNTED
+  EXEC.Forbid()
+  IF registry.state=FSTYPES.STATE_READY AND registry.stop=0
+      AND mount.published<>0 THEN
+    error=ERROR_OBJECT_IN_USE
+    IF mount.references<>$ffff THEN
+      mount.references==+1
+      error=0
+    FI
+  FI
+
+  EXEC.Permit()
+
+RETURN(error)
+
+; Drop a retained mount reference under the registry ownership exclusion.
+PUBLIC PROC Release(FSTYPES.Mount POINTER mount)
+
+  EXEC.Forbid()
+  mount.references==-1
+  EXEC.Permit()
+
+RETURN
+
+; Resolve a public alias and retain its mount in the same protected interval.
+PUBLIC FSTYPES.Mount POINTER FUNC Lookup(BYTE POINTER name CARD colon)
+  DOSCORE.DosRegistry POINTER registry
+  FSTYPES.Service POINTER service
+  FSTYPES.Mount POINTER mount
+  BYTE index
+
+  registry=DOSCORE.GetRegistry()
+  mount=FSTYPES.Mount POINTER(0)
+  EXEC.Forbid()
+  IF registry.state=FSTYPES.STATE_READY AND registry.stop=0 THEN
+    service=FSTYPES.Service POINTER(registry.runtime)
+    FOR index=0 TO service.count-1 DO
+      mount=service.mounts(index).item
+      IF mount<>FSTYPES.Mount POINTER(0) THEN
+        IF mount.published<>0 AND FSSYSTEM.Matches(@mount.spec,index,name,
+            colon)<>0 THEN
+          IF mount.references<>$ffff THEN
+            mount.references==+1
+            EXIT
+          FI
+        FI
+      FI
+
+      mount=FSTYPES.Mount POINTER(0)
+    OD
+  FI
+
+  EXEC.Permit()
+
+RETURN(mount)
+
+PUBLIC FSTYPES.Object POINTER FUNC FindObject(DOSCORE.DosSlot POINTER owner BYTE
+    POINTER identity BYTE kind)
+  DOSOBJECTS.Header POINTER header
+
+  header=DOSOBJECTS.Find(owner,identity,kind)
+
+RETURN(FromHeader(header))
+
+; Reject stale identities before exposing filesystem-specific object state.
+PUBLIC FSTYPES.Object POINTER FUNC FromHeader(DOSOBJECTS.Header POINTER header)
+  FSTYPES.Object POINTER item
+  FSTYPES.FileObject POINTER file
+
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    RETURN(FSTYPES.Object POINTER(0))
+  FI
+
+  IF header.backend<>DOSOBJECTS.BACKEND_FILE THEN
+    RETURN(FSTYPES.Object POINTER(0))
+  FI
+
+  IF header.kind<>DOSOBJECTS.KIND_FILE AND header.kind<>DOSOBJECTS.KIND_LOCK THEN
+    RETURN(NULL)
+  FI
+
+  item=FSTYPES.Object POINTER(header)
+  IF item.mount=FSTYPES.Mount POINTER(0) THEN
+    RETURN(FSTYPES.Object POINTER(0))
+  FI
+
+  IF item.generation<>item.mount.generation THEN
+    RETURN(FSTYPES.Object POINTER(0))
+  FI
+
+  IF item.header.kind=DOSOBJECTS.KIND_FILE THEN
+    file=FSTYPES.FileObject POINTER(item)
+    IF file.backing=FSTYPES.FileBacking POINTER(0) THEN
+      RETURN(FSTYPES.Object POINTER(0))
+    FI
+
+    IF file.backing.references=0 THEN
+      RETURN(FSTYPES.Object POINTER(0))
+    FI
+  FI
+
+RETURN(item)
+
+; Give a lock a fresh enumeration identity without reusing old tickets.
+PUBLIC BYTE FUNC Stamp(FSTYPES.LockObject POINTER item)
+  DOSCORE.DosRegistry POINTER registry
+
+  registry=DOSCORE.GetRegistry()
+  EXEC.Forbid()
+  IF registry.generation=LONGCARD($ffffffff) THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  registry.generation==+1
+  item.ticket=registry.generation
+  EXEC.Permit()
+
+RETURN(1)
+
+ENDMODULE

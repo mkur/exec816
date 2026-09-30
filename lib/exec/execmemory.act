@@ -1,0 +1,192 @@
+MODULE EXECMEMORY
+
+INCLUDE "memory-action.inc"
+
+; Internal kernel policy. Caller holds the serialized kernel context; the VBI
+; hook does not access this table. Owner IDs are fixed for this launch.
+BankRecord ARRAY banks(M_MAX_BANKS)=M_TABLE
+BYTE ready=M_READY,error=M_ERROR
+CARD adopted=M_ADOPTED
+BYTE ARRAY identity(16)=M_ID
+BYTE ARRAY expectedIdentity(16)=M_MANIFEST+M_HEADER_IDENTITY
+CARD manifestVersion=M_MANIFEST+M_HEADER_VERSION,
+    manifestBanks=M_MANIFEST+M_HEADER_BANKS
+CARD manifestExtents=M_MANIFEST+M_HEADER_EXTENTS,nextExtent=M_NEXT,
+    extentOffset=M_OFFSET
+BYTE ARRAY tableBytes(M_TABLE_BYTES)=M_TABLE
+BYTE ARRAY seedBytes(M_TABLE_BYTES)=M_MANIFEST+M_HEADER_BYTES
+
+; Reject bank numbers outside the configured ownership table.
+CARD FUNC ValidBank(CARD bank)
+
+  IF bank>=M_MAX_BANKS THEN
+    RETURN(M_ERROR_BANK)
+  FI
+
+RETURN(M_ERROR_OK)
+
+; Accept only owner identities supported by the bank manager.
+CARD FUNC ValidOwner(CARD owner)
+
+  IF owner<M_OWNER_SYSTEM OR owner>M_OWNER_HEAP THEN
+    RETURN(M_ERROR_OWNER)
+  FI
+
+RETURN(M_ERROR_OK)
+
+; Adopt the loader table only after its identity and completed writes agree.
+PUBLIC CARD FUNC Adopt()
+  CARD i
+
+  IF ready<>1 OR error<>0 THEN
+    RETURN(M_ERROR_BOOT)
+  FI
+
+  IF manifestVersion<>M_VERSION OR manifestBanks<>M_MAX_BANKS THEN
+    RETURN(M_ERROR_BOOT)
+  FI
+
+  IF nextExtent<>manifestExtents OR extentOffset<>0 THEN
+    RETURN(M_ERROR_BOOT)
+  FI
+
+  FOR i=0 TO 15 DO
+    IF identity(i)<>expectedIdentity(i) THEN
+      RETURN(M_ERROR_BOOT)
+    FI
+  OD
+
+  FOR i=0 TO M_TABLE_BYTES-1 DO
+    IF tableBytes(i)<>seedBytes(i) THEN
+      RETURN(M_ERROR_BOOT)
+    FI
+  OD
+
+  IF banks(0).state<>M_STATE_RESERVED OR banks(0).owner<>M_OWNER_SYSTEM THEN
+    RETURN(M_ERROR_BOOT)
+  FI
+
+  adopted=M_VERSION
+
+RETURN(M_ERROR_OK)
+
+; Copy bank ownership to caller storage without changing the table.
+PUBLIC CARD FUNC Query(CARD bank BankRecord POINTER result)
+
+  IF adopted<>M_VERSION THEN
+    RETURN(M_ERROR_BOOT)
+  FI
+
+  IF ValidBank(bank)<>0 THEN
+    RETURN(M_ERROR_BANK)
+  FI
+
+  result.state=banks(bank).state
+  result.reserved=banks(bank).reserved
+  result.owner=banks(bank).owner
+
+RETURN(M_ERROR_OK)
+
+; Permanently reserve a free bank for the requested launch owner.
+PUBLIC CARD FUNC ReserveExact(CARD bank CARD owner)
+
+  IF adopted<>M_VERSION THEN
+    RETURN(M_ERROR_BOOT)
+  FI
+
+  IF ValidBank(bank)<>0 THEN
+    RETURN(M_ERROR_BANK)
+  FI
+
+  IF ValidOwner(owner)<>0 THEN
+    RETURN(M_ERROR_OWNER)
+  FI
+
+  IF banks(bank).state=M_STATE_UNAVAILABLE THEN
+    RETURN(M_ERROR_UNAVAILABLE)
+  FI
+
+  IF banks(bank).state=M_STATE_RESERVED THEN
+    RETURN(M_ERROR_RESERVED)
+  FI
+
+  IF banks(bank).state<>M_STATE_FREE THEN
+    RETURN(M_ERROR_CONFLICT)
+  FI
+
+  banks(bank).owner=owner
+  banks(bank).reserved=0
+  banks(bank).state=M_STATE_RESERVED
+
+RETURN(M_ERROR_OK)
+
+; Claim the lowest free upper bank for an owner that can later release it.
+PUBLIC CARD FUNC Acquire(CARD owner CARD POINTER result)
+  CARD bank
+
+  IF adopted<>M_VERSION THEN
+    RETURN(M_ERROR_BOOT)
+  FI
+
+  IF ValidOwner(owner)<>0 THEN
+    RETURN(M_ERROR_OWNER)
+  FI
+
+  bank=1
+  WHILE bank<M_MAX_BANKS DO
+    IF banks(bank).state=M_STATE_FREE THEN
+      banks(bank).owner=owner
+      banks(bank).reserved=0
+      banks(bank).state=M_STATE_OWNED
+      result^=bank
+      RETURN(M_ERROR_OK)
+    FI
+
+    bank==+1
+  OD
+
+RETURN(M_ERROR_EXHAUSTED)
+
+; Return an owned bank only when the releasing owner matches its claim.
+PUBLIC CARD FUNC Release(CARD bank CARD owner)
+
+  IF adopted<>M_VERSION THEN
+    RETURN(M_ERROR_BOOT)
+  FI
+
+  IF ValidBank(bank)<>0 THEN
+    RETURN(M_ERROR_BANK)
+  FI
+
+  IF ValidOwner(owner)<>0 THEN
+    RETURN(M_ERROR_OWNER)
+  FI
+
+  IF banks(bank).state=M_STATE_UNAVAILABLE THEN
+    RETURN(M_ERROR_UNAVAILABLE)
+  FI
+
+  IF banks(bank).state=M_STATE_RESERVED THEN
+    RETURN(M_ERROR_RESERVED)
+  FI
+
+  IF banks(bank).state<>M_STATE_OWNED THEN
+    RETURN(M_ERROR_CONFLICT)
+  FI
+
+  IF banks(bank).owner<>owner THEN
+    RETURN(M_ERROR_OWNERSHIP)
+  FI
+
+  banks(bank).owner=0
+  banks(bank).reserved=0
+  banks(bank).state=M_STATE_FREE
+
+RETURN(M_ERROR_OK)
+
+; Retained for the bank-zero launcher to call on the native kernel stack.
+PUBLIC CARD FUNC Init()
+
+RETURN(Adopt())
+
+ENDMODULE

@@ -1,0 +1,98 @@
+MODULE DOSSTREAMS
+USE EXEC
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE FSNAMES
+USE HEAPCORE
+INCLUDE "dos-types.inc"
+; The inline prefix is followed by backend-specific stream identity. NIL has
+; no endpoint. RAW will use the endpoint and generation without another wrapper.
+PUBLIC TYPE Handle=[
+  DOSOBJECTS.Header header
+  BYTE POINTER endpoint
+  LONGCARD generation
+]
+
+PUBLIC BYTE FUNC ValidMode(LONGINT mode)
+
+RETURN(mode=MODE_OLDFILE OR mode=MODE_NEWFILE OR mode=MODE_READWRITE)
+
+; Reject unmapped or wrapping caller extents before stream transfer.
+PUBLIC BYTE FUNC ValidBuffer(BYTE POINTER buffer LONGINT length)
+
+  IF length<0 THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+  IF length=0 THEN
+    RETURN(1)
+  FI
+
+  IF FSNAMES.Mapped(buffer,LONGCARD(length))=0 THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Create a caller-owned null-stream handle with the requested access mode.
+PUBLIC BYTE POINTER FUNC OpenNIL(DOSCLIENT.ClientContext POINTER client)
+  Handle POINTER item
+  DOSCORE.DosSlot POINTER owner
+
+  owner=DOSCORE.Current()
+  client.busy=1
+  item=Handle POINTER(EXEC.AllocMem(SIZEOF(Handle),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  IF item=Handle POINTER(0) THEN
+    owner.error=ERROR_NO_FREE_STORE
+    client.busy=0
+    RETURN(BYTE POINTER(0))
+  FI
+
+  item.header.kind=DOSOBJECTS.KIND_FILE
+  item.header.backend=DOSOBJECTS.BACKEND_NIL
+  DOSOBJECTS.Link(owner,@item.header)
+  owner.error=0
+  client.busy=0
+
+RETURN(BYTE POINTER(item))
+
+; Implement immediate EOF for reads and successful discard for writes.
+PUBLIC LONGINT FUNC TransferNIL(DOSCLIENT.ClientContext POINTER client BYTE
+    POINTER buffer LONGINT length BYTE writing)
+
+  client.busy=1
+  IF ValidBuffer(buffer,length)=0 THEN
+    client.busy=0
+    RETURN(-1)
+  FI
+
+  DOSCLIENT.SetError(0)
+  client.busy=0
+  IF writing<>0 THEN
+    RETURN(length)
+  FI
+
+RETURN(0)
+
+; Remove and free the caller's null-stream wrapper.
+PUBLIC LONGINT FUNC CloseNIL(DOSCLIENT.ClientContext POINTER client
+    DOSOBJECTS.Header POINTER header)
+  DOSCORE.DosSlot POINTER owner
+
+  owner=DOSCORE.Current()
+  client.busy=1
+  DOSCLIENT.ClearSelections(client,BYTE POINTER(header))
+  IF DOSOBJECTS.Unlink(owner,header)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  EXEC.FreeMem(BYTE POINTER(header),SIZEOF(Handle))
+  client.busy=0
+
+RETURN(-1)
+
+ENDMODULE

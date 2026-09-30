@@ -1,0 +1,906 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "slice": "D3",
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act"
+  },
+  "compiler_binary_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+  "compiler_execution_revision": "43b7af17dbebadca82569bb1fac5e5bd5707bb93",
+  "compiler_docs_only_successor": [
+    "docs/MIR65816_ARITHMETIC_HELPERS_PLAN.md",
+    "docs/MIR65816_CODE_QUALITY_PLAN.md",
+    "docs/MIR65816_CONTROL_FLOW_IMPLEMENTATION_PLAN.md",
+    "docs/MIR65816_EMISSION_CONTRACT.md",
+    "docs/MIR65816_EXEC_ACCEPTANCE.md",
+    "docs/MIR65816_EXEC_READINESS_REQUIREMENTS.md",
+    "docs/MIR65816_EXEC_READINESS_REVIEW.md",
+    "docs/MIR65816_FRAME_FORWARDING.md",
+    "docs/MIR65816_IMPLEMENTATION_PLAN.md",
+    "docs/MIR65816_LOCAL_ACCUMULATOR_FORWARDING_PLAN.md",
+    "docs/MIR65816_O65_ASSESSMENT.md",
+    "docs/MIR65816_O65_IMPLEMENTATION_PLAN.md",
+    "docs/MIR65816_STATE_TRACKER_DESIGN.md",
+    "docs/MIR65816_VBCC_COMPARISON.md",
+    "docs/MIR65816_WORD_ARITHMETIC_PLAN.md",
+    "docs/MIR65816_WORD_RETURNS_PLAN.md",
+    "docs/NATIVE_DP_PARTITION.md",
+    "docs/NATIVE_ROUTINE_ABI_AND_AUTOMATIC_STORAGE_IMPLEMENTATION_PLAN.md"
+  ],
+  "compiler_followup_tests": {
+    "o65": 13,
+    "o65_cli": 7
+  },
+  "host_tests": 217,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "prior_slice": {
+    "path": "docs/development/direct-page-d2.json",
+    "sha256": "db7a0c1da9cd2b0039a46abb48ccdad9751b97565159d8d6c8938701f076e7a2"
+  },
+  "execution": {
+    "command_raw": {
+      "path": "build/dp-partition/command-raw/results.json",
+      "sha256": "7f23fef6df3d33c5409d019f5ecfded0b6364959638c34ef3bbfb4548786813d",
+      "status": "pass",
+      "mode": "raw",
+      "compiler": "43b7af17dbebadca82569bb1fac5e5bd5707bb93",
+      "compiler_binary_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+      "image_sha256": "87c913f9e3dda128a25a16ee698cd68f359810be05b2d2ab12f8975f46b7f09a",
+      "xex_sha256": "0e7d2f609d7b65bdf46ad3875d56b1775344cf49b963d5b5fc7092110d391187",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1730,
+        "native_irq_count": 42439,
+        "switches": 1452,
+        "gateway_calls": 22498,
+        "guards": "intact",
+        "return_d": 8704,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": 114,
+      "command": {
+        "source": "/Users/michalkurcewicz/action/exec816/tests/programs/cstring_command.act",
+        "source_sha256": "610f3e4d112376446bd8bb608c866d8f9d90a0c10e4953428446f7f6b0b26d49",
+        "file_sha256": "4130ec80b132256777c313ffecdb5b2ac704988785c472b571bf8017c62d2938",
+        "compiler": "43b7af17dbebadca82569bb1fac5e5bd5707bb93",
+        "compiler_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+        "optimize": false,
+        "api_sha256": "06cf5ee748c44edfbfd58070c83c901848c0d1b7a98efcd34e39f3656f00aae8",
+        "profile_sha256": "eec2be8420e513c358bc70a2d894b510d9c33c1f023947a72a01d881d8e49314"
+      },
+      "command_bytes": 7199,
+      "direct_library_relocations": 16,
+      "media_sha256": "5a880fd9570a6c80c205985ef461d46a3ab653f523105096fd6257c85dee3af0"
+    },
+    "command_opt": {
+      "path": "build/dp-partition/command-opt/results.json",
+      "sha256": "e3a685d124cbf2540a058acf756958a48067e3efcb8d48671833ed30a3e0c57a",
+      "status": "pass",
+      "mode": "opt",
+      "compiler": "43b7af17dbebadca82569bb1fac5e5bd5707bb93",
+      "compiler_binary_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+      "image_sha256": "b7dcb512983e168a5b2c9145af7899e2fa2069b21734378362140c7169eea410",
+      "xex_sha256": "a9c367926ff12419b27fda3dac2d5d0ad0d43422e7d266090d6f35241e36d21a",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1552,
+        "native_irq_count": 38476,
+        "switches": 1357,
+        "gateway_calls": 20764,
+        "guards": "intact",
+        "return_d": 8704,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": 114,
+      "command": {
+        "source": "/Users/michalkurcewicz/action/exec816/tests/programs/cstring_command.act",
+        "source_sha256": "610f3e4d112376446bd8bb608c866d8f9d90a0c10e4953428446f7f6b0b26d49",
+        "file_sha256": "5dd3f18d807290b2dee69e1b89a963629d6bb818229c47b67534d42303e90cb8",
+        "compiler": "43b7af17dbebadca82569bb1fac5e5bd5707bb93",
+        "compiler_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+        "optimize": true,
+        "api_sha256": "06cf5ee748c44edfbfd58070c83c901848c0d1b7a98efcd34e39f3656f00aae8",
+        "profile_sha256": "691d289efa6e33159d3c8317792879a43fb089ffd26b4db50943334c54d96726"
+      },
+      "command_bytes": 6467,
+      "direct_library_relocations": 16,
+      "media_sha256": "8b0004748d5d7de59446b30212b643f9b9bcd0c1f39c5b991e0bd50c8db23b01"
+    },
+    "amiga-ports": {
+      "path": "build/dp-partition/examples/amiga-ports/results.json",
+      "sha256": "9f2816e4bc327ad0d2b51ed913e4d00e272a0fc76dd2cdacdba9cf7b5e77f3b1",
+      "status": "pass",
+      "mode": "opt",
+      "compiler": "43b7af17dbebadca82569bb1fac5e5bd5707bb93",
+      "compiler_binary_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+      "image_sha256": "86f938712d7a67ba46396226395e857114820e5502c5b2fbc3a9dd50e8e6bcaf",
+      "xex_sha256": "a8b08d1c4edaf3583e69c4350f1b942ff2834f951a2d0ca973ab01520a522783",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 16,
+        "native_irq_count": 1,
+        "switches": 40,
+        "gateway_calls": 340,
+        "guards": "intact",
+        "return_d": 9216,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "output": [
+        "Send: 10,20",
+        "Reply: 60,70",
+        "Message returned; resources released."
+      ]
+    },
+    "tasks": {
+      "path": "build/dp-partition/examples/tasks/results.json",
+      "sha256": "097a489eedfc4c12ee101a3e6de343e9317729a34fe700f5d6605754ced0b92c",
+      "status": "pass",
+      "mode": "opt",
+      "compiler": "43b7af17dbebadca82569bb1fac5e5bd5707bb93",
+      "compiler_binary_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+      "image_sha256": "8070b7e193eb5aa929faf63a7f8a8437b494023afea6835d4b26630efe547346",
+      "xex_sha256": "8800d468fd33667ab65ad2ada462acaeb47e9dea40ad77e65bec5d88369a042f",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 14,
+        "native_irq_count": 1,
+        "switches": 31,
+        "gateway_calls": 280,
+        "guards": "intact",
+        "return_d": 9216,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "output": [
+        "TASKS EXEC OK"
+      ]
+    },
+    "signals": {
+      "path": "build/dp-partition/examples/signals/results.json",
+      "sha256": "08df3685c544d46fdff9d0125acf7bb7d1ca9901d86f6c134588021eb3c6dac6",
+      "status": "pass",
+      "mode": "opt",
+      "compiler": "43b7af17dbebadca82569bb1fac5e5bd5707bb93",
+      "compiler_binary_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+      "image_sha256": "2e3703a977daf4243c94fd329ea360ddc4e47118c66079828aa223124923d1ef",
+      "xex_sha256": "07a4ea33df775a12158dc31156039de96e6637afb75a8d3d35fe164a5c09cf36",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 19,
+        "native_irq_count": 1,
+        "switches": 54,
+        "gateway_calls": 365,
+        "guards": "intact",
+        "return_d": 9216,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "output": [
+        "SIGNALS OK"
+      ]
+    }
+  },
+  "rebuilt_examples": {
+    "scope": "Build only; selected execution recorded separately at the identical compiler binary before the documentation-only successor",
+    "artifacts": {
+      "hello": {
+        "source": "examples/hello.act",
+        "source_sha256": "8b59a4f909b25779cb43e281aa85b541b96ad3b50e1e4acf765bec4207d766b5",
+        "options": {},
+        "xex": "build/dp-partition/rebuilt/hello/program.xex",
+        "xex_sha256": "43fa8509f46582a3e931815f5d64a879e16fc3c93e6c0fb97d2acf1b8fae28fb",
+        "image_sha256": "6c3ad3b5c722dde898cd4e0fb03e9fd09425eef39ebaf580f1204121fea92b07"
+      },
+      "messages": {
+        "source": "examples/messages.act",
+        "source_sha256": "b3d75359e2b02d068df3675388a54b533ff87aebf60c5a5f6f5e4f34500cbeed",
+        "options": {
+          "tasks": true
+        },
+        "xex": "build/dp-partition/rebuilt/messages/program.xex",
+        "xex_sha256": "373bdbc7b3a68fe1e20282e443f7b81550c259f747a4b0d6b6064ed6acd96100",
+        "image_sha256": "318ccece1d9da20d88b946f6b6710d42ac3f42213e3e5660e2206781a0b85e7a"
+      },
+      "dos-nil": {
+        "source": "examples/dos-nil.act",
+        "source_sha256": "e5cd021b20e10c9a492003884a26c6befaafda84b8f2d7eb94513cc866e9612b",
+        "options": {
+          "tasks": true
+        },
+        "xex": "build/dp-partition/rebuilt/dos-nil/program.xex",
+        "xex_sha256": "6c5854000d36c78295a34904ec13a6fad808262acd48beaf3990014ca31f8cc0",
+        "image_sha256": "6dfcd5d3024b0ebe8cfeaaa0750a78aa2f9db427701a7f686c24b71f5aa0ca52"
+      },
+      "console": {
+        "source": "examples/console.act",
+        "source_sha256": "b687f679d60bf3e21a5a45aae8ca06b41f21935270789f525a5642040810932b",
+        "options": {
+          "tasks": true,
+          "task_capacity": 8,
+          "console": true,
+          "dos_mounts": [
+            {
+              "alias": "D1",
+              "unit": 49,
+              "sectors": 720,
+              "sector_bytes": 128,
+              "profile": 4,
+              "format": 2
+            }
+          ]
+        },
+        "xex": "build/dp-partition/rebuilt/console/program.xex",
+        "xex_sha256": "e4abb5dc01353e9d0ee9dab78fc4fc5f9feaffa9795f7eb3f602a0cade271573",
+        "image_sha256": "a8497accf46a11e56b8ed2bc94dbe3663fe30884b0841086b42ec2a5f03b26ad"
+      },
+      "amiga-ports": {
+        "source": "examples/amiga-ports.act",
+        "source_sha256": "5fbe988fc86d10d714142f347f20441baccb493ade32aa73a7d5990894bbc373",
+        "options": {
+          "tasks": true,
+          "task_capacity": 4,
+          "console": true
+        },
+        "xex": "build/dp-partition/rebuilt/amiga-ports/program.xex",
+        "xex_sha256": "a8b08d1c4edaf3583e69c4350f1b942ff2834f951a2d0ca973ab01520a522783",
+        "image_sha256": "86f938712d7a67ba46396226395e857114820e5502c5b2fbc3a9dd50e8e6bcaf"
+      },
+      "echoargs": {
+        "source": "/Users/michalkurcewicz/action/exec816/examples/commands/echoargs.act",
+        "source_sha256": "849223b957805b5511cc154309caf7cdce40b4f57c073bf6b53321b1a70487df",
+        "file_sha256": "bdcf1655e08d60adbb4616fdf51daa874c754611b167178f32f88ab8b5e309d1",
+        "compiler": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+        "compiler_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+        "optimize": true,
+        "api_sha256": "06cf5ee748c44edfbfd58070c83c901848c0d1b7a98efcd34e39f3656f00aae8",
+        "profile_sha256": "3ad987ac1502f00725673319dc0214d31d43674b96b89215e0ddc6bba8da0f05"
+      },
+      "cooperative": {
+        "source": "examples/cooperative.act",
+        "source_sha256": "c25a2356a1a1831199841eec6afc4359b751c2b1b0487446fd41c846916af4eb",
+        "options": {
+          "cooperative": true
+        },
+        "xex": "build/dp-partition/rebuilt/cooperative/program.xex",
+        "xex_sha256": "d3fbac1697f2ea2dd3456871c5b46f72805eeacb300a0c7dd8ea9bf751de284f",
+        "image_sha256": "659899367860a559305d7ba46f91a57eb1dc8d240b62050f3e6e163184519910"
+      },
+      "memory": {
+        "source": "examples/memory.act",
+        "source_sha256": "5f997ca6c4d82b8c36eb7621d870c93ab4914984657d0896f8c3b2aebfc528fb",
+        "options": {
+          "tasks": true
+        },
+        "xex": "build/dp-partition/rebuilt/memory/program.xex",
+        "xex_sha256": "34ffc47ee652d0b629f292940e826233d207a2819ce447c8182c77c22c7fe424",
+        "image_sha256": "62f91f90b960f1821c73e45420b7947cb545b4e8581ab8184fe5969b14529ec0"
+      },
+      "dos-read": {
+        "source": "examples/dos-read.act",
+        "source_sha256": "6cc7bbecfa22d074dc90575bf6c9d7b7514d93c386d294f02f7e6947a743a772",
+        "options": {
+          "tasks": true,
+          "dos_mounts": [
+            {
+              "alias": "D1",
+              "unit": 49,
+              "sectors": 720,
+              "sector_bytes": 128,
+              "profile": 4,
+              "format": 2
+            }
+          ]
+        },
+        "xex": "build/dp-partition/rebuilt/dos-read/program.xex",
+        "xex_sha256": "a37aa04a24adfef4135f2f6c34bccaf00fcc0592fd5c32aa82d51846e21c1652",
+        "image_sha256": "4387a4a3ee965640fab11b6ea9c93738a8c7da52c3ab6eabe34174a086875b94"
+      },
+      "dos-streams": {
+        "source": "examples/dos-streams.act",
+        "source_sha256": "4902078e85a52c1d04a499f1e68bffa7aa1d2fbb9051d850bf7bd6c916fe7f9d",
+        "options": {
+          "tasks": true,
+          "task_capacity": 8,
+          "console": true,
+          "dos_mounts": [
+            {
+              "alias": "D1",
+              "unit": 49,
+              "sectors": 720,
+              "sector_bytes": 128,
+              "profile": 4,
+              "format": 2
+            }
+          ]
+        },
+        "xex": "build/dp-partition/rebuilt/dos-streams/program.xex",
+        "xex_sha256": "94a60f078eb90580e2d065064550623d3d1981cd1cc0647be7310ad409d5ff61",
+        "image_sha256": "269e857a158bf0b8c897c4b473797e86bbb71766aee640fd28abfc413489fbf0"
+      },
+      "tasks": {
+        "source": "examples/tasks.act",
+        "source_sha256": "c30966cbe75b214d2099766b9879c52b8fcd408905601b40802aa684d37d9408",
+        "options": {
+          "tasks": true,
+          "task_capacity": 8,
+          "console": true
+        },
+        "xex": "build/dp-partition/rebuilt/tasks/program.xex",
+        "xex_sha256": "8800d468fd33667ab65ad2ada462acaeb47e9dea40ad77e65bec5d88369a042f",
+        "image_sha256": "8070b7e193eb5aa929faf63a7f8a8437b494023afea6835d4b26630efe547346"
+      },
+      "preemptive": {
+        "source": "examples/preemptive.act",
+        "source_sha256": "1b621dbd10a123d51fa9fe5f89b189515b5607c3ca3ea90f2e59e17ab87f7ff4",
+        "options": {
+          "preemptive": true
+        },
+        "xex": "build/dp-partition/rebuilt/preemptive/program.xex",
+        "xex_sha256": "9189fb9742c4bafa7f803452fb3007e945c70ec069badee7131760e6299d99a4",
+        "image_sha256": "d5008df2c8baaf721e70768a3f400fb6821eabd57d48c9650a8040c026bf2800"
+      },
+      "device-io": {
+        "source": "examples/device-io.act",
+        "source_sha256": "bd887e7a550e4f70502977ab7b3d1825cec2a8e7c4eebcb7df773b25dc76a9e7",
+        "options": {
+          "tasks": true
+        },
+        "xex": "build/dp-partition/rebuilt/device-io/program.xex",
+        "xex_sha256": "3d9f90b48ba89205c1820325553312e7757e52dc63d6e1260d475e61d1cd2476",
+        "image_sha256": "2f3c876b84f38ab5e36b019d3c22559c4f9c62493590510df929cd8421c69bea"
+      },
+      "dos-directory": {
+        "source": "examples/dos-directory.act",
+        "source_sha256": "6e00c9631bc5a2a5b2f71622de4181322d7eda8bf5061faefbe2367935a3c62f",
+        "options": {
+          "tasks": true,
+          "dos_mounts": [
+            {
+              "alias": "D1",
+              "unit": 49,
+              "sectors": 720,
+              "sector_bytes": 128,
+              "profile": 4,
+              "format": 2
+            }
+          ]
+        },
+        "xex": "build/dp-partition/rebuilt/dos-directory/program.xex",
+        "xex_sha256": "ef6d808541e934b2ea2cec0a1c3d81c61c85d53147584c3da6c23c2792b75184",
+        "image_sha256": "43e421364b008b533c2b27565514b67b1a6a0474ba2f5c4e8ea42b791d0fe9c2"
+      },
+      "shell/shell": {
+        "source": "examples/shell/shell.act",
+        "source_sha256": "7a08b1cb0a0c426eb582365fe61c3f3551600c745bf0457c32ead7c246e4df96",
+        "options": {
+          "tasks": true,
+          "task_capacity": 8,
+          "console": true,
+          "dos_mounts": [
+            {
+              "alias": "D1",
+              "unit": 49,
+              "sectors": 720,
+              "sector_bytes": 128,
+              "profile": 4,
+              "format": 2
+            }
+          ]
+        },
+        "xex": "build/dp-partition/rebuilt/shell-shell/program.xex",
+        "xex_sha256": "6bbf5c82c3a54337539b7f6790868f8f301a15aa69a418aa11ae6c98dc4d7759",
+        "image_sha256": "cc2d6c403aecedac46ebebd786bd46b46f38c04c534a77a050c5e484cde1b0ab"
+      },
+      "signals": {
+        "source": "examples/signals.act",
+        "source_sha256": "618ae6fb6b7a679343a850e3ec41c29f75010fba7f8af08fd1ca5b883bd37b8b",
+        "options": {
+          "tasks": true,
+          "task_capacity": 8,
+          "console": true
+        },
+        "xex": "build/dp-partition/rebuilt/signals/program.xex",
+        "xex_sha256": "07a4ea33df775a12158dc31156039de96e6637afb75a8d3d35fe164a5c09cf36",
+        "image_sha256": "2e3703a977daf4243c94fd329ea360ddc4e47118c66079828aa223124923d1ef"
+      }
+    }
+  },
+  "play_image": {
+    "path": "build/demo/demo-manifest.json",
+    "sha256": "a4a7f900f05e28b5a1f43279b5c42e8a35cc0d1c2c26f7c48598e1f52acb3f7e",
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ]
+    },
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "mounts": [
+      {
+        "alias": "D1",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "profile": 4,
+        "format": 2
+      }
+    ],
+    "compiler": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+    "compiler_binary_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "image_sha256": "f60bf631f36274810134541629a2464c523e49567211790a025e01d85ab2c0cd",
+    "exec_build": {
+      "revision": "6a6e53ecb307e9af4429ab4f41d297f4f3e0844a",
+      "dirty": true,
+      "display": "6a6e53e-dirty",
+      "actionc_pin": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+      "task_capacity": 8,
+      "stack_checks": true,
+      "mount": {
+        "profile": 4,
+        "boot": 1,
+        "format": 2,
+        "alias": "D1",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128
+      },
+      "strings": {
+        "banner": "Exec816 (6a6e53e-dirty)\n\n",
+        "slots": "exec: 8 task slots\n",
+        "stackChecks": "exec: stack checks enabled\n",
+        "version": "Exec816 (6a6e53e-dirty)\nactionc pin: c384bc8\n",
+        "sioReady": "sio.device: ready, 57.6k profile\n",
+        "mountStart": "D1: mounting...\n"
+      }
+    },
+    "artifacts": {
+      "program.xex": "e0fecca795282aec24bd1555fe8205d5c3631f6bf985844b8ee7bb163448d472",
+      "sdfs.atr": "44fd594da9a01ff81df36c203857b4d472a4f79bc90443397f95846d20f71c01",
+      "README.md": "4d0d20efffcd8f762328119264d5602f304b2f35d9b40202772048b95403cc8a",
+      "sdfs.verification.json": "a8d9504ed4a5d10eb2f27026fcfc5281409bf5d8bf0a0bf1aa542ee8428eb109"
+    },
+    "commands": {
+      "HELLO": {
+        "source": "/Users/michalkurcewicz/action/exec816/examples/commands/hello.act",
+        "source_sha256": "569d3d75465ccce52331c10e3f109bad73f5f53c95a65ac514eab7538fe77f4d",
+        "file_sha256": "8c9edcb85c13d1c466bb9ff84c2d92f90118172d88e210560d9ea6bdb83f0e04",
+        "compiler": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+        "compiler_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+        "optimize": true,
+        "api_sha256": "06cf5ee748c44edfbfd58070c83c901848c0d1b7a98efcd34e39f3656f00aae8",
+        "profile_sha256": "2f9999dd3bf37899df57b4e7f5bb269cdd46837448f31962c90863d3ff5f22b0"
+      },
+      "CAT": {
+        "source": "/Users/michalkurcewicz/action/exec816/examples/commands/cat.act",
+        "source_sha256": "ac1fdb4862ffc32bc088335c939b198e7b282756183058c9671832d2912a9867",
+        "file_sha256": "fe622f7585b43db4a59eaec9c887676d58939db04e6e86cd60ca6bc37b957a52",
+        "compiler": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+        "compiler_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+        "optimize": true,
+        "api_sha256": "06cf5ee748c44edfbfd58070c83c901848c0d1b7a98efcd34e39f3656f00aae8",
+        "profile_sha256": "1383cd2ac60f812e880e1b76e26f5c11168632bf6e553317e17755c9f63dea33"
+      },
+      "WC": {
+        "source": "/Users/michalkurcewicz/action/exec816/examples/commands/wc.act",
+        "source_sha256": "788bb532db100678492e2a6694c17d58a003a1a0927321079ac48f5533775246",
+        "file_sha256": "c2ef36c8687e32b66ed3eb103d3bd5a8d4895ff8d4f706889b93d5f69956362e",
+        "compiler": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+        "compiler_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+        "optimize": true,
+        "api_sha256": "06cf5ee748c44edfbfd58070c83c901848c0d1b7a98efcd34e39f3656f00aae8",
+        "profile_sha256": "ceb1f5d6bd099b424ba8cf29c925b01bca3fe72fe8103f1b0843b8830ed66278"
+      }
+    },
+    "smoke": {
+      "path": "build/demo/loading-results.json",
+      "sha256": "80cb99fa13f9ed317699977eb373453160aea2d8c4e29fadac6c6cbe34d530c6",
+      "status": "pass",
+      "scope": "Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "observations": [
+        {
+          "stage": "startup",
+          "prime_frames": 1,
+          "prime_count": 26,
+          "guest_frame": 253
+        },
+        {
+          "stage": "HELLO",
+          "prime_frames": 3,
+          "prime_count": 62,
+          "guest_frame": 364
+        },
+        {
+          "stage": "CAT STORY.TXT | WC",
+          "prime_frames": 13,
+          "prime_count": 212,
+          "guest_frame": 913
+        },
+        {
+          "stage": "MEM",
+          "prime_frames": 13,
+          "prime_count": 212,
+          "guest_frame": 944
+        },
+        {
+          "stage": "break-loading",
+          "prime_frames": 15,
+          "prime_count": 239,
+          "guest_frame": 1064
+        },
+        {
+          "stage": "HELLO",
+          "prime_frames": 18,
+          "prime_count": 279,
+          "guest_frame": 1186
+        },
+        {
+          "stage": "MEM",
+          "prime_frames": 18,
+          "prime_count": 279,
+          "guest_frame": 1227
+        }
+      ],
+      "baseline_memory": [
+        383048,
+        65536,
+        383048,
+        383008
+      ],
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      }
+    },
+    "runtime": {
+      "status": 0,
+      "native_nmi_count": 1105,
+      "native_irq_count": 15851,
+      "switches": 3210,
+      "gateway_calls": 15139,
+      "guards": "intact",
+      "return_d": 9216,
+      "return_dbr": 0,
+      "return_e": 0
+    }
+  },
+  "inputs": {
+    "toolchain/actionc.json": "7b58d60342035559a6b0f39183e3d37a0d447cc080afa084bce3ab89e869e251",
+    "abi/native-dp.json": "a403ba71b1faeba2cbdb0c7d2ed82854d79d3f7ae35ff734bfb3789569f860c4",
+    "abi/program.json": "983c2ca3f8f8cac100cab7917a6fed284df5faeeeee3c0a50584ac07becb73d0",
+    "lib/dos/o65.act": "196867eb79d8c0f75f1a954929d1013e77fcb3fb3146db593e847b69a2f9d171",
+    "tests/programs/cstring_command.act": "610f3e4d112376446bd8bb608c866d8f9d90a0c10e4953428446f7f6b0b26d49",
+    "tests/programs/cstring_resident.act": "69ada88d63a05fc00bb1237f222be9194345e3466f12db511452832ff9679e28",
+    "tools/test_cstring.py": "7e8e191d106982f814595c3c59987d1ced8976495ac3d2c5600c9f700496b56b",
+    "tools/test_task_examples.py": "81acdf5955b92933cdd45d0ab999736743b43846698e21ccc256c72d2e539cbd",
+    "tools/test_demo.py": "d1f10236b07634adb0a1f398433865f62b3e58847d8885c2326ab6df27120df3",
+    "tools/build_demo.py": "7adf6ed4cae2b3caaf6c702fb1440c45594c234dc3c2488e89b82f0d188a4b30",
+    "tools/o65_fixtures.py": "78b727a0b9a02c7cb88be725329394515bc7b1828ea00810bf3ba4e7c15a8d75"
+  },
+  "qualification": "Development checks only; full release qualification and C compiler integration remain pending."
+}

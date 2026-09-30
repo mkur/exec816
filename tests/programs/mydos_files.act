@@ -1,0 +1,540 @@
+MODULE MYDOSFILETEST
+USE FSSTATUS
+USE EXEC
+USE HEAPCORE
+USE BLOCKIO
+USE BLOCKWIRE
+USE BLOCKTYPES
+USE MYDOS
+USE MYDOSTYPES
+USE FSBTYPES
+USE MYDOSFILE
+USE SDFSTYPES
+CARD checks
+CONST WORK_BYTES=SIZEOF(FSBTYPES.Workspace), CURSOR_BYTES=SIZEOF(FSBTYPES.Cursor)
+CONST OPERATION_BYTES=SIZEOF(FSBTYPES.Operation),
+    VOLUME_BYTES=SIZEOF(MYDOSTYPES.Volume)
+CONST CHAIN_BYTES=SIZEOF(MYDOSTYPES.ChainCursor),
+    MAP_BYTES=SIZEOF(SDFSTYPES.MapCursor)
+CARD ARRAY storageSizes=[WORK_BYTES CURSOR_BYTES OPERATION_BYTES VOLUME_BYTES CHAIN_BYTES MAP_BYTES]
+CARD dataSize=128,sectorCount=720
+BYTE phase
+BLOCKTYPES.Adapter POINTER adapter
+BLOCKTYPES.Volume POINTER block
+FSBTYPES.Workspace POINTER work
+FSBTYPES.Volume POINTER volume
+MYDOSTYPES.Volume POINTER nativeVolume
+FSBTYPES.Cursor POINTER file
+MYDOSTYPES.ChainCursor POINTER chain
+FSBTYPES.Operation POINTER op
+LONGCARD before
+INCLUDE "../fixtures/mydos/driver.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Setup()
+
+  Require(SIZEOF(MYDOSTYPES.ChainCursor)<=FSBTYPES.CURSOR_STORAGE_BYTES)
+  Require(SIZEOF(SDFSTYPES.MapCursor)<=FSBTYPES.CURSOR_STORAGE_BYTES)
+  before=EXEC.AvailMem(0)
+  adapter=BLOCKIO.Create()
+  Require(adapter<>BLOCKTYPES.Adapter POINTER(0))
+  block=BlockAttach(adapter,49,1,LONGCARD(sectorCount),dataSize,1,1)
+  Require(block<>BLOCKTYPES.Volume POINTER(0))
+  work=FSBTYPES.Workspace POINTER(EXEC.AllocMem(SIZEOF(FSBTYPES.Workspace),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  volume=FSBTYPES.Volume POINTER(EXEC.AllocMem(SIZEOF(FSBTYPES.Volume),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  file=FSBTYPES.Cursor POINTER(EXEC.AllocMem(SIZEOF(FSBTYPES.Cursor),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  chain=MYDOSFILE.Chain(file)
+  op=FSBTYPES.Operation POINTER(EXEC.AllocMem(SIZEOF(FSBTYPES.Operation),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(work<>FSBTYPES.Workspace POINTER(0) AND volume<>NULL)
+  Require(file<>FSBTYPES.Cursor POINTER(0) AND op<>FSBTYPES.Operation POINTER(0))
+  Require(MYDOS.CreateVolume(volume)<>0)
+  nativeVolume=MYDOSTYPES.Volume POINTER(volume.state)
+  work.volume=volume
+  volume.block=block
+  op.work=work
+  op.file=file
+  Require(Mount(work)=1)
+
+RETURN
+
+; Drive file steps against the sector-only fixture provider.
+LONGINT FUNC Run(FSBTYPES.Operation POINTER operation BYTE status)
+
+  WHILE status=FSSTATUS.NEED_IO DO
+    IF ReadPhysical(operation.work,operation.work.neededSector)=NULL THEN
+      status=MYDOSFILE.Fail(operation,operation.work.error)
+
+    ELSE
+      status=MYDOSFILE.ContinueOperation(operation)
+    FI
+  OD
+
+RETURN(operation.result)
+
+PROC OpenAt(CARD offset)
+
+  Require(Resolve(work,BYTE POINTER(ADDRESS($a0000)+SIZE(offset)))=1)
+  Require(MYDOSFILE.Open(work,file)=1)
+
+RETURN
+
+LONGINT FUNC ReadCount(LONGINT count)
+  BYTE status
+
+  op.requested=count
+  op.output=BYTE POINTER($afff0)
+  status=MYDOSFILE.BeginRead(op)
+
+RETURN(Run(op,status))
+
+LONGINT FUNC SeekTo(LONGINT offset,mode)
+  BYTE status
+
+  op.offset=offset
+  op.mode=mode
+  status=MYDOSFILE.BeginSeek(op)
+
+RETURN(Run(op,status))
+
+PROC CheckBytes(LONGINT count,origin BYTE seed)
+  BYTE POINTER data
+  LONGINT index
+
+  data=BYTE POINTER($afff0)
+  IF count=0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO count-1 DO
+    IF data(SIZE(index))<>(BYTE(origin+index) XOR seed) THEN
+      Require(0)
+    FI
+  OD
+
+  Require(1)
+
+RETURN
+
+PROC FileCase(CARD path LONGINT size BYTE seed)
+  LONGINT result
+
+  OpenAt(path)
+  result=ReadCount(size+1)
+  Require(result=size AND file.position=size AND work.error=0)
+  Require(file.entry.known<>0 AND file.entry.length=size)
+  CheckBytes(size,0,seed)
+  Require(ReadCount(1)=0 AND file.position=size)
+
+RETURN
+
+PROC FileSeeks(LONGINT size BYTE seed)
+
+  Require(SeekTo(0,-1)=size AND file.position=0)
+  Require(SeekTo(0,1)=0 AND file.position=size AND file.entry.length=size)
+  IF size<>0 THEN
+    Require(SeekTo(-1,1)=size AND file.position=size-1)
+    Require(ReadCount(2)=1)
+    CheckBytes(1,size-1,seed)
+  FI
+
+RETURN
+
+PROC Boundaries()
+  LONGINT result,position
+  BYTE status
+
+  OpenAt(1)
+  Require(ReadCount(1)=1)
+  CheckBytes(1,0,83)
+  Require(ReadCount(124)=124)
+  CheckBytes(124,1,83)
+  Require(ReadCount(128)=128)
+  CheckBytes(128,125,83)
+
+RETURN
+
+PROC BadSeek(LONGINT offset,mode)
+  LONGINT position
+
+  position=file.position
+  Require(SeekTo(offset,mode)=-1 AND work.error=219 AND file.position=position)
+
+RETURN
+
+PROC SeekChecks(BYTE unused)
+  LONGINT position
+
+  position=file.position
+  Require(SeekTo(0,0)=position AND file.position=position)
+  Require(SeekTo(-1,0)=position AND file.position=position-1)
+  BadSeek(-999,-1)
+  BadSeek(1,2)
+  BadSeek(LONGINT($7fffffff),0)
+  BadSeek(9999,-1)
+
+RETURN
+
+; Reject malformed chains without publishing bytes beyond validated progress.
+PROC BadReads(BYTE unused)
+  LONGINT position
+  BYTE status
+
+  position=file.position+1
+  Require(ReadCount(-1)=-1 AND work.error=115 AND file.position=position-1)
+  op.output=BYTE POINTER(0)
+  op.requested=0
+  status=MYDOSFILE.BeginRead(op)
+  Require(status=FSSTATUS.DONE AND op.result=0 AND file.position=position-1)
+  op.requested=1
+  status=MYDOSFILE.BeginRead(op)
+  Require(status=FSSTATUS.ERROR AND op.result=-1 AND work.error=115 AND file.position=position-1)
+  Require(ReadCount(4)=4)
+  CheckBytes(4,position-1,83)
+
+RETURN
+
+PROC AncestorLink(BYTE unused)
+
+  phase=0
+  OpenAt(1)
+  phase=54
+  BLOCKIO.Invalidate(adapter)
+  Require(ReadCount(800)=-1 AND work.error=213 AND file.position=0)
+  phase=0
+  BLOCKIO.Invalidate(adapter)
+
+RETURN
+
+PROC EndFirst(CARD path LONGINT size)
+
+  OpenAt(path)
+  Require(file.entry.known=0)
+  Require(SeekTo(0,1)=0 AND file.position=size AND file.entry.length=size)
+  Require(file.entry.known<>0)
+  Require(SeekTo(-2,1)=size AND file.position=size-2)
+
+RETURN
+
+; Reject invalid chain structure encountered while locating a seek target.
+PROC CorruptSeek(BYTE scenario CARD path)
+
+  phase=0
+  OpenAt(path)
+  Require(ReadCount(1)=1)
+  phase=scenario
+  BLOCKIO.Invalidate(adapter)
+  IF scenario=41 THEN
+    file.entry.count=32
+  FI
+
+  Require(SeekTo(0,1)=-1 AND work.error=213 AND file.position=1 AND chain.valid=0)
+  phase=0
+  BLOCKIO.Invalidate(adapter)
+
+RETURN
+
+; Exercise link corruption without allowing unbounded traversal.
+PROC Corrupt(BYTE scenario CARD path)
+  LONGINT result
+  LONGCARD count
+
+  phase=0
+  OpenAt(path)
+  phase=scenario
+  BLOCKIO.Invalidate(adapter)
+  count=work.operations
+  IF scenario=40 OR scenario=41 THEN
+    file.entry.count=32
+  FI
+
+  IF scenario=42 THEN
+    file.entry.key=(file.entry.key & $ff) OR (LONGCARD($42) LSH 8)
+  FI
+
+  IF scenario=50 THEN
+    file.entry.count=2
+  FI
+
+  result=ReadCount(800)
+  Require(result=-1 AND work.error=213 AND file.position=0 AND chain.valid=0)
+  Require(work.operations-count<=8)
+  IF scenario=51 THEN
+    Require(work.ioError=4)
+  FI
+
+  IF scenario=52 THEN
+    Require(work.ioError=LONGINT(-4))
+  FI
+
+  phase=0
+  BLOCKIO.Invalidate(adapter)
+  file.entry.key=(file.entry.key & $ff) OR (LONGCARD($46) LSH 8)
+  IF dataSize=128 THEN
+    file.entry.count=5
+  ELSE
+    file.entry.count=3
+  FI
+
+  Require(ReadCount(10)=10 AND file.position=10)
+  CheckBytes(10,0,49)
+
+RETURN
+
+; Detect a chain cycle even when successive reads consume very small prefixes.
+PROC TinyCycle(BYTE scenario CARD path)
+  LONGINT result,position
+  CARD index
+  LONGCARD count
+
+  phase=0
+  OpenAt(path)
+  phase=scenario
+  BLOCKIO.Invalidate(adapter)
+  file.entry.count=32
+  count=work.operations
+  FOR index=0 TO 2000 DO
+    position=file.position
+    result=ReadCount(1)
+    IF result=-1 THEN
+      EXIT
+    FI
+
+    Require(result=1)
+  OD
+
+  Require(result=-1 AND work.error=213 AND file.position=position AND chain.valid=0)
+  Require(index<2000 AND chain.hops<=8 AND work.operations-count<=2001)
+  phase=0
+  BLOCKIO.Invalidate(adapter)
+
+RETURN
+
+; Distinguish supported empty-file encodings from contradictory directory
+; metadata.
+PROC EmptyForms(CARD path)
+  BYTE okay
+
+  phase=0
+  OpenAt(path)
+  work.entry.count=0
+  work.entry.start=0
+  Require(MYDOSFILE.Open(work,file)=1 AND file.entry.known=1)
+  Require(ReadCount(20)=0 AND SeekTo(0,1)=0)
+  work.entry.count=1
+  Require(MYDOSFILE.Open(work,file)=0 AND work.error=213)
+  work.entry.count=0
+  work.entry.start=4
+  Require(MYDOSFILE.Open(work,file)=0 AND work.error=213)
+  work.entry.count=1
+  work.entry.start=360
+  Require(MYDOSFILE.Open(work,file)=0 AND work.error=213)
+
+RETURN
+
+; Validate narrow chain links together with their directory-entry ordinal.
+PROC TenBit(CARD path)
+
+  phase=0
+  OpenAt(path)
+  phase=49
+  BLOCKIO.Invalidate(adapter)
+  file.entry.key=(file.entry.key & $ff) OR (LONGCARD($42) LSH 8)
+  Require(ReadCount(601)=600)
+  CheckBytes(600,0,49)
+  phase=0
+  BLOCKIO.Invalidate(adapter)
+
+RETURN
+
+PROC ZeroPayload(CARD path LONGINT size)
+
+  phase=0
+  OpenAt(path)
+  phase=48
+  BLOCKIO.Invalidate(adapter)
+  Require(ReadCount(601)=size AND file.entry.length=size)
+  phase=0
+  BLOCKIO.Invalidate(adapter)
+
+RETURN
+
+; Exercise full-width sector references without truncation.
+PROC HighSectors(BYTE unused)
+  BLOCKTYPES.Volume POINTER other
+  BYTE index
+
+  other=BlockAttach(adapter,50,1,LONGCARD($ffff),dataSize,1,2)
+  Require(other<>BLOCKTYPES.Volume POINTER(0))
+  volume.block=other
+  phase=60
+  Require(Mount(work)=1)
+  work.entry.key=(work.entry.key & $ff) OR (LONGCARD($46) LSH 8)
+  work.entry.count=2
+  work.entry.start=$8000
+  work.entry.key=work.entry.key & $ffff00
+  work.depth=0
+  work.ancestors(0)=361
+  Require(MYDOSFILE.Open(work,file)=1)
+  Require(ReadCount(600)=LONGINT(dataSize)+17)
+  CheckBytes(LONGINT(dataSize)+17,0,91)
+  Require(BLOCKIO.Detach(adapter,other)=1)
+  volume.block=block
+  phase=0
+  Require(Mount(work)=1)
+
+RETURN
+
+; Reject wrapping or unmapped destination buffers before copying file payload.
+PROC OutputExtents(BYTE unused)
+  BYTE status,index
+  BYTE POINTER low,high
+
+  OpenAt(1)
+  op.output=BYTE POINTER($b0000)
+  op.requested=16
+  status=MYDOSFILE.BeginRead(op)
+  Require(Run(op,status)=16)
+  low=BYTE POINTER($b0000)
+  FOR index=0 TO 15 DO
+    Require(low(index)=(index XOR 83))
+  OD
+
+  op.output=BYTE POINTER($fffff0)
+  op.requested=32
+  Require(MYDOSFILE.BeginRead(op)=0 AND work.error=115 AND file.position=16)
+  op.output=BYTE POINTER($100000)
+  op.requested=1
+  Require(MYDOSFILE.BeginRead(op)=0 AND work.error=115 AND file.position=16)
+
+RETURN
+
+PROC Guards(BYTE unused)
+  BYTE POINTER low,high
+  BYTE index
+
+  low=BYTE POINTER($affd0)
+  high=BYTE POINTER($c1164)
+  FOR index=0 TO 31 DO
+    Require(low(index)=165 AND high(index)=165)
+  OD
+
+RETURN
+
+; Separate handles retain independent chain and byte positions.
+PROC IndependentCursors()
+
+  OpenAt(1)
+  LET second=FSBTYPES.Cursor POINTER(EXEC.AllocMem(
+      SIZEOF(FSBTYPES.Cursor),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(second<>NULL)
+  Require(MYDOSFILE.Open(work,second)=1)
+  Require(ReadCount(3)=3)
+  op.file=second
+  Require(ReadCount(5)=5)
+  CheckBytes(5,0,83)
+  Require(file.position=3 AND second.position=5)
+  op.file=file
+  Require(ReadCount(7)=7)
+  CheckBytes(7,3,83)
+  EXEC.FreeMem(BYTE POINTER(second),SIZEOF(FSBTYPES.Cursor))
+
+RETURN
+
+; A canceled read commits copied bytes; a canceled seek keeps the old position.
+PROC CancelAndReuse()
+  BYTE status
+  LONGINT completed,position
+
+  OpenAt(1)
+  op.requested=500
+  op.output=BYTE POINTER($afff0)
+  status=MYDOSFILE.BeginRead(op)
+  Require(status=FSSTATUS.NEED_IO)
+  Require(ReadPhysical(work,work.neededSector)<>NULL)
+  status=MYDOSFILE.ContinueOperation(op)
+  Require(status=FSSTATUS.NEED_IO AND op.completed>0)
+  completed=op.completed
+  Require(MYDOSFILE.Cancel(op)=0 AND op.result=completed)
+  Require(file.position=completed AND chain.valid=0 AND work.error=ERROR_BREAK)
+  Require(ReadCount(10)=10)
+  CheckBytes(10,completed,83)
+  position=file.position
+  op.offset=0
+  op.mode=OFFSET_END
+  status=MYDOSFILE.BeginSeek(op)
+  Require(status=FSSTATUS.NEED_IO)
+  Require(ReadPhysical(work,work.neededSector)<>NULL)
+  Require(MYDOSFILE.ContinueOperation(op)=FSSTATUS.NEED_IO)
+  Require(MYDOSFILE.Cancel(op)=0 AND op.result=-1)
+  Require(file.position=position AND chain.valid=0 AND work.error=ERROR_BREAK)
+  Require(ReadCount(10)=10)
+  CheckBytes(10,position,83)
+
+RETURN
+
+; Measurement returns one complete entry, even when reusing a file cursor for
+; a directory. The lookup input must not receive a second copy of the result.
+PROC Measurement()
+  BYTE status
+
+  OpenAt(1)
+  status=MYDOSFILE.Measure(work,file,0)
+  WHILE status=FSSTATUS.NEED_IO DO
+    Require(ReadPhysical(work,work.neededSector)<>NULL)
+    status=MYDOSFILE.Measure(work,file,1)
+  OD
+
+  Require(status=FSSTATUS.DONE AND file.entry.known<>0
+      AND file.entry.length=777 AND file.entry.count=work.entry.count)
+  Require(work.entry.known=0)
+  Require(Resolve(work,BYTE POINTER($a0000))=FSSTATUS.DONE)
+  Require(MYDOSFILE.Measure(work,file,0)=FSSTATUS.DONE)
+  Require(file.entry.known<>0 AND file.entry.length=0
+      AND file.entry.count=8 AND file.entry.parent=0
+      AND (file.entry.flags & FSBTYPES.DIR)<>0)
+
+RETURN
+
+PROC Cleanup()
+
+  IndependentCursors()
+  CancelAndReuse()
+  Measurement()
+  EXEC.FreeMem(BYTE POINTER(op),SIZEOF(FSBTYPES.Operation))
+  EXEC.FreeMem(BYTE POINTER(file),SIZEOF(FSBTYPES.Cursor))
+  MYDOS.DestroyVolume(volume)
+  EXEC.FreeMem(BYTE POINTER(volume),SIZEOF(FSBTYPES.Volume))
+  EXEC.FreeMem(BYTE POINTER(work),SIZEOF(FSBTYPES.Workspace))
+  Require(BLOCKIO.Detach(adapter,block)=1)
+  Require(BLOCKIO.Destroy(adapter)=1)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Exercise MyDOS chain traversal, seeks, bounds and corrupt-link rejection.
+PROC Main()
+
+  Setup()
+  Boundaries()
+  SeekChecks(0)
+  BadReads(0)
+  Cleanup()
+
+RETURN
+
+ENDMODULE

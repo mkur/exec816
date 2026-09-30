@@ -1,0 +1,8 @@
+MODULE DOSWIRE
+; Validate the full 32-bit slot before converting a native pointer. Null is
+; representable; individual actions decide whether it is permitted.
+PUBLIC BYTE FUNC IsPointer(LONGINT slot)
+
+RETURN((LONGCARD(slot) RSH 24)=0)
+
+ENDMODULE

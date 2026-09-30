@@ -1,0 +1,371 @@
+; Task-only, single-worker sector adapter. Geometry is immutable while attached.
+MODULE BLOCKIO
+USE EXEC
+USE EXECMEMORY
+USE BLOCKTYPES
+USE BLOCKCACHE
+USE BOOTCONFIG
+INCLUDE "../dos/dos-types.inc"
+
+; Accept only the device, speed and sector layouts supported by this adapter.
+PUBLIC BYTE FUNC Geometry(CARD unit,profile LONGCARD sectors CARD dataBytes
+    BYTE boot LONGCARD generation)
+
+  IF unit<49 OR unit>56 OR sectors=0 OR sectors>LONGCARD($ffff) OR generation=0 THEN
+    RETURN(0)
+  FI
+
+  IF boot<>1 OR (dataBytes<>128 AND dataBytes<>256) THEN
+    RETURN(0)
+  FI
+
+  IF profile<>EXEC.SIO_PROFILE_FASTEST125 AND profile<>EXEC.SIO_PROFILE_STOCK810
+      AND profile<>EXEC.SIO_PROFILE_GENERIC57600 THEN
+    RETURN(0)
+  FI
+
+  IF dataBytes=256 AND profile=EXEC.SIO_PROFILE_STOCK810 THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Check the sector range against admitted geometry, keeping boot sectors short.
+PUBLIC CARD FUNC SectorBytes(BLOCKTYPES.Volume POINTER volume LONGCARD sector)
+
+  IF volume=NULL THEN
+    RETURN(0)
+  FI
+
+  IF sector=0 OR sector>volume.sectors OR sector>LONGCARD($ffff) THEN
+    RETURN(0)
+  FI
+
+  IF sector<4 THEN
+    RETURN(128)
+  FI
+
+RETURN(volume.dataBytes)
+
+; Require every bank of the transfer extent to be available upper RAM.
+PUBLIC BYTE FUNC Mapped(BYTE POINTER destination LONGCARD bytes)
+  EXECMEMORY.BankRecord info
+  CARD first,last,index
+
+  IF bytes=0 OR destination=BYTE POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF bytes>LONGCARD($1000000)-LONGCARD(ADDRESS(destination)) THEN
+    RETURN(0)
+  FI
+
+  first=CARD(ADDRESS(destination) RSH 16)
+  last=CARD((LONGCARD(ADDRESS(destination))+bytes-1) RSH 16)
+  IF first=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=first TO last DO
+    IF EXECMEMORY.Query(index,@info)<>0 THEN
+      RETURN(0)
+    FI
+
+    IF info.state=0 THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; Acquire the worker's request, scratch buffer and optional retained-sector
+; cache.
+PUBLIC BLOCKTYPES.Adapter POINTER FUNC Create()
+  BLOCKTYPES.Adapter POINTER adapter
+
+  adapter=BLOCKTYPES.Adapter POINTER(EXEC.AllocMem(BLOCKTYPES.ADAPTER_SIZE,
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF adapter=NULL THEN
+    RETURN(NULL)
+  FI
+
+  adapter.port=EXEC.CreateMsgPort()
+  IF adapter.port<>NULL THEN
+    adapter.request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(adapter.port,
+        EXEC.IOSIOREQ_SIZE))
+    IF adapter.request<>NULL THEN
+      adapter.buffer=EXEC.AllocMem(256,EXEC.MEMF_UPPER)
+      IF adapter.buffer<>NULL THEN
+        BLOCKCACHE.Create(@adapter.cache,BOOTCONFIG.CacheBlocks())
+        RETURN(adapter)
+      FI
+
+      EXEC.DeleteIORequest(EXEC.IORequest POINTER(adapter.request))
+    FI
+
+    EXEC.DeleteMsgPort(adapter.port)
+  FI
+
+  EXEC.FreeMem(BYTE POINTER(adapter),BLOCKTYPES.ADAPTER_SIZE)
+
+RETURN(NULL)
+
+; Free the adapter only after all attached volumes and active work have
+; retired.
+PUBLIC BYTE FUNC Destroy(BLOCKTYPES.Adapter POINTER adapter)
+
+  IF adapter=NULL THEN
+    RETURN(1)
+  FI
+
+  IF adapter.busy<>0 OR adapter.owners<>0 THEN
+    RETURN(0)
+  FI
+
+  BLOCKCACHE.Destroy(@adapter.cache)
+  EXEC.FreeMem(adapter.buffer,256)
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(adapter.request))
+  EXEC.DeleteMsgPort(adapter.port)
+  EXEC.FreeMem(BYTE POINTER(adapter),BLOCKTYPES.ADAPTER_SIZE)
+
+RETURN(1)
+
+; Build the resident SIO device name in caller-supplied scratch storage.
+PROC DeviceName(BYTE POINTER name)
+
+  name(0)=115
+  name(1)=105
+  name(2)=111
+  name(3)=46
+  name(4)=100
+  name(5)=101
+  name(6)=118
+  name(7)=105
+  name(8)=99
+  name(9)=101
+  name(10)=0
+
+RETURN
+
+; Internal preallocated-volume entry used by the filesystem state machine.
+; The caller validates geometry and owns a zeroed volume record.
+PUBLIC BLOCKTYPES.Volume POINTER FUNC OpenVolume(BLOCKTYPES.Adapter
+    POINTER adapter BLOCKTYPES.Volume POINTER volume)
+  BYTE POINTER name
+  INT error
+
+  volume.request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(adapter.port,
+      EXEC.IOSIOREQ_SIZE))
+  IF volume.request=NULL THEN
+    adapter.error=ERROR_NO_FREE_STORE
+    RETURN(NULL)
+  FI
+
+  ; No near-memory string initializer: the idle scratch sector holds the
+  ; NUL-terminated device name during open. Stored blocks remain valid.
+  DiscardBuffer(adapter)
+  name=adapter.buffer
+  DeviceName(name)
+  error=EXEC.OpenDevice(name,volume.unit,EXEC.IORequest POINTER(volume.request),0)
+  IF error<>0 THEN
+    adapter.error=LONGINT(error)
+    EXEC.DeleteIORequest(EXEC.IORequest POINTER(volume.request))
+    volume.request=NULL
+    RETURN(NULL)
+  FI
+
+  adapter.owners==+1
+
+RETURN(volume)
+
+; Release an idle allocated volume, including one whose device never opened.
+; A non-NULL request belongs to a successfully attached adapter owner.
+PUBLIC BYTE FUNC Detach(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume)
+
+  IF volume=NULL THEN
+    RETURN(1)
+  FI
+
+  IF volume.adapter<>BYTE POINTER(adapter) OR volume.busy<>0
+      OR volume.references<>0 OR adapter.busy<>0 THEN
+    RETURN(0)
+  FI
+
+  BLOCKCACHE.Invalidate(@adapter.cache,volume)
+  DiscardBuffer(adapter)
+  IF volume.request<>NULL THEN
+    EXEC.CloseDevice(EXEC.IORequest POINTER(volume.request))
+    EXEC.DeleteIORequest(EXEC.IORequest POINTER(volume.request))
+    adapter.owners==-1
+  FI
+
+  EXEC.FreeMem(BYTE POINTER(volume),BLOCKTYPES.VOLUME_SIZE)
+
+RETURN(1)
+
+; Scratch contents can change without discarding the retained working set.
+PROC DiscardBuffer(BLOCKTYPES.Adapter POINTER adapter)
+
+  adapter.valid=0
+  adapter.cached=NULL
+
+RETURN
+
+; Discard both scratch contents and the retained sector working set.
+PUBLIC PROC Invalidate(BLOCKTYPES.Adapter POINTER adapter)
+
+  DiscardBuffer(adapter)
+  BLOCKCACHE.Invalidate(@adapter.cache,NULL)
+
+RETURN
+
+; Volume identity/generation also identifies its immutable admitted geometry.
+BYTE FUNC Cached(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume LONGCARD sector)
+
+  IF adapter.valid=0 OR adapter.cached<>volume
+      OR adapter.cachedGeneration<>volume.generation THEN
+    RETURN(0)
+  FI
+
+RETURN(adapter.cachedSector=sector)
+
+; Tag scratch data after a complete sector transfer or retained-cache hit.
+PROC Publish(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume POINTER volume
+    LONGCARD sector CARD expected)
+
+  adapter.cached=volume
+  adapter.cachedGeneration=volume.generation
+  adapter.cachedSector=sector
+  adapter.valid=expected
+
+RETURN
+
+; Describe one sector transfer without exposing unvalidated caller extents.
+PROC Prepare(EXEC.IOSIOReq POINTER request BLOCKTYPES.Volume POINTER volume
+    LONGCARD sector CARD expected BYTE POINTER buffer)
+
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Flags=0
+  request.io_Offset=0
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(expected)
+  request.io_Actual=0
+  request.sio_Command=$52
+  request.sio_Direction=EXEC.SIODIR_READ
+  request.sio_Profile=volume.profile
+  request.sio_Aux1=BYTE(sector)
+  request.sio_Aux2=BYTE(sector RSH 8)
+  request.sio_TimeoutUS=0
+
+RETURN
+
+; Validate transfer completion before making its bytes available to the
+; parser.
+LONGINT FUNC Complete(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume CARD expected LONGINT error)
+  EXEC.IOSIOReq POINTER request
+
+  request=adapter.request
+  ; The caller has collected the accepted transfer before retiring its borrow.
+  request.io_Device=BYTE POINTER(0)
+  request.io_Unit=BYTE POINTER(0)
+  request.io_Data=BYTE POINTER(0)
+  volume.busy=0
+  IF error<>0 THEN
+    RETURN(error)
+  FI
+
+  IF request.io_Error<>0 THEN
+    IF request.io_Error>=128 THEN
+      RETURN(LONGINT(request.io_Error)-256)
+    FI
+
+    RETURN(LONGINT(request.io_Error))
+  FI
+
+  IF expected=0 OR request.io_Actual<>LONGCARD(expected) THEN
+    RETURN(LONGINT(EXEC.IOERR_BADLENGTH))
+  FI
+
+RETURN(0)
+
+; Reject invalid or overlapping operations before acquiring adapter ownership.
+CARD FUNC Check(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume LONGCARD sector)
+  CARD expected
+
+  adapter.error=0
+  IF adapter.busy<>0 THEN
+    adapter.error=ERROR_OBJECT_IN_USE
+    RETURN(0)
+  FI
+
+  expected=SectorBytes(volume,sector)
+  IF expected=0 THEN
+    DiscardBuffer(adapter)
+    adapter.error=EXEC.IOERR_BADLENGTH
+    RETURN(0)
+  FI
+
+  IF volume.adapter<>BYTE POINTER(adapter) OR volume.request=NULL THEN
+    DiscardBuffer(adapter)
+    adapter.error=EXEC.IOERR_BADADDRESS
+    RETURN(0)
+  FI
+
+  IF Cached(adapter,volume,sector)<>0 THEN
+    RETURN(expected)
+  FI
+
+  DiscardBuffer(adapter)
+  IF BLOCKCACHE.Read(@adapter.cache,volume,CARD(sector),expected,
+      adapter.buffer)<>0 THEN
+    Publish(adapter,volume,sector,expected)
+  FI
+
+RETURN(expected)
+
+; Serve a retained sector when possible; otherwise start physical I/O.
+PUBLIC BYTE FUNC BeginFetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume LONGCARD sector)
+  CARD expected
+
+  expected=Check(adapter,volume,sector)
+  IF expected=0 THEN
+    RETURN(0)
+  FI
+
+  IF adapter.valid<>0 THEN
+    RETURN(1)
+  FI
+
+  adapter.busy=1
+  volume.busy=1
+  adapter.request.io_Device=volume.request.io_Device
+  adapter.request.io_Unit=volume.request.io_Unit
+  Prepare(adapter.request,volume,sector,expected,adapter.buffer)
+
+RETURN(2)
+
+; Retire a pending fetch and publish only valid completed sector data.
+PUBLIC LONGINT FUNC FinishFetch(BLOCKTYPES.Adapter POINTER adapter
+    BLOCKTYPES.Volume POINTER volume LONGCARD sector LONGINT error)
+  CARD expected
+
+  expected=SectorBytes(volume,sector)
+  adapter.error=Complete(adapter,volume,expected,error)
+  IF adapter.error=0 THEN
+    BLOCKCACHE.Write(@adapter.cache,volume,CARD(sector),expected,adapter.buffer)
+    Publish(adapter,volume,sector,expected)
+  ELSE
+    DiscardBuffer(adapter)
+    BLOCKCACHE.Invalidate(@adapter.cache,volume)
+  FI
+
+  adapter.busy=0
+
+RETURN(adapter.error)
+
+ENDMODULE

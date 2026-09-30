@@ -1,0 +1,106 @@
+; Test-only precise break injection into the normal foreground delivery path.
+MODULE FSACTIVEPROBE
+USE EXEC
+USE DOSCORE
+USE FSTYPES
+USE FSACTIVE
+USE FSOPERATION
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+INCLUDE "sio-storage-action.inc"
+PUBLIC BYTE mode,fired,attempts,accepted,wirePhase
+PUBLIC LONGINT threshold,committed
+PUBLIC DOSBREAKTYPES.Scope POINTER target
+
+PUBLIC PROC Deliver(FSTYPES.Service POINTER service BYTE point)
+  BYTE ignored
+
+  IF fired<>0 OR mode<>point OR target=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN
+  FI
+
+  IF target.opState<>FSOPERATION.ACTIVE
+      OR target.packet<>BYTE POINTER(service.packet) THEN
+    RETURN
+  FI
+
+  IF point=1 THEN
+    IF service.operation.stage=0 OR service.stage<>60
+        OR service.operation.completed<threshold THEN
+      RETURN
+    FI
+  FI
+
+  committed=service.operation.completed
+  fired=1
+  ignored=CONSOLEFOREGROUND.Deliver(target.generation)
+
+RETURN
+
+PUBLIC PROC BeforeSend()
+  FSTYPES.Service POINTER service
+  DOSCORE.DosRegistry POINTER registry
+
+  IF mode<>2 THEN
+    RETURN
+  FI
+
+  registry=DOSCORE.GetRegistry()
+  service=FSTYPES.Service POINTER(registry.runtime)
+  Deliver(service,2)
+
+RETURN
+
+PUBLIC PROC OnWire(EXEC.IORequest POINTER request)
+  FSTYPES.Service POINTER service
+  DOSCORE.DosRegistry POINTER registry
+  BYTE POINTER phase,started
+
+  IF mode<>3 OR fired<>0 THEN
+    RETURN
+  FI
+
+  phase=BYTE POINTER(SD_PHASE)
+  started=BYTE POINTER(SD_STARTED)
+  WHILE EXEC.CheckIO(request)=EXEC.IORequest POINTER(0) DO
+    IF started^<>0 AND phase^>=1 AND phase^<13 THEN
+      registry=DOSCORE.GetRegistry()
+      service=FSTYPES.Service POINTER(registry.runtime)
+      wirePhase=phase^
+      Deliver(service,3)
+      RETURN
+    FI
+
+    EXEC.Yield()
+  OD
+
+  ; A fast protocol rejection can finish before this Task runs again. It
+  ; still precedes filesystem completion; identify that terminal race rather
+  ; than claiming the injection happened during wire activity.
+  registry=DOSCORE.GetRegistry()
+  service=FSTYPES.Service POINTER(registry.runtime)
+  wirePhase=phase^
+  Deliver(service,3)
+
+RETURN
+
+PUBLIC PROC Point(BYTE point)
+  DOSCORE.DosRegistry POINTER registry
+  FSTYPES.Service POINTER service
+
+  IF mode<>point OR fired<>0 THEN
+    RETURN
+  FI
+
+  registry=DOSCORE.GetRegistry()
+  service=FSTYPES.Service POINTER(registry.runtime)
+  Deliver(service,point)
+  IF point=9 AND fired<>0 THEN
+    WHILE attempts=0 DO
+      EXEC.Yield()
+    OD
+  FI
+
+RETURN
+
+ENDMODULE

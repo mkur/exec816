@@ -1,0 +1,72 @@
+MODULE PROGRAMPLACE
+USE EXEC
+USE O65TYPES
+USE O65READ
+USE O65MEMORY
+USE PROGRAMIMAGE
+USE O65RELOCATIONS
+
+; Reserve aligned code and separate data/BSS storage for a validated image.
+PUBLIC BYTE FUNC Allocate(PROGRAMIMAGE.Image POINTER image O65TYPES.Validation
+    POINTER validation)
+  LONGCARD base
+
+  image.textBytes=validation.textBytes
+  image.dataBytes=validation.dataBytes
+  image.bssBytes=validation.bssBytes
+  image.backingBytes=image.textBytes+$ffff
+  image.backing=O65MEMORY.Storage(SIZE(image.backingBytes))
+  IF image.backing=BYTE POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  base=(LONGCARD(ADDRESS(image.backing))+$ffff) & LONGCARD($ffff0000)
+  IF base<$10000 OR base>=$1000000 OR O65READ.Extent(base,image.textBytes,
+      $1000000)=0 THEN
+    RETURN(0)
+  FI
+
+  IF base<LONGCARD(ADDRESS(image.backing)) THEN
+    RETURN(0)
+  FI
+
+  IF O65READ.Extent(base-LONGCARD(ADDRESS(image.backing)),image.textBytes,
+      image.backingBytes)=0 THEN
+    RETURN(0)
+  FI
+
+  image.text=ADDRESS(base)
+  IF image.dataBytes<>0 THEN
+    image.data=O65MEMORY.Storage(SIZE(image.dataBytes))
+    IF image.data=BYTE POINTER(0) THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF image.bssBytes<>0 THEN
+    image.bss=O65MEMORY.Allocate(SIZE(image.bssBytes))
+    IF image.bss=BYTE POINTER(0) THEN
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Patches(PROGRAMIMAGE.Image POINTER image O65TYPES.Validation
+    POINTER validation BYTE apply)
+
+RETURN(O65RELOCATIONS.Patches(validation,image,apply))
+
+; Copy a binary span across bank boundaries using explicit wide offsets.
+PUBLIC PROC Copy(BYTE POINTER destination,source LONGCARD bytes)
+  LONGCARD index
+
+  index=0
+  WHILE index<bytes DO
+    destination(SIZE(index))=source(SIZE(index))
+    index==+1
+  OD
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,1420 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-21",
+  "status": "pass",
+  "scope": "Clean-completion sleep removal: kernel bank 1, raw/optimized native code; pinned emulated serial profiles only.",
+  "source_revision_before_change": "9db20e76fa49b91fe2f06461b22562a3866ef43d",
+  "inputs": {
+    "lib/siodriver.act": "5cfbf891255565de37d6525e4e58ce46f0a0cf0df83e64efff1bc74228fd15fc",
+    "platform/altirraos/sio.s": "b131e45144316014b10382af5f6a7ea203be6a660e3a658b30a351885b80bf85",
+    "tests/programs/sio_recovery.act": "4660f2d5d08acda1db1e49f4af54155f1a9dad6bc55b2410e524d91f4121d558",
+    "tools/test_sio_recovery.py": "907de73c657b82e70815c5729638505e9c66c17513b74a01962a2c7942a6dc4a",
+    "tests/programs/dos_large_read.act": "599102754e17a2fac30e0bc54238afa86e658b112e74ebc690734e9206c006cc",
+    "tools/probe_dos_large_read.py": "1555958ef75f440a80b00415253094b2e89ca000cd75e7d8516ab888bc613974",
+    "tools/test_sio_concurrent.py": "339af73e13031de28ef86e2efce488a9cff15f1366e24fa1588e3de6fb755c20",
+    "tools/sio_concurrent_trace.py": "f0aaa75c26f54b0060eeb28b6f87bcb22a1e591ddf5f16cfb99a5bdf701415a4",
+    "tools/test_sio_sectors.py": "d9c8db950ae58e30c7f6334a601999c621b6858a8c13bc7f57512e305d0d806f",
+    "tools/sio_sector_record.py": "0398535033bc8f0eb65500cc138eeee1b22eacb71cef72e703539e78d7b2a84d",
+    "toolchain/actionc.json": "f24bb0535b27d746473c353d30d41784b03c5cd1e4e5f08fbce2a5b36e4f8a28",
+    "toolchain/altirra-sio-queued.json": "d65d3f9ae8adf8f94f39111d5d4b06b752dd2391a2ec87f13bafad00fc262609",
+    "toolchain/altirra-sio-sectors.json": "6e4968116aced260b53475695a3f1ad52467790b9fbf5144a5358c978946e288"
+  },
+  "reserved_bank_zero_delta": 0,
+  "per_task_reserved_bank_zero_delta": 0,
+  "policy": {
+    "clean_completion_sleep_ticks": 0,
+    "error_completion_sleep_ticks": 3,
+    "uncertain_bus": "Offline until platform reset; unsafe shutdown parks at $FF93 with ownership retained",
+    "os_stage_two": "CRITIC restored on retirement; no guaranteed service gap between queued requests"
+  },
+  "reads": [
+    {
+      "name": "read-raw",
+      "status": "pass",
+      "mode": "raw",
+      "artifact": "build/sio-fast-completion/read-raw/results.json",
+      "artifact_sha256": "cdebb986195d12ad96d9faa4be1620c2e181819e232363750a44d824c29da8cb",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "599102754e17a2fac30e0bc54238afa86e658b112e74ebc690734e9206c006cc",
+      "image_sha256": "798e7e9a8565a3c5b69f761a388337eb36fbc341b6d4cdadafbe5b9c180dd866",
+      "xex_sha256": "86948a55c1768d68929b87931d4577c26d84c6ed7bc304fac5556dabd84a9806",
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": false,
+        "diskemu": "fastest"
+      },
+      "observed": {
+        "received": 70003,
+        "ioError": 0,
+        "verified": 70003,
+        "checks": 7
+      },
+      "media_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "timing": {
+        "elapsed_seconds": 17.58438324224427,
+        "file_bytes": 70003,
+        "file_bytes_per_second": 3980.9755642624177,
+        "sectors": 277,
+        "sector_payload_bytes": 70912,
+        "rx_bytes": 71743,
+        "tx_bytes": 1385,
+        "serial_byte_clock_seconds": 5.772891500876119,
+        "ack_end_to_complete_begin": {
+          "seconds": 0.15619295186353135,
+          "count": 277,
+          "min_us": 563.8734724315211,
+          "mean_us": 563.8734724315211,
+          "max_us": 563.8734724315211
+        },
+        "breakdown": {
+          "submit_to_start": {
+            "seconds": 3.192563354708837,
+            "percent": 18.155674331750824,
+            "count": 277,
+            "min_us": 10402.549271968863,
+            "mean_us": 11525.499475483164,
+            "max_us": 15236.284130204023
+          },
+          "start_to_terminal_post": {
+            "seconds": 6.63541682231924,
+            "percent": 37.73471455273156,
+            "count": 277,
+            "min_us": 23917.962048495938,
+            "mean_us": 23954.573365773427,
+            "max_us": 24108.48079799374
+          },
+          "terminal_post_to_sector_return": {
+            "seconds": 2.3918881162256,
+            "percent": 13.602342961221348,
+            "count": 277,
+            "min_us": 6744.561087937478,
+            "mean_us": 8634.97514882888,
+            "max_us": 12601.232909347471
+          },
+          "between_sector_calls": {
+            "seconds": 5.3086870347162805,
+            "percent": 30.189782385786646,
+            "count": 276,
+            "min_us": 15273.640747752612,
+            "mean_us": 19234.37331418942,
+            "max_us": 21504.9360074093
+          },
+          "read_edges": {
+            "seconds": 0.055827914274315986,
+            "percent": 0.31748576850961957,
+            "count": 2,
+            "min_us": 23931.495011834293,
+            "mean_us": 27913.95713715799,
+            "max_us": 31896.41926248169
+          }
+        },
+        "copy_wall_seconds": 4.175569195028328,
+        "copy": {
+          "count": 277,
+          "min_us": 8609.925018925003,
+          "mean_us": 15074.257021762915,
+          "max_us": 18275.421178241813
+        },
+        "recovery_sleep": {
+          "count": 0,
+          "max_us": null
+        },
+        "recovery_overlap_with_queue_seconds": 0.0,
+        "terminal_post_to_retire": {
+          "count": 277,
+          "min_us": 1492.2206606059667,
+          "mean_us": 1803.2808509795238,
+          "max_us": 2056.0236488534338
+        },
+        "boundary": "JSL DOS.Read entry to return; guest time; excludes Open, verification and cleanup. Copy/recovery are overlapping diagnostics, not additional breakdown terms."
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "native_nmi_count": 1110,
+        "vbi_dispatches": 214,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 746,
+            "untouched_above_floor": 534
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 724,
+            "untouched_above_floor": 44
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 656,
+            "untouched_above_floor": 112
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 52,
+            "untouched_above_floor": 204
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1173,
+          "untouched_from_base": 363,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "name": "read-opt",
+      "status": "pass",
+      "mode": "opt",
+      "artifact": "build/sio-fast-completion/read-opt/results.json",
+      "artifact_sha256": "4a0861f785f59767660d82c7deb9250c9ef36072b66fd5da17377f94a18de424",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "599102754e17a2fac30e0bc54238afa86e658b112e74ebc690734e9206c006cc",
+      "image_sha256": "d02c04cdc4d9ca907f900a5b3ac89c71b009a2895655c733cb5cfc87d73e5186",
+      "xex_sha256": "527b166b47a8dc48f5e0ae7b8639329d40ebec4cb17dfe75be2e17e3619c9d06",
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": false,
+        "diskemu": "fastest"
+      },
+      "observed": {
+        "received": 70003,
+        "ioError": 0,
+        "verified": 70003,
+        "checks": 7
+      },
+      "media_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "timing": {
+        "elapsed_seconds": 16.696017996021872,
+        "file_bytes": 70003,
+        "file_bytes_per_second": 4192.796151554189,
+        "sectors": 277,
+        "sector_payload_bytes": 70912,
+        "rx_bytes": 71743,
+        "tx_bytes": 1385,
+        "serial_byte_clock_seconds": 5.772891500876119,
+        "ack_end_to_complete_begin": {
+          "seconds": 0.15619295186353135,
+          "count": 277,
+          "min_us": 563.8734724315211,
+          "mean_us": 563.8734724315211,
+          "max_us": 563.8734724315211
+        },
+        "breakdown": {
+          "submit_to_start": {
+            "seconds": 3.638693420583355,
+            "percent": 21.793779938727543,
+            "count": 277,
+            "min_us": 9528.545389700006,
+            "mean_us": 13136.077330625832,
+            "max_us": 14052.079353913776
+          },
+          "start_to_terminal_post": {
+            "seconds": 6.640496546979823,
+            "percent": 39.77293596929544,
+            "count": 277,
+            "min_us": 23929.239517944567,
+            "mean_us": 23972.911721948818,
+            "max_us": 24105.449978079418
+          },
+          "terminal_post_to_sector_return": {
+            "seconds": 1.9419960275113868,
+            "percent": 11.63149217959697,
+            "count": 277,
+            "min_us": 6328.704402019231,
+            "mean_us": 7010.81598379562,
+            "max_us": 12095.50888876045
+          },
+          "between_sector_calls": {
+            "seconds": 4.4289546913568065,
+            "percent": 26.52701196424252,
+            "count": 276,
+            "min_us": 13170.463179767092,
+            "mean_us": 16046.93728752466,
+            "max_us": 19071.258100394854
+          },
+          "read_edges": {
+            "seconds": 0.045877309590500986,
+            "percent": 0.2747799481375265,
+            "count": 2,
+            "min_us": 22249.601411939173,
+            "mean_us": 22938.65479525049,
+            "max_us": 23627.70817856181
+          }
+        },
+        "copy_wall_seconds": 3.5128627997163715,
+        "copy": {
+          "count": 277,
+          "min_us": 7296.240796527667,
+          "mean_us": 12681.815161430946,
+          "max_us": 16072.578974004024
+        },
+        "recovery_sleep": {
+          "count": 0,
+          "max_us": null
+        },
+        "recovery_overlap_with_queue_seconds": 0.0,
+        "terminal_post_to_retire": {
+          "count": 277,
+          "min_us": 1341.032085810265,
+          "mean_us": 1538.169987220683,
+          "max_us": 1921.1874047582462
+        },
+        "boundary": "JSL DOS.Read entry to return; guest time; excludes Open, verification and cleanup. Copy/recovery are overlapping diagnostics, not additional breakdown terms."
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "native_nmi_count": 1020,
+        "vbi_dispatches": 245,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 586,
+            "untouched_above_floor": 694
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 562,
+            "untouched_above_floor": 206
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 504,
+            "untouched_above_floor": 264
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1052,
+          "untouched_from_base": 484,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "name": "read-opt-mechanical",
+      "status": "pass",
+      "mode": "opt",
+      "artifact": "build/sio-fast-completion/read-opt-mechanical/results.json",
+      "artifact_sha256": "84f377144c4b41e8eae30db7d61aa1963a762cf4239e3fca6be144a84496729e",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "599102754e17a2fac30e0bc54238afa86e658b112e74ebc690734e9206c006cc",
+      "image_sha256": "d02c04cdc4d9ca907f900a5b3ac89c71b009a2895655c733cb5cfc87d73e5186",
+      "xex_sha256": "527b166b47a8dc48f5e0ae7b8639329d40ebec4cb17dfe75be2e17e3619c9d06",
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "fastest"
+      },
+      "observed": {
+        "received": 70003,
+        "ioError": 0,
+        "verified": 70003,
+        "checks": 7
+      },
+      "media_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "timing": {
+        "elapsed_seconds": 48.714675370993504,
+        "file_bytes": 70003,
+        "file_bytes_per_second": 1437.000235901856,
+        "sectors": 277,
+        "sector_payload_bytes": 70912,
+        "rx_bytes": 71743,
+        "tx_bytes": 1385,
+        "serial_byte_clock_seconds": 5.772891500876119,
+        "ack_end_to_complete_begin": {
+          "seconds": 32.23562524405149,
+          "count": 277,
+          "min_us": 91967.76335358109,
+          "mean_us": 116374.09835397649,
+          "max_us": 201930.4208328693
+        },
+        "breakdown": {
+          "submit_to_start": {
+            "seconds": 3.169724646486575,
+            "percent": 6.506714090460602,
+            "count": 277,
+            "min_us": 9506.483840091121,
+            "mean_us": 11443.049265294494,
+            "max_us": 14070.123305031584
+          },
+          "start_to_terminal_post": {
+            "seconds": 38.71911164553786,
+            "percent": 79.48141160885706,
+            "count": 277,
+            "min_us": 115336.65360829684,
+            "mean_us": 139780.18644598505,
+            "max_us": 225284.93231403807
+          },
+          "terminal_post_to_sector_return": {
+            "seconds": 2.036927509836068,
+            "percent": 4.181342674098838,
+            "count": 277,
+            "min_us": 6059.80723985345,
+            "mean_us": 7353.528916375696,
+            "max_us": 11762.400634921529
+          },
+          "between_sector_calls": {
+            "seconds": 4.739639670754279,
+            "percent": 9.729387776186298,
+            "count": 276,
+            "min_us": 13140.154980623898,
+            "mean_us": 17172.607502732895,
+            "max_us": 19028.12177975384
+          },
+          "read_edges": {
+            "seconds": 0.0492718983787228,
+            "percent": 0.10114385039720718,
+            "count": 2,
+            "min_us": 19465.969531096915,
+            "mean_us": 24635.9491893614,
+            "max_us": 29805.92884762588
+          }
+        },
+        "copy_wall_seconds": 3.7089866629826935,
+        "copy": {
+          "count": 277,
+          "min_us": 7297.227575104423,
+          "mean_us": 13389.843548673984,
+          "max_us": 16073.42478421267
+        },
+        "recovery_sleep": {
+          "count": 0,
+          "max_us": null
+        },
+        "recovery_overlap_with_queue_seconds": 0.0,
+        "terminal_post_to_retire": {
+          "count": 277,
+          "min_us": 1277.596320161719,
+          "mean_us": 1540.3743355472507,
+          "max_us": 1947.1960686741502
+        },
+        "boundary": "JSL DOS.Read entry to return; guest time; excludes Open, verification and cleanup. Copy/recovery are overlapping diagnostics, not additional breakdown terms."
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "native_nmi_count": 2687,
+        "vbi_dispatches": 242,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 586,
+            "untouched_above_floor": 694
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 562,
+            "untouched_above_floor": 206
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 504,
+            "untouched_above_floor": 264
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1052,
+          "untouched_from_base": 484,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  ],
+  "recovery": [
+    {
+      "mode": "raw",
+      "status": "pass",
+      "artifact": "build/sio-fast-completion/recovery-current-raw/results.json",
+      "artifact_sha256": "cfc1bc7fbff1f5cc05741d80ff93103cc62baeeb66d5c1b48be2072beea4a824",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "4660f2d5d08acda1db1e49f4af54155f1a9dad6bc55b2410e524d91f4121d558",
+      "image_sha256": "3b8e96a93ba89aa1cadac583d5b609eccf5ec6504137014e0793da5848cf344a",
+      "xex_sha256": "19c761c3a7ea9881a7fa53e89696f9e32a9459fa061a5423db5536792a27acc2",
+      "sector_size": 128,
+      "cases": [
+        {
+          "name": "queued",
+          "status": "pass",
+          "fault": "",
+          "checks": 138,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "preparing",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "active",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "terminal",
+          "status": "pass",
+          "fault": "",
+          "checks": 137,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "wrap",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "nak",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "absent",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "overrun",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "bound-worker",
+          "status": "pass",
+          "fault": "",
+          "checks": 3,
+          "runtime_status": 4,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 0,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": false
+        },
+        {
+          "name": "startup-binding",
+          "status": "pass",
+          "fault": "",
+          "checks": 140,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "startup-capacity",
+          "status": "pass",
+          "fault": "",
+          "checks": 141,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "private-entry",
+          "status": "pass",
+          "fault": "",
+          "checks": 138,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "device",
+          "status": "pass",
+          "fault": "device",
+          "checks": 136,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "checksum",
+          "status": "pass",
+          "fault": "checksum",
+          "checks": 136,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "short",
+          "status": "pass",
+          "fault": "short",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "firstcause",
+          "status": "pass",
+          "fault": "firstcause",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "extra",
+          "status": "pass",
+          "fault": "extra",
+          "checks": 137,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "late",
+          "status": "pass",
+          "fault": "late",
+          "checks": 137,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "framing",
+          "status": "pass",
+          "fault": "framing",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "protocol",
+          "status": "pass",
+          "fault": "protocol",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "late-preparing",
+          "status": "pass",
+          "fault": "late",
+          "checks": 138,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "reuse",
+          "status": "pass",
+          "fault": "",
+          "checks": 140,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        }
+      ]
+    },
+    {
+      "mode": "opt",
+      "status": "pass",
+      "artifact": "build/sio-fast-completion/recovery-current-opt/results.json",
+      "artifact_sha256": "2f8fc6b59f02cd2454ae44830c74f842b06fe477146f0db555fe8e9416262262",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "4660f2d5d08acda1db1e49f4af54155f1a9dad6bc55b2410e524d91f4121d558",
+      "image_sha256": "8650b50f02801057bf6afad4d4cc2fe34dd85d4fe9dbcb10ba6443e8692ed72d",
+      "xex_sha256": "afad498387eefc125c93be5af5dd3422cb988a5c299b55902d641160b58bf63f",
+      "sector_size": 128,
+      "cases": [
+        {
+          "name": "queued",
+          "status": "pass",
+          "fault": "",
+          "checks": 138,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "preparing",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "active",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "terminal",
+          "status": "pass",
+          "fault": "",
+          "checks": 137,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "wrap",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "nak",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "absent",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "overrun",
+          "status": "pass",
+          "fault": "",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "bound-worker",
+          "status": "pass",
+          "fault": "",
+          "checks": 3,
+          "runtime_status": 4,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 0,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": false
+        },
+        {
+          "name": "startup-binding",
+          "status": "pass",
+          "fault": "",
+          "checks": 140,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "startup-capacity",
+          "status": "pass",
+          "fault": "",
+          "checks": 141,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "private-entry",
+          "status": "pass",
+          "fault": "",
+          "checks": 138,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "device",
+          "status": "pass",
+          "fault": "device",
+          "checks": 136,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "checksum",
+          "status": "pass",
+          "fault": "checksum",
+          "checks": 136,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "short",
+          "status": "pass",
+          "fault": "short",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "firstcause",
+          "status": "pass",
+          "fault": "firstcause",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "extra",
+          "status": "pass",
+          "fault": "extra",
+          "checks": 137,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "late",
+          "status": "pass",
+          "fault": "late",
+          "checks": 137,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "framing",
+          "status": "pass",
+          "fault": "framing",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "protocol",
+          "status": "pass",
+          "fault": "protocol",
+          "checks": 136,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "late-preparing",
+          "status": "pass",
+          "fault": "late",
+          "checks": 138,
+          "runtime_status": 65427,
+          "guards": "intact",
+          "offline": 1,
+          "terminal_posts": 1,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        },
+        {
+          "name": "reuse",
+          "status": "pass",
+          "fault": "",
+          "checks": 140,
+          "runtime_status": 0,
+          "guards": "intact",
+          "offline": 0,
+          "terminal_posts": 2,
+          "caller_pointers_cleared": true,
+          "cleanup_reached": true
+        }
+      ]
+    }
+  ],
+  "concurrent_128": [
+    {
+      "mode": "raw",
+      "status": "pass",
+      "artifact": "build/sio-fast-completion/concurrent-128-raw/results.json",
+      "artifact_sha256": "cce9d003d7ea0160b8ae6c99dd9d8408b466528e5498d05aff5ae2e7704567ea",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "beee64a83777d088bdba3f884fddd626d704941a4f8aadf619075dc6b1915669",
+      "image_sha256": "5edd555783ad4e0a6cfa86811ccf601cdb7e84a6925c570d5b713ff91ba82b6c",
+      "xex_sha256": "262578e0eed1bc6a4638b5b636c3c74d59b9bb5e1440d898f268de1106150d72",
+      "observed": {
+        "checks": 5270,
+        "submitted": 36,
+        "collected": 36,
+        "peakTasks": 8,
+        "peakOutstanding": 12,
+        "workRounds": 65,
+        "activeWork": 64,
+        "heapRounds": 65,
+        "registryRounds": 65,
+        "portRounds": 65,
+        "signalRounds": 65
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 3180,
+          "min_us": 6.766481669178253,
+          "mean_us": 19.836288557852015,
+          "max_us": 67.66481669178253
+        },
+        "tx_refill": {
+          "count": 1680,
+          "min_us": 9.585849031335858,
+          "mean_us": 22.51029891402668,
+          "max_us": 64.84544932962491
+        },
+        "command_setup": {
+          "count": 36,
+          "min_us": 1046.5491648329032,
+          "mean_us": 1057.8892868895816,
+          "max_us": 1089.9674222101303
+        },
+        "command_hold": {
+          "count": 36,
+          "min_us": 724.5774120745047,
+          "mean_us": 748.839634541072,
+          "max_us": 857.0876780959121
+        },
+        "rx_bytes": 3180,
+        "byte_deadline_us": 78.94228614041295,
+        "rx_byte_deadline_us": 78.94228614041295,
+        "active_background_entries": 1234,
+        "active_masked_max_us": 4005.7571481535256,
+        "resident_masked_max_us": 6393.831788085072,
+        "critic_deferral_bound": {
+          "count": 36,
+          "min_us": 53871.414293346716,
+          "mean_us": 175699.13653741902,
+          "max_us": 318497.23490545957
+        },
+        "post_to_worker": {
+          "count": 36,
+          "min_us": 1628.8894934865566,
+          "mean_us": 3794.1597118355944,
+          "max_us": 14629.556273867707
+        },
+        "post_to_next_start": {
+          "count": 35,
+          "min_us": 15024.831578042204,
+          "mean_us": 36518.92913177784,
+          "max_us": 107374.61920919565
+        },
+        "post_to_client_collection": {
+          "count": 36,
+          "min_us": 14597.133549202896,
+          "mean_us": 130827.87511643596,
+          "max_us": 281859.6265184055
+        },
+        "forbid": {
+          "count": 96,
+          "min_us": 1200.4161386226544,
+          "mean_us": 13089.266133947203,
+          "max_us": 23765.01136909889
+        },
+        "alarms": {
+          "sio_alarm": {
+            "count": 624,
+            "min_us": 20.722350111858397,
+            "mean_us": 27.7541640700474,
+            "max_us": 69.21546874096921,
+            "cancelled": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "count": 1513,
+            "min_us": 6.061639828638851,
+            "mean_us": 23.023730929074986,
+            "max_us": 86.2021570979688,
+            "cancelled": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        },
+        "write_delay": {
+          "count": 12,
+          "min_us": 1234.8829046250312,
+          "mean_us": 1269.56112317957,
+          "max_us": 1373.5957788431854
+        },
+        "tx_bytes": 1728,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "c3d57949a166b62d46c2441bc3871f206c062ad6bc8f1e86833a752664d5b9e2"
+      },
+      "replay": {
+        "status": "identical",
+        "xex_sha256": "262578e0eed1bc6a4638b5b636c3c74d59b9bb5e1440d898f268de1106150d72",
+        "emulator_sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989"
+      },
+      "sector_size": 128,
+      "key_during_active": true
+    },
+    {
+      "mode": "opt",
+      "status": "pass",
+      "artifact": "build/sio-fast-completion/concurrent-128-opt/results.json",
+      "artifact_sha256": "850adc27a2af9b0ece39643edee299831da0f629ce4afbf78d9bcea2af27895d",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "beee64a83777d088bdba3f884fddd626d704941a4f8aadf619075dc6b1915669",
+      "image_sha256": "be2c7819863a1448d4456592f8773674edf1b1f363b47d536e9d6ed73fe67c1e",
+      "xex_sha256": "7d4d0ab0c806bc2cf76bb830df813529ba45a8a48d5cf11336d074bd8e388601",
+      "observed": {
+        "checks": 5319,
+        "submitted": 36,
+        "collected": 36,
+        "peakTasks": 8,
+        "peakOutstanding": 12,
+        "workRounds": 71,
+        "activeWork": 67,
+        "heapRounds": 71,
+        "registryRounds": 71,
+        "portRounds": 71,
+        "signalRounds": 71
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 3180,
+          "min_us": 5.638734724315211,
+          "mean_us": 19.845331811655157,
+          "max_us": 65.40932280205645
+        },
+        "tx_refill": {
+          "count": 1680,
+          "min_us": 7.894228614041295,
+          "mean_us": 23.511845605536003,
+          "max_us": 64.84544932962491
+        },
+        "command_setup": {
+          "count": 36,
+          "min_us": 1050.496279139924,
+          "mean_us": 1059.5182546988283,
+          "max_us": 1089.9674222101303
+        },
+        "command_hold": {
+          "count": 36,
+          "min_us": 699.2031058150862,
+          "mean_us": 742.9189630805411,
+          "max_us": 857.0876780959121
+        },
+        "rx_bytes": 3180,
+        "byte_deadline_us": 78.94228614041295,
+        "rx_byte_deadline_us": 78.94228614041295,
+        "active_background_entries": 1332,
+        "active_masked_max_us": 3875.5728602058985,
+        "resident_masked_max_us": 8052.113186322121,
+        "critic_deferral_bound": {
+          "count": 36,
+          "min_us": 50332.47389618243,
+          "mean_us": 168763.8256684916,
+          "max_us": 324134.8418828299
+        },
+        "post_to_worker": {
+          "count": 36,
+          "min_us": 1144.0287913795023,
+          "mean_us": 4406.962913258561,
+          "max_us": 19692.08279354196
+        },
+        "post_to_next_start": {
+          "count": 35,
+          "min_us": 13367.325505829747,
+          "mean_us": 34936.951897363746,
+          "max_us": 105996.30099002084
+        },
+        "post_to_client_collection": {
+          "count": 36,
+          "min_us": 12629.708519705264,
+          "mean_us": 136248.87832252652,
+          "max_us": 274653.53499328287
+        },
+        "forbid": {
+          "count": 101,
+          "min_us": 1089.7559696579685,
+          "mean_us": 10628.226369908618,
+          "max_us": 20557.980994644615
+        },
+        "alarms": {
+          "sio_alarm": {
+            "count": 624,
+            "min_us": 20.722350111858397,
+            "mean_us": 26.64494181458315,
+            "max_us": 73.16258304798987,
+            "cancelled": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "count": 1446,
+            "min_us": 6.061639828638851,
+            "mean_us": 23.4295569570671,
+            "max_us": 88.95104027607246,
+            "cancelled": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        },
+        "write_delay": {
+          "count": 12,
+          "min_us": 1245.59650060123,
+          "mean_us": 1292.5859566371903,
+          "max_us": 1367.3931706464386
+        },
+        "tx_bytes": 1728,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "4fa1b1622804c4d09c850113c34903cd048273ffba0b25a96d3d19a5f42178e9"
+      },
+      "replay": {
+        "status": "identical",
+        "xex_sha256": "7d4d0ab0c806bc2cf76bb830df813529ba45a8a48d5cf11336d074bd8e388601",
+        "emulator_sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989"
+      },
+      "sector_size": 128,
+      "key_during_active": true
+    }
+  ],
+  "sector_256_gate": {
+    "record": "docs/qualification/sio-sectors.json",
+    "sha256": "673947133e2792c82f23044d2cd1d8f38c7cbf950a846d93aa6cf084a3fdb846",
+    "status": "pass",
+    "refreshed_recovery": "Recovery cases rerun with the final bounded fixture and cleanup marker; all other sector-suite fixtures and native inputs unchanged.",
+    "scope": "Raw/optimized boundaries, 4/8-task observed traffic plus identical replay, 8 recovery cases and FASTEST125/STOCK810/Happy NONE functional regressions"
+  },
+  "comparison": {
+    "baseline_record": "docs/qualification/dos-large-read.json",
+    "no_mechanics": {
+      "before_seconds": 27.767686948725576,
+      "after_seconds": 16.696017996021872,
+      "before_bytes_per_second": 2521.023811931618,
+      "after_bytes_per_second": 4192.796151554189,
+      "throughput_increase_percent": 66.31323082750467
+    },
+    "mechanical": {
+      "before_seconds": 48.71419262481692,
+      "after_seconds": 48.714675370993504,
+      "before_bytes_per_second": 1437.0144762357763,
+      "after_bytes_per_second": 1437.000235901856
+    }
+  },
+  "commands": [
+    "python3 tools/probe_dos_large_read.py --case raw --no-disk-timing --output build/sio-fast-completion/read-raw",
+    "python3 tools/probe_dos_large_read.py --case opt --no-disk-timing --output build/sio-fast-completion/read-opt",
+    "python3 tools/probe_dos_large_read.py --case opt --output build/sio-fast-completion/read-opt-mechanical",
+    "python3 tools/test_sio_recovery.py --case raw --output build/sio-fast-completion/recovery-current-raw",
+    "python3 tools/test_sio_recovery.py --case opt --output build/sio-fast-completion/recovery-current-opt",
+    "python3 tools/test_sio_concurrent.py --case raw --capacity 8 --speed 0 --trace --key --output build/sio-fast-completion/concurrent-128-raw",
+    "python3 tools/test_sio_concurrent.py --case opt --capacity 8 --speed 0 --trace --key --output build/sio-fast-completion/concurrent-128-opt",
+    "python3 tools/test_sio_sectors.py --case raw --suite --output build/sio-fast-completion/sectors-raw",
+    "python3 tools/test_sio_recovery.py --case raw --sector-size 256 --suite queued,preparing,active,terminal,absent,checksum,short,extra --output build/sio-fast-completion/recovery-256-current-raw",
+    "python3 tools/test_sio_sectors.py --case opt --suite --output build/sio-fast-completion/sectors-opt",
+    "python3 tools/test_sio_recovery.py --case opt --sector-size 256 --suite queued,preparing,active,terminal,absent,checksum,short,extra --output build/sio-fast-completion/recovery-256-current-opt",
+    "python3 tools/sio_sector_record.py --input build/sio-fast-completion/sectors-current-raw/results.json --input build/sio-fast-completion/sectors-current-opt/results.json"
+  ],
+  "limitations": [
+    "No physical hardware or new peripheral profile qualification.",
+    "Large reads use passive observation without a separate uninstrumented replay; queued concurrency cases include identical replay.",
+    "New late-byte case covers a prepared but unarmed next request, not arbitrary faulty peripheral traffic after rearming.",
+    "Existing timing limits are unchanged; the full historical kernel-bank/profile matrix was not rerun."
+  ],
+  "host_tests": {
+    "command": "python3 -m unittest discover -s tests",
+    "status": "pass",
+    "tests": 117,
+    "log": "build/sio-fast-completion/host-tests-final.log",
+    "log_sha256": "155f477f9aee79dbe5187505711415ff62a94536048e011364abbfc9470a54a8"
+  },
+  "fixture_refinement": "A first stricter raw late-byte trial missed the preparation checkpoint. The final fixture poisons buffer endpoints promptly, verifies the known interior afterward, bounds checkpoint/late-byte waits, and confirms online state after preparation. All recovery cases were rerun with this fixture and an explicit cleanup marker so $FF93 cannot conceal an earlier assertion failure."
+}

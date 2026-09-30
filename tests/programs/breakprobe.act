@@ -1,0 +1,83 @@
+; Task-context output observation only; cancellation uses real physical keys.
+MODULE BREAKPROBE
+USE EXEC
+USE CONSOLETYPES
+USE DOSBREAKTYPES
+PUBLIC DOSBREAKTYPES.Scope POINTER scope
+PUBLIC BYTE armed,committed,visible
+PUBLIC CARD prompts,retainedCount,keys,promptIndex
+BYTE POINTER promptData
+
+PUBLIC PROC Prompt(BYTE POINTER data)
+
+  IF armed=0 THEN
+    RETURN
+  FI
+
+  promptData=data
+  committed=0
+  visible=0
+
+RETURN
+
+PUBLIC PROC Written(CONSOLETYPES.Instance POINTER instance EXEC.IOStdReq
+    POINTER request)
+
+  IF armed=0 OR request.io_Data<>promptData OR request.io_Length<>2 THEN
+    RETURN
+  FI
+
+  IF instance.writeCancel<>0 OR request.io_Error<>0 OR request.io_Actual<>2 THEN
+    RETURN
+  FI
+
+  promptIndex=instance.lineStart+instance.column-2
+  committed=1
+  Commit(0)
+
+RETURN
+
+PUBLIC PROC Commit(BYTE unused)
+
+RETURN
+
+PUBLIC PROC Usable(BYTE unused)
+
+RETURN
+
+PUBLIC PROC Visibility(BYTE unused)
+
+  prompts==+1
+
+RETURN
+
+PUBLIC PROC Display(CONSOLETYPES.Instance POINTER instance)
+
+  IF armed=0 OR committed=0 OR visible<>0 THEN
+    RETURN
+  FI
+
+  IF instance.dirtyFirst<instance.dirtyEnd THEN
+    RETURN
+  FI
+
+  visible=1
+  Visibility(0)
+
+RETURN
+
+PUBLIC PROC Retained(BYTE unused)
+
+  IF armed<>0 THEN
+    retainedCount==+1
+  FI
+
+RETURN
+
+PUBLIC PROC Key(BYTE unused)
+
+  keys==+1
+
+RETURN
+
+ENDMODULE

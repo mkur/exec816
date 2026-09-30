@@ -1,0 +1,51 @@
+MODULE FSMUX
+USE FSSTATUS
+USE EXEC
+USE FSTYPES
+USE FSHANDLER
+USE FSMOUNT
+
+; Claim one management packet and hand it to the mount state machine.
+BYTE FUNC Control(FSTYPES.Service POINTER service)
+  EXEC.Message POINTER message
+
+  message=EXEC.GetMsg(service.control)
+  IF message=EXEC.Message POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  service.packet=FSTYPES.Packet POINTER(message)
+  service.selected=FSTYPES.Mount POINTER(0)
+  service.nextStep=@FSMOUNT.Dispatch
+  service.stage=11
+
+RETURN(1)
+
+; Alternate management and filesystem work so neither queue can monopolize
+; service.
+PUBLIC BYTE FUNC Take(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+  BYTE action
+
+  service=FSTYPES.Service POINTER(raw)
+  IF service.controlTurn=0 THEN
+    service.controlTurn=1
+    IF Control(service)<>0 THEN
+      RETURN(FSSTATUS.MORE)
+    FI
+  FI
+
+  action=FSHANDLER.TakeStep(raw)
+  service.controlTurn=0
+  IF action<>FSSTATUS.IDLE THEN
+    RETURN(action)
+  FI
+
+  IF Control(service)<>0 THEN
+    service.controlTurn=1
+    RETURN(FSSTATUS.MORE)
+  FI
+
+RETURN(FSSTATUS.IDLE)
+
+ENDMODULE

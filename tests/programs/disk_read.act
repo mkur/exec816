@@ -1,0 +1,27 @@
+MODULE DISKREAD
+USE COMMAND
+BYTE ARRAY buffer(512)
+
+; Exercise reading through a loaded command's DOS imports.
+LONGINT FUNC Main()
+  LONGINT count,written
+
+  DO
+    count=COMMAND.Read(COMMAND.Input(),buffer,512)
+    IF count<0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF count=0 THEN
+      RETURN(COMMAND.RETURN_OK)
+    FI
+
+    written=COMMAND.Write(COMMAND.Output(),buffer,count)
+    IF written<>count THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+ENDMODULE

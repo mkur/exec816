@@ -1,0 +1,65 @@
+MODULE PORTWAITREMOVE
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+EXEC.Task waiter
+EXEC.MsgPort abandoned
+EXEC.Message item
+BYTE resumed
+CARD checks
+PROC POINTER absent()
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC WaitingEntry()
+  EXEC.Message POINTER msg
+  BYTE bit
+
+  abandoned.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  abandoned.mp_SigTask=EXEC.FindTask(BYTE POINTER(0))
+  bit=EXEC.AllocSignal(31)
+  abandoned.mp_SigBit=bit
+  EXECLISTS.NewList(@abandoned.mp_MsgList)
+  msg=EXEC.WaitPort(@abandoned)
+  resumed=1
+
+RETURN
+
+; Exercise Task removal while a port waiter remains live.
+PROC Main()
+  EXEC.Task POINTER added,self
+  EXEC.Message POINTER msg
+  BYTE bit
+
+  PrepareTask(@waiter,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  added=EXEC.AddTask(@waiter,@WaitingEntry,absent)
+  WHILE waiter.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+
+  ; There are no producers and no queued or outstanding messages. The manual
+  ; port owns no heap allocation; the abandoned continuation belongs to waiter.
+  EXEC.RemTask(@waiter)
+  IF waiter.tc_State<>EXEC.TS_REMOVED OR resumed<>0 THEN
+    HEAPCORE.Abort($ff8a)
+  FI
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  bit=EXEC.AllocSignal(31)
+  abandoned.mp_SigTask=self
+  abandoned.mp_SigBit=bit
+  EXECLISTS.NewList(@abandoned.mp_MsgList)
+  EXEC.PutMsg(@abandoned,@item)
+  msg=EXEC.WaitPort(@abandoned)
+  IF msg<>@item THEN
+    HEAPCORE.Abort($ff8a)
+  FI
+
+  msg=EXEC.GetMsg(@abandoned)
+  EXEC.FreeSignal(bit)
+  checks=1
+
+RETURN
+
+ENDMODULE

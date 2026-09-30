@@ -1,0 +1,5 @@
+; Private qualification controls, never linked by the resident entry.
+MODULE SHELLFAULTCONTROL
+PUBLIC BYTE failLock,failCurrent,failRestore,failClose
+PUBLIC CARD contextAttempts,portAttempts
+ENDMODULE

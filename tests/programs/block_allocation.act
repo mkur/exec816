@@ -1,0 +1,53 @@
+MODULE BLOCKALLOCATION
+USE EXEC
+USE BLOCKIO
+USE BLOCKWIRE
+USE BLOCKTYPES
+USE HEAPCORE
+INCLUDE "../fixtures/block/driver.inc"
+CARD checks
+BYTE variant
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise rollback when block-adapter allocation fails.
+PROC Main()
+  BLOCKTYPES.Adapter POINTER adapter
+  BLOCKTYPES.Volume POINTER volume
+  LONGCARD before,signalMask
+  EXEC.Task POINTER task
+
+  task=EXEC.FindTask(BYTE POINTER(0))
+  signalMask=task.tc_SigAlloc
+  before=EXEC.AvailMem(0)
+  adapter=BLOCKIO.Create()
+  IF variant=0 THEN
+    Require(adapter=BLOCKTYPES.Adapter POINTER(0))
+  ELSEIF variant=2 THEN
+    Require(adapter<>NULL)
+    Require(adapter.cache.requested=512 AND adapter.cache.blocks=0)
+    Require(adapter.cache.payload=NULL AND adapter.cache.tags=NULL)
+    Require(BLOCKIO.Destroy(adapter)<>0)
+  ELSE
+    Require(adapter<>BLOCKTYPES.Adapter POINTER(0))
+    volume=BlockAttach(adapter,49,1,720,128,1,1)
+    Require(volume=BLOCKTYPES.Volume POINTER(0) AND adapter.owners=0)
+    Require(adapter.error<>0)
+    Require(BLOCKIO.Destroy(adapter)<>0)
+  FI
+
+  Require(EXEC.AvailMem(0)=before AND task.tc_SigAlloc=signalMask)
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,59 @@
+; Read-only example: D1 sector 4, 128 bytes, caller-owned reply port/request.
+; The selected drive must support the explicitly selected serial profile.
+MODULE DEVICEIO
+USE EXEC
+BYTE ARRAY sioName=[115 105 111 46 100 101 118 105 99 101 0]
+BYTE completed
+INT ioError
+
+; Read one physical sector asynchronously and release request, device and
+; buffer ownership.
+PROC Main()
+  EXEC.MsgPort POINTER port
+  EXEC.IOSIOReq POINTER request
+  BYTE POINTER buffer
+
+  port=EXEC.CreateMsgPort()
+  IF port=EXEC.MsgPort POINTER(0) THEN
+    RETURN
+  FI
+
+  request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSIOREQ_SIZE))
+  IF request=EXEC.IOSIOReq POINTER(0) THEN
+    EXEC.DeleteMsgPort(port)
+    RETURN
+  FI
+
+  buffer=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC)
+  IF buffer<>BYTE POINTER(0) THEN
+    ioError=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(request),0)
+    IF ioError=0 THEN
+      request.io_Command=EXEC.SIOCMD_TRANSACTION
+      request.io_Length=128
+      request.io_Data=buffer
+      request.io_Offset=0
+      request.sio_Command=$52
+      request.sio_Aux1=4
+      request.sio_Aux2=0
+      request.sio_Direction=EXEC.SIODIR_READ
+      request.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+      request.sio_TimeoutUS=0
+      EXEC.SendIO(EXEC.IORequest POINTER(request))
+      ; Other tasks run while this caller waits for this particular request.
+      ioError=EXEC.WaitIO(EXEC.IORequest POINTER(request))
+      IF ioError=0 AND request.io_Actual=128 THEN
+        completed=1
+      FI
+
+      EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+    FI
+
+    EXEC.FreeMem(buffer,128)
+  FI
+
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,210 @@
+MODULE DOSNILTEST
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE DOSSTREAMS
+USE FSNAMES
+USE FSBOOT
+USE FSREGISTRY
+USE HEAPCORE
+CARD checks
+VOLATILE BYTE phase,gate,foreignDone
+BYTE mounted,sink
+BYTE ARRAY payload(8)
+EXEC.Task child
+PROC POINTER absent()
+DOS.FileHandle POINTER file,second
+DOS.FileLock POINTER lock
+DOSCLIENT.ClientContext POINTER client
+DOSCORE.DosSlot POINTER owner
+LONGCARD before
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e200+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC BadName(CARD offset LONGINT mode,error)
+
+  Require(DOS.Open(BYTE POINTER(ADDRESS($d1000)+SIZE(offset)),
+      mode)=DOS.FileHandle POINTER(0) AND DOS.IoErr()=error)
+
+RETURN
+
+PROC Names()
+
+  BadName(16,0,DOS.ERROR_DEVICE_NOT_MOUNTED)
+  BadName(32,1005,DOS.ERROR_DEVICE_NOT_MOUNTED)
+  BadName(48,1005,DOS.ERROR_ACTION_NOT_KNOWN)
+  BadName(64,1005,DOS.ERROR_INVALID_COMPONENT_NAME)
+  BadName(80,1005,DOS.ERROR_INVALID_COMPONENT_NAME)
+  BadName(96,1005,DOS.ERROR_NO_DEFAULT_DIR)
+  BadName(112,1005,DOS.ERROR_NO_DEFAULT_DIR)
+  BadName(144,1005,DOS.ERROR_INVALID_COMPONENT_NAME)
+  BadName(512,1005,DOS.ERROR_DEVICE_NOT_MOUNTED)
+  BadName(768,1005,DOS.ERROR_INVALID_COMPONENT_NAME)
+  BadName(0,0,DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Lock(BYTE POINTER($d1000),DOS.SHARED_LOCK)=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Require(FSNAMES.ValidAlias(BYTE POINTER($d1060))=0)
+  owner=DOSCORE.Current()
+  ; A well-formed CON open attempts the ordinary lazy client/endpoint path.
+  Require(DOS.ReleaseContext()<>0 AND owner.context=BYTE POINTER(0))
+
+RETURN
+
+PROC OpenModes()
+
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  second=DOS.Open(BYTE POINTER($d1000),DOS.MODE_NEWFILE)
+  Require(file<>DOS.FileHandle POINTER(0) AND second<>DOS.FileHandle POINTER(0))
+  Require(DOS.Close(second)<>0)
+  second=DOS.Open(BYTE POINTER($d1000),DOS.MODE_READWRITE)
+  Require(second<>DOS.FileHandle POINTER(0) AND DOS.Close(second)<>0)
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  Require(client.objects=1 AND SIZEOF(DOSSTREAMS.Handle)=16)
+
+RETURN
+
+PROC Counts()
+
+  BadName(128,1005,DOS.ERROR_DEVICE_NOT_MOUNTED)
+  Require(DOS.Read(file,BYTE POINTER(0),0)=0 AND DOS.IoErr()=0)
+  Require(DOS.Write(file,BYTE POINTER($ffffff),0)=0 AND DOS.IoErr()=0)
+  Require(DOS.Read(file,BYTE POINTER(0),-1)=-1 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Write(file,BYTE POINTER(0),1)=-1 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Write(file,BYTE POINTER($bfffe),70003)=70003 AND DOS.IoErr()=0)
+  Require(DOS.Read(file,BYTE POINTER($bfffe),70003)=0 AND DOS.IoErr()=0)
+  Require(DOS.Write(file,BYTE POINTER($ffffff),2)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Write(file,BYTE POINTER($100000),1)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Read(file,BYTE POINTER($d000),1)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Read(DOS.FileHandle POINTER($ffffff),BYTE POINTER(0),-1)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=-1
+      AND DOS.IoErr()=DOS.ERROR_SEEK_ERROR)
+  Require(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+
+RETURN
+
+PROC Foreign()
+
+  IF DOS.Write(file,BYTE POINTER(0),0)<>-1
+      OR DOS.IoErr()<>DOS.ERROR_BAD_STREAM_NAME THEN
+    HEAPCORE.Abort($e2fe)
+  FI
+
+  IF DOS.Close(file)<>0 THEN
+    HEAPCORE.Abort($e2ff)
+  FI
+
+  IF DOS.ReleaseContext()=0 THEN
+    HEAPCORE.Abort($e2fd)
+  FI
+
+  foreignDone=1
+
+RETURN
+
+PROC Ownership()
+  DOSSTREAMS.Handle POINTER exact
+  CARD status
+
+  child.tc_Node.ln_Type=EXEC.NT_TASK
+  child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(1))
+  child.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(1))
+  child.tc_SPReg=child.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@child.tc_MemEntry)
+  Require(EXEC.AddTask(@child,@Foreign,absent)=@child)
+  WHILE child.tc_State<>EXEC.TS_REMOVED DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  Require(foreignDone=1 AND client.objects=1)
+  exact=DOSSTREAMS.Handle POINTER($e0000)
+  Require(exact=DOSSTREAMS.Handle POINTER($e0000))
+  exact.header.kind=DOSOBJECTS.KIND_FILE
+  exact.header.backend=DOSOBJECTS.BACKEND_NIL
+  DOSOBJECTS.Link(owner,@exact.header)
+  Require(DOS.Write(DOS.FileHandle POINTER(exact),BYTE POINTER(0),0)=0)
+  Require(DOSOBJECTS.Unlink(owner,@exact.header)<>0 AND client.objects=1)
+
+RETURN
+
+PROC Files()
+
+  second=DOS.Open(BYTE POINTER($d10b0),DOS.MODE_OLDFILE)
+  lock=DOS.Lock(BYTE POINTER($d10d0),DOS.SHARED_LOCK)
+  Require(second<>DOS.FileHandle POINTER(0) AND lock<>DOS.FileLock POINTER(0)
+      AND client.objects=3)
+  Require(DOS.Close(DOS.FileHandle POINTER(lock))=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  Require(DOS.Write(second,BYTE POINTER(0),0)=0 AND DOS.IoErr()=0)
+  Require(DOS.Write(second,BYTE POINTER(0),1)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.Write(second,payload,8)=-1
+      AND DOS.IoErr()=DOS.ERROR_DISK_WRITE_PROTECTED)
+  Require(DOS.Read(second,BYTE POINTER($d1400),8)=8 AND BYTE POINTER($d1400)^=83)
+  Require(DOS.Close(second)<>0)
+  DOS.UnLock(lock)
+  Require(client.objects=1 AND FSBOOT.Stop()<>0)
+
+RETURN
+
+PROC PayloadProbe()
+  CARD status
+
+  phase=1
+  WHILE gate=0 DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  Require(DOS.Write(file,payload,8)=8)
+  Require(DOS.Read(file,payload,8)=0)
+  phase=2
+  WHILE gate=1 DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  ; Host arms access watches, verifies NIL reaches phase 2, and proves the
+  ; same watches stop this deliberately real payload access before phase 3.
+  sink=payload(0)
+  phase=3
+
+RETURN
+
+; Exercise NIL names, access modes, transfer bounds and caller ownership.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  Names()
+  OpenModes()
+  Counts()
+  Ownership()
+  IF mounted<>0 THEN
+    Files()
+  FI
+
+  PayloadProbe()
+  DOSCLIENT.SetError(123456)
+  Require(DOS.Close(file)<>0 AND DOS.IoErr()=123456)
+  Require(DOS.Close(file)=0 AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  Require(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=before)
+
+RETURN
+
+ENDMODULE

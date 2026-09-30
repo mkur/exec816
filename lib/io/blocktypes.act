@@ -1,0 +1,42 @@
+; Private filesystem block boundary. All records live in upper RAM.
+MODULE BLOCKTYPES
+USE EXEC
+
+; Geometry is validated before attachment and fixed for this volume lifetime.
+PUBLIC TYPE Volume=[
+  EXEC.IOSIOReq POINTER request
+  BYTE POINTER adapter
+  LONGCARD sectors,generation
+  CARD dataBytes
+  BYTE unit,profile,boot,busy
+  CARD references
+]
+
+PUBLIC TYPE CacheTag=[
+  Volume POINTER volume
+  LONGCARD generation
+  CARD sector
+  BYTE part
+]
+
+PUBLIC TYPE Cache=[
+  CacheTag POINTER tags
+  BYTE POINTER payload,victims
+  CARD requested,blocks,mask
+  LONGCARD hits,misses,evictions
+]
+
+PUBLIC TYPE Adapter=[
+  EXEC.MsgPort POINTER port
+  EXEC.IOSIOReq POINTER request
+  BYTE POINTER buffer
+  Volume POINTER cached
+  LONGCARD cachedGeneration,cachedSector
+  CARD valid,owners
+  BYTE busy
+  LONGINT error
+  Cache cache
+]
+
+PUBLIC CONST VOLUME_SIZE=SIZEOF(Volume), ADAPTER_SIZE=SIZEOF(Adapter)
+ENDMODULE

@@ -1,0 +1,60 @@
+MODULE PORTDELETEFAULT
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+EXEC.MsgPort POINTER allocated
+EXEC.Message item
+EXEC.Task worker
+EXEC.Task POINTER parent
+BYTE ARRAY snapshot(27)
+LONGCARD beforeMask
+BYTE reached,variant
+PROC POINTER absent()
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC WrongOwner()
+  BYTE bit
+  ; Allocate the same bit in this task, so only the owner check rejects it.
+  bit=EXEC.AllocSignal(16)
+  EXEC.DeleteMsgPort(allocated)
+  reached=1
+
+RETURN
+
+; Exercise rejection of port deletion without valid ownership.
+PROC Main()
+  BYTE i
+  BYTE POINTER bytes
+  EXEC.Task POINTER added
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  allocated=EXEC.CreateMsgPort()
+  IF variant=1 THEN
+    EXEC.PutMsg(allocated,@item)
+  FI
+
+  IF variant=2 THEN
+    EXEC.FreeSignal(allocated.mp_SigBit)
+  FI
+
+  bytes=BYTE POINTER(allocated)
+  FOR i=0 TO 26 DO
+    snapshot(i)=bytes(i)
+  OD
+
+  beforeMask=parent.tc_SigAlloc
+  IF variant=0 THEN
+    PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+    added=EXEC.AddTask(@worker,@WrongOwner,absent)
+    DO
+      EXEC.Yield()
+    OD
+  FI
+
+  EXEC.DeleteMsgPort(allocated)
+  reached=1
+
+RETURN
+
+ENDMODULE

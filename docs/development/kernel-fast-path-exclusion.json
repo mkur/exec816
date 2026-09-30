@@ -1,0 +1,219 @@
+{
+  "tier": "development",
+  "host_tests": 197,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "modes": {
+    "raw": {
+      "xex_sha256": "042123525cdb9a6f655961535ac992a4275f8601dd0a2e866ff7cf83c3ffcbc0",
+      "platform_inputs": {
+        "platform/altirraos/hosted.s": "f91a38c835343718ac5a4a5213654876268e07feb6aa271208270bde4ba2890a",
+        "platform/altirraos/layout.inc": "54910fcc103ff50721dab6a2a03f66dc83e31585ddd2cb2b45ff0f8b832d75e0",
+        "platform/altirraos/hosted.cfg": "381c9142b71a2eff92a1af49bd30029e0458b3ab7030ff6bba2bfda696df6112",
+        "lib/exec/execos.act": "62266f93b89c563d3b97cc56fc8482f6f5f8e6add6458ede727b90fb65fece31",
+        "abi/exec816-v1.json": "c38d1ddaedeb89a57c0614ba8702f6f6f93adda4e2d78f7ff582ac47b54fe1c5",
+        "platform/altirraos/exec-abi.inc": "22eb93b3da8cefecad66aeab9cecfe21f53032b848f65b0b928f16e1655d04be",
+        "platform/altirraos/cooperative.s": "5e8821b60f062b49a07c1e52f824565661b8663000229d6fb74495952d105676",
+        "lib/exec/exec-abi.inc": "bdb408417c878b2662170135b8d395a68f3a3b39c9f27047a4947acfb0d168c9",
+        "platform/altirraos/cooperative-probe.s": "54cbbe92eb52a89b8bd4a8ef55b694a11269274d3a5ded7c3009863794a19f74",
+        "platform/altirraos/preemptive.s": "9f16a897205e863a33a8bdc6e67c512a008cf1969f0c6b208ea2ca6ea811bd11",
+        "lib/exec/exec.act": "97d6a431afee161073d052f7eede9b4851f99a776313e965cba8e54884eb3192",
+        "lib/exec/execpolicy.act": "86bdab3ebe27a383f0aa91365d4aded7fd174efd016399e32c3fdd537e883fba",
+        "tools/library_paths.py": "dbc854930528a58f86a0e0e450223fa73ff2e7ce26ed8c84dcefc1601931cafe"
+      },
+      "native_sha256": "003879ba2bfd483da233df0bc973c2244d899f72513861d57d1d09ed953e286e",
+      "timing": {
+        "paths": {
+          "dispatch_call": 87,
+          "fast_complete": 64,
+          "fast_general": 7
+        },
+        "calls": {
+          "tasks_forbid": {
+            "count": 32,
+            "min_cpu_cycles": 623.0,
+            "median_cpu_cycles": 654.5,
+            "max_cpu_cycles": 692.0,
+            "median_us": 46.13189846330382
+          },
+          "ports_get_msg": {
+            "count": 48,
+            "min_cpu_cycles": 11574.0,
+            "median_cpu_cycles": 11969.0,
+            "max_cpu_cycles": 13293.0,
+            "median_us": 843.6251989416095
+          },
+          "tasks_permit": {
+            "count": 32,
+            "min_cpu_cycles": 641.0,
+            "median_cpu_cycles": 666.5,
+            "max_cpu_cycles": 8726.0,
+            "median_us": 46.9777086719511
+          }
+        }
+      },
+      "coordination_cases": 2,
+      "identical_image_replays": 2,
+      "native_context_cases": 9
+    },
+    "opt": {
+      "xex_sha256": "44e2787eb19e151a0034effb767fba8ef068ef89aceb42d24604853390d8f59f",
+      "platform_inputs": {
+        "platform/altirraos/hosted.s": "f91a38c835343718ac5a4a5213654876268e07feb6aa271208270bde4ba2890a",
+        "platform/altirraos/layout.inc": "54910fcc103ff50721dab6a2a03f66dc83e31585ddd2cb2b45ff0f8b832d75e0",
+        "platform/altirraos/hosted.cfg": "381c9142b71a2eff92a1af49bd30029e0458b3ab7030ff6bba2bfda696df6112",
+        "lib/exec/execos.act": "62266f93b89c563d3b97cc56fc8482f6f5f8e6add6458ede727b90fb65fece31",
+        "abi/exec816-v1.json": "c38d1ddaedeb89a57c0614ba8702f6f6f93adda4e2d78f7ff582ac47b54fe1c5",
+        "platform/altirraos/exec-abi.inc": "22eb93b3da8cefecad66aeab9cecfe21f53032b848f65b0b928f16e1655d04be",
+        "platform/altirraos/cooperative.s": "5e8821b60f062b49a07c1e52f824565661b8663000229d6fb74495952d105676",
+        "lib/exec/exec-abi.inc": "bdb408417c878b2662170135b8d395a68f3a3b39c9f27047a4947acfb0d168c9",
+        "platform/altirraos/cooperative-probe.s": "54cbbe92eb52a89b8bd4a8ef55b694a11269274d3a5ded7c3009863794a19f74",
+        "platform/altirraos/preemptive.s": "9f16a897205e863a33a8bdc6e67c512a008cf1969f0c6b208ea2ca6ea811bd11",
+        "lib/exec/exec.act": "97d6a431afee161073d052f7eede9b4851f99a776313e965cba8e54884eb3192",
+        "lib/exec/execpolicy.act": "86bdab3ebe27a383f0aa91365d4aded7fd174efd016399e32c3fdd537e883fba",
+        "tools/library_paths.py": "dbc854930528a58f86a0e0e450223fa73ff2e7ce26ed8c84dcefc1601931cafe"
+      },
+      "native_sha256": "003879ba2bfd483da233df0bc973c2244d899f72513861d57d1d09ed953e286e",
+      "timing": {
+        "paths": {
+          "dispatch_call": 83,
+          "fast_complete": 64,
+          "fast_general": 3
+        },
+        "calls": {
+          "tasks_forbid": {
+            "count": 32,
+            "min_cpu_cycles": 624.0,
+            "median_cpu_cycles": 651.0,
+            "max_cpu_cycles": 704.0,
+            "median_us": 45.88520381911503
+          },
+          "ports_get_msg": {
+            "count": 48,
+            "min_cpu_cycles": 10598.0,
+            "median_cpu_cycles": 11183.0,
+            "max_cpu_cycles": 12396.0,
+            "median_us": 788.2246302752126
+          },
+          "tasks_permit": {
+            "count": 32,
+            "min_cpu_cycles": 627.0,
+            "median_cpu_cycles": 660.5,
+            "max_cpu_cycles": 8431.0,
+            "median_us": 46.55480356762746
+          }
+        }
+      },
+      "coordination_cases": 2,
+      "identical_image_replays": 2,
+      "native_context_cases": 9
+    }
+  },
+  "nmi": [
+    {
+      "checkpoint": 19,
+      "mode": "raw",
+      "xex_sha256": "5c822711a8f6f79d74914f1d51482c0be8814b8bf8dcc739c11d1071ccf885f4",
+      "cases": 2,
+      "identical_image_replays": 2,
+      "counts": [
+        64,
+        69
+      ]
+    },
+    {
+      "checkpoint": 21,
+      "mode": "opt",
+      "xex_sha256": "e6cb54896335abb2b916b313c8499ba7f5f98a624228f3c8eb6f2a0d0e3c0cff",
+      "cases": 2,
+      "identical_image_replays": 2,
+      "counts": [
+        64,
+        69
+      ]
+    }
+  ],
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    }
+  },
+  "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+  "task_integration": {
+    "status": "pass",
+    "platform": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 1,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false
+      }
+    },
+    "cases": [
+      {
+        "name": "core-raw",
+        "xex_sha256": "4869593b92fbe10c42496c4df037db61f9ea703c31a4efea4850ccb12930e743"
+      },
+      {
+        "name": "far-raw",
+        "xex_sha256": "56b33967d466141ac8daec83f0d18929f8384c762844d658be18e57e2f6f0fca"
+      },
+      {
+        "name": "core-opt",
+        "xex_sha256": "1183a0c93da0b311bbc812f8b734d929646613532b9e2224f9c877ac90bb7189"
+      },
+      {
+        "name": "far-opt",
+        "xex_sha256": "d9a6cfda90b76a57674d0eca5193c9ac2d0e7e0c24286212fd224031cf21f4d3"
+      }
+    ]
+  }
+}

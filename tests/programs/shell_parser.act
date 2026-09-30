@@ -1,0 +1,145 @@
+MODULE SHELLPARSER
+USE HEAPCORE
+USE DOSARGS
+INCLUDE "../../examples/shell/shell-session.inc"
+CARD checks,caseCount
+BYTE finished
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e600+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Same(BYTE POINTER first,second)
+  CARD index
+
+  index=0
+  DO
+    IF first(index)<>second(index) THEN
+      HEAPCORE.Abort($e6f0)
+    FI
+
+    IF first(index)=0 THEN
+      EXIT
+    FI
+
+    index==+1
+    IF index=256 THEN
+      HEAPCORE.Abort($e6f1)
+    FI
+  OD
+
+RETURN
+
+; Check one command line against expected parsing results and untouched buffer
+; guards.
+PROC Parse(CARD offset BYTE valid,command,argc)
+  BYTE POINTER source,target
+  CARD index
+
+  source=BYTE POINTER(ADDRESS($e0000)+SIZE(offset))
+  target=ShellLine()
+  index=0
+  DO
+    target(index)=source(index)
+    IF source(index)=0 THEN
+      EXIT
+    FI
+
+    index==+1
+    IF index=256 THEN
+      HEAPCORE.Abort($e6f2)
+    FI
+  OD
+
+  shell.length=index
+  shell.status=0
+  shell.error=0
+  Check(ShellParse()=valid)
+  IF valid<>0 THEN
+    Check(shell.command=command AND shell.argc=argc)
+  FI
+
+  caseCount==+1
+
+RETURN
+
+PROC Redirect(BYTE output CARD expected)
+  CARD offset
+
+  offset=shell.inputRedirect
+  IF output<>0 THEN
+    offset=shell.outputRedirect
+  FI
+
+  IF expected=$ffff THEN
+    Check(offset=$ffff)
+  ELSE
+    Check(offset<>$ffff)
+    Same(ShellLine()+SIZE(offset),BYTE POINTER(ADDRESS($e0000)+SIZE(expected)))
+  FI
+
+RETURN
+
+PROC Word(BYTE argument CARD offset)
+
+  Same(shell.words(argument).text,BYTE POINTER(ADDRESS($e0000)+SIZE(offset)))
+  checks==+1
+
+RETURN
+
+PROC Tail(CARD offset)
+
+  Same(ShellTransfer()+SIZE(256),BYTE POINTER(ADDRESS($e0000)+SIZE(offset)))
+  checks==+1
+
+RETURN
+
+; The actual shell tail is handed to the same parser/template used by CAT.
+PROC CatArgument(CARD expected)
+  ADDRESS ARRAY values(1)
+  BYTE ARRAY storage(16)
+  BYTE POINTER tail
+
+  tail=ShellTransfer()+SIZE(256)
+  Check(DOSARGS.Parse(CSTRING(tail),c"FILE",values,1,storage,SIZEOF(storage))=0)
+  Same(BYTE POINTER(values(0)),BYTE POINTER(ADDRESS($e0000)+SIZE(expected)))
+
+RETURN
+
+PROC CheckPipeline(CARD boundary,left,right)
+
+  Check(shell.pipeline=1 AND shell.pipelineIndex=boundary)
+  Tail(left)
+  Same(ShellTransfer()+SIZE(256+shell.secondArgumentOffset),
+      BYTE POINTER(ADDRESS($e0000)+SIZE(right)))
+  Check(shell.argumentLength=ShellLength(ShellTransfer()+SIZE(256)) AND
+        shell.secondArgumentLength=ShellLength(ShellTransfer()+SIZE(
+            256+shell.secondArgumentOffset)))
+
+RETURN
+
+INCLUDE "shell-parser-cases.inc"
+
+; Exercise command words, raw tails, redirection and pipeline syntax.
+PROC Main()
+  LONGCARD before
+
+  before=EXEC.AvailMem(0)
+  shell=ShellState POINTER(EXEC.AllocMem(SHELL_BYTES,EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  Check(shell<>ShellState POINTER(0) AND SIZEOF(ShellState)=128)
+  Cases()
+  EXEC.FreeMem(BYTE POINTER(shell),SHELL_BYTES)
+  Check(EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,162 @@
+MODULE STREAMCOST
+USE EXEC
+USE DOS
+USE HEAPCORE
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER request
+DOS.FileHandle POINTER stream
+BYTE POINTER payload
+BYTE ARRAY deviceName=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY rawName=[82 65 87 58 0]
+CARD edges,writes
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($f792)
+  FI
+
+RETURN
+
+PROC DirectOpenBegin(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DirectOpenEnd(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DirectFirstBegin(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DirectFirstEnd(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DirectSteadyBegin(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DirectSteadyEnd(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DosOpenBegin(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DosOpenEnd(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DosFirstBegin(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DosFirstEnd(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DosSteadyBegin(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DosSteadyEnd(BYTE unused)
+
+  edges==+1
+
+RETURN
+
+PROC DirectWrite(BYTE unused)
+  INT error
+
+  request.io_Command=EXEC.CMD_WRITE
+  request.io_Data=payload
+  request.io_Length=40
+  request.io_Offset=0
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Check(error=0 AND request.io_Actual=40)
+  writes==+1
+
+RETURN
+
+PROC DosWrite(BYTE unused)
+
+  Check(DOS.Write(stream,payload,40)=40)
+  writes==+1
+
+RETURN
+
+; Exercise direct and DOS stream costs at the recorded measurement points.
+PROC Main()
+  INT error
+  BYTE index
+
+  payload=EXEC.AllocMem(40,EXEC.MEMF_PUBLIC)
+  Check(payload<>BYTE POINTER(0))
+  FOR index=0 TO 39 DO
+    payload(index)=65+index
+  OD
+
+  DirectOpenBegin(0)
+  port=EXEC.CreateMsgPort()
+  request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,42))
+  error=EXEC.OpenDevice(deviceName,0,EXEC.IORequest POINTER(request),0)
+  DirectOpenEnd(0)
+  Check(error=0)
+  DirectFirstBegin(0)
+  DirectWrite(0)
+  DirectFirstEnd(0)
+  FOR index=0 TO 7 DO
+    DirectSteadyBegin(0)
+    DirectWrite(0)
+    DirectSteadyEnd(0)
+  OD
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  DosOpenBegin(0)
+  stream=DOS.Open(rawName,DOS.MODE_READWRITE)
+  DosOpenEnd(0)
+  Check(stream<>DOS.FileHandle POINTER(0))
+  DosFirstBegin(0)
+  DosWrite(0)
+  DosFirstEnd(0)
+  FOR index=0 TO 7 DO
+    DosSteadyBegin(0)
+    DosWrite(0)
+    DosSteadyEnd(0)
+  OD
+
+  Check(DOS.Close(stream)<>0 AND DOS.ReleaseContext()<>0)
+  EXEC.FreeMem(payload,40)
+  Check(edges=40 AND writes=18)
+
+RETURN
+
+ENDMODULE

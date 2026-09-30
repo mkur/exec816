@@ -1,0 +1,217 @@
+; Explicit two-backend boundary; common DOS ownership stays in lib/fs.
+MODULE FSBACKEND
+USE EXEC
+USE FSBTYPES
+USE MYDOS
+USE MYDOSFILE
+USE SDFS
+USE SDFSFILE
+USE SDFSDIR
+USE SDFSNAME
+USE FSFORMATS
+INCLUDE "../dos/dos-types.inc"
+
+PUBLIC BYTE FUNC Available(BYTE format)
+
+RETURN(format=FSFORMATS.MYDOS OR format=FSFORMATS.SDFS)
+
+; Allocate format-specific metadata while keeping common mount ownership here.
+PUBLIC BYTE FUNC CreateVolume(FSBTYPES.Volume POINTER volume)
+
+  IF Available(volume.format)=0 THEN
+    RETURN(0)
+  FI
+
+  IF volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFS.CreateVolume(volume))
+  FI
+
+RETURN(MYDOS.CreateVolume(volume))
+
+; Dispatch format-specific teardown after the common mount is no longer
+; borrowed.
+PUBLIC PROC DestroyVolume(FSBTYPES.Volume POINTER volume)
+
+  IF volume=NULL THEN
+    RETURN
+  FI
+
+  IF volume.format=FSFORMATS.SDFS THEN
+    SDFS.DestroyVolume(volume)
+
+  ELSE
+    MYDOS.DestroyVolume(volume)
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC CreateWork(FSBTYPES.Workspace POINTER work)
+
+RETURN(SDFS.CreateWork(work))
+
+; Release optional backend scratch belonging to the shared worker workspace.
+PUBLIC PROC DestroyWork(FSBTYPES.Workspace POINTER work)
+
+  IF work=NULL THEN
+    RETURN
+  FI
+
+  SDFS.DestroyWork(work)
+
+RETURN
+
+; Discard format-specific cached identities without changing common DOS
+; ownership.
+PUBLIC PROC Invalidate(FSBTYPES.Workspace POINTER work)
+
+  IF work=NULL THEN
+    RETURN
+  FI
+
+  IF work.extra<>NULL THEN
+    SDFS.Invalidate(work)
+  FI
+
+RETURN
+
+PUBLIC LONGCARD FUNC EnumLimit(FSBTYPES.Volume POINTER volume)
+
+  IF volume.format=FSFORMATS.SDFS THEN
+    RETURN(729443)
+  FI
+
+RETURN(64)
+
+PUBLIC BYTE FUNC BeginMount(FSBTYPES.Workspace POINTER work)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFS.BeginMount(work))
+  FI
+
+RETURN(MYDOS.BeginMount(work))
+
+PUBLIC BYTE FUNC MountBuffered(FSBTYPES.Workspace POINTER work)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFS.MountBuffered(work))
+  FI
+
+RETURN(MYDOS.MountBuffered(work))
+
+PUBLIC BYTE FUNC BufferedEntry(FSBTYPES.Workspace POINTER work)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSDIR.BufferedEntry(work))
+  FI
+
+RETURN(MYDOS.BufferedEntry(work))
+
+PUBLIC BYTE FUNC ResolveComponent(FSBTYPES.Workspace POINTER work)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSNAME.ResolveComponent(work))
+  FI
+
+RETURN(MYDOS.ResolveComponent(work))
+
+PUBLIC BYTE FUNC ResolveStep(FSBTYPES.Workspace POINTER work)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSNAME.ResolveStep(work))
+  FI
+
+RETURN(MYDOS.ResolveStep(work))
+
+PUBLIC BYTE FUNC Descend(FSBTYPES.Workspace POINTER work)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSNAME.Descend(work))
+  FI
+
+RETURN(MYDOS.Descend(work))
+
+PUBLIC BYTE FUNC BeginRead(FSBTYPES.Operation POINTER operation)
+
+  IF operation.work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSFILE.BeginRead(operation))
+  FI
+
+RETURN(MYDOSFILE.BeginRead(operation))
+
+PUBLIC BYTE FUNC BeginSeek(FSBTYPES.Operation POINTER operation)
+
+  IF operation.work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSFILE.BeginSeek(operation))
+  FI
+
+RETURN(MYDOSFILE.BeginSeek(operation))
+
+PUBLIC BYTE FUNC ContinueOperation(FSBTYPES.Operation POINTER operation)
+
+  IF operation.work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSFILE.ContinueOperation(operation))
+  FI
+
+RETURN(MYDOSFILE.ContinueOperation(operation))
+
+PUBLIC BYTE FUNC Cancel(FSBTYPES.Operation POINTER operation)
+
+  IF operation.work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSFILE.Cancel(operation))
+  FI
+
+RETURN(MYDOSFILE.Cancel(operation))
+
+PUBLIC BYTE FUNC BeginEntry(FSBTYPES.Workspace POINTER work CARD directory
+    LONGCARD ordinal)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSDIR.BeginEntry(work,directory,ordinal))
+  FI
+
+RETURN(MYDOS.BeginEntry(work,directory,ordinal))
+
+PUBLIC BYTE FUNC StartResolve(FSBTYPES.Workspace POINTER work BYTE POINTER path)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSNAME.StartResolve(work,path))
+  FI
+
+RETURN(MYDOS.StartResolve(work,path))
+
+PUBLIC BYTE FUNC Open(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER file)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSFILE.Open(work,file))
+  FI
+
+RETURN(MYDOSFILE.Open(work,file))
+
+PUBLIC BYTE FUNC Fail(FSBTYPES.Operation POINTER operation LONGINT error)
+
+  IF operation.work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSFILE.Fail(operation,error))
+  FI
+
+RETURN(MYDOSFILE.Fail(operation,error))
+
+; DONE leaves complete metadata in file.entry; work.entry is the lookup input.
+PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file BYTE received)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSDIR.Measure(work,file,received))
+  FI
+
+RETURN(MYDOSFILE.Measure(work,file,received))
+
+PUBLIC LONGINT FUNC ValidateBase(FSBTYPES.Workspace POINTER work FSBTYPES.LockState
+    POINTER state)
+
+  IF work.volume.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSNAME.ValidateBase(work,state))
+  FI
+
+RETURN(MYDOS.ValidateBase(work,state))
+
+ENDMODULE

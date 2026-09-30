@@ -1,0 +1,235 @@
+MODULE SCROLLPROBE
+USE EXEC
+USE EXECTASKS
+USE HEAPCORE
+USE CONSOLECORE
+USE CONSOLEDISPLAY
+USE CONSOLEDRIVER
+USE CONSOLETYPES
+USE CONSOLE
+USE CONSOLEWINDOWS
+BYTE clockHigh=$13,clockLow=$14
+CARD ARRAY elapsed(8)
+CARD checks
+CONSOLETYPES.Instance local
+CONSOLETYPES.Presentation display
+CONSOLETYPES.Instance POINTER instance
+CONSOLETYPES.Service POINTER service
+CONSOLETYPES.Presentation POINTER view
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER request
+BYTE POINTER cells,snapshot
+BYTE ARRAY name=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY lines(160)
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+CARD FUNC Clock()
+  BYTE high,low
+
+  DO
+    high=clockHigh
+    low=clockLow
+  UNTIL high=clockHigh
+  OD
+
+RETURN((CARD(high) LSH 8)+CARD(low))
+
+PROC Clean()
+  CARD ignored
+
+  WHILE instance.dirtyEnd<>0 OR view.index<>instance.lineStart+instance.column DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Write(CARD length)
+  INT error
+
+  request.io_Command=EXEC.CMD_WRITE
+  request.io_Data=lines
+  request.io_Length=LONGCARD(length)
+  request.io_Offset=0
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=LONGCARD(length))
+
+RETURN
+
+; Measure retained scrolling independently of the console worker's device
+; queue.
+PROC Direct()
+  CARD index,started
+
+  cells=EXEC.AllocMem(960,EXEC.MEMF_PUBLIC)
+  snapshot=EXEC.AllocMem(960,EXEC.MEMF_PUBLIC)
+  Require(cells<>BYTE POINTER(0) AND snapshot<>BYTE POINTER(0))
+  Require(CONSOLECORE.Init(@local,cells,40,24,960)=1)
+  WHILE local.operation<>0 DO
+    CONSOLECORE.EditQuantum(@local)
+  OD
+
+  FOR index=0 TO 959 DO
+    cells(index)=BYTE(33+(index & 63))
+  OD
+
+  started=Clock()
+  FOR index=0 TO 15 DO
+    local.operation=CONSOLETYPES.OP_SCROLL
+    WHILE local.operation<>0 DO
+      CONSOLECORE.EditQuantum(@local)
+    OD
+  OD
+
+  elapsed(0)=Clock()-started
+  Require(CONSOLEDISPLAY.Claim(@display,@local,snapshot)=1)
+  started=Clock()
+  FOR index=0 TO 15 DO
+    local.dirtyFirst=0
+    local.dirtyEnd=960
+    WHILE local.dirtyEnd<>0 DO
+      CONSOLEDISPLAY.Quantum(@display,@local)
+    OD
+  OD
+
+  elapsed(1)=Clock()-started
+  CONSOLEDISPLAY.Release(@display)
+  FOR index=0 TO 319 DO
+    Require(cells(index)=BYTE(33+(index & 63)))
+  OD
+
+  FOR index=320 TO 959 DO
+    Require(cells(index)=32)
+  OD
+
+  EXEC.FreeMem(snapshot,960)
+  EXEC.FreeMem(cells,960)
+
+RETURN
+
+; Measure both collection and visibility; polling yields without a whole-frame delay.
+PROC Small()
+  CARD index,started,total
+
+  lines(0)=13
+  FOR index=1 TO 8 DO
+    lines(index)=BYTE(64+index)
+  OD
+
+  elapsed(4)=0
+  total=Clock()
+  FOR index=0 TO 15 DO
+    started=Clock()
+    Write(9)
+    elapsed(4)==+Clock()-started
+    Clean()
+  OD
+
+  elapsed(5)=Clock()-total
+
+RETURN
+
+; A tile uses the same worker and a physical stride larger than its retained row.
+PROC Tile()
+  CARD index,started
+  LONGCARD unit
+  INT error
+  CONSOLETYPES.Window POINTER entry
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  Require(CONSOLE.Hide(0)=1)
+  unit=CONSOLE.Create(20,8)
+  Require(unit<>0 AND CONSOLE.Show(unit,10,4)=1)
+  error=EXEC.OpenDevice(name,unit,EXEC.IORequest POINTER(request),0)
+  Require(error=0)
+  instance=CONSOLETYPES.Instance POINTER(request.io_Unit)
+  entry=CONSOLEWINDOWS.Find(unit)
+  view=CONSOLETYPES.Presentation POINTER(entry.view)
+  FOR index=0 TO 159 DO
+    lines(index)=BYTE(33+(index & 63))
+  OD
+
+  Write(160)
+  Clean()
+  FOR index=0 TO 15 DO
+    lines(index)=10
+  OD
+
+  started=Clock()
+  Write(16)
+  elapsed(6)=Clock()-started
+  Clean()
+  elapsed(7)=Clock()-started
+  FOR index=0 TO 159 DO
+    Require(instance.cells(index)=32)
+  OD
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  Require(CONSOLE.Destroy(unit)=1)
+
+RETURN
+
+; Exercise scrolling through ordinary queued console writes and completion.
+PROC Worker()
+  CARD index,started
+  INT error
+
+  Require(CONSOLEDRIVER.Start()=1)
+  service=CONSOLEDRIVER.GetService()
+  instance=CONSOLEDRIVER.GetInstance()
+  view=CONSOLETYPES.Presentation POINTER(service.presentation)
+  port=EXEC.CreateMsgPort()
+  request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,42))
+  Require(port<>EXEC.MsgPort POINTER(0) AND request<>EXEC.IOStdReq POINTER(0))
+  error=EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(request),0)
+  Require(error=0)
+  FOR index=0 TO 22 DO
+    lines(index)=10
+  OD
+
+  Write(23)
+  Clean()
+  Require(instance.row=23 AND instance.column=0)
+  view.visible=0
+  started=Clock()
+  Write(16)
+  elapsed(2)=Clock()-started
+  view.visible=1
+  EXEC.Signal(@service.task,$80000000)
+  Clean()
+  started=Clock()
+  Write(16)
+  Clean()
+  elapsed(3)=Clock()-started
+  FOR index=0 TO 959 DO
+    Require(instance.cells(index)=32)
+  OD
+
+  Require(instance.row=23 AND instance.column=0 AND instance.operation=0)
+  Small()
+  Tile()
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  Require(CONSOLEDRIVER.Stop()=1)
+
+RETURN
+
+; Exercise scrolling for direct, tiled and worker-driven displays.
+PROC Main()
+
+  Direct()
+  Worker()
+
+RETURN
+
+ENDMODULE

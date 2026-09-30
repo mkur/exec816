@@ -1,0 +1,204 @@
+; Application lifetime API. Extra instances are initially hidden.
+MODULE CONSOLE
+USE EXEC
+USE EXECLISTS
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLEFOREGROUND
+USE CONSOLECORE
+USE CONSOLEINPUT
+USE CONSOLEDRIVER
+USE CONSOLETILING
+
+; Release the buffers owned by a dynamically allocated terminal.
+PROC FreeInstance(CONSOLETYPES.Window POINTER entry)
+  CONSOLETYPES.Instance POINTER instance
+
+  instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  IF instance<>CONSOLETYPES.Instance POINTER(0) THEN
+    IF instance.cells<>BYTE POINTER(0) THEN
+      EXEC.FreeMem(instance.cells,LONGCARD(instance.count))
+    FI
+
+    IF instance.fifo<>BYTE POINTER(0) THEN
+      EXEC.FreeMem(instance.fifo,CONSOLETYPES.INPUT_BYTES)
+    FI
+
+    EXEC.FreeMem(BYTE POINTER(instance),CONSOLETYPES.INSTANCE_SIZE)
+  FI
+
+  IF entry.view<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(entry.view,CONSOLETYPES.PRESENTATION_SIZE)
+  FI
+
+RETURN
+
+; Build and publish an independent terminal, rolling back failed admission.
+PUBLIC LONGCARD FUNC Create(CARD width,height)
+  CONSOLETYPES.Window POINTER entry
+  CONSOLETYPES.Instance POINTER instance
+  CONSOLETYPES.Presentation POINTER view
+  CONSOLETYPES.Service POINTER service
+  CONSOLETYPES.Windows POINTER windows
+  BYTE POINTER owner
+  BYTE okay
+  CARD row,count
+  LONGCARD unit
+
+  IF width=0 OR height=0 OR width>CONSOLETYPES.MAX_WIDTH
+      OR height>CONSOLETYPES.MAX_HEIGHT THEN
+    RETURN(0)
+  FI
+
+  IF CONSOLEDRIVER.State()<>2 THEN
+    RETURN(0)
+  FI
+
+  owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0)))
+  service=CONSOLEDRIVER.GetService()
+  windows=CONSOLEWINDOWS.Registry()
+  EXEC.Forbid()
+  IF service.state<>2 OR service.stop<>0 OR windows.presenting<>0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  entry=CONSOLEWINDOWS.Reserve(owner)
+  EXEC.Permit()
+  IF entry=CONSOLETYPES.Window POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  instance=CONSOLETYPES.Instance POINTER(EXEC.AllocMem(
+      CONSOLETYPES.INSTANCE_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  view=CONSOLETYPES.Presentation POINTER(EXEC.AllocMem(
+      CONSOLETYPES.PRESENTATION_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  entry.instance=BYTE POINTER(instance)
+  entry.view=BYTE POINTER(view)
+  okay=0
+  IF instance<>CONSOLETYPES.Instance POINTER(0)
+      AND view<>CONSOLETYPES.Presentation POINTER(0) THEN
+    ; Match the core's bounded row accounting on the pinned native target.
+    count=0
+    FOR row=1 TO height DO
+      count==+width
+    OD
+
+    instance.count=count
+    instance.cells=EXEC.AllocMem(LONGCARD(instance.count),EXEC.MEMF_UPPER)
+    instance.fifo=EXEC.AllocMem(CONSOLETYPES.INPUT_BYTES,EXEC.MEMF_UPPER)
+    IF instance.cells<>BYTE POINTER(0) AND instance.fifo<>BYTE POINTER(0) THEN
+      okay=CONSOLECORE.Init(instance,instance.cells,width,height,
+          LONGCARD(instance.count))
+      IF okay<>0 THEN
+        WHILE instance.operation<>CONSOLETYPES.OP_IDLE DO
+          CONSOLECORE.EditQuantum(instance)
+          EXEC.Yield()
+        OD
+
+        CONSOLEINPUT.Init(instance,instance.fifo)
+        EXECLISTS.NewMinList(@instance.writes)
+        view.instance=BYTE POINTER(instance)
+        view.width=width
+        view.height=height
+        view.index=$ffff
+        view.previousCursor=$ffff
+        EXEC.Forbid()
+        okay=CONSOLEFOREGROUND.Register(entry)
+        IF okay<>0 THEN
+          entry.state=CONSOLETYPES.WIN_LIVE
+          windows.liveCount==+1
+        FI
+
+        EXEC.Permit()
+      FI
+    FI
+  FI
+
+  IF okay=0 THEN
+    FreeInstance(entry)
+    EXEC.Forbid()
+    CONSOLEWINDOWS.Retired(entry)
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  unit=entry.unit
+
+RETURN(unit)
+
+; Retire an owned terminal before releasing storage that the worker can
+; borrow.
+PUBLIC BYTE FUNC Destroy(LONGCARD unit)
+  CONSOLETYPES.Windows POINTER windows
+  CONSOLETYPES.Window POINTER entry
+  CONSOLETYPES.Instance POINTER instance
+  BYTE POINTER owner
+
+  IF unit=0 THEN
+    RETURN(0)
+  FI
+
+  owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0)))
+  IF CONSOLETILING.Lock()=0 THEN
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  entry=CONSOLEWINDOWS.Find(unit)
+  IF entry=CONSOLETYPES.Window POINTER(0) THEN
+    EXEC.Permit()
+    CONSOLETILING.Unlock()
+    RETURN(0)
+  FI
+
+  IF entry.owner<>owner OR entry.state<>CONSOLETYPES.WIN_PRESENTING
+      OR entry.scope<>BYTE POINTER(0) THEN
+    EXEC.Permit()
+    CONSOLETILING.Unlock()
+    RETURN(0)
+  FI
+
+  instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  IF instance.open<>0 OR instance.read<>BYTE POINTER(0)
+      OR instance.write<>BYTE POINTER(0) THEN
+    EXEC.Permit()
+    CONSOLETILING.Unlock()
+    RETURN(0)
+  FI
+
+  IF EXECLISTS.IsMinListEmpty(@instance.writes)=0 THEN
+    EXEC.Permit()
+    CONSOLETILING.Unlock()
+    RETURN(0)
+  FI
+
+  windows=CONSOLEWINDOWS.Registry()
+  windows.liveCount==-1
+  entry.state=CONSOLETYPES.WIN_RETIRING
+  EXEC.Permit()
+  CONSOLETILING.HideLocked(entry)
+  EXEC.Forbid()
+  CONSOLEFOREGROUND.Unregister(entry)
+  EXEC.Permit()
+  CONSOLETILING.Unlock()
+  FreeInstance(entry)
+  EXEC.Forbid()
+  CONSOLEWINDOWS.Retired(entry)
+  EXEC.Permit()
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Show(LONGCARD unit CARD left,top)
+
+RETURN(CONSOLETILING.Show(unit,left,top))
+
+PUBLIC BYTE FUNC Hide(LONGCARD unit)
+
+RETURN(CONSOLETILING.Hide(unit))
+
+PUBLIC BYTE FUNC Focus(LONGCARD unit)
+
+RETURN(CONSOLETILING.Focus(unit))
+
+ENDMODULE

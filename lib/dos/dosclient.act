@@ -1,0 +1,283 @@
+MODULE DOSCLIENT
+USE EXEC
+USE DOSCORE
+USE HEAPCORE
+USE FSOPERATION
+USE DOSBREAKTYPES
+INCLUDE "dos-types.inc"
+INCLUDE "dos-packets.inc"
+
+PUBLIC TYPE ClientContext=[
+  EXEC.Task POINTER owner
+  EXEC.MsgPort POINTER port
+  StandardPacket packet
+  CARD objects
+  BYTE busy
+  BYTE POINTER input,output
+  EXEC.IOStdReq POINTER request
+  BYTE POINTER directory,foreground
+  BYTE suspended,foregroundLoan
+]
+
+PUBLIC CONST CLIENT_SIZE=88
+
+; Read this Task's detailed DOS error without allocating a client context.
+PUBLIC LONGINT FUNC IoErr()
+  DOSCORE.DosSlot POINTER slot
+
+  slot=DOSCORE.Current()
+
+RETURN(slot.error)
+
+; Replace the caller's detailed error and return the previous value.
+PUBLIC LONGINT FUNC SetIoErr(LONGINT error)
+  DOSCORE.DosSlot POINTER slot
+  LONGINT previous
+
+  slot=DOSCORE.Current()
+  previous=slot.error
+  slot.error=error
+
+RETURN(previous)
+
+; Publish a DOS error through the current Task's error slot.
+PUBLIC PROC SetError(LONGINT error)
+  DOSCORE.DosSlot POINTER slot
+
+  slot=DOSCORE.Current()
+  slot.error=error
+
+RETURN
+
+; Acquire a private packet, reply port and lease for the caller's DOS
+; operations.
+ClientContext POINTER FUNC NewClient(DOSCORE.DosSlot POINTER slot)
+  ClientContext POINTER client
+  ; active is one byte. It protects partially published pointers and all
+  ; allocation/teardown steps from a detected RemTask misuse, without Forbid.
+  slot.active=1
+  client=ClientContext POINTER(EXEC.AllocMem(CLIENT_SIZE,EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  IF client=ClientContext POINTER(0) THEN
+    slot.error=ERROR_NO_FREE_STORE
+    slot.active=0
+    RETURN(client)
+  FI
+
+  client.owner=slot.owner
+  client.port=EXEC.CreateMsgPort()
+  IF client.port=EXEC.MsgPort POINTER(0) THEN
+    EXEC.FreeMem(BYTE POINTER(client),CLIENT_SIZE)
+    slot.error=ERROR_NO_FREE_STORE
+    slot.active=0
+    RETURN(ClientContext POINTER(0))
+  FI
+
+  client.packet.sp_Msg.mn_Node.ln_Name=BYTE POINTER(@client.packet.sp_Pkt)
+  client.packet.sp_Msg.mn_ReplyPort=client.port
+  client.packet.sp_Msg.mn_Length=62
+  client.packet.sp_Pkt.dp_Link=@client.packet.sp_Msg
+  client.packet.sp_Pkt.dp_Port=client.port
+  slot.context=BYTE POINTER(client)
+  slot.active=0
+
+RETURN(client)
+
+; Admit one operation using the caller's already resolved Task-local slot.
+PUBLIC ClientContext POINTER FUNC EnsureSlot(DOSCORE.DosSlot POINTER slot)
+  ClientContext POINTER client
+
+  IF slot.active<>0 THEN
+    slot.error=ERROR_OBJECT_IN_USE
+    RETURN(ClientContext POINTER(0))
+  FI
+
+  client=ClientContext POINTER(slot.context)
+  IF client<>ClientContext POINTER(0) THEN
+    IF client.owner<>slot.owner THEN
+      HEAPCORE.Abort(DOS_ERROR_MISUSE)
+    FI
+
+    IF client.busy<>0 OR client.suspended<>0 THEN
+      slot.error=ERROR_OBJECT_IN_USE
+      RETURN(ClientContext POINTER(0))
+    FI
+
+    RETURN(client)
+  FI
+
+RETURN(NewClient(slot))
+
+PUBLIC ClientContext POINTER FUNC Ensure()
+
+RETURN(EnsureSlot(DOSCORE.Current()))
+
+; Forget borrowed selections while retaining the context's owned-object list.
+PUBLIC PROC ClearSelections(ClientContext POINTER client BYTE POINTER identity)
+
+  IF client.input=identity THEN
+    client.input=BYTE POINTER(0)
+  FI
+
+  IF client.output=identity THEN
+    client.output=BYTE POINTER(0)
+  FI
+
+RETURN
+
+; Release an idle DOS context only after its owned resources are settled.
+PUBLIC LONGINT FUNC ReleaseContext()
+  DOSCORE.DosSlot POINTER slot
+  ClientContext POINTER client
+
+  slot=DOSCORE.Current()
+  IF slot.active<>0 THEN
+    slot.error=ERROR_OBJECT_IN_USE
+    RETURN(0)
+  FI
+
+  client=ClientContext POINTER(slot.context)
+  IF client=ClientContext POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  IF client.owner<>slot.owner THEN
+    HEAPCORE.Abort(DOS_ERROR_MISUSE)
+  FI
+
+  IF client.suspended<>0 OR client.foregroundLoan<>0
+      OR client.foreground<>BYTE POINTER(0) OR client.busy<>0
+      OR client.objects<>0 OR slot.objects<>BYTE POINTER(0)
+      OR client.input<>BYTE POINTER(0) OR client.output<>BYTE POINTER(0)
+      OR client.directory<>BYTE POINTER(0) THEN
+    slot.error=ERROR_OBJECT_IN_USE
+    RETURN(0)
+  FI
+
+  IF client.request<>EXEC.IOStdReq POINTER(0) THEN
+    IF client.request.io_Device<>BYTE POINTER(0)
+        OR client.request.io_Unit<>BYTE POINTER(0) THEN
+      slot.error=ERROR_OBJECT_IN_USE
+      RETURN(0)
+    FI
+  FI
+
+  slot.active=1
+  IF client.request<>EXEC.IOStdReq POINTER(0) THEN
+    EXEC.DeleteIORequest(EXEC.IORequest POINTER(client.request))
+  FI
+
+  EXEC.DeleteMsgPort(client.port)
+  EXEC.FreeMem(BYTE POINTER(client),CLIENT_SIZE)
+  slot.context=BYTE POINTER(0)
+  slot.active=0
+
+RETURN(-1)
+
+; Verify that a collected message is the client's own completed packet.
+PROC CheckReply(ClientContext POINTER client EXEC.Message POINTER message)
+
+  IF message<>@client.packet.sp_Msg THEN
+    HEAPCORE.Abort(DOS_ERROR_MISUSE)
+  FI
+
+  IF message.mn_Node.ln_Name<>BYTE POINTER(@client.packet.sp_Pkt)
+      OR message.mn_ReplyPort<>client.port THEN
+    HEAPCORE.Abort(DOS_ERROR_MISUSE)
+  FI
+
+  IF client.packet.sp_Pkt.dp_Link<>message
+      OR client.packet.sp_Pkt.dp_Port<>client.port THEN
+    HEAPCORE.Abort(DOS_ERROR_MISUSE)
+  FI
+
+RETURN
+
+; Retain packet ownership until the handler replies, including cancellation
+; cleanup.
+PUBLIC LONGINT FUNC Call(DOSCORE.DosSlot POINTER slot ClientContext POINTER client
+                        EXEC.MsgPort POINTER handler LONGINT action)
+  EXEC.Message POINTER message
+  LONGINT result,error
+  LONGCARD bits,mask
+  BYTE requested
+  DOSBREAKTYPES.Scope POINTER scope
+
+  IF client=ClientContext POINTER(0) OR handler=EXEC.MsgPort POINTER(0) THEN
+    slot.error=ERROR_DEVICE_NOT_MOUNTED
+    RETURN(0)
+  FI
+
+  IF slot.context<>BYTE POINTER(client) OR client.owner<>slot.owner THEN
+    HEAPCORE.Abort(DOS_ERROR_MISUSE)
+  FI
+
+  IF client.busy<>0 OR client.suspended<>0 THEN
+    slot.error=ERROR_OBJECT_IN_USE
+    RETURN(0)
+  FI
+
+  client.busy=1
+  client.packet.sp_Pkt.dp_Type=action
+  client.packet.sp_Pkt.dp_Res1=0
+  client.packet.sp_Pkt.dp_Res2=0
+  scope=DOSBREAKTYPES.Scope POINTER(0)
+  requested=0
+  IF FSOPERATION.Cancellable(action)<>0 THEN
+    scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+  FI
+
+  mask=LONGCARD(1) LSH client.port.mp_SigBit
+  EXEC.Forbid()
+  IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+    error=FSOPERATION.Prepare(scope,slot,
+        FSOPERATION.WirePacket POINTER(@client.packet),handler)
+    IF error<>0 THEN
+      EXEC.Permit()
+      slot.error=error
+      client.busy=0
+      IF action=82 OR action=1008 THEN
+        RETURN(-1)
+      FI
+
+      RETURN(0)
+    FI
+
+    scope.opState=FSOPERATION.QUEUED
+    mask=mask OR scope.mask
+  FI
+
+  EXEC.PutMsg(handler,@client.packet.sp_Msg)
+  EXEC.Permit()
+  DO
+    message=EXEC.GetMsg(client.port)
+    IF message<>EXEC.Message POINTER(0) THEN
+      EXIT
+    FI
+
+    IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+      IF scope.pending<>0 AND requested=0 THEN
+        FSOPERATION.Request(scope)
+        requested=1
+      FI
+    FI
+
+    bits=EXEC.Wait(mask)
+  OD
+
+  CheckReply(client,message)
+  IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
+    FSOPERATION.Collect(scope)
+  FI
+
+  result=client.packet.sp_Pkt.dp_Res1
+  ; Successful END/FREE_LOCK preserves a previous read/seek error during cleanup.
+  IF (action<>1007 AND action<>15) OR result=0 THEN
+    slot.error=client.packet.sp_Pkt.dp_Res2
+  FI
+
+  client.busy=0
+
+RETURN(result)
+
+ENDMODULE

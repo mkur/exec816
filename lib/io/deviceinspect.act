@@ -1,0 +1,45 @@
+; Internal diagnostic view of the current built-in drivers, not a public ABI.
+MODULE DEVICEINSPECT
+USE EXEC
+USE SIODRIVER
+USE CONSOLETYPES
+; Generated console address goes here.
+PUBLIC CONST CAPACITY=2, CONSOLE=1, SIO=2
+PUBLIC CONST INACTIVE=0, STARTING=1, READY=2, STOPPING=3, STOPPED=4, OFFLINE=5
+
+PUBLIC TYPE Info=[BYTE kind,state]
+
+; Copy device diagnostics into caller storage through the inspection boundary.
+PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
+  CONSOLETYPES.Service POINTER service
+  CARD count
+
+  IF rows=Info POINTER(0) OR limit<CAPACITY THEN
+    RETURN(0)
+  FI
+
+  count=0
+  EXEC.Forbid()
+  IF CONSOLE_BASE<>0 THEN
+    service=CONSOLETYPES.Service POINTER(ADDRESS(CONSOLE_BASE))
+    rows(count).kind=CONSOLE
+    rows(count).state=service.state
+    IF service.state=READY AND service.stop<>0 THEN
+      rows(count).state=STOPPING
+    FI
+
+    count==+1
+  FI
+
+  rows(count).kind=SIO
+  rows(count).state=SIODRIVER.State()
+  IF SIODRIVER.Unavailable()<>0 THEN
+    rows(count).state=OFFLINE
+  FI
+
+  count==+1
+  EXEC.Permit()
+
+RETURN(count)
+
+ENDMODULE

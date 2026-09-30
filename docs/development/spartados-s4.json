@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "S4 focused development checks; memory sector provider, raw 256/optimized 128; S3 supplies full core map/read matrix",
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "47cd55b2dac510922949832332b7a2c3220885be",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "inputs": {
+    "lib/spartados/sdfs.act": "156c5a17f9053af4334257aecd3c7e41c65aa6ae85345a18352d6b8a27fd4c4a",
+    "lib/spartados/sdfstypes.act": "233e14bd1850e27ced090512854286d26cd1f3370950cc5bb31f3ec930a8a3cf",
+    "lib/spartados/sdfsdir.act": "be1873ac87e288bfa6672e33ed2162d9700eee4416aa98c0af83866161bbb044",
+    "lib/spartados/sdfsname.act": "24daa0fcbfe76e3a08db86b3b4c6c8abf345de316c021081624df5bf89949e08",
+    "lib/spartados/sdfsdate.act": "6704c3841ca14ccc7eb84e8fabdf5ac71d30aed90f477c562ffc3ef5d9dbca6d",
+    "tools/native_program.py": "b7285a4b4b4e3df7d7757cafa0264aa00acf8f2311ec4ece2bb54af4d112212b",
+    "platform/altirraos/hosted.s": "f91a38c835343718ac5a4a5213654876268e07feb6aa271208270bde4ba2890a",
+    "tests/programs/sdfs_namespace.inc": "56923480906d96221a2efd79b7f315c8aa78a13834bce9709c3cfdb9c06add87",
+    "tools/test_sdfs_namespace.py": "cc220e4b7f26e14ecfdba8d8bc16b5bc68b9e28692d2adb50bea106205ba670f",
+    "tools/sdfs_namespace_fixtures.py": "4e13e5029a02acf9afbb8146daee232e6a3762c3054b16ffc81897a3d957b9db",
+    "tests/test_sdfs_namespace_fixtures.py": "67f8ea38ad23611ce538e27b676a2efc72e447bd90fd51a6591cf1917aca1568",
+    "tests/test_native_frame_maps.py": "444b02e139deb94140147c9d27b291ab3e4d079b12f0ba2cd21e6efc9bcf7798"
+  },
+  "cases": [
+    {
+      "mode": "opt",
+      "sector_bytes": 128,
+      "status": "pass",
+      "checks": [
+        23369
+      ],
+      "image_version": 4,
+      "image_sha256": "e1b99dac59306d91a2e5c3a2524d2bcafa3af1201935ec360025dddb854c1de4",
+      "xex_sha256": "95375073c3c65d8d569442fbfed4bfa0294c35cf4dc2f1c03e535a3bc88ed19c",
+      "result_sha256": "5c11ee06d546738e448f56b6e78b6349a655dac97ed9bdd7db52eefb147d4dd5",
+      "fixture_sha256": "d3aec328503fe8ad535c2cf593e3dc38209bd15296b65937a5bc685839eea0c1",
+      "generated_fixture_sha256": "78656c48eb78a950ff0c1754ce29f52f5bc63475f92fa1e5abc63bfa189ec1d5",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 261,
+            "untouched_above_floor": 1019
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 24,
+            "untouched_above_floor": 1256
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 266,
+          "untouched_from_base": 1270,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "arithmetic_fault": {
+        "status": 65431,
+        "guards": "intact",
+        "live_tasks": 1,
+        "fault_required": 1,
+        "fault_s": 18404,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 84,
+            "untouched_above_floor": 1196
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 278,
+          "untouched_from_base": 1258,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "module_code_bytes": {
+        "SDFSDIR": 10329,
+        "SDFSNAME": 8588,
+        "SDFSDATE": 2359
+      }
+    },
+    {
+      "mode": "raw",
+      "sector_bytes": 256,
+      "status": "pass",
+      "checks": [
+        21781
+      ],
+      "image_version": 4,
+      "image_sha256": "44a865f7549076e2e5978abf8346938ebcc6bd4c87633c69e664aa162bd00ccd",
+      "xex_sha256": "f38fd86b8fddbe6d8c87ba92f29c4383379a0a0166e55d49e5528c7dd52b5fe4",
+      "result_sha256": "fe3b609c1b5cb32086e4fdca53cd5c8fb5c87cbf378298e1b2c3bc83c61bee7d",
+      "fixture_sha256": "9ff148d293d5496d704c85fe5d5278bd336d0333e4879875e61f38e5cb83e909",
+      "generated_fixture_sha256": "78656c48eb78a950ff0c1754ce29f52f5bc63475f92fa1e5abc63bfa189ec1d5",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 286,
+            "untouched_above_floor": 994
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 24,
+            "untouched_above_floor": 1256
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 274,
+          "untouched_from_base": 1262,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "arithmetic_fault": {
+        "status": 65431,
+        "guards": "intact",
+        "live_tasks": 1,
+        "fault_required": 1,
+        "fault_s": 18400,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 98,
+            "untouched_above_floor": 1182
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 274,
+          "untouched_from_base": 1262,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "module_code_bytes": {
+        "SDFSDIR": 10975,
+        "SDFSNAME": 8797,
+        "SDFSDATE": 2373
+      }
+    }
+  ],
+  "host_tests": 191,
+  "bank_zero": {
+    "fixed_delta": 0,
+    "per_task_delta": 0
+  },
+  "upper_memory": {
+    "backend_workspace_allocated": 544,
+    "workspace_delta_from_s3": 8,
+    "per_handle_delta": 0
+  },
+  "observations": [
+    "Directory header length is authoritative; parent-entry length can retain its creation value in independently produced valid media.",
+    "Date conversion is bounded over 1978..2049, without a per-year division loop.",
+    "Ordinary reads in the fixture provider expose immutable sector bytes directly; deliberate faults use a copied sector. Guest assertions reject regular-file payload reads during all namespace/accounting cases.",
+    "The arithmetic fault stimulus uses the existing far-memory bootstrap helper because the pinned bridge direct write API accepts only bank-zero addresses. Exact compiled images were replayed with verified inputs."
+  ]
+}

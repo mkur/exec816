@@ -1,0 +1,356 @@
+MODULE HEAPCORE
+
+USE EXECLISTS
+INCLUDE "exec-memory-types.inc"
+
+; Private pool mechanics. Caller owns the header and serializes all access.
+; System policy calls these only under the existing scheduler guard.
+PUBLIC EXTERNAL PROC Abort(CARD reason)
+  INCLUDE "heap-constants.inc"
+
+CONST LONGCARD ALIGNED_SIZE_MASK=$fffffff8
+
+; Round a nonzero request to chunk alignment without overflowing its size.
+PUBLIC LONGCARD FUNC Rounded(LONGCARD bytes)
+
+  IF bytes=0 OR bytes>ALIGNED_SIZE_MASK THEN
+    RETURN(0)
+  FI
+
+RETURN((bytes+(H_ALIGNMENT-1)) & ALIGNED_SIZE_MASK)
+
+; Validate the pool extent and accounting before following its free list.
+PUBLIC PROC Bounds(MemHeader POINTER pool)
+
+  IF pool=NULL THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+  IF LONGCARD(ADDRESS(pool))>LONGCARD(H_ADDRESS_END)-H_MEMHEADER_BYTES THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+  LET low=LONGCARD(ADDRESS(pool.mh_Lower))
+  IF low=0 OR low>=pool.mh_Upper OR pool.mh_Upper>LONGCARD(H_ADDRESS_END) THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+  IF ((low OR pool.mh_Upper OR pool.mh_Free) & (H_ALIGNMENT-1))<>0 THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+  IF pool.mh_Free>pool.mh_Upper-low THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+RETURN
+
+; Require a complete, aligned chunk header inside this pool.
+PROC ChunkAddress(MemHeader POINTER pool MemChunk POINTER chunk)
+
+  LET base=LONGCARD(ADDRESS(chunk))
+  IF base<LONGCARD(ADDRESS(pool.mh_Lower)) THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+  IF base>pool.mh_Upper-H_MEMCHUNK_BYTES OR (base & (H_ALIGNMENT-1))<>0 THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+RETURN
+
+; Reject backward, overlapping or out-of-pool links before following them.
+PROC NextAddress(MemHeader POINTER pool MemChunk POINTER next LONGCARD limit)
+
+  LET base=LONGCARD(ADDRESS(next))
+  IF base<>0 THEN
+    IF base<=limit OR base>pool.mh_Upper-H_MEMCHUNK_BYTES
+        OR (base & (H_ALIGNMENT-1))<>0 THEN
+      Abort(H_ERROR_CORRUPT)
+    FI
+  FI
+
+RETURN
+
+; Validate a free extent and its successor, then return its exclusive end.
+LONGCARD FUNC ChunkEnd(MemHeader POINTER pool MemChunk POINTER chunk)
+
+  ChunkAddress(pool,chunk)
+  LET base=LONGCARD(ADDRESS(chunk))
+  IF chunk.mc_Bytes=0 OR (chunk.mc_Bytes & (H_ALIGNMENT-1))<>0 THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+  IF chunk.mc_Bytes>pool.mh_Upper-base THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+  LET limit=base+chunk.mc_Bytes
+  NextAddress(pool,chunk.mc_Next,limit)
+
+RETURN(limit)
+
+; Check ordered free extents against the header's total free-byte count.
+PUBLIC PROC Validate(MemHeader POINTER pool)
+  MemChunk POINTER chunk
+  LONGCARD total,limit
+
+  Bounds(pool)
+  total=0
+  chunk=pool.mh_First
+  WHILE chunk<>NULL DO
+    limit=ChunkEnd(pool,chunk)
+    total==+chunk.mc_Bytes
+    chunk=chunk.mc_Next
+  OD
+
+  IF total<>pool.mh_Free THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+RETURN
+
+; Replace a free-list link, including the header link before the first chunk.
+PROC Link(MemHeader POINTER pool MemChunk POINTER previous,replacement)
+
+  IF previous=NULL THEN
+    pool.mh_First=replacement
+
+  ELSE
+    previous.mc_Next=replacement
+  FI
+
+RETURN
+
+; Describe a free extent without retaining bytes from its previous owner.
+PROC WriteChunk(MemChunk POINTER chunk,next LONGCARD bytes)
+
+  chunk.mc_Next=next
+  chunk.mc_Pad=0
+  chunk.mc_Bytes=bytes
+
+RETURN
+
+; Remove an allocation while retaining any leading and trailing free space.
+PROC Split(MemHeader POINTER pool MemChunk POINTER previous, chunk
+    LONGCARD startAddress,bytes)
+  MemChunk POINTER replacement
+
+  LET endAddress=LONGCARD(ADDRESS(chunk))+chunk.mc_Bytes
+  LET before=startAddress-LONGCARD(ADDRESS(chunk))
+  LET after=endAddress-startAddress-bytes
+  replacement=chunk.mc_Next
+  IF after<>0 THEN
+    replacement=MemChunk POINTER(ADDRESS(startAddress+bytes))
+    WriteChunk(replacement,chunk.mc_Next,after)
+  FI
+
+  IF before<>0 THEN
+    chunk.mc_Bytes=before
+    chunk.mc_Next=replacement
+
+  ELSE
+    Link(pool,previous,replacement)
+  FI
+
+  pool.mh_Free==-bytes
+
+RETURN
+
+; Find a start address that satisfies an optional single-bank constraint.
+LONGCARD FUNC Candidate(MemChunk POINTER chunk LONGCARD bytes BYTE contained)
+  LONGCARD base
+
+  base=LONGCARD(ADDRESS(chunk))
+  IF contained<>0 THEN
+    IF (base & LONGCARD($ffff))+bytes>LONGCARD(H_BANK_BYTES) THEN
+      base=(base+LONGCARD($ffff)) & LONGCARD($ffff0000)
+    FI
+  FI
+
+RETURN(base)
+
+; Take the first suitable free extent, leaving the pool unchanged on failure.
+PUBLIC BYTE POINTER FUNC Reserve(MemHeader POINTER pool LONGCARD byteSize
+    BYTE contained)
+  LONGCARD base,limit
+  MemChunk POINTER chunk,previous
+
+  LET bytes=Rounded(byteSize)
+  IF bytes=0 THEN
+    RETURN(NULL)
+  FI
+
+  IF contained<>0 AND bytes>LONGCARD(H_BANK_BYTES) THEN
+    RETURN(NULL)
+  FI
+
+  Validate(pool)
+  IF bytes>pool.mh_Free THEN
+    RETURN(NULL)
+  FI
+
+  previous=NULL
+  chunk=pool.mh_First
+  WHILE chunk<>NULL DO
+    base=Candidate(chunk,bytes,contained)
+    limit=LONGCARD(ADDRESS(chunk))+chunk.mc_Bytes
+    IF base<limit THEN
+      IF bytes<=limit-base THEN
+        Split(pool,previous,chunk,base,bytes)
+        RETURN(BYTE POINTER(ADDRESS(base)))
+      FI
+    FI
+
+    previous=chunk
+    chunk=chunk.mc_Next
+  OD
+
+RETURN(NULL)
+
+; Allocate from a private pool with no bank-containment restriction.
+PUBLIC BYTE POINTER FUNC Allocate(MemHeader POINTER pool LONGCARD byteSize)
+
+RETURN(Reserve(pool,byteSize,0))
+
+; Use Candidate, as Reserve does, so bank-aware LARGEST cannot promise a
+; placement that allocation would reject. Validate chunks in the same pass.
+PUBLIC LONGCARD FUNC Largest(MemHeader POINTER pool BYTE contained)
+  MemChunk POINTER chunk
+  LONGCARD best,bytes,base,limit,total
+
+  Bounds(pool)
+  chunk=pool.mh_First
+  best=0
+  total=0
+  WHILE chunk<>NULL DO
+    limit=ChunkEnd(pool,chunk)
+    bytes=chunk.mc_Bytes
+    total==+bytes
+    IF contained<>0 THEN
+      base=Candidate(chunk,LONGCARD(H_BANK_BYTES),1)
+      IF base<limit THEN
+        bytes=limit-base
+        IF bytes>LONGCARD(H_BANK_BYTES) THEN
+          bytes=LONGCARD(H_BANK_BYTES)
+        FI
+
+      ELSE
+        bytes=0
+      FI
+
+      base=LONGCARD(H_BANK_BYTES)-(LONGCARD(ADDRESS(chunk)) & LONGCARD($ffff))
+      IF base>chunk.mc_Bytes THEN
+        base=chunk.mc_Bytes
+      FI
+
+      IF base>bytes THEN
+        bytes=base
+      FI
+    FI
+
+    IF bytes>best THEN
+      best=bytes
+    FI
+
+    chunk=chunk.mc_Next
+  OD
+
+  IF total<>pool.mh_Free THEN
+    Abort(H_ERROR_CORRUPT)
+  FI
+
+RETURN(best)
+
+; Return an extent and coalesce either adjacent free neighbor.
+PROC InsertFree(MemHeader POINTER pool MemChunk POINTER previous, following
+    LONGCARD low,high)
+  MemChunk POINTER joined
+
+  joined=MemChunk POINTER(ADDRESS(low))
+  IF previous<>NULL THEN
+    IF LONGCARD(ADDRESS(previous))+previous.mc_Bytes=low THEN
+      joined=previous
+    FI
+  FI
+
+  IF joined=previous THEN
+    joined.mc_Bytes==+high-low
+    joined.mc_Next=following
+
+  ELSE
+    WriteChunk(joined,following,high-low)
+    Link(pool,previous,joined)
+  FI
+
+  IF following<>NULL THEN
+    IF high=LONGCARD(ADDRESS(following)) THEN
+      joined.mc_Bytes==+following.mc_Bytes
+      joined.mc_Next=following.mc_Next
+    FI
+  FI
+
+  pool.mh_Free==+high-low
+
+RETURN
+
+; Reject out-of-pool and overlapping frees before modifying any links.
+PROC ReturnRange(MemHeader POINTER pool LONGCARD low,high)
+  MemChunk POINTER previous,following
+
+  IF low<LONGCARD(ADDRESS(pool.mh_Lower)) OR high>pool.mh_Upper THEN
+    Abort(H_ERROR_POINTER)
+  FI
+
+  IF high-low>pool.mh_Upper-LONGCARD(ADDRESS(pool.mh_Lower))-pool.mh_Free THEN
+    Abort(H_ERROR_POINTER)
+  FI
+
+  previous=NULL
+  following=pool.mh_First
+  WHILE following<>NULL DO
+    IF LONGCARD(ADDRESS(following))>=low THEN
+      EXIT
+    FI
+
+    previous=following
+    following=following.mc_Next
+  OD
+
+  IF previous<>NULL THEN
+    IF LONGCARD(ADDRESS(previous))+previous.mc_Bytes>low THEN
+      Abort(H_ERROR_POINTER)
+    FI
+  FI
+
+  IF following<>NULL THEN
+    IF high>LONGCARD(ADDRESS(following)) THEN
+      Abort(H_ERROR_POINTER)
+    FI
+  FI
+
+  InsertFree(pool,previous,following,low,high)
+
+RETURN
+
+; Return the aligned extent covering a caller-supplied block and size.
+PUBLIC PROC Deallocate(MemHeader POINTER pool BYTE POINTER memoryBlock
+    LONGCARD byteSize)
+
+  IF byteSize=0 THEN
+    RETURN
+  FI
+
+  LET base=LONGCARD(ADDRESS(memoryBlock))
+  IF base=0 OR byteSize>LONGCARD(H_ADDRESS_END)-base THEN
+    Abort(H_ERROR_POINTER)
+  FI
+
+  LET low=base & ALIGNED_SIZE_MASK
+  LET high=Rounded(base+byteSize)
+  Validate(pool)
+  ReturnRange(pool,low,high)
+
+RETURN
+
+ENDMODULE

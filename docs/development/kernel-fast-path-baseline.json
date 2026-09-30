@@ -1,0 +1,123 @@
+{
+  "status": "pass",
+  "runtime_baseline": "d0d1d7c",
+  "tier": "development",
+  "host_tests": 197,
+  "modes": {
+    "raw": {
+      "xex_sha256": "5d1bc1a8c00807256423019f0c2cc47e52f70fc7d2d4fd5e610056cf492c1528",
+      "image_sha256": "39bdcbb08d15063f62eba7b9cffea47cd449fb241df18340d0b05b8ae1a43da2",
+      "compiler_revision": "47cd55b2dac510922949832332b7a2c3220885be",
+      "timing": {
+        "paths": {
+          "dispatch_call": 144
+        },
+        "calls": {
+          "tasks_forbid": {
+            "count": 32,
+            "min_cpu_cycles": 9739.0,
+            "median_cpu_cycles": 10221.5,
+            "max_cpu_cycles": 11221.0,
+            "median_us": 720.4540873073491
+          },
+          "ports_get_msg": {
+            "count": 48,
+            "min_cpu_cycles": 11354.0,
+            "median_cpu_cycles": 11957.5,
+            "max_cpu_cycles": 13290.0,
+            "median_us": 842.8146308249892
+          },
+          "tasks_permit": {
+            "count": 32,
+            "min_cpu_cycles": 9753.0,
+            "median_cpu_cycles": 10254.5,
+            "max_cpu_cycles": 11241.0,
+            "median_us": 722.7800653811291
+          }
+        }
+      },
+      "checks": [
+        81,
+        87
+      ],
+      "replay": "identical runtime and checks",
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      }
+    },
+    "opt": {
+      "xex_sha256": "58abd6e13cf4432d38a1b863ca1364f14dafb9cdd5971249af13028656144672",
+      "image_sha256": "0489b7f611ef264459716d52ae00a3b59abf1b48202f4cef7a6f3819af3aafd6",
+      "compiler_revision": "47cd55b2dac510922949832332b7a2c3220885be",
+      "timing": {
+        "paths": {
+          "dispatch_call": 144
+        },
+        "calls": {
+          "tasks_forbid": {
+            "count": 32,
+            "min_cpu_cycles": 9240.0,
+            "median_cpu_cycles": 9704.0,
+            "max_cpu_cycles": 10719.0,
+            "median_us": 683.9785220594351
+          },
+          "ports_get_msg": {
+            "count": 48,
+            "min_cpu_cycles": 10576.0,
+            "median_cpu_cycles": 11248.0,
+            "max_cpu_cycles": 12377.0,
+            "median_us": 792.8061022387186
+          },
+          "tasks_permit": {
+            "count": 32,
+            "min_cpu_cycles": 9259.0,
+            "median_cpu_cycles": 9737.0,
+            "max_cpu_cycles": 9875.0,
+            "median_us": 686.3045001332151
+          }
+        }
+      },
+      "checks": [
+        81,
+        87
+      ],
+      "replay": "identical runtime and checks",
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      }
+    }
+  },
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    }
+  },
+  "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8"
+}

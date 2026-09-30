@@ -1,0 +1,222 @@
+diff --git a/docs/cstring.md b/docs/cstring.md
+index 31e05bb9..91ab566b 100644
+--- a/docs/cstring.md
++++ b/docs/cstring.md
+@@ -40,12 +40,13 @@ This first implementation explicitly rejects CSTRING on other targets.
+ 
+ ## Library
+ 
+-`USE CSTRING AS STR` imports the external interface. A host supplies the seven
++`USE CSTRING AS STR` imports the external interface. A host supplies the eight
+ versioned providers in [the contract](../embedded/modules/cstring/contract.json).
+ Only referenced functions become imports. `USE CSTRING.IMPL AS STR` explicitly
+ includes the same implementation for standalone programs; ordinary module
+-inclusion currently includes all seven functions. No allocator, OS services,
+-mutable globals, initialization, errno or cleanup are involved. Calls use the
++inclusion currently includes all eight functions. No allocator, OS services,
++global working storage, initialization, errno or cleanup are involved. Decimal
++conversion shares a 40-byte table of powers of ten, which it never modifies. Calls use the
+ normal checked native ABI and the caller's stack.
+ 
+ | Function | Contract |
+@@ -57,6 +58,7 @@ normal checked native ABI and the caller's stack.
+ | `CSTRING strchr(CSTRING text, BYTE value)` | First match or null; searching zero finds the terminator. |
+ | `SIZE strlcpy(BYTE POINTER destination, CSTRING source, SIZE capacity)` | Copy at most capacity−1 bytes and terminate if capacity > 0; return full source length. |
+ | `SIZE strlcat(BYTE POINTER destination, CSTRING source, SIZE capacity)` | Append after the bounded destination scan; return bounded initial length plus full source length. |
++| `SIZE u32toa(LONGCARD value, BYTE POINTER destination, SIZE capacity)` | Convert unsigned 32-bit value to decimal; write at most capacity−1 digits and terminate if capacity > 0; return full digit count. |
+ 
+ Capacity includes the terminator. A copy/append result `>= capacity` means the
+ complete terminated result did not fit. An unterminated destination within the
+@@ -67,6 +69,15 @@ Source and destination must not overlap. Other pointers must identify live,
+ accessible storage and CSTRING sources must have a reachable terminator.
+ Counts and their sums must fit SIZE; address wrap is unsupported.
+ 
++`u32toa` is an Action library extension, not a standard C function. It emits
++`0` for zero and otherwise no leading zeros, covering `0` through `4294967295`.
++Capacity includes NUL; 11 bytes always suffice. Like `strlcpy`, its result is
++the required length excluding NUL, even on truncation: `result >= capacity`
++means the complete terminated result did not fit. Zero capacity permits a null
++destination and makes no destination accesses. Unused padding stays unchanged.
++Only unsigned decimal conversion is provided; signed, radix and general format
++strings are outside this small API. Repeated subtraction avoids division helpers.
++
+ The [native example](../examples/native65816/cstring.act) appends a filename
+ and checks capacity. The interface generator's `--check` mode checks source
+ consistency; frontend tests also compare every semantic signature against the
+diff --git a/embedded/modules/cstring.act b/embedded/modules/cstring.act
+index 40d60387..9bde5bff 100644
+--- a/embedded/modules/cstring.act
++++ b/embedded/modules/cstring.act
+@@ -8,4 +8,5 @@ PUBLIC EXTERNAL INT FUNC strncmp(SYS.CSTRING left SYS.CSTRING right SIZE maximum
+ PUBLIC EXTERNAL SYS.CSTRING FUNC strchr(SYS.CSTRING text BYTE value)
+ PUBLIC EXTERNAL SIZE FUNC strlcpy(BYTE POINTER destination SYS.CSTRING source SIZE capacity)
+ PUBLIC EXTERNAL SIZE FUNC strlcat(BYTE POINTER destination SYS.CSTRING source SIZE capacity)
++PUBLIC EXTERNAL SIZE FUNC u32toa(LONGCARD value BYTE POINTER destination SIZE capacity)
+ ENDMODULE
+diff --git a/embedded/modules/cstring/contract.json b/embedded/modules/cstring/contract.json
+index cee66c0d..bac50897 100644
+--- a/embedded/modules/cstring/contract.json
++++ b/embedded/modules/cstring/contract.json
+@@ -116,6 +116,25 @@
+       ],
+       "symbol": "cstring_strlcat_v1",
+       "signature": 3599940068
++    },
++    "u32toa": {
++      "result": "SIZE",
++      "arguments": [
++        [
++          "LONGCARD",
++          "value"
++        ],
++        [
++          "BYTE POINTER",
++          "destination"
++        ],
++        [
++          "SIZE",
++          "capacity"
++        ]
++      ],
++      "symbol": "cstring_u32toa_v1",
++      "signature": 876257536
+     }
+   }
+ }
+diff --git a/embedded/modules/cstring/impl.act b/embedded/modules/cstring/impl.act
+index 241f23c0..f861246f 100644
+--- a/embedded/modules/cstring/impl.act
++++ b/embedded/modules/cstring/impl.act
+@@ -1,6 +1,9 @@
+-; Reentrant byte-string utilities. Bounds precede loads; no allocator or globals.
++; Reentrant byte-string utilities. No allocator or global working storage.
+ MODULE CSTRING.IMPL
+ 
++; Shared decimal places, read only by the implementation.
++LONGCARD ARRAY powers=[1000000000 100000000 10000000 1000000 100000 10000 1000 100 10 1]
++
+ PUBLIC SIZE FUNC strlen(SYS.CSTRING text)
+   SIZE length
+   length=0
+@@ -97,4 +100,41 @@ PUBLIC SIZE FUNC strlcat(BYTE POINTER destination SYS.CSTRING source SIZE capaci
+     ELSE destination(initial+room)=0 FI
+   FI
+ RETURN(initial+length)
++
++PUBLIC SIZE FUNC u32toa(LONGCARD value BYTE POINTER destination SIZE capacity)
++  SIZE length,room
++  CARD index
++  BYTE digit,started
++
++  length=0
++  room=0
++  started=0
++  IF capacity>0 THEN
++    room=capacity-1
++  FI
++
++  FOR index=0 TO 9 DO
++    digit=0
++    WHILE value>=powers(index) DO
++      value==-powers(index)
++      digit==+1
++    OD
++    IF digit<>0 OR started<>0 OR index=9 THEN
++      IF length<room THEN
++        destination(length)=digit+'0
++      FI
++      length==+1
++      started=1
++    FI
++  OD
++
++  IF capacity>0 THEN
++    IF length<room THEN
++      destination(length)=0
++    ELSE
++      destination(room)=0
++    FI
++  FI
++
++RETURN(length)
+ ENDMODULE
+diff --git a/tests/cstring.rs b/tests/cstring.rs
+index 759a7c33..d93e3404 100644
+--- a/tests/cstring.rs
++++ b/tests/cstring.rs
+@@ -74,6 +74,7 @@ PROC Main()
+  text=STR.strchr(text,0)
+  result=STR.strlcpy(buffer,text,8)
+  result=STR.strlcat(buffer,text,8)
++ result=STR.u32toa($ffffffff,buffer,8)
+ RETURN
+ ENDMODULE"#;
+ 
+@@ -82,7 +83,7 @@ fn external_interface_matches_single_implementation_and_only_used_imports() {
+     let externs=Source::new(ALL).prepare(true).unwrap();
+     let implementation=Source::new(&ALL.replace("USE CSTRING AS STR","USE CSTRING.IMPL AS STR")).prepare(true).unwrap();
+     let signatures:Vec<_>=externs.mir.routines.iter().filter(|r|r.entry.external).collect();
+-    assert_eq!(signatures.len(),7);
++    assert_eq!(signatures.len(),8);
+     let contract:serde_json::Value=serde_json::from_str(include_str!("../embedded/modules/cstring/contract.json")).unwrap();
+     for declaration in signatures {
+         let name=declaration.name.rsplit('.').next().unwrap().to_ascii_uppercase();
+diff --git a/tools/native65816-runtime-tests/tests/cstring.rs b/tools/native65816-runtime-tests/tests/cstring.rs
+index 8d6e6c5f..6df45008 100644
+--- a/tools/native65816-runtime-tests/tests/cstring.rs
++++ b/tools/native65816-runtime-tests/tests/cstring.rs
+@@ -145,3 +145,54 @@ ENDMODULE"#;
+         }
+     }
+ }
++
++#[test]
++fn unsigned_decimal_conversion_handles_boundaries_and_bounded_bank_crossing_output() {
++    let source=r#"MODULE SAMPLE
++USE CSTRING.IMPL AS STR
++LONGCARD value
++SIZE capacity,length
++PROC Main()
++  IF capacity=0 THEN
++    length=STR.u32toa(value,BYTE POINTER(0),0)
++  ELSE
++    length=STR.u32toa(value,BYTE POINTER($32FFFE),capacity)
++  FI
++RETURN
++ENDMODULE"#;
++    let mut values=vec![0,1,u32::MAX,0x7fffffff,0x80000000];
++    for power in 1..=9 {
++        let value=10u32.pow(power);
++        values.extend([value-1,value,value+1]);
++    }
++    for optimize in [false,true] {
++        let image=compile(source,optimize);
++        for value in &values {
++            let text=value.to_string();
++            let mut capacities=vec![0,1,text.len(),text.len()+1,12];
++            capacities.sort_unstable();
++            capacities.dedup();
++            for capacity in capacities {
++                for mask in [0,4] {
++                    let mut h=Harness::new(&image,&caller(image.entry),mask);
++                    let at=support::context::symbol(&image,"value") as usize;
++                    h.bus.ram[at..at+4].copy_from_slice(&value.to_le_bytes());
++                    let at=support::context::symbol(&image,"capacity") as usize;
++                    h.bus.ram[at..at+3].copy_from_slice(&(capacity as u32).to_le_bytes()[..3]);
++                    h.bus.map(0x32fffd,&[0xa5;14],true);
++                    h.bus.watched.extend(0x32fffd..0x33000b);
++                    h.run(); h.guards(mask);
++                    assert_eq!(h.global(&image,"length",3),text.len() as u32);
++                    let mut expected=[0xa5;14];
++                    if capacity>0 {
++                        let copied=text.len().min(capacity-1);
++                        expected[1..1+copied].copy_from_slice(&text.as_bytes()[..copied]);
++                        expected[1+copied]=0;
++                    }
++                    assert_eq!(&h.bus.ram[0x32fffd..0x33000b],&expected,"value={value}, capacity={capacity}");
++                    assert!(h.bus.trace.iter().all(|(_,at,_)| (0x32fffe..0x32fffe+capacity as u32).contains(at)));
++                }
++            }
++        }
++    }
++}

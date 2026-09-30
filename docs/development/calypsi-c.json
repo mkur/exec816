@@ -1,0 +1,472 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "scope": "Calypsi 5.18 standalone message port; optimized example and raw/optimized C context probe, not full hosted-system qualification.",
+  "inputs": {
+    "c/README.md": "6a6d8f791fa84738fb2baf7064abd54f64c6c7bd8b172122e79df05f3cef155b",
+    "c/calypsi/exec.c": "a93f594c0abc857968e0feb47a0c3602d171bd8491b3149a9c9e34e1d9655b7e",
+    "c/calypsi/gateway.inc": "bc6305bc40b06ccf9de4b7ac46e8a797ca717bbdedf80893a51659e576c485cc",
+    "c/calypsi/gateway.s": "5942de33306e8a4244ba6af012ff73885ad47d7a8b797d34fb0501c98440b3a1",
+    "c/calypsi/image-info.s": "ee2b75322d39901c11780cf7d6928a84243823439cdb4435053fb5b8daea13d5",
+    "c/calypsi/launcher.act": "4bc484a0e99dcae1e8a3454b8c9314a04eae027b006f439a8bfbcea1ba1dfaa2",
+    "c/calypsi/layout-check.c": "3ea77d7a5ce8ed828ea2e94c2e1b24078f141bd21432d73c163b4f7fcd9defaf",
+    "c/calypsi/layout.scm": "5948dc24ce278bb789b98bd5993941dceac405f89f4cc986880765c88438ac4c",
+    "c/calypsi/selectors.h": "d8a3d90093086cd3cbb32e5ab60f073b801ac64f8cc34dd5e1758d298c3e3be7",
+    "c/examples/messages.c": "227c039f37afae7ef2d54fc5ed5c6614bab3b45b3e0043fc452a959651b1d91b",
+    "c/include/exec/lists.h": "709a5246d9456802d5ac6686ef33ac8033f5e82b24e65dd2da975641edf9a610",
+    "c/include/exec/memory.h": "896b66a594d688deed165bd76c21a112adfa6c169f0f905fda93b8d8f07c3ce8",
+    "c/include/exec/nodes.h": "0f10fe16ef03949506b186b25e04a5ff32e1c88e4cca1061a61a7d8fe099e735",
+    "c/include/exec/ports.h": "c61b6ae8370de2610a842df8d389c771d609667715a14d49868b15cf9852d715",
+    "c/include/exec/tasks.h": "4a6a1016139dd3f3a7ff5f5636da5f3979bf2e9e22819e5be612db3cb4c6d647",
+    "c/include/exec/types.h": "0975429aaa016694c8f9d2c73a6a5755ce09f553d85476573f89b8f6d21d2397",
+    "c/include/exec816/abi.h": "8ce0b154f48096aa3770b1ef97259570f3081f39ff36fd61c0ba577b15e4ed07",
+    "c/include/exec816/runtime.h": "4b6b48a3b3bf77a213925300602515cb7cc93a0f834da987c85ddd86a2f1ad99",
+    "c/include/proto/exec.h": "afda8e3afd30a358878e3733c9401003b42cb2959799376fb1b580d4d50754d1",
+    "tests/programs/calypsi_context.c": "94ad17d9536425439a012114d5593d072873cb2e7284e53f9a9139fc67c6ba17",
+    "tests/test_calypsi_image.py": "d21d450841e9dc8cec94bf56fae858bf55ceeb1038dbd209b2e350ec8cf1a531",
+    "toolchain/actionc.json": "7b58d60342035559a6b0f39183e3d37a0d447cc080afa084bce3ab89e869e251",
+    "toolchain/altirra-shell-paced.json": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068",
+    "tools/build_calypsi.py": "ebe7b4fddc87b4d8a0867c4d150b0478ccf1d0ac1d957dd0f1d32ddd80d11f1d",
+    "tools/calypsi_image.py": "c3c340ccb4ec9e35dae448eff07f4d1d0dba55bcf74d66e2b6e719ff867f372e",
+    "tools/generate_calypsi.py": "d9918e1118182c9d78d7c100c1931d0129feba7ad22b68150431d763b975ca19",
+    "tools/native_program.py": "33ed7e288fa431a554444b8eb79abacf9ba0e0ee38b0de030646e0bf398fada4",
+    "tools/test_calypsi.py": "67ad6a6a5341cd87913919ffdc79498083c3575843f73c5ca22a1e6c21a67539"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "dp_workspace_bytes": 20,
+  "c_stack_checks": false,
+  "tools": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "runtime_archive": {
+    "path": "/usr/local/lib/calypsi-65816-5.18/lib/clib-lc-hd.a",
+    "sha256": "321e782d2e18972ff29d32acf446a401012bd6da6959bb4b69c359c1412082db"
+  },
+  "checked_layout": {
+    "sizeof(BYTE)": 1,
+    "sizeof(WORD)": 2,
+    "sizeof(LONG)": 4,
+    "sizeof(APTR)": 4,
+    "sizeof(void EXEC_PTR *)": 3,
+    "sizeof(struct Node)": 11,
+    "sizeof(struct List)": 11,
+    "sizeof(struct MinNode)": 6,
+    "sizeof(struct MinList)": 9,
+    "sizeof(struct MsgPort)": 27,
+    "offsetof(struct MsgPort, mp_Node)": 0,
+    "offsetof(struct MsgPort, mp_Flags)": 11,
+    "offsetof(struct MsgPort, mp_SigBit)": 12,
+    "offsetof(struct MsgPort, mp_SigTask)": 13,
+    "offsetof(struct MsgPort, mp_MsgList)": 16,
+    "sizeof(struct Message)": 16,
+    "offsetof(struct Message, mn_Node)": 0,
+    "offsetof(struct Message, mn_ReplyPort)": 11,
+    "offsetof(struct Message, mn_Length)": 14,
+    "sizeof(struct Task)": 62,
+    "offsetof(struct Task, tc_Node)": 0,
+    "offsetof(struct Task, tc_Flags)": 11,
+    "offsetof(struct Task, tc_State)": 12,
+    "offsetof(struct Task, tc_IDNestCnt)": 13,
+    "offsetof(struct Task, tc_TDNestCnt)": 14,
+    "offsetof(struct Task, tc_SigAlloc)": 16,
+    "offsetof(struct Task, tc_SigWait)": 20,
+    "offsetof(struct Task, tc_SigRecvd)": 24,
+    "offsetof(struct Task, tc_SigExcept)": 28,
+    "offsetof(struct Task, tc_SPReg)": 32,
+    "offsetof(struct Task, tc_SPLower)": 36,
+    "offsetof(struct Task, tc_SPUpper)": 40,
+    "offsetof(struct Task, tc_MemEntry)": 43,
+    "offsetof(struct Task, tc_UserData)": 54,
+    "offsetof(struct Task, tc_ExecPrivate)": 58
+  },
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "on",
+    "burstio": false,
+    "accuratedisk": false,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 15,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": true,
+    "diskemu": "generic",
+    "vbxe": false,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "off",
+    "exeloadmode": "default",
+    "kernel_id": "$eeca81434d995c35",
+    "actual_kernel_id": "$eeca81434d995c35",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "host_tests": 223,
+  "checks": [
+    "native structure sizes/offsets from emitted constants",
+    "same message returned, coordinates 60/70",
+    "allocation and signal cleanup",
+    "public port removal",
+    "C main return and Task self-removal",
+    "native VBI interrupts in both live C computations",
+    "root callee-preserved DP registers and both caller workspaces",
+    "kernel lower-DP pattern preservation",
+    "native guards and stack watermarks",
+    "physical Return, console and OS restoration",
+    "bank ownership restored"
+  ],
+  "cases": [
+    {
+      "case": "messages",
+      "mode": "opt",
+      "result": "build/calypsi/messages/results.json",
+      "result_sha256": "d3c030d5894e5593e64c9a38dcc88eaac26a7b06bd7bf6d97ddd4f2d6a8383c2",
+      "xex_sha256": "0943c55ffeba82d9efd312658f9f3cb5547244ebde7d3ae46918e5dcd9e4e610",
+      "image_sha256": "5c81d76420fc012829625027b80ffe7cd333cc38ac22ab261762fb06007b7695",
+      "c_elf_sha256": "28b62dfc5b3464782dc892408e019d237e1e750e2780c02fadf1ac37321cb12f",
+      "compiler_revision": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+      "compiler_binary_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+      "compiler_override": false,
+      "c_code_bytes": 2148,
+      "c_initialized_data_bytes": 23,
+      "c_bss_bytes": 73,
+      "output": [
+        "C sends: 10,20",
+        "C reply: 60,70",
+        "C message returned; resources released."
+      ],
+      "c_preemption": [],
+      "runtime": {
+        "status": 0,
+        "created": 2,
+        "live_tasks": 0,
+        "guards": "intact",
+        "vbi_dispatches": 2,
+        "native_nmi_count": 16,
+        "os_calls": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 405,
+            "untouched_above_floor": 875
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 192,
+            "untouched_above_floor": 1088
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 67,
+            "untouched_above_floor": 1213
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 24,
+            "untouched_above_floor": 1256
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "case": "context-raw",
+      "mode": "raw",
+      "result": "build/calypsi/context-raw/results.json",
+      "result_sha256": "7cb2482d231eece0d64ce52f1b1b4dcb262aac267cd028f6f39b9d3469b2c6ba",
+      "xex_sha256": "272ed151391aa799a22e0c3c32fea3efe45fffaa88c78b3bf4d18a11ff581447",
+      "image_sha256": "27cac0ab8237212c912e1954f0a7e995fa08443876d66ae055c8093081bb22fe",
+      "c_elf_sha256": "bc4701c52fabd361ce08d652e76dd81c6c59bf9504e11f618e03ba87137ee361",
+      "compiler_revision": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+      "compiler_binary_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+      "compiler_override": false,
+      "c_code_bytes": 3667,
+      "c_initialized_data_bytes": 26,
+      "c_bss_bytes": 94,
+      "output": [
+        "C sends: 10,20",
+        "C reply: 60,70",
+        "C message returned; resources released."
+      ],
+      "c_preemption": [
+        {
+          "slot": 2,
+          "pc": 788662,
+          "progress": 549
+        },
+        {
+          "slot": 0,
+          "pc": 788634,
+          "progress": 889
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "created": 2,
+        "live_tasks": 0,
+        "guards": "intact",
+        "vbi_dispatches": 73,
+        "native_nmi_count": 87,
+        "os_calls": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 442,
+            "untouched_above_floor": 838
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 186,
+            "untouched_above_floor": 1094
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 73,
+            "untouched_above_floor": 1207
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 37,
+            "untouched_above_floor": 1243
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 337,
+          "untouched_from_base": 1199,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "case": "context-opt",
+      "mode": "opt",
+      "result": "build/calypsi/context-opt/results.json",
+      "result_sha256": "8e89bee9450715da0ba81127aa1b497c56b9d6c1b6641f5ea538f4febfdb2f88",
+      "xex_sha256": "058943e6df93e0a75b0d958496aaf57a289e859cd7f61b8a935d3d2b5d962cd4",
+      "image_sha256": "61b6769bafc6a3638ce2542817fd637e3081cc5073f3be9beb6aab0d7eea9f92",
+      "c_elf_sha256": "99202d5b5356d9e761508c0f715fad5abdd1b6bd4982a187cd550d34f912a623",
+      "compiler_revision": "c384bc8da9e62a280ecb4998e4d275bc6e45935f",
+      "compiler_binary_sha256": "e00a255aebed8097060690b372f5629a8743208f204056d812cda729b163d9a0",
+      "compiler_override": false,
+      "c_code_bytes": 3268,
+      "c_initialized_data_bytes": 26,
+      "c_bss_bytes": 94,
+      "output": [
+        "C sends: 10,20",
+        "C reply: 60,70",
+        "C message returned; resources released."
+      ],
+      "c_preemption": [
+        {
+          "slot": 2,
+          "pc": 787952,
+          "progress": 977
+        },
+        {
+          "slot": 0,
+          "pc": 787946,
+          "progress": 1219
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "created": 2,
+        "live_tasks": 0,
+        "guards": "intact",
+        "vbi_dispatches": 70,
+        "native_nmi_count": 81,
+        "os_calls": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 405,
+            "untouched_above_floor": 875
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 180,
+            "untouched_above_floor": 1100
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 73,
+            "untouched_above_floor": 1207
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 24,
+            "untouched_above_floor": 1256
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  ]
+}

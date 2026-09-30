@@ -1,0 +1,8 @@
+; Private service/worker interface; no ordinary application API.
+MODULE CONSOLEADAPTER
+USE EXEC
+
+PUBLIC EXTERNAL BYTE FUNC Bind(EXEC.Task POINTER task LONGCARD mask)
+
+PUBLIC EXTERNAL PROC Release()
+  ENDMODULE

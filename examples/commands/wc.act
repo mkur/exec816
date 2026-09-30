@@ -1,0 +1,95 @@
+MODULE WC
+
+USE COMMAND
+USE CSTRING AS STR
+USE ASCII
+USE SYS
+
+CONST BUFFER_SIZE=512
+
+BYTE ARRAY buffer(BUFFER_SIZE)
+BYTE ARRAY report(33)
+
+; Count the selected input and preserve read errors across output and cleanup.
+LONGINT FUNC Main()
+  LONGCARD lines,words,bytes
+  CARD index,used
+  BYTE inWord,previousCR
+
+  ; WC accepts no arguments; redirected input remains available for counting.
+  IF COMMAND.ReadArgs(c"",ADDRESS POINTER(0),0,BYTE POINTER(0),0)=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  lines=0
+  words=0
+  bytes=0
+  inWord=0
+  previousCR=0
+
+  DO
+    BEGIN
+      IF COMMAND.BreakPending()<>0 THEN
+        COMMAND.SetIoErr(COMMAND.ERROR_BREAK)
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      LET count=COMMAND.Read(COMMAND.Input(),buffer,BUFFER_SIZE)
+      IF count<0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      IF count=0 THEN
+        EXIT
+      FI
+
+      IF bytes>SYS.MAXLONGCARD-LONGCARD(count) THEN
+        COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_TOO_LARGE)
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      bytes==+LONGCARD(count)
+      FOR index=0 TO CARD(count)-1 DO
+        BEGIN
+          LET value=buffer(index)
+          IF value=ASCII.CR OR value=ASCII.ATASCII_EOL
+            OR (value=ASCII.LF AND previousCR=0) THEN
+            lines==+1
+          FI
+
+          previousCR=BYTE(value=ASCII.CR)
+
+          IF value=ASCII.SPACE
+            OR (value>=ASCII.TAB AND value<=ASCII.CR)
+            OR value=ASCII.ATASCII_EOL THEN
+            inWord=0
+          ELSEIF inWord=0 THEN
+            words==+1
+            inWord=1
+          FI
+        END
+      OD
+    END
+  OD
+
+  IF COMMAND.BreakPending()<>0 THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_BREAK)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  ; Three 10-digit counts plus separators fit in report; each NUL is replaced.
+  used=STR.u32toa(lines,report,SIZEOF(report))
+  report(used)=ASCII.SPACE
+  used==+1
+  used==+STR.u32toa(words,@report(used),SIZEOF(report)-used)
+  report(used)=ASCII.SPACE
+  used==+1
+  used==+STR.u32toa(bytes,@report(used),SIZEOF(report)-used)
+  report(used)=ASCII.LF
+  used==+1
+
+  LET count=COMMAND.Write(COMMAND.Output(),report,used)
+
+RETURN(IF count=used THEN COMMAND.RETURN_OK ELSE COMMAND.RETURN_ERROR FI)
+
+ENDMODULE

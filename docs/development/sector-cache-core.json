@@ -1,0 +1,86 @@
+{
+  "status": "development-pass",
+  "slice": "C2",
+  "cases": {
+    "block-raw": {
+      "status": "pass",
+      "results_sha256": "519b5ad5bca02415a763b589ab3c0e9919e636c213c4a7fcf5826ea41cbb8560",
+      "compiler": "bcabe0a4cbb8bb57b389a8596aa8fd72cb9ee0c7",
+      "xex_sha256": "510a8433a5540078999d45084d552b12386d63ad44f3d734a8afe77f1dd58ddf",
+      "checks": [
+        26831
+      ],
+      "backend": "fixture"
+    },
+    "block-opt": {
+      "status": "pass",
+      "results_sha256": "842cce50469264ce4bde41a248c0ed67ca8884ff43035bf9b2dc92f6be5da7a6",
+      "compiler": "bcabe0a4cbb8bb57b389a8596aa8fd72cb9ee0c7",
+      "xex_sha256": "de69f49134cba270a7d6daae9641fb5fa15210b297012e4cd82f1214784115c6",
+      "checks": [
+        26831
+      ],
+      "backend": "fixture"
+    },
+    "cache-payload": {
+      "status": "pass",
+      "results_sha256": "fba4f965a64289db96cd921e34cb350fb708d79488c0b693994673b7d402224b",
+      "compiler": "bcabe0a4cbb8bb57b389a8596aa8fd72cb9ee0c7",
+      "xex_sha256": "69dc59b2bb5ae80afcc3c72c7d4417465df7a1aa9e8b746ce8e76f6d01b19016",
+      "checks": [
+        5
+      ],
+      "fault": "cache-payload"
+    },
+    "cache-tags": {
+      "status": "pass",
+      "results_sha256": "f73a69db00fbc26a801b3e1cd629118ae70ed69d3874142e48a0c0234d222acf",
+      "compiler": "bcabe0a4cbb8bb57b389a8596aa8fd72cb9ee0c7",
+      "xex_sha256": "7fdf3c4376a292a0142cb8828dc85125d029458f16857c04b31aca844e2bf59d",
+      "checks": [
+        5
+      ],
+      "fault": "cache-tags"
+    },
+    "block-sio": {
+      "status": "pass",
+      "results_sha256": "7e5de4db46b1d6b82b6c827ef447a55f99be6ac217b91e20a6f0a87b1cc56faa",
+      "compiler": "bcabe0a4cbb8bb57b389a8596aa8fd72cb9ee0c7",
+      "xex_sha256": "0792b545d761b0f070123dd01d85fa94431118f8be5194130468664f178d2dec",
+      "checks": [
+        1868
+      ],
+      "backend": "sio"
+    },
+    "warm-cancel": {
+      "status": "pass",
+      "results_sha256": "e805a8b56acdb8839a696eeb035ca044f908e920d11a8ed500ce460a2859bb92",
+      "compiler": "bcabe0a4cbb8bb57b389a8596aa8fd72cb9ee0c7",
+      "xex_sha256": "c5d22b1023041daef2af463bcef81efbc2e27e737d894bc537062ed80a2014c0",
+      "sector_bytes": 128,
+      "profile": 4,
+      "filesystem": "mydos",
+      "warm": true
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "default_bytes": {
+    "payload": 65536,
+    "tags": 6144,
+    "replacement": 128,
+    "adapter": 66,
+    "adapter_reserved": 72,
+    "adapter_reserved_growth": 32,
+    "captured_boot_settings": 4
+  },
+  "optimized_cache_routine_bytes": 5292,
+  "compiler_checks": {
+    "focused_regression": "pass",
+    "nir_snapshots": "pass",
+    "nir_sweep": "51/51 pass",
+    "full_tests": "Two stale baseline expectations fail: native emission snapshot still uses pre-migration DP addresses; nir_corpus expects 362 passing fixtures but 363 pass. Remaining test targets pass. No full compiler qualification claimed."
+  }
+}

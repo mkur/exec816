@@ -1,0 +1,20 @@
+; MyDOS-only state. Common metadata and operation progress live in FSBTYPES.
+MODULE MYDOSTYPES
+
+PUBLIC TYPE Volume=[
+  CARD vtocLow,vtocSectors
+  LONGCARD bitmapBytes
+  BYTE marker
+]
+
+; One record embedded in each common cursor; no borrowed sector-buffer pointer.
+PUBLIC TYPE ChainCursor=[
+  BYTE valid
+  CARD sector,offset,next,used
+  LONGCARD hops
+  CARD anchor
+  LONGCARD power,span
+  LONGINT base
+]
+
+ENDMODULE

@@ -1,0 +1,208 @@
+MODULE CSTRINGRESIDENT
+USE EXEC
+USE A816ABI
+USE HEAPCORE
+USE DOS
+USE DOSCLIENT
+USE FSBOOT
+USE PROCESS
+USE PROCESSSTATE
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE PROGRAMPROVIDERS
+USE O65
+USE O65TYPES
+INCLUDE "cstring-fixture.inc"
+
+BYTE ARRAY commandPath=c"D1:CSTR"
+BYTE ARRAY arguments(2),output(32)
+BYTE ARRAY expected=c"CSTRING ok\nCSTRING ok\n"
+BYTE ARRAY truncated=c"CSTRING full\n"
+LONGCARD checks,baseline,firstId,secondId
+LONGCARD ARRAY placements(4)
+BYTE finished
+BYTE POINTER staging
+PROGRAMIMAGE.Image POINTER first,second
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+CARD(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROCESSSTATE.Entry POINTER FUNC Find(LONGCARD identity)
+  PROCESSSTATE.Table POINTER table
+  BYTE index
+
+  table=PROCESSSTATE.Registry()
+  FOR index=1 TO 7 DO
+    IF table.entries(index).identity=identity THEN
+      RETURN(@table.entries(index))
+    FI
+  OD
+
+RETURN(PROCESSSTATE.Entry POINTER(0))
+
+PROC CheckProviders(PROGRAMIMAGE.Image POINTER image)
+  O65TYPES.Validation POINTER validation
+  ADDRESS POINTER operand
+  CARD index
+
+  validation=O65.Validate(staging,FIXTURE_BYTES)
+  Require(validation<>O65TYPES.Validation POINTER(0))
+  Require(PROGRAMPROVIDERS.Resolve(validation)<>0)
+  FOR index=0 TO RELOCATION_COUNT-1 DO
+    operand=ADDRESS POINTER(ADDRESS(image.text)+SIZE(relocationOffsets(index)))
+    Require(operand^=validation.imports(relocationImports(index)).address)
+  OD
+
+  O65.Release(validation)
+
+RETURN
+
+PROC Reject(CARD offset)
+  BYTE saved
+  LONGCARD before
+  PROGRAMIMAGE.Image POINTER image
+
+  before=EXEC.AvailMem(0)
+  saved=staging(offset)
+  staging(offset)=saved XOR 1
+  image=PROGRAM.Load(staging,FIXTURE_BYTES)
+  Require(image=PROGRAMIMAGE.Image POINTER(0) AND DOS.IoErr()=309)
+  Require(EXEC.AvailMem(0)=before)
+  staging(offset)=saved
+
+RETURN
+
+; Reject a complete old-ABI marker set before execution or ownership transfer.
+PROC RejectOldABI()
+
+  LET before=EXEC.AvailMem(0)
+  staging(OLD_DESCRIPTOR)='2
+  staging(OLD_MAGIC)='2
+  staging(OLD_ENTRY)='1
+  staging(NATIVE_REVISION)=1
+  LET image=PROGRAM.Load(staging,FIXTURE_BYTES)
+  Require(image=NULL AND DOS.IoErr()<>0)
+  Require(EXEC.AvailMem(0)=before)
+  staging(OLD_DESCRIPTOR)='3
+  staging(OLD_MAGIC)='3
+  staging(OLD_ENTRY)='2
+  ; A v3 marker with a stale native revision is rejected as well.
+  LET stale=PROGRAM.Load(staging,FIXTURE_BYTES)
+  Require(stale=NULL AND DOS.IoErr()<>0)
+  Require(EXEC.AvailMem(0)=before)
+  staging(NATIVE_REVISION)=A816ABI.ABI_VERSION
+
+RETURN
+
+; Exercise resident C-string provider identity and ABI rejection.
+PROC Main()
+  DOS.PipePair pipe
+  DOS.FileHandle POINTER file,ignored
+  PROCESSSTATE.Entry POINTER firstRow,secondRow
+  PROCESS.Result result
+  SIZE index
+  LONGCARD loadedBaseline,readyBaseline
+
+  baseline=EXEC.AvailMem(0)
+  Require(FSBOOT.Ensure()<>0)
+  Require(DOS.Pipe(@pipe)<>0)
+  ignored=DOS.SelectOutput(pipe.writer)
+  file=DOS.Open(commandPath,DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  staging=EXEC.AllocMem(FIXTURE_BYTES,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  Require(staging<>BYTE POINTER(0))
+  Require(DOS.Read(file,staging,FIXTURE_BYTES)=FIXTURE_BYTES)
+  Require(DOS.Close(file)<>0)
+  RejectOldABI()
+  Reject(IMPORT_NAME)
+  Reject(IMPORT_VERSION)
+  Reject(IMPORT_SIGNATURE)
+  loadedBaseline=EXEC.AvailMem(0)
+  first=PROGRAMFILE.Load(commandPath)
+  Require(first<>PROGRAMIMAGE.Image POINTER(0))
+  second=PROGRAMFILE.Load(commandPath)
+  Require(second<>PROGRAMIMAGE.Image POINTER(0))
+  Require(first.text<>second.text)
+  IF first.dataBytes<>0 THEN
+    Require(first.data<>second.data)
+  FI
+
+  IF first.bssBytes<>0 THEN
+    Require(first.bss<>second.bss)
+  FI
+
+  placements(0)=LONGCARD(first.text)
+  placements(1)=LONGCARD(second.text)
+  placements(2)=LONGCARD(ADDRESS(first.data))
+  placements(3)=LONGCARD(ADDRESS(second.data))
+  CheckProviders(first)
+  CheckProviders(second)
+  readyBaseline=EXEC.AvailMem(0)
+  arguments(0)='1
+  arguments(1)=0
+  Require(PROCESS.StartLoaded(BYTE POINTER(first),arguments,2,0)=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(first.references=1 AND first.running=0 AND EXEC.AvailMem(0)=readyBaseline)
+  arguments(1)='w
+  firstId=PROCESS.StartLoaded(BYTE POINTER(first),arguments,2,0)
+  arguments(0)='2
+  secondId=PROCESS.StartLoaded(BYTE POINTER(second),arguments,2,0)
+  Require(firstId<>0 AND secondId<>0)
+  PROGRAM.Unload(first)
+  PROGRAM.Unload(second)
+  firstRow=Find(firstId)
+  secondRow=Find(secondId)
+  Require(firstRow<>PROCESSSTATE.Entry POINTER(0)
+      AND secondRow<>PROCESSSTATE.Entry POINTER(0))
+  Require(DOS.Read(pipe.reader,output,1)=1)
+  Require(DOS.Read(pipe.reader,@output(1),1)=1)
+  Require((output(0)=1 AND output(1)=2) OR (output(0)=2 AND output(1)=1))
+  Require(firstRow.arguments(0)='1 AND secondRow.arguments(0)='2)
+  Require(first.running<>0 AND second.running<>0)
+  ; The harness releases the wait through each child's private copied text.
+  firstRow.arguments(1)='d
+  secondRow.arguments(1)='d
+  Require(PROCESS.Wait(firstId,@result)<>0 AND result.primary=0
+      AND result.secondary=1)
+  Require(PROCESS.Wait(secondId,@result)<>0 AND result.primary=0
+      AND result.secondary=2)
+  Require(EXEC.AvailMem(0)=loadedBaseline)
+  Require(DOS.Read(pipe.reader,output,SIZEOF(expected)-1)=SIZEOF(expected)-1)
+  FOR index=0 TO SIZEOF(expected)-2 DO
+    Require(output(index)=expected(index))
+  OD
+
+  first=PROGRAMFILE.Load(commandPath)
+  Require(first<>PROGRAMIMAGE.Image POINTER(0))
+  arguments(0)='3
+  arguments(1)='d
+  firstId=PROCESS.StartLoaded(BYTE POINTER(first),arguments,2,0)
+  Require(firstId<>0)
+  PROGRAM.Unload(first)
+  Require(PROCESS.Wait(firstId,@result)<>0 AND result.primary=PROCESS.RETURN_ERROR)
+  Require(DOS.Read(pipe.reader,output,SIZEOF(truncated)-1)=SIZEOF(truncated)-1)
+  FOR index=0 TO SIZEOF(truncated)-2 DO
+    Require(output(index)=truncated(index))
+  OD
+
+  Require(EXEC.AvailMem(0)=loadedBaseline)
+  EXEC.FreeMem(staging,FIXTURE_BYTES)
+  Require(DOS.Close(pipe.writer)<>0 AND DOS.Close(pipe.reader)<>0)
+  Require(DOSCLIENT.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+
+ENDMODULE

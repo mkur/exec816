@@ -1,0 +1,739 @@
+{
+  "abi": "exec816.dos",
+  "revision": 2,
+  "services": {
+    "CONTEXT": 52,
+    "MOUNT_REFERENCE": 53
+  },
+  "errors": {
+    "MISUSE": 65428
+  },
+  "constants": {
+    "DOSFALSE": 0,
+    "DOSTRUE": -1,
+    "MODE_OLDFILE": 1005,
+    "MODE_NEWFILE": 1006,
+    "MODE_READWRITE": 1004,
+    "OFFSET_BEGINNING": -1,
+    "OFFSET_CURRENT": 0,
+    "OFFSET_END": 1,
+    "SHARED_LOCK": -2,
+    "EXCLUSIVE_LOCK": -1,
+    "FIBF_DELETE": 1,
+    "FIBF_WRITE": 4,
+    "ST_ROOT": 1,
+    "ST_USERDIR": 2,
+    "ST_FILE": -3,
+    "PIPE_BUFFER_BYTES": 1024
+  },
+  "dos_errors": {
+    "ERROR_NO_FREE_STORE": 103,
+    "ERROR_BAD_TEMPLATE": 114,
+    "ERROR_BAD_NUMBER": 115,
+    "ERROR_REQUIRED_ARG_MISSING": 116,
+    "ERROR_TOO_MANY_ARGS": 118,
+    "ERROR_UNMATCHED_QUOTES": 119,
+    "ERROR_LINE_TOO_LONG": 120,
+    "ERROR_NO_DEFAULT_DIR": 201,
+    "ERROR_OBJECT_IN_USE": 202,
+    "ERROR_DIR_NOT_FOUND": 204,
+    "ERROR_OBJECT_NOT_FOUND": 205,
+    "ERROR_BAD_STREAM_NAME": 206,
+    "ERROR_OBJECT_TOO_LARGE": 207,
+    "ERROR_ACTION_NOT_KNOWN": 209,
+    "ERROR_INVALID_COMPONENT_NAME": 210,
+    "ERROR_INVALID_LOCK": 211,
+    "ERROR_OBJECT_WRONG_TYPE": 212,
+    "ERROR_DISK_NOT_VALIDATED": 213,
+    "ERROR_DISK_WRITE_PROTECTED": 214,
+    "ERROR_TOO_MANY_LEVELS": 217,
+    "ERROR_DEVICE_NOT_MOUNTED": 218,
+    "ERROR_SEEK_ERROR": 219,
+    "ERROR_NOT_A_DOS_DISK": 225,
+    "ERROR_NO_DISK": 226,
+    "ERROR_NO_MORE_ENTRIES": 232,
+    "ERROR_BUFFER_OVERFLOW": 303,
+    "ERROR_BREAK": 304,
+    "ERROR_BROKEN_PIPE": 310,
+    "ERROR_BAD_ARGUMENTS": 311
+  },
+  "actions": {
+    "ACTION_FINDINPUT": 1005,
+    "ACTION_READ": 82,
+    "ACTION_SEEK": 1008,
+    "ACTION_END": 1007,
+    "ACTION_LOCATE_OBJECT": 8,
+    "ACTION_FREE_LOCK": 15,
+    "ACTION_EXAMINE_OBJECT": 23,
+    "ACTION_EXAMINE_NEXT": 24
+  },
+  "records": {
+    "DateStamp": {
+      "size": 12,
+      "alignment": 2,
+      "fields": [
+        [
+          "ds_Days",
+          "LONGINT",
+          0
+        ],
+        [
+          "ds_Minute",
+          "LONGINT",
+          4
+        ],
+        [
+          "ds_Tick",
+          "LONGINT",
+          8
+        ]
+      ]
+    },
+    "FileInfoBlock": {
+      "size": 260,
+      "alignment": 2,
+      "fields": [
+        [
+          "fib_DiskKey",
+          "LONGINT",
+          0
+        ],
+        [
+          "fib_DirEntryType",
+          "LONGINT",
+          4
+        ],
+        [
+          "fib_FileName",
+          "BYTE[108]",
+          8
+        ],
+        [
+          "fib_Protection",
+          "LONGINT",
+          116
+        ],
+        [
+          "fib_EntryType",
+          "LONGINT",
+          120
+        ],
+        [
+          "fib_Size",
+          "LONGINT",
+          124
+        ],
+        [
+          "fib_NumBlocks",
+          "LONGINT",
+          128
+        ],
+        [
+          "fib_Date",
+          "DateStamp",
+          132
+        ],
+        [
+          "fib_Comment",
+          "BYTE[80]",
+          144
+        ],
+        [
+          "fib_OwnerUID",
+          "CARD",
+          224
+        ],
+        [
+          "fib_OwnerGID",
+          "CARD",
+          226
+        ],
+        [
+          "fib_Reserved",
+          "BYTE[32]",
+          228
+        ]
+      ]
+    },
+    "DosPacket": {
+      "size": 46,
+      "alignment": 2,
+      "fields": [
+        [
+          "dp_Link",
+          "EXEC.Message POINTER",
+          0
+        ],
+        [
+          "dp_Port",
+          "EXEC.MsgPort POINTER",
+          3
+        ],
+        [
+          "dp_Type",
+          "LONGINT",
+          6
+        ],
+        [
+          "dp_Res1",
+          "LONGINT",
+          10
+        ],
+        [
+          "dp_Res2",
+          "LONGINT",
+          14
+        ],
+        [
+          "dp_Arg1",
+          "LONGINT",
+          18
+        ],
+        [
+          "dp_Arg2",
+          "LONGINT",
+          22
+        ],
+        [
+          "dp_Arg3",
+          "LONGINT",
+          26
+        ],
+        [
+          "dp_Arg4",
+          "LONGINT",
+          30
+        ],
+        [
+          "dp_Arg5",
+          "LONGINT",
+          34
+        ],
+        [
+          "dp_Arg6",
+          "LONGINT",
+          38
+        ],
+        [
+          "dp_Arg7",
+          "LONGINT",
+          42
+        ]
+      ]
+    },
+    "StandardPacket": {
+      "size": 62,
+      "alignment": 2,
+      "fields": [
+        [
+          "sp_Msg",
+          "EXEC.Message",
+          0
+        ],
+        [
+          "sp_Pkt",
+          "DosPacket",
+          16
+        ]
+      ]
+    },
+    "PipePair": {
+      "size": 6,
+      "alignment": 2,
+      "fields": [
+        [
+          "reader",
+          "FileHandle POINTER",
+          0
+        ],
+        [
+          "writer",
+          "FileHandle POINTER",
+          3
+        ]
+      ]
+    }
+  },
+  "imports": {
+    "Open": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 3
+    },
+    "Read": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 6,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 11,
+      "result_bytes": 4
+    },
+    "Seek": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        },
+        {
+          "alignment": 2,
+          "offset": 8,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 13,
+      "result_bytes": 4
+    },
+    "Close": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 4
+    },
+    "IoErr": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 4
+    },
+    "Lock": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 9,
+      "result_bytes": 3
+    },
+    "UnLock": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "Examine": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
+      "result_bytes": 4
+    },
+    "ExNext": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
+      "result_bytes": 4
+    },
+    "ReleaseContext": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 4
+    },
+    "Write": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 6,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 11,
+      "result_bytes": 4
+    },
+    "Input": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 3
+    },
+    "Output": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 3
+    },
+    "SelectInput": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 3
+    },
+    "SelectOutput": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 3
+    },
+    "IsInteractive": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 4
+    },
+    "CurrentDir": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 3
+    },
+    "NameFromLock": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 6,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 11,
+      "result_bytes": 4
+    },
+    "BeginForeground": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 4
+    },
+    "EndForeground": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 4
+    },
+    "BreakPending": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 4
+    },
+    "ClearBreak": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 0
+    },
+    "Pipe": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 4
+    },
+    "SetIoErr": {
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 5,
+      "result_bytes": 4
+    }
+  },
+  "cooked": {
+    "constants": {
+      "LINE_BYTES": 256,
+      "ECHO_BYTES": 128,
+      "TAIL_COLUMNS": 36,
+      "PENDING": -2
+    },
+    "session": {
+      "size": 402,
+      "fields": [
+        [
+          "references",
+          "CARD",
+          0
+        ],
+        [
+          "length",
+          "CARD",
+          2
+        ],
+        [
+          "position",
+          "CARD",
+          4
+        ],
+        [
+          "error",
+          "LONGINT",
+          6
+        ],
+        [
+          "ready",
+          "BYTE",
+          10
+        ],
+        [
+          "eof",
+          "BYTE",
+          11
+        ],
+        [
+          "discard",
+          "BYTE",
+          12
+        ],
+        [
+          "drawn",
+          "BYTE",
+          13
+        ],
+        [
+          "width",
+          "BYTE",
+          14
+        ],
+        [
+          "key",
+          "BYTE",
+          15
+        ],
+        [
+          "line",
+          "BYTE[256]",
+          16
+        ],
+        [
+          "echo",
+          "BYTE[128]",
+          272
+        ],
+        [
+          "busy",
+          "BYTE",
+          400
+        ]
+      ]
+    }
+  },
+  "foreground": {
+    "size": 56,
+    "alignment": 2,
+    "fields": [
+      [
+        "owner",
+        "BYTE POINTER",
+        0
+      ],
+      [
+        "client",
+        "BYTE POINTER",
+        3
+      ],
+      [
+        "handle",
+        "BYTE POINTER",
+        6
+      ],
+      [
+        "mask",
+        "LONGCARD",
+        10
+      ],
+      [
+        "generation",
+        "LONGCARD",
+        14
+      ],
+      [
+        "pending",
+        "BYTE",
+        18
+      ],
+      [
+        "active",
+        "BYTE",
+        19
+      ],
+      [
+        "signal",
+        "BYTE",
+        20
+      ],
+      [
+        "opState",
+        "BYTE",
+        21
+      ],
+      [
+        "cancel",
+        "BYTE",
+        22
+      ],
+      [
+        "enqueued",
+        "BYTE",
+        23
+      ],
+      [
+        "next",
+        "BYTE POINTER",
+        24
+      ],
+      [
+        "packet",
+        "BYTE POINTER",
+        27
+      ],
+      [
+        "handler",
+        "BYTE POINTER",
+        30
+      ],
+      [
+        "slot",
+        "BYTE POINTER",
+        33
+      ],
+      [
+        "command",
+        "LONGCARD",
+        36
+      ],
+      [
+        "sequence",
+        "LONGCARD",
+        40
+      ],
+      [
+        "unit",
+        "LONGCARD",
+        44
+      ],
+      [
+        "followerA",
+        "BYTE POINTER",
+        48
+      ],
+      [
+        "followerB",
+        "BYTE POINTER",
+        51
+      ],
+      [
+        "groupActive",
+        "BYTE",
+        54
+      ],
+      [
+        "groupRefs",
+        "BYTE",
+        55
+      ]
+    ]
+  },
+  "streams": {
+    "slots": 4,
+    "slot_bytes": 16
+  }
+}

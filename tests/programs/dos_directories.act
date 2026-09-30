@@ -1,0 +1,289 @@
+MODULE DOSDIRTEST
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE DOS
+USE HEAPCORE
+USE FSBOOT
+USE FSTYPES
+USE FSREGISTRY
+
+TYPE Expected=[
+  BYTE ARRAY name(14)
+  LONGINT kind,size,blocks,protection
+  BYTE ARRAY padding(2)
+]
+
+CARD checks,otherChecks
+BYTE variant
+VOLATILE BYTE otherDone
+EXEC.Task other
+PROC POINTER absent()
+DOS.FileLock POINTER root,nested,sub,fileLock,second
+DOS.FileHandle POINTER file
+DOS.FileInfoBlock POINTER info,parallel,child,otherInfo
+Expected POINTER oracle
+FSTYPES.Service POINTER service
+LONGCARD before
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Compare(BYTE ordinal DOS.FileInfoBlock POINTER result)
+  Expected POINTER value
+  BYTE index
+
+  value=@oracle(ordinal)
+  Require(result.fib_DirEntryType=value.kind AND result.fib_EntryType=value.kind)
+  Require(result.fib_Size=value.size AND result.fib_NumBlocks=value.blocks)
+  Require(result.fib_Protection=value.protection)
+  FOR index=0 TO 12 DO
+    Require(result.fib_FileName(index)=value.name(index))
+  OD
+
+  Require(result.fib_Date.ds_Days=0 AND result.fib_Date.ds_Minute=0
+      AND result.fib_Date.ds_Tick=0)
+  Require(result.fib_Comment(0)=0 AND result.fib_OwnerUID=0
+      AND result.fib_OwnerGID=0)
+
+RETURN
+
+PROC Begin()
+
+  info=DOS.FileInfoBlock POINTER($cfff0)
+  parallel=DOS.FileInfoBlock POINTER($d0200)
+  child=DOS.FileInfoBlock POINTER($d0400)
+  otherInfo=DOS.FileInfoBlock POINTER($e0000)
+  oracle=Expected POINTER($e4000)
+  Require(SIZEOF(Expected)=32 AND SIZEOF(FSTYPES.Service)=454
+      AND SIZEOF(FSTYPES.Object)=16)
+  before=EXEC.AvailMem(0)
+  DOS.UnLock(DOS.FileLock POINTER(0))
+  Require(EXEC.AvailMem(0)=before)
+  root=DOS.Lock(BYTE POINTER($d1000),DOS.EXCLUSIVE_LOCK)
+  Require(root=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_DISK_WRITE_PROTECTED)
+  Require(EXEC.AvailMem(0)=before)
+  root=DOS.Lock(BYTE POINTER($d1000),DOS.SHARED_LOCK)
+  Require(root<>DOS.FileLock POINTER(0))
+  Require(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(FSBOOT.Stop()=0)
+  Require(DOS.ExNext(root,info)=0 AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(DOS.Examine(root,info)<>0)
+  Compare(64,info)
+  Require(DOS.Examine(root,parallel)<>0)
+  Compare(64,parallel)
+
+RETURN
+
+PROC Enumerate()
+  BYTE index
+
+  FOR index=0 TO 63 DO
+    IF variant>=2 AND index=8 THEN
+      Require(DOS.ExNext(root,info)=0)
+      IF variant=2 THEN
+        Require(DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+      ELSE
+        Require(DOS.IoErr()=DOS.ERROR_DISK_NOT_VALIDATED)
+      FI
+
+      Require(DOS.ExNext(root,info)=0)
+      RETURN
+    FI
+
+    Require(DOS.ExNext(root,info)<>0)
+    Compare(index,info)
+    IF index<8 THEN
+      Require(DOS.ExNext(root,parallel)<>0)
+      Compare(index,parallel)
+    FI
+  OD
+
+  Require(DOS.ExNext(root,info)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  Require(DOS.ExNext(root,info)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+
+RETURN
+
+PROC NestedDirectories()
+
+  IF variant>=2 THEN
+    RETURN
+  FI
+
+  nested=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  Require(nested<>DOS.FileLock POINTER(0))
+  Require(DOS.ExNext(nested,info)=0 AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(DOS.Examine(nested,child)<>0)
+  Compare(0,child)
+  Require(DOS.ExNext(nested,child)<>0)
+  Compare(65,child)
+  Require(DOS.ExNext(nested,child)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  sub=DOS.Lock(BYTE POINTER($d1040),DOS.SHARED_LOCK)
+  Require(sub<>DOS.FileLock POINTER(0))
+  Require(DOS.Examine(sub,child)<>0)
+  Compare(65,child)
+  IF variant=1 THEN
+    Require(DOS.ExNext(sub,child)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  ELSE
+    Require(DOS.ExNext(sub,child)<>0)
+    Compare(66,child)
+    Require(DOS.ExNext(sub,child)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  FI
+
+  DOS.UnLock(sub)
+  DOS.UnLock(nested)
+
+RETURN
+
+PROC Metadata()
+
+  IF variant<>0 THEN
+    RETURN
+  FI
+
+  fileLock=DOS.Lock(BYTE POINTER($d1060),DOS.SHARED_LOCK)
+  Require(fileLock<>DOS.FileLock POINTER(0))
+  Require(DOS.Examine(fileLock,child)<>0)
+  Compare(66,child)
+  Require(DOS.ExNext(fileLock,child)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  DOS.UnLock(fileLock)
+  Require(DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  file=DOS.Open(BYTE POINTER($d1060),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  Require(DOS.Examine(DOS.FileLock POINTER(BYTE POINTER(file)),child)=0
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+; Keep the peer Task's failure accounting separate from the main client.
+PROC OtherRequire(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(otherChecks & 255))
+  FI
+
+  otherChecks==+1
+
+RETURN
+
+PROC OtherBegin(BYTE unused)
+
+  OtherRequire(DOS.Examine(root,otherInfo)=0 AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  DOS.UnLock(root)
+  OtherRequire(DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  second=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  OtherRequire(second<>DOS.FileLock POINTER(0))
+
+RETURN
+
+PROC OtherRead(BYTE unused)
+  CARD ticks
+
+  OtherRequire(DOS.Examine(second,otherInfo)<>0 AND otherInfo.fib_FileName(0)=84)
+  ticks=EXECTASKS.Sleep(2)
+  OtherRequire(DOS.ExNext(second,otherInfo)<>0 AND otherInfo.fib_FileName(0)=83)
+  OtherRequire(DOS.ExNext(second,otherInfo)=0
+      AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  ticks=EXECTASKS.Sleep(2)
+  OtherRequire(DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+
+RETURN
+
+PROC OtherFinish(BYTE unused)
+
+  DOS.UnLock(second)
+  OtherRequire(DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  OtherRequire(DOS.ReleaseContext()<>0)
+  otherDone=1
+
+RETURN
+
+PROC OtherBad(BYTE unused)
+
+  OtherRequire(DOS.Examine(root,otherInfo)=0 AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  OtherRequire(DOS.ReleaseContext()<>0)
+  otherDone=1
+
+RETURN
+
+PROC OtherEntry()
+
+  IF variant>=2 THEN
+    OtherBad(0)
+  ELSE
+    OtherBegin(0)
+    OtherRead(0)
+    OtherFinish(0)
+  FI
+
+RETURN
+
+PROC StartOther()
+
+  other.tc_Node.ln_Type=EXEC.NT_TASK
+  other.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+  other.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
+  other.tc_SPReg=other.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@other.tc_MemEntry)
+  EXEC.AddTask(@other,@OtherEntry,absent)
+  Require(other.tc_State<>EXEC.TS_INVALID)
+
+RETURN
+
+PROC Finish()
+  CARD ticks
+
+  WHILE otherDone=0 OR other.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  IF variant>=2 THEN
+    Require(otherChecks=2)
+  ELSE
+    Require(otherChecks=9)
+  FI
+
+  Require(DOS.Examine(root,DOS.FileInfoBlock POINTER($d000))=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  DOS.UnLock(root)
+  Require(DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  root=DOS.Lock(BYTE POINTER($d1000),DOS.SHARED_LOCK)
+  Require(root<>DOS.FileLock POINTER(0))
+  Require(DOS.ExNext(root,parallel)=0 AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  DOS.UnLock(root)
+  service=FSREGISTRY.Service()
+  Require(service.packet=FSTYPES.Packet POINTER(0)
+      AND service.info=BYTE POINTER(0)
+      AND service.operation.output=BYTE POINTER(0)
+      AND service.work.path=BYTE POINTER(0))
+  Require(FSBOOT.Stop()<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Exercise directory enumeration, metadata and caller-local progress.
+PROC Main()
+
+  Begin()
+  StartOther()
+  Enumerate()
+  NestedDirectories()
+  Metadata()
+  Finish()
+
+RETURN
+
+ENDMODULE

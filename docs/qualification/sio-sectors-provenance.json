@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "record": "docs/qualification/sio-sectors.json",
+  "record_sha256": "673947133e2792c82f23044d2cd1d8f38c7cbf950a846d93aa6cf084a3fdb846",
+  "inputs": {
+    "lib/siodriver.act": {
+      "commit": "b63a8d9f3a9b71f5e8ddc6ce72b01cc569e635ca",
+      "blob": "f815d9aea7eb20160f887ecd070e4cc61afec38a",
+      "sha256": "5cfbf891255565de37d6525e4e58ce46f0a0cf0df83e64efff1bc74228fd15fc"
+    },
+    "platform/altirraos/sio.s": {
+      "commit": "b63a8d9f3a9b71f5e8ddc6ce72b01cc569e635ca",
+      "blob": "452b95e50646b0dbf1e24d93acecbbdb9554f3e5",
+      "sha256": "b131e45144316014b10382af5f6a7ea203be6a660e3a658b30a351885b80bf85"
+    },
+    "abi/sio.json": {
+      "commit": "d12bd2825822a726809364be135b7da7fcd504f4",
+      "blob": "1306582bca2604d7b2c5d22a756e106926271c13",
+      "sha256": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df"
+    },
+    "tools/test_sio_sectors.py": {
+      "commit": "d12bd2825822a726809364be135b7da7fcd504f4",
+      "blob": "17d96a7056ec10787fbb084d6dd903dda9c32c2a",
+      "sha256": "d9c8db950ae58e30c7f6334a601999c621b6858a8c13bc7f57512e305d0d806f"
+    },
+    "tools/test_sio_concurrent.py": {
+      "commit": "d12bd2825822a726809364be135b7da7fcd504f4",
+      "blob": "c07e3a3a93522d450ae9393a6a709fadcf7e275f",
+      "sha256": "339af73e13031de28ef86e2efce488a9cff15f1366e24fa1588e3de6fb755c20"
+    },
+    "tools/sio_concurrent_trace.py": {
+      "commit": "672fdd6ea7b58cb8c19e5c06f37fcf07f863b4af",
+      "blob": "d009e305d6d2f19055e6c2857424a80faf85fa2e",
+      "sha256": "f0aaa75c26f54b0060eeb28b6f87bcb22a1e591ddf5f16cfb99a5bdf701415a4"
+    },
+    "tools/sio_adapter_trace.py": {
+      "commit": "8d29c49dc14001b64b09376463d50cfd9056f3ec",
+      "blob": "3589a250ec186c4791397b352faa988dc0cea293",
+      "sha256": "12f8b85a64a558e8557c1d8d2f3b4a3d06dbd59ae3a1f22f305e13bdb9e67502"
+    },
+    "tools/test_sio_recovery.py": {
+      "commit": "b63a8d9f3a9b71f5e8ddc6ce72b01cc569e635ca",
+      "blob": "f762efb78f4e89e3147e4eb3b4f994d21eb7c27e",
+      "sha256": "907de73c657b82e70815c5729638505e9c66c17513b74a01962a2c7942a6dc4a"
+    },
+    "tools/sector_images.py": {
+      "commit": "d12bd2825822a726809364be135b7da7fcd504f4",
+      "blob": "d6da658c0051e1c6384e4016d1afdce27dcc2a9c",
+      "sha256": "d6d9f9c494eaeeed8ad9150671dbd495fc04e259cfa5d60c50f6c066d18b351e"
+    },
+    "tools/sio_sector_record.py": {
+      "commit": "8d29c49dc14001b64b09376463d50cfd9056f3ec",
+      "blob": "e02c97b235858fdc80818df3d05863d80ee2c2ff",
+      "sha256": "0398535033bc8f0eb65500cc138eeee1b22eacb71cef72e703539e78d7b2a84d"
+    },
+    "tests/programs/sio_sectors.act": {
+      "commit": "d12bd2825822a726809364be135b7da7fcd504f4",
+      "blob": "a145798f05134d234ab4aceff96b98601629c880",
+      "sha256": "e181c906aa71b625d3b9ddee773411d1190a929a2fd41e9750ff501f2fbee77d"
+    },
+    "tests/programs/sio_concurrent.act": {
+      "commit": "d12bd2825822a726809364be135b7da7fcd504f4",
+      "blob": "298e50aad02ad4d6e3e85391bce32e9c495c5200",
+      "sha256": "beee64a83777d088bdba3f884fddd626d704941a4f8aadf619075dc6b1915669"
+    },
+    "tests/programs/sio_recovery.act": {
+      "commit": "b63a8d9f3a9b71f5e8ddc6ce72b01cc569e635ca",
+      "blob": "f3a65109778d3d41738a0fa8ac3abd3188a5096e",
+      "sha256": "4660f2d5d08acda1db1e49f4af54155f1a9dad6bc55b2410e524d91f4121d558"
+    },
+    "toolchain/altirra-sio-sectors.json": {
+      "commit": "d12bd2825822a726809364be135b7da7fcd504f4",
+      "blob": "ed5b358b03ba60ebfc726faa7215681d66932eb4",
+      "sha256": "6e4968116aced260b53475695a3f1ad52467790b9fbf5144a5358c978946e288"
+    },
+    "toolchain/patches/altirra-sio-sector-faults.patch": {
+      "commit": "d12bd2825822a726809364be135b7da7fcd504f4",
+      "blob": "470352496f86721baec944f43eaed678dccc9c4b",
+      "sha256": "118c1db88a38d1f0f7c09cbc32f51bfda25aeeed0febb9bf83f36bc5f757c7f2"
+    },
+    "tests/test_sio_alarm_observer.py": {
+      "commit": "672fdd6ea7b58cb8c19e5c06f37fcf07f863b4af",
+      "blob": "58c7497df5b6f77d4c9361524b8d7a184c198307",
+      "sha256": "e3c6aba3c5005874f81df0b1a96f637a1bd09c04d646cf88cd3f5494095066d5"
+    },
+    "tests/test_sio_command_trace.py": {
+      "commit": "8d29c49dc14001b64b09376463d50cfd9056f3ec",
+      "blob": "0449919bdf43a78d176848b8d379f800c2a90811",
+      "sha256": "ba8aeb82e34b2a5a224849187e8f56416a968772ba32e68e2761b59c33f31c72"
+    }
+  }
+}

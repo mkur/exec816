@@ -1,0 +1,33 @@
+MODULE TASKMEMORY
+
+; Generated image binding addresses go here.
+TYPE WritableRange=[
+  ADDRESS base
+  SIZE bytes
+]
+
+; Recognize a complete extent in the loader-declared writable image ranges.
+PUBLIC BYTE FUNC Writable(ADDRESS startAddress SIZE bytes)
+  CARD index
+  SIZE offset
+  WritableRange POINTER span
+
+  LET countPtr=CARD POINTER(COUNT)
+  LET rangesPtr=ADDRESS POINTER(RANGES)
+  IF countPtr^=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO countPtr^-1 DO
+    span=WritableRange POINTER(rangesPtr^+(SIZE(index) LSH 3))
+    IF startAddress>=span.base THEN
+      offset=SIZE(startAddress-span.base)
+      IF offset<span.bytes AND bytes<=span.bytes-offset THEN
+        RETURN(1)
+      FI
+    FI
+  OD
+
+RETURN(0)
+
+ENDMODULE

@@ -1,0 +1,120 @@
+; Test-only observations and deterministic failure/cancellation boundaries.
+MODULE O65INTEGRATION
+USE EXEC
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+USE PROGRAMIMAGE
+USE PROCESSSTATE
+USE TASKINSPECT
+USE HEAPCORE
+
+PUBLIC TYPE Placement=[
+  LONGCARD text,data,bss,backing,backingBytes
+  BYTE live,slot
+]
+
+PUBLIC Placement ARRAY placements(16)
+PUBLIC CARD entered,retired,checks
+PUBLIC BYTE peak,breakLoad,breakEntry,fired,failStaging
+PUBLIC BYTE phase,gate,timingOnly
+TASKINSPECT.Info ARRAY tasks(8)
+
+; Fail immediately when an observed result violates the fixture contract.
+PUBLIC PROC Check(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($e900+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PUBLIC PROC Pause(BYTE number)
+
+  phase=number
+  gate=0
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PUBLIC PROC BreakNow(BYTE unused)
+  DOSBREAKTYPES.Scope POINTER scope
+  BYTE accepted
+
+  scope=DOSBREAK.Current()
+  Check(scope<>DOSBREAKTYPES.Scope POINTER(0))
+  EXEC.Forbid()
+  accepted=CONSOLEFOREGROUND.Deliver(scope.generation)
+  EXEC.Permit()
+  Check(accepted<>0)
+  fired=1
+
+RETURN
+
+PUBLIC PROC Chunk(LONGINT position)
+
+  IF breakLoad<>0 AND position>=512 THEN
+    breakLoad=0
+    BreakNow(0)
+  FI
+
+RETURN
+
+PUBLIC BYTE POINTER FUNC Stage(SIZE length LONGCARD flags)
+
+  IF failStaging<>0 THEN
+    failStaging=0
+    RETURN(BYTE POINTER(0))
+  FI
+
+RETURN(EXEC.AllocMem(length,flags))
+
+; Observe the loaded image at entry while its process still retains execution
+; ownership.
+PUBLIC PROC Enter(PROCESSSTATE.Entry POINTER row)
+  PROGRAMIMAGE.Image POINTER image
+  CARD live
+
+  image=PROGRAMIMAGE.Image POINTER(row.image)
+  Check(entered<16 AND row.state=PROCESSSTATE.STATE_RUNNING)
+  Check(image.magic=PROGRAMIMAGE.MAGIC AND image.running=1 AND image.references>=1)
+  live=TASKINSPECT.Snapshot(tasks,8)
+  placements(entered).text=LONGCARD(image.text)
+  placements(entered).data=LONGCARD(ADDRESS(image.data))
+  placements(entered).bss=LONGCARD(ADDRESS(image.bss))
+  placements(entered).backing=LONGCARD(ADDRESS(image.backing))
+  placements(entered).backingBytes=image.backingBytes
+  placements(entered).live=BYTE(live)
+  placements(entered).slot=row.slot
+  IF live>peak THEN
+    peak=BYTE(live)
+  FI
+
+  entered==+1
+  IF breakEntry<>0 AND row.foreground<>0 THEN
+    breakEntry=0
+    BreakNow(0)
+  FI
+
+RETURN
+
+PUBLIC PROC Retire(PROCESSSTATE.Entry POINTER row)
+  PROGRAMIMAGE.Image POINTER image
+
+  image=PROGRAMIMAGE.Image POINTER(row.image)
+  Check(row.state=PROCESSSTATE.STATE_PREPARING
+      OR row.state=PROCESSSTATE.STATE_COLLECTING)
+  Check(image.magic=PROGRAMIMAGE.MAGIC AND image.running=1)
+  IF row.state=PROCESSSTATE.STATE_COLLECTING THEN
+    retired==+1
+  FI
+
+RETURN
+
+ENDMODULE

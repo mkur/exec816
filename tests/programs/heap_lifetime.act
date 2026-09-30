@@ -1,0 +1,179 @@
+MODULE HEAPLIFETIME
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+USE HEAPAPIPROBE
+
+EXEC.Task creator,unrelated
+EXEC.Task POINTER parent
+VOLATILE ADDRESS sharedBlock,clearBlock
+VOLATILE BYTE stage
+CARD checks,created,consumed,removedDuringClear,phase,badIndex
+LONGCARD before,after,reserved
+PROC POINTER absent()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE condition)
+
+  IF condition=0 THEN
+    HEAPCORE.Abort($ff73)
+  FI
+
+RETURN
+
+PROC Prepare(EXEC.Task POINTER item BYTE slot)
+  BYTE POINTER bytes
+  CARD index
+
+  bytes=BYTE POINTER(item)
+  FOR index=0 TO EXEC.TASK_SIZE-1 DO
+    bytes(index)=0
+  OD
+
+  item.tc_Node.ln_Type=EXEC.NT_TASK
+  item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@item.tc_MemEntry)
+
+RETURN
+
+PROC AwaitRemoval(EXEC.Task POINTER item)
+  CARD ignored
+
+  WHILE item.tc_State<>EXEC.TS_REMOVED DO
+    ignored=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+PROC CreatorEntry()
+  BYTE POINTER p
+
+  phase=1
+  p=EXEC.AllocMem(257,0)
+  Require(p<>BYTE POINTER(0))
+  HEAPAPIPROBE.Fill(p,257,$a5)
+  phase=2
+  sharedBlock=ADDRESS(p)
+  created=1
+  EXEC.Signal(parent,1)
+
+RETURN
+
+PROC UnrelatedEntry()
+  LONGCARD ignored
+
+  ignored=EXEC.Wait(0)
+
+RETURN
+
+PROC ConsumerEntry()
+  BYTE POINTER p
+  CARD index
+
+  p=BYTE POINTER(sharedBlock)
+  phase=10
+  FOR index=0 TO 256 DO
+    badIndex=index
+    Require(p(index)=$a5)
+  OD
+
+  phase=11
+  EXEC.FreeMem(p,257)
+  consumed=1
+  phase=12
+
+RETURN
+
+PROC ClearEntry()
+  BYTE POINTER p
+
+  stage=1
+  phase=20
+  p=EXEC.AllocMem(LONGCARD($40001),EXEC.MEMF_LINEAR OR EXEC.MEMF_CLEAR)
+  stage=2
+  phase=21
+  ; Reaching here means the cancellation probe missed its window.
+  Require(ADDRESS(p)=clearBlock)
+
+RETURN
+
+; Transfer allocation ownership between Tasks without exposing a freed
+; lifetime.
+PROC Handoff()
+  LONGCARD received
+
+  Prepare(@creator,1)
+  Prepare(@unrelated,2)
+  Require(EXEC.AddTask(@creator,@CreatorEntry,absent)=@creator)
+  Require(EXEC.AddTask(@unrelated,@UnrelatedEntry,absent)=@unrelated)
+  phase=100
+  received=EXEC.Wait(1)
+  phase=101
+  Require(received=1)
+  AwaitRemoval(@creator)
+  phase=102
+  after=EXEC.AvailMem(0)
+  Require(after=before-264)
+  EXEC.RemTask(@unrelated)
+  phase=103
+  Require(EXEC.AvailMem(0)=before-264)
+  ; Reuse the creator's public Task and execution slot; consume its buffer.
+  Prepare(@creator,1)
+  phase=104
+  Require(EXEC.AddTask(@creator,@ConsumerEntry,absent)=@creator)
+  AwaitRemoval(@creator)
+  Require(created=1 AND consumed=1 AND EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Interrupt a clearing allocation and verify its retained ownership is retired
+; safely.
+PROC CancelClear()
+  BYTE POINTER p
+
+  p=EXEC.AllocMem(LONGCARD($40008),EXEC.MEMF_LINEAR)
+  Require(p<>BYTE POINTER(0))
+  HEAPAPIPROBE.Fill(p,LONGCARD($40008),$a5)
+  clearBlock=ADDRESS(p)
+  EXEC.FreeMem(p,LONGCARD($40008))
+  Prepare(@creator,1)
+  Require(EXEC.AddTask(@creator,@ClearEntry,absent)=@creator)
+  WHILE stage=0 DO
+    EXEC.Yield()
+  OD
+
+  WHILE stage=1 AND (p(32)<>0 OR p(SIZE($40000))<>$a5) DO
+    EXEC.Yield()
+  OD
+
+  Require(stage=1)
+  EXEC.RemTask(@creator)
+  Require(creator.tc_State=EXEC.TS_REMOVED AND stage=1)
+  reserved=before-EXEC.AvailMem(0)
+  Require(reserved=LONGCARD($40008))
+  removedDuringClear=1
+  ; The fixture owns the exact reserved pointer/size and explicitly releases
+  ; it only after the removed task can no longer write to it.
+  EXEC.FreeMem(p,LONGCARD($40001))
+
+RETURN
+
+; Exercise allocation lifetime during handoff, clearing and Task removal.
+PROC Main()
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  before=EXEC.AvailMem(0)
+  Handoff()
+  CancelClear()
+  after=EXEC.AvailMem(0)
+  Require(after=before)
+  checks=1
+
+RETURN
+
+ENDMODULE

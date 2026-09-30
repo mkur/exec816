@@ -1,0 +1,102 @@
+{
+  "format": "exec816-demo-screenshots-v1",
+  "status": "pass",
+  "tier": "development",
+  "scope": "OF816 autoboot and documented commands, with boot and pipeline screenshots",
+  "capture": "Unmodified AltirraSDL framebuffer captures from one OF816 autoboot session; physical keyboard input.",
+  "command": "python3 tools/test_demo.py --screenshots",
+  "runner_sha256": "9b90ff1eecb68f1fad8fb5e322043abd1e9803b9b227ff1608d7ac1a36af87c3",
+  "machine_pin": "toolchain/altirra-shell-paced.json",
+  "machine_pin_sha256": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068",
+  "bundle_manifest_sha256": "d781c6d99da51a67f67c91e362c02d67d0805ecb6a8edaff5a228cf3e1e07d23",
+  "boot_xex_sha256": "97b615049042267646bbb8de6fd171187fbeabcc4d097b9235c99d37eac0ca8f",
+  "native_xex_sha256": "9daa23d7c12c7768a626536b8ae21cb4f890fa1d4b2fe14c73293fb0ea3c7272",
+  "system_disk_sha256": "1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2",
+  "exec_build": "dbea0fd",
+  "exec_build_revision": "dbea0fde607b1fbc1247e8482dd2197c63e9c2b2",
+  "exec_build_dirty": false,
+  "screenshots": [
+    {
+      "name": "docs/images/demo-boot.png",
+      "sha256": "5d7fe212a4ee4603677e94550779c5d2df206a9dbec4ff0c654afc52f6efed2a",
+      "commands": [
+        "TASKS"
+      ],
+      "rows": [
+        "Exec816 (dbea0fd)",
+        "",
+        "exec: 8 task slots",
+        "exec: stack checks enabled",
+        "console.device: ready",
+        "sio.device: D1 ready, 57.6k profile",
+        "SYS: mounting...",
+        "SYS: -> D1: ready, read-only",
+        "",
+        ">  TASKS",
+        "SLOT STATE    NAME",
+        "0    RUNNING  shell",
+        "1    READY    console.device",
+        "2    WAITING  sio.device",
+        "3    WAITING  dos.filesystem",
+        "4    READY    primes",
+        ">",
+        "",
+        "----------------------------------------",
+        "PRIME SEARCH",
+        "Primes: 46   Latest: 199",
+        "Pass: 1",
+        "",
+        ""
+      ]
+    },
+    {
+      "name": "docs/demo.png",
+      "sha256": "3bca07615e65b5ef700f91389455042e98d5d972189504b069c70e32d0bd8e63",
+      "commands": [
+        "TASKS",
+        "MOUNT",
+        "CD SYS:",
+        "DIR",
+        "HELLO",
+        "TYPE README.TXT",
+        "MEM",
+        "HELLO | WC",
+        "CAT STORY.TXT | WC"
+      ],
+      "rows": [
+        "HELLO | WC",
+        "CAT STORY.TXT | WC",
+        "CAT LONG.TXT | WC",
+        "",
+        "Press BREAK during the long pipeline.",
+        "The prime search keeps running.",
+        "Run MEM again after commands finish.",
+        "EXIT closes the demo and returns to OS.",
+        ">  MEM",
+        "ordinary total 311720",
+        "ordinary largest 65536",
+        "linear total 311720",
+        "linear largest 311576",
+        ">  HELLO | WC",
+        "1 3 17",
+        ">  CAT STORY.TXT | WC",
+        "24 133 746",
+        ">",
+        "----------------------------------------",
+        "PRIME SEARCH",
+        "Primes: 317   Latest: 2099",
+        "Pass: 1",
+        "",
+        ""
+      ]
+    }
+  ],
+  "prime_frames": {
+    "startup": 1,
+    "walkthrough": 21
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  }
+}

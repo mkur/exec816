@@ -1,0 +1,182 @@
+{
+  "abi": "exec816.ports",
+  "revision": 1,
+  "services": {
+    "PUT_MSG": 32,
+    "GET_MSG": 33,
+    "REPLY_MSG": 34,
+    "WAIT_HEAD": 35,
+    "DELETE_CHECK": 36,
+    "ADD_PORT": 37,
+    "REM_PORT": 38,
+    "FIND_PORT": 39
+  },
+  "errors": {
+    "MISUSE": 65408
+  },
+  "constants": {
+    "NT_UNKNOWN": 0,
+    "NT_MSGPORT": 4,
+    "NT_MESSAGE": 5,
+    "NT_FREEMSG": 6,
+    "NT_REPLYMSG": 7,
+    "PF_ACTION": 3,
+    "PA_SIGNAL": 0,
+    "PA_SOFTINT": 1,
+    "PA_IGNORE": 2
+  },
+  "records": {
+    "MsgPort": {
+      "size": 27,
+      "alignment": 1,
+      "fields": [
+        [
+          "mp_Node",
+          "EXECLISTS.Node",
+          0
+        ],
+        [
+          "mp_Flags",
+          "BYTE",
+          11
+        ],
+        [
+          "mp_SigBit",
+          "BYTE",
+          12
+        ],
+        [
+          "mp_SigTask",
+          "Task POINTER",
+          13
+        ],
+        [
+          "mp_MsgList",
+          "EXECLISTS.List",
+          16
+        ]
+      ]
+    },
+    "Message": {
+      "size": 16,
+      "alignment": 2,
+      "fields": [
+        [
+          "mn_Node",
+          "EXECLISTS.Node",
+          0
+        ],
+        [
+          "mn_ReplyPort",
+          "MsgPort POINTER",
+          11
+        ],
+        [
+          "mn_Length",
+          "CARD",
+          14
+        ]
+      ]
+    }
+  },
+  "imports": {
+    "PutMsg": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
+      "result_bytes": 0
+    },
+    "GetMsg": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 3
+    },
+    "ReplyMsg": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "WaitPort": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 3
+    },
+    "CreateMsgPort": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 3
+    },
+    "DeleteMsgPort": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "AddPort": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "RemPort": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "FindPort": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
+      "result_bytes": 3
+    }
+  }
+}

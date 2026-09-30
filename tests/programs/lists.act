@@ -1,0 +1,226 @@
+MODULE LISTSTEST
+USE EXEC
+USE EXECOS
+USE EXECMEMORY
+USE EXECLISTS
+INCLUDE "lists-case.inc"
+
+TYPE Pair=[
+  EXECLISTS.MinNode first
+  BYTE tag
+  BYTE pad
+  EXECLISTS.MinNode second
+  BYTE tail
+]
+
+TYPE Window32=[BYTE ARRAY bytes(32)]
+TYPE Window48=[BYTE ARRAY bytes(48)]
+TYPE Window64=[BYTE ARRAY bytes(64)]
+TYPE Snapshot=[
+  EXECLISTS.Node POINTER returned
+  BYTE empty0
+  BYTE empty1
+  Window32 header0
+  Window32 header1
+  Window48 pair0
+  Window48 pair1
+  Window48 pair2
+  Window48 pair3
+  Window64 shadow
+]
+
+EXECLISTS.MinList ARRAY layoutLists(2)
+EXECLISTS.MinNode ARRAY layoutNodes(2)
+Pair layoutPair
+EXECLISTS.Node ARRAY fullNodes(2)
+EXECLISTS.List ARRAY fullLists(2)
+ADDRESS ARRAY layoutFacts(17)
+CARD completed,writeStatus
+BYTE ARRAY line=[76 73 83 84 83 155]
+
+EXECLISTS.List POINTER FUNC Header(BYTE id)
+
+  IF id=0 THEN
+    RETURN(EXECLISTS.List POINTER(T_HEADER0))
+  FI
+
+RETURN(EXECLISTS.List POINTER(T_HEADER1))
+
+EXECLISTS.Node POINTER FUNC Item(BYTE id)
+  Pair POINTER entry
+
+  IF id=255 THEN
+    RETURN(EXECLISTS.Node POINTER(0))
+  FI
+
+  IF (id & 3)=0 THEN
+    entry=Pair POINTER(T_PAIR0)
+  FI
+
+  IF (id & 3)=1 THEN
+    entry=Pair POINTER(T_PAIR1)
+  FI
+
+  IF (id & 3)=2 THEN
+    entry=Pair POINTER(T_PAIR2)
+  FI
+
+  IF (id & 3)=3 THEN
+    entry=Pair POINTER(T_PAIR3)
+  FI
+
+  IF id<4 THEN
+    RETURN(EXECLISTS.Node POINTER(@entry.first))
+  FI
+
+RETURN(EXECLISTS.Node POINTER(@entry.second))
+
+PROC Capture(CARD index EXECLISTS.Node POINTER returned)
+  Snapshot POINTER output
+
+  output=Snapshot POINTER(ADDRESS($080000)+(SIZE(index) LSH 9))
+  output.returned=returned
+  output.empty0=EXECLISTS.IsListEmpty(Header(0))
+  output.empty1=EXECLISTS.IsListEmpty(Header(1))
+  output.header0=Window32 POINTER(T_HEADER0_BASE)^
+  output.header1=Window32 POINTER(T_HEADER1_BASE)^
+  output.pair0=Window48 POINTER(T_PAIR0_BASE)^
+  output.pair1=Window48 POINTER(T_PAIR1_BASE)^
+  output.pair2=Window48 POINTER(T_PAIR2_BASE)^
+  output.pair3=Window48 POINTER(T_PAIR3_BASE)^
+  output.shadow=Window64 POINTER($008DF0)^
+
+RETURN
+
+PROC FullLayout()
+
+  layoutFacts(8)=ADDRESS(@layoutLists(0).mlh_TailPred)-ADDRESS(@layoutLists(0))
+  layoutFacts(9)=ADDRESS(@fullNodes(1))-ADDRESS(@fullNodes(0))
+  layoutFacts(10)=ADDRESS(@fullLists(1))-ADDRESS(@fullLists(0))
+  layoutFacts(11)=ADDRESS(@fullNodes(0).ln_Type)-ADDRESS(@fullNodes(0))
+  layoutFacts(12)=ADDRESS(@fullNodes(0).ln_Pri)-ADDRESS(@fullNodes(0))
+
+RETURN
+
+PROC FullFields()
+
+  layoutFacts(13)=ADDRESS(@fullNodes(0).ln_Name)-ADDRESS(@fullNodes(0))
+  layoutFacts(14)=ADDRESS(@fullLists(0).lh_TailPred)-ADDRESS(@fullLists(0))
+  layoutFacts(15)=ADDRESS(@fullLists(0).lh_Type)-ADDRESS(@fullLists(0))
+  layoutFacts(16)=ADDRESS(@fullLists(0).lh_Pad)-ADDRESS(@fullLists(0))
+
+RETURN
+
+PUBLIC CARD FUNC KernelInit()
+  CARD status
+
+  status=EXECMEMORY.Adopt()
+  IF status<>0 THEN
+    RETURN(status)
+  FI
+
+  EXECLISTS.NewList(Header(0))
+  EXECLISTS.NewList(Header(1))
+  layoutFacts(0)=ADDRESS(@layoutNodes(1))-ADDRESS(@layoutNodes(0))
+  layoutFacts(1)=ADDRESS(@layoutLists(1))-ADDRESS(@layoutLists(0))
+  layoutFacts(2)=ADDRESS(@layoutNodes(0).mln_Pred)-ADDRESS(@layoutNodes(0))
+  layoutFacts(3)=ADDRESS(@layoutLists(0).mlh_Tail)-ADDRESS(@layoutLists(0))
+  layoutFacts(4)=ADDRESS(@layoutPair.first)-ADDRESS(@layoutPair)
+  layoutFacts(5)=ADDRESS(@layoutPair.second)-ADDRESS(@layoutPair)
+  layoutFacts(6)=ADDRESS(@layoutPair.tail)-ADDRESS(@layoutPair)
+  layoutFacts(7)=ADDRESS(Item(6))
+  FullLayout()
+  FullFields()
+
+RETURN(0)
+
+PROC Drain(EXECLISTS.List POINTER chain)
+  BYTE bound
+  EXECLISTS.Node POINTER cursor,following
+
+  cursor=chain.lh_Head
+  bound=0
+  WHILE cursor.ln_Succ<>EXECLISTS.Node POINTER(0) AND bound<8 DO
+    following=cursor.ln_Succ
+    EXECLISTS.Remove(cursor)
+    cursor=following
+    bound==+1
+  OD
+
+RETURN
+
+EXECLISTS.Node POINTER FUNC ApplyOp(BYTE op,id,nodeId,afterId)
+  BYTE empty
+  EXECLISTS.List POINTER chain
+  EXECLISTS.Node POINTER cursor
+
+  chain=Header(id)
+  cursor=Item(nodeId)
+  IF op=0 THEN
+    EXECLISTS.NewList(chain)
+  FI
+
+  IF op=1 THEN
+    empty=EXECLISTS.IsListEmpty(chain)
+  FI
+
+  IF op=2 THEN
+    EXECLISTS.AddHead(chain,cursor)
+  FI
+
+  IF op=3 THEN
+    EXECLISTS.AddTail(chain,cursor)
+  FI
+
+  IF op=4 THEN
+    EXECLISTS.Insert(chain,cursor,Item(afterId))
+  FI
+
+  IF op=5 THEN
+    EXECLISTS.Remove(cursor)
+  FI
+
+  IF op=6 THEN
+    RETURN(EXECLISTS.RemHead(chain))
+  FI
+
+  IF op=7 THEN
+    RETURN(EXECLISTS.RemTail(chain))
+  FI
+
+  IF op=8 THEN
+    Drain(chain)
+  FI
+
+  IF op=9 THEN
+    EXECLISTS.Insert(chain,cursor,EXECLISTS.Node POINTER(@chain.lh_Head))
+  FI
+
+  IF op=10 THEN
+    EXECLISTS.Insert(chain,cursor,EXECLISTS.Node POINTER(@chain.lh_Tail))
+  FI
+
+RETURN(EXECLISTS.Node POINTER(0))
+
+; Exercise packed list layout and list operations against captured state.
+PROC Main()
+  CARD index
+  BYTE POINTER input
+  EXECLISTS.Node POINTER returned
+
+  IF EXEC.TaskId()<>0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO T_STEP_COUNT-1 DO
+    input=BYTE POINTER(ADDRESS($070000)+(SIZE(index) LSH 2))
+    returned=ApplyOp(input(0),input(1),input(2),input(3))
+    Capture(index,returned)
+    completed==+1
+  OD
+
+  writeStatus=EXECOS.Write(BYTE POINTER(line),6)
+
+RETURN
+
+ENDMODULE

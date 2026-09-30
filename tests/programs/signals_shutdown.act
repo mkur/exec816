@@ -1,0 +1,12 @@
+MODULE SIGNALSHUTDOWN
+USE EXEC
+VOLATILE BYTE nmien=$d40e
+
+; Exercise signal producer retirement during shutdown.
+PROC Main()
+
+  nmien=0
+
+RETURN
+
+ENDMODULE

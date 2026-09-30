@@ -1,0 +1,39 @@
+; Test-only acquisition selector. Production builds never import this module.
+MODULE FSINITPROBE
+USE DOSCORE
+USE FSTYPES
+
+PUBLIC BYTE point,skip,fired,earlyPublished
+
+; Remove one selected acquisition and observe unpublished startup ownership.
+PUBLIC BYTE FUNC Fail(BYTE site)
+  BYTE index
+
+  IF point<>site THEN
+    RETURN(0)
+  FI
+
+  IF skip<>0 THEN
+    skip==-1
+    RETURN(0)
+  FI
+
+  point=0
+  fired==+1
+  LET registry=DOSCORE.GetRegistry()
+  IF registry.state=FSTYPES.STATE_STARTING AND registry.runtime<>NULL THEN
+    BEGIN
+      LET service=FSTYPES.Service POINTER(registry.runtime)
+      FOR index=0 TO 7 DO
+        IF service.mounts(index).item<>NULL THEN
+          IF service.mounts(index).item.published<>0 THEN
+            earlyPublished=1
+          FI
+        FI
+      OD
+    END
+  FI
+
+RETURN(1)
+
+ENDMODULE

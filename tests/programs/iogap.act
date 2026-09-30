@@ -1,0 +1,18 @@
+MODULE IOGAP
+USE EXEC
+PUBLIC EXEC.Task POINTER target
+PUBLIC BYTE armed
+PUBLIC CARD checkpoints
+
+PUBLIC PROC Release()
+
+  IF armed<>0 THEN
+    armed=0
+    checkpoints==+1
+    EXEC.Signal(target,LONGCARD($80000000))
+    EXEC.Yield()
+  FI
+
+RETURN
+
+ENDMODULE

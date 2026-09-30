@@ -1,0 +1,58 @@
+MODULE READERHOLD
+USE COMMAND
+BYTE ARRAY path=[68 65 84 65 46 66 73 78 0]
+BYTE ARRAY buffer(512)
+
+; Exercise a command retaining its input while another Task runs.
+LONGINT FUNC Main()
+  BYTE POINTER file
+  CSTRING arguments
+  LONGINT count,total
+  CARD index
+  VOLATILE CARD delay
+
+  arguments=COMMAND.GetArgStr()
+  file=COMMAND.Open(path,COMMAND.MODE_OLDFILE)
+  IF file=BYTE POINTER(0) THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  total=0
+  DO
+    count=COMMAND.Read(file,buffer,512)
+    IF count<0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF count=0 THEN
+      EXIT
+    FI
+
+    FOR index=0 TO CARD(count)-1 DO
+      IF buffer(index)<>BYTE((LONGCARD(total)+LONGCARD(index)) XOR 83) THEN
+        COMMAND.SetIoErr(306)
+        RETURN(COMMAND.RETURN_FAIL)
+      FI
+    OD
+
+    total==+count
+  OD
+
+  IF COMMAND.Close(file)=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  ; Keep a live second Image while foreground commands load, execute and retire.
+  WHILE arguments(0)=49 DO
+    FOR delay=0 TO 1023 DO
+      delay=delay
+    OD
+
+    COMMAND.Yield()
+  OD
+
+  COMMAND.SetIoErr(total)
+
+RETURN(COMMAND.RETURN_OK)
+
+ENDMODULE

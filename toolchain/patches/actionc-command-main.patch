@@ -1,0 +1,399 @@
+From f3ad9693247b4a918b84e8ec81f0683cb6cc90b9 Mon Sep 17 00:00:00 2001
+From: Michal Kurcewicz <1001406+mkur@users.noreply.github.com>
+Date: Sun, 27 Sep 2026 08:17:23 +0200
+Subject: [PATCH] Support selected function entries in compact o65 v2
+
+---
+ docs/MIR65816_O65_PROFILE.md   | 14 +++++++---
+ src/bin/actionc-65816.rs       |  9 ++++--
+ src/compiler/native65816.rs    | 14 +++++++++-
+ src/mir65816/o65/compact.rs    |  8 +++---
+ src/mir65816/o65/profile.rs    | 23 +++++++++++++--
+ src/nir.rs                     |  1 +
+ src/nir/facts.rs               |  2 +-
+ src/semantic/ir.rs             | 26 +++++++++++++++--
+ tests/actionc_65816_o65_cli.rs | 51 ++++++++++++++++++++++++++++++++--
+ tests/mir65816_o65.rs          | 21 ++++++++------
+ 10 files changed, 142 insertions(+), 27 deletions(-)
+
+diff --git a/docs/MIR65816_O65_PROFILE.md b/docs/MIR65816_O65_PROFILE.md
+index b24818c6..edae093a 100644
+--- a/docs/MIR65816_O65_PROFILE.md
++++ b/docs/MIR65816_O65_PROFILE.md
+@@ -160,14 +160,14 @@ change that preserves validation of complete address values and ABI maps.
+ 
+ ## Compact checked Task applications
+ 
+-`actionc.o65.compact.v1` uses the same standard o65 header, section payloads,
++`actionc.o65.compact.v2` uses the same standard o65 header, section payloads,
+ import names and relocation streams. Its two exports are `__a816_entry_v1`
+-and `__a816_o65_compact_v1`, both text offsets. The latter marks an exact
++and `__a816_o65_compact_v2`, both text offsets. The latter marks an exact
+ trailer of **8 + 4 × import count bytes**:
+ 
+ | Bytes | Meaning |
+ | --- | --- |
+-| 0–3 | ASCII `A8C1`, compact profile v1 |
++| 0–3 | ASCII `A8C2`, compact profile v2 |
+ | 4–5 | little-endian native ABI revision, 1 (`action65816.native.v1`) |
+ | 6–7 | reserved flags, zero |
+ | 8 onward | little-endian 32-bit signature per standard import, in order |
+@@ -175,7 +175,7 @@ trailer of **8 + 4 × import count bytes**:
+ No count, symbol name, entry offset or relocation record is duplicated.
+ The first import is `__a816_stack_overflow_v1`, signature zero. Ordinary
+ imports are checked Task-only routines with zero unchecked stack allowance
+-and preserved IRQ state. The entry is checked `PROC()`; extra NMI stack
++and preserved IRQ state. The entry is a checked no-argument `LONGINT FUNC`, returning A16/X16; extra NMI stack
+ allowance, arithmetic-fault imports and absolute storage are unsupported.
+ The compiler rejects contracts outside this profile instead of discarding
+ incompatible attributes. Runtime stack checks remain in the emitted code.
+@@ -200,3 +200,9 @@ signatures without fabricating unavailable physical argument or debug maps.
+ `compact::relocate` is the host reference for this profile; `validate` accepts
+ both the compact and detailed profiles. Existing detailed profile inspection
+ and relocation APIs retain their original meaning.
++
++Use `actionc-65816 --entry Main` to select a root-module function before NIR
++lowering and optimization, including during `--emit-interfaces`. Missing,
++ambiguous, external and absolute-address entries are rejected. Without `--entry`,
++the default remains the last emitted root procedure. Compact v1 is rejected;
++rebuild commands and their loader together for the v2 entry contract.
+diff --git a/src/bin/actionc-65816.rs b/src/bin/actionc-65816.rs
+index ca1f6b20..7e817253 100644
+--- a/src/bin/actionc-65816.rs
++++ b/src/bin/actionc-65816.rs
+@@ -23,12 +23,13 @@ fn run() -> Result<(), String> {
+     let mut input = None;
+     let mut optimize = true;
+     let mut interfaces = false;
++    let mut entry = None;
+     let mut modules = ModuleLoadOptions::default();
+     while let Some(arg) = args.next() {
+         match arg.as_str() {
+             "--help" | "-h" => {
+                 println!(
+-                    "usage: actionc-65816 --layout <layout.json> [-o <image.a816.json>] [--no-opt] [--module-path <dir>] <source.act>\n       actionc-65816 --format o65-experimental --o65-options <options.json> [-o <program.o65>] [--o65-report <host.json>] [--no-opt] <source.act>\n       actionc-65816 --emit-interfaces <source.act>\n\nEmits a freestanding action65816.native.v1 scalar image. The platform supplies\nABI entry state, stack/direct-page domains and a raw stack-overflow adapter.\nLayout specifies code_origin, data_origin, stack_overflow, nmi_extra_stack and imports."
++                    "usage: actionc-65816 --layout <layout.json> [-o <image.a816.json>] [--no-opt] [--entry <name>] [--module-path <dir>] <source.act>\n       actionc-65816 --format o65-experimental --o65-options <options.json> [-o <program.o65>] [--o65-report <host.json>] [--no-opt] [--entry <name>] <source.act>\n       actionc-65816 --emit-interfaces [--entry <name>] <source.act>\n\nEmits a freestanding action65816.native.v1 scalar image. The platform supplies\nABI entry state, stack/direct-page domains and a raw stack-overflow adapter.\nLayout specifies code_origin, data_origin, stack_overflow, nmi_extra_stack and imports."
+                 );
+                 return Ok(());
+             }
+@@ -57,6 +58,10 @@ fn run() -> Result<(), String> {
+             }
+             "-o" => output = Some(PathBuf::from(args.next().ok_or("-o requires a file")?)),
+             "--no-opt" => optimize = false,
++            "--entry" => {
++                if entry.is_some() { return Err("--entry specified more than once".into()); }
++                entry = Some(args.next().ok_or("--entry requires a routine name")?);
++            }
+             "--emit-interfaces" => interfaces = true,
+             "--module-path" => modules.module_paths.push(PathBuf::from(
+                 args.next().ok_or("--module-path requires a directory")?,
+@@ -68,7 +73,7 @@ fn run() -> Result<(), String> {
+     }
+     let input = input.ok_or("missing source; see actionc-65816 --help")?;
+     let prepared =
+-        native65816::prepare_file(&input, optimize, &modules).map_err(|e| e.to_string())?;
++        native65816::prepare_file_with_entry(&input, optimize, &modules, entry.as_deref()).map_err(|e| e.to_string())?;
+     if interfaces {
+         if layout.is_some()
+             || output.is_some()
+diff --git a/src/compiler/native65816.rs b/src/compiler/native65816.rs
+index 84bce815..252387e4 100644
+--- a/src/compiler/native65816.rs
++++ b/src/compiler/native65816.rs
+@@ -33,6 +33,15 @@ pub fn prepare_file(
+     path: impl AsRef<Path>,
+     optimize: bool,
+     modules: &ModuleLoadOptions,
++) -> Result<Prepared, CompileError> {
++    prepare_file_with_entry(path, optimize, modules, None)
++}
++
++pub fn prepare_file_with_entry(
++    path: impl AsRef<Path>,
++    optimize: bool,
++    modules: &ModuleLoadOptions,
++    entry: Option<&str>,
+ ) -> Result<Prepared, CompileError> {
+     let path = path.as_ref();
+     let loaded = load_compilation(path, modules).map_err(|d| {
+@@ -54,7 +63,10 @@ pub fn prepare_file(
+             Some(&loaded.source_map),
+         )
+     })?;
+-    let semir = semantic::ir::lower_compilation(&loaded, &model);
++    let mut semir = semantic::ir::lower_compilation(&loaded, &model);
++    if let Some(name) = entry {
++        semir.select_program_entry(name).map_err(CompileError::configuration)?;
++    }
+     // The shared declaration-address resolver still uses a 16-bit address
+     // cursor. A wider bare declaration initializer can otherwise become data
+     // silently. Keep that source form out of this emitter's advertised subset.
+diff --git a/src/mir65816/o65/compact.rs b/src/mir65816/o65/compact.rs
+index 621ced40..80aac522 100644
+--- a/src/mir65816/o65/compact.rs
++++ b/src/mir65816/o65/compact.rs
+@@ -10,7 +10,7 @@ use super::{
+ use crate::mir65816::image::{Segment, ZeroFill};
+ use std::collections::BTreeSet;
+ 
+-const HEADER: &[u8; 8] = b"A8C1\x01\x00\x00\x00";
++const HEADER: &[u8; 8] = b"A8C2\x01\x00\x00\x00";
+ 
+ pub(super) fn descriptor(p: &Profile) -> Vec<u8> {
+     let mut bytes = HEADER.to_vec();
+@@ -37,14 +37,14 @@ pub(super) fn admit(a: &Artifact) -> Result<(), String> {
+         .ok_or("missing compact entry")?;
+     if p.nmi_extra_stack != 0
+         || p.version != 1
+-        || entry.contract.signature != 0xa27be3e4
++        || entry.contract.signature != compact_entry_signature()
+         || !entry.contract.arguments.is_empty()
+-        || entry.contract.result != 0
++        || entry.contract.result != 4
+         || entry.contract.incoming != 1
+         || p.objects.iter().any(|o| o.location.section.is_none())
+         || p.imports.iter().skip(1).any(|i| !ordinary(&i.contract))
+     {
+-        return Err("compact v1 requires a checked void Task entry, Task-only preserving imports, no absolute storage, arithmetic fault or extra NMI allowance".into());
++        return Err(format!("compact v2 requires a checked no-argument LONGINT function entry (signature {:08x}, got {:08x}), Task-only preserving imports, no absolute storage, arithmetic fault or extra NMI allowance", compact_entry_signature(), entry.contract.signature));
+     }
+     // Run the rich host proof checks before omitting them from the file.
+     let file = wire::File {
+diff --git a/src/mir65816/o65/profile.rs b/src/mir65816/o65/profile.rs
+index 61977034..03fd54d0 100644
+--- a/src/mir65816/o65/profile.rs
++++ b/src/mir65816/o65/profile.rs
+@@ -1,8 +1,27 @@
+ //! Public contracts are independent of compiler IR and fixed-image JSON.
+ use serde::{Deserialize, Serialize};
+ 
+-pub const COMPACT_ID: &str = "actionc.o65.compact.v1";
+-pub const COMPACT_DESCRIPTOR: &str = "__a816_o65_compact_v1";
++pub const COMPACT_ID: &str = "actionc.o65.compact.v2";
++pub const COMPACT_DESCRIPTOR: &str = "__a816_o65_compact_v2";
++
++pub fn compact_entry_signature() -> u32 {
++    // Native extended scalars use a named source type and a resolved scalar
++    // result. Match that callable contract without changing existing ABI IDs.
++    let callable = crate::semantic::CallableType::new(
++        crate::ast::RoutineKind::Func {
++            return_type: Box::new(crate::ast::TypeRef {
++                base: crate::ast::TypeBase::Named("LONGINT".into()),
++                pointer: false,
++            }),
++        },
++        Vec::new(),
++        Some(crate::semantic::ValueType::fund(crate::ast::FundType::LongInt)),
++    );
++    crate::nir::signature_id(
++        &callable,
++        crate::nir::NirCallConvention::TargetPublic,
++    ).0
++}
+ pub const ID_V2: &str = "actionc.o65.experimental.v2";
+ pub const DESCRIPTOR_V2: &str = "__a816_o65_profile_v2";
+ pub const ARITHMETIC_FAULT: &str = "__a816_arithmetic_fault_v1";
+diff --git a/src/nir.rs b/src/nir.rs
+index b664249a..61b246df 100644
+--- a/src/nir.rs
++++ b/src/nir.rs
+@@ -17,6 +17,7 @@ mod verifier;
+ mod tests;
+ 
+ use crate::semantic::ir::SemProgram;
++pub(crate) use facts::signature_id;
+ 
+ pub use crate::target::{
+     AddressSpaceId, AddressValue, ByteOffset, ByteSize, RoutineActivationModel,
+diff --git a/src/nir/facts.rs b/src/nir/facts.rs
+index ac30ca3e..0f1d27e2 100644
+--- a/src/nir/facts.rs
++++ b/src/nir/facts.rs
+@@ -299,7 +299,7 @@ pub fn runtime_symbol_id(name: &str) -> RuntimeSymbolId {
+     RuntimeSymbolId(hash)
+ }
+ 
+-pub(super) fn signature_id(callable: &CallableType, convention: NirCallConvention) -> SignatureId {
++pub(crate) fn signature_id(callable: &CallableType, convention: NirCallConvention) -> SignatureId {
+     fn byte(hash: &mut u32, value: u8) {
+         *hash ^= u32::from(value);
+         *hash = hash.wrapping_mul(16_777_619);
+diff --git a/src/semantic/ir.rs b/src/semantic/ir.rs
+index 558ed101..c4fbd68a 100644
+--- a/src/semantic/ir.rs
++++ b/src/semantic/ir.rs
+@@ -77,8 +77,8 @@ pub struct SemProgram {
+     /// Stable identity of the source root module. Legacy source regions share
+     /// `None`; named compilations use the loader-assigned module identity.
+     pub root_module: Option<ModuleId>,
+-    /// Stable identity of the last source PROC in the root program which emits
+-    /// code. Link selection and runtime composition must preserve this value
++    /// Stable identity of the selected root entry (by default the last emitted
++    /// source PROC). Link selection and runtime composition must preserve it
+     /// instead of inferring an entry from transformed routine order.
+     pub entry_routine: Option<SymbolId>,
+ }
+@@ -90,6 +90,28 @@ pub struct SemOrigin {
+ }
+ 
+ impl SemProgram {
++    /// Explicit frontend entry selection precedes NIR lowering and retention.
++    pub fn select_program_entry(&mut self, name: &str) -> Result<(), String> {
++        let mut matches = self.modules.iter()
++            .filter(|module| module.id == self.root_module)
++            .flat_map(|module| &module.items)
++            .filter_map(|item| match item {
++                SemItem::Routine(routine) if routine.symbol.qualified_name.rsplit('.').next()
++                    .is_some_and(|leaf| leaf.eq_ignore_ascii_case(name)) => Some(routine),
++                _ => None,
++            });
++        let routine = matches.next().ok_or_else(|| format!("missing root entry routine: {name}"))?;
++        if matches.next().is_some() {
++            return Err(format!("ambiguous root entry routine: {name}"));
++        }
++        if routine.is_external || routine.system_address.as_ref().is_some_and(|address|
++            !matches!(address.kind, SemExprKind::CurrentLocation)) {
++            return Err(format!("entry must be an emitted root routine: {name}"));
++        }
++        self.entry_routine = Some(routine.symbol.id);
++        Ok(())
++    }
++
+     pub(crate) fn program_entry_routine(&self) -> Option<&SemRoutine> {
+         let entry = self.entry_routine?;
+         Some(
+diff --git a/tests/actionc_65816_o65_cli.rs b/tests/actionc_65816_o65_cli.rs
+index 6d118409..25ea31ba 100644
+--- a/tests/actionc_65816_o65_cli.rs
++++ b/tests/actionc_65816_o65_cli.rs
+@@ -189,8 +189,8 @@ fn canonical_input_aliases_cannot_be_overwritten() {
+ fn compact_cli_keeps_full_report_off_disk_and_rejects_contract_changes() {
+     for newline in ["\n", "\r\n"] {
+         for optimize in [false, true] {
+-            let d=Directory::new(&"MODULE API\nPUBLIC EXTERNAL CARD FUNC Host(CARD value)\nCARD output\nPROC Main()\noutput=Host(7)\nRETURN\nENDMODULE\n".replace('\n',newline));
+-            let interfaces = d.run(&["--emit-interfaces"]);
++            let d=Directory::new(&"MODULE API\nPUBLIC EXTERNAL CARD FUNC Host(CARD value)\nCARD output\nLONGINT FUNC Main()\noutput=Host(7)\nRETURN(LONGINT(output))\nENDMODULE\n".replace('\n',newline));
++            let interfaces = d.run(&["--emit-interfaces", "--entry", "Main"]);
+             assert!(interfaces.status.success());
+             let interfaces: serde_json::Value = serde_json::from_slice(&interfaces.stdout).unwrap();
+             let options = serde_json::json!({"profile":o65::profile::COMPACT_ID,"nmi_extra_stack":0,"imports":[{"symbol":interfaces[0]["symbol"],"name":"Host","stack_peak":0,"checks_stack":true,"domains":1}]});
+@@ -200,7 +200,7 @@ fn compact_cli_keeps_full_report_off_disk_and_rejects_contract_changes() {
+             )
+             .unwrap();
+             let mut args = ARGS.to_vec();
+-            args.extend(["--o65-report", "report.json"]);
++            args.extend(["--o65-report", "report.json", "--entry", "Main"]);
+             if !optimize {
+                 args.push("--no-opt");
+             }
+@@ -251,3 +251,48 @@ fn compact_cli_keeps_full_report_off_disk_and_rejects_contract_changes() {
+         }
+     }
+ }
++
++#[test]
++fn explicit_function_entry_survives_selection_and_rejects_wrong_contracts() {
++    for optimize in [false, true] {
++        for source in [
++            "LONGINT FUNC Main() RETURN(-70000)",
++            "LONGINT FUNC Main() RETURN(123456) PROC Last() RETURN",
++            "LONGINT FUNC Main() RETURN(0) LONGINT FUNC Helper() RETURN(7)",
++        ] {
++            let d = Directory::new(source);
++            std::fs::write(d.0.join("options.json"), serde_json::to_vec(&o65::Options {
++                profile: o65::profile::COMPACT_ID.into(), ..Default::default()
++            }).unwrap()).unwrap();
++            let mut args = ARGS.to_vec();
++            args.extend(["--entry", "mAiN", "--o65-report", "report.json"]);
++            if !optimize { args.push("--no-opt"); }
++            let output = d.run(&args);
++            assert!(output.status.success(), "{}", String::from_utf8_lossy(&output.stderr));
++            let report: serde_json::Value = serde_json::from_slice(&std::fs::read(d.0.join("report.json")).unwrap()).unwrap();
++            let entry = report["routines"].as_array().unwrap().iter().find(|r| r["offset"] == report["entry"]).unwrap();
++            assert_eq!(entry["name"], "Main");
++            assert_eq!(entry["contract"]["result"], 4);
++            assert_eq!(entry["contract"]["signature"], o65::profile::compact_entry_signature());
++            let bytes = std::fs::read(d.0.join("main.o65")).unwrap();
++            let mut old = o65::decode(&bytes).unwrap();
++            old.exports.iter_mut().find(|e| e.name == o65::profile::COMPACT_DESCRIPTOR).unwrap().name = "__a816_o65_compact_v1".into();
++            assert!(o65::validate(&o65::wire::encode(&old).unwrap()).is_err());
++        }
++    }
++    for source in [
++        "PROC Main() RETURN", "CARD FUNC Main() RETURN(0)",
++        "LONGCARD FUNC Main() RETURN(0)", "LONGINT FUNC Main(BYTE arg) RETURN(0)",
++        "LONGINT FUNC Other() RETURN(0)", "EXTERNAL LONGINT FUNC Main()",
++        "LONGINT FUNC Main=$4000()",
++    ] {
++        let d = Directory::new(source);
++        std::fs::write(d.0.join("options.json"), serde_json::to_vec(&o65::Options {
++            profile: o65::profile::COMPACT_ID.into(), ..Default::default()
++        }).unwrap()).unwrap();
++        let mut args = ARGS.to_vec(); args.extend(["--entry", "Main"]);
++        let output = d.run(&args);
++        assert!(!output.status.success(), "accepted: {source}");
++        assert!(!d.0.join("main.o65").exists());
++    }
++}
+diff --git a/tests/mir65816_o65.rs b/tests/mir65816_o65.rs
+index ec8c6099..732bfba3 100644
+--- a/tests/mir65816_o65.rs
++++ b/tests/mir65816_o65.rs
+@@ -5,13 +5,18 @@ use actionc::{
+     target::TargetId,
+ };
+ fn mir(source: &str, optimize: bool) -> mir65816::Mir65816Program {
++    mir_entry(source, optimize, None)
++}
++fn mir_entry(source: &str, optimize: bool, entry: Option<&str>) -> mir65816::Mir65816Program {
+     let ast = parser::parse(&lexer::tokenize(source).unwrap()).unwrap();
+     let model = semantic::analyze_with_options(
+         &ast,
+         semantic::SemanticOptions::modern().with_target(TargetId::Wdc65816Native),
+     )
+     .unwrap();
+-    let n = nir::lower_program(&semantic::ir::lower_program(&ast, &model));
++    let mut semir = semantic::ir::lower_program(&ast, &model);
++    if let Some(name) = entry { semir.select_program_entry(name).unwrap(); }
++    let n = nir::lower_program(&semir);
+     let n = if optimize {
+         nir::optimize_program_with_promotion(&n, nir::NirPromotionPolicy::Native65816).unwrap()
+     } else {
+@@ -475,9 +480,9 @@ fn corrupted_descriptors_and_late_streams_never_panic() {
+ fn compact_profile_keeps_proofs_on_host_and_matches_rich_relocation() {
+     use o65::profile::*;
+     for optimize in [false, true] {
+-        let program = mir(
+-            "CARD value,initial=[7] BYTE ARRAY table=[1 2 3] PROC Main() value=initial+CARD(table(1)) RETURN",
+-            optimize,
++        let program = mir_entry(
++            "CARD value,initial=[7] BYTE ARRAY table=[1 2 3] LONGINT FUNC Main() value=initial+CARD(table(1)) RETURN(LONGINT(value))",
++            optimize, Some("Main"),
+         );
+         let rich = o65::prepare(&program, &Default::default()).unwrap();
+         let compact = o65::prepare(
+@@ -534,9 +539,9 @@ fn compact_profile_keeps_proofs_on_host_and_matches_rich_relocation() {
+         };
+         options.nmi_extra_stack = 1;
+         assert!(o65::prepare(&program, &options).is_err());
+-        let absolute = mir(
+-            "BYTE hardware=$d000 PROC Main() hardware=1 RETURN",
+-            optimize,
++        let absolute = mir_entry(
++            "BYTE hardware=$d000 LONGINT FUNC Main() hardware=1 RETURN(0)",
++            optimize, Some("Main"),
+         );
+         assert!(
+             o65::prepare(
+@@ -563,7 +568,7 @@ fn compact_standard_split_relocations_preserve_carries_and_bound_full_targets()
+         .unwrap()
+         .value;
+     file.text.truncate(start as usize);
+-    file.text.extend(b"A8C1\x01\0\0\0\0\0\0\0");
++    file.text.extend(b"A8C2\x01\0\0\0\0\0\0\0");
+     file.lengths[0] = file.text.len() as u32;
+     file.exports
+         .iter_mut()
+-- 
+2.50.1 (Apple Git-155)
+

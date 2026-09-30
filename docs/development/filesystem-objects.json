@@ -1,0 +1,1221 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Development validation of separate file/lock objects. No demo rebuild or release qualification.",
+  "baseline_commit": "7a2e1fa",
+  "implementation_commits": [
+    "d845ab3",
+    "6ea396e"
+  ],
+  "compiler_revision": "27119ab2804e795b0bbb067c269826b934271754",
+  "compiler_override": false,
+  "stack_checks": true,
+  "inputs": {
+    "lib/dos/doscalls.act": "68023d005d6486266bc41f3051d8cb708d6a633cc5ae70c8beab966d36f88ae9",
+    "lib/dos/dosinherit.act": "2b4fd4bf2871a5a1a0af54f51151007ff93a63ac72f09f66ae2715cf8b945265",
+    "lib/fs/fsabort.act": "aa11d444f5417f0d6f642054e9b1e5227b5fb0a4844f74664597c6cb95aa97e3",
+    "lib/fs/fsbackend.act": "e2b259ff35841a02cb6d259b29342074faa1317ab3f9884b20b1399625f3f472",
+    "lib/fs/fsbtypes.act": "9b77886200296b1a74961afd5dbe9d0a7859a5d0e085e7d1f8759386822dc1d5",
+    "lib/fs/fsdirectory.act": "5d0e4a6087c2984bb720fa5f7026f6969d2cd698c3e947d7af8a24f22aeb123a",
+    "lib/fs/fsfiles.act": "36183c07407c8dc98f8cdeb83315ee676a3b8aeb16b4af3786867286bbe4d035",
+    "lib/fs/fshandler.act": "d768f1e63fdd8f3091632d1adb4d7f8f3327cdb3b6cf6db53fccd30be7fe737f",
+    "lib/fs/fsinfo.act": "071834cb309991b107e2c2282bd55e8606c29eaf07c5fb1f7ec00c72b6f9b091",
+    "lib/fs/fslocks.act": "60c63404cbce6fc9714c07b77f75d18faa256b462236cf48af10c179a0206d23",
+    "lib/fs/fsobjects.act": "1ca39dcb40b722996df5da5433cf2864e8727e3c780a344acb833879cf4ce94d",
+    "lib/fs/fspacket.act": "ace64b54811910f8dc5b76d8c42193c11f58da2a3ca076ea78bcfaee9e1e89c9",
+    "lib/fs/fsregistry.act": "f3256790f2a3df8840fd06c8c01fd460d709e47fa3ac49aeacd1586031d0cbc4",
+    "lib/fs/fsrelative.act": "4d13a2077bd469f74c5a62fb480312e6be23729275a512c233d69662765327ff",
+    "lib/fs/fstypes.act": "f0b15955a7e87b86cc9bd9c03b249eff7bbd065679e95b6a5ef74e0538dcbda1",
+    "lib/mydos/mydos.act": "4c6723a5dce5218a40fe419c2cd8fe86c29199707b980c33c1d00272da1fddad",
+    "lib/spartados/sdfsname.act": "1181d55d3b6538df5fd38a3c88187c013053b93ca25423813ab7c89c649db10e",
+    "tests/programs/dos_current_directory.act": "11100e275dbf2a0d787ae1e8c67691c20b2e68003faa010903692f38212dd0ae",
+    "tests/programs/dos_directories.act": "4a9baa0bceffc5f9cad0607b155d807dd4ac309b316d116c9ccd6b04d8d03a0d",
+    "tests/programs/dos_lock_allocation.act": "4d6003b8395312c5852a7a19826431e56450d622b97b41c27958036f591f7d6d",
+    "tests/programs/dos_lock_bounds.act": "bba778ca8bd361c219ff3c3c74fc65ea67e788aadf4b7c3ed056310c8cba1e8d",
+    "tests/programs/dos_lock_names.act": "48de3b93de7c1d6ccbaa71ad33bf3ce9fc52773e1195d99732a5c075d25379d5",
+    "tests/programs/dos_relative_bounds.act": "bf2218048304fd7c2a1c2c9a0a7004e68eaa20d7e8d3538fceedaea44460dd0b",
+    "tests/programs/dos_relative_paths.act": "885c89bd1ac07c7ffb83893523545605774b9ff9e58453da6b0ed699a9f47078",
+    "tests/programs/dos_streams_routing.act": "dc1fadcdd30086028208de58939dc881f0999e9243cfa0214a90eec9e2b36475",
+    "tests/programs/process_inheritance.act": "7593f7cddcb433218c27c3bec57baa887f6c6fa2cda8ceb6806ef0dfa144c810",
+    "tests/programs/sdfs_dos.act": "a784f25a0241af09a3602deaf46a53c97d8732f0d8e7bb1fa9b3f87e3e3ad7e1",
+    "toolchain/actionc.json": "33200a57d20a8df748283333aad8534e9c890ff1eebbdc1167eb74f45ece09d2",
+    "toolchain/altirra-console.json": "9de15dcfe3cb25bb3746cf62024a9bce02e0e231be267cd2418448fb1423077c",
+    "toolchain/altirra-shell-console.json": "310ff2eeed7966bb76474164b23c601e85e9d678ea8b4c5be903e381a81b0f4d",
+    "toolchain/altirra-shell-paced.json": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068",
+    "toolchain/altirra-sio-queued.json": "d65d3f9ae8adf8f94f39111d5d4b06b752dd2391a2ec87f13bafad00fc262609",
+    "tools/generate_tasks.py": "c68384fd07452ef3072bda371d765d55904ad531f48b7a8c5cf26aec8ecf6a56",
+    "tools/native_program.py": "72c68259c1aec3e577727e44049f5b1cc99a82266400f16cc251ce1fab37cfdd",
+    "tools/test_dos_lock_names.py": "c5891738c028592df2a2d1bcc9aae0c23edffced6cc25e2a470f7112ae7a7b8a",
+    "tools/test_dos_streams.py": "cd21d45e15b3acf13b00482804b2c0454010b2a2597e70eab09c4dadfd0a4481",
+    "tools/test_filesystem_active_cancel.py": "fdc4a0d2a369ef2410c9af7a430d12e8d4876c12a853d420a2493259ef550f65",
+    "tools/test_process_inheritance.py": "30dae16a95f481ef0000d5d5431c0de6baa5bf03348dc03123f1e457fc2dc80d",
+    "tools/test_shell_lifetime.py": "494878b22b7594ef9f7eb7ca03316aa37629a934369babec83ded4c68cc8597b"
+  },
+  "size": {
+    "before_routine_bytes": 312372,
+    "after_routine_bytes": 313310,
+    "delta_bytes": 938,
+    "excluded_module": "SDFSDOSTEST",
+    "changed_modules": {
+      "DOSINHERIT": {
+        "before": 4029,
+        "after": 4628,
+        "delta": 599
+      },
+      "FSDIRECTORY": {
+        "before": 6261,
+        "after": 6151,
+        "delta": -110
+      },
+      "FSFILES": {
+        "before": 880,
+        "after": 1030,
+        "delta": 150
+      },
+      "FSHANDLER": {
+        "before": 8615,
+        "after": 8973,
+        "delta": 358
+      },
+      "FSLOCKS": {
+        "before": 2956,
+        "after": 2561,
+        "delta": -395
+      },
+      "FSOBJECTS": {
+        "before": 0,
+        "after": 279,
+        "delta": 279
+      },
+      "FSPACKET": {
+        "before": 3232,
+        "after": 3206,
+        "delta": -26
+      },
+      "FSREGISTRY": {
+        "before": 2474,
+        "after": 2549,
+        "delta": 75
+      },
+      "FSRELATIVE": {
+        "before": 6046,
+        "after": 6054,
+        "delta": 8
+      }
+    },
+    "before_image_sha256": "3f9d36b5c4694fb6f2e46527044a0c4d99dd309f2fabcf480c3d65c0cae8ae5b",
+    "after_image_sha256": "05e789387b6a69bf474d698acaa908700810ef977f34fc2667a9d77583c68a72",
+    "before_build_sha256": "64148f4533bff9e67dd755cab4d4b7a27fa0303216827b55657faf49fcf92831",
+    "after_build_sha256": "b20bf3172378c2922d9dd7195821b280c4531a0c6763790978b23e68aebf21a2",
+    "matching_settings": [
+      "revision",
+      "binary_sha256",
+      "abi_sha256",
+      "compiler_contract",
+      "optimize",
+      "stack_checks",
+      "dos_mounts",
+      "memory",
+      "platform_inputs"
+    ],
+    "explanation": "Separate typed clones, allocation and common teardown add code; smaller name/free logic and directory access offset part of the increase. All new helpers are included."
+  },
+  "storage": {
+    "common": 16,
+    "file": 20,
+    "lock": 98,
+    "lock_state": 78,
+    "file_backing": 112,
+    "cursor": 110,
+    "service": 454,
+    "sdfs_backend": 466,
+    "file_wrapper_heap_before": 136,
+    "file_wrapper_heap_after": 24,
+    "independent_file_heap_before": 248,
+    "independent_file_heap_after": 136,
+    "independent_file_allocations": 2,
+    "inherited_file_allocations": 1,
+    "lock_allocations": 1,
+    "lock_names": [
+      {
+        "name_bytes": 0,
+        "before": 144,
+        "after": 104,
+        "saved": 40
+      },
+      {
+        "name_bytes": 3,
+        "before": 144,
+        "after": 104,
+        "saved": 40
+      },
+      {
+        "name_bytes": 12,
+        "before": 152,
+        "after": 120,
+        "saved": 32
+      },
+      {
+        "name_bytes": 23,
+        "before": 160,
+        "after": 128,
+        "saved": 32
+      },
+      {
+        "name_bytes": 255,
+        "before": 392,
+        "after": 360,
+        "saved": 32
+      }
+    ]
+  },
+  "reservations": {
+    "bank_zero_fixed_delta": 0,
+    "bank_zero_per_task_delta": 0,
+    "fixed_upper_delta": 0,
+    "includes": "Guards, alignment, spare capacity, stacks, direct pages, workers and signals.",
+    "before_memory_sha256": "f7f4d5ee23f343d37ba003757e8fe49f6c6b65d72f3b1b6d7eb9742f66f2e1c8",
+    "after_memory_sha256": "f7f4d5ee23f343d37ba003757e8fe49f6c6b65d72f3b1b6d7eb9742f66f2e1c8"
+  },
+  "stacks": {
+    "scope": "Touched-byte observations from the matching mixed-volume fixture; lower bounds, not worst-case proofs.",
+    "before_kernel": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 270,
+      "untouched_from_base": 1266,
+      "interrupt_reserve_bytes_touched": 0
+    },
+    "after_kernel": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 260,
+      "untouched_from_base": 1276,
+      "interrupt_reserve_bytes_touched": 0
+    },
+    "before_tasks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 272,
+        "untouched_above_floor": 1008
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1024,
+        "touched_bytes": 291,
+        "untouched_above_floor": 477
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1024,
+        "touched_bytes": 138,
+        "untouched_above_floor": 630
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1024,
+        "touched_bytes": 180,
+        "untouched_above_floor": 588
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 50,
+        "untouched_above_floor": 206
+      }
+    ],
+    "after_tasks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 264,
+        "untouched_above_floor": 1016
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1024,
+        "touched_bytes": 291,
+        "untouched_above_floor": 477
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1024,
+        "touched_bytes": 132,
+        "untouched_above_floor": 636
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1024,
+        "touched_bytes": 180,
+        "untouched_above_floor": 588
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 50,
+        "untouched_above_floor": 206
+      }
+    ]
+  },
+  "host": [
+    {
+      "slice": "o1",
+      "status": "pass",
+      "tests": 236,
+      "artifact": "build/development/fs-objects/o1/host.log",
+      "sha256": "3310ada5ede21be4555c85f0bb08ce512e4c5e556abff580ab49106f3bb277a3"
+    },
+    {
+      "slice": "o2",
+      "status": "pass",
+      "tests": 236,
+      "artifact": "build/development/fs-objects/o2/host.log",
+      "sha256": "710d0632d4fa0f026980437e20b1b48aa51071c150eed52f2cc6cc563e8de3c5"
+    }
+  ],
+  "cases": [
+    {
+      "artifact": "build/development/fs-objects/o2/names-final/raw/names-bank1/results.json",
+      "sha256": "d738a03b1d730579fd3c666379158afb79f2e593528a5be8631a0f2e38a0c696",
+      "status": "pass",
+      "optimize": false,
+      "image_sha256": "3256af5b687f728f7901b72a5b2822dc5a1a014b50bd35d1eac663c060c52ca1",
+      "source_sha256": "48de3b93de7c1d6ccbaa71ad33bf3ce9fc52773e1195d99732a5c075d25379d5",
+      "task_inputs_sha256": "a63ce32b200e62cb3cf1e1a2d0ad3bbb96e0948ce580dec174f7ddd46c1ae613",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "names-bank1",
+          "checks": [
+            58
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            329,
+            180,
+            230,
+            166,
+            18,
+            18,
+            18,
+            18,
+            54
+          ]
+        }
+      ],
+      "observers": {}
+    },
+    {
+      "artifact": "build/development/fs-objects/o2/inheritance-raw/results.json",
+      "sha256": "7740e8a70c4f46ad7f0013c196a408c22352d6098c2e6f9daea6e7405385c25f",
+      "status": "pass",
+      "optimize": false,
+      "image_sha256": "634f668b6b6591b1ff5de4a65a05c8d1d90beee24310724f0b67e17c4067abce",
+      "source_sha256": "7593f7cddcb433218c27c3bec57baa887f6c6fa2cda8ceb6806ef0dfa144c810",
+      "task_inputs_sha256": "a63ce32b200e62cb3cf1e1a2d0ad3bbb96e0948ce580dec174f7ddd46c1ae613",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "0",
+          "checks": [
+            395
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 280,
+            "untouched_from_base": 1256,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            393,
+            180,
+            283,
+            158,
+            436,
+            302,
+            302,
+            303,
+            50
+          ]
+        }
+      ],
+      "observers": {
+        "fsfiles": "660de862e46adbba36109af977555aca0ddc9d658d898f7a73aab2bd0ebeee40",
+        "fslocks": "bec4b4700b2f9512dca224f5d135dfab45c2840bcea39a3d97dd4517f4eda48f",
+        "dosinherit": "30f638bcd1894f73f72217f1dececdc488915ffb55e35cc2a955507b14a4d2db",
+        "dosclient": "eb24104e95898b58637f341ec2b22dff577dc20d8fae234de6e650c8b256e18a",
+        "portcore": "717e0e3580558738e519e9befa86aa5b320b81270cb1a3c305d82bbf6f56d7b3",
+        "dosbreak": "7031331d3b7ac15588fb88ea374eb4c691218c2088ce7cb5c2c57538dbba21a2",
+        "consoleforeground": "a6727ca71c7f6664dac4a5990bb42db9bc4b6934af169cce09f730e765fe4928"
+      }
+    },
+    {
+      "artifact": "build/development/fs-objects/o2/relative/opt/bank1-128/results.json",
+      "sha256": "466cc41bc6228f52f2b97f7ffccda8f1fe76071096ba6866b36ba7e0dd5d2bcb",
+      "status": "pass",
+      "optimize": true,
+      "image_sha256": "cdc6c7763d80aed85e7d87dc819cb3b0f0de34e2a542a7045b677ed3bc0f7c4a",
+      "source_sha256": "885c89bd1ac07c7ffb83893523545605774b9ff9e58453da6b0ed699a9f47078",
+      "task_inputs_sha256": "a63ce32b200e62cb3cf1e1a2d0ad3bbb96e0948ce580dec174f7ddd46c1ae613",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "bank1-128",
+          "checks": [
+            82
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            240,
+            263,
+            125,
+            214,
+            18,
+            18,
+            18,
+            18,
+            52
+          ]
+        }
+      ],
+      "observers": {}
+    },
+    {
+      "artifact": "build/development/fs-objects/o2/relative/opt/depth/results.json",
+      "sha256": "4a50c9033559d2da16e11f995ff08dd44926d1fe4f1dfdbd7855833497d3f884",
+      "status": "pass",
+      "optimize": true,
+      "image_sha256": "9450393ec7b98789bf99d07c26e03f509602fd3f90f119de96c7585ee169a10e",
+      "source_sha256": "5e3be617a8f6ed9c88e400ddafed803783aa90f100f1eddf37e3b6aefe2f084a",
+      "task_inputs_sha256": "a63ce32b200e62cb3cf1e1a2d0ad3bbb96e0948ce580dec174f7ddd46c1ae613",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "depth",
+          "checks": [
+            14
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            256,
+            263,
+            132,
+            18,
+            18,
+            18,
+            18,
+            18,
+            50
+          ]
+        }
+      ],
+      "observers": {}
+    },
+    {
+      "artifact": "build/development/fs-objects/o2/relative/opt/corrupt-ancestry/results.json",
+      "sha256": "78f5ec6a3e2bb21ce989a1e14c8a0c578ca12214fda3b3ab6cf438ed5378d5fb",
+      "status": "pass",
+      "optimize": true,
+      "image_sha256": "4f990063be64c410a7dd84a58603cee0f2736f19f3101172bec70b3326a2aa72",
+      "source_sha256": "e7d7477578bb8bac68446df26eca617a7fac5dc39b908c9633b619830db8c1a2",
+      "task_inputs_sha256": "a63ce32b200e62cb3cf1e1a2d0ad3bbb96e0948ce580dec174f7ddd46c1ae613",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "corrupt-ancestry",
+          "checks": [
+            10
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            240,
+            263,
+            125,
+            18,
+            18,
+            18,
+            18,
+            18,
+            50
+          ]
+        }
+      ],
+      "observers": {}
+    },
+    {
+      "artifact": "build/development/fs-objects/o2/mixed-opt/results-128.json",
+      "sha256": "323162f9b48e8b7389b4ceb3da58de7657685407a7b8ed4dfb3317772d160f7b",
+      "status": "pass",
+      "optimize": true,
+      "image_sha256": "05e789387b6a69bf474d698acaa908700810ef977f34fc2667a9d77583c68a72",
+      "source_sha256": "a784f25a0241af09a3602deaf46a53c97d8732f0d8e7bb1fa9b3f87e3e3ad7e1",
+      "task_inputs_sha256": "a63ce32b200e62cb3cf1e1a2d0ad3bbb96e0948ce580dec174f7ddd46c1ae613",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "main",
+          "checks": [
+            124
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            264,
+            291,
+            132,
+            180,
+            18,
+            18,
+            18,
+            18,
+            50
+          ]
+        }
+      ],
+      "observers": {}
+    },
+    {
+      "artifact": "build/development/fs-objects/o3/directories-final/results.json",
+      "sha256": "f5cbbf7841d15c72efb27933a25d3e9f415cd5490f8ccc032b18d7c36fe9f928",
+      "status": "pass",
+      "optimize": true,
+      "image_sha256": "eb734d41f6cc3cc929174bc402f9ee739397e5f3a00323afcc46f3e7f8e187af",
+      "source_sha256": "4a9baa0bceffc5f9cad0607b155d807dd4ac309b316d116c9ccd6b04d8d03a0d",
+      "task_inputs_sha256": "a63ce32b200e62cb3cf1e1a2d0ad3bbb96e0948ce580dec174f7ddd46c1ae613",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "normal",
+          "checks": [
+            1532
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            212,
+            244,
+            125,
+            210,
+            18,
+            18,
+            18,
+            18,
+            50
+          ]
+        }
+      ],
+      "observers": {}
+    },
+    {
+      "artifact": "build/development/fs-objects/o3/cancel-mydos/results.json",
+      "sha256": "90cc087c66087792cd55c9fbceaa7e36ae56ddb979a8f4118d61d33f3742dd3b",
+      "status": "pass",
+      "optimize": true,
+      "image_sha256": "f0e9d7746b9c5b2a52fba18ded5d16d071d8e012afb4bdb528c64369e7858392",
+      "source_sha256": "33e20dca95c8542a490b0ca36ddd4fc0a5c638eb3aaa50816bd951068695355f",
+      "task_inputs_sha256": "a63ce32b200e62cb3cf1e1a2d0ad3bbb96e0948ce580dec174f7ddd46c1ae613",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "open-allocation",
+          "checks": [
+            12
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            293,
+            171,
+            212,
+            125,
+            18,
+            18,
+            18,
+            18,
+            50
+          ]
+        },
+        {
+          "name": "lock-allocation",
+          "checks": [
+            12
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            293,
+            171,
+            208,
+            132,
+            18,
+            18,
+            18,
+            18,
+            50
+          ]
+        },
+        {
+          "name": "open-publication",
+          "checks": [
+            13
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            293,
+            171,
+            208,
+            132,
+            18,
+            18,
+            18,
+            18,
+            50
+          ]
+        },
+        {
+          "name": "lock-publication",
+          "checks": [
+            12
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            293,
+            171,
+            208,
+            132,
+            18,
+            18,
+            18,
+            18,
+            50
+          ]
+        },
+        {
+          "name": "directory-publication",
+          "checks": [
+            13
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            293,
+            171,
+            208,
+            132,
+            18,
+            18,
+            18,
+            18,
+            50
+          ]
+        }
+      ],
+      "observers": {
+        "fsworker.act": "c166592c2c433e5bb167f71da3869fe48517f0c9bc3c2b7eee9f53e7845c5c53",
+        "blockwire.act": "c0944c9057745c38270e0f9d1aaebfd9a7c6bf8a216ff6737821400f11e7931c",
+        "fshandler.act": "eeb171ec2c6696c71c52fae64c0258578e44784da0a55ba8caa91fd888b4fc72",
+        "fspacket.act": "e36467847a555ec52c77dcca117a97dc3e83fe23bba6164475e0c32ab2fd9b7d",
+        "fsdirectory.act": "48ca46566fb8867ff4a0093e084e0ac86bb333c2d6e47c86c6e6901de874ea6c",
+        "mydosfile.act": "5a99bc27cb742d726ff7616eba403af8e7b47619a08cb05645615e3829e301f3",
+        "siodriver.act": "298a5a0ce4409eb48e8924d04e994b9a7d6322600f7f05e03fad90a235f08240",
+        "fsactiveprobe.act": "265e44e25c57a45d04e88a298f7d302dcedf11d4ab1dfdbc806a80adcd784bbf"
+      }
+    },
+    {
+      "artifact": "build/development/fs-objects/o3/cancel-sdfs/results.json",
+      "sha256": "c4bd9e9f0c181bda6eee068c41a11f06f595f0684ea1f7e929bce1d98f7b1efd",
+      "status": "pass",
+      "optimize": true,
+      "image_sha256": "236ce8626405ee8986ce64399eff995879e310e3e14b829403a5e83ed5e7a841",
+      "source_sha256": "91f2f780b8e09bef95e59306e9ea415f083c122caf1be8e9fea2f9345f78cbfd",
+      "task_inputs_sha256": "a63ce32b200e62cb3cf1e1a2d0ad3bbb96e0948ce580dec174f7ddd46c1ae613",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "open-allocation",
+          "checks": [
+            12
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 270,
+            "untouched_from_base": 1266,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            293,
+            171,
+            223,
+            125,
+            18,
+            18,
+            18,
+            18,
+            50
+          ]
+        },
+        {
+          "name": "lock-allocation",
+          "checks": [
+            12
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            293,
+            171,
+            223,
+            125,
+            18,
+            18,
+            18,
+            18,
+            46
+          ]
+        },
+        {
+          "name": "open-publication",
+          "checks": [
+            13
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            293,
+            171,
+            223,
+            125,
+            18,
+            18,
+            18,
+            18,
+            46
+          ]
+        },
+        {
+          "name": "lock-publication",
+          "checks": [
+            12
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            293,
+            171,
+            223,
+            125,
+            18,
+            18,
+            18,
+            18,
+            46
+          ]
+        },
+        {
+          "name": "directory-publication",
+          "checks": [
+            13
+          ],
+          "guards": "intact",
+          "kernel_stack": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "task_stack_touched": [
+            293,
+            171,
+            259,
+            125,
+            18,
+            18,
+            18,
+            18,
+            46
+          ]
+        }
+      ],
+      "observers": {
+        "fsworker.act": "c166592c2c433e5bb167f71da3869fe48517f0c9bc3c2b7eee9f53e7845c5c53",
+        "blockwire.act": "c0944c9057745c38270e0f9d1aaebfd9a7c6bf8a216ff6737821400f11e7931c",
+        "fshandler.act": "eeb171ec2c6696c71c52fae64c0258578e44784da0a55ba8caa91fd888b4fc72",
+        "fspacket.act": "e36467847a555ec52c77dcca117a97dc3e83fe23bba6164475e0c32ab2fd9b7d",
+        "fsdirectory.act": "48ca46566fb8867ff4a0093e084e0ac86bb333c2d6e47c86c6e6901de874ea6c",
+        "siodriver.act": "298a5a0ce4409eb48e8924d04e994b9a7d6322600f7f05e03fad90a235f08240",
+        "sdfsfile.act": "6bd76708fa77a076721a6cb4fd55658455b0e453de733da0ea55944635ad02d2",
+        "fsactiveprobe.act": "265e44e25c57a45d04e88a298f7d302dcedf11d4ab1dfdbc806a80adcd784bbf"
+      }
+    }
+  ],
+  "earlier_slice_evidence": {
+    "scope": "O1-only results; not claimed as final-source coverage.",
+    "artifacts": {
+      "build/development/fs-objects/o1/names/opt/names-bank1/results.json": "03ebc5f1c68309d008a716532f032a5ceba61e7093bbeff308e22fd2d7e4968e",
+      "build/development/fs-objects/o1/allocation-final/opt/allocation/results.json": "020b607aab2e5c5a7a7c778b11c84f52b56ad8ab003e502260cb32d96827d933",
+      "build/development/fs-objects/o1/inheritance-opt/results.json": "c4b26da2c6fc1d24ad2afc8ff806d51557b01330489bc67c48387bc19f3d062f",
+      "build/development/fs-objects/o1/routing-raw/results.json": "27c5f4c30ef36af4f0f1d9d9b7b02ee607fc6d6846aa71803359aa00fc7803b0",
+      "build/development/fs-objects/o1/cancel-mydos/results.json": "5cafdabe4121a18e5e8bd45da1f1907cfe292a17a5375aaa96ceda79f9e8aabc"
+    }
+  },
+  "rejected_experiments": [
+    "Initial bank-crossing name fixture overlapped platform assembly at bank $0f and was rejected by image validation; final fixture uses banks $0b/$0c.",
+    "Directory fixture retained a pre-cleanup 524-byte Service assertion; updated it to the emitted 454 bytes before the final run."
+  ],
+  "remaining": "Full release placement, sector-size, speed and concurrency matrices; physical hardware and refreshed demo are outside this work.",
+  "commands": [
+    "python3 -B -m unittest discover -s tests -p 'test_*.py'",
+    "python3 -B tools/test_dos_lock_names.py --case raw --only names-bank1 --output build/development/fs-objects/o2/names-final",
+    "python3 -B tools/test_process_inheritance.py --case raw --suite 0 --output build/development/fs-objects/o2/inheritance-raw",
+    "python3 -B tools/test_dos_relative.py --case opt --only bank1-128,depth,corrupt-ancestry --output build/development/fs-objects/o2/relative",
+    "python3 -B tools/test_sdfs_dos.py --case opt --size 128 --output build/development/fs-objects/o2/mixed-opt",
+    "python3 -B tools/test_dos_directories.py --case opt --size 128 --output build/development/fs-objects/o3/directories-final",
+    "python3 -B tools/test_filesystem_active_cancel.py --case opt --format mydos --suite open-allocation,lock-allocation,open-publication,lock-publication,directory-publication --output build/development/fs-objects/o3/cancel-mydos",
+    "python3 -B tools/test_filesystem_active_cancel.py --case opt --format sdfs --suite open-allocation,lock-allocation,open-publication,lock-publication,directory-publication --output build/development/fs-objects/o3/cancel-sdfs"
+  ],
+  "build_environment": {
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0"
+  }
+}

@@ -1,0 +1,70 @@
+MODULE READARGSTEST
+USE DOSARGS
+USE EXECPOLICY
+
+TYPE Observation=[
+  CARD error
+  ADDRESS ARRAY slots(10)
+  BYTE ARRAY storage(260)
+]
+
+INCLUDE "read-args-cases.inc"
+Observation POINTER row
+CARD rowBytes,caseIndex
+BYTE finished
+
+; Run one argument/template case and inspect both decoded values and untouched
+; guards.
+PROC Probe(CARD source,template,valueCapacity,storageCapacity BYTE flags)
+  ADDRESS POINTER values
+  BYTE POINTER storage
+  CSTRING text,pattern
+  CARD index
+
+  row=Observation POINTER(ADDRESS($d0000)+SIZE(caseIndex*SIZEOF(Observation)))
+  FOR index=0 TO 9 DO
+    row.slots(index)=$abcdef
+  OD
+
+  FOR index=0 TO 259 DO
+    row.storage(index)=$a5
+  OD
+
+  values=@row.slots(1)
+  storage=@row.storage(1)
+  text=CSTRING(BYTE POINTER(ADDRESS($e0000)+SIZE(source)))
+  pattern=CSTRING(BYTE POINTER(ADDRESS($e0000)+SIZE(template)))
+  IF (flags & 1)<>0 THEN
+    values=ADDRESS POINTER(0)
+  FI
+
+  IF (flags & 2)<>0 THEN
+    storage=BYTE POINTER(0)
+  FI
+
+  IF (flags & 4)<>0 THEN
+    text=CSTRING(0)
+  FI
+
+  IF (flags & 8)<>0 THEN
+    pattern=CSTRING(0)
+  FI
+
+  row.error=DOSARGS.Parse(text,pattern,values,valueCapacity,storage,storageCapacity)
+  caseIndex==+1
+
+RETURN
+
+INCLUDE "read-args-calls.inc"
+
+; Exercise bounded command templates, quoting and argument errors.
+PROC Main()
+
+  rowBytes=SIZEOF(Observation)
+  caseIndex=0
+  Cases()
+  finished=1
+
+RETURN
+
+ENDMODULE

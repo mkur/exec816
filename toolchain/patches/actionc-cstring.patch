@@ -1,0 +1,1572 @@
+From 91c57696da808b8aca568ceea7ee34c6936713d7 Mon Sep 17 00:00:00 2001
+From: Michal Kurcewicz <1001406+mkur@users.noreply.github.com>
+Date: Sun, 27 Sep 2026 10:37:35 +0200
+Subject: [PATCH] Add native CSTRING literals and a resident-library interface
+
+---
+ README.md                                     |   2 +
+ docs/cstring.md                               |  74 +++++++++
+ embedded/modules/cstring.act                  |  11 ++
+ embedded/modules/cstring/contract.json        | 121 ++++++++++++++
+ embedded/modules/cstring/impl.act             | 100 ++++++++++++
+ examples/native65816/cstring.act              |  11 ++
+ src/ast.rs                                    |   1 +
+ src/codegen/analysis.rs                       |   2 +
+ src/codegen/arith.rs                          |   1 +
+ src/codegen/expr.rs                           |   3 +-
+ src/codegen/proof.rs                          |   1 +
+ src/codegen/routine.rs                        |   5 +-
+ src/codegen/semir.rs                          |   3 +
+ src/codegen/standalone.rs                     |   2 +
+ src/lexer.rs                                  |  65 +++++++-
+ src/nir/facts.rs                              |   2 +
+ src/nir/lowerer.rs                            |  17 +-
+ src/parser.rs                                 |   4 +
+ src/semantic.rs                               | 104 ++++++++++++-
+ src/semantic/generics.rs                      |   1 +
+ src/semantic/ir.rs                            |  15 +-
+ src/semantic/let_binding.rs                   |   6 +-
+ src/semantic/materialize.rs                   |   1 +
+ src/semantic/subject.rs                       |   1 +
+ src/semantic/types.rs                         |  22 ++-
+ tests/cstring.rs                              |  98 ++++++++++++
+ tools/generate_cstring.py                     |  25 +++
+ tools/native65816-runtime-tests/Cargo.lock    |   1 +
+ .../tests/cstring.rs                          | 147 ++++++++++++++++++
+ .../tests/support/mod.rs                      |  10 ++
+ 30 files changed, 840 insertions(+), 16 deletions(-)
+ create mode 100644 docs/cstring.md
+ create mode 100644 embedded/modules/cstring.act
+ create mode 100644 embedded/modules/cstring/contract.json
+ create mode 100644 embedded/modules/cstring/impl.act
+ create mode 100644 examples/native65816/cstring.act
+ create mode 100644 tests/cstring.rs
+ create mode 100644 tools/generate_cstring.py
+ create mode 100644 tools/native65816-runtime-tests/tests/cstring.rs
+
+diff --git a/README.md b/README.md
+index 424ca28f..39595095 100644
+--- a/README.md
++++ b/README.md
+@@ -306,3 +306,5 @@ and the bundled AltirraOS image is covered by its
+ [file-specific permissive license](roms/ALTIRRAOS-LICENSE); ROM provenance and
+ licensing notes are recorded in [roms/README.md](roms/README.md). Material under
+ `corpora/` is not relicensed by the `actionc` license.
++
++Native 65816 programs can use [C-string literals and the CSTRING library](docs/cstring.md).
+diff --git a/docs/cstring.md b/docs/cstring.md
+new file mode 100644
+index 00000000..31e05bb9
+--- /dev/null
++++ b/docs/cstring.md
+@@ -0,0 +1,74 @@
++# C strings on native 65816
++
++`c"Hello\n"` (also `C"..."`) emits single-byte text followed by one NUL.
++There is no length prefix or allocation. Ordinary Action! strings are unchanged.
++Supported escapes are `\n \r \t \b \f \v \a \\ \" \' \? \0` and `\xHH`
++with exactly two hexadecimal digits. Physical newlines, unknown escapes and
++characters above 255 are errors. Embedded NUL is allowed; the final NUL is still
++appended. `\n` is byte 10, independent of the host's newline convention.
++
++`SYS.CSTRING`, or contextual `CSTRING`, is a read-only borrowed byte view.
++It occupies the native data pointer's three bytes, including in parameters,
++function results and record fields. Assignment copies the address; equality
++compares addresses. `text(i)` and `text^` read bytes; stores through the view
++are rejected. `SIZEOF(CSTRING)` is 3, not the text length. `CSTRING(0)` is null,
++distinct from the non-null empty literal `c""`.
++
++Use `CSTRING(buffer)` to borrow byte storage and `BYTE POINTER(text)` to bridge
++to an existing raw-pointer API. Both are explicit, nonallocating casts. The raw
++pointer bridge does not make literal backing writable. These are not ownership,
++lifetime or bounds checks. Literal-expression backing is immutable and lasts
++as long as its containing image; the source buffer controls a borrowed view's
++lifetime. There is no implicit conversion from Action! strings or raw pointers.
++
++```action
++BYTE ARRAY greeting=c"Hello\n" ; seven writable bytes, including NUL
++BYTE ARRAY path(32)=c"D1:"    ; excess capacity is zero-filled
++CSTRING text
++PROC Main()
++  text=c"static backing"
++  LET borrowed=CSTRING(path)
++RETURN
++```
++
++Array initialization includes NUL and rejects insufficient capacity. Scalar
++Action! declarations have storage/address initialization rules: initialize a
++CSTRING view with an assignment in a routine or a `LET`, rather than a bare
++`CSTRING text=c"..."` declaration. Array lifetime follows the existing global
++or per-activation local declaration rules. Near/far qualifiers are deferred.
++This first implementation explicitly rejects CSTRING on other targets.
++
++## Library
++
++`USE CSTRING AS STR` imports the external interface. A host supplies the seven
++versioned providers in [the contract](../embedded/modules/cstring/contract.json).
++Only referenced functions become imports. `USE CSTRING.IMPL AS STR` explicitly
++includes the same implementation for standalone programs; ordinary module
++inclusion currently includes all seven functions. No allocator, OS services,
++mutable globals, initialization, errno or cleanup are involved. Calls use the
++normal checked native ABI and the caller's stack.
++
++| Function | Contract |
++| --- | --- |
++| `SIZE strlen(CSTRING text)` | Count bytes before NUL. |
++| `SIZE strnlen(BYTE POINTER bytes, SIZE maximum)` | Inspect at most maximum bytes; raw buffer need not be terminated. |
++| `INT strcmp(CSTRING left, CSTRING right)` | Unsigned byte comparison; negative, zero or positive result. |
++| `INT strncmp(CSTRING left, CSTRING right, SIZE maximum)` | Compare at most maximum bytes, stopping at NUL. |
++| `CSTRING strchr(CSTRING text, BYTE value)` | First match or null; searching zero finds the terminator. |
++| `SIZE strlcpy(BYTE POINTER destination, CSTRING source, SIZE capacity)` | Copy at most capacity−1 bytes and terminate if capacity > 0; return full source length. |
++| `SIZE strlcat(BYTE POINTER destination, CSTRING source, SIZE capacity)` | Append after the bounded destination scan; return bounded initial length plus full source length. |
++
++Capacity includes the terminator. A copy/append result `>= capacity` means the
++complete terminated result did not fit. An unterminated destination within the
++append bound stays unchanged. Zero capacity performs no destination access
++(and permits a null destination); source length is still counted. Zero compare
++or scan bounds perform no input reads. Copy/append do not zero unused padding.
++Source and destination must not overlap. Other pointers must identify live,
++accessible storage and CSTRING sources must have a reachable terminator.
++Counts and their sums must fit SIZE; address wrap is unsupported.
++
++The [native example](../examples/native65816/cstring.act) appends a filename
++and checks capacity. The interface generator's `--check` mode checks source
++consistency; frontend tests also compare every semantic signature against the
++implementation and contract. Native execution tests cover raw/optimized code,
++canaries and observed bounds, large bank-crossing strings and relocation.
+diff --git a/embedded/modules/cstring.act b/embedded/modules/cstring.act
+new file mode 100644
+index 00000000..40d60387
+--- /dev/null
++++ b/embedded/modules/cstring.act
+@@ -0,0 +1,11 @@
++; Generated by tools/generate_cstring.py; do not edit.
++; Use CSTRING.IMPL for standalone source inclusion.
++MODULE CSTRING
++PUBLIC EXTERNAL SIZE FUNC strlen(SYS.CSTRING text)
++PUBLIC EXTERNAL SIZE FUNC strnlen(BYTE POINTER bytes SIZE maximum)
++PUBLIC EXTERNAL INT FUNC strcmp(SYS.CSTRING left SYS.CSTRING right)
++PUBLIC EXTERNAL INT FUNC strncmp(SYS.CSTRING left SYS.CSTRING right SIZE maximum)
++PUBLIC EXTERNAL SYS.CSTRING FUNC strchr(SYS.CSTRING text BYTE value)
++PUBLIC EXTERNAL SIZE FUNC strlcpy(BYTE POINTER destination SYS.CSTRING source SIZE capacity)
++PUBLIC EXTERNAL SIZE FUNC strlcat(BYTE POINTER destination SYS.CSTRING source SIZE capacity)
++ENDMODULE
+diff --git a/embedded/modules/cstring/contract.json b/embedded/modules/cstring/contract.json
+new file mode 100644
+index 00000000..cee66c0d
+--- /dev/null
++++ b/embedded/modules/cstring/contract.json
+@@ -0,0 +1,121 @@
++{
++  "schema_version": 1,
++  "abi": "action65816.native.v1",
++  "module": "CSTRING",
++  "implementation": "CSTRING.IMPL",
++  "providers": {
++    "strlen": {
++      "result": "SIZE",
++      "arguments": [
++        [
++          "SYS.CSTRING",
++          "text"
++        ]
++      ],
++      "symbol": "cstring_strlen_v1",
++      "signature": 1818637244
++    },
++    "strnlen": {
++      "result": "SIZE",
++      "arguments": [
++        [
++          "BYTE POINTER",
++          "bytes"
++        ],
++        [
++          "SIZE",
++          "maximum"
++        ]
++      ],
++      "symbol": "cstring_strnlen_v1",
++      "signature": 1904729536
++    },
++    "strcmp": {
++      "result": "INT",
++      "arguments": [
++        [
++          "SYS.CSTRING",
++          "left"
++        ],
++        [
++          "SYS.CSTRING",
++          "right"
++        ]
++      ],
++      "symbol": "cstring_strcmp_v1",
++      "signature": 3031792884
++    },
++    "strncmp": {
++      "result": "INT",
++      "arguments": [
++        [
++          "SYS.CSTRING",
++          "left"
++        ],
++        [
++          "SYS.CSTRING",
++          "right"
++        ],
++        [
++          "SIZE",
++          "maximum"
++        ]
++      ],
++      "symbol": "cstring_strncmp_v1",
++      "signature": 565784175
++    },
++    "strchr": {
++      "result": "SYS.CSTRING",
++      "arguments": [
++        [
++          "SYS.CSTRING",
++          "text"
++        ],
++        [
++          "BYTE",
++          "value"
++        ]
++      ],
++      "symbol": "cstring_strchr_v1",
++      "signature": 1156764685
++    },
++    "strlcpy": {
++      "result": "SIZE",
++      "arguments": [
++        [
++          "BYTE POINTER",
++          "destination"
++        ],
++        [
++          "SYS.CSTRING",
++          "source"
++        ],
++        [
++          "SIZE",
++          "capacity"
++        ]
++      ],
++      "symbol": "cstring_strlcpy_v1",
++      "signature": 3599940068
++    },
++    "strlcat": {
++      "result": "SIZE",
++      "arguments": [
++        [
++          "BYTE POINTER",
++          "destination"
++        ],
++        [
++          "SYS.CSTRING",
++          "source"
++        ],
++        [
++          "SIZE",
++          "capacity"
++        ]
++      ],
++      "symbol": "cstring_strlcat_v1",
++      "signature": 3599940068
++    }
++  }
++}
+diff --git a/embedded/modules/cstring/impl.act b/embedded/modules/cstring/impl.act
+new file mode 100644
+index 00000000..241f23c0
+--- /dev/null
++++ b/embedded/modules/cstring/impl.act
+@@ -0,0 +1,100 @@
++; Reentrant byte-string utilities. Bounds precede loads; no allocator or globals.
++MODULE CSTRING.IMPL
++
++PUBLIC SIZE FUNC strlen(SYS.CSTRING text)
++  SIZE length
++  length=0
++  WHILE text(length)#0 DO
++    length==+1
++  OD
++RETURN(length)
++
++PUBLIC SIZE FUNC strnlen(BYTE POINTER bytes SIZE maximum)
++  SIZE length
++  length=0
++  WHILE length<maximum DO
++    IF bytes(length)=0 THEN RETURN(length) FI
++    length==+1
++  OD
++RETURN(length)
++
++PUBLIC INT FUNC strcmp(SYS.CSTRING left,right)
++  SIZE index
++  BYTE a,b
++  index=0
++  DO
++    a=left(index)
++    b=right(index)
++    IF a<b THEN RETURN(-1) FI
++    IF a>b THEN RETURN(1) FI
++    IF a=0 THEN RETURN(0) FI
++    index==+1
++  OD
++RETURN(0)
++
++PUBLIC INT FUNC strncmp(SYS.CSTRING left,right SIZE maximum)
++  SIZE index
++  BYTE a,b
++  index=0
++  WHILE index<maximum DO
++    a=left(index)
++    b=right(index)
++    IF a<b THEN RETURN(-1) FI
++    IF a>b THEN RETURN(1) FI
++    IF a=0 THEN RETURN(0) FI
++    index==+1
++  OD
++RETURN(0)
++
++PUBLIC SYS.CSTRING FUNC strchr(SYS.CSTRING text BYTE value)
++  BYTE POINTER cursor
++  BYTE current
++  cursor=BYTE POINTER(text)
++  DO
++    current=cursor^
++    IF current=value THEN RETURN(SYS.CSTRING(cursor)) FI
++    IF current=0 THEN RETURN(SYS.CSTRING(0)) FI
++    cursor==+1
++  OD
++RETURN(SYS.CSTRING(0))
++
++PUBLIC SIZE FUNC strlcpy(BYTE POINTER destination SYS.CSTRING source SIZE capacity)
++  SIZE length,room
++  BYTE current
++  length=0
++  room=0
++  IF capacity>0 THEN room=capacity-1 FI
++  DO
++    current=source(length)
++    IF current=0 THEN EXIT FI
++    IF length<room THEN destination(length)=current FI
++    length==+1
++  OD
++  IF capacity>0 THEN
++    IF length<room THEN destination(length)=0 ELSE destination(room)=0 FI
++  FI
++RETURN(length)
++
++PUBLIC SIZE FUNC strlcat(BYTE POINTER destination SYS.CSTRING source SIZE capacity)
++  SIZE initial,length,room
++  BYTE current
++  initial=0
++  WHILE initial<capacity DO
++    IF destination(initial)=0 THEN EXIT FI
++    initial==+1
++  OD
++  length=0
++  room=0
++  IF initial<capacity THEN room=capacity-initial-1 FI
++  DO
++    current=source(length)
++    IF current=0 THEN EXIT FI
++    IF length<room THEN destination(initial+length)=current FI
++    length==+1
++  OD
++  IF initial<capacity THEN
++    IF length<room THEN destination(initial+length)=0
++    ELSE destination(initial+room)=0 FI
++  FI
++RETURN(initial+length)
++ENDMODULE
+diff --git a/examples/native65816/cstring.act b/examples/native65816/cstring.act
+new file mode 100644
+index 00000000..3c698090
+--- /dev/null
++++ b/examples/native65816/cstring.act
+@@ -0,0 +1,11 @@
++MODULE CSTRING_EXAMPLE
++USE CSTRING.IMPL AS STR
++SIZE required
++BYTE success
++PROC Main()
++  BYTE ARRAY path(32)=c"D1:"
++  required=STR.strlcat(path,c"STORY.TXT",SIZEOF(path))
++  IF required>=SIZEOF(path) THEN success=0 RETURN FI
++  success=BYTE(STR.strcmp(CSTRING(path),c"D1:STORY.TXT")=0)
++RETURN
++ENDMODULE
+diff --git a/src/ast.rs b/src/ast.rs
+index 576fa443..a45aaafb 100644
+--- a/src/ast.rs
++++ b/src/ast.rs
+@@ -657,6 +657,7 @@ pub enum ExprKind {
+     TypeRef(TypeRef),
+     Number(NumberLiteral),
+     String(String),
++    CString(Vec<u8>),
+     Char(char),
+     Name(String),
+     Unary {
+diff --git a/src/codegen/analysis.rs b/src/codegen/analysis.rs
+index 9ac603dc..32967888 100644
+--- a/src/codegen/analysis.rs
++++ b/src/codegen/analysis.rs
+@@ -207,6 +207,7 @@ fn expr_tree_any(expr: &Expr, predicate: &impl Fn(&Expr) -> bool) -> bool {
+         | ExprKind::TypeRef(_)
+         | ExprKind::Char(_)
+         | ExprKind::String(_)
++            | ExprKind::CString(_)
+         | ExprKind::Name(_)
+         | ExprKind::CurrentLocation
+         | ExprKind::Missing
+@@ -238,6 +239,7 @@ fn expr_references_names(expr: &Expr, names: &HashSet<String>) -> bool {
+         | ExprKind::TypeRef(_)
+         | ExprKind::Char(_)
+         | ExprKind::String(_)
++            | ExprKind::CString(_)
+         | ExprKind::CurrentLocation
+         | ExprKind::Missing
+         | ExprKind::Raw
+diff --git a/src/codegen/arith.rs b/src/codegen/arith.rs
+index a23f3257..36d1f91b 100644
+--- a/src/codegen/arith.rs
++++ b/src/codegen/arith.rs
+@@ -2260,6 +2260,7 @@ impl Generator {
+             | ExprKind::TypeRef(_)
+             | ExprKind::Number(_)
+             | ExprKind::String(_)
++            | ExprKind::CString(_)
+             | ExprKind::Char(_)
+             | ExprKind::Name(_) => false,
+         }
+diff --git a/src/codegen/expr.rs b/src/codegen/expr.rs
+index c3e7e7c2..661903da 100644
+--- a/src/codegen/expr.rs
++++ b/src/codegen/expr.rs
+@@ -250,7 +250,8 @@ impl Generator {
+         match &expr.kind {
+             ExprKind::Selection(_) => None,
+             ExprKind::Prepared { value, .. } => self.expr_scalar_type(value),
+-            ExprKind::CurrentLocation | ExprKind::String(_) => Some(ScalarType::Card),
++            ExprKind::CurrentLocation | ExprKind::String(_)
++            | ExprKind::CString(_) => Some(ScalarType::Card),
+             ExprKind::Number(number) => ScalarType::from_number_kind(number.kind),
+             ExprKind::Char(_) => Some(ScalarType::Char),
+             ExprKind::Name(name) => {
+diff --git a/src/codegen/proof.rs b/src/codegen/proof.rs
+index fa52d6f0..c9dc5a8a 100644
+--- a/src/codegen/proof.rs
++++ b/src/codegen/proof.rs
+@@ -251,6 +251,7 @@ impl Generator {
+             | ExprKind::TypeRef(_)
+             | ExprKind::Number(_)
+             | ExprKind::String(_)
++            | ExprKind::CString(_)
+             | ExprKind::Char(_) => ExpressionSideEffectFacts::pure(),
+             ExprKind::Cast { expr, .. } => self.expr_side_effect_facts(expr),
+             ExprKind::Name(name) => {
+diff --git a/src/codegen/routine.rs b/src/codegen/routine.rs
+index 3c760fd6..1776abd5 100644
+--- a/src/codegen/routine.rs
++++ b/src/codegen/routine.rs
+@@ -689,7 +689,8 @@ impl Generator {
+                 self.collect_modern_hidden_expr(base);
+                 self.collect_modern_hidden_expr(index);
+             }
+-            ExprKind::Number(_)
++            ExprKind::CString(_)
++            | ExprKind::Number(_)
+             | ExprKind::TypeRef(_)
+             | ExprKind::Char(_)
+             | ExprKind::Name(_)
+@@ -942,7 +943,7 @@ fn expr_contains_string_literal(expr: &Expr) -> bool {
+     match &expr.kind {
+         ExprKind::Selection(selection) => selection.expressions().into_iter().any(expr_contains_string_literal),
+         ExprKind::Prepared { statements, value } => stmt_list_contains_string_literal(statements) || expr_contains_string_literal(value),
+-        ExprKind::String(_) => true,
++        ExprKind::String(_) | ExprKind::CString(_) => true,
+         ExprKind::Unary { expr, .. } => expr_contains_string_literal(expr),
+         ExprKind::Cast { expr, .. } => expr_contains_string_literal(expr),
+         ExprKind::Binary { left, right, .. } => {
+diff --git a/src/codegen/semir.rs b/src/codegen/semir.rs
+index d4db4b64..dc2ace06 100644
+--- a/src/codegen/semir.rs
++++ b/src/codegen/semir.rs
+@@ -1183,6 +1183,7 @@ impl SemIrAstLowerer<'_> {
+             SemLiteral::Real { source, .. } => {
+                 (ExprKind::Number(source.clone()), source.text.clone())
+             }
++            SemLiteral::CString(bytes) => (ExprKind::CString(bytes.clone()), format!("c{bytes:?}")),
+             SemLiteral::String(text) => (ExprKind::String(text.clone()), format!("{text:?}")),
+             SemLiteral::Char(ch) => (ExprKind::Char(*ch), format!("'{ch}'")),
+             SemLiteral::Constant(value) => {
+@@ -1257,6 +1258,7 @@ impl SemIrAstLowerer<'_> {
+                         ty: self.type_ref(&if ty.is_record() { ValueType::pointer_to(ty.clone()) } else { ty.clone() }), storage: VarStorage::Plain,
+                     }).collect(),
+                 })),
++                ValueTypeBase::CString => TypeBase::Named("SYS.CSTRING".into()),
+                 ValueTypeBase::Error => TypeBase::Fund(FundType::Byte),
+             },
+             pointer: ty.pointer && !matches!(ty.base, ValueTypeBase::Callable(_)),
+@@ -2088,6 +2090,7 @@ fn expr_text(kind: &ExprKind) -> String {
+         ExprKind::CurrentLocation => "*".to_string(),
+         ExprKind::TypeRef(ty) => type_ref_text(ty),
+         ExprKind::Number(NumberLiteral { text, .. }) => text.clone(),
++        ExprKind::CString(bytes) => format!("c{bytes:?}"),
+         ExprKind::String(text) => format!("{text:?}"),
+         ExprKind::Char(ch) => format!("'{ch}'"),
+         ExprKind::Name(name) => name.clone(),
+diff --git a/src/codegen/standalone.rs b/src/codegen/standalone.rs
+index a31ef9f2..9d479a2f 100644
+--- a/src/codegen/standalone.rs
++++ b/src/codegen/standalone.rs
+@@ -909,6 +909,7 @@ fn rewrite_expr_names(expr: &mut Expr, replacements: &BTreeMap<String, String>)
+         | ExprKind::TypeRef(_)
+         | ExprKind::Number(_)
+         | ExprKind::String(_)
++            | ExprKind::CString(_)
+         | ExprKind::Char(_) => {}
+     }
+ }
+@@ -1127,6 +1128,7 @@ fn collect_expr_names(expr: &Expr, candidates: &BTreeSet<String>, output: &mut B
+         | ExprKind::TypeRef(_)
+         | ExprKind::Number(_)
+         | ExprKind::String(_)
++            | ExprKind::CString(_)
+         | ExprKind::Char(_) => {}
+     }
+ }
+diff --git a/src/lexer.rs b/src/lexer.rs
+index 9587d8c8..9da397d0 100644
+--- a/src/lexer.rs
++++ b/src/lexer.rs
+@@ -66,6 +66,8 @@ pub enum TokenKind {
+     },
+     Number(NumberLiteral),
+     String(String),
++    /// Decoded byte payload; the terminating NUL is added by storage lowering.
++    CString(Vec<u8>),
+     Char(char),
+     ActioncAnnotation(String),
+     Keyword(Keyword),
+@@ -136,7 +138,7 @@ impl Keyword {
+ impl TokenKind {
+     pub fn action_token_id(&self) -> Option<u8> {
+         match self {
+-            TokenKind::Ident(_) => None,
++            TokenKind::Ident(_) | TokenKind::CString(_) => None,
+             TokenKind::InlineAsm { .. } => None,
+             TokenKind::Number(number) => Some(number.kind.action_token_id()),
+             TokenKind::String(_) => Some(128 + 5),
+@@ -235,6 +237,10 @@ impl<'a> Lexer<'a> {
+         let ch = self.bump()?;
+ 
+         let kind = match ch {
++            'c' | 'C' if self.peek() == Some('"') => {
++                self.bump();
++                return Some(self.lex_cstring(start, start_line));
++            }
+             'A'..='Z' | 'a'..='z' | '_' => {
+                 return Some(self.lex_ident_or_keyword(start, start_line));
+             }
+@@ -300,6 +306,63 @@ impl<'a> Lexer<'a> {
+         })
+     }
+ 
++    fn lex_cstring(&mut self, start: usize, start_line: usize) -> Token {
++        let mut bytes = Vec::new();
++        let mut closed = false;
++        while let Some(ch) = self.peek() {
++            if matches!(ch, '\n' | '\r') { break; }
++            self.bump();
++            if ch == '"' { closed = true; break; }
++            let byte = if ch == '\\' {
++                match self.peek() {
++                    Some('\n' | '\r') | None => break,
++                    Some(escape) => {
++                        self.bump();
++                        match escape {
++                            'n' => Some(10), 'r' => Some(13), 't' => Some(9),
++                            'b' => Some(8), 'f' => Some(12), 'v' => Some(11),
++                            'a' => Some(7), '0' => Some(0),
++                            '\\' | '"' | '\'' | '?' => Some(escape as u8),
++                            'x' => {
++                                let mut value = 0;
++                                let mut count = 0;
++                                while count < 2 {
++                                    let Some(digit) = self.peek().and_then(|c| c.to_digit(16)) else { break; };
++                                    self.bump(); value = value * 16 + digit as u8; count += 1;
++                                }
++                                if count == 2 { Some(value) } else {
++                                    self.diagnostics.push(Diagnostic::new(Span::new(start, self.pos),
++                                        "C-string hexadecimal escape requires exactly two hex digits"));
++                                    None
++                                }
++                            }
++                            _ => {
++                                self.diagnostics.push(Diagnostic::new(Span::new(start, self.pos),
++                                    format!("unknown C-string escape \\{escape}")));
++                                None
++                            }
++                        }
++                    }
++                }
++            } else {
++                match u8::try_from(u32::from(ch)) {
++                    Ok(byte) => Some(byte),
++                    Err(_) => {
++                        self.diagnostics.push(Diagnostic::new(Span::new(start, self.pos),
++                            "C-string character is outside the single-byte source encoding"));
++                        None
++                    }
++                }
++            };
++            if let Some(byte) = byte { bytes.push(byte); }
++        }
++        if !closed {
++            self.diagnostics.push(Diagnostic::new(Span::new(start, self.pos),
++                "unterminated C-string; physical newlines are not allowed"));
++        }
++        Token { kind: TokenKind::CString(bytes), span: Span::new(start, self.pos), line: start_line }
++    }
++
+     fn lex_ident_or_keyword(&mut self, start: usize, start_line: usize) -> Token {
+         while matches!(self.peek(), Some('A'..='Z' | 'a'..='z' | '0'..='9' | '_')) {
+             self.bump();
+diff --git a/src/nir/facts.rs b/src/nir/facts.rs
+index 0f1d27e2..796327de 100644
+--- a/src/nir/facts.rs
++++ b/src/nir/facts.rs
+@@ -317,6 +317,7 @@ pub(crate) fn signature_id(callable: &CallableType, convention: NirCallConventio
+                 byte(hash, 1);
+                 text(hash, &format!("{fund:?}"));
+             }
++            ValueTypeBase::CString => byte(hash, 7),
+             ValueTypeBase::Real => byte(hash, 2),
+             ValueTypeBase::Enum(identity) => {
+                 byte(hash, 6);
+@@ -488,6 +489,7 @@ impl NirValue {
+ pub(super) fn type_summary(ty: &ValueType) -> String {
+     let base = match &ty.base {
+         ValueTypeBase::Fund(fund) => format!("{fund:?}"),
++        ValueTypeBase::CString => "SYS.CSTRING".to_string(),
+         ValueTypeBase::Real => "REAL".to_string(),
+         ValueTypeBase::Enum(identity) => identity.name.clone(),
+         ValueTypeBase::Named(identity) => identity.name.clone(),
+diff --git a/src/nir/lowerer.rs b/src/nir/lowerer.rs
+index c2a0331c..555f1b57 100644
+--- a/src/nir/lowerer.rs
++++ b/src/nir/lowerer.rs
+@@ -2747,6 +2747,17 @@ impl NirBuilder {
+     }
+ 
+     fn value(&mut self, expr: &SemExpr) -> Option<NirValue> {
++        if let SemExprKind::Literal(SemLiteral::CString(bytes)) = &expr.kind {
++            let id = SymbolId(self.next_static); self.next_static += 1;
++            let name = format!("__nir_cstr_{}_{}", sanitize_static_owner(&self.name), id.0);
++            let ty = NirFacts::type_from_value(&expr.ty);
++            let mut storage = bytes.clone(); storage.push(0);
++            self.statics.push(NirStaticData { id, name: name.clone(), ty: ty.clone(),
++                image: NirDataImage::literal(storage), display: format!("c{bytes:?}"),
++                alignment: ByteSize::ONE, mutable: false, section: "rodata".into() });
++            return Some(NirValue::StaticAddr { id, name, ty });
++        }
++
+         match &expr.kind {
+             SemExprKind::IfValue(selection) => Some(self.if_value(selection, &expr.ty)),
+             SemExprKind::CaseValue(selection) => Some(self.case_value(selection, &expr.ty)),
+@@ -5241,6 +5252,9 @@ fn literal_number_u64_expr(expr: &SemExpr) -> Option<u64> {
+ }
+ 
+ fn string_initializer_bytes(declaration: &SemDeclaration) -> Option<Vec<u8>> {
++    if let SemExprKind::Literal(SemLiteral::CString(bytes)) = &declaration.initializer.as_ref()?.kind {
++        let mut storage = bytes.clone(); storage.push(0); return Some(storage);
++    }
+     let SemExprKind::Literal(SemLiteral::String(value)) = &declaration.initializer.as_ref()?.kind
+     else {
+         return None;
+@@ -6134,6 +6148,7 @@ fn literal_summary(literal: &SemLiteral) -> String {
+         SemLiteral::Enum(value) => value.representation().number_literal().text,
+         SemLiteral::Number(number) => number.text.clone(),
+         SemLiteral::Real { source, .. } => source.text.clone(),
++        SemLiteral::CString(bytes) => format!("c{bytes:?}"),
+         SemLiteral::String(value) => format!("{value:?}"),
+         SemLiteral::Char(value) => format!("{value:?}"),
+         SemLiteral::Constant(value) => value.number_literal().text,
+@@ -6164,7 +6179,7 @@ fn literal_value(literal: &SemLiteral, ty: &NirType) -> Option<NirValue> {
+         SemLiteral::Real { .. } => return None,
+         SemLiteral::Char(value) => u64::from(*value as u16),
+         SemLiteral::Constant(value) => value.bits,
+-        SemLiteral::String(_) => return None,
++        SemLiteral::String(_) | SemLiteral::CString(_) => return None,
+     };
+     if ty.kind.is_pointer() {
+         return Some(if value == 0 {
+diff --git a/src/parser.rs b/src/parser.rs
+index 0220a53a..28a3981b 100644
+--- a/src/parser.rs
++++ b/src/parser.rs
+@@ -3152,6 +3152,7 @@ impl<'a> ExprParser<'a> {
+         let kind = match &token.kind {
+             TokenKind::Number(number) => ExprKind::Number(number.clone()),
+             TokenKind::String(value) => ExprKind::String(value.clone()),
++            TokenKind::CString(value) => ExprKind::CString(value.clone()),
+             TokenKind::Char(value) => ExprKind::Char(*value),
+             TokenKind::Ident(name) => {
+                 if generics::generic_head_end(self.tokens, start).is_some() {
+@@ -3424,6 +3425,7 @@ fn normalize_expr_spans(expr: &mut Expr, fallback: Span) {
+         | ExprKind::TypeRef(_)
+         | ExprKind::Number(_)
+         | ExprKind::String(_)
++            | ExprKind::CString(_)
+         | ExprKind::Char(_)
+         | ExprKind::Name(_) => {}
+     }
+@@ -3483,6 +3485,7 @@ fn token_can_end_expr(token: &Token) -> bool {
+             | TokenKind::Ident(_)
+             | TokenKind::Number(_)
+             | TokenKind::String(_)
++            | TokenKind::CString(_)
+             | TokenKind::Char(_)
+             | TokenKind::RParen
+             | TokenKind::RBracket
+@@ -3514,6 +3517,7 @@ fn token_text(token: &Token) -> String {
+         }
+         TokenKind::Number(number) => number.text.clone(),
+         TokenKind::String(text) => format!("\"{text}\""),
++        TokenKind::CString(bytes) => format!("c\"{}\"", bytes.iter().map(|b| format!("\\x{b:02X}")).collect::<String>()),
+         TokenKind::Char(ch) => format!("'{ch}"),
+         TokenKind::ActioncAnnotation(text) => format!(";@actionc {text}"),
+         TokenKind::Keyword(keyword) => format!("{keyword:?}").to_ascii_uppercase(),
+diff --git a/src/semantic.rs b/src/semantic.rs
+index 87fd6ae9..fe7bd0c6 100644
+--- a/src/semantic.rs
++++ b/src/semantic.rs
+@@ -386,6 +386,8 @@ pub struct ValueType {
+ 
+ #[derive(Debug, Clone, PartialEq, Eq)]
+ pub enum ValueTypeBase {
++    /// Canonical read-only byte view; always represented as a data pointer.
++    CString,
+     Fund(FundType),
+     Enum(EnumIdentity),
+     Real,
+@@ -2410,6 +2412,13 @@ impl Analyzer {
+                 span: expr.span,
+             }),
+             ExprKind::Number(number) => self.classify_number_subject(number, expr.span),
++            ExprKind::CString(value) => {
++                self.require_native_cstring(expr.span);
++                subject::SemSubject::Expr(subject::SemExpr {
++                    ty: ValueType::cstring(),
++                    kind: subject::SemExprKind::Literal(subject::SemLiteral::CString(value.clone())), span: expr.span,
++                })
++            }
+             ExprKind::String(value) => subject::SemSubject::Expr(subject::SemExpr {
+                 ty: string_literal_type(),
+                 kind: subject::SemExprKind::Literal(subject::SemLiteral::String(value.clone())),
+@@ -2547,7 +2556,7 @@ impl Analyzer {
+                 }
+                 subject::SemSubject::Place(subject::SemPlace {
+                     ty,
+-                    access: if pointer_type.is_some() {
++                    access: if pointer.ty.is_cstring() { subject::PlaceAccess::ReadOnly } else if pointer_type.is_some() {
+                         subject::PlaceAccess::Assignable
+                     } else {
+                         subject::PlaceAccess::Error
+@@ -2688,6 +2697,24 @@ impl Analyzer {
+                 let identity = self.enum_type_for_expr(scope, callee).unwrap();
+                 self.enum_cast_subject(scope, identity, args, expr.span)
+             }
++            ExprKind::Call { callee, args }
++                if enums::expression_name(callee).is_some_and(|name| self.is_cstring_type(scope, &name)) =>
++            {
++                self.require_native_cstring(expr.span);
++                if args.len() != 1 {
++                    self.diagnostics.push(Diagnostic::new(expr.span, "CSTRING conversion requires one argument"));
++                    return self.subject_error(expr.span);
++                }
++                let mut inner = self.expect_expr(scope, &args[0], args[0].span);
++                if let Some(decayed) = self.array_decay_pointer_type(scope, &args[0]) { inner.ty = decayed; }
++                if !inner.ty.is_cstring() && !inner.ty.as_pointer().is_some_and(|p| matches!(p.pointee.base, ValueTypeBase::Fund(FundType::Byte | FundType::Char)))
++                    && !matches!(self.evaluate_const_expr(&inner), Ok(value) if value.bits == 0) {
++                    self.diagnostics.push(Diagnostic::new(expr.span, "CSTRING conversion requires byte storage or zero"));
++                }
++                let ty = ValueType::cstring();
++                self.resolved_casts.insert(ExpressionSite::new(scope, expr.span), ty.clone());
++                subject::SemSubject::Expr(subject::SemExpr { ty: ty.clone(), kind: subject::SemExprKind::Cast { ty, expr: Box::new(inner) }, span: expr.span })
++            }
+             ExprKind::Call { callee, args }
+                 if args.len() == 1 && self.contextual_scalar_cast_type(scope, callee).is_some() =>
+             {
+@@ -2742,6 +2769,13 @@ impl Analyzer {
+             ExprKind::Index { base, index } => {
+                 self.index_subject(scope, base, std::slice::from_ref(index.as_ref()), expr.span)
+             }
++            ExprKind::Field { .. } if enums::expression_name(expr).is_some_and(|name| self.is_cstring_type(scope, &name)) => {
++                self.require_native_cstring(expr.span);
++                subject::SemSubject::TypeRef(subject::SemTypeRef {
++                    ty: ValueType::cstring(), kind: subject::SemTypeRefKind::Inline(TypeRef {
++                        base: TypeBase::Named("SYS.CSTRING".into()), pointer: false }), span: expr.span,
++                })
++            }
+             ExprKind::Field { base, field } => {
+                 if let Some(owner) = self.variant_type_for_expr(scope, base) {
+                     self.variant_constructor_subject(scope, owner, field, None, expr.span)
+@@ -3134,6 +3168,13 @@ impl Analyzer {
+         span: Span,
+     ) -> subject::SemSubject {
+         if self.lookup_symbol(scope, name).is_none() {
++            if name.eq_ignore_ascii_case("CSTRING") {
++                self.require_native_cstring(span);
++                return subject::SemSubject::TypeRef(subject::SemTypeRef {
++                    ty: ValueType::cstring(),
++                    kind: subject::SemTypeRefKind::Inline(TypeRef { base: TypeBase::Named("SYS.CSTRING".into()), pointer: false }), span,
++                });
++            }
+             let scalar = contextual_scalar_type_name(name);
+             if let Some(scalar) = scalar {
+                 return subject::SemSubject::TypeRef(subject::SemTypeRef {
+@@ -3867,6 +3908,7 @@ impl Analyzer {
+         actual: &ValueType,
+     ) -> bool {
+         debug_assert!(expected.pointer);
++        if expected.is_cstring() || actual.is_cstring() { return expected == actual; }
+         if actual.pointer {
+             return pointer_value_types_compatible(expected, actual);
+         }
+@@ -4500,6 +4542,7 @@ impl Analyzer {
+         let valid_value_type = matches!(field.ty.base, TypeBase::Fund(_) | TypeBase::Callable(_))
+             || field.ty.pointer
+             || self.value_type_from_type_ref(scope, &field.ty).as_enum().is_some()
++            || self.value_type_from_type_ref(scope, &field.ty).is_cstring()
+             || matches!(&field.ty.base, TypeBase::Named(name) if self.builtin_scalar_type(scope, name).is_some())
+             || self.type_ref_is_record(scope, &field.ty);
+         let inline_array = field.storage == VarStorage::Array && self.options.embedded_record_arrays;
+@@ -4679,10 +4722,18 @@ impl Analyzer {
+         }
+         if (declaration.storage == VarStorage::Array || is_string_type_ref(&declaration.ty))
+             && (entry.size.is_some() || entry.initializer.as_ref().is_some_and(|expr|
+-                matches!(expr.kind, ExprKind::InitializerList(_) | ExprKind::String(_))))
++                matches!(expr.kind, ExprKind::InitializerList(_) | ExprKind::String(_)
++            | ExprKind::CString(_))))
+         {
+             self.static_array_backings.insert(symbol);
+         }
++        if let Some(Expr { kind: ExprKind::CString(bytes), span, .. }) = &entry.initializer {
++            self.require_native_cstring(*span);
++            if declaration.storage == VarStorage::Array {
++                let required = bytes.len() as u32 + 1;
++                if entry.size.is_none() { self.array_lengths.insert(symbol, required); }
++            }
++        }
+         let Some(size) = &entry.size else {
+             return;
+         };
+@@ -4735,7 +4786,8 @@ impl Analyzer {
+         };
+         if matches!(
+             initializer.kind,
+-            ExprKind::InitializerList(_) | ExprKind::String(_) | ExprKind::Raw
++            ExprKind::InitializerList(_) | ExprKind::String(_)
++            | ExprKind::CString(_) | ExprKind::Raw
+         ) {
+             return;
+         }
+@@ -4778,7 +4830,8 @@ impl Analyzer {
+         let Some(initializer) = &entry.initializer else {
+             return;
+         };
+-        if matches!(initializer.kind, ExprKind::InitializerList(_) | ExprKind::String(_))
++        if matches!(initializer.kind, ExprKind::InitializerList(_) | ExprKind::String(_)
++            | ExprKind::CString(_))
+             && self.contains_union(&element_type)
+         {
+             self.diagnostics.push(Diagnostic::new(initializer.span,
+@@ -5024,6 +5077,24 @@ impl Analyzer {
+                     }
+                 }
+             }
++            ExprKind::CString(bytes) if decl.storage == VarStorage::Array => {
++                self.require_native_cstring(initializer.span);
++                if element_type != ValueType::fund(FundType::Byte) {
++                    self.diagnostics.push(Diagnostic::new(initializer.span, "C-string array initialization requires BYTE ARRAY"));
++                }
++                if self.symbols.lookup(scope, &entry.name).and_then(|id| self.array_lengths.get(&id))
++                    .is_some_and(|length| (*length as usize) < bytes.len() + 1) {
++                    self.diagnostics.push(Diagnostic::new(initializer.span, "C-string initializer including NUL exceeds array capacity"));
++                }
++            }
++            ExprKind::CString(_) => {
++                self.require_native_cstring(initializer.span);
++                self.diagnostics.push(Diagnostic::new(initializer.span,
++                    "a C-string declaration initializer requires BYTE ARRAY; assign a CSTRING view inside a routine or use LET"));
++            }
++            ExprKind::String(_) if element_type.is_cstring() => self.diagnostics.push(Diagnostic::new(
++                initializer.span, "an Action! string cannot initialize a CSTRING view",
++            )),
+             ExprKind::String(_) if element_type.as_enum().is_some() => self.diagnostics.push(Diagnostic::new(
+                 initializer.span, "enum storage cannot use a string initializer",
+             )),
+@@ -5099,6 +5170,11 @@ impl Analyzer {
+             return;
+         };
+ 
++        if self.is_cstring_type(scope, name) {
++            self.require_native_cstring(span);
++            if ty.pointer { self.diagnostics.push(Diagnostic::new(span, "CSTRING is already a pointer view; POINTER qualification is not supported")); }
++            return;
++        }
+         if self.builtin_scalar_type(scope, name).is_some()
+             || self.is_sys_native_real_type(scope, name)
+         {
+@@ -5187,6 +5263,7 @@ impl Analyzer {
+         let TypeBase::Named(name) = &ty.base else {
+             return value;
+         };
++        if self.is_cstring_type(scope, name) { return ValueType::cstring(); }
+         if let Some(scalar) = self.builtin_scalar_type(scope, name) {
+             value.base = ValueTypeBase::Fund(scalar.fund_type());
+             return value;
+@@ -5206,6 +5283,7 @@ impl Analyzer {
+             )
+         {
+             let symbol = &self.symbols.symbols[symbol_id.0];
++            if value.is_cstring() { value.pointer = ty.pointer; }
+             value.base = if let Some(identity) = symbol.ty.as_ref().and_then(ValueType::as_enum) {
+                 ValueTypeBase::Enum(identity.clone())
+             } else if symbol.ty.as_ref().is_some_and(ValueType::is_real) {
+@@ -5229,6 +5307,18 @@ impl Analyzer {
+             .is_some_and(|module| module.path.canonical_name() == "sys")
+     }
+ 
++    fn is_cstring_type(&self, scope: ScopeId, name: &QualifiedName) -> bool {
++        (name.components.len() == 2 && name.components[0].eq_ignore_ascii_case("SYS") && name.components[1].eq_ignore_ascii_case("CSTRING")) ||
++            (name.components.len() == 1 && name.components[0].eq_ignore_ascii_case("CSTRING") && matches!(
++                resolve_semantic_name(&self.symbols, &self.modules, scope, name), SemanticNameResolution::Unknown))
++    }
++
++    fn require_native_cstring(&mut self, span: Span) {
++        if self.options.target != TargetId::Wdc65816Native {
++            self.diagnostics.push(Diagnostic::new(span, "CSTRING requires wdc-65816-native"));
++        }
++    }
++
+     fn builtin_scalar_type(&self, scope: ScopeId, name: &QualifiedName) -> Option<ScalarType> {
+         let scalar = match name.components.last()?.to_ascii_uppercase().as_str() {
+             "LONGINT" => ScalarType::LongInt,
+@@ -5630,6 +5720,7 @@ impl ValueType {
+     }
+ 
+     fn from_type_ref(ty: &TypeRef) -> Self {
++        if matches!(&ty.base, TypeBase::Named(name) if name.eq_ignore_ascii_case("CSTRING") || name.to_string().eq_ignore_ascii_case("SYS.CSTRING")) { return Self::cstring(); }
+         let base = match &ty.base {
+             TypeBase::Applied { .. } => ValueTypeBase::Error,
+             TypeBase::Fund(fund) => ValueTypeBase::Fund(*fund),
+@@ -5710,7 +5801,7 @@ impl SemanticCallableSignature {
+ fn callable_kind_from_symbol(symbol: &Symbol) -> RoutineKind {
+     match (&symbol.class, symbol.ty.as_ref()) {
+         (SymbolClass::Func | SymbolClass::BuiltinFunc, Some(ty)) => match ty.base {
+-            ValueTypeBase::Fund(_) | ValueTypeBase::Enum(_) => RoutineKind::Func { return_type: ty.routine_result_type().unwrap() },
++            ValueTypeBase::CString | ValueTypeBase::Fund(_) | ValueTypeBase::Enum(_) => RoutineKind::Func { return_type: ty.routine_result_type().unwrap() },
+             ValueTypeBase::Real => RoutineKind::Proc,
+             ValueTypeBase::Named(_) => RoutineKind::Proc,
+             ValueTypeBase::Callable(_) => RoutineKind::Proc,
+@@ -5956,6 +6047,7 @@ fn evaluate_exact_fixed_address_expr(
+         subject::SemExprKind::Selection { .. } | subject::SemExprKind::Call { .. } | subject::SemExprKind::VariantConstructor { .. } => Err(FixedArrayAddressError::RuntimeDependent),
+         subject::SemExprKind::Literal(subject::SemLiteral::Real { .. })
+         | subject::SemExprKind::Literal(subject::SemLiteral::String(_))
++        | subject::SemExprKind::Literal(subject::SemLiteral::CString(_))
+         | subject::SemExprKind::CurrentLocation
+         | subject::SemExprKind::Raw(_)
+         | subject::SemExprKind::Error => Err(FixedArrayAddressError::Invalid),
+@@ -6019,7 +6111,7 @@ fn evaluate_const_expr_for_layout(expr: &subject::SemExpr, layout: TargetLayout)
+         ),
+         subject::SemExprKind::Literal(subject::SemLiteral::Constant(value)) => value.bits,
+         subject::SemExprKind::Literal(subject::SemLiteral::Enum(value)) => u64::from(value.bits),
+-        subject::SemExprKind::Literal(subject::SemLiteral::String(_)) => {
++        subject::SemExprKind::Literal(subject::SemLiteral::String(_) | subject::SemLiteral::CString(_)) => {
+             return Err("strings are not supported in CONST expressions".to_string());
+         }
+         subject::SemExprKind::Cast { expr: inner, .. } => evaluate_const_expr_for_layout(inner, layout)?.cast_for_layout(scalar, layout).bits,
+diff --git a/src/semantic/generics.rs b/src/semantic/generics.rs
+index 8445a990..87fbee18 100644
+--- a/src/semantic/generics.rs
++++ b/src/semantic/generics.rs
+@@ -56,6 +56,7 @@ fn argument_name(ty: &ValueType) -> String {
+         ValueTypeBase::Fund(fund) => format!("{fund:?}").to_ascii_uppercase(),
+         ValueTypeBase::Enum(identity) => identity.name.clone(),
+         ValueTypeBase::Named(identity) => identity.name.clone(),
++        ValueTypeBase::CString => "SYS.CSTRING".into(),
+         ValueTypeBase::Real => "REAL".into(),
+         ValueTypeBase::Callable(callable) => {
+             let head = callable
+diff --git a/src/semantic/ir.rs b/src/semantic/ir.rs
+index c4fbd68a..a2071b39 100644
+--- a/src/semantic/ir.rs
++++ b/src/semantic/ir.rs
+@@ -1009,6 +1009,7 @@ pub enum SemLiteral {
+         value: AtariReal,
+     },
+     String(String),
++    CString(Vec<u8>),
+     Char(char),
+     Constant(ConstValue),
+ }
+@@ -2135,6 +2136,7 @@ fn literal_summary(literal: &SemLiteral) -> String {
+         SemLiteral::Enum(value) => format!("{}({})", value.identity.name, value.bits),
+         SemLiteral::Number(number) => number.text.clone(),
+         SemLiteral::Real { source, .. } => source.text.clone(),
++        SemLiteral::CString(bytes) => format!("c{bytes:?}"),
+         SemLiteral::String(text) => format!("{text:?}"),
+         SemLiteral::Char(ch) => format!("'{ch}'"),
+         SemLiteral::Constant(value) => const_value_summary(*value),
+@@ -2300,6 +2302,7 @@ fn type_summary(ty: &ValueType) -> String {
+     let base = match &ty.base {
+         ValueTypeBase::Fund(fund) => format!("{fund:?}"),
+         ValueTypeBase::Enum(identity) => identity.name.clone(),
++        ValueTypeBase::CString => "SYS.CSTRING".to_string(),
+         ValueTypeBase::Real => "REAL".to_string(),
+         ValueTypeBase::Named(identity) => identity.name.clone(),
+         ValueTypeBase::Callable(callable) => callable_type_summary(callable),
+@@ -3843,6 +3846,7 @@ impl<'a> IrBuilder<'a> {
+             }
+             ExprKind::Number(number) => SemExprKind::Literal(SemLiteral::Number(number.clone())),
+             ExprKind::String(value) => SemExprKind::Literal(SemLiteral::String(value.clone())),
++            ExprKind::CString(value) => SemExprKind::Literal(SemLiteral::CString(value.clone())),
+             ExprKind::Char(value) => SemExprKind::Literal(SemLiteral::Char(*value)),
+             ExprKind::TypeRef(_) => SemExprKind::Raw(expr.text.clone()),
+             ExprKind::Name(name) => self
+@@ -3977,6 +3981,7 @@ impl<'a> IrBuilder<'a> {
+             SemExprKind::CurrentLocation => card_type(),
+             SemExprKind::Literal(SemLiteral::Number(number)) => value_type_for_number(number),
+             SemExprKind::Literal(SemLiteral::Real { .. }) => ValueType::real(),
++            SemExprKind::Literal(SemLiteral::CString(_)) => ValueType::cstring(),
+             SemExprKind::Literal(SemLiteral::String(_)) => ValueType::pointer_to(char_type()),
+             SemExprKind::Literal(SemLiteral::Char(_)) => char_type(),
+             SemExprKind::Literal(SemLiteral::Constant(value)) => value.value_type(),
+@@ -4717,6 +4722,7 @@ impl<'a> IrBuilder<'a> {
+             | ExprKind::TypeRef(_)
+             | ExprKind::Number(_)
+             | ExprKind::String(_)
++            | ExprKind::CString(_)
+             | ExprKind::Char(_)
+             | ExprKind::Unary { .. }
+             | ExprKind::Binary { .. }
+@@ -4754,6 +4760,8 @@ impl<'a> IrBuilder<'a> {
+                 | SymbolClass::Record => PlaceAccess::ReadOnly,
+             },
+             SemLValueKind::UnresolvedName(_) => PlaceAccess::Error,
++            SemLValueKind::Deref { pointer } if pointer.ty.is_cstring() => PlaceAccess::ReadOnly,
++            SemLValueKind::Index { base, .. } if base.ty.is_cstring() => PlaceAccess::ReadOnly,
+             SemLValueKind::Deref { .. } | SemLValueKind::Index { .. } | SemLValueKind::MultiIndex(_) => PlaceAccess::Assignable,
+             SemLValueKind::Field { base, .. } => {
+                 if base.ty.is_pointer() { PlaceAccess::Assignable } else { base.access }
+@@ -5321,6 +5329,7 @@ impl<'a> IrBuilder<'a> {
+         if let Some(symbol) = self.qualified_symbol_ref(scope, name, Span::new(0, 0))
+             && matches!(symbol.class, SymbolClass::Type | SymbolClass::Record)
+         {
++            if value.is_cstring() { value.pointer = ty.pointer; }
+             value.base = if let Some(identity) = symbol.ty.as_ref().and_then(ValueType::as_enum) {
+                 ValueTypeBase::Enum(identity.clone())
+             } else if symbol.ty.as_ref().is_some_and(ValueType::is_real) {
+@@ -5335,11 +5344,13 @@ impl<'a> IrBuilder<'a> {
+             || name.to_string().eq_ignore_ascii_case("SYS.LONGCARD")
+             || name.to_string().eq_ignore_ascii_case("SYS.ADDRESS")
+             || name.to_string().eq_ignore_ascii_case("SYS.SIZE")
++            || name.to_string().eq_ignore_ascii_case("SYS.CSTRING")
+         {
+             value.base = match name.components.last().map(|part| part.to_ascii_uppercase()) {
+                 Some(name) if name == "LONGINT" => ValueTypeBase::Fund(FundType::LongInt),
+                 Some(name) if name == "LONGCARD" => ValueTypeBase::Fund(FundType::LongCard),
+                 Some(name) if name == "ADDRESS" => ValueTypeBase::Fund(FundType::Address),
++                Some(name) if name == "CSTRING" => { value.pointer = true; ValueTypeBase::CString },
+                 Some(name) if name == "SIZE" => ValueTypeBase::Fund(FundType::Size),
+                 _ => value.base,
+             };
+@@ -5356,6 +5367,7 @@ impl From<&VarDecl> for ValueType {
+ 
+ impl From<&crate::ast::TypeRef> for ValueType {
+     fn from(value: &crate::ast::TypeRef) -> Self {
++        if matches!(&value.base, crate::ast::TypeBase::Named(name) if name.eq_ignore_ascii_case("CSTRING") || name.to_string().eq_ignore_ascii_case("SYS.CSTRING")) { return Self::cstring(); }
+         let base = match &value.base {
+             crate::ast::TypeBase::Applied { .. } => ValueTypeBase::Error,
+             crate::ast::TypeBase::Fund(fund) => ValueTypeBase::Fund(*fund),
+@@ -5438,6 +5450,7 @@ fn type_ref_from_value(value: &ValueType) -> crate::ast::TypeRef {
+         base: match &value.base {
+             ValueTypeBase::Fund(fund) => crate::ast::TypeBase::Fund(*fund),
+             ValueTypeBase::Enum(identity) => crate::ast::TypeBase::Named(QualifiedName::new(identity.name.split('.').map(str::to_string).collect::<Vec<_>>())),
++            ValueTypeBase::CString => crate::ast::TypeBase::Named("SYS.CSTRING".into()),
+             ValueTypeBase::Real => crate::ast::TypeBase::NativeReal,
+             ValueTypeBase::Named(identity) => crate::ast::TypeBase::Named(identity.name.as_str().into()),
+             ValueTypeBase::Callable(callable) => {
+@@ -5448,7 +5461,7 @@ fn type_ref_from_value(value: &ValueType) -> crate::ast::TypeRef {
+             }
+             ValueTypeBase::Error => crate::ast::TypeBase::Named("<error>".into()),
+         },
+-        pointer: value.pointer,
++        pointer: value.pointer && !value.is_cstring(),
+     }
+ }
+ 
+diff --git a/src/semantic/let_binding.rs b/src/semantic/let_binding.rs
+index 484dbc40..c0373a65 100644
+--- a/src/semantic/let_binding.rs
++++ b/src/semantic/let_binding.rs
+@@ -136,7 +136,10 @@ impl Analyzer {
+         }
+         self.diagnostics.push(Diagnostic::new(
+             span,
+-            "cannot modify an immutable LET binding",
++            if matches!(&place.kind, subject::SemPlaceKind::Deref(p) if p.ty.is_cstring())
++                || matches!(&place.kind, subject::SemPlaceKind::Index { base, .. } if base.ty.is_cstring()) {
++                "cannot write through a read-only CSTRING view"
++            } else { "cannot modify an immutable LET binding" },
+         ));
+         true
+     }
+@@ -162,6 +165,7 @@ impl Analyzer {
+     }
+ 
+     pub(super) fn indexed_access(&self, base: &subject::SemPlace) -> subject::PlaceAccess {
++        if base.ty.is_cstring() { return subject::PlaceAccess::ReadOnly; }
+         if self.inline_array_type(base).is_some() {
+             base.access
+         } else {
+diff --git a/src/semantic/materialize.rs b/src/semantic/materialize.rs
+index 9c9d4bcf..2e9ee377 100644
+--- a/src/semantic/materialize.rs
++++ b/src/semantic/materialize.rs
+@@ -286,6 +286,7 @@ impl Materializer<'_> {
+             | ExprKind::TypeRef(_)
+             | ExprKind::Number(_)
+             | ExprKind::String(_)
++            | ExprKind::CString(_)
+             | ExprKind::Char(_)
+             | ExprKind::Name(_) => {}
+         }
+diff --git a/src/semantic/subject.rs b/src/semantic/subject.rs
+index 90f60d6c..564b8d23 100644
+--- a/src/semantic/subject.rs
++++ b/src/semantic/subject.rs
+@@ -104,6 +104,7 @@ pub enum SemLiteral {
+         value: AtariReal,
+     },
+     String(String),
++    CString(Vec<u8>),
+     Char(char),
+     Constant(ConstValue),
+ }
+diff --git a/src/semantic/types.rs b/src/semantic/types.rs
+index 291d054c..9633d870 100644
+--- a/src/semantic/types.rs
++++ b/src/semantic/types.rs
+@@ -497,6 +497,7 @@ impl ValueType {
+         let base = match &self.base {
+             ValueTypeBase::Fund(fund) => TypeBase::Fund(*fund),
+             ValueTypeBase::Enum(identity) => TypeBase::Named(QualifiedName::new(identity.name.split('.').map(str::to_string).collect::<Vec<_>>())),
++            ValueTypeBase::CString => TypeBase::Named("SYS.CSTRING".into()),
+             ValueTypeBase::Named(identity) => TypeBase::Named(QualifiedName::new(identity.name.split('.').map(str::to_string).collect::<Vec<_>>())),
+             ValueTypeBase::Callable(callable) => TypeBase::Callable(Box::new(crate::ast::CallableTypeRef {
+                 kind: callable.kind.clone(),
+@@ -506,7 +507,7 @@ impl ValueType {
+             })),
+             _ => return None,
+         };
+-        Some(Box::new(TypeRef { base, pointer: self.pointer }))
++        Some(Box::new(TypeRef { base, pointer: self.pointer && !self.is_cstring() }))
+     }
+ 
+     pub fn enumeration(identity: EnumIdentity) -> Self {
+@@ -594,7 +595,14 @@ impl ValueType {
+         })
+     }
+ 
++    pub fn cstring() -> Self {
++        Self { base: ValueTypeBase::CString, pointer: true }
++    }
++
++    pub fn is_cstring(&self) -> bool { matches!(self.base, ValueTypeBase::CString) }
++
+     pub fn pointee_type(&self) -> Self {
++        if self.is_cstring() { return Self::fund(FundType::Byte); }
+         let mut pointee = self.clone();
+         pointee.pointer = false;
+         pointee
+@@ -610,7 +618,8 @@ impl ValueType {
+         }
+         match self.base {
+             ValueTypeBase::Fund(fund) => Some(ScalarType::from_fund(fund)),
+-            ValueTypeBase::Real
++            ValueTypeBase::CString
++            | ValueTypeBase::Real
+             | ValueTypeBase::Enum(_)
+             | ValueTypeBase::Named(_)
+             | ValueTypeBase::Callable(_)
+@@ -688,7 +697,7 @@ impl ValueType {
+                 ValueTypeKind::CallablePointer((**callable).clone())
+             }
+             ValueTypeBase::Callable(_) => ValueTypeKind::Error,
+-            ValueTypeBase::Error => ValueTypeKind::Error,
++            ValueTypeBase::CString | ValueTypeBase::Error => ValueTypeKind::Error,
+         }
+     }
+ 
+@@ -719,6 +728,7 @@ impl ValueType {
+             }),
+             ValueTypeBase::Fund(_)
+             | ValueTypeBase::Enum(_)
++            | ValueTypeBase::CString
+             | ValueTypeBase::Real
+             | ValueTypeBase::Callable(_)
+             | ValueTypeBase::Error => None,
+@@ -741,6 +751,9 @@ impl ValueType {
+     }
+ 
+     pub fn assignment_compatibility(&self, actual: &Self) -> TypeCompatibility {
++        if self.is_cstring() || actual.is_cstring() {
++            return if self == actual { TypeCompatibility::Exact } else { TypeCompatibility::Incompatible };
++        }
+         if self.is_error() || actual.is_error() {
+             return TypeCompatibility::Error;
+         }
+@@ -779,6 +792,9 @@ impl ValueType {
+     }
+ 
+     pub fn argument_compatibility(&self, actual: &Self) -> TypeCompatibility {
++        if self.is_cstring() || actual.is_cstring() {
++            return if self == actual { TypeCompatibility::Exact } else { TypeCompatibility::Incompatible };
++        }
+         if self.is_error() || actual.is_error() {
+             return TypeCompatibility::Error;
+         }
+diff --git a/tests/cstring.rs b/tests/cstring.rs
+new file mode 100644
+index 00000000..759a7c33
+--- /dev/null
++++ b/tests/cstring.rs
+@@ -0,0 +1,98 @@
++use actionc::{compiler::native65816, includes::ModuleLoadOptions, lexer, parser, semantic, target::TargetId};
++use std::{path::PathBuf,sync::atomic::{AtomicU64,Ordering}};
++struct Source(PathBuf);
++impl Source {
++    fn new(text:&str)->Self {
++        static NEXT: AtomicU64=AtomicU64::new(0);
++        let p=std::env::temp_dir().join(format!("cstring-{}-{}.act",std::process::id(),NEXT.fetch_add(1,Ordering::Relaxed)));
++        std::fs::write(&p,text).unwrap(); Self(p)
++    }
++    fn prepare(&self,opt:bool)->Result<native65816::Prepared,actionc::compiler::CompileError> {
++        native65816::prepare_file(&self.0,opt,&ModuleLoadOptions::default())
++    }
++}
++impl Drop for Source { fn drop(&mut self){let _=std::fs::remove_file(&self.0);} }
++
++#[test]
++fn decoded_bytes_and_host_newlines_are_independent_of_action_strings() {
++    let escapes=r#"c"\n\r\t\b\f\v\a\\\"\'\?\0\x80\xff""#;
++    let tokens=lexer::tokenize(escapes).unwrap();
++    assert_eq!(tokens[0].kind,lexer::TokenKind::CString(vec![10,13,9,8,12,11,7,92,34,39,63,0,128,255]));
++    for invalid in [r#"c"\q""#,r#"c"\x1""#,r#"c"\xZZ""#,r#"c"\{clear}""#,"c\"a\nb\"","c\"a\rb\"","c\"λ\""] {
++        assert!(lexer::tokenize(invalid).is_err(),"{invalid}");
++    }
++    let source=format!("BYTE ARRAY text=c\"{}\"\nSIZE length\nPROC Main()\nlength=SIZEOF(text)\nRETURN\n","x".repeat(300));
++    for opt in [false,true] {
++        let mut previous=None;
++        for newline in ["\n","\r\n"] {
++            let p=Source::new(&source.replace('\n',newline)).prepare(opt).unwrap();
++            let compiled=p.compile_o65(&Default::default()).unwrap();
++            if let Some(bytes)=&previous { assert_eq!(&compiled.bytes,bytes); }
++            previous=Some(compiled.bytes);
++        }
++    }
++}
++
++#[test]
++fn rejects_read_only_stores_and_implicit_string_conversions() {
++    for source in [
++        "CSTRING text PROC Main() text=c\"hi\" text(0)=1 RETURN",
++        "CSTRING text PROC Main() text=c\"hi\" text^=1 RETURN",
++        "CSTRING text PROC Main() text=\"hi\" RETURN",
++        "CSTRING text BYTE ARRAY bytes(4) PROC Main() text=bytes RETURN",
++        "CSTRING text PROC Main() text=0 RETURN",
++        "CSTRING text BYTE POINTER bytes PROC Main() bytes=text RETURN",
++        "PROC Accept(CSTRING text) RETURN PROC Main() Accept(\"hi\") RETURN",
++        "BYTE ARRAY bytes(3)=c\"abc\" PROC Main() RETURN",
++        "CARD ARRAY bytes=c\"abc\" PROC Main() RETURN",
++        "CSTRING POINTER text PROC Main() RETURN",
++        "CSTRING text=c\"abc\" PROC Main() RETURN",
++        "CSTRING text=\"abc\" PROC Main() RETURN",
++    ] {
++        assert!(Source::new(source).prepare(false).is_err(),"accepted: {source}");
++    }
++    for source in ["CSTRING text PROC Main() RETURN", "BYTE ARRAY text=c\"hello\" PROC Main() RETURN"] {
++        let ast=parser::parse(&lexer::tokenize(source).unwrap()).unwrap();
++        let errors=semantic::analyze_with_options(&ast,semantic::SemanticOptions::modern().with_target(TargetId::Motorola68000)).unwrap_err();
++        assert!(errors.iter().any(|d|d.message.contains("wdc-65816-native")));
++    }
++    Source::new("TYPE CSTRING=[BYTE value] CSTRING item PROC Main() item.value=1 RETURN").prepare(false).unwrap();
++}
++
++const ALL:&str=r#"MODULE TEST
++USE CSTRING AS STR
++CSTRING text
++SIZE result
++INT order
++BYTE ARRAY buffer(8)
++PROC Main()
++ text=c"abc"
++ result=STR.strlen(text)
++ result=STR.strnlen(buffer,8)
++ order=STR.strcmp(text,c"")
++ order=STR.strncmp(text,c"a",1)
++ text=STR.strchr(text,0)
++ result=STR.strlcpy(buffer,text,8)
++ result=STR.strlcat(buffer,text,8)
++RETURN
++ENDMODULE"#;
++
++#[test]
++fn external_interface_matches_single_implementation_and_only_used_imports() {
++    let externs=Source::new(ALL).prepare(true).unwrap();
++    let implementation=Source::new(&ALL.replace("USE CSTRING AS STR","USE CSTRING.IMPL AS STR")).prepare(true).unwrap();
++    let signatures:Vec<_>=externs.mir.routines.iter().filter(|r|r.entry.external).collect();
++    assert_eq!(signatures.len(),7);
++    let contract:serde_json::Value=serde_json::from_str(include_str!("../embedded/modules/cstring/contract.json")).unwrap();
++    for declaration in signatures {
++        let name=declaration.name.rsplit('.').next().unwrap().to_ascii_uppercase();
++        let body=implementation.mir.routines.iter().find(|r|r.name.starts_with(&format!("M_CSTRING_IMPL_{name}_"))).unwrap();
++        assert_eq!(body.signature,declaration.signature,"{name}");
++        assert_eq!(body.frame.incoming_extent,declaration.frame.incoming_extent,"{name}");
++        assert_eq!(body.result_home,declaration.result_home,"{name}");
++        assert_eq!(u64::from(body.signature.0),contract["providers"][name.to_ascii_lowercase()]["signature"].as_u64().unwrap(),"{name}");
++    }
++    let caller=Source::new("MODULE TEST USE CSTRING AS STR SIZE result PROC Main() result=STR.strlen(c\"abc\") RETURN ENDMODULE").prepare(true).unwrap();
++    assert_eq!(caller.mir.routines.iter().filter(|r|r.entry.external).count(),1);
++    assert_eq!(caller.mir.routines.iter().filter(|r|!r.entry.external).count(),1);
++}
+diff --git a/tools/generate_cstring.py b/tools/generate_cstring.py
+new file mode 100644
+index 00000000..ad431853
+--- /dev/null
++++ b/tools/generate_cstring.py
+@@ -0,0 +1,25 @@
++#!/usr/bin/env python3
++"""Keep the hosted interface and native provider contract together."""
++import argparse
++import json
++from pathlib import Path
++ROOT=Path(__file__).resolve().parents[1]
++
++def interface(contract):
++    lines=['; Generated by tools/generate_cstring.py; do not edit.',
++           '; Use CSTRING.IMPL for standalone source inclusion.', 'MODULE CSTRING']
++    for name,spec in contract['providers'].items():
++        args=' '.join(kind+' '+name for kind,name in spec['arguments'])
++        lines.append(f'PUBLIC EXTERNAL {spec["result"]} FUNC {name}({args})')
++    return '\n'.join(lines+['ENDMODULE',''])
++
++if __name__=='__main__':
++    parser=argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--check',action='store_true')
++    args=parser.parse_args()
++    contract=json.loads((ROOT/'embedded/modules/cstring/contract.json').read_text())
++    path=ROOT/'embedded/modules/cstring.act'
++    text=interface(contract)
++    if args.check:
++        if path.read_text()!=text: raise SystemExit('CSTRING interface is stale')
++    else: path.write_text(text)
+diff --git a/tools/native65816-runtime-tests/Cargo.lock b/tools/native65816-runtime-tests/Cargo.lock
+index c27437c6..3757d8c0 100644
+--- a/tools/native65816-runtime-tests/Cargo.lock
++++ b/tools/native65816-runtime-tests/Cargo.lock
+@@ -31,6 +31,7 @@ dependencies = [
+ [[package]]
+ name = "actionc-w65c816"
+ version = "0.1.0"
++source = "git+https://github.com/mkur/actionc-vm.git?rev=56ddc5c5de41f0e7294e87c440869550eaf53292#56ddc5c5de41f0e7294e87c440869550eaf53292"
+ 
+ [[package]]
+ name = "atrcopy-rs"
+diff --git a/tools/native65816-runtime-tests/tests/cstring.rs b/tools/native65816-runtime-tests/tests/cstring.rs
+new file mode 100644
+index 00000000..8d6e6c5f
+--- /dev/null
++++ b/tools/native65816-runtime-tests/tests/cstring.rs
+@@ -0,0 +1,147 @@
++mod support;
++use support::*;
++use actionc_vm::native65816::Inputs;
++
++const SOURCE: &str = r#"
++MODULE SAMPLE
++USE CSTRING.IMPL AS STR
++BYTE ARRAY initialized(8)=c"Hi\n"
++BYTE ARRAY action="Hi"
++BYTE ARRAY buffer(8)
++TYPE Holder=[CSTRING text BYTE tag]
++Holder item
++CSTRING text,found
++CSTRING FUNC POINTER indirect(CSTRING input)
++SIZE copied,appended,limited,longLength,extent
++INT comparison
++BYTE status
++
++CSTRING FUNC Identity(CSTRING input)
++RETURN(input)
++CSTRING FUNC Literal()
++RETURN(c"ab\0cd")
++
++PROC Main()
++  status=0
++  item.text=Literal()
++  item.tag=37
++  indirect=@Identity
++  text=indirect(item.text)
++  IF text(0)#'a THEN RETURN FI
++  IF text^#'a THEN RETURN FI
++  IF text(2)#0 THEN RETURN FI
++  IF text(3)#'c THEN RETURN FI
++  IF item.tag#37 THEN RETURN FI
++  IF SIZEOF(CSTRING)#3 THEN RETURN FI
++  IF SIZEOF(text)#3 THEN RETURN FI
++  extent=SIZEOF(initialized)
++  copied=STR.strlcpy(buffer,c"Hi",SIZEOF(buffer))
++  appended=STR.strlcat(buffer,c" there!",SIZEOF(buffer))
++  IF copied#2 THEN RETURN FI
++  IF appended#9 THEN RETURN FI
++  IF STR.strcmp(CSTRING(buffer),c"Hi ther")#0 THEN RETURN FI
++  IF STR.strcmp(c"",c"")#0 THEN RETURN FI
++  IF STR.strcmp(c"a",c"ab")>=0 THEN RETURN FI
++  IF STR.strcmp(c"\xff",c"\x80")<=0 THEN RETURN FI
++  IF STR.strncmp(c"abc",c"abd",2)#0 THEN RETURN FI
++  IF STR.strncmp(c"abc",c"abd",3)>=0 THEN RETURN FI
++  IF STR.strncmp(CSTRING(0),CSTRING(0),0)#0 THEN RETURN FI
++  IF STR.strnlen(BYTE POINTER(0),0)#0 THEN RETURN FI
++  IF STR.strchr(text,'z)#CSTRING(0) THEN RETURN FI
++  found=STR.strchr(text,0)
++  IF (ADDRESS(found)-ADDRESS(text))#2 THEN RETURN FI
++  found=STR.strchr(text,'b)
++  IF found^#'b THEN RETURN FI
++  IF STR.strlcpy(BYTE POINTER(0),c"abc",0)#3 THEN RETURN FI
++  IF STR.strlcat(BYTE POINTER(0),c"abc",0)#3 THEN RETURN FI
++  IF STR.strlcpy(buffer,c"abc",1)#3 THEN RETURN FI
++  IF buffer(0)#0 THEN RETURN FI
++  IF STR.strlcat(buffer,c"abc",1)#3 THEN RETURN FI
++  IF buffer(0)#0 THEN RETURN FI
++  IF STR.strlcpy(buffer,c"abcdefg",8)#7 THEN RETURN FI
++  IF STR.strlcat(buffer,c"",8)#7 THEN RETURN FI
++  IF STR.strlcat(buffer,c"z",8)#8 THEN RETURN FI
++  limited=STR.strnlen(BYTE POINTER($21FFFE),3)
++  IF STR.strlcat(BYTE POINTER($21FFFE),c"abc",3)#6 THEN RETURN FI
++  IF STR.strncmp(CSTRING(BYTE POINTER($21FFFE)),c"xyz!",3)#0 THEN RETURN FI
++  IF STR.strlcpy(BYTE POINTER($32FFFF),c"12345",4)#5 THEN RETURN FI
++  status=1
++RETURN
++ENDMODULE
++"#;
++
++#[test]
++fn literals_and_library_execute_with_exact_bounds_and_independent_invocations() {
++    for optimize in [false, true] {
++        let image=compile(SOURCE,optimize);
++        for mask in [0,4] {
++            let mut h=Harness::new(&image,&caller(image.entry),mask);
++            h.bus.map(0x21fffd,b"!xyz?",true);
++            h.bus.map(0x32fffe,b"!abcde?",true);
++            h.bus.watched.extend(0x21fffd..0x220002);
++            h.run(); h.guards(mask);
++            assert_eq!(h.global(&image,"status",1),1);
++            assert_eq!(h.global(&image,"extent",3),8);
++            assert_eq!(h.global(&image,"limited",3),3);
++            let at=support::context::symbol(&image,"initialized") as usize;
++            assert_eq!(&h.bus.ram[at..at+8],b"Hi\n\0\0\0\0\0");
++            let at=support::context::symbol(&image,"action") as usize;
++            assert_eq!(&h.bus.ram[at..at+3],b"\x02Hi");
++            assert_eq!(&h.bus.ram[0x21fffd..0x220002],b"!xyz?");
++            assert_eq!(&h.bus.ram[0x32fffe..0x330005],b"!123\0e?");
++            assert!(h.bus.trace.iter().all(|(_,at,_)| (0x21fffe..0x220001).contains(at)));
++        }
++    }
++}
++
++#[test]
++fn size_counts_and_pointer_reads_cross_a_bank_without_wrapping() {
++    let source=r#"MODULE SAMPLE
++USE CSTRING.IMPL AS STR
++SIZE length
++PROC Main()
++ length=STR.strlen(CSTRING(BYTE POINTER($21FFFE)))
++RETURN
++ENDMODULE"#;
++    for optimize in [false,true] {
++        let image=compile(source,optimize);
++        let mut h=Harness::new(&image,&caller(image.entry),0);
++        let mut bytes=vec![b'a';65538]; bytes.push(0);
++        h.bus.map(0x21fffe,&bytes,false);
++        assert!(h.cpu.run_until(&mut h.bus,100_000_000, |_| Inputs::default(),|cpu|cpu.is_stopped()).unwrap());
++        h.guards(0);
++        assert_eq!(h.global(&image,"length",3),65538);
++    }
++}
++
++#[test]
++fn compact_o65_literals_remain_valid_at_two_placements() {
++    use actionc::mir65816::o65 as format;
++    let source=r#"MODULE SAMPLE
++USE CSTRING.IMPL AS STR
++BYTE ARRAY mutable=c"abc"
++CSTRING FUNC LiteralText() RETURN(c"a\x80\0tail")
++LONGINT FUNC Main()
++ CSTRING text
++ text=LiteralText()
++ IF text(1)#$80 THEN RETURN(10) FI
++ IF text(3)#'t THEN RETURN(10) FI
++ IF STR.strlen(text)#2 THEN RETURN(10) FI
++ mutable(0)='z
++ IF STR.strcmp(CSTRING(mutable),c"zbc")#0 THEN RETURN(10) FI
++RETURN(LONGINT($12345678))
++ENDMODULE"#;
++    for optimize in [false,true] {
++        let dir=Temp::new(); let path=dir.0.join("main.act"); std::fs::write(&path,source).unwrap();
++        let p=actionc::compiler::native65816::prepare_file_with_entry(&path,optimize,&Default::default(),Some("Main")).unwrap();
++        let bytes=p.compile_o65(&format::Options {profile:format::profile::COMPACT_ID.into(),..Default::default()}).unwrap().bytes;
++        for variant in 0..2 {
++            let placement=support::o65::placement(&bytes,variant,vec![support::o65::fault(variant)]);
++            let image=format::compact::relocate(&bytes,&placement).unwrap();
++            let mut h=Harness::new_compact(&image,&caller(image.entry),0,support::o65::fault(variant).address);
++            h.run(); h.guards(0);
++            assert_eq!(h.cpu.registers().a,0x5678);
++            assert_eq!(h.cpu.registers().x,0x1234);
++        }
++    }
++}
+diff --git a/tools/native65816-runtime-tests/tests/support/mod.rs b/tools/native65816-runtime-tests/tests/support/mod.rs
+index 9bc62583..ccd0a433 100644
+--- a/tools/native65816-runtime-tests/tests/support/mod.rs
++++ b/tools/native65816-runtime-tests/tests/support/mod.rs
+@@ -253,6 +253,16 @@ impl Harness {
+         bus.load_o65(image);
+         Self::with_bus(bus, caller, irq_mask, image.stack_overflow())
+     }
++    pub fn new_compact(
++        image: &actionc::mir65816::o65::compact::Image,
++        caller: &[u8], irq_mask: u8, overflow: u32,
++    ) -> Self {
++        let mut bus = Bus::new();
++        for s in &image.segments { bus.map(s.address, &s.bytes, s.writable); }
++        for z in &image.zero_fill { bus.map(z.address, &vec![0; z.size as usize], z.writable); }
++        Self::with_bus(bus, caller, irq_mask, overflow)
++    }
++
+     fn with_bus(mut bus: Bus, caller: &[u8], irq_mask: u8, overflow: u32) -> Self {
+         bus.map(0x040000, caller, false);
+         bus.map(overflow, &[0xdb, 0xea], false); // platform fault sink: STP
+-- 
+2.50.1 (Apple Git-155)
+

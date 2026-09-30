@@ -1,0 +1,22 @@
+MODULE DOSREMOVE
+USE DOS
+USE DOSCLIENT
+USE EXEC
+USE HEAPCORE
+BYTE reached
+
+; Exercise Task removal while DOS ownership remains live.
+PROC Main()
+  DOSCLIENT.ClientContext POINTER client
+
+  client=DOSCLIENT.Ensure()
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    HEAPCORE.Abort($f500)
+  FI
+
+  EXEC.RemTask(EXEC.Task POINTER(0))
+  reached=1
+
+RETURN
+
+ENDMODULE

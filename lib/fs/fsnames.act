@@ -1,0 +1,134 @@
+MODULE FSNAMES
+USE BLOCKIO
+USE EXECMEMORY
+USE FS83
+; Native stream names have no filesystem suffix. Value 4 reserves cooked input.
+PUBLIC BYTE FUNC Stream(BYTE POINTER name CARD length)
+
+  IF length=3 THEN
+    IF FS83.Fold(name(0))=78 AND FS83.Fold(name(1))=73
+        AND FS83.Fold(name(2))=76 THEN
+      RETURN(2)
+    FI
+
+    IF FS83.Fold(name(0))=82 AND FS83.Fold(name(1))=65
+        AND FS83.Fold(name(2))=87 THEN
+      RETURN(3)
+    FI
+
+    IF FS83.Fold(name(0))=67 AND FS83.Fold(name(1))=79
+        AND FS83.Fold(name(2))=78 THEN
+      RETURN(4)
+    FI
+  ELSEIF length=7 THEN
+    IF FS83.Fold(name(0))=67 AND FS83.Fold(name(1))=79
+        AND FS83.Fold(name(2))=78 AND
+      FS83.Fold(name(3))=83 AND FS83.Fold(name(4))=79
+          AND FS83.Fold(name(5))=76 AND FS83.Fold(name(6))=69 THEN
+      RETURN(4)
+    FI
+  FI
+
+RETURN(0)
+
+; Caller buffers may use native bank-zero RAM (including task stacks). Serial
+; scratch remains upper-only. Bank-zero I/O and ROM are never writable extents.
+PUBLIC BYTE FUNC Mapped(BYTE POINTER location LONGCARD bytes)
+  LONGCARD start
+
+  start=LONGCARD(ADDRESS(location))
+  IF start<LONGCARD($10000) THEN
+    IF start<LONGCARD($400) OR start>=LONGCARD($c000) THEN
+      RETURN(0)
+    FI
+
+    RETURN(bytes<=LONGCARD($c000)-start)
+  FI
+
+RETURN(BLOCKIO.Mapped(location,bytes))
+
+; A full public path is at most255 bytes. Distinguish an unset-volume
+; relative path, an initial colon, an explicit alias and malformed input.
+PUBLIC CONST RELATIVE=$fffe, INVALID=$ffff
+
+; Validate the bounded path and return its volume separator or relative
+; marker.
+PUBLIC CARD FUNC Path(BYTE POINTER name)
+  CARD index,colon,bank,previous,part
+  BYTE value
+  BYTE POINTER current
+  EXECMEMORY.BankRecord info
+
+  colon=RELATIVE
+  previous=$ffff
+  current=name
+  FOR index=0 TO 255 DO
+    IF ADDRESS(current)<ADDRESS($10000) THEN
+      IF ADDRESS(current)<ADDRESS($400) OR ADDRESS(current)>=ADDRESS($c000) THEN
+        RETURN(INVALID)
+      FI
+    ELSE
+      bank=CARD(ADDRESS(current) RSH 16)
+      IF bank<>previous THEN
+        IF EXECMEMORY.Query(bank,@info)<>0 OR info.state=0 THEN
+          RETURN(INVALID)
+        FI
+
+        previous=bank
+      FI
+    FI
+
+    value=current^
+    IF value=0 THEN
+      RETURN(colon)
+    FI
+
+    IF value=58 THEN
+      IF colon<>RELATIVE OR index>31 THEN
+        RETURN(INVALID)
+      FI
+
+      IF index<>0 THEN
+        FOR part=0 TO index-1 DO
+          IF FS83.Legal(name(part))=0 THEN
+            RETURN(INVALID)
+          FI
+        OD
+      FI
+
+      colon=index
+    FI
+
+    current=BYTE POINTER(ADDRESS(current)+SIZE(1))
+  OD
+
+RETURN(INVALID)
+
+; SYS names the selected volume, never a separately configured filesystem.
+PUBLIC BYTE FUNC System(BYTE POINTER name CARD length)
+
+  IF length<>3 THEN
+    RETURN(0)
+  FI
+
+RETURN(FS83.Fold(name(0))='S AND
+      FS83.Fold(name(1))='Y AND FS83.Fold(name(2))='S)
+
+; Reject malformed and reserved names before publishing a mount alias.
+PUBLIC BYTE FUNC ValidAlias(BYTE POINTER name)
+  BYTE index,value
+
+  FOR index=0 TO 31 DO
+    value=name(index)
+    IF value=0 THEN
+      RETURN(index<>0 AND Stream(name,CARD(index))=0 AND System(name,CARD(index))=0)
+    FI
+
+    IF FS83.Legal(value)=0 THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(0)
+
+ENDMODULE

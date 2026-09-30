@@ -1,0 +1,101 @@
+MODULE PORTREGISTRY
+USE EXEC
+USE HEAPCORE
+INCLUDE "registry-data.inc"
+EXEC.Message first,second
+ADDRESS ARRAY found(10),order(8),after(3)
+CARD checks
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff87)
+  FI
+
+RETURN
+
+PROC Publish()
+  BYTE i
+  EXEC.MsgPort POINTER port
+
+  EXEC.Forbid()
+  Require(EXEC.FindPort(BYTE POINTER(queries(1)))=EXEC.MsgPort POINTER(0))
+  FOR i=0 TO 7 DO
+    port=EXEC.MsgPort POINTER(addresses(i))
+    EXEC.AddPort(port)
+    Require(port.mp_Node.ln_Type=EXEC.NT_MSGPORT)
+    Require(port.mp_MsgList.lh_Type=0 AND port.mp_MsgList.lh_Pad=0)
+  OD
+
+  EXEC.Permit()
+
+RETURN
+
+PROC Search()
+  BYTE i
+  EXEC.MsgPort POINTER port
+
+  EXEC.Forbid()
+  FOR i=0 TO 9 DO
+    found(i)=ADDRESS(EXEC.FindPort(BYTE POINTER(queries(i))))
+  OD
+
+  ; The first alpha is also the head: capture order through the public links.
+  port=EXEC.FindPort(BYTE POINTER(queries(1)))
+  FOR i=0 TO 7 DO
+    order(i)=ADDRESS(port)
+    port=EXEC.MsgPort POINTER(port.mp_Node.ln_Succ)
+  OD
+
+  EXEC.Permit()
+
+RETURN
+
+; Keep named-port lookup and use inside the protected ownership interval.
+PROC Retained()
+  EXEC.MsgPort POINTER port
+  EXEC.Message POINTER msg
+
+  port=EXEC.MsgPort POINTER(addresses(1))
+  EXEC.Forbid()
+  EXEC.PutMsg(port,@first)
+  EXEC.RemPort(port)
+  after(0)=ADDRESS(EXEC.FindPort(BYTE POINTER(queries(1))))
+  ; Removal hides the name; a retained pointer can still be used by agreement.
+  EXEC.PutMsg(port,@second)
+  msg=EXEC.GetMsg(port)
+  Require(msg=@first)
+  msg=EXEC.GetMsg(port)
+  Require(msg=@second)
+  Require(EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+  EXEC.AddPort(port)
+  after(1)=ADDRESS(EXEC.FindPort(BYTE POINTER(queries(1))))
+  EXEC.RemPort(EXEC.MsgPort POINTER(addresses(4)))
+  after(2)=ADDRESS(EXEC.FindPort(BYTE POINTER(queries(1))))
+  EXEC.Permit()
+
+RETURN
+
+; Exercise named-port lookup with long names.
+PROC Main()
+  BYTE i
+
+  Publish()
+  Search()
+  Retained()
+  EXEC.Forbid()
+  FOR i=0 TO 7 DO
+    IF i<>4 THEN
+      EXEC.RemPort(EXEC.MsgPort POINTER(addresses(i)))
+    FI
+  OD
+
+  Require(EXEC.FindPort(BYTE POINTER(queries(1)))=EXEC.MsgPort POINTER(0))
+  EXEC.Permit()
+  checks=1
+
+RETURN
+
+ENDMODULE

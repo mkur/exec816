@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/mkur/actionc.git",
+  "revision": "27119ab2804e795b0bbb067c269826b934271754",
+  "binary": "actionc-65816",
+  "target": "wdc-65816-native",
+  "abi": "action65816.native.v2",
+  "image_format_version": 3,
+  "abi_json": "docs/abi/action65816-native-v2.json",
+  "abi_assembly": "docs/abi/action65816-native-v2.inc",
+  "abi_action": "docs/abi/action65816-native-v2.act"
+}

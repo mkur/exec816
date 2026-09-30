@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "source_revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+  "scope": "Passive full-address CPU markers, POKEY timestamps and I-flag transitions between emulator microstates; no guest instructions/cycles added",
+  "binary_sha256": "2d58089fb04c61e5a9f2a653b94f4d39b5e0dadfc899776a68ecf2dba12577c0",
+  "patch": "toolchain/patches/altirra-concurrency-observer.patch",
+  "patch_sha256": "1e913088ed6873e7e3ccdc3a50f2e27e3229ec0576b5db8d5f8ddf4971def24b",
+  "build_options": "Same as toolchain/altirra-build.json, build/latency target AltirraBridgeServer",
+  "resolution": "I transitions sampled between CPU microstates, including RTI followed immediately by IRQ. 1/8 base-cycle timestamps at 8x; includes NMI/ROM/DMA elapsed time. Not a hardware worst-case guarantee."
+}

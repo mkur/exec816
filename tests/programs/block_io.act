@@ -1,0 +1,404 @@
+MODULE BLOCKTEST
+USE EXEC
+USE BLOCKIO
+USE BLOCKWIRE
+USE BLOCKTYPES
+USE BLOCKCACHE
+USE HEAPCORE
+INCLUDE "../fixtures/block/driver.inc"
+INCLUDE "block-test-state.inc"
+PROC POINTER absent
+BLOCKTYPES.Adapter POINTER adapter
+BLOCKTYPES.Volume POINTER first,second
+BYTE POINTER output
+CARD checks
+BYTE fake
+BYTE phase
+LONGCARD ARRAY cacheFacts(4)
+LONGCARD before
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC ReadChecked(BLOCKTYPES.Volume POINTER volume LONGCARD sector)
+  CARD index,expected
+  BYTE seed
+  LONGINT error
+  TestState POINTER selected
+
+  selected=TestState POINTER($e0000)
+  selected.volume=volume
+  error=BlockReadSector(adapter,volume,sector,output,256)
+  Require(error=0)
+  expected=BLOCKIO.SectorBytes(volume,sector)
+  Require(adapter.valid=expected)
+  seed=BYTE((sector LSH 4)-sector)
+  FOR index=0 TO expected-1 DO
+    Require(output(index)=(BYTE(index) XOR seed))
+  OD
+
+  Require(adapter.request.io_Device=BYTE POINTER(0)
+      AND adapter.request.io_Unit=BYTE POINTER(0))
+  Require(adapter.request.io_Data=BYTE POINTER(0) AND volume.busy=0
+      AND adapter.busy=0)
+
+RETURN
+
+PROC GeometryBounds()
+
+  Require(BLOCKIO.Geometry(49,1,1,128,1,1)<>0)
+  Require(BLOCKIO.Geometry(48,1,720,128,1,1)=0)
+  Require(BLOCKIO.Geometry(305,1,720,128,1,1)=0)
+  Require(BLOCKIO.Geometry(49,1,LONGCARD($10000),128,1,1)=0)
+  Require(BLOCKIO.Geometry(49,1,0,128,1,1)=0)
+  Require(BLOCKIO.Geometry(49,2,720,256,1,1)=0)
+  Require(BLOCKIO.Geometry(49,3,720,128,1,1)=0)
+  Require(BLOCKIO.Geometry(49,1,720,129,1,1)=0)
+  Require(BLOCKIO.Geometry(49,1,720,128,0,1)=0)
+  Require(BLOCKIO.Geometry(49,1,720,128,1,0)=0)
+
+RETURN
+
+PROC Reject(BLOCKTYPES.Volume POINTER volume LONGCARD sector BYTE
+    POINTER destination LONGCARD capacity LONGINT wanted)
+  LONGINT error
+
+  error=BlockReadSector(adapter,volume,sector,destination,capacity)
+  Require(error=wanted AND adapter.valid=0)
+
+RETURN
+
+PROC Bounds()
+
+  Reject(first,0,output,256,LONGINT(-4))
+  Reject(first,721,output,256,LONGINT(-4))
+  Reject(second,LONGCARD($10000),output,256,LONGINT(-4))
+  Reject(second,LONGCARD($ffffffff),output,256,LONGINT(-4))
+  Reject(second,4,output,255,LONGINT(-4))
+  Reject(first,1,output,127,LONGINT(-4))
+
+RETURN
+
+PROC AddressBounds()
+
+  Reject(first,1,BYTE POINTER(0),256,LONGINT(-5))
+  Reject(first,1,BYTE POINTER($008000),256,LONGINT(-5))
+  Reject(second,4,BYTE POINTER($fffff0),256,LONGINT(-5))
+  Reject(second,4,BYTE POINTER($100000),256,LONGINT(-5))
+  Require(BLOCKIO.Mapped(BYTE POINTER($ffff80),LONGCARD($1000080))=0)
+
+RETURN
+
+PROC CacheAndErrors()
+  CARD POINTER calls
+  CARD count
+
+  calls=CARD POINTER($e0000)
+  ReadChecked(second,4)
+  count=calls^
+  ReadChecked(second,4)
+  Require(calls^=count)
+  second.generation==+1
+  ReadChecked(second,4)
+  Require(calls^=count+1)
+  ; Geometry changes require detach/attach; reuse must discard the old tags.
+  Require(BLOCKIO.Detach(adapter,second)<>0)
+  second=BlockAttach(adapter,50,1,LONGCARD($fffe),256,1,4)
+  Require(second<>NULL)
+  ReadChecked(second,4)
+  Require(calls^=count+2)
+  Require(BLOCKIO.Detach(adapter,second)<>0)
+  second=BlockAttach(adapter,50,1,LONGCARD($fffe),128,1,5)
+  Require(second<>NULL)
+  ReadChecked(second,4)
+  Require(calls^=count+3)
+  Require(BLOCKIO.Detach(adapter,second)<>0)
+  second=BlockAttach(adapter,50,1,LONGCARD($ffff),256,1,6)
+  Require(second<>NULL)
+  count=calls^
+  ReadChecked(first,720)
+  Require(calls^=count)
+
+RETURN
+
+; An 8 KiB working set survives intervening reads. A deliberately offset
+; payload then checks the entire capacity across a native bank boundary.
+PROC WorkingSet()
+  CARD sector,count
+
+  LET calls=CARD POINTER($e0000)
+  Require(adapter.cache.requested=512 AND adapter.cache.blocks=512)
+  FOR sector=200 TO 231 DO
+    ReadChecked(second,LONGCARD(sector))
+  OD
+
+  count=calls^
+  FOR sector=200 TO 231 DO
+    ReadChecked(second,LONGCARD(sector))
+  OD
+
+  Require(calls^=count AND adapter.cache.hits>=32)
+  phase=10
+
+  ; Fill all sets/ways with 64 KiB of short sectors, then verify every byte.
+  BLOCKIO.Invalidate(adapter)
+  LET original=adapter.cache.payload
+  LET crossing=EXEC.AllocMem(65664,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  cacheFacts(0)=LONGCARD(ADDRESS(crossing))
+  cacheFacts(1)=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  Require(crossing<>NULL)
+  phase=11
+  adapter.cache.payload=crossing
+  IF (ADDRESS(crossing) & ADDRESS($ffff))=0 THEN
+    adapter.cache.payload=crossing+SIZE(128)
+  FI
+
+  LET start=ADDRESS(adapter.cache.payload)
+  cacheFacts(2)=LONGCARD(start)
+  cacheFacts(3)=LONGCARD(start+SIZE(CARD($ffff)))
+  Require((start RSH 16)<>((start+SIZE(CARD($ffff))) RSH 16))
+  phase=12
+  FOR sector=128 TO 639 DO
+    ReadChecked(first,LONGCARD(sector))
+  OD
+
+  phase=13
+  count=calls^
+  FOR sector=128 TO 639 DO
+    ReadChecked(first,LONGCARD(sector))
+  OD
+
+  phase=14
+  Require(calls^=count)
+  BLOCKIO.Invalidate(adapter)
+  adapter.cache.payload=original
+  EXEC.FreeMem(crossing,65664)
+
+RETURN
+
+; A bounded cache evicts old collisions, and zero restores one-sector behavior.
+PROC SmallAndDisabled()
+  CARD count,index
+
+  LET calls=CARD POINTER($e0000)
+  BLOCKIO.Invalidate(adapter)
+  BLOCKCACHE.Destroy(@adapter.cache)
+  BLOCKCACHE.Create(@adapter.cache,16)
+  Require(adapter.cache.blocks=16)
+  ReadChecked(first,10)
+  ReadChecked(first,14)
+  ReadChecked(first,18)
+  ReadChecked(first,22)
+  ReadChecked(first,26)
+  count=calls^
+  ReadChecked(first,10)
+  Require(calls^=count+1)
+  ReadChecked(first,26)
+  Require(calls^=count+1)
+  Require(adapter.cache.evictions<>0)
+
+  ; Retaining only one half must never satisfy a 256-byte sector request.
+  BLOCKIO.Invalidate(adapter)
+  ReadChecked(second,4)
+  FOR index=0 TO adapter.cache.blocks-1 DO
+    IF adapter.cache.tags(index).volume=second
+        AND adapter.cache.tags(index).part=2 THEN
+      adapter.cache.tags(index).volume=NULL
+    FI
+  OD
+
+  ReadChecked(first,10)
+  count=calls^
+  ReadChecked(second,4)
+  Require(calls^=count+1)
+  ReadChecked(first,14)
+  count=calls^
+  ReadChecked(second,4)
+  Require(calls^=count)
+
+  BLOCKIO.Invalidate(adapter)
+  BLOCKCACHE.Destroy(@adapter.cache)
+  BLOCKCACHE.Create(@adapter.cache,0)
+  count=calls^
+  ReadChecked(first,10)
+  ReadChecked(first,14)
+  ReadChecked(first,10)
+  Require(calls^=count+3 AND adapter.cache.blocks=0)
+  ReadChecked(first,10)
+  Require(calls^=count+3)
+
+RETURN
+
+PROC FailedRead(BYTE failure LONGINT wanted)
+  BYTE POINTER fault
+  LONGINT error
+
+  fault=BYTE POINTER($e0002)
+  fault^=failure
+  error=BlockFetch(adapter,second,5)
+  Require(error=wanted AND adapter.valid=0)
+
+RETURN
+
+PROC Errors()
+  CARD POINTER calls
+  BYTE POINTER fault
+  CARD count
+
+  calls=CARD POINTER($e0000)
+  fault=BYTE POINTER($e0002)
+  count=calls^
+  FailedRead(1,4)
+  FailedRead(2,LONGINT(-4))
+  FailedRead(3,LONGINT(-2))
+  FailedRead(4,6)
+  fault^=0
+  ReadChecked(first,720)
+  Require(calls^=count+4)
+  fault^=0
+  ReadChecked(second,5)
+  Require(calls^=count+5)
+
+RETURN
+
+PROC Busy()
+
+  first.references=1
+  Require(BLOCKIO.Detach(adapter,first)=0)
+  first.references=0
+  first.busy=1
+  Require(BLOCKIO.Detach(adapter,first)=0)
+  first.busy=0
+  adapter.busy=1
+  Require(BLOCKIO.Detach(adapter,first)=0)
+  Require(BLOCKIO.Destroy(adapter)=0)
+  adapter.busy=0
+  Require(BLOCKIO.Destroy(adapter)=0)
+
+RETURN
+
+; Partial startup owns storage without a request or attached-owner count.
+PROC Unopened()
+
+  LET available=EXEC.AvailMem(0)
+  LET owners=adapter.owners
+  LET volume=BLOCKTYPES.Volume POINTER(EXEC.AllocMem(
+      BLOCKTYPES.VOLUME_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(volume<>NULL)
+  Require(BLOCKIO.Detach(adapter,NULL)<>0)
+  Require(BLOCKIO.Detach(adapter,volume)=0)
+  volume.adapter=BYTE POINTER(adapter)
+  volume.references=1
+  Require(BLOCKIO.Detach(adapter,volume)=0)
+  volume.references=0
+  volume.busy=1
+  Require(BLOCKIO.Detach(adapter,volume)=0)
+  volume.busy=0
+  adapter.busy=1
+  Require(BLOCKIO.Detach(adapter,volume)=0)
+  adapter.busy=0
+  Require(BLOCKIO.Detach(adapter,volume)<>0)
+  Require(adapter.owners=owners AND EXEC.AvailMem(0)=available)
+
+RETURN
+
+PROC Setup()
+  TestState POINTER selected
+
+  before=EXEC.AvailMem(0)
+  output=BYTE POINTER($afff0)
+  adapter=BLOCKIO.Create()
+  Require(adapter<>BLOCKTYPES.Adapter POINTER(0))
+  selected=TestState POINTER($e0000)
+  selected.adapter=adapter
+  first=BlockAttach(adapter,49,1,720,128,1,1)
+  Require(first<>BLOCKTYPES.Volume POINTER(0))
+  second=BlockAttach(adapter,50,1,LONGCARD($ffff),256,1,2)
+  Require(second<>BLOCKTYPES.Volume POINTER(0))
+  Require(first.request<>second.request AND first.request<>adapter.request)
+
+RETURN
+
+PROC LiveBorrow()
+  TestState POINTER state
+
+  state=TestState POINTER($e0000)
+  Require(adapter.busy=1 AND state.volume.busy=1)
+  Require(BLOCKIO.Detach(adapter,state.volume)=0 AND BLOCKIO.Destroy(adapter)=0)
+  Require(adapter.request.io_Device=state.volume.request.io_Device)
+  Require(adapter.request.io_Unit=state.volume.request.io_Unit)
+
+RETURN
+
+PROC BorrowProbe()
+  TestState POINTER state
+  LONGINT error
+
+  state=TestState POINTER($e0000)
+  state.volume=second
+  state.probe=@LiveBorrow
+  BLOCKIO.Invalidate(adapter)
+  error=BlockFetch(adapter,second,5)
+  Require(error=0)
+  state.probe=absent
+
+RETURN
+
+PROC Cleanup()
+
+  Require(BLOCKIO.Detach(adapter,first)<>0)
+  Require(adapter.valid=0)
+  Require(BLOCKIO.Detach(adapter,second)<>0)
+  Require(adapter.owners=0)
+  Require(BLOCKIO.Destroy(adapter)<>0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Exercise sector bounds, caching, failures and adapter lifetime.
+PROC Main()
+
+  phase=1
+  Setup()
+  Unopened()
+  GeometryBounds()
+  Bounds()
+  AddressBounds()
+  Busy()
+  ReadChecked(first,1)
+  ReadChecked(first,3)
+  ReadChecked(first,4)
+  ReadChecked(first,720)
+  ReadChecked(second,1)
+  ReadChecked(second,3)
+  ReadChecked(second,4)
+  ReadChecked(second,1024)
+  ReadChecked(second,LONGCARD($8000))
+  ReadChecked(second,LONGCARD($ffff))
+  IF fake<>0 THEN
+    phase=2
+    CacheAndErrors()
+    phase=3
+    Errors()
+    phase=4
+    WorkingSet()
+    phase=5
+    BorrowProbe()
+    phase=6
+    SmallAndDisabled()
+  FI
+
+  Cleanup()
+
+RETURN
+
+ENDMODULE

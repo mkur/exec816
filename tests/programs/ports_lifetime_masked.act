@@ -1,0 +1,16 @@
+MODULE PORTMASKED
+USE EXEC
+USE HEAPAPIPROBE
+CARD ARRAY checks(3)
+LONGCARD before,after
+
+; Exercise port-lifetime operations with the fixture's interrupt mask.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  checks(2)=HEAPAPIPROBE.Masked()
+  after=EXEC.AvailMem(0)
+
+RETURN
+
+ENDMODULE

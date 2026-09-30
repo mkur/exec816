@@ -1,0 +1,49 @@
+; Two-context launcher/ROM-CIO probe. For the public Task API see tasks.act.
+MODULE COOPERATIVE
+USE EXEC
+USE EXECOS
+
+BYTE ARRAY line0=[65 48 155]
+BYTE ARRAY line1=[66 48 155]
+CARD ARRAY totals(2)
+CARD ARRAY versions(2)
+BYTE ARRAY order(12)
+BYTE count
+
+; Demonstrate shared work between explicit cooperative scheduling points.
+CARD FUNC Shared(CARD seed CARD depth)
+  CARD local
+
+  local=seed+depth
+  EXEC.Yield()
+  IF depth=0 THEN
+    RETURN(local)
+  FI
+
+RETURN(local+Shared(seed,depth-1))
+
+; Run the cooperative Tasks and observe their shared progress.
+PROC Main()
+  CARD id,round,value,status
+
+  id=EXEC.TaskId()
+  versions(id)=EXEC.Version()
+  FOR round=0 TO 3 DO
+    value=Shared(10+id,2)
+    totals(id)==+value
+    order(count)=BYTE(id)
+    count==+1
+    IF id=0 THEN
+      line0(1)=BYTE(48+round)
+      status=EXECOS.Write(BYTE POINTER(line0),3)
+    ELSE
+      line1(1)=BYTE(48+round)
+      status=EXECOS.Write(BYTE POINTER(line1),3)
+    FI
+
+    EXEC.Yield()
+  OD
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,1658 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "exec_baseline": "3d8ca49",
+  "production_changed": false,
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "47cd55b2dac510922949832332b7a2c3220885be",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "compiler_override": false,
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "inputs": {
+    "tools/measure_loading_breakdown.py": "4c8e0863709e49d404bb8c37633a67f606b92c70b4908e245ff559c539e20d53",
+    "tests/test_loading_breakdown.py": "dc3d87437087a45b6eca117a4c3d3e89ef664e674982631d4778925d9ced6bc6",
+    "tools/measure_command_loading.py": "ddda767b0adfd77379239e4767d121003a60791de2eca621a0d69a47c9eb96ac",
+    "tools/trace_command_io.py": "49ba70dec43f91f411f09a3f3ea40f4f1f78bd40e16000a9bb0f5ddadb2f16bb",
+    "tools/sio_transaction_trace.py": "f35e2eb3c4285740f3d1062070c4b16456ae18353193600f569933383e5b1c8b",
+    "tools/generate_program.py": "2ee7a51c9535e23e68f415369662c82b33d5df29c722aaabebf31d731ea53040",
+    "toolchain/actionc.json": "5e6c54ec77d27416fae4af619392243031d1993671585e109b67174efcf61bee",
+    "lib/dos/program.act": "540d30895acd4382d7e6a6b900281a9e50a8aa25ef925d514884debbdc3c3fa3",
+    "lib/dos/programproviders.act": "71f56299ed70c5e259913a6ea0363a84ad89fcb555dd4d2a62c18b639030f31d",
+    "lib/dos/programplace.act": "94e786d4765ecb58e7957a5cd799eec98c923a7eddd651efb4df9841019cd648",
+    "lib/dos/o65read.act": "d17ff4990b42e909337fb1fb313fac5502eb59f9b8057f263082d67a49817b71"
+  },
+  "diagnostic_bundle": {
+    "manifest": {
+      "path": "build/development/sio-driver/s3-integration/bundle/demo-manifest.json",
+      "sha256": "98863d39e4812fd657fdff69268adf4a320c4853b029daf1a9e66d7de18fee90"
+    },
+    "xex": {
+      "path": "build/development/sio-driver/s3-integration/bundle/program.xex",
+      "sha256": "d6f05326e3abe5eb657d03c3d2616bd5a70477e7f0679d211947de96830e7494"
+    },
+    "media": {
+      "path": "build/development/sio-driver/s3-integration/bundle/sdfs.atr",
+      "sha256": "2522811285c360cf6eb9473223dd3ef24b2c0a420f928a6f6592e30a8dc80efc"
+    },
+    "providers": {
+      "path": "build/development/sio-driver/s3-integration/bundle/providers.json",
+      "sha256": "49dbd580cbe0d9bcae8ffca39dc3b54403670248ce656f0d505a11cbf24a1f0f"
+    }
+  },
+  "play_xex": {
+    "path": "build/demo/program.xex",
+    "sha256": "50846b2d9c5fdc3d80c154aca864d551f8f665420e818cfea19a63f852d1d3e7"
+  },
+  "hello": {
+    "path": "build/demo/media/HELLO",
+    "sha256": "8372b8f0308ae28ea5b087332f168fe9da8d7f9d82d0d187d83b862353a2ac8b"
+  },
+  "provider_count": 14,
+  "provider_names": [
+    "__a816_stack_overflow_v1",
+    "exec816_open_v1",
+    "exec816_read_v1",
+    "exec816_write_v1",
+    "exec816_seek_v1",
+    "exec816_close_v1",
+    "exec816_input_v1",
+    "exec816_output_v1",
+    "exec816_ioerr_v1",
+    "exec816_arguments_v1",
+    "exec816_argumentlength_v1",
+    "exec816_setresult_v1",
+    "exec816_breakpending_v1",
+    "exec816_yield_v1"
+  ],
+  "profiles": {
+    "stopped": {
+      "results": {
+        "path": "build/development/loading-breakdown/stopped/results.json",
+        "sha256": "271191b5bbc7738ba86acf56baff89f9a15d7c3e61071fb4dbcf3f5674c1ad3f"
+      },
+      "analysis": {
+        "path": "build/development/loading-breakdown/stopped/breakdown.json",
+        "sha256": "1efe023921f76345664c8a4c98495d3349a18ffd29fcfd59e6ecffe41914b04a"
+      },
+      "trace": {
+        "path": "build/development/loading-breakdown/stopped/emulator.log",
+        "sha256": "da79cf445866740e1cec68e290f1f5a0fd3a76d017bba1d412936bccf6dfdfa3"
+      },
+      "markers": {
+        "path": "build/development/loading-breakdown/stopped/markers.json",
+        "sha256": "640098bf298d82e2be4c1925a9e5a1ad699d1b0db94c2e80364f44c852ca4abc"
+      },
+      "listing": {
+        "path": "build/development/loading-breakdown/stopped/loader.asm",
+        "sha256": "d0938ce5c331184ea0608dc6b35d8513f8b3cdea8b8837bf3dcc78895d2301cb"
+      },
+      "samples": [
+        {
+          "phase": "open",
+          "frame": 0,
+          "transfers": 1,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 0,
+            "map": 0,
+            "data": 0
+          }
+        },
+        {
+          "phase": "seek_end",
+          "frame": 24,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "rewind",
+          "frame": 25,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "payload",
+          "frame": 26,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "close",
+          "frame": 150,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "relocate",
+          "frame": 151,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "loaded",
+          "frame": 184,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "returned",
+          "frame": 184,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "prompt",
+          "frame": 194,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        }
+      ],
+      "payload_budget_ms": {
+        "device_wait": 1616.7120819759255,
+        "serial_wire": 474.8942384818271,
+        "outside_transactions": 351.53422923430213,
+        "protocol_pacing": 51.63840485833384
+      },
+      "payload": {
+        "begin": 4307172300.625,
+        "end": 4311596660.125,
+        "milliseconds": 2494.7789545503883,
+        "parts_ms": {
+          "command_setup": 21.299192674155847,
+          "command_wire": 16.916204172945633,
+          "command_byte_gaps": 0.0,
+          "command_hold": 15.531894798126249,
+          "ack_turnaround": 11.863897859959206,
+          "ack_wire": 3.496015529075431,
+          "device_wait": 1616.7120819759255,
+          "complete_wire": 3.496015529075431,
+          "complete_to_data": 1.499903436667846,
+          "data_checksum_wire": 450.98600325073056,
+          "data_byte_gaps": 1.4435160894246941,
+          "before_first_command": 18.99090613057336,
+          "between_commands": 320.4470388889437,
+          "after_last_checksum": 12.096284214785044
+        },
+        "transactions": [
+          {
+            "sector": 69,
+            "begin": 4307205980,
+            "end": 4307668170,
+            "milliseconds": 260.6166802231247,
+            "parts_ms": {
+              "command_setup": 1.070231850675027,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7730705307036154,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 234.28830004835217,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 70,
+            "begin": 4307709435,
+            "end": 4307846518,
+            "milliseconds": 77.2974672213302,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7730705307036154,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 50.9775451486441,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 71,
+            "begin": 4307875356,
+            "end": 4308060856,
+            "milliseconds": 104.59852913604718,
+            "parts_ms": {
+              "command_setup": 1.070231850675027,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7691234163965948,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 78.2740960755816,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 72,
+            "begin": 4308088696,
+            "end": 4308239203,
+            "milliseconds": 84.86690471525095,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7719427837587524,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 58.548110389509695,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 73,
+            "begin": 4308267346,
+            "end": 4308648063,
+            "milliseconds": 214.6762168037114,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7820925062625197,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 188.3472727554664,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 74,
+            "begin": 4308678162,
+            "end": 4308826410,
+            "milliseconds": 83.59311454102813,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7866034940419719,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 57.259659505003675,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 75,
+            "begin": 4308856476,
+            "end": 4309040748,
+            "milliseconds": 103.90609251190125,
+            "parts_ms": {
+              "command_setup": 1.070231850675027,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.772506657231184,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 77.5782762106011,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 76,
+            "begin": 4309070314,
+            "end": 4309219095,
+            "milliseconds": 83.89365910183413,
+            "parts_ms": {
+              "command_setup": 1.070231850675027,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.772506657231184,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 57.565842800533986,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 77,
+            "begin": 4309249093,
+            "end": 4309433434,
+            "milliseconds": 103.94499978149904,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7804008858452252,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 77.61774735367132,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 78,
+            "begin": 4309463218,
+            "end": 4309611781,
+            "milliseconds": 83.77073468484407,
+            "parts_ms": {
+              "command_setup": 1.0629014955334173,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.77476215112091,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 57.447993244795796,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 79,
+            "begin": 4309641580,
+            "end": 4309826119,
+            "milliseconds": 104.05664672904047,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7764537715382045,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 77.73334141551977,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 80,
+            "begin": 4309856224,
+            "end": 4310004466,
+            "milliseconds": 83.58973130019355,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7787092654279306,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 57.26417049278312,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 81,
+            "begin": 4310034256,
+            "end": 4310218804,
+            "milliseconds": 104.06172159029235,
+            "parts_ms": {
+              "command_setup": 1.0629014955334173,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7866034940419719,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 77.72713880732303,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 82,
+            "begin": 4310248378,
+            "end": 4310397151,
+            "milliseconds": 83.88914811405469,
+            "parts_ms": {
+              "command_setup": 1.070231850675027,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7781453919554991,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 57.55569307803022,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 83,
+            "begin": 4310427399,
+            "end": 4310611490,
+            "milliseconds": 103.80403141339114,
+            "parts_ms": {
+              "command_setup": 1.0533156465020814,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7832202532073829,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 77.48241772028774,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 84,
+            "begin": 4310641290,
+            "end": 4310789837,
+            "milliseconds": 83.76171270928516,
+            "parts_ms": {
+              "command_setup": 1.0629014955334173,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7753260245933414,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 57.438407395764465,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 85,
+            "begin": 4310820148,
+            "end": 4311004175,
+            "milliseconds": 103.76794351115554,
+            "parts_ms": {
+              "command_setup": 1.0533156465020814,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7894228614041295,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 77.44012720985538,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 86,
+            "begin": 4311034241,
+            "end": 4311182522,
+            "milliseconds": 83.61172236561838,
+            "parts_ms": {
+              "command_setup": 1.0956061569344455,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7443129836096078,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 57.28672543168038,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 87,
+            "begin": 4311209014,
+            "end": 4311396860,
+            "milliseconds": 105.92137630237151,
+            "parts_ms": {
+              "command_setup": 1.0629014955334173,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.777017645010636,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 79.59637936843352,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 88,
+            "begin": 4311423372,
+            "end": 4311575208,
+            "milliseconds": 85.61629256011244,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7866034940419719,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 59.282837524087974,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          }
+        ],
+        "gaps_ms": [
+          23.26823883988672,
+          16.260983197980206,
+          15.698237472493549,
+          15.869091134640298,
+          16.972027646716356,
+          16.953419822126115,
+          16.671483085910353,
+          16.91507642600077,
+          16.794407502900423,
+          16.8028656049869,
+          16.975410887550943,
+          16.797790743735014,
+          16.675994073689804,
+          17.05604479410865,
+          16.80342947845933,
+          17.091568822871835,
+          16.953419822126115,
+          14.938136031655857,
+          14.949413501104488
+        ],
+        "transfers": 20,
+        "wire_bytes": 2720,
+        "useful_file_bytes": 2359
+      },
+      "dos_read": {
+        "milliseconds": 2490.6917176854686
+      },
+      "load_phase": {
+        "milliseconds": 672.1438751358583
+      },
+      "loader": {
+        "begin": 4311622854.875,
+        "end": 4312814562.5,
+        "milliseconds": 671.972316631871,
+        "parts_ms": {
+          "program_load_before_o65_validate0": 223.16131433267688,
+          "program_load_before_programproviders_resolve0": 238.6213152630681,
+          "program_load_before_o65memory_allocate0": 1.8952492250263964,
+          "program_load_before_programplace_allocate0": 4.2434298167834115,
+          "program_load_before_programplace_patches0": 60.62915592370228,
+          "program_load_before_programplace_copy0": 70.95015499472073,
+          "program_load_before_programplace_copy1": 0.6514148290265147,
+          "program_load_before_programplace_patches1": 62.221675578217,
+          "program_load_before_o65_release2": 8.741518990553711,
+          "program_load_before_dosclient_seterror2": 0.6096177078825282,
+          "caller_instructions": 0.24746997021338757
+        },
+        "counts": {
+          "program_load_before_o65_validate0": 1,
+          "program_load_before_programproviders_resolve0": 1,
+          "program_load_before_o65memory_allocate0": 1,
+          "program_load_before_programplace_allocate0": 1,
+          "program_load_before_programplace_patches0": 1,
+          "program_load_before_programplace_copy0": 1,
+          "program_load_before_programplace_copy1": 1,
+          "program_load_before_programplace_patches1": 1,
+          "program_load_before_o65_release2": 1,
+          "program_load_before_dosclient_seterror2": 1
+        }
+      },
+      "validation": {
+        "begin": 4311622876.5,
+        "end": 4312018641.375,
+        "milliseconds": 223.16131433267688,
+        "parts_ms": {
+          "o65_validate_before_dosclient_seterror0": 0.5776883725060934,
+          "o65_validate_before_o65memory_allocate0": 1.919143363420682,
+          "o65_validate_before_o65wire_header0": 29.71831700684683,
+          "o65_validate_before_o65relocations_read0": 23.980270067199623,
+          "o65_validate_before_o65wire_exports0": 9.478783555757923,
+          "o65_validate_before_o65_descriptor0": 156.7898119341001,
+          "o65_validate_before_dosclient_seterror4": 0.5777588566901473,
+          "caller_instructions": 0.11954117615547943
+        },
+        "counts": {
+          "o65_validate_before_dosclient_seterror0": 1,
+          "o65_validate_before_o65memory_allocate0": 1,
+          "o65_validate_before_o65wire_header0": 1,
+          "o65_validate_before_o65relocations_read0": 1,
+          "o65_validate_before_o65wire_exports0": 1,
+          "o65_validate_before_o65_descriptor0": 1,
+          "o65_validate_before_dosclient_seterror4": 1
+        }
+      },
+      "descriptor": {
+        "begin": 4311739520.125,
+        "end": 4312017578.625,
+        "milliseconds": 156.7898119341001,
+        "parts_ms": {
+          "o65_descriptor_before_o65read_u320": 0.5110808185751199,
+          "o65_descriptor_before_o65read_u321": 0.5110808185751199,
+          "o65_descriptor_before_o65read_u160": 0.2381660579182637,
+          "o65_descriptor_before_o65read_u161": 0.2405625201760977,
+          "o65_descriptor_before_o65read_u80": 0.1046690133201011,
+          "o65_descriptor_before_o65read_u81": 0.10403465566361565,
+          "o65_descriptor_before_o65read_u162": 0.2391528364950189,
+          "o65_descriptor_before_o65read_u322": 0.5107988818389041,
+          "o65_descriptor_before_o65profile_routines0": 11.56095683689537,
+          "o65_descriptor_before_o65profile_objects0": 11.158985535235749,
+          "o65_descriptor_before_o65profile_imports0": 45.783565625709244,
+          "o65_descriptor_before_o65read_count0": 0.7586917571566116,
+          "o65_descriptor_before_o65relocations_read0": 84.8311692339356,
+          "caller_instructions": 0.23689734260528894
+        },
+        "counts": {
+          "o65_descriptor_before_o65read_u320": 1,
+          "o65_descriptor_before_o65read_u321": 1,
+          "o65_descriptor_before_o65read_u160": 1,
+          "o65_descriptor_before_o65read_u161": 1,
+          "o65_descriptor_before_o65read_u80": 1,
+          "o65_descriptor_before_o65read_u81": 1,
+          "o65_descriptor_before_o65read_u162": 1,
+          "o65_descriptor_before_o65read_u322": 1,
+          "o65_descriptor_before_o65profile_routines0": 1,
+          "o65_descriptor_before_o65profile_objects0": 1,
+          "o65_descriptor_before_o65profile_imports0": 1,
+          "o65_descriptor_before_o65read_count0": 1,
+          "o65_descriptor_before_o65relocations_read0": 1
+        }
+      },
+      "providers": {
+        "begin": 4312018733.875,
+        "end": 4312441916.25,
+        "milliseconds": 238.6213152630681,
+        "parts_ms": {
+          "programproviders_resolve_before_o65read_u320": 0.510939850207012,
+          "programproviders_resolve_before_o65read_u321": 0.5107283976548502,
+          "programproviders_resolve_before_o65read_u160": 0.23964622578339648,
+          "programproviders_resolve_before_o65read_u161": 0.2368973426052928,
+          "programproviders_resolve_before_o65read_u80": 0.1039641714795617,
+          "programproviders_resolve_before_o65read_u81": 0.10685402302577324,
+          "programproviders_resolve_before_o65read_u162": 0.23844799465447947,
+          "programproviders_resolve_before_o65read_string0": 106.30488074780901,
+          "programproviders_resolve_before_o65read_u163": 16.40470044926619,
+          "programproviders_resolve_before_o65read_u82": 7.226884359418591,
+          "programproviders_resolve_before_o65read_u322": 35.49611702630045,
+          "programproviders_resolve_before_o65read_u323": 35.34535135660908,
+          "programproviders_resolve_before_o65read_take0": 4.516556029992431,
+          "programproviders_resolve_before_o65read_extent0": 1.8860862810993837,
+          "programproviders_resolve_before_o65read_literal0": 7.848343410222178,
+          "programproviders_resolve_before_o65read_equal0": 10.572557123906966,
+          "caller_instructions": 11.072360473033456
+        },
+        "counts": {
+          "programproviders_resolve_before_o65read_u320": 1,
+          "programproviders_resolve_before_o65read_u321": 1,
+          "programproviders_resolve_before_o65read_u160": 1,
+          "programproviders_resolve_before_o65read_u161": 1,
+          "programproviders_resolve_before_o65read_u80": 1,
+          "programproviders_resolve_before_o65read_u81": 1,
+          "programproviders_resolve_before_o65read_u162": 1,
+          "programproviders_resolve_before_o65read_string0": 70,
+          "programproviders_resolve_before_o65read_u163": 70,
+          "programproviders_resolve_before_o65read_u82": 70,
+          "programproviders_resolve_before_o65read_u322": 70,
+          "programproviders_resolve_before_o65read_u323": 70,
+          "programproviders_resolve_before_o65read_take0": 70,
+          "programproviders_resolve_before_o65read_extent0": 70,
+          "programproviders_resolve_before_o65read_literal0": 70,
+          "programproviders_resolve_before_o65read_equal0": 5
+        }
+      },
+      "u32_calls": {
+        "count": 587,
+        "inclusive_ms": 297.7669905649871
+      },
+      "comparisons": [
+        {
+          "results": {
+            "path": "build/development/sio-driver/s4-profile/results.json",
+            "sha256": "e3c053deb30234e3012afcf4f948ea6573efdf9db63eb361cb3e936459e2f71f"
+          },
+          "trace": {
+            "path": "build/development/sio-driver/s4-profile/emulator.log",
+            "sha256": "60cdfc5d570f28944906a57b7131b78f4f2b0189e6031c2da76beeda23242234"
+          },
+          "cpu_trace": true,
+          "identical_relative_phase_ticks": true,
+          "identical_transfer_counts": true,
+          "identical_payload_transactions_and_gaps": true
+        },
+        {
+          "results": {
+            "path": "build/development/sio-driver/s3-integration/results.json",
+            "sha256": "84088ef1d79e0bb74ce3b2446b97787212b56e1393b834dc01fbae99964a2a66"
+          },
+          "trace": {
+            "path": "build/development/sio-driver/s3-integration/emulator.log",
+            "sha256": "20b31af6e72445dfff9560cb60389b57453149ac14a791afc0c4396d41f8a409"
+          },
+          "cpu_trace": false,
+          "identical_relative_phase_ticks": true,
+          "identical_transfer_counts": true,
+          "identical_payload_transactions_and_gaps": true
+        }
+      ],
+      "guards": "intact",
+      "returned_status": 0,
+      "live_tasks_after_shutdown": 0
+    },
+    "active": {
+      "results": {
+        "path": "build/development/loading-breakdown/active/results.json",
+        "sha256": "fdf91eea6adb69f939b7f3e0b08c16024b0fb6ea879bc6439f02786ee3f046f1"
+      },
+      "analysis": {
+        "path": "build/development/loading-breakdown/active/breakdown.json",
+        "sha256": "28134836400cec960517d1d8b14464d1f322094435ef7ceab69ad74f075ab24b"
+      },
+      "trace": {
+        "path": "build/development/loading-breakdown/active/emulator.log",
+        "sha256": "b3a1ef1323de1c58d95c6162efc84719a9f23777636009f33464edc35405ff45"
+      },
+      "markers": {
+        "path": "build/development/loading-breakdown/active/markers.json",
+        "sha256": "640098bf298d82e2be4c1925a9e5a1ad699d1b0db94c2e80364f44c852ca4abc"
+      },
+      "listing": {
+        "path": "build/development/loading-breakdown/active/loader.asm",
+        "sha256": "d0938ce5c331184ea0608dc6b35d8513f8b3cdea8b8837bf3dcc78895d2301cb"
+      },
+      "samples": [
+        {
+          "phase": "open",
+          "frame": 0,
+          "transfers": 1,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 0,
+            "map": 0,
+            "data": 0
+          }
+        },
+        {
+          "phase": "seek_end",
+          "frame": 29,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "rewind",
+          "frame": 30,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "payload",
+          "frame": 31,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "close",
+          "frame": 154,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "relocate",
+          "frame": 155,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "loaded",
+          "frame": 194,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "returned",
+          "frame": 194,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "prompt",
+          "frame": 208,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        }
+      ],
+      "payload_budget_ms": {
+        "device_wait": 1527.934714729362,
+        "serial_wire": 474.8942384818271,
+        "outside_transactions": 417.0179128505355,
+        "protocol_pacing": 51.77542611213494
+      },
+      "payload": {
+        "begin": 4307215737.875,
+        "end": 4311599030.25,
+        "milliseconds": 2471.6222921738595,
+        "parts_ms": {
+          "command_setup": 21.20784517162194,
+          "command_wire": 16.916204172945633,
+          "command_byte_gaps": 0.0,
+          "command_hold": 15.760263554461014,
+          "ack_turnaround": 11.863897859959206,
+          "ack_wire": 3.496015529075431,
+          "device_wait": 1527.934714729362,
+          "complete_wire": 3.496015529075431,
+          "complete_to_data": 1.499903436667846,
+          "data_checksum_wire": 450.98600325073056,
+          "data_byte_gaps": 1.4435160894246941,
+          "before_first_command": 25.912312036302172,
+          "between_commands": 377.6728659856015,
+          "after_last_checksum": 13.432734828631803
+        },
+        "transactions": [
+          {
+            "sector": 69,
+            "begin": 4307261692,
+            "end": 4307668170,
+            "milliseconds": 229.20216132701984,
+            "parts_ms": {
+              "command_setup": 1.0533156465020814,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7815286327900882,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 202.8822392543337,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 70,
+            "begin": 4307710422,
+            "end": 4307846518,
+            "milliseconds": 76.74092410404029,
+            "parts_ms": {
+              "command_setup": 1.0533156465020814,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7781453919554991,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 50.42438527218877,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 71,
+            "begin": 4307877644,
+            "end": 4308060856,
+            "milliseconds": 103.30838663112384,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.8142332941911165,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 76.94730179495022,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 72,
+            "begin": 4308090996,
+            "end": 4308239203,
+            "milliseconds": 83.56999572865844,
+            "parts_ms": {
+              "command_setup": 1.0629014955334173,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7685595429241633,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 57.25345689680693,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 73,
+            "begin": 4308268467,
+            "end": 4308648063,
+            "milliseconds": 214.04411464111567,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7820925062625197,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 187.71517059287066,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 74,
+            "begin": 4308680473,
+            "end": 4308826410,
+            "milliseconds": 82.2900029462389,
+            "parts_ms": {
+              "command_setup": 1.070231850675027,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7719427837587524,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 55.96275051841118,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 75,
+            "begin": 4308858521,
+            "end": 4309040748,
+            "milliseconds": 102.75297126077879,
+            "parts_ms": {
+              "command_setup": 1.0533156465020814,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.788858987931698,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 76.42571883295108,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 76,
+            "begin": 4309108539,
+            "end": 4309219095,
+            "milliseconds": 62.33959561813925,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7781453919554991,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 36.01459868420125,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 77,
+            "begin": 4309275121,
+            "end": 4309433434,
+            "milliseconds": 89.2685010410514,
+            "parts_ms": {
+              "command_setup": 1.0707957241474586,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7730705307036154,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 62.93955699280639,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 78,
+            "begin": 4309465792,
+            "end": 4309611781,
+            "milliseconds": 82.31932436680533,
+            "parts_ms": {
+              "command_setup": 1.0533156465020814,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7860396205695404,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 55.994891306339774,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 79,
+            "begin": 4309643884,
+            "end": 4309826119,
+            "milliseconds": 102.75748224855825,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7877312409868349,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 76.42289946558891,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 80,
+            "begin": 4309858286,
+            "end": 4310004466,
+            "milliseconds": 82.42702420003975,
+            "parts_ms": {
+              "command_setup": 1.070231850675027,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7736344041760469,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 56.09808015179474,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 81,
+            "begin": 4310036348,
+            "end": 4310218804,
+            "milliseconds": 102.88209828596561,
+            "parts_ms": {
+              "command_setup": 1.0533156465020814,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.825510763639747,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 76.51819408242984,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 82,
+            "begin": 4310251145,
+            "end": 4310397151,
+            "milliseconds": 82.32891021583667,
+            "parts_ms": {
+              "command_setup": 1.0617737485885543,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7894228614041295,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 55.99263581245005,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 83,
+            "begin": 4310429258,
+            "end": 4310611490,
+            "milliseconds": 102.75579062814096,
+            "parts_ms": {
+              "command_setup": 1.07135959761989,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7719427837587524,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 76.42741045336837,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 84,
+            "begin": 4310643358,
+            "end": 4310789837,
+            "milliseconds": 82.59562236829677,
+            "parts_ms": {
+              "command_setup": 1.0544433934469444,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7826563797349513,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 56.27344480172094,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 85,
+            "begin": 4310822452,
+            "end": 4311004175,
+            "milliseconds": 102.4687790306733,
+            "parts_ms": {
+              "command_setup": 1.0544433934469444,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7820925062625197,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 76.1471653375699,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 86,
+            "begin": 4311035947,
+            "end": 4311182522,
+            "milliseconds": 82.6497542216502,
+            "parts_ms": {
+              "command_setup": 1.0533156465020814,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.8249468901673153,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 56.28641389158687,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 87,
+            "begin": 4311214396,
+            "end": 4311396860,
+            "milliseconds": 102.88660927374505,
+            "parts_ms": {
+              "command_setup": 1.0544433934469444,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.7787092654279306,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 76.56837882147626,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          },
+          {
+            "sector": 88,
+            "begin": 4311424436,
+            "end": 4311575208,
+            "milliseconds": 85.0163311854453,
+            "parts_ms": {
+              "command_setup": 1.070231850675027,
+              "command_wire": 0.8458102086472816,
+              "command_byte_gaps": 0.0,
+              "command_hold": 0.8209997758602947,
+              "ack_turnaround": 0.5931948929979602,
+              "ack_wire": 0.17480077645377154,
+              "device_wait": 58.64002176551603,
+              "complete_wire": 0.17480077645377154,
+              "complete_to_data": 0.0749951718333923,
+              "data_checksum_wire": 22.54930016253653,
+              "data_byte_gaps": 0.0721758044712347
+            }
+          }
+        ],
+        "gaps_ms": [
+          23.82478195717663,
+          17.551125702903523,
+          16.995146459086047,
+          16.501193297236032,
+          18.2751392415056,
+          18.106541073248575,
+          38.22554656960524,
+          31.5915751664484,
+          18.24581782093916,
+          18.102030085469124,
+          18.13811798770474,
+          17.977414048061757,
+          18.236231971907824,
+          18.104285579358848,
+          17.969519819447715,
+          18.39073330335406,
+          17.91538796609429,
+          17.972903060282302,
+          15.549374875771624
+        ],
+        "transfers": 20,
+        "wire_bytes": 2720,
+        "useful_file_bytes": 2359
+      },
+      "dos_read": {
+        "milliseconds": 2470.6918304601627
+      },
+      "load_phase": {
+        "milliseconds": 783.0345273824006
+      },
+      "loader": {
+        "begin": 4311629694.625,
+        "end": 4313018048.375,
+        "milliseconds": 782.855849975824,
+        "parts_ms": {
+          "program_load_before_o65_validate0": 250.01917169806265,
+          "program_load_before_programproviders_resolve0": 268.3752972670462,
+          "program_load_before_o65memory_allocate0": 2.1893092408994344,
+          "program_load_before_programplace_allocate0": 4.7375944311855855,
+          "program_load_before_programplace_patches0": 67.12321622151205,
+          "program_load_before_programplace_copy0": 79.35560539570525,
+          "program_load_before_programplace_copy1": 0.6848948164521362,
+          "program_load_before_programplace_patches1": 96.56650394218042,
+          "program_load_before_o65_release2": 12.939063603518006,
+          "program_load_before_dosclient_seterror2": 0.6090538344100968,
+          "caller_instructions": 0.2561395248520739
+        },
+        "counts": {
+          "program_load_before_o65_validate0": 1,
+          "program_load_before_programproviders_resolve0": 1,
+          "program_load_before_o65memory_allocate0": 1,
+          "program_load_before_programplace_allocate0": 1,
+          "program_load_before_programplace_patches0": 1,
+          "program_load_before_programplace_copy0": 1,
+          "program_load_before_programplace_copy1": 1,
+          "program_load_before_programplace_patches1": 1,
+          "program_load_before_o65_release2": 1,
+          "program_load_before_dosclient_seterror2": 1
+        }
+      },
+      "validation": {
+        "begin": 4311629717.75,
+        "end": 4312073113.625,
+        "milliseconds": 250.01917169806265,
+        "parts_ms": {
+          "o65_validate_before_dosclient_seterror0": 0.6084194767536112,
+          "o65_validate_before_o65memory_allocate0": 2.609676914597134,
+          "o65_validate_before_o65wire_header0": 33.628356633055105,
+          "o65_validate_before_o65relocations_read0": 26.08556216070676,
+          "o65_validate_before_o65wire_exports0": 9.635258444357671,
+          "o65_validate_before_o65_descriptor0": 176.71801674422278,
+          "o65_validate_before_dosclient_seterror4": 0.6091948027782046,
+          "caller_instructions": 0.1246865215913715
+        },
+        "counts": {
+          "o65_validate_before_dosclient_seterror0": 1,
+          "o65_validate_before_o65memory_allocate0": 1,
+          "o65_validate_before_o65wire_header0": 1,
+          "o65_validate_before_o65relocations_read0": 1,
+          "o65_validate_before_o65wire_exports0": 1,
+          "o65_validate_before_o65_descriptor0": 1,
+          "o65_validate_before_dosclient_seterror4": 1
+        }
+      },
+      "descriptor": {
+        "begin": 4311758592.125,
+        "end": 4312071992.25,
+        "milliseconds": 176.71801674422278,
+        "parts_ms": {
+          "o65_descriptor_before_o65read_u320": 2.664513609791099,
+          "o65_descriptor_before_o65read_u321": 0.48598844905191724,
+          "o65_descriptor_before_o65read_u160": 0.22660665173341754,
+          "o65_descriptor_before_o65read_u161": 0.2271000410217951,
+          "o65_descriptor_before_o65read_u80": 0.10015802554064894,
+          "o65_descriptor_before_o65read_u81": 0.09959415206821741,
+          "o65_descriptor_before_o65read_u162": 0.22702955683774118,
+          "o65_descriptor_before_o65read_u322": 0.4861999016040791,
+          "o65_descriptor_before_o65profile_routines0": 11.983086615194416,
+          "o65_descriptor_before_o65profile_objects0": 13.511677114772215,
+          "o65_descriptor_before_o65profile_imports0": 50.11918875523521,
+          "o65_descriptor_before_o65read_count0": 2.8168299315316636,
+          "o65_descriptor_before_o65relocations_read0": 93.53878533195936,
+          "caller_instructions": 0.23125860788098862
+        },
+        "counts": {
+          "o65_descriptor_before_o65read_u320": 1,
+          "o65_descriptor_before_o65read_u321": 1,
+          "o65_descriptor_before_o65read_u160": 1,
+          "o65_descriptor_before_o65read_u161": 1,
+          "o65_descriptor_before_o65read_u80": 1,
+          "o65_descriptor_before_o65read_u81": 1,
+          "o65_descriptor_before_o65read_u162": 1,
+          "o65_descriptor_before_o65read_u322": 1,
+          "o65_descriptor_before_o65profile_routines0": 1,
+          "o65_descriptor_before_o65profile_objects0": 1,
+          "o65_descriptor_before_o65profile_imports0": 1,
+          "o65_descriptor_before_o65read_count0": 1,
+          "o65_descriptor_before_o65relocations_read0": 1
+        }
+      },
+      "providers": {
+        "begin": 4312073211.25,
+        "end": 4312549160.75,
+        "milliseconds": 268.3752972670462,
+        "parts_ms": {
+          "programproviders_resolve_before_o65read_u320": 0.5107988818389041,
+          "programproviders_resolve_before_o65read_u321": 0.5107283976548502,
+          "programproviders_resolve_before_o65read_u160": 0.23612201658069945,
+          "programproviders_resolve_before_o65read_u161": 0.22660665173341754,
+          "programproviders_resolve_before_o65read_u80": 0.09994657298848711,
+          "programproviders_resolve_before_o65read_u81": 0.10022850972470287,
+          "programproviders_resolve_before_o65read_u162": 0.22681810428557936,
+          "programproviders_resolve_before_o65read_string0": 127.94387767328887,
+          "programproviders_resolve_before_o65read_u163": 16.468982025123385,
+          "programproviders_resolve_before_o65read_u82": 7.253315928438818,
+          "programproviders_resolve_before_o65read_u322": 41.84758781976912,
+          "programproviders_resolve_before_o65read_u323": 37.48384150080564,
+          "programproviders_resolve_before_o65read_take0": 4.536362085711587,
+          "programproviders_resolve_before_o65read_extent0": 1.770069314146599,
+          "programproviders_resolve_before_o65read_literal0": 7.6697364878294945,
+          "programproviders_resolve_before_o65read_equal0": 10.61949959048689,
+          "caller_instructions": 10.870775706639165
+        },
+        "counts": {
+          "programproviders_resolve_before_o65read_u320": 1,
+          "programproviders_resolve_before_o65read_u321": 1,
+          "programproviders_resolve_before_o65read_u160": 1,
+          "programproviders_resolve_before_o65read_u161": 1,
+          "programproviders_resolve_before_o65read_u80": 1,
+          "programproviders_resolve_before_o65read_u81": 1,
+          "programproviders_resolve_before_o65read_u162": 1,
+          "programproviders_resolve_before_o65read_string0": 70,
+          "programproviders_resolve_before_o65read_u163": 70,
+          "programproviders_resolve_before_o65read_u82": 70,
+          "programproviders_resolve_before_o65read_u322": 70,
+          "programproviders_resolve_before_o65read_u323": 70,
+          "programproviders_resolve_before_o65read_take0": 70,
+          "programproviders_resolve_before_o65read_extent0": 70,
+          "programproviders_resolve_before_o65read_literal0": 70,
+          "programproviders_resolve_before_o65read_equal0": 5
+        }
+      },
+      "u32_calls": {
+        "count": 587,
+        "inclusive_ms": 336.47380314331264
+      },
+      "comparisons": [
+        {
+          "results": {
+            "path": "build/development/sio-driver/s4-profile-active/results.json",
+            "sha256": "2d26c76c1460caff687ebc0ab5079492e3dc3580bbdb190f104c2a3783f69630"
+          },
+          "trace": {
+            "path": "build/development/sio-driver/s4-profile-active/emulator.log",
+            "sha256": "d987f12007c266459d026c67d4a9c933837812c1662a21a47ae2edc63854807e"
+          },
+          "cpu_trace": true,
+          "identical_relative_phase_ticks": true,
+          "identical_transfer_counts": true,
+          "identical_payload_transactions_and_gaps": true
+        },
+        {
+          "results": {
+            "path": "build/development/sio-driver/s4-measurement-active/results.json",
+            "sha256": "70b0c8318ac23e59393dbcfd8d78bb6b75b938ebb215813eaf6c4983b19d9754"
+          },
+          "trace": {
+            "path": "build/development/sio-driver/s4-measurement-active/emulator.log",
+            "sha256": "86cee11f7d438574803ccb1d7f2bf388877b86fc24da12a97e26219e78a926ad"
+          },
+          "cpu_trace": false,
+          "identical_relative_phase_ticks": true,
+          "identical_transfer_counts": true,
+          "identical_payload_transactions_and_gaps": true
+        }
+      ],
+      "guards": "intact",
+      "returned_status": 0,
+      "live_tasks_after_shutdown": 0
+    }
+  },
+  "validation": {
+    "host_tests": 212,
+    "host_log": {
+      "path": "build/development/loading-breakdown/host.log",
+      "sha256": "6f3c8fa1d976fb418df28e6ffa82201c9f46219dc930cab6518b2a2511b89681"
+    },
+    "new_native_replays": 2,
+    "new_compilations": 0,
+    "scope": "Retained optimized diagnostic image: HELLO, DIR and EXIT, stopped/active prime worker, stack/domain guards, bounded completion and OS ownership restoration. Existing S4 traced and untraced runs reused after input and hardware timing comparison."
+  },
+  "reserved_bank_zero_delta": {
+    "fixed_bytes": 0,
+    "per_task_bytes": 0,
+    "includes": "All guards, alignment and unused reserved capacity. No guest image or reservation changes."
+  },
+  "interpretation": [
+    "Each table partitions elapsed guest time; nested loader/validation/descriptor/provider/U32 tables must not be summed.",
+    "Device wait is ACK end to COMPLETE start, including modeled media and device processing, not measured pure rotation.",
+    "Wire transmission can overlap CPU service; outside-transaction time includes scheduling and other Tasks.",
+    "Phase values from instruction markers have finer resolution than the existing 20 ms VBI samples.",
+    "Accurate GENERIC57600 floppy timings apply; this does not characterize a flash-backed SIO device or physical hardware."
+  ],
+  "recommended_next_slice": "Parse provider entries once per load, match all imports against that pass, and preserve full manifest, duplicate/missing provider and contract checks. No ABI or compiler change; remeasure before claiming savings."
+}

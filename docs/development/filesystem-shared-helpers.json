@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Development checks and matched mixed-filesystem integration code sizes; no release qualification or refreshed demo.",
+  "baseline_commit": "79959b1",
+  "compiler_revision": "27119ab2804e795b0bbb067c269826b934271754",
+  "compiler_override": false,
+  "stack_checks": true,
+  "inputs": {
+    "lib/spartados/sdfs.act": "a9268df59e02f0cb7fb03d01e4e3cc4895a2efac7db602eaab69be1d39811cdc",
+    "lib/spartados/sdfstypes.act": "bc05c20b08d860e0c8887e6642c34d13191b135a7665ce01f055af767d3748f4",
+    "lib/spartados/sdfsfile.act": "5d01a9862ac9092d4e5e6452afd99b34cbac5200e31c28f06541593a597d6c41",
+    "lib/spartados/sdfsdir.act": "e6bd01547b3de9f7d10930080669671756379b390e9e65ea6672590a430b4842",
+    "lib/spartados/sdfsname.act": "496c719e18ab3a17c5e007a6661694ac3be6e807f3993446814f066e63d89b46",
+    "lib/spartados/sdfsdate.act": "3805dd9c972fc38d22b5829c3dba79f720100fe41d31cd63d25c6eb21e4484e5",
+    "lib/fs/fsformats.act": "8f1857557b04d9315adf3bae853afc42aef3761a824013873e0823310539e317",
+    "lib/fs/fsbtypes.act": "6b8999e6158ffcf0bc538c36a0b23d6c5ba374ec7ede8d667a4d0b6a8bd0b03d",
+    "lib/fs/fsbackend.act": "fc6df7007b9b150fe5536d4c497a14972a6034a35d082953966be77ab0365de9",
+    "lib/fs/fs83.act": "a7d93deb2dab8c1481edbbcd702036b4ca651b256c2cd8830047d957168d1d3d",
+    "lib/fs/fscore.act": "acae6ee33a30c2d5f24918026ed9cc3c65e97a3bb0eba4b8e7a29db20f5165dc",
+    "lib/fs/fsfiles.act": "11d574fe134fc820fa51b0ca4613848da00ba8e492d008f0e9473ea25c62b49d",
+    "lib/fs/fsinspect.act": "350f675c8594a4f9a8ce8afddedfd0549142c8d74e435ca85b5789ccf250939c",
+    "lib/fs/fsactive.act": "ea39bfd119679214ab5face708e3a2323a25a7be0fce51a9b3375b7dd45e6173",
+    "lib/fs/fsabort.act": "5d180e7d5985f643a2991c3d6f991eb98e885bbaa65116cb36101a4add421e94",
+    "lib/fs/fsoperation.act": "cc865781fd42c4368e47911d6e0cb57359ca9ef79b6cf7c39b9935d85df13951",
+    "lib/mydos/mydosfile.act": "fe07fdba077fc89d5274e4c3c16c2136128775796730d9f73c45cc3ca98e68fd",
+    "lib/mydos/mydos.act": "16877b28fcaab4e1fb328d1e2cbbf4a28fc5be361a06917c35e3880b8283d42f",
+    "lib/mydos/mydostypes.act": "27356579ed43d33f8b7e8955695652894c21e8f914218ba1d6d9367ba351893a",
+    "lib/fs/fsmux.act": "31458fb2360f68f18efbc9f9f5006fe2035c7c9796fad155e3f4f2ab7c93d3c3",
+    "lib/fs/fsmount.act": "58edebbf22bdcc2bbf70bd25345d09f7611a2aac0d363c69b88eeec280f254dd",
+    "lib/fs/fsmanager.act": "8ed76955e223a86321c8aeb21f4456b832a177a9334d02d363c418b4d87b6cb7",
+    "lib/fs/fspacket.act": "a2b8982e7f9c8bfbcd6bcbb222e949e32dc10112e69470a0c92ce453d6e90e6b",
+    "lib/fs/fsdirectory.act": "415426821cc5ea7d566a1ecadd50246cf7d27bf7e59e26257ce807a57ba98af3",
+    "lib/fs/fslocks.act": "512a9ce09cc5001f92e2b328c01956dd89e766e53e2799e2d1f05e2b823a6aab",
+    "lib/fs/fsrelative.act": "9e1ce3fed54afa1e02cf7ef68415e39f5188f17efd761132e92af1f74b094169",
+    "lib/fs/fsinfo.act": "53904f1e99ff0d0a580b4edf754fc02507912076166ad7248ee52520396e0b71",
+    "lib/fs/fsio.act": "5f2e3ce587dd98bbdae3f3f186eda629a3d0c38636a78b5bfb9c851ec9c68a7b",
+    "lib/fs/fsboot.act": "195da7cfcc8de03788216b8454e5c18020a94b26992f3e32d3c9eebbb2bb573c",
+    "lib/fs/fsworker.act": "290f460b5bf0eb68b54fdc9f47621d136dad95ec9d357afbaa15dd20e6d0a9f4",
+    "lib/fs/fsinit.act": "0266a566718358e968827ae0f50198859b60433b57e58c51fc42690f88e643c4",
+    "lib/fs/fsregistry.act": "e434b3c8512a0cdc8ca5b1e39d96f12183ded69f90ab7e2dc210d93d61ca0451",
+    "lib/fs/fsnames.act": "c7d8528147d9642f39c1bddf0cdefc7f32643d8ef405ff38673152b580eeb128",
+    "lib/fs/fssystem.act": "7f860c68d0d8b20766867f4c9dc4823d5169d3ec99dae096b8acb76a2ee63308",
+    "lib/fs/fsports.act": "24758e82c2d2de0a235d1fcf5f76b3c272a2434f76858e80b475fb89cd133a05",
+    "lib/fs/fstypes.act": "43bc8e3ea9db07a3b8960e52ebd669f4c16b113478988cf87fba196b80530ddc",
+    "lib/fs/fshandler.act": "fc25f217a5ec7243a80727c1e212a22f646ac64a7f671ae0b44257402c4b8f5a"
+  },
+  "size": {
+    "before_routine_bytes": 328353,
+    "after_routine_bytes": 325840,
+    "saved_bytes": 2513,
+    "changed_modules": {
+      "FS83": {
+        "before": 0,
+        "after": 3116
+      },
+      "FSBACKEND": {
+        "before": 4316,
+        "after": 4197
+      },
+      "FSCORE": {
+        "before": 0,
+        "after": 673
+      },
+      "MYDOS": {
+        "before": 8732,
+        "after": 7534
+      },
+      "MYDOSFILE": {
+        "before": 11307,
+        "after": 10762
+      },
+      "MYDOSNAMES": {
+        "before": 1851,
+        "after": 0
+      },
+      "SDFS": {
+        "before": 6706,
+        "after": 6587
+      },
+      "SDFSFILE": {
+        "before": 9217,
+        "after": 8672
+      },
+      "SDFSNAME": {
+        "before": 5569,
+        "after": 3644
+      }
+    },
+    "before_image_sha256": "5d7d84459e3b30b44c427c2679a9c45b44c9c300b39a319f87ef189028297d04",
+    "after_image_sha256": "0b2b9f08ea3aecd3bbe8bf95679b1e4769f817831d9a466d8dc6614fe89be594"
+  },
+  "bank_zero": {
+    "fixed_delta": 0,
+    "per_task_delta": 0
+  },
+  "memory_maps_identical": true,
+  "host_tests": 236,
+  "cases": [
+    {
+      "case": "namespace-raw",
+      "result_path": "build/development/fs-shared-helpers/namespace-raw/results.json",
+      "assertions": [
+        23369
+      ],
+      "status": "pass",
+      "guards": "intact",
+      "arithmetic_fault": "expected trap, guards intact"
+    },
+    {
+      "case": "namespace-opt",
+      "result_path": "build/development/fs-shared-helpers/namespace-opt/results.json",
+      "assertions": [
+        23369
+      ],
+      "status": "pass",
+      "guards": "intact",
+      "arithmetic_fault": "expected trap, guards intact"
+    },
+    {
+      "case": "mydos-metadata-opt",
+      "result_path": "build/development/fs-shared-helpers/mydos-metadata-opt/results.json",
+      "assertions": [
+        1164
+      ],
+      "status": "pass",
+      "guards": "intact"
+    },
+    {
+      "case": "mydos-files-raw",
+      "result_path": "build/development/fs-shared-helpers/mydos-files-raw/results.json",
+      "assertions": [
+        768
+      ],
+      "status": "pass",
+      "guards": "intact"
+    },
+    {
+      "case": "sdfs-files-opt",
+      "result_path": "build/development/fs-shared-helpers/sdfs-files-opt/results.json",
+      "assertions": [
+        3538
+      ],
+      "status": "pass",
+      "guards": "intact"
+    },
+    {
+      "case": "mixed-opt",
+      "result_path": "build/development/fs-shared-helpers/mixed-opt/results-128.json",
+      "assertions": [
+        118
+      ],
+      "status": "pass",
+      "guards": "intact"
+    }
+  ]
+}

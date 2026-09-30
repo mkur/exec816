@@ -1,0 +1,169 @@
+MODULE PORTLIFETIME
+USE EXEC
+USE EXECLISTS
+USE HEAPCORE
+EXEC.Task POINTER parent
+ADDRESS ARRAY ports(4),blocks(16)
+LONGCARD ARRAY facts(10)
+CARD checks
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff86)
+  FI
+
+RETURN
+
+PROC Shape(EXEC.MsgPort POINTER port)
+
+  Require(port<>EXEC.MsgPort POINTER(0))
+  Require(port.mp_Node.ln_Type=EXEC.NT_MSGPORT AND port.mp_Node.ln_Pri=0)
+  Require(port.mp_Node.ln_Name=BYTE POINTER(0) AND port.mp_Flags=EXEC.PA_SIGNAL)
+  Require(port.mp_SigTask=parent AND port.mp_SigBit>=16 AND port.mp_SigBit<32)
+  Require(EXECLISTS.IsListEmpty(@port.mp_MsgList))
+  Require(port.mp_MsgList.lh_Type=0 AND port.mp_MsgList.lh_Pad=0)
+
+RETURN
+
+; Check port allocation, signal ownership and ordinary deletion.
+PROC Basic()
+  BYTE i
+  EXEC.MsgPort POINTER port
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  facts(0)=EXEC.AvailMem(0)
+  FOR i=0 TO 3 DO
+    port=EXEC.CreateMsgPort()
+    Shape(port)
+    ports(i)=ADDRESS(port)
+  OD
+
+  facts(1)=EXEC.AvailMem(0)
+  Require(facts(0)-facts(1)=128)
+  FOR i=0 TO 3 DO
+    EXEC.DeleteMsgPort(EXEC.MsgPort POINTER(ports(i)))
+  OD
+
+  EXEC.DeleteMsgPort(EXEC.MsgPort POINTER(0))
+  facts(2)=EXEC.AvailMem(0)
+  Require(facts(2)=facts(0))
+  Require(parent.tc_SigAlloc=LONGCARD($ffff))
+  checks==+1
+
+RETURN
+
+; Exercise port lifetime operations while scheduler exclusion is nested.
+PROC Exclusion()
+  EXEC.MsgPort POINTER port
+  BYTE bit
+  LONGCARD mask,bits
+
+  EXEC.Forbid()
+  EXEC.Forbid()
+  port=EXEC.CreateMsgPort()
+  Shape(port)
+  bit=port.mp_SigBit
+  Require(parent.tc_TDNestCnt=1)
+  mask=LONGCARD(1) LSH bit
+  EXEC.Signal(parent,mask)
+  EXEC.DeleteMsgPort(port)
+  bits=EXEC.SetSignal(0,0)
+  Require((bits & mask)=mask)
+  port=EXEC.CreateMsgPort()
+  Shape(port)
+  Require(port.mp_SigBit=bit)
+  bits=EXEC.SetSignal(0,0)
+  Require((bits & mask)=0)
+  port.mp_Flags=EXEC.PA_IGNORE
+  EXEC.DeleteMsgPort(port)
+  Require(parent.tc_TDNestCnt=1)
+  EXEC.Permit()
+  EXEC.Permit()
+  Require(parent.tc_TDNestCnt=$ff AND parent.tc_SigAlloc=LONGCARD($ffff))
+  checks==+2
+
+RETURN
+
+; Require allocation failure to leave no retained port or signal resources.
+PROC MemoryFailure()
+  BYTE count
+  BYTE POINTER block
+  EXEC.MsgPort POINTER port
+
+  count=0
+  block=EXEC.AllocMem(LONGCARD($10000),0)
+  WHILE block<>BYTE POINTER(0) DO
+    Require(count<16)
+    blocks(count)=ADDRESS(block)
+    count==+1
+    block=EXEC.AllocMem(LONGCARD($10000),0)
+  OD
+
+  facts(3)=EXEC.AvailMem(0)
+  Require(facts(3)=0)
+  port=EXEC.CreateMsgPort()
+  Require(port=EXEC.MsgPort POINTER(0))
+  facts(4)=EXEC.AvailMem(0)
+  Require(facts(4)=0)
+  Require(parent.tc_SigAlloc=LONGCARD($ffff))
+  WHILE count<>0 DO
+    count==-1
+    EXEC.FreeMem(BYTE POINTER(blocks(count)),LONGCARD($10000))
+  OD
+
+  facts(5)=EXEC.AvailMem(0)
+  Require(facts(5)=facts(0))
+  checks==+4
+
+RETURN
+
+; Roll back port storage when no wake signal can be allocated.
+PROC SignalFailure()
+  BYTE bit,got
+  EXEC.MsgPort POINTER port
+  LONGCARD bits
+
+  facts(6)=parent.tc_SigAlloc
+  FOR bit=16 TO 31 DO
+    got=EXEC.AllocSignal(bit)
+    Require(got=bit)
+  OD
+
+  facts(7)=parent.tc_SigAlloc
+  port=EXEC.CreateMsgPort()
+  facts(8)=LONGCARD(ADDRESS(port))
+  Require(port=EXEC.MsgPort POINTER(0))
+  Require(EXEC.AvailMem(0)=facts(0) AND parent.tc_SigAlloc=LONGCARD($ffffffff))
+  EXEC.Signal(parent,LONGCARD($ffff0000))
+  FOR bit=16 TO 31 DO
+    EXEC.FreeSignal(bit)
+  OD
+
+  port=EXEC.CreateMsgPort()
+  Shape(port)
+  Require(port.mp_SigBit=16)
+  bits=EXEC.SetSignal(0,0)
+  Require(bits=LONGCARD($fffe0000))
+  EXEC.DeleteMsgPort(port)
+  bits=EXEC.SetSignal(0,LONGCARD($ffff0000))
+  facts(9)=EXEC.AvailMem(0)
+  Require(facts(9)=facts(0))
+  Require(parent.tc_SigAlloc=LONGCARD($ffff))
+  checks==+8
+
+RETURN
+
+; Exercise port creation, ownership, exclusion and allocation failures.
+PROC Main()
+
+  Basic()
+  Exclusion()
+  MemoryFailure()
+  SignalFailure()
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,119 @@
+MODULE O65
+USE EXEC
+USE A816ABI
+USE O65MEMORY
+USE DOSCLIENT
+USE O65TYPES
+USE O65READ
+USE O65WIRE
+USE O65PROFILE
+USE O65RELOCATIONS
+
+; Release validation-owned storage after loading succeeds or fails.
+PUBLIC PROC Release(O65TYPES.Validation POINTER validation)
+
+  IF validation=O65TYPES.Validation POINTER(0) THEN
+    RETURN
+  FI
+
+  IF validation.imports<>O65TYPES.Import POINTER(0) THEN
+    EXEC.FreeMem(BYTE POINTER(validation.imports),
+        SIZE(validation.importCount)*SIZEOF(O65TYPES.Import))
+  FI
+
+  EXEC.FreeMem(BYTE POINTER(validation),SIZEOF(O65TYPES.Validation))
+
+RETURN
+
+; Validate the compact command descriptor before accepting its entry and
+; imports.
+PROC Descriptor(O65TYPES.Validation POINTER validation)
+  O65TYPES.Cursor POINTER cursor
+  LONGCARD length
+
+  cursor=@validation.descriptor
+  length=validation.textBytes-validation.descriptorAt
+  IF length<>8+LONGCARD(validation.importCount)*4
+      OR validation.entry>=validation.descriptorAt THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+    RETURN
+  FI
+
+  cursor.bytes=@validation.wire.bytes(SIZE(
+      validation.textAt+validation.descriptorAt))
+  cursor.limit=length
+  IF O65READ.U32(cursor)<>LONGCARD($33433841) THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_BAD_FORMAT))
+    RETURN
+  FI
+
+  IF O65READ.U16(cursor)<>A816ABI.ABI_VERSION OR O65READ.U16(cursor)<>0 THEN
+    O65READ.Fail(cursor,CARD(O65TYPES.ERROR_UNSUPPORTED))
+    RETURN
+  FI
+
+  O65PROFILE.Imports(validation)
+  IF cursor.error<>0 THEN
+    RETURN
+  FI
+
+  ; The trailer belongs to the file, not the resident image.
+  validation.textBytes=validation.descriptorAt
+  O65RELOCATIONS.Read(validation,1)
+
+RETURN
+
+; The caller retains this immutable buffer until Release. Validation owns only
+; its bounded upper-heap metadata and never patches the input or admits a Task.
+PUBLIC O65TYPES.Validation POINTER FUNC Validate(BYTE POINTER bytes LONGCARD length)
+  O65TYPES.Validation POINTER validation
+  CARD error
+
+  DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_BAD_FORMAT))
+  IF bytes=BYTE POINTER(0) OR length>$1000000-LONGCARD(ADDRESS(bytes)) THEN
+    RETURN(O65TYPES.Validation POINTER(0))
+  FI
+
+  IF length>O65TYPES.LIMIT_FILE THEN
+    DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_RESOURCE_LIMIT))
+    RETURN(O65TYPES.Validation POINTER(0))
+  FI
+
+  validation=O65TYPES.Validation POINTER(O65MEMORY.Allocate(SIZEOF(
+      O65TYPES.Validation)))
+  IF validation=O65TYPES.Validation POINTER(0) THEN
+    DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_NO_FREE_STORE))
+    RETURN(validation)
+  FI
+
+  validation.wire.bytes=bytes
+  validation.wire.limit=length
+  O65WIRE.Header(validation)
+  IF validation.wire.error=0 THEN
+    O65RELOCATIONS.Read(validation,0)
+  FI
+
+  IF validation.wire.error=0 THEN
+    O65WIRE.Exports(validation)
+  FI
+
+  IF validation.wire.error=0 THEN
+    Descriptor(validation)
+  FI
+
+  error=validation.wire.error
+  IF error=0 THEN
+    error=validation.descriptor.error
+  FI
+
+  IF error<>0 THEN
+    Release(validation)
+    DOSCLIENT.SetError(LONGINT(error))
+    RETURN(O65TYPES.Validation POINTER(0))
+  FI
+
+  DOSCLIENT.SetError(0)
+
+RETURN(validation)
+
+ENDMODULE

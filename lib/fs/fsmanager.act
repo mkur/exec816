@@ -1,0 +1,71 @@
+; Private system administration; same single outstanding client packet.
+MODULE FSMANAGER
+USE EXEC
+USE DOSCORE
+USE DOSCLIENT
+USE FSTYPES
+USE FSBOOT
+USE FSREGISTRY
+USE FSMOUNT
+INCLUDE "../dos/dos-types.inc"
+
+; Send a mount-management request and keep its caller context until the reply.
+PUBLIC LONGINT FUNC Call(LONGINT action,index)
+  DOSCLIENT.ClientContext POINTER client
+  DOSCORE.DosSlot POINTER slot
+  DOSCORE.DosRegistry POINTER registry
+  FSTYPES.Service POINTER service
+  LONGINT result
+
+  slot=DOSCORE.Current()
+  client=DOSCLIENT.EnsureSlot(slot)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  registry=DOSCORE.GetRegistry()
+  service=FSTYPES.Service POINTER(0)
+  EXEC.Forbid()
+  IF (registry.state=FSTYPES.STATE_READY
+      OR registry.state=FSTYPES.STATE_STOPPING) AND registry.stop=0 THEN
+    service=FSTYPES.Service POINTER(registry.runtime)
+    IF service.controls=$ffff THEN
+      service=FSTYPES.Service POINTER(0)
+    ELSE
+      service.controls==+1
+    FI
+  FI
+
+  EXEC.Permit()
+  IF service=FSTYPES.Service POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_DEVICE_NOT_MOUNTED)
+    RETURN(0)
+  FI
+
+  client.packet.sp_Pkt.dp_Arg1=index
+  client.packet.sp_Pkt.dp_Arg2=0
+  client.packet.sp_Pkt.dp_Arg3=0
+  client.packet.sp_Pkt.dp_Arg4=0
+  client.packet.sp_Pkt.dp_Arg5=0
+  client.packet.sp_Pkt.dp_Arg6=0
+  client.packet.sp_Pkt.dp_Arg7=LONGINT(ADDRESS(slot))
+  result=DOSCLIENT.Call(slot,client,service.control,action)
+  EXEC.Forbid()
+  service.controls==-1
+  EXEC.Permit()
+
+RETURN(result)
+
+PUBLIC LONGINT FUNC Unmount(BYTE index)
+
+RETURN(Call(FSMOUNT.UNMOUNT,LONGINT(index)))
+
+PUBLIC LONGINT FUNC Mount(BYTE index)
+
+RETURN(Call(FSMOUNT.MOUNT,LONGINT(index)))
+
+PUBLIC LONGINT FUNC Quiesce()
+
+RETURN(Call(FSMOUNT.QUIESCE,0))
+
+ENDMODULE

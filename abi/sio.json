@@ -1,0 +1,114 @@
+{
+  "abi": "exec816.sio",
+  "revision": 1,
+  "constants": {
+    "SIOCMD_TRANSACTION": 9,
+    "SIODIR_NONE": 0,
+    "SIODIR_READ": 1,
+    "SIODIR_WRITE": 2,
+    "SIOERR_TIMEOUT": 1,
+    "SIOERR_NAK": 2,
+    "SIOERR_DEVICE": 3,
+    "SIOERR_CHECKSUM": 4,
+    "SIOERR_OVERRUN": 5,
+    "SIOERR_FRAMING": 6,
+    "SIOERR_PROTOCOL": 7,
+    "SIOERR_BUSUNAVAILABLE": 8,
+    "SIOERR_BADPROFILE": 9
+  },
+  "records": {
+    "IOSIOReq": {
+      "size": 52,
+      "alignment": 2,
+      "fields": [
+        [
+          "io_Message",
+          "Message",
+          0
+        ],
+        [
+          "io_Device",
+          "BYTE POINTER",
+          16
+        ],
+        [
+          "io_Unit",
+          "BYTE POINTER",
+          19
+        ],
+        [
+          "io_Command",
+          "CARD",
+          22
+        ],
+        [
+          "io_Flags",
+          "BYTE",
+          24
+        ],
+        [
+          "io_Error",
+          "BYTE",
+          25
+        ],
+        [
+          "io_Actual",
+          "LONGCARD",
+          26
+        ],
+        [
+          "io_Length",
+          "LONGCARD",
+          30
+        ],
+        [
+          "io_Data",
+          "BYTE POINTER",
+          34
+        ],
+        [
+          "io_Offset",
+          "LONGCARD",
+          38
+        ],
+        [
+          "sio_Command",
+          "BYTE",
+          42
+        ],
+        [
+          "sio_Aux1",
+          "BYTE",
+          43
+        ],
+        [
+          "sio_Aux2",
+          "BYTE",
+          44
+        ],
+        [
+          "sio_Direction",
+          "BYTE",
+          45
+        ],
+        [
+          "sio_Profile",
+          "CARD",
+          46
+        ],
+        [
+          "sio_TimeoutUS",
+          "LONGCARD",
+          48
+        ]
+      ]
+    }
+  },
+  "profiles": {
+    "FASTEST125": 1,
+    "STOCK810": 2,
+    "HAPPY1050": 3,
+    "GENERIC57600": 4
+  },
+  "profile_note": "FASTEST125 and GENERIC57600 admit <=128-byte payloads plus exactly 256-byte READ ($52); larger writes remain unsupported. GENERIC57600 uses POKEY divisor 8 in command and data phases, matching Altirra Generic + 57600 baud (generic56k); this is a nominal rate, not exact 57600 baud on PAL. STOCK810 retains <=128 payload bytes; Happy1050 NONE only. Default/max active timeout 1,000,000 us except STOCK810 2,000,000 us; minimum explicit 4,041 us. Unsafe recovery requires platform reset; no retry or baud fallback."
+}

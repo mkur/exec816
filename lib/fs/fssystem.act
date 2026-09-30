@@ -1,0 +1,96 @@
+; One boot-selected mount slot, shared by admission, mounting and diagnostics.
+MODULE FSSYSTEM
+USE BOOTCONFIG
+USE FSTYPES
+USE FSNAMES
+USE FS83
+
+PUBLIC BYTE FUNC Selected(BYTE slot)
+
+RETURN(slot=BOOTCONFIG.B_SYSTEM_SLOT)
+
+; Select the configured system drive from validated boot settings.
+PUBLIC CARD FUNC SystemUnit()
+
+  IF BOOTCONFIG.B_SYSTEM_SLOT=255 THEN
+    RETURN(0)
+  FI
+
+RETURN(48+CARD(BOOTCONFIG.SystemDrive()))
+
+; Apply system-drive selection only to the designated mount slot.
+PUBLIC CARD FUNC Unit(FSTYPES.Spec POINTER spec BYTE slot)
+
+  IF Selected(slot)<>0 THEN
+    RETURN(SystemUnit())
+  FI
+
+RETURN(spec.unit)
+
+; Physical names follow the selected drive; SYS remains attached to its slot.
+PUBLIC BYTE FUNC NameByte(FSTYPES.Spec POINTER spec BYTE slot,index)
+
+  IF Selected(slot)<>0 THEN
+    CASE index OF
+    WHEN 0 THEN
+      RETURN('D)
+    WHEN 1 THEN
+      RETURN('0+BOOTCONFIG.SystemDrive())
+    ESAC
+
+    RETURN(0)
+  FI
+
+RETURN(spec.alias(index))
+
+; Resolve SYS and physical aliases against the same mount identity.
+PUBLIC BYTE FUNC Matches(FSTYPES.Spec POINTER spec BYTE slot BYTE POINTER name
+    CARD length)
+  BYTE index
+
+  IF FSNAMES.System(name,length)<>0 THEN
+    RETURN(Selected(slot))
+  FI
+
+  FOR index=0 TO BYTE(length)-1 DO
+    IF FS83.Fold(NameByte(spec,slot,index))<>FS83.Fold(name(index)) THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(NameByte(spec,slot,BYTE(length))=0)
+
+; Detect alias collisions after applying the system-drive selection.
+PUBLIC BYTE FUNC SameName(FSTYPES.Spec POINTER first,second BYTE firstSlot,
+    secondSlot)
+  BYTE index
+
+  FOR index=0 TO 31 DO
+    BEGIN
+      LET value=NameByte(first,firstSlot,index)
+      IF FS83.Fold(value)<>FS83.Fold(NameByte(second,secondSlot,
+          index)) THEN
+        RETURN(0)
+      FI
+
+      IF value=0 THEN
+        RETURN(1)
+      FI
+    END
+  OD
+
+RETURN(0)
+
+; Preserve geometry/profile/format while copying the boot-selected identity.
+PUBLIC PROC Apply(FSTYPES.Spec POINTER spec BYTE slot)
+
+  IF Selected(slot)<>0 THEN
+    spec.unit=SystemUnit()
+    spec.alias(0)='D
+    spec.alias(1)='0+BOOTCONFIG.SystemDrive()
+    spec.alias(2)=0
+  FI
+
+RETURN
+
+ENDMODULE

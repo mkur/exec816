@@ -1,0 +1,24 @@
+; Single-program launcher/ROM-CIO probe. For application I/O see commands/hello.act.
+MODULE HELLO
+USE EXECOS
+
+; Clear screen, "EXEC816 NATIVE ACTION OK", ATASCII end-of-line.
+BYTE ARRAY message=[125 69 88 69 67 56 49 54 32 78 65 84 73 86 69 32 65 67 84 73 79 78 32 79 75 155]
+CARD status, zeroWasClear
+CARD initialized=[$1234]
+VOLATILE BYTE clock=$14
+
+; Print the initial Exec greeting through the example console adapter.
+PROC Main()
+  BYTE before
+
+  zeroWasClear=(status=0 AND initialized=$1234)
+  before=clock
+  WHILE clock=before DO
+  OD
+
+  status=EXECOS.Write(BYTE POINTER(message),26)
+
+RETURN
+
+ENDMODULE

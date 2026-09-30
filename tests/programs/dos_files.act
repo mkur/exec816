@@ -1,0 +1,301 @@
+MODULE DOSFILETEST
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE HEAPCORE
+USE FSBOOT
+USE FSREGISTRY
+USE FSTYPES
+CARD checks,otherChecks
+BYTE concurrent
+EXEC.Task other,compute
+VOLATILE BYTE stopCompute,otherDone,otherStarted
+VOLATILE CARD computations,ioProgress
+PROC POINTER absent()
+DOS.FileHandle POINTER file,second
+LONGCARD before
+TYPE Chunk=[
+  BYTE POINTER next
+  LONGCARD size
+]
+
+Chunk POINTER held
+LONGCARD allocationBefore
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f600+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC OpenFile()
+
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
+  Require(FSBOOT.Stop()=0)
+
+RETURN
+
+PROC ReadFile()
+  BYTE POINTER data
+  CARD index
+
+  data=BYTE POINTER($cfff0)
+  Require(DOS.Read(file,data,778)=777 AND DOS.IoErr()=0)
+  FOR index=0 TO 776 DO
+    IF data(index)<>(BYTE(index) XOR 83) THEN
+      Require(0)
+    FI
+  OD
+
+  Require(DOS.Read(file,data,1)=0)
+
+RETURN
+
+PROC SeekFile()
+  BYTE POINTER data
+
+  data=BYTE POINTER($cfff0)
+  Require(DOS.Seek(file,253,DOS.OFFSET_BEGINNING)=777)
+  Require(DOS.Read(file,data,4)=4 AND data(0)=(253 XOR 83))
+  Require(DOS.Seek(file,9999,DOS.OFFSET_BEGINNING)=-1
+      AND DOS.IoErr()=DOS.ERROR_SEEK_ERROR)
+  Require(DOS.Close(file)<>0 AND DOS.IoErr()=DOS.ERROR_SEEK_ERROR)
+
+RETURN
+
+PROC BadOpen()
+
+  file=DOS.Open(BYTE POINTER($d1020),DOS.MODE_OLDFILE)
+  Require(file=DOS.FileHandle POINTER(0) AND DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND)
+  file=DOS.Open(BYTE POINTER($d1030),DOS.MODE_OLDFILE)
+  Require(file=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_NEWFILE)
+  Require(file=DOS.FileHandle POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_DISK_WRITE_PROTECTED)
+
+RETURN
+
+; Hold available allocations so the next operation must exercise its failure
+; path.
+PROC Exhaust(BYTE unused)
+  LONGCARD size
+  Chunk POINTER item
+  CARD count
+
+  allocationBefore=EXEC.AvailMem(0)
+  count=0
+  DO
+    size=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    IF size<8 THEN
+      EXIT
+    FI
+
+    item=Chunk POINTER(EXEC.AllocMem(size,EXEC.MEMF_UPPER))
+    Require(item<>Chunk POINTER(0))
+    item.next=BYTE POINTER(held)
+    item.size=size
+    held=item
+    count==+1
+    Require(count<128)
+  OD
+
+RETURN
+
+; Return the allocations retained to force memory exhaustion.
+PROC ReleaseHeld(BYTE unused)
+  Chunk POINTER next
+  LONGCARD size
+
+  WHILE held<>Chunk POINTER(0) DO
+    next=Chunk POINTER(held.next)
+    size=held.size
+    EXEC.FreeMem(BYTE POINTER(held),size)
+    held=next
+  OD
+
+  Require(EXEC.AvailMem(0)=allocationBefore)
+
+RETURN
+
+PROC AllocationFailure(BYTE unused)
+
+  Exhaust(0)
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file=DOS.FileHandle POINTER(0) AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  ReleaseHeld(0)
+
+RETURN
+
+PROC Finish()
+
+  Require(FSBOOT.Stop()=1)
+  Require(DOS.ReleaseContext()<>0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Keep the peer Task's failure accounting separate from the main client.
+PROC OtherRequire(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f700+(otherChecks & 255))
+  FI
+
+  otherChecks==+1
+
+RETURN
+
+; Prepare a Task record with its assigned stack before scheduler admission.
+PROC PrepareTask(EXEC.Task POINTER task BYTE slot)
+
+  task.tc_Node.ln_Type=EXEC.NT_TASK
+  task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  task.tc_SPReg=task.tc_SPUpper-SIZE(2)
+  task.tc_UserData=ADDRESS($123456)
+  EXECLISTS.NewList(@task.tc_MemEntry)
+
+RETURN
+
+PROC OtherOpen(BYTE unused)
+
+  OtherRequire(compute.tc_State<>EXEC.TS_INVALID
+      AND compute.tc_State<>EXEC.TS_REMOVED)
+  OtherRequire(DOS.Read(file,BYTE POINTER($e0000),1)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  otherStarted=1
+  second=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  OtherRequire(second<>DOS.FileHandle POINTER(0))
+
+RETURN
+
+PROC OtherRead(BYTE unused)
+  BYTE POINTER buffer
+  CARD index,status
+
+  buffer=BYTE POINTER($e0000)
+  OtherRequire(DOS.Read(second,buffer,19)=19)
+  FOR index=0 TO 18 DO
+    OtherRequire(buffer(index)=(BYTE(index) XOR 83))
+  OD
+
+  status=EXECTASKS.Sleep(2)
+
+RETURN
+
+PROC OtherError(BYTE unused)
+  CARD status
+
+  OtherRequire(DOS.Seek(second,0,DOS.OFFSET_CURRENT)=19)
+  OtherRequire(DOS.Read(second,BYTE POINTER($e0000),-1)=-1
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  status=EXECTASKS.Sleep(2)
+  OtherRequire(DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+
+RETURN
+
+PROC OtherClose(BYTE unused)
+
+  OtherRequire(DOS.Close(second)<>0 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  OtherRequire(DOS.ReleaseContext()<>0)
+  otherDone=1
+
+RETURN
+
+PROC OtherEntry()
+
+  OtherOpen(0)
+  OtherRead(0)
+  OtherError(0)
+  OtherClose(0)
+
+RETURN
+
+PROC ComputeEntry()
+  FSTYPES.Service POINTER service
+  DOSCORE.DosRegistry POINTER registry
+  EXEC.Task POINTER worker
+  BYTE POINTER bytes
+
+  service=FSREGISTRY.Service()
+  registry=DOSCORE.GetRegistry()
+  bytes=registry.task
+  worker=EXEC.Task POINTER(bytes)
+  WHILE stopCompute=0 DO
+    computations==+1
+    IF service.adapter.busy<>0 AND worker.tc_State=EXEC.TS_WAIT THEN
+      IF service.adapter.request.io_Message.mn_Node.ln_Type=EXEC.NT_MESSAGE THEN
+        ioProgress==+1
+      FI
+    FI
+
+    EXEC.Poll()
+  OD
+
+RETURN
+
+PROC Spawn()
+  CARD status
+
+  PrepareTask(@other,3)
+  PrepareTask(@compute,4)
+  Require(EXEC.AddTask(@compute,@ComputeEntry,absent)=@compute)
+  Require(EXEC.AddTask(@other,@OtherEntry,absent)=@other)
+  WHILE otherStarted=0 DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+PROC Join()
+  CARD status
+
+  WHILE otherDone=0 OR other.tc_State<>EXEC.TS_REMOVED DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  stopCompute=1
+  WHILE compute.tc_State<>EXEC.TS_REMOVED DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  Require(computations<>0 AND ioProgress<>0 AND otherChecks=28)
+  Require(other.tc_UserData=ADDRESS($123456)
+      AND compute.tc_UserData=ADDRESS($123456))
+
+RETURN
+
+; Exercise read/seek behavior, allocation failure and file ownership.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  OpenFile()
+  IF concurrent<>0 THEN
+    Spawn()
+  FI
+
+  ReadFile()
+  SeekFile()
+  IF concurrent<>0 THEN
+    Join()
+  FI
+
+  BadOpen()
+  AllocationFailure(0)
+  Finish()
+
+RETURN
+
+ENDMODULE

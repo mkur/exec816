@@ -1,0 +1,174 @@
+; Shared eight-Task peers are generated from shell_concurrent.act by the runner.
+MODULE SHELLBREAKTEST
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE BREAKPROBE
+INCLUDE "shell-break-common.inc"
+CARD scenario,checks
+VOLATILE BYTE computing
+LONGCARD loops
+BYTE ARRAY commandText(96)
+BYTE ARRAY rootCheck=[68 49 58 0]
+LONGCARD promptGeneration
+
+PROC Compute(BYTE unused)
+  CARD index
+
+  computing=1
+  WHILE ShellPoll()=0 DO
+    FOR index=0 TO 63 DO
+      loops==+1
+    OD
+  OD
+
+  computing=0
+
+RETURN
+
+PROC PrepareCommand(BYTE unused)
+  BYTE POINTER line
+  CARD index
+
+  line=ShellLine()
+  index=0
+  DO
+    line(index)=commandText(index)
+    IF commandText(index)=0 THEN
+      EXIT
+    FI
+
+    index==+1
+    Check(index<96)
+  OD
+
+  shell.length=index
+
+RETURN
+
+PROC Balanced(BYTE unused)
+  DOSCLIENT.ClientContext POINTER client
+  DOSBREAKTYPES.Scope POINTER scope
+  BYTE POINTER name
+
+  client=DOSCLIENT.Ensure()
+  scope=DOSBREAK.Current()
+  Check(client.busy=0 AND client.objects=2 AND scope.pending=0)
+  Check(client.input=BYTE POINTER(shell.console)
+      AND client.output=BYTE POINTER(shell.console))
+  Check(client.directory=BYTE POINTER(shell.directory))
+  Check(shell.tempInput=DOS.FileHandle POINTER(0)
+      AND shell.tempOutput=DOS.FileHandle POINTER(0))
+  Check(shell.commandInput=DOS.FileHandle POINTER(0)
+      AND shell.retiredDirectory=DOS.FileLock POINTER(0))
+  Check(client.request.io_Device=BYTE POINTER(0)
+      AND client.request.io_Unit=BYTE POINTER(0))
+  Check(EXECLISTS.IsListEmpty(@client.port.mp_MsgList)<>0)
+  Check(scope.packet=BYTE POINTER(0) AND scope.enqueued=0)
+  IF scenario=5 THEN
+    name=ShellScratch()
+    Check(DOS.NameFromLock(shell.directory,name,256)<>0)
+    Check(name(0)=68 AND name(1)=49 AND name(2)=58 AND name(3)=0)
+  FI
+
+RETURN
+
+PROC VerifyReader(BYTE unused)
+  LONGCARD index
+
+  Check(reader.reads=1 AND reader.received=LONGINT(probe.expected)
+      AND reader.error=0)
+  FOR index=0 TO probe.expected-1 DO
+    IF readBuffer(SIZE(index))<>(BYTE(index) XOR probe.seed) THEN
+      HEAPCORE.Abort($ef82)
+    FI
+  OD
+
+  probe.verified=probe.expected
+
+RETURN
+
+PROC BottomRow(BYTE unused)
+  CARD index
+  BYTE POINTER buffer
+
+  buffer=ShellTransfer()
+  FOR index=0 TO 23 DO
+    buffer(index)=10
+  OD
+
+  Check(DOS.Write(shell.console,buffer,24)=24)
+
+RETURN
+
+; Exercise physical BREAK delivery while the shell and concurrent work peers
+; are active.
+PROC Main()
+  CARD ticks
+
+  initialHeap=EXEC.AvailMem(0)
+  consoleTask=EXEC.FindTask(BYTE POINTER(0))
+  Check(EXEC.AllocSignal(16)=16)
+  Check(ShellStart(shellRoot)<>0)
+  BREAKPROBE.scope=DOSBREAK.Current()
+  AllocateReader(0)
+  StartReader(0)
+  StartWork(0)
+  IF scenario=7 THEN
+    BottomRow(0)
+  FI
+
+  probe.phase=1
+  WHILE probe.go=0 DO
+    EXEC.Yield()
+  OD
+
+  EXEC.Signal(WorkTask(0),$10000)
+  IF scenario=1 OR scenario=2 THEN
+    reader.busy=1
+    EXEC.Signal(@readerTask,$10000)
+    WHILE reader.active=0 DO
+      ticks=EXECTASKS.Sleep(1)
+    OD
+  FI
+
+  PrepareCommand(0)
+  BREAKPROBE.armed=1
+  probe.phase=2
+  ShellCommand()
+  Check(shell.lastStatus=10 AND shell.lastError=DOS.ERROR_BREAK AND shell.done=0)
+  Balanced(0)
+  promptGeneration=BREAKPROBE.scope.generation
+  ShellClear()
+  ShellPrompt()
+  BREAKPROBE.Usable(0)
+  probe.phase=3
+  WHILE probe.finish=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  ShellReadStep()
+  Check(shell.lastStatus=0 AND shell.lastError=0 AND shell.done=0)
+  Check(BREAKPROBE.scope.generation<>promptGeneration)
+  Balanced(0)
+  BREAKPROBE.Usable(0)
+  probe.phase=4
+  WHILE probe.finish=1 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  JoinReader(0)
+  IF scenario=1 OR scenario=2 THEN
+    VerifyReader(0)
+  FI
+
+  StopWork(0)
+  Check(mix.allocations<>0 AND mix.messages<>0 AND mix.signals<>0)
+  Check(ShellFinish()=0 AND FSBOOT.Stop()<>0)
+  EXEC.FreeMem(readBuffer,probe.expected)
+  EXEC.FreeSignal(16)
+  Check(EXEC.AvailMem(0)=initialHeap)
+  probe.phase=5
+
+RETURN
+
+ENDMODULE

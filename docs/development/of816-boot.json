@@ -1,0 +1,531 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "scope": "OF816 automatic and manual boot into the unchanged optimized eight-Task standard shell/prime image; physical disk commands, CAT/WC pipeline and EXIT. No full release qualification.",
+  "inputs": {
+    "platform/of816/boot.s": "e5fff11cb3335fb4e882cebe18b78dbd50d7f1b738afb980a035e233d4d6b548",
+    "platform/of816/platform-lib.s": "7c9ecedba3f417290a1ab955bf573454a9831bfec7605251ec7e0e3996f05367",
+    "platform/of816/platform-words.s": "b495de10ffa511e91cfcab255f0d00adbcf266c78a231d9a01d35fb624d77133",
+    "tests/test_of816_package.py": "f5ef796f292992444706470b223cd96c8a72875f74a3bbb35f566495656f7a74",
+    "toolchain/altirra-shell-paced.json": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068",
+    "toolchain/of816.json": "33c692f20996f093062bc18fc648faf0102b2c9f17682a2d86461645ab9c33a1",
+    "tools/build_of816.py": "f64272bc1cba4651935b419cfdf093abb613ff431eb64718855d2d8b18112ee1",
+    "tools/test_demo.py": "a16b552b60fb1742f9ed918b30a5963f64008fcf3eea0f867134c85fce986438",
+    "tools/test_of816.py": "61b698665d1024287a24271128e155829e785c500130af2c4f255dac364238cd",
+    "tools/test_of816_shell.py": "301859bdb4df23b35f54eec88e92aef697a01079fbfbe3a62a6dcde0ba8ed1a1"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "boot_only_reused_bank_zero_bytes": 3424,
+  "host_tests": 5,
+  "host_test_scope": "python3 -m unittest discover -s tests -p test_of816_package.py",
+  "boot": {
+    "format": "exec816-of816-boot-v1",
+    "of816": {
+      "repository": "https://github.com/mgcaret/of816.git",
+      "revision": "8c923624520fab2196d5c75a97ab94da599d420a",
+      "license": "BSD-2-Clause",
+      "scope": "Pinned Forth core for the experimental AltirraOS XEX boot monitor"
+    },
+    "exec_build": "/Users/michalkurcewicz/action/exec816/build/demo",
+    "exec_xex_sha256": "e0fecca795282aec24bd1555fe8205d5c3631f6bf985844b8ee7bb163448d472",
+    "xex_sha256": "737b93d105155fab2a0c5f93260e8e61c537974eff46fd29e50ad6734230e0fe",
+    "inputs": {
+      "platform/of816/boot.s": "e5fff11cb3335fb4e882cebe18b78dbd50d7f1b738afb980a035e233d4d6b548",
+      "platform/of816/platform-lib.s": "7c9ecedba3f417290a1ab955bf573454a9831bfec7605251ec7e0e3996f05367",
+      "platform/of816/platform-words.s": "b495de10ffa511e91cfcab255f0d00adbcf266c78a231d9a01d35fb624d77133",
+      "toolchain/of816.json": "33c692f20996f093062bc18fc648faf0102b2c9f17682a2d86461645ab9c33a1",
+      "tools/build_of816.py": "f64272bc1cba4651935b419cfdf093abb613ff431eb64718855d2d8b18112ee1"
+    },
+    "layout": {
+      "OF_CODE": 917504,
+      "OF_DATA": 851968,
+      "OF_DP": 8704,
+      "OF_STACK": 16896,
+      "OF_ADAPTER": 18944,
+      "OF_STAGE": 31744,
+      "EXEC_LOADER": 26624,
+      "EXEC_OLD_MEMLO": 11272
+    },
+    "labels": {
+      "_Forth_initialize": 917504,
+      "_Forth_jmptab": 917504,
+      "_Forth_ui": 917507,
+      "of_autoboot": 19273,
+      "of_autoboot_wait": 19292,
+      "of_count": 18967,
+      "of_getchar": 19670,
+      "of_handoff": 19737,
+      "of_io_status": 19954,
+      "of_irq": 19474,
+      "of_irqs": 19962,
+      "of_key_ready": 19650,
+      "of_keys": 19958,
+      "of_load": 18944,
+      "of_nmi": 19413,
+      "of_nmis": 19960,
+      "of_park": 19802,
+      "of_phase": 19956,
+      "of_putchar": 19589,
+      "of_saved_iocb": 19971,
+      "of_saved_nmien": 19964,
+      "of_saved_vectors": 19965,
+      "of_seconds": 19948,
+      "of_start": 18968,
+      "of_system_interface": 920440,
+      "of_target": 18954,
+      "of_wait_key": 19671
+    },
+    "adapter_bytes": 1059,
+    "forth_bytes": 21744,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_task": 0
+    },
+    "boot_only_reused_bank_zero_bytes": 3424,
+    "task_capacity": 8,
+    "media": {
+      "name": "sdfs.atr",
+      "sha256": "44fd594da9a01ff81df36c203857b4d472a4f79bc90443397f95846d20f71c01",
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "manifest_sha256": "a4a7f900f05e28b5a1f43279b5c42e8a35cc0d1c2c26f7c48598e1f52acb3f7e",
+      "filesystem": "sdfs",
+      "sector_bytes": 128
+    },
+    "transient_upper_banks": [
+      14,
+      13
+    ],
+    "assembler": "ca65 V2.18 - N/A",
+    "linker": "ld65 V2.18 - N/A"
+  },
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "results_sha256": "faaefad59b2e16150aca27f7a1da618d13eb93e5a958b48b079520f3c9526841",
+  "cases": [
+    {
+      "route": "autoboot",
+      "frames": 249,
+      "clock_wrap": true,
+      "boot_guards": "intact",
+      "os_restored_at_handoff": true,
+      "screenshot": {
+        "name": "autoboot-shell.png",
+        "sha256": "d397bca128d3635a645cb525c583556921d5ab32a540d4eac553264263f174d0"
+      },
+      "shell": {
+        "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 15,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$eeca81434d995c35",
+          "actual_kernel_id": "$eeca81434d995c35",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "observations": [
+          {
+            "stage": "startup",
+            "prime_frames": 1,
+            "prime_count": 26,
+            "guest_frame": 505
+          },
+          {
+            "stage": "HELLO",
+            "prime_frames": 3,
+            "prime_count": 62,
+            "guest_frame": 616
+          },
+          {
+            "stage": "CAT STORY.TXT | WC",
+            "prime_frames": 13,
+            "prime_count": 212,
+            "guest_frame": 1165
+          },
+          {
+            "stage": "boot-smoke",
+            "prime_frames": 13,
+            "prime_count": 212,
+            "guest_frame": 1169
+          }
+        ],
+        "media_sha256": "44fd594da9a01ff81df36c203857b4d472a4f79bc90443397f95846d20f71c01",
+        "runner_sha256": "a16b552b60fb1742f9ed918b30a5963f64008fcf3eea0f867134c85fce986438",
+        "runtime": {
+          "status": 0,
+          "created": 7,
+          "live_tasks": 0,
+          "guards": "intact",
+          "native_nmi_count": 795,
+          "native_irq_count": 13272,
+          "vbi_dispatches": 296,
+          "os_calls": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 518,
+              "untouched_above_floor": 762
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 180,
+              "untouched_above_floor": 588
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 146,
+              "untouched_above_floor": 622
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 239,
+              "untouched_above_floor": 529
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 315,
+              "untouched_above_floor": 453
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 401,
+              "untouched_above_floor": 367
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 1024,
+              "touched_bytes": 391,
+              "untouched_above_floor": 377
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 54,
+              "untouched_above_floor": 202
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 321,
+            "untouched_from_base": 1215,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      }
+    },
+    {
+      "route": "forth-command",
+      "cancel": {
+        "key": "RETURN",
+        "delay_frames": 240,
+        "held_frames": 2,
+        "seconds_remaining": 1,
+        "cancelled": true,
+        "key_consumed": true,
+        "stays_in_forth": true
+      },
+      "arithmetic": 42,
+      "boot_guards": "intact",
+      "os_restored_at_handoff": true,
+      "screenshot": {
+        "name": "forth-command-shell.png",
+        "sha256": "d397bca128d3635a645cb525c583556921d5ab32a540d4eac553264263f174d0"
+      },
+      "shell": {
+        "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 15,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$eeca81434d995c35",
+          "actual_kernel_id": "$eeca81434d995c35",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "observations": [
+          {
+            "stage": "startup",
+            "prime_frames": 1,
+            "prime_count": 26,
+            "guest_frame": 807
+          },
+          {
+            "stage": "HELLO",
+            "prime_frames": 3,
+            "prime_count": 62,
+            "guest_frame": 918
+          },
+          {
+            "stage": "CAT STORY.TXT | WC",
+            "prime_frames": 13,
+            "prime_count": 212,
+            "guest_frame": 1467
+          },
+          {
+            "stage": "boot-smoke",
+            "prime_frames": 13,
+            "prime_count": 212,
+            "guest_frame": 1471
+          }
+        ],
+        "media_sha256": "44fd594da9a01ff81df36c203857b4d472a4f79bc90443397f95846d20f71c01",
+        "runner_sha256": "a16b552b60fb1742f9ed918b30a5963f64008fcf3eea0f867134c85fce986438",
+        "runtime": {
+          "status": 0,
+          "created": 7,
+          "live_tasks": 0,
+          "guards": "intact",
+          "native_nmi_count": 794,
+          "native_irq_count": 13273,
+          "vbi_dispatches": 290,
+          "os_calls": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 518,
+              "untouched_above_floor": 762
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 180,
+              "untouched_above_floor": 588
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 134,
+              "untouched_above_floor": 634
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 239,
+              "untouched_above_floor": 529
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 315,
+              "untouched_above_floor": 453
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 401,
+              "untouched_above_floor": 367
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 1024,
+              "touched_bytes": 391,
+              "untouched_above_floor": 377
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 54,
+              "untouched_above_floor": 202
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 321,
+            "untouched_from_base": 1215,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      }
+    }
+  ],
+  "exit_cases": [
+    {
+      "case": "bye",
+      "status": "pass",
+      "os_restored": true,
+      "cancel": {
+        "key": "RETURN",
+        "delay_frames": 240,
+        "held_frames": 2,
+        "seconds_remaining": 1,
+        "cancelled": true,
+        "key_consumed": true,
+        "stays_in_forth": true
+      }
+    },
+    {
+      "case": "occupied-iocb",
+      "status": "pass",
+      "os_restored": true
+    }
+  ]
+}

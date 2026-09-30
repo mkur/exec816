@@ -1,0 +1,351 @@
+MODULE NATIVECONSOLELIFETIME
+USE EXEC
+USE EXECOS
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+USE CONSOLEDRIVER
+USE CONSOLESTARTPROBE
+USE CONSOLETYPES
+USE CONSOLEADAPTER
+CARD checks
+BYTE mode,checkpoint,childReady,childDone,gate,heldCount,holdReady
+EXEC.Task child
+PROC POINTER absent()
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER request
+CONSOLETYPES.Service POINTER service
+CONSOLETYPES.Instance POINTER instance
+BYTE ARRAY name=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY text=[72 105 10]
+BYTE ARRAY osText=[82 79 77 155]
+BYTE ARRAY input(4)
+ADDRESS ARRAY held(16)
+LONGCARD ARRAY heldSizes(16)
+BYTE POINTER firstBlock,secondBlock,thirdBlock,holdTasks
+LONGCARD baseline,remaining
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Open()
+  INT error
+
+  port=EXEC.CreateMsgPort()
+  request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,42))
+  Require(port<>EXEC.MsgPort POINTER(0) AND request<>EXEC.IOStdReq POINTER(0))
+  error=EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(request),0)
+  Require(error=0)
+
+RETURN
+
+PROC Close()
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+PROC Write()
+  INT error
+
+  request.io_Command=EXEC.CMD_WRITE
+  request.io_Data=text
+  request.io_Length=3
+  request.io_Offset=0
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=3)
+
+RETURN
+
+PROC ChildEntry()
+  CARD ticks
+
+  Open()
+  childReady=1
+  ticks=EXECTASKS.Sleep(3)
+  Require(service.state=2)
+  Write()
+  Close()
+  childDone=1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE value)
+
+  gate=0
+  checkpoint=value
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; Hold available allocations so the next operation must exercise its failure
+; path.
+PROC Exhaust(BYTE unused)
+  LONGCARD size
+  BYTE POINTER block
+
+  heldCount=0
+  DO
+    size=EXEC.AvailMem(EXEC.MEMF_LARGEST)
+    IF size=0 THEN
+      EXIT
+    FI
+
+    block=EXEC.AllocMem(size,0)
+    Require(block<>BYTE POINTER(0))
+    Require(heldCount<16)
+    held(heldCount)=ADDRESS(block)
+    heldSizes(heldCount)=size
+    heldCount==+1
+  OD
+
+RETURN
+
+; Return the allocations retained to force memory exhaustion.
+PROC ReleaseHeld(BYTE unused)
+
+  WHILE heldCount<>0 DO
+    heldCount==-1
+    EXEC.FreeMem(BYTE POINTER(held(heldCount)),heldSizes(heldCount))
+  OD
+
+RETURN
+
+PROC AllocationFailure(BYTE which)
+
+  baseline=EXEC.AvailMem(0)
+  firstBlock=EXEC.AllocMem(960,0)
+  secondBlock=EXEC.AllocMem(128,0)
+  thirdBlock=EXEC.AllocMem(960,0)
+  Require(firstBlock<>BYTE POINTER(0) AND secondBlock<>BYTE POINTER(0)
+      AND thirdBlock<>BYTE POINTER(0))
+  Exhaust(0)
+  IF which=1 OR which=3 THEN
+    EXEC.FreeMem(secondBlock,128)
+    secondBlock=BYTE POINTER(0)
+  FI
+
+  IF which=2 OR which=3 THEN
+    EXEC.FreeMem(firstBlock,960)
+    firstBlock=BYTE POINTER(0)
+  FI
+
+  remaining=EXEC.AvailMem(0)
+  Require(CONSOLEDRIVER.Start()=0 AND service.state=0)
+  Require(EXEC.AvailMem(0)=remaining AND instance.cells=BYTE POINTER(0)
+      AND instance.fifo=BYTE POINTER(0) AND service.snapshot=BYTE POINTER(0))
+  IF firstBlock<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(firstBlock,960)
+  FI
+
+  IF secondBlock<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(secondBlock,128)
+  FI
+
+  EXEC.FreeMem(thirdBlock,960)
+  ReleaseHeld(0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC SignalFailure(BYTE number)
+  LONGCARD value
+
+  baseline=EXEC.AvailMem(0)
+  ; The fixture reserves a newborn worker signal before its first instruction.
+  CONSOLESTARTPROBE.reservedBit=number
+  Require(CONSOLEDRIVER.Start()=0 AND service.state=0)
+  CONSOLESTARTPROBE.reservedBit=0
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC BindingFailure(BYTE unused)
+  BYTE signalBit
+
+  baseline=EXEC.AvailMem(0)
+  signalBit=EXEC.AllocSignal(28)
+  Require(signalBit=28)
+  Require(CONSOLEADAPTER.Bind(EXEC.FindTask(BYTE POINTER(0)),$10000000)=1)
+  Require(CONSOLEDRIVER.Start()=0 AND service.state=0)
+  Require(EXEC.AvailMem(0)=baseline)
+  CONSOLEADAPTER.Release()
+  EXEC.FreeSignal(28)
+
+RETURN
+
+PROC HoldEntry()
+  BYTE bit
+  LONGCARD bits
+
+  bit=EXEC.AllocSignal(16)
+  EXEC.Forbid()
+  Require(bit=16)
+  holdReady==+1
+  EXEC.Permit()
+  bits=EXEC.Wait($10000)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+PROC Capacity(BYTE unused)
+  BYTE slot
+  EXEC.Task POINTER task,added
+  CARD ticks
+
+  holdTasks=BYTE POINTER($d0000)
+  EXEC.Forbid()
+  FOR slot=1 TO 7 DO
+    task=EXEC.Task POINTER(ADDRESS(holdTasks)+(SIZE(slot-1) LSH 6))
+    task.tc_Node.ln_Type=EXEC.NT_TASK
+    task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+    task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+    task.tc_SPReg=task.tc_SPUpper-SIZE(2)
+    EXECLISTS.NewList(@task.tc_MemEntry)
+    added=EXEC.AddTask(task,@HoldEntry,absent)
+    Require(added=task)
+  OD
+
+  Require(CONSOLEDRIVER.Start()=0 AND service.state=0)
+  EXEC.Permit()
+  WHILE holdReady<>7 DO
+    EXEC.Yield()
+  OD
+
+  FOR slot=1 TO 7 DO
+    task=EXEC.Task POINTER(ADDRESS(holdTasks)+(SIZE(slot-1) LSH 6))
+    EXEC.Signal(task,$10000)
+    WHILE task.tc_State<>EXEC.TS_REMOVED DO
+      ticks=EXECTASKS.Sleep(1)
+    OD
+  OD
+
+RETURN
+
+PROC ReadOne(BYTE expected,value)
+  INT error
+
+  request.io_Command=EXEC.CMD_READ
+  request.io_Data=input
+  request.io_Length=4
+  request.io_Offset=0
+  EXEC.SendIO(EXEC.IORequest POINTER(request))
+  Pause(value)
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=1 AND input(0)=expected)
+  EXEC.SendIO(EXEC.IORequest POINTER(request))
+  EXEC.AbortIO(EXEC.IORequest POINTER(request))
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.IOERR_ABORTED AND request.io_Actual=0)
+
+RETURN
+
+; Exercise console startup failure, endpoint ownership and Task lifetime.
+PROC Main()
+  CARD status
+
+  service=CONSOLEDRIVER.GetService()
+  instance=CONSOLEDRIVER.GetInstance()
+  Require(service.state=2 AND service.task.tc_State<>EXEC.TS_INVALID)
+  status=EXECOS.Write(text,3)
+  Require(status=$ff02)
+  checkpoint=1
+  IF mode=1 THEN
+    EXEC.RemTask(@service.task)
+    HEAPCORE.Abort($f9ff)
+  FI
+
+  IF mode=2 THEN
+    Open()
+    checkpoint=2
+    RETURN
+  FI
+
+  IF mode=3 THEN
+    child.tc_Node.ln_Type=EXEC.NT_TASK
+    child.tc_SPLower=ADDRESS(TASKSTACKS.LOWER2)
+    child.tc_SPUpper=ADDRESS(TASKSTACKS.UPPER2)
+    child.tc_SPReg=child.tc_SPUpper-SIZE(2)
+    EXECLISTS.NewList(@child.tc_MemEntry)
+    EXEC.AddTask(@child,@ChildEntry,absent)
+    WHILE childReady=0 DO
+      EXEC.Yield()
+    OD
+
+    checkpoint=3
+    RETURN
+  FI
+
+  IF mode>=6 AND mode<=8 THEN
+    Require(CONSOLEDRIVER.Stop()=1)
+    IF mode=6 THEN
+      AllocationFailure(0)
+      AllocationFailure(1)
+      AllocationFailure(2)
+      AllocationFailure(3)
+    FI
+
+    IF mode=7 THEN
+      Capacity(0)
+    FI
+
+    IF mode=8 THEN
+      SignalFailure(30)
+      SignalFailure(31)
+      BindingFailure(0)
+    FI
+
+    Require(CONSOLEDRIVER.Start()=1)
+    Require(CONSOLEDRIVER.Stop()=1)
+    checkpoint=6
+    RETURN
+  FI
+
+  IF mode=9 THEN
+    Pause(10)
+    Open()
+    ReadOne(98,11)
+    Close()
+    Pause(12)
+    Open()
+    ReadOne(100,13)
+    Close()
+    checkpoint=14
+    RETURN
+  FI
+
+  Open()
+  Write()
+  Close()
+  Require(service.state=2 AND instance.open=0)
+  Open()
+  Write()
+  Close()
+  checkpoint=4
+  IF mode=4 THEN
+    Require(CONSOLEDRIVER.Stop()=1)
+    Pause(5)
+    status=EXECOS.Write(osText,4)
+    Require(status=1)
+    checkpoint=7
+  FI
+
+RETURN
+
+ENDMODULE

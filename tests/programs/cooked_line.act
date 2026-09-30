@@ -1,0 +1,184 @@
+MODULE COOKEDLINETEST
+USE EXEC
+USE HEAPCORE
+USE COOKEDLINE
+CONST GUARD_BYTES=16
+CONST GUARDED_BYTES=COOKEDLINE.SESSION_SIZE+GUARD_BYTES*2
+
+TYPE Chunk=[
+  BYTE POINTER next
+  LONGCARD bytes
+]
+
+TYPE Observation=[
+  LONGINT result
+  CARD length,position
+  LONGINT error
+  BYTE ready,eof,discard,drawn
+  BYTE ARRAY payload(256)
+]
+
+COOKEDLINE.Session POINTER first,second,session
+Chunk POINTER held
+CARD checks,operations
+BYTE POINTER commands,output
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+COOKEDLINE.Session POINTER FUNC Guarded()
+  BYTE POINTER allocation
+  CARD index
+
+  allocation=EXEC.AllocMem(GUARDED_BYTES,EXEC.MEMF_UPPER)
+  Require(allocation<>BYTE POINTER(0))
+  FOR index=0 TO GUARDED_BYTES-1 DO
+    allocation(index)=$a5
+  OD
+
+  session=COOKEDLINE.Session POINTER(ADDRESS(allocation)+SIZE(GUARD_BYTES))
+  COOKEDLINE.Init(session)
+
+RETURN(session)
+
+PROC Release(COOKEDLINE.Session POINTER item)
+  BYTE POINTER allocation
+  CARD index
+
+  allocation=BYTE POINTER(item)-GUARD_BYTES
+  FOR index=0 TO GUARD_BYTES-1 DO
+    Require(allocation(index)=$a5
+        AND allocation(index+GUARD_BYTES+COOKEDLINE.SESSION_SIZE)=$a5)
+  OD
+
+  EXEC.FreeMem(allocation,GUARDED_BYTES)
+
+RETURN
+
+PROC Allocation()
+  Chunk POINTER item,next
+  LONGCARD size,baseline
+
+  baseline=EXEC.AvailMem(0)
+  session=COOKEDLINE.Create()
+  Require(session<>COOKEDLINE.Session POINTER(0) AND session.references=1)
+  Require(COOKEDLINE.Destroy(session)=1 AND EXEC.AvailMem(0)=baseline)
+  held=Chunk POINTER(0)
+  DO
+    size=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    IF size<8 THEN
+      EXIT
+    FI
+
+    item=Chunk POINTER(EXEC.AllocMem(size,EXEC.MEMF_UPPER))
+    Require(item<>Chunk POINTER(0))
+    item.next=BYTE POINTER(held)
+    item.bytes=size
+    held=item
+  OD
+
+  size=EXEC.AvailMem(0)
+  Require(COOKEDLINE.Create()=COOKEDLINE.Session POINTER(0)
+      AND EXEC.AvailMem(0)=size)
+  WHILE held<>Chunk POINTER(0) DO
+    next=Chunk POINTER(held.next)
+    size=held.bytes
+    EXEC.FreeMem(BYTE POINTER(held),size)
+    held=next
+  OD
+
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC Run()
+  CARD number,index,count,limit
+  BYTE kind,value
+  Observation POINTER sample
+  BYTE POINTER command
+
+  Require(SIZEOF(COOKEDLINE.Session)=COOKEDLINE.SESSION_SIZE
+      AND SIZEOF(Observation)=272)
+  first=Guarded()
+  second=Guarded()
+  commands=BYTE POINTER(ADDRESS($e0000))
+  output=BYTE POINTER(ADDRESS($d0010))
+  operations=CARD(commands(0))+(CARD(commands(1)) LSH 8)
+  Require(operations>0 AND operations<=200)
+  command=commands+2
+  sample=Observation POINTER(output)
+  FOR number=0 TO operations-1 DO
+    kind=command(0)
+    value=command(1)
+    limit=CARD(command(2))+(CARD(command(3)) LSH 8)
+    session=first
+    IF command(4)<>0 THEN
+      session=second
+    FI
+
+    FOR index=0 TO 255 DO
+      sample.payload(index)=$a5
+    OD
+
+    sample.result=0
+    IF kind=0 THEN
+      IF limit<>0 THEN
+        FOR index=1 TO limit DO
+          sample.result=LONGINT(COOKEDLINE.Feed(session,value))
+        OD
+      FI
+    ELSEIF kind=1 THEN
+      COOKEDLINE.Lose(session,303)
+    ELSEIF kind=2 THEN
+      sample.result=COOKEDLINE.Drain(session,sample.payload,limit)
+    ELSEIF kind=3 THEN
+      count=COOKEDLINE.Render(session)
+      Require(count<=128)
+      sample.result=LONGINT(count)
+      IF count<>0 THEN
+        FOR index=0 TO count-1 DO
+          sample.payload(index)=session.echo(index)
+        OD
+      FI
+    ELSEIF kind=4 THEN
+      session.error=0
+    ELSEIF kind=5 THEN
+      COOKEDLINE.Init(session)
+    ELSE
+      Require(0)
+    FI
+
+    sample.length=session.length
+    sample.position=session.position
+    sample.error=session.error
+    sample.ready=session.ready
+    sample.eof=session.eof
+    sample.discard=session.discard
+    sample.drawn=session.drawn
+    command=command+6
+    sample=Observation POINTER(ADDRESS(sample)+SIZE(272))
+  OD
+
+  Release(first)
+  Release(second)
+  Allocation()
+
+RETURN
+
+; Exercise line editing with guarded storage and allocation failure.
+PROC Main()
+
+  Run()
+
+RETURN
+
+ENDMODULE

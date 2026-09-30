@@ -1,0 +1,707 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Runtime MOUNT and DEVICES listings; no driver initialization, disk probing or public ABI extension",
+  "compiler_pin": "ae1f555e77d0ae6caffbfc7453cbf06e3d098bee",
+  "source_inputs": {
+    "lib/deviceinspect.act": "926cdf9074b50c322917ccc0c633bab876d6acf7d5168ca755af992c453cfcf6",
+    "lib/fsinspect.act": "6e9f509fafb19154be83ed2c5473c587b8043fde2347af20c8c58dd129ceee2b",
+    "examples/shell-session.inc": "695b0af6bb62c609d833cbb4d0818819ca4922d0685b01b934a7433ff716b63f",
+    "examples/shell-commands.inc": "b067ced4639b4f094da88aaaa4f9951fe4bc3ae86a4c2b320eb05fc036002a51",
+    "tools/generate_tasks.py": "315af3733f02a7294317d2d6ca745979fda4e39e5bb433be61df98fb43b62c9a",
+    "tools/native_program.py": "9b8202a0f4c2a9364a35e0526d4a4ae7d658ccec3a70f463786ec9b00b74657a",
+    "tools/test_system_inspect.py": "f327ebf98d2826d5b6751a5746905fa27e52265f2fc05428c4313c4aa719a5b7",
+    "tools/test_shell_parser.py": "5358fc2a2a210cf6836e69423bd237b283de8c16814fb27920b0cf08bea49aac",
+    "tools/test_shell_entry.py": "306dd91406c8e15e0a32f2dcf63b071315e0cd8a7965235e2fd99da6244eb6c8",
+    "tests/programs/system_inspect.act": "ebb233caa13fa68cb6a5ae937d361e7dd28d501ffb1ff4534eef8bfd0ffea911",
+    "examples/shell-disk/README.TXT": "4ca5822ea21a94cfe8f2bbc8448119f6f2fe52796781bf2ad92d8ddaee6ff002",
+    "examples/shell-disk/DOCS/COMMANDS.TXT": "5e7899860806a21e5cfffe9b84d91e5744de4d3095c9e084e2a1508416958b23"
+  },
+  "cases": [
+    {
+      "name": "inspect-raw",
+      "status": "pass",
+      "result_path": "build/shell-mount-devices/inspect-raw/results.json",
+      "result_sha256": "c5c0829b8a3cca5c7dec9d1caa465aff43e411d116d83fa43c4a0a6b26d838a0",
+      "mode": "raw",
+      "xex_sha256": "de3c5f6690ebdabbc4d5ad6837af379cff10e593697b25cc2e5851e4efc7ec6f",
+      "emulator_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "checks": [
+        525
+      ],
+      "created": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 120,
+          "untouched_above_floor": 1160
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ]
+    },
+    {
+      "name": "inspect-opt",
+      "status": "pass",
+      "result_path": "build/shell-mount-devices/inspect-opt/results.json",
+      "result_sha256": "5c500dbff7834ce57b587ed2a43ca7534dba94414b242260149d069984ffc17d",
+      "mode": "opt",
+      "xex_sha256": "58ccb6366ae6a322d40b8d728c409679b757445045b8bb35538ea9521964e737",
+      "emulator_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "checks": [
+        525
+      ],
+      "created": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 110,
+          "untouched_above_floor": 1170
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ]
+    },
+    {
+      "name": "parser-raw",
+      "status": "pass",
+      "result_path": "build/shell-mount-devices/parser-raw/results.json",
+      "result_sha256": "daadac17a310532dd723add365b425ba71fc1aad9239627f82512f39e1f96dfc",
+      "mode": "raw",
+      "xex_sha256": "7725fd8c3528dbdccc6a221690c8a24594bc3261a905bb6b9506713eafdef214",
+      "emulator_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "checks": 211,
+      "created": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 408,
+          "untouched_above_floor": 872
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ]
+    },
+    {
+      "name": "parser-opt",
+      "status": "pass",
+      "result_path": "build/shell-mount-devices/parser-opt/results.json",
+      "result_sha256": "ccf6f0aa24389389ee105ddf2b6b4408c11be1e3692afed8ae9bd45a785b0b04",
+      "mode": "opt",
+      "xex_sha256": "ac7c77342a693f7e88e458950e61ef01654eba63c84c85f24fb69b2252eea93b",
+      "emulator_sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "checks": 211,
+      "created": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 381,
+          "untouched_above_floor": 899
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ]
+    },
+    {
+      "name": "entry-raw",
+      "status": "pass",
+      "result_path": "build/shell-mount-devices/entry-raw/results.json",
+      "result_sha256": "60210b7330bee7648f1ee541910dcfc8cfbeeab6afab2d6bb59361b826d89ecd",
+      "mode": "raw",
+      "xex_sha256": "9f7b728d01c09ba50a6e3681ec99f3b13d953ce63ee552eba561fde83ee0dcce",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "checks": null,
+      "created": 3,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 498,
+          "untouched_above_floor": 782
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 174,
+          "untouched_above_floor": 594
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 162,
+          "untouched_above_floor": 606
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 199,
+          "untouched_above_floor": 569
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 50,
+          "untouched_above_floor": 206
+        }
+      ],
+      "commands": [
+        "help",
+        "ver",
+        "ver >nil:",
+        "ver extra",
+        "tasks",
+        "tasks >nil:",
+        "tasks extra",
+        "mount",
+        "mount >nil:",
+        "mount D2:",
+        "devices",
+        "devices >nil:",
+        "devices extra",
+        "echo ok",
+        "cd D1:",
+        "dir",
+        "type hello.txt",
+        "type readme.txt",
+        "cd docs",
+        "type commands.txt",
+        "cd :",
+        "dir tools",
+        "cd tools/sub",
+        "type note.txt",
+        "cd :",
+        "exit"
+      ],
+      "mounts_output": "MOUNT FILESYSTEM ACCESS    STATE\nD1:   MyDOS      read-only mounted\n",
+      "devices_output": "DEVICE          STATE\nconsole.device  ready\nsio.device      ready\n",
+      "no_mount": false,
+      "invalid_disk": false,
+      "diskemu": "generic56k"
+    },
+    {
+      "name": "entry-opt",
+      "status": "pass",
+      "result_path": "build/shell-mount-devices/entry-opt/results.json",
+      "result_sha256": "345db71e2cd53a3e9ebe10f6c88eacffb56ffe9272d0cead8b31942a62dc3ef9",
+      "mode": "opt",
+      "xex_sha256": "2f489ddd6e6402b05f3d8253a15983092d6d6dc60618f97bb50a05bea10dc455",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "checks": null,
+      "created": 3,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 461,
+          "untouched_above_floor": 819
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 150,
+          "untouched_above_floor": 618
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 121,
+          "untouched_above_floor": 647
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 177,
+          "untouched_above_floor": 591
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 42,
+          "untouched_above_floor": 214
+        }
+      ],
+      "commands": [
+        "help",
+        "ver",
+        "ver >nil:",
+        "ver extra",
+        "tasks",
+        "tasks >nil:",
+        "tasks extra",
+        "mount",
+        "mount >nil:",
+        "mount D2:",
+        "devices",
+        "devices >nil:",
+        "devices extra",
+        "echo ok",
+        "cd D1:",
+        "dir",
+        "type hello.txt",
+        "type readme.txt",
+        "cd docs",
+        "type commands.txt",
+        "cd :",
+        "dir tools",
+        "cd tools/sub",
+        "type note.txt",
+        "cd :",
+        "exit"
+      ],
+      "mounts_output": "MOUNT FILESYSTEM ACCESS    STATE\nD1:   MyDOS      read-only mounted\n",
+      "devices_output": "DEVICE          STATE\nconsole.device  ready\nsio.device      ready\n",
+      "no_mount": false,
+      "invalid_disk": false,
+      "diskemu": "generic56k"
+    },
+    {
+      "name": "no-mount-opt",
+      "status": "pass",
+      "result_path": "build/shell-mount-devices/no-mount-opt/results.json",
+      "result_sha256": "ae0c6df0fe7644ac8591626ac518de163349e2fe3a63fa5e625d265e20cc337a",
+      "mode": "opt",
+      "xex_sha256": "566416d2a97e65859637905ec34d5bfb8b3d7c3cc095a59cbdb01680d7a089d4",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "checks": null,
+      "created": 1,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 461,
+          "untouched_above_floor": 819
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 156,
+          "untouched_above_floor": 612
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 37,
+          "untouched_above_floor": 219
+        }
+      ],
+      "commands": [
+        "help",
+        "ver",
+        "ver >nil:",
+        "ver extra",
+        "tasks",
+        "tasks >nil:",
+        "tasks extra",
+        "mount",
+        "mount >nil:",
+        "mount D2:",
+        "devices",
+        "devices >nil:",
+        "devices extra",
+        "echo ok",
+        "cd D1:",
+        "exit"
+      ],
+      "mounts_output": "MOUNT FILESYSTEM ACCESS    STATE\nNo mounted filesystems\n",
+      "devices_output": "DEVICE          STATE\nconsole.device  ready\nsio.device      inactive\n",
+      "no_mount": true,
+      "invalid_disk": false,
+      "diskemu": "generic56k"
+    },
+    {
+      "name": "invalid-opt",
+      "status": "pass",
+      "result_path": "build/shell-mount-devices/invalid-opt/results.json",
+      "result_sha256": "3d971e285ee1fb7773fb6402a6071eaf86175649abcc33f096692e4ff5b8fcea",
+      "mode": "opt",
+      "xex_sha256": "2f489ddd6e6402b05f3d8253a15983092d6d6dc60618f97bb50a05bea10dc455",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "checks": null,
+      "created": 4,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 461,
+          "untouched_above_floor": 819
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 155,
+          "untouched_above_floor": 613
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 121,
+          "untouched_above_floor": 647
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 172,
+          "untouched_above_floor": 596
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 46,
+          "untouched_above_floor": 210
+        }
+      ],
+      "commands": [
+        "help",
+        "ver",
+        "ver >nil:",
+        "ver extra",
+        "tasks",
+        "tasks >nil:",
+        "tasks extra",
+        "mount",
+        "mount >nil:",
+        "mount D2:",
+        "devices",
+        "devices >nil:",
+        "devices extra",
+        "echo ok",
+        "cd D1:",
+        "exit"
+      ],
+      "mounts_output": "MOUNT FILESYSTEM ACCESS    STATE\nNo mounted filesystems\n",
+      "devices_output": "DEVICE          STATE\nconsole.device  ready\nsio.device      ready\n",
+      "no_mount": false,
+      "invalid_disk": true,
+      "diskemu": "generic56k"
+    }
+  ],
+  "host_tests": {
+    "test_shell_disk": 1,
+    "test_task_bindings": 4,
+    "status": "pass"
+  },
+  "bank_zero_reservation_delta": 0,
+  "per_task_reservation_delta": 0,
+  "unchanged_memory_sections": {
+    "regions": true,
+    "task_pools": true,
+    "task_capacity": true,
+    "console_storage": true,
+    "io_storage": true,
+    "dos_storage": true
+  },
+  "shell_allocation_bytes": 1288,
+  "existing_transfer_buffer_bytes": 512,
+  "maximum_mount_snapshot_bytes": 264,
+  "maximum_device_snapshot_bytes": 4,
+  "limits": [
+    "MOUNT accepts no operands and does not mount or unmount volumes.",
+    "MyDOS/read-only describe the current filesystem handler, not media autodetection.",
+    "DEVICES lists built-in production drivers, not physical bus enumeration.",
+    "Only the pinned emulated platform was executed; no new physical hardware qualification."
+  ]
+}

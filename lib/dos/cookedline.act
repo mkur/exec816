@@ -1,0 +1,281 @@
+; Caller-owned terminal state. No filesystem, console request or caller buffer
+; is retained here. Ready bytes and a one-shot EOF drain before new acquisition.
+MODULE COOKEDLINE
+USE EXEC
+USE A816MEMORY
+INCLUDE "dos-types.inc"
+INCLUDE "dos-cooked-types.inc"
+
+; Initialize an empty editable line and its session ownership state.
+PUBLIC PROC Init(Session POINTER state)
+
+  state.references=1
+  state.busy=0
+  state.width=TAIL_COLUMNS
+  state.length=0
+  state.position=0
+  state.error=0
+  state.ready=0
+  state.eof=0
+  state.discard=0
+  state.drawn=0
+  state.key=0
+
+RETURN
+
+; Allocate the shared line session used by cooked console handles.
+PUBLIC Session POINTER FUNC Create()
+  Session POINTER state
+
+  state=Session POINTER(EXEC.AllocMem(SESSION_SIZE,EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  IF state<>Session POINTER(0) THEN
+    Init(state)
+  FI
+
+RETURN(state)
+
+; Release line-session storage after its last owner has retired.
+PUBLIC BYTE FUNC Destroy(Session POINTER state)
+
+  IF state=Session POINTER(0) THEN
+    RETURN(1)
+  FI
+
+  IF state.references<>1 OR state.busy<>0 THEN
+    RETURN(0)
+  FI
+
+  state.references=0
+  EXEC.FreeMem(BYTE POINTER(state),SESSION_SIZE)
+
+RETURN(1)
+
+; Keep the line session alive for another cooked handle.
+PUBLIC BYTE FUNC Retain(Session POINTER state)
+
+  EXEC.Forbid()
+  IF state.references=0 OR state.references=$ffff THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  state.references==+1
+  EXEC.Permit()
+
+RETURN(1)
+
+; Free shared line state only when no cooked handle retains it.
+PUBLIC BYTE FUNC Release(Session POINTER state)
+  BYTE last
+
+  EXEC.Forbid()
+  IF state.references=0 OR (state.references=1 AND state.busy<>0) THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  state.references==-1
+  last=state.references=0
+  EXEC.Permit()
+  IF last<>0 THEN
+    EXEC.FreeMem(BYTE POINTER(state),SESSION_SIZE)
+  FI
+
+RETURN(1)
+
+; Acquire exclusive editing ownership for one cooked reader.
+PUBLIC BYTE FUNC Enter(Session POINTER state)
+
+  EXEC.Forbid()
+  IF state.busy<>0 OR state.references=0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  state.busy=1
+  EXEC.Permit()
+
+RETURN(1)
+
+; Release editing ownership after the read has settled.
+PUBLIC PROC Leave(Session POINTER state)
+
+  EXEC.Forbid()
+  state.busy=0
+  EXEC.Permit()
+
+RETURN
+
+; Discard a damaged input line so partial keystrokes cannot form a command.
+PUBLIC PROC Lose(Session POINTER state LONGINT error)
+
+  state.length=0
+  state.position=0
+  state.ready=0
+  state.eof=0
+  state.error=error
+  state.discard=1
+
+RETURN
+
+; Return 1 when editing changed, 2 when acquisition ends, otherwise 0.
+PUBLIC BYTE FUNC Feed(Session POINTER state BYTE value)
+
+  IF state.ready<>0 OR state.eof<>0 THEN
+    RETURN(0)
+  FI
+
+  IF state.discard<>0 THEN
+    IF value=10 OR value=13 THEN
+      state.discard=0
+      state.ready=1
+      RETURN(2)
+    FI
+
+    RETURN(0)
+  FI
+
+  IF value=3 THEN
+    state.length=0
+    state.position=0
+    state.error=ERROR_BREAK
+    state.ready=1
+    RETURN(2)
+  FI
+
+  IF value=4 THEN
+    state.eof=1
+    state.ready=1
+    RETURN(2)
+  FI
+
+  IF value=10 OR value=13 THEN
+    state.line(state.length)=10
+    state.length==+1
+    state.ready=1
+    RETURN(2)
+  FI
+
+  IF value=8 THEN
+    IF state.length<>0 THEN
+      state.length==-1
+      RETURN(1)
+    FI
+
+    RETURN(0)
+  FI
+
+  IF value=9 THEN
+    value=32
+  FI
+
+  IF value<32 OR value>126 THEN
+    RETURN(0)
+  FI
+
+  IF state.length=LINE_BYTES-1 THEN
+    Lose(state,ERROR_LINE_TOO_LONG)
+    RETURN(1)
+  FI
+
+  state.line(state.length)=value
+  state.length==+1
+
+RETURN(1)
+
+; PENDING is private: the adapter must acquire more input, not return it to DOS.
+; error remains readable after a failed drain until the adapter acknowledges it.
+PUBLIC LONGINT FUNC Drain(Session POINTER state BYTE POINTER target CARD limit)
+  CARD count
+
+  IF limit=0 THEN
+    RETURN(0)
+  FI
+
+  IF state.ready=0 AND state.eof=0 THEN
+    RETURN(PENDING)
+  FI
+
+  IF state.error<>0 THEN
+    state.ready=0
+    RETURN(-1)
+  FI
+
+  count=state.length-state.position
+  IF count>limit THEN
+    count=limit
+  FI
+
+  IF count<>0 THEN
+    A816MEMORY.Move(target,@state.line(state.position),SIZE(count))
+    state.position==+count
+    IF state.position=state.length THEN
+      state.length=0
+      state.position=0
+      state.ready=0
+    FI
+
+    RETURN(LONGINT(count))
+  FI
+
+  state.ready=0
+  state.eof=0
+  state.length=0
+  state.position=0
+
+RETURN(0)
+
+; Redraw only the tail owned by this Read, preserving its caller's prompt.
+; width is bounded by the adapter using the physical space left on this row.
+PUBLIC CARD FUNC Render(Session POINTER state)
+  CARD count,offset,index,used,paint
+  BYTE POINTER output
+
+  output=state.echo
+  count=state.length
+  offset=0
+  used=0
+  IF count>CARD(state.width) THEN
+    offset=count-CARD(state.width)
+    count=CARD(state.width)
+  FI
+
+  IF state.drawn<>0 THEN
+    FOR index=0 TO CARD(state.drawn)-1 DO
+      output(used)=8
+      used==+1
+    OD
+  FI
+
+  output(used)=32
+  IF offset<>0 THEN
+    output(used)=60
+  FI
+
+  used==+1
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      output(used)=state.line(offset+index)
+      used==+1
+    OD
+  FI
+
+  paint=count+1
+  WHILE paint<CARD(state.drawn) DO
+    output(used)=32
+    used==+1
+    paint==+1
+  OD
+
+  WHILE paint>count+1 DO
+    output(used)=8
+    used==+1
+    paint==-1
+  OD
+
+  state.drawn=BYTE(count+1)
+
+RETURN(used)
+
+ENDMODULE

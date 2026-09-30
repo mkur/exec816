@@ -1,0 +1,70 @@
+From 43b7af17dbebadca82569bb1fac5e5bd5707bb93 Mon Sep 17 00:00:00 2001
+From: Michal Kurcewicz <1001406+mkur@users.noreply.github.com>
+Date: Sun, 27 Sep 2026 22:25:08 +0200
+Subject: [PATCH] Derive the compact header revision from the native ABI
+
+---
+ docs/MIR65816_O65_PROFILE.md | 4 ++--
+ src/mir65816/o65/compact.rs  | 5 ++++-
+ tests/mir65816_o65.rs        | 7 ++++++-
+ 3 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/docs/MIR65816_O65_PROFILE.md b/docs/MIR65816_O65_PROFILE.md
+index 89d8fbb5..2a7f0a9f 100644
+--- a/docs/MIR65816_O65_PROFILE.md
++++ b/docs/MIR65816_O65_PROFILE.md
+@@ -167,8 +167,8 @@ trailer of **8 + 4 × import count bytes**:
+ 
+ | Bytes | Meaning |
+ | --- | --- |
+-| 0–3 | ASCII `A8C3`, compact profile v2 |
+-| 4–5 | little-endian native ABI revision, 1 (`action65816.native.v2`) |
++| 0–3 | ASCII `A8C3`, compact profile v3 |
++| 4–5 | little-endian native ABI revision, 2 (`action65816.native.v2`) |
+ | 6–7 | reserved flags, zero |
+ | 8 onward | little-endian 32-bit signature per standard import, in order |
+ 
+diff --git a/src/mir65816/o65/compact.rs b/src/mir65816/o65/compact.rs
+index c46b686f..93881aa5 100644
+--- a/src/mir65816/o65/compact.rs
++++ b/src/mir65816/o65/compact.rs
+@@ -10,7 +10,10 @@ use super::{
+ use crate::mir65816::image::{Segment, ZeroFill};
+ use std::collections::BTreeSet;
+ 
+-const HEADER: &[u8; 8] = b"A8C3\x01\x00\x00\x00";
++const ABI_REVISION: u16 = crate::mir65816::abi::generated::ABI_VERSION as u16;
++const HEADER: &[u8; 8] = &[
++    b'A', b'8', b'C', b'3', ABI_REVISION as u8, (ABI_REVISION >> 8) as u8, 0, 0,
++];
+ 
+ pub(super) fn descriptor(p: &Profile) -> Vec<u8> {
+     let mut bytes = HEADER.to_vec();
+diff --git a/tests/mir65816_o65.rs b/tests/mir65816_o65.rs
+index 0519b514..cc514735 100644
+--- a/tests/mir65816_o65.rs
++++ b/tests/mir65816_o65.rs
+@@ -502,6 +502,11 @@ fn compact_profile_keeps_proofs_on_host_and_matches_rich_relocation() {
+         let info = o65::compact::inspect(&bytes).unwrap();
+         assert_eq!(file.text.len() as u32, compact.section_sizes()[0] + 12);
+         assert_eq!(info.text_bytes, compact.section_sizes()[0]);
++        let header = &file.text[info.text_bytes as usize..info.text_bytes as usize + 8];
++        assert_eq!(header, b"A8C3\x02\0\0\0");
++        let mut stale = file.clone();
++        stale.text[info.text_bytes as usize + 4] = 1;
++        assert!(o65::compact::inspect(&o65::wire::encode(&stale).unwrap()).is_err());
+         assert_eq!(info.imports[0].signature, 0);
+         assert!(
+             serde_json::to_value(compact.profile()).unwrap()["routines"]
+@@ -572,7 +577,7 @@ fn compact_standard_split_relocations_preserve_carries_and_bound_full_targets()
+         .unwrap()
+         .value;
+     file.text.truncate(start as usize);
+-    file.text.extend(b"A8C3\x01\0\0\0\0\0\0\0");
++    file.text.extend(b"A8C3\x02\0\0\0\0\0\0\0");
+     file.lengths[0] = file.text.len() as u32;
+     file.exports
+         .iter_mut()
+-- 
+2.50.1 (Apple Git-155)
+

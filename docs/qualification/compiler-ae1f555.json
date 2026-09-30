@@ -1,0 +1,6302 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-22",
+  "status": "pass",
+  "scope": "Compiler migration: exact clean candidate, unchanged runtime policy and bank-zero reservations; pinned VM and hosted Altirra qualification, not physical hardware or DOS streams.",
+  "source_revision_before": "bacfe92984fa0f36afaa675e3c393b46de700c49",
+  "previous_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 2,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc",
+    "local_bundle": {
+      "path": "toolchain/actionc-comma-groups.bundle",
+      "sha256": "3e536e01ba92629bf357df1bfa489d10b7f1947577497eef0d22bb97d7b6dfb8",
+      "base_revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+      "scope": "Parser comma-group correction; bundled local commit, not asserted published upstream"
+    }
+  },
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "ae1f555e77d0ae6caffbfc7453cbf06e3d098bee",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "compiler_binary": {
+    "path": "build/compiler-ae1f555/target/debug/actionc-65816",
+    "sha256": "19c57d91e38785b130c510665138a8b2f6ca402145ad98ab54bdc11109e6246a"
+  },
+  "abi_unchanged": true,
+  "checks": {
+    "compiler": {
+      "passed": 3379,
+      "failed": 0,
+      "ignored": 27,
+      "log": {
+        "path": "build/compiler-qualification-ae1f555/compiler-tests.log",
+        "sha256": "86b2a7494268d61c84ae379ed872a5ab555d5119781c09a3e2be7e220b0ff5fe"
+      }
+    },
+    "native_debug": {
+      "passed": 111,
+      "failed": 0,
+      "ignored": 2,
+      "log": {
+        "path": "build/compiler-qualification-ae1f555/native-debug.log",
+        "sha256": "ab00a1f732c540880b28c7342f771d1c6d46e5b576774970ae602caec58e0d96"
+      }
+    },
+    "native_release": {
+      "passed": 111,
+      "failed": 0,
+      "ignored": 2,
+      "log": {
+        "path": "build/compiler-qualification-ae1f555/native-release.log",
+        "sha256": "a84bb700f6a245d680ab2a666f1e27b28e4dfc75d6015de2d6b2ca39dd617564"
+      }
+    },
+    "nir_sweep": {
+      "passed": 51,
+      "log": {
+        "path": "build/compiler-qualification-ae1f555/nir-sweep.log",
+        "sha256": "c364d49ee6f201083952848d2d9dad3a8df9e9ab9651b13324629c7d448f96e3"
+      }
+    }
+  },
+  "native_manifests": [
+    {
+      "path": "build/compiler-ae1f555/tools/native65816-runtime-tests/target/qualification/run-4db2m546/manifest.json",
+      "sha256": "954ce167abbff6706ef313398ba86debc685b1af275148e4cfe817deb1bdd410"
+    },
+    {
+      "path": "build/compiler-ae1f555/tools/native65816-runtime-tests/target/qualification/run-a90chggp/manifest.json",
+      "sha256": "d7918b4ee85921d86cb733f5b18a32195685a81ec7d9d677638d233dd789f9c7"
+    }
+  ],
+  "native_identical_artifacts": 648,
+  "cases": [
+    {
+      "name": "core-raw",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/core-raw/results.json",
+        "sha256": "3444790e89e5acc4bfe9f30709ac3a9e062c9cbeda44f05600fa29d4dcef6cf4"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "core",
+        "case": "raw",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/core-raw"
+      },
+      "elapsed_seconds": 146.1039756250102,
+      "driver_sha256": "e8dc442729914109148dcf9ebd343bfa9c85618b7aa70d3c9a2e0715a3677aa1",
+      "image_sha256s": [
+        "0901510e74601244eb86d08eddbe5a060eec547ae3828c8a40e9eea3f29a01d1",
+        "1ab83ad5cad83b904507d8f3594f62d500827ae9e508238ca6c2cd3567f86a8a",
+        "1c8550d11e6145b1ac1e7d9f50094d9566802cb4372445671ecec8fb178058a0",
+        "368a7c25ee4c5f3aa247d6c16d7790ae60a26408cb725feeced42373885fc1c2",
+        "53db62917dd8039831f825536c2927ad00e5c1d5dc48765e140a997078210371",
+        "7265d0aeea775988efba840f42cb853ee020a048391908a6d437fb44fe324764",
+        "aa405a74dc683de6ade47cc8acf87b4f556871f69617c5ec311ea4767eb20194",
+        "c2286adea30729ec77872f9c788447d3c81585ada6a73c5229f472e667afa228"
+      ],
+      "runtime_statuses": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [],
+      "kernel_stack_observations": []
+    },
+    {
+      "name": "boundary-raw",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/boundary-raw/results.json",
+        "sha256": "8a8899fd59c400ec2a610ca3a65bd271802c75d8b5a26db936b45a1ca8fc0a9a"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "boundary",
+        "case": "raw",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/boundary-raw"
+      },
+      "elapsed_seconds": 74.93668804201297,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "1f927c9f7da0f2a2c303526e718981f5f46bec812d9c3e7d4ea26ae8720b3b9d",
+        "64231f9fcc85903e2ea26739f2f4503f27c74fb2011c6cf8f6a8f1c434e531b4",
+        "65dbbf85d906120da17ae6e1d7c9bd10d3d9139df80942e5b730d9333c85ac31",
+        "94f2e9fd44f1a4405ff68d1a7cc293307825e801216ce3d8452bc2debd9e8e1d",
+        "c7a53c50f9ad22d1fe2a3b026624dafd3fcaacadf6a928efd1937df0a86db33a"
+      ],
+      "runtime_statuses": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "guards": "intact",
+      "stack_observations": [],
+      "kernel_stack_observations": []
+    },
+    {
+      "name": "boundary-opt",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/boundary-opt/results.json",
+        "sha256": "04d7ee34bd5147d955ccaae63620553f415609f8274f8a95535beb6ebb426fd7"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "boundary",
+        "case": "opt",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/boundary-opt"
+      },
+      "elapsed_seconds": 75.39259966701502,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "1ee3768ffb12093075b76ae84eb4b0b205ae435eea8623bc91f2c3118362c295",
+        "809b8ff4f962584863c616195f410bbe2a3e36707c6785ef05412442856f2714",
+        "d7b49ec71c95e028146be7fcbb634765b37cd6a2aeb9ffdb0ea92c64624d7b71",
+        "db191ce16aeb25c762ed31facf14a93d64f0348711cbc00e513ce6aab311fe37",
+        "fb5d98774dce9cb31d703ebd44aac3ced79aad990434c73400b4fe30715a7df5"
+      ],
+      "runtime_statuses": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "guards": "intact",
+      "stack_observations": [],
+      "kernel_stack_observations": []
+    },
+    {
+      "name": "core-opt",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/core-opt/results.json",
+        "sha256": "69d2f2f85fbd8db9f3355e6dd496c559b4373b577e0d1a6181f469a7fb4f4292"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "core",
+        "case": "opt",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/core-opt"
+      },
+      "elapsed_seconds": 142.05089604202658,
+      "driver_sha256": "e8dc442729914109148dcf9ebd343bfa9c85618b7aa70d3c9a2e0715a3677aa1",
+      "image_sha256s": [
+        "411f8d325ac60b6175a1fa9e5f5a78a385685c20ac425cbb34e68be997584426",
+        "54fff33a075c1cde9634c8e8569f89d42a983ce715c56ea4036058806475a5a7",
+        "5c11aa5d8ffc05616825ac424f0f7298ca44d849ce120e4ce6d256aa5ed4e661",
+        "5dd397f37286d3382cd428d58acb016709b52627c7ed4f6c75cf6fa828b2f2de",
+        "97ce09cb29614620fa666b152611634e52c037f428e527f679461ee4d35d7cec",
+        "ae9d036da1b1331e0e467d615967ccfc06a5c89bbfe286b4ffdd906cd81f71ca",
+        "c5a933dea7666a46cb29d662ab53686a7701c40f38188361462f0cdcaa33bf80",
+        "d0cb1b2f9d24affd99a2f46837823c85e3ae2f98fb4676da63e5e2cd8e2bcbdd"
+      ],
+      "runtime_statuses": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [],
+      "kernel_stack_observations": []
+    },
+    {
+      "name": "target128-raw",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/target128-raw/results.json",
+        "sha256": "0c39e54757685aa96bb9013551bba30d242b30f233705db5cf147a3429981644"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "concurrent",
+        "case": "raw",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": true,
+        "output": "build/compiler-qualification-ae1f555/target128-raw"
+      },
+      "elapsed_seconds": 271.1854149160208,
+      "driver_sha256": "e8dc442729914109148dcf9ebd343bfa9c85618b7aa70d3c9a2e0715a3677aa1",
+      "image_sha256s": [
+        "2c16e4690faac6e77cdc426322f11412d13e5c35aac3b472c590b635cfc10e62"
+      ],
+      "runtime_statuses": [
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 244,
+            "untouched_above_floor": 1036
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 171,
+            "untouched_above_floor": 597
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 242,
+            "untouched_above_floor": 526
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 187,
+            "untouched_above_floor": 581
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 52,
+            "untouched_above_floor": 716
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 96,
+            "untouched_above_floor": 672
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 46,
+            "untouched_above_floor": 210
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 244,
+            "untouched_above_floor": 1036
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 171,
+            "untouched_above_floor": 597
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 242,
+            "untouched_above_floor": 526
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 187,
+            "untouched_above_floor": 581
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 52,
+            "untouched_above_floor": 716
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 96,
+            "untouched_above_floor": 672
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 46,
+            "untouched_above_floor": 210
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 339,
+          "untouched_from_base": 1197,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 339,
+          "untouched_from_base": 1197,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ],
+      "counters": {
+        "expected": 777,
+        "verified": 777,
+        "collected": 8,
+        "visible": 8,
+        "duringRead": 2,
+        "initialAlloc": 25,
+        "finalAlloc": 48,
+        "floods": 30,
+        "allocations": 50,
+        "signals": 50,
+        "messages": 50
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "limits": {
+        "checkpoint_host_seconds": 180,
+        "checkpoint_guest_frames": 9000,
+        "completion_host_seconds": 1800,
+        "completion_guest_frames": 30000
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 3668,
+          "min_us": 5.638734724315211,
+          "mean_us": 18.732497814379226,
+          "max_us": 67.10094321935101
+        },
+        "tx_refill": {
+          "count": 112,
+          "min_us": 10.149722503767379,
+          "mean_us": 20.566277990024677,
+          "max_us": 64.2815758571934
+        },
+        "command_setup": {
+          "count": 28,
+          "min_us": 1051.0601526123553,
+          "mean_us": 1061.0084917331114,
+          "max_us": 1097.8616508241716
+        },
+        "command_hold": {
+          "count": 28,
+          "min_us": 722.88579165721,
+          "mean_us": 751.4016786916042,
+          "max_us": 858.7792985132066
+        },
+        "byte_deadline_us": 78.94228614041295,
+        "rx_byte_deadline_us": 78.94228614041295,
+        "deadline_misses": {
+          "rx": 0,
+          "tx": 0,
+          "tx_gaps": 0
+        },
+        "critic_deferral_bound": {
+          "count": 28,
+          "min_us": 45547.3731249445,
+          "mean_us": 141448.7127876233,
+          "max_us": 676875.6898639514,
+          "median_us": 81177.33961676339,
+          "p95_us": 564324.0073359938,
+          "p99_us": 676875.6898639514
+        },
+        "post_to_worker": {
+          "count": 28,
+          "min_us": 1386.3534161569487,
+          "mean_us": 2547.5300025998595,
+          "max_us": 11851.915548670035,
+          "median_us": 1949.733499300092,
+          "p95_us": 8790.435014287144,
+          "p99_us": 11851.915548670035
+        },
+        "post_to_sector_collection_upper_bound": {
+          "count": 28,
+          "min_us": 26415.710078815413,
+          "mean_us": 44027.96319033972,
+          "max_us": 93370.25764788639,
+          "median_us": 34406.99541429899,
+          "p95_us": 86917.78301866844,
+          "p99_us": 93370.25764788639
+        },
+        "post_to_sector_collection": {
+          "count": 28,
+          "min_us": 5584.109481673408,
+          "mean_us": 11098.542830117207,
+          "max_us": 35479.694211415896,
+          "median_us": 9344.229248398951,
+          "p95_us": 33486.89487565885,
+          "p99_us": 35479.694211415896
+        },
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 392,
+              "min_us": 20.722350111858397,
+              "mean_us": 23.778882368830157,
+              "max_us": 65.8322279063801,
+              "median_us": 21.850097056721445,
+              "p95_us": 31.506430272111242,
+              "p99_us": 63.012860544222484
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 946,
+              "min_us": 7.823744429987355,
+              "mean_us": 23.020983898590014,
+              "max_us": 78.87180195635901,
+              "median_us": 20.158476639426876,
+              "p95_us": 43.277289009119244,
+              "p99_us": 63.57673401665401
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        },
+        "forbid": {
+          "count": 313,
+          "min_us": 943.2898351938809,
+          "mean_us": 1109.4989724329241,
+          "max_us": 6902.516144402357,
+          "median_us": 1031.395065261306,
+          "p95_us": 1365.0671925726585,
+          "p99_us": 3663.838371307862
+        },
+        "active_masked_max_us": 3996.3122674902984,
+        "longest_transaction_mask": {
+          "start_tick": 4302139708.0,
+          "end_tick": 4302146795.25,
+          "duration_us": 3996.3122674902984,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false,
+          "transaction": 1,
+          "overlap_us": 3996.3122674902984
+        },
+        "longest_resident_mask": {
+          "start_tick": 4318572110.125,
+          "end_tick": 4318606629.25,
+          "duration_us": 19464.41887904773,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false
+        },
+        "resident_masked_max_us": 19464.41887904773,
+        "file_read": {
+          "bytes": 777,
+          "seconds": 1.043393165007704,
+          "bytes_per_second": 744.6857292708669,
+          "mechanical_timing": true,
+          "scope": "JSL DOS.Read entry to return; excludes Open, payload verification and cleanup"
+        },
+        "post_to_next_start_during_read": {
+          "count": 6,
+          "min_us": 27693.79978826551,
+          "mean_us": 40743.922971124506,
+          "max_us": 59090.83860672504,
+          "median_us": 28519.240067721206,
+          "p95_us": 59090.83860672504,
+          "p99_us": 59090.83860672504
+        },
+        "read_progress": {
+          "allocator_entries": 1,
+          "draw_quanta": 47,
+          "terminal_feeds": 3
+        },
+        "keyboard": {
+          "capture_to_reply_lower_bound": {
+            "count": 8,
+            "min_us": 5737.201129438566,
+            "mean_us": 9352.528761071304,
+            "max_us": 28215.876139553046,
+            "median_us": 5775.615009747962,
+            "p95_us": 28215.876139553046,
+            "p99_us": 28215.876139553046
+          },
+          "capture_to_collected_reply_upper_bound": {
+            "count": 8,
+            "min_us": 14808.586101364715,
+            "mean_us": 20006.662517497698,
+            "max_us": 32489.332218743435,
+            "median_us": 15515.683435793842,
+            "p95_us": 32489.332218743435,
+            "p99_us": 32489.332218743435
+          },
+          "capture_to_observed_visible_echo_upper_bound": {
+            "count": 8,
+            "min_us": 103478.6059356141,
+            "mean_us": 164936.67348483673,
+            "max_us": 545289.8944005955,
+            "median_us": 104101.26321754661,
+            "p95_us": 545289.8944005955,
+            "p99_us": 545289.8944005955
+          },
+          "samples": [
+            {
+              "capture": 4316976087.0,
+              "reply_call": 4316997306.125,
+              "collected": 4317033558.375,
+              "visible": 4317237354.75
+            },
+            {
+              "capture": 4317445564.125,
+              "reply_call": 4317495603.5,
+              "collected": 4317503182.25,
+              "visible": 4318412607.125
+            },
+            {
+              "capture": 4318619878.125,
+              "reply_call": 4318630120.875,
+              "collected": 4318647394.375,
+              "visible": 4318804460.875
+            },
+            {
+              "capture": 4319011126.125,
+              "reply_call": 4319021368.875,
+              "collected": 4319038642.375,
+              "visible": 4319195744.25
+            },
+            {
+              "capture": 4319403286.125,
+              "reply_call": 4319413528.875,
+              "collected": 4319429890.375,
+              "visible": 4319587030.5
+            },
+            {
+              "capture": 4319791570.125,
+              "reply_call": 4319801812.875,
+              "collected": 4319821138.375,
+              "visible": 4319978315.625
+            },
+            {
+              "capture": 4320186124.125,
+              "reply_call": 4320196409.75,
+              "collected": 4320212386.375,
+              "visible": 4320369638.0
+            },
+            {
+              "capture": 4320572345.0,
+              "reply_call": 4320582519.625,
+              "collected": 4320603634.375,
+              "visible": 4320760881.875
+            }
+          ],
+          "boundary": "Native raw-event capture entry; worker finish-read call (before publication); client after specific WaitIO collection; task after first observing its unique lowercase glyph in physical screen RAM. Reply and visibility upper bounds include scheduling/polling, not a hard real-time guarantee."
+        },
+        "wire_transactions": 28,
+        "verified_wire_bytes": 3668
+      },
+      "replay": "pass",
+      "replay_image_sha256": "2c16e4690faac6e77cdc426322f11412d13e5c35aac3b472c590b635cfc10e62"
+    },
+    {
+      "name": "dos-raw",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/dos-raw/results.json",
+        "sha256": "9edbd19f55afc35210513943ca59bfc37c86ff2a70a7608f3c3fbc5d3fdb5be7"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "dos",
+        "case": "raw",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/dos-raw"
+      },
+      "elapsed_seconds": 281.3275739160017,
+      "driver_sha256": "e8dc442729914109148dcf9ebd343bfa9c85618b7aa70d3c9a2e0715a3677aa1",
+      "image_sha256s": [
+        "700d08946f9507210b6222d0cc4c8d5e79964f8b41514bdc2eda47c2ba04319f",
+        "cdc3df991fa33ab23d203d832195303c4cb76f8d13c93cf66f15d159fa300838",
+        "ec37f5e6165fa37aed785faa4da4061f110c6f4384adf375b30d8b67a53ba50c",
+        "f928567e55ece632cbc82acc6d61ff66f6b10823bf82faf50ffc978d88169745"
+      ],
+      "runtime_statuses": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 238,
+            "untouched_above_floor": 1042
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 187,
+            "untouched_above_floor": 581
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 206,
+            "untouched_above_floor": 562
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 80,
+            "untouched_above_floor": 688
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 230,
+            "untouched_above_floor": 1050
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 187,
+            "untouched_above_floor": 581
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 170,
+            "untouched_above_floor": 598
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 208,
+            "untouched_above_floor": 560
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 228,
+            "untouched_above_floor": 1052
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 187,
+            "untouched_above_floor": 581
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 190,
+            "untouched_above_floor": 578
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 52,
+            "untouched_above_floor": 204
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 210,
+            "untouched_above_floor": 1070
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 187,
+            "untouched_above_floor": 581
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 52,
+            "untouched_above_floor": 204
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ]
+    },
+    {
+      "name": "dos-opt",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/dos-opt/results.json",
+        "sha256": "906cd0d3ce8c1e8ae356bc8289fa8b0cec934ddc76707cd8706bc89b736bfbd5"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "dos",
+        "case": "opt",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/dos-opt"
+      },
+      "elapsed_seconds": 272.21835054201074,
+      "driver_sha256": "e8dc442729914109148dcf9ebd343bfa9c85618b7aa70d3c9a2e0715a3677aa1",
+      "image_sha256s": [
+        "2362c26eb908fcd3828da9ac79dc6eed7a20e0798462794436d7c13904b0966c",
+        "7e65a2d5b41ab96373a7de311fbec6f6aa268e3e59462a8c096de794631679a3",
+        "e8d3b64b18b1b5e6001ccd4b5d743fa80ea97548a708ea5df52af04ffc7da0c8",
+        "fe7bb50dd3bb1f401b8f4f9f4d3548036f5e04fedb10086aa872a06117ba8001"
+      ],
+      "runtime_statuses": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 216,
+            "untouched_above_floor": 1064
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 190,
+            "untouched_above_floor": 578
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 78,
+            "untouched_above_floor": 690
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 52,
+            "untouched_above_floor": 204
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 216,
+            "untouched_above_floor": 1064
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 122,
+            "untouched_above_floor": 646
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 203,
+            "untouched_above_floor": 565
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 214,
+            "untouched_above_floor": 1066
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 122,
+            "untouched_above_floor": 646
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 174,
+            "untouched_above_floor": 594
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 52,
+            "untouched_above_floor": 204
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 190,
+            "untouched_above_floor": 1090
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 122,
+            "untouched_above_floor": 646
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 316,
+          "untouched_from_base": 1220,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 303,
+          "untouched_from_base": 1233,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 310,
+          "untouched_from_base": 1226,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 303,
+          "untouched_from_base": 1233,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ]
+    },
+    {
+      "name": "console-raw",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/console-raw/results.json",
+        "sha256": "dce276e1a237cdc235a11ece2b4969145ae3f69359496ec46026c0497f08a39a"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "console",
+        "case": "raw",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/console-raw"
+      },
+      "elapsed_seconds": 253.768520542013,
+      "driver_sha256": "e8dc442729914109148dcf9ebd343bfa9c85618b7aa70d3c9a2e0715a3677aa1",
+      "image_sha256s": [
+        "47e10b628b535f077b4b62004b472c601bb0319236a453300a851f4000214eb5",
+        "800f69f88469837c73d28bfdd24c64f8236f4057fc1cb6b0ff7140125480f29e",
+        "8ba2216d266203e7e28d063f47bff56d55ca246c47702f1ace48268dc6a06b8a",
+        "ef94b6d5d6db75e76163764dd8de0cd912f49d152a95557eb8897eb8eac41b90"
+      ],
+      "runtime_statuses": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        65427
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 130,
+            "untouched_above_floor": 1150
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 104,
+            "untouched_above_floor": 1176
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 130,
+            "untouched_above_floor": 1150
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 136,
+            "untouched_above_floor": 1144
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 39,
+            "untouched_above_floor": 217
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 136,
+            "untouched_above_floor": 1144
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 39,
+            "untouched_above_floor": 217
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 250,
+            "untouched_above_floor": 1030
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 187,
+            "untouched_above_floor": 581
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 130,
+            "untouched_above_floor": 1150
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 18,
+            "untouched_above_floor": 238
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 337,
+          "untouched_from_base": 1199,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 288,
+          "untouched_from_base": 1248,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 328,
+          "untouched_from_base": 1208,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 337,
+          "untouched_from_base": 1199,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 337,
+          "untouched_from_base": 1199,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 337,
+          "untouched_from_base": 1199,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ]
+    },
+    {
+      "name": "console-opt",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/console-opt/results.json",
+        "sha256": "095614560c030f6ba20223754712aa25deac51cbbdbe7771e1ec13690bf17087"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "console",
+        "case": "opt",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/console-opt"
+      },
+      "elapsed_seconds": 253.4467321250122,
+      "driver_sha256": "e8dc442729914109148dcf9ebd343bfa9c85618b7aa70d3c9a2e0715a3677aa1",
+      "image_sha256s": [
+        "3cfee4d01fc5775d3c55164ad495d7d699cde3a4acc7956ba309023315f48cfb",
+        "51ad6c9987350919fb19c5c05bb8bca29fe75a3cd6265e3d414a5ff0ee3011f4",
+        "a31f2533660fecc357559341ce1bfe392a19416a98a4edb12a465884c7f3c11d",
+        "e05f508711cbc459811e09edfa74c7ef7c885b938331df7b889707035fdc6b51"
+      ],
+      "runtime_statuses": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        65427
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 112,
+            "untouched_above_floor": 1168
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 98,
+            "untouched_above_floor": 1182
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 112,
+            "untouched_above_floor": 1168
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 106,
+            "untouched_above_floor": 1174
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 46,
+            "untouched_above_floor": 210
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 106,
+            "untouched_above_floor": 1174
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 46,
+            "untouched_above_floor": 210
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 222,
+            "untouched_above_floor": 1058
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 112,
+            "untouched_above_floor": 1168
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 18,
+            "untouched_above_floor": 238
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 266,
+          "untouched_from_base": 1270,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 312,
+          "untouched_from_base": 1224,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 307,
+          "untouched_from_base": 1229,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ]
+    },
+    {
+      "name": "target128-opt",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/target128-opt/results.json",
+        "sha256": "b5d3ae5ef16d5986d1b26e99d4eeed83fd01c92a793907bc21488354c6fba5e7"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "concurrent",
+        "case": "opt",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": true,
+        "output": "build/compiler-qualification-ae1f555/target128-opt"
+      },
+      "elapsed_seconds": 260.67335787502816,
+      "driver_sha256": "e8dc442729914109148dcf9ebd343bfa9c85618b7aa70d3c9a2e0715a3677aa1",
+      "image_sha256s": [
+        "13277cd51a7cea7d6f479e67f3c10fad4245d461eb8e53d2fca7c8062bb8fd08"
+      ],
+      "runtime_statuses": [
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 220,
+            "untouched_above_floor": 1060
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 157,
+            "untouched_above_floor": 611
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 218,
+            "untouched_above_floor": 550
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 98,
+            "untouched_above_floor": 670
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 49,
+            "untouched_above_floor": 719
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 82,
+            "untouched_above_floor": 686
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 52,
+            "untouched_above_floor": 204
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 220,
+            "untouched_above_floor": 1060
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 157,
+            "untouched_above_floor": 611
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 218,
+            "untouched_above_floor": 550
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 98,
+            "untouched_above_floor": 670
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 49,
+            "untouched_above_floor": 719
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 82,
+            "untouched_above_floor": 686
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 52,
+            "untouched_above_floor": 204
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ],
+      "counters": {
+        "expected": 777,
+        "verified": 777,
+        "collected": 8,
+        "visible": 8,
+        "duringRead": 2,
+        "initialAlloc": 25,
+        "finalAlloc": 49,
+        "floods": 30,
+        "allocations": 50,
+        "signals": 50,
+        "messages": 50
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "limits": {
+        "checkpoint_host_seconds": 180,
+        "checkpoint_guest_frames": 9000,
+        "completion_host_seconds": 1800,
+        "completion_guest_frames": 30000
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 3668,
+          "min_us": 5.638734724315211,
+          "mean_us": 19.729114968625012,
+          "max_us": 61.4622084950358
+        },
+        "tx_refill": {
+          "count": 112,
+          "min_us": 9.585849031335858,
+          "mean_us": 24.05524510069471,
+          "max_us": 64.84544932962491
+        },
+        "command_setup": {
+          "count": 28,
+          "min_us": 1054.4433934469446,
+          "mean_us": 1062.4584520907927,
+          "max_us": 1105.755879438213
+        },
+        "command_hold": {
+          "count": 28,
+          "min_us": 725.1412855469362,
+          "mean_us": 756.4362632668856,
+          "max_us": 857.6515515683436
+        },
+        "byte_deadline_us": 78.94228614041295,
+        "rx_byte_deadline_us": 78.94228614041295,
+        "deadline_misses": {
+          "rx": 0,
+          "tx": 0,
+          "tx_gaps": 0
+        },
+        "critic_deferral_bound": {
+          "count": 28,
+          "min_us": 43537.23467991018,
+          "mean_us": 141777.67757835676,
+          "max_us": 676508.6787175826,
+          "median_us": 80770.78684314026,
+          "p95_us": 565309.0942923318,
+          "p99_us": 676508.6787175826
+        },
+        "post_to_worker": {
+          "count": 28,
+          "min_us": 1079.1128578658233,
+          "mean_us": 1777.8905412842985,
+          "max_us": 4476.873434370062,
+          "median_us": 1740.1135359236741,
+          "p95_us": 3889.951633752902,
+          "p99_us": 4476.873434370062
+        },
+        "post_to_sector_collection_upper_bound": {
+          "count": 28,
+          "min_us": 20505.188340788212,
+          "mean_us": 35669.47035968884,
+          "max_us": 79130.83133275724,
+          "median_us": 27818.697762409094,
+          "p95_us": 65077.06035842617,
+          "p99_us": 79130.83133275724
+        },
+        "post_to_sector_collection": {
+          "count": 28,
+          "min_us": 5062.244582938034,
+          "mean_us": 8931.292621534369,
+          "max_us": 24823.19042430069,
+          "median_us": 6863.115485516205,
+          "p95_us": 15563.26026003025,
+          "p99_us": 24823.19042430069
+        },
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 392,
+              "min_us": 8.951491374850397,
+              "mean_us": 26.836493465353758,
+              "max_us": 74.36081417690684,
+              "median_us": 22.977844001584486,
+              "p95_us": 59.70010389368729,
+              "p99_us": 66.39610137881162
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 956,
+              "min_us": 6.625513301070373,
+              "mean_us": 23.245256277278667,
+              "max_us": 81.12729584608509,
+              "median_us": 20.158476639426876,
+              "p95_us": 47.78827678857141,
+              "p99_us": 63.57673401665401
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        },
+        "forbid": {
+          "count": 313,
+          "min_us": 904.4530497801599,
+          "mean_us": 1082.9960184722968,
+          "max_us": 6604.649982590407,
+          "median_us": 979.4482216135522,
+          "p95_us": 1540.0089373945382,
+          "p99_us": 2692.4958308605133
+        },
+        "active_masked_max_us": 4003.2902017116385,
+        "longest_transaction_mask": {
+          "start_tick": 4300578027.75,
+          "end_tick": 4300585127.375,
+          "duration_us": 4003.2902017116385,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false,
+          "transaction": 0,
+          "overlap_us": 4003.2902017116385
+        },
+        "longest_resident_mask": {
+          "start_tick": 4319781751.125,
+          "end_tick": 4319815941.25,
+          "duration_us": 19278.90450661776,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false
+        },
+        "resident_masked_max_us": 19278.90450661776,
+        "file_read": {
+          "bytes": 777,
+          "seconds": 0.8908590471384126,
+          "bytes_per_second": 872.1918495365268,
+          "mechanical_timing": true,
+          "scope": "JSL DOS.Read entry to return; excludes Open, payload verification and cleanup"
+        },
+        "post_to_next_start_during_read": {
+          "count": 6,
+          "min_us": 20505.188340788212,
+          "mean_us": 34549.47919236403,
+          "max_us": 58897.50048986508,
+          "median_us": 26225.89617115815,
+          "p95_us": 58897.50048986508,
+          "p99_us": 58897.50048986508
+        },
+        "read_progress": {
+          "allocator_entries": 1,
+          "draw_quanta": 44,
+          "terminal_feeds": 3
+        },
+        "keyboard": {
+          "capture_to_reply_lower_bound": {
+            "count": 8,
+            "min_us": 6772.402340638784,
+            "mean_us": 13636.795351990966,
+            "max_us": 35414.70779371817,
+            "median_us": 10784.150644436895,
+            "p95_us": 35414.70779371817,
+            "p99_us": 35414.70779371817
+          },
+          "capture_to_collected_reply_upper_bound": {
+            "count": 8,
+            "min_us": 12547.594445282422,
+            "mean_us": 19336.24339034564,
+            "max_us": 41961.98365048866,
+            "median_us": 14828.180704531711,
+            "p95_us": 41961.98365048866,
+            "p99_us": 41961.98365048866
+          },
+          "capture_to_observed_visible_echo_upper_bound": {
+            "count": 8,
+            "min_us": 92613.8213846195,
+            "mean_us": 154787.07432839146,
+            "max_us": 567384.5715759841,
+            "median_us": 93642.11514578245,
+            "p95_us": 567384.5715759841,
+            "p99_us": 567384.5715759841
+          },
+          "samples": [
+            {
+              "capture": 4316013183.0,
+              "reply_call": 4316035371.75,
+              "collected": 4316056894.5,
+              "visible": 4316206507.625
+            },
+            {
+              "capture": 4316409651.0,
+              "reply_call": 4316472457.125,
+              "collected": 4316484068.375,
+              "visible": 4317415877.75
+            },
+            {
+              "capture": 4317620429.0,
+              "reply_call": 4317638799.125,
+              "collected": 4317648054.5,
+              "visible": 4317787510.625
+            },
+            {
+              "capture": 4317975197.0,
+              "reply_call": 4317994322.125,
+              "collected": 4318001379.625,
+              "visible": 4318141031.625
+            },
+            {
+              "capture": 4318330877.0,
+              "reply_call": 4318350002.125,
+              "collected": 4318357059.625,
+              "visible": 4318496742.375
+            },
+            {
+              "capture": 4318689988.125,
+              "reply_call": 4318701998.625,
+              "collected": 4318712240.625,
+              "visible": 4318854233.875
+            },
+            {
+              "capture": 4319040755.0,
+              "reply_call": 4319061362.875,
+              "collected": 4319068420.375,
+              "visible": 4319208160.875
+            },
+            {
+              "capture": 4319397803.0,
+              "reply_call": 4319417042.5,
+              "collected": 4319424100.0,
+              "visible": 4319563872.375
+            }
+          ],
+          "boundary": "Native raw-event capture entry; worker finish-read call (before publication); client after specific WaitIO collection; task after first observing its unique lowercase glyph in physical screen RAM. Reply and visibility upper bounds include scheduling/polling, not a hard real-time guarantee."
+        },
+        "wire_transactions": 28,
+        "verified_wire_bytes": 3668
+      },
+      "replay": "pass",
+      "replay_image_sha256": "13277cd51a7cea7d6f479e67f3c10fad4245d461eb8e53d2fca7c8062bb8fd08"
+    },
+    {
+      "name": "target256-raw",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/target256-raw/results.json",
+        "sha256": "ee4dad5cdabdc0381ad38fd65ed4fd21c3cac5868889701ed44ea9b6566a8ba0"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "concurrent",
+        "case": "raw",
+        "sector_size": 256,
+        "speed": 0,
+        "bank": 1,
+        "trace": true,
+        "output": "build/compiler-qualification-ae1f555/target256-raw"
+      },
+      "elapsed_seconds": 1178.2469681249931,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "add71788f794738ebed97f75ccb904154bf794b485ce0dabc979a3f310289b67"
+      ],
+      "runtime_statuses": [
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 244,
+            "untouched_above_floor": 1036
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 181,
+            "untouched_above_floor": 587
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 242,
+            "untouched_above_floor": 526
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 190,
+            "untouched_above_floor": 578
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 127,
+            "untouched_above_floor": 641
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 78,
+            "untouched_above_floor": 690
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 96,
+            "untouched_above_floor": 672
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 244,
+            "untouched_above_floor": 1036
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 181,
+            "untouched_above_floor": 587
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 242,
+            "untouched_above_floor": 526
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 190,
+            "untouched_above_floor": 578
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 127,
+            "untouched_above_floor": 641
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 78,
+            "untouched_above_floor": 690
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 96,
+            "untouched_above_floor": 672
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 363,
+          "untouched_from_base": 1173,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 363,
+          "untouched_from_base": 1173,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ],
+      "counters": {
+        "expected": 70003,
+        "verified": 70003,
+        "collected": 8,
+        "visible": 8,
+        "duringRead": 8,
+        "initialAlloc": 25,
+        "finalAlloc": 739,
+        "floods": 30,
+        "allocations": 821,
+        "signals": 821,
+        "messages": 821
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "limits": {
+        "checkpoint_host_seconds": 180,
+        "checkpoint_guest_frames": 9000,
+        "completion_host_seconds": 1800,
+        "completion_guest_frames": 30000
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 76146,
+          "min_us": 5.638734724315211,
+          "mean_us": 19.821345527580508,
+          "max_us": 72.73967794366622
+        },
+        "tx_refill": {
+          "count": 1176,
+          "min_us": 9.585849031335858,
+          "mean_us": 21.776735967195915,
+          "max_us": 68.79256363664558
+        },
+        "command_setup": {
+          "count": 294,
+          "min_us": 1046.5491648329032,
+          "mean_us": 1064.7427150352344,
+          "max_us": 1109.7029937452335
+        },
+        "command_hold": {
+          "count": 294,
+          "min_us": 695.2559915080656,
+          "mean_us": 754.069529032258,
+          "max_us": 858.7792985132066
+        },
+        "byte_deadline_us": 78.94228614041295,
+        "rx_byte_deadline_us": 78.94228614041295,
+        "deadline_misses": {
+          "rx": 0,
+          "tx": 0,
+          "tx_gaps": 0
+        },
+        "critic_deferral_bound": {
+          "count": 294,
+          "min_us": 69892.61029717542,
+          "mean_us": 130749.612099643,
+          "max_us": 698379.4981244159,
+          "median_us": 127768.93592846699,
+          "p95_us": 158081.998480361,
+          "p99_us": 229527.16389969256
+        },
+        "post_to_worker": {
+          "count": 294,
+          "min_us": 1034.7783060958952,
+          "mean_us": 6318.097970771849,
+          "max_us": 21345.99417236766,
+          "median_us": 3665.3890233570487,
+          "p95_us": 20669.064068713622,
+          "p99_us": 21118.25977368938
+        },
+        "post_to_sector_collection_upper_bound": {
+          "count": 294,
+          "min_us": 23130.01935495694,
+          "mean_us": 54859.89599814106,
+          "max_us": 110121.45834596176,
+          "median_us": 51431.25184139931,
+          "p95_us": 84086.92673451004,
+          "p99_us": 93455.12060548733
+        },
+        "post_to_sector_collection": {
+          "count": 294,
+          "min_us": 5327.8289884532805,
+          "mean_us": 20125.919898915516,
+          "max_us": 49175.96940422539,
+          "median_us": 18331.597072932804,
+          "p95_us": 36079.23268097871,
+          "p99_us": 37962.07668961162
+        },
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 4116,
+              "min_us": 5.497766356207331,
+              "mean_us": 25.1212584489799,
+              "max_us": 74.85420346528443,
+              "median_us": 22.413970529152966,
+              "p95_us": 48.42263444505687,
+              "p99_us": 65.8322279063801
+            },
+            "cancelled_or_terminal": {
+              "count": 2,
+              "min_us": 0.0,
+              "mean_us": 0.0,
+              "max_us": 0.0,
+              "median_us": 0.0,
+              "p95_us": 0.0,
+              "p99_us": 0.0
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 8905,
+              "min_us": 4.933892883775809,
+              "mean_us": 23.611544702732893,
+              "max_us": 90.14927140498943,
+              "median_us": 20.158476639426876,
+              "p95_us": 46.66052984370837,
+              "p99_us": 63.57673401665401
+            },
+            "cancelled_or_terminal": {
+              "count": 4,
+              "min_us": 16.07039396429835,
+              "mean_us": 25.480032535499358,
+              "max_us": 39.753079806422235,
+              "median_us": 16.42281488456805,
+              "p95_us": 39.753079806422235,
+              "p99_us": 39.753079806422235
+            }
+          }
+        },
+        "forbid": {
+          "count": 313,
+          "min_us": 942.6554775373954,
+          "mean_us": 1112.0134337720494,
+          "max_us": 6905.405995948569,
+          "median_us": 1031.395065261306,
+          "p95_us": 1364.8557400204968,
+          "p99_us": 3756.10216823447
+        },
+        "active_masked_max_us": 4005.404727233256,
+        "longest_transaction_mask": {
+          "start_tick": 4326868090.0,
+          "end_tick": 4326875193.375,
+          "duration_us": 4005.404727233256,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false,
+          "transaction": 50,
+          "overlap_us": 4005.404727233256
+        },
+        "longest_resident_mask": {
+          "start_tick": 4414430984.125,
+          "end_tick": 4414462389.25,
+          "duration_us": 17708.516885895977,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false
+        },
+        "resident_masked_max_us": 17708.516885895977,
+        "file_read": {
+          "bytes": 70003,
+          "seconds": 48.75498252697077,
+          "bytes_per_second": 1435.8122261919598,
+          "mechanical_timing": true,
+          "scope": "JSL DOS.Read entry to return; excludes Open, payload verification and cleanup"
+        },
+        "post_to_next_start_during_read": {
+          "count": 276,
+          "min_us": 23130.01935495694,
+          "mean_us": 55263.690679361505,
+          "max_us": 110121.45834596176,
+          "median_us": 51812.78272968329,
+          "p95_us": 84007.13863816098,
+          "p99_us": 89937.18449517112
+        },
+        "read_progress": {
+          "allocator_entries": 710,
+          "draw_quanta": 80,
+          "terminal_feeds": 10
+        },
+        "keyboard": {
+          "capture_to_reply_lower_bound": {
+            "count": 8,
+            "min_us": 5801.200768559543,
+            "mean_us": 15946.024621535174,
+            "max_us": 43661.70974894943,
+            "median_us": 9405.832425262095,
+            "p95_us": 43661.70974894943,
+            "p99_us": 43661.70974894943
+          },
+          "capture_to_collected_reply_upper_bound": {
+            "count": 8,
+            "min_us": 12159.71998043359,
+            "mean_us": 27142.842542561873,
+            "max_us": 47990.495912622166,
+            "median_us": 17019.46350258466,
+            "p95_us": 47990.495912622166,
+            "p99_us": 47990.495912622166
+          },
+          "capture_to_observed_visible_echo_upper_bound": {
+            "count": 8,
+            "min_us": 131394.57187201764,
+            "mean_us": 203283.8669455961,
+            "max_us": 539196.6071733164,
+            "median_us": 144146.0770617681,
+            "p95_us": 539196.6071733164,
+            "p99_us": 539196.6071733164
+          },
+          "samples": [
+            {
+              "capture": 4316545646.0,
+              "reply_call": 4316601307.875,
+              "collected": 4316627605.125,
+              "visible": 4316783925.5
+            },
+            {
+              "capture": 4316978618.0,
+              "reply_call": 4316992507.875,
+              "collected": 4317000182.625,
+              "visible": 4317934854.875
+            },
+            {
+              "capture": 4318152923.0,
+              "reply_call": 4318169603.75,
+              "collected": 4318195535.5,
+              "visible": 4318419440.25
+            },
+            {
+              "capture": 4318617140.0,
+              "reply_call": 4318627441.625,
+              "collected": 4318647323.125,
+              "visible": 4318880312.375
+            },
+            {
+              "capture": 4319082271.0,
+              "reply_call": 4319101232.375,
+              "collected": 4319111980.875,
+              "visible": 4319315292.375
+            },
+            {
+              "capture": 4319507026.125,
+              "reply_call": 4319584457.875,
+              "collected": 4319592134.75,
+              "visible": 4319942374.875
+            },
+            {
+              "capture": 4320149644.125,
+              "reply_call": 4320159932.25,
+              "collected": 4320177972.25,
+              "visible": 4320405279.625
+            },
+            {
+              "capture": 4320608834.0,
+              "reply_call": 4320631854.125,
+              "collected": 4320674459.25,
+              "visible": 4320844728.5
+            }
+          ],
+          "boundary": "Native raw-event capture entry; worker finish-read call (before publication); client after specific WaitIO collection; task after first observing its unique lowercase glyph in physical screen RAM. Reply and visibility upper bounds include scheduling/polling, not a hard real-time guarantee."
+        },
+        "wire_transactions": 294,
+        "verified_wire_bytes": 76146
+      },
+      "replay": "pass",
+      "replay_image_sha256": "add71788f794738ebed97f75ccb904154bf794b485ce0dabc979a3f310289b67"
+    },
+    {
+      "name": "target256-opt",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/target256-opt/results.json",
+        "sha256": "cc104949e0ffc545f752092c54f14dd738d1e060e87f952db769ab5f109ace7f"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "concurrent",
+        "case": "opt",
+        "sector_size": 256,
+        "speed": 0,
+        "bank": 1,
+        "trace": true,
+        "output": "build/compiler-qualification-ae1f555/target256-opt"
+      },
+      "elapsed_seconds": 1176.0618732909788,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "94b4ab91f6a407194875e69ba40d6556eec6bc1836706ca2bf10eadf57d91dc0"
+      ],
+      "runtime_statuses": [
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 220,
+            "untouched_above_floor": 1060
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 157,
+            "untouched_above_floor": 611
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 218,
+            "untouched_above_floor": 550
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 137,
+            "untouched_above_floor": 631
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 98,
+            "untouched_above_floor": 670
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 72,
+            "untouched_above_floor": 696
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 82,
+            "untouched_above_floor": 686
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 52,
+            "untouched_above_floor": 204
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 220,
+            "untouched_above_floor": 1060
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 157,
+            "untouched_above_floor": 611
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 218,
+            "untouched_above_floor": 550
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 137,
+            "untouched_above_floor": 631
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 98,
+            "untouched_above_floor": 670
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 72,
+            "untouched_above_floor": 696
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 82,
+            "untouched_above_floor": 686
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 52,
+            "untouched_above_floor": 204
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ],
+      "counters": {
+        "expected": 70003,
+        "verified": 70003,
+        "collected": 8,
+        "visible": 8,
+        "duringRead": 8,
+        "initialAlloc": 25,
+        "finalAlloc": 910,
+        "floods": 30,
+        "allocations": 1025,
+        "signals": 1025,
+        "messages": 1025
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "limits": {
+        "checkpoint_host_seconds": 180,
+        "checkpoint_guest_frames": 9000,
+        "completion_host_seconds": 1800,
+        "completion_guest_frames": 30000
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 76146,
+          "min_us": 5.638734724315211,
+          "mean_us": 19.83757023771758,
+          "max_us": 72.1758044712347
+        },
+        "tx_refill": {
+          "count": 1176,
+          "min_us": 9.585849031335858,
+          "mean_us": 22.06346754586432,
+          "max_us": 65.40932280205645
+        },
+        "command_setup": {
+          "count": 294,
+          "min_us": 1046.5491648329032,
+          "mean_us": 1060.678606572369,
+          "max_us": 1113.6501080522542
+        },
+        "command_hold": {
+          "count": 294,
+          "min_us": 719.502550822621,
+          "mean_us": 747.2550989385533,
+          "max_us": 860.4709189305012
+        },
+        "byte_deadline_us": 78.94228614041295,
+        "rx_byte_deadline_us": 78.94228614041295,
+        "deadline_misses": {
+          "rx": 0,
+          "tx": 0,
+          "tx_gaps": 0
+        },
+        "critic_deferral_bound": {
+          "count": 294,
+          "min_us": 50236.47443750097,
+          "mean_us": 134939.92009663564,
+          "max_us": 697371.1513873402,
+          "median_us": 132610.07162602784,
+          "p95_us": 158246.50856594287,
+          "p99_us": 223715.53147189302
+        },
+        "post_to_worker": {
+          "count": 294,
+          "min_us": 936.1709326044329,
+          "mean_us": 4430.2208160164,
+          "max_us": 16958.56516756205,
+          "median_us": 2699.2623125296914,
+          "p95_us": 12497.973579708449,
+          "p99_us": 15684.986445891405
+        },
+        "post_to_sector_collection_upper_bound": {
+          "count": 294,
+          "min_us": 21304.97237724827,
+          "mean_us": 48591.06095795409,
+          "max_us": 106621.56618676336,
+          "median_us": 47367.415725585335,
+          "p95_us": 72070.64206862621,
+          "p99_us": 95227.16347678745
+        },
+        "post_to_sector_collection": {
+          "count": 294,
+          "min_us": 5037.434150151047,
+          "mean_us": 13836.735307617386,
+          "max_us": 34803.25749705024,
+          "median_us": 12527.29500027489,
+          "p95_us": 25529.653401073334,
+          "p99_us": 31557.954210654672
+        },
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 4116,
+              "min_us": 6.695997485124313,
+              "mean_us": 24.467241938438576,
+              "max_us": 68.6515952685377,
+              "median_us": 22.413970529152966,
+              "p95_us": 34.88967110670037,
+              "p99_us": 65.8322279063801
+            },
+            "cancelled_or_terminal": {
+              "count": 2,
+              "min_us": 0.0,
+              "mean_us": 0.0,
+              "max_us": 0.0,
+              "median_us": 0.0,
+              "p95_us": 0.0,
+              "p99_us": 0.0
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 9344,
+              "min_us": 4.933892883775809,
+              "mean_us": 23.535373595720912,
+              "max_us": 89.0215244601264,
+              "median_us": 20.158476639426876,
+              "p95_us": 47.78827678857141,
+              "p99_us": 63.57673401665401
+            },
+            "cancelled_or_terminal": {
+              "count": 2,
+              "min_us": 67.31239577151284,
+              "mean_us": 69.56788966123892,
+              "max_us": 71.823383550965,
+              "median_us": 67.31239577151284,
+              "p95_us": 71.823383550965,
+              "p99_us": 71.823383550965
+            }
+          }
+        },
+        "forbid": {
+          "count": 313,
+          "min_us": 904.312081412052,
+          "mean_us": 1127.8611157298642,
+          "max_us": 6581.390201852606,
+          "median_us": 979.5187057976061,
+          "p95_us": 1573.2069880839438,
+          "p99_us": 3592.7903137814906
+        },
+        "active_masked_max_us": 3976.506211771141,
+        "longest_transaction_mask": {
+          "start_tick": 4300649165.25,
+          "end_tick": 4300656217.375,
+          "duration_us": 3976.506211771141,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false,
+          "transaction": 0,
+          "overlap_us": 3976.506211771141
+        },
+        "longest_resident_mask": {
+          "start_tick": 4414392536.5,
+          "end_tick": 4414426821.25,
+          "duration_us": 19332.261033946594,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false
+        },
+        "resident_masked_max_us": 19332.261033946594,
+        "file_read": {
+          "bytes": 70003,
+          "seconds": 48.65924181572897,
+          "bytes_per_second": 1438.6372945369592,
+          "mechanical_timing": true,
+          "scope": "JSL DOS.Read entry to return; excludes Open, payload verification and cleanup"
+        },
+        "post_to_next_start_during_read": {
+          "count": 276,
+          "min_us": 21304.97237724827,
+          "mean_us": 48706.54346153875,
+          "max_us": 106621.56618676336,
+          "median_us": 47854.60240576616,
+          "p95_us": 71848.12349956793,
+          "p99_us": 79071.90655488815
+        },
+        "read_progress": {
+          "allocator_entries": 881,
+          "draw_quanta": 69,
+          "terminal_feeds": 10
+        },
+        "keyboard": {
+          "capture_to_reply_lower_bound": {
+            "count": 8,
+            "min_us": 5484.797266341406,
+            "mean_us": 17936.260095097263,
+            "max_us": 36612.86843845109,
+            "median_us": 11915.421798502635,
+            "p95_us": 36612.86843845109,
+            "p99_us": 36612.86843845109
+          },
+          "capture_to_collected_reply_upper_bound": {
+            "count": 8,
+            "min_us": 10790.705673553912,
+            "mean_us": 28702.217009525233,
+            "max_us": 50984.45259868138,
+            "median_us": 19943.64084643047,
+            "p95_us": 50984.45259868138,
+            "p99_us": 50984.45259868138
+          },
+          "capture_to_observed_visible_echo_upper_bound": {
+            "count": 8,
+            "min_us": 110652.8386095444,
+            "mean_us": 167310.69534057254,
+            "max_us": 412901.0726283129,
+            "median_us": 127472.26799778397,
+            "p95_us": 412901.0726283129,
+            "p99_us": 412901.0726283129
+          },
+          "samples": [
+            {
+              "capture": 4315954768.125,
+              "reply_call": 4316002470.125,
+              "collected": 4316021233.875,
+              "visible": 4316180833.5
+            },
+            {
+              "capture": 4316373164.0,
+              "reply_call": 4316384992.875,
+              "collected": 4316392300.75,
+              "visible": 4317105422.375
+            },
+            {
+              "capture": 4317299414.0,
+              "reply_call": 4317309141.0,
+              "collected": 4317331030.875,
+              "visible": 4317590909.625
+            },
+            {
+              "capture": 4317800096.125,
+              "reply_call": 4317821227.5,
+              "collected": 4317835465.125,
+              "visible": 4317996333.125
+            },
+            {
+              "capture": 4318192264.125,
+              "reply_call": 4318210182.875,
+              "collected": 4318217237.5,
+              "visible": 4318412707.125
+            },
+            {
+              "capture": 4318617017.0,
+              "reply_call": 4318644528.875,
+              "collected": 4318687225.125,
+              "visible": 4318826775.375
+            },
+            {
+              "capture": 4319040764.0,
+              "reply_call": 4319094485.25,
+              "collected": 4319109790.875,
+              "visible": 4319303158.375
+            },
+            {
+              "capture": 4319507254.125,
+              "reply_call": 4319572185.125,
+              "collected": 4319597672.375,
+              "visible": 4319742335.875
+            }
+          ],
+          "boundary": "Native raw-event capture entry; worker finish-read call (before publication); client after specific WaitIO collection; task after first observing its unique lowercase glyph in physical screen RAM. Reply and visibility upper bounds include scheduling/polling, not a hard real-time guarantee."
+        },
+        "wire_transactions": 294,
+        "verified_wire_bytes": 76146
+      },
+      "replay": "pass",
+      "replay_image_sha256": "94b4ab91f6a407194875e69ba40d6556eec6bc1836706ca2bf10eadf57d91dc0"
+    },
+    {
+      "name": "bank3-raw",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/bank3-raw/results.json",
+        "sha256": "b2e6bce9d5ee7e9782b19202b3378bf6ae67dfa794313f9428cfe2592091ab21"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "concurrent",
+        "case": "raw",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 3,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/bank3-raw"
+      },
+      "elapsed_seconds": 136.4045067920233,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "0c7058673ee5e1e825626828a7ff7ff17810bd301f63388bd80d493f37cc3315"
+      ],
+      "runtime_statuses": [
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 244,
+            "untouched_above_floor": 1036
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 181,
+            "untouched_above_floor": 587
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 242,
+            "untouched_above_floor": 526
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 187,
+            "untouched_above_floor": 581
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 120,
+            "untouched_above_floor": 648
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 52,
+            "untouched_above_floor": 716
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 96,
+            "untouched_above_floor": 672
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 355,
+          "untouched_from_base": 1181,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ],
+      "counters": {
+        "expected": 777,
+        "verified": 777,
+        "collected": 8,
+        "visible": 8,
+        "duringRead": 2,
+        "initialAlloc": 25,
+        "finalAlloc": 48,
+        "floods": 30,
+        "allocations": 50,
+        "signals": 50,
+        "messages": 50
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "limits": {
+        "checkpoint_host_seconds": 180,
+        "checkpoint_guest_frames": 9000,
+        "completion_host_seconds": 1800,
+        "completion_guest_frames": 30000
+      }
+    },
+    {
+      "name": "bank3-opt",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/bank3-opt/results.json",
+        "sha256": "388624a813a22ac9f2d3c254b2fa9dbfeac62a4efe2da4c339fa049af3d96b72"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "concurrent",
+        "case": "opt",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 3,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/bank3-opt"
+      },
+      "elapsed_seconds": 136.05050216702512,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "1d6c8c1d705996b62dacf2c356dfe0122e7251062d26f52d434e221986dea860"
+      ],
+      "runtime_statuses": [
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 220,
+            "untouched_above_floor": 1060
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 139,
+            "untouched_above_floor": 629
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 218,
+            "untouched_above_floor": 550
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 116,
+            "untouched_above_floor": 652
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 46,
+            "untouched_above_floor": 722
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 82,
+            "untouched_above_floor": 686
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 347,
+          "untouched_from_base": 1189,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ],
+      "counters": {
+        "expected": 777,
+        "verified": 777,
+        "collected": 8,
+        "visible": 8,
+        "duringRead": 2,
+        "initialAlloc": 25,
+        "finalAlloc": 59,
+        "floods": 30,
+        "allocations": 60,
+        "signals": 60,
+        "messages": 60
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "limits": {
+        "checkpoint_host_seconds": 180,
+        "checkpoint_guest_frames": 9000,
+        "completion_host_seconds": 1800,
+        "completion_guest_frames": 30000
+      }
+    },
+    {
+      "name": "stock128-opt",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/stock128-opt/results.json",
+        "sha256": "793a51598a66f0c6e2cb62665ae72279550d1c062d2420ed7229adba611b2dfb"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "concurrent",
+        "case": "opt",
+        "sector_size": 128,
+        "speed": 1,
+        "bank": 1,
+        "trace": true,
+        "output": "build/compiler-qualification-ae1f555/stock128-opt"
+      },
+      "elapsed_seconds": 340.8272353330394,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "ee62ec36be280d84c0d8a474809ba4893dcb2be2d06cd81206461abfebd72dad"
+      ],
+      "runtime_statuses": [
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 220,
+            "untouched_above_floor": 1060
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 159,
+            "untouched_above_floor": 609
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 218,
+            "untouched_above_floor": 550
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 140,
+            "untouched_above_floor": 628
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 98,
+            "untouched_above_floor": 670
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 72,
+            "untouched_above_floor": 696
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 82,
+            "untouched_above_floor": 686
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 220,
+            "untouched_above_floor": 1060
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 159,
+            "untouched_above_floor": 609
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 218,
+            "untouched_above_floor": 550
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 173,
+            "untouched_above_floor": 595
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 140,
+            "untouched_above_floor": 628
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 98,
+            "untouched_above_floor": 670
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 72,
+            "untouched_above_floor": 696
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 82,
+            "untouched_above_floor": 686
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 334,
+          "untouched_from_base": 1202,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 334,
+          "untouched_from_base": 1202,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ],
+      "counters": {
+        "expected": 777,
+        "verified": 777,
+        "collected": 8,
+        "visible": 8,
+        "duringRead": 8,
+        "initialAlloc": 25,
+        "finalAlloc": 99,
+        "floods": 30,
+        "allocations": 100,
+        "signals": 100,
+        "messages": 100
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "810",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "limits": {
+        "checkpoint_host_seconds": 180,
+        "checkpoint_guest_frames": 9000,
+        "completion_host_seconds": 1800,
+        "completion_guest_frames": 30000
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 3668,
+          "min_us": 7.894228614041295,
+          "mean_us": 19.667316403762015,
+          "max_us": 75.55904530582383
+        },
+        "tx_refill": {
+          "count": 112,
+          "min_us": 7.894228614041295,
+          "mean_us": 23.858896302258735,
+          "max_us": 70.48418405394014
+        },
+        "command_setup": {
+          "count": 28,
+          "min_us": 1064.593115950712,
+          "mean_us": 1081.0461383427316,
+          "max_us": 1117.5972223592748
+        },
+        "command_hold": {
+          "count": 28,
+          "min_us": 704.2779670669698,
+          "mean_us": 746.2664024248171,
+          "max_us": 866.1096536548164
+        },
+        "byte_deadline_us": 530.0410640856298,
+        "rx_byte_deadline_us": 524.4023293613146,
+        "deadline_misses": {
+          "rx": 0,
+          "tx": 0,
+          "tx_gaps": 0
+        },
+        "critic_deferral_bound": {
+          "count": 28,
+          "min_us": 179381.1206703328,
+          "mean_us": 312803.42686047533,
+          "max_us": 841507.783568445,
+          "median_us": 282027.7312973742,
+          "p95_us": 743280.6722499538,
+          "p99_us": 841507.783568445
+        },
+        "post_to_worker": {
+          "count": 28,
+          "min_us": 1373.5957788431854,
+          "mean_us": 5231.847150817828,
+          "max_us": 31088.529544855428,
+          "median_us": 1521.5420811724057,
+          "p95_us": 18643.982976659867,
+          "p99_us": 31088.529544855428
+        },
+        "post_to_sector_collection_upper_bound": {
+          "count": 28,
+          "min_us": 21159.140600440667,
+          "mean_us": 46734.11784915297,
+          "max_us": 111221.36403812347,
+          "median_us": 37498.29075853669,
+          "p95_us": 83078.086608146,
+          "p99_us": 111221.36403812347
+        },
+        "post_to_sector_collection": {
+          "count": 28,
+          "min_us": 5304.146302611157,
+          "mean_us": 15889.440925493585,
+          "max_us": 71058.7006381638,
+          "median_us": 9691.645791600824,
+          "p95_us": 44359.50317108344,
+          "p99_us": 71058.7006381638
+        },
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 392,
+              "min_us": 20.722350111858397,
+              "mean_us": 26.224971246049037,
+              "max_us": 77.10969735501051,
+              "median_us": 22.977844001584486,
+              "p95_us": 43.91164666560471,
+              "p99_us": 66.46658556286556
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 2116,
+              "min_us": 5.568250540261271,
+              "mean_us": 22.908026019648254,
+              "max_us": 81.12729584608509,
+              "median_us": 20.158476639426876,
+              "p95_us": 43.84116248155077,
+              "p99_us": 63.57673401665401
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        },
+        "forbid": {
+          "count": 314,
+          "min_us": 904.241597227998,
+          "mean_us": 1087.7491906597447,
+          "max_us": 6635.451571021978,
+          "median_us": 979.8711267178758,
+          "p95_us": 1540.0089373945382,
+          "p99_us": 1618.5283184306272
+        },
+        "active_masked_max_us": 3959.519523414141,
+        "longest_transaction_mask": {
+          "start_tick": 4300542459.375,
+          "end_tick": 4300549481.375,
+          "duration_us": 3959.519523414141,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false,
+          "transaction": 0,
+          "overlap_us": 3959.519523414141
+        },
+        "longest_resident_mask": {
+          "start_tick": 4326361736.5,
+          "end_tick": 4326396021.25,
+          "duration_us": 19332.261033946594,
+          "entry_pc": 15149,
+          "instruction_pc": 15148,
+          "opcode": 120,
+          "exit_pc": 15169,
+          "irq": false,
+          "nmi": false,
+          "clipped": false
+        },
+        "resident_masked_max_us": 19332.261033946594,
+        "file_read": {
+          "bytes": 777,
+          "seconds": 2.391365757937576,
+          "bytes_per_second": 324.9189286168087,
+          "mechanical_timing": true,
+          "scope": "JSL DOS.Read entry to return; excludes Open, payload verification and cleanup"
+        },
+        "post_to_next_start_during_read": {
+          "count": 6,
+          "min_us": 24095.159287207545,
+          "mean_us": 60405.30990251097,
+          "max_us": 111221.36403812347,
+          "median_us": 47638.004508168415,
+          "p95_us": 111221.36403812347,
+          "p99_us": 111221.36403812347
+        },
+        "read_progress": {
+          "allocator_entries": 41,
+          "draw_quanta": 37,
+          "terminal_feeds": 8
+        },
+        "keyboard": {
+          "capture_to_reply_lower_bound": {
+            "count": 8,
+            "min_us": 5460.198286106581,
+            "mean_us": 14144.158129857242,
+            "max_us": 36071.549904916836,
+            "median_us": 5547.175769229143,
+            "p95_us": 36071.549904916836,
+            "p99_us": 36071.549904916836
+          },
+          "capture_to_collected_reply_upper_bound": {
+            "count": 8,
+            "min_us": 15860.351095817608,
+            "mean_us": 29850.83608339125,
+            "max_us": 70887.07164999246,
+            "median_us": 18149.0430362331,
+            "p95_us": 70887.07164999246,
+            "p99_us": 70887.07164999246
+          },
+          "capture_to_observed_visible_echo_upper_bound": {
+            "count": 8,
+            "min_us": 101520.55530259566,
+            "mean_us": 127691.23592607054,
+            "max_us": 180175.40694043663,
+            "median_us": 114913.95995652536,
+            "p95_us": 180175.40694043663,
+            "p99_us": 180175.40694043663
+          },
+          "samples": [
+            {
+              "capture": 4322477421.0,
+              "reply_call": 4322539015.75,
+              "collected": 4322555969.875,
+              "visible": 4322796952.625
+            },
+            {
+              "capture": 4322990636.0,
+              "reply_call": 4323000319.375,
+              "collected": 4323021910.125,
+              "visible": 4323172916.625
+            },
+            {
+              "capture": 4323384289.0,
+              "reply_call": 4323394058.125,
+              "collected": 4323413161.5,
+              "visible": 4323584536.625
+            },
+            {
+              "capture": 4323775530.125,
+              "reply_call": 4323839501.125,
+              "collected": 4323901244.625,
+              "visible": 4324011440.25
+            },
+            {
+              "capture": 4324204218.25,
+              "reply_call": 4324219618.25,
+              "collected": 4324270125.375,
+              "visible": 4324469171.25
+            },
+            {
+              "capture": 4324665421.0,
+              "reply_call": 4324675258.625,
+              "collected": 4324693548.5,
+              "visible": 4324845462.375
+            },
+            {
+              "capture": 4325052668.0,
+              "reply_call": 4325062368.125,
+              "collected": 4325084854.375,
+              "visible": 4325256461.875
+            },
+            {
+              "capture": 4325446196.0,
+              "reply_call": 4325466911.375,
+              "collected": 4325479076.125,
+              "visible": 4325671067.375
+            }
+          ],
+          "boundary": "Native raw-event capture entry; worker finish-read call (before publication); client after specific WaitIO collection; task after first observing its unique lowercase glyph in physical screen RAM. Reply and visibility upper bounds include scheduling/polling, not a hard real-time guarantee."
+        },
+        "wire_transactions": 28,
+        "verified_wire_bytes": 3668
+      },
+      "replay": "pass",
+      "replay_image_sha256": "ee62ec36be280d84c0d8a474809ba4893dcb2be2d06cd81206461abfebd72dad"
+    },
+    {
+      "name": "tx-raw",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/tx-raw/results.json",
+        "sha256": "5a607a132d8618165b5db5bc7f7265a1c6db5e76d081296af437a3497b44d179"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "tx",
+        "case": "raw",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/tx-raw"
+      },
+      "elapsed_seconds": 57.36213095794665,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "d71170af5901270627358cf36b1234da961afc9a60750c9fb115a040e1c0505c"
+      ],
+      "runtime_statuses": [
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 124,
+            "untouched_above_floor": 1156
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 168,
+            "untouched_above_floor": 600
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 44,
+            "untouched_above_floor": 212
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 124,
+            "untouched_above_floor": 1156
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 168,
+            "untouched_above_floor": 600
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 44,
+            "untouched_above_floor": 212
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 337,
+          "untouched_from_base": 1199,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 337,
+          "untouched_from_base": 1199,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ],
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 134,
+          "min_us": 9.585849031335858,
+          "mean_us": 17.711518249733373,
+          "max_us": 62.58995543989884
+        },
+        "tx_refill": {
+          "count": 136,
+          "min_us": 9.021975558904337,
+          "mean_us": 25.722581051214387,
+          "max_us": 64.2815758571934
+        },
+        "command_setup": {
+          "count": 2,
+          "min_us": 1050.496279139924,
+          "mean_us": 1058.3905077539653,
+          "max_us": 1066.2847363680064
+        },
+        "command_hold": {
+          "count": 2,
+          "min_us": 721.1941712399155,
+          "mean_us": 726.2690324917992,
+          "max_us": 731.3438937436829
+        },
+        "masked_max_us": 3901.511039937748,
+        "byte_deadline_us": 78.94228614041295,
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 38,
+              "min_us": 20.722350111858397,
+              "mean_us": 21.701709300818408,
+              "max_us": 31.99981956048882
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 195,
+              "min_us": 12.334732209439524,
+              "mean_us": 22.887841120407916,
+              "max_us": 61.321240126927925
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        },
+        "write_delay_us": 1251.7991087979767
+      },
+      "replay": "pass"
+    },
+    {
+      "name": "tx-opt",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/tx-opt/results.json",
+        "sha256": "2b623622d73dee764cf3740fe240649c3be08ce7ea7dc4461c582f849ee4d2ca"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "tx",
+        "case": "opt",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/tx-opt"
+      },
+      "elapsed_seconds": 55.58126008399995,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "6dcfe99303e9bce77ebe3fc7598138ee77326f67e810643703eadb88f1bebb50"
+      ],
+      "runtime_statuses": [
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 108,
+            "untouched_above_floor": 1172
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 164,
+            "untouched_above_floor": 604
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 44,
+            "untouched_above_floor": 212
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 108,
+            "untouched_above_floor": 1172
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 164,
+            "untouched_above_floor": 604
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 44,
+            "untouched_above_floor": 212
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 321,
+          "untouched_from_base": 1215,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ],
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 134,
+          "min_us": 15.22458375565107,
+          "mean_us": 17.349629304740013,
+          "max_us": 46.23762473938473
+        },
+        "tx_refill": {
+          "count": 136,
+          "min_us": 10.149722503767379,
+          "mean_us": 24.789702144618122,
+          "max_us": 64.2815758571934
+        },
+        "command_setup": {
+          "count": 2,
+          "min_us": 1050.496279139924,
+          "mean_us": 1052.4698362934341,
+          "max_us": 1054.4433934469446
+        },
+        "command_hold": {
+          "count": 2,
+          "min_us": 727.3967794366622,
+          "mean_us": 730.4980835350356,
+          "max_us": 733.5993876334089
+        },
+        "masked_max_us": 3895.5198842931636,
+        "byte_deadline_us": 78.94228614041295,
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 38,
+              "min_us": 20.722350111858397,
+              "mean_us": 21.37525623783174,
+              "max_us": 31.99981956048882
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 195,
+              "min_us": 18.466856222132314,
+              "mean_us": 22.776512255338105,
+              "max_us": 63.57673401665401
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            }
+          }
+        },
+        "write_delay_us": 1251.7991087979767
+      },
+      "replay": "pass"
+    },
+    {
+      "name": "recovery-raw",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/recovery-raw/results.json",
+        "sha256": "ea371190a095324efb5a1b859361569adb02067f411ca9c8eb58444f352dd652"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "recovery",
+        "case": "raw",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/recovery-raw"
+      },
+      "elapsed_seconds": 90.9723934159847,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "9042ac11af6436dab8d0adec00d00321ff35024aa7c5a69d86c62933159fd789"
+      ],
+      "runtime_statuses": [
+        0,
+        0,
+        65427,
+        65427,
+        65427,
+        65427
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 136,
+            "untouched_above_floor": 1144
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 46,
+            "untouched_above_floor": 210
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 130,
+            "untouched_above_floor": 1150
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 37,
+            "untouched_above_floor": 219
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 130,
+            "untouched_above_floor": 1150
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 39,
+            "untouched_above_floor": 217
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 130,
+            "untouched_above_floor": 1150
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 39,
+            "untouched_above_floor": 217
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 130,
+            "untouched_above_floor": 1150
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 130,
+            "untouched_above_floor": 1150
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 158,
+            "untouched_above_floor": 610
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 162,
+            "untouched_above_floor": 606
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 18,
+            "untouched_above_floor": 238
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 337,
+          "untouched_from_base": 1199,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ]
+    },
+    {
+      "name": "recovery-opt",
+      "status": "pass",
+      "result": {
+        "path": "build/compiler-qualification-ae1f555/recovery-opt/results.json",
+        "sha256": "28589540599421ec37ad72599e9b115a1d54ff1994217cad1f15fde28ed2f98b"
+      },
+      "invocation": {
+        "compiler_dir": "build/compiler-ae1f555",
+        "compiler_pin": "build/compiler-qualification-ae1f555/candidate.json",
+        "suite": "recovery",
+        "case": "opt",
+        "sector_size": 128,
+        "speed": 0,
+        "bank": 1,
+        "trace": false,
+        "output": "build/compiler-qualification-ae1f555/recovery-opt"
+      },
+      "elapsed_seconds": 87.4299097500043,
+      "driver_sha256": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+      "image_sha256s": [
+        "caebb2c6384b96af553e735722202b1e0209bc6f94bb6fcc35fabbe77a8999d2"
+      ],
+      "runtime_statuses": [
+        0,
+        0,
+        65427,
+        65427,
+        65427,
+        65427
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 112,
+            "untouched_above_floor": 1168
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 44,
+            "untouched_above_floor": 212
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 112,
+            "untouched_above_floor": 1168
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 44,
+            "untouched_above_floor": 212
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 112,
+            "untouched_above_floor": 1168
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 46,
+            "untouched_above_floor": 210
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 112,
+            "untouched_above_floor": 1168
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 39,
+            "untouched_above_floor": 217
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 112,
+            "untouched_above_floor": 1168
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 112,
+            "untouched_above_floor": 1168
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 134,
+            "untouched_above_floor": 634
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 121,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 18,
+            "untouched_above_floor": 238
+          }
+        ]
+      ],
+      "kernel_stack_observations": [
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 307,
+          "untouched_from_base": 1229,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 307,
+          "untouched_from_base": 1229,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 307,
+          "untouched_from_base": 1229,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 307,
+          "untouched_from_base": 1229,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 325,
+          "untouched_from_base": 1211,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        {
+          "reserved_bytes": 1536,
+          "touched_bytes": 290,
+          "untouched_from_base": 1246,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      ]
+    }
+  ],
+  "comparisons": {
+    "raw": {
+      "baseline": {
+        "image": {
+          "path": "build/console-slice8/target128-raw/program.a816.json",
+          "sha256": "9ac636788f24ad0c6fc439b6b252a69b8a63a7c34b18f41578dee2d0754532dc"
+        },
+        "code_bytes": 691708,
+        "routines": 491,
+        "fixed_frame_bytes_sum": 40464,
+        "dp_pointer_temporaries": 0,
+        "dp_scalar_temporaries": 0,
+        "free_upper_banks": [
+          12,
+          13
+        ],
+        "bank_zero": {
+          "fixed_runtime": 10560,
+          "idle": 1056,
+          "loading_excluding_os": 20368,
+          "loading_including_os": 57232,
+          "public": [
+            2080,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568
+          ],
+          "runtime_excluding_os": 24672,
+          "runtime_including_os": 61536
+        }
+      },
+      "candidate": {
+        "image": {
+          "path": "build/compiler-qualification-ae1f555/target128-raw/program.a816.json",
+          "sha256": "2c16e4690faac6e77cdc426322f11412d13e5c35aac3b472c590b635cfc10e62"
+        },
+        "code_bytes": 497535,
+        "routines": 491,
+        "fixed_frame_bytes_sum": 8354,
+        "dp_pointer_temporaries": 8,
+        "dp_scalar_temporaries": 0,
+        "free_upper_banks": [
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "bank_zero": {
+          "fixed_runtime": 10560,
+          "idle": 1056,
+          "loading_excluding_os": 20368,
+          "loading_including_os": 57232,
+          "public": [
+            2080,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568
+          ],
+          "runtime_excluding_os": 24672,
+          "runtime_including_os": 61536
+        }
+      },
+      "code_reduction_percent": 28.071527291863042,
+      "baseline_stacks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 770,
+          "untouched_above_floor": 510
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 722,
+          "untouched_above_floor": 46
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 760,
+          "untouched_above_floor": 8
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 724,
+          "untouched_above_floor": 44
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 656,
+          "untouched_above_floor": 112
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 320,
+          "untouched_above_floor": 448
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 62,
+          "untouched_above_floor": 706
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 228,
+          "untouched_above_floor": 540
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 50,
+          "untouched_above_floor": 206
+        }
+      ],
+      "candidate_stacks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 244,
+          "untouched_above_floor": 1036
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 171,
+          "untouched_above_floor": 597
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 242,
+          "untouched_above_floor": 526
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 187,
+          "untouched_above_floor": 581
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 162,
+          "untouched_above_floor": 606
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 134,
+          "untouched_above_floor": 634
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 52,
+          "untouched_above_floor": 716
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 96,
+          "untouched_above_floor": 672
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 46,
+          "untouched_above_floor": 210
+        }
+      ]
+    },
+    "opt": {
+      "baseline": {
+        "image": {
+          "path": "build/console-slice8/target128-opt/program.a816.json",
+          "sha256": "8a7c567dec9f9e0a5543b17f7932c86032109bb891942b2103e5535a4528fc5b"
+        },
+        "code_bytes": 644774,
+        "routines": 491,
+        "fixed_frame_bytes_sum": 32184,
+        "dp_pointer_temporaries": 0,
+        "dp_scalar_temporaries": 0,
+        "free_upper_banks": [
+          11,
+          12,
+          13
+        ],
+        "bank_zero": {
+          "fixed_runtime": 10560,
+          "idle": 1056,
+          "loading_excluding_os": 20368,
+          "loading_including_os": 57232,
+          "public": [
+            2080,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568
+          ],
+          "runtime_excluding_os": 24672,
+          "runtime_including_os": 61536
+        }
+      },
+      "candidate": {
+        "image": {
+          "path": "build/compiler-qualification-ae1f555/target128-opt/program.a816.json",
+          "sha256": "13277cd51a7cea7d6f479e67f3c10fad4245d461eb8e53d2fca7c8062bb8fd08"
+        },
+        "code_bytes": 470247,
+        "routines": 491,
+        "fixed_frame_bytes_sum": 7266,
+        "dp_pointer_temporaries": 3,
+        "dp_scalar_temporaries": 3,
+        "free_upper_banks": [
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "bank_zero": {
+          "fixed_runtime": 10560,
+          "idle": 1056,
+          "loading_excluding_os": 20368,
+          "loading_including_os": 57232,
+          "public": [
+            2080,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568,
+            1568
+          ],
+          "runtime_excluding_os": 24672,
+          "runtime_including_os": 61536
+        }
+      },
+      "code_reduction_percent": 27.06793388070859,
+      "baseline_stacks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 607,
+          "untouched_above_floor": 673
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 579,
+          "untouched_above_floor": 189
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 610,
+          "untouched_above_floor": 158
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 562,
+          "untouched_above_floor": 206
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 504,
+          "untouched_above_floor": 264
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 248,
+          "untouched_above_floor": 520
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 56,
+          "untouched_above_floor": 712
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 186,
+          "untouched_above_floor": 582
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 46,
+          "untouched_above_floor": 210
+        }
+      ],
+      "candidate_stacks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 220,
+          "untouched_above_floor": 1060
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 157,
+          "untouched_above_floor": 611
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 218,
+          "untouched_above_floor": 550
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 173,
+          "untouched_above_floor": 595
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 121,
+          "untouched_above_floor": 647
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 98,
+          "untouched_above_floor": 670
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 49,
+          "untouched_above_floor": 719
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 82,
+          "untouched_above_floor": 686
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 52,
+          "untouched_above_floor": 204
+        }
+      ]
+    }
+  },
+  "bank_zero_fixed_delta": 0,
+  "bank_zero_per_task_delta": 0,
+  "trace_negative_controls": {
+    "result": {
+      "path": "build/compiler-qualification-ae1f555/trace-controls/results.json",
+      "sha256": "83db62a4df9fe9bbd90b2690b739f30cf477335462324b16d38f03e63ce6029f"
+    },
+    "cases": [
+      {
+        "name": "missing-key",
+        "trace_sha256": "275f8e2efbd72851666d15acd996a7b51c404126aeb3fc40b422f124ffd0a3e8",
+        "expected_violation": "lost/duplicate key, read reply or visible echo",
+        "violations": [
+          "keyboard/echo order",
+          "lost/duplicate key, read reply or visible echo"
+        ]
+      },
+      {
+        "name": "late-rx",
+        "trace_sha256": "73bd8f0a15423af86193d0c8dd28f8ec5e6286aac603a1f6f8f4c2906616efe7",
+        "expected_violation": "RX physical byte deadline",
+        "violations": [
+          "RX physical byte deadline",
+          "late RX read"
+        ]
+      }
+    ]
+  },
+  "preexisting_host_failure": {
+    "test": "test_sio_sector_record.SectorTests.test_published_gate",
+    "exec_revision": "bacfe92984fa0f36afaa675e3c393b46de700c49",
+    "record_input_sha256": "b131e45144316014b10382af5f6a7ea203be6a660e3a658b30a351885b80bf85",
+    "head_input_sha256": "06b31d293e7052da713dc0cba26606f2992d32820c5a0772d3ecc3ff76f3074b",
+    "working_input_sha256": "06b31d293e7052da713dc0cba26606f2992d32820c5a0772d3ecc3ff76f3074b"
+  },
+  "host_tests": {
+    "passed": 127,
+    "preexisting_failures": 1,
+    "new_failures": 0,
+    "log": {
+      "path": "build/compiler-qualification-ae1f555/host-tests-final.log",
+      "sha256": "03e373514ae7a003faafd568e4543450027bea8aff8b6c1274445e707129e119"
+    },
+    "initial_log": {
+      "path": "build/compiler-qualification-ae1f555/host-tests.log",
+      "sha256": "bee51f4e7b87f0c629f0478143f08c624e7f69e75a1e3325c3f6f7ad4893f367"
+    },
+    "pin_transition_log": {
+      "path": "build/compiler-qualification-ae1f555/host-tests-pin-transition.log",
+      "sha256": "b2c4df9b8300c83f8ca08d59abcd5ef29dfa9c9d055df6ed7b233e376a853599"
+    },
+    "pin_transition_fix": "Bind historical bundle check to the compiler recorded in block-io.json."
+  },
+  "compact_host_environment": {
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0"
+  },
+  "inputs": {
+    "lib/blockio.act": "9bfe07c8c54fad7b600135f8bc06e8df268f5d99a83da881bf617d445c1fcea6",
+    "lib/blockwire.act": "86074640ce3c7dacb9c24fc59e1a635e763081cb800e1a033d9cb2e1d4812aa2",
+    "lib/blocktypes.act": "913292e9b9a0451b6c61fa1ff0fe19812e015b74596a9f466814439efa9afb28",
+    "lib/mydosfile.act": "7886205ea229e27a7ef637bf4f67186f0bc6388a891e18dbe9f7e8fad95ba2dd",
+    "lib/mydosfiletypes.act": "076969b89f045047ae761e2ccda59dce57076a413db57c590812705d7ec41f1b",
+    "lib/mydos.act": "a844ab3e0e1dacb3dd08047b97cb55f600e7e90e3e3f840a4cd5e7598cba2bb2",
+    "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+    "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+    "lib/fsmux.act": "d1df71693b54b5c689ccc51b59023228244dde41de6c17c356e8b13ef065803f",
+    "lib/fsmount.act": "ba87270b8622a83aed92855c42ea9525f7887a699ce6fc05962a121b8cf17d6c",
+    "lib/fsmanager.act": "264ed0f52b237d8365d8dd50af4378d714b7c5e83bcc9a00fb48c089699ba168",
+    "lib/fspacket.act": "7405514c2a12ad08de9336b80ec07ee84ab1cbad71385334f8b570986e324f7f",
+    "lib/fsdirectory.act": "4a41108b23ae2c180fea0ab5b8af124d22a881d64f966d0e68afc2124b3cc3fc",
+    "lib/fsinfo.act": "bb7da50a83b4be5b267fe6b37e26075097b61a985bd3bc697857d87af8c43605",
+    "lib/dos-implementation.inc": "0cfe56a374e9872eb534b47dd975aa315aaf4b9a0a3937fe9cbd64a8c5a622e0",
+    "lib/doscalls.act": "f32036504b095bf4701a8e01a586cb34172f09e3b707852f3408a2dab86b3341",
+    "lib/fsio.act": "f2e342ec98c2aa60a2649df6f989fe249df2e084f259dd7e9e188605a3d75508",
+    "lib/fsboot.act": "ed219887768b2758522a4531a512ed6ec9d37f94641fd3c61fcdaead8c4729ef",
+    "lib/fsworker.act": "f8a7de27bf521f6e127802a79e2f6c7f5b930967485e70a5fb5bcf2aea1d8876",
+    "lib/fsinit.act": "43538f1bfd3815b0231352e80657ae3ead689934982b83032ddb4a1cbef5f2ae",
+    "lib/fsregistry.act": "ab7b5cf8984a54a9167418c0051c5a4d06ff01c2c0dc36135ef0a307eb75ae2b",
+    "lib/fsnames.act": "891ac6b1f680019dde4b332e35eeb3b6b213e61cfc75ee5643c1574bb9b2c448",
+    "lib/fsports.act": "de28d89be5844fcb6f094b634ea700387e3511f9b80b935ae0a154382fa2f09b",
+    "lib/fstypes.act": "cf7bb741cf31641dbdc2efab1ef86354f40d561cf8455d0463970bf0a7518159",
+    "lib/fshandler.act": "64a97234a6283f4af409b931534c72ff793368aa5338b9f2b46db5bc0c4f7f03",
+    "lib/dos-registry-types.inc": "7cca5f899f3b8940fe79dc31e4ddf49eaa5372e20a020838eead977af15666fd",
+    "lib/doscore.act": "9f69969509eddb82da912c9e726b0fd3355f4794562d195381f2b1b95edc82fe",
+    "lib/dos-core-types.inc": "54f49dc97b1a245dc2e246a5c56e6dbbbf12f6c07c384d0fedfc9456a174e491",
+    "lib/dosclient.act": "fe73d24681932f3beef6331b163b1cf69f8e4d2f9079c1b3c78c1f48d29a4465",
+    "lib/task-dos.inc": "4d3160ba24b282779220509777f166b26c2e9bccaa90f65b108b41bc011dd1b7",
+    "platform/altirraos/dos.s": "6ae4e062e818b60046dfc957a3c4bbd46046603de954e010dd936ed45e8b41a6",
+    "abi/dos.json": "67e22b3ce249d1b844aadb0c5749e06712f073e7b931ad2af629a85418a10c8d",
+    "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+    "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+    "lib/dos-packets.inc": "9f4684f36680d7eca364d1fd7b5d4f0b7a233217fadd9403cc70a68c37958a70",
+    "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+    "tools/generate_dos.py": "aa0e9ae94437b16574cf6078dd77bb1ea833de97edf90cb9f80fb0d34f079869",
+    "lib/siodriver.act": "5cfbf891255565de37d6525e4e58ce46f0a0cf0df83e64efff1bc74228fd15fc",
+    "lib/task-sio.inc": "6a85705cd914d7c864cc2142c466657ade4fac4b59d33aba501b79c1e6aed0f6",
+    "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+    "lib/task-io.inc": "173dc1c124a9325cfda7de73b2aae06d52c8470ab6c416cd979741da3133298c",
+    "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+    "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+    "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+    "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+    "lib/exec-io-types.inc": "e2d4a51f966616e5d348f78a3e3ae1f1dc2ba471448742b0bc57e9820a673f34",
+    "tools/generate_io.py": "10d4334c03c0f3cb5e295180d9db1f443039347f5a4be65363b83dc540b9f40a",
+    "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+    "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+    "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+    "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+    "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+    "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+    "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+    "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+    "lib/taskpolicy.act": "a0b968eae06271f5e98d59fef098b0076284db872a64b6ac1114e056aca045c8",
+    "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+    "lib/task-wakes.inc": "9fc22d4dec44c71e29c8a1dedeedc2de1834fe3cb944be71bdc2978e956539f4",
+    "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+    "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+    "platform/altirraos/sio.s": "06b31d293e7052da713dc0cba26606f2992d32820c5a0772d3ecc3ff76f3074b",
+    "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+    "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+    "platform/altirraos/signal-irq.s": "2b4e4622579b74411e491c94e0e00ce8c867474eee003a52704e8837f73d3e36",
+    "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+    "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+    "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+    "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+    "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+    "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+    "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+    "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+    "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+    "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+    "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+    "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+    "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+    "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+    "tools/generate_tasks.py": "d23ca6daf169b2098ee208faba60b643fe34be4237f4fb65f6ea94e06d3ecf4b",
+    "platform/altirraos/tasks.s": "2f5c048d03c8f4fb3780d05d5a9ed45caefb183923052c775850ebed248d76be",
+    "platform/altirraos/hosted.s": "07045947a19df22c9c59dfe1a6e39857e17055132089dfca2eb2ea4111699e5d",
+    "platform/altirraos/layout.inc": "54910fcc103ff50721dab6a2a03f66dc83e31585ddd2cb2b45ff0f8b832d75e0",
+    "platform/altirraos/hosted.cfg": "381c9142b71a2eff92a1af49bd30029e0458b3ab7030ff6bba2bfda696df6112",
+    "lib/execos.act": "62266f93b89c563d3b97cc56fc8482f6f5f8e6add6458ede727b90fb65fece31",
+    "abi/exec816-v1.json": "c38d1ddaedeb89a57c0614ba8702f6f6f93adda4e2d78f7ff582ac47b54fe1c5",
+    "platform/altirraos/exec-abi.inc": "22eb93b3da8cefecad66aeab9cecfe21f53032b848f65b0b928f16e1655d04be",
+    "platform/altirraos/cooperative.s": "f937054aa30814a99e487a3988f6ae9f0c5ad59fb76dcea1eee9bf8a527f7b85",
+    "lib/exec-abi.inc": "bdb408417c878b2662170135b8d395a68f3a3b39c9f27047a4947acfb0d168c9",
+    "platform/altirraos/cooperative-probe.s": "54cbbe92eb52a89b8bd4a8ef55b694a11269274d3a5ded7c3009863794a19f74",
+    "platform/altirraos/preemptive.s": "9f16a897205e863a33a8bdc6e67c512a008cf1969f0c6b208ea2ca6ea811bd11",
+    "lib/exec.act": "97d6a431afee161073d052f7eede9b4851f99a776313e965cba8e54884eb3192",
+    "lib/execpolicy.act": "86bdab3ebe27a383f0aa91365d4aded7fd174efd016399e32c3fdd537e883fba",
+    "abi/memory-v1.json": "7e418a4a5771d744c3694dc7160f811af57d7c0bf8ae7aa795c2390cb3ea763d",
+    "lib/execmemory.act": "c7e03ca0fae8e4201611852aeed7acdd1cdab8fdd7c22244a5dad9d1329684dd",
+    "platform/altirraos/loader.s": "547b160e5604510e921dda38b3418628b3bcc79327afddbd16c04e4d935d9470",
+    "tools/generate_memory.py": "5b8a8afeefd200c142c30daa8074b0a6f85eedb8f92f37d115b808e968965dfa",
+    "tools/task_capacity.py": "370d8a8d68bc1a2da63c177f94a70b329d208efa6595d7d14a772dcd739cdff2",
+    "tools/banked_image.py": "be64c46309cab085602facfda29076deb73050b7e036c78c99a310530769b86d",
+    "tools/native_program.py": "754e6ec559231df6b5d952e2128dd9a4a2b723e8c354c10a4180a2a7fa4915d5",
+    "tools/native_frame_maps.py": "3c08cfc8b80d7e81603d261b511803a51a2d2a78e05b6d687bf8f392b6557546",
+    "tools/qualify_compiler.py": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+    "tools/test_hosted.py": "57b816c0a20252e99ee496166787b3e111be5a6f68b34665b44b84ccf1878131",
+    "tools/test_console_concurrent.py": "be483f2a59ecaee3bcd2f5d2884b6ee87b5602e3052ad9ba49ab24463b92ee09",
+    "tools/test_console_tx.py": "e27b793909355a2fed1dc8e9508b4d8c61a2f9fe2b95fe64acc3c35d476faf26",
+    "tools/test_console_recovery.py": "45660a0ff533ce3c01b3300d931c256ea9326efbc70af065d4b43f9bb63cb275",
+    "tools/test_console_trace.py": "81fb455b986c6c13410344bac6e55b6d52746e330e694c76a4d58219bddf6348",
+    "tests/test_native_frame_maps.py": "67f0512f278c2dfa784d1c21040739715c58620f72d65d3a057a8a8fa4e47c3a",
+    "tests/test_native_package.py": "cd7b61ed8c716ac2a79066719c1940d3af4d6c15e4f58713082785c48510f5bd",
+    "tests/test_banked_package.py": "7c65a988268587afee09f39a528d2fe712e954adced7146cf755d637280b23c1",
+    "tests/test_block_package.py": "0fb8abd57729755178c5d5699e9ef641ce1353d05bc54556fcaab0c9e85fdcd3",
+    "toolchain/actionc.json": "717346252a2cc54b33fb87857d1af38172ea8c469487e75cac87a9757ed8dd83",
+    "tools/test_dos_regressions.py": "80e9d04450fca0a174b2f3ad2d5e2af724263ffe13631b1f3abfd3e4c1ce3767",
+    "tools/test_dos_files.py": "4305e1c4f124732ceeb586d50610856263adbb1fc143d436f50c984116c71ef1",
+    "tools/test_dos_directories.py": "343311cfe7c835daf3367c9fd9b9a61574e72a74c1e3e64d5dad4f31ae5a13b9",
+    "tools/test_dos_lifetime.py": "ea5e0a446aa06fc900846e007b6b1862897d7674d11edb5d97c5e0906375601a",
+    "tools/test_console_lifetime.py": "3adb1f95f0271994f09d6aac3fe1b77dd864be1837b65566a13f1e64df408cce",
+    "tools/test_console_services.py": "6ecb8c818a8573ceb3e8bb0ee2a92f185ad5df3b10f08d25a11af3b5013e93c2",
+    "tools/console_concurrent_trace.py": "9316f4a7ebc5fa38dbff19b7b186725d0590a7ab443bbfaebd5efa7dd3397700",
+    "tools/test_sio_recovery.py": "907de73c657b82e70815c5729638505e9c66c17513b74a01962a2c7942a6dc4a",
+    "toolchain/altirra.json": "5ad56ae12ca012928cd322bc884bc77b1edab59313a16cd1133388d8dbfe4db6",
+    "toolchain/altirra-sio-queued.json": "d65d3f9ae8adf8f94f39111d5d4b06b752dd2391a2ec87f13bafad00fc262609",
+    "toolchain/altirra-console.json": "9de15dcfe3cb25bb3746cf62024a9bce02e0e231be267cd2418448fb1423077c",
+    "tests/fixtures/mydos/manifest.json": "343ac86a42162dd649687bce860edfee9f77f0e8fd574101f0883b2a3e1ff024"
+  },
+  "platforms": [
+    {
+      "pin": {
+        "path": "toolchain/altirra.json",
+        "sha256": "5ad56ae12ca012928cd322bc884bc77b1edab59313a16cd1133388d8dbfe4db6"
+      },
+      "binary": {
+        "path": "build/altirra-irq-bridge/AltirraBridgeServer",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 1,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false
+      }
+    },
+    {
+      "pin": {
+        "path": "toolchain/altirra-sio-queued.json",
+        "sha256": "d65d3f9ae8adf8f94f39111d5d4b06b752dd2391a2ec87f13bafad00fc262609"
+      },
+      "binary": {
+        "path": "build/altirra-sio-multi/AltirraBridgeServer",
+        "sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      }
+    },
+    {
+      "pin": {
+        "path": "toolchain/altirra-sio-queued.json",
+        "sha256": "d65d3f9ae8adf8f94f39111d5d4b06b752dd2391a2ec87f13bafad00fc262609"
+      },
+      "binary": {
+        "path": "build/altirra-sio-faults/AltirraBridgeServer",
+        "sha256": "c2eb067b68eea3dfb7c7c883b1aca0be0d74b3179bfa40f98a88557e5aecf60d"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      }
+    },
+    {
+      "pin": {
+        "path": "toolchain/altirra-console.json",
+        "sha256": "9de15dcfe3cb25bb3746cf62024a9bce02e0e231be267cd2418448fb1423077c"
+      },
+      "binary": {
+        "path": "build/console-bridge/AltirraBridgeServer",
+        "sha256": "a2ba84216b260df7972ac54b896e6c874991b4e2f6abeed1200ae672d8fa7dd6"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      }
+    }
+  ],
+  "rom": {
+    "path": "build/firmware/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+  },
+  "pinned_smoke": {
+    "build": {
+      "path": "build/compiler-qualification-ae1f555/pinned-smoke/build.json",
+      "sha256": "144591d81de02bb1e2989a1124477d5e81ecc387f9562fbb9c8f5fb0fc16ef19"
+    },
+    "log": {
+      "path": "build/compiler-qualification-ae1f555/pinned-smoke.log",
+      "sha256": "b52be09818f6cdbbad964fb91f5e8def9400780689ccdeea626b26319ed65f34"
+    },
+    "override": false,
+    "candidate_image_identical": true,
+    "candidate_xex_identical": true,
+    "image_sha256": "4f765d87a433e9d83839e2f80ebf6650d0c0c2e02542ba23ddaff6733e914a83",
+    "xex_sha256": "79501fb21be4dedde795675808f626a9cf377cbbe4c11c1c30e6265dedc9378e"
+  }
+}

@@ -1,0 +1,71 @@
+MODULE PROGRAM
+USE EXEC
+USE DOSCLIENT
+USE O65
+USE O65TYPES
+USE O65MEMORY
+USE PROGRAMIMAGE
+USE PROGRAMPROVIDERS
+USE PROGRAMPLACE
+
+; Validate, allocate and relocate an image before exposing it as executable.
+PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
+  O65TYPES.Validation POINTER validation
+  PROGRAMIMAGE.Image POINTER image
+  LONGINT error
+  ADDRESS POINTER entryAddress
+
+  validation=O65.Validate(bytes,length)
+  IF validation=O65TYPES.Validation POINTER(0) THEN
+    RETURN(PROGRAMIMAGE.Image POINTER(0))
+  FI
+
+  IF PROGRAMPROVIDERS.Resolve(validation)=0 THEN
+    O65.Release(validation)
+    DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_BAD_PROVIDER))
+    RETURN(PROGRAMIMAGE.Image POINTER(0))
+  FI
+
+  image=PROGRAMIMAGE.Image POINTER(O65MEMORY.Allocate(SIZEOF(PROGRAMIMAGE.Image)))
+  error=LONGINT(O65TYPES.ERROR_NO_FREE_STORE)
+  IF image<>PROGRAMIMAGE.Image POINTER(0) THEN
+    IF PROGRAMPLACE.Allocate(image,validation)<>0 THEN
+      error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+      IF PROGRAMPLACE.Patches(image,validation,0)<>0 THEN
+        PROGRAMPLACE.Copy(BYTE POINTER(image.text),
+            @bytes(SIZE(validation.textAt)),image.textBytes)
+        IF image.dataBytes<>0 THEN
+          PROGRAMPLACE.Copy(image.data,@bytes(SIZE(validation.dataAt)),
+              image.dataBytes)
+        FI
+
+        ; O65MEMORY allocated BSS with MEMF_CLEAR, including rounded capacity.
+        IF PROGRAMPLACE.Patches(image,validation,1)<>0 THEN
+          entryAddress=ADDRESS POINTER(@image.entry)
+          entryAddress^=ADDRESS(LONGCARD(image.text)+validation.entry)
+          image.references=1
+          image.ownerHeld=1
+          image.magic=PROGRAMIMAGE.MAGIC
+          O65.Release(validation)
+          DOSCLIENT.SetError(0)
+          RETURN(image)
+        FI
+      FI
+    FI
+
+    PROGRAMIMAGE.Free(image)
+  FI
+
+  O65.Release(validation)
+  DOSCLIENT.SetError(error)
+
+RETURN(PROGRAMIMAGE.Image POINTER(0))
+
+; Release an image only after its execution ownership permits unloading.
+PUBLIC PROC Unload(PROGRAMIMAGE.Image POINTER image)
+
+  PROGRAMIMAGE.DropOwner(image)
+
+RETURN
+
+ENDMODULE

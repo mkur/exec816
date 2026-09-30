@@ -1,0 +1,61 @@
+; The sole serial provider boundary. Other queued cancellations can retire
+; while this worker retains its exact adapter/request and caller buffer.
+MODULE BLOCKWIRE
+USE EXEC
+USE IOCORE
+USE FSOPERATION
+USE DOSCORE
+USE DOSBREAKTYPES
+USE SIODRIVER
+INCLUDE "../dos/dos-types.inc"
+; The filesystem worker supplies its retained context. Standalone block users
+; pass NULL/NULL; no task or filesystem lookup belongs in a sector transfer.
+PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
+    POINTER registry DOSBREAKTYPES.Scope POINTER scope)
+  LONGCARD mask,control,bits,state
+  INT error
+  BYTE attempted,aborted
+
+  control=0
+  IF registry<>DOSCORE.DosRegistry POINTER(0) THEN
+    IF registry.cancelReady<>0 THEN
+      control=LONGCARD(1) LSH registry.cancelSignal
+    FI
+  FI
+
+  IF FSOPERATION.Canceled(scope)<>0 THEN
+    RETURN(INT(ERROR_BREAK))
+  FI
+
+  mask=(LONGCARD(1) LSH request.io_Message.mn_ReplyPort.mp_SigBit) OR control
+  attempted=0
+  aborted=0
+  EXEC.SendIO(EXEC.IORequest POINTER(request))
+  DO
+    ; Collect tests and removes this exact reply in one guarded kernel entry.
+    ; A pending result leaves the request and its durable wake signal intact.
+    state=IOCORE.Collect(EXEC.IORequest POINTER(request))
+    IF (state & LONGCARD($10000))=0 THEN
+      EXIT
+    FI
+
+    IF control<>0 THEN
+      FSOPERATION.Pump(registry)
+    FI
+
+    IF attempted=0 AND FSOPERATION.Canceled(scope)<>0 THEN
+      attempted=1
+      aborted=SIODRIVER.TryCancel(EXEC.IORequest POINTER(request))
+    FI
+
+    bits=EXEC.Wait(mask)
+  OD
+
+  error=INT(CARD(state))
+  IF aborted<>0 AND error=EXEC.IOERR_ABORTED THEN
+    RETURN(INT(ERROR_BREAK))
+  FI
+
+RETURN(error)
+
+ENDMODULE

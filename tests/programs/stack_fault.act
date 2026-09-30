@@ -1,0 +1,15 @@
+CARD entered
+
+PROC Recurse(CARD depth)
+
+  entered=depth
+  Recurse(depth+1)
+
+RETURN
+
+; Exercise native stack-guard failure on recursive exhaustion.
+PROC Main()
+
+  Recurse(1)
+
+RETURN

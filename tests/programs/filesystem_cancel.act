@@ -1,0 +1,269 @@
+MODULE FILESYSTEMCANCELTEST
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE FSOPERATION
+USE FSCANCELPROBE
+USE FSBOOT
+USE FSREGISTRY
+USE FSTYPES
+USE HEAPCORE
+CARD checks
+VOLATILE BYTE phase,gate,bigReady,bigGo,bigDone,orderedDone
+VOLATILE BYTE orderCount
+BYTE ARRAY order(2)
+EXEC.Task bigTask,orderedTask
+PROC POINTER absent()
+DOS.FileHandle POINTER con,file
+DOS.FileLock POINTER lock
+DOSCLIENT.ClientContext POINTER client
+DOSBREAKTYPES.Scope POINTER scope
+BYTE POINTER bulk,buffer,orderedBytes
+BYTE ARRAY conName=[67 79 78 58 0]
+BYTE ARRAY path=[68 49 58 84 79 79 76 83 47 83 85 66 47 68 65 84 65 46 66 73 78 0]
+BYTE ARRAY directory=[68 49 58 84 79 79 76 83 0]
+BYTE ARRAY large=[68 49 58 76 65 82 71 69 46 66 73 78 0]
+LONGCARD baseline
+LONGINT ARRAY results(8),errors(8)
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+  CARD ticks
+
+  gate=0
+  phase=number
+  WHILE gate=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+; Prepare a Task record with its assigned stack before scheduler admission.
+PROC PrepareTask(EXEC.Task POINTER task BYTE slot)
+
+  task.tc_Node.ln_Type=EXEC.NT_TASK
+  task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  task.tc_SPReg=task.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@task.tc_MemEntry)
+
+RETURN
+
+; Keep a long filesystem request active while peers test cancellation
+; ordering.
+PROC BigEntry()
+  DOS.FileHandle POINTER handle
+  CARD ticks
+  LONGINT got
+
+  handle=DOS.Open(large,DOS.MODE_OLDFILE)
+  Require(handle<>DOS.FileHandle POINTER(0))
+  bigReady=1
+  WHILE bigGo=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  got=DOS.Read(handle,bulk,70003)
+  results(5)=got
+  errors(5)=DOS.IoErr()
+  Require(got=70003 AND DOS.IoErr()=0)
+  order(orderCount)=1
+  orderCount==+1
+  bigDone=1
+  Require(DOS.Close(handle)<>0 AND DOS.ReleaseContext()<>0)
+
+RETURN
+
+; Submit a peer request whose completion order is observable by the fixture.
+PROC OrderedEntry()
+  DOS.FileHandle POINTER handle
+
+  handle=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(handle<>DOS.FileHandle POINTER(0))
+  order(orderCount)=2
+  orderCount==+1
+  results(6)=DOS.Read(handle,orderedBytes,2)
+  errors(6)=DOS.IoErr()
+  Require(results(6)=2 AND orderedBytes(0)=83 AND orderedBytes(1)=82)
+  Require(DOS.Close(handle)<>0 AND DOS.ReleaseContext()<>0)
+  orderedDone=1
+
+RETURN
+
+PROC Idle()
+  DOSCORE.DosRegistry POINTER registry
+
+  registry=DOSCORE.GetRegistry()
+  Require(scope.opState=FSOPERATION.COLLECTED AND scope.enqueued=0
+      AND scope.packet=BYTE POINTER(0))
+  Require(client.busy=0 AND EXEC.GetMsg(client.port)=EXEC.Message POINTER(0))
+  Require(registry.cancelHead=BYTE POINTER(0) AND DOS.BreakPending()<>0
+      AND bigDone=0)
+  FSOPERATION.Request(scope)
+  Require(registry.cancelHead=BYTE POINTER(0))
+
+RETURN
+
+; Cancel a request before worker claim and verify its terminal reply.
+PROC Queued()
+  BYTE index
+  CARD ticks
+  FSTYPES.Service POINTER service
+
+  PrepareTask(@bigTask,4)
+  Require(EXEC.AddTask(@bigTask,@BigEntry,absent)=@bigTask)
+  WHILE bigReady=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  bigGo=1
+  service=FSREGISTRY.Service()
+  WHILE service.operation.completed<253 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  PrepareTask(@orderedTask,5)
+  Require(EXEC.AddTask(@orderedTask,@OrderedEntry,absent)=@orderedTask)
+  Require(DOS.BeginForeground(con)<>0)
+  scope=DOSBREAK.Current()
+  FOR index=0 TO 31 DO
+    buffer(index)=$a5
+  OD
+
+  Pause(1)
+  results(0)=DOS.Read(file,buffer,32)
+  errors(0)=DOS.IoErr()
+  Require(results(0)=-1 AND errors(0)=DOS.ERROR_BREAK)
+  Idle()
+  FOR index=0 TO 31 DO
+    Require(buffer(index)=$a5)
+  OD
+
+  Require(DOS.BeginForeground(con)<>0)
+  Pause(2)
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  errors(1)=DOS.IoErr()
+  Require(file=DOS.FileHandle POINTER(0) AND errors(1)=DOS.ERROR_BREAK)
+  Idle()
+  Require(DOS.BeginForeground(con)<>0)
+  Pause(3)
+  lock=DOS.Lock(directory,DOS.SHARED_LOCK)
+  errors(2)=DOS.IoErr()
+  Require(lock=DOS.FileLock POINTER(0) AND errors(2)=DOS.ERROR_BREAK)
+  Idle()
+  Pause(4)
+  WHILE bigTask.tc_State<>EXEC.TS_REMOVED
+      OR orderedTask.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(bigDone<>0 AND orderedDone<>0 AND orderCount=2 AND order(0)=1
+      AND order(1)=2)
+
+RETURN
+
+PROC VerifyBulk()
+  LONGCARD index
+  BYTE POINTER cursor
+
+  cursor=bulk
+  index=0
+  WHILE index<70003 DO
+    IF cursor^<>(BYTE(index) XOR 129) THEN
+      Require(0)
+    FI
+
+    cursor==+1
+    index==+1
+  OD
+
+  Require(1)
+
+RETURN
+
+; Exercise cancellation at deterministic ownership boundaries around reply
+; publication.
+PROC Races(DOS.FileHandle POINTER original)
+  LONGCARD sequence
+
+  Require(DOS.BeginForeground(con)<>0)
+  sequence=scope.sequence
+  scope.sequence=$ffffffff
+  Require(DOS.Read(original,buffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE
+      AND client.busy=0)
+  scope.sequence=sequence
+  FSCANCELPROBE.target=scope
+  FSCANCELPROBE.stage=0
+  FSCANCELPROBE.gate=0
+  FSCANCELPROBE.mode=1
+  Pause(6)
+  results(3)=DOS.Read(original,buffer,1)
+  errors(3)=DOS.IoErr()
+  Require(results(3)=-1 AND errors(3)=DOS.ERROR_BREAK AND DOS.BreakPending()<>0)
+  Require(scope.opState=FSOPERATION.COLLECTED AND scope.enqueued=0)
+  Require(DOS.BeginForeground(con)<>0)
+  FSCANCELPROBE.stage=0
+  FSCANCELPROBE.gate=0
+  FSCANCELPROBE.mode=2
+  Pause(7)
+  results(4)=DOS.Read(original,buffer,1)
+  errors(4)=DOS.IoErr()
+  Require(results(4)=1 AND errors(4)=0 AND buffer(0)=83 AND DOS.BreakPending()<>0)
+  Require(scope.opState=FSOPERATION.COLLECTED AND scope.enqueued=0)
+
+RETURN
+
+; Exercise queued cancellation and races with filesystem completion.
+PROC Main()
+  DOS.FileHandle POINTER original
+  CARD ticks
+
+  baseline=EXEC.AvailMem(0)
+  Require(SIZEOF(DOSCORE.DosRegistry)<=96
+      AND SIZEOF(DOSBREAKTYPES.Scope)=DOSBREAKTYPES.SCOPE_SIZE)
+  con=DOS.Open(conName,DOS.MODE_READWRITE)
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  original=file
+  Require(con<>DOS.FileHandle POINTER(0) AND file<>DOS.FileHandle POINTER(0))
+  client=DOSCLIENT.Ensure()
+  bulk=EXEC.AllocMem(70003,EXEC.MEMF_PUBLIC OR EXEC.MEMF_LINEAR)
+  buffer=EXEC.AllocMem(64,EXEC.MEMF_UPPER)
+  orderedBytes=buffer+SIZE(32)
+  Require(bulk<>BYTE POINTER(0) AND buffer<>BYTE POINTER(0))
+  Queued()
+  VerifyBulk()
+  Races(original)
+  Require(DOS.BeginForeground(con)<>0)
+  Require(DOS.Seek(original,0,DOS.OFFSET_BEGINNING)=1)
+  Require(DOS.Read(original,buffer,32)=32 AND buffer(0)=83 AND buffer(31)=(31
+      XOR 83))
+  Require(DOS.Close(original)<>0)
+  Require(DOS.EndForeground()<>0 AND DOS.Close(con)<>0 AND DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  EXEC.FreeMem(bulk,70003)
+  EXEC.FreeMem(buffer,64)
+  Require(EXEC.AvailMem(0)=baseline)
+  phase=5
+
+RETURN
+
+ENDMODULE

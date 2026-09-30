@@ -1,0 +1,50 @@
+; Supply an explicit D1 MyDOS mount. Keep media stable and do not write raw
+; sectors while mounted. This example reads binary bytes without translation.
+MODULE DOSREAD
+USE EXEC
+USE DOS
+BYTE ARRAY path=[68 49 58 84 79 79 76 83 47 83 85 66 47 68 65 84 65 46 66 73 78 0]
+BYTE completed
+LONGINT error,count,oldPosition
+
+; Read and seek a named file while preserving cleanup on every setup failure.
+PROC Main()
+  DOS.FileHandle POINTER file
+  BYTE POINTER buffer
+  LONGINT okay
+
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  IF file=DOS.FileHandle POINTER(0) THEN
+    error=DOS.IoErr()
+  ELSE
+    buffer=EXEC.AllocMem(512,EXEC.MEMF_UPPER)
+    IF buffer=BYTE POINTER(0) THEN
+      error=DOS.ERROR_NO_FREE_STORE
+    ELSE
+      count=DOS.Read(file,buffer,512)
+      IF count<0 THEN
+        error=DOS.IoErr()
+      ELSE
+        oldPosition=DOS.Seek(file,0,DOS.OFFSET_BEGINNING)
+        IF oldPosition<0 THEN
+          error=DOS.IoErr()
+        ELSE
+          completed=1
+        FI
+      FI
+
+      EXEC.FreeMem(buffer,512)
+    FI
+
+    okay=DOS.Close(file)
+    IF okay=0 THEN
+      error=DOS.IoErr()
+      completed=0
+    FI
+  FI
+
+  okay=DOS.ReleaseContext()
+
+RETURN
+
+ENDMODULE

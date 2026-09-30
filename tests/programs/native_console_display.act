@@ -1,0 +1,497 @@
+MODULE NATIVECONSOLEDISPLAY
+USE EXEC
+USE EXECTASKS
+USE HEAPCORE
+USE CONSOLEDRIVER
+USE CONSOLEDISPLAY
+USE CONSOLETYPES
+BYTE stage,gate,phase
+CARD checks
+BYTE dindex=$57,attract=$4d,clockLow=$14
+CONSOLETYPES.Service POINTER service
+CONSOLETYPES.Instance POINTER instance
+CONSOLETYPES.Presentation POINTER view
+CONSOLETYPES.Presentation clipped
+CONSOLETYPES.Instance small
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER readRequest,writeRequest
+BYTE POINTER source,screen,cells
+BYTE ARRAY name=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY keys(4)
+BYTE ARRAY prefix=[69 120 101 99 56 49 54 32 110 97 116 105 118 101 32 99 111 110 115 111 108 101 10]
+BYTE ARRAY ending=[69 78 68 8 33 9 84 13 90 10]
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+
+  stage=number
+  gate=0
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Clean()
+
+  WHILE instance.dirtyEnd<>0 OR view.index<>instance.lineStart+instance.column DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Write(BYTE POINTER data LONGCARD length)
+  INT error
+
+  writeRequest.io_Command=EXEC.CMD_WRITE
+  writeRequest.io_Data=data
+  writeRequest.io_Length=length
+  writeRequest.io_Offset=0
+  error=EXEC.DoIO(EXEC.IORequest POINTER(writeRequest))
+  Require(error=0 AND writeRequest.io_Actual=length)
+
+RETURN
+
+PROC BadState(CARD location BYTE value)
+  BYTE POINTER at
+  BYTE old
+
+  at=BYTE POINTER(ADDRESS(location))
+  old=at^
+  at^=value
+  Require(CONSOLEDISPLAY.Validate()=0)
+  at^=old
+
+RETURN
+
+PROC Start()
+  INT error
+  LONGCARD state
+  CARD ticks
+
+  Require(CONSOLEDISPLAY.Validate()=1)
+  BadState($59,$80)
+  BadState($5f,$80)
+  BadState($231,$80)
+  BadState($22f,0)
+  BadState($2f4,$e4)
+  BadState($2f3,0)
+  BadState($26f,1)
+  BadState($4d,$80)
+  BadState($4e,$f6)
+  BadState($4f,1)
+  dindex=1
+  Require(CONSOLEDRIVER.Start()=0)
+  Require(CONSOLEDISPLAY.Validate()=0)
+  dindex=0
+  state=CONSOLEDRIVER.State()
+  WHILE state<>0 DO
+    ticks=EXECTASKS.Sleep(1)
+    state=CONSOLEDRIVER.State()
+  OD
+
+  Require(CONSOLEDRIVER.Start()=1)
+  service=CONSOLEDRIVER.GetService()
+  instance=CONSOLEDRIVER.GetInstance()
+  view=CONSOLETYPES.Presentation POINTER(service.presentation)
+  Require(view.claimed=1 AND view.width=40 AND view.height=24)
+  port=EXEC.CreateMsgPort()
+  readRequest=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,42))
+  writeRequest=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,42))
+  error=EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(writeRequest),0)
+  Require(error=0)
+  readRequest.io_Device=writeRequest.io_Device
+  readRequest.io_Unit=writeRequest.io_Unit
+
+RETURN
+
+; Compare terminal text with the pinned platform's screen glyph
+; representation.
+PROC Printable()
+  CARD index
+
+  source=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC)
+  Require(source<>BYTE POINTER(0))
+  FOR index=32 TO 126 DO
+    source(index-32)=BYTE(index)
+  OD
+
+  Write(prefix,23)
+  Write(source,95)
+  EXEC.FreeMem(source,128)
+  source=BYTE POINTER(0)
+  Clean()
+  Pause(1)
+
+RETURN
+
+; Require a hidden view to preserve retained text without drawing to the
+; screen.
+PROC Hidden()
+  CARD row,column,index
+  BYTE letter
+  INT error
+  CARD ticks
+
+  view.visible=0
+  source=EXEC.AllocMem(1201,EXEC.MEMF_PUBLIC)
+  Require(source<>BYTE POINTER(0))
+  source(0)=12
+  index=1
+  letter=65
+  FOR row=0 TO 29 DO
+    FOR column=0 TO 39 DO
+      source(index)=letter
+      index==+1
+    OD
+
+    letter==+1
+    IF letter=91 THEN
+      letter=65
+    FI
+  OD
+
+  readRequest.io_Command=EXEC.CMD_READ
+  readRequest.io_Data=keys
+  readRequest.io_Length=4
+  readRequest.io_Offset=0
+  EXEC.SendIO(EXEC.IORequest POINTER(readRequest))
+  Pause(2)
+  Write(source,1201)
+  EXEC.FreeMem(source,1201)
+  source=BYTE POINTER(0)
+  Write(ending,10)
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(readRequest))
+  Require(error=0 AND readRequest.io_Actual=1 AND keys(0)=97)
+  Pause(3)
+  view.visible=1
+  EXEC.Signal(@service.task,$80000000)
+  Clean()
+  Pause(4)
+  ; Even with no device work and a sleeping worker, VBI suppresses attract.
+  attract=127
+  clockLow=255
+  ticks=EXECTASKS.Sleep(2)
+  Require(attract<128)
+
+RETURN
+
+PROC CheckClipping(BYTE unused)
+  CARD index,row,column,target
+
+  FOR index=0 TO 991 DO
+    target=$a5
+    FOR row=0 TO 1 DO
+      FOR column=0 TO 4 DO
+        IF index=16+160+3+(row LSH 5)+(row LSH 3)+column THEN
+          target=33+row+row+row+row+row+column
+        FI
+      OD
+    OD
+
+    IF index=16+160+3+40+4 THEN
+      target=target XOR $80
+    FI
+
+    Require(screen(index)=BYTE(target))
+  OD
+
+RETURN
+
+; Constrain presentation to the admitted rectangle and preserve surrounding
+; cells.
+PROC Clipping()
+  CARD index
+
+  screen=EXEC.AllocMem(992,EXEC.MEMF_PUBLIC)
+  cells=EXEC.AllocMem(10,EXEC.MEMF_PUBLIC)
+  Require(screen<>BYTE POINTER(0) AND cells<>BYTE POINTER(0))
+  FOR index=0 TO 991 DO
+    screen(index)=$a5
+  OD
+
+  FOR index=0 TO 9 DO
+    cells(index)=BYTE(65+index)
+  OD
+
+  small.cells=cells
+  small.width=5
+  small.height=2
+  small.count=10
+  small.dirtyFirst=0
+  small.dirtyEnd=10
+  small.row=1
+  small.column=4
+  small.lineStart=5
+  clipped.focused=1
+  clipped.screen=BYTE POINTER(ADDRESS(screen)+SIZE(16))
+  clipped.instance=BYTE POINTER(@small)
+  clipped.left=3
+  clipped.top=4
+  clipped.width=5
+  clipped.height=2
+  clipped.claimed=1
+  clipped.visible=1
+  Require(CONSOLEDISPLAY.Geometry(@clipped,@small)=1)
+  CONSOLEDISPLAY.Quantum(@clipped,@small)
+  CheckClipping(0)
+  Require(cells(9)=74)
+  clipped.left=39
+  Require(CONSOLEDISPLAY.Geometry(@clipped,@small)=0)
+  EXEC.FreeMem(screen,992)
+  EXEC.FreeMem(cells,10)
+
+RETURN
+
+PROC Cleanup()
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(writeRequest))
+  readRequest.io_Device=BYTE POINTER(0)
+  readRequest.io_Unit=BYTE POINTER(0)
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(readRequest))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(writeRequest))
+  EXEC.DeleteMsgPort(port)
+  Require(CONSOLEDRIVER.Stop()=1)
+  Require(view.claimed=0)
+
+RETURN
+
+; Dirty spans begin/end inside rows, cross quantum boundaries and include
+; columns/rows outside the view. Guard bytes must never become screen cells.
+PROC ClippedRows()
+  BYTE POINTER expected
+  CARD index,row,column,cellIndex,target,steps
+
+  screen=EXEC.AllocMem(992,EXEC.MEMF_PUBLIC)
+  expected=EXEC.AllocMem(992,EXEC.MEMF_PUBLIC)
+  cells=EXEC.AllocMem(120,EXEC.MEMF_PUBLIC)
+  Require(screen<>BYTE POINTER(0) AND expected<>BYTE POINTER(0)
+      AND cells<>BYTE POINTER(0))
+  FOR index=0 TO 991 DO
+    screen(index)=$a5
+    expected(index)=$a5
+  OD
+
+  FOR index=0 TO 119 DO
+    cells(index)=BYTE(32+(index & 63))
+  OD
+
+  cells(12)=200
+  small.cells=cells
+  small.width=10
+  small.height=12
+  small.count=120
+  small.dirtyFirst=3
+  small.dirtyEnd=113
+  small.row=11
+  small.column=9
+  small.lineStart=110
+  clipped.screen=screen+16
+  clipped.instance=BYTE POINTER(@small)
+  clipped.left=13
+  clipped.top=6
+  clipped.width=7
+  clipped.height=4
+  clipped.claimed=1
+  clipped.visible=1
+  clipped.cursorOn=0
+  cellIndex=0
+  target=269
+  FOR row=0 TO 3 DO
+    FOR column=0 TO 6 DO
+      IF cellIndex+column>=3 THEN
+        expected(target+column)=BYTE((cellIndex+column) & 63)
+      FI
+    OD
+
+    cellIndex==+10
+    target==+40
+  OD
+
+  expected(311)=31
+  steps=0
+  WHILE small.dirtyEnd<>0 DO
+    CONSOLEDISPLAY.Quantum(@clipped,@small)
+    steps==+1
+    Require(steps<=3)
+  OD
+
+  Require(steps=3 AND clipped.cursorOn=0 AND cells(12)=200)
+  FOR index=0 TO 991 DO
+    Require(screen(index)=expected(index))
+  OD
+
+  ; More pending rows than one drawing batch must keep the redraw fallback.
+  clipped.width=10
+  clipped.height=12
+  small.dirtyFirst=0
+  small.dirtyEnd=120
+  small.operation=CONSOLETYPES.OP_SCROLL
+  CONSOLEDISPLAY.Edit(@clipped,@small)
+  Require(small.dirtyFirst=0 AND small.dirtyEnd=120)
+  WHILE small.dirtyEnd<>0 DO
+    CONSOLEDISPLAY.Quantum(@clipped,@small)
+  OD
+
+  FOR index=0 TO 991 DO
+    expected(index)=$a5
+  OD
+
+  target=269
+  FOR row=0 TO 11 DO
+    FOR column=0 TO 9 DO
+      IF row=11 THEN
+        expected(target+column)=0
+      ELSE
+        expected(target+column)=BYTE(((row+1)*10+column) & 63)
+      FI
+    OD
+
+    target==+40
+  OD
+
+  expected(271)=31
+  expected(718)=$80
+  FOR index=0 TO 991 DO
+    Require(screen(index)=expected(index))
+  OD
+
+  EXEC.FreeMem(screen,992)
+  EXEC.FreeMem(expected,992)
+  EXEC.FreeMem(cells,120)
+
+RETURN
+
+; Patterned scrolling must move translated cells without moving cursor ink.
+PROC Scrolling()
+  CARD index,row,column,target
+  BYTE expected
+
+  screen=EXEC.AllocMem(992,EXEC.MEMF_PUBLIC)
+  cells=EXEC.AllocMem(15,EXEC.MEMF_PUBLIC)
+  Require(screen<>NULL AND cells<>NULL)
+  FOR index=0 TO 991 DO
+    screen(index)=$a5
+  OD
+
+  FOR index=0 TO 14 DO
+    cells(index)=BYTE(65+index)
+  OD
+
+  small.cells=cells
+  small.width=5
+  small.height=3
+  small.count=15
+  small.dirtyFirst=0
+  small.dirtyEnd=15
+  small.row=2
+  small.column=2
+  small.lineStart=10
+  small.operation=CONSOLETYPES.OP_IDLE
+  clipped.screen=screen+16
+  clipped.instance=BYTE POINTER(@small)
+  clipped.left=3
+  clipped.top=4
+  clipped.width=5
+  clipped.height=3
+  clipped.claimed=1
+  clipped.visible=1
+  clipped.focused=1
+  clipped.cursorOn=0
+  CONSOLEDISPLAY.Quantum(@clipped,@small)
+
+  ; A short dirty span followed by newline is synchronized before the copy.
+  cells(10)=88
+  cells(11)=89
+  cells(12)=90
+  small.dirtyFirst=10
+  small.dirtyEnd=13
+  small.operation=CONSOLETYPES.OP_SCROLL
+  CONSOLEDISPLAY.Edit(@clipped,@small)
+  Require(small.dirtyEnd=0 AND small.operation=CONSOLETYPES.OP_IDLE)
+  CONSOLEDISPLAY.Quantum(@clipped,@small)
+
+  FOR index=0 TO 991 DO
+    expected=$a5
+    FOR row=0 TO 2 DO
+      FOR column=0 TO 4 DO
+        target=16+163+(row LSH 5)+(row LSH 3)+column
+        IF index=target THEN
+          IF row=0 THEN
+            expected=BYTE(38+column)
+          ELSEIF row=1 THEN
+            IF column<3 THEN
+              expected=BYTE(56+column)
+            ELSE
+              expected=BYTE(43+column)
+            FI
+          ELSE
+            expected=0
+            IF column=2 THEN
+              expected=$80
+            FI
+          FI
+        FI
+      OD
+    OD
+
+    Require(screen(index)=expected)
+  OD
+
+  FOR row=0 TO 2 DO
+    small.operation=CONSOLETYPES.OP_SCROLL
+    CONSOLEDISPLAY.Edit(@clipped,@small)
+    Require(small.dirtyEnd=0)
+    CONSOLEDISPLAY.Quantum(@clipped,@small)
+  OD
+
+  FOR index=0 TO 14 DO
+    Require(cells(index)=32)
+  OD
+
+  ; An invisible view keeps damage until Show invalidates/repaints it.
+  clipped.visible=0
+  small.operation=CONSOLETYPES.OP_CLEAR
+  CONSOLEDISPLAY.Edit(@clipped,@small)
+  Require(small.dirtyFirst=0 AND small.dirtyEnd=15)
+  clipped.visible=1
+  CONSOLEDISPLAY.Quantum(@clipped,@small)
+  Require(small.dirtyEnd=0)
+
+  EXEC.FreeMem(screen,992)
+  EXEC.FreeMem(cells,15)
+
+RETURN
+
+; Exercise display validation, clipping, scrolling and OS restoration.
+PROC Main()
+
+  phase=1
+  Start()
+  phase=2
+  Printable()
+  phase=3
+  Hidden()
+  phase=4
+  Clipping()
+  ClippedRows()
+  Scrolling()
+  phase=5
+  Cleanup()
+
+RETURN
+
+ENDMODULE

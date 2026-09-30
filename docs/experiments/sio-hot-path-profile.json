@@ -1,0 +1,2768 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "optimization_commit": "aef6fb186e9fb7103770b4ae5c07a48f096f830e",
+  "baseline_optimization": {
+    "path": "docs/experiments/sio-hot-path-optimization.json",
+    "sha256": "c804d3428706df8052c761e1c9f9f9b942685603655fb673bc4486b961a9a636"
+  },
+  "inputs": {
+    "tools/trace_command_io.py": "f77d9600c9c807222a7899a995b5462d5fc9bedf1de1cf0a2a5f9d3b1a78dcf7",
+    "tests/test_command_io_trace.py": "d11a4cde2d7aece60095961d499ddcfa465a4cf9d52fe49627c2d19238505df2",
+    "tools/measure_command_loading.py": "ddda767b0adfd77379239e4767d121003a60791de2eca621a0d69a47c9eb96ac",
+    "tools/sio_transaction_trace.py": "f35e2eb3c4285740f3d1062070c4b16456ae18353193600f569933383e5b1c8b",
+    "tools/dos_concurrent_trace.py": "64c18a5d210ff9f880011ccc91e36a98bd848323f2523754a8ae040e9232bc97",
+    "tools/build_demo.py": "7869b7fcfd14b4f0fcc3f7e7d2bac0d2c4075f407d6171742c096599ad1ce8e8",
+    "tools/test_demo.py": "d1f10236b07634adb0a1f398433865f62b3e58847d8885c2326ab6df27120df3"
+  },
+  "compiler": "47cd55b2dac510922949832332b7a2c3220885be",
+  "compiler_override": false,
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "play_image": {
+    "manifest": {
+      "path": "build/demo/demo-manifest.json",
+      "sha256": "9c8a6599e366e8685ffa2b22b4a15fc1a7b0ee21ba33754873860522f7c1b1c7"
+    },
+    "xex": {
+      "path": "build/demo/program.xex",
+      "sha256": "a060f2c8fff9c428eb95fe8f965850607bd18a47722aff227c3d76509359d58d"
+    },
+    "media": {
+      "path": "build/demo/sdfs.atr",
+      "sha256": "2522811285c360cf6eb9473223dd3ef24b2c0a420f928a6f6592e30a8dc80efc"
+    },
+    "previous_manifest": {
+      "path": "build/development/sio-hot-path/previous-play/demo-manifest.json",
+      "sha256": "b215be33a317c7f03c13fdf9ac5dbd2b63e7d4253c4b8cf1bf1f28531bdc6815"
+    },
+    "source_inputs": {
+      "examples/demo.act": "8da508928ac4db24c1ca93f9cff68cf9f03149c14d00532077308e6ad9e99a2c",
+      "examples/demo-session.inc": "faab68d6540d2d152803a50a69db7607a5ce5f12174e9d39fbe68a1d0076748b",
+      "examples/shell-session.inc": "f228d20ceeee790b5dcf85a773769b0d3a78ac59901b80fb2635d998139711f7",
+      "examples/shell-commands.inc": "4f80a752da106aed2ad5cf2fbf94e51540e3a8884984dae6d0ac1ada30a16212",
+      "examples/shell-redirection.inc": "444ce2ae61cfd3451dd845c75d1c1668308fc78f6fd16bc9ae4a82c05d438976",
+      "examples/shell-boot.inc": "29ca7244f5cc1416c2a22a1b2dbbb5ac8b027fbeb9a26e030ada495161a625ec",
+      "docs/demo.md": "4d0d20efffcd8f762328119264d5602f304b2f35d9b40202772048b95403cc8a",
+      "docs/demo.png": "b0abf2d09c8c9e5159b9de9a18097a0771673cd37b15ea11863158c5f8ee20f6",
+      "config/shell-sdfs.json": "0a8b6b5a0a4bc3295c0a2438328cb5f598ccd9108e2077abcc550c38ab988f2d",
+      "tools/build_command.py": "f14d371a416299d63cfd2a59e9e5713962fb31535016e63322fabe0d2234ba02",
+      "tools/make_data_disk.py": "f56df480f19aa750a6fbdcc5715f207082a42c8734c22c177b96744bc043fb24",
+      "tools/sdfs_reference.py": "298da1eed3ffbf5feacc3d7908463574eb29efb3f3e6b7adb09fa44c0b8eec57",
+      "tools/sdfs_reference.cpp": "66931b4b4d55aa9a9bfd14225ae706fb0a1aaec67917c7f29462320d01313ff2",
+      "tools/make_shell_disk.py": "148cdc8de55e3090117a21a292bf17c5e8f1a189d1788fa1e2ded55e8dbf2b5a",
+      "tools/build_demo.py": "7869b7fcfd14b4f0fcc3f7e7d2bac0d2c4075f407d6171742c096599ad1ce8e8",
+      "examples/demo-disk/STORY.TXT": "ca8653e644f744f7541c4d7cc77d700bb85ac2edab16179b4f5bac31a425c028",
+      "examples/demo-disk/LONG.TXT": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+      "examples/demo-disk/README.TXT": "8dd8b1a2b42f1ada5d727309a92965b4ff638199bed9f03e5c3c4354432b19b5",
+      "lib/dos/command.act": "1100c85368a3ec62c6b93d91dfcec6e3a84d08d80a48eb5fd30f3be070d0f7b9",
+      "lib/dos/cookedline.act": "3c87fb9de13326c2ef88f317c6e7a3956e3f6cef9d53408f0932f3b46fd24455",
+      "lib/dos/dos.act": "44046b24086ebb7734e036f916a65b9e2b7e566486ddf86946007690f6fbe21b",
+      "lib/dos/dosbreak.act": "aecc6a5292f9d87c0d629a13b8a626a5d870ae26081e229215fbdd4936d31bbe",
+      "lib/dos/dosbreaktypes.act": "afe9ccd719707e10ea0112697cf37a88b45316ebc50939141ac8d58e8eacda0b",
+      "lib/dos/doscalls.act": "f29420ecc7fa3e4a907817c69a87f39ec988e4b779257c8d5fe04b1a64c858d0",
+      "lib/dos/doscancel.act": "e447cfc4f11e2da549031537ac0d7b35c9a906d66a1c489c29fc9f1ce111b586",
+      "lib/dos/dosclient.act": "5a7ce152d63f9ec5e34ce690f3cf6b153f48552a8c2c3b7f39dd9703631b6b5e",
+      "lib/dos/doscooked.act": "073168627f7d011176bb405c25112a9c6e94826d206a064a5b65597c22a64be3",
+      "lib/dos/doscore.act": "9f69969509eddb82da912c9e726b0fd3355f4794562d195381f2b1b95edc82fe",
+      "lib/dos/dosgroup.act": "874ee15cab2b73a0b7119e0243c150602f03fd094c15404d037652d95287daaf",
+      "lib/dos/dosinherit.act": "7ed142767432476d022b77463e3035a25544f2ae05b0a79fbdad9d1d38e0eaae",
+      "lib/dos/dosobjects.act": "535c9981daa906dc9335314bf29a198c115437fb7c1873f6b9d45fa28cf41b59",
+      "lib/dos/dospipe.act": "84078c81920b9da126207a84867d0628ba2a55d95f22559eb1a90355d1c58863",
+      "lib/dos/dosprocess.act": "87332056900ea81d5be6b5dbd1963413b0842c5fef243de2b4192470ff88b937",
+      "lib/dos/dosraw.act": "8401725a5b0e5876d845a7fbb7295fc239550897647055d8eea0b105d027a68f",
+      "lib/dos/dosstreams.act": "8b2c4c0e5b51ae3ec5cc899c051e29857103a88d1506f001f1713202a8475d08",
+      "lib/dos/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+      "lib/dos/o65.act": "73ad599799b025069deaaba8f7d40623627ae40a76f7b30e26f2bfe32b41446e",
+      "lib/dos/o65contract.act": "2181842c712d2734bb9b258a9c0defbc28ae501ee4fdfbda5d3691659fa3ff78",
+      "lib/dos/o65memory.act": "2f30ee225cb19c6ebe2acd1c74f1bbc29e06866131eb697491ac0485665a0136",
+      "lib/dos/o65profile.act": "8d63e4af20eac84e22dd46e16d916c913798669b62c541d881b3011ef339e9c5",
+      "lib/dos/o65read.act": "d17ff4990b42e909337fb1fb313fac5502eb59f9b8057f263082d67a49817b71",
+      "lib/dos/o65relocations.act": "903cd47ec9748ee4b2e4ba2adc8bb8a3a9acbcf99b3eab225cd4383f7a705924",
+      "lib/dos/o65types.act": "0ddfaeb9eaec1a9a116cf25d534de9fa5e5e9480ca3b401e8222fdd21a75bd0e",
+      "lib/dos/o65wire.act": "b85815a95ba12fbb1917d76e6ac0f6da68400e8fac96551859e7db2ea8ff816b",
+      "lib/dos/pipeline.act": "4d3474c1d1e8410a286899ee6b65600248ca84849a54a7bd52fef38f0d52d0c4",
+      "lib/dos/process.act": "e7d8f6a9c3f208e87515886fa071eb100a11f85df35d57837553805ddc8a726b",
+      "lib/dos/processstate.act": "17d0dfd8800194d55393b4be0fc0efe36e8fa76f3b9a40d1c2fcea11a2af35a0",
+      "lib/dos/program.act": "540d30895acd4382d7e6a6b900281a9e50a8aa25ef925d514884debbdc3c3fa3",
+      "lib/dos/programapi.act": "337f49777b5e2b755967e01391f454906b88fd5ad2cd2ce84d9b62c21cc82b84",
+      "lib/dos/programfile.act": "2354feafbf9b05a73a30482dce3b759950aea25631b5a54eae698b01319416da",
+      "lib/dos/programimage.act": "bba1976ceeaf090b9aa4de44341ffb23b14fb72186f3cc44989810e8c192f3a0",
+      "lib/dos/programplace.act": "94e786d4765ecb58e7957a5cd799eec98c923a7eddd651efb4df9841019cd648",
+      "lib/dos/programproviders.act": "71f56299ed70c5e259913a6ea0363a84ad89fcb555dd4d2a62c18b639030f31d"
+    },
+    "artifacts": {
+      "program.xex": "a060f2c8fff9c428eb95fe8f965850607bd18a47722aff227c3d76509359d58d",
+      "sdfs.atr": "2522811285c360cf6eb9473223dd3ef24b2c0a420f928a6f6592e30a8dc80efc",
+      "README.md": "4d0d20efffcd8f762328119264d5602f304b2f35d9b40202772048b95403cc8a",
+      "sdfs.verification.json": "1542bef17ea681b7f81b3627120501411f47c4ff831a35b92911dcbe0e189c0a"
+    },
+    "loader_observers_present": false,
+    "media_unchanged": true,
+    "memory_reservations_unchanged": true
+  },
+  "play_validation": {
+    "record": {
+      "path": "build/demo/loading-results.json",
+      "sha256": "7b71d86d327534b7063cd2e37841cc92858179b34949e4f6ea4a4289223addf3"
+    },
+    "scope": "Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration",
+    "runtime": {
+      "status": 0,
+      "native_nmi_count": 2029,
+      "native_irq_count": 31799,
+      "os_busy": 0,
+      "return_s": 22014,
+      "return_d": 9216,
+      "return_p": 0,
+      "fault_required": 0,
+      "fault_s": 0,
+      "clock_start": 184,
+      "clock_end": 165,
+      "return_dbr": 0,
+      "return_e": 0,
+      "current": 8,
+      "switching": 0,
+      "switches": 5445,
+      "gateway_calls": 19946,
+      "os_calls": 0,
+      "forwarded_cops": 0,
+      "os_owner": 255,
+      "tick_pending": 0,
+      "vbi_count": 2029,
+      "vbi_dispatches": 856,
+      "irq_depth": 0,
+      "tasks": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "task_records": [
+        [
+          0,
+          0,
+          0,
+          0,
+          254,
+          71,
+          241,
+          71,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          34,
+          0,
+          67,
+          254,
+          71,
+          164,
+          14,
+          11,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          254,
+          85,
+          241,
+          85,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          36,
+          0,
+          83,
+          254,
+          85,
+          62,
+          205,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          14,
+          108,
+          1,
+          108,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          40,
+          16,
+          105,
+          14,
+          108,
+          10,
+          245,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          46,
+          112,
+          33,
+          112,
+          0,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          42,
+          48,
+          109,
+          46,
+          112,
+          58,
+          238,
+          7,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          78,
+          116,
+          43,
+          116,
+          0,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          46,
+          80,
+          113,
+          78,
+          116,
+          222,
+          145,
+          9,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          110,
+          120,
+          75,
+          120,
+          0,
+          5,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          87,
+          112,
+          117,
+          110,
+          120,
+          222,
+          145,
+          9,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          142,
+          124,
+          107,
+          124,
+          0,
+          6,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          89,
+          144,
+          121,
+          142,
+          124,
+          222,
+          145,
+          9,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          174,
+          128,
+          157,
+          128,
+          0,
+          7,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          91,
+          176,
+          125,
+          174,
+          128,
+          164,
+          14,
+          11,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          206,
+          130,
+          189,
+          130,
+          3,
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          93,
+          208,
+          129,
+          206,
+          130,
+          164,
+          14,
+          11,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "ready_queue": [
+        67,
+        2,
+        15,
+        0,
+        0,
+        0,
+        64,
+        2,
+        15
+      ],
+      "live_tasks": 0,
+      "idle_runs": 9432,
+      "created": 8,
+      "signal_nmi_checkpoints": 0,
+      "wake_queue": [
+        76,
+        2,
+        15,
+        0,
+        0,
+        0,
+        73,
+        2,
+        15
+      ],
+      "root_task": [
+        164,
+        8,
+        1,
+        64,
+        2,
+        15,
+        1,
+        0,
+        80,
+        140,
+        0,
+        0,
+        6,
+        255,
+        255,
+        0,
+        255,
+        255,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        241,
+        71,
+        0,
+        0,
+        0,
+        66,
+        0,
+        0,
+        0,
+        72,
+        0,
+        202,
+        2,
+        15,
+        0,
+        0,
+        0,
+        199,
+        2,
+        15,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 582,
+          "untouched_above_floor": 698
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 175,
+          "untouched_above_floor": 593
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 134,
+          "untouched_above_floor": 634
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 233,
+          "untouched_above_floor": 535
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 331,
+          "untouched_above_floor": 437
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 385,
+          "untouched_above_floor": 383
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 387,
+          "untouched_above_floor": 381
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 52,
+          "untouched_above_floor": 204
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 347,
+        "untouched_from_base": 1189,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "baseline_memory": [
+      186440,
+      65536,
+      186440,
+      186400
+    ],
+    "baseline_ownership": {
+      "live": 5,
+      "processes": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "objects": [
+        2,
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "observations": [
+      {
+        "stage": "startup",
+        "prime_frames": 1,
+        "prime_count": 26,
+        "guest_frame": 324
+      },
+      {
+        "stage": "HELLO",
+        "prime_frames": 5,
+        "prime_count": 95,
+        "guest_frame": 556
+      },
+      {
+        "stage": "CAT STORY.TXT | WC",
+        "prime_frames": 26,
+        "prime_count": 378,
+        "guest_frame": 1721
+      },
+      {
+        "stage": "MEM",
+        "prime_frames": 26,
+        "prime_count": 378,
+        "guest_frame": 1758
+      },
+      {
+        "stage": "break-loading",
+        "prime_frames": 29,
+        "prime_count": 419,
+        "guest_frame": 1892
+      },
+      {
+        "stage": "HELLO",
+        "prime_frames": 33,
+        "prime_count": 464,
+        "guest_frame": 2133
+      },
+      {
+        "stage": "MEM",
+        "prime_frames": 34,
+        "prime_count": 478,
+        "guest_frame": 2189
+      }
+    ]
+  },
+  "diagnostic_image": {
+    "manifest": {
+      "path": "build/development/sio-hot-path/measurement/bundle/demo-manifest.json",
+      "sha256": "0b39b8c4fc8cf3c93d167765ac3ddda42c017e76ba3e37d1b1ec4364b48d7ca8"
+    },
+    "xex": {
+      "path": "build/development/sio-hot-path/measurement/bundle/program.xex",
+      "sha256": "a21b7827fb8fafdce87e846e8b71cb3848d96e2b26f175136074046171ece0af"
+    },
+    "observer": {
+      "loadprobe.act": "ad0280e3fb30ef8763e8bbbe6d96dec6732458055c0858affa824bcb8f8b2da3",
+      "programfile.act": "08c1831e919c212231fbd8ac7ba494dbcc3f6ab72a245de9931c04ac0563fc1a",
+      "blockwire.act": "f94f8c6c952310a80f42503216d9af4dd83ce30b01f43e2517b2f1d2725fe5ee"
+    },
+    "play_input_equality": {
+      "task_inputs": true,
+      "console_inputs": true,
+      "platform_inputs": true,
+      "memory": true,
+      "task_storage": true
+    },
+    "scope": "Retained optimized diagnostic build, with bounded loader/sector observers; passive CPU markers add no guest instructions."
+  },
+  "profiles": {
+    "stopped": {
+      "analysis": {
+        "path": "build/development/sio-hot-path/profile/path-analysis.json",
+        "sha256": "1b4f2dcccaa40e6902966e76bc88ea2e5ec59c14ca6f2fab66393452cb60876a"
+      },
+      "measurement": {
+        "path": "build/development/sio-hot-path/profile/results.json",
+        "sha256": "6d61ca2ad8dea37e0888f8c0458974809c90d508af23841035d8f9c5a475c34f"
+      },
+      "prior_measurement": {
+        "path": "build/development/sio-hot-path/measurement/results.json",
+        "sha256": "d3f37059527a02f5fd776c3f166a4f0a9de00ff6bf030fec0dc8d1c287c7660c"
+      },
+      "marker_addresses": {
+        "fs_worker": 524288,
+        "fs_begin": 506018,
+        "fs_complete": 506771,
+        "fs_checkpoint": 520846,
+        "fs_pump": 282744,
+        "fs_file_step": 519974,
+        "sdfs_consume": 434069,
+        "sdfs_drive": 435439,
+        "sdfs_continue": 438289,
+        "fs_reply": 369722,
+        "blockwire": 292830,
+        "block_begin": 303955,
+        "block_finish": 304654,
+        "block_prepare": 301926,
+        "driver_worker": 259338,
+        "driver_request": 257867,
+        "driver_validate": 254132,
+        "driver_prepare": 255963,
+        "driver_deadline": 255445,
+        "io_wait": 262980,
+        "sio_finish_policy": 154475,
+        "sio_take_policy": 153917,
+        "sio_enqueue_policy": 151006,
+        "io_complete_policy": 137963,
+        "dos_call": 288178,
+        "sio_start": 991263,
+        "sio_terminal": 993454,
+        "signal_post": 987542,
+        "sio_retire": 991609,
+        "sio_recovered": 991691,
+        "io_send_io": 990628,
+        "io_wait_io": 990811,
+        "io_check_io": 990646,
+        "io_collect": 990700,
+        "tasks_wait": 987196,
+        "sio_control": 990772,
+        "tasks_forbid": 15121,
+        "tasks_permit": 15130,
+        "dos_submit": 289923,
+        "dos_dispatch": 517811,
+        "dos_collect": 290077,
+        "fs_worker_before_blockwire": 525484,
+        "fs_worker_after_blockwire": 525488,
+        "fs_worker_before_fs_begin": 525221,
+        "fs_worker_after_fs_begin": 525225,
+        "fs_worker_before_fs_complete": 525597,
+        "fs_worker_after_fs_complete": 525601,
+        "fs_worker_before_fs_pump": 524699,
+        "fs_worker_after_fs_pump": 524703,
+        "fs_worker_before_fs_checkpoint0": 524823,
+        "fs_worker_after_fs_checkpoint0": 524827,
+        "fs_worker_before_fs_checkpoint1": 525111,
+        "fs_worker_after_fs_checkpoint1": 525115,
+        "driver_worker_before_driver_request": 260088,
+        "driver_worker_after_driver_request": 260092,
+        "driver_worker_before_sio_control0": 259550,
+        "driver_worker_after_sio_control0": 259554,
+        "driver_worker_before_sio_control1": 259684,
+        "driver_worker_after_sio_control1": 259688,
+        "driver_worker_before_sio_control2": 259811,
+        "driver_worker_after_sio_control2": 259815,
+        "driver_worker_before_sio_control3": 259900,
+        "driver_worker_after_sio_control3": 259904,
+        "driver_worker_before_sio_control4": 260482,
+        "driver_worker_after_sio_control4": 260486,
+        "driver_worker_before_tasks_wait": 260010,
+        "driver_worker_after_tasks_wait": 260014,
+        "driver_request_before_driver_validate": 258164,
+        "driver_request_after_driver_validate": 258168,
+        "driver_request_before_driver_prepare": 258378,
+        "driver_request_after_driver_prepare": 258382,
+        "driver_request_before_sio_start": 258505,
+        "driver_request_after_sio_start": 258509,
+        "driver_request_before_sio_retire": 259003,
+        "driver_request_after_sio_retire": 259007,
+        "driver_request_before_sio_recovered": 259313,
+        "driver_request_after_sio_recovered": 259317,
+        "driver_request_before_sio_control0": 258073,
+        "driver_request_after_sio_control0": 258077,
+        "driver_request_before_sio_control1": 258295,
+        "driver_request_after_sio_control1": 258299,
+        "driver_request_before_sio_control2": 258447,
+        "driver_request_after_sio_control2": 258451,
+        "driver_request_before_sio_control3": 258835,
+        "driver_request_after_sio_control3": 258839,
+        "driver_request_before_sio_control4": 259177,
+        "driver_request_after_sio_control4": 259181,
+        "driver_request_before_tasks_wait": 258943,
+        "driver_request_after_tasks_wait": 258947,
+        "sdfs_continue_before_sdfs_consume": 438915,
+        "sdfs_continue_after_sdfs_consume": 438919,
+        "sdfs_continue_before_sdfs_drive": 439010,
+        "sdfs_continue_after_sdfs_drive": 439014,
+        "driver_prepare_before_driver_deadline": 256449,
+        "driver_prepare_after_driver_deadline": 256453,
+        "blockwire_before_io_wait_io": 294260,
+        "blockwire_after_io_wait_io": 294264,
+        "blockwire_before_io_send_io": 293711,
+        "blockwire_after_io_send_io": 293715,
+        "blockwire_before_io_check_io": 293790,
+        "blockwire_after_io_check_io": 293794,
+        "blockwire_before_tasks_wait": 294173,
+        "blockwire_after_tasks_wait": 294177,
+        "blockwire_before_fs_pump": 293893,
+        "blockwire_after_fs_pump": 293897,
+        "io_wait_before_io_collect0": 263067,
+        "io_wait_after_io_collect0": 263071,
+        "io_wait_before_io_collect1": 263407,
+        "io_wait_after_io_collect1": 263411,
+        "io_wait_before_tasks_wait": 263331,
+        "io_wait_after_tasks_wait": 263335,
+        "fs_pump_before_tasks_forbid": 282872,
+        "fs_pump_after_tasks_forbid": 282876,
+        "fs_pump_before_tasks_permit0": 282977,
+        "fs_pump_after_tasks_permit0": 282981,
+        "fs_pump_before_tasks_permit1": 283841,
+        "fs_pump_after_tasks_permit1": 283845
+      },
+      "trace_sha256": "0e9845194658be97ae201998f72d85970b892d6cf96435fce5b4c51e3335ccdf",
+      "same_as_run_without_cpu_markers": {
+        "xex": true,
+        "relative_samples": true,
+        "hardware_gap_ticks": true
+      },
+      "gaps": {
+        "count": 18,
+        "mean_ms": 17.696824342919026,
+        "min_ms": 16.907182197386728,
+        "max_ms": 19.3842783617784,
+        "sum_ms": 318.5428381725425
+      },
+      "read_boundary_gaps": {
+        "count": 0,
+        "mean_ms": null,
+        "min_ms": null,
+        "max_ms": null,
+        "sum_ms": 0
+      },
+      "phases": {
+        "completion_to_worker": {
+          "count": 18,
+          "mean_ms": 1.032742096334337,
+          "min_ms": 0.8641360965013061,
+          "max_ms": 1.1267601662862872,
+          "sum_ms": 18.589357734018066
+        },
+        "retire_reply_collect": {
+          "count": 18,
+          "mean_ms": 4.8641096257744065,
+          "min_ms": 3.773370793327685,
+          "max_ms": 7.264311461151233,
+          "sum_ms": 87.55397326393931
+        },
+        "finish_cache_and_first_checkpoint": {
+          "count": 18,
+          "mean_ms": 0.4818729558607677,
+          "min_ms": 0.46836740303843216,
+          "max_ms": 0.4934597725616349,
+          "sum_ms": 8.673713205493819
+        },
+        "consume_inclusive": {
+          "count": 18,
+          "mean_ms": 3.3523452672454828,
+          "min_ms": 3.288298638668469,
+          "max_ms": 3.3667475355205045,
+          "sum_ms": 60.34221481041869
+        },
+        "next_step_or_dos_packet_roundtrip": {
+          "count": 18,
+          "mean_ms": 0.23467709080759366,
+          "min_ms": 0.23309119666638003,
+          "max_ms": 0.23717927934150856,
+          "sum_ms": 4.224187634536686
+        },
+        "map_lookup_and_block_prepare": {
+          "count": 18,
+          "mean_ms": 1.0999565974057748,
+          "min_ms": 1.0991303661371425,
+          "max_ms": 1.1018792493152463,
+          "sum_ms": 19.799218753303947
+        },
+        "blockwire_before_send": {
+          "count": 18,
+          "mean_ms": 0.21577558211712874,
+          "min_ms": 0.21349659349938468,
+          "max_ms": 0.21765516035856713,
+          "sum_ms": 3.8839604781083175
+        },
+        "send_to_driver_request": {
+          "count": 18,
+          "mean_ms": 4.72936736059129,
+          "min_ms": 3.9154669083804285,
+          "max_ms": 5.144288173176821,
+          "sum_ms": 85.12861249064322
+        },
+        "driver_validate_prepare_start": {
+          "count": 18,
+          "mean_ms": 1.685977766782245,
+          "min_ms": 1.620219938847922,
+          "max_ms": 1.7123427674064218,
+          "sum_ms": 30.34759980208041
+        }
+      },
+      "empty_pumps": {
+        "count": 48,
+        "mean_ms": 0.010215801426317948,
+        "min_ms": 0.009726817399443739,
+        "max_ms": 0.011136501080522542,
+        "sum_ms": 0.49035846846326153
+      },
+      "calls_overlapping_gaps": {
+        "blockwire_before_fs_pump": {
+          "elapsed": {
+            "count": 12,
+            "mean_ms": 0.01019671195980334,
+            "min_ms": 0.009726817399443739,
+            "max_ms": 0.0107135959761989,
+            "sum_ms": 0.12236054351764007
+          },
+          "in_gaps": {
+            "count": 12,
+            "mean_ms": 0.01019671195980334,
+            "min_ms": 0.009726817399443739,
+            "max_ms": 0.0107135959761989,
+            "sum_ms": 0.12236054351764007
+          }
+        },
+        "blockwire_before_io_check_io": {
+          "elapsed": {
+            "count": 30,
+            "mean_ms": 1.3642566244560383,
+            "min_ms": 0.8515899117397047,
+            "max_ms": 3.8130533889500535,
+            "sum_ms": 40.92769873368115
+          },
+          "in_gaps": {
+            "count": 30,
+            "mean_ms": 1.3642566244560383,
+            "min_ms": 0.8515899117397047,
+            "max_ms": 3.8130533889500535,
+            "sum_ms": 40.92769873368115
+          }
+        },
+        "blockwire_before_io_send_io": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 3.2676663516806794,
+            "min_ms": 1.4676921645551955,
+            "max_ms": 6.860437086522156,
+            "sum_ms": 58.81799433025223
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 2.863380819311288,
+            "min_ms": 1.4676921645551955,
+            "max_ms": 5.629148875283875,
+            "sum_ms": 51.540854747603184
+          }
+        },
+        "blockwire_before_io_wait_io": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 1.0640449056302923,
+            "min_ms": 1.0453509337039861,
+            "max_ms": 1.101103923290653,
+            "sum_ms": 19.15280830134526
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 1.0640449056302923,
+            "min_ms": 1.0453509337039861,
+            "max_ms": 1.101103923290653,
+            "sum_ms": 19.15280830134526
+          }
+        },
+        "blockwire_before_tasks_wait": {
+          "elapsed": {
+            "count": 19,
+            "mean_ms": 102.55458796021813,
+            "min_ms": 74.3082329756026,
+            "max_ms": 220.90962658888972,
+            "sum_ms": 1948.5371712441445
+          },
+          "in_gaps": {
+            "count": 19,
+            "mean_ms": 5.536985240092502,
+            "min_ms": 2.8318430627351527,
+            "max_ms": 7.404786439970735,
+            "sum_ms": 105.20271956175753
+          }
+        },
+        "driver_prepare_before_driver_deadline": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.31782493326322503,
+            "min_ms": 0.30554893787383053,
+            "max_ms": 0.3221127211265064,
+            "sum_ms": 5.720848798738051
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.31782493326322503,
+            "min_ms": 0.30554893787383053,
+            "max_ms": 0.3221127211265064,
+            "sum_ms": 5.720848798738051
+          }
+        },
+        "driver_request_before_driver_prepare": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.49762225520882036,
+            "min_ms": 0.4779532520697681,
+            "max_ms": 0.5034685266972944,
+            "sum_ms": 8.957200593758767
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.49762225520882036,
+            "min_ms": 0.4779532520697681,
+            "max_ms": 0.5034685266972944,
+            "sum_ms": 8.957200593758767
+          }
+        },
+        "driver_request_before_driver_validate": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.26732301538857695,
+            "min_ms": 0.2565624299563421,
+            "max_ms": 0.27143459279172344,
+            "sum_ms": 4.811814276994385
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.26732301538857695,
+            "min_ms": 0.2565624299563421,
+            "max_ms": 0.27143459279172344,
+            "sum_ms": 4.811814276994385
+          }
+        },
+        "driver_request_before_sio_control2": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.8333580027977523,
+            "min_ms": 0.8039426033192413,
+            "max_ms": 0.8469379555921447,
+            "sum_ms": 15.00044405035954
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.8333580027977523,
+            "min_ms": 0.8039426033192413,
+            "max_ms": 0.8469379555921447,
+            "sum_ms": 15.00044405035954
+          }
+        },
+        "driver_request_before_sio_control4": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 9.380747887314898,
+            "min_ms": 2.782504133897395,
+            "max_ms": 12.661003497425213,
+            "sum_ms": 168.85346197166817
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 9.380747887314898,
+            "min_ms": 2.782504133897395,
+            "max_ms": 12.661003497425213,
+            "sum_ms": 168.85346197166817
+          }
+        },
+        "driver_request_before_sio_recovered": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.01740176188531722,
+            "min_ms": 0.01677523580483775,
+            "max_ms": 0.019171698062671716,
+            "sum_ms": 0.31323171393571
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.01740176188531722,
+            "min_ms": 0.01677523580483775,
+            "max_ms": 0.019171698062671716,
+            "sum_ms": 0.31323171393571
+          }
+        },
+        "driver_request_before_sio_retire": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.018631319318258177,
+            "min_ms": 0.018043951117808675,
+            "max_ms": 0.020158476639426878,
+            "sum_ms": 0.3353637477286472
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.018631319318258177,
+            "min_ms": 0.018043951117808675,
+            "max_ms": 0.020158476639426878,
+            "sum_ms": 0.3353637477286472
+          }
+        },
+        "driver_request_before_sio_start": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.059954630113882086,
+            "min_ms": 0.053356527328832684,
+            "max_ms": 0.06639610137881162,
+            "sum_ms": 1.0791833420498775
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.04591261433513601,
+            "min_ms": 0.040669374199123455,
+            "max_ms": 0.050466675782621144,
+            "sum_ms": 0.8264270580324481
+          }
+        },
+        "driver_request_before_tasks_wait": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 98.9410338714096,
+            "min_ms": 74.91580664214757,
+            "max_ms": 213.6994469810919,
+            "sum_ms": 1780.9386096853727
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 1.0236065629233455,
+            "min_ms": 0.8543387949178084,
+            "max_ms": 1.1175972223592747,
+            "sum_ms": 18.42491813262022
+          }
+        },
+        "driver_worker_before_driver_request": {
+          "elapsed": {
+            "count": 19,
+            "mean_ms": 109.97599011915611,
+            "min_ms": 87.26815989760057,
+            "max_ms": 219.1611959192477,
+            "sum_ms": 2089.543812263966
+          },
+          "in_gaps": {
+            "count": 19,
+            "mean_ms": 11.51659260757426,
+            "min_ms": 1.6408013205916725,
+            "max_ms": 15.453939290562591,
+            "sum_ms": 218.81525954391094
+          }
+        },
+        "driver_worker_before_sio_control2": {
+          "elapsed": {
+            "count": 24,
+            "mean_ms": 0.8318631507276083,
+            "min_ms": 0.7963303114414156,
+            "max_ms": 0.9017746507861102,
+            "sum_ms": 19.9647156174626
+          },
+          "in_gaps": {
+            "count": 24,
+            "mean_ms": 0.8318631507276083,
+            "min_ms": 0.7963303114414156,
+            "max_ms": 0.9017746507861102,
+            "sum_ms": 19.9647156174626
+          }
+        },
+        "driver_worker_before_sio_control3": {
+          "elapsed": {
+            "count": 24,
+            "mean_ms": 0.9083972272461782,
+            "min_ms": 0.8634312546607666,
+            "max_ms": 0.94434709795469,
+            "sum_ms": 21.801533453908277
+          },
+          "in_gaps": {
+            "count": 24,
+            "mean_ms": 0.9083972272461782,
+            "min_ms": 0.8634312546607666,
+            "max_ms": 0.94434709795469,
+            "sum_ms": 21.801533453908277
+          }
+        },
+        "driver_worker_before_tasks_wait": {
+          "elapsed": {
+            "count": 6,
+            "mean_ms": 9.543946183915791,
+            "min_ms": 9.36586789290351,
+            "max_ms": 10.227959948067253,
+            "sum_ms": 57.26367710349474
+          },
+          "in_gaps": {
+            "count": 6,
+            "mean_ms": 9.543946183915791,
+            "min_ms": 9.36586789290351,
+            "max_ms": 10.227959948067253,
+            "sum_ms": 57.26367710349474
+          }
+        },
+        "fs_worker_before_blockwire": {
+          "elapsed": {
+            "count": 19,
+            "mean_ms": 110.2269620404088,
+            "min_ms": 84.75476437842113,
+            "max_ms": 228.91261229892623,
+            "sum_ms": 2094.312278767767
+          },
+          "in_gaps": {
+            "count": 19,
+            "mean_ms": 11.869173044681556,
+            "min_ms": 4.956659275225232,
+            "max_ms": 15.33764038687359,
+            "sum_ms": 225.51428784894958
+          }
+        },
+        "fs_worker_before_fs_begin": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.43600733098166766,
+            "min_ms": 0.43397112122010945,
+            "max_ms": 0.4372133936865906,
+            "sum_ms": 7.848131957670018
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.43600733098166766,
+            "min_ms": 0.43397112122010945,
+            "max_ms": 0.4372133936865906,
+            "sum_ms": 7.848131957670018
+          }
+        },
+        "fs_worker_before_fs_checkpoint0": {
+          "elapsed": {
+            "count": 36,
+            "mean_ms": 0.06270938697399024,
+            "min_ms": 0.06026397736611882,
+            "max_ms": 0.06407012330503158,
+            "sum_ms": 2.2575379310636485
+          },
+          "in_gaps": {
+            "count": 36,
+            "mean_ms": 0.06270938697399024,
+            "min_ms": 0.06026397736611882,
+            "max_ms": 0.06407012330503158,
+            "sum_ms": 2.2575379310636485
+          }
+        },
+        "fs_worker_before_fs_checkpoint1": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.06367854450473191,
+            "min_ms": 0.06308334472827642,
+            "max_ms": 0.06555029117016432,
+            "sum_ms": 1.1462138010851743
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.06367854450473191,
+            "min_ms": 0.06308334472827642,
+            "max_ms": 0.06555029117016432,
+            "sum_ms": 1.1462138010851743
+          }
+        },
+        "fs_worker_before_fs_complete": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.28777517612822856,
+            "min_ms": 0.28017463161441203,
+            "max_ms": 0.29645647813087217,
+            "sum_ms": 5.1799531703081145
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.28777517612822856,
+            "min_ms": 0.28017463161441203,
+            "max_ms": 0.29645647813087217,
+            "sum_ms": 5.1799531703081145
+          }
+        },
+        "fs_worker_before_fs_pump": {
+          "elapsed": {
+            "count": 36,
+            "mean_ms": 0.010222164581822818,
+            "min_ms": 0.009726817399443739,
+            "max_ms": 0.011136501080522542,
+            "sum_ms": 0.36799792494562145
+          },
+          "in_gaps": {
+            "count": 36,
+            "mean_ms": 0.010222164581822818,
+            "min_ms": 0.009726817399443739,
+            "max_ms": 0.011136501080522542,
+            "sum_ms": 0.36799792494562145
+          }
+        },
+        "io_wait_before_io_collect0": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 1.0291826450396127,
+            "min_ms": 1.011166104437825,
+            "max_ms": 1.064311179214496,
+            "sum_ms": 18.52528761071303
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 1.0291826450396127,
+            "min_ms": 1.011166104437825,
+            "max_ms": 1.064311179214496,
+            "sum_ms": 18.52528761071303
+          }
+        },
+        "sdfs_continue_before_sdfs_consume": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 3.3529326354459323,
+            "min_ms": 3.2888625121409008,
+            "max_ms": 3.367311408992936,
+            "sum_ms": 60.35278743802678
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 3.3529326354459323,
+            "min_ms": 3.2888625121409008,
+            "max_ms": 3.367311408992936,
+            "sum_ms": 60.35278743802678
+          }
+        },
+        "sdfs_continue_before_sdfs_drive": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.45547271314456417,
+            "min_ms": 0.45412959785953627,
+            "max_ms": 0.4561736391971006,
+            "sum_ms": 8.198508836602155
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.45547271314456417,
+            "min_ms": 0.45412959785953627,
+            "max_ms": 0.4561736391971006,
+            "sum_ms": 8.198508836602155
+          }
+        }
+      },
+      "gap_ticks": [
+        30379,
+        30547,
+        30096,
+        34377,
+        33589,
+        33591,
+        33596,
+        33619,
+        33392,
+        29984,
+        30242,
+        30253,
+        30022,
+        30270,
+        30070,
+        30296,
+        30295,
+        30301
+      ],
+      "prime_worker": {
+        "mode": "stopped",
+        "before": {
+          "live_tasks": 5,
+          "frames": 1,
+          "pass_number": 1,
+          "candidate": 102,
+          "count": 26
+        },
+        "stopped": {
+          "live_tasks": 4,
+          "frames": 1,
+          "pass_number": 1,
+          "candidate": 102,
+          "count": 26
+        },
+        "stop_flag_address": 36074,
+        "after_commands": {
+          "live_tasks": 4,
+          "frames": 1,
+          "pass_number": 1,
+          "candidate": 102,
+          "count": 26
+        }
+      },
+      "loader_samples": [
+        {
+          "phase": "open",
+          "frame": 353,
+          "transfers": 1,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 0,
+            "map": 0,
+            "data": 0
+          }
+        },
+        {
+          "phase": "seek_end",
+          "frame": 385,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "rewind",
+          "frame": 386,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "payload",
+          "frame": 387,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "close",
+          "frame": 510,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "relocate",
+          "frame": 512,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "loaded",
+          "frame": 546,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "returned",
+          "frame": 546,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "prompt",
+          "frame": 558,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        }
+      ],
+      "interpretation": "Wall-clock intervals include preemption and other system workers; consume is not exclusive copy CPU time. Call and Pump totals overlap phase totals; nested or suspended call durations are not additive. Read boundaries are observed DOS submissions, not inferred from sector count."
+    },
+    "active": {
+      "analysis": {
+        "path": "build/development/sio-hot-path/profile-active/path-analysis.json",
+        "sha256": "f8743aaa836a6dbe66e58c48f064ff41bf5a2f3356d6eeb61783fd1e04cee351"
+      },
+      "measurement": {
+        "path": "build/development/sio-hot-path/profile-active/results.json",
+        "sha256": "d536d6e5a3a8076ee479fc2464dcf3201b9d8d21acd3f10b3bf9c1abb7e85ee6"
+      },
+      "prior_measurement": {
+        "path": "build/development/sio-hot-path/measurement-active/results.json",
+        "sha256": "227a1c848905f5db544fdeeacc590371ad047e81f0e41f0ca71464497b1a980f"
+      },
+      "marker_addresses": {
+        "fs_worker": 524288,
+        "fs_begin": 506018,
+        "fs_complete": 506771,
+        "fs_checkpoint": 520846,
+        "fs_pump": 282744,
+        "fs_file_step": 519974,
+        "sdfs_consume": 434069,
+        "sdfs_drive": 435439,
+        "sdfs_continue": 438289,
+        "fs_reply": 369722,
+        "blockwire": 292830,
+        "block_begin": 303955,
+        "block_finish": 304654,
+        "block_prepare": 301926,
+        "driver_worker": 259338,
+        "driver_request": 257867,
+        "driver_validate": 254132,
+        "driver_prepare": 255963,
+        "driver_deadline": 255445,
+        "io_wait": 262980,
+        "sio_finish_policy": 154475,
+        "sio_take_policy": 153917,
+        "sio_enqueue_policy": 151006,
+        "io_complete_policy": 137963,
+        "dos_call": 288178,
+        "sio_start": 991263,
+        "sio_terminal": 993454,
+        "signal_post": 987542,
+        "sio_retire": 991609,
+        "sio_recovered": 991691,
+        "io_send_io": 990628,
+        "io_wait_io": 990811,
+        "io_check_io": 990646,
+        "io_collect": 990700,
+        "tasks_wait": 987196,
+        "sio_control": 990772,
+        "tasks_forbid": 15121,
+        "tasks_permit": 15130,
+        "dos_submit": 289923,
+        "dos_dispatch": 517811,
+        "dos_collect": 290077,
+        "fs_worker_before_blockwire": 525484,
+        "fs_worker_after_blockwire": 525488,
+        "fs_worker_before_fs_begin": 525221,
+        "fs_worker_after_fs_begin": 525225,
+        "fs_worker_before_fs_complete": 525597,
+        "fs_worker_after_fs_complete": 525601,
+        "fs_worker_before_fs_pump": 524699,
+        "fs_worker_after_fs_pump": 524703,
+        "fs_worker_before_fs_checkpoint0": 524823,
+        "fs_worker_after_fs_checkpoint0": 524827,
+        "fs_worker_before_fs_checkpoint1": 525111,
+        "fs_worker_after_fs_checkpoint1": 525115,
+        "driver_worker_before_driver_request": 260088,
+        "driver_worker_after_driver_request": 260092,
+        "driver_worker_before_sio_control0": 259550,
+        "driver_worker_after_sio_control0": 259554,
+        "driver_worker_before_sio_control1": 259684,
+        "driver_worker_after_sio_control1": 259688,
+        "driver_worker_before_sio_control2": 259811,
+        "driver_worker_after_sio_control2": 259815,
+        "driver_worker_before_sio_control3": 259900,
+        "driver_worker_after_sio_control3": 259904,
+        "driver_worker_before_sio_control4": 260482,
+        "driver_worker_after_sio_control4": 260486,
+        "driver_worker_before_tasks_wait": 260010,
+        "driver_worker_after_tasks_wait": 260014,
+        "driver_request_before_driver_validate": 258164,
+        "driver_request_after_driver_validate": 258168,
+        "driver_request_before_driver_prepare": 258378,
+        "driver_request_after_driver_prepare": 258382,
+        "driver_request_before_sio_start": 258505,
+        "driver_request_after_sio_start": 258509,
+        "driver_request_before_sio_retire": 259003,
+        "driver_request_after_sio_retire": 259007,
+        "driver_request_before_sio_recovered": 259313,
+        "driver_request_after_sio_recovered": 259317,
+        "driver_request_before_sio_control0": 258073,
+        "driver_request_after_sio_control0": 258077,
+        "driver_request_before_sio_control1": 258295,
+        "driver_request_after_sio_control1": 258299,
+        "driver_request_before_sio_control2": 258447,
+        "driver_request_after_sio_control2": 258451,
+        "driver_request_before_sio_control3": 258835,
+        "driver_request_after_sio_control3": 258839,
+        "driver_request_before_sio_control4": 259177,
+        "driver_request_after_sio_control4": 259181,
+        "driver_request_before_tasks_wait": 258943,
+        "driver_request_after_tasks_wait": 258947,
+        "sdfs_continue_before_sdfs_consume": 438915,
+        "sdfs_continue_after_sdfs_consume": 438919,
+        "sdfs_continue_before_sdfs_drive": 439010,
+        "sdfs_continue_after_sdfs_drive": 439014,
+        "driver_prepare_before_driver_deadline": 256449,
+        "driver_prepare_after_driver_deadline": 256453,
+        "blockwire_before_io_wait_io": 294260,
+        "blockwire_after_io_wait_io": 294264,
+        "blockwire_before_io_send_io": 293711,
+        "blockwire_after_io_send_io": 293715,
+        "blockwire_before_io_check_io": 293790,
+        "blockwire_after_io_check_io": 293794,
+        "blockwire_before_tasks_wait": 294173,
+        "blockwire_after_tasks_wait": 294177,
+        "blockwire_before_fs_pump": 293893,
+        "blockwire_after_fs_pump": 293897,
+        "io_wait_before_io_collect0": 263067,
+        "io_wait_after_io_collect0": 263071,
+        "io_wait_before_io_collect1": 263407,
+        "io_wait_after_io_collect1": 263411,
+        "io_wait_before_tasks_wait": 263331,
+        "io_wait_after_tasks_wait": 263335,
+        "fs_pump_before_tasks_forbid": 282872,
+        "fs_pump_after_tasks_forbid": 282876,
+        "fs_pump_before_tasks_permit0": 282977,
+        "fs_pump_after_tasks_permit0": 282981,
+        "fs_pump_before_tasks_permit1": 283841,
+        "fs_pump_after_tasks_permit1": 283845
+      },
+      "trace_sha256": "98e85e774ad6110af284b63bbdbf6cfac92d20bf7cae71dbf8042e5113a66852",
+      "same_as_run_without_cpu_markers": {
+        "xex": true,
+        "relative_samples": true,
+        "hardware_gap_ticks": true
+      },
+      "gaps": {
+        "count": 18,
+        "mean_ms": 20.88364925127784,
+        "min_ms": 16.834442519443062,
+        "max_ms": 36.74312321058277,
+        "sum_ms": 375.9056865230011
+      },
+      "read_boundary_gaps": {
+        "count": 0,
+        "mean_ms": null,
+        "min_ms": null,
+        "max_ms": null,
+        "sum_ms": 0
+      },
+      "phases": {
+        "completion_to_worker": {
+          "count": 18,
+          "mean_ms": 1.0921994213718385,
+          "min_ms": 0.8663211062069782,
+          "max_ms": 1.431745230687686,
+          "sum_ms": 19.65958958469309
+        },
+        "retire_reply_collect": {
+          "count": 18,
+          "mean_ms": 5.411219609765098,
+          "min_ms": 3.9652287423225103,
+          "max_ms": 16.383132288945685,
+          "sum_ms": 97.40195297577176
+        },
+        "finish_cache_and_first_checkpoint": {
+          "count": 18,
+          "mean_ms": 0.49142356280007665,
+          "min_ms": 0.48316908168975964,
+          "max_ms": 0.49367122511379674,
+          "sum_ms": 8.84562413040138
+        },
+        "consume_inclusive": {
+          "count": 18,
+          "mean_ms": 4.377059998173676,
+          "min_ms": 3.2988712662765605,
+          "max_ms": 7.984518853814392,
+          "sum_ms": 78.78707996712618
+        },
+        "next_step_or_dos_packet_roundtrip": {
+          "count": 18,
+          "mean_ms": 0.2298332610478868,
+          "min_ms": 0.22329389508288236,
+          "max_ms": 0.23732024770961646,
+          "sum_ms": 4.136998698861962
+        },
+        "map_lookup_and_block_prepare": {
+          "count": 18,
+          "mean_ms": 2.2315057724197267,
+          "min_ms": 1.0461262597285794,
+          "max_ms": 7.72492560394373,
+          "sum_ms": 40.16710390355508
+        },
+        "blockwire_before_send": {
+          "count": 18,
+          "mean_ms": 0.473367864318259,
+          "min_ms": 0.20489752304480396,
+          "max_ms": 4.917892973995565,
+          "sum_ms": 8.520621557728662
+        },
+        "send_to_driver_request": {
+          "count": 18,
+          "mean_ms": 4.889433026789785,
+          "min_ms": 3.8449827243264885,
+          "max_ms": 11.8155457096982,
+          "sum_ms": 88.00979448221614
+        },
+        "driver_validate_prepare_start": {
+          "count": 18,
+          "mean_ms": 1.6876067345914916,
+          "min_ms": 1.6203609072160299,
+          "max_ms": 1.7433558083901555,
+          "sum_ms": 30.37692122264685
+        }
+      },
+      "empty_pumps": {
+        "count": 38,
+        "mean_ms": 0.010222061534770108,
+        "min_ms": 0.009726817399443739,
+        "max_ms": 0.011066016896468602,
+        "sum_ms": 0.38843833832126407
+      },
+      "calls_overlapping_gaps": {
+        "blockwire_before_fs_pump": {
+          "elapsed": {
+            "count": 2,
+            "mean_ms": 0.009762059491470708,
+            "min_ms": 0.009726817399443739,
+            "max_ms": 0.009797301583497679,
+            "sum_ms": 0.019524118982941416
+          },
+          "in_gaps": {
+            "count": 2,
+            "mean_ms": 0.009762059491470708,
+            "min_ms": 0.009726817399443739,
+            "max_ms": 0.009797301583497679,
+            "sum_ms": 0.019524118982941416
+          }
+        },
+        "blockwire_before_io_check_io": {
+          "elapsed": {
+            "count": 23,
+            "mean_ms": 2.3789545994209145,
+            "min_ms": 0.8934575170677451,
+            "max_ms": 8.373239128871873,
+            "sum_ms": 54.71595578668103
+          },
+          "in_gaps": {
+            "count": 23,
+            "mean_ms": 1.9590649923628853,
+            "min_ms": 0.8934575170677451,
+            "max_ms": 8.319036791334392,
+            "sum_ms": 45.05849482434636
+          }
+        },
+        "blockwire_before_io_send_io": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 6.006693491380802,
+            "min_ms": 1.4275866638285035,
+            "max_ms": 14.844180614311954,
+            "sum_ms": 108.12048284485444
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 5.093402508077879,
+            "min_ms": 1.4275866638285035,
+            "max_ms": 13.521615384723821,
+            "sum_ms": 91.68124514540182
+          }
+        },
+        "blockwire_before_io_wait_io": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 1.5576808886520621,
+            "min_ms": 1.0591658337785586,
+            "max_ms": 5.243388935956661,
+            "sum_ms": 28.038255995737117
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 1.5576808886520621,
+            "min_ms": 1.0591658337785586,
+            "max_ms": 5.243388935956661,
+            "sum_ms": 28.038255995737117
+          }
+        },
+        "blockwire_before_tasks_wait": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 97.22656091532954,
+            "min_ms": 77.190049324832,
+            "max_ms": 211.14566402444956,
+            "sum_ms": 1750.0780964759317
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 3.890429359889268,
+            "min_ms": 2.7366189300782797,
+            "max_ms": 8.369080562012691,
+            "sum_ms": 70.02772847800682
+          }
+        },
+        "driver_prepare_before_driver_deadline": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.3165757968902691,
+            "min_ms": 0.3053374853216687,
+            "max_ms": 0.3221127211265064,
+            "sum_ms": 5.698364344024844
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.3165757968902691,
+            "min_ms": 0.3053374853216687,
+            "max_ms": 0.3221127211265064,
+            "sum_ms": 5.698364344024844
+          }
+        },
+        "driver_request_before_driver_prepare": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.4958797295474868,
+            "min_ms": 0.4779532520697681,
+            "max_ms": 0.5033275583291865,
+            "sum_ms": 8.925835131854763
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.4958797295474868,
+            "min_ms": 0.4779532520697681,
+            "max_ms": 0.5033275583291865,
+            "sum_ms": 8.925835131854763
+          }
+        },
+        "driver_request_before_driver_validate": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.2659681527395401,
+            "min_ms": 0.2565624299563421,
+            "max_ms": 0.27150507697577736,
+            "sum_ms": 4.787426749311722
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.2659681527395401,
+            "min_ms": 0.2565624299563421,
+            "max_ms": 0.27150507697577736,
+            "sum_ms": 4.787426749311722
+          }
+        },
+        "driver_request_before_sio_control2": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.8340315183342677,
+            "min_ms": 0.8040835716873491,
+            "max_ms": 0.8469379555921447,
+            "sum_ms": 15.012567330016818
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.8340315183342677,
+            "min_ms": 0.8040835716873491,
+            "max_ms": 0.8469379555921447,
+            "sum_ms": 15.012567330016818
+          }
+        },
+        "driver_request_before_sio_control4": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 9.413730569664141,
+            "min_ms": 3.676102619333248,
+            "max_ms": 13.114216800892049,
+            "sum_ms": 169.44715025395453
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 9.413730569664141,
+            "min_ms": 3.676102619333248,
+            "max_ms": 13.114216800892049,
+            "sum_ms": 169.44715025395453
+          }
+        },
+        "driver_request_before_sio_recovered": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.016892709444927653,
+            "min_ms": 0.01677523580483775,
+            "max_ms": 0.017198140909161393,
+            "sum_ms": 0.30406877000869775
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.016892709444927653,
+            "min_ms": 0.01677523580483775,
+            "max_ms": 0.017198140909161393,
+            "sum_ms": 0.30406877000869775
+          }
+        },
+        "driver_request_before_sio_retire": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.022081128548898248,
+            "min_ms": 0.018537340406186258,
+            "max_ms": 0.04165615277587862,
+            "sum_ms": 0.39746031388016845
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.022081128548898248,
+            "min_ms": 0.018537340406186258,
+            "max_ms": 0.04165615277587862,
+            "sum_ms": 0.39746031388016845
+          }
+        },
+        "driver_request_before_sio_start": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.07148662578270729,
+            "min_ms": 0.05328604314477874,
+            "max_ms": 0.103611750559292,
+            "sum_ms": 1.286759264088731
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.049765749730084734,
+            "min_ms": 0.04081034256723134,
+            "max_ms": 0.08634312546607667,
+            "sum_ms": 0.8957834951415252
+          }
+        },
+        "driver_request_before_tasks_wait": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 96.13551273563058,
+            "min_ms": 71.10684133587264,
+            "max_ms": 211.59359101411235,
+            "sum_ms": 1730.4392292413504
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 1.0828289406806675,
+            "min_ms": 0.857299130648074,
+            "max_ms": 1.4226527709447276,
+            "sum_ms": 19.490920932252013
+          }
+        },
+        "driver_worker_before_driver_request": {
+          "elapsed": {
+            "count": 19,
+            "mean_ms": 106.67777917839332,
+            "min_ms": 77.60350954849243,
+            "max_ms": 226.50733951808556,
+            "sum_ms": 2026.877804389473
+          },
+          "in_gaps": {
+            "count": 19,
+            "mean_ms": 11.60863753256091,
+            "min_ms": 1.705787738289405,
+            "max_ms": 15.995892181753335,
+            "sum_ms": 220.5641131186573
+          }
+        },
+        "driver_worker_before_sio_control2": {
+          "elapsed": {
+            "count": 31,
+            "mean_ms": 0.8128986420608048,
+            "min_ms": 0.7963303114414156,
+            "max_ms": 0.8385503376897258,
+            "sum_ms": 25.199857903884947
+          },
+          "in_gaps": {
+            "count": 31,
+            "mean_ms": 0.8128986420608048,
+            "min_ms": 0.7963303114414156,
+            "max_ms": 0.8385503376897258,
+            "sum_ms": 25.199857903884947
+          }
+        },
+        "driver_worker_before_sio_control3": {
+          "elapsed": {
+            "count": 31,
+            "mean_ms": 0.8932392434655135,
+            "min_ms": 0.8634312546607666,
+            "max_ms": 0.9285586407266073,
+            "sum_ms": 27.69041654743092
+          },
+          "in_gaps": {
+            "count": 31,
+            "mean_ms": 0.8932392434655135,
+            "min_ms": 0.8634312546607666,
+            "max_ms": 0.9285586407266073,
+            "sum_ms": 27.69041654743092
+          }
+        },
+        "driver_worker_before_tasks_wait": {
+          "elapsed": {
+            "count": 13,
+            "mean_ms": 7.812222976824692,
+            "min_ms": 3.677018913725949,
+            "max_ms": 21.895629839620288,
+            "sum_ms": 101.558898698721
+          },
+          "in_gaps": {
+            "count": 13,
+            "mean_ms": 7.812222976824692,
+            "min_ms": 3.677018913725949,
+            "max_ms": 21.895629839620288,
+            "sum_ms": 101.558898698721
+          }
+        },
+        "fs_worker_before_blockwire": {
+          "elapsed": {
+            "count": 19,
+            "mean_ms": 108.1442768215135,
+            "min_ms": 88.38575711995986,
+            "max_ms": 221.436566348877,
+            "sum_ms": 2054.7412596087565
+          },
+          "in_gaps": {
+            "count": 19,
+            "mean_ms": 12.841016393805077,
+            "min_ms": 5.838486901924077,
+            "max_ms": 23.652800548085015,
+            "sum_ms": 243.97931148229648
+          }
+        },
+        "fs_worker_before_fs_begin": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.9496843170027743,
+            "min_ms": 0.41451748642122194,
+            "max_ms": 5.127371969003875,
+            "sum_ms": 17.09431770604994
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.9496843170027743,
+            "min_ms": 0.41451748642122194,
+            "max_ms": 5.127371969003875,
+            "sum_ms": 17.09431770604994
+          }
+        },
+        "fs_worker_before_fs_checkpoint0": {
+          "elapsed": {
+            "count": 36,
+            "mean_ms": 0.062478355481813436,
+            "min_ms": 0.06026397736611882,
+            "max_ms": 0.06357673401665401,
+            "sum_ms": 2.249220797345284
+          },
+          "in_gaps": {
+            "count": 36,
+            "mean_ms": 0.062478355481813436,
+            "min_ms": 0.06026397736611882,
+            "max_ms": 0.06357673401665401,
+            "sum_ms": 2.249220797345284
+          }
+        },
+        "fs_worker_before_fs_checkpoint1": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.06198692408743735,
+            "min_ms": 0.06033446155017276,
+            "max_ms": 0.06399963912097764,
+            "sum_ms": 1.1157646335738722
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.06198692408743735,
+            "min_ms": 0.06033446155017276,
+            "max_ms": 0.06399963912097764,
+            "sum_ms": 1.1157646335738722
+          }
+        },
+        "fs_worker_before_fs_complete": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.29429887894122103,
+            "min_ms": 0.288491765332777,
+            "max_ms": 0.29638599394681825,
+            "sum_ms": 5.297379820941979
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.29429887894122103,
+            "min_ms": 0.288491765332777,
+            "max_ms": 0.29638599394681825,
+            "sum_ms": 5.297379820941979
+          }
+        },
+        "fs_worker_before_fs_pump": {
+          "elapsed": {
+            "count": 36,
+            "mean_ms": 0.010247617203842298,
+            "min_ms": 0.009726817399443739,
+            "max_ms": 0.011066016896468602,
+            "sum_ms": 0.3689142193383227
+          },
+          "in_gaps": {
+            "count": 36,
+            "mean_ms": 0.010247617203842298,
+            "min_ms": 0.009726817399443739,
+            "max_ms": 0.011066016896468602,
+            "sum_ms": 0.3689142193383227
+          }
+        },
+        "io_wait_before_io_collect0": {
+          "elapsed": {
+            "count": 19,
+            "mean_ms": 1.4951068024582805,
+            "min_ms": 1.011448041174041,
+            "max_ms": 5.209627011794823,
+            "sum_ms": 28.40702924670733
+          },
+          "in_gaps": {
+            "count": 19,
+            "mean_ms": 1.4951068024582805,
+            "min_ms": 1.011448041174041,
+            "max_ms": 5.209627011794823,
+            "sum_ms": 28.40702924670733
+          }
+        },
+        "sdfs_continue_before_sdfs_consume": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 4.377659113738135,
+            "min_ms": 3.2995056239330456,
+            "max_ms": 7.985153211470878,
+            "sum_ms": 78.79786404728642
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 4.377659113738135,
+            "min_ms": 3.2995056239330456,
+            "max_ms": 7.985153211470878,
+            "sum_ms": 78.79786404728642
+          }
+        },
+        "sdfs_continue_before_sdfs_drive": {
+          "elapsed": {
+            "count": 18,
+            "mean_ms": 0.7071364923091574,
+            "min_ms": 0.4329843426433543,
+            "max_ms": 5.145979793594115,
+            "sum_ms": 12.728456861564833
+          },
+          "in_gaps": {
+            "count": 18,
+            "mean_ms": 0.7071364923091574,
+            "min_ms": 0.4329843426433543,
+            "max_ms": 5.145979793594115,
+            "sum_ms": 12.728456861564833
+          }
+        }
+      },
+      "gap_ticks": [
+        36210,
+        35462,
+        35529,
+        31242,
+        31231,
+        30338,
+        48842,
+        29855,
+        30195,
+        36441,
+        36654,
+        36229,
+        36675,
+        36694,
+        36457,
+        36679,
+        65162,
+        36754
+      ],
+      "prime_worker": {
+        "mode": "active",
+        "before": {
+          "live_tasks": 5,
+          "frames": 1,
+          "pass_number": 1,
+          "candidate": 102,
+          "count": 26
+        },
+        "after_commands": {
+          "live_tasks": 5,
+          "frames": 10,
+          "pass_number": 1,
+          "candidate": 1002,
+          "count": 168
+        }
+      },
+      "loader_samples": [
+        {
+          "phase": "open",
+          "frame": 347,
+          "transfers": 1,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 0,
+            "map": 0,
+            "data": 0
+          }
+        },
+        {
+          "phase": "seek_end",
+          "frame": 372,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "rewind",
+          "frame": 375,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "payload",
+          "frame": 377,
+          "transfers": 4,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 1,
+            "data": 0
+          }
+        },
+        {
+          "phase": "close",
+          "frame": 498,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "relocate",
+          "frame": 499,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "loaded",
+          "frame": 537,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "returned",
+          "frame": 538,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        },
+        {
+          "phase": "prompt",
+          "frame": 554,
+          "transfers": 24,
+          "reads_by_kind": {
+            "other": 1,
+            "directory": 2,
+            "map": 2,
+            "data": 19
+          }
+        }
+      ],
+      "interpretation": "Wall-clock intervals include preemption and other system workers; consume is not exclusive copy CPU time. Call and Pump totals overlap phase totals; nested or suspended call durations are not additive. Read boundaries are observed DOS submissions, not inferred from sector count."
+    }
+  },
+  "host_validation": {
+    "status": "pass",
+    "tests": 196,
+    "log": {
+      "path": "build/development/sio-hot-path/profile-host.log",
+      "sha256": "b59e5c31c61c130c11174c4af6afedb4a44150822050f824fd58bc5d08fded0e"
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "limits": [
+    "Consecutive phase intervals are elapsed times and include task suspension or interrupt work.",
+    "Call durations overlap phase intervals and may overlap one another; they are not additive CPU costs.",
+    "The profile uses the recorded diagnostic executable; the uninstrumented play image is separately rebuilt and smoke tested.",
+    "The emitted HELLO data layout is checked as sectors 70 through 88. This is a scoped 128-byte-sector diagnostic, not a general media profiler.",
+    "No full release or compiler qualification is claimed."
+  ]
+}

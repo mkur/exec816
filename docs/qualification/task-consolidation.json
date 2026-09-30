@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Single current Task implementation; removal of historical Task APIs and build branches",
+  "compiler_pin": "toolchain/actionc.json",
+  "platform_pin": "toolchain/altirra-1m.json",
+  "additional_platform_pin": "toolchain/altirra.json",
+  "package_tests": 44,
+  "emitted_cases": 28,
+  "suites": {
+    "core-abi": {
+      "report": "build/task-consolidation/core-abi/results.json",
+      "sha256": "a2afda7bad682faa866bcf410691bf56be67eaaef8fed83b0d98efc186159693",
+      "cases": 2
+    },
+    "signal-abi": {
+      "report": "build/task-consolidation/signal-abi/results.json",
+      "sha256": "d280c76bd6e57d40677cb5bf2ff21255da48af874536de693f2c8221f8be6da7",
+      "cases": 4
+    },
+    "core": {
+      "report": "build/task-consolidation/core/results.json",
+      "sha256": "6bab543acb4ee483f94f8ed454bc195727ef4a29b0e6d6988af8ff8b714b6348",
+      "cases": 6
+    },
+    "signals": {
+      "report": "build/task-consolidation/signals/results.json",
+      "sha256": "33ca14502c5b1edc1a98b4b93b9c6bf5c17787bae4c34e255ca07321bfcfbf94",
+      "cases": 10
+    },
+    "capacity": {
+      "report": "build/task-consolidation/capacity/results.json",
+      "sha256": "7608ae283c79d8a58ec7bf2b8bbe58c746a88b805f558b4b0343a8c3e7c02ff1",
+      "cases": 4
+    },
+    "platform": {
+      "report": "build/task-consolidation/platform/results.json",
+      "sha256": "885a01f87e6968e68e8354eae28b562df82da9ced8a3545f60d85d319fd645da",
+      "cases": 2
+    }
+  },
+  "cases": [
+    {
+      "name": "core-abi/abi-raw",
+      "status": "pass",
+      "xex_sha256": "133e646259b03311d63bc85d64583893d27912e62bd5178324941754af749dca",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "core-abi/abi-opt",
+      "status": "pass",
+      "xex_sha256": "6acf157a91067b70ca96741500dedb43110a0c8f9bc58cd4f1f0f7274a3e4ca3",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signal-abi/raw-native",
+      "status": "pass",
+      "xex_sha256": "55dba60b3c565f6706cfd5ab7da46d3e06591a74a91e91c4d91ca025de49df36",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signal-abi/raw-cop",
+      "status": "pass",
+      "xex_sha256": "cf12c9202eb197f4552ee4a427e97ff923908a727dd80c128445d09d9339d688",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signal-abi/opt-native",
+      "status": "pass",
+      "xex_sha256": "ed2f13c0964792e5bfb041b2cefc59959a15717f49282795546febba63319a85",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signal-abi/opt-cop",
+      "status": "pass",
+      "xex_sha256": "98477580d6104622b80c02b30cd40aafeb73c37c422fdd1acd5fb096886cf580",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "core/admission-raw",
+      "status": "pass",
+      "xex_sha256": "0b363ef45d7a30f6e126f04a687a0efe9901a5b7369cebfcc8b3ac9d8bf2b22f",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "core/far-raw",
+      "status": "pass",
+      "xex_sha256": "2f6188b15e6c518dbc4f4d70beeca1734c26524c7961a7b2593f4c63bf9eec59",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "core/fault-12-raw",
+      "status": "pass",
+      "xex_sha256": "d8421c4e49450ba9465e258f16746c458e87127175245721b48f14435ba4cb32",
+      "guards": "intact",
+      "expected_guest_status": 4
+    },
+    {
+      "name": "core/admission-opt",
+      "status": "pass",
+      "xex_sha256": "5f758df8035e40c9ef6485a12a80c744986db621fae03dd9f1d29f580dd00709",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "core/far-opt",
+      "status": "pass",
+      "xex_sha256": "9ffff6260e5a71cb5f55e3cee4384ffe0b72c889d589f21441a186db9f586e41",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "core/fault-12-opt",
+      "status": "pass",
+      "xex_sha256": "c93fe5fa21653530ae45e05deaee8519b9bf0590bf392aa2e0cf19924299c6dd",
+      "guards": "intact",
+      "expected_guest_status": 4
+    },
+    {
+      "name": "signals/core-raw",
+      "status": "pass",
+      "xex_sha256": "f7a097018b7d3d42167fb41d35b612ce25210f1bcd870800c3f2b73266baefb4",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signals/wait-raw",
+      "status": "pass",
+      "xex_sha256": "0ca6bfe3f91268d4bef2e7c3b2011dd2aa768a9fd724b0bddca1b1f0db97e40b",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signals/burst-3-raw",
+      "status": "pass",
+      "xex_sha256": "a940330cebc251440c60efbabb7e5a5751bedc9d8b8e8b25bc97b3cd74102045",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signals/nmi-18-raw",
+      "status": "pass",
+      "xex_sha256": "b890ffc5a38a5594c952de574d2cc7857851387475d4be16b4157c4ca13b198e",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signals/registers-f9-raw",
+      "status": "pass",
+      "xex_sha256": "34482d5d8bcc0491d363c8defb48998313e6cd36e218917225c3d6491c3c6aa9",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signals/core-opt",
+      "status": "pass",
+      "xex_sha256": "46430bee90fce61127ce90475d3d0a71bb72d7d0313228ed93c575e54f991206",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signals/wait-opt",
+      "status": "pass",
+      "xex_sha256": "d00a290a055b4135bc013ffa0ffa0da0a69898f9bc802b94fca500b51b5033f6",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signals/burst-3-opt",
+      "status": "pass",
+      "xex_sha256": "48e441adc72d8245e82e74ee4fa0478e821aed593b3a53f243a47ba09c5c05d5",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signals/nmi-18-opt",
+      "status": "pass",
+      "xex_sha256": "69c88dead2cfca6a8472ce80805f4b9c457691c3bee7c0f77842c6a28dddcb30",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "signals/registers-f9-opt",
+      "status": "pass",
+      "xex_sha256": "87a21e603ee7fcaf37bc0d7453f33b98c01fb72e5b3a8a49a0ea88b6069450b1",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "capacity/8-bank1-raw-100",
+      "status": "pass",
+      "xex_sha256": "4d38e42e9c885c526389fcd713afc0cc53314c8b3b75effc3bc07b678fd0251b",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "capacity/8-bank1-opt-100",
+      "status": "pass",
+      "xex_sha256": "ea50d98bc8e53960feb553059e87324b97fcdbf251fb3a7a322246650a623e5b",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "capacity/8-bank3-raw-100",
+      "status": "pass",
+      "xex_sha256": "1239ae14e6308dc2f08818870b6582e01921fcb32c67ffe22e1934ecbcfd0dde",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "capacity/8-bank3-opt-100",
+      "status": "pass",
+      "xex_sha256": "5363e401860057d48dcaf82160806f2b79ba321d85607af9bf80a4a9f2a4b718",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "platform/single-raw",
+      "status": "pass",
+      "xex_sha256": "fbac64b20c3f9020830bf20d66c84e4fac36471f8e1fac58c7bbdfdea2aa14b8",
+      "guards": "intact",
+      "expected_guest_status": 0
+    },
+    {
+      "name": "platform/single-opt",
+      "status": "pass",
+      "xex_sha256": "c54581b438e0e28e06246f36850f41ec6c7ba933e5b85f3cec9b0808c761ee7a",
+      "guards": "intact",
+      "expected_guest_status": 0
+    }
+  ],
+  "identical_archived_images": [
+    {
+      "current": "build/task-consolidation/pump-image/program.xex",
+      "baseline": "build/signals-tests/eight-pump-long/program/program.xex",
+      "xex_sha256": "f1be85490fe578c2d7cc6104db810b2f5d653773bc35e6badc0a40df41b77521"
+    },
+    {
+      "current": "build/task-consolidation/capacity/8-bank3-raw-100/program.xex",
+      "baseline": "build/signals-tests/eight-combined-raw/8-bank3-raw-100/program.xex",
+      "xex_sha256": "1239ae14e6308dc2f08818870b6582e01921fcb32c67ffe22e1934ecbcfd0dde"
+    },
+    {
+      "current": "build/task-consolidation/capacity/8-bank1-raw-100/program.xex",
+      "baseline": "build/signals-tests/eight-combined-raw/8-bank1-raw-100/program.xex",
+      "xex_sha256": "4d38e42e9c885c526389fcd713afc0cc53314c8b3b75effc3bc07b678fd0251b"
+    },
+    {
+      "current": "build/task-consolidation/capacity/8-bank3-opt-100/program.xex",
+      "baseline": "build/signals-tests/eight-combined-opt/8-bank3-opt-100/program.xex",
+      "xex_sha256": "5363e401860057d48dcaf82160806f2b79ba321d85607af9bf80a4a9f2a4b718"
+    },
+    {
+      "current": "build/task-consolidation/capacity/8-bank1-opt-100/program.xex",
+      "baseline": "build/signals-tests/eight-combined-opt/8-bank1-opt-100/program.xex",
+      "xex_sha256": "ea50d98bc8e53960feb553059e87324b97fcdbf251fb3a7a322246650a623e5b"
+    },
+    {
+      "current": "build/task-consolidation/signals/core-raw/program.xex",
+      "baseline": "build/signals-tests/final-profiles/v3-4-raw/program.xex",
+      "xex_sha256": "f7a097018b7d3d42167fb41d35b612ce25210f1bcd870800c3f2b73266baefb4"
+    },
+    {
+      "current": "build/task-consolidation/signals/core-opt/program.xex",
+      "baseline": "build/signals-tests/final-profiles/v3-4-opt/program.xex",
+      "xex_sha256": "46430bee90fce61127ce90475d3d0a71bb72d7d0313228ed93c575e54f991206"
+    }
+  ],
+  "pump_build_comparison": {
+    "status": "pass",
+    "scope": "Build comparison only; no new baud measurement",
+    "baseline": "build/signals-tests/eight-pump-long/program/program.xex",
+    "current": "build/task-consolidation/pump-image/program.xex",
+    "xex_sha256": "f1be85490fe578c2d7cc6104db810b2f5d653773bc35e6badc0a40df41b77521"
+  },
+  "bank_zero": {
+    "delta_fixed_bytes": 0,
+    "delta_per_task_bytes": 0,
+    "delta_idle_bytes": 0,
+    "comparison": "Same reservations as the former signal implementation at each capacity; includes padding, guards and unused capacity.",
+    "four_tasks": {
+      "fixed_exec_runtime": 11824,
+      "root": 1856,
+      "each_worker": 1856,
+      "idle": 1856,
+      "runtime_excluding_os": 21104,
+      "runtime_including_os": 57968,
+      "loading_excluding_os": 21696,
+      "loading_including_os": 58560
+    },
+    "eight_tasks": {
+      "fixed_exec_runtime": 10560,
+      "root": 2080,
+      "each_worker": 1568,
+      "idle": 1056,
+      "runtime_excluding_os": 24672,
+      "runtime_including_os": 61536,
+      "loading_excluding_os": 20368,
+      "loading_including_os": 57232
+    },
+    "os_fixed": 36864
+  },
+  "limitations": [
+    "No new baud measurement. Existing concurrent-kernel SIO timing limitation remains.",
+    "Twelve/sixteen-task layouts remain unqualified."
+  ],
+  "inputs": {
+    "abi/exec816-v1.json": "c38d1ddaedeb89a57c0614ba8702f6f6f93adda4e2d78f7ff582ac47b54fe1c5",
+    "abi/heap-v1.json": "9613fa3b88e77be94a8514f35cb67d53bb2bf61ce557d41441a2dbc00320cc7f",
+    "abi/memory-v1.json": "b290d001a7d099d64bddfb7e8c006b6e081579be4886e385ed20e503de5b54ed",
+    "abi/tasks.json": "655e82f46f28300b6f80edc3ac4ceffc7eb9cabdfb6302ecfd9578bce811ad17",
+    "lib/exec-abi.inc": "bdb408417c878b2662170135b8d395a68f3a3b39c9f27047a4947acfb0d168c9",
+    "lib/exec-task-types.inc": "c1834a93e3a332f51b43390089ce5ee96647c4ec20437f8584fbc023e5d7b291",
+    "lib/exec.act": "97d6a431afee161073d052f7eede9b4851f99a776313e965cba8e54884eb3192",
+    "lib/execalloc-abi.inc": "067b7b93abc052fab812e68f808939bf9c4404234ddf365d34c831711a9748b9",
+    "lib/execalloc.act": "d86d6d27164f337489cfeb77c54d92189294f030ba993b4e11f98b802c32ee36",
+    "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+    "lib/execmemory.act": "0ecb1fbf33e41afeb89d48bdac922f73c2e1b2ab1ddee8d7ecf8b7f9f9c57268",
+    "lib/execos.act": "62266f93b89c563d3b97cc56fc8482f6f5f8e6add6458ede727b90fb65fece31",
+    "lib/execpolicy.act": "86bdab3ebe27a383f0aa91365d4aded7fd174efd016399e32c3fdd537e883fba",
+    "lib/task-signals.inc": "ddecec2976ec1cd5d770604c305b7494b2781fa63b912cd61adedccd9d591d3b",
+    "lib/task-wakes.inc": "c4a64d45141de7030b5394db4dcc641bad0d1fff729046641f46d3671774f4bd",
+    "lib/taskpolicy.act": "9ff20620ec18aedf1e7782bb855aac9bc6b79a4c1be15f15fe4893d7250597a9",
+    "tools/banked_image.py": "be64c46309cab085602facfda29076deb73050b7e036c78c99a310530769b86d",
+    "tools/banked_test_memory.py": "39010ae477b2cf232d0d527ccc49502e1d578069ffda27ac8ad997b745f20558",
+    "tools/build_rom.py": "930d56f896121332c28a78f4fd6bd2e9c07b66c8e9ddd2dbcfbea446ddad4263",
+    "tools/generate_exec_abi.py": "b416144c4895188ce484b94c37824d9b0345d5e33dd3ea5597dd4492a922dc41",
+    "tools/generate_heap.py": "0b8d32e08259dfb5ac9fd0ad71a62b2b87271f68dffe172c7d5c3ac76a36fe00",
+    "tools/generate_memory.py": "d9638fa26ff595bc55ffdd062fdcaa2a6d0c70c03a97dfd8f5a8a9125424448b",
+    "tools/generate_tasks.py": "b4905fd0a3fc326e5dc9415fbabd0c583f00177889c25c2a75bc0b34e5a891f3",
+    "tools/native_program.py": "f8c96182e88e5609ca9ffd02e6622c3b0ca8f4f362716c2ff5c412fdedba3c65",
+    "tools/os_boundary.py": "088fc0d713fb80cf36557b835aebecc5ed7a7e462f2b0642b99e6fe77748d894",
+    "tools/sio_latency.py": "c7443621ce2e3c83a8f5cca60bda520b9b5b173cea1110d4cb1eef4eb40555e6",
+    "tools/task_capacity.py": "370d8a8d68bc1a2da63c177f94a70b329d208efa6595d7d14a772dcd739cdff2",
+    "tools/test_banked.py": "55340eb749939437395204bc618ec9a91d216efb9d763eb03db285dc10f23439",
+    "tools/test_cooperative.py": "b94b57988dfd3a38156b5f551a741b6f7d99f4866a2b247fb681768a4a1c94a7",
+    "tools/test_heap.py": "68709d80355bcc1d816a07253ea6c283d52664492604406428ca5bd081695e16",
+    "tools/test_hosted.py": "c1197f8e044cd1fb50a0d5dfb815775b275da3b75bb8f2e7e660121f7bcee578",
+    "tools/test_lists.py": "9d54a4496c09d1c62995f57c99cbc598e96b1aff5fa1d93bb3c99c9f31ada3d9",
+    "tools/test_preemptive.py": "1a57dfb8159e53cce0e947ae4e945580126b1a01b4e459e23f63cdc291044ad7",
+    "tools/test_serial_irq.py": "69a8b0f5fabd279d2c5b3ce839ce865133ba966dfe868a99a0e47055f9cc7f55",
+    "tools/test_signal_stream.py": "6bcd5b3c9d9589137816a625f303facf3ee7bb9f737e8b67db4a1c50facb02a9",
+    "tools/test_signals.py": "5a0df60b69b90d8135adb204509d8311096210c39f630dcd96a58a82ca4ba3d4",
+    "tools/test_signals_abi.py": "0bc6cb6d24e0c2d811a44ed18eb055d2e7dffacc215973b5dd10daa9d72e8441",
+    "tools/test_signals_irq.py": "88343f8559be67f4aa1fa621ceba75dd22d2bd85fb55a0b5b88f42696286823c",
+    "tools/test_task_capacity.py": "164e594f104d3cddb3e12e1387d06c5b73eef8ba3b057545af8bac46ee51b63b",
+    "tools/test_tasks.py": "8966b440816a144240e839e364625611add93eac5e84f979ab0170b863889486",
+    "tools/test_tasks_abi.py": "b2ea084f2e4c67f32856c02ba2acf55f212d4763166a0300981dfa5ec7c66878",
+    "tools/test_tasks_exec.py": "a606616dff5f6996857ace2fe4c5b3aa5cee4dce88dd52de52b2cbe1524421fc",
+    "tools/test_tasks_regressions.py": "1ad2638e2b021f545a52d1e561bd9c9b86f878135f1af28dc673e6745f98ca89",
+    "tools/test_upper_table.py": "7a0e25601eb05b60354f85e17cf40f50b50440422dbfe856d77766b3d0d59820",
+    "platform/altirraos/cooperative-probe.s": "54cbbe92eb52a89b8bd4a8ef55b694a11269274d3a5ded7c3009863794a19f74",
+    "platform/altirraos/cooperative.s": "71aca866c885a0b87670260095f4ef16c66191d25f4e15c4f29d3454aa7f27b1",
+    "platform/altirraos/exec-abi.inc": "22eb93b3da8cefecad66aeab9cecfe21f53032b848f65b0b928f16e1655d04be",
+    "platform/altirraos/hosted.cfg": "381c9142b71a2eff92a1af49bd30029e0458b3ab7030ff6bba2bfda696df6112",
+    "platform/altirraos/hosted.s": "f6eda71a0d305533a8716da20b3995db543afffda79455cd3f71e1675e92cfec",
+    "platform/altirraos/layout.inc": "54910fcc103ff50721dab6a2a03f66dc83e31585ddd2cb2b45ff0f8b832d75e0",
+    "platform/altirraos/loader.s": "547b160e5604510e921dda38b3418628b3bcc79327afddbd16c04e4d935d9470",
+    "platform/altirraos/memory-1m.json": "238638b9783f3b0f553a2c39d8630b6b9936dc85b7d69d4cc48b29d0989cf976",
+    "platform/altirraos/preemptive.s": "3f5a778f0f191b2e3a9dfbadfba8b90dc327afab8e7d188ebd5d10551e2ea61c",
+    "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+    "platform/altirraos/signal-irq.s": "5bbc2160ef292ce1c54401a809388f3ae9d9407df97b5f2f3054fd278f5073cf",
+    "platform/altirraos/tasks.s": "c9365d5317d175306e8e002dd69b26321a705670d56a6df585f0545904eac36f",
+    "tests/test_banked_package.py": "ae58515f6b2d80cbaa2cb21e57cb65dba06537e8172c7e84d5097d382e617ac9",
+    "tests/test_capacity_package.py": "631f570c4545f004e4d6340a35699191bb391314a8be569f08c5d291a687f8b8",
+    "tests/test_heap_package.py": "0bd1c4010804bdba4e8343f1e981a00d8ca7f3f953f09ef0843a76ea69177b10",
+    "tests/test_lists_harness.py": "3feca01dcf4446f4a1a0bdcc71b31d1808737f533fdd84e54b464dac19f3f14f",
+    "tests/test_native_package.py": "915c3ffdc93026dca95185f1fe61d8eb07b720b6c9382b3cfe1686abe15171e0",
+    "tests/test_rendezvous.py": "6578be4f94f0fe329a9c28603c3610520f839735a395a931cfc0581699f794f7",
+    "tests/test_signals_package.py": "6f75da5dce1f5ae9e4c1e35590310f2d8bfc383a12c7d65081886d7763d823bb",
+    "tests/test_task_bindings.py": "8cfc3f9ba0d84cc64b6e16447ffb46a910930aec83e833ac9e0e1aa70614c083",
+    "tests/test_tasks_package.py": "4b9e6f4a4c1095d6f18f939de99c4b4458764cfee3f35eb3da9ec52e44dc15c4",
+    "tests/programs/banked_memory.act": "899ba6772903a215bf0318f1543baef42d679bef618e28e277f07e359fb56552",
+    "tests/programs/banks.act": "2cce653e139ffecfdb1d22df6c3fca4de9333dd36b2e02a1737773d18bc3740e",
+    "tests/programs/console_bounds.act": "627cb0c53ccfeee235b92c339567c50d9a6e5a2f063f1ba98dcf44869fe71752",
+    "tests/programs/console_inputs.act": "3af3131e39eebac203f687fe323776335bd1969b136a1352f0d793f99ed51625",
+    "tests/programs/cooperative_locks.act": "5b435ffac69a9cac894f314603dbb1ac3e90af98d2a1c4269ecee02ec1d2c54e",
+    "tests/programs/cooperative_pending.act": "3dff6f9a841d113d788868f1d9b320d3e98111893b8df077560062eb26311e07",
+    "tests/programs/heap_abi.act": "36f224cfe86726ee4ae6f8e15a5c9bc565965b06dbc07714d170e215475a6672",
+    "tests/programs/heap_imports.act": "95f5e009d1c10d7d095fa1c76c066b55f769149ecb4d326c52d7e43e6f28ed7e",
+    "tests/programs/lists.act": "811835ef4c387be547379e198ed2b7a3a0ca7e5950d7effd53ed5a9a51f326d1",
+    "tests/programs/lists_named.act": "f1b6d166e7db3c0af46a93dedc542aaf1d5f9be41e89eb06a26465bb9faea0dd",
+    "tests/programs/lists_preemptive.act": "42b13e0fd07fd35bff0b7e0cde07aee4628d16136dec831b2bc7de9b23a7b988",
+    "tests/programs/lists_probe.act": "b179f9e4ba4462a451a639306bb957310d84b156147436120156343f4fd39789",
+    "tests/programs/preemptive_locks.act": "272f361bcc72447b4ccfb777bdac61f5db1616ecdde0ebc76c86d9dd01a7f700",
+    "tests/programs/signals_abi.act": "cefa79baf7024225a441f41ebc6e199d213be62c9680b8d5f6e45b38de4ee979",
+    "tests/programs/signals_burst.act": "ea790c83a5fd12476abfed33b820c1450f67a2b7253a080c186bd091088d4b00",
+    "tests/programs/signals_capacity.act": "0c00bc1762e1551dcc8bdb7105b46321efdbfb949a0562390f575a8d6b7f9520",
+    "tests/programs/signals_capacity_burst.act": "1c164531c512f4076487f482da5b61cd1f95b031c1d4abc37c89491c0cdaf071",
+    "tests/programs/signals_faults.act": "68d7a4190aa54b0b0637a1e8966cd5727974669c5b2b3fbd0bd113a139f38ce6",
+    "tests/programs/signals_irq.act": "604709e6279b605ac84dd1c999a6aca58bb0c29dec13a89fae95e95f70978d30",
+    "tests/programs/signals_irq_targets.act": "10db4ad961575116799870495ffcd7ac23ae18bfdb520a1a366c9fc29c500669",
+    "tests/programs/signals_lifecycle.act": "fe671a9055f2c17c0d08c0bbe217a02a60c42b73c3e17b6bde5b30f2ccd9b98e",
+    "tests/programs/signals_masked.act": "00d62d8d125f9c91934d2603c20814d8f766fcd737e034682cf93ba4727e6de6",
+    "tests/programs/signals_masked.s": "3bb986d889331427b08f74a92e0245222e7499c2769e0a72ec8d93266ffcf1ed",
+    "tests/programs/signals_masks.act": "8078cd9300dd72250202924cc2eb6cd21b729d970568571fd5e4857779209bd5",
+    "tests/programs/signals_pump.act": "2d2545ff5d5432996cc68dcc6217ce143bf2abbcbec7784841de2f8eb96fb0ae",
+    "tests/programs/signals_queue.act": "f7935f3172d0d58e0f50f3bb621700a6baa62b67be71dc9e2de9da87f40ad696",
+    "tests/programs/signals_shutdown.act": "de34145090481847e53cc08f8356156a70662efe9aab43a3b410de167613acdc",
+    "tests/programs/signals_stream.act": "1635440778d68dfd5aed18dd0706a2f008cecc95575dbf82ca6ba1f4c5fe157c",
+    "tests/programs/signals_wait.act": "ce3e9160dfe7358640878e8aefcd02572075864cc72364fbe3c35a1286da6bcf",
+    "tests/programs/stack_fault.act": "7ad688a3ee54d3bf962a809bd0611d61a7b3bd49fc8e1d9ebe71c1e22ac41ddc",
+    "tests/programs/tasks_abi.act": "015b4cba8fe8265c1933fd07c1578bc0e9178f9bb00ec600480c17167d107db0",
+    "tests/programs/tasks_exec.act": "91f5930a5dbdbdc46a78a50c1812b8da87c7abdf74ebe9b34f4cb8c4df94d68b",
+    "tests/programs/tasks_exec_admission.act": "1416a20ee46ab316dba52dc4b8735911f57a6becf0fb89b3aa0f5e96621f685f",
+    "tests/programs/tasks_exec_far.act": "f118e0b70ebe32dff3c1610390b01fb1576bca2bf1b8a1f480ad251bc1a0fc58",
+    "tests/programs/tasks_exec_faults.act": "626f94a8c34dfe23ecf56545974e6aeba808a4ce1bfd64c553299c73a65ae11d",
+    "tests/programs/tasks_exec_helpers.inc": "46cb075e489011fbb8833e8afca86f74a14cc23043709d8880945249407b596b",
+    "tests/programs/tasks_exec_raw.s": "09ab5e996a4c1dd12c1064eaa888171107626b8229aad794cdfcaf9d133ae529",
+    "tests/programs/tasks_exec_reuse.act": "e318cf8f284f90314a82a5356085725fd882202a050fb8f0ba1b892379246573",
+    "tests/programs/tasks_exec_root.act": "c312091b0ec9ed61637352272d42617d43f933a03e6df608358335a43f836980",
+    "tests/programs/tasks_exec_sleep.act": "6c649c90bb5f5cf7d6c674b48e39f70b1612f2bb44fc08dcb5df294681897e87",
+    "tests/programs/upper_bank_table.act": "009e50f75f5d5c04cb2cefa5a5241e64b3c5dbc804a700243aecfb0859a1bf94"
+  }
+}

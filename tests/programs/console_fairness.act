@@ -1,0 +1,389 @@
+; Eight live Tasks: root, three services, flood/small/file/command clients.
+MODULE WINDOWFAIR
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE HEAPCORE
+USE DOS
+USE CONSOLE
+USE CONSOLEWINDOWS
+USE CONSOLEDRIVER
+USE CONSOLEFOREGROUND
+USE CONSOLETYPES
+USE DOSBREAKTYPES
+BYTE phase,gate,go,stop,readyFlood,readySmall,readyFile,readyCommand,smallRead,
+    smallDone,broken
+CARD checks,floods,smalls,reads,computes
+LONGCARD first,second,third,baseline
+EXEC.Task floodTask,smallTask,fileTask,commandTask
+BYTE thirdKey
+PROC POINTER absent()
+EXEC.MsgPort POINTER rootPort
+EXEC.IOStdReq POINTER rootIO
+CONSOLETYPES.Window POINTER wa,wb,wc
+DOSBREAKTYPES.Scope scope
+BYTE ARRAY device=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY path=[68 49 58 84 79 79 76 83 47 83 85 66 47 68 65 84 65 46 66 73 78 0]
+BYTE ARRAY conName(13),line=[49 50 51 52 53 54 55 56],flood(20),input(2)
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE value)
+
+  phase=value
+  gate=0
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Sleep()
+  CARD ignored
+
+  ignored=EXECTASKS.Sleep(1)
+
+RETURN
+
+PROC Clean(CONSOLETYPES.Window POINTER entry)
+  CONSOLETYPES.Presentation POINTER view
+  CONSOLETYPES.Instance POINTER instance
+
+  view=CONSOLETYPES.Presentation POINTER(entry.view)
+  instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  WHILE instance.dirtyEnd<>0 OR view.index<>instance.lineStart+instance.column DO
+    Sleep()
+  OD
+
+RETURN
+
+PROC SmallBegin(BYTE unused)
+
+  smalls==+1
+
+RETURN
+
+PROC SmallCollected(BYTE unused)
+
+RETURN
+
+PROC SmallVisible(BYTE unused)
+
+RETURN
+
+PROC EchoVisible(BYTE unused)
+
+RETURN
+
+PROC ThirdCollected(BYTE unused)
+
+RETURN
+
+PROC ThirdVisible(BYTE unused)
+
+RETURN
+
+PROC FloodBegin(BYTE unused)
+
+RETURN
+
+PROC FloodCollected(BYTE unused)
+
+  floods==+1
+
+RETURN
+
+PROC FileBegin(BYTE unused)
+
+RETURN
+
+PROC FileCollected(BYTE unused)
+
+RETURN
+
+PROC BreakObserved(BYTE unused)
+
+  broken=1
+
+RETURN
+
+PROC Producer()
+  EXEC.MsgPort POINTER port
+  EXEC.IOStdReq POINTER request
+  INT error
+
+  port=EXEC.CreateMsgPort()
+  Require(port<>EXEC.MsgPort POINTER(0))
+  request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(request<>EXEC.IOStdReq POINTER(0))
+  Require(EXEC.OpenDevice(device,first,EXEC.IORequest POINTER(request),0)=0)
+  request.io_Command=EXEC.CMD_WRITE
+  request.io_Data=flood
+  request.io_Length=20
+  readyFlood=1
+  WHILE go=0 DO
+    Sleep()
+  OD
+
+  WHILE stop=0 DO
+    FloodBegin(0)
+    error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+    Require(error=0 AND request.io_Actual=20)
+    FloodCollected(0)
+  OD
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+PROC SmallClient()
+  DOS.FileHandle POINTER handle
+  CARD index
+  LONGINT count
+
+  handle=DOS.Open(conName,DOS.MODE_READWRITE)
+  Require(handle<>DOS.FileHandle POINTER(0))
+  Require(DOS.BeginForeground(handle)<>0)
+  readySmall=1
+  ; Measure small writes only after the producer has begun real scrolling.
+  WHILE go=0 OR floods<12 DO
+    Sleep()
+  OD
+
+  FOR index=0 TO 7 DO
+    SmallBegin(0)
+    count=DOS.Write(handle,line,8)
+    Require(count=8)
+    SmallCollected(0)
+    Clean(wb)
+    SmallVisible(0)
+  OD
+
+  smallRead=1
+  count=DOS.Read(handle,input,2)
+  Require(count=2 AND input(0)=97 AND input(1)=10)
+  Clean(wb)
+  EchoVisible(0)
+  smallDone=1
+  WHILE stop=0 DO
+    Sleep()
+  OD
+
+  Require(DOS.EndForeground()<>0 AND DOS.Close(handle)<>0
+      AND DOS.ReleaseContext()<>0)
+
+RETURN
+
+PROC FileClient()
+  DOS.FileHandle POINTER handle
+  BYTE POINTER bytes
+  LONGINT count
+  CARD index
+
+  handle=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(handle<>DOS.FileHandle POINTER(0))
+  bytes=EXEC.AllocMem(777,EXEC.MEMF_UPPER)
+  Require(bytes<>BYTE POINTER(0))
+  readyFile=1
+  WHILE go=0 DO
+    Sleep()
+  OD
+
+  WHILE stop=0 DO
+    FileBegin(0)
+    count=DOS.Read(handle,bytes,777)
+    FileCollected(0)
+    Require(count=777)
+    FOR index=0 TO 776 DO
+      IF bytes(index)<>(BYTE(index) XOR 83) THEN
+        HEAPCORE.Abort($e9ff)
+      FI
+    OD
+
+    reads==+1
+    Require(DOS.Seek(handle,0,DOS.OFFSET_BEGINNING)>=0)
+  OD
+
+  Require(DOS.Close(handle)<>0 AND DOS.ReleaseContext()<>0)
+  EXEC.FreeMem(bytes,777)
+
+RETURN
+
+PROC CommandClient()
+  LONGCARD ignored
+
+  Require(EXEC.AllocSignal(20)=20)
+  scope.owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0)))
+  scope.unit=third
+  scope.mask=$100000
+  EXEC.Forbid()
+  Require(CONSOLEFOREGROUND.Begin(@scope)<>0)
+  EXEC.Permit()
+  readyCommand=1
+  WHILE stop=0 DO
+    computes==+1
+    IF scope.pending<>0 AND broken=0 THEN
+      BreakObserved(0)
+    FI
+
+    Sleep()
+  OD
+
+  EXEC.Forbid()
+  CONSOLEFOREGROUND.End(@scope)
+  EXEC.Permit()
+  EXEC.FreeSignal(20)
+
+RETURN
+
+PROC Add(EXEC.Task POINTER task PROC POINTER entry() BYTE slot)
+
+  task.tc_Node.ln_Type=EXEC.NT_TASK
+  task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  task.tc_SPReg=task.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@task.tc_MemEntry)
+  Require(EXEC.AddTask(task,entry,absent)=task)
+
+RETURN
+
+PROC Setup()
+  DOS.FileHandle POINTER warm
+  BYTE index,value
+
+  Require(CONSOLEDRIVER.Start()<>0)
+  warm=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(warm<>DOS.FileHandle POINTER(0))
+  Require(DOS.Close(warm)<>0 AND DOS.ReleaseContext()<>0)
+  baseline=EXEC.AvailMem(EXEC.MEMF_UPPER)
+  first=CONSOLE.Create(20,12)
+  second=CONSOLE.Create(20,12)
+  third=CONSOLE.Create(40,12)
+  Require(first<>0 AND second<>0 AND third<>0)
+  wa=CONSOLEWINDOWS.Find(first)
+  wb=CONSOLEWINDOWS.Find(second)
+  wc=CONSOLEWINDOWS.Find(third)
+  Require(CONSOLE.Hide(0)<>0 AND CONSOLE.Show(first,0,0)<>0
+      AND CONSOLE.Show(second,20,0)<>0 AND CONSOLE.Show(third,0,12)<>0)
+  conName(0)=67
+  conName(1)=79
+  conName(2)=78
+  conName(3)=58
+  conName(12)=0
+  FOR index=0 TO 7 DO
+    value=BYTE((second RSH ((7-index) LSH 2)) & 15)
+    IF value<10 THEN
+      value==+48
+    ELSE
+      value==+87
+    FI
+
+    conName(index+4)=value
+  OD
+
+  FOR index=0 TO 19 DO
+    flood(index)=35
+  OD
+
+  rootPort=EXEC.CreateMsgPort()
+  Require(rootPort<>EXEC.MsgPort POINTER(0))
+  rootIO=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(rootPort,EXEC.IOSTDREQ_SIZE))
+  Require(rootIO<>EXEC.IOStdReq POINTER(0))
+  Require(EXEC.OpenDevice(device,third,EXEC.IORequest POINTER(rootIO),0)=0)
+  Add(@floodTask,@Producer,4)
+  Add(@smallTask,@SmallClient,5)
+  Add(@fileTask,@FileClient,6)
+  Add(@commandTask,@CommandClient,7)
+  WHILE readyFlood=0 OR readySmall=0 OR readyFile=0 OR readyCommand=0 DO
+    Sleep()
+  OD
+
+RETURN
+
+PROC Interaction()
+  INT error
+
+  Pause(1)
+  go=1
+  WHILE floods<16 OR smallRead=0 DO
+    Sleep()
+  OD
+
+  Require(CONSOLE.Focus(third)<>0)
+  rootIO.io_Command=EXEC.CMD_READ
+  rootIO.io_Data=@thirdKey
+  rootIO.io_Length=1
+  EXEC.SendIO(EXEC.IORequest POINTER(rootIO))
+  Pause(2)
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(rootIO))
+  Require(error=0 AND rootIO.io_Actual=1 AND thirdKey=122)
+  ThirdCollected(0)
+  rootIO.io_Command=EXEC.CMD_WRITE
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(rootIO))=0)
+  Clean(wc)
+  ThirdVisible(0)
+  Require(CONSOLE.Focus(second)<>0)
+  Pause(3)
+  WHILE smallDone=0 DO
+    Sleep()
+  OD
+
+  Require(CONSOLE.Focus(third)<>0)
+  Pause(4)
+  ; Console progress may outrun the first mechanical disk read. Require both
+  ; kinds of progress without assuming which one completes first.
+  WHILE broken=0 OR reads=0 DO
+    Sleep()
+  OD
+
+  Require(scope.pending<>0 AND computes<>0 AND reads<>0 AND smalls=8 AND floods>=16)
+  stop=1
+  WHILE floodTask.tc_State<>EXEC.TS_REMOVED
+      OR smallTask.tc_State<>EXEC.TS_REMOVED
+      OR fileTask.tc_State<>EXEC.TS_REMOVED
+      OR commandTask.tc_State<>EXEC.TS_REMOVED DO
+    Sleep()
+  OD
+
+  Clean(wa)
+  Clean(wb)
+  Clean(wc)
+  Pause(5)
+
+RETURN
+
+PROC Cleanup()
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(rootIO))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(rootIO))
+  EXEC.DeleteMsgPort(rootPort)
+  Require(CONSOLE.Destroy(first)<>0 AND CONSOLE.Destroy(second)<>0
+      AND CONSOLE.Destroy(third)<>0)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=baseline)
+
+RETURN
+
+PROC Main()
+
+  Setup()
+  Interaction()
+  Cleanup()
+
+RETURN
+
+ENDMODULE

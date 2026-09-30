@@ -1,0 +1,36 @@
+; Test-only owner of the public producer's required Task lease.
+MODULE PRODUCERPROBE
+USE EXEC
+USE EXECPRODUCER
+EXEC.TaskLease lease
+
+PUBLIC BYTE FUNC Bind(EXEC.Task POINTER task LONGCARD bits)
+  BYTE okay,ignored
+
+  IF EXEC.RetainTask(task,@lease)=0 THEN
+    RETURN(0)
+  FI
+
+  okay=EXECPRODUCER.Bind(task,bits)
+  IF okay=0 THEN
+    ignored=EXEC.ReleaseTask(@lease)
+  FI
+
+RETURN(okay)
+
+PUBLIC PROC Release()
+  BYTE ignored
+
+  EXECPRODUCER.Release()
+  EXECPRODUCER.Drain()
+  ignored=EXEC.ReleaseTask(@lease)
+
+RETURN
+
+PUBLIC PROC Drain()
+
+  EXECPRODUCER.Drain()
+
+RETURN
+
+ENDMODULE

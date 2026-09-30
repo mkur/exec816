@@ -1,0 +1,430 @@
+{
+  "tier": "development",
+  "status": "pass",
+  "baseline_commit": "905c3001769b682ba2bac33d45a27db869ad7be7",
+  "scope": "Bounded common request setup and result publication; backend scan/copy/seek chunk boundaries retained. No elapsed-time or release-qualification claim.",
+  "size": {
+    "compiler_revision": "bcabe0a4cbb8bb57b389a8596aa8fd72cb9ee0c7",
+    "compiler_binary_sha256": "b25ac48ec3e9643b83520ff38bda79faf8fd706a56c1d7327f32c5ff8d36c4f3",
+    "compiler_override": false,
+    "optimize": true,
+    "stack_checks": true,
+    "before_image_sha256": "112ce0d998e0e346d0dd7b0e67dbec369cf0067b9178ab7a65130dce7fa338fc",
+    "after_image_sha256": "5cf7b8aae4d5385906dc29dab852c7f67ff29603d8e76022c30664763a4a7808",
+    "before_code_bytes": 481245,
+    "after_code_bytes": 479859,
+    "saved_code_bytes": 1386,
+    "modules": {
+      "FSHANDLER": {
+        "before_code_bytes": 9664,
+        "after_code_bytes": 8940,
+        "before_max_local_stack": 32,
+        "after_max_local_stack": 32
+      },
+      "FSDIRECTORY": {
+        "before_code_bytes": 7257,
+        "after_code_bytes": 6611,
+        "before_max_local_stack": 34,
+        "after_max_local_stack": 34
+      },
+      "FSPACKET": {
+        "before_code_bytes": 3485,
+        "after_code_bytes": 3469,
+        "before_max_local_stack": 28,
+        "after_max_local_stack": 28
+      }
+    },
+    "code_banks_before": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "code_banks_after": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "bank_zero": {
+      "fixed_delta": 0,
+      "per_task_delta": 0
+    },
+    "upper_reservations_unchanged": true
+  },
+  "step_routines": {
+    "lib/fs/fshandler.act": {
+      "before": 17,
+      "after": 7
+    },
+    "lib/fs/fsdirectory.act": {
+      "before": 14,
+      "after": 4
+    }
+  },
+  "host_checks": {
+    "passed": 234,
+    "seconds": 9.004,
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_*.py'"
+  },
+  "generated_check": "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_dos.py --check",
+  "mixed": [
+    {
+      "mode": "raw",
+      "checks": 118,
+      "media": [
+        "cdf13335979095072576b952668a4458b4970c3fa6527c5baafa12573c70da42",
+        "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d"
+      ],
+      "mounts": [
+        {
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 2000,
+          "sector_bytes": 128,
+          "profile": 4,
+          "format": 2
+        },
+        {
+          "alias": "D2",
+          "unit": 50,
+          "sectors": 720,
+          "sector_bytes": 128,
+          "profile": 4,
+          "format": 1
+        }
+      ],
+      "image_sha256": "5eafaf75effc9aab863533979b6e42be796535a7765eefbf1f15375255f28a31",
+      "source_sha256": "c4ba7a1adc794a5e1800635c31bda1e57ae5557f086e6773c64cc9f49b18babb",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "os_busy": 0,
+        "live_tasks": 0,
+        "created": 3,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 332,
+            "untouched_above_floor": 948
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 328,
+            "untouched_above_floor": 440
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 168,
+            "untouched_above_floor": 600
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 234,
+            "untouched_above_floor": 534
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 46,
+            "untouched_above_floor": 210
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 280,
+          "untouched_from_base": 1256,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/test_sdfs_dos.py --case raw --size 128 --output build/development/fs-cpu-steps/mixed-raw"
+    },
+    {
+      "mode": "opt",
+      "checks": 118,
+      "media": [
+        "cdf13335979095072576b952668a4458b4970c3fa6527c5baafa12573c70da42",
+        "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d"
+      ],
+      "mounts": [
+        {
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 2000,
+          "sector_bytes": 128,
+          "profile": 4,
+          "format": 2
+        },
+        {
+          "alias": "D2",
+          "unit": 50,
+          "sectors": 720,
+          "sector_bytes": 128,
+          "profile": 4,
+          "format": 1
+        }
+      ],
+      "image_sha256": "cf4e3afe8ccef1e13c18aa3fb69757cfa1b7acc4c88e6c33d6e810c3430dc46a",
+      "source_sha256": "c4ba7a1adc794a5e1800635c31bda1e57ae5557f086e6773c64cc9f49b18babb",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "os_busy": 0,
+        "live_tasks": 0,
+        "created": 3,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 312,
+            "untouched_above_floor": 968
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 307,
+            "untouched_above_floor": 461
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 149,
+            "untouched_above_floor": 619
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 228,
+            "untouched_above_floor": 540
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 269,
+          "untouched_from_base": 1267,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/test_sdfs_dos.py --case opt --size 128 --output build/development/fs-cpu-steps/mixed-opt"
+    }
+  ],
+  "cancellation": {
+    "format": "mydos",
+    "mode": "opt",
+    "sector_bytes": 128,
+    "profile": 1,
+    "image_sha256": "2dfe26e9ed42c61322f074ca141e967f75d693f5469af8c05b6cef06f0eea0de",
+    "media_sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+    "observers": {
+      "fsworker.act": "088b946601cd10aa77358463893e233abc819f77d2333b6db62bd1303af2a0a9",
+      "blockwire.act": "512b1a8000da59cac139a44d57ed938a2a56e3be0c8f9debb597e090076e355e",
+      "fshandler.act": "6e59f53b8b43c897db12dc2741c7f3298314d3e7f3b979bac933d6d49e20f13b",
+      "fspacket.act": "021569ee4bf6f7c02c3a5817c878965222c29c40088b9b3965cfb2cc92e66da3",
+      "fsdirectory.act": "514dd0659fa3f2d07fc55423ba7db9850dd9e29a99657aa5a7aff70ad6213faf",
+      "mydosfile.act": "365974160a9c993ca00c6d1a9bf9f67b3b7770b15957b86adb2322e01f49d05f",
+      "siodriver.act": "fbbdc6ea005b8a88f701327a10739eb01b70cfc2f429449f2b10733ca22b14ff",
+      "fsactiveprobe.act": "7abfefc1e52eba8577a5c506a0a73ec1a7ed23da27ed6fc6729ff01d04fcba61"
+    },
+    "reused_build": true,
+    "cases": [
+      {
+        "name": "open-allocation",
+        "checks": 12,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "os_busy": 0,
+          "live_tasks": 0,
+          "created": 3
+        },
+        "max_nonroot_public_stack_touched": 246,
+        "kernel_stack_touched": 280
+      },
+      {
+        "name": "lock-allocation",
+        "checks": 12,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "os_busy": 0,
+          "live_tasks": 0,
+          "created": 3
+        },
+        "max_nonroot_public_stack_touched": 236,
+        "kernel_stack_touched": 266
+      },
+      {
+        "name": "open-publication",
+        "checks": 13,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "os_busy": 0,
+          "live_tasks": 0,
+          "created": 3
+        },
+        "max_nonroot_public_stack_touched": 236,
+        "kernel_stack_touched": 266
+      },
+      {
+        "name": "lock-publication",
+        "checks": 12,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "os_busy": 0,
+          "live_tasks": 0,
+          "created": 3
+        },
+        "max_nonroot_public_stack_touched": 236,
+        "kernel_stack_touched": 266
+      },
+      {
+        "name": "directory-scan",
+        "checks": 14,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "os_busy": 0,
+          "live_tasks": 0,
+          "created": 3
+        },
+        "max_nonroot_public_stack_touched": 236,
+        "kernel_stack_touched": 266
+      },
+      {
+        "name": "directory-publication",
+        "checks": 13,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "os_busy": 0,
+          "live_tasks": 0,
+          "created": 3
+        },
+        "max_nonroot_public_stack_touched": 236,
+        "kernel_stack_touched": 266
+      },
+      {
+        "name": "lookup",
+        "checks": 12,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "os_busy": 0,
+          "live_tasks": 0,
+          "created": 3
+        },
+        "max_nonroot_public_stack_touched": 236,
+        "kernel_stack_touched": 266
+      },
+      {
+        "name": "copy",
+        "checks": 2268,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "os_busy": 0,
+          "live_tasks": 0,
+          "created": 3
+        },
+        "max_nonroot_public_stack_touched": 284,
+        "kernel_stack_touched": 266
+      },
+      {
+        "name": "seek",
+        "checks": 16,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "os_busy": 0,
+          "live_tasks": 0,
+          "created": 3
+        },
+        "max_nonroot_public_stack_touched": 236,
+        "kernel_stack_touched": 266
+      }
+    ],
+    "reproduction_command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/test_filesystem_active_cancel.py --case opt --format mydos --suite open-allocation,lock-allocation,open-publication,lock-publication,directory-scan,directory-publication,lookup,copy,seek --output build/development/fs-cpu-steps/cancel-opt",
+    "selection_correction": "The first run included directory-accounting, a SpartaDOS-only checkpoint. The MyDOS assertion could not fire. The runner now rejects this combination before compilation; applicable cases passed on the same binary after source, observer, compiler and configuration checks."
+  },
+  "platform_pins": {
+    "toolchain/altirra-sio-queued.json": "d65d3f9ae8adf8f94f39111d5d4b06b752dd2391a2ec87f13bafad00fc262609",
+    "toolchain/altirra-shell-paced.json": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068"
+  },
+  "inputs": {
+    "lib/dos/dos-packets.inc": "6c9311b0351fce4e38cc598ddd48981677eabd309166e6faa2d3bad3f81307fe",
+    "lib/fs/fsdirectory.act": "01d3b944ca4dee1187d7fc265b0d6615789dabb2ac4d5445f061c5f932074598",
+    "lib/fs/fshandler.act": "65b1625e00bede1f0410dd9e23188d6d8019fda1f7fb4013761ec4fb3a800e14",
+    "lib/fs/fspacket.act": "6804614f2d73ce24bba1ace062e37908b03754c864da864aa2469eea629fe3f1",
+    "tools/generate_dos.py": "d7599a390dc9071c9fd764f1179c146a755d3092d53d3f189d93584b989657f2",
+    "tools/test_filesystem_active_cancel.py": "b5b178d4eaee6cfa67ef763efd08971a21cd5d87ebe2ec61d005407217e39fd8"
+  },
+  "build_command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/native_program.py --compiler-dir build/actionc --source examples/demo.act --tasks --task-capacity 8 --console --dos-mounts config/shell-sdfs.json --output build/development/fs-cpu-steps/system"
+}

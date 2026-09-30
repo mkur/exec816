@@ -1,0 +1,95 @@
+; Retry the same ownership boundary without changing the emitted kernel.
+MODULE FSINITFAILURES
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE FSBOOT
+USE FSMANAGER
+USE FSREGISTRY
+USE FSINITPROBE
+USE FSTYPES
+USE HEAPCORE
+
+CARD checks
+BYTE fault,skipCount,dynamic
+LONGINT expected
+LONGCARD baseline,signals
+DOSCORE.DosRegistry POINTER registry
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; A failed worker must retire completely before another startup can reuse it.
+PROC Attempt()
+  CARD ticks
+
+  FSINITPROBE.point=fault
+  FSINITPROBE.skip=skipCount
+  FSINITPROBE.fired=0
+  Require(FSBOOT.Ensure()=0)
+  Require(registry.error=expected)
+  WHILE registry.worker<>NULL DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(registry.runtime=NULL AND registry.state=FSTYPES.STATE_FAILED)
+  Require(FSINITPROBE.fired=1 AND FSINITPROBE.earlyPublished=0)
+  Require(EXEC.AvailMem(0)=baseline)
+  LET self=EXEC.FindTask(NULL)
+  Require(self.tc_SigAlloc=signals AND registry.cancelReady=0
+      AND registry.cancelHead=NULL AND registry.mask=0)
+
+RETURN
+
+; Failed remounts must leave their peer volume usable and their own slot empty.
+PROC Remount()
+  DOS.FileLock POINTER lock
+
+  Require(FSMANAGER.Unmount(0)<>0)
+  LET available=EXEC.AvailMem(0)
+  FSINITPROBE.point=fault
+  FSINITPROBE.skip=0
+  FSINITPROBE.fired=0
+  Require(FSMANAGER.Mount(0)=0 AND DOS.IoErr()=expected)
+  LET service=FSREGISTRY.Service()
+  Require(FSINITPROBE.fired=1 AND service.mounts(0).item=NULL
+      AND service.mounts(1).item.published<>0)
+  Require(EXEC.AvailMem(0)=available)
+  lock=DOS.Lock(BYTE POINTER(c"D2:"),DOS.SHARED_LOCK)
+  Require(lock<>NULL)
+  DOS.UnLock(lock)
+  Require(FSMANAGER.Mount(0)<>0)
+
+RETURN
+
+; Exercise repeatable rollback and successful recovery with live peer mounts.
+PROC Main()
+
+  LET client=DOSCLIENT.Ensure()
+  Require(client<>NULL)
+  registry=DOSCORE.GetRegistry()
+  baseline=EXEC.AvailMem(0)
+  LET self=EXEC.FindTask(NULL)
+  signals=self.tc_SigAlloc
+  Attempt()
+  Attempt()
+  Require(FSBOOT.Ensure()<>0)
+  IF dynamic<>0 THEN
+    Remount()
+  FI
+
+  Require(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,86 @@
+MODULE IOGAPTEST
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+USE IOPROBE
+USE IOGAP
+EXEC.Task worker
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq item
+BYTE buffer,ready
+CARD checks
+PROC POINTER absent()
+INCLUDE "io-names.inc"
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC WorkerEntry()
+  LONGCARD bits,value
+  BYTE bit
+
+  EXEC.Forbid()
+  bit=EXEC.AllocSignal(31)
+  value=IOPROBE.Advance(0)
+  ready=1
+  bits=EXEC.Wait(LONGCARD($80000000))
+  value=IOPROBE.Advance(1)
+  value=IOPROBE.Advance(2)
+  ready=2
+  ; The injected caller-side gap releases this completion only after Collect
+  ; observed pending. Reply and signal then precede the caller's actual Wait.
+  bits=EXEC.Wait(LONGCARD($80000000))
+  value=IOPROBE.Advance(3)
+  value=IOPROBE.Advance(4)
+  EXEC.FreeSignal(31)
+  EXEC.Permit()
+
+RETURN
+
+; Exercise I/O completion in the caller's check-to-wait scheduling window.
+PROC Main()
+  EXEC.Task POINTER added
+  INT error
+
+  port=EXEC.CreateMsgPort()
+  item.io_Message.mn_Length=42
+  item.io_Message.mn_ReplyPort=port
+  item.io_Command=EXEC.CMD_READ
+  item.io_Length=1
+  item.io_Data=@buffer
+  buffer=$a5
+  error=EXEC.OpenDevice(queuedName,0,EXEC.IORequest POINTER(@item),0)
+  IF error<>0 THEN
+    HEAPCORE.Abort($ff90)
+  FI
+
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  IOGAP.target=@worker
+  added=EXEC.AddTask(@worker,@WorkerEntry,absent)
+  WHILE ready=0 DO
+    EXEC.Yield()
+  OD
+
+  EXEC.SendIO(EXEC.IORequest POINTER(@item))
+  WHILE ready<>2 DO
+    EXEC.Yield()
+  OD
+
+  IOGAP.armed=1
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(@item))
+  IF error<>0 OR buffer<>$5a OR IOGAP.checkpoints<>1 THEN
+    HEAPCORE.Abort($ff90)
+  FI
+
+  IF item.io_Message.mn_Node.ln_Type<>EXEC.NT_FREEMSG THEN
+    HEAPCORE.Abort($ff90)
+  FI
+
+  AwaitRemoval(@worker)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(@item))
+  EXEC.DeleteMsgPort(port)
+  checks=1
+
+RETURN
+
+ENDMODULE

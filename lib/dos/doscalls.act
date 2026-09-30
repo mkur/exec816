@@ -1,0 +1,865 @@
+MODULE DOSCALLS
+USE EXEC
+USE DOSCORE
+USE DOSCLIENT
+USE FSTYPES
+USE DOSOBJECTS
+USE DOSSTREAMS
+USE DOSPIPE
+USE DOSRAW
+USE DOSCOOKED
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE DOSCANCEL
+USE FSBOOT
+USE FSREGISTRY
+USE FSNAMES
+USE FSSYSTEM
+USE FSLOCKS
+INCLUDE "dos-types.inc"
+
+TYPE ResultCell=[BYTE POINTER handle]
+TYPE DestinationInfo=[
+  LONGCARD unit
+  FSTYPES.Object POINTER base
+]
+
+; Validate the caller's name and classify its volume or stream prefix.
+PROC Arguments(DOSCLIENT.ClientContext POINTER client DOSCORE.DosSlot POINTER slot)
+
+  client.packet.sp_Pkt.dp_Arg1=0
+  client.packet.sp_Pkt.dp_Arg2=0
+  client.packet.sp_Pkt.dp_Arg3=0
+  client.packet.sp_Pkt.dp_Arg4=0
+  client.packet.sp_Pkt.dp_Arg5=0
+  client.packet.sp_Pkt.dp_Arg6=0
+  client.packet.sp_Pkt.dp_Arg7=LONGINT(ADDRESS(slot))
+
+RETURN
+
+; Validate a bounded name before starting a name-based DOS operation.
+PROC NameArguments(DOSCLIENT.ClientContext POINTER client BYTE POINTER relative,
+    result LONGINT action)
+
+  IF action=8 THEN
+    client.packet.sp_Pkt.dp_Arg1=0
+    client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(relative))
+    client.packet.sp_Pkt.dp_Arg3=SHARED_LOCK
+  ELSE
+    client.packet.sp_Pkt.dp_Arg1=LONGINT(ADDRESS(result))
+    client.packet.sp_Pkt.dp_Arg3=LONGINT(ADDRESS(relative))
+  FI
+
+RETURN
+
+; Admit the current Task's client context for one synchronous DOS call.
+BYTE POINTER FUNC Acquire(DOSCORE.DosSlot POINTER slot BYTE POINTER name
+                          CARD colon FSTYPES.Object POINTER base LONGINT action)
+  DOSCLIENT.ClientContext POINTER client
+  DOSCORE.DosRegistry POINTER registry
+  FSTYPES.Mount POINTER mount
+  BYTE POINTER relative
+  ResultCell result
+  LONGINT success,error
+
+  result.handle=NULL
+  relative=name
+  client=DOSCLIENT.EnsureSlot(slot)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(result.handle)
+  FI
+
+  IF colon=FSNAMES.RELATIVE OR colon=0 THEN
+    mount=base.mount
+    error=FSREGISTRY.RetainBase(mount)
+    IF error<>0 THEN
+      slot.error=error
+      RETURN(result.handle)
+    FI
+  ELSE
+    IF FSBOOT.Ensure()=0 THEN
+      registry=DOSCORE.GetRegistry()
+      slot.error=registry.error
+      RETURN(result.handle)
+    FI
+
+    mount=FSREGISTRY.Lookup(name,colon)
+    IF mount=FSTYPES.Mount POINTER(0) THEN
+      slot.error=ERROR_DEVICE_NOT_MOUNTED
+      RETURN(result.handle)
+    FI
+
+    relative=BYTE POINTER(ADDRESS(name)+SIZE(colon+1))
+  FI
+
+  Arguments(client,slot)
+  NameArguments(client,relative,BYTE POINTER(@result),action)
+  IF base<>FSTYPES.Object POINTER(0) THEN
+    IF action=8 THEN
+      client.packet.sp_Pkt.dp_Arg1=LONGINT(ADDRESS(base))
+    ELSE
+      client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(base))
+    FI
+  FI
+
+  success=DOSCLIENT.Call(slot,client,mount.port,action)
+  IF success=0 THEN
+    FSREGISTRY.Release(mount)
+  FI
+
+  IF action=8 THEN
+    result.handle=BYTE POINTER(ADDRESS(success))
+  FI
+
+RETURN(result.handle)
+
+; Ensure the filesystem service is available before resolving a mount.
+BYTE FUNC Configured(BYTE POINTER name CARD colon)
+  DOSCORE.DosRegistry POINTER registry
+  FSTYPES.Spec POINTER specs
+  BYTE index
+
+  registry=DOSCORE.GetRegistry()
+  IF registry.count=0 THEN
+    RETURN(0)
+  FI
+
+  specs=FSTYPES.Spec POINTER(registry.config)
+  FOR index=0 TO registry.count-1 DO
+    IF FSSYSTEM.Matches(@specs(index),index,name,colon)<>0 THEN
+      RETURN(1)
+    FI
+  OD
+
+RETURN(0)
+
+; Resolve an explicit volume or retained current-directory base.
+BYTE FUNC Destination(DOSCORE.DosSlot POINTER slot BYTE POINTER name CARD colon
+                      DestinationInfo POINTER resolved)
+  BYTE backend
+
+  resolved.base=NULL
+  IF colon=FSNAMES.INVALID THEN
+    DOSCLIENT.SetError(ERROR_INVALID_COMPONENT_NAME)
+    RETURN(0)
+  FI
+
+  IF colon=FSNAMES.RELATIVE OR colon=0 THEN
+    resolved.base=Directory(slot)
+    IF resolved.base=NULL THEN
+      RETURN(0)
+    FI
+
+    RETURN(DOSOBJECTS.BACKEND_FILE)
+  FI
+
+  backend=FSNAMES.Stream(name,colon)
+  IF backend<>0 THEN
+    IF backend=DOSOBJECTS.BACKEND_RAW OR backend=DOSOBJECTS.BACKEND_CON THEN
+      IF DOSRAW.Unit(name+SIZE(colon+1),@resolved.unit)=0 THEN
+        DOSCLIENT.SetError(ERROR_INVALID_COMPONENT_NAME)
+        RETURN(0)
+      FI
+    ELSEIF name(colon+1)<>0 THEN
+      DOSCLIENT.SetError(ERROR_INVALID_COMPONENT_NAME)
+      RETURN(0)
+    FI
+
+    RETURN(backend)
+  FI
+
+  IF Configured(name,colon)=0 THEN
+    DOSCLIENT.SetError(ERROR_DEVICE_NOT_MOUNTED)
+    RETURN(0)
+  FI
+
+RETURN(DOSOBJECTS.BACKEND_FILE)
+
+PUBLIC LONGINT FUNC Pipe(BYTE POINTER pair)
+
+RETURN(DOSPIPE.Create(DOSPIPE.Pair POINTER(pair)))
+
+; Select the stream or filesystem backend and return a caller-owned file
+; wrapper.
+PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
+  DestinationInfo resolved
+  DOSCLIENT.ClientContext POINTER client
+  DOSCORE.DosSlot POINTER slot
+  CARD colon
+  BYTE backend
+
+  slot=DOSCORE.Current()
+  colon=FSNAMES.Path(name)
+  backend=Destination(slot,name,colon,@resolved)
+  IF backend=0 THEN
+    RETURN(BYTE POINTER(0))
+  FI
+
+  IF backend=DOSOBJECTS.BACKEND_CON AND colon<>3 THEN
+    DOSCLIENT.SetError(ERROR_ACTION_NOT_KNOWN)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  IF backend=DOSOBJECTS.BACKEND_FILE THEN
+    IF mode<>MODE_OLDFILE THEN
+      DOSCLIENT.SetError(ERROR_DISK_WRITE_PROTECTED)
+      RETURN(BYTE POINTER(0))
+    FI
+
+    RETURN(Acquire(slot,name,colon,resolved.base,1005))
+  FI
+
+  IF DOSSTREAMS.ValidMode(mode)=0 THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  client=DOSCLIENT.EnsureSlot(slot)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(BYTE POINTER(0))
+  FI
+
+  IF backend=DOSOBJECTS.BACKEND_RAW OR backend=DOSOBJECTS.BACKEND_CON THEN
+    IF backend=DOSOBJECTS.BACKEND_RAW THEN
+      RETURN(DOSRAW.Open(client,resolved.unit))
+    FI
+
+    RETURN(DOSCOOKED.Open(client,resolved.unit))
+  FI
+
+RETURN(DOSSTREAMS.OpenNIL(client))
+
+; Resolve a filesystem path into a caller-owned lock with a retained mount.
+PUBLIC BYTE POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
+  DestinationInfo resolved
+  DOSCORE.DosSlot POINTER slot
+  CARD colon
+  BYTE backend
+
+  slot=DOSCORE.Current()
+  colon=FSNAMES.Path(name)
+  backend=Destination(slot,name,colon,@resolved)
+  IF backend=0 THEN
+    RETURN(BYTE POINTER(0))
+  FI
+
+  IF backend<>DOSOBJECTS.BACKEND_FILE THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  IF mode<>SHARED_LOCK THEN
+    DOSCLIENT.SetError(ERROR_DISK_WRITE_PROTECTED)
+    RETURN(BYTE POINTER(0))
+  FI
+
+RETURN(Acquire(slot,name,colon,resolved.base,8))
+
+; Report a rejected handle using the error expected by its public operation.
+PROC BadObject(DOSCORE.DosSlot POINTER owner BYTE kind)
+
+  IF kind=DOSOBJECTS.KIND_LOCK THEN
+    owner.error=ERROR_INVALID_LOCK
+  ELSE
+    owner.error=ERROR_BAD_STREAM_NAME
+  FI
+
+RETURN
+
+; Require a live object of the requested kind in the caller's ownership list.
+DOSOBJECTS.Header POINTER FUNC Object(DOSCORE.DosSlot POINTER owner BYTE
+    POINTER identity BYTE kind)
+  DOSOBJECTS.Header POINTER header
+
+  header=DOSOBJECTS.Find(owner,identity,kind)
+  IF header<>DOSOBJECTS.Header POINTER(0) THEN
+    IF header.backend=DOSOBJECTS.BACKEND_FILE
+        OR header.backend=DOSOBJECTS.BACKEND_NIL
+        OR header.backend=DOSOBJECTS.BACKEND_RAW
+        OR header.backend=DOSOBJECTS.BACKEND_CON
+        OR header.backend=DOSOBJECTS.BACKEND_PIPE THEN
+      RETURN(header)
+    FI
+  FI
+
+  BadObject(owner,kind)
+
+RETURN(DOSOBJECTS.Header POINTER(0))
+
+; Admit a caller-owned file before dispatching its backend operation.
+FSTYPES.Object POINTER FUNC File(DOSCLIENT.ClientContext POINTER client
+    DOSOBJECTS.Header POINTER header)
+  FSTYPES.Object POINTER item
+
+  item=FSREGISTRY.FromHeader(header)
+  IF item=FSTYPES.Object POINTER(0) THEN
+    BadObject(header.owner,header.kind)
+    RETURN(item)
+  FI
+
+  IF FSREGISTRY.Retain(item.mount)=0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(FSTYPES.Object POINTER(0))
+  FI
+
+  Arguments(client,header.owner)
+  client.packet.sp_Pkt.dp_Arg1=LONGINT(ADDRESS(item))
+
+RETURN(item)
+
+; Read through the selected backend while preserving partial-transfer
+; semantics.
+PUBLIC LONGINT FUNC Read(BYTE POINTER identity,buffer LONGINT length)
+  DOSCORE.DosSlot POINTER slot
+  DOSCLIENT.ClientContext POINTER client
+  DOSOBJECTS.Header POINTER header
+  EXEC.IOStdReq POINTER request
+  INT error
+  FSTYPES.Object POINTER item
+  FSTYPES.Mount POINTER mount
+  LONGINT result
+
+  slot=DOSCORE.Current()
+  client=DOSCLIENT.EnsureSlot(slot)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  header=Object(slot,identity,DOSOBJECTS.KIND_FILE)
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_PIPE THEN
+    RETURN(DOSPIPE.Transfer(client,DOSPIPE.Handle POINTER(header),buffer,length,0))
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_NIL THEN
+    RETURN(DOSSTREAMS.TransferNIL(client,buffer,length,0))
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_CON THEN
+    RETURN(DOSCOOKED.Read(client,DOSCOOKED.Handle POINTER(header),buffer,length))
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_RAW THEN
+    request=DOSRAW.Prepare(client,DOSSTREAMS.Handle POINTER(header),buffer,length,1)
+    IF request=EXEC.IOStdReq POINTER(0) THEN
+      IF length=0 AND DOSCLIENT.IoErr()=0 THEN
+        RETURN(0)
+      FI
+
+      RETURN(-1)
+    FI
+
+    error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),
+        DOSBREAKTYPES.Scope POINTER(client.foreground))
+    RETURN(DOSRAW.Complete(client,DOSSTREAMS.Handle POINTER(header),error))
+  FI
+
+  item=File(client,header)
+  IF item=FSTYPES.Object POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  mount=item.mount
+  client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(buffer))
+  client.packet.sp_Pkt.dp_Arg3=length
+  result=DOSCLIENT.Call(slot,client,mount.port,82)
+  FSREGISTRY.Release(mount)
+
+RETURN(result)
+
+; Write through the selected backend while preserving its detailed error.
+PUBLIC LONGINT FUNC Write(BYTE POINTER identity,buffer LONGINT length)
+  DOSCORE.DosSlot POINTER slot
+  DOSCLIENT.ClientContext POINTER client
+  DOSOBJECTS.Header POINTER header
+  EXEC.IOStdReq POINTER request
+  INT error
+
+  slot=DOSCORE.Current()
+  client=DOSCLIENT.EnsureSlot(slot)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  header=Object(slot,identity,DOSOBJECTS.KIND_FILE)
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_PIPE THEN
+    RETURN(DOSPIPE.Transfer(client,DOSPIPE.Handle POINTER(header),buffer,length,1))
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_NIL THEN
+    RETURN(DOSSTREAMS.TransferNIL(client,buffer,length,1))
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_RAW
+      OR header.backend=DOSOBJECTS.BACKEND_CON THEN
+    request=DOSRAW.Prepare(client,DOSSTREAMS.Handle POINTER(header),buffer,length,0)
+    IF request=EXEC.IOStdReq POINTER(0) THEN
+      IF length=0 AND DOSCLIENT.IoErr()=0 THEN
+        RETURN(0)
+      FI
+
+      RETURN(-1)
+    FI
+
+    error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),
+        DOSBREAKTYPES.Scope POINTER(client.foreground))
+    RETURN(DOSRAW.Complete(client,DOSSTREAMS.Handle POINTER(header),error))
+  FI
+
+  IF FSREGISTRY.FromHeader(header)=FSTYPES.Object POINTER(0) THEN
+    BadObject(slot,DOSOBJECTS.KIND_FILE)
+    RETURN(-1)
+  FI
+
+  IF DOSSTREAMS.ValidBuffer(buffer,length)=0 THEN
+    RETURN(-1)
+  FI
+
+  IF length=0 THEN
+    DOSCLIENT.SetError(0)
+    RETURN(0)
+  FI
+
+  DOSCLIENT.SetError(ERROR_DISK_WRITE_PROTECTED)
+
+RETURN(-1)
+
+; Apply a position change only to a valid caller-owned file.
+PUBLIC LONGINT FUNC Seek(BYTE POINTER identity LONGINT offset,mode)
+  DOSCORE.DosSlot POINTER slot
+  DOSCLIENT.ClientContext POINTER client
+  DOSOBJECTS.Header POINTER header
+  FSTYPES.Object POINTER item
+  FSTYPES.Mount POINTER mount
+  LONGINT result
+
+  slot=DOSCORE.Current()
+  client=DOSCLIENT.EnsureSlot(slot)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  header=Object(slot,identity,DOSOBJECTS.KIND_FILE)
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_RAW
+      OR header.backend=DOSOBJECTS.BACKEND_CON THEN
+    IF DOSRAW.Live(DOSSTREAMS.Handle POINTER(header))=0 THEN
+      DOSCLIENT.SetError(ERROR_BAD_STREAM_NAME)
+      RETURN(-1)
+    FI
+  FI
+
+  IF header.backend<>DOSOBJECTS.BACKEND_FILE THEN
+    DOSCLIENT.SetError(ERROR_SEEK_ERROR)
+    RETURN(-1)
+  FI
+
+  item=File(client,header)
+  IF item=FSTYPES.Object POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  mount=item.mount
+  client.packet.sp_Pkt.dp_Arg2=offset
+  client.packet.sp_Pkt.dp_Arg3=mode
+  result=DOSCLIENT.Call(slot,client,mount.port,1008)
+  FSREGISTRY.Release(mount)
+
+RETURN(result)
+
+; Close an owned file through its backend before relinquishing its identity.
+PUBLIC LONGINT FUNC Close(BYTE POINTER identity)
+  DOSCORE.DosSlot POINTER slot
+  DOSCLIENT.ClientContext POINTER client
+  DOSOBJECTS.Header POINTER header
+  FSTYPES.Object POINTER item
+  FSTYPES.Mount POINTER mount
+  LONGINT result
+
+  slot=DOSCORE.Current()
+  client=DOSCLIENT.EnsureSlot(slot)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  header=Object(slot,identity,DOSOBJECTS.KIND_FILE)
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_PIPE THEN
+    RETURN(DOSPIPE.Close(client,DOSPIPE.Handle POINTER(header)))
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_NIL THEN
+    RETURN(DOSSTREAMS.CloseNIL(client,header))
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_CON THEN
+    RETURN(DOSCOOKED.Close(client,DOSCOOKED.Handle POINTER(header)))
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_RAW THEN
+    RETURN(DOSRAW.Close(client,DOSSTREAMS.Handle POINTER(header)))
+  FI
+
+  item=File(client,header)
+  IF item=FSTYPES.Object POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  mount=item.mount
+  DOSCLIENT.ClearSelections(client,identity)
+  result=DOSCLIENT.Call(slot,client,mount.port,1007)
+  FSREGISTRY.Release(mount)
+
+RETURN(result)
+
+; Release an owned directory lock through its filesystem handler.
+PUBLIC PROC UnLock(BYTE POINTER identity)
+  DOSCORE.DosSlot POINTER slot
+  DOSCLIENT.ClientContext POINTER client
+  DOSOBJECTS.Header POINTER header
+  FSTYPES.Object POINTER item
+  FSTYPES.Mount POINTER mount
+  LONGINT result
+
+  IF identity=BYTE POINTER(0) THEN
+    RETURN
+  FI
+
+  slot=DOSCORE.Current()
+  client=DOSCLIENT.EnsureSlot(slot)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN
+  FI
+
+  header=Object(slot,identity,DOSOBJECTS.KIND_LOCK)
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    RETURN
+  FI
+
+  IF client.directory=identity THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN
+  FI
+
+  item=File(client,header)
+  IF item=FSTYPES.Object POINTER(0) THEN
+    RETURN
+  FI
+
+  mount=item.mount
+  result=DOSCLIENT.Call(slot,client,mount.port,15)
+  FSREGISTRY.Release(mount)
+
+RETURN
+
+; Validate lock and output storage before requesting directory metadata.
+PUBLIC LONGINT FUNC Information(BYTE POINTER identity,info LONGINT action)
+  DOSCORE.DosSlot POINTER slot
+  DOSCLIENT.ClientContext POINTER client
+  DOSOBJECTS.Header POINTER header
+  FSTYPES.Object POINTER item
+  FSTYPES.Mount POINTER mount
+  LONGINT result
+
+  slot=DOSCORE.Current()
+  client=DOSCLIENT.EnsureSlot(slot)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  header=Object(slot,identity,DOSOBJECTS.KIND_LOCK)
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  item=File(client,header)
+  IF item=FSTYPES.Object POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  mount=item.mount
+  client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(info))
+  result=DOSCLIENT.Call(slot,client,mount.port,action)
+  FSREGISTRY.Release(mount)
+
+RETURN(result)
+
+; These getters deliberately avoid Ensure: reading an unset default must not
+; allocate a context or change the caller's secondary result.
+PUBLIC BYTE POINTER FUNC Selected(BYTE output)
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+
+  owner=DOSCORE.Current()
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(BYTE POINTER(0))
+  FI
+
+  IF output<>0 THEN
+    RETURN(client.output)
+  FI
+
+RETURN(client.input)
+
+; Require an idle client before changing borrowed stream selections.
+BYTE FUNC SelectionReady(DOSCORE.DosSlot POINTER owner)
+  DOSCLIENT.ClientContext POINTER client
+
+  IF owner.active<>0 THEN
+    owner.error=ERROR_OBJECT_IN_USE
+    RETURN(0)
+  FI
+
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  IF client<>DOSCLIENT.ClientContext POINTER(0) THEN
+    IF client.busy<>0 OR client.suspended<>0 THEN
+      owner.error=ERROR_OBJECT_IN_USE
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
+; Reject a selected stream whose identity is no longer live for this caller.
+BYTE FUNC LiveSelection(DOSCORE.DosSlot POINTER owner BYTE POINTER identity)
+  DOSOBJECTS.Header POINTER header
+
+  header=Object(owner,identity,DOSOBJECTS.KIND_FILE)
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_RAW
+      OR header.backend=DOSOBJECTS.BACKEND_CON THEN
+    IF DOSRAW.Live(DOSSTREAMS.Handle POINTER(header))=0 THEN
+      BadObject(owner,DOSOBJECTS.KIND_FILE)
+      RETURN(0)
+    FI
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_FILE THEN
+    IF FSREGISTRY.FromHeader(header)=FSTYPES.Object POINTER(0) THEN
+      BadObject(owner,DOSOBJECTS.KIND_FILE)
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
+; Replace a borrowed standard stream and return the previous selection.
+PUBLIC BYTE POINTER FUNC Select(BYTE POINTER identity BYTE output)
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+  BYTE POINTER previous
+
+  owner=DOSCORE.Current()
+  IF SelectionReady(owner)=0 THEN
+    RETURN(BYTE POINTER(0))
+  FI
+
+  IF identity<>BYTE POINTER(0) THEN
+    IF LiveSelection(owner,identity)=0 THEN
+      RETURN(BYTE POINTER(0))
+    FI
+  FI
+
+  previous=BYTE POINTER(0)
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  IF client<>DOSCLIENT.ClientContext POINTER(0) THEN
+    IF output<>0 THEN
+      previous=client.output
+      client.output=identity
+    ELSE
+      previous=client.input
+      client.input=identity
+    FI
+  FI
+
+  owner.error=0
+
+RETURN(previous)
+
+; Validate a directory selection without transferring ownership of its lock.
+FSTYPES.Object POINTER FUNC Directory(DOSCORE.DosSlot POINTER owner)
+  DOSCLIENT.ClientContext POINTER client
+  FSTYPES.LockObject POINTER item
+
+  IF SelectionReady(owner)=0 THEN
+    RETURN(FSTYPES.Object POINTER(0))
+  FI
+
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    owner.error=ERROR_NO_DEFAULT_DIR
+    RETURN(FSTYPES.Object POINTER(0))
+  FI
+
+  IF client.directory=BYTE POINTER(0) THEN
+    owner.error=ERROR_NO_DEFAULT_DIR
+    RETURN(FSTYPES.Object POINTER(0))
+  FI
+
+  item=FSTYPES.LockObject POINTER(FSREGISTRY.FindObject(owner,
+      client.directory,DOSOBJECTS.KIND_LOCK))
+  IF item=NULL THEN
+    owner.error=ERROR_INVALID_LOCK
+    RETURN(FSTYPES.Object POINTER(item))
+  FI
+
+  IF (item.state.entry.flags & $10)=0 THEN
+    owner.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(FSTYPES.Object POINTER(0))
+  FI
+
+RETURN(FSTYPES.Object POINTER(item))
+
+; Replace the caller's borrowed current-directory lock.
+PUBLIC BYTE POINTER FUNC CurrentDir(BYTE POINTER identity)
+  DOSCORE.DosSlot POINTER owner
+  DOSCLIENT.ClientContext POINTER client
+  DOSOBJECTS.Header POINTER header
+  FSTYPES.LockObject POINTER item
+  BYTE POINTER previous
+
+  owner=DOSCORE.Current()
+  IF SelectionReady(owner)=0 THEN
+    RETURN(BYTE POINTER(0))
+  FI
+
+  IF identity<>BYTE POINTER(0) THEN
+    header=Object(owner,identity,DOSOBJECTS.KIND_LOCK)
+    IF header=DOSOBJECTS.Header POINTER(0) THEN
+      RETURN(BYTE POINTER(0))
+    FI
+
+    item=FSTYPES.LockObject POINTER(FSREGISTRY.FromHeader(header))
+    IF item=NULL THEN
+      BadObject(owner,DOSOBJECTS.KIND_LOCK)
+      RETURN(BYTE POINTER(0))
+    FI
+
+    IF (item.state.entry.flags & $10)=0 THEN
+      owner.error=ERROR_OBJECT_WRONG_TYPE
+      RETURN(BYTE POINTER(0))
+    FI
+  FI
+
+  previous=BYTE POINTER(0)
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  IF client<>DOSCLIENT.ClientContext POINTER(0) THEN
+    previous=client.directory
+    client.directory=identity
+  FI
+
+  owner.error=0
+
+RETURN(previous)
+
+; Copy a lock's canonical path only when the caller supplies enough space.
+PUBLIC LONGINT FUNC NameFromLock(BYTE POINTER identity,buffer LONGINT length)
+  DOSCORE.DosSlot POINTER owner
+  DOSOBJECTS.Header POINTER header
+  FSTYPES.LockObject POINTER item
+  FSLOCKS.Name POINTER name
+  BYTE POINTER text
+  CARD index
+
+  owner=DOSCORE.Current()
+  IF SelectionReady(owner)=0 THEN
+    RETURN(0)
+  FI
+
+  header=Object(owner,identity,DOSOBJECTS.KIND_LOCK)
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  item=FSTYPES.LockObject POINTER(FSREGISTRY.FromHeader(header))
+  IF item=NULL THEN
+    BadObject(owner,DOSOBJECTS.KIND_LOCK)
+    RETURN(0)
+  FI
+
+  IF length<=0 THEN
+    owner.error=ERROR_BAD_NUMBER
+    RETURN(0)
+  FI
+
+  IF FSNAMES.Mapped(buffer,LONGCARD(length))=0 THEN
+    owner.error=ERROR_BAD_NUMBER
+    RETURN(0)
+  FI
+
+  name=FSLOCKS.Trailer(item)
+  text=FSLOCKS.Text(item)
+  IF LONGINT(name.length)>=length THEN
+    owner.error=ERROR_LINE_TOO_LONG
+    RETURN(0)
+  FI
+
+  FOR index=0 TO name.length DO
+    buffer(index)=text(index)
+  OD
+
+  owner.error=0
+
+RETURN(-1)
+
+; Report terminal behavior only for a valid live file backend.
+PUBLIC LONGINT FUNC IsInteractive(BYTE POINTER identity)
+  DOSCORE.DosSlot POINTER owner
+  DOSOBJECTS.Header POINTER header
+
+  owner=DOSCORE.Current()
+  IF SelectionReady(owner)=0 THEN
+    RETURN(0)
+  FI
+
+  IF LiveSelection(owner,identity)=0 THEN
+    RETURN(0)
+  FI
+
+  owner.error=0
+  header=DOSOBJECTS.Header POINTER(identity)
+  IF header.backend=DOSOBJECTS.BACKEND_RAW
+      OR header.backend=DOSOBJECTS.BACKEND_CON THEN
+    RETURN(-1)
+  FI
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC BeginForeground(BYTE POINTER console)
+
+RETURN(DOSBREAK.Begin(console))
+
+PUBLIC LONGINT FUNC EndForeground()
+
+RETURN(DOSBREAK.End())
+
+PUBLIC LONGINT FUNC BreakPending()
+
+RETURN(DOSBREAK.Pending())
+
+; Acknowledge the current foreground break scope without consuming stream
+; input.
+PUBLIC PROC ClearBreak()
+
+  DOSBREAK.Clear()
+
+RETURN
+
+ENDMODULE

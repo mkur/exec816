@@ -1,0 +1,127 @@
+MODULE SYSTEMINSPECTTEST
+USE EXEC
+USE HEAPCORE
+USE DOSCORE
+USE FSTYPES
+USE FSREGISTRY
+USE FSINSPECT
+USE DEVICEINSPECT
+USE SIODRIVER
+
+FSTYPES.Service service
+FSTYPES.Mount ARRAY mounts(8)
+CARD checks
+BYTE finished
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ed00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise public system inspection without leaking ownership.
+PROC Main()
+  DOSCORE.DosRegistry POINTER registry
+  EXEC.Task POINTER self
+  FSINSPECT.Info POINTER rows
+  DEVICEINSPECT.Info POINTER devices
+  BYTE POINTER buffer,previous
+  BYTE oldState,slot,index
+  CARD count
+  LONGCARD available
+
+  rows=FSINSPECT.Info POINTER($dfff8)
+  devices=DEVICEINSPECT.Info POINTER($dfff8)
+  buffer=BYTE POINTER($dffe8)
+  self=EXEC.FindTask(BYTE POINTER(0))
+  registry=DOSCORE.GetRegistry()
+  available=EXEC.AvailMem(0)
+  Check(SIZEOF(FSINSPECT.Info)=35 AND SIZEOF(DEVICEINSPECT.Info)=2)
+  Check(FSINSPECT.Snapshot(rows,7)=0 AND buffer(16)=$a5)
+  Check(FSINSPECT.Snapshot(FSINSPECT.Info POINTER(0),8)=0)
+  Check(DEVICEINSPECT.Snapshot(devices,1)=0 AND buffer(16)=$a5)
+  Check(DEVICEINSPECT.Snapshot(DEVICEINSPECT.Info POINTER(0),2)=0)
+  Check(FSINSPECT.Snapshot(rows,8)=0 AND buffer(16)=$a5)
+  EXEC.Forbid()
+  Check(DEVICEINSPECT.Snapshot(devices,2)=1 AND self.tc_TDNestCnt=0)
+  Check(devices(0).kind=DEVICEINSPECT.SIO
+      AND devices(0).state=DEVICEINSPECT.INACTIVE)
+  Check(SIODRIVER.State()=0)
+  ; Eight diagnostic mount records exercise capacity, holes, publication and
+  ; offline state without a filesystem worker or disk traffic. Restore the
+  ; actual empty registry before allowing scheduling again.
+  oldState=registry.state
+  previous=registry.runtime
+  service.count=8
+  FOR slot=0 TO 7 DO
+    mounts(slot).published=1
+    mounts(slot).offline=slot & 1
+    mounts(slot).spec.format=1+(slot & 1)
+    FOR index=0 TO 30 DO
+      mounts(slot).spec.alias(index)=65+(index & 15)
+    OD
+
+    mounts(slot).spec.alias(0)=65+slot
+    mounts(slot).spec.alias(31)=0
+    service.mounts(slot).item=@mounts(slot)
+  OD
+
+  registry.runtime=BYTE POINTER(@service)
+  registry.state=FSTYPES.STATE_READY
+  count=FSINSPECT.Snapshot(rows,8)
+  Check(count=8 AND self.tc_TDNestCnt=0)
+  FOR slot=0 TO 7 DO
+    Check(rows(slot).name(0)=65+slot AND rows(slot).name(31)=0)
+    FOR index=1 TO 30 DO
+      Check(rows(slot).name(index)=65+(index & 15))
+    OD
+
+    Check(rows(slot).offline=(slot & 1))
+    Check(rows(slot).format=1+(slot & 1) AND rows(slot).readOnly=1)
+  OD
+
+  mounts(0).spec.alias(0)=90
+  mounts(0).offline=1
+  Check(rows(0).name(0)=65 AND rows(0).offline=0)
+  mounts(1).published=0
+  service.mounts(2).item=FSTYPES.Mount POINTER(0)
+  mounts(3).spec.alias(1)=1
+  Check(FSINSPECT.Snapshot(rows,8)=6)
+  Check(rows(0).name(0)=90 AND rows(0).offline=1)
+  Check(rows(1).name(0)=68 AND rows(1).name(1)=46)
+  registry.stop=1
+  Check(FSINSPECT.Snapshot(rows,8)=0)
+  registry.stop=0
+  registry.state=FSTYPES.STATE_STARTING
+  Check(FSINSPECT.Snapshot(rows,8)=0)
+  registry.state=FSTYPES.STATE_STOPPING
+  Check(FSINSPECT.Snapshot(rows,8)=0)
+  registry.state=FSTYPES.STATE_FAILED
+  Check(FSINSPECT.Snapshot(rows,8)=0)
+  registry.state=FSTYPES.STATE_READY
+  service.count=0
+  Check(FSINSPECT.Snapshot(rows,8)=0)
+  registry.state=oldState
+  registry.runtime=previous
+  EXEC.Permit()
+  Check(self.tc_TDNestCnt=$ff AND EXEC.AvailMem(0)=available)
+  Check(FSINSPECT.Snapshot(rows,8)=0 AND SIODRIVER.State()=0)
+  FOR index=0 TO 15 DO
+    Check(buffer(index)=$a5)
+  OD
+
+  ; The maximum snapshot occupies 280 bytes from offset 16.
+  FOR count=296 TO 511 DO
+    Check(buffer(count)=$a5)
+  OD
+
+  finished=1
+
+RETURN
+
+ENDMODULE

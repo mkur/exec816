@@ -1,0 +1,384 @@
+{
+  "tier": "development",
+  "compiler_pin": "5f62c9fdd02e29f9de3807ce9436047b2745c7a6",
+  "baseline_source": {
+    "revision": "2bca1c8a3852923e55b3ccb8081f0bfb15893300",
+    "dirty": false,
+    "display": "2bca1c8",
+    "actionc_pin": "5f62c9fdd02e29f9de3807ce9436047b2745c7a6",
+    "task_capacity": 8,
+    "stack_checks": true,
+    "mount": {
+      "profile": 4,
+      "boot": 1,
+      "format": 2,
+      "alias": "D1",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128
+    },
+    "strings": {
+      "banner": "Exec816 (2bca1c8)\n\n",
+      "slots": "exec: 8 task slots\n",
+      "stackChecks": "exec: stack checks enabled\n",
+      "version": "Exec816 (2bca1c8)\nactionc pin: 5f62c9f\n",
+      "sioReady": " ready, 57.6k profile\n",
+      "mountStart": "SYS: mounting...\n"
+    }
+  },
+  "source": {
+    "revision": "da7cb3f8bc5b0f820a7895c553d9f9eea5d6556e",
+    "dirty": false,
+    "display": "da7cb3f",
+    "actionc_pin": "5f62c9fdd02e29f9de3807ce9436047b2745c7a6",
+    "task_capacity": 8,
+    "stack_checks": true,
+    "mount": {
+      "profile": 4,
+      "boot": 1,
+      "format": 2,
+      "alias": "D1",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128
+    },
+    "strings": {
+      "banner": "Exec816 (da7cb3f)\n\n",
+      "slots": "exec: 8 task slots\n",
+      "stackChecks": "exec: stack checks enabled\n",
+      "version": "Exec816 (da7cb3f)\nactionc pin: 5f62c9f\n",
+      "sioReady": " ready, 57.6k profile\n",
+      "mountStart": "SYS: mounting...\n"
+    }
+  },
+  "sizes": {
+    "DOS API and client": {
+      "before": 24546,
+      "after": 24997,
+      "delta": 451
+    },
+    "Streams and line editing": {
+      "before": 22553,
+      "after": 22191,
+      "delta": -362
+    },
+    "Pipes": {
+      "before": 6732,
+      "after": 7162,
+      "delta": 430
+    },
+    "BREAK and foreground": {
+      "before": 8294,
+      "after": 8294,
+      "delta": 0
+    },
+    "Arguments": {
+      "before": 2901,
+      "after": 2901,
+      "delta": 0
+    },
+    "Inheritance": {
+      "before": 4491,
+      "after": 4165,
+      "delta": -326
+    },
+    "Command providers": {
+      "before": 1512,
+      "after": 1426,
+      "delta": -86
+    },
+    "DOS Task policy": {
+      "before": 3809,
+      "after": 3449,
+      "delta": -360
+    },
+    "DOS subtotal": {
+      "before": 68835,
+      "after": 68994,
+      "delta": 159
+    },
+    "Whole-image Action routines": {
+      "before": 480792,
+      "after": 480535,
+      "delta": -257
+    },
+    "Whole-image loaded segments": {
+      "before": 493778,
+      "after": 493521,
+      "delta": -257
+    },
+    "XEX file": {
+      "before": 508444,
+      "after": 508187,
+      "delta": -257
+    }
+  },
+  "module_sizes": {
+    "EXECMEMORY": 3146,
+    "EXECLISTS": 2362,
+    "TASKMEMORY": 631,
+    "HEAPCORE": 7292,
+    "HEAPPOLICY": 8581,
+    "PROCESSSTATE": 62,
+    "BOOTCONFIG": 934,
+    "TASKPOLICY": 61910,
+    "TASKSTACKS": 164,
+    "CONSOLECORE": 3001,
+    "CONSOLEWINDOWS": 3559,
+    "CONSOLEFOREGROUND": 7917,
+    "CONSOLEINPUT": 3261,
+    "CONSOLEDISPLAY": 6871,
+    "CONSOLEDRIVER": 22530,
+    "PORTCORE": 799,
+    "SIODRIVER": 16920,
+    "IORESIDENT": 1141,
+    "IOCORE": 3599,
+    "CONSOLETILING": 6163,
+    "CONSOLE": 4666,
+    "DOSCORE": 62,
+    "FSOPERATION": 5161,
+    "DOSCLIENT": 5319,
+    "DOSOBJECTS": 1103,
+    "BLOCKCACHE": 5292,
+    "BLOCKIO": 7748,
+    "MYDOSNAMES": 1939,
+    "FSNAMES": 3443,
+    "DOSSTREAMS": 1585,
+    "DOSPIPE": 7162,
+    "DOSRAW": 10272,
+    "COOKEDLINE": 4035,
+    "DOSCANCEL": 679,
+    "DOSCOOKED": 6299,
+    "DOSBREAK": 3645,
+    "FSSYSTEM": 1945,
+    "FSREGISTRY": 2567,
+    "DOSWIRE": 117,
+    "FSFILES": 916,
+    "FSLOCKS": 3080,
+    "FSPACKET": 3469,
+    "FSPORTS": 471,
+    "MYDOS": 9298,
+    "MYDOSFILE": 11889,
+    "SDFS": 7006,
+    "SDFSFILE": 9637,
+    "SDFSDATE": 1516,
+    "SDFSDIR": 7196,
+    "SDFSNAME": 5950,
+    "FSBACKEND": 4422,
+    "FSINIT": 11315,
+    "FSRELATIVE": 6225,
+    "FSINFO": 1787,
+    "FSDIRECTORY": 6611,
+    "FSIO": 1715,
+    "FSHANDLER": 8940,
+    "BLOCKWIRE": 1045,
+    "FSACTIVE": 294,
+    "FSABORT": 1340,
+    "FSWORKER": 2491,
+    "FSMOUNT": 2336,
+    "FSMUX": 633,
+    "FSBOOT": 2273,
+    "DOSCALLS": 15893,
+    "DOS": 2503,
+    "TASKINSPECT": 1169,
+    "DEVICEINSPECT": 694,
+    "FSINSPECT": 2052,
+    "O65MEMORY": 331,
+    "O65READ": 3837,
+    "O65WIRE": 4206,
+    "O65PROFILE": 1118,
+    "PROGRAMIMAGE": 1825,
+    "O65RELOCATIONS": 4241,
+    "O65": 2294,
+    "DOSINHERIT": 4165,
+    "DOSGROUP": 3970,
+    "DOSPROCESS": 8326,
+    "PROCESS": 7407,
+    "DOSARGS": 2901,
+    "PROGRAMAPI": 1426,
+    "CSTRING": 3569,
+    "PROGRAMPROVIDERS": 2522,
+    "PROGRAMPLACE": 1714,
+    "PROGRAM": 1632,
+    "PROGRAMFILE": 2388,
+    "PIPELINE": 4184,
+    "DEMO": 49986,
+    "": 445
+  },
+  "bank_zero": {
+    "fixed_runtime": 10560,
+    "public": [
+      2080,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568
+    ],
+    "idle": 1056,
+    "runtime_excluding_os": 24672,
+    "loading_excluding_os": 20368,
+    "runtime_including_os": 61536,
+    "loading_including_os": 57232
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "action_banks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "provider_contracts_unchanged": true,
+  "checks": [
+    {
+      "artifact": "build/development/dos-simplification/d1-console-normal/results.json",
+      "sha256": "fec5ef9137b8533fb64dd1858f0de0f5eccdf6832784f23400713e734b6e250a",
+      "status": "pass",
+      "checks": [
+        9
+      ]
+    },
+    {
+      "artifact": "build/development/dos-simplification/d1-console-opt/results.json",
+      "sha256": "7094e1f072dddb82102ef91ac9665cfdb8d5df9147f111bf853dd9820aa7240d",
+      "status": "pass",
+      "checks": [
+        2
+      ]
+    },
+    {
+      "artifact": "build/development/dos-simplification/d1-lifetime-opt/results.json",
+      "sha256": "45c04a41b514cfee2b7544e677cff093671b30ecda740df42e24f520b0a60ab0",
+      "status": "pass",
+      "checks": {
+        "checks": 171,
+        "childChecks": 3
+      }
+    },
+    {
+      "artifact": "build/development/dos-simplification/d2-client-opt/call/results.json",
+      "sha256": "d10f08c1283c2fd28bfee55aaa9dc247c464c556767225d58e6ad7ceb0fd0e11",
+      "status": "pass",
+      "checks": [
+        58
+      ]
+    },
+    {
+      "artifact": "build/development/dos-simplification/d2-client-opt/results.json",
+      "sha256": "bdc464038954a190b9e0d51ad3532e9dd127dbf17b40dd4043f1b93dab23890c",
+      "status": "pass"
+    },
+    {
+      "artifact": "build/development/dos-simplification/d2-relative/opt/bank1-128/results.json",
+      "sha256": "308243971ac1e7585302246f96bbc0fa7329ec4a4376add24f26387c43ed0604",
+      "status": "pass",
+      "observations": {
+        "checks": [
+          82
+        ]
+      }
+    },
+    {
+      "artifact": "build/development/dos-simplification/d3-inheritance-opt/results.json",
+      "sha256": "9d3ec3759770941064cf6f93c528b1f010aeeb9cbe470ef8e197186400d20813",
+      "status": "pass"
+    },
+    {
+      "artifact": "build/development/dos-simplification/d3-line-opt/results.json",
+      "sha256": "eebdfbdac2b5feab2bb0f71dd2cc7f6ed816e00dddc21b560839bcca9c91f12b",
+      "status": "pass",
+      "checks": [
+        61
+      ],
+      "operations": 192
+    },
+    {
+      "artifact": "build/development/dos-simplification/d3-line-raw/results.json",
+      "sha256": "e91b4ac18e7ce4cef58fc5647c5881f4f74e4d186a0fcf615f8a0ea88429068c",
+      "status": "pass",
+      "checks": [
+        61
+      ],
+      "operations": 192
+    },
+    {
+      "artifact": "build/development/dos-simplification/d3-pipe-opt/results.json",
+      "sha256": "586531c85efd1c98177b9eb6f893b19f8991624808689bde083a2bf10c320619",
+      "status": "pass",
+      "checks": [
+        8520
+      ]
+    },
+    {
+      "artifact": "build/development/dos-simplification/d3-pipe-raw/results.json",
+      "sha256": "b363280f4b82e1dc7fb5405dc7debf978bc41ae9fddfd3d0230b8361e8839118",
+      "status": "pass",
+      "checks": [
+        8520
+      ]
+    }
+  ],
+  "artifacts": {
+    "build/demo/program.xex": "44e6005ed2f13d0a976c9a57368b3c0e76360d7efdfee3cc986fa923f6f9434d",
+    "build/demo/sdfs.atr": "417cdc611fa2582a64e93a0d1e1a4ade785914ad5278673f0325553d0e8153bd",
+    "build/demo/providers.json": "3402a4e9fcb7185ff686be43b436bb3e5e2487e1b7cb9c27af163b9e53ec21dc",
+    "build/demo/demo-manifest.json": "c1c4d99125463f6841c43d5739dfa9134816c24952961b8b7ddca888336635ab",
+    "build/demo/dos-simplification-smoke.json": "c06a64276e17201f3dad680524ccbbb75f64b23132e32f1229facab7c7c3e4ea",
+    "build/demo/build.json": "673012fed3f73f7f1815056ebd0ad67fb31f2f7ad6061cd2a435980119b57796"
+  },
+  "source_inputs": {
+    "lib/dos/command.act": "06cf5ee748c44edfbfd58070c83c901848c0d1b7a98efcd34e39f3656f00aae8",
+    "lib/dos/cookedline.act": "9f4d38d4e3580113b29e985c343b6de5815d4245ecfd08840ed2f03e9875ddfa",
+    "lib/dos/dos.act": "44a1ddd8894a9dbd02f46722d1d2d07bec276fe5854a205249d694b1b154fb27",
+    "lib/dos/dosargs.act": "d2c9393d69f00b728e967ce5dcf36519ea7d025cf829437b0603c0bb5e09715a",
+    "lib/dos/dosbreak.act": "aecc6a5292f9d87c0d629a13b8a626a5d870ae26081e229215fbdd4936d31bbe",
+    "lib/dos/dosbreaktypes.act": "afe9ccd719707e10ea0112697cf37a88b45316ebc50939141ac8d58e8eacda0b",
+    "lib/dos/doscalls.act": "2c17899e13d870e47825863ecfe53b93e50655b16589d8446b5c46e1737545bc",
+    "lib/dos/doscancel.act": "e447cfc4f11e2da549031537ac0d7b35c9a906d66a1c489c29fc9f1ce111b586",
+    "lib/dos/dosclient.act": "3da40de3ffc40141053a43376b848c6367cea539d66c5183fde7e0ff362ef86f",
+    "lib/dos/doscooked.act": "8d3a484ae02320320f858c7c5eb598eac6574e8ebecc473577ecfd895a789a89",
+    "lib/dos/doscore.act": "d6b637a6edabc74e46bc2b8acd364a038f27d60653e5f507449f10c365502165",
+    "lib/dos/dosgroup.act": "874ee15cab2b73a0b7119e0243c150602f03fd094c15404d037652d95287daaf",
+    "lib/dos/dosinherit.act": "33dbbc797b5e4fbc3774afaf3b1ef00876de8d10fb4d2b61708cdd98d412273e",
+    "lib/dos/dosobjects.act": "535c9981daa906dc9335314bf29a198c115437fb7c1873f6b9d45fa28cf41b59",
+    "lib/dos/dospipe.act": "cd47fbe10d626608dab0351d1ad15ce0ab3ce0fa889432d592a7a2355032c6c4",
+    "lib/dos/dosprocess.act": "87332056900ea81d5be6b5dbd1963413b0842c5fef243de2b4192470ff88b937",
+    "lib/dos/dosraw.act": "9639de8588cee92af611362488b6fe90e49277bf2a7d87d791af66798bd30185",
+    "lib/dos/dosstreams.act": "8b2c4c0e5b51ae3ec5cc899c051e29857103a88d1506f001f1713202a8475d08",
+    "lib/dos/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+    "lib/dos/o65.act": "196867eb79d8c0f75f1a954929d1013e77fcb3fb3146db593e847b69a2f9d171",
+    "lib/dos/o65memory.act": "2f30ee225cb19c6ebe2acd1c74f1bbc29e06866131eb697491ac0485665a0136",
+    "lib/dos/o65profile.act": "373b63f95fbffa8579ef9a5c1e070ada025c149e99974390b8581e242eb52d6c",
+    "lib/dos/o65read.act": "d69cacc35c83864103d6238b3339db23f266a66fb06de1f18743643a765d9462",
+    "lib/dos/o65relocations.act": "ef5aa635331ade53c614a5fd4a6cf71601cbdda5ecaaf3a0725220d5e3467d77",
+    "lib/dos/o65types.act": "f8e42fcf4d276059ad22b0a8082ab9934c424f8b0eca00440e4157a1babd91c1",
+    "lib/dos/o65wire.act": "0d4ef5cc2f7b7fbfccf41ecf04934cc8a86b2b036a9dba34e19fea82f3c41315",
+    "lib/dos/pipeline.act": "4d3474c1d1e8410a286899ee6b65600248ca84849a54a7bd52fef38f0d52d0c4",
+    "lib/dos/process.act": "5786dc5b494b45e312a2ab8495bb2bdd6e0b36ac1a6620022f3215bae04bb224",
+    "lib/dos/processstate.act": "33125de3065a1c9ee2d88cd2ac682706efc9c882762f0c3c75e6b345a013d527",
+    "lib/dos/program.act": "2d97ec3c8da97376b74cae2e777647723d376ecc30561a853beb0a2d1e4e4dd4",
+    "lib/dos/programapi.act": "ec0a69798b4873729ad6b4176b94ed950638ef213e71735c35739ed5884ae655",
+    "lib/dos/programfile.act": "2354feafbf9b05a73a30482dce3b759950aea25631b5a54eae698b01319416da",
+    "lib/dos/programimage.act": "b9d95cb08face6b770882e1b6911bc9c938629716784878e46cf6a9eb1b11828",
+    "lib/dos/programlibraries.act": "275ebe903d0bdaa05c068742e965b5b49bebb86652b1636d004c5481a502d3a4",
+    "lib/dos/programplace.act": "600d7b878a9ca1fd0921229bfd9ab762bc925c06c67c3d4f382d9baa486271cc",
+    "lib/dos/programproviders.act": "e8e20497c6e23a58bc096145e1d5a0c6ccfcd63a2514a46c77f075d806d829b8"
+  },
+  "implementation_commits": [
+    "3dcd3e0",
+    "d06421f",
+    "588a016",
+    "da7cb3f"
+  ],
+  "host_checks": 235,
+  "validation_scope": "Focused native DOS/console lifetime, packet/reentrancy, relative paths, raw/optimized pipe and cooked-line, optimized inheritance, packaged shell smoke; no release matrix or timing qualification"
+}

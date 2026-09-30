@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "scope": "Focused classic Amiga source-compatibility demo, macOS host; not release qualification",
+  "tools": {
+    "vc": {
+      "version": "vbcc driver V0.9i pre",
+      "sha256": "00f27648e2e1e86a7b53e343e389ee5337dfc8d582408aa0f2529280627ecdb2"
+    },
+    "vbccm68k": {
+      "version": "vbcc V0.9i pre (1995-2022)",
+      "sha256": "2e44bd3c4cea67b649c92e893c6c48f44ca2340e5f70b15d72bec287c8442365"
+    },
+    "vasmm68k_mot": {
+      "version": "vasm 2.0f / M68k backend 2.8c",
+      "sha256": "3fc239b8b9620f3351f31f850053b6185e25471d92909ad6081592c584e550e0"
+    },
+    "vlink": {
+      "version": "vlink V0.18a (build Sep 21 2026)",
+      "sha256": "5134410f915b9825619b8127cf80507b24bff9eb7e539fd9b09046c309f65ce9"
+    },
+    "fs-uae": {
+      "version": "FS-UAE 3.2.35",
+      "sha256": "3b4d827feaa7d29cedd7145f0e274373d20ab1b35593da1665739aac02b657d8"
+    }
+  },
+  "sdk_archives": {
+    "vbcc_target": {
+      "url": "https://server.owl.de/~frank/vbcc/current/vbcc_target_m68k-amigaos.lha",
+      "sha256": "ec734d7115359cdb5d1c70349284ecbd5712ef47e8bc28d4150117c6f8c73289"
+    },
+    "ndk": {
+      "version": "NDK 3.2 R4",
+      "url": "https://www.hyperion-entertainment.com/index.php/downloads?view=download&format=raw&file=126",
+      "sha256": "96cabd4ad683dced632e147bf86dee0f50dcb1254386216c25c362916a6409bb"
+    }
+  },
+  "sdk_trees": {
+    "target_include": "ad664a7fb8e4a5b98072268526214d603cb889c2d1f271c24e09dc1e7c52b0c2",
+    "target_lib": "2bb3348037648525db555de3fd3803b522ad09dba6c5fa39ff0b49a87f52c8b6",
+    "ndk_include": "cedc8c08faef2b71cb90c29e29cd6d19cb7dbffc7ff49e1decd89c4bef46496e"
+  },
+  "rom": {
+    "name": "Kickstart 2.04 rev 37.175, A500+",
+    "sha256": "d0b70e8a1772614b897f92c33cb299bed3fc8e3de488fc12f67f97fc2486eb79",
+    "redistributed": false
+  },
+  "settings": {
+    "amiga_model": "A500+",
+    "chip_memory": 1024,
+    "fast_memory": 4096,
+    "hard_drive_0_label": "ExecDemo",
+    "floppy_drive_0": "",
+    "floppy_drive_0_sounds": 0,
+    "sound_output": "none",
+    "joystick_port_0": "none",
+    "joystick_port_1": "none",
+    "window_width": 640,
+    "window_height": 512,
+    "fullscreen": 0
+  }
+}

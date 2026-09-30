@@ -1,0 +1,178 @@
+MODULE TASKLIFETIME
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE EXECPRODUCER
+USE TASKSTACKS
+USE HEAPCORE
+EXEC.Task worker,resident
+EXEC.Task POINTER parent
+EXEC.TaskLease first,second,stale
+PROC POINTER absent()
+BYTE kind,finished
+CARD checks
+INCLUDE "tasks_exec_helpers.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff90)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC CopyLease(EXEC.TaskLease POINTER target,source)
+  BYTE POINTER a,b
+  BYTE index
+
+  a=BYTE POINTER(target)
+  b=BYTE POINTER(source)
+  FOR index=0 TO SIZEOF(EXEC.TaskLease)-1 DO
+    a(index)=b(index)
+  OD
+
+RETURN
+
+PROC WorkerEntry()
+  LONGCARD bits
+
+  bits=EXEC.Wait(1)
+
+RETURN
+
+PROC ResidentEntry()
+  LONGCARD bits
+  BYTE okay
+
+  Require(EXEC.AllocSignal(16)=16)
+  Require(EXEC.RegisterResident(LONGCARD($10000))=1)
+  Require(EXEC.RegisterResident(LONGCARD($10000))=0)
+  IF kind=2 THEN
+    EXEC.FreeSignal(16)
+    RETURN
+  FI
+
+  EXEC.Signal(parent,LONGCARD($10000))
+  bits=EXEC.Wait(LONGCARD($10000))
+  Require(bits=LONGCARD($10000))
+  okay=EXEC.UnregisterResident()
+  Require(okay=1)
+  Require(EXEC.UnregisterResident()=0)
+  EXEC.FreeSignal(16)
+  finished=1
+
+RETURN
+
+PROC LateEntry()
+  LONGCARD bits
+  BYTE okay
+
+  bits=EXEC.Wait(1)
+  Require(EXEC.AllocSignal(16)=16)
+  Require(EXEC.RegisterResident(LONGCARD($10000))=1)
+  bits=EXEC.Wait(LONGCARD($10000))
+  Require(bits=LONGCARD($10000))
+  okay=EXEC.UnregisterResident()
+  EXEC.FreeSignal(16)
+  finished=1
+
+RETURN
+
+; Exercise Task leases, removal and identity reuse.
+PROC Main()
+  EXEC.Task POINTER added
+  EXEC.TaskLease local
+  EXEC.TaskLease POINTER heap
+  LONGCARD bits,generation
+  CARD POINTER holds
+  BYTE okay
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  Require(EXEC.AllocSignal(16)=16)
+  Require(EXEC.RegisterResident(LONGCARD($10000))=0)
+  EXEC.Forbid()
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  IF kind=3 THEN
+    added=EXEC.AddTask(@worker,@LateEntry,absent)
+    Require(added=@worker)
+    EXEC.Signal(@worker,1)
+    EXEC.FreeSignal(16)
+    EXEC.RemTask(EXEC.Task POINTER(0))
+    RETURN
+  FI
+
+  added=EXEC.AddTask(@worker,@WorkerEntry,absent)
+  Require(added=@worker)
+  ; A 24-bit end address must not wrap into the current stack range.
+  Require(EXEC.RetainTask(@worker,EXEC.TaskLease POINTER($fffff4))=0)
+  Require(EXEC.ReleaseTask(EXEC.TaskLease POINTER($fffff4))=0)
+  Require(EXECPRODUCER.Bind(@worker,1)=0)
+  Require(EXEC.RetainTask(@worker,@first)=1)
+  Require(EXEC.RetainTask(@worker,@first)=0)
+  Require(EXEC.RetainTask(@worker,@second)=1)
+  CopyLease(@stale,@first)
+  Require(EXEC.ReleaseTask(@stale)=0)
+  generation=first.incarnation
+  IF kind=1 THEN
+    EXEC.RemTask(@worker)
+    RETURN
+  FI
+
+  IF kind=4 THEN
+    holds=CARD POINTER(worker.tc_ExecPrivate+SIZE(38))
+    holds^=$ffff
+    Require(EXEC.ReleaseTask(@second)=1)
+    holds^=$ffff
+    local.task=EXEC.Task POINTER(0)
+    local.incarnation=0
+    local.identity=0
+    Require(EXEC.RetainTask(@worker,@local)=0)
+    holds^=1
+  ELSE
+    Require(EXEC.ReleaseTask(@second)=1)
+  FI
+
+  local.task=EXEC.Task POINTER(0)
+  local.incarnation=0
+  local.identity=0
+  Require(EXEC.RetainTask(@worker,@local)=1)
+  Require(EXEC.ReleaseTask(@local)=1)
+  heap=EXEC.TaskLease POINTER(EXEC.AllocMem(SIZEOF(EXEC.TaskLease),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(heap<>EXEC.TaskLease POINTER(0))
+  Require(EXEC.RetainTask(@worker,heap)=1)
+  Require(EXEC.ReleaseTask(heap)=1)
+  EXEC.FreeMem(BYTE POINTER(heap),SIZEOF(EXEC.TaskLease))
+  Require(EXECPRODUCER.Bind(@worker,1)=1)
+  Require(EXECPRODUCER.Bind(@worker,1)=0)
+  EXECPRODUCER.Release()
+  EXECPRODUCER.Drain()
+  Require(EXEC.ReleaseTask(@first)=1)
+  Require(EXEC.ReleaseTask(@first)=0)
+  EXEC.RemTask(@worker)
+  Require(EXEC.RetainTask(@worker,@first)=0)
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  added=EXEC.AddTask(@worker,@WorkerEntry,absent)
+  Require(added=@worker)
+  Require(EXEC.RetainTask(@worker,@first)=1)
+  Require(first.incarnation<>generation)
+  stale.identity=ADDRESS(@stale)
+  Require(EXEC.ReleaseTask(@stale)=0)
+  Require(EXEC.ReleaseTask(@first)=1)
+  EXEC.Signal(@worker,1)
+  EXEC.Permit()
+  AwaitRemoval(@worker)
+  PrepareTask(@resident,TASKSTACKS.LOWER2,BYTE POINTER(0))
+  added=EXEC.AddTask(@resident,@ResidentEntry,absent)
+  Require(added=@resident)
+  bits=EXEC.Wait(LONGCARD($10000))
+  EXEC.FreeSignal(16)
+; The root's departure is the event under test. The resident must retire
+; itself after receiving the generic last-application notification.
+RETURN
+
+ENDMODULE

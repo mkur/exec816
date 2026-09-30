@@ -1,0 +1,776 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-21",
+  "status": "pass",
+  "scope": "Slice 2: private generated layout and retained terminal core; no keyboard/display ownership or ordinary console device.",
+  "source_revision_before_change": "7768a38",
+  "inputs": {
+    "abi/console.json": "7f67d7b2bc62261a3f6074f8b57c00a66e514bdb720d30a68c6b0ccc2130d7ae",
+    "lib/consolecore.act": "3885ab83f63c95cafc65b45f379bc836016b9d71680ba3a5fb2ec850a6a00d6d",
+    "lib/consoletypes.act": "b70ec251dd7071bdd958e40cee809176a2110bdc4bfaed916837aef834843d2e",
+    "platform/altirraos/console-layout.inc": "70d0b207cee55e2dbcb0bf494f96d1f705694264c066791d4c548c4f4e65881b",
+    "tools/generate_console.py": "5d819acc5c4ae450e058a6e6c9706a09ddb5b910d3fe07f956f4b56569c0f37d",
+    "tools/native_program.py": "7b89f3b1ce36644c5223f2235d5fff856a5dfad2e33a49183fed28435ec8a093",
+    "tools/test_console_core.py": "1f5664c2a2e623482d4a30ae4abfa7dae703a93ee2eae0d84a3111afb188311d",
+    "tests/programs/native_console_core.act": "6c4f55c4171c4b5222034fba5bf52cb1f591153d015d5a9a8744f66fee37cd96",
+    "tests/test_console_layout.py": "9532475590eab15c282a003b100918e9efecaa97c0931f1b1efc6136934019d7"
+  },
+  "pin": "toolchain/altirra-sio-queued.json",
+  "pin_sha256": "d65d3f9ae8adf8f94f39111d5d4b06b752dd2391a2ec87f13bafad00fc262609",
+  "limits": {
+    "host_seconds": 120,
+    "guest_frames": 6000,
+    "source_bytes_per_quantum": 64,
+    "cells_per_edit_quantum": 40,
+    "maximum_width": 40,
+    "maximum_height": 24
+  },
+  "memory": {
+    "fixed_bank_zero_reserved_delta": 0,
+    "per_task_bank_zero_reserved_delta": 0,
+    "loading_including_os": 57232,
+    "runtime_including_os": 61536,
+    "added_upper_metadata_reservation": 256,
+    "service_bytes": 130,
+    "instance_bytes": 56,
+    "presentation_bytes": 26,
+    "alignment_and_unused_bytes": 44,
+    "capture_bytes_in_existing_arena": 288,
+    "additional_task_slots": 0,
+    "fixture_guarded_heap_bytes_after_allocator_rounding": 1360
+  },
+  "cases": [
+    {
+      "name": "raw-bank1",
+      "status": "pass",
+      "artifact": "build/console-slice2/raw-bank1/results.json",
+      "artifact_sha256": "04953cdcc5f18ebbdf87b86d62af9e28d420dd5e821c6c112b99e19d01804679",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "6c4f55c4171c4b5222034fba5bf52cb1f591153d015d5a9a8744f66fee37cd96",
+      "image_sha256": "81272b2a3fb0baebb6366c3ef7a19702944e921d0ef183459ab8742c818fe3e9",
+      "xex_sha256": "133b0f9aa670ab7d387a3c06bd55488b0389bb21220e988f5ee25843846eace6",
+      "console_inputs": {
+        "abi/console.json": "7f67d7b2bc62261a3f6074f8b57c00a66e514bdb720d30a68c6b0ccc2130d7ae",
+        "tools/generate_console.py": "5d819acc5c4ae450e058a6e6c9706a09ddb5b910d3fe07f956f4b56569c0f37d",
+        "lib/consoletypes.act": "b70ec251dd7071bdd958e40cee809176a2110bdc4bfaed916837aef834843d2e",
+        "lib/consolecore.act": "3885ab83f63c95cafc65b45f379bc836016b9d71680ba3a5fb2ec850a6a00d6d",
+        "platform/altirraos/console-layout.inc": "70d0b207cee55e2dbcb0bf494f96d1f705694264c066791d4c548c4f4e65881b"
+      },
+      "kernel_bank": 1,
+      "checks": 1269,
+      "quanta": 75,
+      "first": "ABD     Z       Q?      ",
+      "second": "67        ",
+      "snapshots_sha256": "4ff4453ef347d05c184d3852268b463747d727b428bdef36601c5e974a21c365",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 23,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 18430,
+        "return_d": 8704,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 90,
+        "clock_end": 113,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 1,
+        "gateway_calls": 14,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 23,
+        "vbi_dispatches": 23,
+        "irq_depth": 0,
+        "live_tasks": 0,
+        "idle_runs": 1,
+        "created": 0,
+        "signal_nmi_checkpoints": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 538,
+            "untouched_above_floor": 742
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1166,
+          "untouched_from_base": 370,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "storage": {
+        "BASE": 66608,
+        "BYTES": 256,
+        "INSTANCE": 66768,
+        "PRESENTATION": 66832,
+        "CAPTURE": 986112
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      },
+      "core_frames": [
+        {
+          "name": "M_CONSOLECORE_EXTENT_83D9960B",
+          "fixed_frame": 120,
+          "local_stack_peak": 120
+        },
+        {
+          "name": "M_CONSOLECORE_INIT_F63331F9",
+          "fixed_frame": 144,
+          "local_stack_peak": 160
+        },
+        {
+          "name": "M_CONSOLECORE_DIRTY_4A63B073",
+          "fixed_frame": 34,
+          "local_stack_peak": 34
+        },
+        {
+          "name": "M_CONSOLECORE_EDITQUANTUM_E6CDEC54",
+          "fixed_frame": 140,
+          "local_stack_peak": 152
+        },
+        {
+          "name": "M_CONSOLECORE_NEWLINE_97A73E23",
+          "fixed_frame": 56,
+          "local_stack_peak": 56
+        },
+        {
+          "name": "M_CONSOLECORE_CHARACTER_94A5011A",
+          "fixed_frame": 172,
+          "local_stack_peak": 184
+        },
+        {
+          "name": "M_CONSOLECORE_FEED_287D49E7",
+          "fixed_frame": 60,
+          "local_stack_peak": 68
+        }
+      ]
+    },
+    {
+      "name": "raw-bank3",
+      "status": "pass",
+      "artifact": "build/console-slice2/raw-bank3/results.json",
+      "artifact_sha256": "9622cbb3610bc2abc5b1f398dd47946226fdff864f17d3b61bcaff13fa1e1cfc",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "6c4f55c4171c4b5222034fba5bf52cb1f591153d015d5a9a8744f66fee37cd96",
+      "image_sha256": "117bbd51b2de6477a7367383269c36286ab07c4a44f9023f9cce61edb014d119",
+      "xex_sha256": "8e666154eaf29f37488396a9712c1dea998910856d65ee986e0cdfd2886e3e13",
+      "console_inputs": {
+        "abi/console.json": "7f67d7b2bc62261a3f6074f8b57c00a66e514bdb720d30a68c6b0ccc2130d7ae",
+        "tools/generate_console.py": "b49f7e2441f10953bfda278fdd05778db87353a7ff6d5d9c86baa15178544c37",
+        "lib/consoletypes.act": "b70ec251dd7071bdd958e40cee809176a2110bdc4bfaed916837aef834843d2e",
+        "lib/consolecore.act": "3885ab83f63c95cafc65b45f379bc836016b9d71680ba3a5fb2ec850a6a00d6d",
+        "platform/altirraos/console-layout.inc": "70d0b207cee55e2dbcb0bf494f96d1f705694264c066791d4c548c4f4e65881b"
+      },
+      "kernel_bank": 3,
+      "checks": 1269,
+      "quanta": 75,
+      "first": "ABD     Z       Q?      ",
+      "second": "67        ",
+      "snapshots_sha256": "4ff4453ef347d05c184d3852268b463747d727b428bdef36601c5e974a21c365",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 23,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 18430,
+        "return_d": 8704,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 90,
+        "clock_end": 113,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 1,
+        "gateway_calls": 14,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 23,
+        "vbi_dispatches": 22,
+        "irq_depth": 0,
+        "live_tasks": 0,
+        "idle_runs": 1,
+        "created": 0,
+        "signal_nmi_checkpoints": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 538,
+            "untouched_above_floor": 742
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1166,
+          "untouched_from_base": 370,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "storage": {
+        "BASE": 197680,
+        "BYTES": 256,
+        "INSTANCE": 197840,
+        "PRESENTATION": 197904,
+        "CAPTURE": 986112
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      },
+      "core_frames": [
+        {
+          "name": "M_CONSOLECORE_EXTENT_83D9960B",
+          "fixed_frame": 120,
+          "local_stack_peak": 120
+        },
+        {
+          "name": "M_CONSOLECORE_INIT_F63331F9",
+          "fixed_frame": 144,
+          "local_stack_peak": 160
+        },
+        {
+          "name": "M_CONSOLECORE_DIRTY_4A63B073",
+          "fixed_frame": 34,
+          "local_stack_peak": 34
+        },
+        {
+          "name": "M_CONSOLECORE_EDITQUANTUM_E6CDEC54",
+          "fixed_frame": 140,
+          "local_stack_peak": 152
+        },
+        {
+          "name": "M_CONSOLECORE_NEWLINE_97A73E23",
+          "fixed_frame": 56,
+          "local_stack_peak": 56
+        },
+        {
+          "name": "M_CONSOLECORE_CHARACTER_94A5011A",
+          "fixed_frame": 172,
+          "local_stack_peak": 184
+        },
+        {
+          "name": "M_CONSOLECORE_FEED_287D49E7",
+          "fixed_frame": 60,
+          "local_stack_peak": 68
+        }
+      ]
+    },
+    {
+      "name": "opt-bank1",
+      "status": "pass",
+      "artifact": "build/console-slice2/opt-bank1/results.json",
+      "artifact_sha256": "8c28a3f9408b00a5d9501d19da8a13144589976d6c644d7071042d27026f751f",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "6c4f55c4171c4b5222034fba5bf52cb1f591153d015d5a9a8744f66fee37cd96",
+      "image_sha256": "e3252a2e866625d2390b6e0adc6841cc71f2c7d9c3fa682b5fb3c585de368364",
+      "xex_sha256": "d7af5cfc29af2ce6e2d72fdb51026ea84b6941a7208e5b65959e236ac7d3c278",
+      "console_inputs": {
+        "abi/console.json": "7f67d7b2bc62261a3f6074f8b57c00a66e514bdb720d30a68c6b0ccc2130d7ae",
+        "tools/generate_console.py": "5d819acc5c4ae450e058a6e6c9706a09ddb5b910d3fe07f956f4b56569c0f37d",
+        "lib/consoletypes.act": "b70ec251dd7071bdd958e40cee809176a2110bdc4bfaed916837aef834843d2e",
+        "lib/consolecore.act": "3885ab83f63c95cafc65b45f379bc836016b9d71680ba3a5fb2ec850a6a00d6d",
+        "platform/altirraos/console-layout.inc": "70d0b207cee55e2dbcb0bf494f96d1f705694264c066791d4c548c4f4e65881b"
+      },
+      "kernel_bank": 1,
+      "checks": 1269,
+      "quanta": 75,
+      "first": "ABD     Z       Q?      ",
+      "second": "67        ",
+      "snapshots_sha256": "4ff4453ef347d05c184d3852268b463747d727b428bdef36601c5e974a21c365",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 19,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 18430,
+        "return_d": 8704,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 83,
+        "clock_end": 102,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 1,
+        "gateway_calls": 14,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 19,
+        "vbi_dispatches": 17,
+        "irq_depth": 0,
+        "live_tasks": 0,
+        "idle_runs": 1,
+        "created": 0,
+        "signal_nmi_checkpoints": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 438,
+            "untouched_above_floor": 842
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1052,
+          "untouched_from_base": 484,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "storage": {
+        "BASE": 66608,
+        "BYTES": 256,
+        "INSTANCE": 66768,
+        "PRESENTATION": 66832,
+        "CAPTURE": 986112
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      },
+      "core_frames": [
+        {
+          "name": "M_CONSOLECORE_EXTENT_83D9960B",
+          "fixed_frame": 104,
+          "local_stack_peak": 104
+        },
+        {
+          "name": "M_CONSOLECORE_INIT_F63331F9",
+          "fixed_frame": 116,
+          "local_stack_peak": 132
+        },
+        {
+          "name": "M_CONSOLECORE_DIRTY_4A63B073",
+          "fixed_frame": 34,
+          "local_stack_peak": 34
+        },
+        {
+          "name": "M_CONSOLECORE_EDITQUANTUM_E6CDEC54",
+          "fixed_frame": 110,
+          "local_stack_peak": 122
+        },
+        {
+          "name": "M_CONSOLECORE_NEWLINE_97A73E23",
+          "fixed_frame": 46,
+          "local_stack_peak": 46
+        },
+        {
+          "name": "M_CONSOLECORE_CHARACTER_94A5011A",
+          "fixed_frame": 154,
+          "local_stack_peak": 166
+        },
+        {
+          "name": "M_CONSOLECORE_FEED_287D49E7",
+          "fixed_frame": 48,
+          "local_stack_peak": 56
+        }
+      ]
+    },
+    {
+      "name": "opt-bank3",
+      "status": "pass",
+      "artifact": "build/console-slice2/opt-bank3/results.json",
+      "artifact_sha256": "ab77c94a660ed2ae5708d23282c1bf42b68c673c9e22804df4e2de700ccfee11",
+      "compiler_revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+      "compiler_binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+      "source_sha256": "6c4f55c4171c4b5222034fba5bf52cb1f591153d015d5a9a8744f66fee37cd96",
+      "image_sha256": "964a489592a85db57fd391d38c57e8beadfbac4cbd660cc50be272e67a8142ed",
+      "xex_sha256": "537ab2ff9dbcd43de99d1ebe7d4f8cf3d9eb4b60fe6a55249e957c07d85ce826",
+      "console_inputs": {
+        "abi/console.json": "7f67d7b2bc62261a3f6074f8b57c00a66e514bdb720d30a68c6b0ccc2130d7ae",
+        "tools/generate_console.py": "5d819acc5c4ae450e058a6e6c9706a09ddb5b910d3fe07f956f4b56569c0f37d",
+        "lib/consoletypes.act": "b70ec251dd7071bdd958e40cee809176a2110bdc4bfaed916837aef834843d2e",
+        "lib/consolecore.act": "3885ab83f63c95cafc65b45f379bc836016b9d71680ba3a5fb2ec850a6a00d6d",
+        "platform/altirraos/console-layout.inc": "70d0b207cee55e2dbcb0bf494f96d1f705694264c066791d4c548c4f4e65881b"
+      },
+      "kernel_bank": 3,
+      "checks": 1269,
+      "quanta": 75,
+      "first": "ABD     Z       Q?      ",
+      "second": "67        ",
+      "snapshots_sha256": "4ff4453ef347d05c184d3852268b463747d727b428bdef36601c5e974a21c365",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 19,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 18430,
+        "return_d": 8704,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 83,
+        "clock_end": 102,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 1,
+        "gateway_calls": 14,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 19,
+        "vbi_dispatches": 17,
+        "irq_depth": 0,
+        "live_tasks": 0,
+        "idle_runs": 1,
+        "created": 0,
+        "signal_nmi_checkpoints": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 438,
+            "untouched_above_floor": 842
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 1052,
+          "untouched_from_base": 484,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "storage": {
+        "BASE": 197680,
+        "BYTES": 256,
+        "INSTANCE": 197840,
+        "PRESENTATION": 197904,
+        "CAPTURE": 986112
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      },
+      "core_frames": [
+        {
+          "name": "M_CONSOLECORE_EXTENT_83D9960B",
+          "fixed_frame": 104,
+          "local_stack_peak": 104
+        },
+        {
+          "name": "M_CONSOLECORE_INIT_F63331F9",
+          "fixed_frame": 116,
+          "local_stack_peak": 132
+        },
+        {
+          "name": "M_CONSOLECORE_DIRTY_4A63B073",
+          "fixed_frame": 34,
+          "local_stack_peak": 34
+        },
+        {
+          "name": "M_CONSOLECORE_EDITQUANTUM_E6CDEC54",
+          "fixed_frame": 110,
+          "local_stack_peak": 122
+        },
+        {
+          "name": "M_CONSOLECORE_NEWLINE_97A73E23",
+          "fixed_frame": 46,
+          "local_stack_peak": 46
+        },
+        {
+          "name": "M_CONSOLECORE_CHARACTER_94A5011A",
+          "fixed_frame": 154,
+          "local_stack_peak": 166
+        },
+        {
+          "name": "M_CONSOLECORE_FEED_287D49E7",
+          "fixed_frame": 48,
+          "local_stack_peak": 56
+        }
+      ]
+    }
+  ],
+  "host_checks": [
+    "generated Action!/assembly match ABI",
+    "unchanged 42-byte IOStdReq",
+    "reject field/size/metadata/capture overlap",
+    "reject reservation overlap and bank overflow in banks 1 and 3"
+  ],
+  "compiler_limitations": [
+    "No compiler revision change; retained row offsets avoid unsupported runtime multiplication. Admission sums at most 24 bounded rows and validates address extents with LONGCARD.",
+    "Native frame limit retained; geometry/extent validation and ABI fixtures use small procedures."
+  ],
+  "unsupported": [
+    "ordinary console.device",
+    "keyboard or screen ownership",
+    "multiple public console instances",
+    "window presentation"
+  ]
+}

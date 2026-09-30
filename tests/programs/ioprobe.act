@@ -1,0 +1,4 @@
+MODULE IOPROBE
+; Explicit test builds only; each call is bounded protected policy.
+PUBLIC EXTERNAL LONGCARD FUNC Advance(BYTE operation)
+  ENDMODULE

@@ -1,0 +1,64 @@
+MODULE FSIO
+USE FSSTATUS
+USE FSTYPES
+USE FSBACKEND
+USE BLOCKIO
+USE SIODRIVER
+INCLUDE "../dos/dos-types.inc"
+
+; Request the backend's next sector and invalidate parsing caches on failure.
+PUBLIC BYTE FUNC Begin(FSTYPES.Service POINTER service)
+  BYTE status
+
+  service.work.operations==+1
+  status=BLOCKIO.BeginFetch(service.adapter,service.work.volume.block,
+      LONGCARD(service.work.neededSector))
+  service.work.ioError=service.adapter.error
+  IF status=FSSTATUS.ERROR THEN
+    service.work.error=ERROR_DISK_NOT_VALIDATED
+    FSBACKEND.Invalidate(service.work)
+  FI
+
+RETURN(status)
+
+; Translate block completion into filesystem errors while preserving BREAK.
+PUBLIC BYTE FUNC Complete(FSTYPES.Service POINTER service)
+
+  service.work.ioError=BLOCKIO.FinishFetch(service.adapter,
+      service.work.volume.block,LONGCARD(service.work.neededSector),
+      service.ioResult)
+  IF service.work.ioError<>0 THEN
+    FSBACKEND.Invalidate(service.work)
+    service.work.error=ERROR_DISK_NOT_VALIDATED
+    IF service.work.ioError=ERROR_BREAK THEN
+      service.work.error=ERROR_BREAK
+    FI
+
+    IF SIODRIVER.Unavailable()<>0 THEN
+      Offline(service)
+    FI
+
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+RETURN(FSSTATUS.DONE)
+
+; Invalidate shared sectors and mark every affected mount unavailable.
+PUBLIC PROC Offline(FSTYPES.Service POINTER service)
+  BYTE index
+  FSTYPES.Mount POINTER mount
+
+  BLOCKIO.Invalidate(service.adapter)
+  FOR index=0 TO service.count-1 DO
+    mount=service.mounts(index).item
+    IF mount<>FSTYPES.Mount POINTER(0) THEN
+      IF mount.offline=0 THEN
+        mount.error=service.work.ioError
+        mount.offline=1
+      FI
+    FI
+  OD
+
+RETURN
+
+ENDMODULE

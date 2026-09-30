@@ -1,0 +1,12 @@
+MODULE PORTCONTEXT
+USE EXEC
+EXEC.MsgPort port
+EXEC.Message item
+CARD ARRAY checks(8)
+
+; Exercise port-service admission from the required execution context.
+PROC Main()
+
+RETURN
+
+ENDMODULE

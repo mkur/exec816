@@ -1,0 +1,12 @@
+MODULE HEAPCONTEXT
+USE EXEC
+CARD ARRAY checks(12)
+
+; Exercise allocation from the required execution context.
+PROC Main()
+
+  checks(0)=EXEC.Version()
+
+RETURN
+
+ENDMODULE

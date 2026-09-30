@@ -1,0 +1,135 @@
+MODULE SIGNALPUMP
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE EXECSIGNALIRQ
+USE PRODUCERPROBE
+USE TASKSTACKS
+EXEC.Task worker
+EXEC.Task ARRAY bystanders(6)
+EXEC.Task POINTER parent
+VOLATILE BYTE skctl=$d20f,skshadow=$232,audctl=$d208,irqst=$d20e
+VOLATILE BYTE finished
+BYTE variant,oldsk
+CARD byteCount,sent,waits,background
+CARD pumpSent=$2080
+LONGCARD badResult
+PROC POINTER missing()
+
+PROC Prepare(EXEC.Task POINTER item BYTE slot)
+
+  item.tc_Node.ln_Type=EXEC.NT_TASK
+  item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@item.tc_MemEntry)
+
+RETURN
+
+PROC AwaitRemoval(EXEC.Task POINTER item)
+  CARD status
+
+  WHILE item.tc_State<>EXEC.TS_REMOVED DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+PROC StreamStart()
+
+  EXECSIGNALIRQ.PumpStart()
+
+RETURN
+
+PROC Refill()
+
+RETURN
+
+PROC StreamWorker()
+  EXEC.Task POINTER self
+  BYTE claimed
+  LONGCARD received
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  claimed=PRODUCERPROBE.Bind(self,1)
+  IF claimed=0 THEN
+    badResult=$ffffffff
+    RETURN
+  FI
+
+  received=EXEC.Wait(1)
+  waits==+1
+  IF received<>1 THEN
+    badResult=received
+  FI
+
+  WHILE (irqst & 8)<>0 DO
+  OD
+
+  sent=pumpSent
+  PRODUCERPROBE.Release()
+  skshadow=oldsk
+  skctl=oldsk
+  audctl=0
+  finished=1
+  EXEC.Signal(parent,2)
+
+RETURN
+
+PROC Bystander()
+  LONGCARD ignored
+
+  ignored=EXEC.Wait(0)
+
+RETURN
+
+PROC MoreTasks()
+  EXEC.Task POINTER item
+  CARD status
+  BYTE index
+
+  FOR index=0 TO TASKSTACKS.CAPACITY-3 DO
+    Prepare(@bystanders(index),index+2)
+    item=EXEC.AddTask(@bystanders(index),@Bystander,missing)
+    WHILE item.tc_State<>EXEC.TS_WAIT DO
+      status=EXECTASKS.Sleep(1)
+    OD
+  OD
+
+RETURN
+
+; Exercise bounded interrupt notification while other Tasks remain runnable.
+PROC Main()
+  EXEC.Task POINTER item
+  CARD status
+  LONGCARD received
+  BYTE index
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  oldsk=skshadow
+  IF variant=2 THEN
+    MoreTasks()
+  FI
+
+  Prepare(@worker,1)
+  item=EXEC.AddTask(@worker,@StreamWorker,missing)
+  WHILE worker.tc_State<>EXEC.TS_WAIT DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  StreamStart()
+  ; No Exec calls during the stream: this isolates the IRQ buffered byte path.
+  WHILE finished=0 DO
+    background==+1
+  OD
+
+  AwaitRemoval(@worker)
+  IF variant=2 THEN
+    FOR index=0 TO TASKSTACKS.CAPACITY-3 DO
+      EXEC.RemTask(@bystanders(index))
+    OD
+  FI
+
+RETURN
+
+ENDMODULE

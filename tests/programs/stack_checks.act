@@ -1,0 +1,18 @@
+MODULE STACKCHECKS
+USE EXECOS
+CARD result,status
+BYTE ARRAY message=[83 84 65 67 75 32 67 72 69 67 75 83 155]
+
+CARD FUNC Work(CARD value)
+
+RETURN(value+1)
+
+; Exercise native frame checks around bounded stack use.
+PROC Main()
+
+  result=Work(41)
+  status=EXECOS.Write(BYTE POINTER(message),13)
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "scope": "C Output/Write library binding; no release qualification",
+  "source_sha256": "04f93a775711d077070fc97afbc4bd6709c35dffd7fd51fd162b9159f456a1c0",
+  "source_inputs": {
+    "c/README.md": "3fa999935bf52dbb125f06d791b61f103ea08f745e10b17b3307f70222deead5",
+    "c/amiga/observe.c": "ebaee9e5378326e33cc620c6b838fc2964c6d612365642a51650dbc15c4459ba",
+    "c/calypsi/create-task-packet.h": "9a62d3d24a44b9285367337520dfe5b5881a0f96e8949b2bbab1c58b4a6c4c4d",
+    "c/calypsi/dos-bridge.h": "6fe5168dba166e6a2bb5981ae8b312c556f460ea8068a3ef29986cce5ed9b712",
+    "c/calypsi/dos-bridge.inc": "1c5907df93c63cae664c6963451eac2fae989afc2810f1eefdb09d1a251dc179",
+    "c/calypsi/dos.c": "bf31871a645acb14e9ff884179d488c70495c8e7aaf73f3fc6b7f3d4db85c926",
+    "c/calypsi/dos.s": "4789af31ca0177455a2957bc3c4aa31d218f8f9cf68af487dc87600cf322e6f8",
+    "c/calypsi/exec.c": "a2306f19337534a8cff50e2dca9df07c88c25233b1379764769e850945513b3f",
+    "c/calypsi/gateway.inc": "bc6305bc40b06ccf9de4b7ac46e8a797ca717bbdedf80893a51659e576c485cc",
+    "c/calypsi/gateway.s": "5942de33306e8a4244ba6af012ff73885ad47d7a8b797d34fb0501c98440b3a1",
+    "c/calypsi/image-info.s": "ee2b75322d39901c11780cf7d6928a84243823439cdb4435053fb5b8daea13d5",
+    "c/calypsi/launcher.act": "826e68cd3536b6b16f1025188d98b80adf10fce8693e8ec7a42faac7bdd92cfd",
+    "c/calypsi/layout-check.c": "5b8ecf0a523dbb5c19a841bd708aa74fc34408cee0e0ca1f5250c6bad82b706f",
+    "c/calypsi/layout.scm": "5948dc24ce278bb789b98bd5993941dceac405f89f4cc986880765c88438ac4c",
+    "c/calypsi/selectors.h": "6f5d005d64b8c07e501745b68cf1da07b5fc98713549673110b05bd4e780dedc",
+    "c/examples/messages.c": "04f93a775711d077070fc97afbc4bd6709c35dffd7fd51fd162b9159f456a1c0",
+    "c/include/clib/alib_protos.h": "b264f5d70229e345280101c2fe4942d4766535f251b5f0d5870985ecbada3f68",
+    "c/include/exec/lists.h": "709a5246d9456802d5ac6686ef33ac8033f5e82b24e65dd2da975641edf9a610",
+    "c/include/exec/memory.h": "896b66a594d688deed165bd76c21a112adfa6c169f0f905fda93b8d8f07c3ce8",
+    "c/include/exec/nodes.h": "0f10fe16ef03949506b186b25e04a5ff32e1c88e4cca1061a61a7d8fe099e735",
+    "c/include/exec/ports.h": "c61b6ae8370de2610a842df8d389c771d609667715a14d49868b15cf9852d715",
+    "c/include/exec/tasks.h": "4a6a1016139dd3f3a7ff5f5636da5f3979bf2e9e22819e5be612db3cb4c6d647",
+    "c/include/exec/types.h": "9ca3325ab96ed58d89223284edaea740d6bb1e046e21d4f3649f4aaf64e3bc5e",
+    "c/include/exec816/abi.h": "8ce0b154f48096aa3770b1ef97259570f3081f39ff36fd61c0ba577b15e4ed07",
+    "c/include/exec816/runtime.h": "9eb7406878e3b83208df54e21dc8680627827f243d13add5a57f987901913a74",
+    "c/include/proto/dos.h": "97d932966c45543d62851af912faa39e8e0c5b11a04181bb2a8f2df5c92f2bdf",
+    "c/include/proto/exec.h": "afda8e3afd30a358878e3733c9401003b42cb2959799376fb1b580d4d50754d1"
+  },
+  "compiler_pin": "27119ab2804e795b0bbb067c269826b934271754",
+  "exec816_pin_sha256": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068",
+  "amiga_pin_sha256": "111b0f154e22d5816bf6d61785a2a2283cc216514bb3d3e89fbfec8c909254fc",
+  "host_checks": {
+    "passed": 238
+  },
+  "exec816": {
+    "messages-opt": {
+      "status": "pass",
+      "results_sha256": "e0ab16825f36dde8d8db48d59ab5600a0ef1650f583943a46ee1b37c05d42ede",
+      "mode": "opt",
+      "image_sha256": "84295bb0be5c12d9b1a49d4891ff2ab6fcda5250c0e12280987bb2fc755fa3fd",
+      "xex_sha256": "7cef7145226399bec13bb74924fd7f8a6bd8ba5adfe91b614ce4ab6aa216306d",
+      "c_elf_sha256": "e844ee123258cef23c05cb1e4ec11ac2de4f40529f472df0e20dab07eaa188d8",
+      "output": [
+        "C sends: 10,20",
+        "C reply: 60,70",
+        "C message returned; resources released."
+      ],
+      "os_calls": 0,
+      "c_preemption": []
+    },
+    "context-raw": {
+      "status": "pass",
+      "results_sha256": "0a33a8da2102ff2dd0426641fa7fc653ab6a9024ed8607fc4e0bd0c01f6c5fe2",
+      "mode": "raw",
+      "image_sha256": "aa89ae87b7e3e2b964d20126666b788039cfb4e05f8f6a934215652d7c4085fc",
+      "xex_sha256": "e9f044ab61487e8bdd8a1144cff4398b106554625aa534ec5a3b2ff00bc601e7",
+      "c_elf_sha256": "d02cd2aedd7d1ab79b26cc922305414416a71cd844721159e5cc02a79a92c2ba",
+      "output": [
+        "C sends: 10,20",
+        "C reply: 60,70",
+        "C message returned; resources released."
+      ],
+      "os_calls": 0,
+      "c_preemption": [
+        {
+          "slot": 2,
+          "pc": 789833,
+          "progress": 929
+        },
+        {
+          "slot": 0,
+          "pc": 789863,
+          "progress": 1142
+        }
+      ]
+    },
+    "context-opt": {
+      "status": "pass",
+      "results_sha256": "b83b7b6aee6d4bbed3290a877b897f5524c73b498fb5f7fa0c36f29d389bd1df",
+      "mode": "opt",
+      "image_sha256": "a5eb37a6fe313764cea513a165a7f4d7c920496482d87432260bc7ba3122b7bd",
+      "xex_sha256": "4d67d1bd3c6485ea846f98c13aa4957e9fb118f0d06e2477fe87b72c60293036",
+      "c_elf_sha256": "ad794f08c717bff917c07a09ad1a556be392f44d5f929500bb1edca7e86586c8",
+      "output": [
+        "C sends: 10,20",
+        "C reply: 60,70",
+        "C message returned; resources released."
+      ],
+      "os_calls": 0,
+      "c_preemption": [
+        {
+          "slot": 2,
+          "pc": 789214,
+          "progress": 979
+        },
+        {
+          "slot": 0,
+          "pc": 789235,
+          "progress": 1314
+        }
+      ]
+    }
+  },
+  "amiga": {
+    "status": "pass",
+    "results_sha256": "59ab40c366736144060a54513d6c3fa71902424741d12b8c79e65de2118289e8",
+    "source_sha256": "04f93a775711d077070fc97afbc4bd6709c35dffd7fd51fd162b9159f456a1c0",
+    "executable_sha256": "d635d09a361b3f383239d46da63ba627d0b6b107db6e85833a21b5f543a4f922",
+    "completed_invocations": 3,
+    "output": [
+      "PASS 60,70 same message",
+      "PASS 60,70 same message",
+      "PASS 60,70 same message"
+    ],
+    "console_checks": "Shared main checks all three Write byte counts on each invocation; exact screen bytes checked on Exec816."
+  },
+  "coverage": [
+    "native and C argument layouts",
+    "current standard output handle",
+    "exact console bytes and explicit write length",
+    "zero and negative lengths",
+    "invalid handle and out-of-range C pointers",
+    "32-bit negative error result",
+    "C preemption and lower-DP preservation",
+    "native guards, resource cleanup and OS restoration"
+  ],
+  "storage": {
+    "upper_bank_binding_bytes": 6,
+    "bank_zero_reserved_delta": {
+      "fixed": 0,
+      "per_task": 0
+    },
+    "note": "Existing stack/DP reservations, guards, alignment and unused capacity are unchanged."
+  }
+}

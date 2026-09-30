@@ -1,0 +1,6 @@
+{
+  "system_mount": "D1",
+  "mounts": [
+    {"alias": "D1", "unit": 49, "sectors": 720, "sector_bytes": 128, "profile": 4, "format": 2}
+  ]
+}

@@ -1,0 +1,210 @@
+MODULE SIOLIFETIME
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE SIODRIVER
+USE TASKSTACKS
+USE IORESIDENTMETA
+USE HEAPCORE
+EXEC.Task first,second,stopper
+EXEC.Task POINTER parent
+PROC POINTER absent()
+BYTE kind,finished,opened,closed,stopped
+CARD checks
+BYTE POINTER checkpoint
+INCLUDE "tasks_exec_helpers.inc"
+INCLUDE "io-names.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC UntilCheckpoint(BYTE value)
+  CARD POINTER clock
+  CARD before
+
+  clock=CARD POINTER($2034)
+  before=clock^
+  WHILE checkpoint^<>value DO
+    IF CARD(clock^-before)>100 THEN
+      HEAPCORE.Abort($fbff)
+    FI
+
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Client()
+  EXEC.Task POINTER self
+  EXEC.MsgPort POINTER port
+  EXEC.IORequest POINTER request
+  INT error
+  LONGCARD bits,unit
+
+  port=EXEC.CreateMsgPort()
+  request=EXEC.CreateIORequest(port,EXEC.IOSIOREQ_SIZE)
+  Require(port<>EXEC.MsgPort POINTER(0) AND request<>EXEC.IORequest POINTER(0))
+  self=EXEC.FindTask(BYTE POINTER(0))
+  unit=49
+  IF self=@second THEN
+    unit=50
+  FI
+
+  EXEC.Forbid()
+  error=EXEC.OpenDevice(sioName,unit,request,0)
+  Require(error=0 AND self.tc_TDNestCnt=0)
+  opened==+1
+  EXEC.Signal(parent,LONGCARD($10000))
+  EXEC.Permit()
+  bits=EXEC.Wait(1)
+  EXEC.CloseDevice(request)
+  EXEC.DeleteIORequest(request)
+  EXEC.DeleteMsgPort(port)
+  EXEC.Forbid()
+  closed==+1
+  EXEC.Permit()
+
+RETURN
+
+PROC StopperEntry()
+
+  SIODRIVER.Stop()
+  stopped=1
+
+RETURN
+
+PROC AddStopper()
+  EXEC.Task POINTER added
+
+  PrepareTask(@stopper,TASKSTACKS.LOWER2,BYTE POINTER(0))
+  added=EXEC.AddTask(@stopper,@StopperEntry,absent)
+  Require(added=@stopper)
+
+RETURN
+
+PROC Concurrent()
+  EXEC.Task POINTER added,worker
+  LONGCARD bits
+  CARD POINTER opens
+
+  EXEC.Forbid()
+  PrepareTask(@first,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  added=EXEC.AddTask(@first,@Client,absent)
+  Require(added=@first)
+  PrepareTask(@second,TASKSTACKS.LOWER2,BYTE POINTER(0))
+  added=EXEC.AddTask(@second,@Client,absent)
+  Require(added=@second)
+  EXEC.Permit()
+  WHILE opened<>2 DO
+    bits=EXEC.Wait(LONGCARD($10000))
+  OD
+
+  worker=EXEC.FindTask(sioName)
+  opens=CARD POINTER(ADDRESS(IORESIDENTMETA.BASE+64))
+  Require(worker<>EXEC.Task POINTER(0) AND opens^=2 AND SIODRIVER.State()=2)
+  EXEC.Forbid()
+  EXEC.Signal(@first,1)
+  EXEC.Signal(@second,1)
+  EXEC.Permit()
+  AwaitRemoval(@first)
+  AwaitRemoval(@second)
+  Require(closed=2 AND opens^=0)
+  SIODRIVER.Stop()
+  Require(SIODRIVER.State()=0)
+
+RETURN
+
+PROC StopRaces()
+  EXEC.Task POINTER worker
+  EXEC.MsgPort POINTER port
+  EXEC.IORequest POINTER request
+  BYTE okay
+  INT error
+  LONGCARD POINTER generation
+  LONGCARD previous
+
+  okay=SIODRIVER.Start()
+  Require(okay=1)
+  worker=EXEC.FindTask(sioName)
+  generation=LONGCARD POINTER(ADDRESS(IORESIDENTMETA.BASE+104))
+  previous=generation^
+  IF kind=4 THEN
+    checkpoint^=11
+  ELSE
+    checkpoint^=9
+  FI
+
+  AddStopper()
+  IF kind=4 THEN
+    UntilCheckpoint(12)
+    Require(SIODRIVER.State()=0)
+    okay=SIODRIVER.Start()
+    Require(okay=1 AND generation^<>previous)
+    EXEC.Signal(@stopper,1)
+    AwaitRemoval(@stopper)
+    Require(stopped=1 AND SIODRIVER.State()=2)
+    SIODRIVER.Stop()
+  ELSE
+    UntilCheckpoint(10)
+    Require(SIODRIVER.State()=3)
+    IF kind=2 THEN
+      EXEC.RemTask(worker)
+      RETURN
+    FI
+
+    port=EXEC.CreateMsgPort()
+    request=EXEC.CreateIORequest(port,EXEC.IOSIOREQ_SIZE)
+    Require(port<>EXEC.MsgPort POINTER(0) AND request<>EXEC.IORequest POINTER(0))
+    error=EXEC.OpenDevice(sioName,49,request,0)
+    Require(error=EXEC.IOERR_OPENFAIL AND request.io_Device=BYTE POINTER(0))
+    EXEC.DeleteIORequest(request)
+    EXEC.DeleteMsgPort(port)
+    EXEC.Signal(worker,1)
+    AwaitRemoval(@stopper)
+    Require(stopped=1 AND SIODRIVER.State()=0)
+  FI
+
+RETURN
+
+; Exercise worker startup and shutdown with concurrent retained callers.
+PROC Main()
+  EXEC.Task POINTER added,worker
+  BYTE okay
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  Require(EXEC.AllocSignal(16)=16)
+  checkpoint=BYTE POINTER($0f085a)
+  IF kind=0 THEN
+    Concurrent()
+  ELSEIF kind=1 THEN
+    checkpoint^=7
+    PrepareTask(@first,TASKSTACKS.LOWER1,BYTE POINTER(0))
+    added=EXEC.AddTask(@first,@Client,absent)
+    Require(added=@first)
+    UntilCheckpoint(8)
+    worker=EXEC.FindTask(sioName)
+    Require(worker<>EXEC.Task POINTER(0) AND SIODRIVER.State()=1)
+    EXEC.RemTask(worker)
+    RETURN
+  ELSEIF kind=5 THEN
+    okay=SIODRIVER.Start()
+    Require(okay=1)
+  ELSE
+    StopRaces()
+  FI
+
+  EXEC.FreeSignal(16)
+  finished=1
+
+RETURN
+
+ENDMODULE

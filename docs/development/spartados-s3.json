@@ -1,0 +1,344 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "S3 native parser development checks; byte-exact sector provider, not transport or release qualification",
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "47cd55b2dac510922949832332b7a2c3220885be",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "platform": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "on",
+    "burstio": false,
+    "accuratedisk": false,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 15,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": true,
+    "diskemu": "generic",
+    "vbxe": false,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "off",
+    "exeloadmode": "default",
+    "kernel_id": "$eeca81434d995c35",
+    "actual_kernel_id": "$eeca81434d995c35",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "inputs": {
+    "lib/fs/fsbtypes.act": "300ea0afa0933e1c5047311c3a9fea0ed378080f820731007cbdf15197052d6e",
+    "lib/spartados/sdfstypes.act": "6999594ad7747183e7793b682603b855e3c3e776185971f72623f9fdd8bd2bc7",
+    "lib/spartados/sdfs.act": "6d14c328a6735a0e233bcc3764ec2cd08cd8ca5eb1d39e7573b525f79e42e693",
+    "lib/spartados/sdfsfile.act": "69d89367b1b1a1306f7e99174d59f6e7e9e515264115ca93961c5a961a516ae0",
+    "tools/library_paths.py": "dbc854930528a58f86a0e0e450223fa73ff2e7ce26ed8c84dcefc1601931cafe",
+    "tools/native_program.py": "f89c88a382d33457bddbc92f87b0b1d137b1c887bf756a21b064bb89cf1b151f",
+    "tools/test_sdfs_files.py": "90cb45dab3568372ac8e5d0bc8114b5c20e6f97eea14e7a5a85b1919722f9e5e",
+    "tests/programs/sdfs_files.act": "a7da4060e1fc7084ec9d8dd7183c00bab85c2e13d5251a4643d5e5b6ea73b38d"
+  },
+  "cases": [
+    {
+      "mode": "raw",
+      "sector_bytes": 128,
+      "status": "pass",
+      "checks": {
+        "checks": [
+          3538
+        ],
+        "dataReads": [
+          842
+        ],
+        "mapReads": [
+          18
+        ]
+      },
+      "result_sha256": "36cc18b8430e9a83c315a0f091982f4bb830e4cee27ae9ac9189870c0946c96e",
+      "image_sha256": "4c1ac613ef915cb27f5909f815ea7665831ce48666161b8962a906afb7e5e036",
+      "xex_sha256": "0428bad9a7d195d8409b7e993db35001222a53978eea02a6f998c1f9779046c1",
+      "fixture_sha256": "cdf13335979095072576b952668a4458b4970c3fa6527c5baafa12573c70da42",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 220,
+            "untouched_above_floor": 1060
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 24,
+            "untouched_above_floor": 1256
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 274,
+          "untouched_from_base": 1262,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "module_code_bytes": {
+        "SDFS": 10499,
+        "SDFSFILE": 15399
+      }
+    },
+    {
+      "mode": "raw",
+      "sector_bytes": 256,
+      "status": "pass",
+      "checks": {
+        "checks": [
+          2669
+        ],
+        "dataReads": [
+          562
+        ],
+        "mapReads": [
+          12
+        ]
+      },
+      "result_sha256": "8c2f582df954dc21ba90ef18356a45a021b08c771fee035b3bb851418c2b6c3a",
+      "image_sha256": "9d728dfd4c271495a988f632ff6124c469b6358573fd31015ac09e5d5977b7b4",
+      "xex_sha256": "038ecc24e0768e6ba534059a9d79fa1791a4eb35ce06c89528a631d7669eac13",
+      "fixture_sha256": "1fdbef44ad3ff73d51d798ca8c2622bf71153490e99e4832ae91b347b68e3145",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 222,
+            "untouched_above_floor": 1058
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 24,
+            "untouched_above_floor": 1256
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 274,
+          "untouched_from_base": 1262,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "module_code_bytes": {
+        "SDFS": 10499,
+        "SDFSFILE": 15399
+      }
+    },
+    {
+      "mode": "opt",
+      "sector_bytes": 128,
+      "status": "pass",
+      "checks": {
+        "checks": [
+          3538
+        ],
+        "dataReads": [
+          842
+        ],
+        "mapReads": [
+          18
+        ]
+      },
+      "result_sha256": "480ff5f2be36db973f6d45bcacaef3b43118d6850c6ae6a977213e5d705b01df",
+      "image_sha256": "5df5310159c7778487dab0c3275b2bb4882a6651e385f54d4184e19d9cd5b72f",
+      "xex_sha256": "4f1b4474d0f8333c89eafd08b56798fcdd53e93eea5d378e6d56f2e2089cb867",
+      "fixture_sha256": "cdf13335979095072576b952668a4458b4970c3fa6527c5baafa12573c70da42",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 204,
+            "untouched_above_floor": 1076
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 24,
+            "untouched_above_floor": 1256
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 266,
+          "untouched_from_base": 1270,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "module_code_bytes": {
+        "SDFS": 9662,
+        "SDFSFILE": 14418
+      }
+    },
+    {
+      "mode": "opt",
+      "sector_bytes": 256,
+      "status": "pass",
+      "checks": {
+        "checks": [
+          2669
+        ],
+        "dataReads": [
+          562
+        ],
+        "mapReads": [
+          12
+        ]
+      },
+      "result_sha256": "d64a6553df98c5a14e7a96c0ac15fa2add274343c701834befd25ef5d3c3b719",
+      "image_sha256": "211339b1e3a8f534b73f85eb062463b3c0e1e987122f0997488c260a6d1180bb",
+      "xex_sha256": "3d13b9f51d3e941965892a4fcb5be2b480b9bd02c2a1a17387f4ae4047ea8c75",
+      "fixture_sha256": "1fdbef44ad3ff73d51d798ca8c2622bf71153490e99e4832ae91b347b68e3145",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 199,
+            "untouched_above_floor": 1081
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1536,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1262
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1536,
+            "touched_bytes": 24,
+            "untouched_above_floor": 1256
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 266,
+          "untouched_from_base": 1270,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "module_code_bytes": {
+        "SDFS": 9662,
+        "SDFSFILE": 14418
+      }
+    }
+  ],
+  "bank_zero": {
+    "fixed_delta": 0,
+    "per_task_delta": 0
+  },
+  "upper_memory": {
+    "backend_workspace_allocated": 536,
+    "volume_allocated": 8,
+    "common_workspace_size": 174,
+    "common_workspace_allocated": 176,
+    "per_handle_delta": 0
+  },
+  "test_correction": "The initial boundary test used decimal 65530, a signed INT literal (-6) under documented Action semantics. It now uses unsigned $fffa. Every byte remains checked; assertion counting is per chunk to avoid counter wrap and overhead."
+}

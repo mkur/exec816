@@ -1,0 +1,27 @@
+; Common teardown owns storage only. Callers release their mount reference.
+MODULE FSOBJECTS
+USE EXEC
+USE DOSOBJECTS
+USE FSTYPES
+USE FSFILES
+USE FSLOCKS
+USE HEAPCORE
+
+; Select only the payload belonging to this validated or unpublished object.
+PUBLIC PROC Free(FSTYPES.Object POINTER item)
+
+  CASE item.header.kind OF
+  WHEN DOSOBJECTS.KIND_FILE THEN
+    FSFILES.Release(FSTYPES.FileObject POINTER(item))
+    EXEC.FreeMem(BYTE POINTER(item),SIZEOF(FSTYPES.FileObject))
+
+  WHEN DOSOBJECTS.KIND_LOCK THEN
+    FSLOCKS.Free(FSTYPES.LockObject POINTER(item))
+
+  ELSE
+    HEAPCORE.Abort($ff94)
+  ESAC
+
+RETURN
+
+ENDMODULE

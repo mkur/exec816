@@ -1,0 +1,196 @@
+MODULE SIOFIXTURE
+USE EXEC
+USE EXECLISTS
+USE EXECSIGNALIRQ
+USE PRODUCERPROBE
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+USE SIOADAPTER
+USE SIOPROBE
+EXEC.Task background
+BYTE stop
+CARD checks
+VOLATILE CARD progress
+PROC POINTER absent()
+INCLUDE "tasks_exec_helpers.inc"
+
+TYPE Descriptor=[
+  BYTE owned,phase,cancel,error,direction,divisor
+  CARD timeout,length,actual
+  BYTE POINTER cursor
+  BYTE pad
+  BYTE POINTER buffer
+  BYTE pad2
+  CARD remaining
+  BYTE checksum,value,alarm,pad3
+  CARD clock,deadline
+]
+
+Descriptor POINTER desc
+BYTE POINTER command
+CARD ARRAY results(8)
+BYTE variant
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fd00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC BackgroundEntry()
+
+  WHILE stop=0 DO
+    progress==+1
+  OD
+
+RETURN
+
+PROC Transaction(BYTE wire,direction CARD length BYTE POINTER buffer)
+  LONGCARD bits
+  CARD before,index,total
+  BYTE okay
+  CARD POINTER lowPart
+  BYTE POINTER bankPart
+
+  desc.direction=direction
+  desc.length=length
+  IF variant=6 THEN
+    lowPart=CARD POINTER($0f0810)
+    bankPart=BYTE POINTER($0f0812)
+    lowPart^=CARD(ADDRESS(buffer))
+    before=EXECTASKS.Sleep(1)
+    bankPart^=BYTE(ADDRESS(buffer) RSH 16)
+    Require(desc.phase=0)
+  ELSE
+    desc.buffer=buffer
+  FI
+
+  desc.timeout=250
+  desc.divisor=0
+  command(0)=$31
+  command(1)=wire
+  command(2)=4
+  command(3)=0
+  IF variant=1 OR variant=4 THEN
+    command(0)=$38
+    desc.timeout=4
+  FI
+
+  IF variant=4 THEN
+    desc.clock=$fffc
+  FI
+
+  IF variant=3 THEN
+    SIOADAPTER.Cancel()
+  FI
+
+  total=0
+  FOR index=0 TO 3 DO
+    total==+CARD(command(index))
+    IF total>255 THEN
+      total=(total & 255)+1
+    FI
+  OD
+
+  command(4)=BYTE(total)
+  before=progress
+  okay=SIOADAPTER.Start()
+  Require(okay=1)
+  IF variant=5 THEN
+    SIOPROBE.Emulation()
+  FI
+
+  bits=EXEC.Wait(LONGCARD($80000000))
+  Require(desc.phase=13)
+  IF variant<>3 THEN
+    Require(progress<>before)
+  FI
+
+  Require(desc.cursor=BYTE POINTER(0) AND desc.buffer=BYTE POINTER(0))
+  okay=SIOADAPTER.Retire()
+  Require(okay=1)
+  before=EXECTASKS.Sleep(3)
+  okay=SIOADAPTER.Recovered()
+
+RETURN
+
+PROC Setup()
+  EXEC.Task POINTER added
+  BYTE bit,okay
+
+  desc=Descriptor POINTER($0f0800)
+  command=BYTE POINTER($0f0830)
+  PrepareTask(@background,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  added=EXEC.AddTask(@background,@BackgroundEntry,absent)
+  bit=EXEC.AllocSignal(31)
+  okay=PRODUCERPROBE.Bind(EXEC.FindTask(BYTE POINTER(0)),LONGCARD($80000000))
+  Require(okay=1)
+  okay=SIOADAPTER.Init()
+  Require(okay=1)
+
+RETURN
+
+BYTE FUNC Normal()
+
+RETURN(variant=0 OR variant=5 OR variant=6)
+
+PROC Transfers()
+  CARD i
+  BYTE POINTER tx,rx
+
+  tx=BYTE POINTER($08ffc0)
+  rx=BYTE POINTER($0cffc0)
+  FOR i=0 TO 127 DO
+    tx(i)=BYTE(i XOR $6b)
+  OD
+
+  Transaction($52,1,128,rx)
+  results(0)=desc.error
+  results(1)=desc.actual
+  IF Normal()<>0 THEN
+    Require(desc.error=0 AND desc.actual=128)
+    FOR i=0 TO 127 DO
+      Require(rx(i)=BYTE(i XOR 60))
+    OD
+
+    Transaction($50,2,128,tx)
+    results(2)=desc.error
+    results(3)=desc.actual
+    Require(desc.error=0 AND desc.actual=128)
+    Transaction($52,1,128,rx)
+    results(4)=desc.error
+    results(5)=desc.actual
+    Require(desc.error=0 AND desc.actual=128)
+    FOR i=0 TO 127 DO
+      Require(rx(i)=tx(i))
+    OD
+  ELSEIF variant=3 THEN
+    Require(desc.error=$fe AND desc.actual=0)
+  ELSE
+    Require(desc.error=1 AND desc.actual=0)
+  FI
+
+RETURN
+
+; Exercise serial transactions with a concurrently runnable Task.
+PROC Main()
+
+  Setup()
+  Transfers()
+  SIOADAPTER.Shutdown()
+  PRODUCERPROBE.Release()
+  PRODUCERPROBE.Drain()
+  EXEC.FreeSignal(31)
+  stop=1
+  AwaitRemoval(@background)
+
+RETURN
+
+ENDMODULE

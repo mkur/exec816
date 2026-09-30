@@ -1,0 +1,11 @@
+MODULE DISKSTATUS
+USE COMMAND
+
+; Exercise command completion and detailed result propagation.
+LONGINT FUNC Main()
+
+  COMMAND.SetIoErr(0)
+
+RETURN(COMMAND.RETURN_FAIL)
+
+ENDMODULE

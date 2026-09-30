@@ -1,0 +1,20 @@
+MODULE BOOTCONFIGTEST
+USE BOOTCONFIG
+
+CARD ARRAY facts(4)
+
+; Exercise validated boot overrides and fallback defaults.
+PROC Main()
+
+  facts(0)=BOOTCONFIG.CacheBlocks()
+  facts(1)=BOOTCONFIG.Status()
+  facts(2)=BOOTCONFIG.SystemDrive()
+  ; Resident settings no longer depend on the retired loader's input bytes.
+  LET request=CARD POINTER(ADDRESS(BOOTCONFIG.B_ADDRESS
+      +BOOTCONFIG.B_FIELD_CACHE_BLOCKS))
+  request^=0
+  facts(3)=BOOTCONFIG.CacheBlocks()
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,214 @@
+; Retained terminal state only. No POKEY, screen access, blocking or globals.
+MODULE CONSOLECORE
+USE CONSOLETYPES
+USE A816MEMORY
+USE ASCII
+
+CONST BACKSPACE=8, DELETE=127
+
+; Keep terminal cells in writable upper RAM, disjoint from instance metadata.
+BYTE FUNC Extent(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
+    CARD count LONGCARD bytes)
+  LONGCARD start,last,recordStart
+
+  start=LONGCARD(ADDRESS(cells))
+  last=start+bytes
+  recordStart=LONGCARD(ADDRESS(instance))
+  IF bytes<LONGCARD(count) THEN
+    RETURN(0)
+  FI
+
+  IF start<LONGCARD($10000) OR last>LONGCARD($1000000) OR last<start THEN
+    RETURN(0)
+  FI
+
+  IF start<recordStart+CONSOLETYPES.INSTANCE_SIZE AND last>recordStart THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Validate dimensions and establish an initially cleared retained terminal.
+PUBLIC BYTE FUNC Init(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
+    CARD width,height LONGCARD bytes)
+  CARD count,row
+
+  IF width=0 OR height=0 OR width>CONSOLETYPES.MAX_WIDTH
+      OR height>CONSOLETYPES.MAX_HEIGHT THEN
+    RETURN(0)
+  FI
+
+  ; A bounded sum of at most 24 rows, checked before addition. Address/extent
+  ; validation below uses full-width arithmetic; cursor work uses row offsets.
+  count=0
+  FOR row=1 TO height DO
+    IF count>CONSOLETYPES.CELL_BYTES-width THEN
+      RETURN(0)
+    FI
+
+    count==+width
+  OD
+
+  IF Extent(instance,cells,count,bytes)=0 THEN
+    RETURN(0)
+  FI
+
+  instance.cells=cells
+  instance.width=width
+  instance.height=height
+  instance.count=count
+  instance.column=0
+  instance.row=0
+  instance.lineStart=0
+  instance.dirtyFirst=0
+  instance.dirtyEnd=count
+  instance.reserved=0
+  instance.operation=CONSOLETYPES.OP_CLEAR
+
+RETURN(1)
+
+; Accumulate the cell interval that presentation must refresh.
+PUBLIC PROC Dirty(CONSOLETYPES.Instance POINTER instance CARD first,last)
+
+  IF first<instance.dirtyFirst THEN
+    instance.dirtyFirst=first
+  FI
+
+  IF last>instance.dirtyEnd THEN
+    instance.dirtyEnd=last
+  FI
+
+RETURN
+
+; Complete one logical edit while the worker retains its request and instance.
+; The bounded native copy stays preemptible, including when an abort arrives.
+PUBLIC PROC EditQuantum(CONSOLETYPES.Instance POINTER instance)
+
+  IF instance.operation=CONSOLETYPES.OP_IDLE THEN
+    RETURN
+  FI
+
+  LET cells=instance.cells
+  LET count=instance.count
+  LET copied=count-instance.width
+  IF instance.operation=CONSOLETYPES.OP_SCROLL THEN
+    A816MEMORY.Move(cells,cells+SIZE(instance.width),SIZE(copied))
+    A816MEMORY.Fill(cells+SIZE(copied),ASCII.SPACE,SIZE(instance.width))
+  ELSE
+    A816MEMORY.Fill(cells,ASCII.SPACE,SIZE(count))
+  FI
+
+  Dirty(instance,0,count)
+  instance.operation=CONSOLETYPES.OP_IDLE
+
+RETURN
+
+; Advance within the retained terminal or request scrolling at its bottom
+; edge.
+PROC NewLine(CONSOLETYPES.Instance POINTER instance)
+
+  instance.column=0
+  IF instance.row+1<instance.height THEN
+    instance.row==+1
+    instance.lineStart==+instance.width
+  ELSE
+    instance.operation=CONSOLETYPES.OP_SCROLL
+  FI
+
+RETURN
+
+; Apply supported text controls without exposing platform character codes.
+PROC Control(CONSOLETYPES.Instance POINTER instance BYTE value)
+  CARD column
+
+  CASE value OF
+  WHEN BACKSPACE THEN
+    IF instance.column<>0 THEN
+      instance.column==-1
+    FI
+
+  WHEN ASCII.TAB THEN
+    column=(instance.column & $fff8)+8
+    IF column>=instance.width THEN
+      NewLine(instance)
+    ELSE
+      instance.column=column
+    FI
+
+  WHEN ASCII.LF THEN
+    NewLine(instance)
+
+  WHEN ASCII.FF THEN
+    instance.column=0
+    instance.row=0
+    instance.lineStart=0
+    instance.operation=CONSOLETYPES.OP_CLEAR
+
+  WHEN ASCII.CR THEN
+    instance.column=0
+  ESAC
+
+RETURN
+
+; Count source bytes, including ignored controls. Printable runs publish one
+; dirty interval, ending at a control, row edge or the source quantum.
+PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
+    CARD length)
+  CARD used,limit,stop,first,index
+  BYTE value
+
+  IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
+    EditQuantum(instance)
+    RETURN(0)
+  FI
+
+  used=0
+  limit=length
+  IF limit>CONSOLETYPES.SOURCE_QUANTUM THEN
+    limit=CONSOLETYPES.SOURCE_QUANTUM
+  FI
+
+  WHILE used<limit DO
+    value=bytes(used)
+    IF value>=ASCII.SPACE AND value<>DELETE THEN
+      first=instance.lineStart+instance.column
+      index=first
+      stop=used+instance.width-instance.column
+      IF stop>limit THEN
+        stop=limit
+      FI
+
+      DO
+        value=bytes(used)
+        IF value<ASCII.SPACE OR value=DELETE THEN
+          EXIT
+        FI
+
+        IF value>=128 THEN
+          value='?
+        FI
+
+        instance.cells(index)=value
+        index==+1
+        used==+1
+      UNTIL used=stop
+      OD
+
+      instance.column==+index-first
+      Dirty(instance,first,index)
+      IF instance.column=instance.width THEN
+        NewLine(instance)
+      FI
+    ELSE
+      Control(instance,value)
+      used==+1
+    FI
+
+    IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
+      EXIT
+    FI
+  OD
+
+RETURN(used)
+
+ENDMODULE

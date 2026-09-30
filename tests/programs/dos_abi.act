@@ -1,0 +1,252 @@
+MODULE DOSABI
+USE EXEC
+USE EXECLISTS
+USE DOS
+USE DOSWIRE
+USE HEAPCORE
+INCLUDE "dos-packets.inc"
+LONGCARD ARRAY seen(35),returns(23)
+CARD checks
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Test-only native callees: none is a DOS production import.
+DOS.FileHandle POINTER FUNC Open(BYTE POINTER name LONGINT mode)
+
+  seen(0)=LONGCARD(ADDRESS(name))
+  seen(1)=LONGCARD(mode)
+
+RETURN(DOS.FileHandle POINTER($070000))
+
+LONGINT FUNC Read(DOS.FileHandle POINTER file BYTE POINTER buffer LONGINT length)
+
+  seen(2)=LONGCARD(ADDRESS(file))
+  seen(3)=LONGCARD(ADDRESS(buffer))
+  seen(4)=LONGCARD(length)
+
+RETURN(length)
+
+LONGINT FUNC Write(DOS.FileHandle POINTER file BYTE POINTER buffer LONGINT length)
+
+  seen(19)=LONGCARD(ADDRESS(file))
+  seen(20)=LONGCARD(ADDRESS(buffer))
+  seen(21)=LONGCARD(length)
+
+RETURN(length)
+
+LONGINT FUNC Seek(DOS.FileHandle POINTER file LONGINT offset LONGINT mode)
+
+  seen(5)=LONGCARD(ADDRESS(file))
+  seen(6)=LONGCARD(offset)
+  seen(7)=LONGCARD(mode)
+
+RETURN(offset)
+
+LONGINT FUNC Close(DOS.FileHandle POINTER file)
+
+  seen(8)=LONGCARD(ADDRESS(file))
+
+RETURN(-1)
+
+LONGINT FUNC SetIoErr(LONGINT error)
+
+  seen(34)=LONGCARD(error)
+
+RETURN(-70000)
+
+LONGINT FUNC IoErr()
+
+RETURN(70000)
+
+DOS.FileLock POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
+
+  seen(9)=LONGCARD(ADDRESS(name))
+  seen(10)=LONGCARD(mode)
+
+RETURN(DOS.FileLock POINTER($090000))
+
+PROC UnLock(DOS.FileLock POINTER lock)
+
+  seen(11)=LONGCARD(ADDRESS(lock))
+
+RETURN
+
+LONGINT FUNC Examine(DOS.FileLock POINTER lock DOS.FileInfoBlock POINTER info)
+
+  seen(12)=LONGCARD(ADDRESS(lock))
+  seen(13)=LONGCARD(ADDRESS(info))
+
+RETURN(-1)
+
+LONGINT FUNC ExNext(DOS.FileLock POINTER lock DOS.FileInfoBlock POINTER info)
+
+  seen(14)=LONGCARD(ADDRESS(lock))
+  seen(15)=LONGCARD(ADDRESS(info))
+
+RETURN(0)
+
+LONGINT FUNC ReleaseContext()
+
+RETURN(-1)
+
+DOS.FileHandle POINTER FUNC Input()
+
+RETURN(DOS.FileHandle POINTER($070000))
+
+DOS.FileHandle POINTER FUNC Output()
+
+RETURN(DOS.FileHandle POINTER($090000))
+
+DOS.FileHandle POINTER FUNC SelectInput(DOS.FileHandle POINTER file)
+
+  seen(25)=LONGCARD(ADDRESS(file))
+
+RETURN(DOS.FileHandle POINTER($070000))
+
+DOS.FileHandle POINTER FUNC SelectOutput(DOS.FileHandle POINTER file)
+
+  seen(26)=LONGCARD(ADDRESS(file))
+
+RETURN(DOS.FileHandle POINTER($090000))
+
+LONGINT FUNC IsInteractive(DOS.FileHandle POINTER file)
+
+  seen(27)=LONGCARD(ADDRESS(file))
+
+RETURN(-1)
+
+DOS.FileLock POINTER FUNC CurrentDir(DOS.FileLock POINTER lock)
+
+  seen(28)=LONGCARD(ADDRESS(lock))
+
+RETURN(DOS.FileLock POINTER($070000))
+
+LONGINT FUNC NameFromLock(DOS.FileLock POINTER lock BYTE POINTER buffer
+    LONGINT length)
+
+  seen(29)=LONGCARD(ADDRESS(lock))
+  seen(30)=LONGCARD(ADDRESS(buffer))
+  seen(31)=LONGCARD(length)
+
+RETURN(-1)
+
+PROC Defaults()
+
+  returns(12)=LONGCARD(ADDRESS(Input()))
+  returns(13)=LONGCARD(ADDRESS(Output()))
+  returns(14)=LONGCARD(ADDRESS(SelectInput(DOS.FileHandle POINTER($090000))))
+  returns(15)=LONGCARD(ADDRESS(SelectOutput(DOS.FileHandle POINTER($070000))))
+  returns(18)=LONGCARD(NameFromLock(DOS.FileLock POINTER($090000),
+      BYTE POINTER($0affff),LONGINT(70003)))
+  returns(17)=LONGCARD(ADDRESS(CurrentDir(DOS.FileLock POINTER($090000))))
+  returns(16)=LONGCARD(IsInteractive(DOS.FileHandle POINTER($070000)))
+
+RETURN
+
+LONGINT FUNC BeginForeground(DOS.FileHandle POINTER console)
+
+  seen(32)=LONGCARD(ADDRESS(console))
+
+RETURN(-1)
+
+LONGINT FUNC EndForeground()
+
+RETURN(-1)
+
+LONGINT FUNC BreakPending()
+
+RETURN(-1)
+
+PROC ClearBreak()
+
+  seen(33)=$87654321
+
+RETURN
+
+PROC ForegroundCalls()
+
+  returns(19)=LONGCARD(BeginForeground(DOS.FileHandle POINTER($0bfffe)))
+  returns(20)=LONGCARD(EndForeground())
+  returns(21)=LONGCARD(BreakPending())
+  ClearBreak()
+
+RETURN
+
+PROC Calls0()
+
+  returns(0)=LONGCARD(ADDRESS(Open(BYTE POINTER($05ffff),LONGINT(1005))))
+  returns(1)=LONGCARD(Read(DOS.FileHandle POINTER($070000),
+      BYTE POINTER($09ffff),LONGINT(70001)))
+  returns(2)=LONGCARD(Seek(DOS.FileHandle POINTER($070000),LONGINT(-70002),
+      LONGINT(-1)))
+
+RETURN
+
+PROC Calls1()
+
+  returns(3)=LONGCARD(Close(DOS.FileHandle POINTER($070000)))
+  returns(4)=LONGCARD(IoErr())
+  returns(5)=LONGCARD(ADDRESS(Lock(BYTE POINTER($05ffff),LONGINT(-2))))
+  UnLock(DOS.FileLock POINTER($090000))
+
+RETURN
+
+PROC Calls2()
+
+  returns(6)=LONGCARD(Examine(DOS.FileLock POINTER($090000),
+      DOS.FileInfoBlock POINTER($06fff0)))
+  returns(7)=LONGCARD(ExNext(DOS.FileLock POINTER($090000),
+      DOS.FileInfoBlock POINTER($06fff0)))
+  returns(8)=LONGCARD(ReleaseContext())
+  returns(9)=LONGCARD(Read(DOS.FileHandle POINTER(0),BYTE POINTER(0),LONGINT(0)))
+
+RETURN
+
+PROC PointerSlots()
+
+  Require(DOSWIRE.IsPointer(LONGINT(0))<>0)
+  Require(DOSWIRE.IsPointer(LONGINT($070000))<>0)
+  Require(DOSWIRE.IsPointer(LONGINT($ffffff))<>0)
+  Require(DOSWIRE.IsPointer(LONGINT($01000000))=0)
+  Require(DOSWIRE.IsPointer(LONGINT($80000000))=0)
+  Require(DOSWIRE.IsPointer(LONGINT(-1))=0)
+
+RETURN
+
+INCLUDE "dos-abi-fields.inc"
+
+; Exercise DOS call signatures and packed record layout.
+PROC Main()
+
+  returns(22)=LONGCARD(SetIoErr(123456))
+  Fields()
+  Calls0()
+  Calls1()
+  seen(16)=seen(3)
+  seen(17)=seen(4)
+  seen(18)=seen(2)
+  Calls2()
+  PointerSlots()
+  Defaults()
+  ForegroundCalls()
+  returns(10)=LONGCARD(Write(DOS.FileHandle POINTER($070000),
+      BYTE POINTER($0dfffe),LONGINT(70003)))
+  seen(22)=seen(19)
+  seen(23)=seen(20)
+  seen(24)=seen(21)
+  returns(11)=LONGCARD(Write(DOS.FileHandle POINTER($070000),BYTE POINTER(0),
+      LONGINT(-1)))
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,123 @@
+MODULE TASKSEXEC
+
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+
+INCLUDE "example-output.inc"
+
+; Build with --tasks --task-capacity 8 --console.
+CONST WORKER_COUNT=3,FIRST_WORKER_SLOT=2
+
+EXEC.Task ARRAY workers(WORKER_COUNT)
+ADDRESS ARRAY pointers(5)
+CARD ARRAY checks(4)
+VOLATILE BYTE ARRAY progress(WORKER_COUNT)
+BYTE ARRAY workerName=c"worker"
+BYTE ARRAY line=c"TASKS EXEC OK\n"
+BYTE ARRAY failed=c"Task example failed.\n"
+PROC POINTER defaultFinalizer()
+
+; Each Task borrows a generated stack slot; root and console occupy 0 and 1.
+PROC Prepare(EXEC.Task POINTER item BYTE slot)
+
+  item.tc_Node.ln_Type=EXEC.NT_TASK
+  item.tc_Node.ln_Name=workerName
+  item.tc_Node.ln_Pri=$80
+  item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@item.tc_MemEntry)
+
+RETURN
+
+; Returning from the entry routine uses the default Task finalizer.
+PROC First()
+
+  progress(0)=1
+
+RETURN
+
+; A Task can also remove itself explicitly; RemTask does not return.
+PROC Second()
+
+  progress(1)=1
+  EXEC.RemTask(NULL)
+  progress(1)=$ff
+
+RETURN
+
+; This Task returns into the custom finalizer supplied to AddTask.
+PROC Third()
+
+  progress(2)=1
+
+RETURN
+
+; Record Task completion through the explicit finalizer entry.
+PROC Finalizer()
+
+  progress(2)=2
+  EXEC.RemTask(NULL)
+  progress(2)=$ff
+
+RETURN
+
+; Admission under Forbid lets the parent inspect Tasks before they run.
+PROC StartWorkers()
+
+  checks(0)=EXEC.Version()
+  pointers(0)=ADDRESS(EXEC.FindTask(NULL))
+  Prepare(@workers(0),FIRST_WORKER_SLOT)
+  Prepare(@workers(1),FIRST_WORKER_SLOT+1)
+  Prepare(@workers(2),FIRST_WORKER_SLOT+2)
+
+  EXEC.Forbid()
+  pointers(1)=ADDRESS(EXEC.AddTask(@workers(0),@First,defaultFinalizer))
+  pointers(2)=ADDRESS(EXEC.AddTask(@workers(1),@Second,defaultFinalizer))
+  pointers(3)=ADDRESS(EXEC.AddTask(@workers(2),@Third,@Finalizer))
+  LET found=EXEC.FindTask(workerName)
+  pointers(4)=ADDRESS(found)
+  IF found<>NULL THEN
+    checks(1)=CARD(EXEC.SetTaskPri(found,$7f))
+  FI
+
+  EXEC.Yield()
+  checks(2)=CARD(progress(0))+CARD(progress(1))+CARD(progress(2))
+  EXEC.Permit()
+
+RETURN
+
+; Demonstrate Task admission, scheduling and retirement using public Exec
+; services.
+PROC Main()
+
+  BYTE index
+  CARD status
+
+  StartWorkers()
+  ; Wait for every admitted Task, including its finalizer, before exiting.
+  FOR index=0 TO WORKER_COUNT-1 DO
+    IF pointers(index+1)<>0 THEN
+      WHILE workers(index).tc_State<>EXEC.TS_REMOVED DO
+        status=EXECTASKS.Sleep(1)
+      OD
+    FI
+  OD
+
+  checks(3)=CARD(EXEC.FindTask(workerName)=NULL)
+
+  IF OpenConsole()<>0 THEN
+    IF progress(0)=1 AND progress(1)=1 AND progress(2)=2 THEN
+      Print(line)
+    ELSE
+      Print(failed)
+    FI
+
+    CloseConsole()
+  FI
+
+RETURN
+
+ENDMODULE

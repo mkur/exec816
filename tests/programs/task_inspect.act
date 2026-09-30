@@ -1,0 +1,132 @@
+MODULE INSPECTTEST
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE TASKINSPECT
+USE HEAPCORE
+
+EXEC.Task ARRAY workers(3)
+BYTE ARRAY oddName=[120 1 121 0]
+PROC POINTER noFinalizer()
+VOLATILE BYTE ready
+CARD checks
+BYTE finished
+
+; Fail immediately when an observed result violates the fixture contract.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ec00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Worker()
+  EXEC.Task POINTER self
+  CARD status
+  LONGCARD received
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  IF self.tc_UserData=1 THEN
+    received=EXEC.Wait(1)
+  ELSEIF self.tc_UserData=2 THEN
+    status=EXECTASKS.Sleep(5000)
+  ELSE
+    ready=1
+    DO
+      EXEC.Yield()
+    OD
+  FI
+
+RETURN
+
+PROC Prepare(BYTE slot)
+  EXEC.Task POINTER item
+
+  item=@workers(slot-1)
+  item.tc_Node.ln_Type=EXEC.NT_TASK
+  item.tc_UserData=ADDRESS(slot)
+  item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@item.tc_MemEntry)
+  IF slot=1 THEN
+    item.tc_Node.ln_Name=BYTE POINTER($bfff4)
+  FI
+
+  IF slot=3 THEN
+    item.tc_Node.ln_Name=oddName
+  FI
+
+  Check(EXEC.AddTask(item,@Worker,noFinalizer)=item)
+
+RETURN
+
+; Exercise Task inspection while a worker changes state.
+PROC Main()
+  TASKINSPECT.Info POINTER rows
+  BYTE POINTER buffer,name
+  EXEC.Task POINTER self
+  CARD count,index,status
+
+  rows=TASKINSPECT.Info POINTER($dfff8)
+  buffer=BYTE POINTER($dffe8)
+  self=EXEC.FindTask(BYTE POINTER(0))
+  Check(SIZEOF(TASKINSPECT.Info)=26 AND TASKINSPECT.CAPACITY=8)
+  Check(TASKINSPECT.Snapshot(rows,7)=0 AND buffer(16)=$a5)
+  Check(TASKINSPECT.Snapshot(TASKINSPECT.Info POINTER(0),8)=0)
+  EXEC.Forbid()
+  Prepare(1)
+  Prepare(2)
+  Prepare(3)
+  count=TASKINSPECT.Snapshot(rows,8)
+  Check(count=4 AND self.tc_TDNestCnt=0)
+  Check(rows(0).slot=0 AND rows(0).state=TASKINSPECT.STATE_RUNNING)
+  FOR index=1 TO 3 DO
+    Check(rows(index).slot=index AND rows(index).state=TASKINSPECT.STATE_READY)
+  OD
+
+  name=BYTE POINTER($bfff4)
+  FOR index=0 TO 22 DO
+    Check(rows(1).name(index)=name(index))
+  OD
+
+  Check(rows(1).name(23)=0 AND rows(2).name(0)=0)
+  Check(rows(3).name(0)=120 AND rows(3).name(1)=46 AND rows(3).name(2)=121
+      AND rows(3).name(3)=0)
+  EXEC.Permit()
+  WHILE workers(0).tc_State<>EXEC.TS_WAIT OR workers(1).tc_State<>EXEC.TS_WAIT
+      OR ready=0 DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  count=TASKINSPECT.Snapshot(rows,8)
+  Check(count=4 AND self.tc_TDNestCnt=$ff)
+  Check(rows(0).state=TASKINSPECT.STATE_RUNNING
+      AND rows(1).state=TASKINSPECT.STATE_SIGNAL_WAIT)
+  Check(rows(2).state=TASKINSPECT.STATE_SLEEPING
+      AND rows(3).state=TASKINSPECT.STATE_READY)
+  EXEC.RemTask(@workers(0))
+  name(0)=90
+  Check(rows(1).name(0)=65)
+  count=TASKINSPECT.Snapshot(rows,8)
+  Check(count=3 AND rows(0).slot=0 AND rows(1).slot=2 AND rows(2).slot=3)
+  EXEC.RemTask(@workers(1))
+  EXEC.RemTask(@workers(2))
+  Check(TASKINSPECT.Snapshot(rows,8)=1)
+  FOR index=0 TO 15 DO
+    Check(buffer(index)=$a5)
+  OD
+
+  FOR index=120 TO 255 DO
+    Check(buffer(index)=$a5)
+  OD
+
+  finished=1
+
+RETURN
+
+ENDMODULE

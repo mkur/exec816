@@ -1,0 +1,125 @@
+MODULE FSPACKET
+USE FSSTATUS
+USE EXEC
+USE HEAPCORE
+USE DOSWIRE
+USE DOSCORE
+USE DOSCLIENT
+USE FSTYPES
+USE DOSOBJECTS
+USE FSREGISTRY
+USE FSOBJECTS
+USE FSOPERATION
+USE DOSBREAKTYPES
+USE FSBTYPES
+INCLUDE "../dos/dos-types.inc"
+
+TYPE ResultCell=[BYTE POINTER handle]
+
+; Return packet ownership after retiring its cancellation state.
+PUBLIC PROC Reply(FSTYPES.Service POINTER service)
+  FSTYPES.Packet POINTER packet
+
+  packet=service.packet
+  EXEC.Forbid()
+  FSOPERATION.ReplyReady(DOSBREAKTYPES.Scope POINTER(service.client.foreground),
+      FSOPERATION.WirePacket POINTER(packet))
+  service.packet=FSTYPES.Packet POINTER(0)
+  service.object=FSTYPES.Object POINTER(0)
+  service.stage=10
+  service.nextStep=service.readyStep
+  service.client=DOSCLIENT.ClientContext POINTER(0)
+  service.owner=DOSCORE.DosSlot POINTER(0)
+  service.info=BYTE POINTER(0)
+  service.work.path=BYTE POINTER(0)
+  service.operation.stage=0
+  service.operation.output=BYTE POINTER(0)
+  service.operation.file=FSBTYPES.Cursor POINTER(0)
+  service.selected=FSTYPES.Mount POINTER(0)
+  service.work.volume=FSBTYPES.Volume POINTER(0)
+  EXEC.ReplyMsg(@packet.sp_Msg)
+  EXEC.Permit()
+
+RETURN
+
+; Publish a failed packet result through the ordinary reply path.
+PUBLIC BYTE FUNC Error(FSTYPES.Service POINTER service LONGINT error)
+
+  IF error=ERROR_DISK_NOT_VALIDATED AND service.work.ioError<>0 THEN
+    error=service.work.ioError
+  FI
+
+  service.packet.sp_Pkt.dp_Res2=error
+  Reply(service)
+
+RETURN(FSSTATUS.MORE)
+
+; Recover the client and owner attached to the worker's current packet.
+PUBLIC PROC Identity(FSTYPES.Service POINTER service)
+  BYTE POINTER bytes
+
+  bytes=BYTE POINTER(service.packet)
+  service.client=DOSCLIENT.ClientContext POINTER(ADDRESS(bytes)-SIZE(6))
+  IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg7)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  service.owner=DOSCORE.DosSlot POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg7))
+  IF service.owner.context<>BYTE POINTER(service.client)
+      OR service.owner.owner<>service.client.owner OR service.client.busy=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  IF service.packet.sp_Msg.mn_ReplyPort<>service.client.port
+      OR service.packet.sp_Pkt.dp_Port<>service.client.port THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  IF service.packet.sp_Pkt.dp_Link<>@service.packet.sp_Msg
+      OR service.packet.sp_Msg.mn_Node.ln_Name<>BYTE POINTER(
+      @service.packet.sp_Pkt) THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+RETURN
+
+; Expose a fully prepared object only at the final open checkpoint.
+PUBLIC BYTE FUNC PublishOpenStep(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+  FSTYPES.Object POINTER item
+  ResultCell POINTER cell
+
+  service=FSTYPES.Service POINTER(raw)
+  item=service.object
+  item.mount=service.selected
+  item.generation=service.selected.generation
+  item.header.backend=DOSOBJECTS.BACKEND_FILE
+  DOSOBJECTS.Link(service.owner,@item.header)
+  IF service.packet.sp_Pkt.dp_Type=8 THEN
+    service.packet.sp_Pkt.dp_Res1=LONGINT(ADDRESS(item))
+  ELSE
+    cell=ResultCell POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg1))
+    cell.handle=BYTE POINTER(item)
+    service.packet.sp_Pkt.dp_Res1=-1
+  FI
+
+  Reply(service)
+
+RETURN(FSSTATUS.MORE)
+
+; Release a validated object; there is no I/O or resumable work in Close.
+PUBLIC BYTE FUNC Close(FSTYPES.Service POINTER service)
+
+  LET item=service.object
+  IF DOSOBJECTS.Unlink(service.owner,@item.header)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  FSREGISTRY.Release(item.mount)
+  FSOBJECTS.Free(item)
+  service.packet.sp_Pkt.dp_Res1=-1
+  Reply(service)
+
+RETURN(FSSTATUS.MORE)
+
+ENDMODULE

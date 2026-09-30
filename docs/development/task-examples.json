@@ -1,0 +1,95 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "host_tests": 217,
+  "cases": [
+    {
+      "example": "amiga-ports",
+      "mode": "raw",
+      "status": "pass",
+      "result": "build/task-examples/raw/amiga-ports/results.json",
+      "result_sha256": "d79ce1943532a05581c0c6a51d87cb74a8ff1d7740d925eae836bb21c5f061b7",
+      "xex_sha256": "ea3e42256b63897f0680e58491e7c4ab2b79090d9f1df07592258acb12c8d174",
+      "guards": "intact",
+      "created": 2,
+      "os_calls": 0
+    },
+    {
+      "example": "tasks",
+      "mode": "raw",
+      "status": "pass",
+      "result": "build/task-examples/raw/tasks/results.json",
+      "result_sha256": "7cd8736fbfec339ec960f64c4aef02ff7f8504fde26bd6f10aa9361e92dc6eb1",
+      "xex_sha256": "b1f068cec60fce5af66a7eeb512f08b0de1178ee10b80dada05883020a3fff25",
+      "guards": "intact",
+      "created": 4,
+      "os_calls": 0
+    },
+    {
+      "example": "signals",
+      "mode": "raw",
+      "status": "pass",
+      "result": "build/task-examples/raw/signals/results.json",
+      "result_sha256": "5a419391cf2f3104606d17c20c53658075a46bf89a54e14c224ad01c69a45b06",
+      "xex_sha256": "c879250de3e9f2e6fb31a57b13973ada5afcefe3dc81004ac099d5539904259e",
+      "guards": "intact",
+      "created": 7,
+      "os_calls": 0
+    },
+    {
+      "example": "amiga-ports",
+      "mode": "opt",
+      "status": "pass",
+      "result": "build/task-examples/opt/amiga-ports/results.json",
+      "result_sha256": "1f77312b5cfafd4dba4ecb7d46312ccbf0a0d2221f92b25b9a485493b37a5d8f",
+      "xex_sha256": "5e21d4d3f53787e58d9ae81a3e49d60cc0218016c0decbf6fdc625a081b1c9df",
+      "guards": "intact",
+      "created": 2,
+      "os_calls": 0
+    },
+    {
+      "example": "tasks",
+      "mode": "opt",
+      "status": "pass",
+      "result": "build/task-examples/opt/tasks/results.json",
+      "result_sha256": "aa399040b4494861203e7a94c410f6e6af0fc6a823055d19e3f193b708452f1a",
+      "xex_sha256": "1f7f7a725439353a9c9e2d3621302a8fe3d6c0d407e92b7db56000b6afa58ea2",
+      "guards": "intact",
+      "created": 4,
+      "os_calls": 0
+    },
+    {
+      "example": "signals",
+      "mode": "opt",
+      "status": "pass",
+      "result": "build/task-examples/opt/signals/results.json",
+      "result_sha256": "39d37c5f2f667243c972fbe6a8c338a4ff0d455bdc3c582a38b8b73ac7ee576c",
+      "xex_sha256": "8ec8fd48592f3bbdaf8decb11dda2dbffeb820b878d1afafa85c8d0717a06ccf",
+      "guards": "intact",
+      "created": 7,
+      "os_calls": 0
+    }
+  ],
+  "scope": "Three public examples in raw and optimized modes; native output, physical Return, task retirement, ownership, stack/domain guards and OS restoration. No release qualification.",
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "scope": "No change within the existing capacity profiles."
+  },
+  "tasks_example_profile_change": {
+    "previous_capacity": 4,
+    "capacity": 8,
+    "runtime_delta": 3568,
+    "fixed_delta": -1264,
+    "root_delta": 224,
+    "existing_worker_delta_each": -288,
+    "additional_slots": 4,
+    "additional_slot_bytes_each": 1568,
+    "idle_delta": -800
+  },
+  "evidence_notes": [
+    "Preserves six previously passing runs; committing this record did not rerun the native examples.",
+    "All example and shared-output-helper hashes still match their recorded inputs.",
+    "Four runs precede the final test-runner revision; their original result hashes and runner provenance are retained. Raw tasks and signals runs used the current runner."
+  ]
+}

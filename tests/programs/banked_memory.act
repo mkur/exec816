@@ -1,0 +1,61 @@
+MODULE BANKEDMEMORY
+USE EXEC
+USE EXECOS
+USE EXECMEMORY
+
+VOLATILE BYTE ARRAY progress(2)
+CARD acquired
+CARD ARRAY outputStatus(2)
+BYTE ARRAY line0=[77 48 155]
+BYTE ARRAY line1=[77 49 155]
+
+; The launcher calls this on the actual native kernel stack, before tasks.
+PUBLIC CARD FUNC KernelInit()
+  EXECMEMORY.BankRecord bankInfo
+  CARD status
+
+  status=EXECMEMORY.Adopt()
+  IF status<>0 THEN
+    RETURN(status)
+  FI
+
+  status=EXECMEMORY.Query(1,@bankInfo)
+  IF status<>0 OR bankInfo.state<>2 OR bankInfo.owner<>2 THEN
+    RETURN(10)
+  FI
+
+  status=EXECMEMORY.Acquire(3,@acquired)
+  IF status<>0 OR acquired<>2 THEN
+    RETURN(11)
+  FI
+
+  status=EXECMEMORY.Query(acquired,@bankInfo)
+  IF status<>0 OR bankInfo.state<>3 OR bankInfo.owner<>3 THEN
+    RETURN(12)
+  FI
+
+  status=EXECMEMORY.Release(acquired,3)
+  IF status<>0 THEN
+    RETURN(status)
+  FI
+
+RETURN(0)
+
+; Exercise banked startup and the native memory-service gateway.
+PROC Main()
+  CARD id
+
+  id=EXEC.TaskId()
+  progress(id)=1
+  WHILE progress(id XOR 1)=0 DO
+  OD
+
+  IF id=0 THEN
+    outputStatus(id)=EXECOS.Write(BYTE POINTER(line0),3)
+  ELSE
+    outputStatus(id)=EXECOS.Write(BYTE POINTER(line1),3)
+  FI
+
+RETURN
+
+ENDMODULE

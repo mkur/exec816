@@ -1,0 +1,120 @@
+From 4293d5ccde08e016bdffd39908a54f60218b5372 Mon Sep 17 00:00:00 2001
+From: Michal Kurcewicz <1001406+mkur@users.noreply.github.com>
+Date: Sun, 27 Sep 2026 14:19:09 +0200
+Subject: [PATCH] Preserve pointer offset types through casts and inference
+
+---
+ docs/SEMANTIC_INVARIANTS.md | 10 ++++++++++
+ src/semantic.rs             | 16 ++++++++++++++++
+ src/semantic/ir.rs          |  3 +++
+ tests/cstring.rs            | 28 ++++++++++++++++++++++++++++
+ 4 files changed, 57 insertions(+)
+
+diff --git a/docs/SEMANTIC_INVARIANTS.md b/docs/SEMANTIC_INVARIANTS.md
+index 764f09ca..fa577245 100644
+--- a/docs/SEMANTIC_INVARIANTS.md
++++ b/docs/SEMANTIC_INVARIANTS.md
+@@ -522,6 +522,16 @@ existing `array_lengths` and layout count projections must agree with canonical
+ shape facts; mutating a runtime descriptor never changes these facts. Higher
+ ranks are enabled in modern mode and rejected in the compatibility profile.
+ 
++Array strides match the complete element width used by pointer indexing.
++Aggregate widths include tail padding; scalar arrays have no padding between
++items (native ADDRESS/SIZE elements occupy three bytes). The array's starting
++address still follows its element alignment.
++
++Pointer plus an integer displacement, integer plus pointer, and pointer minus
++an integer displacement retain the pointer type in semantic subjects and SemIR.
++Casts and LET inference must not relabel these expressions as CARD and lose the
++bank byte on native targets. ADDRESS-valued operands keep their separate rules.
++
+ For fixed higher ranks, semantic subjects and SemIR retain a `MultiIndex` place
+ with the canonical shape and typed coordinates in source order. Array identity
+ is resolved before arity: every axis requires an integer coordinate, and known
+diff --git a/src/semantic.rs b/src/semantic.rs
+index 728ef01d..c375e8fd 100644
+--- a/src/semantic.rs
++++ b/src/semantic.rs
+@@ -5880,6 +5880,19 @@ fn param_signature_type(param: &VarDecl) -> ValueType {
+     }
+ }
+ 
++// Shared by semantic classification and SemIR reconstruction. Pointer offsets
++// retain the pointer type so nested operations, casts and LET keep its width.
++fn pointer_arithmetic_result(op: BinaryOp, left: &ValueType, right: &ValueType) -> Option<ValueType> {
++    let displacement = |ty: &ValueType| ty.is_numeric_scalar() && ty.as_scalar() != Some(ScalarType::Address);
++    if matches!(op, BinaryOp::Add | BinaryOp::Sub) && left.is_pointer() && displacement(right) {
++        Some(left.clone())
++    } else if op == BinaryOp::Add && right.is_pointer() && displacement(left) {
++        Some(right.clone())
++    } else {
++        None
++    }
++}
++
+ fn promote_numeric(
+     op: BinaryOp,
+     left: &ValueType,
+@@ -5889,6 +5902,9 @@ fn promote_numeric(
+     if left.is_error() || right.is_error() {
+         return ValueType::error();
+     }
++    if let Some(pointer) = pointer_arithmetic_result(op, left, right) {
++        return pointer;
++    }
+     if left.pointer || right.pointer {
+         return fund_value(FundType::Card);
+     }
+diff --git a/src/semantic/ir.rs b/src/semantic/ir.rs
+index a2071b39..c6666274 100644
+--- a/src/semantic/ir.rs
++++ b/src/semantic/ir.rs
+@@ -5670,6 +5670,9 @@ fn arithmetic_numeric_result_type(
+     if left.is_error() || right.is_error() {
+         return ValueType::error();
+     }
++    if let Some(pointer) = super::pointer_arithmetic_result(op, left, right) {
++        return pointer;
++    }
+     if left.pointer || right.pointer {
+         return card_type();
+     }
+diff --git a/tests/cstring.rs b/tests/cstring.rs
+index d93e3404..13ba2523 100644
+--- a/tests/cstring.rs
++++ b/tests/cstring.rs
+@@ -97,3 +97,31 @@ fn external_interface_matches_single_implementation_and_only_used_imports() {
+     assert_eq!(caller.mir.routines.iter().filter(|r|r.entry.external).count(),1);
+     assert_eq!(caller.mir.routines.iter().filter(|r|!r.entry.external).count(),1);
+ }
++
++#[test]
++fn pointer_offsets_keep_the_bank_through_address_and_cstring_casts() {
++    let source = r#"BYTE POINTER data
++ADDRESS first,second,third
++CSTRING view
++PROC Main()
++ data=BYTE POINTER($d0000)
++ first=ADDRESS(data+SIZE(2))
++ second=ADDRESS(SIZE(2)+data)
++ third=ADDRESS(data-SIZE(2))
++ LET next=data+SIZE(2)
++ view=CSTRING(next)
++RETURN"#;
++    for opt in [false, true] {
++        let prepared=Source::new(source).prepare(opt).unwrap();
++        prepared.compile_o65(&Default::default()).unwrap();
++    }
++    let ast=parser::parse(&lexer::tokenize(source).unwrap()).unwrap();
++    let model=semantic::analyze_with_options(&ast,semantic::SemanticOptions::modern().with_target(TargetId::Wdc65816Native)).unwrap();
++    let semir=semantic::ir::lower_program(&ast,&model);
++    let nir=actionc::nir::lower_program(&semir);
++    let casts:Vec<_>=nir.routines.iter().flat_map(|r| &r.blocks).flat_map(|b| &b.ops)
++        .filter_map(|op| if let actionc::nir::NirOp::Cast {from,to,..}=op {Some((from,to))} else {None})
++        .collect();
++    // Three ADDRESS conversions and the CSTRING view must take pointer inputs.
++    assert_eq!(casts.iter().filter(|(from,_)|matches!(from.kind,actionc::nir::NirTypeKind::Pointer {..})).count(),4);
++}
+-- 
+2.50.1 (Apple Git-155)
+

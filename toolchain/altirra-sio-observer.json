@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "source_revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+  "patch": "toolchain/patches/altirra-sio-observer.patch",
+  "patch_sha256": "3f07e51282b9bc3d4174a0436eb4d26fd44f85863276768a6c7811b0479bc4e3",
+  "binary_sha256": "2bbf0317e3cd6f7153895e7f6ae7c79411df808999e4c0330d38af1a56cfdae8",
+  "scope": "Passive CPU/I transitions, POKEY serial/timer/COMMAND/register observations; no guest state or cycles changed",
+  "build_options": "toolchain/altirra-build.json, build/latency target AltirraBridgeServer"
+}

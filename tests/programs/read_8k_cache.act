@@ -1,0 +1,182 @@
+; Two identical 8 KiB reads across Close/Open, with a continuously runnable Task.
+; Only ReadOne is timed; every returned byte and final heap ownership are checked.
+MODULE READ8K
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE FSBOOT
+USE FSINSPECT
+USE HEAPCORE
+DOS.FileHandle POINTER file
+BYTE POINTER buffer
+LONGINT received,ioError
+LONGCARD before,verified
+CARD checks
+EXEC.Task background
+VOLATILE BYTE stopWorker,workerReady
+VOLATILE LONGCARD workRounds
+BYTE workerEnabled,workerPriority
+CARD workValue
+LONGCARD workBeforeRead,workAfterRead
+LONGCARD ARRAY progress(2),hits(2),misses(2)
+CARD cacheBlocks
+BYTE round
+PROC POINTER defaultFinal()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fd90)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Setup()
+
+  before=EXEC.AvailMem(0)
+  buffer=EXEC.AllocMem(8192,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  Require(buffer<>BYTE POINTER(0))
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+
+RETURN
+
+; No Yield, Sleep or I/O: only asynchronous preemption lets other Tasks run.
+PROC Work()
+  CARD index
+
+  FOR index=0 TO 255 DO
+    workValue=(workValue LSH 1) XOR (workValue RSH 1) XOR index
+  OD
+
+  workRounds==+1
+
+RETURN
+
+PROC WorkerEntry()
+
+  workerReady=1
+  WHILE stopWorker=0 DO
+    Work()
+  OD
+
+RETURN
+
+PROC StartWorker()
+  BYTE POINTER mode
+  EXEC.Task POINTER added,parent
+
+  mode=BYTE POINTER($d1020)
+  workerEnabled=mode^
+  stopWorker=1-workerEnabled
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  workerPriority=parent.tc_Node.ln_Pri
+  background.tc_Node.ln_Type=EXEC.NT_TASK
+  background.tc_Node.ln_Pri=workerPriority
+  background.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+  background.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
+  background.tc_SPReg=background.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@background.tc_MemEntry)
+  added=EXEC.AddTask(@background,@WorkerEntry,defaultFinal)
+  Require(added=@background)
+  WHILE workerReady=0 DO
+    EXEC.Yield()
+  OD
+
+  IF workerEnabled=0 THEN
+    WHILE background.tc_State<>EXEC.TS_REMOVED DO
+      EXEC.Yield()
+    OD
+  FI
+
+  EXEC.Forbid()
+  workBeforeRead=workRounds
+  EXEC.Permit()
+
+RETURN
+
+PROC FinishWorker()
+
+  EXEC.Forbid()
+  workAfterRead=workRounds
+  stopWorker=1
+  EXEC.Permit()
+  WHILE background.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  IF workerEnabled<>0 THEN
+    Require(workAfterRead>workBeforeRead)
+  ELSE
+    Require(workBeforeRead=0 AND workAfterRead=0)
+  FI
+
+RETURN
+
+PROC ReadOne()
+
+  received=DOS.Read(file,buffer,8192)
+  ioError=DOS.IoErr()
+
+RETURN
+
+PROC Verify()
+  CARD index
+
+  Require(received=8192 AND ioError=0)
+  FOR index=0 TO 8191 DO
+    IF buffer(index)<>(BYTE(index) XOR BYTE(index RSH 8) XOR $81) THEN
+      HEAPCORE.Abort($fde0)
+    FI
+  OD
+
+  verified=8192
+
+RETURN
+
+PROC Cleanup()
+
+  Require(DOS.ReleaseContext()<>0)
+  EXEC.FreeMem(buffer,8192)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+PROC Main()
+  FSINSPECT.CacheInfo info
+
+  Setup()
+  StartWorker()
+  FOR round=0 TO 1 DO
+    EXEC.Forbid()
+    workBeforeRead=workRounds
+    EXEC.Permit()
+    ReadOne()
+    EXEC.Forbid()
+    progress(round)=workRounds-workBeforeRead
+    EXEC.Permit()
+    Require(progress(round)>0)
+    Verify()
+    Require(FSINSPECT.CacheStatus(@info)<>0)
+    cacheBlocks=info.blocks
+    hits(round)=info.hits
+    misses(round)=info.misses
+    Require(DOS.Close(file)<>0)
+    IF round=0 THEN
+      file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+      Require(file<>NULL)
+    FI
+  OD
+
+  FinishWorker()
+  Cleanup()
+
+RETURN
+
+ENDMODULE

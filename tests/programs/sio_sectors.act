@@ -1,0 +1,136 @@
+MODULE SIOSECTORS
+USE EXEC
+USE HEAPCORE
+EXEC.MsgPort POINTER port
+EXEC.IOSIOReq POINTER request
+BYTE POINTER buffer
+CARD checks,profile
+CARD ARRAY sectors=[1 2 3 4 720 1024 32768 65535]
+INCLUDE "io-names.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC ReadSector(CARD sector)
+  CARD length,index
+  BYTE seed
+  INT error
+
+  length=256
+  IF sector<4 THEN
+    length=128
+  FI
+
+  FOR index=0 TO 255 DO
+    buffer(index)=$a5
+  OD
+
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Offset=0
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(length)
+  request.sio_Command=$52
+  request.sio_Aux1=BYTE(sector)
+  request.sio_Aux2=BYTE(sector RSH 8)
+  request.sio_Direction=EXEC.SIODIR_READ
+  request.sio_Profile=profile
+  request.sio_TimeoutUS=0
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=LONGCARD(length))
+  seed=BYTE((sector LSH 4)-sector)
+  FOR index=0 TO length-1 DO
+    Require(buffer(index)=(BYTE(index) XOR seed))
+  OD
+
+  IF length=128 THEN
+    FOR index=128 TO 255 DO
+      Require(buffer(index)=$a5)
+    OD
+  FI
+
+RETURN
+
+PROC Rejected()
+  INT error
+
+  request.io_Length=256
+  request.sio_Direction=EXEC.SIODIR_WRITE
+  request.sio_Command=$50
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  request.sio_Direction=EXEC.SIODIR_READ
+  request.sio_Command=$52
+  request.sio_Profile=EXEC.SIO_PROFILE_STOCK810
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  request.sio_Profile=EXEC.SIO_PROFILE_HAPPY1050
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.SIOERR_BADPROFILE)
+  request.sio_Profile=profile
+  request.sio_Command=$53
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  request.sio_Command=$52
+  request.io_Length=257
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  request.io_Length=129
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  request.io_Length=LONGCARD($10000)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  request.io_Length=128
+  request.sio_TimeoutUS=1000001
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  request.sio_TimeoutUS=4040
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.IOERR_BADLENGTH)
+  request.sio_TimeoutUS=0
+  request.sio_Profile=5
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.SIOERR_BADPROFILE)
+
+RETURN
+
+; Exercise physical-sector transfer sizes and request rejection.
+PROC Main()
+  BYTE index
+  INT error
+  LONGCARD before
+
+  before=EXEC.AvailMem(0)
+  buffer=BYTE POINTER($0afff0)
+  IF profile=0 THEN
+    profile=EXEC.SIO_PROFILE_FASTEST125
+  FI
+
+  port=EXEC.CreateMsgPort()
+  Require(port<>EXEC.MsgPort POINTER(0))
+  request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSIOREQ_SIZE))
+  Require(request<>EXEC.IOSIOReq POINTER(0))
+  error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(request),0)
+  Require(error=0)
+  FOR index=0 TO 7 DO
+    ReadSector(sectors(index))
+  OD
+
+  Rejected()
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Development checks, emitted record layouts and resident/library routine sizes; excludes changed fixture module. No release qualification or refreshed demo.",
+  "baseline_commit": "6686db3",
+  "compiler_revision": "27119ab2804e795b0bbb067c269826b934271754",
+  "compiler_override": false,
+  "stack_checks": true,
+  "inputs": {
+    "lib/fs/fsbackend.act": "15eb67234675dcabc62ba32ea51b492c01959302b382212f91e38e22123bfcd0",
+    "lib/fs/fsbtypes.act": "437c6f584a01f6db0e518299bccf32d126a9dc550cc828965e27b765aceb5e70",
+    "lib/fs/fsdirectory.act": "ad7a01dce98ce5286023f639a76dbb21283a436beb5998d1b1b3fa87ca4a83e7",
+    "lib/fs/fsinfo.act": "9244419b1ca5c68e21522f210374a0d5e342a31ba0c2ddfb1214eff6e94d2ac5",
+    "lib/mydos/mydosfile.act": "00f48af80ac0b8f93783fe5c46dc61415a9fedd0cb4a58d377f2e714536d39ee",
+    "lib/spartados/sdfsdir.act": "45ac0e14de9cc3d8864c3040a51ded57d54c1128e4b9554a7874ac30d042ac89",
+    "lib/spartados/sdfsfile.act": "bbec7752eabe4143743b7f0005e1dd5a01a5ba2c8500a8b3897c1e593ef12bbf",
+    "lib/spartados/sdfsname.act": "2e802961d0d7b6738ea6fde589e40c9a153c9d7477485d2f9fe0d4c317587448",
+    "lib/spartados/sdfstypes.act": "76226b076d0cf1c4989bf91b89e9d137fca150e0c3a8dad94fedba83f744a3be",
+    "tests/programs/mydos_files.act": "21e8cfc7e705bbcc7a7ef1c0ceddd0a73d2b6bfc0f3d036ade145c89d781c8bb",
+    "tests/programs/sdfs_dos.act": "cd2fe9868ef5d7659aca785ef210805023b27aa4b3261cc6c31ef2bf8222087d",
+    "tests/programs/sdfs_files.act": "6017f52471f2089f98b9b74b40a1073f23b68f6dde4b0ace67f3e3570efbd51f",
+    "tests/programs/sdfs_namespace.inc": "3279eb02556272c6216cfe5e354723f7b3af5dd3a5c1ac017fe0f8e4aac2ea18"
+  },
+  "size": {
+    "before_routine_bytes": 312489,
+    "after_routine_bytes": 312372,
+    "saved_bytes": 117,
+    "excluded_module": "SDFSDOSTEST",
+    "changed_modules": {
+      "FSDIRECTORY": {
+        "before": 6327,
+        "after": 6261
+      },
+      "FSINFO": {
+        "before": 1683,
+        "after": 1704
+      },
+      "MYDOSFILE": {
+        "before": 10762,
+        "after": 10850
+      },
+      "SDFSDIR": {
+        "before": 6561,
+        "after": 6512
+      },
+      "SDFSFILE": {
+        "before": 8672,
+        "after": 8561
+      }
+    },
+    "before_image_sha256": "9aaf41dc432162eada32c3f8d0ca05f4733efe431ccd3a76345e0741cad5f748",
+    "after_image_sha256": "3f9d36b5c4694fb6f2e46527044a0c4d99dd309f2fabcf480c3d65c0cae8ae5b"
+  },
+  "layouts": {
+    "workspace": {
+      "before": 172,
+      "after": 172,
+      "heap_before": 176,
+      "heap_after": 176
+    },
+    "cursor": {
+      "before": 116,
+      "after": 110,
+      "heap_before": 120,
+      "heap_after": 112
+    },
+    "file_backing": {
+      "before": 118,
+      "after": 112,
+      "heap_before": 120,
+      "heap_after": 112
+    },
+    "object": {
+      "before": 140,
+      "after": 134,
+      "heap_before": 144,
+      "heap_after": 136
+    },
+    "service": {
+      "before": 460,
+      "after": 454,
+      "heap_before": 464,
+      "heap_after": 456
+    },
+    "sdfs_state": {
+      "before": 476,
+      "after": 466,
+      "heap_before": 480,
+      "heap_after": 472
+    }
+  },
+  "bank_zero": {
+    "fixed_delta": 0,
+    "per_task_delta": 0
+  },
+  "memory_maps_identical": true,
+  "host_tests": 236,
+  "cases": [
+    {
+      "case": "cancel-sdfs",
+      "result_path": "build/development/fs-length/cancel-sdfs/results.json",
+      "status": "pass",
+      "image_sha256": "f850fea7d37f0aab49013b6db194e867d14d0f2801f66f5903a7e0d996cdc36f",
+      "scenarios": [
+        {
+          "name": "directory-accounting",
+          "status": "pass",
+          "checks": [
+            14
+          ],
+          "guards": "intact"
+        },
+        {
+          "name": "directory-publication",
+          "status": "pass",
+          "checks": [
+            13
+          ],
+          "guards": "intact"
+        }
+      ]
+    },
+    {
+      "case": "mixed-opt",
+      "result_path": "build/development/fs-length/mixed-opt/results-128.json",
+      "status": "pass",
+      "image_sha256": "3f9d36b5c4694fb6f2e46527044a0c4d99dd309f2fabcf480c3d65c0cae8ae5b",
+      "assertions": [
+        124
+      ],
+      "guards": "intact"
+    },
+    {
+      "case": "mydos-files-raw",
+      "result_path": "build/development/fs-length/mydos-files-raw/results.json",
+      "status": "pass",
+      "image_sha256": "c6dee7d73a677d9986a909f259cc4c32f6f4e1913264adcf72afccf007044b9b",
+      "assertions": [
+        788
+      ],
+      "guards": "intact"
+    },
+    {
+      "case": "namespace-opt",
+      "result_path": "build/development/fs-length/namespace-opt/results.json",
+      "status": "pass",
+      "image_sha256": "4c3d049b027ea488d14b29a7238b4da0a05a9f4bcc33513e693a91b18406ea04",
+      "assertions": [
+        23375
+      ],
+      "guards": "intact",
+      "arithmetic_fault": "expected trap, guards intact"
+    },
+    {
+      "case": "sdfs-files-opt",
+      "result_path": "build/development/fs-length/sdfs-files-opt/results.json",
+      "status": "pass",
+      "image_sha256": "b85709ed73a80317697fc3805f68864352c15b4702635e231d54d20311fb1049",
+      "guards": "intact"
+    }
+  ]
+}

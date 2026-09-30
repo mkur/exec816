@@ -1,0 +1,381 @@
+MODULE FSINIT
+USE FSSTATUS
+USE EXEC
+USE A816MEMORY
+USE EXECLISTS
+USE DOSCORE
+USE FSTYPES
+USE FSPACKET
+USE HEAPCORE
+USE FSNAMES
+USE FSSYSTEM
+USE BOOTCONFIG
+USE FS83
+USE FSPORTS
+USE BLOCKIO
+USE BLOCKTYPES
+USE FSBACKEND
+USE FSBTYPES
+INCLUDE "../dos/dos-types.inc"
+
+; Reject conflicting mount descriptors before allocating or opening devices.
+BYTE FUNC Config(FSTYPES.Service POINTER service)
+  BYTE index,other
+
+  LET registry=DOSCORE.GetRegistry()
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  IF registry.count=0 OR registry.count>8 OR
+      (BOOTCONFIG.B_SYSTEM_SLOT<>255
+          AND BOOTCONFIG.B_SYSTEM_SLOT>=registry.count) THEN
+    service.error=ERROR_DEVICE_NOT_MOUNTED
+    RETURN(0)
+  FI
+
+  service.count=registry.count
+  FOR index=0 TO service.count-1 DO
+    BEGIN
+      LET spec=@specs(index)
+      IF FSNAMES.ValidAlias(spec.alias)=0 THEN
+        service.error=ERROR_BAD_STREAM_NAME
+        RETURN(0)
+      FI
+
+      IF FSSYSTEM.Selected(index)<>0 THEN
+        ; The immutable descriptor must still match the packaged physical drive.
+        IF spec.unit<>48+BOOTCONFIG.B_DEFAULT_DRIVE OR
+            FS83.Fold(spec.alias(0))<>'D OR
+            spec.alias(1)<>'0+BOOTCONFIG.B_DEFAULT_DRIVE
+                OR spec.alias(2)<>0 THEN
+          service.error=ERROR_BAD_NUMBER
+          RETURN(0)
+        FI
+      FI
+
+      IF FSBACKEND.Available(spec.format)=0 THEN
+        service.error=ERROR_NOT_A_DOS_DISK
+        RETURN(0)
+      FI
+
+      LET unit=FSSYSTEM.Unit(spec,index)
+      IF BLOCKIO.Geometry(unit,spec.profile,
+          spec.sectors,spec.dataBytes,spec.boot,1)=0 THEN
+        service.error=ERROR_BAD_NUMBER
+        RETURN(0)
+      FI
+
+      other=0
+      WHILE other<index DO
+        IF FSSYSTEM.Unit(@specs(other),other)=unit OR
+            FSSYSTEM.SameName(@specs(other),spec,other,index)<>0 THEN
+          service.error=ERROR_OBJECT_IN_USE
+          RETURN(0)
+        FI
+
+        other==+1
+      OD
+    END
+  OD
+
+RETURN(1)
+
+; Allocate the worker's shared parsing state; Cleanup owns partial failure.
+BYTE FUNC Workspace(FSTYPES.Service POINTER service)
+
+  service.work=FSBTYPES.Workspace POINTER(EXEC.AllocMem(SIZEOF(
+      FSBTYPES.Workspace),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF service.work=FSBTYPES.Workspace POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  service.operation=FSBTYPES.Operation POINTER(EXEC.AllocMem(SIZEOF(
+      FSBTYPES.Operation),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF service.operation=FSBTYPES.Operation POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  IF FSBACKEND.CreateWork(service.work)=0 THEN
+    RETURN(0)
+  FI
+
+  service.operation.work=service.work
+
+RETURN(1)
+
+; Reserve the worker's request/cancellation signals and management port.
+BYTE FUNC Arrival(FSTYPES.Service POINTER service)
+  DOSCORE.DosRegistry POINTER registry
+
+  service.arrival=EXEC.AllocSignal(-1)
+  IF service.arrival=255 THEN
+    RETURN(0)
+  FI
+
+  registry=DOSCORE.GetRegistry()
+  registry.mask=LONGCARD(1) LSH service.arrival
+  registry.cancelSignal=EXEC.AllocSignal(-1)
+  IF registry.cancelSignal=255 THEN
+    RETURN(0)
+  FI
+
+  registry.cancelReady=1
+  registry.cancelHead=BYTE POINTER(0)
+  registry.mask=registry.mask OR (LONGCARD(1) LSH registry.cancelSignal)
+  service.control=FSPORTS.Create(service.arrival)
+
+RETURN(service.control<>EXEC.MsgPort POINTER(0))
+
+; Create a fresh mount identity before any caller can discover it.
+BYTE FUNC AllocateMount(FSTYPES.Service POINTER service)
+  DOSCORE.DosRegistry POINTER registry
+  FSTYPES.Mount POINTER mount
+  FSTYPES.Spec POINTER specs
+
+  registry=DOSCORE.GetRegistry()
+  IF registry.generation=LONGCARD($ffffffff) THEN
+    service.error=ERROR_NO_FREE_STORE
+    RETURN(0)
+  FI
+
+  mount=FSTYPES.Mount POINTER(EXEC.AllocMem(SIZEOF(FSTYPES.Mount),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF mount=FSTYPES.Mount POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  service.selected=mount
+  service.mounts(service.index).item=mount
+  specs=FSTYPES.Spec POINTER(registry.config)
+  A816MEMORY.Move(BYTE POINTER(@mount.spec),BYTE POINTER(@specs(service.index)),
+      SIZEOF(FSTYPES.Spec))
+
+  FSSYSTEM.Apply(@mount.spec,service.index)
+  registry.generation==+1
+  mount.generation=registry.generation
+  mount.volume=FSBTYPES.Volume POINTER(EXEC.AllocMem(SIZEOF(FSBTYPES.Volume),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF mount.volume=FSBTYPES.Volume POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  mount.volume.format=mount.spec.format
+
+RETURN(FSBACKEND.CreateVolume(mount.volume))
+
+; Attach physical geometry and a request port to the pending mount.
+BYTE FUNC AllocateBlock(FSTYPES.Service POINTER service)
+  FSTYPES.Mount POINTER mount
+  BLOCKTYPES.Volume POINTER block
+
+  mount=service.selected
+  block=BLOCKTYPES.Volume POINTER(EXEC.AllocMem(BLOCKTYPES.VOLUME_SIZE,
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF block=BLOCKTYPES.Volume POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  mount.block=block
+  mount.volume.block=block
+  block.adapter=BYTE POINTER(service.adapter)
+  block.unit=BYTE(mount.spec.unit)
+  block.profile=BYTE(mount.spec.profile)
+  block.sectors=mount.spec.sectors
+  block.dataBytes=mount.spec.dataBytes
+  block.boot=mount.spec.boot
+  block.generation=mount.generation
+  mount.port=FSPORTS.Create(service.arrival)
+
+RETURN(mount.port<>EXEC.MsgPort POINTER(0))
+
+; Make the complete initial mount set discoverable together.
+PROC Publish(FSTYPES.Service POINTER service)
+  DOSCORE.DosRegistry POINTER registry
+  BYTE index
+
+  registry=DOSCORE.GetRegistry()
+  FOR index=0 TO service.count-1 DO
+    service.mounts(index).item.published=1
+  OD
+
+  service.error=0
+  service.stage=10
+  service.index=0
+  service.nextStep=service.readyStep
+  registry.state=FSTYPES.STATE_READY
+
+RETURN
+
+; Acquire bounded startup resources before beginning the mount sequence.
+PUBLIC BYTE FUNC First(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  service.error=ERROR_NO_FREE_STORE
+  IF Config(service)=0 THEN
+    RETURN(FSSTATUS.STOP)
+  FI
+
+  service.stage=1
+  service.adapter=BLOCKIO.Create()
+  IF service.adapter=NULL THEN
+    RETURN(FSSTATUS.STOP)
+  FI
+
+  IF Workspace(service)=0 OR Arrival(service)=0 THEN
+    RETURN(FSSTATUS.STOP)
+  FI
+
+  service.nextStep=@MountStep
+
+RETURN(FSSTATUS.MORE)
+
+; Prepare one private mount, then let the worker open its device.
+PUBLIC BYTE FUNC MountStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  service.error=ERROR_NO_FREE_STORE
+  IF AllocateMount(service)=0 OR AllocateBlock(service)=0 THEN
+    RETURN(Failed(service))
+  FI
+
+  service.nextStep=@OpenedStep
+
+RETURN(FSSTATUS.OPEN_VOLUME)
+
+; Start filesystem recognition only after the device open succeeds.
+BYTE FUNC OpenedStep(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+
+  service=FSTYPES.Service POINTER(raw)
+  IF service.resultState=FSSTATUS.ERROR THEN
+    service.error=service.adapter.error
+    RETURN(Failed(service))
+  FI
+
+  service.work.volume=service.selected.volume
+  LET status=FSBACKEND.BeginMount(service.work)
+  IF status=FSSTATUS.ERROR THEN
+    service.error=service.work.error
+    RETURN(Failed(service))
+  FI
+
+  service.nextStep=@MountedStep
+
+RETURN(status)
+
+; Publish a validated mount or continue the initial mount sequence.
+BYTE FUNC MountedStep(BYTE POINTER raw)
+  FSTYPES.Service POINTER service
+
+  service=FSTYPES.Service POINTER(raw)
+  IF service.resultState=FSSTATUS.ERROR THEN
+    service.error=service.work.ioError
+    RETURN(Failed(service))
+  FI
+
+  IF FSBACKEND.MountBuffered(service.work)=FSSTATUS.ERROR THEN
+    service.error=service.work.error
+    RETURN(Failed(service))
+  FI
+
+  IF service.packet<>FSTYPES.Packet POINTER(0) THEN
+    EXEC.Forbid()
+    service.selected.published=1
+    EXEC.Permit()
+    service.packet.sp_Pkt.dp_Res1=-1
+    FSPACKET.Reply(service)
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  service.index==+1
+  IF service.index<service.count THEN
+    service.nextStep=@MountStep
+  ELSE
+    Publish(service)
+  FI
+
+RETURN(FSSTATUS.MORE)
+
+; Startup retirement owns all mounts; a failed remount owns only its slot.
+BYTE FUNC Failed(FSTYPES.Service POINTER service)
+
+  IF service.packet=NULL THEN
+    RETURN(FSSTATUS.STOP)
+  FI
+
+  LET error=service.error
+  DestroyMount(service,service.mounts(service.index).item)
+  service.mounts(service.index).item=NULL
+
+RETURN(FSPACKET.Error(service,error))
+
+; Tear down an unreferenced mount; queued packets indicate an ownership bug.
+PUBLIC PROC DestroyMount(FSTYPES.Service POINTER service FSTYPES.Mount
+    POINTER mount)
+
+  IF mount=NULL THEN
+    RETURN
+  FI
+
+  FSBACKEND.Invalidate(service.work)
+  IF mount.references<>0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  IF mount.port<>NULL THEN
+    IF EXECLISTS.IsListEmpty(@mount.port.mp_MsgList)=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+  FI
+
+  IF BLOCKIO.Detach(service.adapter,mount.block)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  FSPORTS.Delete(mount.port)
+  FSBACKEND.DestroyVolume(mount.volume)
+  IF mount.volume<>NULL THEN
+    EXEC.FreeMem(BYTE POINTER(mount.volume),SIZEOF(FSBTYPES.Volume))
+  FI
+
+  EXEC.FreeMem(BYTE POINTER(mount),SIZEOF(FSTYPES.Mount))
+
+RETURN
+
+; Release service resources, including those left by partial initialization.
+PUBLIC PROC Cleanup(FSTYPES.Service POINTER service)
+  BYTE index
+
+  LET registry=DOSCORE.GetRegistry()
+  IF registry.cancelHead<>NULL THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  IF registry.cancelReady<>0 THEN
+    EXEC.FreeSignal(registry.cancelSignal)
+    registry.cancelReady=0
+  FI
+
+  FOR index=0 TO 7 DO
+    DestroyMount(service,service.mounts(index).item)
+  OD
+
+  FSPORTS.Delete(service.control)
+  IF service.arrival<>255 THEN
+    EXEC.FreeSignal(service.arrival)
+  FI
+
+  IF service.operation<>NULL THEN
+    EXEC.FreeMem(BYTE POINTER(service.operation),SIZEOF(FSBTYPES.Operation))
+  FI
+
+  FSBACKEND.DestroyWork(service.work)
+  IF service.work<>NULL THEN
+    EXEC.FreeMem(BYTE POINTER(service.work),SIZEOF(FSBTYPES.Workspace))
+  FI
+
+  IF BLOCKIO.Destroy(service.adapter)=0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+RETURN
+
+ENDMODULE

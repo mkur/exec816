@@ -1,0 +1,189 @@
+; One 8 KiB Read with 1, 3 or 5 equal-priority computing Tasks.
+; Host input at $0d1020 is the application count, including the reader.
+MODULE READ8K
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE FSBOOT
+USE HEAPCORE
+DOS.FileHandle POINTER file
+BYTE POINTER buffer
+LONGINT received,ioError
+LONGCARD before,verified
+CARD checks
+EXEC.Task ARRAY workers(5)
+VOLATILE BYTE stopWorkers
+VOLATILE BYTE ARRAY ready(5)
+VOLATILE LONGCARD ARRAY rounds(5)
+CARD ARRAY values(5)
+LONGCARD ARRAY workBefore(5),workAfter(5)
+LONGCARD liveAddress
+BYTE workerCount,workerPriority,liveDuringRead
+PROC POINTER defaultFinal()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fd90)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Setup()
+
+  before=EXEC.AvailMem(0)
+  buffer=EXEC.AllocMem(8192,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  Require(buffer<>BYTE POINTER(0))
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+
+RETURN
+
+; Private array elements belong to one worker each. No kernel calls here.
+PROC Work(BYTE slot)
+  CARD index
+
+  FOR index=0 TO 255 DO
+    values(slot)=(values(slot) LSH 1) XOR (values(slot) RSH 1) XOR index
+  OD
+
+  rounds(slot)==+1
+
+RETURN
+
+BYTE FUNC OwnSlot()
+  BYTE slot
+  EXEC.Task POINTER self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  FOR slot=0 TO workerCount-1 DO
+    IF self=@workers(slot) THEN
+      RETURN(slot)
+    FI
+  OD
+
+  HEAPCORE.Abort($fdb0)
+
+RETURN(0)
+
+PROC WorkerEntry()
+  BYTE slot
+
+  slot=OwnSlot()
+  ready(slot)=1
+  WHILE stopWorkers=0 DO
+    Work(slot)
+  OD
+
+RETURN
+
+PROC StartWorkers()
+  BYTE slot
+  BYTE POINTER mode,live
+  EXEC.Task POINTER item,added,parent
+
+  mode=BYTE POINTER($d1020)
+  workerCount=mode^-1
+  Require(workerCount>=1 AND workerCount<=5 AND workerCount+3<=TASKSTACKS.CAPACITY)
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  workerPriority=parent.tc_Node.ln_Pri
+  EXEC.Forbid()
+  FOR slot=0 TO workerCount-1 DO
+    item=@workers(slot)
+    item.tc_Node.ln_Type=EXEC.NT_TASK
+    item.tc_Node.ln_Pri=workerPriority
+    item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot+3))
+    item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot+3))
+    item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+    EXECLISTS.NewList(@item.tc_MemEntry)
+    added=EXEC.AddTask(item,@WorkerEntry,defaultFinal)
+    Require(added=item)
+  OD
+
+  EXEC.Permit()
+  FOR slot=0 TO workerCount-1 DO
+    WHILE ready(slot)=0 DO
+      EXEC.Yield()
+    OD
+  OD
+
+  EXEC.Forbid()
+  live=BYTE POINTER(ADDRESS(liveAddress))
+  liveDuringRead=live^
+  FOR slot=0 TO workerCount-1 DO
+    workBefore(slot)=rounds(slot)
+  OD
+
+  EXEC.Permit()
+  Require(liveDuringRead=workerCount+3)
+
+RETURN
+
+PROC FinishWorkers()
+  BYTE slot
+
+  EXEC.Forbid()
+  stopWorkers=1
+  FOR slot=0 TO workerCount-1 DO
+    workAfter(slot)=rounds(slot)
+  OD
+
+  EXEC.Permit()
+  FOR slot=0 TO workerCount-1 DO
+    WHILE workers(slot).tc_State<>EXEC.TS_REMOVED DO
+      EXEC.Yield()
+    OD
+
+    Require(workAfter(slot)>workBefore(slot))
+  OD
+
+RETURN
+
+PROC ReadOne()
+
+  received=DOS.Read(file,buffer,8192)
+  ioError=DOS.IoErr()
+
+RETURN
+
+PROC Verify()
+  CARD index
+
+  Require(received=8192 AND ioError=0)
+  FOR index=0 TO 8191 DO
+    IF buffer(index)<>(BYTE(index) XOR BYTE(index RSH 8) XOR $81) THEN
+      HEAPCORE.Abort($fde0)
+    FI
+  OD
+
+  verified=8192
+
+RETURN
+
+PROC Cleanup()
+
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  EXEC.FreeMem(buffer,8192)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+PROC Main()
+
+  Setup()
+  StartWorkers()
+  ReadOne()
+  FinishWorkers()
+  Verify()
+  Cleanup()
+
+RETURN
+
+ENDMODULE

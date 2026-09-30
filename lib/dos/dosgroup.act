@@ -1,0 +1,223 @@
+; A foreground command group owns one captured route and up to two local scopes.
+; The console worker fans BREAK out in task context; IRQ follows no new pointer.
+MODULE DOSGROUP
+USE EXEC
+USE DOSCLIENT
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+USE FSOPERATION
+INCLUDE "dos-types.inc"
+
+; Reserve the caller's foreground route for a two-command group.
+PUBLIC DOSBREAKTYPES.Scope POINTER FUNC Begin()
+  DOSCLIENT.ClientContext POINTER client
+  DOSBREAKTYPES.Scope POINTER scope
+  BYTE okay
+
+  client=DOSCLIENT.Ensure()
+  IF client=DOSCLIENT.ClientContext POINTER(0) THEN
+    RETURN(DOSBREAKTYPES.Scope POINTER(0))
+  FI
+
+  scope=DOSBREAK.Current()
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(scope)
+  FI
+
+  IF scope.active=0 OR scope.groupActive<>0 OR client.foregroundLoan<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(DOSBREAKTYPES.Scope POINTER(0))
+  FI
+
+  EXEC.Forbid()
+  okay=CONSOLEFOREGROUND.Handoff(scope,scope,1)
+  IF okay<>0 THEN
+    scope.groupActive=1
+  FI
+
+  EXEC.Permit()
+  IF okay=0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(DOSBREAKTYPES.Scope POINTER(0))
+  FI
+
+  DOSCLIENT.SetError(0)
+
+RETURN(scope)
+
+; Require the active group to belong to the current foreground caller.
+PUBLIC BYTE FUNC Valid(DOSBREAKTYPES.Scope POINTER scope)
+
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) OR scope<>DOSBREAK.Current() THEN
+    RETURN(0)
+  FI
+
+RETURN(scope.active<>0 AND scope.groupActive<>0)
+
+; Suspend the parent context only after both child scopes have joined.
+PUBLIC BYTE FUNC Seal(DOSBREAKTYPES.Scope POINTER scope)
+  DOSCLIENT.ClientContext POINTER client
+
+  IF Valid(scope)=0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  client=DOSCLIENT.ClientContext POINTER(scope.client)
+  IF client.busy<>0 OR client.suspended<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  IF scope.groupRefs<>2 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  client.suspended=1
+
+RETURN(1)
+
+; Require both followers and a suspended parent before group execution.
+PUBLIC BYTE FUNC Ready(DOSBREAKTYPES.Scope POINTER scope)
+  DOSCLIENT.ClientContext POINTER client
+
+  IF Valid(scope)=0 THEN
+    RETURN(0)
+  FI
+
+  client=DOSCLIENT.ClientContext POINTER(scope.client)
+
+RETURN(scope.groupRefs=2 AND client.suspended<>0)
+
+; Fan an interruption out through the group's retained foreground scopes.
+PUBLIC PROC Cancel(DOSBREAKTYPES.Scope POINTER scope)
+
+  IF Valid(scope)=0 THEN
+    RETURN
+  FI
+
+  EXEC.Forbid()
+  CONSOLEFOREGROUND.Notify(scope)
+  EXEC.Permit()
+
+RETURN
+
+; Attach one child break scope without exceeding the group's two-member bound.
+PUBLIC BYTE FUNC Join(DOSBREAKTYPES.Scope POINTER parent DOSCLIENT.ClientContext
+    POINTER client BYTE POINTER console)
+  DOSBREAKTYPES.Scope POINTER scope
+  BYTE okay
+
+  scope=DOSBREAK.Allocate(client,console)
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  okay=0
+  EXEC.Forbid()
+  IF parent.active<>0 AND parent.groupActive<>0 THEN
+    IF parent.followerA=BYTE POINTER(0) THEN
+      parent.followerA=BYTE POINTER(scope)
+      okay=1
+    ELSEIF parent.followerB=BYTE POINTER(0) THEN
+      parent.followerB=BYTE POINTER(scope)
+      okay=1
+    FI
+
+    IF okay<>0 THEN
+      scope.unit=parent.unit
+      scope.generation=parent.generation
+      scope.active=1
+      client.foreground=BYTE POINTER(scope)
+      client.foregroundLoan=2
+      IF parent.pending<>0 THEN
+        CONSOLEFOREGROUND.Notify(scope)
+      FI
+    FI
+  FI
+
+  EXEC.Permit()
+  IF okay=0 THEN
+    DOSBREAK.Free(scope)
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+  FI
+
+RETURN(okay)
+
+; Detach a child scope before its DOS context can be freed.
+PUBLIC BYTE FUNC Leave(DOSBREAKTYPES.Scope POINTER parent
+    DOSCLIENT.ClientContext POINTER client)
+  DOSBREAKTYPES.Scope POINTER scope
+  BYTE okay
+
+  scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+  IF scope=DOSBREAKTYPES.Scope POINTER(0) THEN
+    RETURN(client.foregroundLoan=0)
+  FI
+
+  IF client.foregroundLoan<>2 OR (scope.opState<>0
+      AND scope.opState<>FSOPERATION.COLLECTED) THEN
+    RETURN(0)
+  FI
+
+  okay=0
+  EXEC.Forbid()
+  IF parent.followerA=BYTE POINTER(scope) THEN
+    parent.followerA=BYTE POINTER(0)
+    okay=1
+  ELSEIF parent.followerB=BYTE POINTER(scope) THEN
+    parent.followerB=BYTE POINTER(0)
+    okay=1
+  FI
+
+  IF okay<>0 THEN
+    scope.active=0
+    client.foreground=BYTE POINTER(0)
+    client.foregroundLoan=0
+  FI
+
+  EXEC.Permit()
+  IF okay<>0 THEN
+    DOSBREAK.Free(scope)
+  FI
+
+RETURN(okay)
+
+; Restore the parent foreground context after group ownership has settled.
+PUBLIC BYTE FUNC End(DOSBREAKTYPES.Scope POINTER scope)
+  DOSCLIENT.ClientContext POINTER client
+  BYTE okay
+  LONGCARD ignored
+
+  IF Valid(scope)=0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  client=DOSCLIENT.ClientContext POINTER(scope.client)
+  EXEC.Forbid()
+  IF scope.groupRefs<>0 OR scope.followerA<>BYTE POINTER(0)
+      OR scope.followerB<>BYTE POINTER(0) THEN
+    EXEC.Permit()
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  okay=CONSOLEFOREGROUND.Handoff(scope,scope,0)
+  IF okay<>0 THEN
+    scope.groupActive=0
+    client.suspended=0
+    ignored=EXEC.SetSignal(0,scope.mask)
+  FI
+
+  EXEC.Permit()
+  IF okay=0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+  FI
+
+RETURN(okay)
+
+ENDMODULE

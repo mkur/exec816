@@ -1,0 +1,36 @@
+MODULE LOADEDCOMMAND
+USE COMMAND
+USE CSTRING AS STR
+CARD initial=[7],counter
+BYTE ARRAY tail(8)=[9 8]
+
+PROC Add(CARD value)
+
+  counter==+value
+
+RETURN
+
+; Exercise a loaded command's execution and public result.
+LONGINT FUNC Main()
+  CSTRING arguments
+  PROC POINTER indirect(CARD value)
+
+  IF initial<>7 OR counter<>0 OR tail(0)<>9 OR tail(1)<>8 OR tail(7)<>0 THEN
+    COMMAND.SetIoErr(0)
+    RETURN(90)
+  FI
+
+  arguments=COMMAND.GetArgStr()
+  indirect=@Add
+  indirect(5)
+  Add(9)
+  initial==+1
+  WHILE arguments(0)=1 DO
+    COMMAND.Yield()
+  OD
+
+  COMMAND.SetIoErr(LONGINT(STR.strlen(arguments)))
+
+RETURN(LONGINT(counter+initial))
+
+ENDMODULE

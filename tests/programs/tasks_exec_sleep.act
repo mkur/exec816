@@ -1,0 +1,74 @@
+MODULE TASKSLEEPV2
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+
+EXEC.Task sleeper,reused
+VOLATILE CARD ticks=$2034
+VOLATILE BYTE phase
+CARD ARRAY checks(12)
+BYTE ARRAY label=[115 108 101 101 112 0]
+PROC POINTER missing()
+
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC DoSleep()
+  CARD start,status
+
+  start=ticks
+  checks(0)=start
+  phase=1
+  status=EXECTASKS.Sleep(4)
+  checks(1)=status
+  checks(2)=ticks-start
+  phase=2
+  status=EXECTASKS.Sleep(20)
+  phase=$ff
+
+RETURN
+
+PROC RunAgain()
+  CARD status
+
+  phase=3
+  status=EXECTASKS.Sleep(40)
+  phase=4
+
+RETURN
+
+; Exercise sleep completion and subsequent Task execution.
+PROC Main()
+  EXEC.Task POINTER item
+  CARD status,start
+
+  PrepareTask(@sleeper,TASKSTACKS.LOWER1,BYTE POINTER(label))
+  EXEC.Forbid()
+  item=EXEC.AddTask(@sleeper,@DoSleep,missing)
+  ticks=$fffd
+  EXEC.Permit()
+  WHILE phase<>2 OR sleeper.tc_State<>EXEC.TS_WAIT DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  EXEC.Forbid()
+  checks(3)=CARD(EXEC.FindTask(BYTE POINTER(label))=@sleeper)
+  checks(4)=CARD(sleeper.tc_State)
+  checks(5)=EXECTASKS.Sleep(1)
+  checks(6)=EXECTASKS.Sleep($8000)
+  EXEC.RemTask(@sleeper)
+  checks(7)=CARD(EXEC.FindTask(BYTE POINTER(label))=EXEC.Task POINTER(0))
+  PrepareTask(@reused,TASKSTACKS.LOWER1,BYTE POINTER(label))
+  item=EXEC.AddTask(@reused,@RunAgain,missing)
+  EXEC.Permit()
+  start=ticks
+  status=EXECTASKS.Sleep(25)
+  checks(8)=CARD(phase)
+  checks(9)=ticks-start
+  AwaitRemoval(@reused)
+  checks(10)=CARD(phase)
+  checks(11)=EXECTASKS.Sleep(0)
+
+RETURN
+
+ENDMODULE

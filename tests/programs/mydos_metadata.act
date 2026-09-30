@@ -1,0 +1,203 @@
+MODULE MYDOSTEST
+USE FSSTATUS
+USE EXEC
+USE HEAPCORE
+USE BLOCKIO
+USE BLOCKWIRE
+USE BLOCKTYPES
+USE MYDOS
+USE MYDOSTYPES
+USE FSBTYPES
+CONST WORK_BYTES=SIZEOF(FSBTYPES.Workspace), VOLUME_BYTES=SIZEOF(MYDOSTYPES.Volume)
+CARD ARRAY storageSizes=[WORK_BYTES VOLUME_BYTES]
+CARD checks
+CARD dataSize=128,sectorCount=720
+BYTE phase
+BLOCKTYPES.Adapter POINTER adapter
+BLOCKTYPES.Volume POINTER block
+FSBTYPES.Workspace POINTER work
+FSBTYPES.Volume POINTER volume
+MYDOSTYPES.Volume POINTER nativeVolume
+LONGCARD before
+INCLUDE "../fixtures/mydos/driver.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f700+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Setup()
+
+  before=EXEC.AvailMem(0)
+  adapter=BLOCKIO.Create()
+  Require(adapter<>BLOCKTYPES.Adapter POINTER(0))
+  block=BlockAttach(adapter,49,1,LONGCARD(sectorCount),dataSize,1,1)
+  Require(block<>BLOCKTYPES.Volume POINTER(0))
+  work=FSBTYPES.Workspace POINTER(EXEC.AllocMem(SIZEOF(FSBTYPES.Workspace),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  volume=FSBTYPES.Volume POINTER(EXEC.AllocMem(SIZEOF(FSBTYPES.Volume),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(work<>FSBTYPES.Workspace POINTER(0) AND volume<>NULL)
+  Require(MYDOS.CreateVolume(volume)<>0)
+  nativeVolume=MYDOSTYPES.Volume POINTER(volume.state)
+  work.volume=volume
+  volume.block=block
+  Require(Mount(work)<>0 AND work.error=0)
+
+RETURN
+
+PROC Compare(BYTE POINTER expected)
+  BYTE index
+
+  Require(BYTE(work.entry.key RSH 8)=expected(0))
+  Require(work.entry.flags=(expected(0) & $30) AND work.entry.known=0
+      AND work.entry.length=0 AND work.entry.days=0
+      AND work.entry.minutes=0 AND work.entry.ticks=0)
+  Require(work.entry.count=CARD(expected(1))+(CARD(expected(2)) LSH 8))
+  Require(work.entry.start=CARD(expected(3))+(CARD(expected(4)) LSH 8))
+  FOR index=0 TO 10 DO
+    Require(work.entry.name(index)=expected(index+5))
+  OD
+
+RETURN
+
+PROC Scan()
+  BYTE index,status
+
+  FOR index=0 TO 63 DO
+    status=GetEntry(work,361,index)
+    Require(status=FSSTATUS.DONE AND BYTE(work.entry.key)=index AND work.entry.parent=361)
+    Compare(BYTE POINTER(ADDRESS($a1000)+(SIZE(index) LSH 4)))
+  OD
+
+  status=GetEntry(work,361,64)
+  Require(status=FSSTATUS.END_DIR)
+
+RETURN
+
+PROC Paths()
+  BYTE okay
+
+  okay=Resolve(work,BYTE POINTER($a0000))
+  Require(okay<>0 AND work.entry.start=361)
+  okay=Resolve(work,BYTE POINTER($a0001))
+  Require(okay<>0 AND work.entry.count<>0 AND work.depth=2)
+  okay=Resolve(work,BYTE POINTER($a0014))
+  Require(okay<>0 AND BYTE(work.entry.key)=63)
+
+RETURN
+
+; Compare path resolution with the expected entry identity and error.
+PROC PathCase(BYTE scenario CARD offset LONGINT expected BYTE ordinal)
+  BYTE okay
+  LONGCARD count
+
+  phase=scenario
+  BLOCKIO.Invalidate(adapter)
+  count=work.operations
+  okay=Resolve(work,BYTE POINTER(ADDRESS($a0000)+SIZE(offset)))
+  Require(work.error=expected)
+  IF expected=0 THEN
+    Require(okay=1 AND BYTE(work.entry.key)=ordinal)
+  ELSE
+    Require(okay=0)
+  FI
+
+  IF scenario=22 THEN
+    Require(work.ioError=4)
+  FI
+
+  IF scenario=23 THEN
+    Require(work.ioError=LONGINT(-4))
+  FI
+
+  Require(work.operations-count<200)
+
+RETURN
+
+; Recognize supported on-disk forms and reject contradictory metadata.
+PROC FormatCase(BYTE scenario,success)
+  BYTE okay
+
+  phase=scenario
+  BLOCKIO.Invalidate(adapter)
+  okay=Mount(work)
+  Require(okay=success)
+  IF success=0 THEN
+    Require(work.error=225)
+  FI
+
+  IF scenario=4 THEN
+    Require(nativeVolume.vtocLow=359 AND nativeVolume.vtocSectors=2)
+  FI
+
+  phase=0
+  BLOCKIO.Invalidate(adapter)
+  Require(Mount(work)=1)
+
+RETURN
+
+; Exercise mount geometry limits before any directory traversal.
+PROC GeometryCases()
+  BLOCKTYPES.Volume POINTER other
+  LONGCARD count
+  BYTE okay
+
+  other=BlockAttach(adapter,50,1,367,dataSize,1,2)
+  Require(other<>BLOCKTYPES.Volume POINTER(0))
+  volume.block=other
+  count=work.operations
+  Require(Mount(work)=0 AND work.error=225 AND work.operations=count)
+  Require(BLOCKIO.Detach(adapter,other)<>0)
+  other=BlockAttach(adapter,50,1,LONGCARD($ffff),dataSize,1,3)
+  Require(other<>BLOCKTYPES.Volume POINTER(0))
+  volume.block=other
+  phase=30
+  Require(Mount(work)=1)
+  IF dataSize=128 THEN
+    Require(nativeVolume.vtocLow=295)
+  ELSE
+    Require(nativeVolume.vtocLow=328)
+  FI
+
+  okay=Resolve(work,BYTE POINTER($a1800))
+  Require(okay=1 AND work.entry.start=$ffff AND BYTE(work.entry.key RSH 8)=$46
+      AND work.entry.parent=$fff0)
+  Require(MYDOS.ValidDirectory(volume,$fff9)=0)
+  Require(BLOCKIO.Detach(adapter,other)<>0)
+  volume.block=block
+  phase=0
+  Require(Mount(work)=1)
+
+RETURN
+
+PROC Cleanup()
+
+  MYDOS.DestroyVolume(volume)
+  EXEC.FreeMem(BYTE POINTER(volume),SIZEOF(FSBTYPES.Volume))
+  EXEC.FreeMem(BYTE POINTER(work),SIZEOF(FSBTYPES.Workspace))
+  Require(BLOCKIO.Detach(adapter,block)<>0)
+  Require(BLOCKIO.Destroy(adapter)<>0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+; Exercise MyDOS geometry, directory metadata and path resolution.
+PROC Main()
+
+  Setup()
+  Scan()
+  Paths()
+  GeometryCases()
+  Cleanup()
+
+RETURN
+
+ENDMODULE

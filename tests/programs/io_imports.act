@@ -1,0 +1,24 @@
+MODULE IOIMPORTS
+USE EXEC
+EXEC.IORequest POINTER req
+EXEC.MsgPort POINTER port
+INT result
+
+; Exercise linkage of the public device-service imports.
+PROC Main()
+
+  req=EXEC.CreateIORequest(port,LONGCARD($ffffffff))
+  EXEC.DeleteIORequest(req)
+  result=EXEC.OpenDevice(BYTE POINTER($05ffff),LONGCARD($ffffffff),req,
+      LONGCARD($80000000))
+  EXEC.CloseDevice(req)
+  EXEC.BeginIO(req)
+  EXEC.SendIO(req)
+  result=EXEC.DoIO(req)
+  req=EXEC.CheckIO(req)
+  result=EXEC.WaitIO(req)
+  EXEC.AbortIO(req)
+
+RETURN
+
+ENDMODULE

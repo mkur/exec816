@@ -1,0 +1,86 @@
+MODULE DOSOBJECTS
+USE EXEC
+USE DOSCORE
+USE DOSCLIENT
+USE HEAPCORE
+; Every owned DOS object starts with this inline header. Inspect only a known
+; member of the owner's list; an arbitrary caller pointer is never dereferenced.
+PUBLIC TYPE Header=[
+  BYTE POINTER next
+  DOSCORE.DosSlot POINTER owner
+  BYTE kind,backend
+]
+
+PUBLIC CONST KIND_FILE=1, KIND_LOCK=2
+PUBLIC CONST BACKEND_FILE=1, BACKEND_NIL=2, BACKEND_RAW=3, BACKEND_CON=4,
+    BACKEND_PIPE=5
+
+; Resolve an opaque handle only within this caller's live ownership list.
+PUBLIC Header POINTER FUNC Find(DOSCORE.DosSlot POINTER owner BYTE
+    POINTER identity BYTE kind)
+  Header POINTER item
+
+  item=Header POINTER(owner.objects)
+  WHILE item<>Header POINTER(0) DO
+    IF BYTE POINTER(item)=identity THEN
+      IF item.owner=owner AND item.kind=kind THEN
+        RETURN(item)
+      FI
+
+      RETURN(Header POINTER(0))
+    FI
+
+    item=Header POINTER(item.next)
+  OD
+
+RETURN(item)
+
+; Publish a newly admitted object in the owning DOS slot.
+PUBLIC PROC Link(DOSCORE.DosSlot POINTER owner Header POINTER item)
+  DOSCLIENT.ClientContext POINTER client
+
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  IF client.objects=$ffff THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  item.owner=owner
+  item.next=owner.objects
+  owner.objects=BYTE POINTER(item)
+  client.objects==+1
+
+RETURN
+
+; Remove object discoverability before its storage is released.
+PUBLIC BYTE FUNC Unlink(DOSCORE.DosSlot POINTER owner Header POINTER item)
+  Header POINTER previous,current
+  DOSCLIENT.ClientContext POINTER client
+
+  previous=Header POINTER(0)
+  current=Header POINTER(owner.objects)
+  WHILE current<>Header POINTER(0) DO
+    IF current=item THEN
+      client=DOSCLIENT.ClientContext POINTER(owner.context)
+      IF client.objects=0 OR item.owner<>owner THEN
+        HEAPCORE.Abort($ff94)
+      FI
+
+      IF previous=Header POINTER(0) THEN
+        owner.objects=item.next
+      ELSE
+        previous.next=item.next
+      FI
+
+      client.objects==-1
+      item.next=BYTE POINTER(0)
+      item.owner=DOSCORE.DosSlot POINTER(0)
+      RETURN(1)
+    FI
+
+    previous=current
+    current=Header POINTER(current.next)
+  OD
+
+RETURN(0)
+
+ENDMODULE

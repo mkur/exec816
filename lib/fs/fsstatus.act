@@ -1,0 +1,17 @@
+; One byte-sized progress vocabulary from backend traversal to the worker.
+; These are control outcomes, not DOS error codes or backend stage numbers.
+MODULE FSSTATUS
+
+PUBLIC CONST ERROR=0, DONE=1, NEED_IO=2, MORE=3
+PUBLIC CONST END_DIR=4, SKIP_ENTRY=5, NEXT_COMPONENT=6
+PUBLIC CONST OPEN_VOLUME=7, IDLE=8, STOP=255
+
+; ERROR: the workspace holds the causal error. DONE: this operation completed
+; (a directory operation produced an entry/header). NEED_IO: fetch neededSector.
+; MORE: resume CPU work after the worker's ordinary cancellation checkpoint.
+; END_DIR/SKIP_ENTRY describe directory results; NEXT_COMPONENT advances a path.
+; OPEN_VOLUME/IDLE/STOP are worker actions, using the same nonoverlapping values.
+; Packet completion returns MORE after arranging the next callback, even when
+; the packet failed. STOP is reserved for fatal worker startup failure.
+
+ENDMODULE

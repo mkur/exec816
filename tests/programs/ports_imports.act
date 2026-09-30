@@ -1,0 +1,21 @@
+MODULE PORTIMPORTS
+USE EXEC
+EXEC.MsgPort POINTER port
+EXEC.Message POINTER message
+
+; Exercise linkage of the public message-port imports.
+PROC Main()
+
+  port=EXEC.CreateMsgPort()
+  EXEC.PutMsg(port,message)
+  message=EXEC.GetMsg(port)
+  EXEC.ReplyMsg(message)
+  message=EXEC.WaitPort(port)
+  EXEC.AddPort(port)
+  EXEC.RemPort(port)
+  port=EXEC.FindPort(BYTE POINTER($04ffff))
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+ENDMODULE

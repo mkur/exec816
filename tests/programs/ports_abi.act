@@ -1,0 +1,136 @@
+MODULE PORTABI
+USE EXEC
+USE EXECOS
+USE EXECLISTS
+INCLUDE "exec-task-types.inc"
+INCLUDE "ports-action.inc"
+MsgPort ARRAY ports(2)
+Message ARRAY messages(2)
+LONGCARD ARRAY facts(15),seen(9)
+BYTE ARRAY line=[80 79 82 84 32 65 66 73 155]
+CARD writeStatus
+
+; Test-only native shapes, not production services.
+PROC PutMsg(MsgPort POINTER port Message POINTER msg)
+
+  seen(0)=LONGCARD(ADDRESS(port))
+  seen(1)=LONGCARD(ADDRESS(msg))
+
+RETURN
+
+Message POINTER FUNC GetMsg(MsgPort POINTER port)
+
+  seen(2)=LONGCARD(ADDRESS(port))
+
+RETURN(Message POINTER($ab1234))
+
+PROC ReplyMsg(Message POINTER msg)
+
+  seen(3)=LONGCARD(ADDRESS(msg))
+
+RETURN
+
+Message POINTER FUNC WaitPort(MsgPort POINTER port)
+
+  seen(4)=LONGCARD(ADDRESS(port))
+
+RETURN(Message POINTER($feffff))
+
+MsgPort POINTER FUNC CreateMsgPort()
+
+RETURN(MsgPort POINTER($071234))
+
+PROC DeleteMsgPort(MsgPort POINTER port)
+
+  seen(5)=LONGCARD(ADDRESS(port))
+
+RETURN
+
+PROC AddPort(MsgPort POINTER port)
+
+  seen(6)=LONGCARD(ADDRESS(port))
+
+RETURN
+
+PROC RemPort(MsgPort POINTER port)
+
+  seen(7)=LONGCARD(ADDRESS(port))
+
+RETURN
+
+MsgPort POINTER FUNC FindPort(BYTE POINTER name)
+
+  seen(8)=LONGCARD(ADDRESS(name))
+
+RETURN(MsgPort POINTER($ffffff))
+
+PROC Layout()
+
+  facts(0)=LONGCARD(ADDRESS(@ports(1))-ADDRESS(@ports(0)))
+  facts(1)=LONGCARD(ADDRESS(@messages(1))-ADDRESS(@messages(0)))
+  facts(2)=LONGCARD(ADDRESS(@ports(0).mp_Flags)-ADDRESS(@ports(0)))
+  facts(3)=LONGCARD(ADDRESS(@ports(0).mp_SigBit)-ADDRESS(@ports(0)))
+
+RETURN
+
+PROC LayoutMessage()
+
+  facts(4)=LONGCARD(ADDRESS(@ports(0).mp_SigTask)-ADDRESS(@ports(0)))
+  facts(5)=LONGCARD(ADDRESS(@ports(0).mp_MsgList)-ADDRESS(@ports(0)))
+  facts(6)=LONGCARD(ADDRESS(@messages(0).mn_ReplyPort)-ADDRESS(@messages(0)))
+  facts(7)=LONGCARD(ADDRESS(@messages(0).mn_Length)-ADDRESS(@messages(0)))
+
+RETURN
+
+PROC Calls()
+
+  PutMsg(MsgPort POINTER($011234),Message POINTER($071234))
+  facts(8)=LONGCARD(ADDRESS(GetMsg(MsgPort POINTER($011234))))
+  ReplyMsg(Message POINTER($feffff))
+  facts(9)=LONGCARD(ADDRESS(WaitPort(MsgPort POINTER($abffff))))
+
+RETURN
+
+PROC RegistryCalls()
+
+  facts(10)=LONGCARD(ADDRESS(CreateMsgPort()))
+  DeleteMsgPort(MsgPort POINTER($071234))
+  AddPort(MsgPort POINTER($011234))
+  RemPort(MsgPort POINTER($071234))
+  facts(11)=LONGCARD(ADDRESS(FindPort(BYTE POINTER($05ffff))))
+
+RETURN
+
+PROC Records()
+  MsgPort POINTER port
+  Message POINTER msg
+
+  port=MsgPort POINTER($04fff3)
+  msg=Message POINTER($06fff4)
+  port.mp_Node.ln_Type=P_NT_MSGPORT
+  port.mp_Flags=P_PA_SIGNAL
+  port.mp_SigBit=31
+  port.mp_SigTask=Task POINTER($ab1234)
+  port.mp_MsgList.lh_Head=EXECLISTS.Node POINTER($cd1234)
+  msg.mn_Node.ln_Type=P_NT_REPLYMSG
+  msg.mn_ReplyPort=port
+  msg.mn_Length=$ffff
+  facts(12)=LONGCARD(ADDRESS(msg.mn_ReplyPort))
+  facts(13)=LONGCARD(msg.mn_Length)
+  facts(14)=LONGCARD(1) LSH port.mp_SigBit
+
+RETURN
+
+; Exercise message-port signatures and packed public records.
+PROC Main()
+
+  Layout()
+  LayoutMessage()
+  Calls()
+  RegistryCalls()
+  Records()
+  writeStatus=EXECOS.Write(BYTE POINTER(line),9)
+
+RETURN
+
+ENDMODULE

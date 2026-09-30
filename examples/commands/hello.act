@@ -1,0 +1,16 @@
+MODULE HELLO
+
+USE COMMAND
+USE CSTRING AS STR
+
+; Write one greeting through the command's selected output stream.
+LONGINT FUNC Main()
+
+  LET greeting=c"Hello from disk!\n"
+  LET length=STR.strlen(greeting)
+
+  LET count=COMMAND.Write(COMMAND.Output(),BYTE POINTER(greeting),length)
+
+RETURN(IF count=length THEN COMMAND.RETURN_OK ELSE COMMAND.RETURN_ERROR FI)
+
+ENDMODULE

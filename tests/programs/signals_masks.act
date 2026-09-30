@@ -1,0 +1,129 @@
+MODULE SIGNALMASKS
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+
+EXEC.Task worker
+CARD ARRAY checks(24)
+LONGCARD ARRAY values(6)
+BYTE ARRAY allocated(16)
+BYTE childBit,childCold
+PROC POINTER missing()
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC Child()
+  EXEC.Task POINTER self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  childCold=BYTE(self.tc_SigAlloc=LONGCARD($ffff) AND self.tc_SigRecvd=0
+      AND self.tc_SigWait=0 AND self.tc_SigExcept=0)
+  childBit=EXEC.AllocSignal(31)
+
+RETURN
+
+; Check initial signal masks before any caller allocation.
+PROC Cold()
+  EXEC.Task POINTER self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  checks(0)=EXEC.Version()
+  checks(1)=CARD(self.tc_SigAlloc=LONGCARD($ffff))
+  checks(2)=CARD(self.tc_SigRecvd=0 AND self.tc_SigWait=0 AND self.tc_SigExcept=0)
+  checks(3)=CARD(self.tc_ExecPrivate>ADDRESS($ffff))
+  values(0)=EXEC.SetSignal(LONGCARD($ab1234cd),LONGCARD($ffffffff))
+  values(1)=EXEC.SetSignal(LONGCARD($8000ffff),LONGCARD($ff00ff00))
+  values(2)=EXEC.SetSignal(0,0)
+  checks(4)=CARD(EXEC.AllocSignal(31))
+  values(3)=EXEC.SetSignal(0,0)
+  checks(5)=CARD(EXEC.AllocSignal(31))
+
+RETURN
+
+; Hold available allocations so the next operation must exercise its failure
+; path.
+PROC Exhaust()
+  BYTE index
+
+  EXEC.FreeSignal(31)
+  FOR index=0 TO 15 DO
+    allocated(index)=EXEC.AllocSignal($ff)
+  OD
+
+  checks(6)=CARD(EXEC.AllocSignal($ff))
+  checks(7)=CARD(EXEC.AllocSignal(0))
+  checks(8)=CARD(EXEC.AllocSignal(15))
+  checks(9)=CARD(EXEC.AllocSignal(32))
+  checks(10)=CARD(EXEC.AllocSignal(254))
+
+RETURN
+
+PROC Reallocate()
+  LONGCARD old
+  BYTE index
+
+  old=EXEC.SetSignal(LONGCARD($80000000),LONGCARD($ffffffff))
+  EXEC.FreeSignal(31)
+  values(4)=EXEC.SetSignal(0,0)
+  EXEC.FreeSignal($ff)
+  checks(11)=CARD(EXEC.AllocSignal(31))
+  values(5)=EXEC.SetSignal(0,0)
+  FOR index=16 TO 31 DO
+    EXEC.FreeSignal(index)
+  OD
+
+RETURN
+
+; Require each Task's allocated and pending masks to remain independent.
+PROC Isolation()
+  EXEC.Task POINTER item,self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  item=EXEC.AddTask(@worker,@Child,missing)
+  checks(12)=CARD(item=@worker)
+  AwaitRemoval(item)
+  checks(13)=CARD(childCold)
+  checks(14)=CARD(childBit)
+  checks(15)=CARD(self.tc_SigAlloc=LONGCARD($ffffffff))
+  checks(16)=CARD(worker.tc_ExecPrivate=0)
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  item=EXEC.AddTask(@worker,@Child,missing)
+  AwaitRemoval(item)
+  checks(17)=CARD(childCold)
+  checks(18)=CARD(childBit)
+
+RETURN
+
+; Validate initial signal metadata before the Task becomes runnable.
+PROC Admission()
+  EXEC.Task POINTER item,self
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  checks(19)=CARD(self.tc_SigAlloc=LONGCARD($ffff))
+  PrepareTask(@worker,TASKSTACKS.LOWER1,BYTE POINTER(0))
+  worker.tc_SigExcept=LONGCARD($80000000)
+  item=EXEC.AddTask(@worker,@Child,missing)
+  checks(20)=CARD(item=EXEC.Task POINTER(0))
+  checks(21)=CARD(worker.tc_SigExcept=LONGCARD($80000000)
+      AND worker.tc_State=EXEC.TS_INVALID)
+  worker.tc_SigExcept=0
+  worker.tc_ExecPrivate=$0f0040
+  item=EXEC.AddTask(@worker,@Child,missing)
+  checks(22)=CARD(item=EXEC.Task POINTER(0))
+  checks(23)=CARD(worker.tc_ExecPrivate=ADDRESS($0f0040))
+
+RETURN
+
+; Exercise signal allocation masks, exhaustion and Task isolation.
+PROC Main()
+
+  Cold()
+  Exhaust()
+  Isolation()
+  Reallocate()
+  Admission()
+
+RETURN
+
+ENDMODULE

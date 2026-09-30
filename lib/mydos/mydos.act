@@ -1,0 +1,409 @@
+; Read-only MyDOS metadata in the common filesystem workspace.
+MODULE MYDOS
+USE FSSTATUS
+
+USE EXEC
+USE ASCII
+USE BLOCKTYPES
+USE FSBTYPES
+USE FSCORE
+USE MYDOSTYPES
+USE FS83
+INCLUDE "../dos/dos-types.inc"
+
+CONST ROOT_SECTOR=361, DIRECTORY_SECTORS=8, DIRECTORY_ENTRIES=64
+CONST VTOC_SECTOR=360, FIRST_DATA_SECTOR=4, LAST_SYSTEM_SECTOR=368
+CONST DIRECTORY_DEPTH=16, NAME_BYTES=11, ENTRY_BYTES=16
+CONST RAW_DIRECTORY=$10, RAW_PROTECTION=$20, RAW_TEN_BIT=$42, RAW_SIXTEEN_BIT=$46
+
+; Only format-specific mount metadata needs its own allocation.
+PUBLIC BYTE FUNC CreateVolume(FSBTYPES.Volume POINTER volume)
+
+  volume.state=EXEC.AllocMem(SIZEOF(MYDOSTYPES.Volume),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  volume.root=ROOT_SECTOR
+
+RETURN(volume.state<>NULL)
+
+; Release format-specific volume state after mount ownership has retired.
+PUBLIC PROC DestroyVolume(FSBTYPES.Volume POINTER volume)
+
+  IF volume.state<>NULL THEN
+    EXEC.FreeMem(volume.state,SIZEOF(MYDOSTYPES.Volume))
+    volume.state=NULL
+  FI
+
+RETURN
+
+; Exclude boot, bitmap and root-directory sectors from file data.
+PUBLIC BYTE FUNC DataSector(FSBTYPES.Volume POINTER volume LONGCARD sector)
+
+  LET native=MYDOSTYPES.Volume POINTER(volume.state)
+  IF sector<FIRST_DATA_SECTOR OR sector>volume.block.sectors
+      OR sector>LONGCARD($ffff) THEN
+    RETURN(0)
+  FI
+
+  IF sector>=LONGCARD(native.vtocLow) AND sector<=LAST_SYSTEM_SECTOR THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Require a complete directory extent outside protected disk structures.
+PUBLIC BYTE FUNC ValidDirectory(FSBTYPES.Volume POINTER volume CARD start)
+
+  LET native=MYDOSTYPES.Volume POINTER(volume.state)
+  LET last=LONGCARD(start)+DIRECTORY_SECTORS-1
+  IF DataSector(volume,LONGCARD(start))=0 OR DataSector(volume,last)=0 THEN
+    RETURN(0)
+  FI
+
+  IF LONGCARD(start)<LONGCARD(native.vtocLow)
+      AND last>=LONGCARD(native.vtocLow) THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Validate bitmap coverage before accepting the volume header.
+BYTE FUNC Extent(FSBTYPES.Volume POINTER volume)
+  LONGCARD physical
+
+  LET native=MYDOSTYPES.Volume POINTER(volume.state)
+  IF native.marker<2 THEN
+    RETURN(0)
+  FI
+
+  IF native.marker=2 THEN
+    physical=1
+    native.bitmapBytes=LONGCARD(volume.block.dataBytes)
+
+  ELSE
+    native.bitmapBytes=(LONGCARD(native.marker)-2) LSH 8
+    physical=native.bitmapBytes RSH 7
+    IF volume.block.dataBytes=256 THEN
+      physical=physical RSH 1
+    FI
+  FI
+
+  IF physical=0 OR physical>357 THEN
+    RETURN(0)
+  FI
+
+  LET needed=10+((volume.block.sectors+8) RSH 3)
+  IF native.bitmapBytes<needed THEN
+    RETURN(0)
+  FI
+
+  native.vtocSectors=CARD(physical)
+  native.vtocLow=CARD(ROOT_SECTOR-physical)
+
+RETURN(1)
+
+; Validate MyDOS geometry and allocation metadata from the buffered VTOC.
+BYTE FUNC Header(FSBTYPES.Workspace POINTER work BYTE POINTER buffer)
+
+  LET volume=work.volume
+  LET native=MYDOSTYPES.Volume POINTER(volume.state)
+  native.marker=buffer(0)
+  IF Extent(volume)=0 THEN
+    RETURN(0)
+  FI
+
+  LET total=CARD(buffer(1))+(CARD(buffer(2)) LSH 8)
+  LET free=CARD(buffer(3))+(CARD(buffer(4)) LSH 8)
+  LET available=volume.block.sectors-11-LONGCARD(native.vtocSectors)
+  IF total=0 OR free>total OR LONGCARD(total)>available THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Reset recognition state and request the first mount-validation sector.
+PUBLIC BYTE FUNC BeginMount(FSBTYPES.Workspace POINTER work)
+
+  work.error=0
+  work.ioError=0
+  work.volume.mounted=0
+  work.neededSector=VTOC_SECTOR
+  IF work.volume.block.sectors<LAST_SYSTEM_SECTOR THEN
+    work.error=ERROR_NOT_A_DOS_DISK
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+RETURN(FSSTATUS.NEED_IO)
+
+; Recognize the volume only after its buffered VTOC passes validation.
+PUBLIC BYTE FUNC MountBuffered(FSBTYPES.Workspace POINTER work)
+
+  LET adapter=BLOCKTYPES.Adapter POINTER(work.volume.block.adapter)
+  IF Header(work,adapter.buffer)=0 THEN
+    work.error=ERROR_NOT_A_DOS_DISK
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  work.volume.mounted=1
+
+RETURN(FSSTATUS.DONE)
+
+; Keep raw link encoding/ordinal in the opaque key, separate from DOS flags.
+PROC Decode(FSBTYPES.Entry POINTER entry BYTE POINTER bytes CARD parent
+    BYTE ordinal)
+  BYTE index
+
+  entry.key=(LONGCARD(bytes(0)) LSH 8) OR LONGCARD(ordinal)
+  entry.flags=bytes(0) & (RAW_DIRECTORY OR RAW_PROTECTION)
+  entry.parent=parent
+  entry.count=LONGINT(CARD(bytes(1))+(CARD(bytes(2)) LSH 8))
+  entry.start=CARD(bytes(3))+(CARD(bytes(4)) LSH 8)
+  entry.length=0
+  entry.known=0
+  entry.days=0
+  entry.minutes=0
+  entry.ticks=0
+  FOR index=0 TO NAME_BYTES-1 DO
+    entry.name(index)=bytes(index+5)
+  OD
+
+RETURN
+
+; Classify a directory slot before accepting its name and sector chain.
+BYTE FUNC Live(FSBTYPES.Workspace POINTER work)
+
+  LET kind=BYTE(work.entry.key RSH 8) & $df
+  IF kind<>RAW_TEN_BIT AND kind<>RAW_SIXTEEN_BIT AND kind<>RAW_DIRECTORY THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF FS83.Stored(work.entry.name)=0 THEN
+    work.error=ERROR_INVALID_COMPONENT_NAME
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF kind=RAW_DIRECTORY THEN
+    IF work.entry.count<>DIRECTORY_SECTORS
+        OR ValidDirectory(work.volume,work.entry.start)=0 THEN
+      work.error=ERROR_DISK_NOT_VALIDATED
+      RETURN(FSSTATUS.ERROR)
+    FI
+  FI
+
+RETURN(FSSTATUS.DONE)
+
+; Decode the requested directory slot from the worker's sector buffer.
+PUBLIC BYTE FUNC BufferedEntry(FSBTYPES.Workspace POINTER work)
+
+  LET adapter=BLOCKTYPES.Adapter POINTER(work.volume.block.adapter)
+  LET offset=CARD(work.index & 7) LSH 4
+  LET bytes=adapter.buffer+offset
+  IF bytes^=0 THEN
+    RETURN(FSSTATUS.END_DIR)
+  FI
+
+  IF (bytes^ & $81)<>0 THEN
+    RETURN(FSSTATUS.SKIP_ENTRY)
+  FI
+
+  Decode(@work.entry,bytes,work.directory,BYTE(work.index))
+
+RETURN(Live(work))
+
+; Locate an ordinal directory slot and report whether its sector is needed.
+PUBLIC BYTE FUNC BeginEntry(FSBTYPES.Workspace POINTER work CARD directory
+    LONGCARD ordinal)
+
+  work.error=0
+  work.ioError=0
+  IF work.volume.mounted=0 THEN
+    work.error=ERROR_NOT_A_DOS_DISK
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF ordinal>=DIRECTORY_ENTRIES THEN
+    RETURN(FSSTATUS.END_DIR)
+  FI
+
+  IF directory<>ROOT_SECTOR AND ValidDirectory(work.volume,directory)=0 THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  work.directory=directory
+  work.index=ordinal
+  work.neededSector=directory+CARD(ordinal RSH 3)
+
+RETURN(FSSTATUS.NEED_IO)
+
+; Reject overlapping ancestor directories before changing the current path.
+PUBLIC BYTE FUNC Descend(FSBTYPES.Workspace POINTER work)
+  BYTE index
+  LONGCARD ancestor
+
+  IF (work.entry.flags & FSBTYPES.DIR)=0 THEN
+    work.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF work.depth=DIRECTORY_DEPTH THEN
+    work.error=ERROR_TOO_MANY_LEVELS
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  LET low=LONGCARD(work.entry.start)
+  LET high=low+DIRECTORY_SECTORS-1
+  FOR index=0 TO work.depth DO
+    ancestor=LONGCARD(work.ancestors(index))
+    IF low<=ancestor+DIRECTORY_SECTORS-1 AND high>=ancestor THEN
+      work.error=ERROR_DISK_NOT_VALIDATED
+      RETURN(FSSTATUS.ERROR)
+    FI
+  OD
+
+  work.depth==+1
+  work.ancestors(work.depth)=work.entry.start
+  work.directory=work.entry.start
+
+RETURN(FSSTATUS.DONE)
+
+; Represent the volume root using the same cursor contract as directories.
+PROC RootEntry(FSBTYPES.Workspace POINTER work)
+  BYTE index
+
+  work.entry.key=LONGCARD(RAW_DIRECTORY) LSH 8
+  work.entry.flags=FSBTYPES.DIR
+  work.entry.count=DIRECTORY_SECTORS
+  work.entry.start=ROOT_SECTOR
+  work.entry.parent=0
+  work.entry.length=0
+  work.entry.known=0
+  work.entry.days=0
+  work.entry.minutes=0
+  work.entry.ticks=0
+  FOR index=0 TO NAME_BYTES-1 DO
+    work.entry.name(index)=ASCII.SPACE
+  OD
+
+RETURN
+
+; Validate a bounded path and seed lookup at the volume root.
+PUBLIC BYTE FUNC StartResolve(FSBTYPES.Workspace POINTER work BYTE POINTER path)
+
+  IF FS83.StartResolve(work,path)=0 THEN
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF work.pathLength=0 THEN
+    RootEntry(work)
+    RETURN(FSSTATUS.DONE)
+  FI
+
+RETURN(FSSTATUS.NEXT_COMPONENT)
+
+; Advance one path component while preserving bounded worker progress.
+PUBLIC BYTE FUNC ResolveComponent(FSBTYPES.Workspace POINTER work)
+
+  IF FS83.Component(work)=0 THEN
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  work.index=0
+  work.matchCount=0
+  work.exactFound=0
+  work.neededSector=work.directory
+
+RETURN(FSSTATUS.NEED_IO)
+
+; Decode at most eight entries, then return before the next I/O wait.
+PUBLIC BYTE FUNC ResolveStep(FSBTYPES.Workspace POINTER work)
+  BYTE status
+
+  DO
+    status=BufferedEntry(work)
+    IF status=FSSTATUS.ERROR THEN
+      RETURN(FSSTATUS.ERROR)
+    FI
+
+    IF status=FSSTATUS.END_DIR THEN
+      EXIT
+    FI
+
+    IF status=FSSTATUS.DONE THEN
+      FS83.SelectMatch(work)
+    FI
+
+    work.index==+1
+    IF work.index=DIRECTORY_ENTRIES THEN
+      EXIT
+    FI
+
+    IF (work.index & 7)=0 THEN
+      work.neededSector=work.directory+CARD(work.index RSH 3)
+      RETURN(FSSTATUS.NEED_IO)
+    FI
+  OD
+
+  IF FS83.Choose(work)=0 THEN
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF work.pathOffset=work.pathLength THEN
+    IF (work.entry.flags & FSBTYPES.DIR)<>0 THEN
+      RETURN(Descend(work))
+    FI
+
+    RETURN(FSSTATUS.DONE)
+  FI
+
+  IF Descend(work)=0 THEN
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+RETURN(FSSTATUS.NEXT_COMPONENT)
+
+; A borrowed directory lock must describe a valid, nonoverlapping ancestor path.
+PUBLIC LONGINT FUNC ValidateBase(FSBTYPES.Workspace POINTER work FSBTYPES.LockState
+    POINTER state)
+  BYTE index,previous
+  LONGCARD low,high,ancestor
+
+  LET depth=state.depth
+  IF state.entry.count<>DIRECTORY_SECTORS OR depth>DIRECTORY_DEPTH
+      OR state.ancestors(0)<>ROOT_SECTOR THEN
+    RETURN(ERROR_INVALID_LOCK)
+  FI
+
+  IF state.entry.start<>state.ancestors(depth) THEN
+    RETURN(ERROR_INVALID_LOCK)
+  FI
+
+  IF depth=0 THEN
+    IF state.entry.parent<>0 THEN
+      RETURN(ERROR_INVALID_LOCK)
+    FI
+
+  ELSE
+    IF state.entry.parent<>state.ancestors(depth-1) THEN
+      RETURN(ERROR_INVALID_LOCK)
+    FI
+
+    FOR index=1 TO depth DO
+      IF ValidDirectory(work.volume,state.ancestors(index))=0 THEN
+        RETURN(ERROR_DISK_NOT_VALIDATED)
+      FI
+
+      low=LONGCARD(state.ancestors(index))
+      high=low+DIRECTORY_SECTORS-1
+      FOR previous=0 TO index-1 DO
+        ancestor=LONGCARD(state.ancestors(previous))
+        IF low<=ancestor+DIRECTORY_SECTORS-1 AND high>=ancestor THEN
+          RETURN(ERROR_DISK_NOT_VALIDATED)
+        FI
+      OD
+    OD
+  FI
+
+RETURN(0)
+
+ENDMODULE

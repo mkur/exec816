@@ -1,0 +1,451 @@
+; Bounded file-chain operations. Only the worker waits for neededSector I/O.
+MODULE MYDOSFILE
+USE FSSTATUS
+
+USE MYDOS
+USE MYDOSTYPES
+USE FSBTYPES
+USE FSCORE
+USE BLOCKIO
+USE BLOCKTYPES
+USE SYS
+INCLUDE "../dos/dos-types.inc"
+
+CONST LOCATING=1, COPYING=2, MEASURING=3
+
+PUBLIC MYDOSTYPES.ChainCursor POINTER FUNC Chain(FSBTYPES.Cursor POINTER file)
+
+RETURN(MYDOSTYPES.ChainCursor POINTER(@file.storage(0)))
+
+; Restart traversal without losing the caller's committed position or length.
+PUBLIC PROC Restart(FSBTYPES.Cursor POINTER file)
+
+  LET chain=Chain(file)
+  chain.valid=0
+  chain.sector=file.entry.start
+  chain.offset=0
+  chain.next=0
+  chain.used=0
+  chain.hops=0
+  chain.anchor=0
+  chain.power=1
+  chain.span=0
+  chain.base=0
+
+RETURN
+
+; Validate a regular file entry and establish its independent traversal
+; cursor.
+PUBLIC BYTE FUNC Open(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER file)
+  BYTE index
+
+  work.error=0
+  work.ioError=0
+  IF (work.entry.flags & FSBTYPES.DIR)<>0 THEN
+    work.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(0)
+  FI
+
+  IF (work.entry.count=0 AND work.entry.start<>0)
+      OR (work.entry.count<>0 AND work.entry.start=0) THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(0)
+  FI
+
+  FSCORE.CopyEntry(@file.entry,@work.entry)
+  file.depth=work.depth
+  FOR index=0 TO work.depth DO
+    file.ancestors(index)=work.ancestors(index)
+  OD
+
+  file.position=0
+  file.entry.length=0
+  file.entry.known=IF file.entry.count=0 THEN 1 ELSE 0 FI
+  Restart(file)
+  IF file.entry.start<>0 AND SectorAllowed(work,file,file.entry.start)=0 THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Reject chain sectors that overlap metadata or ancestor directories.
+BYTE FUNC SectorAllowed(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file CARD sector)
+  BYTE index
+  LONGCARD ancestor
+
+  LET number=LONGCARD(sector)
+  IF MYDOS.DataSector(work.volume,number)=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO file.depth DO
+    ancestor=LONGCARD(file.ancestors(index))
+    IF number>=ancestor AND number<=ancestor+7 THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; Bound total work and detect loops even across successive one-byte reads.
+BYTE FUNC Visit(FSBTYPES.Cursor POINTER file)
+
+  LET chain=Chain(file)
+  chain.hops==+1
+  IF chain.hops>LONGCARD(file.entry.count) THEN
+    RETURN(0)
+  FI
+
+  IF chain.hops=1 THEN
+    chain.anchor=chain.sector
+    RETURN(1)
+  FI
+
+  chain.span==+1
+  IF chain.sector=chain.anchor THEN
+    RETURN(0)
+  FI
+
+  IF chain.span=chain.power THEN
+    chain.anchor=chain.sector
+    chain.power=chain.power LSH 1
+    chain.span=0
+  FI
+
+RETURN(1)
+
+; Decode either ten-bit links with a file ordinal or full sixteen-bit links.
+BYTE FUNC Trailer(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER file)
+  CARD high
+
+  LET chain=Chain(file)
+  LET adapter=BLOCKTYPES.Adapter POINTER(work.volume.block.adapter)
+  LET bytes=adapter.buffer
+  LET last=work.volume.block.dataBytes-3
+  chain.used=CARD(bytes(last+2))
+  high=CARD(bytes(last))
+  IF chain.used>last THEN
+    RETURN(0)
+  FI
+
+  IF (file.entry.key & LONGCARD($400))=0 THEN
+    IF (high RSH 2)<>CARD(file.entry.key & $ff) THEN
+      RETURN(0)
+    FI
+
+    high=high & 3
+  FI
+
+  chain.next=(high LSH 8)+CARD(bytes(last+1))
+
+RETURN(1)
+
+; Only a valid terminal sector makes the exact byte length known.
+BYTE FUNC Link(FSBTYPES.Cursor POINTER file)
+
+  LET chain=Chain(file)
+  IF chain.next=0 THEN
+    IF chain.hops<>LONGCARD(file.entry.count) THEN
+      RETURN(0)
+    FI
+
+    IF chain.base>SYS.MAXLONGINT-LONGINT(chain.used) THEN
+      RETURN(0)
+    FI
+
+    file.entry.length=chain.base+LONGINT(chain.used)
+    file.entry.known=1
+
+  ELSEIF chain.hops>=LONGCARD(file.entry.count) THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Accept buffered chain data only after link and extent checks succeed.
+PUBLIC BYTE FUNC Validate(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file)
+
+  LET chain=Chain(file)
+  IF chain.valid<>0 THEN
+    RETURN(1)
+  FI
+
+  IF chain.hops>=work.volume.block.sectors
+      OR SectorAllowed(work,file,chain.sector)=0 OR Visit(file)=0
+      OR Trailer(work,file)=0 OR Link(file)=0 THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(0)
+  FI
+
+  IF chain.next<>0 THEN
+    IF SectorAllowed(work,file,chain.next)=0 THEN
+      work.error=ERROR_DISK_NOT_VALIDATED
+      RETURN(0)
+    FI
+  FI
+
+  chain.valid=1
+
+RETURN(1)
+
+; Retire a failed operation while preserving its causal filesystem error.
+PUBLIC BYTE FUNC Fail(FSBTYPES.Operation POINTER op LONGINT error)
+
+  LET chain=Chain(op.file)
+  op.work.error=error
+  op.file.position=op.start
+  chain.valid=0
+  op.result=-1
+  op.stage=0
+
+RETURN(FSSTATUS.ERROR)
+
+; Cancellation commits a partial read, but does not commit a partial seek.
+PUBLIC BYTE FUNC Cancel(FSBTYPES.Operation POINTER op)
+
+  LET chain=Chain(op.file)
+  op.work.error=ERROR_BREAK
+  op.file.position=op.start
+  chain.valid=0
+  op.result=-1
+  IF op.kind=FSCORE.READ AND op.completed<>0 THEN
+    op.file.position=op.start+op.completed
+    op.result=op.completed
+  FI
+
+  op.stage=0
+
+RETURN(FSSTATUS.ERROR)
+
+; Move traversal to the next validated link without changing committed
+; position.
+PUBLIC PROC Advance(FSBTYPES.Cursor POINTER file)
+
+  LET chain=Chain(file)
+  chain.base==+LONGINT(chain.used)
+  chain.sector=chain.next
+  chain.offset=0
+  chain.valid=0
+
+RETURN
+
+; Publish the sector explicitly at every boundary where the worker will wait.
+BYTE FUNC NeedSector(FSBTYPES.Operation POINTER op)
+
+  LET chain=Chain(op.file)
+  op.work.neededSector=chain.sector
+
+RETURN(FSSTATUS.NEED_IO)
+
+; Validate a read request before entering the bounded chain walker.
+PUBLIC BYTE FUNC BeginRead(FSBTYPES.Operation POINTER op)
+
+  FSCORE.BeginOperation(op,FSCORE.READ,LOCATING)
+  op.remaining=op.requested
+  op.target=op.start
+  IF op.requested<0 THEN
+    RETURN(Fail(op,ERROR_BAD_NUMBER))
+  FI
+
+  IF op.requested=0 THEN
+    RETURN(FSCORE.FinishOperation(op))
+  FI
+
+  IF op.requested>SYS.MAXLONGINT-op.start THEN
+    RETURN(Fail(op,ERROR_BAD_NUMBER))
+  FI
+
+  IF BLOCKIO.Mapped(op.output,LONGCARD(op.requested))=0 THEN
+    RETURN(Fail(op,ERROR_BAD_NUMBER))
+  FI
+
+  IF op.file.entry.known<>0 AND op.start=op.file.entry.length THEN
+    RETURN(FSCORE.FinishOperation(op))
+  FI
+
+  LET chain=Chain(op.file)
+  IF chain.valid=0 THEN
+    Restart(op.file)
+  FI
+
+RETURN(NeedSector(op))
+
+; Derive a seek target without accepting overflow or a position outside the
+; file.
+BYTE FUNC Target(FSBTYPES.Operation POINTER op LONGINT base)
+
+  IF op.offset<0 THEN
+    IF op.offset < -base THEN
+      RETURN(Fail(op,ERROR_SEEK_ERROR))
+    FI
+
+  ELSEIF op.offset>SYS.MAXLONGINT-base THEN
+    RETURN(Fail(op,ERROR_SEEK_ERROR))
+  FI
+
+  op.target=base+op.offset
+  IF op.file.entry.known<>0 AND op.target>op.file.entry.length THEN
+    RETURN(Fail(op,ERROR_SEEK_ERROR))
+  FI
+
+  Restart(op.file)
+  op.stage=LOCATING
+  IF op.target=0 THEN
+    RETURN(FSCORE.FinishOperation(op))
+  FI
+
+RETURN(NeedSector(op))
+
+; Prepare a seek whose chain traversal can resume after sector I/O.
+PUBLIC BYTE FUNC BeginSeek(FSBTYPES.Operation POINTER op)
+
+  FSCORE.BeginOperation(op,FSCORE.SEEK,LOCATING)
+  CASE op.mode OF
+  WHEN OFFSET_BEGINNING THEN
+    RETURN(Target(op,0))
+
+  WHEN OFFSET_CURRENT THEN
+    RETURN(Target(op,op.start))
+
+  WHEN OFFSET_END THEN
+    IF op.file.entry.known<>0 THEN
+      RETURN(Target(op,op.file.entry.length))
+    FI
+
+  ELSE
+    RETURN(Fail(op,ERROR_SEEK_ERROR))
+  ESAC
+
+  Restart(op.file)
+  op.stage=MEASURING
+
+RETURN(NeedSector(op))
+
+; Find the sector containing the target logical position.
+BYTE FUNC Locate(FSBTYPES.Operation POINTER op)
+
+  LET chain=Chain(op.file)
+  LET end=chain.base+LONGINT(chain.used)
+  IF op.target<=end THEN
+    chain.offset=CARD(op.target-chain.base)
+    IF op.kind=FSCORE.SEEK THEN
+      RETURN(FSCORE.FinishOperation(op))
+    FI
+
+    op.stage=COPYING
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  IF chain.next=0 THEN
+    RETURN(Fail(op,ERROR_SEEK_ERROR))
+  FI
+
+  Advance(op.file)
+
+RETURN(NeedSector(op))
+
+; Copy only the requested payload span, excluding the sector's chain trailer.
+PROC Copy(FSBTYPES.Operation POINTER op CARD amount)
+  CARD index
+
+  LET chain=Chain(op.file)
+  LET adapter=BLOCKTYPES.Adapter POINTER(op.work.volume.block.adapter)
+  LET target=op.output+SIZE(op.completed)
+  LET source=adapter.buffer+chain.offset
+  FOR index=0 TO amount-1 DO
+    target(index)=source(index)
+  OD
+
+RETURN
+
+; Apply one buffered sector to the active read, seek or measurement operation.
+BYTE FUNC Consume(FSBTYPES.Operation POINTER op)
+  CARD amount
+
+  LET chain=Chain(op.file)
+  amount=chain.used-chain.offset
+  IF LONGINT(amount)>op.remaining THEN
+    amount=CARD(op.remaining)
+  FI
+
+  IF amount<>0 THEN
+    Copy(op,amount)
+    chain.offset==+amount
+    op.completed==+LONGINT(amount)
+    op.remaining==-LONGINT(amount)
+  FI
+
+  IF op.remaining=0 OR chain.next=0 THEN
+    RETURN(FSCORE.FinishOperation(op))
+  FI
+
+  Advance(op.file)
+
+RETURN(NeedSector(op))
+
+; Resume bounded chain work after the worker supplies its next sector.
+PUBLIC BYTE FUNC ContinueOperation(FSBTYPES.Operation POINTER op)
+  BYTE status
+
+  IF Validate(op.work,op.file)=0 THEN
+    RETURN(Fail(op,op.work.error))
+  FI
+
+  LET chain=Chain(op.file)
+  IF op.stage=MEASURING THEN
+    IF chain.next=0 THEN
+      RETURN(Target(op,op.file.entry.length))
+    FI
+
+    Advance(op.file)
+    RETURN(NeedSector(op))
+  FI
+
+  IF op.stage=LOCATING THEN
+    status=Locate(op)
+    IF status<>FSSTATUS.MORE THEN
+      RETURN(status)
+    FI
+  FI
+
+RETURN(Consume(op))
+
+; MyDOS stores sector counts, so exact byte length requires a bounded chain walk.
+PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file BYTE received)
+  BYTE status
+
+  IF (work.entry.flags & FSBTYPES.DIR)<>0 THEN
+    FSCORE.CopyEntry(@file.entry,@work.entry)
+    file.entry.length=0
+    file.entry.known=1
+    RETURN(FSSTATUS.DONE)
+  FI
+
+  LET chain=Chain(file)
+  IF received=0 THEN
+    status=Open(work,file)
+
+  ELSE
+    status=Validate(work,file)
+    IF status<>0 AND chain.next<>0 THEN
+      Advance(file)
+    FI
+  FI
+
+  IF status=0 THEN
+    RETURN(FSSTATUS.ERROR)
+  FI
+
+  IF file.entry.known<>0 THEN
+    RETURN(FSSTATUS.DONE)
+  FI
+
+  work.neededSector=chain.sector
+
+RETURN(FSSTATUS.NEED_IO)
+
+ENDMODULE

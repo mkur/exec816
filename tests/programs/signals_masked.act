@@ -1,0 +1,13 @@
+MODULE SIGNALMASKED
+USE EXEC
+CARD ARRAY checks(8)
+LONGCARD ARRAY values(2)
+
+; Exercise signal operations with the fixture's interrupt mask.
+PROC Main()
+
+  checks(0)=EXEC.Version()
+
+RETURN
+
+ENDMODULE

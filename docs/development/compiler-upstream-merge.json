@@ -1,0 +1,416 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "fe2a933b4a3b17b8a93a73c2cfd4ec55ea2b393c",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "merge": {
+    "branch": "exec816-compact-o65",
+    "parents": [
+      "4293d5ccde08e016bdffd39908a54f60218b5372",
+      "57cc927cd7bdd039a4a0d43fdc57c5ca885a679d"
+    ],
+    "upstream_commits_included": 62,
+    "local_commits_preserved": 10,
+    "upstream_commits_missing": 0,
+    "published": false
+  },
+  "compiler_binary_sha256": "ad33cb6065801423a31529ed891bcc524baef5adf7c9487ced16bd5217fcfa13",
+  "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+  "abi_assembly_sha256": "ba00a5bfa74d656f5d6d7f1fe566d399c6788ed745ba6a58c99fb336fc95afdb",
+  "candidate_validation": {
+    "revision": "e62536dae7da58236ceaeb7c38013be58c11bde6",
+    "override": true,
+    "final_changes": [
+      "tests/fixtures/mir65816-state-boundary.txt",
+      "tests/mir65816_state_boundary.rs"
+    ],
+    "identical_compiler_binary": true,
+    "promoted_pin_override": false
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "host_tests": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "passed": 216
+  },
+  "compiler_tests": {
+    "status": "pass",
+    "passed": 3635,
+    "ignored": 29,
+    "logs": [
+      {
+        "path": "build/compiler-main-merge-tests.log",
+        "sha256": "bbebdd27b70bfad2f6a15f1f60ae0e2ea0a1f6b99205ec6c87a3852cd2738d12",
+        "passed": 3425,
+        "failed": 1,
+        "ignored": 29
+      },
+      {
+        "path": "build/compiler-main-merge-tests-remaining.log",
+        "sha256": "8411417e3beb3ceeb5a586404579fcf4a2e196577fbcfb4308e9396dae9bc48e",
+        "passed": 210,
+        "failed": 0,
+        "ignored": 0
+      }
+    ],
+    "snapshot_failure": "Stale upstream snapshot; reviewed three omitted stores from 1d9873cb and remapped positions. Resolved in merge commit.",
+    "completion": "Reran only the failed target and remaining integration targets, then doc tests; no implementation changes after initial run."
+  },
+  "native_vm_tests": [
+    {
+      "targets": [
+        "cstring",
+        "o65",
+        "memory",
+        "interop"
+      ],
+      "passed": 25,
+      "log": {
+        "path": "build/compiler-main-merge-native-tests.log",
+        "sha256": "3c04146ed72f3f611b3c6b5d4e9efe56070cf9fb747f97691238e9a9396efc12"
+      },
+      "manifest": {
+        "path": "build/actionc/tools/native65816-runtime-tests/target/qualification/run-ku0hsdmb/manifest.json",
+        "sha256": "ab221c3a83ed85d398c557a5da8a92fda5bee82d5f21eda29d7f67ba814967db"
+      },
+      "compiler_revision": "e62536dae7da58236ceaeb7c38013be58c11bde6",
+      "vm_base": "56ddc5c5de41f0e7294e87c440869550eaf53292",
+      "vm_patch_sha256": "afd5efebc9f0d153ef928c953af657af24cc5f059a1dca7482e3a3fa325f4cac"
+    },
+    {
+      "targets": [
+        "parameter_comparisons"
+      ],
+      "passed": 2,
+      "log": {
+        "path": "build/compiler-main-merge-parameter-tests.log",
+        "sha256": "435540ff566eab9e6396bcc55b8edac00d246e5a1e286d055d9208b290877f69"
+      },
+      "manifest": {
+        "path": "build/actionc/tools/native65816-runtime-tests/target/qualification/run-tnm55z8w/manifest.json",
+        "sha256": "4c370f3b5172a68a464247df3b02fc66ffba51d9ee4bad4ea85c200f9a68b1b0"
+      },
+      "compiler_revision": "fe2a933b4a3b17b8a93a73c2cfd4ec55ea2b393c",
+      "vm_base": "56ddc5c5de41f0e7294e87c440869550eaf53292",
+      "vm_patch_sha256": "afd5efebc9f0d153ef928c953af657af24cc5f059a1dca7482e3a3fa325f4cac"
+    }
+  ],
+  "exec_tests": [
+    {
+      "name": "read_args-opt",
+      "result": {
+        "path": "build/compiler-main-merge/read_args-opt/results.json",
+        "sha256": "b23991e3ec61990782ae97e5b8690a7bff9c0923f053b760ff89e73255e2c707"
+      },
+      "status": "pass",
+      "checks": 65,
+      "compiler_revision": "e62536dae7da58236ceaeb7c38013be58c11bde6",
+      "compiler_override": true,
+      "image_sha256": "41f0cc4547a4b547f15fe26f20f3ca4393582c1d042c3d3e3ac3feb97b3312ff",
+      "xex_sha256": "a2e8cb2dce037d4f81044ce0776fbda0a43dae76f9c7ac89fc045cc316a80356",
+      "guards": "intact",
+      "runtime_status": 0
+    },
+    {
+      "name": "read_args-raw",
+      "result": {
+        "path": "build/compiler-main-merge/read_args-raw/results.json",
+        "sha256": "344ef12ab7e6f51c358c45714dd6340d92f8277f40a9a45f92223d5f216a548b"
+      },
+      "status": "pass",
+      "checks": 65,
+      "compiler_revision": "e62536dae7da58236ceaeb7c38013be58c11bde6",
+      "compiler_override": true,
+      "image_sha256": "a0e81aeca77a96b355ea607487ecd24bb98ba181e42ca4eecd89814e0f569a22",
+      "xex_sha256": "eb54b3457135e193289ae62fe787d828ab0bcb1ae16142be03743bfe40435e1a",
+      "guards": "intact",
+      "runtime_status": 0
+    },
+    {
+      "name": "cstring-opt",
+      "result": {
+        "path": "build/compiler-main-merge/cstring-opt/results.json",
+        "sha256": "81865e190c30b894f609a7249a4d70fa86a5be51e45837659c7ddf100991bf3f"
+      },
+      "status": "pass",
+      "checks": 109,
+      "compiler_revision": "e62536dae7da58236ceaeb7c38013be58c11bde6",
+      "compiler_override": true,
+      "image_sha256": "e8d194297a8709f1b4c42f92d020c6792802995bb8bf3e3f33c49429bec77561",
+      "xex_sha256": "5acb95e039955eb9072bd170d05f21c70eb7b8101d9f8f62788f657317aed9aa",
+      "guards": "intact",
+      "runtime_status": 0
+    },
+    {
+      "name": "cstring-raw",
+      "result": {
+        "path": "build/compiler-main-merge/cstring-raw/results.json",
+        "sha256": "071d40f4e328ec12b423d4bbbd850592208baac59e312e3eea6f4911e5c76069"
+      },
+      "status": "pass",
+      "checks": 109,
+      "compiler_revision": "e62536dae7da58236ceaeb7c38013be58c11bde6",
+      "compiler_override": true,
+      "image_sha256": "f2329e9bbd1d7cf2a5c48e5c02a42b6ab06a8bbdfb63f1ed96552307ae65095d",
+      "xex_sha256": "3710a5a2e9e550ca5d7aca6d4dc9d585691824fb16e9103e453a628ecc31295c",
+      "guards": "intact",
+      "runtime_status": 0
+    }
+  ],
+  "platform_pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "command_builds": {
+    "result": {
+      "path": "build/compiler-main-merge/commands/results.json",
+      "sha256": "3af64d4242b6a6714917f277c01d2c207d6306fc2d41e7ea96aa6f8888fd8cac"
+    },
+    "commands": {
+      "hello-opt": {
+        "source_sha256": "569d3d75465ccce52331c10e3f109bad73f5f53c95a65ac514eab7538fe77f4d",
+        "file_sha256": "b9a686d707a1aeeec43428a2b6ea2970e306287a0838910844f0124ae50d0c5c",
+        "bytes": 642,
+        "imports": [
+          "__a816_stack_overflow_v1",
+          "exec816_write_v1",
+          "exec816_output_v1",
+          "cstring_strlen_v1"
+        ]
+      },
+      "echoargs-opt": {
+        "source_sha256": "849223b957805b5511cc154309caf7cdce40b4f57c073bf6b53321b1a70487df",
+        "file_sha256": "36b251c29241fff45ef6bc3c16934f21fcd2388312fa2c77f7f8989b788b3baf",
+        "bytes": 976,
+        "imports": [
+          "__a816_stack_overflow_v1",
+          "exec816_write_v1",
+          "exec816_output_v1",
+          "exec816_getargstr_v1",
+          "cstring_strlen_v1"
+        ]
+      },
+      "cat-opt": {
+        "source_sha256": "ac1fdb4862ffc32bc088335c939b198e7b282756183058c9671832d2912a9867",
+        "file_sha256": "ecbbabdf733aa04afa5ecfc90133624c53ffd7716a69675a6104df3617212e45",
+        "bytes": 2854,
+        "imports": [
+          "__a816_stack_overflow_v1",
+          "exec816_open_v1",
+          "exec816_read_v1",
+          "exec816_write_v1",
+          "exec816_close_v1",
+          "exec816_input_v1",
+          "exec816_output_v1",
+          "exec816_ioerr_v1",
+          "exec816_setioerr_v1",
+          "exec816_breakpending_v1",
+          "exec816_readargs_v1"
+        ]
+      },
+      "wc-opt": {
+        "source_sha256": "788bb532db100678492e2a6694c17d58a003a1a0927321079ac48f5533775246",
+        "file_sha256": "d04c2333253bb06b530e5af5369753f953ff21d6f944db537dcc5d2d77e5ff5c",
+        "bytes": 2875,
+        "imports": [
+          "__a816_stack_overflow_v1",
+          "exec816_read_v1",
+          "exec816_write_v1",
+          "exec816_input_v1",
+          "exec816_output_v1",
+          "exec816_setioerr_v1",
+          "exec816_breakpending_v1",
+          "exec816_readargs_v1",
+          "cstring_u32toa_v1"
+        ]
+      },
+      "hello-raw": {
+        "source_sha256": "569d3d75465ccce52331c10e3f109bad73f5f53c95a65ac514eab7538fe77f4d",
+        "file_sha256": "70cadd3873c70f1527627a3b3ab8bf2ce3931a48d305fc3661ff4e3a6b0a07b2",
+        "bytes": 654,
+        "imports": [
+          "__a816_stack_overflow_v1",
+          "exec816_write_v1",
+          "exec816_output_v1",
+          "cstring_strlen_v1"
+        ]
+      },
+      "echoargs-raw": {
+        "source_sha256": "849223b957805b5511cc154309caf7cdce40b4f57c073bf6b53321b1a70487df",
+        "file_sha256": "aae98b2e8309f3ce28251e56917239d64bd6d382848ce8f237015e140645ae8a",
+        "bytes": 1004,
+        "imports": [
+          "__a816_stack_overflow_v1",
+          "exec816_write_v1",
+          "exec816_output_v1",
+          "exec816_getargstr_v1",
+          "cstring_strlen_v1"
+        ]
+      },
+      "cat-raw": {
+        "source_sha256": "ac1fdb4862ffc32bc088335c939b198e7b282756183058c9671832d2912a9867",
+        "file_sha256": "f2fd743b3acbf24c477935f803f035dec451c6d82eea0d9d5e8e96efca11077e",
+        "bytes": 3704,
+        "imports": [
+          "__a816_stack_overflow_v1",
+          "exec816_open_v1",
+          "exec816_read_v1",
+          "exec816_write_v1",
+          "exec816_close_v1",
+          "exec816_input_v1",
+          "exec816_output_v1",
+          "exec816_ioerr_v1",
+          "exec816_setioerr_v1",
+          "exec816_breakpending_v1",
+          "exec816_readargs_v1"
+        ]
+      },
+      "wc-raw": {
+        "source_sha256": "788bb532db100678492e2a6694c17d58a003a1a0927321079ac48f5533775246",
+        "file_sha256": "bbb8966a510b5c189c19b32c6ba0334f67fb0ac564ab5f746f2a63013027be8e",
+        "bytes": 2937,
+        "imports": [
+          "__a816_stack_overflow_v1",
+          "exec816_read_v1",
+          "exec816_write_v1",
+          "exec816_input_v1",
+          "exec816_output_v1",
+          "exec816_setioerr_v1",
+          "exec816_breakpending_v1",
+          "exec816_readargs_v1",
+          "cstring_u32toa_v1"
+        ]
+      }
+    }
+  },
+  "source_inputs": {
+    "abi/program.json": "1567db375cbae9aad523022f843ebd82f1091b07ffbd74211b3845c6c3b9374b",
+    "abi/dos.json": "f507524bba8812693392f8138fd500f340bcb692f8657d894615e9a6db477705",
+    "abi/process.json": "586d0e5d3d5cbf823e79d2b3f1f3b9329035f0fb122b801dcc862c3af94a9013",
+    "toolchain/actionc.json": "5ee9701da420d6ba2fbd2ea8f759be14c3f73fcb0d7a30d1d5e455db6534dbd6",
+    "toolchain/patches/actionc-array-stride.patch": "c974dde5aa4649cf6c40e934029ecb07d3b6eac4bdc51d717caf0274984deb8d",
+    "toolchain/patches/actionc-pointer-expressions.patch": "7af32482f0c0e8a3aac01f632361de67ce3558873d64fc527ad8dab7c436a0d3",
+    "lib/dos/dosargs.act": "d2c9393d69f00b728e967ce5dcf36519ea7d025cf829437b0603c0bb5e09715a",
+    "lib/dos/programapi.act": "6d621c1d1529840d8c1a4822536b5198e83aeda025ed4d36e9088c5353436945",
+    "lib/dos/command.act": "06cf5ee748c44edfbfd58070c83c901848c0d1b7a98efcd34e39f3656f00aae8",
+    "lib/dos/command-args.inc": "2e929d4ec0ed2cb5f8fdb6e9116b705f24c335a64bfe978395954c614e6bb8f1",
+    "lib/dos/command-errors.inc": "0769cde0d935de6f9b2f078379735bbbfbff16e12f32930f18c300ee55d4b5b3",
+    "lib/dos/dos-types.inc": "fa99c517bad5396b4a188c31e6c2c2ab1363c557fff77bedfdd7c6ce030f2184",
+    "tools/generate_program.py": "6ca4cdf997706f1895b1adb709871fcc219e76bbcb22649f3d6d5e80c9ef0632",
+    "examples/commands/cat.act": "ac1fdb4862ffc32bc088335c939b198e7b282756183058c9671832d2912a9867",
+    "examples/commands/wc.act": "788bb532db100678492e2a6694c17d58a003a1a0927321079ac48f5533775246",
+    "examples/shell-session.inc": "b3870251e43fd8624f588608b1e8a115b743e1e011f345427d9b8757bdb3547f",
+    "tests/programs/read_args.act": "deab050eae6189989510d3a54f897009dabadeb83a445cbe320b9aab6c1da728",
+    "tests/programs/cat_stream.act": "4fd7d838d903e4fc5562400f4ac67ba42f23419ce35ae95b9849e054376ab290",
+    "tests/programs/wc_stream.act": "522a6ca72a04dfbf3b09d76ec304fc8409623fdbcbf9130dccef699448e7aa39",
+    "tests/programs/cstring_command.act": "47a21c70a411b848864eb730c5f1db1bc1fa308a282249cf4e1c69f8dddf2af9",
+    "tests/programs/cstring_resident.act": "b4c1195f5c6bf86717c1b1bd3b7991c8f7c217b9e5c0e644d0e8cdc8b8f9c6cb",
+    "tests/programs/shell_parser.act": "6ecb1537962e3f9abe87a4b42af09c52a02400451d0db14d50fe425c83488f9c",
+    "tests/test_program_contract.py": "1859b5043dd14cd80757e0568d330ea9858ae92bce39aa4f64a16f39b110baf4",
+    "tools/test_read_args.py": "cf6a4e72a8daa3cf915f64c70a0379fd6cb87214d5689a4aee79d9c0fcb39b71",
+    "tools/test_cat.py": "65451d606a2b4ff71d81efa40b4b05b1bffdf8ae12f24e0a77c44b845fadcc79",
+    "tools/test_wc.py": "d1b0be98e686c60b96aabf70ce918af255b17855fe389c95e02e3f9b0635c32a",
+    "tools/test_cstring.py": "83b4c2010a7bdee90ddc5fe74e00c3986a4b37630bcdb644948cfefc69efeeb1",
+    "tools/test_shell_parser.py": "fd9c0719a5465bf5752410332b4cf9d680aa09b0e56d062fa30006307652c04a",
+    "examples/commands/hello.act": "569d3d75465ccce52331c10e3f109bad73f5f53c95a65ac514eab7538fe77f4d",
+    "examples/commands/echoargs.act": "849223b957805b5511cc154309caf7cdce40b4f57c073bf6b53321b1a70487df"
+  },
+  "scope": "Compiler merge and focused Exec development checks; no full Exec release matrix or play image refresh."
+}

@@ -1,0 +1,213 @@
+MODULE FSDIRECTORY
+USE FSSTATUS
+USE EXEC
+USE DOSWIRE
+USE FSTYPES
+USE DOSOBJECTS
+USE FSREGISTRY
+USE FSNAMES
+USE FSPACKET
+USE FSINFO
+USE FSBACKEND
+USE FSBTYPES
+USE FSCORE
+INCLUDE "../dos/dos-types.inc"
+INCLUDE "../dos/dos-packets.inc"
+
+; The caller keeps this lock private until its publication checkpoint.
+PUBLIC PROC InitLockState(FSTYPES.Service POINTER service)
+  BYTE index
+  FSTYPES.LockObject POINTER lock
+
+  lock=FSTYPES.LockObject POINTER(service.object)
+  FSCORE.CopyEntry(@lock.state.entry,@service.work.entry)
+  lock.state.depth=service.work.depth
+  FOR index=0 TO service.work.depth DO
+    lock.state.ancestors(index)=service.work.ancestors(index)
+  OD
+
+RETURN
+
+; Validate the request and restore its ancestry before starting bounded work.
+PUBLIC BYTE FUNC Select(FSTYPES.Service POINTER service)
+  BYTE index
+  FSTYPES.LockObject POINTER lock
+
+  IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg1)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_INVALID_LOCK))
+  FI
+
+  service.object=FSREGISTRY.FindObject(service.owner,
+      BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg1)),DOSOBJECTS.KIND_LOCK)
+  IF service.object=NULL THEN
+    RETURN(FSPACKET.Error(service,ERROR_INVALID_LOCK))
+  FI
+
+  IF service.object.mount<>service.selected THEN
+    RETURN(FSPACKET.Error(service,ERROR_INVALID_LOCK))
+  FI
+
+  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_FREE_LOCK THEN
+    RETURN(FSPACKET.Close(service))
+  FI
+
+  IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg2)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+  FI
+
+  service.info=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg2))
+  IF FSNAMES.Mapped(service.info,FILEINFOBLOCK_SIZE)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+  FI
+
+  lock=FSTYPES.LockObject POINTER(service.object)
+  service.work.depth=lock.state.depth
+  FOR index=0 TO service.work.depth DO
+    service.work.ancestors(index)=lock.state.ancestors(index)
+  OD
+
+  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_OBJECT THEN
+    FSCORE.CopyEntry(@service.work.entry,@lock.state.entry)
+    service.enumIndex=0
+    RETURN(MeasureEntry(service))
+  FI
+
+  IF (lock.state.entry.flags & FSBTYPES.DIR)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_OBJECT_WRONG_TYPE))
+  FI
+
+  LET state=FSINFO.EnumerationState(FSINFO.FileInfoBlock POINTER(service.info))
+  IF state.magic<>LONGCARD(FSINFO.ENUM_MAGIC) OR
+      state.lock<>BYTE POINTER(service.object) OR state.info<>service.info OR
+      state.generation<>lock.ticket THEN
+    RETURN(FSPACKET.Error(service,ERROR_INVALID_LOCK))
+  FI
+
+  IF state.next>FSBACKEND.EnumLimit(service.work.volume) THEN
+    RETURN(FSPACKET.Error(service,ERROR_INVALID_LOCK))
+  FI
+
+  service.enumIndex=state.next
+
+RETURN(EntryStep(BYTE POINTER(service)))
+
+; Record enumeration exhaustion before reporting that no entries remain.
+BYTE FUNC End(FSTYPES.Service POINTER service)
+
+  FSINFO.Save(FSINFO.FileInfoBlock POINTER(service.info),
+      FSTYPES.LockObject POINTER(service.object),
+      FSBACKEND.EnumLimit(service.work.volume))
+
+RETURN(FSPACKET.Error(service,ERROR_NO_MORE_ENTRIES))
+
+; Keep directory scanning resumable even when all its sectors are cached.
+BYTE FUNC EntryStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  LET lock=FSTYPES.LockObject POINTER(service.object)
+  LET status=FSBACKEND.BeginEntry(service.work,
+      lock.state.entry.start,service.enumIndex)
+  IF status=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  IF status=FSSTATUS.END_DIR THEN
+    RETURN(End(service))
+  FI
+
+  service.nextStep=@EntryResultStep
+
+RETURN(status)
+
+; Consume one buffered directory result and arrange the next bounded step.
+BYTE FUNC EntryResultStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  IF service.resultState=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  LET status=FSBACKEND.BufferedEntry(service.work)
+  IF status=FSSTATUS.NEED_IO OR status=FSSTATUS.MORE THEN
+    RETURN(status)
+  FI
+
+  IF status=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  IF status=FSSTATUS.END_DIR THEN
+    RETURN(End(service))
+  FI
+
+  service.enumIndex==+1
+  IF status=FSSTATUS.SKIP_ENTRY THEN
+    service.nextStep=@EntryStep
+    RETURN(FSSTATUS.MORE)
+  FI
+
+RETURN(MeasureEntry(service))
+
+; Start measurement with the selected entry; the backend bounds each chunk.
+BYTE FUNC MeasureEntry(FSTYPES.Service POINTER service)
+
+  IF (service.work.entry.flags & FSBTYPES.DIR)<>0 AND
+      service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_NEXT THEN
+    IF FSBACKEND.Descend(service.work)=0 THEN
+      RETURN(FSPACKET.Error(service,service.work.error))
+    FI
+  FI
+
+  LET status=FSBACKEND.Measure(service.work,@service.measured,0)
+
+RETURN(SizeResult(service,status))
+
+; Continue metadata measurement until the entry can be returned to the caller.
+BYTE FUNC SizeResult(FSTYPES.Service POINTER service BYTE status)
+
+  IF status=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  IF status=FSSTATUS.DONE THEN
+    ; Check cancellation once more before touching the caller's result/cookie.
+    service.nextStep=@PublishStep
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  service.nextStep=@SizeContinueStep
+
+RETURN(status)
+
+; Resume file-size measurement after the preceding sector request.
+BYTE FUNC SizeContinueStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  IF service.resultState=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  LET status=FSBACKEND.Measure(service.work,@service.measured,1)
+
+RETURN(SizeResult(service,status))
+
+; Publish the whole result in one bounded completion-wins region. A break must
+; not erase the old enumeration cookie without publishing its replacement.
+BYTE FUNC PublishStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  service.stage=70
+  FSINFO.Clear(FSINFO.FileInfoBlock POINTER(service.info))
+  FSINFO.Name(FSINFO.FileInfoBlock POINTER(service.info),
+      @service.measured.entry,service.selected)
+  FSINFO.Fill(FSINFO.FileInfoBlock POINTER(service.info),
+      @service.measured.entry)
+  FSINFO.Save(FSINFO.FileInfoBlock POINTER(service.info),
+      FSTYPES.LockObject POINTER(service.object),
+      service.enumIndex)
+  service.packet.sp_Pkt.dp_Res1=-1
+  FSPACKET.Reply(service)
+
+RETURN(FSSTATUS.MORE)
+
+ENDMODULE

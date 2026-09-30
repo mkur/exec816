@@ -1,0 +1,782 @@
+{
+  "status": "development-pass",
+  "slice": "C4",
+  "host_tests": 231,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "bank_zero_budget": {
+    "fixed_runtime": 10560,
+    "idle": 1056,
+    "loading_excluding_os": 20368,
+    "loading_including_os": 57232,
+    "public": [
+      2080,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568
+    ],
+    "runtime_excluding_os": 24672,
+    "runtime_including_os": 61536
+  },
+  "compiler": "bcabe0a4cbb8bb57b389a8596aa8fd72cb9ee0c7",
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "read_8k": {
+    "results_sha256": "e5f5749def9c60d9053cbbc1938fd916c11ea9bebf6aed4835e897de28c762ba",
+    "xex_sha256": "d53d2454a6671227589aed59ec750166e18b737a1f4817e0e481be09fca0b4b7",
+    "media_sha256": "119800b2ed7c919e6746b4d7d775d4f4dc74bd3db90ae1b334090fb9083b27f2",
+    "boundary": "DOS.Read call through return; Open/Close, allocation and byte verification excluded. Same image and disk; fresh boot per capacity, Close/Open between reads; one busy CPU Task.",
+    "cases": [
+      {
+        "blocks": 0,
+        "samples": [
+          {
+            "seconds": 7.641385704961664,
+            "wire_reads": 66,
+            "sectors": [
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45,
+              46,
+              47,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              58,
+              59,
+              60,
+              61,
+              62,
+              63,
+              64,
+              65,
+              66,
+              67,
+              68,
+              69,
+              70,
+              71,
+              72
+            ],
+            "background_rounds": 2714
+          },
+          {
+            "seconds": 7.6412429744889545,
+            "wire_reads": 66,
+            "sectors": [
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45,
+              46,
+              47,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              58,
+              59,
+              60,
+              61,
+              62,
+              63,
+              64,
+              65,
+              66,
+              67,
+              68,
+              69,
+              70,
+              71,
+              72
+            ],
+            "background_rounds": 2714
+          }
+        ],
+        "observed": {
+          "received": 8192,
+          "ioError": 0,
+          "verified": 8192,
+          "cacheBlocks": 0,
+          "checks": 16,
+          "progress": [
+            2714,
+            2714
+          ],
+          "hits": [
+            0,
+            0
+          ],
+          "misses": [
+            0,
+            0
+          ]
+        },
+        "log_sha256": "f70fe11a87d7489e4ce3692b70d4de3091be22d08eebbdfc34450d6b0c52c07d"
+      },
+      {
+        "blocks": 512,
+        "samples": [
+          {
+            "seconds": 7.6213298532942195,
+            "wire_reads": 66,
+            "sectors": [
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45,
+              46,
+              47,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              58,
+              59,
+              60,
+              61,
+              62,
+              63,
+              64,
+              65,
+              66,
+              67,
+              68,
+              69,
+              70,
+              71,
+              72
+            ],
+            "background_rounds": 2660
+          },
+          {
+            "seconds": 0.6618065942183233,
+            "wire_reads": 0,
+            "sectors": [],
+            "background_rounds": 137
+          }
+        ],
+        "observed": {
+          "received": 8192,
+          "ioError": 0,
+          "verified": 8192,
+          "cacheBlocks": 512,
+          "checks": 16,
+          "progress": [
+            2660,
+            137
+          ],
+          "hits": [
+            0,
+            68
+          ],
+          "misses": [
+            69,
+            69
+          ]
+        },
+        "log_sha256": "29602ee46280df375e7eb4d9e094ce9e0bf15546fe942d0fe6a6ea92b4718fd0"
+      }
+    ]
+  },
+  "commands": {
+    "results_sha256": "45ea1475525b331f7491dca531546f3c0d2526d22cbc9e33ac916be3aec76754",
+    "xex_sha256": "2f2d45eabd9453f6022df80fc4b545efc279a93f4dd07de91dbbac6f2caa9d67",
+    "media_sha256": "44fd594da9a01ff81df36c203857b4d472a4f79bc90443397f95846d20f71c01",
+    "boundary": "ShellDispatch call through return, including load, execution and unload; elapsed guest time, excluding typing, redirection setup, prompt rendering and debugger pauses. Prime worker active; same XEX/media/configuration and a fresh boot per capacity.",
+    "cases": [
+      {
+        "blocks": 0,
+        "samples": [
+          {
+            "command": "HELLO",
+            "prime_frames": 3,
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "seconds": 1.7408916813156297,
+            "wire_reads": 10,
+            "relocate_seconds": 0.14461458543317465
+          },
+          {
+            "command": "HELLO",
+            "prime_frames": 5,
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "seconds": 1.8621712793866185,
+            "wire_reads": 10,
+            "relocate_seconds": 0.15099735120436325
+          },
+          {
+            "command": "CAT STORY.TXT",
+            "prime_frames": 13,
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "seconds": 6.919916011046281,
+            "wire_reads": 37,
+            "relocate_seconds": 0.4166714126017263
+          },
+          {
+            "command": "WC <STORY.TXT",
+            "prime_frames": 19,
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "seconds": 4.814851933874558,
+            "wire_reads": 33,
+            "relocate_seconds": 0.3247004069756787
+          },
+          {
+            "command": "MEM",
+            "prime_frames": 20,
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "seconds": 0.43127855490506484,
+            "wire_reads": 0,
+            "relocate_seconds": 0.0
+          },
+          {
+            "command": "HELLO",
+            "prime_frames": 23,
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "seconds": 1.9407021493447085,
+            "wire_reads": 10,
+            "relocate_seconds": 0.14943323667602226
+          },
+          {
+            "command": "CAT STORY.TXT",
+            "prime_frames": 30,
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "seconds": 7.042016115503842,
+            "wire_reads": 37,
+            "relocate_seconds": 0.4166719764751987
+          },
+          {
+            "command": "WC <STORY.TXT",
+            "prime_frames": 37,
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "seconds": 4.848260661790101,
+            "wire_reads": 33,
+            "relocate_seconds": 0.3247175346324038
+          },
+          {
+            "command": "CAT STORY.TXT | WC",
+            "prime_frames": 47,
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "seconds": 9.439830119019593,
+            "wire_reads": 64,
+            "relocate_seconds": 0.8026876324221608
+          },
+          {
+            "command": "MEM",
+            "prime_frames": 48,
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "seconds": 0.42895166053689215,
+            "wire_reads": 0,
+            "relocate_seconds": 0.0
+          }
+        ],
+        "startup_memory": [
+          383016,
+          65536,
+          383016,
+          382976
+        ],
+        "baseline_memory": [
+          383016,
+          65536,
+          383016,
+          382976
+        ],
+        "cache": {
+          "requested": 0,
+          "blocks": 0,
+          "captured": 0
+        },
+        "baseline_ownership": {
+          "live": 5,
+          "processes": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "objects": [
+            2,
+            0,
+            0,
+            0,
+            3,
+            0,
+            0,
+            0
+          ]
+        },
+        "log_sha256": "b193db36188982851b55fa3d22ba2b1c3da645b15bd43b4fded6ea2db4a06c0c"
+      },
+      {
+        "blocks": 512,
+        "samples": [
+          {
+            "command": "HELLO",
+            "prime_frames": 3,
+            "hits": 0,
+            "misses": 11,
+            "evictions": 0,
+            "seconds": 1.7548576289966293,
+            "wire_reads": 10,
+            "relocate_seconds": 0.1505924900511574
+          },
+          {
+            "command": "HELLO",
+            "prime_frames": 4,
+            "hits": 10,
+            "misses": 11,
+            "evictions": 0,
+            "seconds": 0.4870286546401853,
+            "wire_reads": 0,
+            "relocate_seconds": 0.14459372211469468
+          },
+          {
+            "command": "CAT STORY.TXT",
+            "prime_frames": 11,
+            "hits": 16,
+            "misses": 42,
+            "evictions": 0,
+            "seconds": 6.2453447310957895,
+            "wire_reads": 31,
+            "relocate_seconds": 0.4166558355970504
+          },
+          {
+            "command": "WC <STORY.TXT",
+            "prime_frames": 16,
+            "hits": 28,
+            "misses": 66,
+            "evictions": 0,
+            "seconds": 3.442069824452091,
+            "wire_reads": 24,
+            "relocate_seconds": 0.3213941348700765
+          },
+          {
+            "command": "MEM",
+            "prime_frames": 16,
+            "hits": 28,
+            "misses": 66,
+            "evictions": 0,
+            "seconds": 0.4272283222367733,
+            "wire_reads": 0,
+            "relocate_seconds": 0.0
+          },
+          {
+            "command": "HELLO",
+            "prime_frames": 17,
+            "hits": 38,
+            "misses": 66,
+            "evictions": 0,
+            "seconds": 0.4929558811298333,
+            "wire_reads": 0,
+            "relocate_seconds": 0.14754750281584314
+          },
+          {
+            "command": "CAT STORY.TXT",
+            "prime_frames": 21,
+            "hits": 75,
+            "misses": 66,
+            "evictions": 0,
+            "seconds": 2.445581769406763,
+            "wire_reads": 0,
+            "relocate_seconds": 0.44800409936014457
+          },
+          {
+            "command": "WC <STORY.TXT",
+            "prime_frames": 23,
+            "hits": 111,
+            "misses": 66,
+            "evictions": 0,
+            "seconds": 0.8826558863456629,
+            "wire_reads": 0,
+            "relocate_seconds": 0.3203269338393158
+          },
+          {
+            "command": "CAT STORY.TXT | WC",
+            "prime_frames": 26,
+            "hits": 175,
+            "misses": 66,
+            "evictions": 0,
+            "seconds": 1.9613222269055046,
+            "wire_reads": 0,
+            "relocate_seconds": 0.7755081557249369
+          },
+          {
+            "command": "MEM",
+            "prime_frames": 26,
+            "hits": 175,
+            "misses": 66,
+            "evictions": 0,
+            "seconds": 0.42567943229218796,
+            "wire_reads": 0,
+            "relocate_seconds": 0.0
+          }
+        ],
+        "startup_memory": [
+          311208,
+          65536,
+          311208,
+          311168
+        ],
+        "baseline_memory": [
+          311208,
+          65536,
+          311208,
+          311168
+        ],
+        "cache": {
+          "requested": 512,
+          "blocks": 512,
+          "captured": 512
+        },
+        "baseline_ownership": {
+          "live": 5,
+          "processes": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "objects": [
+            2,
+            0,
+            0,
+            0,
+            3,
+            0,
+            0,
+            0
+          ]
+        },
+        "log_sha256": "c6c3bd3e9c374c1fadf06718da4166b7e772b568bc33d60dc66eec93f35eee17"
+      }
+    ]
+  },
+  "offline": {
+    "status": "pass",
+    "checks": [
+      529
+    ],
+    "results_sha256": "4dad5c9d62e6ed018696022987ba430253ff388694dd0a8c198e5e199ca9fa91",
+    "xex_sha256": "60a1cea962fc59227dfae7d3b82c8b89d94c5e21cd1b0ac4f18d53cc6201d568",
+    "emulator_sha256": "32b1a92a7dbbed844c72aae8eaaf6b1da527d56e09b69817e63e45293092bbbb",
+    "fault": "short"
+  },
+  "scope": "Focused development checks; retained exact guest traces analyzed after excluding the post-profile EXIT marker and allowing MEM to finish inside one prime display-update interval. Full release qualification remains separate."
+}

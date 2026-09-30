@@ -1,0 +1,85 @@
+MODULE FSTYPES
+USE EXEC
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE BLOCKTYPES
+USE FSBTYPES
+INCLUDE "../dos/dos-packets.inc"
+
+PUBLIC TYPE Spec=[
+  BYTE ARRAY alias(32)
+  CARD unit,profile
+  LONGCARD sectors
+  CARD dataBytes
+  BYTE boot,format
+]
+
+PUBLIC TYPE Mount=[
+  Spec spec
+  BLOCKTYPES.Volume POINTER block
+  FSBTYPES.Volume POINTER volume
+  EXEC.MsgPort POINTER port
+  CARD references
+  LONGCARD generation
+  BYTE published,offline
+  LONGINT error
+]
+
+PUBLIC TYPE MountSlot=[Mount POINTER item]
+PUBLIC TYPE FileBacking=[
+  CARD references
+  FSBTYPES.Cursor cursor
+]
+
+PUBLIC TYPE Object=[
+  DOSOBJECTS.Header header
+  Mount POINTER mount
+  LONGCARD generation
+]
+
+PUBLIC TYPE FileObject=[
+  Object common
+  FileBacking POINTER backing
+]
+
+PUBLIC TYPE LockObject=[
+  Object common
+  FSBTYPES.LockState state
+  LONGCARD ticket
+]
+
+PUBLIC TYPE Packet=[
+  EXEC.Message sp_Msg
+  DosPacket sp_Pkt
+]
+
+PUBLIC TYPE Service=[
+  BLOCKTYPES.Adapter POINTER adapter
+  FSBTYPES.Workspace POINTER work
+  FSBTYPES.Operation POINTER operation
+  MountSlot ARRAY mounts(8)
+  EXEC.MsgPort POINTER control
+  Mount POINTER selected
+  Packet POINTER packet
+  DOSCLIENT.ClientContext POINTER client
+  DOSCORE.DosSlot POINTER owner
+  Object POINTER object
+  BYTE arrival,index,count,stage,resultState
+  CARD controls
+  LONGINT error,ioResult
+  LONGCARD enumIndex
+  BYTE FUNC POINTER nextStep(BYTE POINTER raw)
+  BYTE POINTER info
+  FSBTYPES.Cursor measured
+  BYTE FUNC POINTER readyStep(BYTE POINTER raw)
+  BYTE controlTurn
+  CARD nameLength
+  BYTE ARRAY name(256)
+  CARD parentStart
+  BYTE FUNC POINTER resolveReady(BYTE POINTER raw)
+]
+
+PUBLIC CONST STATE_STARTING=1, STATE_READY=2, STATE_STOPPING=3, STATE_STOPPED=4,
+    STATE_FAILED=5
+ENDMODULE

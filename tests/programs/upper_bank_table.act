@@ -1,0 +1,65 @@
+MODULE UPPERTABLE
+USE EXEC
+USE EXECMEMORY
+USE HEAPPOLICY
+
+BYTE kernelBank
+VOLATILE BYTE switching=$2024
+CARD ARRAY checks(12)
+
+PROC Inventory()
+  EXECMEMORY.BankRecord info
+  CARD status
+
+  checks(0)=EXEC.Version()
+  status=EXECMEMORY.Query(0,@info)
+  checks(1)=CARD(status=0 AND info.state=2 AND info.owner=1)
+  status=EXECMEMORY.Query(CARD(kernelBank),@info)
+  checks(2)=CARD(status=0 AND info.state=2 AND info.owner=2)
+
+RETURN
+
+; Check bank acquisition and release against the upper-RAM ownership table.
+PROC Ownership()
+  EXECMEMORY.BankRecord info
+  CARD status,acquired
+
+  status=EXECMEMORY.Acquire(3,@acquired)
+  checks(3)=CARD(status=0)
+  status=EXECMEMORY.Query(acquired,@info)
+  checks(4)=CARD(status=0 AND info.state=3 AND info.owner=3)
+  checks(5)=CARD(EXECMEMORY.Release(acquired,4)=6)
+  status=EXECMEMORY.Query(acquired,@info)
+  checks(6)=CARD(status=0 AND info.state=3 AND info.owner=3)
+  checks(7)=CARD(EXECMEMORY.Release(acquired,3)=0)
+  status=EXECMEMORY.Query(acquired,@info)
+  checks(8)=CARD(status=0 AND info.state=1 AND info.owner=0)
+
+RETURN
+
+PROC Rejections()
+  EXECMEMORY.BankRecord info
+
+  checks(9)=CARD(EXECMEMORY.ReserveExact(CARD(kernelBank),3)=4)
+  checks(10)=CARD(EXECMEMORY.Query(256,@info)=1)
+  checks(11)=CARD(EXECMEMORY.Adopt()=0)
+
+RETURN
+
+; Exercise upper-RAM bank inventory, ownership and rejected operations.
+PROC Main()
+  ; Isolated internal-policy test: no other task or interrupt uses the table.
+  EXEC.Forbid()
+  ; Bootstrap now assigns all free upper banks to the heap. This isolated
+  ; bank-manager probe first releases that owner under the scheduler guard.
+  switching=1
+  HEAPPOLICY.Shutdown()
+  switching=0
+  Inventory()
+  Ownership()
+  Rejections()
+  EXEC.Permit()
+
+RETURN
+
+ENDMODULE

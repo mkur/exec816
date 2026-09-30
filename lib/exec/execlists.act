@@ -1,0 +1,168 @@
+MODULE EXECLISTS
+
+PUBLIC TYPE MinNode=[MinNode POINTER mln_Succ,mln_Pred]
+PUBLIC TYPE MinList=[MinNode POINTER mlh_Head,mlh_Tail,mlh_TailPred]
+PUBLIC TYPE Node=[
+  Node POINTER ln_Succ,ln_Pred
+  BYTE ln_Type,ln_Pri
+  BYTE POINTER ln_Name
+]
+
+PUBLIC TYPE List=[
+  Node POINTER lh_Head,lh_Tail,lh_TailPred
+  BYTE lh_Type,lh_Pad
+]
+
+; Classic Exec sentinel layout, with native 24-bit pointers. Common primitives
+; touch only the minimal prefix; callers may explicitly cast MinList/MinNode.
+; Caller owns storage, membership and synchronization. See docs/reference/lists.md.
+PUBLIC PROC NewList(List POINTER chain)
+
+  chain.lh_Head=Node POINTER(@chain.lh_Tail)
+  chain.lh_Tail=NULL
+  chain.lh_TailPred=Node POINTER(@chain.lh_Head)
+
+RETURN
+
+; Initialize a header for links that carry no public Node metadata.
+PUBLIC PROC NewMinList(MinList POINTER chain)
+
+  NewList(List POINTER(chain))
+
+RETURN
+
+; Recognize the tail sentinel without following it as a real node.
+PUBLIC BYTE FUNC IsListEmpty(List POINTER chain)
+
+RETURN(chain.lh_Head=Node POINTER(@chain.lh_Tail))
+
+; Test a minimal list using the shared sentinel layout.
+PUBLIC BYTE FUNC IsMinListEmpty(MinList POINTER chain)
+
+RETURN(IsListEmpty(List POINTER(chain)))
+
+; Insert a caller-owned node before the current first node.
+PUBLIC PROC AddHead(List POINTER chain Node POINTER item)
+
+  LET first=chain.lh_Head
+  item.ln_Pred=Node POINTER(@chain.lh_Head)
+  item.ln_Succ=first
+  first.ln_Pred=item
+  chain.lh_Head=item
+
+RETURN
+
+; Append a caller-owned node before the tail sentinel.
+PUBLIC PROC AddTail(List POINTER chain Node POINTER item)
+
+  LET last=chain.lh_TailPred
+  item.ln_Succ=Node POINTER(@chain.lh_Tail)
+  item.ln_Pred=last
+  last.ln_Succ=item
+  chain.lh_TailPred=item
+
+RETURN
+
+; Insert after a predecessor; NULL means insert at the head.
+PUBLIC PROC Insert(List POINTER chain Node POINTER item,predecessor)
+
+  IF predecessor=NULL OR predecessor=Node POINTER(@chain.lh_Head) THEN
+    AddHead(chain,item)
+    RETURN
+  FI
+
+  IF predecessor=Node POINTER(@chain.lh_Tail) THEN
+    AddTail(chain,item)
+    RETURN
+  FI
+
+  LET following=predecessor.ln_Succ
+  item.ln_Pred=predecessor
+  item.ln_Succ=following
+  following.ln_Pred=item
+  predecessor.ln_Succ=item
+
+RETURN
+
+; Detach a linked node; its own links remain unspecified afterwards.
+PUBLIC PROC Remove(Node POINTER item)
+
+  LET previous=item.ln_Pred
+  LET following=item.ln_Succ
+  previous.ln_Succ=following
+  following.ln_Pred=previous
+
+RETURN
+
+; Take the first node, or return NULL for an empty list.
+PUBLIC Node POINTER FUNC RemHead(List POINTER chain)
+
+  LET item=chain.lh_Head
+  IF item.ln_Succ=NULL THEN
+    RETURN(NULL)
+  FI
+
+  Remove(item)
+
+RETURN(item)
+
+; Take the last node, or return NULL for an empty list.
+PUBLIC Node POINTER FUNC RemTail(List POINTER chain)
+
+  LET item=chain.lh_TailPred
+  IF item.ln_Pred=NULL THEN
+    RETURN(NULL)
+  FI
+
+  Remove(item)
+
+RETURN(item)
+
+; Insert by signed priority, retaining FIFO order among equal priorities.
+PUBLIC PROC Enqueue(List POINTER chain Node POINTER item)
+  Node POINTER cursor
+
+  cursor=chain.lh_Head
+  ; Bias signed byte priorities for an unsigned comparison; equal priorities
+  ; stay ahead of this insertion (FIFO). Never read tail-sentinel metadata.
+  WHILE cursor.ln_Succ<>NULL DO
+    IF (item.ln_Pri XOR $80)>(cursor.ln_Pri XOR $80) THEN
+      Insert(chain,item,cursor.ln_Pred)
+      RETURN
+    FI
+
+    cursor=cursor.ln_Succ
+  OD
+
+  AddTail(chain,item)
+
+RETURN
+
+; Find a borrowed NUL-terminated name, optionally resuming after a node.
+PUBLIC Node POINTER FUNC FindName(List POINTER chain BYTE POINTER name)
+  Node POINTER item
+  BYTE POINTER left,right
+  ; Reading only the first header field also supports resuming after a Node
+  ; passed as List POINTER, as in Exec. Names are borrowed, zero-terminated.
+
+  item=chain.lh_Head
+  WHILE item.ln_Succ<>NULL DO
+    left=item.ln_Name
+    right=name
+    IF left<>NULL THEN
+      WHILE left^=right^ DO
+        IF left^=0 THEN
+          RETURN(item)
+        FI
+
+        left=BYTE POINTER(ADDRESS(left)+SIZE(1))
+        right=BYTE POINTER(ADDRESS(right)+SIZE(1))
+      OD
+    FI
+
+    item=item.ln_Succ
+  OD
+
+RETURN(NULL)
+
+ENDMODULE

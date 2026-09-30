@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "compiler_revision": "f088ab9d0a4175481751bd41cc78a0f07b80fd8f",
+  "base_revision": "f628742684eb5af82f04e28f98534c85114a72c9",
+  "branch": "fix/65816-wide-absolute-index",
+  "change": "Native absolute array addresses retain target pointer types; native NIR rejects integer index bases.",
+  "checks": [
+    {
+      "command": "cargo test --test nir_absolute_arrays",
+      "status": "pass",
+      "cases": 2
+    },
+    {
+      "command": "cargo test nir_fixtures_match_snapshots",
+      "status": "pass",
+      "snapshot_changes": false
+    },
+    {
+      "command": "cargo run --bin actionc-nir-sweep -- fixtures/nir",
+      "status": "pass"
+    },
+    {
+      "command": "python3 tools/native65816-runtime-tests/qualify.py --test memory",
+      "status": "pass",
+      "cases": 4,
+      "modes": [
+        "raw",
+        "optimized"
+      ],
+      "indices": [
+        0,
+        255,
+        256,
+        1023
+      ]
+    },
+    {
+      "command": "cargo test",
+      "status": "baseline_failures",
+      "failures": [
+        "sample_catalog_classifies_every_action_source",
+        "parses_all_sample_programs"
+      ],
+      "reproduced_on_base": true,
+      "detail": "Four existing TN dependency files are unclassified; the sample parser treats LOCATION.ACT as a standalone source and cannot resolve DIR_* constants. All other integration targets and doc tests passed, continuing past these failures with targeted runs."
+    }
+  ]
+}

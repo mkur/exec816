@@ -1,0 +1,67 @@
+; Boot-only input is copied into resident upper-RAM state before Task admission.
+MODULE BOOTCONFIG
+INCLUDE "boot-config-action.inc"
+
+PUBLIC CONST BAD_RECORD=1, BAD_CAPACITY=2
+
+; Use the boot override only when the boot record and capacity are valid.
+PUBLIC CARD FUNC CacheBlocks()
+
+  LET setting=CARD POINTER(ADDRESS(B_SETTINGS))
+
+RETURN(setting^)
+
+; Report whether boot settings were accepted or defaults were required.
+PUBLIC BYTE FUNC Status()
+
+  LET setting=BYTE POINTER(ADDRESS(B_SETTINGS+2))
+
+RETURN(setting^)
+
+; Resolve the system-drive override against the supported device range.
+PUBLIC BYTE FUNC SystemDrive()
+
+  LET setting=BYTE POINTER(ADDRESS(B_SETTINGS+3))
+
+RETURN(setting^)
+
+PUBLIC BYTE FUNC ValidBlocks(CARD count)
+
+RETURN(count=0 OR (count>=B_MIN_BLOCKS AND count<=B_MAX_BLOCKS
+      AND (count & (count-1))=0))
+
+; A malformed monitor request must not prevent ordinary default startup.
+PUBLIC PROC Init()
+
+  LET bytes=BYTE POINTER(ADDRESS(B_ADDRESS))
+  LET words=CARD POINTER(ADDRESS(B_ADDRESS))
+  LET capacity=CARD POINTER(ADDRESS(B_SETTINGS))
+  LET result=BYTE POINTER(ADDRESS(B_SETTINGS+2))
+  LET drive=BYTE POINTER(ADDRESS(B_SETTINGS+3))
+  capacity^=B_DEFAULT_BLOCKS
+  drive^=B_DEFAULT_DRIVE
+  result^=BAD_RECORD
+  IF words^<>B_MAGIC OR bytes(B_FIELD_VERSION)<>B_VERSION
+      OR bytes(B_FIELD_SIZE)<>B_SIZE OR bytes(B_FIELD_RESERVED)<>0
+      OR bytes(B_FIELD_SYSTEM_DRIVE)>8 THEN
+    RETURN
+  FI
+
+  IF (B_SYSTEM_SLOT=255 AND bytes(B_FIELD_SYSTEM_DRIVE)<>0) OR
+      (B_SYSTEM_SLOT<>255 AND bytes(B_FIELD_SYSTEM_DRIVE)=0) THEN
+    RETURN
+  FI
+
+  result^=BAD_CAPACITY
+  LET count=words(B_FIELD_CACHE_BLOCKS RSH 1)
+  IF ValidBlocks(count)=0 THEN
+    RETURN
+  FI
+
+  capacity^=count
+  drive^=bytes(B_FIELD_SYSTEM_DRIVE)
+  result^=0
+
+RETURN
+
+ENDMODULE

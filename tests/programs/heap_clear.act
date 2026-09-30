@@ -1,0 +1,118 @@
+MODULE HEAPCLEAR
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE HEAPCORE
+USE HEAPAPIPROBE
+CONST REQUEST=$40001
+CONST ROUNDED=$40008
+EXEC.Task workerTask
+VOLATILE ADDRESS testBlock
+VOLATILE BYTE stage
+CARD checks,overlap,allocations
+LONGCARD before,after
+BYTE POINTER leftGuard,rightGuard
+PROC POINTER absent()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE condition)
+
+  IF condition=0 THEN
+    HEAPCORE.Abort($ff70)
+  FI
+
+RETURN
+
+PROC ClearWorker()
+  BYTE POINTER p,other
+
+  WHILE stage=0 DO
+    EXEC.Yield()
+  OD
+
+  p=BYTE POINTER(testBlock)
+  WHILE stage=1 DO
+    ; Free-list headers can alter the first eight bytes; probe beyond them.
+    IF p(32)=0 AND p(SIZE(REQUEST-1))=$a5 THEN
+      overlap=1
+      other=EXEC.AllocMem(128,0)
+      Require(other<>BYTE POINTER(0))
+      Require(ADDRESS(other)<testBlock OR ADDRESS(other)>=testBlock+SIZE(ROUNDED))
+      other^=$39
+      other(127)=$73
+      EXEC.FreeMem(other,128)
+      IF stage=1 THEN
+        allocations==+1
+      FI
+
+      RETURN
+    FI
+
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC PrepareWorker()
+
+  workerTask.tc_Node.ln_Type=EXEC.NT_TASK
+  workerTask.tc_SPLower=ADDRESS(TASKSTACKS.LOWER1)
+  workerTask.tc_SPUpper=ADDRESS(TASKSTACKS.UPPER1)
+  workerTask.tc_SPReg=workerTask.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@workerTask.tc_MemEntry)
+  Require(EXEC.AddTask(@workerTask,@ClearWorker,absent)=@workerTask)
+
+RETURN
+
+PROC Verify(BYTE POINTER p)
+  SIZE index
+
+  Require(HEAPAPIPROBE.VerifyZero(p,LONGCARD(REQUEST)))
+  FOR index=SIZE(REQUEST) TO SIZE(ROUNDED-1) DO
+    Require(p(index)=$a5)
+  OD
+
+  FOR index=0 TO 7 DO
+    Require(leftGuard(index)=$3c AND rightGuard(index)=$5a)
+  OD
+
+RETURN
+
+; Exercise cleared allocation while another Task remains runnable.
+PROC Main()
+  BYTE POINTER p
+
+  before=EXEC.AvailMem(0)
+  leftGuard=EXEC.AllocMem(8,0)
+  p=EXEC.AllocMem(LONGCARD(ROUNDED),EXEC.MEMF_LINEAR)
+  rightGuard=EXEC.AllocMem(8,0)
+  Require(leftGuard<>BYTE POINTER(0) AND p<>BYTE POINTER(0)
+      AND rightGuard<>BYTE POINTER(0))
+  HEAPAPIPROBE.Fill(leftGuard,8,$3c)
+  HEAPAPIPROBE.Fill(rightGuard,8,$5a)
+  HEAPAPIPROBE.Fill(p,LONGCARD(ROUNDED),$a5)
+  testBlock=ADDRESS(p)
+  EXEC.FreeMem(p,LONGCARD(ROUNDED))
+  PrepareWorker()
+  stage=1
+  p=EXEC.AllocMem(LONGCARD(REQUEST),EXEC.MEMF_LINEAR OR EXEC.MEMF_CLEAR)
+  stage=2
+  Require(ADDRESS(p)=testBlock)
+  WHILE workerTask.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Require(overlap=1 AND allocations=1)
+  Verify(p)
+  EXEC.FreeMem(p,LONGCARD(REQUEST))
+  EXEC.FreeMem(leftGuard,8)
+  EXEC.FreeMem(rightGuard,8)
+  checks=HEAPAPIPROBE.Masked()
+  Require(checks=1)
+  after=EXEC.AvailMem(0)
+  Require(before=after)
+
+RETURN
+
+ENDMODULE

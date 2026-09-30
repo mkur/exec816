@@ -1,0 +1,34 @@
+MODULE LOCKS
+USE EXEC
+CARD ARRAY results(8)
+BYTE phase,peerPhase
+
+; Exercise cooperative exclusion and scheduling state.
+PROC Main()
+  CARD id
+
+  id=EXEC.TaskId()
+  IF id=0 THEN
+    results(0)=EXEC.Unlock()
+    results(1)=EXEC.Lock()
+    results(2)=EXEC.Lock()
+    phase=1
+    EXEC.Yield()
+    results(3)=CARD(peerPhase)
+    results(4)=EXEC.Unlock()
+    phase=2
+    results(5)=CARD(peerPhase)
+    results(6)=EXEC.Unlock()
+    results(7)=CARD(peerPhase)
+    EXEC.ExitTask(42)
+  FI
+
+  peerPhase=phase
+  EXEC.Yield()
+  ; Task zero has exited: yielding must continue this sole surviving task.
+  EXEC.Yield()
+  EXEC.ExitTask(99)
+
+RETURN
+
+ENDMODULE

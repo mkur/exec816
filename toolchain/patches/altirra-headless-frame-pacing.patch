@@ -1,0 +1,23 @@
+--- a/src/AltirraBridgeServer/main_bridge.cpp
++++ b/src/AltirraBridgeServer/main_bridge.cpp
+@@ -538,7 +538,8 @@
+ 		//    frame. Advance() returns Running after internal
+ 		//    scanline chunks too, so using the result alone counts
+ 		//    partial frames and makes FRAME N finish early.
+-		if (ATBridgeNullVideoDisplayConsumeFramePosted(g_pNullDisplay)) {
++		const bool framePosted = ATBridgeNullVideoDisplayConsumeFramePosted(g_pNullDisplay);
++		if (framePosted) {
+ 			ATBridge::OnFrameCompleted(g_sim);
+ 		}
+ 
+@@ -560,7 +561,9 @@
+ 		if (result == ATSimulator::kAdvanceResult_Stopped) {
+ 			std::this_thread::sleep_for(pollTick);
+ 			nextFrameDeadline = clock::now() + frameDuration;
+-		} else {
++		} else if (framePosted) {
++			// Advance can return after a partial frame. Pace only completed
++			// frames; sleeping per chunk slows high clock multipliers.
+ 			auto now = clock::now();
+ 			if (now >= nextFrameDeadline) {
+ 				// Behind schedule — reset the deadline to avoid

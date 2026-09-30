@@ -1,0 +1,15 @@
+MODULE DISKWAIT
+USE COMMAND
+
+; Exercise waiting from a loaded command.
+LONGINT FUNC Main()
+
+  WHILE COMMAND.BreakPending()=0 DO
+    COMMAND.Yield()
+  OD
+
+  COMMAND.SetIoErr(304)
+
+RETURN(COMMAND.RETURN_ERROR)
+
+ENDMODULE

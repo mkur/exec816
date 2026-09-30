@@ -1,0 +1,196 @@
+MODULE HEAPPOLICY
+
+USE EXECLISTS
+USE EXECMEMORY
+USE HEAPCORE
+USE SYS
+INCLUDE "memory-action.inc"
+INCLUDE "heap-storage.inc"
+INCLUDE "heap-constants.inc"
+
+; All persistent state is explicitly reserved upper RAM. The byte per bank
+; records only this initialization's successful claims, never caller pointers.
+PUBLIC TYPE HeapState=[
+  EXECLISTS.List regions
+  BYTE ready
+  CARD count
+]
+
+; Borrow the system heap header from its reserved upper-RAM arena.
+PUBLIC HeapState POINTER FUNC GetState()
+
+RETURN(HeapState POINTER(ADDRESS(HS_BASE)))
+
+; Locate one reserved region descriptor without allocating storage.
+PUBLIC HEAPCORE.MemHeader POINTER FUNC Header(CARD index)
+
+RETURN(HEAPCORE.MemHeader POINTER(ADDRESS(HS_HEADERS)+(SIZE(index) LSH 5)))
+
+; Release only this heap's bank claims, then retire the region registry.
+PUBLIC PROC Shutdown()
+  CARD bank,result
+  HeapState POINTER state
+
+  state=GetState()
+  state.ready=0
+  LET claims=BYTE POINTER(ADDRESS(HS_CLAIMS))
+  FOR bank=1 TO M_MAX_BANKS-1 DO
+    IF claims(bank)<>0 THEN
+      result=EXECMEMORY.Release(bank,H_OWNER)
+      claims(bank)=0
+    FI
+  OD
+
+  state.count=0
+  EXECLISTS.NewList(@state.regions)
+
+RETURN
+
+; Count contiguous free-bank runs before committing any heap claims.
+CARD FUNC Runs()
+  CARD bank,count,result
+  BYTE previous
+  EXECMEMORY.BankRecord entry
+
+  count=0
+  previous=0
+  FOR bank=1 TO M_MAX_BANKS-1 DO
+    result=EXECMEMORY.Query(bank,@entry)
+    IF result<>0 THEN
+      RETURN($ffff)
+    FI
+
+    IF entry.state=M_STATE_FREE THEN
+      IF previous=0 THEN
+        count==+1
+      FI
+
+      previous=1
+
+    ELSE
+      previous=0
+    FI
+  OD
+
+RETURN(count)
+
+; Describe a contiguous bank run as one initially free memory region.
+PROC Region(CARD index CARD low CARD high)
+
+  LET pool=Header(index)
+  pool.mh_Node.ln_Succ=NULL
+  pool.mh_Node.ln_Pred=NULL
+  pool.mh_Node.ln_Type=H_NT_MEMORY
+  pool.mh_Node.ln_Pri=0
+  pool.mh_Node.ln_Name=NULL
+  pool.mh_Attributes=H_FLAG_PUBLIC+H_FLAG_UPPER
+  pool.mh_Lower=BYTE POINTER(ADDRESS(LONGCARD(low) LSH 16))
+  pool.mh_Upper=LONGCARD(high) LSH 16
+  pool.mh_Free=LONGCARD(high-low) LSH 16
+  LET chunk=HEAPCORE.MemChunk POINTER(pool.mh_Lower)
+  pool.mh_First=chunk
+  chunk.mc_Next=NULL
+  chunk.mc_Pad=0
+  chunk.mc_Bytes=pool.mh_Free
+
+RETURN
+
+; Internal bootstrap entry. Capacity and failure injection are explicit inputs
+; for qualification; production passes the reserved capacity and $ffff.
+PUBLIC CARD FUNC Start(CARD capacity CARD failAfter)
+  HeapState POINTER state
+  CARD bank,claimed,result,low,index
+
+  state=GetState()
+  IF state.ready<>0 THEN
+    RETURN(H_ERROR_BOOT)
+  FI
+
+  LET count=Runs()
+  IF count=$ffff OR count>capacity OR count>HS_CAPACITY THEN
+    RETURN(H_ERROR_BOOT)
+  FI
+
+  LET claims=BYTE POINTER(ADDRESS(HS_CLAIMS))
+  claimed=0
+  ; Acquire chooses the lowest free bank. Rollback consults only our ledger.
+  DO
+    IF claimed=failAfter THEN
+      Shutdown()
+      RETURN(H_ERROR_BOOT)
+    FI
+
+    result=EXECMEMORY.Acquire(H_OWNER,@bank)
+    IF result=M_ERROR_EXHAUSTED THEN
+      EXIT
+    FI
+
+    IF result<>0 THEN
+      Shutdown()
+      RETURN(H_ERROR_BOOT)
+    FI
+
+    claims(bank)=1
+    claimed==+1
+  OD
+
+  low=0
+  index=0
+  bank=1
+  ; The sentinel iteration closes a run ending in bank 255 without wrapping.
+  WHILE bank<=M_MAX_BANKS DO
+    IF bank<M_MAX_BANKS THEN
+      IF claims(bank)<>0 THEN
+        IF low=0 THEN
+          low=bank
+        FI
+
+      ELSE
+        IF low<>0 THEN
+          Region(index,low,bank)
+          index==+1
+          low=0
+        FI
+      FI
+
+    ELSE
+      IF low<>0 THEN
+        Region(index,low,bank)
+        index==+1
+      FI
+    FI
+
+    bank==+1
+  OD
+
+  ; Publish only once every claim and header exists. Equal priorities are
+  ; already in ascending address order.
+  FOR bank=0 TO index DO
+    IF bank<index THEN
+      EXECLISTS.AddTail(@state.regions,EXECLISTS.Node POINTER(Header(bank)))
+    FI
+  OD
+
+  state.count=index
+  state.ready=1
+
+RETURN(0)
+
+; Clear the reserved metadata and claim the available system heap regions.
+PUBLIC CARD FUNC Init()
+  CARD index
+  HeapState POINTER state
+
+  state=GetState()
+  LET bytes=BYTE POINTER(ADDRESS(HS_BASE))
+  FOR index=0 TO HS_BYTES-1 DO
+    bytes(index)=0
+  OD
+
+  EXECLISTS.NewList(@state.regions)
+
+RETURN(Start(HS_CAPACITY,$ffff))
+
+INCLUDE "heap-system.inc"
+
+ENDMODULE

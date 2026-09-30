@@ -1,0 +1,109 @@
+{
+  "status": "development-pass",
+  "source_commit": "a36ebc0cf105fa7ec202d728fb4685a8b3750891",
+  "compiler": "bcabe0a4cbb8bb57b389a8596aa8fd72cb9ee0c7",
+  "host_tests": 231,
+  "artifacts": {
+    "build/demo/program.xex": {
+      "bytes": 515576,
+      "sha256": "da6e1baee6792a64c67705e1f7ac4f1328262df254e89b8d7f71b1e4c29e3529"
+    },
+    "build/demo/sdfs.atr": {
+      "bytes": 92176,
+      "sha256": "44fd594da9a01ff81df36c203857b4d472a4f79bc90443397f95846d20f71c01"
+    },
+    "build/demo/demo-manifest.json": {
+      "bytes": 57498,
+      "sha256": "76c4fa7c01a53862545809fce68bcf7b2ef54a79d85d65c4b670daaa7bf0a57d"
+    },
+    "build/of816/of816-exec.xex": {
+      "bytes": 540385,
+      "sha256": "d69967109a1cd421d95b26bc782ac37129805122567317e49b7ad03c583680c8"
+    },
+    "build/of816/sdfs.atr": {
+      "bytes": 92176,
+      "sha256": "44fd594da9a01ff81df36c203857b4d472a4f79bc90443397f95846d20f71c01"
+    },
+    "build/of816/of816.json": {
+      "bytes": 3520,
+      "sha256": "a087fa2c7adb7282d1c86026542c1f3718357f67e9b3c7738edc0ae9b39a4bf4"
+    }
+  },
+  "results_sha256": "4ed39b5286a9b3720457bc01f80a56a5ac95a4be1155ee26a0ceb81e38439abe",
+  "cases": [
+    {
+      "route": "autoboot",
+      "cache": {
+        "requested": 512,
+        "blocks": 512,
+        "captured": 512
+      },
+      "shell_status": "pass",
+      "boot_guards": "intact",
+      "os_restored_at_handoff": true,
+      "screenshot": {
+        "name": "autoboot-shell.png",
+        "sha256": "6bef57c30d07d06eec86d0819e4075784e5c9dd9917e24b5c25ded1908c876c1"
+      }
+    },
+    {
+      "route": "forth-command",
+      "cache": {
+        "requested": 128,
+        "blocks": 128,
+        "captured": 128
+      },
+      "shell_status": "pass",
+      "boot_guards": "intact",
+      "os_restored_at_handoff": true,
+      "screenshot": {
+        "name": "forth-command-shell.png",
+        "sha256": "6bef57c30d07d06eec86d0819e4075784e5c9dd9917e24b5c25ded1908c876c1"
+      }
+    }
+  ],
+  "exit_cases": [
+    {
+      "case": "bye",
+      "status": "pass",
+      "os_restored": true,
+      "cancel": {
+        "key": "RETURN",
+        "delay_frames": 240,
+        "held_frames": 2,
+        "seconds_remaining": 1,
+        "cancelled": true,
+        "key_consumed": true,
+        "stays_in_forth": true
+      }
+    },
+    {
+      "case": "occupied-iocb",
+      "status": "pass",
+      "os_restored": true
+    }
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "bank_zero_budget": {
+    "fixed_runtime": 10560,
+    "public": [
+      2080,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568,
+      1568
+    ],
+    "idle": 1056,
+    "runtime_excluding_os": 24672,
+    "loading_excluding_os": 20368,
+    "runtime_including_os": 61536,
+    "loading_including_os": 57232
+  },
+  "scope": "Refreshed standard shell kernel inside the OF816 bundle: default autoboot and manual 128-block override, HELLO, CAT/WC, EXIT, guards, ownership and OS restoration; BYE and occupied-IOCB exits. Final guide refreshed separately without recompiling unchanged native code. Full release qualification remains separate."
+}

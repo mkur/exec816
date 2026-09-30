@@ -1,0 +1,171 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "scope": "Standalone message example; one raw and one optimized native image. No platform or release qualification.",
+  "inputs": {
+    "examples/amiga-ports.act": "36c17dbd490d71731c7535e19b9f4bb160fc4756f2f592db5727018c63ffeb3c",
+    "tools/test_amiga_ports.py": "fe704ce72cc79799586b9b3217005ae8cfdf48cfd9cb436ef143589c61214338",
+    "toolchain/actionc.json": "6150d588e482cd196ff1c1a0a0a7ddd6edd6ce121448d735bfd4d8bd1841684b",
+    "toolchain/altirra-shell-paced.json": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "host_tests": 212,
+  "cases": [
+    {
+      "mode": "raw",
+      "result": "build/amiga-ports/raw/results.json",
+      "result_sha256": "84b9fdedd877e4be33831019a8fbc67afdbf26904eb7114847cd62aefbd527f1",
+      "compiler_revision": "a62ee9e7ec525b31c0376d2358030a1e6670bb33",
+      "compiler_binary_sha256": "aab8f09d879f6bbdf3aa1821bbe24fd010024da3b4b7cc0ad76be41458cca6b4",
+      "compiler_override": false,
+      "source_sha256": "36c17dbd490d71731c7535e19b9f4bb160fc4756f2f592db5727018c63ffeb3c",
+      "xex_sha256": "8e7a732d7d8fa33ae9f07e58b0f52bede34d6c4c103fae175745d8203c365de3",
+      "image_sha256": "c8e380dcea53ff12773e0b949e4efc4628e9e1ff8b1fc21962b04582fcb4ee43",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "output": [
+        "Send: 10,20",
+        "Reply: 60,70",
+        "Message returned; resources released."
+      ],
+      "checks": {
+        "reply_identity": true,
+        "coordinates": [
+          60,
+          70
+        ],
+        "reply_signal_released": true,
+        "bank_ownership_restored": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "live_tasks": 0,
+        "native_nmi_count": 3,
+        "native_irq_count": 0,
+        "os_calls": 6,
+        "return_s": 18430,
+        "return_d": 8704,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    {
+      "mode": "opt",
+      "result": "build/amiga-ports/opt/results.json",
+      "result_sha256": "34948c19464d7fbc041a78195ba60c17d69871499ecc10596b33d1882d142a6d",
+      "compiler_revision": "a62ee9e7ec525b31c0376d2358030a1e6670bb33",
+      "compiler_binary_sha256": "aab8f09d879f6bbdf3aa1821bbe24fd010024da3b4b7cc0ad76be41458cca6b4",
+      "compiler_override": false,
+      "source_sha256": "36c17dbd490d71731c7535e19b9f4bb160fc4756f2f592db5727018c63ffeb3c",
+      "xex_sha256": "cc02d9fc016b67457f6600035eb9b0427773d9bba6a973903a2ea542cd7ca72e",
+      "image_sha256": "39ba43eeed482ff1cf1ac38402d5ab126fc31659005832b0abf8fe9d98ee0391",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "output": [
+        "Send: 10,20",
+        "Reply: 60,70",
+        "Message returned; resources released."
+      ],
+      "checks": {
+        "reply_identity": true,
+        "coordinates": [
+          60,
+          70
+        ],
+        "reply_signal_released": true,
+        "bank_ownership_restored": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "live_tasks": 0,
+        "native_nmi_count": 2,
+        "native_irq_count": 0,
+        "os_calls": 6,
+        "return_s": 18430,
+        "return_d": 8704,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    }
+  ],
+  "note": "Initial runs passed the message checks; the output oracle used uppercase-only screen encoding. Corrected the oracle for lowercase and replayed both unchanged images successfully."
+}

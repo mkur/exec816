@@ -1,0 +1,2651 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "created_utc": "2026-09-20T01:01:24.647822+00:00",
+  "scope": "Slice 1 two-context assembly probe; no public device API or production driver",
+  "compiler": {
+    "kind": "assembly; raw/optimized NIR not applicable",
+    "tools": {
+      "ca65": {
+        "version": "ca65 V2.18 - N/A",
+        "sha256": "1a57997819fd98814e4601b5160df589e7a1a24e1888a80fee51ae450d8fd0ea"
+      },
+      "ld65": {
+        "version": "ld65 V2.18 - N/A",
+        "sha256": "36bb196207a6b2c90a4aa991b419d6113885303951b14b60b455f51c777b3339"
+      }
+    }
+  },
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Slice-1 two-context assembly probe with real disk-model serial traffic; not production SIO",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "limits": {
+      "command_setup_us": [
+        750,
+        1600
+      ],
+      "command_hold_us": [
+        650,
+        950
+      ],
+      "write_delay_us": [
+        1000,
+        1800
+      ],
+      "alarm_lateness_us": 100,
+      "active_max_us": 1020000,
+      "critic_max_us": 1020000
+    },
+    "alarm": {
+      "timer1_base_cycles": 224,
+      "timer2_base_cycles": 7168,
+      "timer2_count": 250,
+      "phase_counts": {
+        "setup": 8,
+        "hold": 7,
+        "write": 10
+      },
+      "stimer": "initialization/cleanup only"
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "write_delay_basis": "Figure 18 (1.0\u20131.8 ms); qualified only against these pinned disk models. Page 219 prose says 10\u201318 ms and is not used for these profiles.",
+    "timeout_policy": "One 250-tick active watchdog: ACK, result and data all inherit its remaining time; receiving a byte does not restart it. No separate phase or per-byte timeout in this disposable probe."
+  },
+  "observer": {
+    "schema_version": 1,
+    "source_revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+    "patch": "toolchain/patches/altirra-sio-observer.patch",
+    "patch_sha256": "3f07e51282b9bc3d4174a0436eb4d26fd44f85863276768a6c7811b0479bc4e3",
+    "binary_sha256": "2bbf0317e3cd6f7153895e7f6ae7c79411df808999e4c0330d38af1a56cfdae8",
+    "scope": "Passive CPU/I transitions, POKEY serial/timer/COMMAND/register observations; no guest state or cycles changed",
+    "build_options": "toolchain/altirra-build.json, build/latency target AltirraBridgeServer"
+  },
+  "selected_cases": [
+    "target",
+    "target-phase-3",
+    "target-phase-13",
+    "target-phase-31",
+    "target-vbi-32",
+    "target-vbi-121",
+    "target-vbi-125",
+    "stock-810",
+    "none-happy",
+    "silent",
+    "nak",
+    "keyboard",
+    "negative-rx-stall"
+  ],
+  "gate": "pass for the pinned two-context probe",
+  "inputs": {
+    "probes/sio-transactions/probe.s": "70af125a426d775e9e0f4c35babe8f005f3e9bb96d6be639ea1c4d6e2bf939e1",
+    "probes/sio-transactions/engine.inc": "96a311b1cc029fbca7c7d6e6ed8d2e6ef320698cf4b6ff87df5fe49bf6eee03d",
+    "probes/sio-transactions/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103",
+    "tools/sio_transactions.py": "fc9c357854999dbb2f261af667f0ee82a8fbadd144a44d0a4f09d9b7560a38cc",
+    "tools/sio_transaction_trace.py": "f35e2eb3c4285740f3d1062070c4b16456ae18353193600f569933383e5b1c8b",
+    "tools/test_sio.py": "d251e971cbfcada50a4879d1e665def37187a562dd837929221320a2773146be",
+    "toolchain/altirra-sio-device.json": "cb961184d8a8f7c539c7393faa94f0fed3a9a2fe111a657ad71bbff28f996829",
+    "toolchain/altirra-sio-observer.json": "72ff74ef5022538821ef1a3b21a10713abf1ec8fd761cbf4f437142c2a1e6695",
+    "toolchain/patches/altirra-sio-observer.patch": "3f07e51282b9bc3d4174a0436eb4d26fd44f85863276768a6c7811b0479bc4e3",
+    "tools/os_boundary.py": "088fc0d713fb80cf36557b835aebecc5ed7a7e462f2b0642b99e6fe77748d894",
+    "tools/native_program.py": "f5371e864f6f6911ef384d5cc30bbc3b57dc5e4c389733b17207d02e5d426807",
+    "tools/banked_test_memory.py": "39010ae477b2cf232d0d527ccc49502e1d578069ffda27ac8ad997b745f20558",
+    "tools/test_signal_concurrency.py": "ebfff141f659301e594585e3a4e1ff69f6b47fb695650cc4942cdd762de9087d"
+  },
+  "memory": {
+    "production_delta": {
+      "fixed_bank_zero": 0,
+      "per_task_bank_zero": 0
+    },
+    "production_runtime_including_os": {
+      "tasks4": 57968,
+      "tasks8": 61536
+    },
+    "production_loading_including_os": {
+      "tasks4": 58560,
+      "tasks8": 57232
+    },
+    "diagnostic": {
+      "code": 4096,
+      "state": 256,
+      "preflight_snapshot": 32,
+      "os_stack_with_guard": 240,
+      "contexts": 2,
+      "per_context_dp_with_guards": 288,
+      "per_context_stack_with_guards": 1568,
+      "bank_zero_during_probe": 8336,
+      "post_probe_inspection_code": 1536,
+      "post_probe_inspection_buffer": 8192,
+      "bank_zero_with_inspection": 18064,
+      "upper_buffer_reservations": 768
+    }
+  },
+  "cases": [
+    {
+      "name": "target",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 0,
+        "STALL": 0,
+        "SCENARIO": 0,
+        "VCOUNT_PHASE": -1
+      },
+      "disk_mode": "fastest",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 149,
+        "rx_bytes": 272,
+        "tx_refill": {
+          "count": 144,
+          "min_us": 14.096836810788027,
+          "mean_us": 19.86087675119913,
+          "max_us": 60.334461550172755
+        },
+        "rx_service": {
+          "count": 272,
+          "min_us": 7.894228614041295,
+          "mean_us": 13.186761610797447,
+          "max_us": 56.95122071558363
+        },
+        "command_setup": {
+          "count": 4,
+          "min_us": 933.774470346599,
+          "mean_us": 968.8755940054612,
+          "max_us": 1003.130907455676
+        },
+        "command_hold": {
+          "count": 4,
+          "min_us": 863.2902862926588,
+          "mean_us": 865.1228750780612,
+          "max_us": 866.6735271272479
+        },
+        "write_delay": {
+          "count": 1,
+          "min_us": 1223.0415617039691,
+          "mean_us": 1223.0415617039691,
+          "max_us": 1223.0415617039691
+        },
+        "active_duration": {
+          "count": 4,
+          "min_us": 3949.792706014697,
+          "mean_us": 156013.28767837785,
+          "max_us": 268239.5447285584
+        },
+        "critic_deferral": {
+          "count": 4,
+          "min_us": 4661.189575671116,
+          "mean_us": 156240.22912998553,
+          "max_us": 268289.7294676048
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 70,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.357365285089394,
+            "max_us": 17.973466933754736
+          },
+          "watchdog_service": {
+            "count": 154,
+            "min_us": 17.339109277269273,
+            "mean_us": 22.657003657287003,
+            "max_us": 61.885113599359435
+          }
+        },
+        "masked_max_us": 82.32552697500208,
+        "post_to_worker": {
+          "count": 4,
+          "min_us": 22.202517976991142,
+          "mean_us": 22.907359817530544,
+          "max_us": 24.035106762393585
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "455f1d625303b3f18cb0f46a821b5c68c888c5a772f317be9f285b70a81506a0"
+      },
+      "code_bytes": 2115,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "d690b416b38e44bf1471b9fbcca98fe0dfef7fac327ce6cb9637c1b78891d912",
+      "state": {
+        "STATE": 24589,
+        "SENT": 149,
+        "POSTS": 4,
+        "WAITS": 4,
+        "NMIS": 38,
+        "BG_PROGRESS": 24840,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 1,
+        "TIMER_COUNT": 70,
+        "WATCH_COUNT": 154,
+        "RX_COUNT": 272,
+        "DEFERRED_COUNT": 8,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 0,
+          "actual": 4
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 20,
+        "os": 31
+      },
+      "xex_sha256": "5cbc408fcb93a54ad961fda8581275b1f685cc6b4440c9d8532e84f6e3584bb2",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "72f4bf606cd9c7c21a668f1eba3681e6a0f74d5c5d2c81def592cf772c9a3241",
+        "VERIFY_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "target-phase-3",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 3,
+        "STALL": 0,
+        "SCENARIO": 0,
+        "VCOUNT_PHASE": -1
+      },
+      "disk_mode": "fastest",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 149,
+        "rx_bytes": 272,
+        "tx_refill": {
+          "count": 144,
+          "min_us": 14.096836810788027,
+          "mean_us": 19.86087675119913,
+          "max_us": 60.334461550172755
+        },
+        "rx_service": {
+          "count": 272,
+          "min_us": 7.894228614041295,
+          "mean_us": 13.186761610797447,
+          "max_us": 56.95122071558363
+        },
+        "command_setup": {
+          "count": 4,
+          "min_us": 933.774470346599,
+          "mean_us": 968.8755940054612,
+          "max_us": 1003.130907455676
+        },
+        "command_hold": {
+          "count": 4,
+          "min_us": 863.2902862926588,
+          "mean_us": 865.1228750780612,
+          "max_us": 866.6735271272479
+        },
+        "write_delay": {
+          "count": 1,
+          "min_us": 1223.0415617039691,
+          "mean_us": 1223.0415617039691,
+          "max_us": 1223.0415617039691
+        },
+        "active_duration": {
+          "count": 4,
+          "min_us": 3949.792706014697,
+          "mean_us": 156013.28767837785,
+          "max_us": 268239.5447285584
+        },
+        "critic_deferral": {
+          "count": 4,
+          "min_us": 4661.189575671116,
+          "mean_us": 156240.22912998553,
+          "max_us": 268289.7294676048
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 70,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.357365285089394,
+            "max_us": 17.973466933754736
+          },
+          "watchdog_service": {
+            "count": 154,
+            "min_us": 17.339109277269273,
+            "mean_us": 22.657003657287003,
+            "max_us": 61.885113599359435
+          }
+        },
+        "masked_max_us": 82.32552697500208,
+        "post_to_worker": {
+          "count": 4,
+          "min_us": 22.202517976991142,
+          "mean_us": 22.907359817530544,
+          "max_us": 24.035106762393585
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "c628715bcb6852d5e61b631b9d2e22ca8394645a937c51d7459097d30edc0bf2"
+      },
+      "code_bytes": 2127,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "5c59e6f5d74d389ea485a2e5aeb731c44de0c98628dc87fc65a9b151912d8615",
+      "state": {
+        "STATE": 24589,
+        "SENT": 149,
+        "POSTS": 4,
+        "WAITS": 4,
+        "NMIS": 38,
+        "BG_PROGRESS": 24840,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 1,
+        "TIMER_COUNT": 70,
+        "WATCH_COUNT": 154,
+        "RX_COUNT": 272,
+        "DEFERRED_COUNT": 8,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 0,
+          "actual": 4
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 20,
+        "os": 31
+      },
+      "xex_sha256": "0c381bc22592b0ed25bfbac175a2cc417694198498c3076a1808b995de69fa80",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "72f4bf606cd9c7c21a668f1eba3681e6a0f74d5c5d2c81def592cf772c9a3241",
+        "VERIFY_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "target-phase-13",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 13,
+        "STALL": 0,
+        "SCENARIO": 0,
+        "VCOUNT_PHASE": -1
+      },
+      "disk_mode": "fastest",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 149,
+        "rx_bytes": 272,
+        "tx_refill": {
+          "count": 144,
+          "min_us": 14.096836810788027,
+          "mean_us": 19.680750503061287,
+          "max_us": 59.20671460530971
+        },
+        "rx_service": {
+          "count": 272,
+          "min_us": 7.330355141609774,
+          "mean_us": 13.20334612469249,
+          "max_us": 56.95122071558363
+        },
+        "command_setup": {
+          "count": 4,
+          "min_us": 933.774470346599,
+          "mean_us": 968.4526889011374,
+          "max_us": 997.4921727313609
+        },
+        "command_hold": {
+          "count": 4,
+          "min_us": 861.5986658753643,
+          "mean_us": 863.9951281331981,
+          "max_us": 866.6735271272479
+        },
+        "write_delay": {
+          "count": 1,
+          "min_us": 1226.9886760109898,
+          "mean_us": 1226.9886760109898,
+          "max_us": 1226.9886760109898
+        },
+        "active_duration": {
+          "count": 4,
+          "min_us": 3944.153971290382,
+          "mean_us": 156011.7370263287,
+          "max_us": 268239.5447285584
+        },
+        "critic_deferral": {
+          "count": 4,
+          "min_us": 4661.189575671116,
+          "mean_us": 156240.17626684747,
+          "max_us": 268289.6589834207
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 70,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.324137026892537,
+            "max_us": 17.973466933754736
+          },
+          "watchdog_service": {
+            "count": 154,
+            "min_us": 17.339109277269273,
+            "mean_us": 22.659749794328068,
+            "max_us": 61.885113599359435
+          }
+        },
+        "masked_max_us": 82.11407442284025,
+        "post_to_worker": {
+          "count": 4,
+          "min_us": 22.202517976991142,
+          "mean_us": 22.907359817530544,
+          "max_us": 24.035106762393585
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "596dab6352d5aa0cefbec6c9148ae644de206efa463794dd5152f7df6fb2510c"
+      },
+      "code_bytes": 2167,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "9cbb10aec72a2a527b36666cb1916b832184b808e5977533e899cf6291a1da57",
+      "state": {
+        "STATE": 24589,
+        "SENT": 149,
+        "POSTS": 4,
+        "WAITS": 4,
+        "NMIS": 38,
+        "BG_PROGRESS": 24875,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 1,
+        "TIMER_COUNT": 70,
+        "WATCH_COUNT": 154,
+        "RX_COUNT": 272,
+        "DEFERRED_COUNT": 8,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 0,
+          "actual": 4
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 23,
+        "os": 31
+      },
+      "xex_sha256": "8db06b4558d5df08660c0a7e394cf0f5c210a94efb699f13ca4125bb585c8311",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "72f4bf606cd9c7c21a668f1eba3681e6a0f74d5c5d2c81def592cf772c9a3241",
+        "VERIFY_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "target-phase-31",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 31,
+        "STALL": 0,
+        "SCENARIO": 0,
+        "VCOUNT_PHASE": -1
+      },
+      "disk_mode": "fastest",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 149,
+        "rx_bytes": 272,
+        "tx_refill": {
+          "count": 144,
+          "min_us": 14.096836810788027,
+          "mean_us": 19.86087675119913,
+          "max_us": 60.334461550172755
+        },
+        "rx_service": {
+          "count": 272,
+          "min_us": 7.894228614041295,
+          "mean_us": 13.19712693198185,
+          "max_us": 56.95122071558363
+        },
+        "command_setup": {
+          "count": 4,
+          "min_us": 933.774470346599,
+          "mean_us": 964.9284796984405,
+          "max_us": 987.3424502275935
+        },
+        "command_hold": {
+          "count": 4,
+          "min_us": 863.2902862926588,
+          "mean_us": 865.1228750780612,
+          "max_us": 866.6735271272479
+        },
+        "write_delay": {
+          "count": 1,
+          "min_us": 1223.0415617039691,
+          "mean_us": 1223.0415617039691,
+          "max_us": 1223.0415617039691
+        },
+        "active_duration": {
+          "count": 4,
+          "min_us": 3934.004248786615,
+          "mean_us": 156009.35818511684,
+          "max_us": 268239.5447285584
+        },
+        "critic_deferral": {
+          "count": 4,
+          "min_us": 4661.189575671116,
+          "mean_us": 156240.22912998553,
+          "max_us": 268289.7294676048
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 70,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.357365285089394,
+            "max_us": 17.973466933754736
+          },
+          "watchdog_service": {
+            "count": 154,
+            "min_us": 17.339109277269273,
+            "mean_us": 22.653342141232255,
+            "max_us": 61.885113599359435
+          }
+        },
+        "masked_max_us": 82.32552697500208,
+        "post_to_worker": {
+          "count": 4,
+          "min_us": 22.202517976991142,
+          "mean_us": 22.88973877151706,
+          "max_us": 24.035106762393585
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "89d89231dcaa4705530d4135c39d2f40d5a344e82bc9bc38a813fea22e0b6a7f"
+      },
+      "code_bytes": 2239,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "3311450574ccbe68e5e36216d46bf92e54495d01cf155b69017106c4f818f2fa",
+      "state": {
+        "STATE": 24589,
+        "SENT": 149,
+        "POSTS": 4,
+        "WAITS": 4,
+        "NMIS": 38,
+        "BG_PROGRESS": 24834,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 1,
+        "TIMER_COUNT": 70,
+        "WATCH_COUNT": 154,
+        "RX_COUNT": 272,
+        "DEFERRED_COUNT": 8,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 0,
+          "actual": 4
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 20,
+        "os": 31
+      },
+      "xex_sha256": "35d242ced92aba64a4215901d8c63e936ab25d0706edb5ff4fda104d3cd404ae",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "72f4bf606cd9c7c21a668f1eba3681e6a0f74d5c5d2c81def592cf772c9a3241",
+        "VERIFY_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "target-vbi-32",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 0,
+        "STALL": 0,
+        "SCENARIO": 0,
+        "VCOUNT_PHASE": 32
+      },
+      "disk_mode": "fastest",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 149,
+        "rx_bytes": 272,
+        "tx_refill": {
+          "count": 144,
+          "min_us": 14.096836810788027,
+          "mean_us": 19.927445147250076,
+          "max_us": 60.334461550172755
+        },
+        "rx_service": {
+          "count": 272,
+          "min_us": 7.894228614041295,
+          "mean_us": 13.139081133349194,
+          "max_us": 52.440232936131466
+        },
+        "command_setup": {
+          "count": 4,
+          "min_us": 933.774470346599,
+          "mean_us": 953.0871367773785,
+          "max_us": 977.1927277238261
+        },
+        "command_hold": {
+          "count": 4,
+          "min_us": 859.9070454580697,
+          "mean_us": 863.4312546607666,
+          "max_us": 865.5457801823849
+        },
+        "write_delay": {
+          "count": 1,
+          "min_us": 1223.0415617039691,
+          "mean_us": 1223.0415617039691,
+          "max_us": 1223.0415617039691
+        },
+        "active_duration": {
+          "count": 4,
+          "min_us": 3840.6831890991984,
+          "mean_us": 155986.01029914897,
+          "max_us": 268239.5447285584
+        },
+        "critic_deferral": {
+          "count": 4,
+          "min_us": 10559.024160568611,
+          "mean_us": 157714.6877762099,
+          "max_us": 268289.7294676048
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 70,
+            "min_us": 15.64748885997471,
+            "mean_us": 17.09845613457082,
+            "max_us": 28.052705253468176
+          },
+          "watchdog_service": {
+            "count": 154,
+            "min_us": 17.339109277269273,
+            "mean_us": 22.689957301779753,
+            "max_us": 61.885113599359435
+          }
+        },
+        "masked_max_us": 77.32114990717233,
+        "post_to_worker": {
+          "count": 4,
+          "min_us": 22.273002161045085,
+          "mean_us": 22.92498086354403,
+          "max_us": 24.035106762393585
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "022d7e944bc0f8ee8ba4a19d5c48801c615f8a7d78a6968ade47f0ab1bef44f6"
+      },
+      "code_bytes": 2124,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "6ec704a0e6f340e13c51c2897e46cf19ec115ab738bfbf264cadff311445bcd6",
+      "state": {
+        "STATE": 24589,
+        "SENT": 149,
+        "POSTS": 4,
+        "WAITS": 4,
+        "NMIS": 38,
+        "BG_PROGRESS": 24624,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 1,
+        "TIMER_COUNT": 70,
+        "WATCH_COUNT": 154,
+        "RX_COUNT": 272,
+        "DEFERRED_COUNT": 8,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 0,
+          "actual": 4
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 20,
+        "os": 31
+      },
+      "xex_sha256": "8860873ef2dab90eb2a2fc48d3055eadceefa22d4768d2529f87fa7987104fba",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "72f4bf606cd9c7c21a668f1eba3681e6a0f74d5c5d2c81def592cf772c9a3241",
+        "VERIFY_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "target-vbi-121",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 0,
+        "STALL": 0,
+        "SCENARIO": 0,
+        "VCOUNT_PHASE": 121
+      },
+      "disk_mode": "fastest",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 149,
+        "rx_bytes": 272,
+        "tx_refill": {
+          "count": 144,
+          "min_us": 14.096836810788027,
+          "mean_us": 19.880455691214117,
+          "max_us": 60.334461550172755
+        },
+        "rx_service": {
+          "count": 272,
+          "min_us": 7.894228614041295,
+          "mean_us": 13.037500985742044,
+          "max_us": 52.440232936131466
+        },
+        "command_setup": {
+          "count": 4,
+          "min_us": 957.4571561887228,
+          "mean_us": 979.5891899816601,
+          "max_us": 1022.3026055183478
+        },
+        "command_hold": {
+          "count": 4,
+          "min_us": 864.9819067099534,
+          "mean_us": 866.3915903910322,
+          "max_us": 869.4928944894056
+        },
+        "write_delay": {
+          "count": 1,
+          "min_us": 1223.0415617039691,
+          "mean_us": 1223.0415617039691,
+          "max_us": 1223.0415617039691
+        },
+        "active_duration": {
+          "count": 4,
+          "min_us": 3923.9250104669018,
+          "mean_us": 150992.8578376298,
+          "max_us": 248183.69306111403
+        },
+        "critic_deferral": {
+          "count": 4,
+          "min_us": 22045.126793998694,
+          "mean_us": 155572.25051770636,
+          "max_us": 248233.87780016044
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 70,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.70173087003864,
+            "max_us": 47.22440331613989
+          },
+          "watchdog_service": {
+            "count": 149,
+            "min_us": 17.339109277269273,
+            "mean_us": 22.758822677980632,
+            "max_us": 61.885113599359435
+          }
+        },
+        "masked_max_us": 77.32114990717233,
+        "post_to_worker": {
+          "count": 4,
+          "min_us": 21.356707768343863,
+          "mean_us": 22.695907265368724,
+          "max_us": 24.035106762393585
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "03c0f5d3a46c1062fab7216b58b18e2407af6e1645c85865abd4b40bea7a4a55"
+      },
+      "code_bytes": 2124,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "d0ad033545d9331f46f7588b2b133f522dc2c27e74fde3c9862494168e325ad5",
+      "state": {
+        "STATE": 24589,
+        "SENT": 149,
+        "POSTS": 4,
+        "WAITS": 4,
+        "NMIS": 38,
+        "BG_PROGRESS": 8909,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 1,
+        "TIMER_COUNT": 70,
+        "WATCH_COUNT": 149,
+        "RX_COUNT": 272,
+        "DEFERRED_COUNT": 8,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 0,
+          "actual": 4
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 30,
+        "os": 31
+      },
+      "xex_sha256": "7c10048a6ef86e3aab5527e2ddb2d9f24b29aae302f197bb2149cf62d6bfc517",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "72f4bf606cd9c7c21a668f1eba3681e6a0f74d5c5d2c81def592cf772c9a3241",
+        "VERIFY_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "target-vbi-125",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 0,
+        "STALL": 0,
+        "SCENARIO": 0,
+        "VCOUNT_PHASE": 125
+      },
+      "disk_mode": "fastest",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 149,
+        "rx_bytes": 272,
+        "tx_refill": {
+          "count": 144,
+          "min_us": 14.096836810788027,
+          "mean_us": 19.817803083166172,
+          "max_us": 60.334461550172755
+        },
+        "rx_service": {
+          "count": 272,
+          "min_us": 7.894228614041295,
+          "mean_us": 13.02920872879452,
+          "max_us": 52.440232936131466
+        },
+        "command_setup": {
+          "count": 4,
+          "min_us": 961.4042704957434,
+          "mean_us": 979.3072532454441,
+          "max_us": 1013.2806299594434
+        },
+        "command_hold": {
+          "count": 4,
+          "min_us": 861.5986658753643,
+          "mean_us": 864.8409383418455,
+          "max_us": 867.2374005996795
+        },
+        "write_delay": {
+          "count": 1,
+          "min_us": 1223.0415617039691,
+          "mean_us": 1223.0415617039691,
+          "max_us": 1223.0415617039691
+        },
+        "active_duration": {
+          "count": 4,
+          "min_us": 3914.9030349079967,
+          "mean_us": 150990.6023437401,
+          "max_us": 248183.69306111403
+        },
+        "critic_deferral": {
+          "count": 4,
+          "min_us": 22552.04904571463,
+          "mean_us": 155698.9810806353,
+          "max_us": 248233.87780016044
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 70,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.354344534344225,
+            "max_us": 18.466856222132314
+          },
+          "watchdog_service": {
+            "count": 149,
+            "min_us": 17.339109277269273,
+            "mean_us": 22.758822677980632,
+            "max_us": 61.885113599359435
+          }
+        },
+        "masked_max_us": 77.32114990717233,
+        "post_to_worker": {
+          "count": 4,
+          "min_us": 22.273002161045085,
+          "mean_us": 23.118812369692364,
+          "max_us": 24.035106762393585
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "6921f7fb67113b6401a951ffa2a47ac697d1a236339193a9fd99c47158b0ec0b"
+      },
+      "code_bytes": 2124,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "ef75f53d623e52c513a1dfa9a1d2e63fa8695cee756fc915ffe90fe2ec8a70b0",
+      "state": {
+        "STATE": 24589,
+        "SENT": 149,
+        "POSTS": 4,
+        "WAITS": 4,
+        "NMIS": 38,
+        "BG_PROGRESS": 8929,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 1,
+        "TIMER_COUNT": 70,
+        "WATCH_COUNT": 149,
+        "RX_COUNT": 272,
+        "DEFERRED_COUNT": 8,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 0,
+          "actual": 4
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 20,
+        "os": 31
+      },
+      "xex_sha256": "5250432ed8f29efc3d3da95414e602db7d3b9dbc0c45fe6e435d0aeaf71677a3",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "72f4bf606cd9c7c21a668f1eba3681e6a0f74d5c5d2c81def592cf772c9a3241",
+        "VERIFY_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "stock-810",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 40,
+        "PHASE": 0,
+        "STALL": 0,
+        "SCENARIO": 0,
+        "VCOUNT_PHASE": -1
+      },
+      "disk_mode": "810",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 149,
+        "rx_bytes": 272,
+        "tx_refill": {
+          "count": 144,
+          "min_us": 12.969089865924985,
+          "mean_us": 17.793340685616887,
+          "max_us": 60.334461550172755
+        },
+        "rx_service": {
+          "count": 272,
+          "min_us": 11.277469448630422,
+          "mean_us": 15.487862913734904,
+          "max_us": 57.51509418801515
+        },
+        "command_setup": {
+          "count": 4,
+          "min_us": 948.4351806298184,
+          "mean_us": 1009.4744840205307,
+          "max_us": 1054.4433934469446
+        },
+        "command_hold": {
+          "count": 4,
+          "min_us": 832.2772453089252,
+          "mean_us": 849.4753862180866,
+          "max_us": 868.929021016974
+        },
+        "write_delay": {
+          "count": 1,
+          "min_us": 1305.3670886789712,
+          "mean_us": 1305.3670886789712,
+          "max_us": 1305.3670886789712
+        },
+        "active_duration": {
+          "count": 4,
+          "min_us": 9227.084534501302,
+          "mean_us": 309767.9801629312,
+          "max_us": 873828.0947138271
+        },
+        "critic_deferral": {
+          "count": 4,
+          "min_us": 9941.864644992309,
+          "mean_us": 309994.1462885143,
+          "max_us": 873877.1517059287
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 70,
+            "min_us": 15.64748885997471,
+            "mean_us": 17.203175493736676,
+            "max_us": 59.62961970963335
+          },
+          "watchdog_service": {
+            "count": 306,
+            "min_us": 7.823744429987355,
+            "mean_us": 21.97378988952198,
+            "max_us": 61.885113599359435
+          }
+        },
+        "masked_max_us": 77.39163409122627,
+        "post_to_worker": {
+          "count": 4,
+          "min_us": 21.145255216182044,
+          "mean_us": 23.964622578339647,
+          "max_us": 25.72672717968815
+        },
+        "tx_byte_deadline_us": 530.0410640856298,
+        "tx_baud": 18866.462765957447,
+        "rx_cycles_per_bit": [
+          93
+        ],
+        "observations_sha256": "98727616b39a56f61db5b542f71259014d794a25dcdb7f9eb9f6ff54b4845f1f"
+      },
+      "code_bytes": 2115,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "810",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "fb07b62466226ee64b553550719b93ed232381d1ca86f0106d58331354b1e6eb",
+      "state": {
+        "STATE": 24589,
+        "SENT": 149,
+        "POSTS": 4,
+        "WAITS": 4,
+        "NMIS": 68,
+        "BG_PROGRESS": 54460,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 1,
+        "TIMER_COUNT": 70,
+        "WATCH_COUNT": 306,
+        "RX_COUNT": 272,
+        "DEFERRED_COUNT": 8,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 0,
+          "actual": 4
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 19,
+        "os": 31
+      },
+      "xex_sha256": "373052c0031ad532cee8346fa92aa02cdca9600631592ff1df28b9e37b4f1bcc",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "72f4bf606cd9c7c21a668f1eba3681e6a0f74d5c5d2c81def592cf772c9a3241",
+        "VERIFY_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "none-happy",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 40,
+        "PHASE": 0,
+        "STALL": 0,
+        "SCENARIO": 3,
+        "VCOUNT_PHASE": -1
+      },
+      "disk_mode": "happy1050",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 5,
+        "rx_bytes": 2,
+        "tx_refill": {
+          "count": 4,
+          "min_us": 14.096836810788027,
+          "mean_us": 14.801678651327428,
+          "max_us": 15.22458375565107
+        },
+        "rx_service": {
+          "count": 2,
+          "min_us": 14.096836810788027,
+          "mean_us": 15.78845722808259,
+          "max_us": 17.480077645377154
+        },
+        "command_setup": {
+          "count": 1,
+          "min_us": 1033.5800749669781,
+          "mean_us": 1033.5800749669781,
+          "max_us": 1033.5800749669781
+        },
+        "command_hold": {
+          "count": 1,
+          "min_us": 854.832184206186,
+          "mean_us": 854.832184206186,
+          "max_us": 854.832184206186
+        },
+        "write_delay": {
+          "count": 0,
+          "max_us": null
+        },
+        "active_duration": {
+          "count": 1,
+          "min_us": 6126.414793784423,
+          "mean_us": 6126.414793784423,
+          "max_us": 6126.414793784423
+        },
+        "critic_deferral": {
+          "count": 1,
+          "min_us": 6878.41055345591,
+          "mean_us": 6878.41055345591,
+          "max_us": 6878.41055345591
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 15,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.549686415865143,
+            "max_us": 18.466856222132314
+          },
+          "watchdog_service": {
+            "count": 1,
+            "min_us": 17.973466933754736,
+            "mean_us": 17.973466933754736,
+            "max_us": 17.973466933754736
+          }
+        },
+        "masked_max_us": 37.49758591669615,
+        "post_to_worker": {
+          "count": 1,
+          "min_us": 21.356707768343863,
+          "mean_us": 21.356707768343863,
+          "max_us": 21.356707768343863
+        },
+        "tx_byte_deadline_us": 530.0410640856298,
+        "tx_baud": 18866.462765957447,
+        "rx_cycles_per_bit": [
+          91
+        ],
+        "observations_sha256": "af2876d9845a3ebb55029ee594f8e6a197b1d4a58810d7eefbda8c4676b1c553"
+      },
+      "code_bytes": 2126,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "happy1050",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "627362d1dccb9b1856eb90923c7830004e0cc954aabcc26471ad90c58fc4a8ba",
+      "state": {
+        "STATE": 24589,
+        "SENT": 5,
+        "POSTS": 1,
+        "WAITS": 1,
+        "NMIS": 2,
+        "BG_PROGRESS": 4437,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 0,
+        "TIMER_COUNT": 15,
+        "WATCH_COUNT": 1,
+        "RX_COUNT": 2,
+        "DEFERRED_COUNT": 2,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 0,
+          "actual": 0
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 19,
+        "os": 23
+      },
+      "xex_sha256": "3d4c1156357cd72786e1b5c1edc707ac30966a8d925078dd8b8f4b750f97b0ac",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "39557315215be0f6922cec45d29336c8f72198032cababdc5ec0672d45e894ad",
+        "VERIFY_BUFFER": "39557315215be0f6922cec45d29336c8f72198032cababdc5ec0672d45e894ad"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "silent",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 0,
+        "STALL": 0,
+        "SCENARIO": 1,
+        "VCOUNT_PHASE": -1
+      },
+      "disk_mode": "fastest",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 5,
+        "rx_bytes": 0,
+        "tx_refill": {
+          "count": 4,
+          "min_us": 14.660710283219547,
+          "mean_us": 16.775235804837752,
+          "max_us": 21.991065424829323
+        },
+        "rx_service": {
+          "count": 0,
+          "max_us": null
+        },
+        "command_setup": {
+          "count": 1,
+          "min_us": 1003.130907455676,
+          "mean_us": 1003.130907455676,
+          "max_us": 1003.130907455676
+        },
+        "command_hold": {
+          "count": 1,
+          "min_us": 866.6735271272479,
+          "mean_us": 866.6735271272479,
+          "max_us": 866.6735271272479
+        },
+        "write_delay": {
+          "count": 0,
+          "max_us": null
+        },
+        "active_duration": {
+          "count": 1,
+          "min_us": 1009841.9885561878,
+          "mean_us": 1009841.9885561878,
+          "max_us": 1009841.9885561878
+        },
+        "critic_deferral": {
+          "count": 1,
+          "min_us": 1010581.6495836499,
+          "mean_us": 1010581.6495836499,
+          "max_us": 1010581.6495836499
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 15,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.173770767577466,
+            "max_us": 17.902982749700794
+          },
+          "watchdog_service": {
+            "count": 250,
+            "min_us": 17.339109277269273,
+            "mean_us": 22.003188704486604,
+            "max_us": 61.885113599359435
+          }
+        },
+        "masked_max_us": 68.72207945259164,
+        "post_to_worker": {
+          "count": 1,
+          "min_us": 17.832498565646855,
+          "mean_us": 17.832498565646855,
+          "max_us": 17.832498565646855
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [],
+        "observations_sha256": "549a3b02422ff490d55e27bfed2295d62e14bd3e2e1da4bfb8bfbfcc28875281"
+      },
+      "code_bytes": 2117,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "aa83c8c9f1b63ff9e547bdd721681b14fc5e4a7fa6a57f0d02219cb42e9c6607",
+      "state": {
+        "STATE": 24589,
+        "SENT": 5,
+        "POSTS": 1,
+        "WAITS": 1,
+        "NMIS": 52,
+        "BG_PROGRESS": 15694,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 0,
+        "TIMER_COUNT": 15,
+        "WATCH_COUNT": 250,
+        "RX_COUNT": 0,
+        "DEFERRED_COUNT": 2,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 1,
+          "actual": 0
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 19,
+        "os": 23
+      },
+      "xex_sha256": "7d596bf2adbf2dda95ab764c4e225c24c448011847d9330cf008c40689b96573",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "39557315215be0f6922cec45d29336c8f72198032cababdc5ec0672d45e894ad",
+        "VERIFY_BUFFER": "39557315215be0f6922cec45d29336c8f72198032cababdc5ec0672d45e894ad"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "nak",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 0,
+        "STALL": 0,
+        "SCENARIO": 2,
+        "VCOUNT_PHASE": -1
+      },
+      "disk_mode": "fastest",
+      "keyboard": false,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 5,
+        "rx_bytes": 1,
+        "tx_refill": {
+          "count": 4,
+          "min_us": 14.660710283219547,
+          "mean_us": 16.775235804837752,
+          "max_us": 21.991065424829323
+        },
+        "rx_service": {
+          "count": 1,
+          "min_us": 11.277469448630422,
+          "mean_us": 11.277469448630422,
+          "max_us": 11.277469448630422
+        },
+        "command_setup": {
+          "count": 1,
+          "min_us": 1003.130907455676,
+          "mean_us": 1003.130907455676,
+          "max_us": 1003.130907455676
+        },
+        "command_hold": {
+          "count": 1,
+          "min_us": 866.6735271272479,
+          "mean_us": 866.6735271272479,
+          "max_us": 866.6735271272479
+        },
+        "write_delay": {
+          "count": 0,
+          "max_us": null
+        },
+        "active_duration": {
+          "count": 1,
+          "min_us": 2477.23713275978,
+          "mean_us": 2477.23713275978,
+          "max_us": 2477.23713275978
+        },
+        "critic_deferral": {
+          "count": 1,
+          "min_us": 3214.9246030683175,
+          "mean_us": 3214.9246030683175,
+          "max_us": 3214.9246030683175
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 15,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.173770767577466,
+            "max_us": 17.902982749700794
+          },
+          "watchdog_service": {
+            "count": 0,
+            "max_us": null
+          }
+        },
+        "masked_max_us": 36.08790223561735,
+        "post_to_worker": {
+          "count": 1,
+          "min_us": 21.991065424829323,
+          "mean_us": 21.991065424829323,
+          "max_us": 21.991065424829323
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "1509c28162c109794e0b5e0244f693620924c590700262e8d0435f23f98ba6df"
+      },
+      "code_bytes": 2121,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "b503a534f764d81cd8939b7dcfe2b15bb4d222eff4604e666e21f913d210d5ed",
+      "state": {
+        "STATE": 24589,
+        "SENT": 5,
+        "POSTS": 1,
+        "WAITS": 1,
+        "NMIS": 2,
+        "BG_PROGRESS": 1558,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 0,
+        "TIMER_COUNT": 15,
+        "WATCH_COUNT": 0,
+        "RX_COUNT": 1,
+        "DEFERRED_COUNT": 2,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 2,
+          "actual": 0
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 19,
+        "os": 23
+      },
+      "xex_sha256": "a6bd581eb14bbcaddaab63ee793da19f1eb60ebad8648a7dd8dd237c1b7cf039",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "39557315215be0f6922cec45d29336c8f72198032cababdc5ec0672d45e894ad",
+        "VERIFY_BUFFER": "39557315215be0f6922cec45d29336c8f72198032cababdc5ec0672d45e894ad"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "keyboard",
+      "status": "pass",
+      "negative_control": false,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 0,
+        "STALL": 0,
+        "SCENARIO": 0,
+        "VCOUNT_PHASE": -1
+      },
+      "disk_mode": "fastest",
+      "keyboard": true,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "tx_bytes": 149,
+        "rx_bytes": 272,
+        "tx_refill": {
+          "count": 144,
+          "min_us": 14.096836810788027,
+          "mean_us": 19.86087675119913,
+          "max_us": 60.334461550172755
+        },
+        "rx_service": {
+          "count": 272,
+          "min_us": 7.894228614041295,
+          "mean_us": 13.186761610797447,
+          "max_us": 56.95122071558363
+        },
+        "command_setup": {
+          "count": 4,
+          "min_us": 933.774470346599,
+          "mean_us": 968.8755940054612,
+          "max_us": 1003.130907455676
+        },
+        "command_hold": {
+          "count": 4,
+          "min_us": 863.2902862926588,
+          "mean_us": 865.1228750780612,
+          "max_us": 866.6735271272479
+        },
+        "write_delay": {
+          "count": 1,
+          "min_us": 1223.0415617039691,
+          "mean_us": 1223.0415617039691,
+          "max_us": 1223.0415617039691
+        },
+        "active_duration": {
+          "count": 4,
+          "min_us": 3949.792706014697,
+          "mean_us": 156013.28767837785,
+          "max_us": 268239.5447285584
+        },
+        "critic_deferral": {
+          "count": 4,
+          "min_us": 4661.189575671116,
+          "mean_us": 156240.22912998553,
+          "max_us": 268289.7294676048
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 70,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.365420620409843,
+            "max_us": 17.973466933754736
+          },
+          "watchdog_service": {
+            "count": 154,
+            "min_us": 17.339109277269273,
+            "mean_us": 22.657003657287003,
+            "max_us": 61.885113599359435
+          }
+        },
+        "masked_max_us": 82.32552697500208,
+        "post_to_worker": {
+          "count": 4,
+          "min_us": 22.202517976991142,
+          "mean_us": 22.907359817530544,
+          "max_us": 24.035106762393585
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "bf6459d89d958deec97553300586637299f573c5b831a015fea73b07e338439e"
+      },
+      "code_bytes": 2115,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "1bcbb04cba102e428d6e09767fc5e264f3e48f37bc7a70f08ec5706abb5517be",
+      "state": {
+        "STATE": 24589,
+        "SENT": 149,
+        "POSTS": 4,
+        "WAITS": 4,
+        "NMIS": 38,
+        "BG_PROGRESS": 24799,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 1,
+        "TIMER_COUNT": 70,
+        "WATCH_COUNT": 154,
+        "RX_COUNT": 272,
+        "DEFERRED_COUNT": 8,
+        "ROM_IRQ_COUNT": 1
+      },
+      "transactions": [
+        {
+          "error": 0,
+          "actual": 4
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        },
+        {
+          "error": 0,
+          "actual": 128
+        }
+      ],
+      "functional_pass": true,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 20,
+        "os": 31
+      },
+      "xex_sha256": "5cbc408fcb93a54ad961fda8581275b1f685cc6b4440c9d8532e84f6e3584bb2",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "72f4bf606cd9c7c21a668f1eba3681e6a0f74d5c5d2c81def592cf772c9a3241",
+        "VERIFY_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    },
+    {
+      "name": "negative-rx-stall",
+      "status": "pass",
+      "negative_control": true,
+      "definitions": {
+        "DIVISOR": 0,
+        "PHASE": 0,
+        "STALL": 1600,
+        "SCENARIO": 0,
+        "VCOUNT_PHASE": -1
+      },
+      "disk_mode": "fastest",
+      "keyboard": false,
+      "timing": {
+        "verdict": "fail",
+        "violations": [
+          "RX byte overwritten or corrupted",
+          "RX register overwritten before read",
+          "RX start/register/read count mismatch",
+          "late SERIN read",
+          "wrong TX frame count or inter-byte gap"
+        ],
+        "tx_bytes": 5,
+        "rx_bytes": 4,
+        "tx_refill": {
+          "count": 4,
+          "min_us": 14.096836810788027,
+          "mean_us": 16.493299068621994,
+          "max_us": 21.991065424829323
+        },
+        "rx_service": {
+          "count": 3,
+          "min_us": 11.841342921061942,
+          "mean_us": 48.49311862911081,
+          "max_us": 121.79667004520856
+        },
+        "command_setup": {
+          "count": 1,
+          "min_us": 1003.130907455676,
+          "mean_us": 1003.130907455676,
+          "max_us": 1003.130907455676
+        },
+        "command_hold": {
+          "count": 1,
+          "min_us": 866.6735271272479,
+          "mean_us": 866.6735271272479,
+          "max_us": 866.6735271272479
+        },
+        "write_delay": {
+          "count": 0,
+          "max_us": null
+        },
+        "active_duration": {
+          "count": 1,
+          "min_us": 3696.6840010769984,
+          "mean_us": 3696.6840010769984,
+          "max_us": 3696.6840010769984
+        },
+        "critic_deferral": {
+          "count": 1,
+          "min_us": 4434.019050465266,
+          "mean_us": 4434.019050465266,
+          "max_us": 4434.019050465266
+        },
+        "alarms": {
+          "alarm_service": {
+            "count": 15,
+            "min_us": 15.64748885997471,
+            "mean_us": 16.248953897234998,
+            "max_us": 17.902982749700794
+          },
+          "watchdog_service": {
+            "count": 1,
+            "min_us": 17.973466933754736,
+            "mean_us": 17.973466933754736,
+            "max_us": 17.973466933754736
+          }
+        },
+        "masked_max_us": 228.08681959855028,
+        "post_to_worker": {
+          "count": 1,
+          "min_us": 21.638644504559622,
+          "mean_us": 21.638644504559622,
+          "max_us": 21.638644504559622
+        },
+        "tx_byte_deadline_us": 78.94228614041295,
+        "tx_baud": 126674.82142857143,
+        "rx_cycles_per_bit": [
+          14
+        ],
+        "observations_sha256": "32f1c6d72eca1b079ac38d385d4b18f24cbdb03e25d6237fd9fbf6560e8aa551"
+      },
+      "code_bytes": 3732,
+      "verified_machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 15,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "verified_cpu": {
+        "clock_multiplier": 8,
+        "shadow_rom": true
+      },
+      "state_sha256": "ee7cbb93223a4d1731a8775c2efdf5db9e1e931ad92173219190d6b7605bcb5f",
+      "state": {
+        "STATE": 24589,
+        "SENT": 5,
+        "POSTS": 1,
+        "WAITS": 1,
+        "NMIS": 2,
+        "BG_PROGRESS": 1119,
+        "WORK_S": 18416,
+        "BG_S": 20464,
+        "EMU_COUNT": 0,
+        "TIMER_COUNT": 15,
+        "WATCH_COUNT": 1,
+        "RX_COUNT": 3,
+        "DEFERRED_COUNT": 2,
+        "ROM_IRQ_COUNT": 0
+      },
+      "transactions": [
+        {
+          "error": 6,
+          "actual": 0
+        }
+      ],
+      "functional_pass": false,
+      "guards": "pass",
+      "stack_written_extent": {
+        "worker": 16,
+        "background": 19,
+        "os": 23
+      },
+      "xex_sha256": "6bb34e66b19fa420486531f76a916fde1928343cefad8a62c877100a508486b8",
+      "media_initial_sha256": "c68d53100b158461d9f8909de00451991f0a353ec64844d159f2d5ae4c64d522",
+      "write_only_snapshot": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      "buffer_sha256": {
+        "TX_BUFFER": "23389bbc7bdb192328b3e11b0dfe047eb618ccf83f372451f0bb508fa551aacc",
+        "RX_BUFFER": "39557315215be0f6922cec45d29336c8f72198032cababdc5ec0672d45e894ad",
+        "VERIFY_BUFFER": "39557315215be0f6922cec45d29336c8f72198032cababdc5ec0672d45e894ad"
+      },
+      "replay": {
+        "status": "identical",
+        "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929"
+      }
+    }
+  ],
+  "source_revision": "d12bd2825822a726809364be135b7da7fcd504f4"
+}

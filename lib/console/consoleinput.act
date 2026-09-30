@@ -1,0 +1,227 @@
+; The single worker owns translated bytes and each instance's keyboard state.
+MODULE CONSOLEINPUT
+USE EXEC
+USE CONSOLETYPES
+USE CONSOLECAPTURE
+USE CONSOLEFOREGROUND
+USE CONSOLEWINDOWS
+INCLUDE "console-storage-action.inc"
+
+; An empty observation only skips this turn's drain. IRQ publication retains
+; its signal, so an event arriving after these reads still wakes the worker.
+; Take and the caller's Forbid continue to protect actual ring consumption.
+PUBLIC BYTE FUNC Pending()
+  CONSOLETYPES.Capture POINTER capture
+
+  capture=CONSOLETYPES.Capture POINTER(ADDRESS(CS_CAPTURE))
+
+RETURN(capture.breakPending<>0 OR capture.lost<>0 OR capture.head<>capture.tail)
+
+; Attach private input storage and reset this terminal's keyboard state.
+PUBLIC PROC Init(CONSOLETYPES.Instance POINTER instance BYTE POINTER fifo)
+
+  instance.fifo=fifo
+  instance.inputHead=0
+  instance.inputTail=0
+  instance.inputCount=0
+  instance.inputLost=0
+  instance.caps=0
+  instance.lastValid=0
+
+RETURN
+
+; Discard an incomplete input sequence and latch one loss report for its
+; reader.
+PUBLIC PROC Lose(CONSOLETYPES.Instance POINTER instance)
+
+  instance.inputLost=1
+  instance.inputHead=0
+  instance.inputTail=0
+  instance.inputCount=0
+
+RETURN
+
+; Retire captured and translated input together under the console exclusion.
+PUBLIC PROC Clear(CONSOLETYPES.Instance POINTER instance)
+  CONSOLETYPES.Window POINTER entry
+
+  EXEC.Forbid()
+  entry=CONSOLEWINDOWS.Bound(BYTE POINTER(instance))
+  IF entry<>CONSOLETYPES.Window POINTER(0) THEN
+    CONSOLECAPTURE.ClearUnit(entry.unit)
+  FI
+
+  instance.inputLost=0
+  instance.inputHead=0
+  instance.inputTail=0
+  instance.inputCount=0
+  EXEC.Permit()
+
+RETURN
+
+; Translate one captured key, suppressing duplicate events and handling
+; modifiers.
+PUBLIC CARD FUNC Decode(CONSOLETYPES.Instance POINTER instance LONGCARD event)
+  BYTE code,kind,index,value,shift
+  CARD tick,key
+  BYTE POINTER table
+
+  table=BYTE POINTER(ADDRESS(CS_KEYMAP))
+  code=BYTE(event)
+  kind=BYTE(event RSH 8)
+  tick=CARD(event RSH 16)
+  key=CARD(event)
+  IF instance.lastValid<>0 AND instance.lastKey=key AND instance.lastTick=tick THEN
+    RETURN($ffff)
+  FI
+
+  instance.lastValid=1
+  instance.lastKey=key
+  instance.lastTick=tick
+  IF kind=1 THEN
+    RETURN(3)
+  FI
+
+  IF kind<>0 THEN
+    RETURN($ffff)
+  FI
+
+  index=code & 63
+  IF index=60 THEN
+    instance.caps=instance.caps XOR 1
+    RETURN($ffff)
+  FI
+
+  value=table(index)
+  IF value=0 THEN
+    RETURN($ffff)
+  FI
+
+  IF value<32 THEN
+    RETURN(CARD(value))
+  FI
+
+  shift=(code RSH 6) & 1
+  IF (code & $80)<>0 THEN
+    IF value>=97 AND value<=122 THEN
+      RETURN(CARD(value & 31))
+    FI
+
+    IF value=32 THEN
+      RETURN(0)
+    FI
+
+    RETURN($ffff)
+  FI
+
+  IF value>=97 AND value<=122 THEN
+    IF (instance.caps XOR shift)<>0 THEN
+      value==-32
+    FI
+  ELSEIF shift<>0 THEN
+    table=BYTE POINTER(ADDRESS(CS_KEYMAP+64))
+    value=table(index)
+  FI
+
+  IF value=0 THEN
+    RETURN($ffff)
+  FI
+
+RETURN(CARD(value))
+
+; Queue a translated byte only while the terminal has a live reader endpoint.
+PUBLIC PROC Deliver(CONSOLETYPES.Instance POINTER instance LONGCARD event)
+  CARD value
+
+  IF instance.open=0 OR instance.inputLost<>0 THEN
+    RETURN
+  FI
+
+  value=Decode(instance,event)
+  IF value=$ffff THEN
+    RETURN
+  FI
+
+  IF instance.inputCount=CONSOLETYPES.INPUT_BYTES THEN
+    Lose(instance)
+    RETURN
+  FI
+
+  instance.fifo(instance.inputHead)=BYTE(value)
+  instance.inputHead=(instance.inputHead+1) & 127
+  instance.inputCount==+1
+
+RETURN
+
+; Route a bounded batch of captured input to its original terminal or break
+; scope.
+PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
+  LONGCARD event
+  CARD consumed
+  BYTE bound
+  CONSOLETYPES.Capture POINTER capture
+  CONSOLETYPES.Window POINTER entry
+
+  capture=CONSOLETYPES.Capture POINTER(ADDRESS(CS_CAPTURE))
+  CONSOLEFOREGROUND.Pump()
+  consumed=0
+  WHILE consumed<CONSOLETYPES.RAW_SLOTS DO
+    event=CONSOLECAPTURE.Take()
+    IF event=LONGCARD(CONSOLETYPES.EVENT_EMPTY) THEN
+      EXIT
+    FI
+
+    IF event=LONGCARD(CONSOLETYPES.EVENT_LOST) THEN
+      entry=CONSOLEFOREGROUND.Resolve(capture.takenRoute)
+      IF entry<>CONSOLETYPES.Window POINTER(0) THEN
+        Lose(CONSOLETYPES.Instance POINTER(entry.instance))
+      FI
+    ELSE
+      bound=0
+      IF BYTE(event RSH 8)=1 OR (CARD(event) & $ffbf)=$92 THEN
+        bound=CONSOLEFOREGROUND.Deliver(capture.takenRoute)
+      FI
+
+      IF bound=0 THEN
+        entry=CONSOLEFOREGROUND.Resolve(capture.takenRoute)
+        IF entry<>CONSOLETYPES.Window POINTER(0) THEN
+          Deliver(CONSOLETYPES.Instance POINTER(entry.instance),event)
+        FI
+      FI
+    FI
+
+    consumed==+1
+  OD
+
+RETURN(consumed)
+
+; $FFFF is a single input-loss report, with no bytes copied. Ordinary results
+; are short prefixes of at most 64 bytes. The worker maps loss to io_Error=1.
+PUBLIC CARD FUNC Read(CONSOLETYPES.Instance POINTER instance BYTE POINTER target
+    CARD limit)
+  CARD count
+
+  IF limit=0 THEN
+    RETURN(0)
+  FI
+
+  IF instance.inputLost<>0 THEN
+    Clear(instance)
+    RETURN($ffff)
+  FI
+
+  IF limit>CONSOLETYPES.SOURCE_QUANTUM THEN
+    limit=CONSOLETYPES.SOURCE_QUANTUM
+  FI
+
+  count=0
+  WHILE count<limit AND instance.inputCount<>0 DO
+    target(count)=instance.fifo(instance.inputTail)
+    instance.inputTail=(instance.inputTail+1) & 127
+    instance.inputCount==-1
+    count==+1
+  OD
+
+RETURN(count)
+
+ENDMODULE

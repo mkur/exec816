@@ -1,0 +1,34 @@
+; Build with tools/native_program.py --tasks. All pointers are native/far.
+MODULE MEMORYEXAMPLE
+USE EXEC
+
+LONGCARD available,largest
+BYTE completed
+
+; Demonstrate Exec allocation and release through the public memory API.
+PROC Main()
+  BYTE POINTER buffer
+
+  available=EXEC.AvailMem(0)
+  largest=EXEC.AvailMem(EXEC.MEMF_LARGEST OR EXEC.MEMF_LINEAR)
+  ; Ordinary requests stay inside one bank. The caller retains the size.
+  buffer=EXEC.AllocMem(513,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR)
+  IF buffer=BYTE POINTER(0) THEN
+    RETURN
+  FI
+
+  buffer(512)=$5a
+  EXEC.FreeMem(buffer,513)
+  ; LINEAR permits a bank crossing. Vec retains its own allocation size.
+  buffer=EXEC.AllocVec(LONGCARD($10001),EXEC.MEMF_LINEAR OR EXEC.MEMF_CLEAR)
+  IF buffer=BYTE POINTER(0) THEN
+    RETURN
+  FI
+
+  buffer(SIZE($10000))=$a5
+  EXEC.FreeVec(buffer)
+  completed=1
+
+RETURN
+
+ENDMODULE

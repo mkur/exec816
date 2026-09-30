@@ -1,0 +1,3241 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "runtime_baseline": "d0d1d7c",
+  "implementation_commit": "82010c7",
+  "change": "Forbid, Permit and GetMsg execute once in native handlers through COP $50; completed calls use Poll when deferred work requires it.",
+  "inputs": {
+    "tools/test_kernel_fast_paths.py": "e25984ace1d76ba3b709082ab129c0b508b469932cde71aa021c961896aabeb1",
+    "tools/test_signal_concurrency.py": "79ca4fe680b71055e68154cd8ef1e76f8f36ad309944402aff9e68fad6d069e4",
+    "tests/test_gateway_timing.py": "ee9cc0582ea950d964d7bc6bb01a695fa1be56a3b5e927d46d6ca2c499fb695a",
+    "platform/altirraos/fast-services.s": "e1cc07c8e96d04a1e03f9c2068c6b965edd73ed311008d73a3667d7842c9c181",
+    "platform/altirraos/fast-getmsg.inc": "01b1d2b7e453c300399ebb0f6509192ff9f5807c6d7167a46841ef3c6165e127",
+    "platform/altirraos/cooperative.s": "5e8821b60f062b49a07c1e52f824565661b8663000229d6fb74495952d105676",
+    "lib/exec/taskpolicy.act": "ad5b14e8fa202f4cc5ecd2b173bec93a35fb96b49f46d3c93d4296a2498b9b6f",
+    "lib/exec/task-ports.inc": "fa714cbbbbd409991dfb18c34646e226f4f3879b6c69bb2fb5698ac79e3da62d"
+  },
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "47cd55b2dac510922949832332b7a2c3220885be",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "compiler_override": false,
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "primitives": {
+    "raw": {
+      "g1": {
+        "paths": {
+          "dispatch_call": 144
+        },
+        "nested_claim_sequence": {
+          "count": 16,
+          "median_us": 5580.58527247071,
+          "scope": "Two Forbid, three GetMsg, active-pointer publication/clear, two Permit and fixture assertions"
+        },
+        "calls": {
+          "tasks_forbid": {
+            "count": 32,
+            "min_cpu_cycles": 9739.0,
+            "median_cpu_cycles": 10221.5,
+            "max_cpu_cycles": 11221.0,
+            "median_us": 720.4540873073491
+          },
+          "ports_get_msg": {
+            "count": 48,
+            "min_cpu_cycles": 11354.0,
+            "median_cpu_cycles": 11957.5,
+            "max_cpu_cycles": 13290.0,
+            "median_us": 842.8146308249892
+          },
+          "tasks_permit": {
+            "count": 32,
+            "min_cpu_cycles": 9753.0,
+            "median_cpu_cycles": 10254.5,
+            "max_cpu_cycles": 11241.0,
+            "median_us": 722.7800653811291
+          }
+        },
+        "build": {
+          "path": "build/development/kernel-fast-path/g1-raw/program/build.json",
+          "sha256": "4953d85318aa9cb3e7d0b85c06adc1b1382e23e5a8fada982d4414cc0d004906"
+        },
+        "trace": {
+          "path": "build/development/kernel-fast-path/g1-raw/0-observed/emulator.log",
+          "sha256": "59953435f2aac144c9445cbd5511aabd9b8279e31c27b81bcc686e7974c8c71c"
+        }
+      },
+      "g3": {
+        "paths": {
+          "dispatch_call": 34,
+          "fast_complete": 112,
+          "fast_general": 2
+        },
+        "nested_claim_sequence": {
+          "count": 16,
+          "median_us": 565.7765454009775,
+          "scope": "Two Forbid, three GetMsg, active-pointer publication/clear, two Permit and fixture assertions"
+        },
+        "calls": {
+          "tasks_forbid": {
+            "count": 32,
+            "min_cpu_cycles": 645.0,
+            "median_cpu_cycles": 675.0,
+            "max_cpu_cycles": 8380.0,
+            "median_us": 47.57682423640959
+          },
+          "ports_get_msg": {
+            "count": 48,
+            "min_cpu_cycles": 997.0,
+            "median_cpu_cycles": 1094.0,
+            "max_cpu_cycles": 1173.0,
+            "median_us": 77.10969735501051
+          },
+          "tasks_permit": {
+            "count": 32,
+            "min_cpu_cycles": 650.0,
+            "median_cpu_cycles": 676.0,
+            "max_cpu_cycles": 8747.0,
+            "median_us": 47.64730842046353
+          }
+        },
+        "build": {
+          "path": "build/development/kernel-fast-path/g3-raw/program/build.json",
+          "sha256": "dcb5189ee62438aa8a9203224b24bd2c522ce1cb22111a23c3d3749d5a8f2a16"
+        },
+        "trace": {
+          "path": "build/development/kernel-fast-path/g3-raw/0-observed/emulator.log",
+          "sha256": "6c17041ab80b7f28992701a21af2c7cf27d5dc9ead20899901f382c9580d6062"
+        },
+        "native_stack_observation": {
+          "bytes_below_public_import_entry": 33,
+          "full_cop_frame_bytes": 13,
+          "local_bytes": 20,
+          "completion_samples": {
+            "tasks_forbid": 32,
+            "ports_get_msg": 48,
+            "tasks_permit": 32
+          },
+          "scope": "Steady native body; excludes interrupt nesting and general Poll stack use. Every observed local D equals S."
+        }
+      },
+      "nested_sequence_reduction_percent": 89.86169876855068
+    },
+    "opt": {
+      "g1": {
+        "paths": {
+          "dispatch_call": 144
+        },
+        "nested_claim_sequence": {
+          "count": 16,
+          "median_us": 5236.551970103429,
+          "scope": "Two Forbid, three GetMsg, active-pointer publication/clear, two Permit and fixture assertions"
+        },
+        "calls": {
+          "tasks_forbid": {
+            "count": 32,
+            "min_cpu_cycles": 9240.0,
+            "median_cpu_cycles": 9704.0,
+            "max_cpu_cycles": 10719.0,
+            "median_us": 683.9785220594351
+          },
+          "ports_get_msg": {
+            "count": 48,
+            "min_cpu_cycles": 10576.0,
+            "median_cpu_cycles": 11248.0,
+            "max_cpu_cycles": 12377.0,
+            "median_us": 792.8061022387186
+          },
+          "tasks_permit": {
+            "count": 32,
+            "min_cpu_cycles": 9259.0,
+            "median_cpu_cycles": 9737.0,
+            "max_cpu_cycles": 9875.0,
+            "median_us": 686.3045001332151
+          }
+        },
+        "build": {
+          "path": "build/development/kernel-fast-path/g1-opt/program/build.json",
+          "sha256": "5589b6a3edc9460d1979a7df052d562d687494ee2ec6b4d632556c1a58cfcb72"
+        },
+        "trace": {
+          "path": "build/development/kernel-fast-path/g1-opt/0-observed/emulator.log",
+          "sha256": "7ffe3bf19e86f799ff99d57aabbf6fb4ba98fbf362869116137e56814125f03f"
+        }
+      },
+      "g3": {
+        "paths": {
+          "dispatch_call": 34,
+          "fast_complete": 112,
+          "fast_general": 2
+        },
+        "nested_claim_sequence": {
+          "count": 16,
+          "median_us": 558.093769339098,
+          "scope": "Two Forbid, three GetMsg, active-pointer publication/clear, two Permit and fixture assertions"
+        },
+        "calls": {
+          "tasks_forbid": {
+            "count": 32,
+            "min_cpu_cycles": 644.0,
+            "median_cpu_cycles": 674.0,
+            "max_cpu_cycles": 9514.0,
+            "median_us": 47.506340052355654
+          },
+          "ports_get_msg": {
+            "count": 48,
+            "min_cpu_cycles": 997.0,
+            "median_cpu_cycles": 1092.5,
+            "max_cpu_cycles": 1179.0,
+            "median_us": 77.0039710789296
+          },
+          "tasks_permit": {
+            "count": 32,
+            "min_cpu_cycles": 651.0,
+            "median_cpu_cycles": 679.5,
+            "max_cpu_cycles": 8449.0,
+            "median_us": 47.894003064652324
+          }
+        },
+        "build": {
+          "path": "build/development/kernel-fast-path/g3-opt/program/build.json",
+          "sha256": "42b2a409ccf7b0f7b310a0b59acb2d3323e0602e9955d50ec55a0327d575469c"
+        },
+        "trace": {
+          "path": "build/development/kernel-fast-path/g3-opt/0-observed/emulator.log",
+          "sha256": "cfbb7cdd3d813f6bd7af73e5111a73331d0ee6bccf70ea64eb657b4598bb01c6"
+        },
+        "native_stack_observation": {
+          "bytes_below_public_import_entry": 33,
+          "full_cop_frame_bytes": 13,
+          "local_bytes": 20,
+          "completion_samples": {
+            "tasks_forbid": 32,
+            "ports_get_msg": 48,
+            "tasks_permit": 32
+          },
+          "scope": "Steady native body; excludes interrupt nesting and general Poll stack use. Every observed local D equals S."
+        }
+      },
+      "nested_sequence_reduction_percent": 89.34234258486553
+    }
+  },
+  "serial": {
+    "results": {
+      "path": "build/development/kernel-fast-path/g4-serial/results.json",
+      "sha256": "add043683ca074766b27d6d68e59aa3b46949f7deada65467a8013c97297ccb6"
+    },
+    "platform": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      }
+    },
+    "observer": {
+      "schema_version": 1,
+      "source_revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "scope": "Passive full-address CPU markers, POKEY timestamps and I-flag transitions between emulator microstates; no guest instructions/cycles added",
+      "binary_sha256": "2d58089fb04c61e5a9f2a653b94f4d39b5e0dadfc899776a68ecf2dba12577c0",
+      "patch": "toolchain/patches/altirra-concurrency-observer.patch",
+      "patch_sha256": "1e913088ed6873e7e3ccdc3a50f2e27e3229ec0576b5db8d5f8ddf4971def24b",
+      "build_options": "Same as toolchain/altirra-build.json, build/latency target AltirraBridgeServer",
+      "resolution": "I transitions sampled between CPU microstates, including RTI followed immediately by IRQ. 1/8 base-cycle timestamps at 8x; includes NMI/ROM/DMA elapsed time. Not a hardware worst-case guarantee."
+    },
+    "scope": "Four-task diagnostic TX pump under concurrent kernel work; no production driver or RX",
+    "cases": [
+      {
+        "name": "ports-raw",
+        "xex_sha256": "5ea48abd00ba7bf3c2db2c9e68c52cec07946496d6dbd83382f6353aa3d19cb4",
+        "timing": {
+          "target_baud": 125000,
+          "actual_baud": 126674.82142857143,
+          "deadline_us": 78.94228614041295,
+          "ready_to_refill": {
+            "count": 4095,
+            "min_us": 14.660710283219547,
+            "max_us": 67.66481669178253,
+            "mean_us": 19.292596941498307,
+            "p99_us": 59.77058807774123
+          },
+          "deadline_misses": 0,
+          "public_call_elapsed_latency": {
+            "ports_get_msg": {
+              "count": 64,
+              "min_us": 93.03912295120098,
+              "max_us": 7325.844153830322,
+              "mean_us": 394.99887401515974,
+              "p99_us": 7325.844153830322
+            },
+            "tasks_forbid": {
+              "count": 5,
+              "min_us": 69.92031058150862,
+              "max_us": 78.44889685203538,
+              "mean_us": 74.4031046873392,
+              "p99_us": 78.44889685203538
+            },
+            "tasks_permit": {
+              "count": 5,
+              "min_us": 2695.6676191429406,
+              "max_us": 19261.988302444814,
+              "mean_us": 9636.357997628911,
+              "p99_us": 19261.988302444814
+            }
+          },
+          "completion_post_to_worker_resume_us": 3086.5024197220387,
+          "completion_post_to_client_reply_us": 109302.2206747028,
+          "masked_intervals": {
+            "count": 4991,
+            "min_us": 0.9162943927012217,
+            "max_us": 68.299174348268,
+            "mean_us": 22.186065547733914,
+            "p99_us": 65.90271209043404
+          },
+          "path_entries": {
+            "TASKPOLICY.DISPATCH": 149,
+            "ports_get_msg": 64,
+            "fast_complete": 74,
+            "tasks_forbid": 5,
+            "tasks_permit": 5,
+            "fast_general": 7
+          }
+        },
+        "counters": {
+          "sent": 4096,
+          "waits": 1,
+          "background": 3,
+          "yields": 3,
+          "requests": 3,
+          "replies": 3,
+          "sleeps": 10,
+          "blocked": 3,
+          "heapBefore": 720896,
+          "heapAfter": 720896,
+          "heapAllocations": 2,
+          "heapQueries": 0,
+          "heapClears": 2,
+          "fragmentCount": 0,
+          "portBursts": 2,
+          "portReplies": 20,
+          "registryRounds": 2,
+          "completionReplies": 1,
+          "maxOutstanding": 8
+        },
+        "identical_replay_counters": true,
+        "observed_trace_sha256": "6d55be66748e2b6def6f23a1c6b34da9c517f7ac0b80aa02423a702db1713b69",
+        "replay_trace_sha256": "21fcd408a03d96bc087b919afec959ec8acf6eb6f62e95ed5eb127d1d8b841db",
+        "serial_ownership": "restored"
+      },
+      {
+        "name": "ports-opt",
+        "xex_sha256": "698c087a7adce7893819a3b76b4a3ef6fbe66235e669860afc2698e541087172",
+        "timing": {
+          "target_baud": 125000,
+          "actual_baud": 126674.82142857143,
+          "deadline_us": 78.94228614041295,
+          "ready_to_refill": {
+            "count": 4095,
+            "min_us": 14.660710283219547,
+            "max_us": 60.89833502260428,
+            "mean_us": 19.2450911178136,
+            "p99_us": 58.64284113287819
+          },
+          "deadline_misses": 0,
+          "public_call_elapsed_latency": {
+            "ports_get_msg": {
+              "count": 77,
+              "min_us": 82.46649534310995,
+              "max_us": 6861.846770203234,
+              "mean_us": 404.78609212670983,
+              "p99_us": 6861.846770203234
+            },
+            "tasks_forbid": {
+              "count": 6,
+              "min_us": 47.15391913208595,
+              "max_us": 74.43129836096078,
+              "mean_us": 68.69858472457365,
+              "p99_us": 74.43129836096078
+            },
+            "tasks_permit": {
+              "count": 5,
+              "min_us": 2352.691579536468,
+              "max_us": 17682.649190348176,
+              "mean_us": 9190.658308182226,
+              "p99_us": 17682.649190348176
+            }
+          },
+          "completion_post_to_worker_resume_us": 5702.381942515919,
+          "completion_post_to_client_reply_us": 65728.19325071646,
+          "masked_intervals": {
+            "count": 5094,
+            "min_us": 0.9162943927012217,
+            "max_us": 71.40047844664136,
+            "mean_us": 21.85012473013489,
+            "p99_us": 65.90271209043404
+          },
+          "path_entries": {
+            "TASKPOLICY.DISPATCH": 163,
+            "ports_get_msg": 77,
+            "fast_complete": 88,
+            "tasks_forbid": 6,
+            "tasks_permit": 5,
+            "fast_general": 9
+          }
+        },
+        "counters": {
+          "sent": 4096,
+          "waits": 1,
+          "background": 3,
+          "yields": 3,
+          "requests": 3,
+          "replies": 3,
+          "sleeps": 12,
+          "blocked": 3,
+          "heapBefore": 720896,
+          "heapAfter": 720896,
+          "heapAllocations": 2,
+          "heapQueries": 0,
+          "heapClears": 2,
+          "fragmentCount": 0,
+          "portBursts": 3,
+          "portReplies": 24,
+          "registryRounds": 2,
+          "completionReplies": 1,
+          "maxOutstanding": 8
+        },
+        "identical_replay_counters": true,
+        "observed_trace_sha256": "53ce30ea4ccaf2f4af45786f94c359bd308efdc69e52c463ef2876fb44cd2d60",
+        "replay_trace_sha256": "402aaa1196135250f5871eeaaffe2afd6cd7a40aae8869c147677f1fe3824097",
+        "serial_ownership": "restored"
+      }
+    ]
+  },
+  "profiles": {
+    "stopped": {
+      "before": {
+        "results": {
+          "path": "build/development/sio-collect/profile/results.json",
+          "sha256": "dd33ae63c81bed25d02f6ed1a4caae00e643cf3d4615f6f6fbec100306eba116"
+        },
+        "analysis": {
+          "path": "build/development/sio-collect/profile/path-analysis.json",
+          "sha256": "32485525f3e4e58c3a3efbae2a6cd4863cd00d6b4e51e6ed43b4d88bd6027ca1"
+        },
+        "xex_sha256": "6b77660126223cfab7fa12824ce6fb600ff97e1a4c9b6064d98cab3a830ae730",
+        "samples": [
+          {
+            "phase": "open",
+            "frame": 0,
+            "transfers": 1,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 0,
+              "map": 0,
+              "data": 0
+            }
+          },
+          {
+            "phase": "seek_end",
+            "frame": 32,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "rewind",
+            "frame": 33,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "payload",
+            "frame": 34,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "close",
+            "frame": 157,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "relocate",
+            "frame": 159,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "loaded",
+            "frame": 193,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "returned",
+            "frame": 193,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "prompt",
+            "frame": 205,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          }
+        ],
+        "payload_seconds": 2.46,
+        "open_to_prompt_seconds": 4.1,
+        "gaps": {
+          "count": 18,
+          "mean_ms": 16.79854257503159,
+          "min_ms": 16.11042898084099,
+          "max_ms": 18.480953058943104,
+          "sum_ms": 302.3737663505686
+        },
+        "phases": {
+          "completion_to_worker": {
+            "count": 18,
+            "mean_ms": 1.0617737485885543,
+            "min_ms": 0.8682946633604886,
+            "max_ms": 1.240028250060969,
+            "sum_ms": 19.111927474593976
+          },
+          "retire_reply_collect": {
+            "count": 18,
+            "mean_ms": 3.794970279952215,
+            "min_ms": 2.889428641107222,
+            "max_ms": 6.379875919642391,
+            "sum_ms": 68.30946503913987
+          },
+          "finish_cache_and_first_checkpoint": {
+            "count": 18,
+            "mean_ms": 0.4751808741636464,
+            "min_ms": 0.46829691885437824,
+            "max_ms": 0.4933188041935271,
+            "sum_ms": 8.553255734945635
+          },
+          "consume_inclusive": {
+            "count": 18,
+            "mean_ms": 3.32217020489439,
+            "min_ms": 3.229303376615321,
+            "max_ms": 3.36505591510321,
+            "sum_ms": 59.799063688099025
+          },
+          "next_step_or_dos_packet_roundtrip": {
+            "count": 18,
+            "mean_ms": 0.23496294333181245,
+            "min_ms": 0.2333731334025958,
+            "max_ms": 0.23696782678934675,
+            "sum_ms": 4.229332979972624
+          },
+          "map_lookup_and_block_prepare": {
+            "count": 18,
+            "mean_ms": 1.1001132289258946,
+            "min_ms": 1.0992008503211965,
+            "max_ms": 1.1016677967630844,
+            "sum_ms": 19.802038120666104
+          },
+          "blockwire_before_send": {
+            "count": 18,
+            "mean_ms": 0.21542707698486202,
+            "min_ms": 0.2140604669718162,
+            "max_ms": 0.21751419199045927,
+            "sum_ms": 3.8776873857275165
+          },
+          "send_to_driver_request": {
+            "count": 18,
+            "mean_ms": 4.897989023576333,
+            "min_ms": 3.9158193293006978,
+            "max_ms": 5.3022432296417,
+            "sum_ms": 88.163802424374
+          },
+          "driver_validate_prepare_start": {
+            "count": 18,
+            "mean_ms": 1.6959551946138807,
+            "min_ms": 1.620219938847922,
+            "max_ms": 1.746175175752313,
+            "sum_ms": 30.52719350304985
+          }
+        },
+        "calls_overlapping_gaps": {
+          "blockwire_before_fs_pump": {
+            "elapsed": {
+              "count": 13,
+              "mean_ms": 0.010225628548133163,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011136501080522542,
+              "sum_ms": 0.1329331711257311
+            },
+            "in_gaps": {
+              "count": 13,
+              "mean_ms": 0.010225628548133163,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011136501080522542,
+              "sum_ms": 0.1329331711257311
+            }
+          },
+          "blockwire_before_io_collect": {
+            "elapsed": {
+              "count": 31,
+              "mean_ms": 1.4028990099427718,
+              "min_ms": 1.000734445197842,
+              "max_ms": 3.972629581648174,
+              "sum_ms": 43.48986930822593
+            },
+            "in_gaps": {
+              "count": 31,
+              "mean_ms": 1.4028990099427718,
+              "min_ms": 1.000734445197842,
+              "max_ms": 3.972629581648174,
+              "sum_ms": 43.48986930822593
+            }
+          },
+          "blockwire_before_io_send_io": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 2.9865910888255787,
+              "min_ms": 1.4817185171819296,
+              "max_ms": 6.956647997755783,
+              "sum_ms": 53.75863959886041
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 2.636084988889343,
+              "min_ms": 1.4817185171819296,
+              "max_ms": 5.662558378525443,
+              "sum_ms": 47.44952980000818
+            }
+          },
+          "blockwire_before_tasks_wait": {
+            "elapsed": {
+              "count": 19,
+              "mean_ms": 103.79076554801341,
+              "min_ms": 75.55566206498924,
+              "max_ms": 221.65330521484285,
+              "sum_ms": 1972.0245454122548
+            },
+            "in_gaps": {
+              "count": 19,
+              "mean_ms": 5.799523986917839,
+              "min_ms": 3.008194491238111,
+              "max_ms": 7.42438104313773,
+              "sum_ms": 110.19095575143893
+            }
+          },
+          "driver_prepare_before_driver_deadline": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.3186511645318574,
+              "min_ms": 0.30540796950572263,
+              "max_ms": 0.3221832053105604,
+              "sum_ms": 5.735720961573433
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.3186511645318574,
+              "min_ms": 0.30540796950572263,
+              "max_ms": 0.3221832053105604,
+              "sum_ms": 5.735720961573433
+            }
+          },
+          "driver_request_before_driver_prepare": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.4986560232416115,
+              "min_ms": 0.4779532520697681,
+              "max_ms": 0.5034685266972944,
+              "sum_ms": 8.975808418349008
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.4986560232416115,
+              "min_ms": 0.4779532520697681,
+              "max_ms": 0.5034685266972944,
+              "sum_ms": 8.975808418349008
+            }
+          },
+          "driver_request_before_driver_validate": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.26754229951674474,
+              "min_ms": 0.2564919457722881,
+              "max_ms": 0.27150507697577736,
+              "sum_ms": 4.815761391301406
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.26754229951674474,
+              "min_ms": 0.2564919457722881,
+              "max_ms": 0.27150507697577736,
+              "sum_ms": 4.815761391301406
+            }
+          },
+          "driver_request_before_sio_control2": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.8367804015123713,
+              "min_ms": 0.8039426033192413,
+              "max_ms": 0.8467265030399829,
+              "sum_ms": 15.062047227222683
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.8367804015123713,
+              "min_ms": 0.8039426033192413,
+              "max_ms": 0.8467265030399829,
+              "sum_ms": 15.062047227222683
+            }
+          },
+          "driver_request_before_sio_control4": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 9.34358705916646,
+              "min_ms": 2.782504133897395,
+              "max_ms": 11.816673456643063,
+              "sum_ms": 168.1845670649963
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 9.34358705916646,
+              "min_ms": 2.782504133897395,
+              "max_ms": 11.816673456643063,
+              "sum_ms": 168.1845670649963
+            }
+          },
+          "driver_request_before_sio_recovered": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.017480077645377155,
+              "min_ms": 0.01677523580483775,
+              "max_ms": 0.018466856222132313,
+              "sum_ms": 0.3146413976167888
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.017480077645377155,
+              "min_ms": 0.01677523580483775,
+              "max_ms": 0.018466856222132313,
+              "sum_ms": 0.3146413976167888
+            }
+          },
+          "driver_request_before_sio_retire": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.01874487717034508,
+              "min_ms": 0.018114435301862616,
+              "max_ms": 0.020510897559696577,
+              "sum_ms": 0.33740778906621144
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.01874487717034508,
+              "min_ms": 0.018114435301862616,
+              "max_ms": 0.020510897559696577,
+              "sum_ms": 0.33740778906621144
+            }
+          },
+          "driver_request_before_sio_start": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.06537408071002948,
+              "min_ms": 0.05342701151288662,
+              "max_ms": 0.10043996227686469,
+              "sum_ms": 1.1767334527805307
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.05096789664700471,
+              "min_ms": 0.0410922793034471,
+              "max_ms": 0.08599070454580697,
+              "sum_ms": 0.9174221396460849
+            }
+          },
+          "driver_request_before_tasks_wait": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 99.82275968762036,
+              "min_ms": 76.33874134982851,
+              "max_ms": 214.44291415449288,
+              "sum_ms": 1796.8096743771664
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 1.052669541481587,
+              "min_ms": 0.8586383301450987,
+              "max_ms": 1.2305128852136868,
+              "sum_ms": 18.948051746668565
+            }
+          },
+          "driver_worker_before_driver_request": {
+            "elapsed": {
+              "count": 19,
+              "mean_ms": 110.84203670801466,
+              "min_ms": 88.37123737804474,
+              "max_ms": 219.9048745452008,
+              "sum_ms": 2105.9986974522785
+            },
+            "in_gaps": {
+              "count": 19,
+              "mean_ms": 11.518558745339975,
+              "min_ms": 1.6749861498578333,
+              "max_ms": 14.676780677183848,
+              "sum_ms": 218.85261616145954
+            }
+          },
+          "driver_worker_before_sio_control2": {
+            "elapsed": {
+              "count": 23,
+              "mean_ms": 0.8369874275215732,
+              "min_ms": 0.7963303114414156,
+              "max_ms": 0.901845134970164,
+              "sum_ms": 19.250710832996184
+            },
+            "in_gaps": {
+              "count": 23,
+              "mean_ms": 0.8369874275215732,
+              "min_ms": 0.7963303114414156,
+              "max_ms": 0.901845134970164,
+              "sum_ms": 19.250710832996184
+            }
+          },
+          "driver_worker_before_sio_control3": {
+            "elapsed": {
+              "count": 23,
+              "mean_ms": 0.9156630995744778,
+              "min_ms": 0.8634312546607666,
+              "max_ms": 0.9444880663227978,
+              "sum_ms": 21.06025129021299
+            },
+            "in_gaps": {
+              "count": 23,
+              "mean_ms": 0.9156630995744778,
+              "min_ms": 0.8634312546607666,
+              "max_ms": 0.9444880663227978,
+              "sum_ms": 21.06025129021299
+            }
+          },
+          "driver_worker_before_tasks_wait": {
+            "elapsed": {
+              "count": 5,
+              "mean_ms": 8.508244535008789,
+              "min_ms": 8.277028217638245,
+              "max_ms": 9.299401307340647,
+              "sum_ms": 42.54122267504395
+            },
+            "in_gaps": {
+              "count": 5,
+              "mean_ms": 8.508244535008789,
+              "min_ms": 8.277028217638245,
+              "max_ms": 9.299401307340647,
+              "sum_ms": 42.54122267504395
+            }
+          },
+          "fs_worker_before_blockwire": {
+            "elapsed": {
+              "count": 19,
+              "mean_ms": 110.2730512773923,
+              "min_ms": 85.22588066463767,
+              "max_ms": 228.94256807714916,
+              "sum_ms": 2095.1879742704537
+            },
+            "in_gaps": {
+              "count": 19,
+              "mean_ms": 11.052673127519022,
+              "min_ms": 4.277191740945249,
+              "max_ms": 14.612005712038277,
+              "sum_ms": 210.0007894228614
+            }
+          },
+          "fs_worker_before_fs_begin": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.4360229941336797,
+              "min_ms": 0.4343940263244331,
+              "max_ms": 0.4372838778706446,
+              "sum_ms": 7.848413894406234
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.4360229941336797,
+              "min_ms": 0.4343940263244331,
+              "max_ms": 0.4372838778706446,
+              "sum_ms": 7.848413894406234
+            }
+          },
+          "fs_worker_before_fs_checkpoint0": {
+            "elapsed": {
+              "count": 36,
+              "mean_ms": 0.06238633446374301,
+              "min_ms": 0.06026397736611882,
+              "max_ms": 0.06555029117016432,
+              "sum_ms": 2.2459080406947485
+            },
+            "in_gaps": {
+              "count": 36,
+              "mean_ms": 0.06238633446374301,
+              "min_ms": 0.06026397736611882,
+              "max_ms": 0.06555029117016432,
+              "sum_ms": 2.2459080406947485
+            }
+          },
+          "fs_worker_before_fs_checkpoint1": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.06360022874467199,
+              "min_ms": 0.06308334472827642,
+              "max_ms": 0.06555029117016432,
+              "sum_ms": 1.1448041174040957
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.06360022874467199,
+              "min_ms": 0.06308334472827642,
+              "max_ms": 0.06555029117016432,
+              "sum_ms": 1.1448041174040957
+            }
+          },
+          "fs_worker_before_fs_complete": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.2844036826576485,
+              "min_ms": 0.28017463161441203,
+              "max_ms": 0.29673841486708796,
+              "sum_ms": 5.1192662878376725
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.2844036826576485,
+              "min_ms": 0.28017463161441203,
+              "max_ms": 0.29673841486708796,
+              "sum_ms": 5.1192662878376725
+            }
+          },
+          "fs_worker_before_fs_pump": {
+            "elapsed": {
+              "count": 36,
+              "mean_ms": 0.010071406743707446,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011136501080522542,
+              "sum_ms": 0.36257064277346807
+            },
+            "in_gaps": {
+              "count": 36,
+              "mean_ms": 0.010071406743707446,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011136501080522542,
+              "sum_ms": 0.36257064277346807
+            }
+          },
+          "sdfs_continue_before_sdfs_consume": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 3.322745825730831,
+              "min_ms": 3.229867250087753,
+              "max_ms": 3.365619788575642,
+              "sum_ms": 59.80942486315496
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 3.322745825730831,
+              "min_ms": 3.229867250087753,
+              "max_ms": 3.365619788575642,
+              "sum_ms": 59.80942486315496
+            }
+          },
+          "sdfs_continue_before_sdfs_drive": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.45555886048063005,
+              "min_ms": 0.453283787650889,
+              "max_ms": 0.45610315501304666,
+              "sum_ms": 8.200059488651341
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.45555886048063005,
+              "min_ms": 0.453283787650889,
+              "max_ms": 0.45610315501304666,
+              "sum_ms": 8.200059488651341
+            }
+          }
+        },
+        "prime_worker": {
+          "mode": "stopped",
+          "before": {
+            "live_tasks": 5,
+            "frames": 1,
+            "pass_number": 1,
+            "candidate": 102,
+            "count": 26
+          },
+          "stopped": {
+            "live_tasks": 4,
+            "frames": 1,
+            "pass_number": 1,
+            "candidate": 102,
+            "count": 26
+          },
+          "stop_flag_address": 36074,
+          "after_commands": {
+            "live_tasks": 4,
+            "frames": 1,
+            "pass_number": 1,
+            "candidate": 102,
+            "count": 26
+          }
+        }
+      },
+      "after": {
+        "results": {
+          "path": "build/development/kernel-fast-path/g4-profile/results.json",
+          "sha256": "4daa42e00f2f4e213d563491426809624eb1148dda99a5c0287e5077ca9056ff"
+        },
+        "analysis": {
+          "path": "build/development/kernel-fast-path/g4-profile/path-analysis.json",
+          "sha256": "2d8ecaa68174242969a453dd56d686684c2208b17a6b4fd4e5c55446f2831546"
+        },
+        "xex_sha256": "4b841d3ad3d2d2106a7c379531ac5dd9831329f63283de5e0e69c6e908e7b6e9",
+        "samples": [
+          {
+            "phase": "open",
+            "frame": 0,
+            "transfers": 1,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 0,
+              "map": 0,
+              "data": 0
+            }
+          },
+          {
+            "phase": "seek_end",
+            "frame": 25,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "rewind",
+            "frame": 26,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "payload",
+            "frame": 26,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "close",
+            "frame": 151,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "relocate",
+            "frame": 151,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "loaded",
+            "frame": 185,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "returned",
+            "frame": 185,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "prompt",
+            "frame": 195,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          }
+        ],
+        "payload_seconds": 2.5,
+        "open_to_prompt_seconds": 3.9,
+        "gaps": {
+          "count": 18,
+          "mean_ms": 16.868525538221142,
+          "min_ms": 14.766718496036676,
+          "max_ms": 18.518732581596012,
+          "sum_ms": 303.6334596879806
+        },
+        "phases": {
+          "completion_to_worker": {
+            "count": 18,
+            "mean_ms": 1.0870384127838888,
+            "min_ms": 0.8646999699737377,
+            "max_ms": 1.1737026328662112,
+            "sum_ms": 19.566691430109998
+          },
+          "retire_reply_collect": {
+            "count": 18,
+            "mean_ms": 3.2058908801454042,
+            "min_ms": 3.015665814747829,
+            "max_ms": 5.97071523120927,
+            "sum_ms": 57.706035842617275
+          },
+          "finish_cache_and_first_checkpoint": {
+            "count": 18,
+            "mean_ms": 0.4885454586178741,
+            "min_ms": 0.4684378872224862,
+            "max_ms": 0.4938121934819046,
+            "sum_ms": 8.793818255121733
+          },
+          "consume_inclusive": {
+            "count": 18,
+            "mean_ms": 3.709042228014456,
+            "min_ms": 3.1999114718648283,
+            "max_ms": 6.757248241067186,
+            "sum_ms": 66.76276010426021
+          },
+          "next_step_or_dos_packet_roundtrip": {
+            "count": 18,
+            "mean_ms": 0.42294817799167383,
+            "min_ms": 0.22329389508288236,
+            "max_ms": 3.704789682243202,
+            "sum_ms": 7.613067203850129
+          },
+          "map_lookup_and_block_prepare": {
+            "count": 18,
+            "mean_ms": 1.4571978527071645,
+            "min_ms": 1.0458443229923637,
+            "max_ms": 4.526282847391874,
+            "sum_ms": 26.22956134872896
+          },
+          "blockwire_before_send": {
+            "count": 18,
+            "mean_ms": 0.40240986991595623,
+            "min_ms": 0.20482703886075004,
+            "max_ms": 3.6859704051007993,
+            "sum_ms": 7.243377658487212
+          },
+          "send_to_driver_request": {
+            "count": 18,
+            "mean_ms": 4.42882279978529,
+            "min_ms": 3.7360846599631508,
+            "max_ms": 5.283001047394975,
+            "sum_ms": 79.71881039613521
+          },
+          "driver_validate_prepare_start": {
+            "count": 18,
+            "mean_ms": 1.6666298582594385,
+            "min_ms": 1.6219820434492704,
+            "max_ms": 1.7141753561918243,
+            "sum_ms": 29.999337448669895
+          }
+        },
+        "calls_overlapping_gaps": {
+          "blockwire_before_fs_pump": {
+            "elapsed": {
+              "count": 6,
+              "mean_ms": 0.009844291039533638,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.010079238319713439,
+              "sum_ms": 0.05906574623720183
+            },
+            "in_gaps": {
+              "count": 6,
+              "mean_ms": 0.009844291039533638,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.010079238319713439,
+              "sum_ms": 0.05906574623720183
+            }
+          },
+          "blockwire_before_io_collect": {
+            "elapsed": {
+              "count": 27,
+              "mean_ms": 1.832197206602144,
+              "min_ms": 0.9740209394413988,
+              "max_ms": 7.103396068956087,
+              "sum_ms": 49.46932457825788
+            },
+            "in_gaps": {
+              "count": 27,
+              "mean_ms": 1.5796158277821817,
+              "min_ms": 0.9740209394413988,
+              "max_ms": 4.759726464978523,
+              "sum_ms": 42.649627350118905
+            }
+          },
+          "blockwire_before_io_send_io": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 4.246382320937672,
+              "min_ms": 1.4159567734596032,
+              "max_ms": 7.787304106831468,
+              "sum_ms": 76.43488177687809
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 3.5070776301838964,
+              "min_ms": 1.4159567734596032,
+              "max_ms": 5.634928578376298,
+              "sum_ms": 63.127397343310136
+            }
+          },
+          "blockwire_before_tasks_wait": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 102.28673404641398,
+              "min_ms": 78.32660679270178,
+              "max_ms": 212.65881848771954,
+              "sum_ms": 1841.1612128354518
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 4.456797189278698,
+              "min_ms": 2.811684586095726,
+              "max_ms": 7.428610094180966,
+              "sum_ms": 80.22234940701657
+            }
+          },
+          "driver_prepare_before_driver_deadline": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.31329045075575496,
+              "min_ms": 0.30512603276950684,
+              "max_ms": 0.3221127211265064,
+              "sum_ms": 5.639228113603589
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.31329045075575496,
+              "min_ms": 0.30512603276950684,
+              "max_ms": 0.3221127211265064,
+              "sum_ms": 5.639228113603589
+            }
+          },
+          "driver_request_before_driver_prepare": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.49036630003926757,
+              "min_ms": 0.4779532520697681,
+              "max_ms": 0.5030456215929707,
+              "sum_ms": 8.826593400706816
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.49036630003926757,
+              "min_ms": 0.4779532520697681,
+              "max_ms": 0.5030456215929707,
+              "sum_ms": 8.826593400706816
+            }
+          },
+          "driver_request_before_driver_validate": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.2630234801612866,
+              "min_ms": 0.2565624299563421,
+              "max_ms": 0.27150507697577736,
+              "sum_ms": 4.7344226429031595
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.2630234801612866,
+              "min_ms": 0.2565624299563421,
+              "max_ms": 0.27150507697577736,
+              "sum_ms": 4.7344226429031595
+            }
+          },
+          "driver_request_before_sio_control2": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.8270457525369216,
+              "min_ms": 0.8054932553684279,
+              "max_ms": 0.8486295760094392,
+              "sum_ms": 14.886823545664589
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.8270457525369216,
+              "min_ms": 0.8054932553684279,
+              "max_ms": 0.8486295760094392,
+              "sum_ms": 14.886823545664589
+            }
+          },
+          "driver_request_before_sio_control4": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 9.856175456122735,
+              "min_ms": 3.3817606667239937,
+              "max_ms": 11.882858105469714,
+              "sum_ms": 177.4111582102092
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 9.856175456122735,
+              "min_ms": 3.3817606667239937,
+              "max_ms": 11.882858105469714,
+              "sum_ms": 177.4111582102092
+            }
+          },
+          "driver_request_before_sio_recovered": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.017029762025032535,
+              "min_ms": 0.01677523580483775,
+              "max_ms": 0.018114435301862616,
+              "sum_ms": 0.30653571645058564
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.017029762025032535,
+              "min_ms": 0.01677523580483775,
+              "max_ms": 0.018114435301862616,
+              "sum_ms": 0.30653571645058564
+            }
+          },
+          "driver_request_before_sio_retire": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.023251949161794253,
+              "min_ms": 0.018396372038078375,
+              "max_ms": 0.05955913552557942,
+              "sum_ms": 0.4185350849122965
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.023251949161794253,
+              "min_ms": 0.018396372038078375,
+              "max_ms": 0.05955913552557942,
+              "sum_ms": 0.4185350849122965
+            }
+          },
+          "driver_request_before_sio_start": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.05903050414517487,
+              "min_ms": 0.05342701151288662,
+              "max_ms": 0.06526835443394857,
+              "sum_ms": 1.0625490746131476
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.04487884630234488,
+              "min_ms": 0.0410922793034471,
+              "max_ms": 0.050396191598567196,
+              "sum_ms": 0.8078192334422079
+            }
+          },
+          "driver_request_before_tasks_wait": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 100.1037448873514,
+              "min_ms": 78.75388191643677,
+              "max_ms": 213.47678744366553,
+              "sum_ms": 1801.867407972325
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 1.077511300572598,
+              "min_ms": 0.8548321842061859,
+              "max_ms": 1.1645396889391988,
+              "sum_ms": 19.395203410306763
+            }
+          },
+          "driver_worker_before_driver_request": {
+            "elapsed": {
+              "count": 19,
+              "mean_ms": 111.40703050800326,
+              "min_ms": 91.74031089163903,
+              "max_ms": 227.08023496607595,
+              "sum_ms": 2116.733579652062
+            },
+            "in_gaps": {
+              "count": 19,
+              "mean_ms": 12.004087192348592,
+              "min_ms": 1.7079022638110235,
+              "max_ms": 14.673467920533312,
+              "sum_ms": 228.07765665462327
+            }
+          },
+          "driver_worker_before_sio_control2": {
+            "elapsed": {
+              "count": 25,
+              "mean_ms": 0.82120277031037,
+              "min_ms": 0.7980219318587102,
+              "max_ms": 0.9033253028352969,
+              "sum_ms": 20.53006925775925
+            },
+            "in_gaps": {
+              "count": 25,
+              "mean_ms": 0.82120277031037,
+              "min_ms": 0.7980219318587102,
+              "max_ms": 0.9033253028352969,
+              "sum_ms": 20.53006925775925
+            }
+          },
+          "driver_worker_before_sio_control3": {
+            "elapsed": {
+              "count": 25,
+              "mean_ms": 0.8973115922518146,
+              "min_ms": 0.8649819067099533,
+              "max_ms": 0.9461796867400925,
+              "sum_ms": 22.432789806295364
+            },
+            "in_gaps": {
+              "count": 25,
+              "mean_ms": 0.8973115922518146,
+              "min_ms": 0.8649819067099533,
+              "max_ms": 0.9461796867400925,
+              "sum_ms": 22.432789806295364
+            }
+          },
+          "driver_worker_before_tasks_wait": {
+            "elapsed": {
+              "count": 7,
+              "mean_ms": 4.554577212704955,
+              "min_ms": 2.9372169178957934,
+              "max_ms": 8.274702239564464,
+              "sum_ms": 31.88204048893469
+            },
+            "in_gaps": {
+              "count": 7,
+              "mean_ms": 4.554577212704955,
+              "min_ms": 2.9372169178957934,
+              "max_ms": 8.274702239564464,
+              "sum_ms": 31.88204048893469
+            }
+          },
+          "fs_worker_before_blockwire": {
+            "elapsed": {
+              "count": 19,
+              "mean_ms": 109.56002585211483,
+              "min_ms": 88.6352711315108,
+              "max_ms": 222.40346838572893,
+              "sum_ms": 2081.640491190182
+            },
+            "in_gaps": {
+              "count": 19,
+              "mean_ms": 10.223430411818313,
+              "min_ms": 4.18203809247243,
+              "max_ms": 13.395589663635377,
+              "sum_ms": 194.24517782454794
+            }
+          },
+          "fs_worker_before_fs_begin": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.6163802737637035,
+              "min_ms": 0.414447002237168,
+              "max_ms": 3.8946035899004623,
+              "sum_ms": 11.094844927746664
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.6163802737637035,
+              "min_ms": 0.414447002237168,
+              "max_ms": 3.8946035899004623,
+              "sum_ms": 11.094844927746664
+            }
+          },
+          "fs_worker_before_fs_checkpoint0": {
+            "elapsed": {
+              "count": 36,
+              "mean_ms": 0.15932362437192718,
+              "min_ms": 0.06033446155017276,
+              "max_ms": 3.541477827790222,
+              "sum_ms": 5.735650477389378
+            },
+            "in_gaps": {
+              "count": 36,
+              "mean_ms": 0.15932362437192718,
+              "min_ms": 0.06033446155017276,
+              "max_ms": 3.541477827790222,
+              "sum_ms": 5.735650477389378
+            }
+          },
+          "fs_worker_before_fs_checkpoint1": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.0620456609074823,
+              "min_ms": 0.06026397736611882,
+              "max_ms": 0.06547980698611039,
+              "sum_ms": 1.1168218963346814
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.0620456609074823,
+              "min_ms": 0.06026397736611882,
+              "max_ms": 0.06547980698611039,
+              "sum_ms": 1.1168218963346814
+            }
+          },
+          "fs_worker_before_fs_complete": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.2922274270876358,
+              "min_ms": 0.2803155999825199,
+              "max_ms": 0.29673841486708796,
+              "sum_ms": 5.260093687577445
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.2922274270876358,
+              "min_ms": 0.2803155999825199,
+              "max_ms": 0.29673841486708796,
+              "sum_ms": 5.260093687577445
+            }
+          },
+          "fs_worker_before_fs_pump": {
+            "elapsed": {
+              "count": 36,
+              "mean_ms": 0.010239785627836303,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011136501080522542,
+              "sum_ms": 0.3686322826021069
+            },
+            "in_gaps": {
+              "count": 36,
+              "mean_ms": 0.010239785627836303,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011136501080522542,
+              "sum_ms": 0.3686322826021069
+            }
+          },
+          "sdfs_continue_before_sdfs_consume": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 3.709633512002908,
+              "min_ms": 3.2004753453372596,
+              "max_ms": 6.757812114539618,
+              "sum_ms": 66.77340321605234
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 3.709633512002908,
+              "min_ms": 3.2004753453372596,
+              "max_ms": 6.757812114539618,
+              "sum_ms": 66.77340321605234
+            }
+          },
+          "sdfs_continue_before_sdfs_drive": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.6378701183241493,
+              "min_ms": 0.4331253110114622,
+              "max_ms": 3.9132818986747564,
+              "sum_ms": 11.481662129834687
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.6378701183241493,
+              "min_ms": 0.4331253110114622,
+              "max_ms": 3.9132818986747564,
+              "sum_ms": 11.481662129834687
+            }
+          }
+        },
+        "prime_worker": {
+          "mode": "stopped",
+          "before": {
+            "live_tasks": 5,
+            "frames": 1,
+            "pass_number": 1,
+            "candidate": 102,
+            "count": 26
+          },
+          "stopped": {
+            "live_tasks": 4,
+            "frames": 1,
+            "pass_number": 1,
+            "candidate": 102,
+            "count": 26
+          },
+          "stop_flag_address": 36074,
+          "after_commands": {
+            "live_tasks": 4,
+            "frames": 1,
+            "pass_number": 1,
+            "candidate": 102,
+            "count": 26
+          }
+        }
+      },
+      "replay": {
+        "results": {
+          "path": "build/development/kernel-fast-path/g4-measurement/results.json",
+          "sha256": "431b9b5d1508a2fa2efaaced5d9f952a3fac693f1a11b1afd23602a7d34f7257"
+        },
+        "identical_relative_phase_ticks": true,
+        "identical_transfer_counts": true,
+        "identical_hardware_gaps": true,
+        "hardware_gap_ticks": [
+          26188,
+          26210,
+          31971,
+          28996,
+          29163,
+          28986,
+          29056,
+          29014,
+          28765,
+          28076,
+          27851,
+          27955,
+          32793,
+          32842,
+          32767,
+          32759,
+          32798,
+          32288
+        ]
+      }
+    },
+    "active": {
+      "before": {
+        "results": {
+          "path": "build/development/sio-collect/profile-active/results.json",
+          "sha256": "dd2222184f544b33d16c35899031b7a9a2e70d0791b8021c1bb35e6cdc863e32"
+        },
+        "analysis": {
+          "path": "build/development/sio-collect/profile-active/path-analysis.json",
+          "sha256": "68c8a6ea0a0385df8012f05a779d100d604485ee65e40a2931182169a644bddb"
+        },
+        "xex_sha256": "6b77660126223cfab7fa12824ce6fb600ff97e1a4c9b6064d98cab3a830ae730",
+        "samples": [
+          {
+            "phase": "open",
+            "frame": 0,
+            "transfers": 1,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 0,
+              "map": 0,
+              "data": 0
+            }
+          },
+          {
+            "phase": "seek_end",
+            "frame": 25,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "rewind",
+            "frame": 28,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "payload",
+            "frame": 30,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "close",
+            "frame": 151,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "relocate",
+            "frame": 152,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "loaded",
+            "frame": 190,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "returned",
+            "frame": 190,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "prompt",
+            "frame": 207,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          }
+        ],
+        "payload_seconds": 2.42,
+        "open_to_prompt_seconds": 4.14,
+        "gaps": {
+          "count": 18,
+          "mean_ms": 18.56616060588831,
+          "min_ms": 15.100531591716134,
+          "max_ms": 25.81920242916692,
+          "sum_ms": 334.1908909059896
+        },
+        "phases": {
+          "completion_to_worker": {
+            "count": 18,
+            "mean_ms": 1.102999164684103,
+            "min_ms": 0.8792901960729032,
+            "max_ms": 1.428150537300935,
+            "sum_ms": 19.853984964313856
+          },
+          "retire_reply_collect": {
+            "count": 18,
+            "mean_ms": 4.198343433716908,
+            "min_ms": 3.035330902098878,
+            "max_ms": 12.21230118173783,
+            "sum_ms": 75.57018180690434
+          },
+          "finish_cache_and_first_checkpoint": {
+            "count": 18,
+            "mean_ms": 0.4857495859837344,
+            "min_ms": 0.46829691885437824,
+            "max_ms": 0.49338928837758095,
+            "sum_ms": 8.74349254770722
+          },
+          "consume_inclusive": {
+            "count": 18,
+            "mean_ms": 3.841560325611869,
+            "min_ms": 3.1997705034967203,
+            "max_ms": 7.988254515569251,
+            "sum_ms": 69.14808586101364
+          },
+          "next_step_or_dos_packet_roundtrip": {
+            "count": 18,
+            "mean_ms": 0.22928113493946428,
+            "min_ms": 0.22329389508288236,
+            "max_ms": 0.23717927934150856,
+            "sum_ms": 4.127060428910357
+          },
+          "map_lookup_and_block_prepare": {
+            "count": 18,
+            "mean_ms": 1.5962396531175704,
+            "min_ms": 1.0459852913604717,
+            "max_ms": 5.757782511182316,
+            "sum_ms": 28.732313756116266
+          },
+          "blockwire_before_send": {
+            "count": 18,
+            "mean_ms": 0.7338382507015918,
+            "min_ms": 0.20489752304480396,
+            "max_ms": 4.9178224898115115,
+            "sum_ms": 13.209088512628652
+          },
+          "send_to_driver_request": {
+            "count": 18,
+            "mean_ms": 4.701608339438047,
+            "min_ms": 3.7176178037410184,
+            "max_ms": 6.868472283504305,
+            "sum_ms": 84.62895010988484
+          },
+          "driver_validate_prepare_start": {
+            "count": 18,
+            "mean_ms": 1.676540717695023,
+            "min_ms": 1.6203609072160299,
+            "max_ms": 1.745752270647989,
+            "sum_ms": 30.177732918510415
+          }
+        },
+        "calls_overlapping_gaps": {
+          "blockwire_before_fs_pump": {
+            "elapsed": {
+              "count": 5,
+              "mean_ms": 0.010051044646091864,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011136501080522542,
+              "sum_ms": 0.05025522323045932
+            },
+            "in_gaps": {
+              "count": 5,
+              "mean_ms": 0.010051044646091864,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011136501080522542,
+              "sum_ms": 0.05025522323045932
+            }
+          },
+          "blockwire_before_io_collect": {
+            "elapsed": {
+              "count": 26,
+              "mean_ms": 2.2365228004949507,
+              "min_ms": 0.9723293190241042,
+              "max_ms": 8.550436367583478,
+              "sum_ms": 58.14959281286872
+            },
+            "in_gaps": {
+              "count": 26,
+              "mean_ms": 1.8562660493842555,
+              "min_ms": 0.9723293190241042,
+              "max_ms": 5.212305410788873,
+              "sum_ms": 48.262917283990646
+            }
+          },
+          "blockwire_before_io_send_io": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 4.845599695884241,
+              "min_ms": 1.4115867540482592,
+              "max_ms": 11.351618810255168,
+              "sum_ms": 87.22079452591633
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 3.7800785381768183,
+              "min_ms": 1.4115867540482592,
+              "max_ms": 5.928495204960958,
+              "sum_ms": 68.04141368718273
+            }
+          },
+          "blockwire_before_tasks_wait": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 100.76448712340104,
+              "min_ms": 76.8573639760974,
+              "max_ms": 211.56631363488347,
+              "sum_ms": 1813.7607682212188
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 5.1673521645144715,
+              "min_ms": 2.8250060968819204,
+              "max_ms": 17.25784101305508,
+              "sum_ms": 93.01233896126048
+            }
+          },
+          "driver_prepare_before_driver_deadline": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.31507996587312437,
+              "min_ms": 0.30519651695356076,
+              "max_ms": 0.3221127211265064,
+              "sum_ms": 5.671439385716239
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.31507996587312437,
+              "min_ms": 0.30519651695356076,
+              "max_ms": 0.3221127211265064,
+              "sum_ms": 5.671439385716239
+            }
+          },
+          "driver_request_before_driver_prepare": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.49311126742936817,
+              "min_ms": 0.478023736253822,
+              "max_ms": 0.5034685266972944,
+              "sum_ms": 8.876002813728627
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.49311126742936817,
+              "min_ms": 0.478023736253822,
+              "max_ms": 0.5034685266972944,
+              "sum_ms": 8.876002813728627
+            }
+          },
+          "driver_request_before_driver_validate": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.264899142614722,
+              "min_ms": 0.2565624299563421,
+              "max_ms": 0.2712936244236156,
+              "sum_ms": 4.7681845670649965
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.264899142614722,
+              "min_ms": 0.2565624299563421,
+              "max_ms": 0.2712936244236156,
+              "sum_ms": 4.7681845670649965
+            }
+          },
+          "driver_request_before_sio_control2": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.8294108884907315,
+              "min_ms": 0.8040130875032951,
+              "max_ms": 0.8467265030399829,
+              "sum_ms": 14.929395992833168
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.8294108884907315,
+              "min_ms": 0.8040130875032951,
+              "max_ms": 0.8467265030399829,
+              "sum_ms": 14.929395992833168
+            }
+          },
+          "driver_request_before_sio_control4": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 10.462488238930733,
+              "min_ms": 3.835678812031368,
+              "max_ms": 20.82589137823364,
+              "sum_ms": 188.3247883007532
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 10.462488238930733,
+              "min_ms": 3.835678812031368,
+              "max_ms": 20.82589137823364,
+              "sum_ms": 188.3247883007532
+            }
+          },
+          "driver_request_before_sio_recovered": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.016959277840978598,
+              "min_ms": 0.01677523580483775,
+              "max_ms": 0.018043951117808675,
+              "sum_ms": 0.30526700113761474
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.016959277840978598,
+              "min_ms": 0.01677523580483775,
+              "max_ms": 0.018043951117808675,
+              "sum_ms": 0.30526700113761474
+            }
+          },
+          "driver_request_before_sio_retire": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.021462434044424772,
+              "min_ms": 0.018748792958348075,
+              "max_ms": 0.044405035953982284,
+              "sum_ms": 0.3863238127996459
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.021462434044424772,
+              "min_ms": 0.018748792958348075,
+              "max_ms": 0.044405035953982284,
+              "sum_ms": 0.3863238127996459
+            }
+          },
+          "driver_request_before_sio_start": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.06186553465934446,
+              "min_ms": 0.0532155589607248,
+              "max_ms": 0.09910076277983983,
+              "sum_ms": 1.1135796238682003
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.04738495062426276,
+              "min_ms": 0.04088082675128528,
+              "max_ms": 0.08577925199364514,
+              "sum_ms": 0.8529291112367297
+            }
+          },
+          "driver_request_before_tasks_wait": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 98.50528106664812,
+              "min_ms": 78.21707437068197,
+              "max_ms": 212.29413331942445,
+              "sum_ms": 1773.0950591996661
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 1.0933976525007554,
+              "min_ms": 0.8694928944894056,
+              "max_ms": 1.4191990459260846,
+              "sum_ms": 19.681157745013596
+            }
+          },
+          "driver_worker_before_driver_request": {
+            "elapsed": {
+              "count": 19,
+              "mean_ms": 110.44020637472316,
+              "min_ms": 87.74463298180521,
+              "max_ms": 225.98519268261393,
+              "sum_ms": 2098.36392111974
+            },
+            "in_gaps": {
+              "count": 19,
+              "mean_ms": 12.601177263939007,
+              "min_ms": 1.7083251689153471,
+              "max_ms": 23.935724062877533,
+              "sum_ms": 239.42236801484114
+            }
+          },
+          "driver_worker_before_sio_control2": {
+            "elapsed": {
+              "count": 26,
+              "mean_ms": 0.9416280350083015,
+              "min_ms": 0.7963303114414156,
+              "max_ms": 2.459334150010079,
+              "sum_ms": 24.482328910215838
+            },
+            "in_gaps": {
+              "count": 26,
+              "mean_ms": 0.9416280350083015,
+              "min_ms": 0.7963303114414156,
+              "max_ms": 2.459334150010079,
+              "sum_ms": 24.482328910215838
+            }
+          },
+          "driver_worker_before_sio_control3": {
+            "elapsed": {
+              "count": 26,
+              "mean_ms": 0.8956072846813903,
+              "min_ms": 0.8634312546607666,
+              "max_ms": 0.9285586407266073,
+              "sum_ms": 23.285789401716148
+            },
+            "in_gaps": {
+              "count": 26,
+              "mean_ms": 0.8956072846813903,
+              "min_ms": 0.8634312546607666,
+              "max_ms": 0.9285586407266073,
+              "sum_ms": 23.285789401716148
+            }
+          },
+          "driver_worker_before_tasks_wait": {
+            "elapsed": {
+              "count": 8,
+              "mean_ms": 5.78187048108275,
+              "min_ms": 3.7439084043931383,
+              "max_ms": 9.116424365536618,
+              "sum_ms": 46.254963848662
+            },
+            "in_gaps": {
+              "count": 8,
+              "mean_ms": 5.78187048108275,
+              "min_ms": 3.7439084043931383,
+              "max_ms": 9.116424365536618,
+              "sum_ms": 46.254963848662
+            }
+          },
+          "fs_worker_before_blockwire": {
+            "elapsed": {
+              "count": 19,
+              "mean_ms": 109.49763992983931,
+              "min_ms": 88.40112267208362,
+              "max_ms": 221.2109464757203,
+              "sum_ms": 2080.4551586669468
+            },
+            "in_gaps": {
+              "count": 19,
+              "mean_ms": 11.760542078278846,
+              "min_ms": 4.029369349811596,
+              "max_ms": 21.109660703234802,
+              "sum_ms": 223.45029948729805
+            }
+          },
+          "fs_worker_before_fs_begin": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.686414142197299,
+              "min_ms": 0.4145879706052759,
+              "max_ms": 5.12638519042712,
+              "sum_ms": 12.355454559551383
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.686414142197299,
+              "min_ms": 0.4145879706052759,
+              "max_ms": 5.12638519042712,
+              "sum_ms": 12.355454559551383
+            }
+          },
+          "fs_worker_before_fs_checkpoint0": {
+            "elapsed": {
+              "count": 36,
+              "mean_ms": 0.062165092441573706,
+              "min_ms": 0.06026397736611882,
+              "max_ms": 0.06414060748908552,
+              "sum_ms": 2.2379433278966534
+            },
+            "in_gaps": {
+              "count": 36,
+              "mean_ms": 0.062165092441573706,
+              "min_ms": 0.06026397736611882,
+              "max_ms": 0.06414060748908552,
+              "sum_ms": 2.2379433278966534
+            }
+          },
+          "fs_worker_before_fs_checkpoint1": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.06195951357141638,
+              "min_ms": 0.06026397736611882,
+              "max_ms": 0.06526835443394857,
+              "sum_ms": 1.1152712442854948
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.06195951357141638,
+              "min_ms": 0.06026397736611882,
+              "max_ms": 0.06526835443394857,
+              "sum_ms": 1.1152712442854948
+            }
+          },
+          "fs_worker_before_fs_complete": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.29115450117481473,
+              "min_ms": 0.28017463161441203,
+              "max_ms": 0.29687938323519586,
+              "sum_ms": 5.240781021146665
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.29115450117481473,
+              "min_ms": 0.28017463161441203,
+              "max_ms": 0.29687938323519586,
+              "sum_ms": 5.240781021146665
+            }
+          },
+          "fs_worker_before_fs_pump": {
+            "elapsed": {
+              "count": 36,
+              "mean_ms": 0.009975469937634028,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011136501080522542,
+              "sum_ms": 0.359116917754825
+            },
+            "in_gaps": {
+              "count": 36,
+              "mean_ms": 0.009975469937634028,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011136501080522542,
+              "sum_ms": 0.359116917754825
+            }
+          },
+          "sdfs_continue_before_sdfs_consume": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 3.8421398622363125,
+              "min_ms": 3.200334376969152,
+              "max_ms": 7.988818389041683,
+              "sum_ms": 69.15851752025362
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 3.8421398622363125,
+              "min_ms": 3.200334376969152,
+              "max_ms": 7.988818389041683,
+              "sum_ms": 69.15851752025362
+            }
+          },
+          "sdfs_continue_before_sdfs_drive": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.7066744293248038,
+              "min_ms": 0.4331957951955161,
+              "max_ms": 5.14499301501736,
+              "sum_ms": 12.720139727846469
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.7066744293248038,
+              "min_ms": 0.4331957951955161,
+              "max_ms": 5.14499301501736,
+              "sum_ms": 12.720139727846469
+            }
+          }
+        },
+        "prime_worker": {
+          "mode": "active",
+          "before": {
+            "live_tasks": 5,
+            "frames": 1,
+            "pass_number": 1,
+            "candidate": 102,
+            "count": 26
+          },
+          "after_commands": {
+            "live_tasks": 5,
+            "frames": 10,
+            "pass_number": 1,
+            "candidate": 1002,
+            "count": 168
+          }
+        }
+      },
+      "after": {
+        "results": {
+          "path": "build/development/kernel-fast-path/g4-profile-active/results.json",
+          "sha256": "1ec74af57a31b6c57e8d554171d4691dc1b46433ce381f8dfa00dffbd3a70afd"
+        },
+        "analysis": {
+          "path": "build/development/kernel-fast-path/g4-profile-active/path-analysis.json",
+          "sha256": "6b5e54f230be1bbe3449521ebfd7e3010a617251fb302168e5ab902b942de262"
+        },
+        "xex_sha256": "4b841d3ad3d2d2106a7c379531ac5dd9831329f63283de5e0e69c6e908e7b6e9",
+        "samples": [
+          {
+            "phase": "open",
+            "frame": 0,
+            "transfers": 1,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 0,
+              "map": 0,
+              "data": 0
+            }
+          },
+          {
+            "phase": "seek_end",
+            "frame": 29,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "rewind",
+            "frame": 29,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "payload",
+            "frame": 30,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "close",
+            "frame": 154,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "relocate",
+            "frame": 155,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "loaded",
+            "frame": 193,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "returned",
+            "frame": 194,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "prompt",
+            "frame": 207,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          }
+        ],
+        "payload_seconds": 2.48,
+        "open_to_prompt_seconds": 4.14,
+        "gaps": {
+          "count": 18,
+          "mean_ms": 20.20759628413647,
+          "min_ms": 15.008056342237365,
+          "max_ms": 37.102310612521656,
+          "sum_ms": 363.73673311445646
+        },
+        "phases": {
+          "completion_to_worker": {
+            "count": 18,
+            "mean_ms": 1.1024235438476628,
+            "min_ms": 0.8746382399253431,
+            "max_ms": 1.4230756760490513,
+            "sum_ms": 19.84362378925793
+          },
+          "retire_reply_collect": {
+            "count": 18,
+            "mean_ms": 3.760409535037766,
+            "min_ms": 3.0301150724788863,
+            "max_ms": 8.920478333866665,
+            "sum_ms": 67.68737163067979
+          },
+          "finish_cache_and_first_checkpoint": {
+            "count": 18,
+            "mean_ms": 0.48626647000013,
+            "min_ms": 0.4684378872224862,
+            "max_ms": 0.4938121934819046,
+            "sum_ms": 8.75279646000234
+          },
+          "consume_inclusive": {
+            "count": 18,
+            "mean_ms": 4.808759962352048,
+            "min_ms": 3.1999114718648283,
+            "max_ms": 13.828785458830893,
+            "sum_ms": 86.55767932233687
+          },
+          "next_step_or_dos_packet_roundtrip": {
+            "count": 18,
+            "mean_ms": 0.22995073468797667,
+            "min_ms": 0.22329389508288236,
+            "max_ms": 0.23626298494880732,
+            "sum_ms": 4.13911322438358
+          },
+          "map_lookup_and_block_prepare": {
+            "count": 18,
+            "mean_ms": 1.5979900103549098,
+            "min_ms": 1.0461967439126334,
+            "max_ms": 5.761588657121229,
+            "sum_ms": 28.763820186388376
+          },
+          "blockwire_before_send": {
+            "count": 18,
+            "mean_ms": 0.4722831910414289,
+            "min_ms": 0.20482703886075004,
+            "max_ms": 4.920148467885292,
+            "sum_ms": 8.50109743874572
+          },
+          "send_to_driver_request": {
+            "count": 18,
+            "mean_ms": 6.077314728014847,
+            "min_ms": 3.8530884054926915,
+            "max_ms": 20.47636030951015,
+            "sum_ms": 109.39166510426725
+          },
+          "driver_validate_prepare_start": {
+            "count": 18,
+            "mean_ms": 1.6721981087996998,
+            "min_ms": 1.6221230118173784,
+            "max_ms": 1.7267215409534253,
+            "sum_ms": 30.099565958394596
+          }
+        },
+        "calls_overlapping_gaps": {
+          "blockwire_before_fs_pump": {
+            "elapsed": {
+              "count": 5,
+              "mean_ms": 0.009839592093930042,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.00993826995160556,
+              "sum_ms": 0.04919796046965021
+            },
+            "in_gaps": {
+              "count": 5,
+              "mean_ms": 0.009839592093930042,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.00993826995160556,
+              "sum_ms": 0.04919796046965021
+            }
+          },
+          "blockwire_before_io_collect": {
+            "elapsed": {
+              "count": 26,
+              "mean_ms": 2.0810509560528945,
+              "min_ms": 0.9740209394413988,
+              "max_ms": 8.573766632505333,
+              "sum_ms": 54.107324857375254
+            },
+            "in_gaps": {
+              "count": 26,
+              "mean_ms": 1.6984492503573276,
+              "min_ms": 0.9740209394413988,
+              "max_ms": 5.240851505330719,
+              "sum_ms": 44.15968050929052
+            }
+          },
+          "blockwire_before_io_send_io": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 5.218085113881297,
+              "min_ms": 1.413137406097446,
+              "max_ms": 12.225763660892131,
+              "sum_ms": 93.92553204986334
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 4.304567014874198,
+              "min_ms": 1.413137406097446,
+              "max_ms": 11.074615966923181,
+              "sum_ms": 77.48220626773558
+            }
+          },
+          "blockwire_before_tasks_wait": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 99.8071278619124,
+              "min_ms": 72.50517706331875,
+              "max_ms": 211.65068320319602,
+              "sum_ms": 1796.5283015144232
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 5.803738199185485,
+              "min_ms": 2.764389698595532,
+              "max_ms": 28.697565053377673,
+              "sum_ms": 104.46728758533872
+            }
+          },
+          "driver_prepare_before_driver_deadline": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.3133021981197639,
+              "min_ms": 0.3050555485854529,
+              "max_ms": 0.3221127211265064,
+              "sum_ms": 5.63943956615575
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.3133021981197639,
+              "min_ms": 0.3050555485854529,
+              "max_ms": 0.3221127211265064,
+              "sum_ms": 5.63943956615575
+            }
+          },
+          "driver_request_before_driver_prepare": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.4902370790351686,
+              "min_ms": 0.478023736253822,
+              "max_ms": 0.5034685266972944,
+              "sum_ms": 8.824267422633035
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.4902370790351686,
+              "min_ms": 0.478023736253822,
+              "max_ms": 0.5034685266972944,
+              "sum_ms": 8.824267422633035
+            }
+          },
+          "driver_request_before_driver_validate": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.26342289053759227,
+              "min_ms": 0.2565624299563421,
+              "max_ms": 0.2712231402395616,
+              "sum_ms": 4.741612029676661
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.26342289053759227,
+              "min_ms": 0.2565624299563421,
+              "max_ms": 0.2712231402395616,
+              "sum_ms": 4.741612029676661
+            }
+          },
+          "driver_request_before_sio_control2": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.8307814142917804,
+              "min_ms": 0.8056342237365357,
+              "max_ms": 0.910091784504475,
+              "sum_ms": 14.954065457252048
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.8307814142917804,
+              "min_ms": 0.8056342237365357,
+              "max_ms": 0.910091784504475,
+              "sum_ms": 14.954065457252048
+            }
+          },
+          "driver_request_before_sio_control4": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 10.191856382679624,
+              "min_ms": 3.8408946416513596,
+              "max_ms": 12.30872354552362,
+              "sum_ms": 183.45341488823323
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 10.191856382679624,
+              "min_ms": 3.8408946416513596,
+              "max_ms": 12.30872354552362,
+              "sum_ms": 183.45341488823323
+            }
+          },
+          "driver_request_before_sio_recovered": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.016927951536954623,
+              "min_ms": 0.01677523580483775,
+              "max_ms": 0.017902982749700792,
+              "sum_ms": 0.3047031276651832
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.016927951536954623,
+              "min_ms": 0.01677523580483775,
+              "max_ms": 0.017902982749700792,
+              "sum_ms": 0.3047031276651832
+            }
+          },
+          "driver_request_before_sio_retire": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.022296496889063062,
+              "min_ms": 0.018114435301862616,
+              "max_ms": 0.043700194113442885,
+              "sum_ms": 0.40133694400313513
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.022296496889063062,
+              "min_ms": 0.018114435301862616,
+              "max_ms": 0.043700194113442885,
+              "sum_ms": 0.40133694400313513
+            }
+          },
+          "driver_request_before_sio_start": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.06469273359750806,
+              "min_ms": 0.05363846406504844,
+              "max_ms": 0.10051044646091864,
+              "sum_ms": 1.164469204755145
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.04653914041561547,
+              "min_ms": 0.04123324767155498,
+              "max_ms": 0.06230801870368308,
+              "sum_ms": 0.8377045274810785
+            }
+          },
+          "driver_request_before_tasks_wait": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 96.09272492012184,
+              "min_ms": 61.95369471044392,
+              "max_ms": 212.28926991072473,
+              "sum_ms": 1729.669048562193
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 1.0928142000883088,
+              "min_ms": 0.8646999699737377,
+              "max_ms": 1.41285546936123,
+              "sum_ms": 19.67065560158956
+            }
+          },
+          "driver_worker_before_driver_request": {
+            "elapsed": {
+              "count": 19,
+              "mean_ms": 108.3508437068122,
+              "min_ms": 83.03812207578741,
+              "max_ms": 226.02438188894794,
+              "sum_ms": 2058.666030429432
+            },
+            "in_gaps": {
+              "count": 19,
+              "mean_ms": 12.340879172227806,
+              "min_ms": 1.7134000301672307,
+              "max_ms": 15.076989874242118,
+              "sum_ms": 234.47670427232833
+            }
+          },
+          "driver_worker_before_sio_control2": {
+            "elapsed": {
+              "count": 26,
+              "mean_ms": 1.5267226687003703,
+              "min_ms": 0.7980219318587102,
+              "max_ms": 16.047416120296766,
+              "sum_ms": 39.69478938620963
+            },
+            "in_gaps": {
+              "count": 26,
+              "mean_ms": 1.5267226687003703,
+              "min_ms": 0.7980219318587102,
+              "max_ms": 16.047416120296766,
+              "sum_ms": 39.69478938620963
+            }
+          },
+          "driver_worker_before_sio_control3": {
+            "elapsed": {
+              "count": 26,
+              "mean_ms": 0.894932263072566,
+              "min_ms": 0.8649819067099533,
+              "max_ms": 0.9300388085917402,
+              "sum_ms": 23.268238839886717
+            },
+            "in_gaps": {
+              "count": 26,
+              "mean_ms": 0.894932263072566,
+              "min_ms": 0.8649819067099533,
+              "max_ms": 0.9300388085917402,
+              "sum_ms": 23.268238839886717
+            }
+          },
+          "driver_worker_before_tasks_wait": {
+            "elapsed": {
+              "count": 8,
+              "mean_ms": 8.194156438236824,
+              "min_ms": 3.74912423401313,
+              "max_ms": 18.80073980199583,
+              "sum_ms": 65.5532515058946
+            },
+            "in_gaps": {
+              "count": 8,
+              "mean_ms": 8.194156438236824,
+              "min_ms": 3.74912423401313,
+              "max_ms": 18.80073980199583,
+              "sum_ms": 65.5532515058946
+            }
+          },
+          "fs_worker_before_blockwire": {
+            "elapsed": {
+              "count": 19,
+              "mean_ms": 108.32363681176737,
+              "min_ms": 83.95815213024349,
+              "max_ms": 221.2498537453181,
+              "sum_ms": 2058.14909942358
+            },
+            "in_gaps": {
+              "count": 19,
+              "mean_ms": 12.396535709773138,
+              "min_ms": 4.18203809247243,
+              "max_ms": 32.52253026943284,
+              "sum_ms": 235.5341784856896
+            }
+          },
+          "fs_worker_before_fs_begin": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.6874596575940991,
+              "min_ms": 0.414447002237168,
+              "max_ms": 5.129063589421169,
+              "sum_ms": 12.374273836693783
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.6874596575940991,
+              "min_ms": 0.414447002237168,
+              "max_ms": 5.129063589421169,
+              "sum_ms": 12.374273836693783
+            }
+          },
+          "fs_worker_before_fs_checkpoint0": {
+            "elapsed": {
+              "count": 36,
+              "mean_ms": 0.06258016596989134,
+              "min_ms": 0.060404945734226695,
+              "max_ms": 0.06555029117016432,
+              "sum_ms": 2.2528859749160883
+            },
+            "in_gaps": {
+              "count": 36,
+              "mean_ms": 0.06258016596989134,
+              "min_ms": 0.060404945734226695,
+              "max_ms": 0.06555029117016432,
+              "sum_ms": 2.2528859749160883
+            }
+          },
+          "fs_worker_before_fs_checkpoint1": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.061955597783413384,
+              "min_ms": 0.06033446155017276,
+              "max_ms": 0.06547980698611039,
+              "sum_ms": 1.1152007601014409
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.061955597783413384,
+              "min_ms": 0.06033446155017276,
+              "max_ms": 0.06547980698611039,
+              "sum_ms": 1.1152007601014409
+            }
+          },
+          "fs_worker_before_fs_complete": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.2913385432109556,
+              "min_ms": 0.2803155999825199,
+              "max_ms": 0.2969498674192498,
+              "sum_ms": 5.2440937777972
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.2913385432109556,
+              "min_ms": 0.2803155999825199,
+              "max_ms": 0.2969498674192498,
+              "sum_ms": 5.2440937777972
+            }
+          },
+          "fs_worker_before_fs_pump": {
+            "elapsed": {
+              "count": 36,
+              "mean_ms": 0.01009098568372243,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011066016896468602,
+              "sum_ms": 0.36327548461400744
+            },
+            "in_gaps": {
+              "count": 36,
+              "mean_ms": 0.01009098568372243,
+              "min_ms": 0.009726817399443739,
+              "max_ms": 0.011066016896468602,
+              "sum_ms": 0.36327548461400744
+            }
+          },
+          "sdfs_continue_before_sdfs_consume": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 4.8093355831884885,
+              "min_ms": 3.2004753453372596,
+              "max_ms": 13.829349332303325,
+              "sum_ms": 86.56804049739279
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 4.8093355831884885,
+              "min_ms": 3.2004753453372596,
+              "max_ms": 13.829349332303325,
+              "sum_ms": 86.56804049739279
+            }
+          },
+          "sdfs_continue_before_sdfs_drive": {
+            "elapsed": {
+              "count": 18,
+              "mean_ms": 0.7073401132853133,
+              "min_ms": 0.4334072477476779,
+              "max_ms": 5.148517224220058,
+              "sum_ms": 12.73212203913564
+            },
+            "in_gaps": {
+              "count": 18,
+              "mean_ms": 0.7073401132853133,
+              "min_ms": 0.4334072477476779,
+              "max_ms": 5.148517224220058,
+              "sum_ms": 12.73212203913564
+            }
+          }
+        },
+        "prime_worker": {
+          "mode": "active",
+          "before": {
+            "live_tasks": 5,
+            "frames": 1,
+            "pass_number": 1,
+            "candidate": 102,
+            "count": 26
+          },
+          "after_commands": {
+            "live_tasks": 5,
+            "frames": 9,
+            "pass_number": 1,
+            "candidate": 902,
+            "count": 154
+          }
+        }
+      },
+      "replay": {
+        "results": {
+          "path": "build/development/kernel-fast-path/g4-measurement-active/results.json",
+          "sha256": "d89622ca6bca099a043a4166361c714acdb0ee7c2fb18372679be4a05e9f282e"
+        },
+        "identical_relative_phase_ticks": true,
+        "identical_transfer_counts": true,
+        "identical_hardware_gaps": true,
+        "hardware_gap_ticks": [
+          27052,
+          26616,
+          34317,
+          32101,
+          31881,
+          56057,
+          65799,
+          29393,
+          29773,
+          28890,
+          29090,
+          28829,
+          35111,
+          34670,
+          35085,
+          50506,
+          34814,
+          35084
+        ]
+      }
+    }
+  },
+  "active_gap_followup": {
+    "results": {
+      "path": "build/development/kernel-fast-path/g4-profile-schedule/results.json",
+      "sha256": "6c2f6d6e13178726298b89ac534e2b905ea1834b17ca7e2440efe7959eba6254"
+    },
+    "analysis": {
+      "path": "build/development/kernel-fast-path/g4-profile-schedule/path-analysis.json",
+      "sha256": "cb970104812c6c5ef0204d9fb775ee1c14508dee0d45cd3dd0e1f589737d5515"
+    },
+    "identical_phase_ticks_and_gap_intervals": true,
+    "longest": [
+      {
+        "after_sector": 76,
+        "milliseconds": 37.102310612521656,
+        "phases": {
+          "completion_to_worker": 1.253984118503649,
+          "retire_reply_collect": 8.920478333866665,
+          "finish_cache_and_first_checkpoint": 0.4746404954192329,
+          "consume_inclusive": 13.828785458830893,
+          "next_step_or_dos_packet_roundtrip": 0.2333731334025958,
+          "map_lookup_and_block_prepare": 1.1018792493152463,
+          "blockwire_before_send": 0.21511772973262527,
+          "send_to_driver_request": 9.451929081633372,
+          "driver_validate_prepare_start": 1.6221230118173784
+        },
+        "task_pool_restores": [
+          {
+            "offset_ms": 1.242072291398533,
+            "pool": 2,
+            "stack": 27607
+          },
+          {
+            "offset_ms": 3.115118998447938,
+            "pool": 1,
+            "stack": 21967
+          },
+          {
+            "offset_ms": 9.07744661175479,
+            "pool": 3,
+            "stack": 28621
+          },
+          {
+            "offset_ms": 13.24806626641048,
+            "pool": 2,
+            "stack": 27607
+          },
+          {
+            "offset_ms": 15.788175291346375,
+            "pool": 1,
+            "stack": 21967
+          },
+          {
+            "offset_ms": 21.55709430360921,
+            "pool": 4,
+            "stack": 29709
+          },
+          {
+            "offset_ms": 22.375415680475456,
+            "pool": 3,
+            "stack": 28585
+          },
+          {
+            "offset_ms": 28.065251438229776,
+            "pool": 1,
+            "stack": 21967
+          },
+          {
+            "offset_ms": 33.76558933940813,
+            "pool": 2,
+            "stack": 27625
+          }
+        ],
+        "fast_completions": 0
+      },
+      {
+        "after_sector": 75,
+        "milliseconds": 31.609055244093778,
+        "phases": {
+          "completion_to_worker": 1.0275889193223933,
+          "retire_reply_collect": 3.0431546465288655,
+          "finish_cache_and_first_checkpoint": 0.4919796046965021,
+          "consume_inclusive": 3.363575747238077,
+          "next_step_or_dos_packet_roundtrip": 0.2356286272923219,
+          "map_lookup_and_block_prepare": 1.0997647237936279,
+          "blockwire_before_send": 0.2149767613645174,
+          "send_to_driver_request": 20.47636030951015,
+          "driver_validate_prepare_start": 1.6560259043473236
+        },
+        "task_pool_restores": [
+          {
+            "offset_ms": 1.0154656396651154,
+            "pool": 2,
+            "stack": 27607
+          },
+          {
+            "offset_ms": 2.9734457884995185,
+            "pool": 3,
+            "stack": 28621
+          },
+          {
+            "offset_ms": 12.917424959013447,
+            "pool": 2,
+            "stack": 27607
+          },
+          {
+            "offset_ms": 14.632164188677704,
+            "pool": 4,
+            "stack": 29709
+          },
+          {
+            "offset_ms": 28.997475256527185,
+            "pool": 2,
+            "stack": 27625
+          }
+        ],
+        "fast_completions": 2
+      }
+    ],
+    "interpretation": "The longest gap resumes SIO pool 2, filesystem pool 3 and other Task pools. No fast service completes in that gap. Sparse markers show scheduling overlap, not exclusive CPU attribution."
+  },
+  "diagnostic_image": {
+    "build": {
+      "path": "build/development/kernel-fast-path/g4-measurement/bundle/build.json",
+      "sha256": "dd517a9644c6e93630a4741f2bd43268b6a94cb95c56ad8940bfa367ad4c4a75"
+    },
+    "manifest": {
+      "path": "build/development/kernel-fast-path/g4-measurement/bundle/demo-manifest.json",
+      "sha256": "95c43cbb3695bedf68b83a299f8609c6667680090e8dd70c9190fa6ee9ddd2a9"
+    },
+    "xex": {
+      "path": "build/development/kernel-fast-path/g4-measurement/bundle/program.xex",
+      "sha256": "4b841d3ad3d2d2106a7c379531ac5dd9831329f63283de5e0e69c6e908e7b6e9"
+    },
+    "media": {
+      "path": "build/development/kernel-fast-path/g4-measurement/bundle/sdfs.atr",
+      "sha256": "2522811285c360cf6eb9473223dd3ef24b2c0a420f928a6f6592e30a8dc80efc"
+    },
+    "hello_sha256": "8372b8f0308ae28ea5b087332f168fe9da8d7f9d82d0d187d83b862353a2ac8b",
+    "observer": {
+      "loadprobe.act": "ad0280e3fb30ef8763e8bbbe6d96dec6732458055c0858affa824bcb8f8b2da3",
+      "programfile.act": "08c1831e919c212231fbd8ac7ba494dbcc3f6ab72a245de9931c04ac0563fc1a",
+      "blockwire.act": "4e4c921f407bfaae21dc946b3e04d1173ff9c4d8974f4a11e1f30e11af28f355"
+    }
+  },
+  "play_image": {
+    "build": {
+      "path": "build/demo/build.json",
+      "sha256": "754a3822a5610dc6bd7ebd7a54ed7d8b34a1b712d34067fe5c3e8f80a1310795"
+    },
+    "manifest": {
+      "path": "build/demo/demo-manifest.json",
+      "sha256": "9c1dddfdb17888cbd824e355d2611e06d53a88b5ba34d995ad59ae38152e4674"
+    },
+    "xex": {
+      "path": "build/demo/program.xex",
+      "sha256": "c89555bb96611ec87d27c3c6b9f4889c0959f01ff0e6f5d5db2662455fc8b84b"
+    },
+    "media": {
+      "path": "build/demo/sdfs.atr",
+      "sha256": "2522811285c360cf6eb9473223dd3ef24b2c0a420f928a6f6592e30a8dc80efc"
+    },
+    "previous_xex": {
+      "path": "build/development/kernel-fast-path/previous-play/program.xex",
+      "sha256": "a060f2c8fff9c428eb95fe8f965850607bd18a47722aff227c3d76509359d58d"
+    },
+    "loading_smoke": {
+      "path": "build/demo/loading-results.json",
+      "sha256": "48caa20b21a5b0a5301109248b5ef3af8843f4141d58b06384bc1211df26f72d"
+    },
+    "smoke_scope": "Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration",
+    "peak_tasks": 7,
+    "native_code_bytes": 8859,
+    "native_region_bytes": 9216
+  },
+  "reserved_bank_zero_delta": {
+    "fixed_bytes": 0,
+    "per_task_bytes": 0,
+    "complete_memory_and_task_reservations_equal": true,
+    "includes": "Guards, alignment and unused reserved capacity."
+  },
+  "stack": {
+    "local_bytes": 20,
+    "full_frame_bytes": 13,
+    "interrupt_reserve_bytes": 256,
+    "native_retained_call_frame_bytes": 0,
+    "test_only_dequeue_probe_extra_bytes": 20,
+    "scope": "Native body maximum is 33 bytes below import entry; asynchronous nesting remains within existing guarded headroom. No whole-system stack worst-case claim."
+  },
+  "host_validation": {
+    "count": 199,
+    "status": "pass",
+    "log": {
+      "path": "build/development/kernel-fast-path/g4-host.log",
+      "sha256": "9aca71491cbdd12704189b6be8a3c3868239a1cb7324050f8f7d2b2e73c56c2f"
+    }
+  },
+  "limits": [
+    "Development selection only; no compiler, full release, or real-hardware qualification.",
+    "Primitive cycles are elapsed PAL ticks times eight, not exclusive CPU attribution; suspended call times include other Tasks.",
+    "Serial measurement is diagnostic TX with four Tasks, not production SIO/RX qualification.",
+    "Same-profile HELLO includes rotational disk timing. Active mean/max sector gaps increase; active open-to-prompt is unchanged.",
+    "Fast kernel calls do not move private SIO driver policy; the driver-boundary migration remains separate.",
+    "Images identify 82010c7-dirty because G4 harness/documentation changes were present when built. Runtime sources match G3."
+  ]
+}

@@ -1,0 +1,14 @@
+; Native ring access has no dependency on public Exec calls. Both the protected
+; policy and the worker use these same checked imports.
+MODULE CONSOLECAPTURE
+
+PUBLIC EXTERNAL LONGCARD FUNC Take()
+
+PUBLIC EXTERNAL PROC ResetInput()
+
+PUBLIC EXTERNAL PROC ClearUnit(LONGCARD unit)
+
+PUBLIC EXTERNAL PROC Publish(LONGCARD route)
+
+PUBLIC EXTERNAL LONGCARD FUNC TakeBreak()
+  ENDMODULE

@@ -1,0 +1,30 @@
+MODULE O65TYPES
+INCLUDE "o65-constants.inc"
+
+PUBLIC TYPE Cursor=[
+  BYTE POINTER bytes
+  LONGCARD at,limit
+  CARD error
+]
+
+PUBLIC TYPE Span=[
+  BYTE POINTER bytes
+  CARD length
+]
+
+; Offsets remain 32-bit until they have passed section/address bounds checks.
+PUBLIC TYPE Import=[
+  Span name
+  LONGCARD signature
+  ADDRESS address
+]
+
+PUBLIC TYPE Validation=[
+  Cursor wire,descriptor
+  LONGCARD textAt,dataAt,textBytes,dataBytes,bssBytes,descriptorAt,entry
+  LONGCARD relocationAt,relocationCount
+  Import POINTER imports
+  CARD importCount
+]
+
+ENDMODULE

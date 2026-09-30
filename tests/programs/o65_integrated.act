@@ -1,0 +1,158 @@
+MODULE O65INTEGRATED
+USE EXECLISTS
+USE TASKSTACKS
+USE EXECTASKS
+USE HEAPCORE
+USE FSBOOT
+USE DOSCLIENT
+USE DOSCORE
+USE PROCESSSTATE
+USE O65CONTROL
+USE O65INTEGRATION
+INCLUDE "../../examples/shell/shell-session.inc"
+EXEC.Task ARRAY peers(3)
+PROC POINTER absent()
+BYTE ARRAY readerPath=[82 69 65 68 69 82 0]
+BYTE ARRAY hold=[49]
+BYTE ARRAY hello="HELLO >NIL:"
+BYTE ARRAY waitCommand="WAIT"
+BYTE ARRAY readCommand="READ <DATA.BIN >NIL:"
+LONGCARD baseline,childId
+LONGINT expectedBytes
+BYTE finished
+
+PROC Peer()
+  LONGCARD ignored
+
+  O65INTEGRATION.Check(EXEC.AllocSignal(16)=16)
+  ignored=EXEC.Wait($10000)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+PROC StartPeer(BYTE index,slot)
+  EXEC.Task POINTER task
+
+  task=@peers(index)
+  task.tc_Node.ln_Type=EXEC.NT_TASK
+  task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  task.tc_SPReg=task.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@task.tc_MemEntry)
+  O65INTEGRATION.Check(EXEC.AddTask(task,@Peer,absent)=task)
+
+RETURN
+
+PROC JoinPeer(BYTE index)
+  CARD ticks
+
+  EXEC.Signal(@peers(index),$10000)
+  WHILE peers(index).tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+PROC Command(BYTE POINTER text LONGINT status,error)
+  CARD index
+  BYTE POINTER line
+
+  line=ShellLine()
+  shell.length=CARD(text(0))
+  FOR index=0 TO shell.length-1 DO
+    line(index)=text(index+1)
+  OD
+
+  line(shell.length)=0
+  ShellCommand()
+  O65INTEGRATION.Check(shell.done=0 AND shell.lastStatus=status
+      AND shell.lastError=error)
+
+RETURN
+
+; Exercise command execution alongside a runnable peer and injected faults.
+PROC Main()
+  PROGRAMIMAGE.Image POINTER image
+  PROCESS.Result outcome
+  PROCESSSTATE.Table POINTER table
+  PROCESSSTATE.Entry POINTER row
+  CARD allocationCount,index
+  LONGCARD warm
+
+  baseline=EXEC.AvailMem(0)
+  O65INTEGRATION.Check(ShellStart(shellRoot)<>0)
+  O65INTEGRATION.Pause(1)
+  image=PROGRAMFILE.Load(readerPath)
+  O65INTEGRATION.Check(image<>PROGRAMIMAGE.Image POINTER(0))
+  childId=PROCESS.StartLoaded(BYTE POINTER(image),hold,1,0)
+  O65INTEGRATION.Check(childId<>0)
+  PROGRAM.Unload(image)
+  StartPeer(0,6)
+  StartPeer(1,7)
+  Command(hello,0,0)
+  O65INTEGRATION.Check(O65INTEGRATION.peak=8)
+  Command(readCommand,0,0)
+  table=PROCESSSTATE.Registry()
+  row=@table.entries(4)
+  WHILE row.secondary<>expectedBytes DO
+    EXEC.Yield()
+  OD
+
+  IF O65INTEGRATION.timingOnly=0 THEN
+    ; Fill the one remaining slot: a failed foreground admission must unwind
+    ; its file, private image and attempted Process state, then remain usable.
+    StartPeer(2,5)
+    warm=EXEC.AvailMem(0)
+    Command(hello,10,103)
+    O65INTEGRATION.Check(EXEC.AvailMem(0)=warm)
+    JoinPeer(2)
+    warm=EXEC.AvailMem(0)
+    O65INTEGRATION.failStaging=1
+    Command(hello,10,103)
+    O65INTEGRATION.Check(EXEC.AvailMem(0)=warm)
+    O65CONTROL.allocations=0
+    Command(hello,0,0)
+    allocationCount=O65CONTROL.allocations
+    FOR index=1 TO allocationCount DO
+      O65CONTROL.allocations=0
+      O65CONTROL.failAt=index
+      Command(hello,10,103)
+      O65INTEGRATION.Check(EXEC.AvailMem(0)=warm)
+    OD
+
+    O65CONTROL.failAt=0
+    O65INTEGRATION.breakLoad=1
+    O65INTEGRATION.fired=0
+    Command(hello,10,304)
+    O65INTEGRATION.Check(O65INTEGRATION.fired=1 AND EXEC.AvailMem(0)=warm)
+    O65INTEGRATION.breakEntry=1
+    O65INTEGRATION.fired=0
+    Command(waitCommand,10,304)
+    O65INTEGRATION.Check(O65INTEGRATION.fired=1 AND EXEC.AvailMem(0)=warm)
+    FOR index=1 TO 4 DO
+      Command(hello,0,0)
+      O65INTEGRATION.Check(EXEC.AvailMem(0)=warm)
+    OD
+  FI
+
+  table=PROCESSSTATE.Registry()
+  row=@table.entries(4)
+  O65INTEGRATION.Check(row.identity=childId AND row.image<>BYTE POINTER(0))
+  image=PROGRAMIMAGE.Image POINTER(row.image)
+  O65INTEGRATION.Check(image.magic=PROGRAMIMAGE.MAGIC AND image.references=1
+      AND image.ownerHeld=0)
+  row.arguments(0)=50
+  O65INTEGRATION.Check(PROCESS.Wait(childId,@outcome)<>0 AND outcome.primary=0
+      AND outcome.secondary=expectedBytes)
+  JoinPeer(0)
+  JoinPeer(1)
+  O65INTEGRATION.Check(O65INTEGRATION.entered=O65INTEGRATION.retired)
+  shell.status=0
+  shell.error=0
+  O65INTEGRATION.Check(ShellFinish()=0)
+  O65INTEGRATION.Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+
+ENDMODULE

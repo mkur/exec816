@@ -1,0 +1,160 @@
+MODULE DOSOFFLINETEST
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE FSREGISTRY
+USE FSBOOT
+USE FSMANAGER
+USE FSTYPES
+USE HEAPCORE
+CARD checks,postsBefore,postsAfter
+VOLATILE BYTE ready,go,done
+LONGCARD baseline
+DOS.FileHandle POINTER file,otherFile
+DOS.FileLock POINTER lock
+FSTYPES.Service POINTER service
+EXEC.Task other
+PROC POINTER absent()
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC OtherOpen(BYTE unused)
+
+  otherFile=DOS.Open(BYTE POINTER($d1020),DOS.MODE_OLDFILE)
+  IF otherFile=DOS.FileHandle POINTER(0) THEN
+    HEAPCORE.Abort($fae0)
+  FI
+
+  ; D1 data is already retained when D8 later takes the shared bus offline.
+  Require(DOS.Read(otherFile,BYTE POINTER($d0200),10)=10)
+  Require(DOS.Seek(otherFile,0,DOS.OFFSET_BEGINNING)=10)
+  ready=1
+
+RETURN
+
+PROC OtherRead(BYTE unused)
+  BYTE POINTER phase
+
+  WHILE go=0 DO
+    EXEC.Yield()
+  OD
+
+  phase=BYTE POINTER($f0801)
+  WHILE phase^=0 DO
+    EXEC.Yield()
+  OD
+
+  IF DOS.Read(otherFile,BYTE POINTER($d0200),10)<>-1 OR DOS.IoErr()<>1 THEN
+    HEAPCORE.Abort($fae1)
+  FI
+
+RETURN
+
+PROC OtherEntry()
+
+  OtherOpen(0)
+  OtherRead(0)
+  IF DOS.Close(otherFile)=0 OR DOS.IoErr()<>1 THEN
+    HEAPCORE.Abort($fae2)
+  FI
+
+  IF DOS.ReleaseContext()=0 THEN
+    HEAPCORE.Abort($fae3)
+  FI
+
+  done=1
+
+RETURN
+
+PROC Armed(BYTE unused)
+  CARD POINTER posts
+
+  posts=CARD POINTER($f0838)
+  postsBefore=posts^
+  go=1
+
+RETURN
+
+PROC Setup()
+  CARD ticks
+
+  baseline=EXEC.AvailMem(0)
+  file=DOS.Open(BYTE POINTER($d1000),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  lock=DOS.Lock(BYTE POINTER($d1040),DOS.SHARED_LOCK)
+  Require(lock<>DOS.FileLock POINTER(0))
+  other.tc_Node.ln_Type=EXEC.NT_TASK
+  other.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+  other.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
+  other.tc_SPReg=other.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@other.tc_MemEntry)
+  EXEC.AddTask(@other,@OtherEntry,absent)
+  Require(other.tc_State<>EXEC.TS_INVALID)
+  WHILE ready=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+PROC Failure()
+  CARD ticks
+
+  Armed(0)
+  Require(DOS.Read(file,BYTE POINTER($d0000),777)=-1 AND DOS.IoErr()=1)
+  WHILE done=0 OR other.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Require(DOS.Read(file,BYTE POINTER($d0000),1)=-1 AND DOS.IoErr()=1)
+  Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=-1 AND DOS.IoErr()=1)
+  Require(DOS.Examine(lock,DOS.FileInfoBlock POINTER($d0400))=0 AND DOS.IoErr()=1)
+  Require(DOS.Close(file)<>0 AND DOS.IoErr()=1)
+  DOS.UnLock(lock)
+  Require(DOS.IoErr()=1)
+
+RETURN
+
+PROC Cleanup(BYTE unused)
+  CARD POINTER posts
+  CARD index
+
+  service=FSREGISTRY.Service()
+  FOR index=0 TO service.adapter.cache.blocks-1 DO
+    Require(service.adapter.cache.tags(index).volume=NULL)
+  OD
+
+  Require(FSMANAGER.Unmount(0)<>0)
+  Require(FSMANAGER.Mount(0)=0 AND DOS.IoErr()=8)
+  service=FSREGISTRY.Service()
+  Require(service.mounts(0).item=FSTYPES.Mount POINTER(0))
+  posts=CARD POINTER($f0838)
+  postsAfter=posts^
+  Require(postsAfter=postsBefore+1)
+  Require(FSBOOT.Stop()<>0)
+  Require(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Exercise offline errors shared between concurrent filesystem callers.
+PROC Main()
+
+  Setup()
+  Failure()
+  Cleanup(0)
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,294 @@
+; Four live tasks: IRQ completion worker, signal peer, timed sleeper and root.
+; Workloads: 0 compute control, 1 Yield, 2 Signal/Wait, 3 Sleep, 4 mixed.
+MODULE SIGNALCONCURRENT
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE EXECSIGNALIRQ
+USE PRODUCERPROBE
+USE TASKSTACKS
+USE HEAPCORE
+EXEC.Task worker,peer,sleeper
+EXEC.Task POINTER parent
+VOLATILE BYTE skctl=$d20f,skshadow=$232,audctl=$d208,irqst=$d20e
+VOLATILE BYTE finished,stopping
+VOLATILE CARD pumpSent=$2080
+BYTE workload,oldsk
+CARD byteCount,sent,waits,yields,requests,replies,sleeps,blocked
+LONGCARD badResult,background
+PROC POINTER missing()
+
+INCLUDE "heap_concurrent.inc"
+INCLUDE "ports_concurrent.inc"
+
+PROC StreamResume()
+
+RETURN
+
+PROC Prepare(EXEC.Task POINTER item BYTE slot)
+
+  item.tc_Node.ln_Type=EXEC.NT_TASK
+  item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@item.tc_MemEntry)
+
+RETURN
+
+PROC AwaitRemoval(EXEC.Task POINTER item)
+  CARD status
+
+  WHILE item.tc_State<>EXEC.TS_REMOVED DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+PROC StreamStart()
+
+  EXECSIGNALIRQ.PumpStart()
+
+RETURN
+
+PROC StreamWorker()
+  EXEC.Task POINTER self
+  BYTE claimed
+  LONGCARD received
+  EXEC.MsgPort POINTER inbox
+  EXEC.Message POINTER msg
+
+  self=EXEC.FindTask(BYTE POINTER(0))
+  IF workload=8 THEN
+    inbox=EXEC.CreateMsgPort()
+    HeapRequire(inbox<>EXEC.MsgPort POINTER(0))
+    ; Publish the complete 24-bit address before the readiness flag.
+    completionRequest.header.mn_Node.ln_Name=BYTE POINTER(inbox)
+    completionRequest.sequence=1
+    msg=EXEC.WaitPort(inbox)
+    msg=EXEC.GetMsg(inbox)
+    HeapRequire(msg=@completionRequest.header)
+  FI
+
+  claimed=PRODUCERPROBE.Bind(self,1)
+  IF claimed=0 THEN
+    badResult=$ffffffff
+    RETURN
+  FI
+
+  received=EXEC.Wait(1)
+  StreamResume()
+  waits==+1
+  IF received<>1 THEN
+    badResult=$ffffffff
+  FI
+
+  WHILE (irqst & 8)<>0 DO
+  OD
+
+  sent=pumpSent
+  PRODUCERPROBE.Release()
+  skshadow=oldsk
+  skctl=oldsk
+  audctl=0
+  IF workload=8 THEN
+    EXEC.ReplyMsg(msg)
+    EXEC.DeleteMsgPort(inbox)
+  FI
+
+  finished=1
+
+RETURN
+
+; Separate routines give the passive observer progress markers. Counts are
+; also checked on the uninstrumented emulator. No trace calls enter the guest.
+PROC YieldStep()
+
+  EXEC.Yield()
+  IF pumpSent<byteCount THEN
+    yields==+1
+  FI
+
+RETURN
+
+PROC SignalStep()
+  LONGCARD received
+
+  EXEC.Signal(@peer,LONGCARD($80000000))
+  received=EXEC.Wait(LONGCARD($40000000))
+  IF received<>LONGCARD($40000000) THEN
+    badResult=$ffffffff
+  FI
+
+  IF pumpSent<byteCount THEN
+    requests==+1
+  FI
+
+RETURN
+
+PROC PeerReply()
+  ; Yield lets the requester enter a blocking Wait before its reply.
+  EXEC.Yield()
+  IF parent.tc_State=EXEC.TS_WAIT AND pumpSent<byteCount THEN
+    blocked==+1
+  FI
+
+  EXEC.Signal(parent,LONGCARD($40000000))
+  IF pumpSent<byteCount THEN
+    replies==+1
+  FI
+
+RETURN
+
+PROC PeerEntry()
+  LONGCARD received,mask
+  EXEC.Message POINTER msg
+
+  mask=LONGCARD($80000000)
+  IF workload=8 THEN
+    peerPort=EXEC.CreateMsgPort()
+    HeapRequire(peerPort<>EXEC.MsgPort POINTER(0))
+    mask=mask OR (LONGCARD(1) LSH peerPort.mp_SigBit)
+  FI
+
+  DO
+    received=EXEC.Wait(mask)
+    IF stopping<>0 THEN
+      EXIT
+    FI
+
+    IF workload=8 THEN
+      msg=EXEC.GetMsg(peerPort)
+      WHILE msg<>EXEC.Message POINTER(0) DO
+        HeapRequire(msg.mn_Node.ln_Type=EXEC.NT_MESSAGE)
+        EXEC.ReplyMsg(msg)
+        msg=EXEC.GetMsg(peerPort)
+      OD
+    FI
+
+    IF (received & LONGCARD($80000000))<>0 THEN
+      PeerReply()
+    FI
+  OD
+
+  IF workload=8 THEN
+    EXEC.DeleteMsgPort(peerPort)
+  FI
+
+RETURN
+
+PROC SleepStep()
+  CARD status
+
+  status=EXECTASKS.Sleep(1)
+  IF pumpSent<byteCount THEN
+    sleeps==+1
+  FI
+
+RETURN
+
+PROC SleeperEntry()
+  LONGCARD received
+
+  received=EXEC.Wait(1)
+  WHILE stopping=0 DO
+    SleepStep()
+  OD
+
+RETURN
+
+; Measure notification and scheduling progress with the fixture's four
+; independent Tasks.
+PROC Main()
+  EXEC.Task POINTER item
+  CARD status
+
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  oldsk=skshadow
+  IF workload=8 THEN
+    HeapPrepare()
+    PortsPrepare(0)
+  FI
+
+  Prepare(@worker,1)
+  Prepare(@peer,2)
+  Prepare(@sleeper,3)
+  item=EXEC.AddTask(@worker,@StreamWorker,missing)
+  item=EXEC.AddTask(@peer,@PeerEntry,missing)
+  item=EXEC.AddTask(@sleeper,@SleeperEntry,missing)
+  IF workload=8 THEN
+    WHILE completionRequest.sequence=0
+        OR completionRequest.header.mn_Node.ln_Name=BYTE POINTER(0) DO
+      EXEC.Yield()
+    OD
+
+    EXEC.PutMsg(EXEC.MsgPort POINTER(completionRequest.header.mn_Node.ln_Name),
+        @completionRequest.header)
+    ; Wait until the serial owner has consumed its request and bound its signal.
+    WHILE worker.tc_SigWait<>1 DO
+      EXEC.Yield()
+    OD
+  FI
+
+  WHILE worker.tc_State<>EXEC.TS_WAIT OR peer.tc_State<>EXEC.TS_WAIT
+      OR sleeper.tc_State<>EXEC.TS_WAIT DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  IF workload>=5 AND workload<8 THEN
+    HeapPrepare()
+  FI
+
+  StreamStart()
+  IF workload>=3 THEN
+    EXEC.Signal(@sleeper,1)
+  FI
+
+  WHILE finished=0 DO
+    IF workload=5 THEN
+      HeapAllocateStep()
+    FI
+
+    IF workload=6 THEN
+      HeapFragmentStep()
+    FI
+
+    IF workload=7 THEN
+      HeapClearStep()
+    FI
+
+    IF workload=2 OR workload>=4 THEN
+      SignalStep()
+    FI
+
+    IF workload=1 OR workload>=4 THEN
+      YieldStep()
+    FI
+
+    IF workload=8 THEN
+      PortsStep(0)
+    FI
+
+    background==+1
+  OD
+
+  ; Keep both targets live while posting stop: the first Signal can schedule
+  ; a timed sleeper that would otherwise exit before the second Signal.
+  EXEC.Forbid()
+  stopping=1
+  EXEC.Signal(@peer,LONGCARD($80000000))
+  EXEC.Signal(@sleeper,1)
+  EXEC.Permit()
+  AwaitRemoval(@worker)
+  AwaitRemoval(@peer)
+  AwaitRemoval(@sleeper)
+  IF workload=8 THEN
+    PortsFinish(0)
+  FI
+
+  IF workload>=5 THEN
+    HeapFinish()
+  FI
+
+RETURN
+
+ENDMODULE

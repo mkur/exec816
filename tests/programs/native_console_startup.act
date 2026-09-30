@@ -1,0 +1,38 @@
+; Public-only client: the packager must supply the resident startup dependency.
+MODULE CONSOLESTARTUP
+USE EXEC
+USE HEAPCORE
+BYTE enabled,checkpoint
+EXEC.MsgPort POINTER port
+EXEC.IORequest POINTER request
+BYTE ARRAY name=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+
+PROC Main()
+  INT error
+
+  port=EXEC.CreateMsgPort()
+  request=EXEC.CreateIORequest(port,42)
+  IF port=EXEC.MsgPort POINTER(0) OR request=EXEC.IORequest POINTER(0) THEN
+    HEAPCORE.Abort($f8e0)
+  FI
+
+  error=EXEC.OpenDevice(name,0,request,0)
+  IF enabled<>0 THEN
+    IF error<>0 THEN
+      HEAPCORE.Abort($f8e1)
+    FI
+
+    EXEC.CloseDevice(request)
+  ELSE
+    IF error<>EXEC.IOERR_OPENFAIL THEN
+      HEAPCORE.Abort($f8e2)
+    FI
+  FI
+
+  EXEC.DeleteIORequest(request)
+  EXEC.DeleteMsgPort(port)
+  checkpoint=1
+
+RETURN
+
+ENDMODULE

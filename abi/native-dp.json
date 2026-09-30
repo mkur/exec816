@@ -1,0 +1,75 @@
+{
+  "abi": "action65816.native.v2",
+  "direct_page": {
+    "bank": 0,
+    "size": 256,
+    "alignment": 256,
+    "offset_base": "D",
+    "fields": [
+      {
+        "name": "caller_workspace",
+        "offset": 0,
+        "size": 128,
+        "owner": "caller_preserved"
+      },
+      {
+        "name": "scratch",
+        "offset": 128,
+        "size": 64,
+        "owner": "compiler_call_clobbered"
+      },
+      {
+        "name": "owner_pointer",
+        "offset": 192,
+        "size": 3,
+        "owner": "execution_domain"
+      },
+      {
+        "name": "domain_kind",
+        "offset": 195,
+        "size": 1,
+        "owner": "execution_domain"
+      },
+      {
+        "name": "stack_floor",
+        "offset": 196,
+        "size": 2,
+        "owner": "execution_domain"
+      },
+      {
+        "name": "stack_ceiling",
+        "offset": 198,
+        "size": 2,
+        "owner": "execution_domain"
+      },
+      {
+        "name": "reserved_zero",
+        "offset": 200,
+        "size": 56,
+        "owner": "reserved"
+      }
+    ],
+    "scratch_aliases": [
+      {
+        "name": "pointer0",
+        "offset": 128,
+        "size": 3
+      },
+      {
+        "name": "pointer1",
+        "offset": 131,
+        "size": 3
+      },
+      {
+        "name": "pointer2",
+        "offset": 134,
+        "size": 3
+      }
+    ],
+    "domain_kinds": {
+      "task": 0,
+      "irq": 1,
+      "bootstrap": 2
+    }
+  }
+}

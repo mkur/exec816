@@ -1,0 +1,5 @@
+; Libraries resident with the system image; ordinary caller-context code.
+; PROGRAMPROVIDERS publishes only the explicit compiler-owned contracts.
+MODULE PROGRAMLIBRARIES
+USE CSTRING.IMPL AS STR
+ENDMODULE

@@ -1,0 +1,236 @@
+MODULE DOSDIRECTORY
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE FSTYPES
+USE FSBOOT
+USE HEAPCORE
+CARD checks,cycles
+BYTE finished,removal
+EXEC.Task child
+PROC POINTER absent()
+DOS.FileLock POINTER root,sub,file,old
+DOSCORE.DosSlot POINTER owner
+DOSCLIENT.ClientContext POINTER client
+FSTYPES.LockObject POINTER item
+LONGCARD before
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e500+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Unset()
+
+  owner=DOSCORE.Current()
+  DOSCLIENT.SetError(70000)
+  Require(DOS.CurrentDir(DOS.FileLock POINTER(0))=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=0)
+  Require(owner.context=BYTE POINTER(0) AND EXEC.AvailMem(0)=before)
+  Require(DOS.CurrentDir(DOS.FileLock POINTER($ffffff))=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(owner.context=BYTE POINTER(0))
+
+RETURN
+
+PROC OpenLocks()
+
+  root=DOS.Lock(BYTE POINTER($d1000),DOS.SHARED_LOCK)
+  sub=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  file=DOS.Lock(BYTE POINTER($d1040),DOS.SHARED_LOCK)
+  Require(root<>DOS.FileLock POINTER(0) AND sub<>DOS.FileLock POINTER(0)
+      AND file<>DOS.FileLock POINTER(0))
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  Require(SIZEOF(DOSCLIENT.ClientContext)=88 AND DOSCLIENT.CLIENT_SIZE=88)
+  Require(ADDRESS(@client.directory)-ADDRESS(client)=80
+      AND client.directory=BYTE POINTER(0))
+  item=FSTYPES.LockObject POINTER(root)
+  Require(item.common.mount.references=3 AND client.objects=3)
+  Require(DOS.CurrentDir(root)=DOS.FileLock POINTER(0) AND DOS.IoErr()=0)
+  Require(DOS.CurrentDir(root)=root AND item.common.mount.references=3
+      AND client.objects=3)
+  Require(DOS.CurrentDir(file)=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Require(client.directory=BYTE POINTER(root))
+  Require(DOS.CurrentDir(sub)=root AND DOS.IoErr()=0)
+  Require(DOS.CurrentDir(root)=sub AND item.common.mount.references=3)
+
+RETURN
+
+; Reject invalid current-directory choices without changing the retained
+; selection.
+PROC Refusals()
+  LONGCARD generation
+  DOS.FileHandle POINTER stream
+
+  stream=DOS.Open(BYTE POINTER($d1060),DOS.MODE_OLDFILE)
+  Require(stream<>DOS.FileHandle POINTER(0))
+  Require(DOS.CurrentDir(DOS.FileLock POINTER(stream))=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(DOS.Close(stream)<>0)
+  DOS.UnLock(root)
+  Require(DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE AND client.objects=3)
+  Require(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  client.busy=1
+  Require(DOS.CurrentDir(sub)=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  client.busy=0
+  owner.active=1
+  Require(DOS.CurrentDir(DOS.FileLock POINTER(0))=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  owner.active=0
+  Require(client.directory=BYTE POINTER(root))
+  item=FSTYPES.LockObject POINTER(sub)
+  generation=item.common.generation
+  item.common.generation=0
+  Require(DOS.CurrentDir(sub)=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  item.common.generation=generation
+  item.common.mount.offline=1
+  Require(DOS.CurrentDir(sub)=root AND DOS.IoErr()=0)
+  Require(DOS.CurrentDir(root)=sub)
+  item.common.mount.offline=0
+
+RETURN
+
+; Verify that one Task's directory selection cannot change another Task's
+; base.
+PROC Other()
+  DOS.FileLock POINTER local,ignored
+  DOSCORE.DosSlot POINTER slot
+
+  slot=DOSCORE.Current()
+  IF DOS.CurrentDir(DOS.FileLock POINTER(0))<>DOS.FileLock POINTER(0)
+      OR slot.context<>BYTE POINTER(0) THEN
+    HEAPCORE.Abort($e5f0)
+  FI
+
+  IF DOS.CurrentDir(root)<>DOS.FileLock POINTER(0)
+      OR DOS.IoErr()<>DOS.ERROR_INVALID_LOCK THEN
+    HEAPCORE.Abort($e5f1)
+  FI
+
+  local=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  IF local=DOS.FileLock POINTER(0) THEN
+    HEAPCORE.Abort($e5f2)
+  FI
+
+  ignored=DOS.CurrentDir(local)
+  IF DOS.CurrentDir(DOS.FileLock POINTER(0))<>local THEN
+    HEAPCORE.Abort($e5f3)
+  FI
+
+  DOS.UnLock(local)
+  IF DOS.ReleaseContext()=0 THEN
+    HEAPCORE.Abort($e5f4)
+  FI
+
+RETURN
+
+PROC Reuse()
+  CARD index,status
+  BYTE POINTER bytes
+  LONGCARD saved
+
+  saved=EXEC.AvailMem(0)
+  FOR cycles=0 TO 2 DO
+    bytes=BYTE POINTER(@child)
+    FOR index=0 TO EXEC.TASK_SIZE-1 DO
+      bytes(index)=0
+    OD
+
+    child.tc_Node.ln_Type=EXEC.NT_TASK
+    child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+    child.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
+    child.tc_SPReg=child.tc_SPUpper-SIZE(2)
+    EXECLISTS.NewList(@child.tc_MemEntry)
+    Require(EXEC.AddTask(@child,@Other,absent)=@child)
+    WHILE child.tc_State<>EXEC.TS_REMOVED DO
+      status=EXECTASKS.Sleep(1)
+    OD
+
+    Require(EXEC.AvailMem(0)=saved AND client.directory=BYTE POINTER(root))
+  OD
+
+RETURN
+
+; Exercise directory identity without truncating the bank byte.
+PROC FarIdentity()
+  FSTYPES.LockObject POINTER far
+  FSTYPES.Mount POINTER mount
+  BYTE POINTER bytes
+  CARD index
+
+  far=FSTYPES.LockObject POINTER($e0000)
+  bytes=BYTE POINTER(far)
+  FOR index=0 TO CARD(SIZEOF(FSTYPES.LockObject)-1) DO
+    bytes(index)=0
+  OD
+
+  item=FSTYPES.LockObject POINTER(root)
+  mount=item.common.mount
+  far.common.mount=mount
+  far.common.generation=mount.generation
+  far.state.entry.flags=$10
+  far.common.header.kind=DOSOBJECTS.KIND_LOCK
+  far.common.header.backend=DOSOBJECTS.BACKEND_FILE
+  ; Test-owned mapped storage exercises a valid far identity with low word zero.
+  ; It is linked and unlinked locally; it is never passed to the heap's FreeMem.
+  DOSOBJECTS.Link(owner,@far.common.header)
+  Require(DOS.CurrentDir(DOS.FileLock POINTER(far))=root)
+  Require(DOS.CurrentDir(root)=DOS.FileLock POINTER(far) AND DOS.IoErr()=0)
+  Require(DOSOBJECTS.Unlink(owner,@far.common.header)<>0)
+
+RETURN
+
+PROC Finish()
+
+  old=DOS.CurrentDir(DOS.FileLock POINTER(0))
+  Require(old=root)
+  item.common.mount.offline=1
+  DOS.UnLock(old)
+  DOS.UnLock(sub)
+  DOS.UnLock(file)
+  Require(DOS.CurrentDir(sub)=DOS.FileLock POINTER(0)
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(client.objects=0 AND owner.objects=BYTE POINTER(0))
+  client.directory=BYTE POINTER($ffffff)
+  Require(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  client.directory=BYTE POINTER(0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+; Exercise borrowed current-directory identity and Task isolation.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  Unset()
+  OpenLocks()
+  IF removal<>0 THEN
+    EXEC.RemTask(EXEC.Task POINTER(0))
+    HEAPCORE.Abort($e5ff)
+  FI
+
+  Refusals()
+  Reuse()
+  FarIdentity()
+  Finish()
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,213 @@
+; Shared 8.3 spelling and lookup policy for MyDOS and SpartaDOS.
+MODULE FS83
+
+USE ASCII
+USE FSBTYPES
+USE FSCORE
+INCLUDE "../dos/dos-types.inc"
+
+CONST NAME_BYTES=11, STEM_BYTES=8, PATH_BYTES=256
+
+; Reject characters that cannot participate in supported on-disk names.
+PUBLIC BYTE FUNC Legal(BYTE value)
+
+  IF value>=48 AND value<=57 THEN
+    RETURN(1)
+  FI
+
+  IF value>=64 AND value<=90 THEN
+    RETURN(1)
+  FI
+
+  IF value>=95 AND value<=122 THEN
+    RETURN(1)
+  FI
+
+RETURN(0)
+
+; Normalize ASCII name comparisons without allocating transformed strings.
+PUBLIC BYTE FUNC Fold(BYTE value)
+
+  IF value>=97 AND value<=122 THEN
+    RETURN(value-32)
+  FI
+
+RETURN(value)
+
+; Validate the padded on-disk name before using it in path resolution.
+PUBLIC BYTE FUNC Stored(BYTE POINTER name)
+  BYTE index,padding
+
+  IF name(0)=ASCII.SPACE OR (name(0)>='0 AND name(0)<='9) THEN
+    RETURN(0)
+  FI
+
+  padding=0
+  FOR index=0 TO NAME_BYTES-1 DO
+    IF index=STEM_BYTES THEN
+      padding=0
+    FI
+
+    IF name(index)=ASCII.SPACE THEN
+      padding=1
+    ELSE
+      IF padding<>0 OR Legal(name(index))=0 THEN
+        RETURN(0)
+      FI
+    FI
+  OD
+
+RETURN(1)
+
+; Compare a requested component with a validated padded directory name.
+PUBLIC BYTE FUNC Match(BYTE POINTER stored,wanted)
+  BYTE index,exact
+
+  exact=1
+  FOR index=0 TO NAME_BYTES-1 DO
+    IF stored(index)<>wanted(index) THEN
+      exact=0
+    FI
+
+    IF Fold(stored(index))<>Fold(wanted(index)) THEN
+      RETURN(0)
+    FI
+  OD
+
+  IF exact<>0 THEN
+    RETURN(2)
+  FI
+
+RETURN(1)
+
+; Validate the bounded path and seed its ancestry; the backend supplies root
+; metadata for an empty path and owns all subsequent directory traversal.
+PUBLIC BYTE FUNC StartResolve(FSBTYPES.Workspace POINTER work BYTE POINTER path)
+
+  work.error=0
+  work.ioError=0
+  work.path=path
+  work.pathLength=0
+  work.pathOffset=0
+  work.depth=0
+  work.ancestors(0)=work.volume.root
+  work.directory=work.volume.root
+  IF work.volume.mounted=0 THEN
+    work.error=ERROR_NOT_A_DOS_DISK
+    RETURN(0)
+  FI
+
+  IF path=NULL THEN
+    work.error=ERROR_INVALID_COMPONENT_NAME
+    RETURN(0)
+  FI
+
+  WHILE work.pathLength<PATH_BYTES DO
+    IF path(work.pathLength)=ASCII.NUL THEN
+      RETURN(1)
+    FI
+
+    work.pathLength==+1
+  OD
+
+  work.error=ERROR_INVALID_COMPONENT_NAME
+
+RETURN(0)
+
+; Parse one path component using the existing 8.3 spelling rules.
+PUBLIC BYTE FUNC Component(FSBTYPES.Workspace POINTER work)
+  BYTE index,dotted,value
+
+  FOR index=0 TO NAME_BYTES-1 DO
+    work.wanted(index)=ASCII.SPACE
+  OD
+
+  index=0
+  dotted=0
+  WHILE work.pathOffset<work.pathLength DO
+    value=work.path(work.pathOffset)
+    IF value='/ THEN
+      EXIT
+    FI
+
+    IF value='. THEN
+      IF dotted<>0 OR index=0 THEN
+        work.error=ERROR_INVALID_COMPONENT_NAME
+        RETURN(0)
+      FI
+
+      dotted=1
+      index=STEM_BYTES
+
+    ELSE
+      IF Legal(value)=0 OR index>=NAME_BYTES OR (dotted=0 AND index>=STEM_BYTES) THEN
+        work.error=ERROR_INVALID_COMPONENT_NAME
+        RETURN(0)
+      FI
+
+      work.wanted(index)=value
+      index==+1
+    FI
+
+    work.pathOffset==+1
+  OD
+
+  IF index=0 OR (dotted<>0 AND index=STEM_BYTES) OR Stored(work.wanted)=0 THEN
+    work.error=ERROR_INVALID_COMPONENT_NAME
+    RETURN(0)
+  FI
+
+  IF work.pathOffset<work.pathLength THEN
+    work.pathOffset==+1
+    IF work.pathOffset=work.pathLength THEN
+      work.error=ERROR_INVALID_COMPONENT_NAME
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
+; Keep the preferred candidate while remembering ambiguity. Counts saturate
+; at two: longer directories cannot wrap back into an apparently unique match.
+PUBLIC PROC SelectMatch(FSBTYPES.Workspace POINTER work)
+
+  LET kind=Match(work.entry.name,work.wanted)
+  IF kind=0 THEN
+    RETURN
+  FI
+
+  IF work.matchCount<2 THEN
+    work.matchCount==+1
+  FI
+
+  IF kind=2 THEN
+    IF work.exactFound<2 THEN
+      work.exactFound==+1
+    FI
+
+    FSCORE.CopyEntry(@work.found,@work.entry)
+
+  ELSEIF work.exactFound=0 THEN
+    FSCORE.CopyEntry(@work.found,@work.entry)
+  FI
+
+RETURN
+
+; Prefer one exact spelling, otherwise require a unique case-folded match.
+PUBLIC BYTE FUNC Choose(FSBTYPES.Workspace POINTER work)
+
+  IF work.exactFound>1 OR (work.exactFound=0 AND work.matchCount>1) THEN
+    work.error=ERROR_INVALID_COMPONENT_NAME
+    RETURN(0)
+  FI
+
+  IF work.matchCount=0 THEN
+    work.error=ERROR_OBJECT_NOT_FOUND
+    RETURN(0)
+  FI
+
+  FSCORE.CopyEntry(@work.entry,@work.found)
+
+RETURN(1)
+
+ENDMODULE

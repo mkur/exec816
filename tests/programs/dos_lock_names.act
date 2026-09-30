@@ -1,0 +1,279 @@
+MODULE DOSLOCKNAMES
+USE EXEC
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE FSTYPES
+USE FSLOCKS
+USE FSBOOT
+USE FSREGISTRY
+USE HEAPCORE
+CARD checks
+BYTE finished,variant
+CARD ARRAY layouts(4)
+DOS.FileLock POINTER root,sub,file,lower
+DOS.FileHandle POINTER handle
+DOSCORE.DosSlot POINTER owner
+DOSCLIENT.ClientContext POINTER client
+FSTYPES.LockObject POINTER item
+LONGCARD before
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e600+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Name(DOS.FileLock POINTER lock BYTE POINTER expected)
+  BYTE POINTER buffer
+  FSLOCKS.Name POINTER trailer
+  CARD index,length
+
+  buffer=BYTE POINTER($cfff0)
+  length=0
+  WHILE expected(length)<>0 DO
+    length==+1
+  OD
+
+  FOR index=0 TO 255 DO
+    buffer(index)=165
+  OD
+
+  Require(DOS.NameFromLock(lock,buffer,LONGINT(length))=0
+      AND DOS.IoErr()=DOS.ERROR_LINE_TOO_LONG)
+  FOR index=0 TO 255 DO
+    IF buffer(index)<>165 THEN
+      HEAPCORE.Abort($e6f0)
+    FI
+  OD
+
+  Require(DOS.NameFromLock(lock,buffer,LONGINT(length)+1)<>0 AND DOS.IoErr()=0)
+  FOR index=0 TO length DO
+    IF buffer(index)<>expected(index) THEN
+      HEAPCORE.Abort($e6f1)
+    FI
+  OD
+
+  Require(buffer(length+1)=165)
+  item=FSTYPES.LockObject POINTER(lock)
+  trailer=FSLOCKS.Trailer(item)
+  Require(trailer.length=length
+      AND FSLOCKS.Allocation(item)=SIZEOF(FSTYPES.LockObject)+SIZE(length)+SIZE(3))
+
+RETURN
+
+PROC Unset()
+
+  owner=DOSCORE.Current()
+  Require(DOS.NameFromLock(DOS.FileLock POINTER(0),BYTE POINTER($cfff0),256)=0
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(owner.context=BYTE POINTER(0) AND EXEC.AvailMem(0)=before)
+
+RETURN
+
+PROC OpenLocks()
+
+  root=DOS.Lock(BYTE POINTER($d1000),DOS.SHARED_LOCK)
+  sub=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  file=DOS.Lock(BYTE POINTER($d1040),DOS.SHARED_LOCK)
+  lower=DOS.Lock(BYTE POINTER($d1060),DOS.SHARED_LOCK)
+  handle=DOS.Open(BYTE POINTER($d1040),DOS.MODE_OLDFILE)
+  Require(root<>DOS.FileLock POINTER(0) AND sub<>DOS.FileLock POINTER(0)
+      AND file<>DOS.FileLock POINTER(0) AND lower<>DOS.FileLock POINTER(0)
+      AND handle<>DOS.FileHandle POINTER(0))
+  client=DOSCLIENT.ClientContext POINTER(owner.context)
+  layouts(0)=CARD(SIZEOF(FSTYPES.LockObject))
+  layouts(1)=CARD(SIZEOF(FSTYPES.Service))
+  layouts(2)=CARD(SIZEOF(FSLOCKS.Name))
+  layouts(3)=DOSCLIENT.CLIENT_SIZE
+  Require(SIZEOF(FSTYPES.LockObject)=98
+      AND SIZEOF(FSTYPES.FileObject)=20 AND SIZEOF(FSTYPES.Object)=16)
+  Name(root,BYTE POINTER($d1100))
+  Name(sub,BYTE POINTER($d1120))
+  Name(file,BYTE POINTER($d1140))
+  Name(lower,BYTE POINTER($d1160))
+
+RETURN
+
+; Reject foreign or stale lock identities before accessing their name
+; trailers.
+PROC Invalid()
+  LONGCARD generation
+
+  Require(DOS.NameFromLock(DOS.FileLock POINTER(handle),BYTE POINTER($cfff0),
+      256)=0 AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(DOS.NameFromLock(root,BYTE POINTER($cfff0),0)=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.NameFromLock(root,BYTE POINTER($cfff0),-1)=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.NameFromLock(root,BYTE POINTER(0),256)=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.NameFromLock(root,BYTE POINTER($ffffff),4)=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.NameFromLock(root,BYTE POINTER($ff0000),256)=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.NameFromLock(root,BYTE POINTER($e0000),4)<>0)
+  client.busy=1
+  Require(DOS.NameFromLock(root,BYTE POINTER($cfff0),256)=0
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  client.busy=0
+  owner.active=1
+  Require(DOS.NameFromLock(root,BYTE POINTER($cfff0),256)=0
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  owner.active=0
+  item=FSTYPES.LockObject POINTER(root)
+  generation=item.common.generation
+  item.common.generation=0
+  Require(DOS.NameFromLock(root,BYTE POINTER($cfff0),256)=0
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  item.common.generation=generation
+  item.common.mount.offline=1
+  Name(sub,BYTE POINTER($d1120))
+  item.common.mount.offline=0
+
+RETURN
+
+; Exercise canonical-name output exactly at its required buffer capacity.
+PROC Boundary()
+  FSTYPES.Service POINTER workspace
+  FSTYPES.LockObject POINTER temporary,far
+  FSTYPES.Mount POINTER mount
+  FSTYPES.LockObject POINTER live
+  BYTE POINTER buffer,source,target
+  CARD index
+  LONGCARD available
+
+  available=EXEC.AvailMem(0)
+  workspace=FSTYPES.Service POINTER(EXEC.AllocMem(SIZEOF(FSTYPES.Service),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(workspace<>FSTYPES.Service POINTER(0))
+  workspace.packet=FSTYPES.Packet POINTER(@client.packet)
+  client.packet.sp_Pkt.dp_Type=8
+  workspace.nameLength=255
+  FOR index=0 TO 254 DO
+    workspace.name(index)=65
+  OD
+
+  workspace.name(255)=0
+  temporary=FSLOCKS.Create(workspace)
+  Require(temporary<>FSTYPES.LockObject POINTER(0))
+  Require(FSLOCKS.Allocation(temporary)=356)
+  live=FSTYPES.LockObject POINTER(root)
+  mount=live.common.mount
+  temporary.common.mount=mount
+  temporary.common.generation=mount.generation
+  temporary.common.header.backend=DOSOBJECTS.BACKEND_FILE
+  DOSOBJECTS.Link(owner,@temporary.common.header)
+  buffer=BYTE POINTER($cfff0)
+  Require(DOS.NameFromLock(DOS.FileLock POINTER(temporary),buffer,255)=0
+      AND DOS.IoErr()=DOS.ERROR_LINE_TOO_LONG)
+  Require(DOS.NameFromLock(DOS.FileLock POINTER(temporary),buffer,256)<>0)
+  FOR index=0 TO 254 DO
+    IF buffer(index)<>65 THEN
+      HEAPCORE.Abort($e6f2)
+    FI
+  OD
+
+  Require(buffer(255)=0)
+  Require(DOSOBJECTS.Unlink(owner,@temporary.common.header)<>0)
+  ; Move the whole lock so its name crosses a bank boundary too.
+  far=FSTYPES.LockObject POINTER($bff90)
+  source=BYTE POINTER(temporary)
+  target=BYTE POINTER(far)
+  FOR index=0 TO CARD(FSLOCKS.Allocation(temporary))-1 DO
+    target(index)=source(index)
+  OD
+
+  far.common.header.next=NULL
+  far.common.header.owner=NULL
+  DOSOBJECTS.Link(owner,@far.common.header)
+  Require(DOS.NameFromLock(DOS.FileLock POINTER(far),buffer,256)<>0)
+  FOR index=0 TO 254 DO
+    IF buffer(index)<>65 THEN
+      HEAPCORE.Abort($e6f3)
+    FI
+  OD
+
+  Require(buffer(255)=0 AND FSLOCKS.Allocation(far)=356)
+  Require(DOSOBJECTS.Unlink(owner,@far.common.header)<>0)
+  FSLOCKS.Free(temporary)
+  workspace.nameLength=0
+  workspace.name(0)=0
+  temporary=FSLOCKS.Create(workspace)
+  Require(temporary<>NULL AND FSLOCKS.Allocation(temporary)=101)
+  source=FSLOCKS.Text(temporary)
+  Require(source^=0)
+  FSLOCKS.Free(temporary)
+  EXEC.FreeMem(BYTE POINTER(workspace),SIZEOF(FSTYPES.Service))
+  Require(EXEC.AvailMem(0)=available)
+
+RETURN
+
+PROC StampFailure()
+  DOSCORE.DosRegistry POINTER registry
+  LONGCARD generation,available
+  DOS.FileLock POINTER candidate
+
+  registry=DOSCORE.GetRegistry()
+  generation=registry.generation
+  available=EXEC.AvailMem(0)
+  registry.generation=LONGCARD($ffffffff)
+  candidate=DOS.Lock(BYTE POINTER($d1020),DOS.SHARED_LOCK)
+  Require(candidate=DOS.FileLock POINTER(0) AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  registry.generation=generation
+  Require(EXEC.AvailMem(0)=available AND client.objects=5)
+
+RETURN
+
+PROC Streams()
+  DOS.FileHandle POINTER raw,nil
+
+  raw=DOS.Open(BYTE POINTER($d1180),DOS.MODE_READWRITE)
+  nil=DOS.Open(BYTE POINTER($d11a0),DOS.MODE_OLDFILE)
+  Require(raw<>DOS.FileHandle POINTER(0) AND nil<>DOS.FileHandle POINTER(0))
+  Require(client.objects=7)
+  Require(DOS.NameFromLock(DOS.FileLock POINTER(raw),BYTE POINTER($cfff0),256)=0
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(DOS.NameFromLock(DOS.FileLock POINTER(nil),BYTE POINTER($cfff0),256)=0
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(DOS.Close(raw)<>0 AND DOS.Close(nil)<>0)
+  Require(client.objects=5)
+
+RETURN
+
+PROC Finish()
+
+  DOS.UnLock(root)
+  DOS.UnLock(sub)
+  DOS.UnLock(file)
+  DOS.UnLock(lower)
+  Require(DOS.Close(handle)<>0 AND client.objects=0)
+  Require(DOS.NameFromLock(root,BYTE POINTER($cfff0),256)=0
+      AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+; Exercise canonical lock names, buffer bounds and identity reuse.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  Unset()
+  OpenLocks()
+  Invalid()
+  Boundary()
+  StampFailure()
+  Streams()
+  Finish()
+
+RETURN
+
+ENDMODULE

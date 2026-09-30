@@ -1,0 +1,106 @@
+MODULE SIGNALDEMO
+
+USE EXEC
+
+INCLUDE "example-output.inc"
+
+; Build with --tasks --task-capacity 8 --console.
+; Six workers leave one slot for root and one for the console service.
+CONST WORKER_COUNT=6,WORKER_STACK_SIZE=1024
+CONST READY_BIT=16,DONE_BIT=17
+CONST READY_MASK=$10000,DONE_MASK=$20000
+
+TYPE WorkerRef=[EXEC.Task POINTER task]
+WorkerRef ARRAY workers(WORKER_COUNT)
+EXEC.Task POINTER parent
+VOLATILE BYTE ready,finished
+BYTE admitted
+BYTE ARRAY message=c"SIGNALS OK\n"
+BYTE ARRAY failed=c"Signal example failed.\n"
+
+; Tell the parent we can receive a signal, then wait for its permission to finish.
+PROC Worker()
+
+  LET bit=EXEC.AllocSignal(READY_BIT)
+  EXEC.Forbid()
+  ready==+1
+  EXEC.Signal(parent,READY_MASK)
+  EXEC.Permit()
+
+  LET received=EXEC.Wait(READY_MASK)
+  EXEC.FreeSignal(bit)
+
+  EXEC.Forbid()
+  finished==+1
+  EXEC.Signal(parent,DONE_MASK)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+; Admit as many workers as fit, so even an admission failure can finish cleanly.
+PROC StartWorkers()
+
+  BYTE index
+
+  EXEC.Forbid()
+  FOR index=0 TO WORKER_COUNT-1 DO
+    BEGIN
+      LET item=EXEC.CreateTask(c"signal worker",0,@Worker,WORKER_STACK_SIZE)
+      IF item=NULL THEN
+        EXIT
+      FI
+      workers(index).task=item
+
+      admitted==+1
+    END
+  OD
+
+  EXEC.Permit()
+
+RETURN
+
+; Demonstrate Task notification and waiting with explicitly allocated signals.
+PROC Main()
+
+  BYTE index
+  LONGCARD received
+
+  parent=EXEC.FindTask(NULL)
+  LET readyBit=EXEC.AllocSignal(READY_BIT)
+  LET doneBit=EXEC.AllocSignal(DONE_BIT)
+  StartWorkers()
+
+  ; Signals may merge; the counters record how many workers have reported.
+  WHILE ready<>admitted DO
+    received=EXEC.Wait(READY_MASK)
+  OD
+
+  IF admitted<>0 THEN
+    FOR index=0 TO admitted-1 DO
+      EXEC.Signal(workers(index).task,READY_MASK)
+    OD
+  FI
+
+  WHILE finished<>admitted DO
+    received=EXEC.Wait(DONE_MASK)
+  OD
+
+  ; The final notification and self-removal share one Forbid region. Every
+  ; worker has retired before the parent can observe the completed count.
+  EXEC.FreeSignal(readyBit)
+  EXEC.FreeSignal(doneBit)
+
+  ; Open DOS only after releasing the signal bits used by this demonstration.
+  IF OpenConsole()<>0 THEN
+    IF admitted=WORKER_COUNT THEN
+      Print(message)
+    ELSE
+      Print(failed)
+    FI
+
+    CloseConsole()
+  FI
+
+RETURN
+
+ENDMODULE

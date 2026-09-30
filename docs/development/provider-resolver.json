@@ -1,0 +1,1031 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "exec_baseline": "3d8ca49",
+  "change": "One provider-manifest parse per load. Existing Import.address fields hold attempt-local matches and are cleared before matching.",
+  "inputs": {
+    "lib/dos/programproviders.act": "a9489ba824a92d9cc62295227ad276cde202afadaa1b6557cc7110007a37356e",
+    "tests/programs/o65_execution.act": "c7b962b107276b06e00fbac3d63b0a83ecda41875009878d16d5545c366e8d71",
+    "tools/test_o65_execution.py": "623c36df123b88703a270a3cb5eec9a049ebc1ff83d0dd15e8284651378198db",
+    "tools/measure_loading_breakdown.py": "4c8e0863709e49d404bb8c37633a67f606b92c70b4908e245ff559c539e20d53",
+    "tools/measure_command_loading.py": "ddda767b0adfd77379239e4767d121003a60791de2eca621a0d69a47c9eb96ac",
+    "toolchain/actionc.json": "5e6c54ec77d27416fae4af619392243031d1993671585e109b67174efcf61bee"
+  },
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "47cd55b2dac510922949832332b7a2c3220885be",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc"
+  },
+  "compiler_override": false,
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "native": {
+    "raw": {
+      "results": {
+        "path": "build/development/provider-resolver/raw/results.json",
+        "sha256": "c545e4ed58e076317a96cb9504e58e607faec7bf06e8ea8d58d35e78f4bbd24d"
+      },
+      "xex": {
+        "path": "build/development/provider-resolver/raw/program.xex",
+        "sha256": "ccedca2a2c7c4c612d032c0f798c89de481a82d0ea578e192658da68235a7f67"
+      },
+      "checks": 115,
+      "provider_checks": 17,
+      "native_processes": 6,
+      "allocation_failures": 8,
+      "resolver": {
+        "name": "M_PROGRAMPROVIDERS_RESOLVE_0AD38ACF",
+        "address": 615622,
+        "size": 3964,
+        "fixed_frame": 76,
+        "spill_bytes": 18,
+        "local_stack_peak": 92
+      },
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 493,
+          "untouched_above_floor": 787
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 164,
+          "untouched_above_floor": 604
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 164,
+          "untouched_above_floor": 604
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "guards": "intact",
+      "relocation_oracle": "Complete relocated text/data/BSS compared with the independent Rust reference at two distinct placements."
+    },
+    "opt": {
+      "results": {
+        "path": "build/development/provider-resolver/opt/results.json",
+        "sha256": "389af50624bfdec120677c1241446fe04341da10091215c58f1bdcd75029223a"
+      },
+      "xex": {
+        "path": "build/development/provider-resolver/opt/program.xex",
+        "sha256": "b1f6a1ab8ae39f363f6ecdc36028e2917a8ec8556d465c92b3ebb4db8e86cd32"
+      },
+      "checks": 115,
+      "provider_checks": 17,
+      "native_processes": 6,
+      "allocation_failures": 8,
+      "resolver": {
+        "name": "M_PROGRAMPROVIDERS_RESOLVE_0AD38ACF",
+        "address": 563893,
+        "size": 3365,
+        "fixed_frame": 66,
+        "spill_bytes": 30,
+        "local_stack_peak": 82
+      },
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 457,
+          "untouched_above_floor": 823
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 154,
+          "untouched_above_floor": 614
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 154,
+          "untouched_above_floor": 614
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "guards": "intact",
+      "relocation_oracle": "Complete relocated text/data/BSS compared with the independent Rust reference at two distinct placements."
+    }
+  },
+  "profiles": {
+    "stopped": {
+      "before": {
+        "results": {
+          "path": "build/development/loading-breakdown/stopped/results.json",
+          "sha256": "271191b5bbc7738ba86acf56baff89f9a15d7c3e61071fb4dbcf3f5674c1ad3f"
+        },
+        "analysis": {
+          "path": "build/development/loading-breakdown/stopped/breakdown.json",
+          "sha256": "1efe023921f76345664c8a4c98495d3349a18ffd29fcfd59e6ecffe41914b04a"
+        },
+        "xex_sha256": "d6f05326e3abe5eb657d03c3d2616bd5a70477e7f0679d211947de96830e7494",
+        "open_to_prompt_ms": 3880,
+        "payload_ms": 2494.7789545503883,
+        "loader_ms": 671.972316631871,
+        "resolver_ms": 238.6213152630681,
+        "provider_calls": {
+          "programproviders_resolve_before_o65read_u320": 1,
+          "programproviders_resolve_before_o65read_u321": 1,
+          "programproviders_resolve_before_o65read_u160": 1,
+          "programproviders_resolve_before_o65read_u161": 1,
+          "programproviders_resolve_before_o65read_u80": 1,
+          "programproviders_resolve_before_o65read_u81": 1,
+          "programproviders_resolve_before_o65read_u162": 1,
+          "programproviders_resolve_before_o65read_string0": 70,
+          "programproviders_resolve_before_o65read_u163": 70,
+          "programproviders_resolve_before_o65read_u82": 70,
+          "programproviders_resolve_before_o65read_u322": 70,
+          "programproviders_resolve_before_o65read_u323": 70,
+          "programproviders_resolve_before_o65read_take0": 70,
+          "programproviders_resolve_before_o65read_extent0": 70,
+          "programproviders_resolve_before_o65read_literal0": 70,
+          "programproviders_resolve_before_o65read_equal0": 5
+        },
+        "provider_parts_ms": {
+          "programproviders_resolve_before_o65read_u320": 0.510939850207012,
+          "programproviders_resolve_before_o65read_u321": 0.5107283976548502,
+          "programproviders_resolve_before_o65read_u160": 0.23964622578339648,
+          "programproviders_resolve_before_o65read_u161": 0.2368973426052928,
+          "programproviders_resolve_before_o65read_u80": 0.1039641714795617,
+          "programproviders_resolve_before_o65read_u81": 0.10685402302577324,
+          "programproviders_resolve_before_o65read_u162": 0.23844799465447947,
+          "programproviders_resolve_before_o65read_string0": 106.30488074780901,
+          "programproviders_resolve_before_o65read_u163": 16.40470044926619,
+          "programproviders_resolve_before_o65read_u82": 7.226884359418591,
+          "programproviders_resolve_before_o65read_u322": 35.49611702630045,
+          "programproviders_resolve_before_o65read_u323": 35.34535135660908,
+          "programproviders_resolve_before_o65read_take0": 4.516556029992431,
+          "programproviders_resolve_before_o65read_extent0": 1.8860862810993837,
+          "programproviders_resolve_before_o65read_literal0": 7.848343410222178,
+          "programproviders_resolve_before_o65read_equal0": 10.572557123906966,
+          "caller_instructions": 11.072360473033456
+        },
+        "u32_calls": {
+          "count": 587,
+          "inclusive_ms": 297.7669905649871
+        },
+        "samples": [
+          {
+            "phase": "open",
+            "frame": 0,
+            "transfers": 1,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 0,
+              "map": 0,
+              "data": 0
+            }
+          },
+          {
+            "phase": "seek_end",
+            "frame": 24,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "rewind",
+            "frame": 25,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "payload",
+            "frame": 26,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "close",
+            "frame": 150,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "relocate",
+            "frame": 151,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "loaded",
+            "frame": 184,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "returned",
+            "frame": 184,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "prompt",
+            "frame": 194,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          }
+        ]
+      },
+      "after": {
+        "results": {
+          "path": "build/development/provider-resolver/profile-stopped/results.json",
+          "sha256": "57d7aa91ba560c27152a701d6401bf85ca7f9da395ccc3bdaf5649c744753c6e"
+        },
+        "analysis": {
+          "path": "build/development/provider-resolver/profile-stopped/breakdown.json",
+          "sha256": "a7610c85d5374a89643b36524423ce1b7c63f8c8e04a9a9ef376ce0559c88a24"
+        },
+        "xex_sha256": "f12bc5ab925d8ab8fc42544661f7c14ae30279581708c0f7b6f90346d244045b",
+        "open_to_prompt_ms": 3720,
+        "payload_ms": 2494.575889616129,
+        "loader_ms": 500.9095983952161,
+        "resolver_ms": 67.64395337330257,
+        "provider_calls": {
+          "programproviders_resolve_before_o65read_u320": 1,
+          "programproviders_resolve_before_o65read_u321": 1,
+          "programproviders_resolve_before_o65read_u160": 1,
+          "programproviders_resolve_before_o65read_u161": 1,
+          "programproviders_resolve_before_o65read_u80": 1,
+          "programproviders_resolve_before_o65read_u81": 1,
+          "programproviders_resolve_before_o65read_u162": 1,
+          "programproviders_resolve_before_o65read_string0": 14,
+          "programproviders_resolve_before_o65read_u163": 14,
+          "programproviders_resolve_before_o65read_u82": 14,
+          "programproviders_resolve_before_o65read_u322": 14,
+          "programproviders_resolve_before_o65read_u323": 14,
+          "programproviders_resolve_before_o65read_take0": 14,
+          "programproviders_resolve_before_o65read_extent0": 14,
+          "programproviders_resolve_before_o65read_literal0": 70,
+          "programproviders_resolve_before_o65read_equal0": 5
+        },
+        "provider_parts_ms": {
+          "programproviders_resolve_before_o65read_u320": 0.5110808185751199,
+          "programproviders_resolve_before_o65read_u321": 0.5107283976548502,
+          "programproviders_resolve_before_o65read_u160": 0.23781363699799404,
+          "programproviders_resolve_before_o65read_u161": 0.2379546053661019,
+          "programproviders_resolve_before_o65read_u80": 0.10410513984766959,
+          "programproviders_resolve_before_o65read_u81": 0.10530337097658655,
+          "programproviders_resolve_before_o65read_u162": 0.2405625201760977,
+          "programproviders_resolve_before_o65read_string0": 21.258523299956725,
+          "programproviders_resolve_before_o65read_u163": 3.293303015736299,
+          "programproviders_resolve_before_o65read_u82": 1.444855288921719,
+          "programproviders_resolve_before_o65read_u322": 7.010356946004887,
+          "programproviders_resolve_before_o65read_u323": 7.033052853270255,
+          "programproviders_resolve_before_o65read_take0": 0.9064970911177241,
+          "programproviders_resolve_before_o65read_extent0": 0.35185704679726915,
+          "programproviders_resolve_before_o65read_literal0": 7.932994915270959,
+          "programproviders_resolve_before_o65read_equal0": 10.583270719883167,
+          "caller_instructions": 5.8816937067491395
+        },
+        "u32_calls": {
+          "count": 419,
+          "inclusive_ms": 212.4919119398798
+        },
+        "samples": [
+          {
+            "phase": "open",
+            "frame": 0,
+            "transfers": 1,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 0,
+              "map": 0,
+              "data": 0
+            }
+          },
+          {
+            "phase": "seek_end",
+            "frame": 25,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "rewind",
+            "frame": 25,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "payload",
+            "frame": 26,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "close",
+            "frame": 150,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "relocate",
+            "frame": 151,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "loaded",
+            "frame": 176,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "returned",
+            "frame": 176,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "prompt",
+            "frame": 186,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          }
+        ]
+      },
+      "resolver_reduction_ms": 170.97736188976555,
+      "loader_reduction_ms": 171.06271823665486,
+      "replay": {
+        "results": {
+          "path": "build/development/provider-resolver/replay-stopped/results.json",
+          "sha256": "c2b266c9abafbc02168dfdb2f68e525fcc76f86e6b02009a7296e4f47f8d6712"
+        },
+        "identical_relative_phase_ticks": true,
+        "identical_payload_transactions_and_gaps": true
+      },
+      "unobserved_replay": {
+        "results": {
+          "path": "build/development/provider-resolver/unobserved-stopped/results.json",
+          "sha256": "6dec1a7da7377fcbffad4fa99920838912396b94d4f1ece969f549b6516006a7"
+        },
+        "identical_relative_phase_ticks": true
+      },
+      "trace": {
+        "path": "build/development/provider-resolver/profile-stopped/emulator.log",
+        "sha256": "6c5848b96ce2894d8364b2fdfa3f5550e0a6ce577e2cb6770b59875ffdac754b"
+      },
+      "markers": {
+        "path": "build/development/provider-resolver/profile-stopped/markers.json",
+        "sha256": "8095bc793599a78987d0306266f691d3d531cc402ca87b1b8895a176c40bed00"
+      }
+    },
+    "active": {
+      "before": {
+        "results": {
+          "path": "build/development/loading-breakdown/active/results.json",
+          "sha256": "fdf91eea6adb69f939b7f3e0b08c16024b0fb6ea879bc6439f02786ee3f046f1"
+        },
+        "analysis": {
+          "path": "build/development/loading-breakdown/active/breakdown.json",
+          "sha256": "28134836400cec960517d1d8b14464d1f322094435ef7ceab69ad74f075ab24b"
+        },
+        "xex_sha256": "d6f05326e3abe5eb657d03c3d2616bd5a70477e7f0679d211947de96830e7494",
+        "open_to_prompt_ms": 4160,
+        "payload_ms": 2471.6222921738595,
+        "loader_ms": 782.855849975824,
+        "resolver_ms": 268.3752972670462,
+        "provider_calls": {
+          "programproviders_resolve_before_o65read_u320": 1,
+          "programproviders_resolve_before_o65read_u321": 1,
+          "programproviders_resolve_before_o65read_u160": 1,
+          "programproviders_resolve_before_o65read_u161": 1,
+          "programproviders_resolve_before_o65read_u80": 1,
+          "programproviders_resolve_before_o65read_u81": 1,
+          "programproviders_resolve_before_o65read_u162": 1,
+          "programproviders_resolve_before_o65read_string0": 70,
+          "programproviders_resolve_before_o65read_u163": 70,
+          "programproviders_resolve_before_o65read_u82": 70,
+          "programproviders_resolve_before_o65read_u322": 70,
+          "programproviders_resolve_before_o65read_u323": 70,
+          "programproviders_resolve_before_o65read_take0": 70,
+          "programproviders_resolve_before_o65read_extent0": 70,
+          "programproviders_resolve_before_o65read_literal0": 70,
+          "programproviders_resolve_before_o65read_equal0": 5
+        },
+        "provider_parts_ms": {
+          "programproviders_resolve_before_o65read_u320": 0.5107988818389041,
+          "programproviders_resolve_before_o65read_u321": 0.5107283976548502,
+          "programproviders_resolve_before_o65read_u160": 0.23612201658069945,
+          "programproviders_resolve_before_o65read_u161": 0.22660665173341754,
+          "programproviders_resolve_before_o65read_u80": 0.09994657298848711,
+          "programproviders_resolve_before_o65read_u81": 0.10022850972470287,
+          "programproviders_resolve_before_o65read_u162": 0.22681810428557936,
+          "programproviders_resolve_before_o65read_string0": 127.94387767328887,
+          "programproviders_resolve_before_o65read_u163": 16.468982025123385,
+          "programproviders_resolve_before_o65read_u82": 7.253315928438818,
+          "programproviders_resolve_before_o65read_u322": 41.84758781976912,
+          "programproviders_resolve_before_o65read_u323": 37.48384150080564,
+          "programproviders_resolve_before_o65read_take0": 4.536362085711587,
+          "programproviders_resolve_before_o65read_extent0": 1.770069314146599,
+          "programproviders_resolve_before_o65read_literal0": 7.6697364878294945,
+          "programproviders_resolve_before_o65read_equal0": 10.61949959048689,
+          "caller_instructions": 10.870775706639165
+        },
+        "u32_calls": {
+          "count": 587,
+          "inclusive_ms": 336.47380314331264
+        },
+        "samples": [
+          {
+            "phase": "open",
+            "frame": 0,
+            "transfers": 1,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 0,
+              "map": 0,
+              "data": 0
+            }
+          },
+          {
+            "phase": "seek_end",
+            "frame": 29,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "rewind",
+            "frame": 30,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "payload",
+            "frame": 31,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "close",
+            "frame": 154,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "relocate",
+            "frame": 155,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "loaded",
+            "frame": 194,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "returned",
+            "frame": 194,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "prompt",
+            "frame": 208,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          }
+        ]
+      },
+      "after": {
+        "results": {
+          "path": "build/development/provider-resolver/profile-active/results.json",
+          "sha256": "1feb872fdf3d2bcda6c00b85edbb21e40569f438b8b24876e0872faea8bf6684"
+        },
+        "analysis": {
+          "path": "build/development/provider-resolver/profile-active/breakdown.json",
+          "sha256": "76b4efd83832cd487c81f5b74c163e29184d2e202181858ca28a9f415e94f839"
+        },
+        "xex_sha256": "f12bc5ab925d8ab8fc42544661f7c14ae30279581708c0f7b6f90346d244045b",
+        "open_to_prompt_ms": 3940,
+        "payload_ms": 2476.0613156013924,
+        "loader_ms": 561.6195996780282,
+        "resolver_ms": 75.6034503417778,
+        "provider_calls": {
+          "programproviders_resolve_before_o65read_u320": 1,
+          "programproviders_resolve_before_o65read_u321": 1,
+          "programproviders_resolve_before_o65read_u160": 1,
+          "programproviders_resolve_before_o65read_u161": 1,
+          "programproviders_resolve_before_o65read_u80": 1,
+          "programproviders_resolve_before_o65read_u81": 1,
+          "programproviders_resolve_before_o65read_u162": 1,
+          "programproviders_resolve_before_o65read_string0": 14,
+          "programproviders_resolve_before_o65read_u163": 14,
+          "programproviders_resolve_before_o65read_u82": 14,
+          "programproviders_resolve_before_o65read_u322": 14,
+          "programproviders_resolve_before_o65read_u323": 14,
+          "programproviders_resolve_before_o65read_take0": 14,
+          "programproviders_resolve_before_o65read_extent0": 14,
+          "programproviders_resolve_before_o65read_literal0": 70,
+          "programproviders_resolve_before_o65read_equal0": 5
+        },
+        "provider_parts_ms": {
+          "programproviders_resolve_before_o65read_u320": 0.48591796486786326,
+          "programproviders_resolve_before_o65read_u321": 0.4855655439475936,
+          "programproviders_resolve_before_o65read_u160": 0.22660665173341754,
+          "programproviders_resolve_before_o65read_u161": 0.22717052520584907,
+          "programproviders_resolve_before_o65read_u80": 0.10015802554064894,
+          "programproviders_resolve_before_o65read_u81": 0.09959415206821741,
+          "programproviders_resolve_before_o65read_u162": 0.22695907265368723,
+          "programproviders_resolve_before_o65read_string0": 23.52212287084901,
+          "programproviders_resolve_before_o65read_u163": 3.314589239320589,
+          "programproviders_resolve_before_o65read_u82": 1.4637450502481748,
+          "programproviders_resolve_before_o65read_u322": 9.282696555719859,
+          "programproviders_resolve_before_o65read_u323": 9.264864057154215,
+          "programproviders_resolve_before_o65read_take0": 0.9123472783942013,
+          "programproviders_resolve_before_o65read_extent0": 0.3535486672145637,
+          "programproviders_resolve_before_o65read_literal0": 7.678335558284073,
+          "programproviders_resolve_before_o65read_equal0": 10.400716683183461,
+          "caller_instructions": 7.558512445392381
+        },
+        "u32_calls": {
+          "count": 419,
+          "inclusive_ms": 240.99931066467994
+        },
+        "samples": [
+          {
+            "phase": "open",
+            "frame": 0,
+            "transfers": 1,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 0,
+              "map": 0,
+              "data": 0
+            }
+          },
+          {
+            "phase": "seek_end",
+            "frame": 29,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "rewind",
+            "frame": 30,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "payload",
+            "frame": 31,
+            "transfers": 4,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 1,
+              "data": 0
+            }
+          },
+          {
+            "phase": "close",
+            "frame": 154,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "relocate",
+            "frame": 155,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "loaded",
+            "frame": 183,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "returned",
+            "frame": 183,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          },
+          {
+            "phase": "prompt",
+            "frame": 197,
+            "transfers": 24,
+            "reads_by_kind": {
+              "other": 1,
+              "directory": 2,
+              "map": 2,
+              "data": 19
+            }
+          }
+        ]
+      },
+      "resolver_reduction_ms": 192.77184692526842,
+      "loader_reduction_ms": 221.23625029779578,
+      "replay": {
+        "results": {
+          "path": "build/development/provider-resolver/replay-active/results.json",
+          "sha256": "37fc64de62d2cf50eb1aff75bd7ea2101ab9265bd83e6d4e581245a2067c373a"
+        },
+        "identical_relative_phase_ticks": true,
+        "identical_payload_transactions_and_gaps": true
+      },
+      "unobserved_replay": {
+        "results": {
+          "path": "build/development/provider-resolver/unobserved-active/results.json",
+          "sha256": "37fc64de62d2cf50eb1aff75bd7ea2101ab9265bd83e6d4e581245a2067c373a"
+        },
+        "identical_relative_phase_ticks": true
+      },
+      "trace": {
+        "path": "build/development/provider-resolver/profile-active/emulator.log",
+        "sha256": "f8b71d649289f1dfc4e93fa9175c2c977ecd22a9885dc71cbbb21c08366d1666"
+      },
+      "markers": {
+        "path": "build/development/provider-resolver/profile-active/markers.json",
+        "sha256": "8095bc793599a78987d0306266f691d3d531cc402ca87b1b8895a176c40bed00"
+      }
+    }
+  },
+  "resolver_before": {
+    "name": "M_PROGRAMPROVIDERS_RESOLVE_0AD38ACF",
+    "address": 655360,
+    "size": 3041,
+    "fixed_frame": 74,
+    "spill_bytes": 38,
+    "local_stack_peak": 90
+  },
+  "resolver_after": {
+    "name": "M_PROGRAMPROVIDERS_RESOLVE_0AD38ACF",
+    "address": 655360,
+    "size": 3365,
+    "fixed_frame": 66,
+    "spill_bytes": 30,
+    "local_stack_peak": 82
+  },
+  "diagnostic_bundle": {
+    "build": {
+      "path": "build/development/provider-resolver/measurement/bundle/build.json",
+      "sha256": "a1076194043ee6aadd07abc1da777bde73e7f003099a7145add77b61a0c2e499"
+    },
+    "xex": {
+      "path": "build/development/provider-resolver/measurement/bundle/program.xex",
+      "sha256": "f12bc5ab925d8ab8fc42544661f7c14ae30279581708c0f7b6f90346d244045b"
+    },
+    "manifest": {
+      "path": "build/development/provider-resolver/measurement/bundle/demo-manifest.json",
+      "sha256": "273a8d5071569c30120a7f91fca5acf2459de3f1397f014dcfaf6f95b65a1bd1"
+    }
+  },
+  "unchanged_play_image": {
+    "path": "build/demo/program.xex",
+    "sha256": "50846b2d9c5fdc3d80c154aca864d551f8f665420e818cfea19a63f852d1d3e7"
+  },
+  "validation": {
+    "host_tests": 212,
+    "host_log": {
+      "path": "build/development/provider-resolver/host.log",
+      "sha256": "3a2d1536cb169aa1255199245bb6dc9c9ccff1b9e5292d2c459bf937b86dc567"
+    },
+    "native_modes": [
+      "raw",
+      "opt"
+    ],
+    "new_provider_cases_per_mode": 17,
+    "hello_profiles": 2,
+    "hardware_only_replays": 2,
+    "unobserved_replays": 2
+  },
+  "reserved_bank_zero_delta": {
+    "fixed_bytes": 0,
+    "per_task_bytes": 0,
+    "complete_memory_maps_equal": true,
+    "includes": "Guards, alignment and unused reserved capacity; no upper reservation or heap allocation added."
+  },
+  "limits": [
+    "Development checks, not full release or physical-hardware qualification.",
+    "Timings use the existing guest load probes and fixed accurate GENERIC57600 disk profile.",
+    "Resolver timings are inclusive elapsed guest time. End-to-end differences also include scheduling and disk timing.",
+    "Matches are private to one validation attempt; this is not a persistent or cross-program provider cache.",
+    "The production play image was not refreshed."
+  ]
+}

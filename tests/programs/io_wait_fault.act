@@ -1,0 +1,45 @@
+MODULE IOWAITFAULT
+USE EXEC
+EXEC.Task dead
+EXEC.MsgPort POINTER port
+EXEC.IORequest item
+BYTE variant,reached
+BYTE ARRAY snapshot(26)
+CARD checks
+INCLUDE "io-names.inc"
+
+; Exercise ownership checks on an invalid I/O wait.
+PROC Main()
+  INT error
+  BYTE i
+  BYTE POINTER bytes
+
+  port=EXEC.CreateMsgPort()
+  item.io_Message.mn_Length=26
+  item.io_Message.mn_ReplyPort=port
+  error=EXEC.OpenDevice(immediateName,0,@item,0)
+  item.io_Command=EXEC.CMD_RESET
+  item.io_Flags=$a4
+  item.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+  IF (variant & 1)=0 THEN
+    port.mp_SigTask=@dead
+  ELSE
+    port.mp_Flags=EXEC.PA_IGNORE
+  FI
+
+  bytes=BYTE POINTER(@item)
+  FOR i=0 TO 25 DO
+    snapshot(i)=bytes(i)
+  OD
+
+  IF variant<2 THEN
+    error=EXEC.WaitIO(@item)
+  ELSE
+    error=EXEC.DoIO(@item)
+  FI
+
+  reached=1
+
+RETURN
+
+ENDMODULE

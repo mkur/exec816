@@ -1,0 +1,59 @@
+; Cooperative operation retirement between bounded filesystem steps.
+MODULE FSABORT
+USE EXEC
+USE FSTYPES
+USE DOSCLIENT
+USE FSOPERATION
+USE DOSBREAKTYPES
+USE FSOBJECTS
+USE FSPACKET
+USE FSBACKEND
+USE FSBTYPES
+INCLUDE "../dos/dos-types.inc"
+
+; Observe cancellation at a worker boundary before publishing further results.
+PUBLIC BYTE FUNC Checkpoint(FSTYPES.Service POINTER service)
+  DOSBREAKTYPES.Scope POINTER scope
+  LONGINT action
+  BYTE ignored
+
+  IF service.packet=FSTYPES.Packet POINTER(0)
+      OR service.client=DOSCLIENT.ClientContext POINTER(0) OR service.stage=70 THEN
+    RETURN(0)
+  FI
+
+  scope=DOSBREAKTYPES.Scope POINTER(service.client.foreground)
+  IF FSOPERATION.Canceled(scope)=0 THEN
+    RETURN(0)
+  FI
+
+  ; A prior filesystem/transport failure owns its cause and recovery path.
+  IF service.work.error<>0 AND service.work.error<>ERROR_BREAK THEN
+    RETURN(0)
+  FI
+
+  IF service.work.ioError<>0 AND service.work.ioError<>ERROR_BREAK THEN
+    RETURN(0)
+  FI
+
+  action=service.packet.sp_Pkt.dp_Type
+  service.packet.sp_Pkt.dp_Res1=0
+  IF action=82 OR action=1008 THEN
+    service.packet.sp_Pkt.dp_Res1=-1
+    IF service.operation.stage<>0
+        AND service.operation.file<>FSBTYPES.Cursor POINTER(0) THEN
+      ignored=FSBACKEND.Cancel(service.operation)
+      service.packet.sp_Pkt.dp_Res1=service.operation.result
+    FI
+  ELSEIF (action=1005 OR action=8)
+      AND service.object<>FSTYPES.Object POINTER(0) THEN
+    FSOBJECTS.Free(service.object)
+    service.object=FSTYPES.Object POINTER(0)
+  FI
+
+  FSBACKEND.Invalidate(service.work)
+  ignored=FSPACKET.Error(service,ERROR_BREAK)
+
+RETURN(1)
+
+ENDMODULE

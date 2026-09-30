@@ -1,0 +1,60 @@
+Exec816 demo
+============
+
+A text shell and an independent prime search share the screen. Try disk
+commands and pipes while the prime search keeps running.
+
+Boot in AltirraSDL
+-----------------
+
+Requires AltirraSDL: https://github.com/ilmenit/AltirraSDL
+Upstream Altirra will not run this build.
+
+1. Extract all files from this ZIP into one folder.
+2. Select the included altirraos-816.rom as the OS firmware.
+3. Configure Atari 800XL, native 65C816 at 8x, PAL, 64 KiB base RAM plus
+   15 high banks, BASIC off and ROM shadowing on.
+4. Mount @SYSTEM_DISK@ in D@SYSTEM_DRIVE@. Use Generic + 57600 baud drive emulation,
+   with SIO patch and burst I/O disabled. Disable "Unload disks when
+   booting new image".
+5. Boot Exec-of816.xex while keeping the disk mounted. Leave the keyboard
+   alone; Exec816 starts after the five-second countdown.
+
+The ATR contains the system files. Boot the XEX, not the ATR.
+To enter the OF816 Forth monitor, press a key during the countdown.
+Type EXEC816 to continue into the demo.
+
+Try it
+------
+
+Wait for the SYS: ready message and the > prompt, then enter these in order.
+TASKS comes first so the boot messages remain visible beside the task list:
+
+    TASKS
+    MOUNT
+    CD SYS:
+    DIR
+    HELLO
+    TYPE README.TXT
+    MEM
+    HELLO | WC
+    CAT STORY.TXT | WC
+
+HELLO | WC prints 1 3 17. CAT STORY.TXT | WC prints 24 133 746.
+The columns count lines, words and bytes. The lower screen shows the
+prime search advancing independently.
+
+Try CAT LONG.TXT | WC, then press BREAK to cancel it. EXIT stops the demo
+and restores the OS display. Disk access is read-only; keep the same disk
+mounted until reset. Pipes support two external commands.
+
+Included files
+--------------
+
+Exec-of816.xex       Exec816 with the OF816 boot monitor
+@SYSTEM_DISK@        System disk with HELLO, CAT, WC and sample text
+altirraos-816.rom    AltirraOS 3.44 for 65C816
+README.txt          This guide
+OF816-LICENSE.txt   OF816 license
+ALTIRRAOS-LICENSE.txt  AltirraOS redistribution notice
+SHA256SUMS          Checksums of the files above

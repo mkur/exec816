@@ -1,0 +1,244 @@
+; Detached, retained wrappers are prepared by the parent and adopted once by
+; the child. Public handles never change owner or alias another Task's handle.
+MODULE DOSINHERIT
+USE EXEC
+USE A816MEMORY
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE DOSSTREAMS
+USE DOSPIPE
+USE DOSRAW
+USE DOSCOOKED
+USE COOKEDLINE
+USE FSTYPES
+USE FSFILES
+USE FSLOCKS
+USE FSOBJECTS
+USE FSREGISTRY
+USE HEAPCORE
+INCLUDE "dos-types.inc"
+
+; Clone ownership separately from the shared file position.
+BYTE POINTER FUNC CloneFile(FSTYPES.FileObject POINTER source)
+
+  LET item=FSFILES.Allocate()
+  IF item=NULL THEN
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(NULL)
+  FI
+
+  item.common.mount=source.common.mount
+  item.common.generation=source.common.generation
+  item.common.header.backend=DOSOBJECTS.BACKEND_FILE
+  IF FSREGISTRY.Retain(item.common.mount)=0 THEN
+    FSOBJECTS.Free(@item.common)
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(NULL)
+  FI
+
+  IF FSFILES.Retain(source,item)=0 THEN
+    FSREGISTRY.Release(item.common.mount)
+    FSOBJECTS.Free(@item.common)
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(NULL)
+  FI
+
+RETURN(BYTE POINTER(item))
+
+; A child gets its own lock identity, ancestry snapshot and canonical name.
+BYTE POINTER FUNC CloneLock(FSTYPES.LockObject POINTER source)
+
+  LET name=FSLOCKS.Trailer(source)
+  LET item=FSLOCKS.Allocate(name.length)
+  IF item=NULL THEN
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(NULL)
+  FI
+
+  A816MEMORY.Move(BYTE POINTER(item),BYTE POINTER(source),
+      FSLOCKS.Allocation(source))
+  item.common.header.next=NULL
+  item.common.header.owner=NULL
+  IF FSREGISTRY.Retain(item.common.mount)=0 THEN
+    FSLOCKS.Free(item)
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(NULL)
+  FI
+
+  IF FSREGISTRY.Stamp(item)=0 THEN
+    FSREGISTRY.Release(item.common.mount)
+    FSLOCKS.Free(item)
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(NULL)
+  FI
+
+RETURN(BYTE POINTER(item))
+
+; Validate an inherited standard stream before cloning its backend ownership.
+BYTE POINTER FUNC Stream(DOSSTREAMS.Handle POINTER source)
+  DOSSTREAMS.Handle POINTER item
+  DOSCOOKED.Handle POINTER cooked
+  SIZE bytes
+  LONGINT ignored
+
+  bytes=SIZEOF(DOSSTREAMS.Handle)
+  IF source.header.backend=DOSOBJECTS.BACKEND_CON THEN
+    bytes=SIZEOF(DOSCOOKED.Handle)
+  FI
+
+  item=DOSSTREAMS.Handle POINTER(EXEC.AllocMem(bytes,EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  IF item=DOSSTREAMS.Handle POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  A816MEMORY.Move(BYTE POINTER(item),BYTE POINTER(source),bytes)
+  item.header.next=BYTE POINTER(0)
+  item.header.owner=DOSCORE.DosSlot POINTER(0)
+  IF source.header.backend<>DOSOBJECTS.BACKEND_NIL THEN
+    IF DOSRAW.Retain(item)=0 THEN
+      EXEC.FreeMem(BYTE POINTER(item),bytes)
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+      RETURN(BYTE POINTER(0))
+    FI
+  FI
+
+  IF source.header.backend=DOSOBJECTS.BACKEND_CON THEN
+    cooked=DOSCOOKED.Handle POINTER(item)
+    IF COOKEDLINE.Retain(cooked.state)=0 THEN
+      ignored=DOSRAW.ReleaseEndpoint(item)
+      IF ignored<>0 THEN
+        HEAPCORE.Abort($ff94)
+      FI
+
+      EXEC.FreeMem(BYTE POINTER(item),bytes)
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+      RETURN(BYTE POINTER(0))
+    FI
+  FI
+
+RETURN(BYTE POINTER(item))
+
+; Capture the parent's stream and directory selections for a child context.
+PUBLIC BYTE POINTER FUNC Clone(DOSCORE.DosSlot POINTER owner BYTE
+    POINTER identity BYTE kind)
+  DOSOBJECTS.Header POINTER header
+  FSTYPES.Object POINTER file
+
+  IF identity=BYTE POINTER(0) THEN
+    RETURN(BYTE POINTER(0))
+  FI
+
+  header=DOSOBJECTS.Find(owner,identity,kind)
+  IF header=DOSOBJECTS.Header POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_BAD_STREAM_NAME)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_FILE THEN
+    file=FSREGISTRY.FromHeader(header)
+    IF file=FSTYPES.Object POINTER(0) THEN
+      DOSCLIENT.SetError(ERROR_INVALID_LOCK)
+      RETURN(BYTE POINTER(0))
+    FI
+
+    IF kind=DOSOBJECTS.KIND_LOCK THEN
+      RETURN(CloneLock(FSTYPES.LockObject POINTER(file)))
+    FI
+
+    RETURN(CloneFile(FSTYPES.FileObject POINTER(file)))
+  FI
+
+  IF kind<>DOSOBJECTS.KIND_FILE THEN
+    DOSCLIENT.SetError(ERROR_INVALID_LOCK)
+    RETURN(BYTE POINTER(0))
+  FI
+
+  CASE header.backend OF
+  WHEN DOSOBJECTS.BACKEND_PIPE THEN
+    RETURN(DOSPIPE.Clone(DOSPIPE.Handle POINTER(header)))
+  WHEN DOSOBJECTS.BACKEND_NIL TO DOSOBJECTS.BACKEND_CON THEN
+    RETURN(Stream(DOSSTREAMS.Handle POINTER(header)))
+  ELSE
+    DOSCLIENT.SetError(ERROR_BAD_STREAM_NAME)
+  ESAC
+
+RETURN(BYTE POINTER(0))
+
+; Release an inheritance snapshot that was not transferred to a child.
+PUBLIC LONGINT FUNC Discard(BYTE POINTER identity)
+  DOSOBJECTS.Header POINTER header
+  FSTYPES.Object POINTER file
+  DOSCOOKED.Handle POINTER cooked
+  LONGINT error
+  SIZE bytes
+
+  IF identity=BYTE POINTER(0) THEN
+    RETURN(-1)
+  FI
+
+  header=DOSOBJECTS.Header POINTER(identity)
+  IF header.owner<>DOSCORE.DosSlot POINTER(0) THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_FILE THEN
+    file=FSTYPES.Object POINTER(header)
+    FSREGISTRY.Release(file.mount)
+    FSOBJECTS.Free(file)
+    RETURN(-1)
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_PIPE THEN
+    DOSPIPE.Discard(DOSPIPE.Handle POINTER(header))
+    RETURN(-1)
+  FI
+
+  bytes=SIZEOF(DOSSTREAMS.Handle)
+  IF header.backend=DOSOBJECTS.BACKEND_CON THEN
+    cooked=DOSCOOKED.Handle POINTER(header)
+    bytes=SIZEOF(DOSCOOKED.Handle)
+    IF cooked.state.references=1 AND cooked.state.busy<>0 THEN
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+      RETURN(0)
+    FI
+  FI
+
+  IF header.backend<>DOSOBJECTS.BACKEND_NIL THEN
+    error=DOSRAW.ReleaseEndpoint(DOSSTREAMS.Handle POINTER(header))
+    IF error<>0 THEN
+      DOSCLIENT.SetError(error)
+      RETURN(0)
+    FI
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_CON THEN
+    IF COOKEDLINE.Release(cooked.state)=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+  FI
+
+  EXEC.FreeMem(identity,bytes)
+
+RETURN(-1)
+
+; Transfer a prepared inheritance snapshot into the child's DOS ownership.
+PUBLIC PROC Adopt(DOSCORE.DosSlot POINTER owner BYTE POINTER identity)
+  DOSOBJECTS.Header POINTER header
+
+  IF identity=BYTE POINTER(0) THEN
+    RETURN
+  FI
+
+  header=DOSOBJECTS.Header POINTER(identity)
+  IF header.owner<>DOSCORE.DosSlot POINTER(0) THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  DOSOBJECTS.Link(owner,header)
+
+RETURN
+
+ENDMODULE

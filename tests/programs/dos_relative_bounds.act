@@ -1,0 +1,112 @@
+MODULE DOSRELATIVEBOUNDS
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE FSTYPES
+USE FSLOCKS
+USE FSBOOT
+USE HEAPCORE
+CARD checks
+BYTE finished,variant
+LONGCARD before
+DOS.FileLock POINTER cwd
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ea00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Failure(BYTE POINTER path BYTE opening LONGINT error)
+  DOS.FileLock POINTER lock
+  DOS.FileHandle POINTER file
+  LONGCARD available
+
+  available=EXEC.AvailMem(0)
+  IF opening<>0 THEN
+    file=DOS.Open(path,DOS.MODE_OLDFILE)
+    Require(file=DOS.FileHandle POINTER(0) AND DOS.IoErr()=error)
+  ELSE
+    lock=DOS.Lock(path,DOS.SHARED_LOCK)
+    Require(lock=DOS.FileLock POINTER(0) AND DOS.IoErr()=error)
+  FI
+
+  Require(EXEC.AvailMem(0)=available)
+
+RETURN
+
+PROC Deep()
+  DOS.FileLock POINTER parent,duplicate
+  DOS.FileHandle POINTER file
+  FSTYPES.LockObject POINTER item
+  DOS.FileInfoBlock POINTER info
+  BYTE POINTER buffer,expected
+  CARD index
+
+  Failure(BYTE POINTER($d1100),0,DOS.ERROR_TOO_MANY_LEVELS)
+  parent=DOS.Lock(BYTE POINTER($d1200),DOS.SHARED_LOCK)
+  Require(parent<>DOS.FileLock POINTER(0))
+  item=FSTYPES.LockObject POINTER(parent)
+  Require(item.state.depth=15)
+  buffer=BYTE POINTER($e0000)
+  expected=BYTE POINTER($d1600)
+  Require(DOS.NameFromLock(parent,buffer,256)<>0)
+  FOR index=0 TO 226 DO
+    IF buffer(index)<>expected(index) THEN
+      HEAPCORE.Abort($eaf0)
+    FI
+  OD
+
+  info=DOS.FileInfoBlock POINTER($e0200)
+  Require(DOS.Examine(parent,info)<>0 AND DOS.ExNext(parent,info)<>0
+      AND info.fib_DirEntryType=DOS.ST_USERDIR)
+  duplicate=DOS.Lock(BYTE POINTER($d1300),DOS.SHARED_LOCK)
+  Require(duplicate<>DOS.FileLock POINTER(0))
+  item=FSTYPES.LockObject POINTER(duplicate)
+  Require(item.state.depth=16)
+  DOS.UnLock(duplicate)
+  DOS.UnLock(parent)
+  file=DOS.Open(BYTE POINTER($d1400),DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0) AND DOS.Read(file,buffer,1)=0)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Corrupt()
+
+  Failure(BYTE POINTER($d1100),0,DOS.ERROR_DISK_NOT_VALIDATED)
+  Failure(BYTE POINTER($d1200),0,DOS.ERROR_DISK_NOT_VALIDATED)
+  Failure(BYTE POINTER($d1300),1,DOS.ERROR_DISK_NOT_VALIDATED)
+
+RETURN
+
+; Exercise relative-path depth bounds and corrupt ancestry rejection.
+PROC Main()
+  DOS.FileLock POINTER old
+
+  before=EXEC.AvailMem(0)
+  cwd=DOS.Lock(BYTE POINTER($d1000),DOS.SHARED_LOCK)
+  Require(cwd<>DOS.FileLock POINTER(0))
+  old=DOS.CurrentDir(cwd)
+  Require(old=DOS.FileLock POINTER(0) AND DOS.IoErr()=0)
+  IF variant=0 THEN
+    Deep()
+  ELSE
+    Corrupt()
+  FI
+
+  old=DOS.CurrentDir(DOS.FileLock POINTER(0))
+  Require(old=cwd)
+  DOS.UnLock(old)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,112 @@
+# Historical records
+
+[Documentation home](../README.md)
+
+These pages preserve earlier designs, completed implementation slices and
+revision-specific measurements. Some use the future tense because they were
+written before implementation. Start with the [current architecture](../architecture/README.md)
+or [reference](../reference/README.md) when looking up today's behavior.
+
+Recorded paths and hashes inside [development](../development/),
+[qualification](../qualification/) and [experiments](../experiments/) evidence
+remain tied to their original revisions. Their JSON records are not rewritten
+when documentation moves. The [testing policy](../contributing/testing.md)
+distinguishes that evidence from a new qualification claim.
+
+Records made before the public repository was created refer to commits in the
+private development archive. Those commits are outside the public Git history;
+their recorded hashes and measurements are preserved here as historical evidence.
+
+## Exec and project history
+
+- [Intrusive Lists — earlier guide](lists-reference.md)
+- [Build cleanup and artifact restoration](build-cleanup.md)
+- [Two cooperative tasks under AltirraOS](cooperative-tasks.md)
+- [Exec816](development-overview.md)
+- [Interruptible Task policy](kernel-critical-sections.md)
+- [COP fast-path implementation record](kernel-fast-path-implementation.md)
+- [Classic Exec list update](lists-exec-update.md)
+- [Memory allocation: classic Exec design](memory-allocation-design.md)
+- [Exec memory allocation implementation](memory-allocation-implementation.md)
+- [Byte-level memory allocation (superseded proposal)](memory-allocation.md)
+- [Messages and ports: classic Exec design](messages-ports-design.md)
+- [Messages and ports implementation](messages-ports-implementation.md)
+- [Initial AltirraOS platform contract](platform-contract.md)
+- [Exec816 implementation roadmap](roadmap-chronology.md)
+- [Serial deadlines under concurrent kernel work](signals-concurrency.md)
+- [Signals and Wait: delivery-path review](signals-delivery-review.md)
+- [Signals implementation record](signals-implementation.md)
+- [Signals and Wait: classic Exec design](signals-wait-design.md)
+- [Eight-task configuration](task-capacity.md)
+- [Task API review and migration](tasks-exec-update.md)
+- [General task management](tasks.md)
+
+## Platform and boot
+
+- [Bank manager](bank-manager.md)
+- [Banked loading and memory ownership](banked-loading.md)
+- [Native interrupt masking in the pinned emulator](emulator-native-irq-fix.md)
+- [Native Action! launch under AltirraOS](native-launch.md)
+- [OF816 boot monitor](of816-boot.md)
+- [AltirraOS 65816 boundary probe](os-boundary-probe.md)
+- [Stack checks](stack-checks.md)
+- [VBI preemption under AltirraOS](vbi-preemption.md)
+
+## Device I/O and SIO
+
+- [Queued device I/O and SIO](device-io-sio-design.md)
+- [Queued device I/O and SIO implementation](device-io-sio-implementation.md)
+- [Shared serial IRQ adapter](serial-irq-adapter.md)
+- [Nominal 57.6 kbaud SIO](sio-57600.md)
+- [SIO driver migration record](sio-driver-boundary-implementation.md)
+- [POKEY IRQ-to-worker latency proof](sio-latency-poc.md)
+
+## Filesystems and DOS
+
+- [Block I/O and DOS with MyDOS filesystems](block-io-dos-design.md)
+- [Block I/O and MyDOS implementation](block-io-dos-implementation.md)
+- [DOS console streams](dos-console-streams-design.md)
+- [DOS console streams implementation](dos-console-streams-implementation.md)
+- [Single large-read throughput](dos-read-throughput.md)
+- [DOS simplification development record](dos-simplification-implementation.md)
+- [Filesystem CPU-step consolidation](filesystem-cpu-steps.md)
+- [One owner for length metadata](filesystem-length.md)
+- [Separate file handles and locks](filesystem-objects.md)
+- [Shared filesystem progress](filesystem-progress.md)
+- [Shared filesystem helpers](filesystem-shared-helpers.md)
+- [Filesystem initialization simplification](fsinit-simplification.md)
+- [MyDOS simplification implementation record](mydos-simplification.md)
+- [Sector read cache](sector-cache.md)
+- [SpartaDOS implementation record](spartados-implementation.md)
+
+## Console and interaction
+
+- [Console interaction implementation record](console-interaction-implementation.md)
+- [Console input/output](console-io-design.md)
+- [Native console implementation](console-io-implementation.md)
+- [Console refactor development record](console-refactor-implementation.md)
+- [Idle console scrolling](console-scrolling.md)
+- [Console instances and windows](console-windows-design.md)
+- [Cooked console contract](cooked-console-design.md)
+
+## Programs and shell
+
+- [Resident shell — earlier guide](shell-guide.md)
+- [HELLO and CAT size analysis](command-size-analysis.md)
+- [Compact o65 metadata](compact-o65-implementation.md)
+- [C-string literals and CSTRING](cstrings-design.md)
+- [Demo implementation record](demo-implementation.md)
+- [Native o65 implementation record](o65-loading-implementation.md)
+- [Resident shell and DOS current directory](shell-design.md)
+- [Resident shell implementation](shell-implementation.md)
+
+## Compiler and ABI
+
+- [Compiler ae1f555 qualification](compiler-ae1f555-qualification.md)
+- [Compiler issues encountered by Exec816](compiler-issues.md)
+- [Compiler refresh and Exec816 size comparison](compiler-main-refresh.md)
+- [Compiler-supported NULL](compiler-null.md)
+- [Native pointer-loop implementation results](compiler-pointer-loops-results.md)
+- [Compiler upstream merge](compiler-upstream-merge.md)
+- [Native word-address selection](compiler-word-addresses-results.md)
+- [Native direct-page partition](direct-page-partition.md)

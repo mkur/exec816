@@ -1,0 +1,2387 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-17T10:07:49.736032+00:00",
+  "target_baud": 125000,
+  "platform_base": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 1,
+      "memory": "64K",
+      "high_banks": 0,
+      "video": "PAL",
+      "basic": false,
+      "dli": false
+    }
+  },
+  "observer_patch_sha256": "14cd4ad74a390b5a66aa399a0d0697c7365e408b03562526bac563d2b23df492",
+  "assembler": "ca65 V2.18 - N/A",
+  "cases": [
+    {
+      "name": "native_no_vbi",
+      "status": 24589,
+      "sent": 4096,
+      "posts": 4096,
+      "waits": 4096,
+      "vbis": 0,
+      "background_progress": 42397,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$336c",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 4294962923,
+        "clock_multiplier": 8,
+        "shadow_rom": false,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$20",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc20",
+        "beam_x": 35,
+        "beam_y": 4
+      },
+      "clock_before": 3,
+      "clock_after": 3,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 0,
+        "ROM_IRQ": 0,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 0,
+        "PHASE": 0,
+        "BYTE_COUNT": 4096
+      },
+      "xex_sha256": "760316850e18de0ac6dfa2274522f4bf582eeda52e7bdcd767e60b94ced097a9",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": false,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": false
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 323347.6040311314,
+        "blocked_waits": 4096,
+        "ready_to_refill": {
+          "count": 4095,
+          "min_us": 21.991065424829323,
+          "mean_us": 29.123273087359987,
+          "p99_us": 67.66481669178253,
+          "max_us": 69.35643710907709
+        },
+        "ready_to_wake": {
+          "count": 4096,
+          "min_us": 20.651865927804458,
+          "mean_us": 26.600121896889743,
+          "p99_us": 65.90271209043404,
+          "max_us": 67.45336413962072
+        },
+        "native_irq_entry_to_wake": {
+          "count": 4096,
+          "min_us": 15.29506793970501,
+          "mean_us": 16.569375869818884,
+          "p99_us": 19.735571535103237,
+          "max_us": 60.47542991828063
+        },
+        "post_entry_to_wake": {
+          "count": 4096,
+          "min_us": 8.810523006742518,
+          "mean_us": 9.066183046412776,
+          "p99_us": 9.726817399443739,
+          "max_us": 10.0087541356595
+        },
+        "deadline_misses": 0,
+        "gap_count": 0,
+        "max_gap_us": 0.0,
+        "context_restoration": "pass",
+        "worst_refill_byte": 197,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294664713,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294664726.375,
+            "event": "native_irq"
+          },
+          {
+            "base_tick": 4294664739.0,
+            "event": "irq_post"
+          },
+          {
+            "base_tick": 4294664754.75,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294664836,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "d5bc0db1f1241c1692fc32d2d97be905eba6ae9b81d1300f653a4963ec20c4ca",
+        "refills_csv_sha256": "fb8d3725c97781830056a872dcc167fd81780c61220065f5361f4d576d9c7728",
+        "verdict": "pass"
+      }
+    },
+    {
+      "name": "native_rom_vbi",
+      "status": 24589,
+      "sent": 4096,
+      "posts": 4096,
+      "waits": 4096,
+      "vbis": 16,
+      "background_progress": 39921,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$3372",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 4074,
+        "clock_multiplier": 8,
+        "shadow_rom": false,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$31",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc31",
+        "beam_x": 37,
+        "beam_y": 123
+      },
+      "clock_before": 3,
+      "clock_after": 19,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 0,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 0,
+        "PHASE": 0,
+        "BYTE_COUNT": 4096
+      },
+      "xex_sha256": "462cc52a3eb8e05880721275b224c82c7a0cd086378b93bd5f77cf988ef0e5d0",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": false,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": false
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 330997.1115581375,
+        "blocked_waits": 4096,
+        "ready_to_refill": {
+          "count": 4095,
+          "min_us": 21.991065424829323,
+          "mean_us": 31.7198450213383,
+          "p99_us": 68.22869016421406,
+          "max_us": 555.4153703450484
+        },
+        "ready_to_wake": {
+          "count": 4096,
+          "min_us": 20.651865927804458,
+          "mean_us": 28.90323046856828,
+          "p99_us": 66.32561719475767,
+          "max_us": 554.0761708480234
+        },
+        "native_irq_entry_to_wake": {
+          "count": 4080,
+          "min_us": 15.29506793970501,
+          "mean_us": 16.77977927062358,
+          "p99_us": 59.34768297341759,
+          "max_us": 60.47542991828063
+        },
+        "post_entry_to_wake": {
+          "count": 4096,
+          "min_us": 8.810523006742518,
+          "mean_us": 10.703322768708617,
+          "p99_us": 9.726817399443739,
+          "max_us": 425.93592423796025
+        },
+        "deadline_misses": 16,
+        "gap_count": 16,
+        "max_gap_us": 481.54794545651896,
+        "context_restoration": "pass",
+        "worst_refill_byte": 1966,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294918295,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294918435,
+            "event": "idle"
+          },
+          {
+            "base_tick": 4294918522.25,
+            "event": "emulation_post"
+          },
+          {
+            "base_tick": 4294919261.5,
+            "event": "nmi_return"
+          },
+          {
+            "base_tick": 4294919277.625,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294919280,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "9f60fc88efab537cda83eb8ed62f264703a94d76928e6d6dada7782f12f16df9",
+        "refills_csv_sha256": "a98abff9021f9ac3e4febf995e67bb64811e1504fc3f68faf6f9c329baf26628",
+        "verdict": "fail"
+      }
+    },
+    {
+      "name": "rom_irq_rom_vbi",
+      "status": 24589,
+      "sent": 4096,
+      "posts": 4096,
+      "waits": 4096,
+      "vbis": 30,
+      "background_progress": 0,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$3350",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 344978,
+        "clock_multiplier": 8,
+        "shadow_rom": false,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$33",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc33",
+        "beam_x": 69,
+        "beam_y": 139
+      },
+      "clock_before": 3,
+      "clock_after": 33,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 1,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 0,
+        "PHASE": 0,
+        "BYTE_COUNT": 4096
+      },
+      "xex_sha256": "2e489ad7d2c79a4eeb1081da61e08059a55387a31890e68dcd803f6290dcbc07",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": false,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": false
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 612750.0250218854,
+        "blocked_waits": 4081,
+        "ready_to_refill": {
+          "count": 4095,
+          "min_us": 108.26370670685205,
+          "mean_us": 144.3996655583128,
+          "p99_us": 201.302829658053,
+          "max_us": 575.7148153525831
+        },
+        "ready_to_wake": {
+          "count": 4096,
+          "min_us": 106.7835388417193,
+          "mean_us": 139.80830443995734,
+          "p99_us": 198.976851584273,
+          "max_us": 574.0936791193424
+        },
+        "native_irq_entry_to_wake": {
+          "count": 4081,
+          "min_us": 93.03912295120098,
+          "mean_us": 114.16600150190068,
+          "p99_us": 170.5012412264812,
+          "max_us": 230.4127976723303
+        },
+        "post_entry_to_wake": {
+          "count": 4096,
+          "min_us": 26.854474124551192,
+          "mean_us": 34.171561857492605,
+          "p99_us": 46.23762473938473,
+          "max_us": 438.62307736766945
+        },
+        "deadline_misses": 4095,
+        "gap_count": 4095,
+        "max_gap_us": 505.2306312986429,
+        "context_restoration": "pass",
+        "worst_refill_byte": 1060,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294918281,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294918286.375,
+            "event": "native_nmi"
+          },
+          {
+            "base_tick": 4294918421,
+            "event": "idle"
+          },
+          {
+            "base_tick": 4294918522.25,
+            "event": "emulation_post"
+          },
+          {
+            "base_tick": 4294919261.5,
+            "event": "nmi_return"
+          },
+          {
+            "base_tick": 4294919274.125,
+            "event": "wait_call"
+          },
+          {
+            "base_tick": 4294919299.125,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294919302,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "b8ae0bd07c244796d05d351af2d9c63c7bb746a9d8672818d46cbebcdb088aad",
+        "refills_csv_sha256": "a6d027b9222345bbe2609dafa8e274a871d57e8f6d4513fdad5c0d4d907b1f79",
+        "verdict": "fail"
+      }
+    },
+    {
+      "name": "native_critic",
+      "status": 24589,
+      "sent": 4096,
+      "posts": 4096,
+      "waits": 4096,
+      "vbis": 16,
+      "background_progress": 41560,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$3372",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 4294965097,
+        "clock_multiplier": 8,
+        "shadow_rom": false,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$23",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc23",
+        "beam_x": 4,
+        "beam_y": 25
+      },
+      "clock_before": 3,
+      "clock_after": 19,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 0,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 1,
+        "PHASE": 0,
+        "BYTE_COUNT": 4096
+      },
+      "xex_sha256": "eb57177325cf7c0bade5023438e7a3046944d477b3224bda2fa9b5cd64f0a28f",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": false,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": false
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 324681.72866690444,
+        "blocked_waits": 4096,
+        "ready_to_refill": {
+          "count": 4095,
+          "min_us": 21.991065424829323,
+          "mean_us": 29.902919387947843,
+          "p99_us": 68.22869016421406,
+          "max_us": 160.140066170552
+        },
+        "ready_to_wake": {
+          "count": 4096,
+          "min_us": 20.651865927804458,
+          "mean_us": 27.24886548547215,
+          "p99_us": 66.32561719475767,
+          "max_us": 158.8008666735271
+        },
+        "native_irq_entry_to_wake": {
+          "count": 4080,
+          "min_us": 15.29506793970501,
+          "mean_us": 16.700743696592507,
+          "p99_us": 58.14945184450061,
+          "max_us": 60.47542991828063
+        },
+        "post_entry_to_wake": {
+          "count": 4096,
+          "min_us": 8.810523006742518,
+          "mean_us": 9.167899846203511,
+          "p99_us": 9.867785767551618,
+          "max_us": 35.73548131534765
+        },
+        "deadline_misses": 16,
+        "gap_count": 16,
+        "max_gap_us": 86.83651475445426,
+        "context_restoration": "pass",
+        "worst_refill_byte": 1242,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294811601,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294811741,
+            "event": "idle"
+          },
+          {
+            "base_tick": 4294811819.25,
+            "event": "emulation_post"
+          },
+          {
+            "base_tick": 4294811866.5,
+            "event": "nmi_return"
+          },
+          {
+            "base_tick": 4294811882.625,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294811885,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "877e2b5e84ad65cf9488a22fd4f1851cb51c7d2ca1e954c9ba5d378512d5e6ae",
+        "refills_csv_sha256": "e75afb5ab7a951950b804bc2b9a2b17022dfb603c4a13f3d284fffa8387f6328",
+        "verdict": "fail"
+      }
+    },
+    {
+      "name": "native_shadow",
+      "status": 24589,
+      "sent": 4096,
+      "posts": 4096,
+      "waits": 4096,
+      "vbis": 16,
+      "background_progress": 6278,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$3372",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 4294438239,
+        "clock_multiplier": 8,
+        "shadow_rom": true,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$20",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc20",
+        "beam_x": 66,
+        "beam_y": 311
+      },
+      "clock_before": 2,
+      "clock_after": 18,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 0,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 0,
+        "PHASE": 0,
+        "BYTE_COUNT": 4096
+      },
+      "xex_sha256": "462cc52a3eb8e05880721275b224c82c7a0cd086378b93bd5f77cf988ef0e5d0",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": true,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 323442.33477449993,
+        "blocked_waits": 4093,
+        "ready_to_refill": {
+          "count": 4095,
+          "min_us": 19.735571535103237,
+          "mean_us": 24.592043696076942,
+          "p99_us": 65.40932280205645,
+          "max_us": 106.57208628955749
+        },
+        "ready_to_wake": {
+          "count": 4096,
+          "min_us": 18.396372038078376,
+          "mean_us": 22.251027477686467,
+          "p99_us": 61.25075594287399,
+          "max_us": 104.88046587226293
+        },
+        "native_irq_entry_to_wake": {
+          "count": 4080,
+          "min_us": 15.29506793970501,
+          "mean_us": 16.72463576192256,
+          "p99_us": 20.017508271319,
+          "max_us": 60.82785083855034
+        },
+        "post_entry_to_wake": {
+          "count": 4096,
+          "min_us": 8.810523006742518,
+          "mean_us": 9.32512982415782,
+          "p99_us": 9.726817399443739,
+          "max_us": 87.75280914715547
+        },
+        "deadline_misses": 9,
+        "gap_count": 9,
+        "max_gap_us": 31.57691445616518,
+        "context_restoration": "pass",
+        "worst_refill_byte": 235,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294100240,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294100270.375,
+            "event": "emulation_post"
+          },
+          {
+            "base_tick": 4294100380,
+            "event": "idle"
+          },
+          {
+            "base_tick": 4294100409.875,
+            "event": "nmi_return"
+          },
+          {
+            "base_tick": 4294100426.0,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294100429,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "8323285480b94cf91ec88693398158ccca674a77e57675acbe5e8666ae5fee8f",
+        "refills_csv_sha256": "b4247259809723c625029f8cb9411c4fa841723d4fa927881ff906115ce14d94",
+        "verdict": "fail"
+      }
+    },
+    {
+      "name": "rom_irq_critic_shadow",
+      "status": 24589,
+      "sent": 4096,
+      "posts": 4096,
+      "waits": 4096,
+      "vbis": 16,
+      "background_progress": 17650,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$3350",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 4294438708,
+        "clock_multiplier": 8,
+        "shadow_rom": true,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$20",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc20",
+        "beam_x": 1,
+        "beam_y": 4
+      },
+      "clock_before": 2,
+      "clock_after": 18,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 1,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 1,
+        "PHASE": 0,
+        "BYTE_COUNT": 4096
+      },
+      "xex_sha256": "a75bbe07cdf3c6948371843df9f4da6037ad254d2da07552375fad214ee91b61",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": true,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 323726.5270046054,
+        "blocked_waits": 4081,
+        "ready_to_refill": {
+          "count": 4095,
+          "min_us": 32.704661401028225,
+          "mean_us": 41.63024833216649,
+          "p99_us": 78.94228614041295,
+          "max_us": 80.070033085276
+        },
+        "ready_to_wake": {
+          "count": 4096,
+          "min_us": 31.083525167787602,
+          "mean_us": 38.886103692895475,
+          "p99_us": 75.84098204203958,
+          "max_us": 78.09647593176567
+        },
+        "native_irq_entry_to_wake": {
+          "count": 4092,
+          "min_us": 30.30819914319426,
+          "mean_us": 33.34189561145723,
+          "p99_us": 72.31677283934258,
+          "max_us": 74.9951718333923
+        },
+        "post_entry_to_wake": {
+          "count": 4096,
+          "min_us": 13.603447522410447,
+          "mean_us": 14.158097478569285,
+          "p99_us": 15.013131203489248,
+          "max_us": 46.16714055533079
+        },
+        "deadline_misses": 48,
+        "gap_count": 48,
+        "max_gap_us": 7.894228614041295,
+        "context_restoration": "pass",
+        "worst_refill_byte": 124,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294084700,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294084705.5,
+            "event": "native_irq"
+          },
+          {
+            "base_tick": 4294084710.125,
+            "event": "irq_post"
+          },
+          {
+            "base_tick": 4294084814.375,
+            "event": "emulation_post"
+          },
+          {
+            "base_tick": 4294084838.5,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294084840,
+            "event": "idle"
+          },
+          {
+            "base_tick": 4294084842,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "7428e72fbce9bf2997b028e13bb2d29475cbd10c2afac08cc96c0aecaaef1a5c",
+        "refills_csv_sha256": "eb6cf27e2f9abd2183d42a4588a61c5c36eba584d2e701f9d642874785c173ea",
+        "verdict": "fail"
+      }
+    },
+    {
+      "name": "candidate_long",
+      "status": 24589,
+      "sent": 65535,
+      "posts": 65535,
+      "waits": 65535,
+      "vbis": 258,
+      "background_progress": 28389,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$3372",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 5341026,
+        "clock_multiplier": 8,
+        "shadow_rom": true,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$20",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc20",
+        "beam_x": 59,
+        "beam_y": 257
+      },
+      "clock_before": 2,
+      "clock_after": 260,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 0,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 1,
+        "PHASE": 0,
+        "BYTE_COUNT": 65535
+      },
+      "xex_sha256": "4e28644bd81a32754b7d1e7c3fd2b1eb04dd333ec67bb52adfd19afed234837d",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": true,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 5173482.7222119635,
+        "blocked_waits": 65535,
+        "ready_to_refill": {
+          "count": 65534,
+          "min_us": 19.735571535103237,
+          "mean_us": 24.586015722440905,
+          "p99_us": 63.717702384761886,
+          "max_us": 65.97319627448798
+        },
+        "ready_to_wake": {
+          "count": 65535,
+          "min_us": 18.396372038078376,
+          "mean_us": 22.18531611478379,
+          "p99_us": 61.8146294153055,
+          "max_us": 64.6339967774631
+        },
+        "native_irq_entry_to_wake": {
+          "count": 65461,
+          "min_us": 15.29506793970501,
+          "mean_us": 17.091886494306582,
+          "p99_us": 55.96444213882847,
+          "max_us": 60.82785083855034
+        },
+        "post_entry_to_wake": {
+          "count": 65535,
+          "min_us": 8.810523006742518,
+          "mean_us": 9.10952608968244,
+          "p99_us": 9.726817399443739,
+          "max_us": 41.23324767155498
+        },
+        "deadline_misses": 0,
+        "gap_count": 0,
+        "max_gap_us": 0.0,
+        "context_restoration": "pass",
+        "worst_refill_byte": 4886,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294751380,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294751387.25,
+            "event": "native_irq"
+          },
+          {
+            "base_tick": 4294751479.0,
+            "event": "irq_post"
+          },
+          {
+            "base_tick": 4294751494.625,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294751497,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "35b40919c101f127a24add76a7761858d8e53720640cf7e25f3ee4fcc4891329",
+        "refills_csv_sha256": "03e1fcb0143c5d4388c8f794f3e93c0ef02afde0fa4ac28a32e351c63470f1d0",
+        "verdict": "pass"
+      }
+    },
+    {
+      "name": "candidate_idle",
+      "status": 24589,
+      "sent": 16384,
+      "posts": 16384,
+      "waits": 16384,
+      "vbis": 64,
+      "background_progress": 0,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$336a",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 644701,
+        "clock_multiplier": 8,
+        "shadow_rom": true,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$30",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc30",
+        "beam_x": 13,
+        "beam_y": 113
+      },
+      "clock_before": 2,
+      "clock_after": 66,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 0,
+        "BUSY": 0,
+        "STALL": 0,
+        "CRITICAL": 1,
+        "PHASE": 0,
+        "BYTE_COUNT": 16384
+      },
+      "xex_sha256": "3094add2d41cbb25bb4eda6822cf7c81086bdd068d4e86d046455f6c9225c321",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": true,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 1293390.4161245257,
+        "blocked_waits": 16384,
+        "ready_to_refill": {
+          "count": 16383,
+          "min_us": 19.735571535103237,
+          "mean_us": 24.58688653761607,
+          "p99_us": 63.717702384761886,
+          "max_us": 65.97319627448798
+        },
+        "ready_to_wake": {
+          "count": 16384,
+          "min_us": 18.396372038078376,
+          "mean_us": 22.172399582669755,
+          "p99_us": 61.8146294153055,
+          "max_us": 64.6339967774631
+        },
+        "native_irq_entry_to_wake": {
+          "count": 16365,
+          "min_us": 15.43603630781289,
+          "mean_us": 17.145741851220652,
+          "p99_us": 56.034926322882406,
+          "max_us": 60.757366654496394
+        },
+        "post_entry_to_wake": {
+          "count": 16384,
+          "min_us": 8.810523006742518,
+          "mean_us": 9.110446460092648,
+          "p99_us": 9.726817399443739,
+          "max_us": 41.23324767155498
+        },
+        "deadline_misses": 0,
+        "gap_count": 0,
+        "max_gap_us": 0.0,
+        "context_restoration": "pass",
+        "worst_refill_byte": 4886,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294751380,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294751386.875,
+            "event": "native_irq"
+          },
+          {
+            "base_tick": 4294751479.0,
+            "event": "irq_post"
+          },
+          {
+            "base_tick": 4294751494.625,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294751497,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "d1507e19d65296926b8e9a97bc58a549885229762d75f2b50833205573c402d9",
+        "refills_csv_sha256": "8aeec5c4dc3531f7c23cf4641338eb1411229c271216f39d9972287f506d3201",
+        "verdict": "pass"
+      }
+    },
+    {
+      "name": "candidate_phase_3",
+      "status": 24589,
+      "sent": 4096,
+      "posts": 4096,
+      "waits": 4096,
+      "vbis": 16,
+      "background_progress": 6057,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$337e",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 4294438090,
+        "clock_multiplier": 8,
+        "shadow_rom": true,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$20",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc20",
+        "beam_x": 13,
+        "beam_y": 310
+      },
+      "clock_before": 2,
+      "clock_after": 18,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 0,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 1,
+        "PHASE": 3,
+        "BYTE_COUNT": 4096
+      },
+      "xex_sha256": "70ffffc2d4508b84700e2dca6bec57f25e2e2dd00d5ef61721416ffea7871f0f",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": true,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 323347.6040311314,
+        "blocked_waits": 4096,
+        "ready_to_refill": {
+          "count": 4095,
+          "min_us": 19.735571535103237,
+          "mean_us": 24.523470072323367,
+          "p99_us": 63.717702384761886,
+          "max_us": 65.40932280205645
+        },
+        "ready_to_wake": {
+          "count": 4096,
+          "min_us": 18.396372038078376,
+          "mean_us": 22.14970646310893,
+          "p99_us": 61.8146294153055,
+          "max_us": 63.50624983260007
+        },
+        "native_irq_entry_to_wake": {
+          "count": 4092,
+          "min_us": 15.29506793970501,
+          "mean_us": 17.06743856590594,
+          "p99_us": 55.96444213882847,
+          "max_us": 60.82785083855034
+        },
+        "post_entry_to_wake": {
+          "count": 4096,
+          "min_us": 8.810523006742518,
+          "mean_us": 9.107654453534359,
+          "p99_us": 9.726817399443739,
+          "max_us": 41.23324767155498
+        },
+        "deadline_misses": 0,
+        "gap_count": 0,
+        "max_gap_us": 0.0,
+        "context_restoration": "pass",
+        "worst_refill_byte": 163,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294090160,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294090166.25,
+            "event": "native_irq"
+          },
+          {
+            "base_tick": 4294090179.0,
+            "event": "irq_post"
+          },
+          {
+            "base_tick": 4294090194.75,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294090276,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "7c95c71b86d4f3869a2f60b608debcdcf2f3393793e5692759f163347d2ac7ef",
+        "refills_csv_sha256": "0259188edbe1e29099d3f678ea31fcaac84b8ef48012952943f965a514e166b0",
+        "verdict": "pass"
+      }
+    },
+    {
+      "name": "candidate_phase_7",
+      "status": 24589,
+      "sent": 4096,
+      "posts": 4096,
+      "waits": 4096,
+      "vbis": 16,
+      "background_progress": 6053,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$338e",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 4294438090,
+        "clock_multiplier": 8,
+        "shadow_rom": true,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$20",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc20",
+        "beam_x": 13,
+        "beam_y": 310
+      },
+      "clock_before": 2,
+      "clock_after": 18,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 0,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 1,
+        "PHASE": 7,
+        "BYTE_COUNT": 4096
+      },
+      "xex_sha256": "df17dd3e1cb485c1fc809c940ff229ce0d5f2d530525c680a02e4704aaf68903",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": true,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 323347.6040311314,
+        "blocked_waits": 4096,
+        "ready_to_refill": {
+          "count": 4095,
+          "min_us": 19.735571535103237,
+          "mean_us": 24.52415856252169,
+          "p99_us": 63.717702384761886,
+          "max_us": 65.40932280205645
+        },
+        "ready_to_wake": {
+          "count": 4096,
+          "min_us": 18.396372038078376,
+          "mean_us": 22.150308744955094,
+          "p99_us": 61.8146294153055,
+          "max_us": 63.50624983260007
+        },
+        "native_irq_entry_to_wake": {
+          "count": 4092,
+          "min_us": 15.29506793970501,
+          "mean_us": 17.067783063384212,
+          "p99_us": 55.96444213882847,
+          "max_us": 60.82785083855034
+        },
+        "post_entry_to_wake": {
+          "count": 4096,
+          "min_us": 8.810523006742518,
+          "mean_us": 9.107688869639855,
+          "p99_us": 9.726817399443739,
+          "max_us": 41.303731855608916
+        },
+        "deadline_misses": 0,
+        "gap_count": 0,
+        "max_gap_us": 0.0,
+        "context_restoration": "pass",
+        "worst_refill_byte": 163,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294090160,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294090166.25,
+            "event": "native_irq"
+          },
+          {
+            "base_tick": 4294090179.0,
+            "event": "irq_post"
+          },
+          {
+            "base_tick": 4294090194.75,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294090276,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "c6388b64e1900a29cda4acf3492e2632adb96279f40025f5a623324ac9dbbdb9",
+        "refills_csv_sha256": "9992ed85625be567d16f12fe09dd5772d4de0db4ba184cb2a9df7dae6c127925",
+        "verdict": "pass"
+      }
+    },
+    {
+      "name": "candidate_phase_13",
+      "status": 24589,
+      "sent": 4096,
+      "posts": 4096,
+      "waits": 4096,
+      "vbis": 16,
+      "background_progress": 5690,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$33a6",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 4294438101,
+        "clock_multiplier": 8,
+        "shadow_rom": true,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$20",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc20",
+        "beam_x": 25,
+        "beam_y": 310
+      },
+      "clock_before": 2,
+      "clock_after": 18,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 0,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 1,
+        "PHASE": 13,
+        "BYTE_COUNT": 4096
+      },
+      "xex_sha256": "2f033a21f297ad8e922906495bfdeab45b9bec377ddc921cf1c6b4671caa88c5",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": true,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 323347.6040311314,
+        "blocked_waits": 4096,
+        "ready_to_refill": {
+          "count": 4095,
+          "min_us": 19.735571535103237,
+          "mean_us": 24.595210750989256,
+          "p99_us": 64.2815758571934,
+          "max_us": 66.5370697469195
+        },
+        "ready_to_wake": {
+          "count": 4096,
+          "min_us": 18.396372038078376,
+          "mean_us": 22.075522547714268,
+          "p99_us": 62.37850288773702,
+          "max_us": 64.07012330503157
+        },
+        "native_irq_entry_to_wake": {
+          "count": 4091,
+          "min_us": 15.29506793970501,
+          "mean_us": 16.9645489836167,
+          "p99_us": 20.087992455372937,
+          "max_us": 60.757366654496394
+        },
+        "post_entry_to_wake": {
+          "count": 4096,
+          "min_us": 8.810523006742518,
+          "mean_us": 9.112214587512458,
+          "p99_us": 9.726817399443739,
+          "max_us": 41.374216039662855
+        },
+        "deadline_misses": 0,
+        "gap_count": 0,
+        "max_gap_us": 0.0,
+        "context_restoration": "pass",
+        "worst_refill_byte": 443,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294129374,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294129380.75,
+            "event": "native_irq"
+          },
+          {
+            "base_tick": 4294129393.125,
+            "event": "irq_post"
+          },
+          {
+            "base_tick": 4294129408.75,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294129492,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "8e0f9576298b2071f331cad9fdcc8af4847cd1cea8dc11df680f607bb72ea6b6",
+        "refills_csv_sha256": "47f6d1b032c231ad3f896b8098ac6022c801e6018e9c833be1e5eb29c094693c",
+        "verdict": "pass"
+      }
+    },
+    {
+      "name": "negative_stall",
+      "status": 24589,
+      "sent": 256,
+      "posts": 256,
+      "waits": 256,
+      "vbis": 0,
+      "background_progress": 116,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$39ae",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 4294090741,
+        "clock_multiplier": 8,
+        "shadow_rom": true,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$20",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc20",
+        "beam_x": 45,
+        "beam_y": 239
+      },
+      "clock_before": 2,
+      "clock_after": 2,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 0,
+        "ROM_IRQ": 0,
+        "BUSY": 1,
+        "STALL": 1600,
+        "CRITICAL": 0,
+        "PHASE": 0,
+        "BYTE_COUNT": 256
+      },
+      "xex_sha256": "04de653a879431ef51749dce1a07b3338a46f8ee25efb579362f0dd3f4dea935",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": true,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "instrumented": true,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      },
+      "trace": {
+        "actual_baud": 126674.82142857143,
+        "byte_deadline_us": 78.94228614041295,
+        "stream_duration_us": 38018.605005222875,
+        "blocked_waits": 256,
+        "ready_to_refill": {
+          "count": 255,
+          "min_us": 24.810432786986926,
+          "mean_us": 123.99024841639313,
+          "p99_us": 235.6991114763758,
+          "max_us": 260.5095442633627
+        },
+        "ready_to_wake": {
+          "count": 256,
+          "min_us": 23.471233289962065,
+          "mean_us": 121.73995230335265,
+          "p99_us": 234.35991197935095,
+          "max_us": 259.1703447663379
+        },
+        "native_irq_entry_to_wake": {
+          "count": 256,
+          "min_us": 15.22458375565107,
+          "mean_us": 20.963538179167976,
+          "p99_us": 59.841072261795176,
+          "max_us": 59.841072261795176
+        },
+        "post_entry_to_wake": {
+          "count": 256,
+          "min_us": 8.810523006742518,
+          "mean_us": 9.184419576841153,
+          "p99_us": 9.726817399443739,
+          "max_us": 9.726817399443739
+        },
+        "deadline_misses": 117,
+        "gap_count": 117,
+        "max_gap_us": 189.46148673699108,
+        "context_restoration": "pass",
+        "worst_refill_byte": 37,
+        "worst_refill_window": [
+          {
+            "base_tick": 4294077070,
+            "event": "ready"
+          },
+          {
+            "base_tick": 4294077210,
+            "event": "idle"
+          },
+          {
+            "base_tick": 4294077442.375,
+            "event": "native_irq"
+          },
+          {
+            "base_tick": 4294077514.0,
+            "event": "irq_post"
+          },
+          {
+            "base_tick": 4294077529.625,
+            "event": "worker_wake"
+          },
+          {
+            "base_tick": 4294077532,
+            "event": "write"
+          }
+        ],
+        "log_sha256": "2be1801b3a159726ec804efc37c7476da0d85da147d4d5ff7b863eae63e43bb7",
+        "refills_csv_sha256": "52c0e8d003758fbf06e11b7d0f564ab0de12289f57019fcf68fd755009e7c02a",
+        "verdict": "fail"
+      }
+    },
+    {
+      "name": "pinned_replay",
+      "status": 24589,
+      "sent": 65535,
+      "posts": 65535,
+      "waits": 65535,
+      "vbis": 258,
+      "background_progress": 28389,
+      "worker_saved_s": 18416,
+      "background_saved_s": 20464,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 0,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$eeca81434d995c35",
+        "actual_kernel_id": "$eeca81434d995c35",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "regs": {
+        "ok": true,
+        "PC": "$3372",
+        "A": "$40",
+        "X": "$34",
+        "Y": "$78",
+        "S": "$ef",
+        "P": "$30",
+        "flags": "---B----",
+        "cycles": 5341026,
+        "mode": "65C816"
+      },
+      "guards": "pass",
+      "vectors": "restored",
+      "antic": {
+        "ok": true,
+        "DMACTL": "$22",
+        "CHACTL": "$02",
+        "DLISTL": "$20",
+        "DLISTH": "$bc",
+        "HSCROL": "$00",
+        "VSCROL": "$00",
+        "PMBASE": "$00",
+        "CHBASE": "$e0",
+        "NMIEN": "$40",
+        "DLIST": "$bc20",
+        "beam_x": 59,
+        "beam_y": 257
+      },
+      "clock_before": 2,
+      "clock_after": 260,
+      "timer1_before": 0,
+      "defines": {
+        "DIVISOR": 0,
+        "VBI": 1,
+        "ROM_IRQ": 0,
+        "BUSY": 1,
+        "STALL": 0,
+        "CRITICAL": 1,
+        "PHASE": 0,
+        "BYTE_COUNT": 65535
+      },
+      "xex_sha256": "4e28644bd81a32754b7d1e7c3fd2b1eb04dd333ec67bb52adfd19afed234837d",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+      "clock_multiplier": 8,
+      "base_hz": 1773447.5,
+      "cpu_nominal_hz": 14187580.0,
+      "shadow_rom": true,
+      "resolved_machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "instrumented": false,
+      "source_sha256": {
+        "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+        "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103"
+      }
+    }
+  ],
+  "status": "candidate_passes_with_explicit_platform_constraints",
+  "source_inputs": {
+    "probes/sio-latency/probe.s": "2277c835df24ee3dc5048ec0fa721ef3fd50d572d0bc86991c6c3eef8407b5cf",
+    "probes/sio-latency/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103",
+    "probes/sio-latency/observer.patch": "14cd4ad74a390b5a66aa399a0d0697c7365e408b03562526bac563d2b23df492",
+    "tools/sio_latency.py": "787da4cdd14fb5890facf1020ee417cef7b3005e6b4abd1d2f90c1913356180b",
+    "tools/os_boundary.py": "088fc0d713fb80cf36557b835aebecc5ed7a7e462f2b0642b99e6fe77748d894"
+  },
+  "observer_build": {
+    "source_revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+    "source_override": "probes/sio-latency/observer.patch",
+    "binary_sha256": "5c1ef64565847364b673adce356716b31023652914eacb68fb019763b6e1988e",
+    "purpose": "Passive hardware/CPU event logging and read-only active CPU/ROM settings; no emulated-state or timing changes.",
+    "cmake_options": [
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DALTIRRA_BRIDGE_SERVER=ON",
+      "-DALTIRRA_STATIC_SDL3=OFF",
+      "-DALTIRRA_SKIP_SDL3_IMAGE=ON",
+      "-DENABLE_LIBRASHADER=OFF",
+      "-DALTIRRA_CPU_TESTS=ON"
+    ],
+    "imgui_cache_override": "/Users/michalkurcewicz/atari/AltirraSDL/build/macos-release/_deps/imgui-src",
+    "original_binary_unchanged": true,
+    "interrupt_mask_regressions": [
+      "interrupt-mask mode=0 nmi=0: PASS (IRQ=1 NMI=0 S=3FFC P=04)",
+      "interrupt-mask mode=0 nmi=1: PASS (IRQ=0 NMI=1 S=3FFC P=04)",
+      "interrupt-mask mode=1 nmi=0: PASS (IRQ=1 NMI=0 S=3FFC P=14)",
+      "interrupt-mask mode=1 nmi=1: PASS (IRQ=0 NMI=1 S=3FFC P=14)",
+      "interrupt-mask mode=2 nmi=0: PASS (IRQ=1 NMI=0 S=3FFC P=24)",
+      "interrupt-mask mode=2 nmi=1: PASS (IRQ=0 NMI=1 S=3FFC P=24)",
+      "interrupt-mask mode=3 nmi=0: PASS (IRQ=1 NMI=0 S=3FFC P=34)",
+      "interrupt-mask mode=3 nmi=1: PASS (IRQ=0 NMI=1 S=3FFC P=34)",
+      "interrupt-mask mode=4 nmi=0: PASS (IRQ=1 NMI=0 S=01ED P=34)",
+      "interrupt-mask mode=4 nmi=1: PASS (IRQ=0 NMI=1 S=01ED P=34)"
+    ]
+  },
+  "decision": {
+    "verdict": "conditional_go_for_minimal_native_delivery",
+    "required_conditions": [
+      "direct native serial IRQ route",
+      "8x PAL CPU with fast/shadowed ROM",
+      "CRITIC=1 during transfer"
+    ],
+    "candidate_bytes": 94207,
+    "candidate_refills": 94202,
+    "candidate_vbis": 370,
+    "candidate_misses": 0,
+    "worst_refill_us": 66.5370697469195,
+    "hardware_deadline_us": 78.94228614041295,
+    "observed_margin_us": 12.405216393493447,
+    "scope": "One worker and one busy/idle context, native M=X=0, POKEY transmit-ready at divisor zero; no full Exec API or physical peripheral/RX qualification."
+  },
+  "bank_zero": {
+    "production_reserved_delta": 0,
+    "poc_fixed_reserved_including_os_stack": 4592,
+    "poc_per_context_reserved": 1856,
+    "poc_two_context_total": 8304,
+    "os_stack_reused_bytes": 240
+  },
+  "other_checks": {
+    "rendezvous_tests": 2,
+    "settings_defaults_and_override": "pass",
+    "python_syntax": "pass",
+    "compiler_execution": "not applicable: hand-written assembly, no NIR or compiler changes"
+  }
+}

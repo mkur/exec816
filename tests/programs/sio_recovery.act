@@ -1,0 +1,393 @@
+MODULE SIORECOVERY
+USE EXEC
+USE EXECTASKS
+USE EXECSIGNALIRQ
+USE PRODUCERPROBE
+USE SIOPROBE
+USE SIODRIVER
+USE TASKSTACKS
+USE EXECLISTS
+USE HEAPCORE
+USE IORESIDENTMETA
+
+TYPE ActiveSlot=[EXEC.IORequest POINTER value]
+EXEC.MsgPort POINTER port
+EXEC.IOSIOReq POINTER request,queued
+EXEC.Task POINTER parent
+EXEC.Task ARRAY blockers(3)
+BYTE stopBlockers
+PROC POINTER absent()
+BYTE kind,unit,expected,offlineExpected,cleanupReached
+CARD checks,sectorSize
+BYTE POINTER phase,checkpoint,buffer
+INCLUDE "io-names.inc"
+INCLUDE "tasks_exec_helpers.inc"
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Prepare(EXEC.IOSIOReq POINTER req)
+
+  req.io_Command=EXEC.SIOCMD_TRANSACTION
+  req.io_Length=LONGCARD(sectorSize)
+  req.io_Data=buffer
+  req.io_Offset=0
+  req.sio_Command=$52
+  req.sio_Aux1=4
+  req.sio_Aux2=0
+  req.sio_Direction=EXEC.SIODIR_READ
+  req.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  req.sio_TimeoutUS=0
+  req.io_Actual=0
+
+RETURN
+
+PROC Setup()
+  INT error
+
+  port=EXEC.CreateMsgPort()
+  request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,52))
+  queued=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,52))
+  buffer=EXEC.AllocMem(LONGCARD(sectorSize),EXEC.MEMF_PUBLIC)
+  Require(port<>EXEC.MsgPort POINTER(0) AND request<>EXEC.IOSIOReq POINTER(0)
+      AND queued<>EXEC.IOSIOReq POINTER(0) AND buffer<>BYTE POINTER(0))
+  parent=EXEC.FindTask(BYTE POINTER(0))
+  ; Lazy OpenDevice may block with Forbid held and must preserve its nesting.
+  EXEC.Forbid()
+  error=EXEC.OpenDevice(sioName,LONGCARD(unit),EXEC.IORequest POINTER(request),0)
+  Require(error=0 AND parent.tc_TDNestCnt=0)
+  EXEC.Permit()
+  error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(queued),0)
+  Require(error=0)
+  phase=BYTE POINTER($0f0801)
+  checkpoint=BYTE POINTER($0f085a)
+  Prepare(request)
+  Prepare(queued)
+
+RETURN
+
+PROC Submit()
+  INT error
+  CARD POINTER clock
+  ActiveSlot POINTER slot
+
+  IF kind=1 THEN
+    checkpoint^=1
+  FI
+
+  IF kind=15 THEN
+    checkpoint^=3
+  FI
+
+  IF kind=16 THEN
+    checkpoint^=5
+  FI
+
+  IF kind=4 OR kind=6 THEN
+    request.sio_TimeoutUS=20205
+  FI
+
+  IF kind=4 THEN
+    clock=CARD POINTER($0f081a)
+    clock^=$fffc
+  FI
+
+  IF kind=5 THEN
+    request.sio_Command=0
+    request.sio_Direction=0
+    request.io_Length=0
+  FI
+
+  IF kind=0 THEN
+    EXEC.Forbid()
+    EXEC.SendIO(EXEC.IORequest POINTER(request))
+    EXEC.SendIO(EXEC.IORequest POINTER(queued))
+    EXEC.AbortIO(EXEC.IORequest POINTER(queued))
+    error=EXEC.WaitIO(EXEC.IORequest POINTER(queued))
+    Require(error=EXEC.IOERR_ABORTED)
+    EXEC.AbortIO(EXEC.IORequest POINTER(queued))
+    EXEC.Permit()
+    RETURN
+  FI
+
+  EXEC.SendIO(EXEC.IORequest POINTER(request))
+  IF kind=15 OR kind=16 THEN
+    slot=ActiveSlot POINTER(ADDRESS(IORESIDENTMETA.BASE+71))
+    IF kind=15 THEN
+      WHILE checkpoint^<>4 DO
+        EXEC.Yield()
+      OD
+
+      Require(slot.value=EXEC.IORequest POINTER(request))
+      EXEC.AbortIO(EXEC.IORequest POINTER(request))
+    ELSE
+      WHILE checkpoint^<>6 DO
+        EXEC.Yield()
+      OD
+
+      Require(slot.value=EXEC.IORequest POINTER(0)
+          AND request.io_Message.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+    FI
+  ELSEIF kind=1 THEN
+    WHILE checkpoint^<>2 DO
+      EXEC.Yield()
+    OD
+
+    EXEC.AbortIO(EXEC.IORequest POINTER(request))
+  ELSEIF kind=2 THEN
+    WHILE phase^<>11 DO
+      EXEC.Yield()
+    OD
+
+    EXEC.AbortIO(EXEC.IORequest POINTER(request))
+  ELSEIF kind=3 THEN
+    WHILE phase^=0 DO
+      EXEC.Yield()
+    OD
+
+    EXEC.Forbid()
+    WHILE phase^<>13 DO
+    OD
+
+    EXEC.AbortIO(EXEC.IORequest POINTER(request))
+    EXEC.Permit()
+  ELSEIF kind=7 THEN
+    WHILE phase^<>11 DO
+      EXEC.Yield()
+    OD
+
+    SIOPROBE.Stall()
+  FI
+
+RETURN
+
+PROC Collect()
+  INT error
+  CARD index,status
+
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(request))
+  Require(BYTE(error)=expected)
+  Require(request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  IF kind=13 THEN
+    ; Reach the checkpoint promptly. Poison the ends and retain the known
+    ; payload inside; LatePreparing checks every byte after the stray IRQ.
+    Require(request.io_Actual=LONGCARD(sectorSize))
+    buffer(0)=$b6
+    buffer(sectorSize-1)=$b6
+    LatePreparing()
+    RETURN
+  FI
+
+  EXEC.AbortIO(EXEC.IORequest POINTER(request))
+  Require(EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+  IF expected=0 AND kind<>5 THEN
+    Require(request.io_Actual=LONGCARD(sectorSize))
+  FI
+
+  ; Reuse immediately after collection; private recovery must never write here.
+  FOR index=0 TO sectorSize-1 DO
+    buffer(index)=$b6
+  OD
+
+  IF kind=14 THEN
+    ImmediateReuse()
+    RETURN
+  FI
+
+  status=EXECTASKS.Sleep(4)
+  SIOPROBE.Stale()
+  FOR index=0 TO sectorSize-1 DO
+    Require(buffer(index)=$b6)
+  OD
+
+  Prepare(queued)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(queued))
+  IF offlineExpected<>0 THEN
+    Require(error=EXEC.SIOERR_BUSUNAVAILABLE)
+  ELSE
+    Require(error=0 AND queued.io_Actual=LONGCARD(sectorSize))
+  FI
+
+RETURN
+
+; Inject cancellation while the worker is preparing a retained request.
+PROC LatePreparing()
+  BYTE POINTER offline
+  CARD POINTER clock
+  CARD before,index
+  INT error
+
+  offline=BYTE POINTER($0f082d)
+  clock=CARD POINTER($2034)
+  checkpoint^=1
+  before=clock^
+  EXEC.SendIO(EXEC.IORequest POINTER(queued))
+  WHILE checkpoint^<>2 DO
+    IF CARD(clock^-before)>10 THEN
+      HEAPCORE.Abort($fbeb)
+    FI
+
+    EXEC.Yield()
+  OD
+
+  ; Hold the already-prepared worker until the real responder's stray byte
+  ; arrives. IRQ/NMI remain enabled; the returned caller buffer stays untouched.
+  EXEC.Forbid()
+  Require(offline^=0)
+  before=clock^
+  WHILE offline^=0 DO
+    IF CARD(clock^-before)>10 THEN
+      HEAPCORE.Abort($fbea)
+    FI
+  OD
+
+  EXEC.Permit()
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(queued))
+  Require(error=EXEC.SIOERR_BUSUNAVAILABLE AND queued.io_Actual=0)
+  Require(EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+  SIOPROBE.Stale()
+  FOR index=0 TO sectorSize-1 DO
+    IF index=0 OR index=sectorSize-1 THEN
+      Require(buffer(index)=$b6)
+    ELSE
+      Require(buffer(index)=(BYTE(index) XOR 60))
+    FI
+  OD
+
+RETURN
+
+; Reuse request storage only after recovery has returned terminal ownership.
+PROC ImmediateReuse()
+  INT error
+  CARD index
+  ; The worker may still be returning from publishing this request's reply.
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,52))
+  Require(request<>EXEC.IOSIOReq POINTER(0))
+  error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(request),0)
+  Require(error=0)
+  Prepare(request)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=LONGCARD(sectorSize))
+  FOR index=0 TO sectorSize-1 DO
+    Require(buffer(index)=(BYTE(index) XOR 60))
+  OD
+
+  Require(EXEC.GetMsg(port)=EXEC.Message POINTER(0))
+
+RETURN
+
+PROC Cleanup()
+  INT error
+  BYTE okay
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.CloseDevice(EXEC.IORequest POINTER(queued))
+  IF offlineExpected<>0 THEN
+    error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(request),0)
+    Require(error=EXEC.SIOERR_BUSUNAVAILABLE AND request.io_Device=BYTE POINTER(0))
+  FI
+
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(queued))
+  EXEC.FreeMem(buffer,LONGCARD(sectorSize))
+  EXEC.DeleteMsgPort(port)
+  ; Unsafe shutdown intentionally replaces STATUS with $FF93. The host must
+  ; distinguish this expected exit from an earlier failed guest assertion.
+  cleanupReached=1
+  SIODRIVER.Stop()
+  ; Only qualified clean shutdown reaches this point; test restart too.
+  okay=SIODRIVER.Start()
+  Require(okay=1)
+  SIODRIVER.Stop()
+
+RETURN
+
+PROC BlockerEntry()
+
+  WHILE stopBlockers=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Rollback()
+  BYTE bit,okay,index
+  EXEC.Task POINTER added
+  LONGCARD baseline
+
+  IF kind=10 THEN
+    baseline=EXEC.AvailMem(0)
+    bit=EXEC.AllocSignal(29)
+    okay=PRODUCERPROBE.Bind(EXEC.FindTask(BYTE POINTER(0)),LONGCARD($20000000))
+    Require(okay=1)
+    okay=SIODRIVER.Start()
+    Require(okay=0)
+    Require(EXEC.FindTask(sioName)=EXEC.Task POINTER(0)
+        AND EXEC.AvailMem(0)=baseline)
+    PRODUCERPROBE.Release()
+    PRODUCERPROBE.Drain()
+    EXEC.FreeSignal(bit)
+  ELSEIF kind=11 THEN
+    FOR index=0 TO 2 DO
+      PrepareTask(@blockers(index),TASKSTACKS.StackLower(index+1),BYTE POINTER(0))
+      added=EXEC.AddTask(@blockers(index),@BlockerEntry,absent)
+      Require(added=@blockers(index))
+    OD
+
+    okay=SIODRIVER.Start()
+    Require(okay=0 AND EXEC.FindTask(sioName)=EXEC.Task POINTER(0))
+    stopBlockers=1
+    FOR index=0 TO 2 DO
+      AwaitRemoval(@blockers(index))
+    OD
+  FI
+
+RETURN
+
+PROC DuplicateEntry()
+  EXEC.Task POINTER added
+
+  PrepareTask(@blockers(0),TASKSTACKS.LOWER2,BYTE POINTER(0))
+  added=EXEC.AddTask(@blockers(0),@SIODRIVER.Worker,absent)
+  Require(added=@blockers(0))
+  AwaitRemoval(@blockers(0))
+  Require(EXEC.FindTask(sioName)<>EXEC.Task POINTER(0))
+
+RETURN
+
+; Exercise SIO failure recovery, rollback and immediate request reuse.
+PROC Main()
+
+  IF sectorSize=0 THEN
+    sectorSize=128
+  FI
+
+  Rollback()
+  Setup()
+  IF kind=12 THEN
+    DuplicateEntry()
+  FI
+
+  IF kind=8 THEN
+    EXEC.RemTask(EXEC.FindTask(sioName))
+    RETURN
+  FI
+
+  Submit()
+  Collect()
+  Cleanup()
+
+RETURN
+
+ENDMODULE

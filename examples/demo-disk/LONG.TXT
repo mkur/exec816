@@ -1,0 +1,768 @@
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.
+Exec816 at work
+
+This is a small computer doing several
+things at once. The shell accepts your
+commands while another task searches
+for prime numbers in its own text area.
+
+CAT reads this file from disk. A pipe
+carries its bytes to WC, which counts
+lines, words and bytes. The pipe has a
+bounded buffer: a full buffer makes the
+writer wait, and an empty one makes the
+reader wait. Other tasks can still run.
+
+The commands are separate programs,
+loaded from disk into upper memory.
+When they finish, their streams close
+and their memory returns to the system.
+
+Try CAT LONG.TXT | WC and press BREAK.
+The shell returns to its prompt while
+the prime search continues below it.
+Then try another command. A useful
+system should also know how to stop.

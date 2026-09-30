@@ -1,0 +1,1057 @@
+MODULE TASKPOLICY
+USE TASKMEMORY
+
+USE EXECLISTS
+USE HEAPPOLICY
+USE PROCESSSTATE
+USE SYS
+USE A816ABI
+USE BOOTCONFIG
+INCLUDE "exec-abi.inc"
+INCLUDE "tasks-action.inc"
+INCLUDE "heap-constants.inc"
+INCLUDE "heap-call-types.inc"
+INCLUDE "ports-action.inc"
+INCLUDE "port-packets.inc"
+INCLUDE "io-action.inc"
+INCLUDE "../io/io-call-types.inc"
+INCLUDE "io-storage-action.inc"
+INCLUDE "sio-storage-action.inc"
+INCLUDE "ports-storage-action.inc"
+INCLUDE "dos-action.inc"
+INCLUDE "dos-storage-action.inc"
+
+TYPE AddArguments=[
+  Task POINTER item
+  BYTE POINTER entry,finalPC
+]
+
+BYTE current=E816_CURRENT
+CARD switches=E816_SWITCH_COUNT
+VOLATILE BYTE osBusy=$2006
+VOLATILE CARD clockTicks=E816_VBI_COUNT
+
+PUBLIC EXTERNAL LONGCARD FUNC SignalChange(Task POINTER item LONGCARD bits,mask)
+
+PUBLIC EXTERNAL LONGCARD FUNC WaitBegin(TaskControl POINTER ctx LONGCARD mask)
+
+PUBLIC EXTERNAL LONGCARD FUNC WaitComplete(TaskControl POINTER ctx)
+
+PUBLIC EXTERNAL BYTE FUNC WakeMatch(TaskControl POINTER ctx)
+
+PUBLIC EXTERNAL TaskControl POINTER FUNC TakeWake()
+
+PUBLIC EXTERNAL PROC CancelWakeNode(TaskControl POINTER ctx)
+
+; Locate a private Task context in the fixed-capacity pool.
+TaskControl POINTER FUNC RecordFor(BYTE id)
+
+RETURN(TaskControl POINTER(ADDRESS(T_BASE)+(SIZE(id) LSH T_SHIFT)))
+
+; Read a native gateway argument from the saved caller frame.
+CARD FUNC SavedWord(CARD saved CARD offset)
+
+  LET value=CARD POINTER(ADDRESS(saved+offset))
+
+RETURN(value^)
+
+; Publish a word result for the gateway to restore into A.
+PROC Result(CARD saved CARD value)
+
+  LET cell=CARD POINTER(ADDRESS(saved+T_FRAME_A_FULL))
+  cell^=value
+
+RETURN
+
+; Publish a native pointer result across the saved A and X registers.
+PROC PointerResult(CARD saved Task POINTER item)
+
+  Result(saved,CARD(ADDRESS(item)))
+  LET cell=CARD POINTER(ADDRESS(saved+T_FRAME_X))
+  cell^=CARD(ADDRESS(item) RSH 16)
+
+RETURN
+
+; Reconstruct the native packet address from the saved argument registers.
+ADDRESS FUNC ArgumentPointer(CARD saved)
+
+RETURN(ADDRESS(SavedWord(saved,T_FRAME_X))
+      +(SIZE(SavedWord(saved,T_FRAME_Y) & $ff) LSH 16))
+
+; Inspect the interrupted processor flags without changing the saved frame.
+BYTE FUNC Flags(CARD saved)
+
+  LET value=BYTE POINTER(ADDRESS(saved+T_FRAME_P))
+
+RETURN(value^)
+
+; Defer Task switching across Forbid, OS activity and caller IRQ masking.
+BYTE FUNC Protected(TaskControl POINTER ctx CARD saved)
+
+RETURN(ctx.lockDepth<>0 OR osBusy<>0 OR (Flags(saved) & 4)<>0)
+
+; Validate a Task's private link and current pool membership.
+TaskControl POINTER FUNC Lookup(Task POINTER item)
+
+  IF item=NULL THEN
+    RETURN(NULL)
+  FI
+
+  LET linkAddress=item.tc_ExecPrivate
+  IF linkAddress<ADDRESS(T_BASE)
+      OR linkAddress>=ADDRESS(T_BASE)+SIZE(T_PUBLIC_CONTEXT_BYTES) THEN
+    RETURN(NULL)
+  FI
+
+  IF (SIZE(linkAddress-ADDRESS(T_BASE)) & SIZE(T_SIZE-1))<>0 THEN
+    RETURN(NULL)
+  FI
+
+  LET ctx=TaskControl POINTER(linkAddress)
+  IF ctx.state=T_STATE_FREE OR ctx.item<>item THEN
+    RETURN(NULL)
+  FI
+
+RETURN(ctx)
+
+BYTE FUNC Writable(ADDRESS startAddress SIZE bytes)
+
+RETURN(TASKMEMORY.Writable(startAddress,bytes))
+
+; Require writable Task storage that overlaps no live Task or Process record.
+BYTE FUNC AvailableRecord(Task POINTER item)
+  BYTE id
+  ADDRESS other
+  TaskControl POINTER ctx
+
+  LET startAddress=ADDRESS(item)
+  IF startAddress<ADDRESS(T_MANAGED)+SIZE(T_MANAGED_BYTES)
+      AND startAddress+SIZE(T_TASK_SIZE)>ADDRESS(T_MANAGED) THEN
+    RETURN(0)
+  FI
+
+  IF Writable(startAddress,SIZE(T_TASK_SIZE))=0
+      OR ProcessRecordAvailable(item)=0 THEN
+    RETURN(0)
+  FI
+
+  FOR id=0 TO T_CAPACITY-1 DO
+    ctx=RecordFor(id)
+    IF ctx.state<>T_STATE_FREE THEN
+      other=ADDRESS(ctx.item)
+      IF startAddress<other+SIZE(T_TASK_SIZE)
+          AND other<startAddress+SIZE(T_TASK_SIZE) THEN
+        RETURN(0)
+      FI
+    FI
+  OD
+
+RETURN(1)
+
+; Require the caller-prepared memory list to contain only its sentinels.
+BYTE FUNC EmptyMemory(Task POINTER item)
+  EXECLISTS.List POINTER chain
+
+  chain=@item.tc_MemEntry
+
+RETURN(chain.lh_Head=EXECLISTS.Node POINTER(@chain.lh_Tail) AND chain.lh_Tail=NULL
+      AND chain.lh_TailPred=EXECLISTS.Node POINTER(@chain.lh_Head))
+
+; Accept only entry points declared by the loaded native image.
+BYTE FUNC ValidEntry(ADDRESS entry)
+  CARD index
+
+  LET meta=TaskMetadata POINTER(T_READY)
+  LET entries=ADDRESS POINTER(T_ENTRIES)
+  FOR index=0 TO meta.entryCount-1 DO
+    IF entries(index)=entry THEN
+      RETURN(1)
+    FI
+  OD
+
+RETURN(0)
+
+; Match a prepared stack to a free pool slot with room for the native frame.
+CARD FUNC StackSlot(Task POINTER item)
+  BYTE id
+  CARD base
+  TaskControl POINTER ctx
+
+  FOR id=0 TO T_CAPACITY-1 DO
+    base=poolStack(id)
+    IF item.tc_SPLower=ADDRESS(base)
+        AND item.tc_SPUpper=ADDRESS(base+poolSize(id)) THEN
+      ctx=RecordFor(id)
+      IF SlotFree(id)=0 THEN
+        RETURN($ffff)
+      FI
+
+      IF item.tc_SPReg<ADDRESS(base+$120)
+          OR item.tc_SPReg>ADDRESS(base+poolSize(id)-2) THEN
+        RETURN($ffff)
+      FI
+
+      IF (item.tc_SPReg & ADDRESS(1))<>0 THEN
+        RETURN($ffff)
+      FI
+
+      RETURN(CARD(id))
+    FI
+  OD
+
+RETURN($ffff)
+
+; Pool guard initialization occurs at boot. Admission preserves prepared stack
+; bytes outside the new frame; only a released context's private DP is reset.
+PROC PrepareStack(TaskControl POINTER ctx)
+  CARD index
+
+  LET base=poolStack(ctx.id)
+  LET words=CARD POINTER(ADDRESS(base-16))
+  FOR index=0 TO ((poolSize(ctx.id)+32) RSH 1)-1 DO
+    words(index)=$a5a5
+  OD
+
+  ctx.stackFloor=base+$100
+  ctx.stackTop=base+poolSize(ctx.id)-2
+
+RETURN
+
+; Reset the context's private direct page and establish its stack bounds.
+PROC PrepareDomain(TaskControl POINTER ctx)
+  CARD index
+  CARD POINTER words,word
+
+  ctx.dp=poolDp(ctx.id)
+  words=CARD POINTER(ADDRESS(ctx.dp-16))
+  FOR index=0 TO (poolDpBytes(ctx.id) RSH 1)-1 DO
+    words(index)=$a5a5
+  OD
+
+  words=CARD POINTER(ADDRESS(ctx.dp))
+  FOR index=0 TO 127 DO
+    words(index)=0
+  OD
+
+  LET location=ADDRESS POINTER(ADDRESS(ctx.dp+A816ABI.DP_OWNER_POINTER_OFFSET))
+  location^=ADDRESS(ctx)
+  word=CARD POINTER(ADDRESS(ctx.dp+A816ABI.DP_STACK_FLOOR_OFFSET))
+  word^=ctx.stackFloor
+  word=CARD POINTER(ADDRESS(ctx.dp+A816ABI.DP_STACK_CEILING_OFFSET))
+  word^=ctx.stackTop+1
+
+RETURN
+
+; Construct the initial native continuation consumed by the restore adapter.
+PROC PrepareFrame(TaskControl POINTER ctx)
+  CARD index
+  ADDRESS POINTER location
+
+  LET saved=ctx.initialS-17
+  LET bytes=BYTE POINTER(ADDRESS(saved+1))
+  FOR index=0 TO 16 DO
+    bytes(index)=0
+  OD
+
+  LET word=CARD POINTER(ADDRESS(saved+2))
+  word^=ctx.dp
+  location=ADDRESS POINTER(ADDRESS(saved+11))
+  IF ctx.id=T_IDLE THEN
+    location^=ADDRESS(T_IDLE_ENTRY)
+
+  ELSE
+    location^=ADDRESS(T_TASK_START)
+  FI
+
+  location=ADDRESS POINTER(ADDRESS(saved+14))
+  location^=ADDRESS(T_RETURN)
+  ctx.savedS=saved
+
+RETURN
+
+; Keep private scheduling state and the public Task state in agreement.
+PROC SetState(TaskControl POINTER ctx BYTE state,publicState)
+
+  ctx.state=state
+  LET item=ctx.item
+  IF item<>NULL THEN
+    item.tc_State=publicState
+  FI
+
+RETURN
+
+; Publish a runnable Task after retiring any queued signal-wake claim.
+PROC Ready(TaskControl POINTER ctx)
+  Task POINTER item
+
+  item=ctx.item
+  SetState(ctx,T_STATE_READY,T_TS_READY)
+  CancelWake(ctx)
+  EXECLISTS.AddTail(EXECLISTS.List POINTER(EXECLISTS.MinList POINTER(T_READY)),
+      @item.tc_Node)
+
+RETURN
+
+; Initialize a Task's public signal state and private wake association.
+PROC InitSignals(TaskControl POINTER ctx Task POINTER item)
+
+  DosReset(ctx,item)
+  ctx.waitReason=T_WAIT_NONE
+  ctx.queued=0
+  ctx.wakeNode.mln_Succ=NULL
+  ctx.wakeNode.mln_Pred=NULL
+  item.tc_SigAlloc=LONGCARD($ffff)
+  item.tc_SigWait=0
+  item.tc_SigRecvd=0
+  item.tc_SigExcept=0
+  item.tc_ExecPrivate=ADDRESS(ctx)
+
+RETURN
+
+; Attach a validated Task record to its prepared context and ready queue.
+PROC Admit(TaskControl POINTER ctx Task POINTER item ADDRESS entry,finalPC)
+
+  LET meta=TaskMetadata POINTER(T_READY)
+  ctx.initialS=CARD(item.tc_SPReg)
+  ctx.entry=entry
+  ctx.finalPC=finalPC
+  ctx.lockDepth=0
+  ctx.pending=0
+  ctx.wake=0
+  ctx.incarnation==+1
+  ctx.holds=0
+  ctx.residentMask=0
+  PrepareDomain(ctx)
+  PrepareFrame(ctx)
+  item.tc_IDNestCnt=$ff
+  item.tc_TDNestCnt=$ff
+  item.tc_SPReg=ADDRESS(ctx.savedS)
+  ctx.item=item
+  InitSignals(ctx,item)
+  Ready(ctx)
+  meta.live==+1
+  meta.created==+1
+
+RETURN
+
+; Initialize services and pool contexts, then publish the root and idle Tasks.
+PUBLIC CARD FUNC Init()
+  Task POINTER rootTask
+  BYTE id
+  TaskControl POINTER ctx
+
+  BOOTCONFIG.Init()
+  IF HEAPPOLICY.Init()<>0 THEN
+    RETURN($ff62)
+  FI
+
+  InitPorts()
+  DosInit()
+  ConsoleInit()
+  ProcessInit()
+  IF InitIO()=0 THEN
+    RETURN(IO_ERROR_MISUSE)
+  FI
+
+  LET meta=TaskMetadata POINTER(T_READY)
+  LET entries=ADDRESS POINTER(T_ENTRIES)
+  rootTask=Task POINTER(T_ROOT)
+  EXECLISTS.NewMinList(EXECLISTS.MinList POINTER(T_READY))
+  EXECLISTS.NewMinList(EXECLISTS.MinList POINTER(T_WAKE))
+  meta.live=1
+  meta.created=0
+  meta.idleRuns=0
+  meta.timerPending=0
+  FOR id=0 TO T_IDLE DO
+    ctx=RecordFor(id)
+    ctx.id=id
+    ctx.item=NULL
+    ctx.state=T_STATE_FREE
+    ctx.incarnation=0
+    ctx.holds=0
+    ctx.residentMask=0
+    ctx.lockDepth=0
+    ctx.pending=0
+    ctx.entry=entries(0)
+    ctx.finalPC=0
+    ctx.wake=0
+    PrepareStack(ctx)
+    ctx.initialS=ctx.stackTop
+    PrepareDomain(ctx)
+    PrepareFrame(ctx)
+  OD
+
+  rootTask.tc_Node.ln_Type=T_NT_TASK
+  rootTask.tc_IDNestCnt=$ff
+  rootTask.tc_TDNestCnt=$ff
+  rootTask.tc_SPLower=ADDRESS(poolStack(0))
+  rootTask.tc_SPUpper=ADDRESS(poolStack(0)+poolSize(0))
+  rootTask.tc_SPReg=ADDRESS(poolStack(0)+poolSize(0)-2)
+  EXECLISTS.NewList(@rootTask.tc_MemEntry)
+  ctx=RecordFor(0)
+  ctx.item=rootTask
+  ctx.incarnation=1
+  InitSignals(ctx,rootTask)
+  SetState(ctx,T_STATE_RUNNING,T_TS_RUN)
+  ctx=RecordFor(T_IDLE)
+  ctx.state=T_STATE_READY
+  current=0
+
+RETURN(0)
+
+; Read the number of sleeping Tasks tracked by the timer path.
+BYTE FUNC TimedCount()
+
+  LET countPtr=BYTE POINTER(T_SLEEPERS)
+
+RETURN(countPtr^)
+
+; Keep the timer fast-path count consistent with sleep admission and waking.
+PROC AdjustTimed(BYTE added)
+
+  LET countPtr=BYTE POINTER(T_SLEEPERS)
+  IF added<>0 THEN
+    countPtr^==+1
+
+  ELSE
+    countPtr^==-1
+  FI
+
+RETURN
+
+; Move expired sleepers to the ready queue using wrapping tick comparisons.
+PROC Wake()
+  BYTE id
+  TaskControl POINTER ctx
+
+  LET now=clockTicks
+  FOR id=0 TO T_CAPACITY-1 DO
+    ctx=RecordFor(id)
+    IF ctx.state=T_STATE_SLEEPING AND ((now-ctx.wake) & $8000)=0 THEN
+      ctx.waitReason=T_WAIT_NONE
+      AdjustTimed(0)
+      Ready(ctx)
+    FI
+  OD
+
+RETURN
+
+; Restore the next runnable Task, completing any pending signal wait first.
+CARD FUNC Select(TaskControl POINTER previous)
+  TaskControl POINTER next
+
+  IF DrainWakes()=0 THEN
+    RETURN(T_FAULT)
+  FI
+
+  LET node=EXECLISTS.RemHead(EXECLISTS.List POINTER(EXECLISTS.MinList POINTER(
+      T_READY)))
+  IF node=NULL THEN
+    next=RecordFor(T_IDLE)
+
+  ELSE
+    next=Lookup(Task POINTER(node))
+  FI
+
+  IF next=NULL THEN
+    RETURN(T_FAULT)
+  FI
+
+  IF CompleteWait(next)=0 THEN
+    RETURN(T_FAULT)
+  FI
+
+  SetState(next,T_STATE_RUNNING,T_TS_RUN)
+  current=next.id
+  IF next<>previous THEN
+    switches==+1
+  FI
+
+RETURN(next.savedS)
+
+; Consume a permitted reschedule request without switching to an empty queue.
+CARD FUNC Switch(TaskControl POINTER ctx CARD saved)
+
+  IF ctx.pending=0 OR Protected(ctx,saved) THEN
+    RETURN(saved)
+  FI
+
+  ctx.pending=0
+  IF EXECLISTS.IsMinListEmpty(EXECLISTS.MinList POINTER(T_READY))<>0 THEN
+    RETURN(saved)
+  FI
+
+  IF ctx.id<>T_IDLE THEN
+    Ready(ctx)
+
+  ELSE
+    ctx.state=T_STATE_READY
+  FI
+
+RETURN(Select(ctx))
+
+; Require unowned signal/private fields before admitting a caller's Task.
+BYTE FUNC EmptySignals(Task POINTER item)
+
+RETURN(item.tc_SigAlloc=0 AND item.tc_SigWait=0 AND item.tc_SigRecvd=0
+      AND item.tc_SigExcept=0 AND item.tc_ExecPrivate=0)
+
+; Validate caller-prepared Task resources before publishing the new context.
+CARD FUNC Add(CARD saved)
+  TaskControl POINTER ctx
+
+  LET args=AddArguments POINTER(ArgumentPointer(saved))
+  LET item=args.item
+  LET entry=ADDRESS(args.entry)
+  LET finalPC=ADDRESS(args.finalPC)
+  IF AvailableRecord(item)=0 THEN
+    PointerResult(saved,NULL)
+    RETURN(saved)
+  FI
+
+  IF item.tc_Node.ln_Type<>T_NT_TASK OR item.tc_State<>T_TS_INVALID
+      OR item.tc_Flags<>0 THEN
+    PointerResult(saved,NULL)
+    RETURN(saved)
+  FI
+
+  IF EmptySignals(item)=0 THEN
+    PointerResult(saved,NULL)
+    RETURN(saved)
+  FI
+
+  IF EmptyMemory(item)=0 OR ValidEntry(entry)=0 THEN
+    PointerResult(saved,NULL)
+    RETURN(saved)
+  FI
+
+  IF finalPC<>0 AND ValidEntry(finalPC)=0 THEN
+    PointerResult(saved,NULL)
+    RETURN(saved)
+  FI
+
+  LET id=StackSlot(item)
+  IF id=$ffff THEN
+    PointerResult(saved,NULL)
+    RETURN(saved)
+  FI
+
+  ctx=RecordFor(BYTE(id))
+  Admit(ctx,item,entry,finalPC)
+  PointerResult(saved,item)
+  ctx=RecordFor(current)
+  ctx.pending=1
+
+RETURN(Switch(ctx,saved))
+
+; Admit a managed record only after all arguments and pool ownership agree.
+; The dispatcher owns SWITCHING throughout selection, initialization and Admit.
+CARD FUNC Create(TaskControl POINTER caller CARD saved)
+  BYTE id,selected
+  CARD best,index
+
+  LET base=SavedWord(saved,T_FRAME_X)
+  IF base<caller.stackFloor OR base>caller.stackTop
+      OR T_CREATE_BYTES>caller.stackTop-base+1 THEN
+    RETURN(T_FAULT)
+  FI
+
+  LET args=CreateArguments POINTER(ArgumentPointer(saved))
+  PointerResult(saved,NULL)
+  IF args.priority<-128 OR args.priority>127 OR args.stackSize=0
+      OR args.stackSize=SYS.MAXLONGCARD OR ValidEntry(ADDRESS(args.entry))=0 THEN
+    RETURN(saved)
+  FI
+
+  LET required=(args.stackSize+1) & (SYS.MAXLONGCARD-1)
+  selected=0
+  best=$ffff
+  FOR id=1 TO T_CAPACITY-1 DO
+    IF LONGCARD(poolSize(id))>=required AND poolSize(id)>=($120+2)
+        AND poolSize(id)<best AND SlotFree(id)<>0 THEN
+      selected=id
+      best=poolSize(id)
+    FI
+  OD
+
+  IF selected=0 THEN
+    RETURN(saved)
+  FI
+
+  LET item=Task POINTER(ADDRESS(T_MANAGED)
+      +SIZE(selected-1)*SIZE(T_MANAGED_STRIDE))
+  LET bytes=BYTE POINTER(item)
+  FOR index=0 TO T_MANAGED_STRIDE-1 DO
+    bytes(index)=0
+  OD
+
+  item.tc_Node.ln_Type=T_NT_TASK
+  item.tc_Node.ln_Name=BYTE POINTER(args.name)
+  item.tc_Node.ln_Pri=BYTE(args.priority)
+  item.tc_SPLower=ADDRESS(poolStack(selected))
+  item.tc_SPUpper=item.tc_SPLower+SIZE(best)
+  item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@item.tc_MemEntry)
+  Admit(RecordFor(selected),item,ADDRESS(args.entry),0)
+  PointerResult(saved,item)
+  caller.pending=1
+
+RETURN(Switch(caller,saved))
+
+; Retire a removable Task only after its leases and service ownership permit
+; it.
+CARD FUNC RemoveTask(TaskControl POINTER caller CARD saved)
+  Task POINTER item
+
+  LET meta=TaskMetadata POINTER(T_READY)
+  IF osBusy<>0 OR (Flags(saved) & 4)<>0 THEN
+    RETURN(T_FAULT)
+  FI
+
+  item=Task POINTER(ArgumentPointer(saved))
+  IF item=NULL THEN
+    item=caller.item
+  FI
+
+  LET target=Lookup(item)
+  IF target=NULL THEN
+    RETURN(T_FAULT)
+  FI
+
+  IF target.holds<>0 OR EmptyMemory(item)=0 OR BoundProducer(target)<>0
+      OR DosCanRemove(target)=0
+      OR ProcessCanRemove(caller,target)=0 THEN
+    RETURN(T_FAULT)
+  FI
+
+  CancelWake(target)
+  IF target.state=T_STATE_SLEEPING THEN
+    AdjustTimed(0)
+  FI
+
+  IF target.state=T_STATE_READY THEN
+    EXECLISTS.Remove(@item.tc_Node)
+  FI
+
+  item.tc_State=T_TS_REMOVED
+  item.tc_TDNestCnt=$ff
+  item.tc_ExecPrivate=0
+  item.tc_SigWait=0
+  target.waitReason=T_WAIT_NONE
+  target.queued=0
+  target.item=NULL
+  target.state=T_STATE_FREE
+  target.lockDepth=0
+  target.pending=0
+  target.wake=0
+  target.finalPC=0
+  meta.live==-1
+  ProcessRemoved(target)
+  DosRemoved(target)
+  target.residentMask=0
+  NotifyResidents()
+  caller.pending=1
+  IF target=caller THEN
+    RETURN(Select(caller))
+  FI
+
+RETURN(saved)
+
+; Compare borrowed NUL-terminated Task names without allocating a copy.
+BYTE FUNC SameName(BYTE POINTER left,right)
+
+  IF left=NULL THEN
+    RETURN(0)
+  FI
+
+  WHILE left^=right^ DO
+    IF left^=0 THEN
+      RETURN(1)
+    FI
+
+    left=BYTE POINTER(ADDRESS(left)+SIZE(1))
+    right=BYTE POINTER(ADDRESS(right)+SIZE(1))
+  OD
+
+RETURN(0)
+
+; Return the current Task for NULL, or find a live Task by its borrowed name.
+Task POINTER FUNC Find(BYTE POINTER name)
+  BYTE id
+  TaskControl POINTER ctx
+  Task POINTER item
+
+  IF name=NULL THEN
+    ctx=RecordFor(current)
+    RETURN(ctx.item)
+  FI
+
+  FOR id=0 TO T_CAPACITY-1 DO
+    ctx=RecordFor(id)
+    IF ctx.state<>T_STATE_FREE THEN
+      item=ctx.item
+      IF SameName(item.tc_Node.ln_Name,name)<>0 THEN
+        RETURN(item)
+      FI
+    FI
+  OD
+
+RETURN(NULL)
+
+; Update the stored priority and return its previous value; FIFO is unchanged.
+CARD FUNC Priority(CARD saved)
+
+  LET item=Task POINTER(ArgumentPointer(saved))
+  IF Lookup(item)=NULL THEN
+    RETURN(T_FAULT)
+  FI
+
+  LET old=item.tc_Node.ln_Pri
+  item.tc_Node.ln_Pri=BYTE(SavedWord(saved,T_FRAME_A_FULL) RSH 8)
+  Result(saved,CARD(old))
+
+RETURN(saved)
+
+; Validate a bounded delay, then yield immediately or publish a timed wait.
+CARD FUNC SleepTask(TaskControl POINTER ctx CARD saved)
+
+  LET ticks=SavedWord(saved,T_FRAME_X)
+  IF ticks>$7fff THEN
+    Result(saved,T_ERROR_TICKS)
+    RETURN(saved)
+  FI
+
+  IF Protected(ctx,saved) THEN
+    Result(saved,E816_ERROR_LOCK)
+    RETURN(saved)
+  FI
+
+  Result(saved,0)
+  IF ticks=0 THEN
+    ctx.pending=1
+    RETURN(Switch(ctx,saved))
+  FI
+
+  AdjustTimed(1)
+  ctx.wake=clockTicks+ticks
+  ctx.pending=0
+  ctx.waitReason=T_WAIT_SLEEP
+  SetState(ctx,T_STATE_SLEEPING,T_TS_WAIT)
+
+RETURN(Select(ctx))
+
+; Publish a long result across the saved A and X registers.
+PROC MaskResult(CARD saved LONGCARD value)
+
+  Result(saved,CARD(value))
+  LET cell=CARD POINTER(ADDRESS(saved+T_FRAME_X))
+  cell^=CARD(value RSH 16)
+
+RETURN
+
+; Form the mask for an already validated signal number.
+LONGCARD FUNC SignalBit(BYTE number)
+
+RETURN(LONGCARD(1) LSH number)
+
+; Reserve a requested or first-free user signal and clear stale delivery.
+BYTE FUNC AllocateBit(Task POINTER item BYTE number)
+  BYTE bit
+  LONGCARD mask
+
+  IF number=$ff THEN
+    FOR bit=T_USER_SIGNAL_FIRST TO T_SIGNAL_COUNT-1 DO
+      mask=SignalBit(bit)
+      IF (item.tc_SigAlloc & mask)=0 THEN
+        number=bit
+        EXIT
+      FI
+    OD
+  FI
+
+  IF number<T_USER_SIGNAL_FIRST OR number>=T_SIGNAL_COUNT THEN
+    RETURN($ff)
+  FI
+
+  mask=SignalBit(number)
+  IF (item.tc_SigAlloc & mask)<>0 THEN
+    RETURN($ff)
+  FI
+
+  item.tc_SigAlloc=item.tc_SigAlloc % mask
+  LET ignored=SignalChange(item,0,mask)
+
+RETURN(number)
+
+; Apply allocation, release or mask changes while preserving retained signals.
+CARD FUNC Masks(TaskControl POINTER ctx CARD saved BYTE service)
+  LONGCARD mask
+  BYTE number
+
+  LET item=ctx.item
+  LET argByte=BYTE POINTER(ArgumentPointer(saved))
+  IF service=T_SERVICE_ALLOC_SIGNAL THEN
+    Result(saved,CARD(AllocateBit(item,argByte^)))
+    RETURN(saved)
+  FI
+
+  IF service=T_SERVICE_FREE_SIGNAL THEN
+    number=argByte^
+    IF number=$ff THEN
+      RETURN(saved)
+    FI
+
+    IF number<T_USER_SIGNAL_FIRST OR number>=T_SIGNAL_COUNT THEN
+      RETURN(T_FAULT)
+    FI
+
+    mask=SignalBit(number)
+    IF (item.tc_SigAlloc & mask)=0 THEN
+      RETURN(T_FAULT)
+    FI
+
+    IF (ctx.residentMask & mask)<>0 OR ProducerSignalBound(ctx,mask)<>0 THEN
+      RETURN(T_FAULT)
+    FI
+
+    item.tc_SigAlloc=item.tc_SigAlloc & (mask XOR SYS.MAXLONGCARD)
+    RETURN(saved)
+  FI
+
+  LET words=LONGCARD POINTER(argByte)
+  LET old=SignalChange(item,words(0),words(1))
+  MaskResult(saved,old)
+
+RETURN(saved)
+
+INCLUDE "task-signals.inc"
+INCLUDE "task-wakes.inc"
+
+INCLUDE "task-memory.inc"
+INCLUDE "task-ports.inc"
+INCLUDE "../io/task-io.inc"
+INCLUDE "task-lifetime.inc"
+INCLUDE "../dos/task-dos.inc"
+INCLUDE "../dos/task-process.inc"
+INCLUDE "../console/task-console.inc"
+
+; Validate service tags and caller CPU widths before decoding arguments.
+BYTE FUNC RequestValid(CARD saved BYTE service)
+
+  IF ConsoleService(service)<>0 THEN
+    IF (Flags(saved) & $34)<>0 OR SavedWord(saved,T_FRAME_Y)<>T_PROFILE_TAG THEN
+      RETURN(0)
+    FI
+
+    RETURN(SavedWord(saved,T_FRAME_A_FULL)=CARD(service))
+  FI
+
+  IF service=DOS_SERVICE_CONTEXT OR service=DOS_SERVICE_MOUNT_REFERENCE THEN
+    IF (Flags(saved) & $34)<>0 OR SavedWord(saved,T_FRAME_Y)<>T_PROFILE_TAG THEN
+      RETURN(0)
+    FI
+
+    RETURN(SavedWord(saved,T_FRAME_A_FULL)=CARD(service))
+  FI
+
+  IF MemoryService(service)<>0 OR PortService(service)<>0
+      OR IOService(service)<>0 THEN
+    IF (Flags(saved) & $30)<>0 OR SavedWord(saved,T_FRAME_Y)<>T_PROFILE_TAG THEN
+      RETURN(0)
+    FI
+
+    IF SavedWord(saved,T_FRAME_A_FULL)<>CARD(service) THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF IOService(service)<>0 AND (Flags(saved) & 4)<>0 THEN
+    RETURN(0)
+  FI
+
+  IF (service>=T_SERVICE_RETAIN_TASK AND service<=T_SERVICE_DRAIN_PRODUCER)
+      OR service=T_SERVICE_CREATE_TASK THEN
+    IF (Flags(saved) & $34)<>0 OR SavedWord(saved,T_FRAME_Y)<>T_PROFILE_TAG THEN
+      RETURN(0)
+    FI
+
+    IF SavedWord(saved,T_FRAME_A_FULL)<>CARD(service) THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF service>=T_SERVICE_ADD_TASK AND service<=T_SERVICE_PERMIT THEN
+    IF (Flags(saved) & $30)<>0 THEN
+      RETURN(0)
+    FI
+
+    IF (SavedWord(saved,T_FRAME_Y) & $ff00)<>T_PROFILE_TAG THEN
+      RETURN(0)
+    FI
+
+    IF service<>T_SERVICE_SET_TASK_PRI
+        AND (SavedWord(saved,T_FRAME_A_FULL) & $ff00)<>0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF service>=T_SERVICE_ALLOC_SIGNAL AND service<=T_SERVICE_WAIT THEN
+    IF (Flags(saved) & $30)<>0 OR SavedWord(saved,T_FRAME_Y)<>T_PROFILE_TAG THEN
+      RETURN(0)
+    FI
+
+    IF SavedWord(saved,T_FRAME_A_FULL)<>CARD(service) THEN
+      RETURN(0)
+    FI
+
+    IF service=T_SERVICE_WAIT AND (Flags(saved) & 4)<>0 THEN
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
+; Dispatch general Task services after entry validation and deferred work.
+CARD FUNC Route(TaskControl POINTER ctx CARD saved BYTE service)
+
+  IF ConsoleService(service)<>0 THEN
+    RETURN(ConsoleProducerControl(ctx,saved,service))
+  FI
+
+  IF service=DOS_SERVICE_CONTEXT THEN
+    RETURN(DosCurrent(ctx,saved))
+  FI
+
+  IF service=DOS_SERVICE_MOUNT_REFERENCE THEN
+    RETURN(DosControl(ctx,saved))
+  FI
+
+  IF service>=T_SERVICE_RETAIN_TASK AND service<=T_SERVICE_UNREGISTER_RESIDENT THEN
+    RETURN(LifetimeCall(ctx,saved,service))
+  FI
+
+  IF service>=T_SERVICE_BIND_PRODUCER AND service<=T_SERVICE_DRAIN_PRODUCER THEN
+    RETURN(ProducerControl(ctx,saved,service))
+  FI
+
+  IF service>=T_SERVICE_ALLOC_SIGNAL AND service<=T_SERVICE_WAIT THEN
+    IF service=T_SERVICE_SIGNAL THEN
+      RETURN(SignalTask(ctx,saved))
+    FI
+
+    IF service=T_SERVICE_WAIT THEN
+      RETURN(WaitTask(ctx,saved))
+    FI
+
+    RETURN(Masks(ctx,saved,service))
+  FI
+
+  CASE service OF
+  WHEN E816_SERVICE_VERSION THEN
+    Result(saved,T_VERSION)
+    RETURN(saved)
+
+  WHEN E816_SERVICE_YIELD THEN
+    ctx.pending=1
+    RETURN(Switch(ctx,saved))
+
+  WHEN E816_SERVICE_POLL THEN
+    RETURN(Switch(ctx,saved))
+
+  WHEN T_SERVICE_CREATE_TASK THEN
+    RETURN(Create(ctx,saved))
+
+  WHEN T_SERVICE_ADD_TASK THEN
+    RETURN(Add(saved))
+
+  WHEN T_SERVICE_REM_TASK THEN
+    RETURN(RemoveTask(ctx,saved))
+
+  WHEN T_SERVICE_FIND_TASK THEN
+    PointerResult(saved,Find(BYTE POINTER(ArgumentPointer(saved))))
+    RETURN(saved)
+
+  WHEN T_SERVICE_SET_TASK_PRI THEN
+    RETURN(Priority(saved))
+
+  WHEN T_SERVICE_SLEEP THEN
+    RETURN(SleepTask(ctx,saved))
+  ESAC
+
+  Result(saved,E816_ERROR_UNKNOWN)
+
+RETURN(saved)
+
+; Drain newly posted wakes before deciding whether the caller can resume.
+CARD FUNC FinishDispatch(TaskControl POINTER ctx CARD saved CARD selected)
+
+  IF selected=0 OR selected=T_FAULT OR current<>ctx.id THEN
+    RETURN(selected)
+  FI
+
+  LET drained=DrainWakes()
+  IF drained=0 THEN
+    RETURN(T_FAULT)
+  FI
+
+  IF drained>1 THEN
+    ctx.pending=1
+  FI
+
+RETURN(Switch(ctx,saved))
+
+; Enter guarded Task policy and return the continuation selected for
+; restoration.
+PUBLIC CARD FUNC Dispatch(CARD saved BYTE service)
+
+  IF RequestValid(saved,service)=0 THEN
+    RETURN(T_FAULT)
+  FI
+
+  LET meta=TaskMetadata POINTER(T_READY)
+  LET ctx=RecordFor(current)
+  ctx.savedS=saved
+  LET item=ctx.item
+  IF item<>NULL THEN
+    item.tc_SPReg=ADDRESS(saved)
+  FI
+
+  IF meta.timerPending<>0 THEN
+    meta.timerPending=0
+    IF TimedCount()<>0 THEN
+      Wake()
+    FI
+  FI
+
+  IF current=T_IDLE THEN
+    meta.idleRuns==+1
+    IF meta.live=0 THEN
+      ctx.pending=0
+      RETURN(0)
+    FI
+
+    ctx.pending=1
+    IF DrainWakes()=0 THEN
+      RETURN(T_FAULT)
+    FI
+
+    RETURN(Switch(ctx,saved))
+  FI
+
+  ; Memory is a separate service family. Enter it directly so deep free-list
+  ; coalescing does not retain the general Task-routing frame on the stack.
+  IF MemoryService(service)<>0 THEN
+    RETURN(FinishDispatch(ctx,saved,MemoryCall(ctx,saved,service)))
+  FI
+
+  IF PortService(service)<>0 THEN
+    RETURN(FinishDispatch(ctx,saved,PortCall(ctx,saved,service)))
+  FI
+
+  IF IOService(service)<>0 THEN
+    RETURN(FinishDispatch(ctx,saved,IOCall(ctx,saved,service)))
+  FI
+
+RETURN(FinishDispatch(ctx,saved,Route(ctx,saved,service)))
+
+ENDMODULE

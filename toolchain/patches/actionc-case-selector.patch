@@ -1,0 +1,77 @@
+From 47cd55b2dac510922949832332b7a2c3220885be Mon Sep 17 00:00:00 2001
+From: Michal Kurcewicz <1001406+mkur@users.noreply.github.com>
+Date: Fri, 25 Sep 2026 01:07:59 +0200
+Subject: [PATCH] Preserve escaping temporaries when threading predicate blocks
+
+---
+ src/nir/analysis/predicates.rs | 10 ++++++++++
+ src/nir/tests.rs               | 18 ++++++++++++++++++
+ 2 files changed, 28 insertions(+)
+
+diff --git a/src/nir/analysis/predicates.rs b/src/nir/analysis/predicates.rs
+index 8bd8fa21..8c0cec64 100644
+--- a/src/nir/analysis/predicates.rs
++++ b/src/nir/analysis/predicates.rs
+@@ -5,6 +5,7 @@ use super::dataflow::{
+     NirDataflowDirection, NirDataflowProblem, NirDataflowResult, solve_dataflow,
+ };
+ use super::storage::NirRoutineStorageAnalysis;
++use super::use_def::NirUseDef;
+ use crate::nir::facts::{NirStorageId, direct_storage_id};
+ use crate::nir::{
+     BlockId, NirBlock, NirCompareOp, NirOp, NirRoutine, NirTerminator, NirValue, TempId,
+@@ -410,6 +411,7 @@ pub(in crate::nir) fn predicate_threading_candidates(
+     analysis: &NirPredicateAnalysis,
+     storage: &NirRoutineStorageAnalysis,
+ ) -> BTreeSet<BlockId> {
++    let use_def = NirUseDef::from_routine(routine);
+     routine
+         .blocks
+         .iter()
+@@ -436,6 +438,14 @@ pub(in crate::nir) fn predicate_threading_candidates(
+                             })
+                     ) || matches!(op, NirOp::Compare { .. })
+                 })
++                // Bypassing a pure block also bypasses its definitions. CASE
++                // lowering, for example, reuses the first arm's selector load
++                // in later arms. Those uses still need the defining block.
++                && block.ops.iter().all(|op| match op {
++                    NirOp::Load { dest, .. } | NirOp::Compare { dest, .. } =>
++                        use_def.uses(*dest).iter().all(|site| site.block() == block.id),
++                    _ => false,
++                })
+         })
+         .map(|block| block.id)
+         .collect()
+diff --git a/src/nir/tests.rs b/src/nir/tests.rs
+index c356210b..4df5cb7a 100644
+--- a/src/nir/tests.rs
++++ b/src/nir/tests.rs
+@@ -80,6 +80,24 @@ fn lower_modern_source_for_target(source: &str, target: crate::target::TargetId)
+     lower_program(&semir)
+ }
+ 
++#[test]
++fn predicate_threading_preserves_case_selector_used_by_later_arms() {
++    let source = "BYTE output\nPROC Pick(BYTE selector,amount)\n\
++        IF (selector=0 AND amount>20) OR (selector<>0 AND amount>10) THEN RETURN FI\n\
++        CASE selector OF\nWHEN 0 THEN\noutput=1\nWHEN 1 THEN\noutput=2\n\
++        WHEN 2 THEN\noutput=3\nESAC\nRETURN\nPROC Main() Pick(1,5) RETURN";
++    for target in [crate::target::TargetId::Atari6502,
++                   crate::target::TargetId::Wdc65816Native,
++                   crate::target::TargetId::Motorola68000] {
++        let program = lower_modern_source_for_target(source, target);
++        verify_program(&program).unwrap();
++        let optimized = optimize_program(&program).unwrap();
++        verify_program(&optimized).unwrap();
++        let again = optimize_program(&optimized).unwrap();
++        assert_eq!(optimized, again);
++    }
++}
++
+ fn foreign_relocations(op: &NirOp) -> Option<&[NirForeignRelocation]> {
+     let NirOp::ForeignCode { code, .. } = op else {
+         return None;
+-- 
+2.50.1 (Apple Git-155)
+

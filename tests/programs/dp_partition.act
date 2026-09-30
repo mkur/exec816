@@ -1,0 +1,166 @@
+MODULE DPPARTITION
+
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+USE A816ABI
+USE CSTRING.IMPL AS STR
+INCLUDE "task-types.inc"
+CONST WORKSPACE_BYTES=A816ABI.DP_CALLER_WORKSPACE_SIZE
+CONST BUFFER_BYTES=513
+CONST READY_SIGNAL=$20000
+CONST GO_SIGNAL=$10000
+
+EXEC.Task worker
+EXEC.Task POINTER parent
+EXEC.MsgPort POINTER inbox,reply
+EXEC.Message message
+VOLATILE BYTE ready,finished
+VOLATILE CARD ticks=$2036
+CARD checks,workerDp,firstDp
+BYTE incarnation
+PROC POINTER noFinalizer()
+INCLUDE "tasks_exec_helpers.inc"
+
+; Every assertion is also an ordinary Action! call in the owning domain.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ed00+(checks & $ff))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Inspect the private context only to locate the test's own domain.
+BYTE POINTER FUNC Workspace()
+
+  LET self=EXEC.FindTask(NULL)
+  LET context=TaskControl POINTER(self.tc_ExecPrivate)
+
+RETURN(BYTE POINTER(ADDRESS(context.dp)))
+
+PROC Seed(BYTE POINTER page BYTE pattern)
+  CARD index
+
+  FOR index=0 TO WORKSPACE_BYTES-1 DO
+    page(index)=BYTE(index) XOR pattern
+  OD
+
+RETURN
+
+PROC Preserved(BYTE POINTER page BYTE pattern)
+  CARD index
+
+  FOR index=0 TO WORKSPACE_BYTES-1 DO
+    Require(page(index)=(BYTE(index) XOR pattern))
+  OD
+
+RETURN
+
+; Exercise caller-context clearing, resident calls and fast/full COP paths.
+PROC Calls(BYTE POINTER page BYTE pattern)
+  CARD index
+  BYTE ARRAY text(24)
+
+  LET block=EXEC.AllocMem(BUFFER_BYTES,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  Require(block<>NULL)
+  FOR index=0 TO BUFFER_BYTES-1 DO
+    Require(block(index)=0)
+  OD
+
+  Require(STR.strlcpy(text,c"partition",SIZEOF(text))=9)
+  Require(STR.strlen(CSTRING(text))=9)
+  EXEC.Forbid()
+  Require(EXEC.GetMsg(reply)=NULL)
+  EXEC.Permit()
+  EXEC.FreeMem(block,BUFFER_BYTES)
+  Preserved(page,pattern)
+
+RETURN
+
+; Keep a distinct caller workspace live across scheduling and kernel calls.
+PROC WorkerEntry()
+  CARD index
+  LONGCARD received
+  EXEC.Message POINTER item
+
+  LET page=Workspace()
+  workerDp=CARD(ADDRESS(page))
+  ; Reusing a released slot starts a fresh ownership lifetime.
+  FOR index=0 TO WORKSPACE_BYTES-1 DO
+    Require(page(index)=0)
+  OD
+
+  Seed(page,$a7)
+  Require(EXEC.AllocSignal(16)=16)
+  inbox=EXEC.CreateMsgPort()
+  Require(inbox<>NULL)
+  ready=1
+  EXEC.Signal(parent,READY_SIGNAL)
+  received=EXEC.Wait(GO_SIGNAL)
+  Require(received=GO_SIGNAL)
+  Calls(page,$a7)
+  item=EXEC.WaitPort(inbox)
+  Require(item=@message)
+  item=EXEC.GetMsg(inbox)
+  EXEC.ReplyMsg(item)
+  ; Busy computation gives VBI a chance to preempt a live Action! task.
+  LET start=ticks
+  WHILE CARD(ticks-start)<3 DO
+    Preserved(page,$a7)
+  OD
+
+  EXEC.DeleteMsgPort(inbox)
+  EXEC.FreeSignal(16)
+  Preserved(page,$a7)
+
+RETURN
+
+; Exercise caller direct-page preservation across calls and Task switches.
+PROC Main()
+  EXEC.Message POINTER item
+  CARD status
+
+  LET page=Workspace()
+  parent=EXEC.FindTask(NULL)
+  Seed(page,$59)
+  reply=EXEC.CreateMsgPort()
+  Require(reply<>NULL AND EXEC.AllocSignal(17)=17)
+  FOR incarnation=0 TO 1 DO
+    PrepareTask(@worker,TASKSTACKS.LOWER1,NULL)
+    ready=0
+    Require(EXEC.AddTask(@worker,@WorkerEntry,noFinalizer)=@worker)
+    Require(EXEC.Wait(READY_SIGNAL)=READY_SIGNAL AND ready=1)
+    IF incarnation=0 THEN
+      firstDp=workerDp
+    ELSE
+      Require(workerDp=firstDp)
+    FI
+
+    Calls(page,$59)
+    EXEC.Signal(@worker,GO_SIGNAL)
+    message.mn_ReplyPort=reply
+    EXEC.PutMsg(inbox,@message)
+    item=EXEC.WaitPort(reply)
+    Require(item=@message)
+    item=EXEC.GetMsg(reply)
+    Require(item=@message)
+    WHILE worker.tc_State<>EXEC.TS_REMOVED DO
+      status=EXECTASKS.Sleep(1)
+    OD
+
+    Preserved(page,$59)
+  OD
+
+  EXEC.DeleteMsgPort(reply)
+  EXEC.FreeSignal(17)
+  Preserved(page,$59)
+  finished=1
+
+RETURN
+
+ENDMODULE

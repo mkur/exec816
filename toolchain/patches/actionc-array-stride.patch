@@ -1,0 +1,73 @@
+From 5e17f099ae007e446d0c9ea92d6aa9cb4736242a Mon Sep 17 00:00:00 2001
+From: Michal Kurcewicz <1001406+mkur@users.noreply.github.com>
+Date: Sun, 27 Sep 2026 14:09:59 +0200
+Subject: [PATCH] Fix packed native ADDRESS and SIZE array strides
+
+---
+ src/semantic.rs                       |  5 ++++-
+ src/semantic/layout.rs                |  4 +++-
+ tests/embedded_record_array_places.rs | 20 ++++++++++++++++++++
+ 3 files changed, 27 insertions(+), 2 deletions(-)
+
+diff --git a/src/semantic.rs b/src/semantic.rs
+index fe7bd0c6..728ef01d 100644
+--- a/src/semantic.rs
++++ b/src/semantic.rs
+@@ -4380,7 +4380,10 @@ impl Analyzer {
+                         continue;
+                     };
+                     let length = shape.length().expect("fixed inline array shape");
+-                    let Some((stride, size)) = align_u32(element_size, alignment)
++                    // Array indexing and pointer decay advance by the complete
++                    // element width. Align the array's start, not each scalar:
++                    // native ADDRESS/SIZE elements occupy three bytes.
++                    let Some((stride, size)) = Some(element_size)
+                         .filter(|stride| *stride != 0)
+                         .and_then(|stride| length.checked_mul(stride).filter(|size| *size <= max_extent).map(|size| (stride, size)))
+                     else {
+diff --git a/src/semantic/layout.rs b/src/semantic/layout.rs
+index 56d2f5d4..c3cbf8b1 100644
+--- a/src/semantic/layout.rs
++++ b/src/semantic/layout.rs
+@@ -237,7 +237,9 @@ impl SemanticLayoutFacts {
+                 semantic_value_width(&element_type, &records, target_layout).unwrap_or(0);
+             let element_alignment =
+                 semantic_value_alignment(&element_type, &records, target_layout).unwrap_or(1);
+-            let stride = align_up(element_size, element_alignment).unwrap_or(element_size);
++            // Match pointer indexing. Aggregate widths already include their
++            // tail padding; scalar arrays have no per-element padding.
++            let stride = element_size;
+             let length = array_lengths.get(&symbol_id).copied();
+             let shape = array_shapes.get(&symbol_id).cloned().unwrap_or_else(|| ArrayShape::linear(length));
+             assert_eq!(shape.length(), length, "array count must derive from canonical shape");
+diff --git a/tests/embedded_record_array_places.rs b/tests/embedded_record_array_places.rs
+index 3e4f0ea9..08b1ca3f 100644
+--- a/tests/embedded_record_array_places.rs
++++ b/tests/embedded_record_array_places.rs
+@@ -419,3 +419,23 @@ fn embedded_array_places_match_the_nir_snapshot() {
+         include_str!("snapshots/embedded_record_array_places.nir")
+     );
+ }
++
++#[test]
++fn native_24_bit_arrays_share_packed_stride_with_pointer_indexing() {
++    for element in ["ADDRESS", "SIZE"] {
++        let source = format!(
++            "TYPE Buffer=[BYTE lead {element} ARRAY slots(3) BYTE tail] \
++             Buffer item {element} ARRAY cells(3) {element} POINTER p \
++             CARD i PROC Main() p=item.slots item.slots(i)=$123456 \
++             p(1)=item.slots(i) cells(i)=p(1) RETURN"
++        );
++        let (_, model) = analyze(&source, TargetId::Wdc65816Native);
++        let record = model.layout.record_for_name("Buffer").unwrap();
++        let slots = record.fields.iter().find(|f| f.name == "slots").unwrap();
++        assert_eq!((slots.offset, slots.size), (2, 9));
++        assert!(matches!(&slots.storage, RecordFieldStorage::InlineArray { stride: 3, .. }));
++        let cells = model.layout.arrays.iter().find(|a| a.name == "cells").unwrap();
++        assert_eq!((cells.element_size, cells.stride, cells.storage_size), (3, 3, Some(9)));
++        lower(&source, TargetId::Wdc65816Native);
++    }
++}
+-- 
+2.50.1 (Apple Git-155)
+

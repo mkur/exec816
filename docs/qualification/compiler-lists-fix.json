@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "compiler_revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+  "base_revision": "f088ab9d0a4175481751bd41cc78a0f07b80fd8f",
+  "branch": "fix/65816-record-pointer-casts",
+  "change": "Explicit named pointer conversions parse as typed casts; semantic analysis validates destination types. No new executable NIR form.",
+  "checks": [
+    {
+      "command": "cargo test --test named_pointer_casts",
+      "status": "pass",
+      "log_sha256": "3e1ccc50408082cdabeefb2d0acf1abd2fcd1d6870796644c592b170980e46a4",
+      "cases": 2,
+      "targets": [
+        "atari-6502",
+        "motorola-68000",
+        "wdc-65816-small",
+        "wdc-65816-native"
+      ]
+    },
+    {
+      "command": "cargo test nir_fixtures_match_snapshots",
+      "status": "pass",
+      "log_sha256": "efd3d46b28905cebe1a4e05e3d3e6d6ed4659f602105eb4fbcf73cd089edc47d",
+      "snapshot_changes": false
+    },
+    {
+      "command": "cargo run --bin actionc-nir-sweep -- fixtures/nir",
+      "status": "pass",
+      "log_sha256": "bb0009cea26082f287c8797ce77eb72ed4d943de699188a6750b61e9d82d0ffb",
+      "cases": 51
+    },
+    {
+      "command": "python3 tools/native65816-runtime-tests/qualify.py --test memory",
+      "status": "pass",
+      "log_sha256": "a062d034db71d526f04953629e4c9b9500a1edd29353cec146a318045df059f8",
+      "cases": 5,
+      "modes": [
+        "raw",
+        "optimized"
+      ],
+      "record_pointer_destination": "12FFFE",
+      "pointer_value": "AB1234"
+    },
+    {
+      "command": "cargo test",
+      "status": "baseline_failure",
+      "log_sha256": "777fdf3e6e31d9d9b729def9a6500a6639aad8b1fd23469532027c03d46a2606",
+      "failure": "sample_catalog_classifies_every_action_source",
+      "detail": "Four existing TN dependency files lack catalog roles; all other tests in this run passed."
+    },
+    {
+      "command": "cargo test --test samples",
+      "status": "baseline_failure",
+      "log_sha256": "998a0ee599720bc584358a1b8f227194fcc0600cf1ad8f93f539f75baf688b02",
+      "failure": "parses_all_sample_programs",
+      "detail": "Standalone LOCATION.ACT cannot resolve DIR_* constants."
+    },
+    {
+      "command": "cargo test (all 14 integration targets after samples)",
+      "status": "pass",
+      "log_sha256": "9fab43b91e7204c87fee99cf6425445aa4e8f1ecb37d3559814422251eb1def2"
+    },
+    {
+      "command": "cargo test --doc",
+      "status": "pass",
+      "log_sha256": "a234b9f44ea7bd6a7980ba7c49862cbaac9e77b280bdfd129c5664a70169a915"
+    }
+  ],
+  "baseline_evidence": "compiler-memory-fix.json records these same two failures reproduced before the previous compiler fix; TN sources and sample tests are unchanged in this commit.",
+  "execution_manifest_sha256": "9df1d432c205217fe6e9271bb07aba2497ac2f36b45a8e4582506ce04ab9dee7"
+}

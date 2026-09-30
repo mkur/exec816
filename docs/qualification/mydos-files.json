@@ -1,0 +1,1149 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "Standalone file parser with sector-byte fixture provider and root caller in four-slot profile. No filesystem task, public DOS API, actual wire or physical-hardware claim.",
+  "inputs": {
+    "lib/mydosfile.act": "e150983b6277f98cf52210e9ed9adb038e2bcb223368bf1c11ebc648cebce114",
+    "lib/mydosfiletypes.act": "076969b89f045047ae761e2ccda59dce57076a413db57c590812705d7ec41f1b",
+    "lib/mydos.act": "2889efcb3453e635a4a23ce153c7f2e34fcc0a5348d130a89bfbac84b2a0af45",
+    "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+    "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+    "tools/mydos_file_cases.py": "af9f1ad7eb20e87b95acc09c338affa84eeefaefc748013bddea988dd7cb43ae",
+    "tools/test_mydos_files.py": "7f7c008e26396cf7bac66e17c1ffb254d74f339c2211b6b42c68c2f0026be92a",
+    "tools/mydos_files_record.py": "27201c86f75047bdc3357eebc1da1f4912e1f5b697d533ada804836d6d7e1e49",
+    "tests/programs/mydos_files.act": "44c26330b30a70b33342c299022126728a8ab47a4be36f517e97ac14f5b6892d",
+    "tests/fixtures/mydos/blockwire.act": "ce19baf42bfc62cf473901d0a99d5b9e9bc820464c90c22c83835ef3e4288037",
+    "tests/fixtures/mydos/manifest.json": "343ac86a42162dd649687bce860edfee9f77f0e8fd574101f0883b2a3e1ff024"
+  },
+  "cases": [
+    {
+      "status": "pass",
+      "build": {
+        "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "source_sha256": "bd71d17c643c3eeb9a42713d87b62aeaa8363b38b0521dc75f96b7dc9c6f4452",
+        "image_sha256": "6cdb72c6fb7e08212a4c0fc13f25de4ab4d70a44169997d90ab50ea938d7bc40",
+        "xex_sha256": "b1350ffbf1becb872b3fd25c6b3f1b5450279a6e745bf8230d32a25e0dd6156d",
+        "optimize": false,
+        "task_inputs": {
+          "lib/blockio.act": "bfd2e92954157e937cd93b53a4c10ef3cec36ed7d40449b7e0825cc36a3c34c4",
+          "lib/blockwire.act": "86074640ce3c7dacb9c24fc59e1a635e763081cb800e1a033d9cb2e1d4812aa2",
+          "lib/blocktypes.act": "913292e9b9a0451b6c61fa1ff0fe19812e015b74596a9f466814439efa9afb28",
+          "lib/mydosfile.act": "e150983b6277f98cf52210e9ed9adb038e2bcb223368bf1c11ebc648cebce114",
+          "lib/mydosfiletypes.act": "076969b89f045047ae761e2ccda59dce57076a413db57c590812705d7ec41f1b",
+          "lib/mydos.act": "2889efcb3453e635a4a23ce153c7f2e34fcc0a5348d130a89bfbac84b2a0af45",
+          "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+          "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+          "lib/doscore.act": "3dc83e7875109ceafa1299c8feda38d111d90a118a0a6b856abfb7b01b338ca9",
+          "lib/dos-core-types.inc": "1ff75917d2ae80ac03ab41fa55929026b42b99c05591d9f19344c54f5cd72a22",
+          "lib/dosclient.act": "df28128889da37a246cf25684b69ae1ae66fc7402208121634dd498ddf42922c",
+          "lib/task-dos.inc": "87ea7622eae7d351e44816e732aa4c963c9ae685fe606ba08456b30957ebde80",
+          "platform/altirraos/dos.s": "6693418023dbd2b88d01e1f5cc59d16098094ac21a0dc6d3b2d59f51a41f865f",
+          "abi/dos.json": "67e22b3ce249d1b844aadb0c5749e06712f073e7b931ad2af629a85418a10c8d",
+          "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+          "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+          "lib/dos-packets.inc": "9f4684f36680d7eca364d1fd7b5d4f0b7a233217fadd9403cc70a68c37958a70",
+          "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+          "tools/generate_dos.py": "98096e37826051df80326fb2ce24ae87e757cd7208e7c7a8401d1e8d60532736",
+          "lib/siodriver.act": "271dd4359b55f1ad7ac1763378d2d07d9440de861dfeb0f8b56834ee9b4ffad9",
+          "lib/task-sio.inc": "87d59dffd7181fdf1341c88af32fe6d7a26818495fb4ecad085282260bb7fb0f",
+          "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+          "lib/task-io.inc": "2d970dcb2de53091a3d23338c38d832157370d962ad3a7ba8964b36ddbece875",
+          "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+          "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+          "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+          "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+          "lib/exec-io-types.inc": "e21b39c3c4fce74163e6230f3abbf73eeb932bf25b565909fed04a3c8387bbdf",
+          "tools/generate_io.py": "c261b28e3722702b882e7251b0d1f05c94db2956b4508e2d1a5b309d4e9da3b1",
+          "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+          "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+          "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+          "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+          "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+          "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+          "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+          "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+          "lib/taskpolicy.act": "2390c023f25c528d7fa8197c1e830b5b544ebe702942db60b068b324a3cac549",
+          "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "lib/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+          "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+          "platform/altirraos/sio.s": "e26287bae010cb99161864a03b4b85c2392c68813bb1fbb2baf1ab14cf46fb32",
+          "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+          "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+          "platform/altirraos/signal-irq.s": "d0f18ff9d829ffe48690151fbdb7ecb8253daf5f354f52901f77ea3c5d5b129a",
+          "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+          "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+          "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+          "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+          "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+          "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+          "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+          "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+          "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+          "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+          "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+          "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+          "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+          "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+          "tools/generate_tasks.py": "21eee0a86ac560e3c1a66b23fc49265493d565a3d1207556f6f398411e080441",
+          "platform/altirraos/tasks.s": "5eed313ca495622b18aa5d773e4f7a1ae1b3c5c757739c1a0712ef415e6d9120"
+        },
+        "kernel_bank": 1
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "live_tasks": 0,
+        "native_nmi_count": 433,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0
+      },
+      "checks": [
+        740
+      ],
+      "sector_bytes": 128,
+      "cases": [
+        {
+          "path": "EMPTY",
+          "size": 0,
+          "seed": 0
+        },
+        {
+          "path": "TEXT.TXT",
+          "size": 259,
+          "seed": 34
+        },
+        {
+          "path": "EXT.BIN",
+          "size": 600,
+          "seed": 49
+        },
+        {
+          "path": "LOCKED.BIN",
+          "size": 17,
+          "seed": 155
+        },
+        {
+          "path": "TOOLS/SUB/DATA.BIN",
+          "size": 777,
+          "seed": 83
+        },
+        {
+          "phase": 40,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 41,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 42,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 43,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 44,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 45,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 46,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 47,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 50,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 51,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 52,
+          "error": 213,
+          "path": "EXT.BIN"
+        }
+      ],
+      "fixture_provider_sha256": "ce19baf42bfc62cf473901d0a99d5b9e9bc820464c90c22c83835ef3e4288037",
+      "fixture_sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+      "request_count": 363,
+      "request_trace_sha256": "7abb78196a47959f1ec4226ca0e45402a18fa8ff434f4638265afc920f294889",
+      "phase_reads": {
+        "0": 321,
+        "40": 2,
+        "41": 12,
+        "42": 1,
+        "43": 1,
+        "44": 1,
+        "45": 1,
+        "46": 1,
+        "47": 1,
+        "50": 2,
+        "51": 4,
+        "52": 2,
+        "54": 1,
+        "49": 5,
+        "48": 5,
+        "60": 3
+      },
+      "high_reads": [
+        360,
+        32768,
+        65535
+      ],
+      "frames": {
+        "M_MYDOSFILE_RESTART_75C66A72": 72,
+        "M_MYDOSFILE_OPEN_0FD3469F": 220,
+        "M_MYDOSFILE_SECTORALLOWED_E72DFCC7": 96,
+        "M_MYDOSFILE_VISIT_2F7F40D0": 140,
+        "M_MYDOSFILE_TRAILER_58DD2DFC": 138,
+        "M_MYDOSFILE_LINK_86A70D17": 138,
+        "M_MYDOSFILE_VALIDATE_CCD11D35": 98,
+        "M_MYDOSFILE_FAIL_8A60C23B": 52,
+        "M_MYDOSFILE_FINISH_E4A712C2": 78,
+        "M_MYDOSFILE_ADVANCE_71346BED": 42,
+        "M_MYDOSFILE_BEGIN_902FB340": 64,
+        "M_MYDOSFILE_BEGINREAD_56DCAA56": 208,
+        "M_MYDOSFILE_TARGET_3D0FAE04": 180,
+        "M_MYDOSFILE_BEGINSEEK_007E9A86": 136,
+        "M_MYDOSFILE_LOCATE_F172D4F1": 142,
+        "M_MYDOSFILE_COPY_B45932A2": 116,
+        "M_MYDOSFILE_CONSUME_CDF927EF": 164,
+        "M_MYDOSFILE_CONTINUEOPERATION_DDF4199B": 116,
+        "M_MYDOSFILE_RUN_01B89F42": 70
+      }
+    },
+    {
+      "status": "pass",
+      "build": {
+        "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "source_sha256": "2bc5eb419b0314f70618e50733a0324d58cbf93e2d150cb12960bda8ca32eaa4",
+        "image_sha256": "37ee8af8b423513cbc68b97d693620a00a2c65d44df1bbcaf8d18fcc88f40439",
+        "xex_sha256": "8d7991f0740f97649108653cc7ceae2536e7d974a7fafb45f1df45a085260f5e",
+        "optimize": false,
+        "task_inputs": {
+          "lib/blockio.act": "bfd2e92954157e937cd93b53a4c10ef3cec36ed7d40449b7e0825cc36a3c34c4",
+          "lib/blockwire.act": "86074640ce3c7dacb9c24fc59e1a635e763081cb800e1a033d9cb2e1d4812aa2",
+          "lib/blocktypes.act": "913292e9b9a0451b6c61fa1ff0fe19812e015b74596a9f466814439efa9afb28",
+          "lib/mydosfile.act": "e150983b6277f98cf52210e9ed9adb038e2bcb223368bf1c11ebc648cebce114",
+          "lib/mydosfiletypes.act": "076969b89f045047ae761e2ccda59dce57076a413db57c590812705d7ec41f1b",
+          "lib/mydos.act": "2889efcb3453e635a4a23ce153c7f2e34fcc0a5348d130a89bfbac84b2a0af45",
+          "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+          "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+          "lib/doscore.act": "3dc83e7875109ceafa1299c8feda38d111d90a118a0a6b856abfb7b01b338ca9",
+          "lib/dos-core-types.inc": "1ff75917d2ae80ac03ab41fa55929026b42b99c05591d9f19344c54f5cd72a22",
+          "lib/dosclient.act": "df28128889da37a246cf25684b69ae1ae66fc7402208121634dd498ddf42922c",
+          "lib/task-dos.inc": "87ea7622eae7d351e44816e732aa4c963c9ae685fe606ba08456b30957ebde80",
+          "platform/altirraos/dos.s": "6693418023dbd2b88d01e1f5cc59d16098094ac21a0dc6d3b2d59f51a41f865f",
+          "abi/dos.json": "67e22b3ce249d1b844aadb0c5749e06712f073e7b931ad2af629a85418a10c8d",
+          "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+          "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+          "lib/dos-packets.inc": "9f4684f36680d7eca364d1fd7b5d4f0b7a233217fadd9403cc70a68c37958a70",
+          "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+          "tools/generate_dos.py": "98096e37826051df80326fb2ce24ae87e757cd7208e7c7a8401d1e8d60532736",
+          "lib/siodriver.act": "271dd4359b55f1ad7ac1763378d2d07d9440de861dfeb0f8b56834ee9b4ffad9",
+          "lib/task-sio.inc": "87d59dffd7181fdf1341c88af32fe6d7a26818495fb4ecad085282260bb7fb0f",
+          "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+          "lib/task-io.inc": "2d970dcb2de53091a3d23338c38d832157370d962ad3a7ba8964b36ddbece875",
+          "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+          "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+          "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+          "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+          "lib/exec-io-types.inc": "e21b39c3c4fce74163e6230f3abbf73eeb932bf25b565909fed04a3c8387bbdf",
+          "tools/generate_io.py": "c261b28e3722702b882e7251b0d1f05c94db2956b4508e2d1a5b309d4e9da3b1",
+          "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+          "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+          "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+          "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+          "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+          "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+          "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+          "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+          "lib/taskpolicy.act": "2390c023f25c528d7fa8197c1e830b5b544ebe702942db60b068b324a3cac549",
+          "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "lib/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+          "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+          "platform/altirraos/sio.s": "e26287bae010cb99161864a03b4b85c2392c68813bb1fbb2baf1ab14cf46fb32",
+          "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+          "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+          "platform/altirraos/signal-irq.s": "d0f18ff9d829ffe48690151fbdb7ecb8253daf5f354f52901f77ea3c5d5b129a",
+          "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+          "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+          "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+          "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+          "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+          "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+          "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+          "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+          "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+          "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+          "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+          "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+          "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+          "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+          "tools/generate_tasks.py": "21eee0a86ac560e3c1a66b23fc49265493d565a3d1207556f6f398411e080441",
+          "platform/altirraos/tasks.s": "5eed313ca495622b18aa5d773e4f7a1ae1b3c5c757739c1a0712ef415e6d9120"
+        },
+        "kernel_bank": 1
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "live_tasks": 0,
+        "native_nmi_count": 1766,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0
+      },
+      "checks": [
+        1262
+      ],
+      "sector_bytes": 256,
+      "cases": [
+        {
+          "path": "EMPTY",
+          "size": 0,
+          "seed": 0
+        },
+        {
+          "path": "TEXT.TXT",
+          "size": 259,
+          "seed": 34
+        },
+        {
+          "path": "EXT.BIN",
+          "size": 600,
+          "seed": 49
+        },
+        {
+          "path": "LOCKED.BIN",
+          "size": 17,
+          "seed": 155
+        },
+        {
+          "path": "TOOLS/SUB/DATA.BIN",
+          "size": 777,
+          "seed": 83
+        },
+        {
+          "path": "LARGE.BIN",
+          "size": 70003,
+          "seed": 129
+        },
+        {
+          "phase": 40,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 41,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 42,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 43,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 44,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 45,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 46,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 47,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 50,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 51,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 52,
+          "error": 213,
+          "path": "EXT.BIN"
+        }
+      ],
+      "fixture_provider_sha256": "ce19baf42bfc62cf473901d0a99d5b9e9bc820464c90c22c83835ef3e4288037",
+      "fixture_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "request_count": 1161,
+      "request_trace_sha256": "8bdfb6d2679338dc5f40f075ea70c4a28006837a278c711868e43d00b6344077",
+      "phase_reads": {
+        "0": 1123,
+        "40": 2,
+        "41": 12,
+        "42": 1,
+        "43": 1,
+        "44": 1,
+        "45": 1,
+        "46": 1,
+        "47": 1,
+        "50": 2,
+        "51": 4,
+        "52": 2,
+        "54": 1,
+        "49": 3,
+        "48": 3,
+        "60": 3
+      },
+      "high_reads": [
+        360,
+        32768,
+        65535
+      ],
+      "frames": {
+        "M_MYDOSFILE_RESTART_75C66A72": 72,
+        "M_MYDOSFILE_OPEN_0FD3469F": 220,
+        "M_MYDOSFILE_SECTORALLOWED_E72DFCC7": 96,
+        "M_MYDOSFILE_VISIT_2F7F40D0": 140,
+        "M_MYDOSFILE_TRAILER_58DD2DFC": 138,
+        "M_MYDOSFILE_LINK_86A70D17": 138,
+        "M_MYDOSFILE_VALIDATE_CCD11D35": 98,
+        "M_MYDOSFILE_FAIL_8A60C23B": 52,
+        "M_MYDOSFILE_FINISH_E4A712C2": 78,
+        "M_MYDOSFILE_ADVANCE_71346BED": 42,
+        "M_MYDOSFILE_BEGIN_902FB340": 64,
+        "M_MYDOSFILE_BEGINREAD_56DCAA56": 208,
+        "M_MYDOSFILE_TARGET_3D0FAE04": 180,
+        "M_MYDOSFILE_BEGINSEEK_007E9A86": 136,
+        "M_MYDOSFILE_LOCATE_F172D4F1": 142,
+        "M_MYDOSFILE_COPY_B45932A2": 116,
+        "M_MYDOSFILE_CONSUME_CDF927EF": 164,
+        "M_MYDOSFILE_CONTINUEOPERATION_DDF4199B": 116,
+        "M_MYDOSFILE_RUN_01B89F42": 70
+      }
+    },
+    {
+      "status": "pass",
+      "build": {
+        "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "source_sha256": "bd71d17c643c3eeb9a42713d87b62aeaa8363b38b0521dc75f96b7dc9c6f4452",
+        "image_sha256": "18ed1a2f2f15d0318b70c68872496dc3e6850ed9f4678233a264cb7e7cb409e9",
+        "xex_sha256": "3302f45598e821dc0b95ddbd0d19ce8eff5d5a69bcf5d7ec216a3ed3802af4cf",
+        "optimize": true,
+        "task_inputs": {
+          "lib/blockio.act": "bfd2e92954157e937cd93b53a4c10ef3cec36ed7d40449b7e0825cc36a3c34c4",
+          "lib/blockwire.act": "86074640ce3c7dacb9c24fc59e1a635e763081cb800e1a033d9cb2e1d4812aa2",
+          "lib/blocktypes.act": "913292e9b9a0451b6c61fa1ff0fe19812e015b74596a9f466814439efa9afb28",
+          "lib/mydosfile.act": "e150983b6277f98cf52210e9ed9adb038e2bcb223368bf1c11ebc648cebce114",
+          "lib/mydosfiletypes.act": "076969b89f045047ae761e2ccda59dce57076a413db57c590812705d7ec41f1b",
+          "lib/mydos.act": "2889efcb3453e635a4a23ce153c7f2e34fcc0a5348d130a89bfbac84b2a0af45",
+          "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+          "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+          "lib/doscore.act": "3dc83e7875109ceafa1299c8feda38d111d90a118a0a6b856abfb7b01b338ca9",
+          "lib/dos-core-types.inc": "1ff75917d2ae80ac03ab41fa55929026b42b99c05591d9f19344c54f5cd72a22",
+          "lib/dosclient.act": "df28128889da37a246cf25684b69ae1ae66fc7402208121634dd498ddf42922c",
+          "lib/task-dos.inc": "87ea7622eae7d351e44816e732aa4c963c9ae685fe606ba08456b30957ebde80",
+          "platform/altirraos/dos.s": "6693418023dbd2b88d01e1f5cc59d16098094ac21a0dc6d3b2d59f51a41f865f",
+          "abi/dos.json": "67e22b3ce249d1b844aadb0c5749e06712f073e7b931ad2af629a85418a10c8d",
+          "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+          "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+          "lib/dos-packets.inc": "9f4684f36680d7eca364d1fd7b5d4f0b7a233217fadd9403cc70a68c37958a70",
+          "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+          "tools/generate_dos.py": "98096e37826051df80326fb2ce24ae87e757cd7208e7c7a8401d1e8d60532736",
+          "lib/siodriver.act": "271dd4359b55f1ad7ac1763378d2d07d9440de861dfeb0f8b56834ee9b4ffad9",
+          "lib/task-sio.inc": "87d59dffd7181fdf1341c88af32fe6d7a26818495fb4ecad085282260bb7fb0f",
+          "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+          "lib/task-io.inc": "2d970dcb2de53091a3d23338c38d832157370d962ad3a7ba8964b36ddbece875",
+          "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+          "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+          "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+          "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+          "lib/exec-io-types.inc": "e21b39c3c4fce74163e6230f3abbf73eeb932bf25b565909fed04a3c8387bbdf",
+          "tools/generate_io.py": "c261b28e3722702b882e7251b0d1f05c94db2956b4508e2d1a5b309d4e9da3b1",
+          "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+          "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+          "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+          "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+          "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+          "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+          "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+          "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+          "lib/taskpolicy.act": "2390c023f25c528d7fa8197c1e830b5b544ebe702942db60b068b324a3cac549",
+          "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "lib/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+          "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+          "platform/altirraos/sio.s": "e26287bae010cb99161864a03b4b85c2392c68813bb1fbb2baf1ab14cf46fb32",
+          "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+          "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+          "platform/altirraos/signal-irq.s": "d0f18ff9d829ffe48690151fbdb7ecb8253daf5f354f52901f77ea3c5d5b129a",
+          "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+          "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+          "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+          "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+          "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+          "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+          "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+          "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+          "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+          "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+          "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+          "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+          "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+          "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+          "tools/generate_tasks.py": "21eee0a86ac560e3c1a66b23fc49265493d565a3d1207556f6f398411e080441",
+          "platform/altirraos/tasks.s": "5eed313ca495622b18aa5d773e4f7a1ae1b3c5c757739c1a0712ef415e6d9120"
+        },
+        "kernel_bank": 1
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "live_tasks": 0,
+        "native_nmi_count": 401,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0
+      },
+      "checks": [
+        740
+      ],
+      "sector_bytes": 128,
+      "cases": [
+        {
+          "path": "EMPTY",
+          "size": 0,
+          "seed": 0
+        },
+        {
+          "path": "TEXT.TXT",
+          "size": 259,
+          "seed": 34
+        },
+        {
+          "path": "EXT.BIN",
+          "size": 600,
+          "seed": 49
+        },
+        {
+          "path": "LOCKED.BIN",
+          "size": 17,
+          "seed": 155
+        },
+        {
+          "path": "TOOLS/SUB/DATA.BIN",
+          "size": 777,
+          "seed": 83
+        },
+        {
+          "phase": 40,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 41,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 42,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 43,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 44,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 45,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 46,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 47,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 50,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 51,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 52,
+          "error": 213,
+          "path": "EXT.BIN"
+        }
+      ],
+      "fixture_provider_sha256": "ce19baf42bfc62cf473901d0a99d5b9e9bc820464c90c22c83835ef3e4288037",
+      "fixture_sha256": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+      "request_count": 363,
+      "request_trace_sha256": "7abb78196a47959f1ec4226ca0e45402a18fa8ff434f4638265afc920f294889",
+      "phase_reads": {
+        "0": 321,
+        "40": 2,
+        "41": 12,
+        "42": 1,
+        "43": 1,
+        "44": 1,
+        "45": 1,
+        "46": 1,
+        "47": 1,
+        "50": 2,
+        "51": 4,
+        "52": 2,
+        "54": 1,
+        "49": 5,
+        "48": 5,
+        "60": 3
+      },
+      "high_reads": [
+        360,
+        32768,
+        65535
+      ],
+      "frames": {
+        "M_MYDOSFILE_RESTART_75C66A72": 42,
+        "M_MYDOSFILE_OPEN_0FD3469F": 176,
+        "M_MYDOSFILE_SECTORALLOWED_E72DFCC7": 64,
+        "M_MYDOSFILE_VISIT_2F7F40D0": 114,
+        "M_MYDOSFILE_TRAILER_58DD2DFC": 130,
+        "M_MYDOSFILE_LINK_86A70D17": 120,
+        "M_MYDOSFILE_VALIDATE_CCD11D35": 90,
+        "M_MYDOSFILE_FAIL_8A60C23B": 44,
+        "M_MYDOSFILE_FINISH_E4A712C2": 70,
+        "M_MYDOSFILE_ADVANCE_71346BED": 32,
+        "M_MYDOSFILE_BEGIN_902FB340": 40,
+        "M_MYDOSFILE_BEGINREAD_56DCAA56": 170,
+        "M_MYDOSFILE_TARGET_3D0FAE04": 146,
+        "M_MYDOSFILE_BEGINSEEK_007E9A86": 104,
+        "M_MYDOSFILE_LOCATE_F172D4F1": 134,
+        "M_MYDOSFILE_COPY_B45932A2": 106,
+        "M_MYDOSFILE_CONSUME_CDF927EF": 154,
+        "M_MYDOSFILE_CONTINUEOPERATION_DDF4199B": 104,
+        "M_MYDOSFILE_RUN_01B89F42": 66
+      }
+    },
+    {
+      "status": "pass",
+      "build": {
+        "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "e9364f7610bf153fbc7eb4e4d9e745a23187cf049b233bd4487db5680a4c596e",
+        "abi_sha256": "d8c329329c0c286e5c4673b5d638e8c3f685fb6c2ce71fad6b1f6bf764ca3175",
+        "source_sha256": "2bc5eb419b0314f70618e50733a0324d58cbf93e2d150cb12960bda8ca32eaa4",
+        "image_sha256": "8436151b5e7145f411c3df3add3d0c620d005938521d3b80c07423b5c8e452c7",
+        "xex_sha256": "72f145e1108a95b78e13529b57d27bd46e476fd6b0d13d73e865cd3bd175fb49",
+        "optimize": true,
+        "task_inputs": {
+          "lib/blockio.act": "bfd2e92954157e937cd93b53a4c10ef3cec36ed7d40449b7e0825cc36a3c34c4",
+          "lib/blockwire.act": "86074640ce3c7dacb9c24fc59e1a635e763081cb800e1a033d9cb2e1d4812aa2",
+          "lib/blocktypes.act": "913292e9b9a0451b6c61fa1ff0fe19812e015b74596a9f466814439efa9afb28",
+          "lib/mydosfile.act": "e150983b6277f98cf52210e9ed9adb038e2bcb223368bf1c11ebc648cebce114",
+          "lib/mydosfiletypes.act": "076969b89f045047ae761e2ccda59dce57076a413db57c590812705d7ec41f1b",
+          "lib/mydos.act": "2889efcb3453e635a4a23ce153c7f2e34fcc0a5348d130a89bfbac84b2a0af45",
+          "lib/mydosnames.act": "aa2a18b7cdd921052dea461c64c1d626b4844bb466464af7ea6a41b4b368bf58",
+          "lib/mydostypes.act": "ee249634d2361e34ddc85c20576c4f599bd1cf8da218cdef0f808914f63b42d7",
+          "lib/doscore.act": "3dc83e7875109ceafa1299c8feda38d111d90a118a0a6b856abfb7b01b338ca9",
+          "lib/dos-core-types.inc": "1ff75917d2ae80ac03ab41fa55929026b42b99c05591d9f19344c54f5cd72a22",
+          "lib/dosclient.act": "df28128889da37a246cf25684b69ae1ae66fc7402208121634dd498ddf42922c",
+          "lib/task-dos.inc": "87ea7622eae7d351e44816e732aa4c963c9ae685fe606ba08456b30957ebde80",
+          "platform/altirraos/dos.s": "6693418023dbd2b88d01e1f5cc59d16098094ac21a0dc6d3b2d59f51a41f865f",
+          "abi/dos.json": "67e22b3ce249d1b844aadb0c5749e06712f073e7b931ad2af629a85418a10c8d",
+          "lib/dos.act": "e6bc8cfcefc355b67791eb0924314c77c1b0df62e46bc602f8af6dd2a0f2626f",
+          "lib/dos-types.inc": "3dd8cced4a810d19aaded7b502cc5252494df0119136dc7de1c269984c581e08",
+          "lib/dos-packets.inc": "9f4684f36680d7eca364d1fd7b5d4f0b7a233217fadd9403cc70a68c37958a70",
+          "lib/doswire.act": "dec5bb134c1b45825960c7efd27c3d2fb56d7edc7f800d6767b36ca0ffc62268",
+          "tools/generate_dos.py": "98096e37826051df80326fb2ce24ae87e757cd7208e7c7a8401d1e8d60532736",
+          "lib/siodriver.act": "271dd4359b55f1ad7ac1763378d2d07d9440de861dfeb0f8b56834ee9b4ffad9",
+          "lib/task-sio.inc": "87d59dffd7181fdf1341c88af32fe6d7a26818495fb4ecad085282260bb7fb0f",
+          "lib/iocore.act": "b39270664f793bde51e418bba22b2ff38b6f5dff1dcb2c690e5d65bf88603e10",
+          "lib/task-io.inc": "2d970dcb2de53091a3d23338c38d832157370d962ad3a7ba8964b36ddbece875",
+          "lib/io-call-types.inc": "3fc8435cd30528ef88019646e0ce9c30fe8d5e34b4419a3d4e8bb19097b602d8",
+          "platform/altirraos/io.s": "1a86a7f1a77443d2733b71b5272c62645c420ab3a03f03560a64546780fb37e8",
+          "abi/io.json": "97cac5cbc13aa3113834217d8aee6ee0ad0d5cc9f0c7c914e7ffd7ad43522417",
+          "abi/sio.json": "fcbb8da3f8b077cb48247c542ce669de6bc79358c0ff0e2e69d22311351560df",
+          "lib/exec-io-types.inc": "e21b39c3c4fce74163e6230f3abbf73eeb932bf25b565909fed04a3c8387bbdf",
+          "tools/generate_io.py": "c261b28e3722702b882e7251b0d1f05c94db2956b4508e2d1a5b309d4e9da3b1",
+          "abi/ports.json": "30d67e7a4d36c3ef5dda63d2fc558773dec5c359d3cfd3101de27e717a6c75b1",
+          "lib/exec-port-types.inc": "c124de9b2057e7885be703706733ffd912c2044a2a96d5f4b899794ae44d2d1e",
+          "lib/port-call-types.inc": "e94de811eb8a0d00365ee4451a1120a0ecd92cf14b91ef21203c1018f68abd45",
+          "tools/generate_ports.py": "2c8f010954f06307a93025fc63958a4c6ee2a9e1eb08a0ad9045d1c43aed64bc",
+          "lib/task-ports.inc": "aa49334530cd0b42b060349b776eefb9dabe9295e4030e32c79d38bb08d92670",
+          "lib/portcore.act": "35cb17d3749b56bf8f77a535b6dd70bb5b1b0d71d9d39926fccc88aa79171bda",
+          "platform/altirraos/ports.s": "2ebf9e9d65a7036adc16c51a86819019a03acfb611992059c749d5a41a6c11eb",
+          "abi/tasks.json": "8d6ffa73f77551b883f778219cadd6884d370db5c5762e82fc339e5b18ac14c5",
+          "lib/taskpolicy.act": "2390c023f25c528d7fa8197c1e830b5b544ebe702942db60b068b324a3cac549",
+          "lib/task-signals.inc": "48c95ec0a76cda2e7b13e3ef6f1cc7c1f9cf1d2fb80e480bfc71202de262e1cd",
+          "lib/task-wakes.inc": "031a4450543639aaffa5c6aee13ff90e8c2ce66e8d6d9ef0fa4ea7e285222ba9",
+          "abi/sio-adapter.json": "9024bf2039ab2932a5bc73f3523bb2504111e54c831fcd5e36e729e9f562449e",
+          "tools/generate_sio_adapter.py": "3f1622ac0f0a3a20c19b21f54a112f40418ad2fa6fc49109c31d8717190f0aae",
+          "platform/altirraos/sio.s": "e26287bae010cb99161864a03b4b85c2392c68813bb1fbb2baf1ab14cf46fb32",
+          "platform/altirraos/sio-state.inc": "4d6d1e0f79d284f953fc61ca087786306a015ba7db310f0814ab286b5432e40f",
+          "lib/sioadapter.act": "7c001c9569b40818589573fe5f10f78431558e0ecbbb63b8df9089e496b8ea81",
+          "platform/altirraos/signal-irq.s": "d0f18ff9d829ffe48690151fbdb7ecb8253daf5f354f52901f77ea3c5d5b129a",
+          "platform/altirraos/signal-atomic.s": "318abc0ad82280cc5f9aed90cc54f4e92ebbf8bcef7f6802d6a21b1043795966",
+          "platform/altirraos/serial-irq.inc": "cbc92ae741bfe34164d2cfeaa6793cd2e624cfb6cf12ed05249542ac69a0f1c8",
+          "platform/altirraos/heap.s": "4133f3890fe972d6aa0df6490e7383963ba55fd390a9908545e5f9d30973668d",
+          "platform/altirraos/heap-probe.s": "6df15dbf49435721a224b9531315b0bd32a9bdd23f3717ecd0a52dc29bf301d0",
+          "lib/task-memory.inc": "c04bf601c2c76c33e9780bcd3330801e810a76ebd679b94693150840503ec614",
+          "lib/heap-call-types.inc": "e32bcb3297fb17728df6c481d8b906fdb19f6bc0e4c3f96a946c52a645ccd838",
+          "lib/heappolicy.act": "cff97f5ef3fe1181d85c49d3f01fe1cbb39ca4c0ef8e8a04ba7ff78931c93b9c",
+          "lib/heap-system.inc": "1816bfccc25489f872d92a826d125f8bed2907468900232abd41c60d33eee2d8",
+          "lib/heapcore.act": "9b0f39fcd63765ac27ba3199a9e7c8e71e7bfb081b2c714338ca2f2444151abb",
+          "lib/heap-constants.inc": "ee4f80d8249fd93a32a6a5bd4566bbcf0b062eca77929a152257e6d95ace26ab",
+          "lib/exec-memory-types.inc": "03f8b4f123aff08975864bad472f47fd955743a463123fdfa0118af18e3f00a6",
+          "tools/generate_heap.py": "cade8d9f863c84e95995eb6067494fea131b4495387eb430cd0eb0412822ba7f",
+          "lib/exec-task-types.inc": "4bea79f4b5c48bc9d5c0472eeee05aff08a4e6ae2b57bc190507ae8e5b01f678",
+          "lib/execlists.act": "db35ebcf7ce26ccb6d0aa1d5e9e024a21c5007b1683622eb6daacebcbc8fa0d4",
+          "tools/generate_tasks.py": "21eee0a86ac560e3c1a66b23fc49265493d565a3d1207556f6f398411e080441",
+          "platform/altirraos/tasks.s": "5eed313ca495622b18aa5d773e4f7a1ae1b3c5c757739c1a0712ef415e6d9120"
+        },
+        "kernel_bank": 1
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "live_tasks": 0,
+        "native_nmi_count": 1546,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0
+      },
+      "checks": [
+        1262
+      ],
+      "sector_bytes": 256,
+      "cases": [
+        {
+          "path": "EMPTY",
+          "size": 0,
+          "seed": 0
+        },
+        {
+          "path": "TEXT.TXT",
+          "size": 259,
+          "seed": 34
+        },
+        {
+          "path": "EXT.BIN",
+          "size": 600,
+          "seed": 49
+        },
+        {
+          "path": "LOCKED.BIN",
+          "size": 17,
+          "seed": 155
+        },
+        {
+          "path": "TOOLS/SUB/DATA.BIN",
+          "size": 777,
+          "seed": 83
+        },
+        {
+          "path": "LARGE.BIN",
+          "size": 70003,
+          "seed": 129
+        },
+        {
+          "phase": 40,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 41,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 42,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 43,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 44,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 45,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 46,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 47,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 50,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 51,
+          "error": 213,
+          "path": "EXT.BIN"
+        },
+        {
+          "phase": 52,
+          "error": 213,
+          "path": "EXT.BIN"
+        }
+      ],
+      "fixture_provider_sha256": "ce19baf42bfc62cf473901d0a99d5b9e9bc820464c90c22c83835ef3e4288037",
+      "fixture_sha256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff",
+      "request_count": 1161,
+      "request_trace_sha256": "8bdfb6d2679338dc5f40f075ea70c4a28006837a278c711868e43d00b6344077",
+      "phase_reads": {
+        "0": 1123,
+        "40": 2,
+        "41": 12,
+        "42": 1,
+        "43": 1,
+        "44": 1,
+        "45": 1,
+        "46": 1,
+        "47": 1,
+        "50": 2,
+        "51": 4,
+        "52": 2,
+        "54": 1,
+        "49": 3,
+        "48": 3,
+        "60": 3
+      },
+      "high_reads": [
+        360,
+        32768,
+        65535
+      ],
+      "frames": {
+        "M_MYDOSFILE_RESTART_75C66A72": 42,
+        "M_MYDOSFILE_OPEN_0FD3469F": 176,
+        "M_MYDOSFILE_SECTORALLOWED_E72DFCC7": 64,
+        "M_MYDOSFILE_VISIT_2F7F40D0": 114,
+        "M_MYDOSFILE_TRAILER_58DD2DFC": 130,
+        "M_MYDOSFILE_LINK_86A70D17": 120,
+        "M_MYDOSFILE_VALIDATE_CCD11D35": 90,
+        "M_MYDOSFILE_FAIL_8A60C23B": 44,
+        "M_MYDOSFILE_FINISH_E4A712C2": 70,
+        "M_MYDOSFILE_ADVANCE_71346BED": 32,
+        "M_MYDOSFILE_BEGIN_902FB340": 40,
+        "M_MYDOSFILE_BEGINREAD_56DCAA56": 170,
+        "M_MYDOSFILE_TARGET_3D0FAE04": 146,
+        "M_MYDOSFILE_BEGINSEEK_007E9A86": 104,
+        "M_MYDOSFILE_LOCATE_F172D4F1": 134,
+        "M_MYDOSFILE_COPY_B45932A2": 106,
+        "M_MYDOSFILE_CONSUME_CDF927EF": 154,
+        "M_MYDOSFILE_CONTINUEOPERATION_DDF4199B": 104,
+        "M_MYDOSFILE_RUN_01B89F42": 66
+      }
+    }
+  ],
+  "media": {
+    "128": "6da372c9986ef99ad11ff17e60d37e7ace49663f945ba1b293c356b5d95b557d",
+    "256": "e4409839301c68f301007e007f898e680b00df8da7d5e2ec17deee2c88d422ff"
+  },
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "c2268b7c742958bd9078c4e11ef9b10f3b7a0221",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v1",
+    "image_format_version": 2,
+    "abi_json": "docs/abi/action65816-native-v1.json",
+    "abi_assembly": "docs/abi/action65816-native-v1.inc",
+    "local_bundle": {
+      "path": "toolchain/actionc-comma-groups.bundle",
+      "sha256": "3e536e01ba92629bf357df1bfa489d10b7f1947577497eef0d22bb97d7b6dfb8",
+      "base_revision": "e7266982c22527040dfc2a46508be8475581fe8f",
+      "scope": "Parser comma-group correction; bundled local commit, not asserted published upstream"
+    }
+  },
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json",
+      "additional_patch": "toolchain/patches/altirra-headless-mount.patch",
+      "additional_patch_sha256": "3ba17abf8b5037383457f85306bb3eaad973151701a3fa4221469c87ccefd1bd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Queued SIO tests; drive-specific headless MOUNT fixed without changing CPU/peripheral emulation",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "limits": {
+      "command_setup_us": [
+        750,
+        1600
+      ],
+      "command_hold_us": [
+        650,
+        950
+      ],
+      "write_delay_us": [
+        1000,
+        1800
+      ],
+      "alarm_lateness_us": 100,
+      "active_max_us": 1020000,
+      "critic_max_us": 1020000
+    },
+    "alarm": {
+      "timer1_base_cycles": 224,
+      "timer2_base_cycles": 7168,
+      "timer2_count": 250,
+      "phase_counts": {
+        "setup": 8,
+        "hold": 7,
+        "write": 10
+      },
+      "stimer": "initialization/cleanup only"
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "write_delay_basis": "Figure 18 (1.0\u20131.8 ms); qualified only against these pinned disk models. Page 219 prose says 10\u201318 ms and is not used for these profiles.",
+    "timeout_policy": "One 250-tick active watchdog: ACK, result and data all inherit its remaining time; receiving a byte does not restart it. No separate phase or per-byte timeout in this disposable probe.",
+    "observer": {
+      "binary_sha256": "f5bb13fff27be8e89a8cb0a499d5c56bb31e609917eef8ce8999a59286f02922",
+      "patch": "toolchain/patches/altirra-sio-observer.patch",
+      "additional_patch": "toolchain/patches/altirra-headless-mount.patch"
+    },
+    "fault_responder": {
+      "binary_sha256": "c2eb067b68eea3dfb7c7c883b1aca0be0d74b3179bfa40f98a88557e5aecf60d",
+      "patch": "toolchain/patches/altirra-sio-fault-responder.patch",
+      "patch_sha256": "47cb3ca5fb473cd7561010dd8634a8295980204a1fc9c0facf65ab05029fa160",
+      "scope": "Explicit D8 protocol/stop-bit corruption, test-only environment selector; POKEY and guest execute normally. Includes passive observer and drive-specific MOUNT patches."
+    }
+  },
+  "bank_zero": {
+    "before": {
+      "four": {
+        "fixed_runtime": 11824,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 21104,
+        "runtime_including_os": 57968,
+        "loading_excluding_os": 21696,
+        "loading_including_os": 58560
+      },
+      "eight": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      }
+    },
+    "after": {
+      "four": {
+        "fixed_runtime": 11824,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 21104,
+        "runtime_including_os": 57968,
+        "loading_excluding_os": 21696,
+        "loading_including_os": 58560
+      },
+      "eight": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      }
+    },
+    "fixed_delta": 0,
+    "per_task_delta": 0,
+    "diagnostic_delta": 0,
+    "accounting": "Generated maps; full guards, near arena, table slack and retained legacy contexts; unchanged pools."
+  },
+  "storage": {
+    "fixed_upper_delta": 0,
+    "per_open_cursor": 92,
+    "cursor_heap": 96,
+    "per_worker_operation": 44,
+    "operation_heap": 48,
+    "additional_tasks": 0,
+    "additional_signals": 0
+  },
+  "limits": {
+    "host_seconds": 600,
+    "frames": 30000,
+    "requests": 4096,
+    "max_chain_hops": 65535,
+    "cycle_one_byte_calls": 2001,
+    "cycle_hops": 8,
+    "cycle_physical_reads": 4
+  },
+  "commands": [
+    "python3 tools/test_mydos_files.py --case raw --size 128 --output build/dos-slice6/final-raw128",
+    "python3 tools/test_mydos_files.py --case raw --size 256 --output build/dos-slice6/final-raw256",
+    "python3 tools/test_mydos_files.py --case opt --size 128 --output build/dos-slice6/final-opt128",
+    "python3 tools/test_mydos_files.py --case opt --size 256 --output build/dos-slice6/final-opt256"
+  ]
+}

@@ -1,0 +1,69 @@
+; Internal diagnostic view of the current private pool, not a public Exec ABI.
+MODULE TASKINSPECT
+
+USE EXEC
+USE ASCII
+
+; Generated layout constants go here.
+CONST NAME_CAPACITY=24
+CONST NAME_LIMIT=NAME_CAPACITY-1
+CONST LAST_PRINTABLE=126
+CONST REPLACEMENT_CHAR=46
+
+PUBLIC TYPE Info=[
+  BYTE slot,state
+  BYTE ARRAY name(NAME_CAPACITY)
+]
+
+; Task context only. Copy names while scheduling is excluded: a task may be
+; removed and its caller-owned record/name freed immediately after Permit.
+; IRQs remain enabled; pending wakes are not task-list mutations.
+PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
+  BYTE slot,state,index,value
+  CARD count
+  BYTE POINTER context,name
+  ADDRESS POINTER link
+  EXEC.Task POINTER task
+
+  IF rows=NULL OR limit<CAPACITY THEN
+    RETURN(0)
+  FI
+
+  count=0
+  EXEC.Forbid()
+  FOR slot=0 TO CAPACITY-1 DO
+    context=BYTE POINTER(ADDRESS(TABLE_BASE)+(SIZE(slot) LSH RECORD_SHIFT))
+    state=context(STATE_OFFSET)
+    IF state<>STATE_FREE THEN
+      link=ADDRESS POINTER(ADDRESS(context)+SIZE(ITEM_OFFSET))
+      task=EXEC.Task POINTER(link^)
+      rows(count).slot=slot
+      rows(count).state=state
+      name=task.tc_Node.ln_Name
+      index=0
+      IF name<>NULL THEN
+        WHILE index<NAME_LIMIT DO
+          value=name(index)
+          IF value=ASCII.NUL THEN
+            EXIT
+          FI
+
+          IF value<ASCII.SPACE OR value>LAST_PRINTABLE THEN
+            value=REPLACEMENT_CHAR
+          FI
+
+          rows(count).name(index)=value
+          index==+1
+        OD
+      FI
+
+      rows(count).name(index)=ASCII.NUL
+      count==+1
+    FI
+  OD
+
+  EXEC.Permit()
+
+RETURN(count)
+
+ENDMODULE

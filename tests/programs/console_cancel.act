@@ -1,0 +1,292 @@
+MODULE CONSOLECANCELTEST
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCLIENT
+USE DOSRAW
+USE DOSCOOKED
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE COOKEDLINE
+USE CONSOLEDRIVER
+USE CONSOLEINPUT
+USE CONSOLETYPES
+USE WAITPROBE
+USE HEAPCORE
+CARD checks
+VOLATILE BYTE phase,gate,peerDone
+EXEC.Task peer
+PROC POINTER absent()
+DOS.FileHandle POINTER con,raw
+DOSCLIENT.ClientContext POINTER client
+DOSRAW.RawEndpoint POINTER endpoint
+DOSBREAKTYPES.Scope POINTER scope
+CONSOLETYPES.Instance POINTER instance
+COOKEDLINE.Session POINTER line
+BYTE POINTER bulk,buffer
+BYTE ARRAY conName=[67 79 78 58 0],rawName=[82 65 87 58 0]
+BYTE ARRAY one=[81],clear=[12]
+LONGINT ARRAY results(16),errors(16)
+LONGCARD baseline
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e800+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE number)
+  CARD ticks
+
+  gate=0
+  phase=number
+  WHILE gate=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+PROC Remember(BYTE index LONGINT result)
+
+  results(index)=result
+  errors(index)=DOS.IoErr()
+
+RETURN
+
+PROC Idle(BYTE active)
+
+  Require(client.busy=0
+      AND client.request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  Require(client.request.io_Data=BYTE POINTER(0)
+      AND client.request.io_Device=BYTE POINTER(0)
+      AND client.request.io_Unit=BYTE POINTER(0))
+  Require(endpoint.active=CARD(active) AND endpoint.reader<>BYTE POINTER(client))
+  Require(EXEC.GetMsg(client.port)=EXEC.Message POINTER(0))
+
+RETURN
+
+PROC Next(BYTE mode)
+
+  Require(DOS.BeginForeground(con)<>0 AND DOS.BreakPending()=0)
+  WAITPROBE.mode=mode
+  WAITPROBE.stage=0
+  WAITPROBE.gate=0
+  WAITPROBE.sends=0
+  WAITPROBE.collections=0
+  WAITPROBE.aborts=0
+
+RETURN
+
+PROC PeerEntry()
+  DOS.FileHandle POINTER file
+
+  file=DOS.Open(rawName,DOS.MODE_READWRITE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  Require(DOS.Write(file,bulk,4096)=4096)
+  Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+  peerDone=1
+
+RETURN
+
+PROC StartPeer()
+
+  peer.tc_Node.ln_Type=EXEC.NT_TASK
+  peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  peer.tc_SPReg=peer.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@peer.tc_MemEntry)
+  Require(EXEC.AddTask(@peer,@PeerEntry,absent)=@peer)
+
+RETURN
+
+; Cancel reads at different ownership stages and require each reply exactly
+; once.
+PROC CanceledReads()
+  LONGCARD bits
+  CARD index,ticks
+
+  Pause(1)
+  Remember(0,DOS.Read(raw,buffer,1))
+  Require(results(0)=-1 AND errors(0)=DOS.ERROR_BREAK AND WAITPROBE.sends=0)
+  Idle(0)
+  WAITPROBE.target=EXEC.IORequest POINTER(client.request)
+  Next(0)
+  Pause(2)
+  Remember(1,DOS.Read(raw,buffer,1))
+  Require(results(1)=-1 AND errors(1)=DOS.ERROR_BREAK AND DOS.BreakPending()<>0)
+  Require(WAITPROBE.sends=1 AND WAITPROBE.collections=1 AND WAITPROBE.aborts=1)
+  Idle(0)
+  Next(3)
+  Pause(3)
+  Remember(2,DOS.Read(con,buffer,256))
+  Require(results(2)=-1 AND errors(2)=DOS.ERROR_BREAK)
+  Require(line.length=0 AND line.discard=0 AND line.ready=0
+      AND instance.inputCount=0)
+  Require(WAITPROBE.collections=WAITPROBE.sends AND WAITPROBE.aborts=1)
+  Idle(0)
+  Next(0)
+  Pause(4)
+  Remember(3,DOS.Read(con,buffer,256))
+  Require(results(3)=3 AND errors(3)=0 AND buffer(0)=111 AND buffer(1)=107
+      AND buffer(2)=10)
+  Idle(0)
+  Next(2)
+  Pause(8)
+  FOR index=0 TO 255 DO
+    buffer(index)=$a5
+  OD
+
+  EXEC.Forbid()
+  FOR index=0 TO 63 DO
+    CONSOLEINPUT.Deliver(instance,(LONGCARD(index+200) LSH 16) OR $3f)
+  OD
+
+  EXEC.Permit()
+  Remember(7,DOS.Read(raw,buffer,128))
+  Require(results(7)=64 AND errors(7)=DOS.ERROR_BREAK)
+  FOR index=0 TO 63 DO
+    Require(buffer(index)=97)
+    buffer(index)=$a5
+  OD
+
+  FOR index=64 TO 255 DO
+    Require(buffer(index)=$a5)
+  OD
+
+  Require(WAITPROBE.sends=1 AND WAITPROBE.collections=1 AND WAITPROBE.aborts=1)
+  Idle(0)
+  ticks=EXECTASKS.Sleep(3)
+  FOR index=0 TO 255 DO
+    Require(buffer(index)=$a5)
+  OD
+
+  Next(0)
+  Pause(9)
+  bits=EXEC.SetSignal(scope.mask,scope.mask)
+  Remember(8,DOS.Read(raw,buffer,1))
+  Require(results(8)=1 AND errors(8)=0 AND buffer(0)=97 AND WAITPROBE.aborts=0)
+  Idle(0)
+
+RETURN
+
+; Interrupt writes while checking that retained requests eventually return to
+; their callers.
+PROC CanceledWrites()
+  CARD ticks
+
+  Next(0)
+  StartPeer()
+  WHILE instance.write=BYTE POINTER(0) DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Pause(5)
+  Remember(4,DOS.Write(raw,one,1))
+  Require(results(4)=-1 AND errors(4)=DOS.ERROR_BREAK AND peerDone=0)
+  Require(WAITPROBE.sends=1 AND WAITPROBE.collections=1 AND WAITPROBE.aborts=1)
+  Idle(1)
+  WHILE peer.tc_State<>EXEC.TS_REMOVED DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+  Next(0)
+  Require(DOS.Write(raw,clear,1)=1)
+  Next(0)
+  Pause(6)
+  Remember(5,DOS.Write(raw,bulk,4096))
+  Require(results(5)>0 AND results(5)<4096 AND errors(5)=DOS.ERROR_BREAK)
+  Require(instance.operation=CONSOLETYPES.OP_IDLE AND WAITPROBE.collections=1
+      AND WAITPROBE.aborts=1)
+  Idle(0)
+  Pause(7)
+  Next(1)
+  Remember(6,DOS.Write(raw,one,1))
+  Require(results(6)=1 AND errors(6)=0 AND DOS.BreakPending()<>0)
+  Require(WAITPROBE.sends=1 AND WAITPROBE.collections=1 AND WAITPROBE.aborts=0)
+  Idle(0)
+
+RETURN
+
+; Verify that new console work remains usable after cancellation has settled.
+PROC Resync()
+
+  Next(0)
+  COOKEDLINE.Lose(line,DOS.ERROR_BUFFER_OVERFLOW)
+  Pause(10)
+  Remember(9,DOS.Read(con,buffer,256))
+  Require(results(9)=-1 AND errors(9)=DOS.ERROR_BREAK AND line.discard<>0
+      AND line.error=DOS.ERROR_BUFFER_OVERFLOW)
+  Idle(0)
+  Next(0)
+  Pause(11)
+  Remember(10,DOS.Read(con,buffer,256))
+  Require(results(10)=-1 AND errors(10)=DOS.ERROR_BUFFER_OVERFLOW
+      AND line.discard=0)
+  Idle(0)
+  Next(0)
+  Pause(12)
+  Remember(11,DOS.Read(con,buffer,256))
+  Require(results(11)=2 AND errors(11)=0 AND buffer(0)=122 AND buffer(1)=10)
+  Idle(0)
+  Pause(13)
+  Require(DOS.BreakPending()<>0 AND results(11)=2 AND errors(11)=0
+      AND buffer(0)=122)
+
+RETURN
+
+; Exercise read/write cancellation and subsequent console reuse.
+PROC Main()
+  CARD index
+  BYTE column
+  DOSRAW.StreamRegistry POINTER registry
+  DOSCOOKED.Handle POINTER item
+
+  baseline=EXEC.AvailMem(0)
+  con=DOS.Open(conName,DOS.MODE_READWRITE)
+  raw=DOS.Open(rawName,DOS.MODE_READWRITE)
+  Require(con<>DOS.FileHandle POINTER(0) AND raw<>DOS.FileHandle POINTER(0))
+  Require(DOS.BeginForeground(con)<>0)
+  client=DOSCLIENT.Ensure()
+  scope=DOSBREAK.Current()
+  registry=DOSRAW.GetRegistry()
+  endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
+  item=DOSCOOKED.Handle POINTER(con)
+  line=item.state
+  instance=CONSOLEDRIVER.GetInstance()
+  WAITPROBE.unit=instance
+  bulk=EXEC.AllocMem(4096,EXEC.MEMF_UPPER)
+  buffer=EXEC.AllocMem(256,EXEC.MEMF_UPPER)
+  Require(bulk<>BYTE POINTER(0) AND buffer<>BYTE POINTER(0))
+  column=0
+  FOR index=0 TO 4095 DO
+    bulk(index)=65
+    column==+1
+    IF column=40 THEN
+      bulk(index)=10
+      column=0
+    FI
+  OD
+
+  CanceledReads()
+  CanceledWrites()
+  Resync()
+  Require(DOS.EndForeground()<>0 AND DOS.Close(raw)<>0 AND DOS.Close(con)<>0
+      AND DOS.ReleaseContext()<>0)
+  EXEC.FreeMem(buffer,256)
+  EXEC.FreeMem(bulk,4096)
+  Require(EXEC.AvailMem(0)=baseline)
+  phase=14
+
+RETURN
+
+ENDMODULE

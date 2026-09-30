@@ -1,0 +1,11 @@
+--- a/src/Altirra/source/siomanager.cpp
++++ b/src/Altirra/source/siomanager.cpp
+@@ -493,7 +493,7 @@
+ 	if (!len)
+ 		return;
+ 
+-	const bool faultData = mActiveDeviceId == 0x38 && addChecksum && len == 128;
++	const bool faultData = mActiveDeviceId == 0x38 && addChecksum && (len == 128 || len == 256);
+ 	const bool extra = faultData && (Exec816SIOFault("extra") || Exec816SIOFault("late"));
+ 	uint32 spaceRequired = len + (extra ? 1 : 0);
+ 

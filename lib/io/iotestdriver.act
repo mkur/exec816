@@ -1,0 +1,104 @@
+; Immediate diagnostic resident using the same caller dispatch as sio.device.
+MODULE IOTESTDRIVER
+USE EXEC
+USE IORESIDENTMETA
+USE HEAPCORE
+
+TYPE Resident=[
+  CARD opens
+  BYTE unit
+]
+
+; Catch accidental entry into this caller-context resident during task
+; switching.
+PROC Context()
+  BYTE POINTER switching
+
+  switching=BYTE POINTER(IORESIDENTMETA.SWITCHING)
+  IF switching^<>0 THEN
+    HEAPCORE.Abort($ff8f)
+  FI
+
+RETURN
+
+; Recognize only live bindings to the enabled diagnostic device.
+PUBLIC BYTE FUNC Bound(EXEC.IORequest POINTER request)
+  Resident POINTER device
+
+  Context()
+  device=Resident POINTER(ADDRESS(IORESIDENTMETA.BASE))
+
+RETURN(IORESIDENTMETA.TEST_DEVICE<>0 AND request.io_Device=BYTE POINTER(device)
+    AND request.io_Unit=@device.unit AND device.opens<>0)
+
+; Admit the diagnostic unit and return the signed public device error.
+PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD unit EXEC.IORequest
+    POINTER request LONGCARD flags)
+  Resident POINTER device
+  BYTE error
+
+  Context()
+  device=Resident POINTER(ADDRESS(IORESIDENTMETA.BASE))
+  error=BYTE(EXEC.IOERR_OPENFAIL)
+  IF IORESIDENTMETA.TEST_DEVICE<>0 AND unit=0 AND flags=0
+      AND device.opens<>$ffff THEN
+    device.opens==+1
+    request.io_Device=BYTE POINTER(device)
+    request.io_Unit=@device.unit
+    error=0
+  FI
+
+  request.io_Error=error
+  IF error>=128 THEN
+    RETURN(INT(CARD(error) OR $ff00))
+  FI
+
+RETURN(INT(error))
+
+; Release the diagnostic binding so the request can be reused safely.
+PUBLIC PROC Close(EXEC.IORequest POINTER request)
+  Resident POINTER device
+
+  Context()
+  device=Resident POINTER(request.io_Device)
+  device.opens==-1
+  request.io_Device=BYTE POINTER(0)
+  request.io_Unit=BYTE POINTER(0)
+
+RETURN
+
+; Provide deterministic immediate results for quick and queued I/O fixtures.
+PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
+  EXEC.IOStdReq POINTER standard
+
+  Context()
+  IF request.io_Command=EXEC.CMD_READ OR request.io_Command=EXEC.CMD_WRITE THEN
+    IF request.io_Message.mn_Length<EXEC.IOSTDREQ_SIZE THEN
+      request.io_Error=BYTE(EXEC.IOERR_BADLENGTH)
+    ELSE
+      standard=EXEC.IOStdReq POINTER(request)
+      standard.io_Actual=0
+      IF request.io_Command=EXEC.CMD_WRITE THEN
+        request.io_Error=9
+      FI
+    FI
+  ELSEIF request.io_Command<>EXEC.CMD_RESET THEN
+    request.io_Error=BYTE(EXEC.IOERR_NOCMD)
+  FI
+
+  IF (request.io_Flags & EXEC.IOF_QUICK)<>0 THEN
+    request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+  ELSE
+    EXEC.ReplyMsg(@request.io_Message)
+  FI
+
+RETURN
+
+; Check callback context even though diagnostic requests complete immediately.
+PUBLIC PROC AbortIO(EXEC.IORequest POINTER request)
+
+  Context()
+
+RETURN
+
+ENDMODULE

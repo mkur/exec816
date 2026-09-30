@@ -1,0 +1,130 @@
+MODULE FILESYSTEMCANCELFAULT
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DOSCLIENT
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE FSBOOT
+USE FSREGISTRY
+USE FSOPERATION
+USE FSACTIVEPROBE
+USE CONSOLEFOREGROUND
+USE HEAPCORE
+CARD checks
+VOLATILE BYTE phase,gate
+BYTE expected,offline,point,cleanupReached
+LONGINT result,error
+LONGCARD baseline
+BYTE POINTER buffer
+DOS.FileHandle POINTER con,file
+DOS.FileLock POINTER lock
+DOSCLIENT.ClientContext POINTER client
+DOSBREAKTYPES.Scope POINTER scope
+BYTE ARRAY conName=[67 79 78 58 0]
+BYTE ARRAY path=[68 49 58 84 79 79 76 83 47 83 85 66 47 68 65 84 65 46 66 73 78 0]
+BYTE ARRAY directory=[68 49 58 0]
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($ec00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the other Tasks or device work advance before checking the next
+; boundary.
+PROC Pause(BYTE next)
+  CARD ticks
+
+  gate=0
+  phase=next
+  WHILE gate=0 DO
+    ticks=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+; Exercise cancellation combined with a transport failure.
+PROC Main()
+  CARD index,ticks
+  BYTE ignored
+
+  baseline=EXEC.AvailMem(0)
+  con=DOS.Open(conName,DOS.MODE_READWRITE)
+  Require(con<>DOS.FileHandle POINTER(0))
+  buffer=EXEC.AllocMem(800,EXEC.MEMF_UPPER)
+  Require(buffer<>BYTE POINTER(0))
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(file<>DOS.FileHandle POINTER(0))
+  lock=DOS.Lock(directory,DOS.SHARED_LOCK)
+  Require(lock<>DOS.FileLock POINTER(0))
+  Require(DOS.BeginForeground(con)<>0)
+  scope=DOSBREAK.Current()
+  client=DOSCLIENT.Ensure()
+  FSACTIVEPROBE.target=scope
+  FSACTIVEPROBE.mode=point
+  FOR index=0 TO 799 DO
+    buffer(index)=$a5
+  OD
+
+  Pause(1)
+  result=DOS.Read(file,buffer+SIZE(8),777)
+  error=DOS.IoErr()
+  Require(result=-1 AND error=LONGINT(expected))
+  Require(FSACTIVEPROBE.fired=1 AND DOS.BreakPending()<>0)
+  Require(client.busy=0 AND scope.opState=FSOPERATION.COLLECTED
+      AND scope.enqueued=0)
+  Require(scope.packet=BYTE POINTER(0)
+      AND EXEC.GetMsg(client.port)=EXEC.Message POINTER(0))
+  FOR index=0 TO 799 DO
+    Require(buffer(index)=$a5)
+    buffer(index)=$3c
+  OD
+
+  ticks=EXECTASKS.Sleep(3)
+  FOR index=0 TO 799 DO
+    Require(buffer(index)=$3c)
+  OD
+
+  FSACTIVEPROBE.mode=0
+  IF offline=0 THEN
+    Pause(2)
+    DOS.ClearBreak()
+    Require(DOS.Seek(file,0,DOS.OFFSET_CURRENT)=0)
+    Require(DOS.Read(file,buffer,777)=777 AND DOS.IoErr()=0)
+    FOR index=0 TO 776 DO
+      Require(buffer(index)=(BYTE(index) XOR 83))
+    OD
+
+    ignored=CONSOLEFOREGROUND.Deliver(scope.generation)
+  ELSE
+    DOS.ClearBreak()
+    Require(DOS.Read(file,buffer,1)=-1 AND DOS.IoErr()=LONGINT(expected))
+    ignored=CONSOLEFOREGROUND.Deliver(scope.generation)
+  FI
+
+  Require(DOS.BreakPending()<>0 AND DOS.Close(file)<>0)
+  IF offline<>0 THEN
+    Require(DOS.IoErr()=LONGINT(expected))
+  FI
+
+  DOS.UnLock(lock)
+  IF offline<>0 THEN
+    Require(DOS.IoErr()=LONGINT(expected))
+  FI
+
+  Require(DOS.EndForeground()<>0 AND DOS.Close(con)<>0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  EXEC.FreeMem(buffer,800)
+  Require(EXEC.AvailMem(0)=baseline)
+  cleanupReached=1
+
+RETURN
+
+ENDMODULE

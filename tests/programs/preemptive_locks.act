@@ -1,0 +1,46 @@
+MODULE PREEMPTIVELOCKS
+USE EXEC
+
+VOLATILE CARD ticks=$2034
+VOLATILE BYTE phase,peerPhase
+CARD ARRAY results(5)
+
+PROC WaitTicks()
+  CARD start
+
+  start=ticks
+  WHILE ticks-start<2 DO
+  OD
+
+RETURN
+
+; Exercise deferred preemption while scheduler exclusion is held.
+PROC Main()
+  CARD id,status
+
+  id=EXEC.TaskId()
+  IF id=0 THEN
+    status=EXEC.Lock()
+    status=EXEC.Lock()
+    phase=1
+    WaitTicks()
+    results(0)=CARD(peerPhase)
+    results(1)=EXEC.Unlock()
+    WaitTicks()
+    results(2)=CARD(peerPhase)
+    phase=2
+    results(3)=EXEC.Unlock()
+    results(4)=CARD(peerPhase)
+    phase=3
+  ELSE
+    WHILE phase=0 DO
+    OD
+
+    peerPhase=phase
+    WHILE phase<>3 DO
+    OD
+  FI
+
+RETURN
+
+ENDMODULE

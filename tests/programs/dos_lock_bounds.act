@@ -1,0 +1,66 @@
+MODULE DOSLOCKBOUNDS
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE FSTYPES
+USE FSLOCKS
+USE FSBOOT
+USE HEAPCORE
+CARD checks
+BYTE finished
+LONGCARD before
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Path(BYTE POINTER path LONGINT expected CARD length)
+  DOS.FileLock POINTER lock
+  FSTYPES.LockObject POINTER item
+  FSLOCKS.Name POINTER name
+  BYTE POINTER buffer
+  CARD index
+
+  lock=DOS.Lock(path,DOS.SHARED_LOCK)
+  IF expected<>0 THEN
+    Require(lock=DOS.FileLock POINTER(0) AND DOS.IoErr()=expected)
+    RETURN
+  FI
+
+  Require(lock<>DOS.FileLock POINTER(0) AND DOS.IoErr()=0)
+  item=FSTYPES.LockObject POINTER(lock)
+  name=FSLOCKS.Trailer(item)
+  Require(name.length=length)
+  buffer=BYTE POINTER($e0000)
+  Require(DOS.NameFromLock(lock,buffer,256)<>0)
+  FOR index=0 TO length DO
+    IF buffer(index)<>path(index) THEN
+      HEAPCORE.Abort($e8f0)
+    FI
+  OD
+
+  DOS.UnLock(lock)
+
+RETURN
+
+INCLUDE "dos-lock-bounds.inc"
+
+; Exercise bounded lock paths and rejected caller extents.
+PROC Main()
+
+  before=EXEC.AvailMem(0)
+  Cases()
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

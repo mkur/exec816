@@ -1,0 +1,58 @@
+; Explicit test-only byte provider; no filesystem interpretation.
+MODULE BLOCKWIRE
+USE EXEC
+USE DOSCORE
+USE DOSBREAKTYPES
+USE BLOCKTYPES
+USE HEAPCORE
+INCLUDE "block-test-state.inc"
+PROC POINTER absent
+
+; Supply host-controlled sector bytes while keeping all filesystem
+; interpretation in guest code.
+PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
+    POINTER registry DOSBREAKTYPES.Scope POINTER scope)
+  CARD POINTER calls
+  BYTE POINTER fault,buffer
+  CARD sector,index
+  BYTE seed
+  TestState POINTER state
+
+  calls=CARD POINTER($e0000)
+  fault=BYTE POINTER($e0002)
+  state=TestState POINTER($e0000)
+  IF state.probe<>absent THEN
+    state.probe()
+  FI
+
+  calls^==+1
+  request.io_Error=0
+  request.io_Actual=request.io_Length
+  sector=CARD(request.sio_Aux1)+(CARD(request.sio_Aux2) LSH 8)
+  seed=BYTE((sector LSH 4)-sector)
+  buffer=request.io_Data
+  FOR index=0 TO CARD(request.io_Length)-1 DO
+    buffer(index)=BYTE(index) XOR seed
+  OD
+
+  IF fault^=1 THEN
+    request.io_Error=4
+    RETURN(4)
+  FI
+
+  IF fault^=2 THEN
+    request.io_Actual==-1
+  FI
+
+  IF fault^=3 THEN
+    request.io_Error=BYTE(-2)
+    RETURN(-2)
+  FI
+
+  IF fault^=4 THEN
+    request.io_Error=6
+  FI
+
+RETURN(0)
+
+ENDMODULE

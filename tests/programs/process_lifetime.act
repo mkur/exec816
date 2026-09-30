@@ -1,0 +1,361 @@
+MODULE PROCESSLIFETIME
+USE EXEC
+USE EXECLISTS
+USE EXECTASKS
+USE TASKSTACKS
+USE PROCESS
+USE PROCESSSTATE
+USE PROCESSCONTROL
+USE DOSCORE
+USE DOSCLIENT
+USE HEAPCORE
+USE CSTRING.IMPL AS STR
+
+TYPE Admission=[
+  LONGINT FUNC POINTER entry()
+  PROC POINTER trampoline(),finalizer()
+]
+
+PROCESSSTATE.Table POINTER table
+EXEC.Task ordinary
+EXEC.Task POINTER root
+PROC POINTER absent()
+LONGINT FUNC POINTER absentCommand(),invalidCommand()
+BYTE ARRAY source(256),bits(16)
+LONGCARD ARRAY children(7)
+LONGCARD freeStart,signalsStart,lastIdentity,foreignIdentity
+CARD checks,completed,iteration,entered
+BYTE gate,variant
+
+; Stop at the first failed fixture invariant and retain its check index for
+; diagnosis.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f500+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Return an observable result from a child with its own process lifetime.
+LONGINT FUNC Child()
+  CSTRING arguments
+  CARD index,length
+  DOSCLIENT.ClientContext POINTER client
+  PROCESS.Result outcome
+  EXEC.Task POINTER self
+
+  client=DOSCLIENT.Ensure()
+  self=EXEC.FindTask(BYTE POINTER(0))
+  Require(client<>DOSCLIENT.ClientContext POINTER(0))
+  Require(client.owner=self AND client.owner<>root)
+  Require(client.input=BYTE POINTER(0) AND client.output=BYTE POINTER(0))
+  Require(client.directory=BYTE POINTER(0) AND DOSCLIENT.IoErr()=0)
+  Require(LONGCARD(ADDRESS(client))>=65536 AND LONGCARD(ADDRESS(self))>=65536)
+  arguments=PROCESS.GetArgStr()
+  Require(arguments<>CSTRING(0) AND arguments<>CSTRING(source))
+  length=STR.strlen(arguments)
+  Require(arguments(length)=0)
+  IF length<>0 THEN
+    FOR index=0 TO length-1 DO
+      Require(arguments(index)=BYTE(index+1))
+    OD
+  FI
+
+  IF foreignIdentity<>0 THEN
+    Require(PROCESS.Collect(foreignIdentity,@outcome)=0)
+    Require(DOSCLIENT.IoErr()=PROCESS.ERROR_INVALID_PROCESS)
+  FI
+
+  entered==+1
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+  DOSCLIENT.SetError(77777)
+  completed==+1
+  IF length<>0 THEN
+    Require(DOSCLIENT.SetIoErr(-70000)=77777)
+    RETURN(123456)
+  FI
+
+  IF foreignIdentity<>0 THEN
+    Require(DOSCLIENT.SetIoErr(LONGINT(ADDRESS(self)))=77777)
+    RETURN(PROCESS.RETURN_OK)
+  FI
+
+  IF iteration=1 THEN
+    Require(DOSCLIENT.SetIoErr(123456)=77777)
+    RETURN(-70000)
+  FI
+
+  Require(DOSCLIENT.SetIoErr(0)=77777)
+
+RETURN(PROCESS.RETURN_OK)
+
+PROC OrdinaryEntry()
+
+RETURN
+
+PROC PrepareOrdinary(BYTE slot)
+  BYTE POINTER bytes
+  CARD index
+
+  bytes=BYTE POINTER(@ordinary)
+  FOR index=0 TO EXEC.TASK_SIZE-1 DO
+    bytes(index)=0
+  OD
+
+  ordinary.tc_Node.ln_Type=EXEC.NT_TASK
+  ordinary.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  ordinary.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  ordinary.tc_SPReg=ordinary.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@ordinary.tc_MemEntry)
+
+RETURN
+
+PROC Baseline(BYTE unused)
+  BYTE id
+  PROCESSSTATE.Entry POINTER row
+
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=freeStart)
+  Require(root.tc_SigAlloc=signalsStart)
+  FOR id=1 TO 7 DO
+    row=@table.entries(id)
+    Require(row.state=PROCESSSTATE.STATE_FREE)
+    Require(row.arguments=BYTE POINTER(0) AND row.mask=0)
+  OD
+
+RETURN
+
+; Reject invalid process starts before scheduler ownership is published.
+PROC AdmissionTests(BYTE unused)
+  Admission request
+  PROCESSSTATE.Entry POINTER lease,accepted
+  EXEC.Task POINTER item
+  PROC POINTER invalidTask()
+  ADDRESS POINTER invalidAddress
+
+  PrepareOrdinary(1)
+  invalidAddress=ADDRESS POINTER(@invalidTask)
+  invalidAddress^=ADDRESS(@Child)
+  Require(EXEC.AddTask(@ordinary,invalidTask,absent)=EXEC.Task POINTER(0))
+  request.entry=@Child
+  request.trampoline=@PROCESS.Run
+  request.finalizer=@PROCESS.Finish
+  lease=PROCESSSTATE.Entry POINTER(DOSCORE.Control(PROCESSSTATE.OP_RESERVE,
+      BYTE POINTER(@request)))
+  Require(lease<>PROCESSSTATE.Entry POINTER(0))
+  Require(lease.state=PROCESSSTATE.STATE_PREPARING)
+  PrepareOrdinary(lease.slot)
+  ; A normal admission must observe even a preparing lease.
+  Require(EXEC.AddTask(@ordinary,@OrdinaryEntry,absent)=EXEC.Task POINTER(0))
+  item=EXEC.Task POINTER(@lease.task(0))
+  Require(EXEC.AddTask(item,@OrdinaryEntry,absent)=EXEC.Task POINTER(0))
+  accepted=PROCESSSTATE.Entry POINTER(DOSCORE.Control(PROCESSSTATE.OP_ROLLBACK,
+      BYTE POINTER(lease)))
+  Require(accepted=lease)
+  Require(EXEC.AddTask(@ordinary,@OrdinaryEntry,absent)=@ordinary)
+  WHILE ordinary.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  ; A live ordinary Task also excludes its slot from Process reservation.
+  EXEC.Forbid()
+  PrepareOrdinary(1)
+  Require(EXEC.AddTask(@ordinary,@OrdinaryEntry,absent)=@ordinary)
+  lease=PROCESSSTATE.Entry POINTER(DOSCORE.Control(PROCESSSTATE.OP_RESERVE,
+      BYTE POINTER(@request)))
+  Require(lease.slot=2)
+  accepted=PROCESSSTATE.Entry POINTER(DOSCORE.Control(PROCESSSTATE.OP_ROLLBACK,
+      BYTE POINTER(lease)))
+  Require(accepted=lease)
+  EXEC.Permit()
+  WHILE ordinary.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Baseline(0)
+
+RETURN
+
+; Verify that failed preparation and launch paths release their retained
+; resources.
+PROC FailureTests(BYTE unused)
+  BYTE index,fault
+  LONGCARD identity
+  PROCESS.Result outcome
+  CARD before
+  ADDRESS POINTER invalidAddress
+
+  Require(PROCESS.Start(absentCommand,BYTE POINTER(0),0)=0)
+  Require(DOSCLIENT.IoErr()=PROCESS.ERROR_BAD_NUMBER)
+  Require(PROCESS.Start(@Child,source,256)=0)
+  Require(PROCESS.Start(@Child,BYTE POINTER(0),1)=0)
+  before=entered
+  ; NUL at the beginning, middle and final payload byte must reject the start.
+  FOR fault=0 TO 2 DO
+    index=0
+    IF fault=1 THEN
+      index=127
+    ELSEIF fault=2 THEN
+      index=254
+    FI
+
+    source(index)=0
+    Require(PROCESS.Start(@Child,source,255)=0)
+    Require(DOSCLIENT.IoErr()=PROCESS.ERROR_BAD_NUMBER AND entered=before)
+    source(index)=$ff
+    Baseline(0)
+  OD
+
+  invalidAddress=ADDRESS POINTER(@invalidCommand)
+  invalidAddress^=ADDRESS(@PROCESS.Run)
+  Require(PROCESS.Start(invalidCommand,BYTE POINTER(0),0)=0)
+  FOR index=0 TO 15 DO
+    bits(index)=EXEC.AllocSignal($ff)
+    Require(bits(index)<>$ff)
+  OD
+
+  Require(PROCESS.Start(@Child,BYTE POINTER(0),0)=0)
+  Require(DOSCLIENT.IoErr()=PROCESS.ERROR_NO_FREE_STORE)
+  FOR index=0 TO 15 DO
+    EXEC.FreeSignal(bits(index))
+  OD
+
+  Baseline(0)
+  ; Copied arguments, DOS context, reply-port storage, launch validation and
+  ; reply-port signal failure. Overrides affect only this fixture image.
+  FOR fault=1 TO 5 DO
+    PROCESSCONTROL.fault=fault
+    before=entered
+    identity=PROCESS.Start(@Child,BYTE POINTER(0),0)
+    IF fault=1 OR fault=4 THEN
+      Require(identity=0)
+      IF fault=1 THEN
+        Require(DOSCLIENT.IoErr()=PROCESS.ERROR_NO_FREE_STORE)
+      ELSE
+        Require(DOSCLIENT.IoErr()=PROCESS.ERROR_OBJECT_IN_USE)
+      FI
+    ELSE
+      Require(identity<>0)
+      Require(PROCESS.Wait(identity,@outcome)=-1)
+      Require(outcome.primary=20 AND outcome.secondary=PROCESS.ERROR_NO_FREE_STORE)
+    FI
+
+    Require(entered=before)
+    PROCESSCONTROL.fault=0
+    Baseline(0)
+  OD
+
+RETURN
+
+; Exercise process admission, completion and failed-start cleanup.
+PROC Main()
+  PROCESS.Result outcome
+  PROCESSSTATE.Entry POINTER row
+  EXEC.Task POINTER item
+  LONGCARD identity
+  BYTE index
+  CARD before
+
+  table=PROCESSSTATE.Registry()
+  root=EXEC.FindTask(BYTE POINTER(0))
+  freeStart=EXEC.AvailMem(EXEC.MEMF_UPPER)
+  signalsStart=root.tc_SigAlloc
+  gate=1
+  Require(PROCESS.GetArgStr()=CSTRING(0))
+  FOR iteration=0 TO 254 DO
+    source(iteration)=BYTE(iteration+1)
+  OD
+
+  EXEC.Forbid()
+  identity=PROCESS.Start(@Child,source,255)
+  Require(identity<>0)
+  FOR iteration=0 TO 254 DO
+    source(iteration)=$ff
+  OD
+
+  Require(PROCESS.Collect(identity,@outcome)=0
+      AND DOSCLIENT.IoErr()=PROCESS.ERROR_OBJECT_IN_USE)
+  EXEC.Permit()
+  Require(PROCESS.Wait(identity,@outcome)=-1)
+  Require(outcome.primary=123456 AND outcome.secondary=-70000)
+  Baseline(0)
+  FailureTests(0)
+  AdmissionTests(0)
+  lastIdentity=identity
+  FOR iteration=0 TO 259 DO
+    identity=PROCESS.Start(@Child,BYTE POINTER(0),0)
+    Require(identity<>0 AND identity<>lastIdentity)
+    Require(PROCESS.Collect(lastIdentity,@outcome)=0)
+    Require(DOSCLIENT.IoErr()=PROCESS.ERROR_INVALID_PROCESS)
+    IF iteration=0 THEN
+      row=@table.entries(1)
+      WHILE row.state<>PROCESSSTATE.STATE_RETIRED DO
+        EXEC.Yield()
+      OD
+
+      item=EXEC.Task POINTER(@row.task(0))
+      Require(item.tc_State=EXEC.TS_REMOVED AND item.tc_ExecPrivate=0)
+      PrepareOrdinary(1)
+      Require(EXEC.AddTask(@ordinary,@OrdinaryEntry,absent)=EXEC.Task POINTER(0))
+      Require(PROCESS.Collect(identity,@outcome)=-1)
+    ELSE
+      Require(PROCESS.Wait(identity,@outcome)=-1)
+    FI
+
+    IF iteration=1 THEN
+      Require(outcome.primary=-70000 AND outcome.secondary=123456)
+    ELSE
+      Require(outcome.primary=0 AND outcome.secondary=0)
+    FI
+
+    lastIdentity=identity
+    Baseline(0)
+  OD
+
+  before=entered
+  gate=0
+  FOR index=0 TO 6 DO
+    children(index)=PROCESS.Start(@Child,BYTE POINTER(0),0)
+    Require(children(index)<>0)
+    foreignIdentity=children(0)
+  OD
+
+  WHILE entered<>before+7 DO
+    EXEC.Yield()
+  OD
+
+  Require(PROCESS.Start(@Child,BYTE POINTER(0),0)=0)
+  Require(DOSCLIENT.IoErr()=PROCESS.ERROR_NO_FREE_STORE)
+  IF variant=1 THEN
+    EXEC.RemTask(root)
+  FI
+
+  IF variant=2 THEN
+    row=@table.entries(1)
+    EXEC.RemTask(EXEC.Task POINTER(@row.task(0)))
+  FI
+
+  gate=1
+  FOR index=0 TO 6 DO
+    Require(PROCESS.Wait(children(index),@outcome)=-1)
+    Require(outcome.primary=0
+        AND outcome.secondary=LONGINT(ADDRESS(@table.entries(index+1).task(0))))
+  OD
+
+  foreignIdentity=0
+  Baseline(0)
+  Require(PROCESS.Wait(0,@outcome)=0)
+  Require(PROCESS.Collect(lastIdentity,@outcome)=0)
+  ; No wrapping identity can revive a stale handle.
+  table.nextIdentity=$ffffffff
+  Require(PROCESS.Start(@Child,BYTE POINTER(0),0)=0)
+  Baseline(0)
+
+RETURN
+
+ENDMODULE
