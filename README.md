@@ -169,3 +169,14 @@ The kernel and libraries are in [lib/](lib/README.md), machine-specific code in
 Contributions follow the [repository instructions](AGENTS.md),
 [Action! style guide](docs/contributing/style.md) and
 [two-tier testing policy](docs/contributing/testing.md).
+
+## License
+
+Exec816's OS code is **GPL-3.0-only**. Public C and Action! bindings, headers,
+ABI definitions and examples are **MIT-licensed**; the resident shell remains
+GPL. Independent applications may use the public interfaces under their own
+licences, including when bundled in the same boot image.
+
+See the [file-level licence map and application permission](LICENSING.md),
+the [GPL text](LICENSE) and the [MIT text](LICENSE-MIT). Third-party components
+retain their own notices and licences.

@@ -7,7 +7,13 @@
 - [Testing policy](testing.md): focused development checks and release qualification.
 - [Stack checks](stack-checks.md): checked builds and recorded build settings.
 - [Contributor instructions](../../AGENTS.md): repository ownership and platform rules.
+- [Licensing](../../LICENSING.md): GPL OS code, MIT interfaces/examples and third-party notices.
 - [Roadmap](../roadmap.md) and [implementation plans](../plans/README.md).
+
+Contributions follow the licence assigned to the affected files. Keep public
+binding declarations and generated interface outputs under MIT; OS
+implementation remains GPL-3.0-only. Update the licence map when adding a new
+public binding outside an existing MIT directory. Preserve third-party notices.
 
 ## Maintaining the documentation
 

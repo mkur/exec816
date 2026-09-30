@@ -78,6 +78,22 @@ Try CAT LONG.TXT | WC, then press BREAK to cancel it. EXIT stops the demo
 and restores the OS display. Disk access is read-only; keep the same disk
 mounted until reset. Pipes support two external commands.
 
+Licences and source
+-------------------
+
+Exec816's OS code is GPL version 3 only. Public bindings, headers and example
+source are MIT-licensed; the resident shell remains GPL. Independent
+applications may use the public interfaces under their own licences.
+See EXEC816-LICENSING.md for the scope and application permission, and
+EXEC816-GPL-3.0.txt and EXEC816-MIT.txt for the complete licence texts.
+Third-party components retain their own notices and licences.
+
+Source and build instructions: https://github.com/mkur/exec816
+For a published demo, download the matching release's Source code archive.
+The boot banner identifies the Exec816 source commit. The toolchain directory
+records the compiler, OF816 and ROM source versions and locations; build
+instructions are in docs/contributing/building.md.
+
 Included files
 --------------
 
@@ -85,6 +101,9 @@ Exec-of816.xex       Exec816 with the OF816 boot monitor
 @SYSTEM_DISK@        System disk with HELLO, CAT, WC and sample text
 altirraos-816.rom    AltirraOS 3.44 for 65C816
 README.txt          This guide
+EXEC816-GPL-3.0.txt  Exec816 OS licence
+EXEC816-MIT.txt      Public bindings, headers and examples licence
+EXEC816-LICENSING.md  Licence scope and application permission
 OF816-LICENSE.txt   OF816 license
 ALTIRRAOS-LICENSE.txt  AltirraOS redistribution notice
 SHA256SUMS          Checksums of the files above

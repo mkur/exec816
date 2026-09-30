@@ -7,6 +7,11 @@ from pathlib import Path
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
+LICENSE_FILES = {
+    'EXEC816-GPL-3.0.txt': 'LICENSE',
+    'EXEC816-MIT.txt': 'LICENSE-MIT',
+    'EXEC816-LICENSING.md': 'LICENSING.md',
+}
 
 
 def package(bundle, archive):
@@ -31,6 +36,8 @@ def package(bundle, archive):
             raise ValueError(f'Changed demo artifact: {name}')
         files[name] = content
     files['OF816-LICENSE.txt'] = (bundle/'OF816-LICENSE.txt').read_bytes()
+    for name, source in LICENSE_FILES.items():
+        files[name] = (ROOT/source).read_bytes()
     guide = (ROOT/'docs/demo-distribution.txt').read_text()
     guide = guide.replace('@SYSTEM_DISK@', media['name'])
     guide = guide.replace('@SYSTEM_DRIVE@', str(record['boot_config']['system_drive']))

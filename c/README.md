@@ -1,5 +1,11 @@
 # C examples and binding
 
+This directory is licensed under the [MIT License](../LICENSE-MIT), including
+the public headers, Calypsi shim and examples. Exec816's OS implementation is
+GPL-3.0-only; the [application permission](../LICENSING.md#application-permission)
+allows independent applications to use its public interfaces under their own
+licences. Compiler runtimes retain their own licences.
+
 The initial SDK targets Calypsi 65816 5.18 and the standalone hosted image.
 See [the C binding guide](../docs/guides/calypsi-c.md) for build instructions,
 supported calls, ABI details and current limits.

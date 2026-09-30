@@ -3,6 +3,11 @@
 Sources are grouped by subsystem. Action module names, public interfaces and
 procedure boundaries are unchanged by this layout.
 
+OS implementation is GPL-3.0-only. Public Action! declarations, records and
+application-side list helpers are MIT-licensed as listed in the
+[licence map](../LICENSING.md#mit-public-interfaces-and-examples). A routine being
+declared `PUBLIC` does not by itself make its implementation MIT-licensed.
+
 For the runtime relationships behind these directories, read the
 [system overview](../docs/architecture/overview.md),
 [execution model](../docs/architecture/runtime.md) and
