@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "lease_bytes": 20,
+  "fields": {"owner": 0, "generation": 12, "kind": 16, "state": 17, "reserved": 18},
+  "errors": {"OK": 0, "BUSY": 1, "UNSUPPORTED": 2, "NO_MEMORY": 3, "INVALID_OWNER": 4, "DEVICE_FAULT": 5, "BAD_ARGUMENT": 6},
+  "states": {"FREE": 0, "ACQUIRING": 1, "ACTIVE": 2, "RELEASING": 3, "FAULTED": 4},
+  "kinds": {"TEXT": 1, "VBXE": 2}
+}

@@ -1,0 +1,32 @@
+MODULE GEMRENDER
+USE EXEC
+USE DISPLAY
+USE DISPLAYBOOT
+USE DISPLAYADAPTER
+USE HEAPCORE
+INCLUDE "c-image.inc"
+INCLUDE "../../c/calypsi/display-bridge.inc"
+CARD FUNC POINTER cMain()
+CARD result
+
+PROC Main()
+
+  LET entry=ADDRESS POINTER(@cMain)
+  entry^=C_MAIN
+  BindDisplay()
+  DISPLAYBOOT.Authorize()
+  result=cMain()
+  IF result<>0 THEN
+    HEAPCORE.Abort($f710)
+  FI
+
+  LET stage=CARD POINTER(C_STAGE)
+  stage^=1
+  result=cMain()
+  IF result<>0 OR DISPLAY.State()<>DISPLAY.FREE THEN
+    HEAPCORE.Abort($f711)
+  FI
+
+RETURN
+
+ENDMODULE

@@ -229,8 +229,9 @@ does not replace a bounded target-side wait.
 
 ## Executable slices
 
-G0 inputs/contracts, G1 extraction/C entry checks and G2 message service are
-implemented; their development evidence is linked below. G3–G6 remain pending.
+G0 inputs/contracts, G1 extraction/C entry checks, G2 message service, G3
+display ownership/adapter and G4 real VDI rendering are implemented; development
+evidence is linked below. G5–G6 remain pending.
 Complete their development gates in order. Keep builds, source downloads, maps and logs under
 `build/gem-vdi/`. Paths named as
 new tools or modules below are proposed deliverables unless linked as completed.
@@ -250,7 +251,7 @@ G1 deliverables: [selection and patch](../../../ports/gem4xe/README.md),
 [development record](../../development/gem-vdi-g1.json). The selected C entry
 points run with a recording device and computing peer in both compiler modes.
 The linked VBXE backend is inactive; hardware fences and pixel correctness
-remain G3–G4 work. CPU code/data fit the existing checked banks;
+were deferred to G3–G4. CPU code/data fit the existing checked banks;
 fixed and per-Task reserved bank-zero deltas are zero.
 
 G2 deliverables: [private service and client](../../../ports/gem4xe/service/README.md),
@@ -261,6 +262,29 @@ validation, generation/sequence rules, Task leases, queued/active stop and actua
 allocation failure rollback through a fixture-only dispatcher. G2 adds generated
 C bindings for the existing public Task leases; no kernel selector, platform
 state or bank-zero reservation is added.
+
+G3 deliverables: [public display ownership](../../reference/display.md),
+[AltirraOS adapter](../../../platform/altirraos/vbxe.md),
+[runner](../../../tools/test_gem_display.py) and
+[development record](../../development/gem-vdi-g3.json). Ten cases in each compiler
+mode cover the shared console lease, exact hardware/baseline admission, all-screen
+VRAM readback and guards, physical SIO and C preemption, four mapping-boundary NMIs,
+independent busy/VCOUNT deadlines, tick rollover, safe recovery and retained
+reset-required ownership. Console lifecycle/rollback and OF816 autoboot controls
+also pass, along with raw/optimized uninstrumented adapter controls. The reserved
+bank-zero delta is zero, fixed and per Task. The G3 pattern uses the native
+adapter directly.
+
+G4 deliverables: [renderer backend](../../../ports/gem4xe/adapter/README.md),
+[pixel runner](../../../tools/test_gem_render.py) and
+[development record](../../development/gem-vdi-g4.json). The selected renderer
+runs through the G2 service and G3 adapter, with independent and upstream pixel
+oracles, font-mask readback, palette/scanout checks, extreme-coordinate fixes,
+packet bank-boundary rejection, atomic batch rejection and honest completed-prefix
+fault replies. Reopening restores the default workstation. Raw/optimized stack
+measurements fit the existing large pool; fixed, per-Task and idle bank-zero
+reservation deltas are zero. The combined renderer/peer/physical-SDFS workload
+and broader failure cleanup remain G5.
 
 | Slice | Deliverable and acceptance gate |
 | --- | --- |

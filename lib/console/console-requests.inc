@@ -68,6 +68,11 @@ PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD unit EXEC.IORequest
   LET service=GetService()
   LET entry=CONSOLEWINDOWS.Find(unit)
   error=BYTE(EXEC.IOERR_OPENFAIL)
+  IF DISPLAY.Kind()=DISPLAY.VBXE THEN
+    request.io_Error=BYTE(EXEC.IOERR_UNITBUSY)
+    RETURN(EXEC.IOERR_UNITBUSY)
+  FI
+
   IF service.state=2 AND service.stop=0 AND entry<>NULL AND flags=0 THEN
     instance=CONSOLETYPES.Instance POINTER(entry.instance)
     IF request.io_Message.mn_Length<EXEC.IOSTDREQ_SIZE THEN

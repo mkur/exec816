@@ -1,0 +1,121 @@
+--- a/src/vdi/vdi.c
++++ b/src/vdi/vdi.c
+@@ -71,24 +71,24 @@
+     /* no flush: vdi() flushes once, after the call (see there) */
+ }
+ 
+-static WORD align_x(WORD x, WORD w)
++static int32_t align_x(int32_t x, int32_t w)
+ {
+     switch (vwk.h_align) {
+-    case TA_CENTRE: return (WORD)(x - w / 2);
+-    case TA_RIGHT:  return (WORD)(x - w);
++    case TA_CENTRE: return (x - w / 2);
++    case TA_RIGHT:  return (x - w);
+     default:        return x;
+     }
+ }
+ 
+-static WORD align_y(WORD y)
++static int32_t align_y(int32_t y)
+ {
+     switch (vwk.v_align) {
+-    case TA_HALF:    return (WORD)(y - FONT_HALF);
+-    case TA_ASCENT:  return (WORD)(y - FONT_ASCENT);
+-    case TA_BOTTOM:  return (WORD)(y - FONT_H + 1);
+-    case TA_DESCENT: return (WORD)(y - FONT_TOP - FONT_DESCENT);
++    case TA_HALF:    return (y - FONT_HALF);
++    case TA_ASCENT:  return (y - FONT_ASCENT);
++    case TA_BOTTOM:  return (y - FONT_H + 1);
++    case TA_DESCENT: return (y - FONT_TOP - FONT_DESCENT);
+     case TA_TOP:     return y;
+-    default:         return (WORD)(y - FONT_TOP);   /* the baseline */
++    default:         return (y - FONT_TOP);   /* the baseline */
+     }
+ }
+ 
+@@ -114,8 +114,8 @@
+ static void vdi_v_gtext(void)
+ {
+     WORD n = contrl[3], i;
+-    WORD x = align_x(ptsin[0], (WORD)(n * FONT_W));
+-    WORD cy = align_y(ptsin[1]);
++    int32_t x = align_x(ptsin[0], (WORD)(n * FONT_W));
++    int32_t cy = align_y(ptsin[1]);
+     WORD pre = 0, run = 0, lo = 0, hi = -1;
+ 
+     if (n > INTIN_SIZE)
+@@ -162,10 +162,13 @@
+         }
+     }
+     {
+-        WORD fw = FONT_W, cx = x;           /* a far read, once; and no
++        WORD fw = FONT_W; int32_t cx = x;           /* a far read, once; and no
+                                              * multiply per cell */
+ 
+-        for (i = 0; i < n; i++, cx = (WORD)(cx + fw)) {
++        for (i = 0; i < n; i++, cx += fw) {
++            /* Reject before narrowing; the device only sees cells touching the screen. */
++            if (cx <= -FONT_W || cx >= SCR_W || cy <= -FONT_H || cy >= SCR_H)
++                continue;
+             if (i >= lo && i <= hi) {
+                 if (run)
+                     continue;                       /* drawn with the run */
+--- a/src/vdi/dev_vbxe.c
++++ b/src/vdi/dev_vbxe.c
+@@ -622,8 +622,9 @@
+ #define WIN ((volatile uint8_t *)MEMAC_WIN_ADDR)   /* the window, fixed  */
+ 
+ static TINY WORD  ld_x, ld_y, ld_i;
+-static TINY WORD  ld_dx, ld_dy, ld_ndy, ld_sx, ld_sy, ld_err;
+-static TINY UWORD ld_n;                /* pixels to go        */
++static int32_t ld_dx, ld_dy, ld_ndy, ld_err;
++static WORD ld_sx, ld_sy;
++static uint32_t ld_n;                /* pixels to go        */
+ static TINY UWORD ld_m;                /* the style, rotating */
+ static TINY UWORD ld_cx0, ld_cy0, ld_cw, ld_ch;
+ static TINY UWORD ld_page;             /* the 4K page mapped  */
+@@ -689,15 +690,15 @@
+     }
+ 
+     ld_x = x1;  ld_y = y1;
+-    ld_dx = (WORD)(x2 - x1); if (ld_dx < 0) ld_dx = (WORD)-ld_dx;
+-    ld_dy = (WORD)(y2 - y1); if (ld_dy < 0) ld_dy = (WORD)-ld_dy;
+-    ld_ndy = (WORD)-ld_dy;
++    ld_dx = (int32_t)x2 - x1; if (ld_dx < 0) ld_dx = -ld_dx;
++    ld_dy = (int32_t)y2 - y1; if (ld_dy < 0) ld_dy = -ld_dy;
++    ld_ndy = -ld_dy;
+     ld_sx = (WORD)(x1 < x2 ? 1 : -1);
+     ld_sy = (WORD)(y1 < y2 ? 1 : -1);
+-    ld_err = (WORD)(ld_dx - ld_dy);
++    ld_err = (ld_dx - ld_dy);
+     /* Bresenham steps the major axis every time, so the pixel count is
+      * known: no endpoint compare in the loop */
+-    ld_n = (UWORD)((ld_dx > ld_dy ? ld_dx : ld_dy) + 1);
++    ld_n = (uint32_t)((ld_dx > ld_dy ? ld_dx : ld_dy) + 1);
+     ld_m = mask;
+     ld_page = 0xFFFF;
+     /* The row address as a 4K page and an offset in it, so that a step is
+@@ -710,7 +711,7 @@
+     }
+     ld_rstep = (WORD)(ld_sy > 0 ? SCR_STRIDE : -SCR_STRIDE);
+     for (;;) {
+-        WORD e2;
++        int32_t e2;
+         if (ld_m != 0xFFFF)     /* a solid style rotates into itself */
+             ld_m = (UWORD)((ld_m << 1) | (ld_m >> 15));
+         ld_i = (WORD)(((ld_m & 1) << 1) | (ld_x & 1));
+@@ -733,10 +734,10 @@
+         }
+         if (--ld_n == 0)
+             break;
+-        e2 = (WORD)(ld_err << 1);
+-        if (e2 > ld_ndy) { ld_err = (WORD)(ld_err - ld_dy); ld_x = (WORD)(ld_x + ld_sx); }
++        e2 = ld_err * 2;
++        if (e2 > ld_ndy) { ld_err = (ld_err - ld_dy); ld_x = (WORD)(ld_x + ld_sx); }
+         if (e2 <  ld_dx) {
+-            ld_err = (WORD)(ld_err + ld_dx);
++            ld_err = (ld_err + ld_dx);
+             ld_y = (WORD)(ld_y + ld_sy);
+             ld_roff = (WORD)(ld_roff + ld_rstep);
+             if ((UWORD)ld_roff >= 0x1000) {      /* crossed a page, either way */

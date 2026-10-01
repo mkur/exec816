@@ -360,7 +360,7 @@ def application_entry(routine):
         return False
     if routine['name'].startswith('M_PROCESS_') and not re.fullmatch(r'M_PROCESS_(?:RUN|FINISH|EXECUTEIMAGE)_[0-9A-F]+',routine['name']):
         return False
-    if routine['name'].startswith(('M_PROGRAM_', 'M_PROGRAMAPI_', 'M_PROGRAMIMAGE_', 'M_PROGRAMPLACE_', 'M_PROGRAMPROVIDERS_', 'M_PROGRAMLIBRARIES_', 'M_CSTRING_IMPL_')):
+    if routine['name'].startswith(('M_DISPLAY_', 'M_DISPLAYBOOT_', 'M_DISPLAYADAPTER_', 'M_PROGRAM_', 'M_PROGRAMAPI_', 'M_PROGRAMIMAGE_', 'M_PROGRAMPLACE_', 'M_PROGRAMPROVIDERS_', 'M_PROGRAMLIBRARIES_', 'M_CSTRING_IMPL_')):
         return False
     if routine['name'].startswith(('M_DOSPROCESS_','M_DOSINHERIT_','M_FSFILES_','M_FSOBJECTS_','M_DOSCANCEL_','M_FSOPERATION_','M_FSABORT_','M_FSACTIVE_','M_DOSBREAK_','M_CONSOLE_', 'M_CONSOLEWINDOWS_','M_CONSOLETILING_','M_CONSOLEFOREGROUND_','M_CONSOLEDISPLAY_','M_CONSOLEDRIVER_','M_CONSOLEINPUT_','M_CONSOLECORE_','M_DOS_','M_DOSCALLS_','M_DOSRAW_','M_DOSSTREAMS_','M_DOSOBJECTS_','M_FSDIRECTORY_','M_FSMUX_','M_FSMOUNT_','M_FSMANAGER_','M_FSPACKET_','M_FSINFO_','M_FSIO_','M_FSINIT_','M_FSBOOT_','M_FSWORKER_','M_FSREGISTRY_','M_FSTYPES_','M_FSHANDLER_','M_FSPORTS_','M_FSNAMES_','M_DOSCLIENT_','M_DOSCORE_','M_DOSWIRE_','M_BLOCKIO_','M_BLOCKWIRE_','M_BLOCKTYPES_','M_MYDOSFILE_','M_MYDOS_','M_FS83_','M_FSCORE_','M_MYDOSTYPES_')):return False
     if re.match(r'M_(?:EXEC|EXECLISTS|EXECMEMORY|HEAPCORE|HEAPPOLICY|PORTCORE|IOCORE|IORESIDENT|IOTESTDRIVER|PRODUCERPROBE|EXECTASKS|TASKPOLICY)_', routine['name']):
@@ -404,7 +404,7 @@ def task_entries(image):
 def writable_bindings(image, memory=None):
     """Publish only writable payload extents, subtracting kernel globals."""
     reserved = [(d['address'],d['address']+d['size']) for d in image['data']
-                if re.match(r'M_(?:PROCESSSTATE|EXEC|TASKPOLICY|EXECMEMORY|HEAPCORE|HEAPPOLICY|PORTCORE|IOCORE|EXECLISTS|EXECTASKS)_',d['name'])]
+                if re.match(r'M_(?:DISPLAY|DISPLAYBOOT|PROCESSSTATE|EXEC|TASKPOLICY|EXECMEMORY|HEAPCORE|HEAPPOLICY|PORTCORE|IOCORE|EXECLISTS|EXECTASKS)_',d['name'])]
     ranges = [(s['address'],s['address']+len(s['bytes'])) for s in image['segments'] if s['writable']]
     ranges += [(s['address'],s['address']+s['size']) for s in image['zero_fill'] if s['writable']]
     for start,end in reserved:

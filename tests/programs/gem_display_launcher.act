@@ -1,0 +1,103 @@
+MODULE GEMDISPLAY
+USE EXEC
+USE DOS
+USE CONSOLEDRIVER
+USE DISPLAY
+USE DISPLAYBOOT
+USE DISPLAYADAPTER
+USE HEAPCORE
+INCLUDE "c-image.inc"
+INCLUDE "../../c/calypsi/display-bridge.inc"
+CARD FUNC POINTER cMain()
+CARD checks,result
+BYTE checkpoint
+BYTE ARRAY diskData(128)
+DOS.FileHandle POINTER file
+
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($f600+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Run(CARD stage)
+
+  LET value=CARD POINTER(C_STAGE)
+  value^=stage
+  result=cMain()
+  Require(result=0)
+
+RETURN
+
+; Real physical SIO while the retained graphics Task draws and computes.
+PROC DiskWork()
+  CARD index
+
+  file=DOS.Open(BYTE POINTER(c"D1:DATA.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,diskData,128)=128)
+  FOR index=0 TO 127 DO
+    Require(diskData(index)=(BYTE(index) XOR $5a))
+  OD
+
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+PROC Main()
+
+  LET entry=ADDRESS POINTER(@cMain)
+  entry^=C_MAIN
+  BindDisplay()
+  file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Run(0)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(CONSOLEDRIVER.Stop()<>0)
+  Require(DISPLAY.State()=DISPLAY.FREE)
+  LET variant=CARD POINTER(C_VARIANT)
+  IF variant^<>1 THEN
+    DISPLAYBOOT.Authorize()
+  FI
+
+  Run(1)
+  IF variant^=0 OR variant^>=4 THEN
+    Require(DISPLAY.State()=DISPLAY.ACTIVE)
+    Require(CONSOLEDRIVER.Start()=0)
+    file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
+    Require(file=NULL)
+    Require(DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+    Require(DOS.ReleaseContext()<>0)
+    checkpoint=1
+    Run(2)
+    IF variant^=0 OR variant^=9 THEN
+      DiskWork()
+    FI
+
+    Run(5)
+    Require(DISPLAY.State()=DISPLAY.FREE)
+  FI
+
+  Require(CONSOLEDRIVER.Start()<>0)
+  file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,BYTE POINTER(c"Display restored\n"),17)=17)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(CONSOLEDRIVER.Stop()<>0)
+  IF variant^=0 OR variant^>=4 THEN
+    Run(3)
+  FI
+
+  Run(4)
+  checkpoint=2
+
+RETURN
+
+ENDMODULE

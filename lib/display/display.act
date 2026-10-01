@@ -1,0 +1,144 @@
+; Shared resource ownership; hardware policy remains in each display adapter.
+MODULE DISPLAY
+USE EXEC
+USE HEAPCORE
+INCLUDE "display-types.inc"
+Lease POINTER current
+LONGCARD generation
+BYTE sharedState,sharedKind
+
+; Address and generation identify the original retained record, never a copy.
+BYTE FUNC Valid(Lease POINTER lease)
+
+  IF current=NULL OR lease<>current THEN
+    RETURN(0)
+  FI
+
+RETURN(lease.generation=generation AND lease.kind=sharedKind AND
+    lease.state=sharedState AND lease.reserved=0 AND
+    lease.owner.task=EXEC.FindTask(NULL)
+    AND lease.owner.identity=ADDRESS(@lease.owner))
+
+PUBLIC BYTE FUNC State()
+
+RETURN(sharedState)
+
+PUBLIC BYTE FUNC Kind()
+
+RETURN(sharedKind)
+
+; Reserve ownership before the adapter snapshots or mutates presentation.
+PUBLIC CARD FUNC Acquire(Lease POINTER lease CARD requested)
+
+  IF ADDRESS(lease)<$10000 OR ADDRESS(lease)>$1000000-LEASE_BYTES THEN
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF requested<>TEXT AND requested<>VBXE THEN
+    RETURN(UNSUPPORTED)
+  FI
+
+  EXEC.Forbid()
+  IF sharedState<>FREE THEN
+    EXEC.Permit()
+    RETURN(BUSY)
+  FI
+
+  IF lease.owner.task<>NULL OR lease.owner.identity<>0 OR
+      lease.owner.incarnation<>0 OR lease.generation<>0 OR
+      lease.kind<>0 OR lease.state<>FREE OR lease.reserved<>0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF generation=$ffffffff THEN
+    EXEC.Permit()
+    RETURN(UNSUPPORTED)
+  FI
+
+  IF EXEC.RetainTask(EXEC.FindTask(NULL),@lease.owner)=0 THEN
+    EXEC.Permit()
+    RETURN(NO_MEMORY)
+  FI
+
+  generation==+1
+  lease.generation=generation
+  lease.kind=BYTE(requested)
+  lease.state=ACQUIRING
+  current=lease
+  sharedKind=BYTE(requested)
+  sharedState=ACQUIRING
+  EXEC.Permit()
+
+RETURN(OK)
+
+PUBLIC CARD FUNC Check(Lease POINTER lease)
+
+  IF Valid(lease)=0 THEN
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF sharedState=FAULTED THEN
+    RETURN(DEVICE_FAULT)
+  FI
+
+RETURN(OK)
+
+PUBLIC CARD FUNC Activate(Lease POINTER lease)
+
+  IF Valid(lease)=0 OR sharedState<>ACQUIRING THEN
+    RETURN(INVALID_OWNER)
+  FI
+
+  lease.state=ACTIVE
+  sharedState=ACTIVE
+
+RETURN(OK)
+
+PUBLIC CARD FUNC BeginRelease(Lease POINTER lease)
+
+  IF Valid(lease)=0 OR (sharedState<>ACQUIRING AND sharedState<>ACTIVE) THEN
+    RETURN(INVALID_OWNER)
+  FI
+
+  lease.state=RELEASING
+  sharedState=RELEASING
+
+RETURN(OK)
+
+; Hardware restoration precedes this final publication and lease retirement.
+PUBLIC CARD FUNC Release(Lease POINTER lease)
+
+  EXEC.Forbid()
+  IF Valid(lease)=0 OR sharedState<>RELEASING THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF EXEC.ReleaseTask(@lease.owner)=0 THEN
+    HEAPCORE.Abort(4)
+  FI
+
+  lease.generation=0
+  lease.kind=0
+  lease.state=FREE
+  current=NULL
+  sharedKind=0
+  sharedState=FREE
+  EXEC.Permit()
+
+RETURN(OK)
+
+; Never release storage or Task ownership when hardware is not quiescent.
+PUBLIC CARD FUNC Fault(Lease POINTER lease)
+
+  IF Valid(lease)=0 THEN
+    RETURN(INVALID_OWNER)
+  FI
+
+  lease.state=FAULTED
+  sharedState=FAULTED
+
+RETURN(DEVICE_FAULT)
+
+ENDMODULE

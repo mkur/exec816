@@ -575,6 +575,11 @@ finish:
     lda #0
     sta f:NMIEN
     .if GENERAL_TASKS
+        ; A terminated graphics owner may still have live DMA. Never reclaim
+        ; its storage or return to ROM through any normal/fault exit path.
+        lda f:DISPLAY_KIND
+        cmp #2
+        beq reset_required
         lda f:SD_OWNED
         beq sio_exit_checked
         lda f:SD_STARTED
@@ -588,6 +593,11 @@ sio_exit_checked:
         beq :+
         ; No qualified bus recovery: park with interrupts off, without handing
         ; owned POKEY/callback state or live kernel storage back to ROM.
+reset_required:
+        sei
+        sep #$20
+        lda #0
+        sta f:NMIEN
         rep #$30
         lda #$ff93
         sta f:STATUS

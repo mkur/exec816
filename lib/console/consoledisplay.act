@@ -4,11 +4,14 @@ MODULE CONSOLEDISPLAY
 USE A816MEMORY
 USE CONSOLETYPES
 USE CONSOLECORE
+USE DISPLAY
+USE HEAPCORE
 INCLUDE "console-storage-action.inc"
 BYTE dindex=$57,crsinh=$2f0,attract=$4d,drkmsk=$4e,colrsh=$4f
 BYTE sdmctl=$22f,chbas=$2f4,chact=$2f3,gprior=$26f
 BYTE oldchr=$5d
 CARD savmsc=$58,sdlst=$230,oldadr=$5e
+DISPLAY.Lease lease
 
 CONST ROW_BUDGET=4, CELL_BUDGET=160
 
@@ -125,6 +128,10 @@ PUBLIC BYTE FUNC Claim(CONSOLETYPES.Presentation POINTER view
     RETURN(0)
   FI
 
+  IF DISPLAY.Acquire(@lease,DISPLAY.TEXT)<>DISPLAY.OK THEN
+    RETURN(0)
+  FI
+
   ; Preserve the visible old cursor as part of the exact screen snapshot.
   A816MEMORY.Move(snapshot,screen,SIZE(960))
   view.savedCursor=crsinh
@@ -140,6 +147,9 @@ PUBLIC BYTE FUNC Claim(CONSOLETYPES.Presentation POINTER view
   view.focused=1
   instance.dirtyFirst=0
   instance.dirtyEnd=instance.count
+  IF DISPLAY.Activate(@lease)<>DISPLAY.OK THEN
+    HEAPCORE.Abort(4)
+  FI
 
 RETURN(1)
 
@@ -150,6 +160,10 @@ PUBLIC PROC Release(CONSOLETYPES.Presentation POINTER view)
     RETURN
   FI
 
+  IF DISPLAY.BeginRelease(@lease)<>DISPLAY.OK THEN
+    HEAPCORE.Abort(4)
+  FI
+
   view.visible=0
   A816MEMORY.Move(view.screen,view.snapshot,SIZE(960))
   crsinh=view.savedCursor
@@ -157,6 +171,9 @@ PUBLIC PROC Release(CONSOLETYPES.Presentation POINTER view)
   attract=view.savedAttract
   view.cursorOn=0
   view.previousCursor=$ffff
+  IF DISPLAY.Release(@lease)<>DISPLAY.OK THEN
+    HEAPCORE.Abort(4)
+  FI
 
 RETURN
 

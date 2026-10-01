@@ -1,0 +1,32 @@
+--- a/src/vdi/dev_vbxe.c
++++ b/src/vdi/dev_vbxe.c
+@@ -619,7 +619,8 @@
+  * first version called paint_pixel(), plot(), plot_visible() and two VRAM
+  * accessors per step, ~200 instructions; the second kept everything in
+  * stack locals, ~150 (docs/phase8c.md). */
+-#define WIN ((volatile uint8_t *)MEMAC_WIN_ADDR)   /* the window, fixed  */
++static volatile uint8_t *ld_window;
++#define WIN ld_window   /* the window, fixed  */
+ 
+ static TINY WORD  ld_x, ld_y, ld_i;
+ static int32_t ld_dx, ld_dy, ld_ndy, ld_err;
+@@ -726,7 +727,7 @@
+             }
+             if (ld_pg != ld_page) {
+                 ld_page = ld_pg;
+-                vram_map_page((uint8_t)ld_pg);
++                ld_window = vram_win((uint32_t)ld_pg << 12);
+             }
+             ld_a = ld_am[ld_i];
+             ld_v = ld_xv[ld_i];
+--- a/src/vbxe/vbxe.h
++++ b/src/vbxe/vbxe.h
+@@ -180,7 +180,7 @@
+ /* Scratch for vrt_cpyfm (src/vdi/vdi.c): a monochrome form expanded to 4bpp
+  * AND and OR strips, half a page each, written through one MEMAC mapping
+  * and blitted in bands.  The first page boundary after the save buffer.  */
+-#define VR_STRIP           ((VR_SAVE + VB_BYTES_MAX + 0xFFFUL) & ~0xFFFUL)
++#define VR_STRIP           0x36000UL
+ #define VR_STRIP_LEN       0x1000UL
+ /* VR_STRIP + VR_STRIP_LEN onward is free: window backing stores, icons */
+ /* A raster form in VRAM says so in its address: the screen's and the save

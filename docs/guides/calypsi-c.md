@@ -219,3 +219,9 @@ The [C output binding record](../development/c-dos-output.json) records the
 current shared-source runs and raw/optimized DOS boundary checks. Its only new
 binding state is the six-byte entry table in upper RAM; fixed and per-Task
 bank-zero reservations remain unchanged, including guards and unused capacity.
+
+The optional [display binding](../reference/display.md) adds an ordinary native
+library bridge and `<hardware/vbxe.h>` for the pinned G3 adapter. Its launcher
+must bind the entry table and establish the cold-boot graphics baseline. The
+standard C message example and text demo do not enable graphics. The selected
+GEM renderer is integrated by the [G4 service backend](../../ports/gem4xe/adapter/README.md).

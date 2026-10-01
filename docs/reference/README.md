@@ -14,7 +14,7 @@ rebuild programs when the ABI changes.
 | Console | [Device](console.md), [instances and windows](console-windows.md), [cooked input](cooked-console.md), [foreground BREAK](foreground-break.md) |
 | Programs | [Processes](process.md), [loading and imports](program-loading.md), [arguments](command-arguments.md), [C strings](cstrings.md) |
 | Filesystem internals | [Block adapter](block-io.md) |
-| Machine boundary | [Platform contract](platform.md) |
+| Machine boundary | [Platform contract](platform.md), [display ownership](display.md) |
 
 For the reason these services are organized this way, read the
 [architecture](../architecture/README.md). For runnable examples, use the

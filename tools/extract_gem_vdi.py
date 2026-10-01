@@ -57,15 +57,16 @@ def extract(output, upstream=None):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(payload)
         selected[name] = sha256(path)
-    patch = PORT/'patches/0001-hosted-storage-and-subset.patch'
-    command(['patch', '-p1', '-F', '0', '-t', '-i', patch], cwd=output)
+    patches = sorted((PORT/'patches').glob('*.patch'))
+    for patch in patches:
+        command(['patch', '-p1', '-F', '0', '-t', '-i', patch], cwd=output)
     for path in sorted((PORT/'hosted').iterdir()):
         if path.is_file():
             shutil.copyfile(path, output/'src'/path.name)
     (output/'src/operation-checks.inc').write_text(operation_checks(
         json.loads((ROOT/'abi/gem-vdi.json').read_text())))
     record = dict(upstream=sources, selection_sha256=sha256(PORT/'selection.json'),
-                  patch_sha256=sha256(patch), selected=selected,
+                  patches={p.name:sha256(p) for p in patches}, selected=selected,
                   adapted={p.relative_to(output).as_posix():sha256(p)
                            for p in sorted(output.rglob('*')) if p.is_file() and
                            p.name != 'extraction.json' and p.suffix not in ('.orig', '.rej')})

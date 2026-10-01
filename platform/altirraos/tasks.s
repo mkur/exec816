@@ -168,6 +168,7 @@ general_finalizer_start:
     .include "io.s"
     .include "dos.s"
     .include "sio.s"
+    .include "display.s"
     .if SIGNAL_IRQ_PROBE = 10
         .include "console-probe.s"
     .endif

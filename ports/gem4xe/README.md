@@ -5,7 +5,10 @@
 G0 provides read-only VBXE detection. G1 extracts and links the selected GEM C
 subset, then exercises its entry points through a recording device on an ordinary
 Exec Task. [G2](service/README.md) implements the private message service with a
-fixture backend. Display ownership and real drawing remain pending.
+fixture backend. [G3](../../platform/altirraos/vbxe.md) implements shared display
+ownership and a bounded VBXE adapter with a hardware test pattern.
+[G4](adapter/README.md) connects accepted requests to the selected renderer and
+checks real pixels, attributes, font expansion and failure recovery.
 
 [inputs.json](inputs.json) pins GEM4XE 0.9.4, the Exec baseline, compiler/runtime
 hashes and selected source roles. [selection.json](selection.json) selects exact
@@ -43,7 +46,7 @@ python3 tools/test_gem_vdi.py --slice g1 --mode opt
 ```
 
 [build_gem_vdi.py](../../tools/build_gem_vdi.py) reproduces selected source,
-applies the patch without fuzz, generates validation from the operation manifest,
+applies the ordered patch series without fuzz, generates validation from the operation manifest,
 checks target-emitted C layouts and packages the linked image through the existing
 Exec builder. Generated source, notices, maps, provenance and test results stay
 under `build/gem-vdi/g1-{raw,opt}/`. Repeated extraction has identical content
@@ -59,11 +62,10 @@ observes VBI in selected GEM C and the computing peer, checks results, all exist
 guards and cleanup, and measures stack high-water marks. These are entry/layout
 checks, not the G4 pixel corpus or a worst-case C stack bound.
 
-The VBXE device table and its dependency closure are linked for sizing but never
-bound or executed. In particular, the imported backend's busy waits, mapping,
-shutdown and extreme-coordinate arithmetic are **not ready for hosted drawing**.
-G3 must implement display ownership, bounded internal waits/fences and recovery;
-G4 must establish pixel correctness. The recording callbacks validate actual GEM
+In the G1 probe, the VBXE device table and its dependency closure are linked for
+sizing but never bound or executed. G4 excludes the donor low-level hardware
+implementation, substitutes the bounded adapter and fixes wide-coordinate
+arithmetic through separate reproducible patches. The recording callbacks validate actual GEM
 calls without changing the hardware. The test verifies inactive MEMAC/blitter/IRQ,
 OS presentation and the unmapped aperture sentinel after execution.
 
@@ -81,3 +83,23 @@ The [separate platform pin](../../toolchain/altirra-gem-vdi.json) enables only
 VBXE with private 512 KiB VRAM at `$D600`. It also selects physical SIO settings
 for the later SDFS workload; G0–G2 do not mount a disk or claim concurrent I/O.
 Existing default platform checks continue to require add-ons off.
+
+## G3 display adapter
+
+```sh
+python3 tools/test_gem_display.py --mode raw --output build/gem-vdi/g3-raw
+python3 tools/test_gem_display.py --mode opt --output build/gem-vdi/g3-opt
+```
+
+The [G3 record](../../docs/development/gem-vdi-g3.json) covers the pinned hardware
+adapter, full-pattern mapped readback, CPU/VRAM separation, physical SIO, console
+restoration and reset-required recovery. The [display contract](../../docs/reference/display.md)
+and [VRAM map](../../platform/altirraos/vbxe-vram.json) define the current boundary.
+These are development checks; no full hosted-system qualification is claimed.
+
+## G4 rendering
+
+The [renderer backend](adapter/README.md) documents integration and the raw/optimized
+pixel corpus. Its [development record](../../docs/development/gem-vdi-g4.json)
+keeps exact pixels, scanout, font/palette checks and measured stack use together.
+G5 remains the combined drawing, computing-peer and physical SDFS workload.

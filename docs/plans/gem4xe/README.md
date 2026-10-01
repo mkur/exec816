@@ -9,7 +9,10 @@ The next executable milestone is the
 building on the completed larger Task stacks.
 Its [G0 hosting contracts](hosting-contracts.md) define the frozen packet,
 display ownership and source boundaries; the [port directory](../../../ports/gem4xe/README.md)
-contains pinned inputs, reproducible extraction and the G0–G2 runners.
+contains pinned inputs, reproducible extraction and the G0–G4 runners. The
+[selected VDI backend](../../../ports/gem4xe/adapter/README.md) now uses the service
+and bounded [display adapter](../../reference/display.md). G5 next combines real
+drawing, a computing peer, physical SDFS I/O and failure cleanup.
 
 **Preserved analysis:** these three documents were moved from GEM4XE's
 `docs/kernel/` into Exec816 on 2026-10-01 so the upstream checkout can

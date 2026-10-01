@@ -141,8 +141,7 @@ in `diagnostic_scratch` and checked against every live phase. It does not reserv
 production bytes; instrumented runs must report their borrowing and restore
 scratch when the observation ends.
 
-This reserves address space only. The current adapter does not enable VBXE,
-manage its window registers or hand display ownership to GEM. The
+The reserved aperture supports the optional [display adapter](display.md). The
 [aperture development record](../development/vbxe-aperture.json) covers the
 unmapped RAM reservation, loading, Task execution and OF816 handoff; mapped
 VBXE hardware requires a separate configuration pin and integration checks.
@@ -150,8 +149,12 @@ VBXE hardware requires a separate configuration pin and integration checks.
 The optional [GEM development pin](../../toolchain/altirra-gem-vdi.json) selects
 FX 1.26 at `$D600` with private 512 KiB VRAM. Its
 [G0 probe](../../ports/gem4xe/README.md) reads identity without enabling mapping
-or presentation, and rejects absent/unsupported hardware. Display ownership and
-mapped rendering remain pending; existing standard pins still require add-ons off.
+or presentation, and rejects absent/unsupported hardware. The G3 adapter adds
+shared console/graphics ownership, bounded completion, mapped VRAM readback and
+reset-required recovery. The [G4 backend](../../ports/gem4xe/adapter/README.md)
+connects selected GEM rendering to that service with pixel and scanout checks.
+Standard pins still require add-ons off; the combined drawing/peer/SDFS workload
+remains G5.
 
 Heap and resident metadata stay in upper RAM
 where the profile permits. See [Task capacity](../architecture/task-capacity.md)

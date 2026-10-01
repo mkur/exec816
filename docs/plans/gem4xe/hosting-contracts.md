@@ -2,10 +2,12 @@
 
 [Implementation plan](minimal-vdi-implementation-plan.md) · [Port inputs](../../../ports/gem4xe/README.md)
 
-These are the frozen G0 implementation contracts, not available public services.
-G1 extraction and the [G2 private service](../../../ports/gem4xe/service/README.md)
-are implemented. G3–G5 must establish hardware and integration behavior before
-these contracts move into reference documentation.
+These are the frozen G0 implementation contracts. G1 extraction, the
+[G2 private service](../../../ports/gem4xe/service/README.md), G3 adapter and
+[G4 renderer](../../../ports/gem4xe/adapter/README.md) are implemented. Display
+ownership is described by the current [public contract](../../reference/display.md).
+G5 must establish the combined rendering, computing-peer and physical-SDFS
+workload before the remaining contracts become public reference interfaces.
 The exact operation numbers, limits and packet offsets are in
 [gem-vdi.json](../../../abi/gem-vdi.json). No new COP selector is allocated.
 
@@ -47,9 +49,9 @@ OPEN returns the 45 integer and 12 coordinate words of `work_out`, with the
 physical handle implied by the successful generation. The manifest's handle 1
 is a client helper convention, never a way to bypass generation validation.
 Restrict advertised capabilities to the subset: no input devices, selectable
-fonts, rotation, markers, patterned fill or raster operations. G4 must check the
-emitted inquiry values against the operation manifest instead of copying upstream
-capability claims wholesale.
+fonts, rotation, markers, patterned fill or raster operations. The G4 development
+corpus records all 57 emitted inquiry words, and its evidence gate checks the
+complete expected subset instead of copying upstream capability claims wholesale.
 
 SUBMIT replies contain one word for each successful colour, interior or writing
 mode setter, in command order; other supported drawing calls produce no words.
@@ -105,8 +107,8 @@ Implement a reusable native `DISPLAY` module, not a GEM-specific kernel gateway.
 Its public operations will acquire, release and query completion of a display
 lease on behalf of the current Task. The caller supplies a zero-initialized,
 address-stable lease record in upper RAM. Its identity and generation are checked
-on every operation; copying the record does not create ownership. Records remain
-opaque until G3 determines their checked ABI layout.
+on every operation; copying the record does not create ownership. Records remain opaque; G3 fixes their checked layout in
+[display.json](../../../abi/display.json).
 
 The shared state is FREE, ACQUIRING, ACTIVE, RELEASING or FAULTED, with one retained
 owner. Acquisition returns OK, BUSY, UNSUPPORTED, NO_MEMORY or INVALID_OWNER and
@@ -120,7 +122,8 @@ acknowledges release only after its worker has stopped presentation and input
 production and restored the OS state it owns. Root closes all text handles,
 releases its DOS context and waits for this acknowledgement before graphics
 acquisition. A new console open while graphics owns presentation fails with BUSY.
-G3 adds a public bounded completion notification if the console lacks one.
+G3 uses the existing signal-based `CONSOLEDRIVER.Stop()` retirement acknowledgment;
+no new console completion service is needed.
 
 Use short Forbid sections to test/publish ownership and Task leases. No drawing,
 allocation, ROM call, hardware wait or reply occurs while Forbid is held.

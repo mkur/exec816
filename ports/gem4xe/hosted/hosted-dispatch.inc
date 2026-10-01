@@ -55,3 +55,28 @@ uint16_t GemVdiDispatch(uint16_t op, uint16_t sub, uint16_t handle,
     dev_flush();
     return 0;
 }
+
+/* Service-facing entry points keep GEM typedefs out of the Exec unit. */
+uint16_t GemVdiOpen(int16_t *workout)
+{
+    static const int16_t input[11]={1,1,1,1,1,1,1,1,1,1,2};
+    uint16_t i,status=GemVdiBind(&hosted_vbxe_device);
+    if (!status) status=GemVdiDispatch(1,0,0,0,11,0,input);
+    if (status) return status;
+    for (i=0;i<45;i++) workout[i]=intout[i];
+    for (i=0;i<12;i++) workout[45+i]=ptsout[i];
+    /* Deterministic initial pixels, before enabling the overlay. */
+    return GemVdiDispatch(3,0,1,0,0,0,0);
+}
+uint16_t GemVdiCommand(uint16_t op,uint16_t sub,uint16_t pairs,uint16_t words,
+    const int16_t *points,const int16_t *ints,int16_t *reply)
+{
+    uint16_t status=GemVdiDispatch(op,sub,1,pairs,words,points,ints);
+    if (!status && contrl[4]==1) *reply=intout[0];
+    return status;
+}
+void GemVdiReset(void)
+{
+    vwk.handle=0;
+    vdev=0;
+}

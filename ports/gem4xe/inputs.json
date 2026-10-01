@@ -124,6 +124,30 @@
     "src/vdi/sintbl.c": {
       "sha256": "4d990d00f911037464b9eac35bcf2cc85bc176807a2b49dc800aaa20001b6244",
       "role": "reference-only"
+    },
+    "tools/vdiref.py": {
+      "sha256": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+      "role": "host-oracle-only"
+    },
+    "tools/devref.py": {
+      "sha256": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+      "role": "host-oracle-only"
+    },
+    "tools/fontref.py": {
+      "sha256": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+      "role": "host-oracle-only"
+    },
+    "tools/vbxeref.py": {
+      "sha256": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+      "role": "host-oracle-only"
+    },
+    "tools/anticref.py": {
+      "sha256": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+      "role": "host-oracle-only"
+    },
+    "src/vdi/font6x6.c": {
+      "sha256": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+      "role": "host-oracle-only"
     }
   },
   "excluded_runtime": [

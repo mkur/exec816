@@ -1,0 +1,16 @@
+; Launcher-only authorization of the pinned cold-boot inactive baseline.
+MODULE DISPLAYBOOT
+BYTE authorized
+
+; Call once, before graphics admission, only from the pinned cold-boot launcher.
+PUBLIC PROC Authorize()
+
+  authorized=1
+
+RETURN
+
+PUBLIC CARD FUNC Known()
+
+RETURN(CARD(authorized))
+
+ENDMODULE
