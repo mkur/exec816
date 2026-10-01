@@ -67,9 +67,9 @@ assuming work is pending. Current behavior belongs in the
 ## Programs and shell
 
 - [Minimal hosted GEM VDI subset](gem4xe/minimal-vdi-implementation-plan.md):
-  G0–G5 detection, C entry/layout, service, display adapter, real rendering and
-  concurrent physical-SDFS/failure checks implemented. G6 documentation and
-  optional artifact integration remain pending.
+  G0–G6 complete, including concurrent physical-SDFS/failure checks and the
+  optional artifact. See the [current contract](../reference/gem-vdi.md),
+  [guide](../guides/gem-vdi.md) and [implementation record](../history/gem-vdi.md).
 - [GEM4XE as the GUI layer for Exec816](gem4xe/exec816-integration-assessment.md):
   VBXE-only integration with expandable upper RAM, bank-zero and hardware
   constraints, and proposed executable slices. The

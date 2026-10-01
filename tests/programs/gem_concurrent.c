@@ -176,6 +176,10 @@ UWORD main(void)
     } else if (stage==3) {
         status=GemCollect(&client);
         endTick=DisplayTicks();
+#ifndef GEM_DIAGNOSTIC
+        /* Give the optional artifact a visible, bounded three-second scene. */
+        while ((UWORD)(DisplayTicks()-endTick)<150) { }
+#endif
         check(status==(variant==3 ? GEM_DEVICE_FAULT : GEM_OK));
         completed=client.packet->completed_count;
         check(completed==(variant==3 ? 0 : 12));

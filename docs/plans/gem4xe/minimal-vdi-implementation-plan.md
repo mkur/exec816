@@ -2,7 +2,14 @@
 
 [Implementation plans](../README.md) · [GEM assessment](exec816-integration-assessment.md) · [Larger Task stacks](../larger-task-stacks-implementation-plan.md)
 
-Status: implementation started on 2026-10-01. This plan turns the assessment's first memory,
+Status: G0–G6 completed on 2026-10-02 with development-tier evidence.
+Use the [current contract](../../reference/gem-vdi.md),
+[artifact guide](../../guides/gem-vdi.md) and
+[implementation record](../../history/gem-vdi.md) for the delivered behavior.
+The optional artifact uses the G5 font/concurrency workload; the G4 corpus covers
+the broader mixed-primitive scene described below.
+
+This plan turns the assessment's first memory,
 C and display milestones into a bounded executable: one GEM rendering service,
 one client drawing a test scene, and a computing peer under Exec preemption.
 The display backend is VBXE only. Success means correct drawing, measured memory
@@ -229,18 +236,15 @@ does not replace a bounded target-side wait.
 
 ## Executable slices
 
-G0 inputs/contracts, G1 extraction/C entry checks, G2 message service, G3
-display ownership/adapter and G4 real VDI rendering are implemented; development
-evidence is linked below. G5 adds combined physical-I/O and lifecycle checks;
-G6 documentation/artifact integration remains pending.
-Complete their development gates in order. Keep builds, source downloads, maps and logs under
+G0–G6 are implemented and their development gates have passed; the evidence
+for each slice is linked below. Keep builds, source downloads, maps and logs under
 `build/gem-vdi/`. Paths named as
 new tools or modules below are proposed deliverables unless linked as completed.
 
 G0 deliverables: [source/compiler inputs](../../../ports/gem4xe/inputs.json),
 [platform pin](../../../toolchain/altirra-gem-vdi.json),
 [operation manifest](../../../abi/gem-vdi.json),
-[hosting contracts](hosting-contracts.md), and
+[hosting contracts](../../reference/gem-vdi.md), and
 [probe instructions](../../../ports/gem4xe/README.md).
 The [development record](../../development/gem-vdi.json) covers read-only
 identity detection in raw/optimized emitted code, including absent and
@@ -299,6 +303,17 @@ and retained reset-required ownership. Console restart, pixel hash, full saved
 C frames, lower DP, all stack guards/headroom and final allocation ownership are
 checked. Fixed, per-public-Task and private-idle reserved bank-zero deltas are zero.
 Diagnostic timing includes owner-side VRAM readback; it is not a throughput claim.
+
+G6 deliverables: [current contract](../../reference/gem-vdi.md),
+[artifact guide](../../guides/gem-vdi.md), [implementation history](../../history/gem-vdi.md),
+[optional demo build](../../../tools/build_demo.py) and
+[development record](../../development/gem-vdi-g6.json). Raw/optimized artifacts
+without diagnostic hooks match the independent visible pixel/palette model.
+The distribution includes a separately selected graphics XEX/disk and preserves
+OF816's five-second shell/prime boot. Normal and wrapping countdowns, automatic
+and Forth-command shell routes, monitor exit controls, package checksums and
+274 host tests pass (four skips). Bank-zero reservation increments remain zero.
+These are focused development checks, not full hosted or hardware qualification.
 
 | Slice | Deliverable and acceptance gate |
 | --- | --- |

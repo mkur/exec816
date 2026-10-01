@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """G5 combined VDI / computing Task / physical SDFS development checks."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import adapter_state as adapter
 from build_gem_vdi import build_concurrent_probe
-from gem_render_oracle import Raster, font_bytes
+from gem_render_oracle import Raster, font_bytes, PENS, PALETTE
 from native_program import ROOT, execute, read_build, verify_machine, require, sha256
 from os_boundary import emulator, run_to
 from stack_budget import stack_usage
@@ -18,11 +19,15 @@ CASES=['concurrent','stop-queued','stop-active','device-fault','unquiesced',
        'worker-port','worker-scratch','client-port','client-packet','stop-port','stop-packet','admission','startup-signal']
 
 
-def scene_hash(output):
+def scene_pixels(output):
     raster=Raster(font_bytes(output/'selected/src/vdi/font8x8.c'))
     for i in range(12): raster.apply(8,[64,24+i*16],[32+(i*64+j)%96 for j in range(64)])
+    return raster.packed()
+
+
+def scene_hash(output):
     h=2166136261
-    for v in raster.packed(): h=((h^v)*16777619)&0xffffffff
+    for v in scene_pixels(output): h=((h^v)*16777619)&0xffffffff
     return h
 
 
@@ -93,6 +98,21 @@ def run(output,mode,cases=None,replay=False,production=False):
                         require(all(seen),'No renderer and peer progress during physical SIO')
                         case['physical_overlap']=windows
                         case['c_preemption']=observe(b,program,[sy['progress'],sy['progress']+2],code_bank=12,pc_range=(0xc0000,0xd0000))
+                    if production:
+                        reach('native_cop',f'dw(${sy["endTick"]:x})>0')
+                        b.screenshot(str(folder/'scene.png'))
+                        frame=b.rawscreen(str(folder/'scanout.bgra'))
+                        pixels=(folder/'scanout.bgra').read_bytes()
+                        require((frame.width,frame.height)==(672,240),'Wrong scanout geometry')
+                        rgb=bytes((v&254)+(v>>7) for v in PALETTE)
+                        hardware=[None]*16
+                        for pen,hw in enumerate(PENS): hardware[hw]=rgb[pen*3:pen*3+3][::-1]
+                        cropped=b''.join(pixels[y*frame.stride+64:y*frame.stride+2624] for y in range(240))
+                        actual=b''.join(cropped[i:i+3] for i in range(0,len(cropped),4))
+                        expected=b''.join(hardware[v>>4]+hardware[v&15] for v in scene_pixels(output))
+                        require(actual==expected,'Optional artifact pixels/palette differ')
+                        case['scanout_sha256']=hashlib.sha256(actual).hexdigest()
+                        case['screenshot_sha256']=sha256(folder/'scene.png')
                     b.bp_clear_all()
                 try:
                     runtime,_=execute(b,{**program,'output':folder},before_run=before,
@@ -118,7 +138,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                         require(b.memdump(0xd65e,2)==bytes(2),'MEMAC left mapped')
                         case.update(frames=(read('endTick')-read('startTick'))&65535,
                             service_round_trips=read('crossings'),completed=read('completed'),
-                            stack_usage=stack_usage(b,memory),pixel_hash=read('pixelHash',4))
+                            stack_usage=stack_usage(b,memory),pixel_hash=None if production else read('pixelHash',4))
                         require(all(v['remaining_above_floor']>0 for v in case['stack_usage'].values()),'Stack floor reached')
                         if not production and variant!=3:
                             require(case['pixel_hash']==scene_hash(output),'Scene pixel hash mismatch')
@@ -137,7 +157,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                     case['status']='pass'
                     print(mode,name,'pass',flush=True)
                 except Exception:
-                    print('target', {k:read(k) for k in ('stage','checks','failures','first_failure','entered','commandCount','completed','finished')},flush=True)
+                    print('target', {k:read(k) for k in ('stage','checks','failures','first_failure','entered','commandCount','completed','finished') if k in sy},flush=True)
                     raise
         report['status']='pass'
     except Exception as e:

@@ -1,0 +1,42 @@
+Exec816 optional GEM/VDI workload
+
+The main Exec-of816.xex still starts OF816 and, after five seconds, the standard
+shell/prime demo. This optional program must be selected explicitly. It is not
+a desktop or an AES application environment.
+
+1. Cold-reset into the supplied altirraos-816.rom with BASIC disabled.
+2. Select Atari 800XL, 64 KiB base RAM plus fifteen CPU high banks, 65C816 at 8x,
+   shadow ROM and PAL. Enable VBXE full FX 1.26 at $D600, private 512 KiB VRAM,
+   no shared RAM and no VBXE IRQ. Other cores/bases are unsupported.
+3. Mount gem-vdi/system.atr as drive 1. Select physical generic56k disk emulation:
+   SIO patch OFF, burst OFF, random delay OFF and accurate sector timing ON.
+4. Load gem-vdi/Exec-gem-vdi.xex directly, not as a shell command. The workload
+   renders twelve rows of the built-in font while another Task computes and
+   a cold 2 KiB file is read. It restores text and exits when finished.
+
+Use a cold inactive graphics baseline; do not chain-load this program over
+another VBXE owner. A permanently busy blitter deliberately parks for reset,
+retaining its live resources. Do not resume such a fault as an ordinary return.
+To run the standard demo again, restore its no-add-ons profile, mount the main
+system.atr and boot the main Exec-of816.xex.
+
+Supported drawing: 640x240, sixteen colors, built-in 8x8 text, polylines, solid
+bars, clipping, clear/update, basic color setters, solid fill and replace mode.
+No AES, keyboard/mouse input, desktop, GEMDOS, virtual workstations, loaded fonts
+or multiple GUI clients. Evidence is development testing on the pinned emulator;
+it is not physical-hardware or full-system qualification.
+
+Sources and reproducible build instructions:
+https://github.com/mkur/exec816
+  docs/guides/gem-vdi.md
+  ports/gem4xe/inputs.json and selection.json
+  tools/build_demo.py --gem-vdi
+GEM4XE 0.9.4 source revision: e413c39d2f8e1bec8fe16596f610b923de4a0ae9
+https://github.com/slaapliedje/gem4xe
+
+Keep GEM-COPYING.txt, GEM-COPYING.LIB.txt, GEM-LICENSING.md and
+GEM-FONT-NOTICE.txt with this artifact, as well as the root Exec816, OF816 and
+AltirraOS notices. SHA256SUMS in the parent directory covers every shipped file.
+The compiler/runtime and donor source retain their own notices; the Exec MIT
+interface grant does not relicense them. Build maps, source manifests and test
+logs are intentionally kept in the development build directory.

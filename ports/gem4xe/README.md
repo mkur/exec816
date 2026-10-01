@@ -1,6 +1,6 @@
 # Hosted GEM4XE port
 
-[Implementation plan](../../docs/plans/gem4xe/minimal-vdi-implementation-plan.md) · [G0 contracts](../../docs/plans/gem4xe/hosting-contracts.md)
+[Implementation plan](../../docs/plans/gem4xe/minimal-vdi-implementation-plan.md) · [Current hosting contract](../../docs/reference/gem-vdi.md)
 
 G0 provides read-only VBXE detection. G1 extracts and links the selected GEM C
 subset, then exercises its entry points through a recording device on an ordinary
@@ -115,4 +115,20 @@ The [G5 record](../../docs/development/gem-vdi-g5.json) records the fixed drawin
 computing and physical-SDFS workload and 12 lifecycle/failure controls per mode.
 The diagnostic start rendezvous borrows `$6000` only in the test environment.
 Renderer/peer progress is observed during live physical transactions; a pending
-reply alone does not count as overlap. The optional artifact is integrated in G6.
+reply alone does not count as overlap. The [optional artifact guide](../../docs/guides/gem-vdi.md) describes the G6
+distribution and exact machine configuration.
+
+## G6 optional artifact
+
+```sh
+python3 tools/build_demo.py --gem-vdi --output build/gem-vdi/g6-demo
+python3 tools/test_gem_concurrent.py --mode opt --production --replay \
+  --output build/gem-vdi/g6-demo/gem-vdi
+python3 tools/test_of816.py --output build/gem-vdi/g6-demo/of816
+```
+
+The [G6 record](../../docs/development/gem-vdi-g6.json) covers raw/optimized
+uninstrumented graphics, exact visible pixels/palette, the packaged optimized
+image, standard OF816 boot/exit routes and shell/prime controls. The ZIP includes
+only boot files, guides, notices and checksums. The standard five-second OF816
+shell/prime autoboot remains the default; graphics is selected explicitly.

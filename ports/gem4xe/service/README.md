@@ -1,6 +1,6 @@
 # G2 hosted message service
 
-[Port overview](../README.md) · [Hosting contract](../../../docs/plans/gem4xe/hosting-contracts.md)
+[Port overview](../README.md) · [Hosting contract](../../../docs/reference/gem-vdi.md)
 
 G2 implements the private OPEN/SUBMIT/CLOSE/STOP transport using ordinary Exec
 Tasks, messages, signals and removal leases. The test executable supplies an

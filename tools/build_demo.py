@@ -14,7 +14,7 @@ from library_paths import read_source
 from native_program import ROOT, build, compiler, require, sha256
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False):
     output=output.resolve();output.mkdir(parents=True,exist_ok=True)
     toolchain=compiler(compiler_dir)
     pin=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
@@ -72,10 +72,15 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128):
                         *sorted((ROOT/'lib/dos').glob('*.act'))]},
         bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=8,expected_peak_tasks=7,
         qualification='Focused development checks only; full release and general compiler qualification remain separate.')
+    graphics=None
+    if gem_vdi:
+        from build_gem_artifact import build as build_graphics
+        graphics=output/'gem-vdi'
+        record['graphics']=build_graphics(graphics)
     (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
-    # Package the boot XEX, matching system disk and pinned ROM together.
+    # OF816 records this final manifest, including the optional artifact.
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
-    package(output/'of816',output/record['distribution'])
+    package(output/'of816',output/record['distribution'],graphics)
     return record
 
 
@@ -85,5 +90,6 @@ if __name__=='__main__':
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
     parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs')
     parser.add_argument('--sector-bytes',type=int,choices=(128,256),default=128)
-    args=parser.parse_args();result=bundle(args.output,args.compiler_dir,args.format,args.sector_bytes)
+    parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
+    args=parser.parse_args();result=bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi)
     print(f'Demo distribution ready: {args.output}/{result["distribution"]}')

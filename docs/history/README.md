@@ -19,6 +19,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Minimal GEM/VDI hosting](gem-vdi.md): G0–G6 evidence, memory costs and optional artifact.
+
 - [Intrusive Lists — earlier guide](lists-reference.md)
 - [Build cleanup and artifact restoration](build-cleanup.md)
 - [Two cooperative tasks under AltirraOS](cooperative-tasks.md)

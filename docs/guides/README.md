@@ -8,6 +8,8 @@
 - [Shell](shell.md): commands, paths, redirection and pipes.
 - [OF816 boot monitor](boot-monitor.md): interrupt autoboot and choose boot settings.
 
+- [Optional GEM/VDI workload](gem-vdi.md): explicit VBXE graphics alongside the standard demo.
+
 ## Writing programs
 
 - [Disk commands](commands.md): `Main`, arguments, streams and return codes.

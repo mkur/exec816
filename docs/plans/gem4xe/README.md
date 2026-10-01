@@ -4,15 +4,12 @@
 
 For the current comparison against GEM4XE 0.9.4 and implemented Exec816, read
 [GEM4XE as the GUI layer for Exec816](exec816-integration-assessment.md).
-The next executable milestone is the
-[minimal hosted VDI implementation plan](minimal-vdi-implementation-plan.md),
-building on the completed larger Task stacks.
-Its [G0 hosting contracts](hosting-contracts.md) define the frozen packet,
-display ownership and source boundaries; the [port directory](../../../ports/gem4xe/README.md)
-contains pinned inputs, reproducible extraction and the G0–G4 runners. The
-[selected VDI backend](../../../ports/gem4xe/adapter/README.md) now uses the service
-and bounded [display adapter](../../reference/display.md). G5 next combines real
-drawing, a computing peer, physical SDFS I/O and failure cleanup.
+The completed [minimal hosted VDI plan](minimal-vdi-implementation-plan.md)
+builds on the larger Task stacks. Its [current contract](../../reference/gem-vdi.md)
+defines the packet, display ownership and supported source boundary. The
+[port directory](../../../ports/gem4xe/README.md) contains pinned inputs and
+reproducible runners. Use the [artifact guide](../../guides/gem-vdi.md) to run
+it, or the [implementation record](../../history/gem-vdi.md) for G0–G6 evidence.
 
 **Preserved analysis:** these three documents were moved from GEM4XE's
 `docs/kernel/` into Exec816 on 2026-10-01 so the upstream checkout can

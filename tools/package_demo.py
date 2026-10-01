@@ -13,8 +13,11 @@ LICENSE_FILES = {
     'EXEC816-LICENSING.md': 'LICENSING.md',
 }
 
+GEM_FILES = ('Exec-gem-vdi.xex', 'system.atr', 'README.txt', 'GEM-COPYING.txt',
+             'GEM-COPYING.LIB.txt', 'GEM-LICENSING.md', 'GEM-FONT-NOTICE.txt')
 
-def package(bundle, archive):
+
+def package(bundle, archive, graphics=None):
     """Include only boot files and user documentation, checking recorded hashes."""
     record = json.loads((bundle/'of816.json').read_text())
     media = record['media']
@@ -41,6 +44,16 @@ def package(bundle, archive):
     guide = (ROOT/'docs/demo-distribution.txt').read_text()
     guide = guide.replace('@SYSTEM_DISK@', media['name'])
     guide = guide.replace('@SYSTEM_DRIVE@', str(record['boot_config']['system_drive']))
+    if graphics is not None:
+        record = json.loads((graphics/'graphics.json').read_text())
+        if record.get('diagnostic') is not False or set(record['files']) != set(GEM_FILES):
+            raise ValueError('Incomplete or diagnostic graphics artifact')
+        for name in GEM_FILES:
+            content = (graphics/name).read_bytes()
+            if hashlib.sha256(content).hexdigest() != record['files'][name]:
+                raise ValueError(f'Changed graphics artifact: {name}')
+            files['gem-vdi/'+name] = content
+        guide += '\nOptional graphics: see gem-vdi/README.txt. The default OF816 boot is unchanged.\n'
     files['README.txt'] = guide.encode('utf-8')
     files['SHA256SUMS'] = ''.join(
         f'{hashlib.sha256(content).hexdigest()}  {name}\n'
@@ -60,5 +73,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle', type=Path, default=ROOT/'build/demo/of816')
     parser.add_argument('--output', type=Path, default=ROOT/'build/demo/exec816-demo.zip')
+    parser.add_argument('--gem-vdi', type=Path, help='Optional graphics build directory')
     args = parser.parse_args()
-    print('Demo distribution:', package(args.bundle, args.output))
+    print('Demo distribution:', package(args.bundle, args.output, args.gem_vdi))

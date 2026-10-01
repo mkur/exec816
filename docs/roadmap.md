@@ -26,12 +26,10 @@ These are possible next milestones, without a delivery order:
   [two-command foreground pipeline](guides/shell.md).
 - Broader C bindings and more Amiga examples beyond the
   [standalone Calypsi binding](guides/calypsi-c.md).
-- A [minimal hosted GEM VDI subset](plans/gem4xe/minimal-vdi-implementation-plan.md):
-  bounded VBXE drawing in an Exec service, with explicit display ownership and
-  measured C memory/stack use before AES or desktop integration. G0 detection
-  through G5 C extraction, service, display ownership, real drawing and concurrent
-  physical SDFS/failure checks are implemented. G6 publishes the optional graphics
-  artifact and current documentation.
+- GUI input and higher GEM layers beyond the implemented
+  [minimal hosted VDI subset](reference/gem-vdi.md). The
+  [optional graphics workload](guides/gem-vdi.md) covers drawing and concurrent
+  physical I/O; input/event routing, AES and desktop integration remain future work.
 - Priority scheduling and larger Task capacities. Current priorities are stored
   but selection is FIFO; capacities beyond the supported four/eight layouts need
   separate memory budgeting and qualification.

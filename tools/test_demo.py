@@ -89,7 +89,13 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             rendezvous(condition)
         def cells(label):
             instances=[saved['top'],saved['bottom']];views=[saved['topView'],saved['bottomView']]
-            condition='&'.join(f'(dw(${i+14:x})>=dw(${i+16:x}))&(dw(${v+10:x})=dw(${i+54:x})+dw(${i+10:x}))' for i,v in zip(instances,views))
+            # A console write can span multiple source quanta. A synchronized
+            # screen halfway through the prime frame's clear/title write is
+            # still an intermediate frame, so wait for both writes to finish.
+            write=console['INSTANCE_WRITE']
+            condition='&'.join(f'(dw(${i+write:x})=0)&(db(${i+write+2:x})=0)&'
+                f'(dw(${i+14:x})>=dw(${i+16:x}))&(dw(${v+10:x})=dw(${i+54:x})+dw(${i+10:x}))'
+                for i,v in zip(instances,views))
             rendezvous(condition)
             text=b''.join(far(pointer(i),length) for i,length in zip(instances,(720,240)))
             physical=b.memdump(saved['screen'],960);expected=bytearray(map(glyph,text))

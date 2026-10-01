@@ -1,15 +1,22 @@
 # Minimal VDI hosting contracts
 
-[Implementation plan](minimal-vdi-implementation-plan.md) · [Port inputs](../../../ports/gem4xe/README.md)
+[Reference index](README.md) · [Run the workload](../guides/gem-vdi.md) ·
+[Implementation record](../history/gem-vdi.md)
 
-These are the frozen G0 implementation contracts. G1 extraction, the
-[G2 private service](../../../ports/gem4xe/service/README.md), G3 adapter and
-[G4 renderer](../../../ports/gem4xe/adapter/README.md) are implemented. Display
-ownership is described by the current [public contract](../../reference/display.md).
-G5 must establish the combined rendering, computing-peer and physical-SDFS
-workload before the remaining contracts become public reference interfaces.
-The exact operation numbers, limits and packet offsets are in
-[gem-vdi.json](../../../abi/gem-vdi.json). No new COP selector is allocated.
+This is the current supervised hosting contract for the selected GEM4XE VDI
+subset. It uses one renderer Task and one root-owned client. It is a private,
+rebuilt client/service ABI, not a discoverable resident service or an AES/GEMDOS
+environment. [Display ownership](display.md) is a reusable platform interface.
+The exact operation numbers, limits and packet offsets are generated from
+[gem-vdi.json](../../abi/gem-vdi.json). No new COP selector is allocated.
+
+The fixed mode is 640×240 with sixteen colors and the built-in 8×8 face.
+Supported operations are OPEN/CLOSE, clear/update, 2–16-point solid polylines,
+solid bars, inclusive clipping, up to 64 glyph indices per text call, line/text/
+fill colors 0–15, solid fill interior 1 and replace writing mode 1. Virtual
+workstations, raster copies, polygon/contour fill, external fonts, rotation,
+markers, physical input/cursor, AES, GEMDOS, callbacks and dynamic loading are
+unsupported. A validated request never silently succeeds as an omitted service.
 
 ## Service protocol
 
@@ -103,12 +110,12 @@ nothing. Session open/close cannot appear inside a SUBMIT batch.
 
 ## Display lease and transitions
 
-Implement a reusable native `DISPLAY` module, not a GEM-specific kernel gateway.
-Its public operations will acquire, release and query completion of a display
-lease on behalf of the current Task. The caller supplies a zero-initialized,
+The reusable native `DISPLAY` module acquires, releases and queries a display
+lease on behalf of the current Task; the hardware adapter supplies completion
+fences. It does not add a GEM-specific kernel gateway. The caller supplies a zero-initialized,
 address-stable lease record in upper RAM. Its identity and generation are checked
-on every operation; copying the record does not create ownership. Records remain opaque; G3 fixes their checked layout in
-[display.json](../../../abi/display.json).
+on every operation; copying the record does not create ownership. Records remain opaque; their checked layout is in
+[display.json](../../abi/display.json).
 
 The shared state is FREE, ACQUIRING, ACTIVE, RELEASING or FAULTED, with one retained
 owner. Acquisition returns OK, BUSY, UNSUPPORTED, NO_MEMORY or INVALID_OWNER and
@@ -122,7 +129,7 @@ acknowledges release only after its worker has stopped presentation and input
 production and restored the OS state it owns. Root closes all text handles,
 releases its DOS context and waits for this acknowledgement before graphics
 acquisition. A new console open while graphics owns presentation fails with BUSY.
-G3 uses the existing signal-based `CONSOLEDRIVER.Stop()` retirement acknowledgment;
+The console uses the existing signal-based `CONSOLEDRIVER.Stop()` retirement acknowledgment;
 no new console completion service is needed.
 
 Use short Forbid sections to test/publish ownership and Task leases. No drawing,
@@ -135,12 +142,12 @@ The assembly adapter keeps the caller's S and D and preserves the complete
 public bridge context. It publishes a pending map in owner-private upper RAM,
 disables MEMAC A if necessary, writes BANK_SEL, writes CONTROL, then commits the
 software shadow. Between these writes only that Task may resume mapping work;
-no asynchronous handler consumes either shadow. G3 injects NMI at each boundary.
+no asynchronous handler consumes either shadow. The G3 development tests interrupt each boundary with NMI.
 Kernel stack switching needs no new private protocol because it never depends
 on the mapped aperture. Do not use SEI as a substitute for this invariant.
 
 Support only the cold-boot inactive VBXE baseline in the
-[platform pin](../../../toolchain/altirra-gem-vdi.json): full FX 1.26, `$D600`,
+[platform pin](../../toolchain/altirra-gem-vdi.json): full FX 1.26, `$D600`,
 private 512 KiB VRAM, no VBXE interrupts, no shared-memory or ANTIC fallback.
 Version reads do not prove inactivity. The launcher establishes the boot
 precondition; software tracks all later writes. An unknown previous graphics
@@ -156,26 +163,33 @@ DMA storage, release ownership or claim a clean return to the OS.
 
 ## Source boundary and memory
 
-[inputs.json](../../../ports/gem4xe/inputs.json) fixes the donor files and their
-roles. Extract the selected dispatcher/workstation, clipping, line, rectangle,
-text and palette code from `vdi.c`; extract only built-in face initialization
-from `font.c`. Adapt `dev_vbxe.c` and `vbxe.c` to the display lease/fence, and retain
-the pinned generated `font8x8.c` unchanged with its notices. Rewrite the small
-host boundary headers for huge-data pointers and upper-RAM scratch. Reference-only
-files explain removed dependencies; they are never compiled to satisfy symbols.
+[inputs.json](../../ports/gem4xe/inputs.json) pins the donor and toolchain;
+[selection.json](../../ports/gem4xe/selection.json) and the patch series define
+the extracted renderer. The selected workstation, clipping, line, rectangle,
+text and palette code runs through the Exec [backend](../../ports/gem4xe/adapter/README.md).
+The donor's low-level hardware/startup code is excluded. The built-in font is
+unchanged. There are no printer, CIO font-loading, keyboard, legacy context or
+full opcode-table dependencies, and no near/TINY/ZWIN reservations.
 
-Remove the full opcode tables, virtual workstation/context ownership, printer,
-CIO font loading, keyboard/cursor paths, fill-pattern and trigonometric tables.
-Unsupported operations return explicit errors at dispatch, not fake service stubs.
-G1 must prove the selected link has no remaining near/TINY/ZWIN reservations or
-hidden startup calls. Keep the upstream extraction and platform patch separate.
+The mixed eight-Task layout supplies two 2,560-byte large stacks, each including
+its 256-byte interrupt reserve. C uses 20 bytes of each Task's existing lower
+128-byte DP area. Complete C code/data banks `$0C`/`$0D` reserve 131,072 upper-RAM
+bytes. The adapter's 4 KiB staging page is inside that data bank; the CPU aperture
+`$8000–$8FFF` is an existing reservation, mapped only during owner transfers.
+Protocol storage, leases, driver state and globals remain in upper RAM. Steady
+service/client heap allocations total 2,464 rounded bytes, rising to 2,656 for
+STOP. Task stacks and external guards are already in the platform budget.
 
-G0 adds no production allocation or bank-zero reservation. Subsequent slices
-reuse the two 2,560-byte pools and the existing 4 KiB CPU aperture. Keep protocol
-storage, driver state, font data and runtime globals in validated upper RAM.
-G1 records complete CPU placement; G3 records VRAM extents and slack separately.
-The donor's BCB comment says 1 KiB, but `MAX_BCB=12` uses 252 bytes at `$30100`,
-before cursor storage at `$30200`; validate actual extents instead of importing
-that comment as an overlapping reservation. The
-[G1 record](../../development/gem-vdi-g1.json) measures the recording-device call
-chain; hardware drawing stack measurements remain pending.
+[VBXE extents](../../platform/altirraos/vbxe-vram.json) reserve 107,008 bytes of
+private VRAM, including screen slack, XDL, 252-byte BCB capacity rounded to 256,
+expanded font and strip scratch. CPU and VRAM reservations are separate.
+Fixed, per-public-Task and private-idle bank-zero increments are all zero for
+G0–G6; the existing eight-Task budget includes 56,128 reserved bytes with OS
+memory and leaves 9,408 bytes free after startup.
+
+[G4](../development/gem-vdi-g4.json) records the primitive corpus and
+[G5](../development/gem-vdi-g5.json) records concurrent physical I/O and failure
+cleanup. [G6](../development/gem-vdi-g6.json) records the optional artifact and
+standard OF816 controls. These are measured development paths on the pinned
+emulator, not a general C stack bound, hardware certification or full hosted
+qualification. Calypsi does not add automatic stack checks to these C calls.
