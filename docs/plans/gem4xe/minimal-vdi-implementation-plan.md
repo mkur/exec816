@@ -229,9 +229,9 @@ does not replace a bounded target-side wait.
 
 ## Executable slices
 
-G0 inputs/contracts and G1 extraction/C entry checks are implemented; their
-development evidence is linked below. G2–G6 remain pending. Complete their
-development gates in order. Keep builds, source downloads, maps and logs under
+G0 inputs/contracts, G1 extraction/C entry checks and G2 message service are
+implemented; their development evidence is linked below. G3–G6 remain pending.
+Complete their development gates in order. Keep builds, source downloads, maps and logs under
 `build/gem-vdi/`. Paths named as
 new tools or modules below are proposed deliverables unless linked as completed.
 
@@ -249,9 +249,18 @@ G1 deliverables: [selection and patch](../../../ports/gem4xe/README.md),
 [C/Task runner](../../../tools/test_gem_vdi_context.py) and
 [development record](../../development/gem-vdi-g1.json). The selected C entry
 points run with a recording device and computing peer in both compiler modes.
-The linked VBXE backend is inactive; message service, hardware fences and pixel
-correctness remain G2–G4 work. CPU code/data fit the existing checked banks;
+The linked VBXE backend is inactive; hardware fences and pixel correctness
+remain G3–G4 work. CPU code/data fit the existing checked banks;
 fixed and per-Task reserved bank-zero deltas are zero.
+
+G2 deliverables: [private service and client](../../../ports/gem4xe/service/README.md),
+[wire generator](../../../tools/generate_gem_vdi.py),
+[native runner](../../../tools/test_gem_service.py) and
+[development record](../../development/gem-vdi-g2.json). Raw/optimized cases cover
+validation, generation/sequence rules, Task leases, queued/active stop and actual
+allocation failure rollback through a fixture-only dispatcher. G2 adds generated
+C bindings for the existing public Task leases; no kernel selector, platform
+state or bank-zero reservation is added.
 
 | Slice | Deliverable and acceptance gate |
 | --- | --- |

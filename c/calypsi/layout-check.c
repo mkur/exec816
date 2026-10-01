@@ -2,6 +2,7 @@
 #include <proto/exec.h>
 #include "create-task-packet.h"
 #include "dos-bridge.h"
+#include "tasklease-packet.h"
 __attribute__((section("exec_layout")))
 const UWORD ExecCLayout[] = {
     sizeof(BYTE),
@@ -49,4 +50,12 @@ const UWORD ExecCLayout[] = {
     offsetof(struct ExecDosWriteArgs, file),
     offsetof(struct ExecDosWriteArgs, buffer),
     offsetof(struct ExecDosWriteArgs, length),
+    sizeof(struct TaskLease),
+    offsetof(struct TaskLease, task),
+    offsetof(struct TaskLease, pad),
+    offsetof(struct TaskLease, incarnation),
+    offsetof(struct TaskLease, identity),
+    offsetof(struct TaskLease, pad2),
+    sizeof(struct ExecRetainTaskPacket),
+    offsetof(struct ExecRetainTaskPacket, lease),
 };

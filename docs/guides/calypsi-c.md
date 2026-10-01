@@ -47,6 +47,7 @@ as needed, and `<proto/exec.h>` for the function declarations.
 | --- | --- |
 | Memory | `AllocMem`, `FreeMem`, `AvailMem` |
 | Tasks | `CreateTask` (in `<clib/alib_protos.h>`), `AddTask`, `RemTask`, `FindTask`, `Forbid`, `Permit` |
+| Task lifetime | `RetainTask`, `ReleaseTask`; generated `struct TaskLease` in `<exec/tasklease.h>` |
 | Signals | `AllocSignal`, `FreeSignal`, `SetSignal`, `Signal`, `Wait` |
 | Messages | `CreateMsgPort`, `DeleteMsgPort`, `PutMsg`, `GetMsg`, `WaitPort`, `ReplyMsg` |
 | Public ports | `AddPort`, `RemPort`, `FindPort` |
@@ -82,6 +83,15 @@ the sender resumes only after retirement. A normally returning entry also uses
 native default self-removal. AddTask remains available for caller-owned records
 and custom finalizers, whose entries must also be registered.
 
+The C lifetime calls use the existing
+[Task lease contract](../reference/resident-drivers.md#task-admission-and-lifetime).
+Start a lease zeroed and keep its address stable. Both calls return `UBYTE` 1 on
+success or 0 on rejection; the shim rejects pointers outside 24 bits before
+packing them. A copied or stale lease cannot release a hold. Release the final
+hold and remove a worker under Forbid when retirement must be indivisible.
+Leases retain Tasks, not arbitrary buffers. C resident registration bindings
+remain outside this subset.
+
 The constants and COP selectors are generated from `abi/*.json`:
 
 ```sh
@@ -93,7 +103,8 @@ python3 tools/generate_calypsi.py --check
 `BYTE`/`UBYTE` are 8 bits, `WORD`/`UWORD` 16, and `LONG`/`ULONG` 32. Ordinary
 C pointers use Calypsi's four-byte huge representation. Pointer fields shared
 with Exec use `__far24`, giving the native three-byte layout. Explicit Task
-padding preserves its native offsets. Node/List/Task/MsgPort/Message records and the CreateTask packet
+padding preserves its native offsets. Node/List/Task/TaskLease/MsgPort/Message
+records, the CreateTask packet and the RetainTask packet
 are checked against target-emitted `sizeof`/`offsetof` values before linking.
 The probe object is not included in the image. Calypsi 5.18 frontend static
 assertions alone do not describe this final far24 layout.

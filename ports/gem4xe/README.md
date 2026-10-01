@@ -4,7 +4,8 @@
 
 G0 provides read-only VBXE detection. G1 extracts and links the selected GEM C
 subset, then exercises its entry points through a recording device on an ordinary
-Exec Task. The message service and display lease remain pending.
+Exec Task. [G2](service/README.md) implements the private message service with a
+fixture backend. Display ownership and real drawing remain pending.
 
 [inputs.json](inputs.json) pins GEM4XE 0.9.4, the Exec baseline, compiler/runtime
 hashes and selected source roles. [selection.json](selection.json) selects exact
@@ -78,5 +79,5 @@ inactive. The standard OF816 demo is unchanged; this fixture is not a demo bundl
 
 The [separate platform pin](../../toolchain/altirra-gem-vdi.json) enables only
 VBXE with private 512 KiB VRAM at `$D600`. It also selects physical SIO settings
-for the later SDFS workload; G0/G1 do not mount a disk or claim concurrent I/O.
+for the later SDFS workload; G0–G2 do not mount a disk or claim concurrent I/O.
 Existing default platform checks continue to require add-ons off.

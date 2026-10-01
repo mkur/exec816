@@ -3,7 +3,9 @@
 [Implementation plan](minimal-vdi-implementation-plan.md) · [Port inputs](../../../ports/gem4xe/README.md)
 
 These are the frozen G0 implementation contracts, not available public services.
-G1–G5 must implement and test them before they move into reference documentation.
+G1 extraction and the [G2 private service](../../../ports/gem4xe/service/README.md)
+are implemented. G3–G5 must establish hardware and integration behavior before
+these contracts move into reference documentation.
 The exact operation numbers, limits and packet offsets are in
 [gem-vdi.json](../../../abi/gem-vdi.json). No new COP selector is allocated.
 

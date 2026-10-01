@@ -1,6 +1,7 @@
 #ifndef PROTO_EXEC_H
 #define PROTO_EXEC_H
 #include <exec816/abi.h>
+#include <exec/tasklease.h>
 
 /* This is the implemented classic Exec subset, not an Amiga binary ABI. */
 APTR EXEC_CALL AllocMem(ULONG bytes, ULONG attributes);

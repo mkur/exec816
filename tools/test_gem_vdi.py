@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run a hosted GEM development slice (G0 identity or G1 C extraction)."""
+"""Run a hosted GEM development slice: G0 identity, G1 C or G2 service."""
 import argparse
 import copy
 import json
@@ -104,9 +104,11 @@ def run(output, mode):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
-    parser.add_argument('--slice', choices=('g0', 'g1'), default='g0')
+    parser.add_argument('--slice', choices=('g0', 'g1', 'g2'), default='g0')
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     if args.slice == 'g1':
         from test_gem_vdi_context import run
+    elif args.slice == 'g2':
+        from test_gem_service import run
     run(args.output or ROOT/'build/gem-vdi'/(args.slice+'-'+args.mode), args.mode)

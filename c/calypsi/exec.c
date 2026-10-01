@@ -2,6 +2,7 @@
 #include <clib/alib_protos.h>
 #include "create-task-packet.h"
 #include "selectors.h"
+#include "tasklease-packet.h"
 
 ULONG EXEC_CALL _ExecPacket(UWORD selector, const void *packet);
 ULONG EXEC_CALL _ExecPointer(UWORD selector, const void *pointer);
@@ -9,6 +10,8 @@ ULONG EXEC_CALL _ExecPointer(UWORD selector, const void *pointer);
 struct PointerPacket { void EXEC_PTR *pointer; };
 struct PointerMask { void EXEC_PTR *pointer; UBYTE pad; ULONG value; };
 struct Pair { ULONG first, second; };
+
+#include "tasklease.inc"
 
 APTR EXEC_CALL AllocMem(ULONG bytes, ULONG attributes)
 {

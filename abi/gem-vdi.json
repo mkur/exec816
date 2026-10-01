@@ -1,7 +1,7 @@
 {
   "abi": "exec816.gem-vdi",
   "revision": 1,
-  "status": "G0 frozen contract; service and generated bindings pending G2",
+  "status": "G2 private service ABI; hardware backend pending G3/G4",
   "byte_order": "little",
   "pointer_bits": 24,
   "alignment": 2,
@@ -192,7 +192,8 @@
         1,
         1,
         2
-      ]
+      ],
+      "reply_words": 57
     },
     {
       "name": "v_clswk",
@@ -206,7 +207,8 @@
         0,
         0
       ],
-      "transport": "CLOSE"
+      "transport": "CLOSE",
+      "reply_words": 0
     },
     {
       "name": "v_clrwk",
@@ -220,7 +222,8 @@
         0,
         0
       ],
-      "transport": "SUBMIT"
+      "transport": "SUBMIT",
+      "reply_words": 0
     },
     {
       "name": "v_updwk",
@@ -234,7 +237,8 @@
         0,
         0
       ],
-      "transport": "SUBMIT"
+      "transport": "SUBMIT",
+      "reply_words": 0
     },
     {
       "name": "v_pline",
@@ -248,7 +252,8 @@
         0,
         0
       ],
-      "transport": "SUBMIT"
+      "transport": "SUBMIT",
+      "reply_words": 0
     },
     {
       "name": "v_gtext",
@@ -266,7 +271,8 @@
       "glyph_range": [
         0,
         255
-      ]
+      ],
+      "reply_words": 0
     },
     {
       "name": "v_bar",
@@ -280,7 +286,8 @@
         0,
         0
       ],
-      "transport": "SUBMIT"
+      "transport": "SUBMIT",
+      "reply_words": 0
     },
     {
       "name": "vsl_color",
@@ -298,7 +305,8 @@
       "value_range": [
         0,
         15
-      ]
+      ],
+      "reply_words": 1
     },
     {
       "name": "vst_color",
@@ -316,7 +324,8 @@
       "value_range": [
         0,
         15
-      ]
+      ],
+      "reply_words": 1
     },
     {
       "name": "vsf_interior",
@@ -333,7 +342,8 @@
       "transport": "SUBMIT",
       "int_values": [
         1
-      ]
+      ],
+      "reply_words": 1
     },
     {
       "name": "vsf_color",
@@ -351,7 +361,8 @@
       "value_range": [
         0,
         15
-      ]
+      ],
+      "reply_words": 1
     },
     {
       "name": "vswr_mode",
@@ -368,7 +379,8 @@
       "transport": "SUBMIT",
       "int_values": [
         1
-      ]
+      ],
+      "reply_words": 1
     },
     {
       "name": "vs_clip",
@@ -386,7 +398,8 @@
       "value_range": [
         0,
         1
-      ]
+      ],
+      "reply_words": 0
     }
   ]
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build G1: selected hosted GEM C plus a recording-device/Task probe."""
+"""Build hosted GEM probes: G1 C extraction or G2 message service."""
 import argparse
 import json
 import re
@@ -57,10 +57,43 @@ def build_probe(output, optimize=True):
     return program,foreign
 
 
+def build_service_probe(output, optimize=True):
+    from generate_gem_vdi import files, expected_layout
+    output = Path(output).resolve()
+    inputs = local_inputs()
+    service = PORT/'service'
+    for path,content in files().items():
+        require(path.read_text()==content,'Stale GEM binding: '+str(path))
+    sources = [ROOT/'c/calypsi/exec.c', service/'gem-validation.c', service/'gem-service.c',
+               service/'gem-client.c', ROOT/'tests/programs/gem_service.c']
+    foreign = emit(output,sources,(ROOT/'c/calypsi/gateway.s', ROOT/'c/calypsi/image-info.s'),
+                   ['GemServiceWorker','Peer','Blocker'],optimize=optimize,includes=[service],
+                   probes=[(service/'gem-layout.c',expected_layout())])
+    paths = [*service.glob('*.c'),*service.glob('*.h'),ROOT/'abi/gem-vdi.json',ROOT/'abi/tasks.json',
+             *ROOT.glob('tools/*gem*.py'),ROOT/'tools/generate_calypsi.py',
+             ROOT/'tools/calypsi_build.py',ROOT/'tools/calypsi_image.py',
+             ROOT/'tests/programs/gem_service.c',ROOT/'tests/programs/gem_vdi_launcher.act',
+             *ROOT.glob('c/calypsi/*'),*ROOT.glob('c/include/**/*.h')]
+    foreign['provenance'].update(slice='G2',local_inputs=inputs,hardware_execution=False,
+        backend='fixture-only',source_inputs={p.relative_to(ROOT).as_posix():sha256(p)
+        for p in sorted(set(paths)) if p.is_file()})
+    (output/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
+    include = output/'c-image.inc'
+    include.write_text(f'CONST C_MAIN=${foreign["symbols"]["main"]:x}\n')
+    source = output/'launcher.act'
+    source.write_text(read_source(ROOT/'tests/programs/gem_vdi_launcher.act',{'c-image.inc':include}))
+    program = build(compiler(ROOT/'build/actionc'),source,output/'program',optimize=optimize,
+                    tasks=True,task_capacity=8,console=False,foreign_image=foreign)
+    return program,foreign
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output',type=Path,default=ROOT/'build/gem-vdi/g1-opt')
+    parser.add_argument('--output',type=Path)
     parser.add_argument('--no-opt',action='store_true')
+    parser.add_argument('--slice',choices=('g1','g2'),default='g1')
     args = parser.parse_args()
-    program,_ = build_probe(args.output,not args.no_opt)
-    print('G1 image ready:',program['xex'])
+    builder = build_service_probe if args.slice=='g2' else build_probe
+    output = args.output or ROOT/'build/gem-vdi'/(args.slice+('-raw' if args.no_opt else '-opt'))
+    program,_ = builder(output,not args.no_opt)
+    print(args.slice.upper(),'image ready:',program['xex'])
