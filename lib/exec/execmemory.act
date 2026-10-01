@@ -34,9 +34,13 @@ CARD FUNC ValidOwner(CARD owner)
 
 RETURN(M_ERROR_OK)
 
-; Adopt the loader table only after its identity and completed writes agree.
+; Validate first adoption; later calls preserve live ownership after boot data retires.
 PUBLIC CARD FUNC Adopt()
   CARD i
+
+  IF adopted=M_VERSION THEN
+    RETURN(M_ERROR_OK)
+  FI
 
   IF ready<>1 OR error<>0 THEN
     RETURN(M_ERROR_BOOT)

@@ -1,4 +1,5 @@
 """Native lock/FIB packets over actual SIO and declared damaged media copies."""
+import adapter_state as adapter
 import argparse,json,struct
 from pathlib import Path
 from native_program import ROOT,build,compiler,verify_machine,sha256,require
@@ -42,7 +43,7 @@ def run(t,out,mode,size,variant='normal'):
         def before_run(b):b.poke(next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_DOSDIRTEST_VARIANT_')),index)
         try:runtime,_=execute(b,p,before_run=before_run,timeout=3600 if size==256 else 600,frame_limit=30000)
         except Exception:
-            print('native state',b.memdump(0x2000,64).hex(),flush=True)
+            print('native state',b.memdump(adapter.STATE,64).hex(),flush=True)
             print('checks',data(b,p['image'],'checks',True),'other checks',data(b,p['image'],'otherChecks',True),flush=True)
             for i,pool in enumerate(p['build']['memory']['task_pools']):(out/f'fault-stack-{i}.bin').write_bytes(b.memdump(pool['stack_base'],pool.get('stack_bytes',1536)))
             raise

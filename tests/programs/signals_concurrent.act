@@ -8,11 +8,12 @@ USE EXECSIGNALIRQ
 USE PRODUCERPROBE
 USE TASKSTACKS
 USE HEAPCORE
+INCLUDE "../../lib/exec/exec-abi.inc"
 EXEC.Task worker,peer,sleeper
 EXEC.Task POINTER parent
 VOLATILE BYTE skctl=$d20f,skshadow=$232,audctl=$d208,irqst=$d20e
 VOLATILE BYTE finished,stopping
-VOLATILE CARD pumpSent=$2080
+VOLATILE CARD pumpSent=E816_PROBE0
 BYTE workload,oldsk
 CARD byteCount,sent,waits,yields,requests,replies,sleeps,blocked
 LONGCARD badResult,background

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Collect relative-path ownership, ancestry, layout and complete-read evidence."""
+from image_data_usage import used as image_data_used
 import argparse,json
 from pathlib import Path
 from native_program import ROOT,require,sha256
-from ports_budget import account,current
+from ports_budget import historical,account,current
 CASES={'bank1-128','bank1-256','bank3-128','bank3-256','depth','corrupt-ancestry','abi',
        'headless','mixed','lifetime','directories','relative-large','absolute-large'}
 # The retained record predates foreground calls. Its exact required call set
@@ -17,7 +18,7 @@ def validate(record,*,current_abi=False):
     require(record['status']=='pass','Unfinished relative paths')
     require(len(record['cases'])==2*len(CASES) and
             {(c['mode'],c['name'])for c in record['cases']}=={(m,n)for m in ('raw','opt')for n in CASES},'Missing relative case')
-    budgets=current()['after']
+    budgets=current()['after'] if current_abi else historical()
     for case in record['cases']:
         require(case['status']=='pass' and case['runtime']['status']==0 and case['runtime']['guards']=='intact','Failed native case')
         require(case['compiler_revision']==record['compiler']['revision'] and not case['override'],'Unpinned compiler')
@@ -60,8 +61,7 @@ def collect(directory):
             inputs={**b['task_inputs'],**b['platform_inputs'],**b['banked_inputs']}
             for p,h in inputs.items():require(sha256(ROOT/p)==h,'Source changed: '+p);record['inputs'][p]=h
             image=json.loads((path/'program.a816.json').read_text())
-            near=sum(len(s['bytes'])for s in image['segments']if 0x8800<=s['address']<0x9000)
-            near+=sum(s['size']for s in image['zero_fill']if 0x8800<=s['address']<0x9000)
+            near=image_data_used(image,b['memory'])
             record['cases'].append(dict(name=name,mode=mode,status=r['status'],compiler_revision=b['revision'],override=b['override'],
                 source_sha256=b['source_sha256'],image_sha256=b['image_sha256'],xex_sha256=b['xex_sha256'],
                 compiler_binary_sha256=b['binary_sha256'],abi_sha256=b['abi_sha256'],inputs=inputs,generated=b['task_generated'],

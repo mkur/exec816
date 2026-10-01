@@ -59,7 +59,42 @@ Count guards, alignment and unused capacity, not only live payload bytes.
 The build's `memory.json` is authoritative for `runtime_reservations`,
 `task_pools` and `bank_zero_budget`. Loading and runtime lifetimes differ:
 loader/staging storage may be reused only after adoption retires every live
-bootstrap frame and callback. Heap and resident metadata stay in upper RAM
+bootstrap frame and callback. The manifest at `$6000–$67FF` remains protected
+through memory adoption, Task initialization and boot-setting capture. The
+adapter publishes `M_RETIRED=1` at `startup_complete`, before Task dispatch;
+only then is that entire range reusable. Failed startup does not publish it.
+Repeated memory adoption/initialization uses the live adoption state and never
+revalidates retired manifest bytes. The boot-state page at `$2C00–$2CFF` stays
+reserved, including shutdown information. Restarting retired bootstrap code is
+unsupported; a cold boot reloads the manifest.
+
+The no-resident-Atari-DOS profile reserves `$0000–$07FF` for the OS and places
+the 256-byte adapter state at `$0800–$08FF`. Both loader and hosted entry require
+the original `MEMLO <= $0800`; hosted entry checks before writing that page.
+`MEMTOP` must still cover `$9000`. State fields are generated from the profile
+base and ABI offsets. Exec's own DOS/file services are independent of this
+resident Atari DOS restriction.
+
+Ordinary compiled globals occupy a 2 KiB `image_data` arena in the selected
+upper kernel bank, after resident metadata and 256-byte alignment. Emitted code
+starts after the full arena. The image owns its bank even when some capacity is
+unused; packaging rejects code/metadata overlap, arena overflow and resident
+image payload in bank zero.
+
+The profile reserves **`$8000–$8FFF` (4 KiB) for the VBXE CPU aperture** during
+loading and runtime. Boot staging is at `$0900–$0D0F`. In the eight-Task layout,
+slot 7's stack moves to `$0D20–$111F` and idle to `$7CB0–$7EAF`, each with
+16-byte guards on both ends. Other pools retain their locations and sizes;
+the four-Task layout already fits below the aperture. Staging and the retired
+manifest remain unavailable to a general heap until explicitly registered.
+
+This reserves address space only. The current adapter does not enable VBXE,
+manage its window registers or hand display ownership to GEM. The
+[aperture development record](../development/vbxe-aperture.json) covers the
+unmapped RAM reservation, loading, Task execution and OF816 handoff; mapped
+VBXE hardware requires a separate configuration pin and integration checks.
+
+Heap and resident metadata stay in upper RAM
 where the profile permits. See [Task capacity](../architecture/task-capacity.md)
 for supported layouts; do not copy old code origins or memory totals into new
 build assumptions.
@@ -132,6 +167,12 @@ Serialize OS calls while keeping required hardware interrupts functional. The
 adapter establishes mode, widths, DP, bank registers and the OS stack, then
 restores the caller. Never truncate a far pointer into an OS near address;
 stage buffers where necessary. No reentrant ROM service is assumed.
+
+The small `EXECOS.Write` adapter accepts 0–255 bytes from the resident compiled
+data arena. Banked builds stage the bytes on the caller's checked stack while
+`OS_BUSY` excludes switching, before entering ROM on the separate OS stack.
+Its local stack peak is 266 bytes, including 256 temporary buffer bytes; it adds
+no permanent bank-zero reservation. It is not a general far-buffer console API.
 
 Native console ownership excludes conflicting ROM console use until shutdown.
 Native SIO ownership likewise excludes ROM serial/POKEY use. Shutdown must retire

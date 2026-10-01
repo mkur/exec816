@@ -1,4 +1,5 @@
 """Concurrent read-only MyDOS over the real queued SIO device."""
+import adapter_state as adapter
 import argparse,json,os,shutil,time
 from pathlib import Path
 from native_program import ROOT,build,compiler,verify_machine,sha256,require
@@ -58,7 +59,7 @@ def run(t,out,mode,size,capacity=8,bank=1,speed=0,trace=False,program=None,key=F
         b.regs=monitored_regs
         try:runtime,_=execute(b,p,before_run=before,timeout=host_seconds,frame_limit=guest_seconds*50)
         except Exception:
-            print('native state',b.memdump(0x2000,64).hex(),flush=True)
+            print('native state',b.memdump(adapter.STATE,64).hex(),flush=True)
             print('counters',{n:data(b,p['image'],n,True) for n in ('checks','workRounds','clientsDone')},flush=True)
             for i,pool in enumerate(p['build']['memory']['task_pools']):(out/f'fault-stack-{i}.bin').write_bytes(b.memdump(pool['stack_base'],pool.get('stack_bytes',1536)))
             raise

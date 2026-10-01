@@ -1,5 +1,5 @@
 ; Initial bank-zero hosted layout. Native images occupy $6000-$8fff.
-STATE = $2000
+STATE = E816_STATE
 TASK_DP = $2200
 STACK_BASE = $4200
 STACK_FLOOR = $4300             ; includes a conservative interrupt reserve
@@ -41,7 +41,11 @@ FAULT_RETURN = 3
 FAULT_CONTEXT = 4
 ERROR_POINTER = $ff01
 ERROR_BUSY = $ff02
+.if BANKED
+WRITE_STACK_BYTES = 266         ; full save and 256-byte ROM buffer
+.else
 WRITE_STACK_BYTES = 10
+.endif
 
 .assert STACK_FLOOR-STACK_BASE >= A816_INTERRUPT_TASK_OR_BOOTSTRAP_HEADROOM_BASE_BYTES, error, "interrupt reserve"
 .assert TASK_DP .mod A816_DP_ALIGNMENT = 0, error, "DP alignment"

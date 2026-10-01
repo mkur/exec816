@@ -3,6 +3,7 @@ USE EXEC
 USE EXECTASKS
 USE EXECLISTS
 USE TASKSTACKS
+INCLUDE "../../lib/exec/exec-abi.inc"
 
 EXEC.Task worker
 EXEC.Task POINTER parent
@@ -24,7 +25,7 @@ RETURN
 
 PROC Sleeper()
   CARD status,before
-  VOLATILE CARD ticks=$2034
+  VOLATILE CARD ticks=E816_VBI_COUNT
 
   phase=2
   before=ticks

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate isolated Action/assembly/JSON memory definitions for a kernel build."""
+import adapter_state as adapter
 import argparse
 import hashlib
 import json
@@ -66,15 +67,16 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
     require(regions['boot-state'][1] - regions['boot-state'][0] >= 256,
             'Boot state/work area does not fit')
     require(regions['resident'] == [0x3000,0x4000], 'Resident layout differs from hosted.cfg')
-    fixed = {'os-low':[0,0x2000], 'state':[0x2000,0x2100],
+    fixed = {'os-low':[0,adapter.STATE], 'state':[adapter.STATE,adapter.STATE+256],
              'task0-dp':[0x21f0,0x2310], 'task1-dp':[0x23f0,0x2510],
              'kernel-dp':[0x25f0,0x2710], 'task0-stack':[0x41f0,0x4810],
              'kernel-stack':[0x49f0,0x5010], 'task1-stack':[0x51f0,0x5810],
+             'vbxe-aperture':[0x8000,0x9000],
              'os-high':[0x9000,0x10000]}
     require(all(regions.get(k) == v for k,v in fixed.items()),
             'Fixed OS/adapter reservation differs from hosted layout')
-    require(platform['image_near'] == [0x8800,0x9000]
-            and platform['memlo_limit'] == 0x2000 and platform['memtop_required'] == 0x9000,
+    integer(platform['image_data_bytes'], 1, 65536, 'image data capacity')
+    require(platform['memlo_limit'] == adapter.STATE and platform['memtop_required'] == 0x9000,
             'Memory bounds differ from hosted console/launch contract')
     usable = platform['usable_banks']
     require(len(usable) == len(set(usable)), 'Duplicate usable bank')
@@ -87,17 +89,13 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
         regions.pop('table')
         platform['regions'] = [r for r in platform['regions'] if r['name']!='table']
     platform['code_origin'] = (kernel << 16) + (count*abi['record_size'] if upper_table else 0)
-    near_start, near_end = platform['image_near']
-    require(0 < near_start < near_end <= 65536, 'Invalid near image arena')
-    require(all(near_end <= a or near_start >= b for a, b, _ in spans),
-            'Near image overlaps a reservation')
     c = {'VERSION': abi['version'], 'KERNEL_BANK':kernel, 'MAX_BANKS': count, 'TABLE': table,
          'TABLE_BYTES': count * abi['record_size'], 'MANIFEST': regions['manifest'][0],
          'MANIFEST_CAPACITY': regions['manifest'][1] - regions['manifest'][0],
          'MAX_EXTENTS': cfg['max_extents'], 'EXTENTS': regions['manifest'][0] + abi['manifest']['header_size'] + count * abi['record_size'],
          'LOADER': regions['loader'][0], 'LOADER_BYTES': regions['loader'][1] - regions['loader'][0],
          'STAGE': regions['staging'][0], 'PAYLOAD': regions['staging'][0] + abi['record']['size'],
-         'CHUNK': cfg['staging_bytes'], 'NEAR_BASE': near_start, 'NEAR_END': near_end,
+         'CHUNK': cfg['staging_bytes'],
          'MEMLO_LIMIT': platform['memlo_limit'], 'MEMTOP_REQUIRED': platform['memtop_required']}
     boot = regions['boot-state'][0]
     for name, offset in abi['boot_fields'].items():
@@ -113,12 +111,47 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
     # maximum arena so other build limits cannot collide with fixed adapters.
     if not upper_table:
         regions['table'] = [table, table + c['TABLE_BYTES']]
-    memory = {'abi':abi, 'config':cfg, 'profile':platform, 'constants':c,
+    memory = {'adapter_state':adapter.addresses(platform), 'abi':abi, 'config':cfg, 'profile':platform, 'constants':c,
             'upper_reservations':([{'name':'bank-table','address':table,'size':c['TABLE_BYTES']}] if upper_table else []),
             'regions':regions, 'usable_banks':[b for b in usable if b < count]}
     from boot_config import describe
     memory['boot_config'] = describe(memory)
+    memory['reclaimed_after_startup'] = ['manifest']
+    memory['startup_retirement'] = dict(address=c['RETIRED'], value=1,
+        boundary='startup_complete', ranges=['manifest'])
     return memory
+
+
+def reserve_image_data(memory):
+    """Finalize compiled data after all metadata and before emitted code."""
+    require('image_data' not in memory, 'Image data placement already finalized')
+    profile = memory['profile']
+    previous = profile['code_origin']
+    start = (previous+255)//256*256
+    size = profile['image_data_bytes']
+    end = start+size
+    bank = memory['config']['kernel_bank']
+    require(start >> 16 == bank and end <= (bank+1)*65536,
+            'Image data arena exceeds kernel bank')
+    require(bank in memory['usable_banks'], 'Image data bank unavailable')
+    require(all(end <= r['address'] or start >= r['address']+r['size']
+                for r in memory['upper_reservations']), 'Image data overlaps metadata')
+    if start > previous:
+        memory['upper_reservations'].append(dict(name='image-data-alignment',
+            address=previous,size=start-previous))
+    memory['image_data'] = dict(address=start,size=size)
+    profile.update(data_origin=start,code_origin=end)
+    memory['constants'].update(IMAGE_DATA_BASE=start,IMAGE_DATA_END=end)
+
+
+def validate_compiled_data(image, memory):
+    """Bound ordinary compiler data before adding separately placed bindings."""
+    arena = memory['image_data']
+    low,high = arena['address'],arena['address']+arena['size']
+    for region in [s for s in image['segments'] if not s['executable']]+image['zero_fill']:
+        size = len(region['bytes']) if 'bytes' in region else region['size']
+        require(low <= region['address'] < region['address']+size <= high,
+                'Compiled data outside upper image arena')
 
 
 def generate(output, memory, check=False):

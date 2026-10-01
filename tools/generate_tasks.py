@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate Task layouts, native call bindings and per-image kernel modules."""
 from library_paths import library_file, read_source
+import adapter_state as adapter
 import argparse
 import json
 import re
@@ -91,7 +92,8 @@ def storage(memory):
     cursor = c['MANAGED']+c['MANAGED_BYTES']
     c['METADATA_END'] = (cursor+63)//64*64
     c['METADATA_BYTES'] = c['METADATA_END']-base
-    c.update(WAKE_PENDING=0x203a, IRQ_ALLOW=0x203b)
+    state=adapter.addresses(memory['profile'])
+    c.update(WAKE_PENDING=state['WAKE_PENDING'], IRQ_ALLOW=state['IRQ_ALLOW'])
     require(c['METADATA_BYTES'] <= 0x800, 'Task metadata overlaps SIO descriptor')
     return c
 
@@ -206,7 +208,6 @@ def validate_pools(memory):
     for i, pool in enumerate(ABI['pools']):
         spans += [(pool['dp']-16, pool['dp']+272, f'dp{i}'),
                   (pool['stack_base']-16, pool['stack_base']+1552, f'stack{i}')]
-    require(memory['profile']['image_near'] == [0x8800, 0x9000], 'Task near layout changed')
     for a, b, name in spans:
         for other, (x, y) in reserved:
             if a < y and x < b:
@@ -217,6 +218,16 @@ def validate_pools(memory):
     # Every new permanent reservation must also be excluded from image writes.
     memory['task_pools'] = ABI['pools']
     memory['reclaimed_after_adopt'] = ['loader', 'staging']
+    # Preserve loading geometry, but publish only post-startup reservations.
+    excluded = {'task0-dp','task1-dp','task0-stack','task1-stack','loader','staging','manifest','table'}
+    runtime = [(a,b,name) for name,(a,b) in memory['regions'].items() if name not in excluded]
+    runtime += spans
+    table = memory['constants']['TABLE']
+    runtime.append((table,table+1024,'table'))
+    memory['runtime_reservations'] = [dict(name=name,address=a,size=b-a) for a,b,name in sorted(runtime)]
+    from ports_budget import account
+    memory.pop('bank_zero_budget',None)
+    memory['bank_zero_budget'] = account(memory)
 
 
 

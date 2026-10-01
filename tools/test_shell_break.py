@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Physical shell break, prompt recovery and unchanged SIO gates with eight Tasks."""
+import adapter_state as adapter
 from library_paths import read_source
 import argparse,json,os,shutil,time
 from pathlib import Path
@@ -68,12 +69,12 @@ def run_case(p,out,name,size,profile,trace,marks,schedule=None):
             for i in range(0,n,2):raw.extend((b.eval_expr(f'dw(${address+i:x})')&65535).to_bytes(2,'little'))
             return bytes(raw[:n])
         def rendezvous(condition,point='native_nmi'):
-            marker=p['labels'][point];b.bp_clear_all();b.bp_set(marker,condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            marker=p['labels'][point];b.bp_clear_all();b.bp_set(marker,condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs;last=time.monotonic()
             def regs():
                 nonlocal last
                 r=original()
-                if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(0x2000)==0xffff,'Shell break stopped: checks='+str(b.peek16(at('checks')))+' status='+hex(b.peek16(0x2000)))
+                if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(adapter.STATE)==0xffff,'Shell break stopped: checks='+str(b.peek16(at('checks')))+' status='+hex(b.peek16(adapter.STATE)))
                 if time.monotonic()-last>30:print(name,'frame',b.eval_expr('@frame'),'phase',b.peek(q+9).hex(),flush=True);last=time.monotonic()
                 return r
             b.regs=regs

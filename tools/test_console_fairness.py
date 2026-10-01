@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Bounded eight-Task multiwindow/SIO development workload with passive timing."""
+import adapter_state as adapter
 import argparse,hashlib,json,os,shutil
 from pathlib import Path
 from generate_console import constants as console_constants
@@ -66,11 +67,11 @@ def run(out,mode,from_build=None):
         b.config('diskemu','fastest');b.mount(0,str(media));machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
         ts=p['build']['task_storage'];cs=p['build']['memory']['console_storage']
         def rendezvous(condition,point='native_nmi'):
-            b.bp_clear_all();b.bp_set(p['labels'][point],condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_clear_all();b.bp_set(p['labels'][point],condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
                 r=original()
-                if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(0x2000)==0xffff,'Fairness fixture stopped early')
+                if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(adapter.STATE)==0xffff,'Fairness fixture stopped early')
                 return r
             b.regs=regs
             try:run_to(b,p['labels'][point],9000,180,condition)
@@ -114,7 +115,7 @@ def run(out,mode,from_build=None):
             b.bp_clear_all()
         try:runtime,_=execute(b,p,before_run=before,timeout=300,frame_limit=15000)
         except Exception:
-            print('Fairness phase/checks/status',data(b,p['image'],'phase'),data(b,p['image'],'checks',True),hex(b.peek16(0x2000)),flush=True);raise
+            print('Fairness phase/checks/status',data(b,p['image'],'phase'),data(b,p['image'],'checks',True),hex(b.peek16(adapter.STATE)),flush=True);raise
         b.profile_stop();require(runtime['created']==7,'Unexpected Task creation')
         require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'OS console ownership restoration')
         ownership(b,p,p['output']);require(sha256(media)==media_hash,'Media changed')

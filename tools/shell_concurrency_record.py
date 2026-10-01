@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Freeze the resident shell's capacity, payload, replay and timing evidence."""
+from image_data_usage import used as image_data_used
 import argparse
 import json
 from pathlib import Path
@@ -178,8 +179,7 @@ def collect(out):
             r['inputs'][path] = digest
         require(sha256(p.parent/'program.xex') == b['xex_sha256'], 'Image changed after execution')
         image = json.loads((p.parent/'program.a816.json').read_text())
-        near = sum(len(s['bytes']) for s in image['segments'] if 0x8800 <= s['address'] < 0x9000)
-        near += sum(s['size'] for s in image['zero_fill'] if 0x8800 <= s['address'] < 0x9000)
+        near=image_data_used(image,b['memory'])
         trace = p.parent/'observed/trace.log'
         r['cases'].append(dict(name=name, compiler_revision=b['revision'], override=b['override'], optimize=b['optimize'],
             kernel_bank=b['memory']['constants']['KERNEL_BANK'], task_capacity=b['memory']['task_capacity'],

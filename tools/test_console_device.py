@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Execute console requests through the public Exec device API."""
+import adapter_state as adapter
 import argparse,json
 import generate_tasks
 from pathlib import Path
@@ -41,11 +42,11 @@ def run(t,out,optimize,paced=False):
                 current=original()
                 pc=int(current['PC'].lstrip('$'),16)
                 if pc in (p['labels']['done'],p['labels']['done']+2):
-                    status=b.peek16(0x2000)
+                    status=b.peek16(adapter.STATE)
                     require(status==0xffff,f'Console stopped before input checkpoint: ${status:04x}')
                 return current
             b.regs=regs
-            b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             try:run_to(b,p['labels']['native_nmi'],frame_limit=frames,timeout=seconds,condition=condition)
             finally:b.regs=original
         def before(b):
@@ -71,7 +72,7 @@ def run(t,out,optimize,paced=False):
         try:runtime,_=execute(b,p,before_run=before,timeout=240,frame_limit=12000)
         except Exception:
             print('Device checks',data(b,p['image'],'checks',True),'phase',data(b,p['image'],'phase'),flush=True)
-            print('Native status',b.memdump(0x2000,64).hex(),flush=True);raise
+            print('Native status',b.memdump(adapter.STATE,64).hex(),flush=True);raise
         b._cmd_ok('KEY ALL up')
         require(saved==hw(),'Console hardware not restored')
         ownership(b,p,out)

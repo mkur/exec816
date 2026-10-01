@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Real keyboard break delivery without Read, retained routes and overflow."""
+import adapter_state as adapter
 import argparse,json,os,hashlib
 from pathlib import Path
 from native_program import ROOT,build,compiler,require,verify_machine,sha256
@@ -46,12 +47,12 @@ def run(out,optimize,bank,publication=False,removal=False,trace=False):
         capture=p['build']['memory']['console_storage']['CAPTURE']
         def rendezvous(condition):
             b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition)
-            b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
                 r=original()
                 if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):
-                    require(b.peek16(0x2000)==0xffff,'Foreground fixture stopped before checkpoint; checks='+str(b.peek16(at('checks')))+' status='+hex(b.peek16(0x2000)))
+                    require(b.peek16(adapter.STATE)==0xffff,'Foreground fixture stopped before checkpoint; checks='+str(b.peek16(at('checks')))+' status='+hex(b.peek16(adapter.STATE)))
                 return r
             b.regs=regs
             try:run_to(b,p['labels']['native_nmi'],12000,240,condition)
@@ -78,13 +79,13 @@ def run(out,optimize,bank,publication=False,removal=False,trace=False):
             if publication:
                 b.poke(at('publicationMode'),1)
                 rendezvous(f'db(${at("publishStage"):x})=1')
-                race.update(nmi_before=b.peek16(0x2002),irq_before=b.peek16(0x2004),half_route=b.eval_expr(f'dw(${capture+28:x})')+(b.eval_expr(f'dw(${capture+30:x})')<<16))
+                race.update(nmi_before=b.peek16(adapter.NMI_COUNT),irq_before=b.peek16(adapter.IRQ_COUNT),half_route=b.eval_expr(f'dw(${capture+28:x})')+(b.eval_expr(f'dw(${capture+30:x})')<<16))
                 down(False)
                 frames(2)
-                require(b.peek16(0x2002)>=race['nmi_before']+2,'NMI did not enter split publication')
-                require(b.peek16(0x2004)==race['irq_before'],'IRQ observed a split route')
+                require(b.peek16(adapter.NMI_COUNT)>=race['nmi_before']+2,'NMI did not enter split publication')
+                require(b.peek16(adapter.IRQ_COUNT)==race['irq_before'],'IRQ observed a split route')
                 require(b.eval_expr(f'db(${capture+40:x})')==0,'Split route published break')
-                race.update(nmi_after=b.peek16(0x2002),irq_after=b.peek16(0x2004))
+                race.update(nmi_after=b.peek16(adapter.NMI_COUNT),irq_after=b.peek16(adapter.IRQ_COUNT))
                 b.poke(at('publishGate'),1)
                 phase(20)
                 scope=int.from_bytes(b.memdump(at('scope'),3),'little')

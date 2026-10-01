@@ -41,7 +41,7 @@ class CapacityPackaging(unittest.TestCase):
         c=storage(m)
         self.assertEqual((c['CAPACITY'],c['IDLE'],c['PUBLIC_CONTEXT_BYTES'],c['METADATA_BYTES']),(8,8,512,1216))
         self.assertEqual(m['bank_zero_budget']['runtime_excluding_os'],24672)
-        self.assertEqual(m['bank_zero_budget']['loading_excluding_os'],20368)
+        self.assertEqual(m['bank_zero_budget']['loading_excluding_os'],22416)
         self.assertTrue(all(p['dp_reserved_bytes']==512 for p in pools))
 
     def test_invalid_or_oversized_pools(self):

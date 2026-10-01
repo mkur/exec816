@@ -7,6 +7,7 @@ from native_program import ROOT, require, sha256
 from os_boundary import run_to
 from test_demo import run as run_demo
 from test_of816 import PIN, check_boot_guards, check_exit, enter_forth, press, screen_text
+from test_vbxe_aperture import PATTERN
 
 
 def run(output, record, program):
@@ -18,13 +19,19 @@ def run(output, record, program):
     labels = record['labels']
     report = dict(status='running',tier='development',boot=record,pin=PIN,cases=[],
                   inputs={str(path.relative_to(ROOT)):sha256(path) for path in
-                          (Path(__file__),ROOT/'tools/test_of816.py',ROOT/'tools/test_demo.py')})
+                          (Path(__file__),ROOT/'tools/test_of816.py',ROOT/'tools/test_demo.py',
+                           ROOT/'tools/test_vbxe_aperture.py')})
     try:
         for manual in (False, True):
             case = dict(route='forth-command' if manual else 'autoboot')
 
             def bootstrap(bridge, native):
                 bridge.boot(str(output/'Exec-of816.xex'))
+                first=native['labels']['loader_init']
+                bridge.bp_set(first)
+                run_to(bridge,first,3000,90)
+                bridge.bp_clear_all()
+                bridge.memload(0x8000,PATTERN)
                 bridge.bp_set(labels['of_start'])
                 run_to(bridge,labels['of_start'],3000,90)
                 bridge.bp_clear_all()
@@ -87,7 +94,8 @@ def run(output, record, program):
             # stack/domain guard and OS restoration checks after native startup.
             case['shell'] = run_demo(bundle,boot_smoke=True,bootstrap=bootstrap,
                                      media_path=output/media['name'],expected_cache=128 if manual else 512,
-                                     system_drive=2 if manual else 1)
+                                     system_drive=2 if manual else 1,retire_manifest=True,
+                                     aperture_pattern=PATTERN)
             screenshot = case['route']+'-shell.png'
             shutil.copyfile(bundle/'boot-smoke.png',output/screenshot)
             case['screenshot'] = dict(name=screenshot,sha256=sha256(output/screenshot))

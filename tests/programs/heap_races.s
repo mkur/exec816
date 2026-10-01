@@ -47,16 +47,16 @@ relevant_pointer:
     bne :+
     rtl
 :
-    lda f:$2024
+    lda f:E816_SWITCHING
     and #$ff
     cmp #1
     jne failed
     tdc
     cmp #$2600
     jne failed
-    lda f:$2034
+    lda f:E816_VBI_COUNT
     sta $00
-    lda f:$2004
+    lda f:E816_IRQ_COUNT
     sta $02
     lda f:WAKES
     sta $04
@@ -96,9 +96,9 @@ native_dequeue:
     and #$ff
     cmp #1
     jne failed
-    lda f:$2034
+    lda f:E816_VBI_COUNT
     sta 1
-    lda f:$2004
+    lda f:E816_IRQ_COUNT
     sta 3
     lda f:WAKES
     sta 5
@@ -147,10 +147,10 @@ hardware_wait:
     rep #$20
 wait_entries:
     wai
-    lda f:$2004
+    lda f:E816_IRQ_COUNT
     cmp $02
     beq wait_entries
-    lda f:$2034
+    lda f:E816_VBI_COUNT
     cmp $00
     beq wait_entries
     lda f:WAKES             ; the IRQ/NMI must not enter Task policy here

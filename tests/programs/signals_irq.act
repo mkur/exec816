@@ -5,13 +5,14 @@ USE EXECTASKS
 USE EXECSIGNALIRQ
 USE PRODUCERPROBE
 USE TASKSTACKS
+INCLUDE "../../lib/exec/exec-abi.inc"
 
 EXEC.Task worker
 EXEC.Task POINTER parent
 VOLATILE BYTE mask=$10,irqen=$d20e,skctl=$d20f,skshadow=$232,nmien=$d40e
 VOLATILE BYTE freq3=$d204,vol3=$d205,freq4=$d206,vol4=$d207,audctl=$d208,
     stimer=$d209,skreset=$d20a,serout=$d20d
-VOLATILE CARD ticks=$2034
+VOLATILE CARD ticks=E816_VBI_COUNT
 VOLATILE BYTE phase
 BYTE variant,oldsk
 CARD ARRAY checks(8)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Focused native tiled-screen, captured focus, break and loss isolation checks."""
+import adapter_state as adapter
 import argparse,hashlib,json
 from pathlib import Path
 from native_program import ROOT,build,compiler,require,verify_machine,sha256
@@ -34,12 +35,12 @@ def run(out,mode,bank):
         capture=p['build']['memory']['console_storage']['CAPTURE']
         def rendezvous(condition):
             b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition)
-            b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
                 r=original()
                 if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):
-                    require(b.peek16(0x2000)==0xffff,'Focus fixture stopped before checkpoint')
+                    require(b.peek16(adapter.STATE)==0xffff,'Focus fixture stopped before checkpoint')
                 return r
             b.regs=regs
             try:run_to(b,p['labels']['native_nmi'],3000,60,condition)
@@ -71,7 +72,7 @@ def run(out,mode,bank):
             b.bp_clear_all()
         try:runtime,_=execute(b,p,before_run=before,timeout=180,frame_limit=9000)
         except Exception:
-            print('Focus checks/phase/status',data(b,p['image'],'checks',True),data(b,p['image'],'phase'),hex(b.peek16(0x2000)),flush=True);raise
+            print('Focus checks/phase/status',data(b,p['image'],'checks',True),data(b,p['image'],'phase'),hex(b.peek16(adapter.STATE)),flush=True);raise
         require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'OS screen/input restoration')
         require(runtime['kernel_stack_observation']['interrupt_reserve_bytes_touched']==0,'Kernel interrupt reserve touched')
         ownership(b,p,out)

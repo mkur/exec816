@@ -1,4 +1,5 @@
 """Actual capacity pressure on FS admission and the dependent SIO admission."""
+import adapter_state as adapter
 import argparse,json,shutil
 from pathlib import Path
 from native_program import ROOT,build,compiler,verify_machine,sha256,require
@@ -17,7 +18,7 @@ def run(t,out,mode,count):
                 at=next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_DOSCAPTEST_'+name+'_'));b.memload(at,(value&((1<<(size*8))-1)).to_bytes(size,'little'))
         try:runtime,_=execute(b,p,before_run=before_run,timeout=240,frame_limit=12000)
         except Exception:
-            print('native state',b.memdump(0x2000,64).hex(),'checks',data(b,p['image'],'checks',True),flush=True)
+            print('native state',b.memdump(adapter.STATE,64).hex(),'checks',data(b,p['image'],'checks',True),flush=True)
             for i,pool in enumerate(p['build']['memory']['task_pools']):(out/f'fault-stack-{i}.bin').write_bytes(b.memdump(pool['stack_base'],pool.get('stack_bytes',1536)))
             raise
         ownership(b,p,out);require(sha256(media)==old,'Media changed')

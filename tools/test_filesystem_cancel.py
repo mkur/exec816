@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Cancel queued filesystem packets while a 70,003-byte peer Read continues."""
+import adapter_state as adapter
 from library_paths import library_file, read_source
 import argparse,json,shutil
 from pathlib import Path
@@ -29,13 +30,13 @@ def run(out,optimize,bank,reuse=False):
         def far(a,n):return bytes(b.eval_expr(f'db(${a+i:x})') for i in range(n))
         def pointer(a):return int.from_bytes(far(a,3),'little')
         def rendezvous(condition):
-            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
                 r=original()
                 if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):
-                    if b.peek16(0x2000)!=0xffff:print('Failure state',{n:far(at(n),32 if n in ('results','errors') else 4).hex() for n in (('phase','done','round','results','errors') if reuse else ('phase','bigDone','orderedDone','orderCount','order','orderedBytes','results','errors'))},flush=True)
-                    require(b.peek16(0x2000)==0xffff,'Filesystem cancel stopped: '+hex(b.peek16(0x2000))+' checks='+str(b.peek16(at('checks'))))
+                    if b.peek16(adapter.STATE)!=0xffff:print('Failure state',{n:far(at(n),32 if n in ('results','errors') else 4).hex() for n in (('phase','done','round','results','errors') if reuse else ('phase','bigDone','orderedDone','orderCount','order','orderedBytes','results','errors'))},flush=True)
+                    require(b.peek16(adapter.STATE)==0xffff,'Filesystem cancel stopped: '+hex(b.peek16(adapter.STATE))+' checks='+str(b.peek16(at('checks'))))
                 return r
             b.regs=regs
             try:run_to(b,p['labels']['native_nmi'],60000,1200,condition)

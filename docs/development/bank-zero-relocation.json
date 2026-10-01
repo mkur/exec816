@@ -1,0 +1,780 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-01",
+  "status": "pass",
+  "tier": "development",
+  "base_revision": "477f091e8725d22cc57c270f0673b8220fc8c0ef",
+  "source_state": "Uncommitted implementation; exact inputs below. Historical qualification records retained.",
+  "scope": [
+    "Adapter state at $0800, original MEMLO checked before first state write",
+    "Ordinary compiled globals in a bounded upper arena after resident metadata",
+    "Manifest retired after successful memory/Task/boot-setting initialization and before dispatch"
+  ],
+  "inputs": {
+    "abi/exec816-v1.json": "31889fa8a23568f6900749c104d1f1e85391628ba790a75c8d56379f8e2709b0",
+    "abi/memory-v1.json": "d5124292508efc7b3bb61ec8d397cc36c4107a08468736ee143008f499512303",
+    "lib/exec/adapter-state.inc": "28b517b168bb6be70d1061ea2f44d039f7a647642aa03c50a39ee2677d4428c2",
+    "lib/exec/exec-abi.inc": "2672d5ccb28a71b16564ed1cac6e00b60071a1e2ca04837f0c87d454191a9ac9",
+    "lib/exec/execmemory.act": "71c6f74bdc4d8e5c88d43959cac876b6efab91b244356d92dd6adf03d8e05f65",
+    "lib/exec/execos.act": "1a3c4b659c674e38a7fc2a93c67a1dbc8a30fe8c4f71fba51cb1a726317bc12a",
+    "lib/exec/execpolicy.act": "03a8646bc9b1f511fd816807400c45f185790138d9065e124d41454d3536e07f",
+    "lib/exec/taskpolicy.act": "462b1e50e144a6e2e6a23cad2b3352bb3f358c1719cde87ab57ca0aff50feaa6",
+    "platform/altirraos/exec-abi.inc": "f0cc0300b65c19336d510b4d60f22146c5f2f0d20411f5a97388e8d16a376899",
+    "platform/altirraos/hosted.s": "b0cb96c0eae89339010131229b51a9cb30eb23631b67edc83fdcf4cb996db481",
+    "platform/altirraos/layout.inc": "1fd7cf5892c16227a8e3c872fef65c286cd533b4e169dba0d9d02e3453da9c49",
+    "platform/altirraos/memory-1m.json": "56332fc3bcefff82ee95e64c4994bab65ef9eb1c0d44481f7f940afe3279c115",
+    "tests/programs/cooperative_pending.act": "38a1850fc3d17d734b8951d369194e690c1d83696b91bf870d756ee458b00e05",
+    "tests/programs/create_task.act": "a8785b66a34f11f6743e81a419bfbc973f5c1ddffe9ac7a64d223a1b94ff14c6",
+    "tests/programs/dp_partition.act": "59302a685a9eda00df7f831bb399c7db0dc0d50aa9a990e1be7d9a9953da74a3",
+    "tests/programs/heap_policy.act": "7bdd9a89cdaf245fdb7cc46cf4cac04a0a39523121f972a95929465c6b7f3a86",
+    "tests/programs/heap_races.s": "5c156b12e440905112388457d4a509a61476de8cab1814ce42412e81cc3a6456",
+    "tests/programs/io_context.s": "3357b6d6bb8cfc7f21cfe60a224bff6d657780240d7d8c9b72011f31ea18657f",
+    "tests/programs/lists_probe.act": "17a9474ea4d5615b25f7c582878ea698f2f1a682454f8a42ff2eaaef1c6c78a6",
+    "tests/programs/memory_relocation.act": "992168f2c3d7a7f9e791705c072d2cea02fb5470ed8f78ea3c8a4e58be3dd439",
+    "tests/programs/preemptive_locks.act": "adbe2e328c22e87928cc10a6a66118ced772f3f60fa5efb07874387bb4644105",
+    "tests/programs/signals_capacity.act": "e700128165414c058f5169905b512d34c902f32e58c04b855a9ee79c77a5f97e",
+    "tests/programs/signals_concurrent.act": "2353a1b4bae9916eb6b31f863bc664f41ed3c581684b2cd0802f558b3c583a62",
+    "tests/programs/signals_irq.act": "7d81b24263367e7b0d7208e9922ac57e847e69294b7fd23edf4f9bb6d9fddb83",
+    "tests/programs/signals_irq_targets.act": "28cc04e615e428631caff3a3e8eb74356949539ff716853047ff30f4e27f174c",
+    "tests/programs/signals_lifecycle.act": "937380c2ae0e313aae93568c7d3a927be1c0454a8abbbbef98399f10cbea5a3b",
+    "tests/programs/signals_pump.act": "a6728d31c77ff8c8649f428abd65ba641982fdd4af15326aa0acc201e22bfcc7",
+    "tests/programs/signals_queue.act": "8724cbe941d56fd2325b4068da2b2ba6ebe0c58c6e62368ed33f24487a4f8ce2",
+    "tests/programs/sio_lifetime.act": "b8aab9646c905b5df454832cf95fd94ec261a306a83a3b5569cc790693a52bd9",
+    "tests/programs/sio_recovery.act": "6d063daa021714d7d09f1c9dbb9b75817a8cf805da45e453e66fa301e67e28c4",
+    "tests/programs/sio_request_probe.inc": "c278ccdfdb0fc4735bb77454c844087602a97dbc8bb67cca978a546a644f109f",
+    "tests/programs/tasks_exec.act": "11534644bd731371fd6ba513f56d0d31c1e6e98e248bd6996134005727e6ddf7",
+    "tests/programs/tasks_exec_sleep.act": "71b53c0590b5671fb7c5ad3286e9282fdfa20b0a8b87669aa057345ca71fbc64",
+    "tests/programs/upper_bank_table.act": "896b1897c3bf8861cbbe13c7d76c14a8b6c6e608b4ad9c9490d541f7edfbc282",
+    "tests/test_banked_package.py": "118f458c7208fd3357849f466b921e343c26f60bd8c7fdd8056b31d4d27bee05",
+    "tests/test_capacity_package.py": "e55efc0166c2498a9cf436a9ffcb9a53885bb215a588467fed5d8ba871d16f5f",
+    "tests/test_memory_relocation_package.py": "28281db49927d1c9d883e517e1728c8b27da6d0ad2d95f62bf95795733569159",
+    "tools/adapter_state.py": "890bf80a867fc7157c23990371a47eb5a16d1521f5769fcce7b64f5bf5367a2d",
+    "tools/banked_image.py": "736423e4c65ecb9c3ce97f024c331ebc1ad153b6f91a02358c8fb683cd17eeb5",
+    "tools/bridge_memory.py": "a41510dd7a63e529303e0756932e7ec032051f6cda0930c18e38212b65355f67",
+    "tools/dos_directory_record.py": "e49d301fea98ce1082f154235a7594faa9ea1a27d29228a14ce1a26cf9c1763c",
+    "tools/dos_names_record.py": "068a3a98b0b29af31756b3926ad0fe9774638edb1a851d4978f60a1604077702",
+    "tools/dos_relative_record.py": "8b41eef1cbc9a3cc88699110bc28fd665e347ecc5aa204110e7111d9a3052c6b",
+    "tools/dos_streams_concurrency_record.py": "75a55043542f09654a6a5d8145235168ba34c4bb4fbd7930e3f7378f1b5fcfdc",
+    "tools/dos_streams_example_record.py": "de32cd042733acb21d1e72d16364ab4672538b54030b8ac4a21e2aff40ea9198",
+    "tools/dos_streams_lifetime_record.py": "2d2235ab8a6d6bd5fc9245b3d5672ccd88a761d50258723a8d2e782556f4ca7e",
+    "tools/dos_streams_record.py": "4a71862c5845677a6dba9e14648b9109e2329753fc563b2dd4db960aba7371fc",
+    "tools/generate_exec_abi.py": "f746d09daa343e3f8c266aaafadd1dc7d96b8e2bc95529ef4614de1a2df525b9",
+    "tools/generate_io.py": "1453db30e13702345f7e449fc512d257d3ca529b23cef4d9207f67533e110f88",
+    "tools/generate_memory.py": "e4d61d9ff2dc0c07cd5c3386af2efb9b952500da937e8194864274c497ee0e80",
+    "tools/generate_tasks.py": "53938c23b4ea8bcf0cc0b75b0eecc0875b735fa78860adb9b599f12e323c7408",
+    "tools/image_data_usage.py": "25859710cbce328068944b44a8d440c4bd1f70cfd5731da5cb0c7ac1c813908f",
+    "tools/measure_command_loading.py": "44c317cd9b53cb35e2c1f44963548447c2c5869287f00a4206303a534b6a451e",
+    "tools/native_program.py": "ee091e8a2c157ed2e8b4bb20a511d3827d66967731f478bf4bc54e7b277344c5",
+    "tools/os_boundary.py": "fc8b02eb8bd124fffd09b62a0833be019a9abf1a2fb39524be4f13e9c6d562cc",
+    "tools/ports_budget.py": "963772ea4f0ffa7418aa13fa28ce60eaf60c537ad710fb1a16d344aecac05390",
+    "tools/shell_commands_record.py": "673d8e7e9e17d8cfa9934b12efc5f29ae7b460727d63ec648c36d99517cc3970",
+    "tools/shell_concurrency_record.py": "4275027edf035a1edf63cccc3ab0e044b56574bc7fd3f32e8ca3aee4d6837b47",
+    "tools/shell_core_record.py": "476dd3e5078d9006ed5bb635e5c9f90fa0f13a3dee77edecf408bae1bfe47e6d",
+    "tools/shell_lifetime_record.py": "9d2e9d3cccc68266bbe317f2cf4d17dcf848ad25903a787657b56673425712f7",
+    "tools/shell_redirection_record.py": "89bab82fe350c2e07cac666da0a38d5f941f6ef9f5aa124282384447029b7f40",
+    "tools/task_capacity.py": "dbbaf43e2a06a048df48ab50974ea54292243a80cd9c82ceba320e4012863b70",
+    "tools/test_banked.py": "9c8c153b2ed9f0ae92a0977e6d375e7df756a636605d6de3ebd88ce0f477841e",
+    "tools/test_calypsi.py": "4eb17200be058775028b9a5f6e4990b0e8c236953f29d97ea9902a01bda285ad",
+    "tools/test_console_cancel.py": "7fd7a61b9f45d36ad954b0ae4a784a962fc93a51f57342da2f8b582542e1c6c8",
+    "tools/test_console_coexistence.py": "bac0a16643cfb031b8303f07dc20848562d331baffefc50f367a75b77855cae5",
+    "tools/test_console_concurrent.py": "ccd2f715e41f20948f52921f206467169193cb1e614688b0af604536a56b6948",
+    "tools/test_console_device.py": "68fdf5fa9d217060c9c2ba8b8fde3f49966e658408e0414e74f59c25000aa43d",
+    "tools/test_console_display.py": "daa47fd11b60b0f798b861c9251f1f787d933fe85be2a04f0a642c17d4e6953d",
+    "tools/test_console_dos.py": "08f504ad8145b80cf230ed757b7d26b2265dd1fe1180c814f722c69bafa540dc",
+    "tools/test_console_fairness.py": "9e58451c5af3edcdce71fdbe51ebceb762d6843a72cd7e71f21ba60b52f6f26b",
+    "tools/test_console_focus.py": "babe51e3736f83978cfe960c9706007fe073af2dc22b2a7146baa156f925a257",
+    "tools/test_console_lifetime.py": "42be7277b9a5cae417fc1a1da18a600ad01d32af8c60d90f33410f212a7ac817",
+    "tools/test_console_tx.py": "422e241bc90f46f7802fa59555fc09453590f228f80cf9b4c2947d1a4baa3fff",
+    "tools/test_cooperative.py": "fa31d9877d1c1839bb251031bd6fb7483983d70566cf6f5fd2342901369ffd06",
+    "tools/test_demo.py": "0c4c5c6f8e7d6dbcbd7c0f91099e27c219560736ec8682342e6b56b100fc60e2",
+    "tools/test_demo_console.py": "735073be8902ab7de3919f99575caaea78befdd2e6b0cdbae162bf790f4ed103",
+    "tools/test_dos_capacity.py": "b0659dc543f5481ca1a4bb3ad805476210016c2869e9c3786a7152b6fa2817ef",
+    "tools/test_dos_concurrent.py": "4822d90e3086028899217992afb78fa14a9e9a0500427d5ef5b6bd42a37cf80a",
+    "tools/test_dos_cooked.py": "6de5b9d9fa669f47d922b82540d2d76943f5c4115723391b34aa6f85e71ebc44",
+    "tools/test_dos_directories.py": "20a57dfb80834cf479e66d322b0c221f923948caa93580e19efd9334b43f9348",
+    "tools/test_dos_lifetime.py": "4f0780bddc25c529e0d7f2a9cb7a02115563992485b5f147dfac659e50d4fc66",
+    "tools/test_dos_offline.py": "206238916da6902f9d466050e3d896fab26db88f0591d8ed7aec15d9f0328843",
+    "tools/test_dos_stack.py": "4b996f4dd166ce51f2c2fd807e20aa438ec25534933c1338fb346d6534ff4476",
+    "tools/test_dos_startup.py": "d8f632d98333819f4ed14196c360cbfcff75286182cebdc5d6df1844bd6d3334",
+    "tools/test_dos_streams.py": "ac691c2ee55e5dbbb28d5d60c36d1bd30f758a01bcce75bb9900c68132935ede",
+    "tools/test_dos_streams_example.py": "0d64be254b5e50abdbd5692c4159dea587db7c43372ffc54ac1f3988a0f0909e",
+    "tools/test_dos_streams_raw.py": "696e711d77a115217cf2a7eaa99d912f2e3141472ee146c97cc5b61ba364f025",
+    "tools/test_filesystem_cancel.py": "90902fff26119bc9a8be38faa4d12195b58272cc75b1d43db1be5c24aacbf46b",
+    "tools/test_foreground_break.py": "4e77c4bec38563a0ae541de469b6bf53ce074f6ddd552a3ef68a33374bc9dcc9",
+    "tools/test_heap_concurrent.py": "af52a3f30db7e09935542993a91b9036ddfe8f600c11f50f3b13b633541418a5",
+    "tools/test_heap_policy.py": "35dfe7ef7e5bb0233840597286be0d0151811aff0a5c282e698fb31d539cc92d",
+    "tools/test_memory_relocation.py": "75310349aac0c344daa46d5d71eca8238d7be0586b1a078b57e6e77473390ef2",
+    "tools/test_mydos.py": "870a9908b3044f4e77abd4a8326ae2329d9b33dc68df0f298ef83e292e5287ae",
+    "tools/test_mydos_files.py": "9e0b322b0cc224a8b0c11460d7cbf49456bbf0c218b5b7c8350505f4f4fc8b0e",
+    "tools/test_of816_shell.py": "8a7e49e0cd2a36283ffa8c10b104533399f1d5d06179062981df46a2a4ae36e1",
+    "tools/test_preemptive.py": "e99cf2628170bcec0e259f977fc023e7efa8d93fa7350a15235e520afe428790",
+    "tools/test_process_inheritance.py": "da5aea96956eb1ca094b633477a851cad07a4c4bd5f74be96f8c24dbb0aea09c",
+    "tools/test_process_lifetime.py": "ad6d76192411a6e51dc95f92353a0570e9c754627d13e01c31abf5eef7f0c4f8",
+    "tools/test_shell_break.py": "540e34ebfbac8413b72013b1d7899a64e18ae6e5cc42e2f5a3f9b97a5452d23f",
+    "tools/test_shell_concurrent.py": "e5a3b6f20397446ed55f0d6dff045fd213c2bcf1f1fb0b9b30604ae67aaf4170",
+    "tools/test_shell_core.py": "691d39c411ba70d8724be82e10aa0ad7f820fa9669ceaf3d6cd3472ba16f62b4",
+    "tools/test_shell_entry.py": "6b357934630c9eceda8cb78c259ac7aee40efb772f8be9d9592b578a809a6a61",
+    "tools/test_signals.py": "e7a7be9fcb56158e0cb4d1a281a45648b309f2a671f95fc7e0ea3153aaace511",
+    "tools/test_task_capacity.py": "345777a45af2550cec48ca0d71d4e954ccb51b12ebcf28fa91d04c349f70947c",
+    "tools/test_tasks_exec.py": "1e42b7946ade55cee5264b3969d005621a9de987c4c2e852be79588f5006c51b"
+  },
+  "compiler": {
+    "revision": "27119ab2804e795b0bbb067c269826b934271754",
+    "override": false,
+    "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "pins": {
+    "relocation_and_tasks": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      }
+    },
+    "of816": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ]
+    }
+  },
+  "bank_zero": {
+    "before": {
+      "four": {
+        "fixed_runtime": 11824,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 21104,
+        "runtime_including_os": 57968,
+        "loading_excluding_os": 21696,
+        "loading_including_os": 58560
+      },
+      "eight": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 61536,
+        "loading_including_os": 57232
+      }
+    },
+    "after": {
+      "four": {
+        "fixed_runtime": 7728,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 17008,
+        "runtime_including_os": 47728,
+        "loading_excluding_os": 19648,
+        "loading_including_os": 50368
+      },
+      "eight": {
+        "fixed_runtime": 6464,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 20576,
+        "loading_excluding_os": 18320,
+        "runtime_including_os": 51296,
+        "loading_including_os": 49040
+      }
+    },
+    "fixed_delta": -10240,
+    "per_task_delta": 0,
+    "diagnostic_delta": 0,
+    "accounting": "Generated maps; full guards, table slack and retained legacy contexts; unchanged pools."
+  },
+  "reservation_deltas": {
+    "os_fixed": -6144,
+    "exec_runtime_fixed": -4096,
+    "total_runtime_fixed": -10240,
+    "total_loading_fixed": -8192,
+    "per_task": 0,
+    "manifest_loading_delta": 0
+  },
+  "globals": {
+    "address": 68608,
+    "size": 2048,
+    "used": 1483,
+    "alignment_bytes": 172,
+    "code_origin": 70656,
+    "upper_reservation_delta": 2220,
+    "occupied_code_banks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      15
+    ],
+    "occupied_code_bank_delta": 0
+  },
+  "rom_console": {
+    "local_stack_peak": 266,
+    "temporary_caller_stack_delta": 256,
+    "fixed_bank_zero_delta": 0,
+    "per_task_reservation_delta": 0,
+    "max_bytes": 255
+  },
+  "retirement": {
+    "address": 11299,
+    "value": 1,
+    "boundary": "startup_complete",
+    "ranges": [
+      "manifest"
+    ]
+  },
+  "validation": {
+    "host": {
+      "tests": 248,
+      "skipped": 4,
+      "result": "pass",
+      "skip_reason": "Unavailable historical compiler commits in this checkout",
+      "log": {
+        "path": "build/relocation-host-tests.log",
+        "sha256": "158e7217236ba3790fc41b4f80b57d0c953252e29f0b879d1f3d340ce3233e8e"
+      }
+    },
+    "generated": [
+      "generate_exec_abi.py --check",
+      "generate_tasks.py --check",
+      "generate_io.py --check"
+    ],
+    "relocation": {
+      "report": {
+        "path": "build/memory-relocation/results.json",
+        "sha256": "8c9deb075c1de1a49735578269e3ec17f7e9b37afdc80985eb4ed01bdb69f187"
+      },
+      "cases": [
+        {
+          "name": "raw",
+          "checks": 278,
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 5,
+            "native_irq_count": 0,
+            "os_busy": 0,
+            "return_s": 18430,
+            "return_d": 8704,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "clock_start": 39,
+            "clock_end": 45,
+            "return_dbr": 0,
+            "return_e": 0,
+            "current": 8,
+            "switching": 0,
+            "switches": 7,
+            "gateway_calls": 22,
+            "os_calls": 2,
+            "forwarded_cops": 2,
+            "os_owner": 255,
+            "tick_pending": 0,
+            "vbi_count": 6,
+            "vbi_dispatches": 2,
+            "irq_depth": 0,
+            "live_tasks": 0,
+            "idle_runs": 3,
+            "created": 1,
+            "signal_nmi_checkpoints": 0,
+            "guards": "intact"
+          },
+          "image_sha256": "7317e11a627ec35a0f2dc1a14f9546581ca394bb7e11b797ee9c085d760ee4c1",
+          "xex_sha256": "eea8758ca7314a2b52b8c50b5cb709d198b5920ec41b99053b41a8d463dd557d",
+          "far_stimuli": [
+            "bootstrap",
+            "native-nmi"
+          ]
+        },
+        {
+          "name": "opt",
+          "checks": 278,
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 5,
+            "native_irq_count": 0,
+            "os_busy": 0,
+            "return_s": 18430,
+            "return_d": 8704,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "clock_start": 37,
+            "clock_end": 43,
+            "return_dbr": 0,
+            "return_e": 0,
+            "current": 8,
+            "switching": 0,
+            "switches": 7,
+            "gateway_calls": 22,
+            "os_calls": 2,
+            "forwarded_cops": 2,
+            "os_owner": 255,
+            "tick_pending": 0,
+            "vbi_count": 6,
+            "vbi_dispatches": 3,
+            "irq_depth": 0,
+            "live_tasks": 0,
+            "idle_runs": 3,
+            "created": 1,
+            "signal_nmi_checkpoints": 0,
+            "guards": "intact"
+          },
+          "image_sha256": "31283278c6509abe17cdf187330ec948e51df39bc5c33af95267feac2285d97c",
+          "xex_sha256": "2e1dfe443c6c0e8ad46ba8583ba18bc261092513678006fd765eed166ad507dc",
+          "far_stimuli": [
+            "bootstrap",
+            "native-nmi"
+          ]
+        },
+        {
+          "name": "nmi-stack",
+          "checks": 278,
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 7,
+            "native_irq_count": 0,
+            "os_busy": 0,
+            "return_s": 18430,
+            "return_d": 8704,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "clock_start": 34,
+            "clock_end": 41,
+            "return_dbr": 0,
+            "return_e": 0,
+            "current": 8,
+            "switching": 0,
+            "switches": 7,
+            "gateway_calls": 22,
+            "os_calls": 2,
+            "forwarded_cops": 2,
+            "os_owner": 255,
+            "tick_pending": 0,
+            "vbi_count": 7,
+            "vbi_dispatches": 2,
+            "irq_depth": 0,
+            "live_tasks": 0,
+            "idle_runs": 3,
+            "created": 1,
+            "signal_nmi_checkpoints": 0,
+            "guards": "intact"
+          },
+          "image_sha256": "6d8560b882ddb36d531e4c08ce241e29e4b0f50699edc4b79d587c6b67367dee",
+          "xex_sha256": "fd71b05942453c83df787191da808e1e66e628a5e6da9667ca7d39816714cb61",
+          "far_stimuli": [
+            "bootstrap",
+            "native-nmi"
+          ]
+        }
+      ],
+      "rejected": [
+        "loader-memlo-0801",
+        "hosted-memlo-0801",
+        "invalid-first-adoption",
+        "direct-xex-memlo-0801"
+      ],
+      "fresh_cold_boot": true,
+      "direct_memlo_0800": true,
+      "retired_ranges": [
+        "$2000-$20ff",
+        "$8800-$8fff",
+        "$6000-$67ff"
+      ]
+    },
+    "tasks": {
+      "report": {
+        "path": "build/relocation-tasks/results.json",
+        "sha256": "c8a4694e2c0b62afb84a371a17756a7fcdde076208a0b869253116ec3ef480f2"
+      },
+      "cases": [
+        {
+          "name": "core-raw",
+          "status": "pass",
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 4,
+            "native_irq_count": 0,
+            "os_busy": 0,
+            "return_s": 18430,
+            "return_d": 8704,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "clock_start": 38,
+            "clock_end": 42,
+            "return_dbr": 0,
+            "return_e": 0,
+            "current": 4,
+            "switching": 0,
+            "switches": 8,
+            "gateway_calls": 20,
+            "os_calls": 1,
+            "forwarded_cops": 1,
+            "os_owner": 255,
+            "tick_pending": 0,
+            "vbi_count": 4,
+            "vbi_dispatches": 1,
+            "irq_depth": 0,
+            "live_tasks": 0,
+            "idle_runs": 2,
+            "created": 3,
+            "signal_nmi_checkpoints": 0,
+            "guards": "intact"
+          }
+        },
+        {
+          "name": "core-opt",
+          "status": "pass",
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 4,
+            "native_irq_count": 0,
+            "os_busy": 0,
+            "return_s": 18430,
+            "return_d": 8704,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "clock_start": 37,
+            "clock_end": 41,
+            "return_dbr": 0,
+            "return_e": 0,
+            "current": 4,
+            "switching": 0,
+            "switches": 8,
+            "gateway_calls": 20,
+            "os_calls": 1,
+            "forwarded_cops": 1,
+            "os_owner": 255,
+            "tick_pending": 0,
+            "vbi_count": 4,
+            "vbi_dispatches": 1,
+            "irq_depth": 0,
+            "live_tasks": 0,
+            "idle_runs": 2,
+            "created": 3,
+            "signal_nmi_checkpoints": 0,
+            "guards": "intact"
+          }
+        },
+        {
+          "name": "fault-0-opt",
+          "status": "pass",
+          "runtime": {
+            "status": 4,
+            "native_nmi_count": 0,
+            "native_irq_count": 0,
+            "os_busy": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "clock_start": 34,
+            "clock_end": 34,
+            "return_dbr": 0,
+            "return_e": 0,
+            "current": 0,
+            "switching": 1,
+            "switches": 0,
+            "gateway_calls": 1,
+            "os_calls": 0,
+            "forwarded_cops": 0,
+            "os_owner": 255,
+            "tick_pending": 0,
+            "vbi_count": 0,
+            "vbi_dispatches": 0,
+            "irq_depth": 0,
+            "live_tasks": 1,
+            "idle_runs": 0,
+            "created": 0,
+            "signal_nmi_checkpoints": 0,
+            "guards": "intact"
+          }
+        },
+        {
+          "name": "nmi-15-opt",
+          "status": "pass",
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 22,
+            "native_irq_count": 0,
+            "os_busy": 0,
+            "return_s": 18430,
+            "return_d": 8704,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "clock_start": 37,
+            "clock_end": 59,
+            "return_dbr": 0,
+            "return_e": 0,
+            "current": 4,
+            "switching": 0,
+            "switches": 9,
+            "gateway_calls": 20,
+            "os_calls": 1,
+            "forwarded_cops": 1,
+            "os_owner": 255,
+            "tick_pending": 1,
+            "vbi_count": 22,
+            "vbi_dispatches": 1,
+            "irq_depth": 0,
+            "live_tasks": 0,
+            "idle_runs": 1,
+            "created": 3,
+            "signal_nmi_checkpoints": 0,
+            "guards": "intact"
+          }
+        },
+        {
+          "name": "registers-c9-opt",
+          "status": "pass",
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 7,
+            "native_irq_count": 0,
+            "os_busy": 0,
+            "return_s": 18430,
+            "return_d": 8704,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "clock_start": 36,
+            "clock_end": 43,
+            "return_dbr": 0,
+            "return_e": 0,
+            "current": 4,
+            "switching": 0,
+            "switches": 12,
+            "gateway_calls": 33,
+            "os_calls": 1,
+            "forwarded_cops": 1,
+            "os_owner": 255,
+            "tick_pending": 0,
+            "vbi_count": 7,
+            "vbi_dispatches": 5,
+            "irq_depth": 0,
+            "live_tasks": 0,
+            "idle_runs": 2,
+            "created": 3,
+            "signal_nmi_checkpoints": 0,
+            "guards": "intact"
+          }
+        }
+      ]
+    },
+    "irq": {
+      "report": {
+        "path": "build/banked-tests/timer-irq-opt.json",
+        "sha256": "273c802b8a260adbe0c12d1615353bd0cd598320b2ad23a4bc9b7771dc47c8eb"
+      },
+      "cases": [
+        "timer-irq-opt"
+      ]
+    },
+    "of816": {
+      "report": {
+        "path": "build/relocation-demo/of816/results.json",
+        "sha256": "0f7774691dc1160bc7cca81e275379eb88c112dafca143fe80ef9745755be25c"
+      },
+      "routes": [
+        "autoboot",
+        "forth-command"
+      ],
+      "exit_cases": [
+        "bye",
+        "occupied-iocb"
+      ],
+      "five_second_autoboot": true,
+      "physical_shell_commands": true,
+      "cat_wc_pipeline": true,
+      "boot_settings_capture": true,
+      "guards_and_os_restoration": true,
+      "retired_manifest_poisoned_and_intact_on_both_routes": true
+    },
+    "manifest_consumer_audit": [
+      "platform/altirraos/loader.s: loading only",
+      "lib/exec/execmemory.act: initial adoption only; successful repeats return before validation"
+    ],
+    "zip": {
+      "archive": {
+        "path": "build/relocation-demo/exec816-demo.zip",
+        "sha256": "89ef0dc551db3726ac6baad1ffe20e34f9a31809ff6d91832710f2aed6021c07"
+      },
+      "crc": "pass",
+      "development_files_excluded": true
+    }
+  },
+  "artifacts": {
+    "build.json": {
+      "path": "build/relocation-demo/build.json",
+      "sha256": "4f41f23bee64e292faaa1d6dfa87ded5d468c6e50732fe540d76527ee8cd5a50"
+    },
+    "memory.json": {
+      "path": "build/relocation-demo/memory.json",
+      "sha256": "584876fc12ad81c6a35f1528141b361b39da47f431d32a5a360e62750cb5ee48"
+    },
+    "program.xex": {
+      "path": "build/relocation-demo/program.xex",
+      "sha256": "d05906fd48eb2bddef91434a087e77ef3c1a3a5a690c9353472e92481ed0f092"
+    },
+    "of816/Exec-of816.xex": {
+      "path": "build/relocation-demo/of816/Exec-of816.xex",
+      "sha256": "e57581ab5374998bc790b7646f574a3aeb5ac5c7f8b1b748323e96484c831e2b"
+    },
+    "system.atr": {
+      "path": "build/relocation-demo/system.atr",
+      "sha256": "1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2"
+    }
+  },
+  "limits": [
+    "Development checks do not qualify the full hosted system or real hardware.",
+    "No VBXE driver is integrated; existing stack reservations still overlap $8000-$82df.",
+    "Recovered bank-zero holes are unassigned, not automatically registered with the heap.",
+    "Pinned 16-bit access watchpoints alias upper-bank accesses. Stale-reader evidence uses full manifest poison, repeat calls and consumer audit instead of a hardware range watch.",
+    "Upper test writes temporarily mask NMI at paused bootstrap/IRQ-masked rendezvous; they are not interrupt qualification."
+  ],
+  "gem4xe_repository": "Unchanged; analysis remains outside ~/atari/gem4xe"
+}

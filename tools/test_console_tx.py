@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """TX refill/write turnaround with native display work and a physical key."""
+import adapter_state as adapter
 import argparse,json,os
 from pathlib import Path
 from native_program import ROOT,build,compiler,verify_machine,require,sha256
@@ -25,7 +26,7 @@ def run(out,optimize,toolchain=None):
             for key,value in PIN['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
             b.config('diskemu','fastest');machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN);b.mount(0,str(dest/'disk.atr'));actions=[];saved={}
             def rendezvous(point,condition):
-                b.bp_clear_all();b.bp_set(p['labels'][point],condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+                b.bp_clear_all();b.bp_set(p['labels'][point],condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
                 run_to(b,p['labels'][point],6000,120,condition)
             def before(b):
                 saved.update(at=b.peek16(88),cursor=b.peek(752),mask=b.peek(16));saved['screen']=b.memdump(saved['at'],960)

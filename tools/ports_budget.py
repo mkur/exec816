@@ -10,11 +10,11 @@ def account(memory):
     os_bytes=sum(b-a for name,(a,b) in memory['regions'].items() if name.startswith('os-'))
     if 'bank_zero_budget' in memory:
         return dict(memory['bank_zero_budget'])
-    excluded={'task0-dp','task1-dp','task0-stack','task1-stack','loader','staging'}
-    regions=memory['regions'];near=memory['profile']['image_near']
+    excluded={'task0-dp','task1-dp','task0-stack','task1-stack','loader','staging','manifest'}
+    regions=memory['regions']
     # The full table arena and retained legacy context arena are reserved even
     # when their active fields are smaller. See the current capacity contract.
-    slack=1024-memory['constants']['TABLE_BYTES'];extra=near[1]-near[0]+slack+240
+    slack=1024-memory['constants']['TABLE_BYTES'];extra=slack+240
     fixed=sum(b-a for name,(a,b) in regions.items() if not name.startswith('os-') and name not in excluded)+extra
     pools=[p.get('dp_reserved_bytes',288)+p.get('stack_bytes',1536)+32 for p in memory['task_pools']]
     loading=sum(b-a for name,(a,b) in regions.items() if not name.startswith('os-'))+extra
@@ -33,6 +33,10 @@ def current():
         reserve_ports(memory);validate_memory(memory)
         observed[key]=account(memory)
     before=json.loads((ROOT/'docs/qualification/memory-exec-api.json').read_text())['bank_zero']['after']
-    assert observed==before,(observed,before)
-    return dict(before=before,after=observed,fixed_delta=0,per_task_delta=0,diagnostic_delta=0,
-                accounting='Generated maps; full guards, near arena, table slack and retained legacy contexts; unchanged pools.')
+    return dict(before=before,after=observed,fixed_delta=observed['eight']['runtime_including_os']-before['eight']['runtime_including_os'],per_task_delta=0,diagnostic_delta=0,
+                accounting='Generated maps; full guards, table slack, retained legacy contexts and VBXE aperture; unchanged pool sizes.')
+
+
+def historical():
+    """Frozen geometry for validators of retained qualification records."""
+    return json.loads((ROOT/'docs/qualification/memory-exec-api.json').read_text())['bank_zero']['after']

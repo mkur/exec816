@@ -11,22 +11,28 @@ def configure(memory, capacity, worker_stack=1024, idle_stack=512):
     regions=memory['regions']
     fixed=[(a,b,name) for name,(a,b) in regions.items()
            if name not in ('table','task0-dp','task1-dp','task0-stack','task1-stack','loader','staging')]
-    fixed.append((*memory['profile']['image_near'],'near-image'))
     used=list(fixed)
     pools=[]
+    low=regions['state'][1]
 
     def reserve(start,size,name):
         end=start+size
-        require(0x2000 <= start < end <= 0x9000 and
+        require(low <= start < end <= 0x9000 and
                 all(end<=a or start>=b for a,b,_ in used), 'Task pool does not fit: '+name)
         used.append((start,end,name))
 
     def fit(size,alignment,offset,name):
-        for address in range(((0x2000+offset+alignment-1)//alignment)*alignment,0x9000,alignment):
-            start=address-offset
-            if start+size<=0x9000 and all(start+size<=a or start>=b for a,b,_ in used):
-                reserve(start,size,name)
-                return address
+        # Prefer the established pool arena, then use the reclaimed no-DOS
+        # space below it, after boot staging. This also leaves room for the
+        # eight-slot register probe's temporary $0900-$097f capture extension.
+        # Both passes protect the aperture and still-live startup manifest.
+        for floor,ceiling in ((0x2000,0x9000),(max(low,regions['staging'][1]),0x2000)):
+            first=((floor+offset+alignment-1)//alignment)*alignment
+            for address in range(first,ceiling,alignment):
+                start=address-offset
+                if start+size<=ceiling and all(start+size<=a or start>=b for a,b,_ in used):
+                    reserve(start,size,name)
+                    return address
         raise ValueError('No bank-zero space for '+name)
 
     # Root and the first worker retain adapter probe identities; every other
@@ -55,12 +61,13 @@ def configure(memory, capacity, worker_stack=1024, idle_stack=512):
     memory['task_pools']=pools
     memory['task_capacity']=capacity
     memory['reclaimed_after_adopt']=['loader','staging']
-    memory['runtime_reservations']=[dict(name=n,address=a,size=b-a) for a,b,n in sorted(used)]
-    fixed_bytes=sum(b-a for a,b,n in fixed if not n.startswith('os-'))
+    memory['runtime_reservations']=[dict(name=n,address=a,size=b-a) for a,b,n in sorted(used) if n != 'manifest']
+    fixed_bytes=sum(b-a for a,b,n in fixed if not n.startswith('os-') and n != 'manifest')
     public=[p['dp_reserved_bytes']+p['stack_bytes']+32 for p in pools[:-1]]
     idle=pools[-1]['dp_reserved_bytes']+pools[-1]['stack_bytes']+32
-    loading=fixed_bytes+sum(public[:2])+sum(regions[n][1]-regions[n][0] for n in ('loader','staging'))
+    loading=fixed_bytes+regions['manifest'][1]-regions['manifest'][0]+sum(public[:2])+sum(regions[n][1]-regions[n][0] for n in ('loader','staging'))
+    os_bytes=sum(b-a for name,(a,b) in regions.items() if name.startswith('os-'))
     memory['bank_zero_budget']=dict(fixed_runtime=fixed_bytes,public=public,idle=idle,
         runtime_excluding_os=fixed_bytes+sum(public)+idle,loading_excluding_os=loading,
-        runtime_including_os=fixed_bytes+sum(public)+idle+0x9000,loading_including_os=loading+0x9000)
+        runtime_including_os=fixed_bytes+sum(public)+idle+os_bytes,loading_including_os=loading+os_bytes)
     return pools

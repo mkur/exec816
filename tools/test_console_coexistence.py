@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Physical POKEY keyboard scan with the native SIO driver (slice 1)."""
+import adapter_state as adapter
 import argparse,json,os
 from pathlib import Path
 from native_program import ROOT,build,compiler,require,verify_machine,sha256
@@ -153,7 +154,7 @@ def run(t,out,optimize,mode=1,order=0,sector_size=128,trace=False,program=None,n
             raise
         if trace:b.profile_stop()
         if native and nmi:
-            observations['post_nmi_checkpoints']=b.peek16(0x20a0)
+            observations['post_nmi_checkpoints']=b.peek16(adapter.PROBE1)
             require(observations['post_nmi_checkpoints']>0,'No injected NMI during keyboard posting')
         key('ALL','up')
         restored=hardware()

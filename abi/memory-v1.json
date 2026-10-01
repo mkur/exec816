@@ -80,6 +80,7 @@
     "ID": 16,
     "CALLS": 32,
     "ENTERED": 34,
-    "WORK": 40
+    "WORK": 40,
+    "RETIRED": 35
   }
 }

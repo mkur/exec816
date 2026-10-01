@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Shared resident shell: real POKEY keys, exact writes, retained/physical screen."""
+import adapter_state as adapter
 from library_paths import read_source
 import argparse,json,shutil,time,re
 from pathlib import Path
@@ -92,11 +93,11 @@ def collect_capture(b,p,out):
     def symbol(name):return next(d['address'] for d in p['image']['data'] if '_SHELLEDITPROBE_'+name.upper()+'_' in d['name'])
     total=next(d['address'] for d in p['image']['data'] if '_SHELLAPP_CAPTURECOUNT_' in d['name'])
     marker=p['labels']['native_nmi'];condition=f'db(${symbol("ready"):x})=1'
-    b.bp_clear_all();b.bp_set(marker,condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+    b.bp_clear_all();b.bp_set(marker,condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
     original=b.regs
     def regs():
         r=original()
-        if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(0x2000)==0xffff,'Shell stopped before observer retirement')
+        if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(adapter.STATE)==0xffff,'Shell stopped before observer retirement')
         return r
     b.regs=regs
     try:run_to(b,marker,60000,1800,condition)
@@ -148,11 +149,11 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
                 v=b.eval_expr(f'dw(${addr+i:x})');result.extend((v&65535).to_bytes(2,'little'))
             return bytes(result[:n])
         def rendezvous(condition):
-            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
                 r=original()
-                if int(r['PC'].lstrip('$'),16)in(p['labels']['done'],p['labels']['done']+2):require(b.peek16(0x2000)==0xffff,'Shell stopped before checkpoint')
+                if int(r['PC'].lstrip('$'),16)in(p['labels']['done'],p['labels']['done']+2):require(b.peek16(adapter.STATE)==0xffff,'Shell stopped before checkpoint')
                 return r
             b.regs=regs
             try:run_to(b,p['labels']['native_nmi'],LIMITS['checkpoint_guest_frames'],LIMITS['checkpoint_host_seconds'],condition)

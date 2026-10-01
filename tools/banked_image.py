@@ -33,7 +33,8 @@ def extents(image, memory):
 
 
 def reserved_banks(memory):
-    return {bank for region in memory.get('upper_reservations',[])
+    return {bank for region in [*memory.get('upper_reservations',[]),
+                           *([memory['image_data']] if 'image_data' in memory else [])]
             for bank in range(region['address'] >> 16,
                               ((region['address']+region['size']-1) >> 16)+1)}
 
@@ -52,11 +53,15 @@ def validate_extents(regions, memory):
         require(flags in (0, 1, 2) and owner in (2, 3, 4), 'Invalid extent kind/owner')
         require((flags == 1 and not payload) or (flags != 1 and len(payload) == size),
                 'Extent payload length mismatch')
+        arena = memory.get('image_data')
+        if arena and address < arena['address']+arena['size'] and arena['address'] < address+size:
+            require(flags != 2 and owner == 2 and arena['address'] <= address
+                    and address+size <= arena['address']+arena['size'],
+                    'Image conflicts with global data arena')
         for bank in range(address >> 16, ((address + size - 1) >> 16) + 1):
             require(bank < c['MAX_BANKS'], 'Image outside MAX_BANKS')
             if bank == 0:
-                require(c['NEAR_BASE'] <= address and address + size <= c['NEAR_END']
-                        and flags != 2, 'Image outside near data arena')
+                require(False, 'Resident image payload in bank zero')
             else:
                 require(bank in memory['usable_banks'], 'Unavailable image bank')
                 require(bank not in claims or claims[bank] == owner, 'Conflicting bank owners')

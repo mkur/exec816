@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Focused P2/P3 inheritance, foreground and teardown machine-code checks."""
+import adapter_state as adapter
 from library_paths import library_file, read_source
 import argparse
 import json
@@ -98,7 +99,7 @@ def exercise(program, mode, bank, variants=(0,1,2,3,4,5)):
             except Exception:
                 print('Process inheritance state:',{name:int.from_bytes(bytes(data(bridge,program['image'],name)), 'little')
                       for name in ('checks','stage','kind','entered','completed','observedFree')},
-                      bridge.memdump(0x2000,64).hex(),flush=True)
+                      bridge.memdump(adapter.STATE,64).hex(),flush=True)
                 raise
             if variant == 0:
                 ownership(bridge,program,out)

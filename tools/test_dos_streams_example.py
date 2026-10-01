@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Resident DOS streams: physical input, background 70003-byte Read, redirection."""
+import adapter_state as adapter
 import argparse,json,shutil,time
 from pathlib import Path
 from native_program import ROOT,build,compiler,require,sha256,verify_machine
@@ -28,12 +29,12 @@ def run(t,out,mode,nil=False):
         saved={}
         def far(addr,n):return bytes(b.eval_expr(f'db(${addr+i:x})') for i in range(n))
         def rendezvous(condition,long=False):
-            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs;last=time.monotonic()
             def regs():
                 nonlocal last
                 r=original()
-                if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(0x2000)==0xffff,'Example stopped before checkpoint')
+                if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(adapter.STATE)==0xffff,'Example stopped before checkpoint')
                 if time.monotonic()-last>30:
                     print('Example progress',b.peek(at('phase')),'reader',b.memdump(at('reader'),22).hex(),flush=True);last=time.monotonic()
                 return r

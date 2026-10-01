@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Qualify VBI preemption and deferred delivery on the pinned AltirraOS machine."""
+import adapter_state as adapter
 import argparse
 import json
 from pathlib import Path
@@ -35,7 +36,7 @@ def check(bridge, program, fixture, result, screen):
     if flags != 0x100:
         observed["probe_switch_counts"] = []
         for task in (0, 1):
-            before, after = struct.unpack("<HH", bridge.memdump(0x2080+task*32+20, 4))
+            before, after = struct.unpack("<HH", bridge.memdump(adapter.PROBE0+task*32+20, 4))
             require((before == after) if flags & 4 else (after > before),
                     f"Incorrect I-mask preemption: task={task}, flags={flags:x}, {before}->{after}")
             observed["probe_switch_counts"].append([before, after])
@@ -50,7 +51,7 @@ def without_preemption(bridge, program):
     bridge.bp_clear_all()
     bridge.frame(8)
     progress = data(bridge, program["image"], "progress")
-    state = bridge.memdump(0x2000, 64)
+    state = bridge.memdump(adapter.STATE, 64)
     require(progress == [1, 0] and state[:2] == b"\xff\xff" and state[38:40] == b"\0\0",
             "Negative control unexpectedly made peer progress")
     require(int.from_bytes(state[2:4], "little") > 0, "Negative control had no native VBI")

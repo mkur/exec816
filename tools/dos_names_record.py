@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 """Collect canonical-lock-name execution, allocation and ownership evidence."""
+from image_data_usage import used as image_data_used
 import argparse,json
 from pathlib import Path
 from native_program import ROOT,require,sha256
-from ports_budget import account,current
+from ports_budget import historical,account,current
 CASES={'names-bank1','names-bank3','allocation','bounds','abi','current-directory','directories',
        'corrupt-name','files','lifetime','large-read'}
 
 
-def validate(record):
+def validate(record,*,current_layout=False):
+    budgets=current()['after'] if current_layout else historical()
     require(record['status']=='pass','Unfinished lock names')
     require(len(record['cases'])==2*len(CASES) and
             {(c['mode'],c['name']) for c in record['cases']}=={(m,n) for m in ('raw','opt') for n in CASES},'Missing lock-name case')
     for case in record['cases']:
         require(case['status']=='pass' and case['runtime']['status']==0 and case['runtime']['guards']=='intact','Failed native case')
         require(case['compiler_revision']==record['compiler']['revision'] and not case['override'],'Unpinned compiler')
-        require(case['bank_zero']==current()['after']['eight' if case['capacity']==8 else 'four'],'Bank-zero growth')
+        require(case['bank_zero']==budgets['eight' if case['capacity']==8 else 'four'],'Bank-zero growth')
         require(all(record['inputs'][p]==h for p,h in case['inputs'].items()),'Mixed sources')
         for s in case['runtime'].get('stack_observations',[]):require(s['untouched_above_floor']>=0,'Task reserve touched')
         if 'kernel_stack_observation' in case['runtime']:
@@ -57,8 +59,7 @@ def collect(directory):
             inputs={**b['task_inputs'],**b['platform_inputs'],**b['banked_inputs']}
             for p,h in inputs.items():require(sha256(ROOT/p)==h,'Source changed: '+p);record['inputs'][p]=h
             image=json.loads((path/'program.a816.json').read_text())
-            near=sum(len(s['bytes']) for s in image['segments'] if 0x8800<=s['address']<0x9000)
-            near+=sum(s['size'] for s in image['zero_fill'] if 0x8800<=s['address']<0x9000)
+            near=image_data_used(image,b['memory'])
             record['cases'].append(dict(name=name,mode=mode,status=r['status'],compiler_revision=b['revision'],override=b['override'],
                 source_sha256=b['source_sha256'],image_sha256=b['image_sha256'],xex_sha256=b['xex_sha256'],
                 compiler_binary_sha256=b['binary_sha256'],abi_sha256=b['abi_sha256'],inputs=inputs,generated=b['task_generated'],
@@ -72,7 +73,7 @@ def collect(directory):
               'tests/programs/dos_lock_allocation.act','tests/programs/dos_lock_bounds.act','tests/programs/dosfaultcontrol.act',
               'tools/test_dos_abi.py','tests/programs/dos_abi.act'):
         record['inputs'][p]=sha256(ROOT/p)
-    validate(record);return record
+    validate(record,current_layout=True);return record
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('directory',type=Path);p.add_argument('--output',type=Path,required=True)

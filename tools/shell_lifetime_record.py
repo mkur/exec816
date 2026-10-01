@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Collect shell failure, directory/stream lifetime and serial recovery evidence."""
+from image_data_usage import used as image_data_used
 import argparse,json
 from pathlib import Path
 from native_program import ROOT,require,sha256
-from ports_budget import account,current
+from ports_budget import historical,account,current
 from test_shell_lifetime_suite import cases
 NAMES={name for name,_ in cases(None,'raw')}
 
@@ -11,11 +12,12 @@ def guard(rt,status=0):
     require(rt['status']==status and rt['guards']=='intact','Unexpected native exit')
     require(rt['kernel_stack_observation']['interrupt_reserve_bytes_touched']==0 and all(s['untouched_above_floor']>=0 for s in rt['stack_observations']),'Interrupt reserve used')
 
-def validate(r):
+def validate(r,*,current_layout=False):
+    budgets=current()['after'] if current_layout else historical()
     require(r['status']=='pass'and len(r['cases'])==26 and {(c['mode'],c['name'])for c in r['cases']}=={(m,n)for m in ('raw','opt')for n in NAMES},'Incomplete shell lifetime matrix')
     require(r['fixed_bank_zero_delta']==r['per_task_bank_zero_delta']==0,'Bank-zero growth')
     for c in r['cases']:
-        name=c['name'];require(c['compiler_revision']==r['compiler']['revision']and not c['override']and c['bank_zero']==current()['after']['eight'],'Compiler/capacity changed')
+        name=c['name'];require(c['compiler_revision']==r['compiler']['revision']and not c['override']and c['bank_zero']==budgets['eight'],'Compiler/capacity changed')
         require(all(r['inputs'][p]==h for p,h in c['inputs'].items()),'Mixed production inputs')
         if name.startswith('serial'):
             require({x['name']for x in c['serial_cases']}=={'checksum','device','short','firstcause','framing','protocol'}and c['sector_size']==int(name[-3:]),'Missing real fault responder')
@@ -52,7 +54,7 @@ def collect(directory):
             out=directory/mode/name;p=out/'results.json';c=json.loads(p.read_text());b=c['build'];require(c['status']=='pass','Failed '+name)
             inputs={**b['task_inputs'],**b['platform_inputs'],**b['banked_inputs'],**c.get('source_inputs',{})}
             for path,h in inputs.items():require(sha256(ROOT/path)==h,'Changed lifetime input '+path);r['inputs'][path]=h
-            im=json.loads((out/'program.a816.json').read_text());near=sum(len(s['bytes'])for s in im['segments']if 0x8800<=s['address']<0x9000)+sum(s['size']for s in im['zero_fill']if 0x8800<=s['address']<0x9000)
+            im=json.loads((out/'program.a816.json').read_text());near=image_data_used(im,b['memory'])
             item={k:v for k,v in c.items()if k not in ('build','runtime','cases')}
             item.update(name=name,mode=mode,inputs=inputs,compiler_revision=b['revision'],override=b['override'],bank_zero=account(b['memory']),kernel_bank=b['memory']['constants']['KERNEL_BANK'],near_image_used=near,image_sha256=b['image_sha256'],xex_sha256=b['xex_sha256'],source_sha256=b['source_sha256'],compiler_binary_sha256=b['binary_sha256'],abi_sha256=b['abi_sha256'],generated=b['task_generated'],result_sha256=sha256(p))
             if 'runtime'in c:item['runtime']=runtime(c['runtime'])
@@ -64,6 +66,6 @@ def collect(directory):
             r['cases'].append(item)
     for path in ('tools/shell_lifetime_record.py','tools/test_shell_lifetime_suite.py','tools/test_shell_lifetime.py','tools/shell_stream_races.py','tools/shell_serial_recovery.py'):
         r['inputs'][path]=sha256(ROOT/path)
-    validate(r);return r
+    validate(r,current_layout=True);return r
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('directory',type=Path);a.add_argument('--output',type=Path,required=True);o=a.parse_args();o.output.write_text(json.dumps(collect(o.directory),indent=2)+'\n')

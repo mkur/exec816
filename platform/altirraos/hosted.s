@@ -2,9 +2,10 @@
 ; COOPERATIVE enables two tasks. DLI and third-party handlers are excluded.
 .setcpu "65816"
 .smart
+.macpack longbranch
 .include "action65816-native-v2.inc"
-.include "layout.inc"
 .include "exec-abi.inc"
+.include "layout.inc"
 .if GENERAL_TASKS
     .include "tasks.inc"
 .endif
@@ -13,8 +14,8 @@
 .endif
 .export start, done, console_write, console_write_end, stack_overflow
 .export stack_overflow_end, arithmetic_fault, arithmetic_fault_end
-.export native_nmi, native_irq, native_return
-.export heap_fault, heap_fault_end
+.export native_nmi, native_irq, native_return, state_rejected
+.export heap_fault, heap_fault_end, startup_complete
 
 .macro save_full
     rep #$30
@@ -57,7 +58,24 @@ start:
     tcd
     phk
     plb
-    ldx #$00fe
+    .if BANKED
+        lda M_OLD_MEMLO
+    .else
+        lda MEMLO
+    .endif
+    cmp #STATE+1
+    bcs memory_fault
+    lda MEMTOP
+    cmp #APP_LIMIT
+    bcc memory_fault
+    bra memory_ok
+memory_fault:
+    ; The state page is unclaimed. Report through this exported rejection
+    ; entry, without writing state or installing vectors.
+    jmp state_rejected
+memory_ok:
+    lda #0
+    ldx #E816_STATE_BYTES-2
 clear_state:
     sta STATE,x
     dex
@@ -71,18 +89,6 @@ clear_state:
         lda MEMLO
     .endif
     sta OLD_MEMLO
-    cmp #STATE+1
-    bcs memory_fault
-    lda MEMTOP
-    cmp #APP_LIMIT
-    bcc memory_fault
-    bra memory_ok
-memory_fault:
-    lda #FAULT_MEMORY
-    sta STATUS
-    ; No vectors installed or native program invoked on this path.
-    jmp park_os
-memory_ok:
     lda #APP_LIMIT
     sta MEMLO
     lda VNMIN
@@ -168,6 +174,15 @@ clear_dp:
         jmp finish
 :
     .endif
+    .if BANKED
+        ; Every startup consumer has returned. No bootstrap callback remains;
+        ; normal bank operations use the adopted table, not the manifest.
+        sep #$20
+        lda #1
+        sta f:M_RETIRED
+        rep #$20
+    .endif
+startup_complete:
     lda #TASK_DP
     tcd
     lda #STACK_TOP
@@ -345,6 +360,38 @@ stack_ok:
     bcc :+
     jmp invalid_pointer
 :
+    .if BANKED
+        sep #$20
+        lda 16,s
+        cmp #^M_IMAGE_DATA_BASE
+        beq :+
+        jmp invalid_pointer_8
+:
+        rep #$20
+        lda 14,s
+        cmp #.loword(M_IMAGE_DATA_BASE)
+        bcs :+
+        jmp invalid_pointer
+:
+        clc
+        adc 18,s
+        .if .loword(M_IMAGE_DATA_END) = 0
+        ; An exclusive end at the next bank permits an exact wrap to zero.
+        bcc :+
+        cmp #0
+        beq :+
+        jmp invalid_pointer
+:
+        .else
+        bcc :+
+        jmp invalid_pointer
+:
+        cmp #.loword(M_IMAGE_DATA_END)+1
+        bcc :+
+        jmp invalid_pointer
+:
+        .endif
+    .else
     sep #$20
     lda 16,s                     ; pointer bank: entry+6
     beq :+
@@ -361,6 +408,7 @@ stack_ok:
     bcs invalid_pointer
     cmp #APP_LIMIT+1
     bcs invalid_pointer
+    .endif
     sep #$20
     .if GENERAL_TASKS
         lda f:SD_OWNED
@@ -368,10 +416,10 @@ stack_ok:
             ora f:CS_BASE+CON_SERVICE_STATE
             ora f:CI_ACTIVE
         .endif
-        bne busy
+        jne busy
     .endif
     lda f:OS_BUSY
-    bne busy
+    jne busy
     lda #1
     sta f:OS_BUSY
     .if COOPERATIVE
@@ -382,10 +430,42 @@ stack_ok:
     .if COOPERATIVE
         inc E816_OS_CALLS
     .endif
-    lda 14,s
-    sta f:$0344                  ; IOCB0 buffer
-    lda 18,s
-    sta f:$0348                  ; IOCB0 length
+    .if BANKED
+        ; A ROM IOCB accepts a bank-zero pointer. Stage upper image data on
+        ; this activation's checked Task stack while OS_BUSY blocks switching.
+        lda 14,s
+        sta A816_DP_SCRATCH_OFFSET
+        lda 18,s
+        sta A816_DP_SCRATCH_OFFSET+3
+        sta f:$0348
+        sep #$20
+        lda 16,s
+        sta A816_DP_SCRATCH_OFFSET+2
+        rep #$20
+        tsc
+        sec
+        sbc #256
+        tcs
+        inc a
+        sta f:$0344
+        tax
+        ldy #0
+copy_rom_buffer:
+        sep #$20
+        lda [A816_DP_SCRATCH_OFFSET],y
+        sta f:$000000,x
+        inx
+        iny
+        rep #$20
+        tya
+        cmp A816_DP_SCRATCH_OFFSET+3
+        bcc copy_rom_buffer
+    .else
+        lda 14,s
+        sta f:$0344              ; IOCB0 buffer
+        lda 18,s
+        sta f:$0348              ; IOCB0 length
+    .endif
     sep #$20
     lda #11                      ; PUT CHARACTERS; exact ATASCII bytes
     sta f:$0342
@@ -418,6 +498,10 @@ stack_ok:
     tay
     checkpoint 6
     pla                          ; recover private saved_s
+    .if BANKED
+        clc
+        adc #256                 ; discard this call's ROM staging buffer
+    .endif
     tcs
     checkpoint 7
     tya
@@ -580,6 +664,7 @@ sio_exit_checked:
     rep #$20
     lda OLD_MEMLO
     sta MEMLO
+state_rejected:
 park_os:
     sep #$30
     sec

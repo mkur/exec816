@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Archive DOS directory slice evidence and enforce its execution/map gates."""
+from image_data_usage import used as image_data_used
 import argparse
 import json
 from pathlib import Path
 from native_program import ROOT, require, sha256
-from ports_budget import account, current
+from ports_budget import historical,account, current
 
 CURRENT_CASES = {'directory-bank1','directory-bank3','defaults-bank1','defaults-bank3',
                  'abi','selected-removal','client','lifetime','reuse','files','large-read'}
@@ -15,7 +16,7 @@ def validate(record,*,current_layout=False):
     expected = {(mode,name) for mode in ('raw','opt') for name in CURRENT_CASES}
     require(len(record['cases']) == len(expected) and
             {(c['mode'],c['name']) for c in record['cases']} == expected, 'Missing directory case')
-    budgets = current()['after']
+    budgets = current()['after'] if current_layout else historical()
     for case in record['cases']:
         require(case['status'] == 'pass' and case['runtime']['guards'] == 'intact', 'Failed execution/guards')
         require(case['compiler_revision'] == record['compiler']['revision'] and not case['override'], 'Unpinned compiler')
@@ -57,8 +58,7 @@ def collect(directory):
                 require(sha256(ROOT/relative) == digest, 'Source changed: '+relative)
                 record['inputs'][relative] = digest
             image = json.loads((path/'program.a816.json').read_text())
-            near = sum(len(s['bytes']) for s in image['segments'] if 0x8800 <= s['address'] < 0x9000)
-            near += sum(s['size'] for s in image['zero_fill'] if 0x8800 <= s['address'] < 0x9000)
+            near=image_data_used(image,build['memory'])
             record['cases'].append(dict(name=name,mode=mode,status=result['status'],runtime={k:v for k,v in result['runtime'].items() if not isinstance(v,list) or k=='stack_observations'},
                 compiler_revision=build['revision'],override=build['override'],image_sha256=build['image_sha256'],
                 xex_sha256=build['xex_sha256'],source_sha256=build['source_sha256'],

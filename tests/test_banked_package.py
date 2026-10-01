@@ -113,7 +113,7 @@ class BankedPackageTests(unittest.TestCase):
         self.image = {'entry':0x10000, 'segments':[
             {'address':0x10000, 'bytes':[0x6b], 'executable':True},
             {'address':0x1fffd, 'bytes':[7,9,11,13,15,17], 'executable':False},
-            {'address':0x8800, 'bytes':[65,155], 'executable':False}],
+            {'address':0x18000, 'bytes':[65,155], 'executable':False}],
             'zero_fill':[{'address':0x20003, 'size':65533}]}
 
     def make(self, image=None, memory=None):

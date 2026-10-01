@@ -8,6 +8,7 @@ USE PROCESSSTATE
 USE DOSCORE
 USE EXECPRODUCER
 USE SYS
+INCLUDE "../../lib/exec/exec-abi.inc"
 
 CONST DONE=$10000
 EXEC.Task POINTER parent
@@ -20,7 +21,7 @@ Child ARRAY children(7)
 EXECLISTS.Node memoryNode
 PROC POINTER absent(),bad()
 BYTE concurrentFinished
-VOLATILE CARD ticks=$2034
+VOLATILE CARD ticks=E816_VBI_COUNT
 
 ; Keep the first failing invariant visible to the emulator observer.
 PROC Require(BYTE okay)

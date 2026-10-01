@@ -19,22 +19,17 @@
     15
   ],
   "code_origin": 65536,
-  "data_origin": 34816,
-  "image_near": [
-    34816,
-    36864
-  ],
-  "memlo_limit": 8192,
+  "memlo_limit": 2048,
   "memtop_required": 36864,
   "regions": [
     {
       "name": "os-low",
       "address": 0,
-      "size": 8192
+      "size": 2048
     },
     {
       "name": "state",
-      "address": 8192,
+      "address": 2048,
       "size": 256
     },
     {
@@ -94,13 +89,19 @@
     },
     {
       "name": "staging",
-      "address": 31744,
+      "address": 2304,
       "size": 1040
+    },
+    {
+      "name": "vbxe-aperture",
+      "address": 32768,
+      "size": 4096
     },
     {
       "name": "os-high",
       "address": 36864,
       "size": 28672
     }
-  ]
+  ],
+  "image_data_bytes": 2048
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Native retained-screen rendering, hidden output and borrowed-screen restore."""
+import adapter_state as adapter
 import argparse,json,hashlib
 from pathlib import Path
 from native_program import ROOT,build,compiler,require,verify_machine,sha256
@@ -47,11 +48,11 @@ def run(t,out,optimize,bank,paced=False):
         def readfar(at,size):return bytes(b.eval_expr(f'db(${at+i:x})') for i in range(size))
         def rendezvous(condition):
             b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition)
-            b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
                 r=original();pc=int(r['PC'].lstrip('$'),16)
-                if pc in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(0x2000)==0xffff,'Console failed before display checkpoint')
+                if pc in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(adapter.STATE)==0xffff,'Console failed before display checkpoint')
                 return r
             b.regs=regs
             try:run_to(b,p['labels']['native_nmi'],3000,60,condition)

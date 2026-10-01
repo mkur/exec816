@@ -5,6 +5,7 @@ USE EXECTASKS
 USE EXECSIGNALIRQ
 USE PRODUCERPROBE
 USE TASKSTACKS
+INCLUDE "../../lib/exec/exec-abi.inc"
 EXEC.Task worker
 EXEC.Task ARRAY bystanders(6)
 EXEC.Task POINTER parent
@@ -12,7 +13,7 @@ VOLATILE BYTE skctl=$d20f,skshadow=$232,audctl=$d208,irqst=$d20e
 VOLATILE BYTE finished
 BYTE variant,oldsk
 CARD byteCount,sent,waits,background
-CARD pumpSent=$2080
+CARD pumpSent=E816_PROBE0
 LONGCARD badResult
 PROC POINTER missing()
 

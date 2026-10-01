@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Collect native command output, ownership, maps and full TYPE evidence."""
+from image_data_usage import used as image_data_used
 import argparse,json
 from pathlib import Path
 from native_program import ROOT,require,sha256
-from ports_budget import account,current
+from ports_budget import historical,account,current
 from test_shell_commands_suite import cases
 
-def validate(r):
+def validate(r,*,current_layout=False):
+    budgets=current()['after'] if current_layout else historical()
     expected={(m,n)for m in ('raw','opt')for n,*_ in cases()}
     require(r['status']=='pass'and {(c['mode'],c['name'])for c in r['cases']}==expected and len(r['cases'])==22,'Missing command matrix case')
     require(r['shell_allocation']==1288 and r['fixed_bank_zero_delta']==r['per_task_bank_zero_delta']==0,'Shell budget changed')
@@ -14,7 +16,7 @@ def validate(r):
     for c in r['cases']:
         rt=c['runtime'];require(rt['native_nmi_count']<=30000,'Command completion frame bound exceeded')
         require(c['status']=='pass'and rt['status']==0 and rt['guards']=='intact','Command execution failed')
-        require(c['bank_zero']==current()['after']['eight']and rt['created']==3,'Command capacity changed')
+        require(c['bank_zero']==budgets['eight']and rt['created']==3,'Command capacity changed')
         require(c['compiler_revision']==r['compiler']['revision']and not c['override'],'Compiler override')
         require(all(s['untouched_above_floor']>=0 for s in rt['stack_observations'])and rt['kernel_stack_observation']['interrupt_reserve_bytes_touched']==0,'Interrupt reserve used')
         require(c['writes_sha256']==c['expected_sha256']and len(c['writes_sha256'])==64,'Actual Write output differs')
@@ -41,7 +43,7 @@ def collect(directory):
             inputs={**b['task_inputs'],**b['platform_inputs'],**b['banked_inputs'],**{p:h for p,h in c['source_inputs'].items()if p.startswith('examples/')}}
             for p,h in inputs.items():require(sha256(ROOT/p)==h,'Production input changed: '+p);r['production_inputs'][p]=h
             im=json.loads((out/'program.a816.json').read_text())
-            near=sum(len(s['bytes'])for s in im['segments']if 0x8800<=s['address']<0x9000)+sum(s['size']for s in im['zero_fill']if 0x8800<=s['address']<0x9000)
+            near=image_data_used(im,b['memory'])
             item={k:v for k,v in c.items()if k not in ('build','runtime')}
             item.update(name=name,production_inputs=inputs,bank_zero=account(b['memory']),near_image_used=near,compiler_revision=b['revision'],override=b['override'],compiler_binary_sha256=b['binary_sha256'],abi_sha256=b['abi_sha256'],image_sha256=b['image_sha256'],xex_sha256=b['xex_sha256'],generated=b['task_generated'],runtime={k:v for k,v in c['runtime'].items()if not isinstance(v,list)or k=='stack_observations'},result_sha256=sha256(out/'results.json'))
             require(sha256(out/'writes.bin')==c['writes_sha256']and sha256(out/'expected.bin')==c['expected_sha256'],'Command artifacts changed')
@@ -51,6 +53,6 @@ def collect(directory):
         path=ROOT/'build/shell-commands-entry'/mode/'results.json';e=json.loads(path.read_text())
         require(all(sha256(ROOT/p)==h for p,h in e['source_inputs'].items()),'Shipped entry inputs changed')
         r['entry_checks'].append(dict(mode=mode,source_inputs=e['source_inputs'],image_sha256=e['build']['image_sha256'],xex_sha256=e['build']['xex_sha256'],runtime={k:v for k,v in e['runtime'].items()if not isinstance(v,list)or k=='stack_observations'},machine=e['machine'],pin=e['pin'],commands=e['commands'],result_sha256=sha256(path)))
-    r['collector_sha256']=sha256(Path(__file__));validate(r);return r
+    r['collector_sha256']=sha256(Path(__file__));validate(r,current_layout=True);return r
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('directory',type=Path);p.add_argument('--output',type=Path,required=True);a=p.parse_args();a.output.write_text(json.dumps(collect(a.directory),indent=2)+'\n')

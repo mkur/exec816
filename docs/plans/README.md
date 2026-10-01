@@ -10,6 +10,13 @@ assuming work is pending. Current behavior belongs in the
 
 ## Exec and project history
 
+- [Bank zero relocation and boot manifest retirement](bank-zero-relocation-plan.md):
+  complete; state at `$0800`, resident globals in upper RAM, and manifest
+  reclamation after startup. Recovers 10 KiB while retaining existing Task pools;
+  [development evidence](../development/bank-zero-relocation.json).
+- [VBXE aperture reservation evidence](../development/vbxe-aperture.json):
+  reserves `$8000–$8FFF`, relocates boot staging and overlapping stacks,
+  and retains eight public Tasks; mapped VBXE integration remains pending.
 - [CreateTask for Action! and C](create-task-implementation-plan.md): complete;
   shared creation service, language bindings and same-source Amiga example.
 - [Kernel COP fast-path refactor plan](kernel-fast-path-refactor-plan.md)
@@ -44,6 +51,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [GEM4XE as the GUI layer for Exec816](gem4xe/exec816-integration-assessment.md):
+  VBXE-only integration with expandable upper RAM, bank-zero and hardware
+  constraints, and proposed executable slices. The
+  [earlier analysis](gem4xe/README.md) is preserved.
 - [Command arguments implementation](command-arguments-implementation-plan.md)
 - [Command Main return-value implementation plan](command-main-implementation-plan.md)
 - [CSTRING module implementation plan](cstring-implementation-plan.md)

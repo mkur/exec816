@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Executable DOS stream slice gates, using the pinned compiler and platform."""
+import adapter_state as adapter
 import argparse
 import json
 import shutil
@@ -77,12 +78,12 @@ def nil(t, out, mode, mounted=False):
         def before(b):
             b.poke(at('mounted'),int(mounted))
             checkpoint=p['labels']['native_nmi']
-            b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original_regs=b.regs
             def regs():
                 result=original_regs()
                 if int(result['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):
-                    require(b.peek16(0x2000)==0xffff,'Guest stopped before NIL checkpoint')
+                    require(b.peek16(adapter.STATE)==0xffff,'Guest stopped before NIL checkpoint')
                 return result
             b.regs=regs
             def until(phase):
@@ -106,7 +107,7 @@ def nil(t, out, mode, mounted=False):
             b.pause();b.bp_clear_all();b.regs=original_regs
         try:runtime,_=execute(b,p,before_run=before,timeout=240,frame_limit=12000)
         except Exception:
-            print('NIL checks',data(b,p['image'],'checks',True), 'status',b.peek16(0x2000),flush=True);raise
+            print('NIL checks',data(b,p['image'],'checks',True), 'status',b.peek16(adapter.STATE),flush=True);raise
         ownership(b,p,out)
         require(runtime['created']==(3 if mounted else 1),'Unexpected stream worker creation')
         require(data(b,p['image'],'phase')==[3],'Missing watch negative-control completion')

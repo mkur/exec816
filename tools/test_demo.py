@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Physical walkthrough of the exact packaged demo, without target-code observers."""
+import adapter_state as adapter
 import argparse
 import json
 import re
@@ -13,7 +14,8 @@ from test_shell_core import KEYS
 
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
-        expected_cache=512,cache_smoke=False,cache_override=None,system_drive=1,showcase=False):
+        expected_cache=512,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
+        retire_manifest=False, aperture_pattern=None):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase)) <= 1,'Select one demo smoke scope')
     manifest=json.loads((out/'demo-manifest.json').read_text())
     require(all(sha256(out/name)==digest for name,digest in manifest['artifacts'].items()),'Changed demo bundle')
@@ -56,12 +58,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         def pointer(address):return number(address,3)
         def rendezvous(condition):
             b.bp_clear_all();marker=p['labels']['native_nmi']
-            b.bp_set(marker,condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_set(marker,condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
                 state=original()
                 if int(state['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):
-                    require(b.peek16(0x2000)==0xffff,'Demo ended before checkpoint')
+                    require(b.peek16(adapter.STATE)==0xffff,'Demo ended before checkpoint')
                 return state
             b.regs=regs
             try:run_to(b,marker,12000,240,condition)
@@ -160,12 +162,20 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             press('\x03');ready(previous);result(304);cells('break-loading' if loading else 'break-pipeline')
             require(ledger()==saved['ledger'],'Ownership retained after BREAK')
         def before(bridge):
+            if aperture_pattern is not None:
+                require(b.memdump(0x8000,4096)==aperture_pattern,'Boot changed the reserved VBXE aperture')
             if cache_override is not None:
                 boot=p['build']['memory']['boot_config']
                 b.memload(boot['address']+boot['abi']['fields']['cache_blocks'],cache_override.to_bytes(2,'little'))
             if stock_smoke:
                 from banked_test_memory import write as far_write
                 far_write(b,p['build']['task_storage']['BASE']+0x900+34,(2).to_bytes(2,'little'),out)
+            if retire_manifest:
+                marker=p['labels']['startup_complete']
+                b.bp_set(marker);run_to(b,marker,3000,90);b.bp_clear_all()
+                boot=p['build']['memory']['constants']
+                require(b.peek(boot['RETIRED'])==bytes([1]),'OF816 startup did not retire the manifest')
+                b.memload(boot['MANIFEST'],bytes([0xd3])*boot['MANIFEST_CAPACITY'])
             saved.update(screen=b.peek16(88),cursor=b.peek(752),mask=b.peek(16))
             saved['screenBytes']=b.memdump(saved['screen'],960);b._cmd_ok('KEY ALL up')
             rendezvous(f'(db(${at("started"):x})=1)&(dw(${at("demoFrames"):x})>0)')
@@ -200,7 +210,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             registry=p['build']['memory']['dos_storage']['SHARED']
             service=pointer(registry+68)
             adapter=pointer(service)
-            cache=adapter+38
+            cache=adapter+30
             saved['cache_address']=cache
             settings=p['build']['memory']['boot_config']['settings']
             saved['cache']=dict(requested=number(cache+10,2),blocks=number(cache+12,2),
@@ -295,6 +305,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         require(number(at('exitStatus'))==0,'Demo EXIT failed')
         require(b.memdump(saved['screen'],960)==saved['screenBytes'] and b.peek(752)==saved['cursor'] and b.peek(16)==saved['mask'],'Demo OS display/input restoration failed')
         ownership(b,p,out)
+        if aperture_pattern is not None:
+            require(b.memdump(0x8000,4096)==aperture_pattern,'Shell changed the reserved VBXE aperture')
+        if retire_manifest:
+            boot=p['build']['memory']['constants']
+            require(b.memdump(boot['MANIFEST'],boot['MANIFEST_CAPACITY'])==bytes([0xd3])*boot['MANIFEST_CAPACITY'],
+                    'OF816 shell reused retired manifest data')
         require(sha256(media_path)==manifest['artifacts'][media],'Read-only demo media changed')
     return dict(status='pass',tier='development',bundle_manifest_sha256=sha256(out/'demo-manifest.json'),
         xex_sha256=sha256(out/'program.xex'),media_sha256=sha256(media_path),screenshot_sha256=sha256(out/'boot-smoke.png') if boot_smoke else None if stock_smoke or loading_smoke or cache_smoke else sha256(out/'walkthrough.png'),
@@ -302,7 +318,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
         baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=None if stock_smoke or showcase else 7,
-        system_drive=system_drive,sys_cache=saved.get('sys_cache'),
+        system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
+        aperture_intact=aperture_pattern is not None,
         scope='OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=dict(fixed=0,per_task=0))
 
 

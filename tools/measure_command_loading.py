@@ -6,6 +6,7 @@ BLOCKWIRE transfers. The observer never waits, allocates or yields. Build it
 once; replay its identical instructions with explicit mount/table overrides.
 Host pauses are outside the measured command.
 """
+import adapter_state as adapter
 import argparse
 import hashlib
 import json
@@ -71,8 +72,8 @@ def prepare(bundle, output, filesystem=None):
     classes=sector_classes(output/disk_name,filesystem)
     table_address=manifest['kernel']['task_storage']['BASE']+0xe000
     require(len(classes)<=0x2000,'Diagnostic table exceeds reserved kernel bank tail')
-    (output/'loadprobe.act').write_text("""MODULE LOADPROBE
-VOLATILE CARD clock=$2034
+    (output/'loadprobe.act').write_text(f"""MODULE LOADPROBE
+VOLATILE CARD clock=${adapter.VBI_COUNT:04x}
 PUBLIC CARD ARRAY ticks(9),reads(9),kinds(4),snapshots(36)
 PUBLIC CARD transfers
 PUBLIC PROC Mark(BYTE phase)
@@ -159,11 +160,9 @@ def run(bundle, output, filesystem=None, prime_worker='active', cpu_trace=False)
             frames()
         def before(_):
             if override:
-                from banked_test_memory import transfer,write
-                # A dedicated helper byte keeps the descriptor override separate
-                # from both the static-data arena and the upper sector table.
-                b.memload(0x86f0,bytes([2 if filesystem=='sdfs' else 1]))
-                transfer(b,0x86f0,p['build']['task_storage']['BASE']+0x900+43,1,output)
+                from banked_test_memory import write
+                write(b,p['build']['task_storage']['BASE']+0x900+43,
+                      bytes([2 if filesystem=='sdfs' else 1]),output)
                 write(b,manifest['observer_table']['address'],sector_classes(bundle/media,filesystem),output)
             b._cmd_ok('KEY ALL up')
             rendezvous(f'(db(${at("started"):x})=1)&(dw(${at("demoFrames"):x})>0)')
@@ -186,7 +185,7 @@ def run(bundle, output, filesystem=None, prime_worker='active', cpu_trace=False)
                 prime['stop_flag_address'] = at('demoStop')
             for char in 'HELLO': press(char)
             previous = num(scope+14)
-            start_frame=b.eval_expr('@frame'); start_tick=num(0x2034,2)
+            start_frame=b.eval_expr('@frame'); start_tick=num(adapter.VBI_COUNT,2)
             if cpu_trace: b.profile_start()
             press('\n')
             rendezvous(ready+f'&(dw(${scope+14:x})>{previous&65535})')

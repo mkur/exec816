@@ -52,6 +52,36 @@ inside a larger reserved arena does not make the rest of that arena free.
 Implementation slices must report fixed/per-Task reservation deltas, including
 zero; see the [platform budget rule](../reference/platform.md#bank-zero-memory-budget).
 
+Moving state to `$0800`, placing globals in upper RAM and retiring the manifest
+after startup recovered **10,240 fixed bank-zero bytes; 0 bytes per Task**;
+see the [relocation record](../development/bank-zero-relocation.json).
+The subsequent [VBXE aperture reservation](../development/vbxe-aperture.json)
+assigns 4,096 of those bytes to `$8000–$8FFF`, leaving a net recovery of
+6,144 bytes. Pool sizes and public Task capacity remain unchanged.
+
+| Reservation after startup | Four public Tasks | Eight public Tasks |
+| --- | ---: | ---: |
+| OS ranges | 30,720 | 30,720 |
+| Fixed Exec runtime, including aperture, guards and slack | 11,824 | 10,560 |
+| Public and idle pools | 9,280 | 14,112 |
+| Total reserved | 51,824 | 55,392 |
+| Unreserved across all holes | 13,712 | 10,144 |
+
+The manifest still occupies 2 KiB during loading. Total loading reservations
+are 54,464 and 53,136 bytes respectively. The eight-Task worker DP stride remains
+512 bytes: 256 usable DP bytes, 32 guard bytes and 224 bytes of reserved spacing.
+Worker stacks remain 1,024 bytes plus 32 external guard bytes, with 256 bytes of
+interrupt reserve inside the stack. Root and idle retain their separate sizes.
+
+The eight-Task allocator prefers the established arena above `$2000`, then the
+low RAM after boot staging. Slot 7 uses `$0D20–$111F`, with a complete guarded
+reservation of `$0D10–$112F`; idle uses `$7CB0–$7EAF`, guarded at
+`$7CA0–$7EBF`. Root, slots 1–6 and all DPs keep their previous addresses.
+Starting the low pool after staging also keeps the diagnostic eight-Task
+register capture at `$0900–$097F` clear of live pools. That probe adds 128
+temporary runtime bytes in instrumented builds only; it runs after loading.
+The production map reserves the full VBXE aperture but does not yet map it.
+
 The [capacity implementation record](../history/task-capacity.md) preserves exact
 maps, before/after totals and experiments for its recorded revision. Its old code
 origins and serial timing limits are historical, not current build metadata.

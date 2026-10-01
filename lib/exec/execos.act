@@ -4,7 +4,8 @@ MODULE EXECOS
 ; Applications use DOS.Write (or COMMAND.Write in disk commands).
 ; Native v1. Status 1 means success; $80-$ff are CIO errors.
 ; $ff01: invalid buffer/length; $ff02: OS call already active.
-; 0..255 ATASCII bytes, wholly within the launcher's bank-zero image arena.
+; 0..255 ATASCII bytes in the compiled image data arena. Banked builds stage
+; upper data on the checked caller stack for the ROM's bank-zero IOCB.
 PUBLIC EXTERNAL CARD FUNC Write(BYTE POINTER buffer CARD length)
 
   ENDMODULE

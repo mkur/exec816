@@ -7,7 +7,7 @@ INCLUDE "exec-abi.inc"
 ; can dispatch only after retiring OS frames and validating task ownership.
 BYTE current=E816_CURRENT
 CARD switches=E816_SWITCH_COUNT
-VOLATILE BYTE osBusy=$2006
+VOLATILE BYTE osBusy=E816_OS_BUSY
 TaskRecord task0=E816_TASK0
 TaskRecord task1=E816_TASK1
 

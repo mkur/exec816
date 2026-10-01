@@ -2,9 +2,10 @@ MODULE UPPERTABLE
 USE EXEC
 USE EXECMEMORY
 USE HEAPPOLICY
+INCLUDE "../../lib/exec/exec-abi.inc"
 
 BYTE kernelBank
-VOLATILE BYTE switching=$2024
+VOLATILE BYTE switching=E816_SWITCHING
 CARD ARRAY checks(12)
 
 PROC Inventory()

@@ -1,4 +1,5 @@
 """Declared single-expression startup failures in emitted native filesystem code."""
+import adapter_state as adapter
 from library_paths import library_file, read_source
 import argparse,json,shutil
 from pathlib import Path
@@ -69,7 +70,7 @@ def run(t,out,mode,fault,filesystem='mydos'):
                 address=next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_DOSFAILTEST_'+name+'_'));b.memload(address,(value&((1<<(size*8))-1)).to_bytes(size,'little'))
         try:runtime,_=execute(b,p,before_run=before_run,timeout=240,frame_limit=12000)
         except Exception:
-            print('native state',b.memdump(0x2000,64).hex(),'checks',data(b,p['image'],'checks',True),flush=True)
+            print('native state',b.memdump(adapter.STATE,64).hex(),'checks',data(b,p['image'],'checks',True),flush=True)
             for i,pool in enumerate(p['build']['memory']['task_pools']):(out/f'fault-stack-{i}.bin').write_bytes(b.memdump(pool['stack_base'],pool.get('stack_bytes',1536)))
             raise
         ownership(b,p,out);require(sha256(media)==before,'Media changed')

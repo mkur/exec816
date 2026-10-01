@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Qualify two cooperative tasks using actual emitted bytes on pinned AltirraOS."""
+import adapter_state as adapter
 import argparse
 import json
 from pathlib import Path
@@ -15,7 +16,9 @@ def data(bridge, image, name, words=False):
                and re.search(r"(?:^|_)"+re.escape(name)+r"(?:_|$)", s["name"], re.IGNORECASE)]
     require(len(matches) == 1, f"Missing/ambiguous inspection symbol: {name}")
     symbol = matches[0]
-    raw = bridge.memdump(symbol["address"], symbol["size"])
+    raw = bytes(bridge.eval_expr(f'db(${symbol["address"]+i:x})') & 255
+                for i in range(symbol["size"])) if symbol["address"] >= 65536 else \
+        bridge.memdump(symbol["address"], symbol["size"])
     return list(struct.unpack("<"+"H"*(len(raw)//2), raw)) if words else list(raw)
 
 
@@ -52,7 +55,7 @@ def check(bridge, program, fixture, result, screen):
     if flags != 0x100:
         snapshots = []
         for task in (0, 1):
-            raw = bridge.memdump(0x2080+task*32, 20)
+            raw = bridge.memdump(adapter.PROBE0+task*32, 20)
             expected = struct.pack("<BHHHHBHHHHH", 0x12, 0x2200+task*0x200,
                                    0x78 if flags & 0x10 else 0x5678,
                                    0x34 if flags & 0x10 else 0x1234, 0xAB01, flags,

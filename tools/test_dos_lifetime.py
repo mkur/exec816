@@ -1,4 +1,5 @@
 """Private mount control and last-application shutdown over real SIO."""
+import adapter_state as adapter
 import argparse,json,shutil
 from library_paths import library_file, read_source
 from pathlib import Path
@@ -33,7 +34,7 @@ def run(t,out,mode,auto=False,retry=False):
             if not retry:b.poke(next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_DOSLIFETEST_AUTOSTOP_')),int(auto))
         try:runtime,_=execute(b,p,before_run=before_run,timeout=600,frame_limit=30000)
         except Exception:
-            print('native state',b.memdump(0x2000,64).hex(),'checks',data(b,p['image'],'checks',True),flush=True)
+            print('native state',b.memdump(adapter.STATE,64).hex(),'checks',data(b,p['image'],'checks',True),flush=True)
             for i,pool in enumerate(p['build']['memory']['task_pools']):(out/f'fault-stack-{i}.bin').write_bytes(b.memdump(pool['stack_base'],pool.get('stack_bytes',1536)))
             raise
         ownership(b,p,out)

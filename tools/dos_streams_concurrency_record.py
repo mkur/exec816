@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Freeze the seven-workload DOS streams timing/capacity qualification."""
+from image_data_usage import used as image_data_used
 from library_paths import record_input_paths
 import argparse,json
 from pathlib import Path
@@ -85,8 +86,7 @@ def collect(out):
         for path,digest in v['source_inputs'].items():
             require(sha256(ROOT/path)==digest,'Workload source changed: '+path);r['inputs'][path]=digest
         image=json.loads((p.parent/'program.a816.json').read_text())
-        near=sum(len(s['bytes']) for s in image['segments'] if 0x8800<=s['address']<0x9000)
-        near+=sum(s['size'] for s in image['zero_fill'] if 0x8800<=s['address']<0x9000)
+        near=image_data_used(image,b['memory'])
         traces={str(f.relative_to(ROOT)):sha256(f) for f in (p.parent/'observed/trace.log',) if f.exists()}
         r['cases'].append(dict(name=name,compiler_revision=b['revision'],override=b['override'],optimize=b['optimize'],kernel_bank=b['memory']['constants']['KERNEL_BANK'],
             image_sha256=b['image_sha256'],xex_sha256=b['xex_sha256'],source_sha256=b['source_sha256'],bank_zero=account(b['memory']),near_image_used=near,

@@ -130,6 +130,8 @@ def emulator(bridge_dir, rom, output_dir=OUT, pin=PIN):
                 finally:
                     socket.setdefaulttimeout(previous_timeout)
                 bridge.pause()
+                from bridge_memory import install
+                install(bridge)
                 yield bridge
             finally:
                 if bridge:

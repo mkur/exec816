@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Collect the shared resident DOS session and standalone headless NIL example."""
+from image_data_usage import used as image_data_used
 import argparse,json
 from pathlib import Path
 from native_program import ROOT,require,sha256
@@ -46,8 +47,7 @@ def collect(out):
             for name,digest in {**b['task_inputs'],**b['platform_inputs'],**b['banked_inputs'],**v['source_inputs']}.items():
                 require(sha256(ROOT/name)==digest,'Changed example input: '+name);r['inputs'][name]=digest
             image=json.loads((path.parent/'program.a816.json').read_text())
-            near=sum(len(s['bytes']) for s in image['segments'] if 0x8800<=s['address']<0x9000)
-            near+=sum(s['size'] for s in image['zero_fill'] if 0x8800<=s['address']<0x9000)
+            near=image_data_used(image,b['memory'])
             r['cases'].append(dict(mode=mode,nil=nil,compiler_revision=b['revision'],override=b['override'],
                 image_sha256=b['image_sha256'],xex_sha256=b['xex_sha256'],runtime=v['runtime'],machine=v['machine'],
                 bank_zero=account(b['memory']),near_image_used=near,counts=v['counts'],observations=v['observations'],schedule=v['schedule'],

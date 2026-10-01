@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Interrupt console requests, retain exact reply ownership and committed bytes."""
+import adapter_state as adapter
 from library_paths import read_source
 import argparse,json
 from pathlib import Path
@@ -38,12 +39,12 @@ def run(out,optimize,bank):
         def far(a,n):return bytes(b.eval_expr(f'db(${a+i:x})') for i in range(n))
         def pointer(a):return int.from_bytes(far(a,3),'little')
         def rendezvous(condition):
-            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original_regs=b.regs
             def regs():
                 r=original_regs()
                 if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):
-                    require(b.peek16(0x2000)==0xffff,'Console cancel stopped: '+hex(b.peek16(0x2000))+' checks='+str(b.peek16(at('checks'))))
+                    require(b.peek16(adapter.STATE)==0xffff,'Console cancel stopped: '+hex(b.peek16(adapter.STATE))+' checks='+str(b.peek16(at('checks'))))
                 return r
             b.regs=regs
             try:run_to(b,p['labels']['native_nmi'],20000,400,condition)

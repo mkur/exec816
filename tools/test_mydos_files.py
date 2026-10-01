@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run bounded guest file operations with a sector-only fixture provider."""
+import adapter_state as adapter
 import argparse,json,shutil,time
 from library_paths import read_source
 from pathlib import Path
@@ -18,11 +19,11 @@ def symbol(p,name,module='MYDOSFILETEST'):
 
 def serve(b,p,image):
     ready=symbol(p,'ready','BLOCKWIRE');sector=symbol(p,'sector','BLOCKWIRE');length=symbol(p,'length','BLOCKWIRE');staging=symbol(p,'staging','BLOCKWIRE')
-    done=p['labels']['done'];condition='dw($2000)!=$ffff'
+    done=p['labels']['done'];condition=adapter.STOPPED
     b.bp_set(done,condition=condition)
     requests=[];deadline=time.monotonic()+600;initial_frame=b.eval_expr('@frame');b.resume()
     while time.monotonic()<deadline:
-        status=b.peek16(0x2000)
+        status=b.peek16(adapter.STATE)
         if status!=65535:
             regs=b.regs()
             if int(regs['PC'].lstrip('$'),16)==done:break

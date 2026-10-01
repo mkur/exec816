@@ -1,7 +1,8 @@
 MODULE PREEMPTIVELOCKS
 USE EXEC
+INCLUDE "../../lib/exec/exec-abi.inc"
 
-VOLATILE CARD ticks=$2034
+VOLATILE CARD ticks=E816_VBI_COUNT
 VOLATILE BYTE phase,peerPhase
 CARD ARRAY results(5)
 

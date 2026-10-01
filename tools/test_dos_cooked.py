@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Physical CON input, shared RAW endpoint and concurrent filesystem progress."""
+import adapter_state as adapter
 from library_paths import read_source
 import argparse,json,shutil,os
 from pathlib import Path
@@ -36,12 +37,12 @@ def run(out,optimize,bank,trace=False):
         def far(addr,n):return bytes(b.eval_expr(f'db(${addr+i:x})') for i in range(n))
         def rendezvous(condition):
             b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition)
-            b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
                 r=original()
                 if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):
-                    require(b.peek16(0x2000)==0xffff,'CON stopped before checkpoint')
+                    require(b.peek16(adapter.STATE)==0xffff,'CON stopped before checkpoint')
                 return r
             b.regs=regs
             try:run_to(b,p['labels']['native_nmi'],12000,240,condition)
@@ -91,7 +92,7 @@ def run(out,optimize,bank,trace=False):
             if trace:b.profile_stop()
             hardware=far(p['build']['task_storage']['BASE']+0x800,128)
             (out/'failure-hardware.bin').write_bytes(hardware)
-            print('CON failure',data(b,p['image'],'checks',True),data(b,p['image'],'peerChecks',True),data(b,p['image'],'phase'),b.peek16(0x2000),data(b,p['image'],'peerResult'),data(b,p['image'],'peerError'),flush=True);raise
+            print('CON failure',data(b,p['image'],'checks',True),data(b,p['image'],'peerChecks',True),data(b,p['image'],'phase'),b.peek16(adapter.STATE),data(b,p['image'],'peerResult'),data(b,p['image'],'peerError'),flush=True);raise
         if trace:b.profile_stop()
         require(data(b,p['image'],'phase')==[11],'CON completion missing')
         require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'Console not restored')

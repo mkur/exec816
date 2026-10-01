@@ -4,6 +4,7 @@ USE HEAPPOLICY
 USE HEAPCORE
 USE EXECLISTS
 USE EXECMEMORY
+INCLUDE "../../lib/exec/exec-abi.inc"
 
 TYPE Operation=[
   BYTE code
@@ -14,7 +15,7 @@ TYPE Operation=[
   LONGCARD extra
 ]
 
-VOLATILE BYTE switching=$2024
+VOLATILE BYTE switching=E816_SWITCHING
 CARD checks,completed
 BYTE ARRAY bankSnapshots(128)
 ADDRESS ARRAY handles(8)

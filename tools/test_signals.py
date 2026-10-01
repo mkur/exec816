@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Qualify Task and signal policy through emitted machine code."""
+import adapter_state as adapter
 import argparse
 import json
 from pathlib import Path
@@ -111,9 +112,9 @@ def main():
                         values=[int.from_bytes(raw[i:i+4],'little') for i in range(0,len(raw),4)]
                         require(checks==[31,1,1,1] and values==[0,0x80010001,0x40010000,2,0x80000001,2],
                                 'Atomic far masks/claim repost: '+str((checks,values)))
-                        require(bridge.peek16(0x2080)==127 and result['native_irq_count']>=2,
+                        require(bridge.peek16(adapter.PROBE0)==127 and result['native_irq_count']>=2,
                                 'Claimed wake repost/checkpoints missing')
-                        require(bridge.peek16(0x20a0)==1,'Rejected IRQ COP corrupted kernel scratch/guard')
+                        require(bridge.peek16(adapter.PROBE1)==1,'Rejected IRQ COP corrupted kernel scratch/guard')
                         from banked_test_memory import read as far_read
                         record=far_read(bridge,0x04ffd0,128,program['output'])
                         require(record[:23]==bytes([0xa5])*23 and record[85:]==bytes([0xa5])*43,
@@ -131,9 +132,9 @@ def main():
                         require(flags==[1]*4,'Queue did not reach all public contexts: '+str(flags))
                         require(result['idle_runs']>=2,'Burst did not wake idle')
                         if point==103:
-                            require(bridge.peek16(0x2080)==2 and result['native_irq_count']>=2,'Masked IRQ or protected window failed')
+                            require(bridge.peek16(adapter.PROBE0)==2 and result['native_irq_count']>=2,'Masked IRQ or protected window failed')
                             require(int.from_bytes(bytes(result['root_task'][24:28]),'little')==2,'Window post lost or incorrectly consumed')
-                        observed=dict(checks=checks,queued=flags,masked_pending=bridge.peek16(0x2080))
+                        observed=dict(checks=checks,queued=flags,masked_pending=bridge.peek16(adapter.PROBE0))
                     elif fixture=='irq':
                         checks=data(bridge,program['image'],'checks',True)
                         require(checks==[1]*5+[0]*3,'IRQ safe delivery: '+str(checks))
@@ -141,7 +142,7 @@ def main():
                         observed=dict(checks=checks)
                         if point>=104:
                             import struct
-                            raw=bridge.memdump(0x2080,18);f=0xc9+(point-104)*16
+                            raw=bridge.memdump(adapter.PROBE0,18);f=0xc9+(point-104)*16
                             expected=struct.pack('<BHHHHB',0x12,0x2200,0x78 if f&16 else 0x5678,0x34 if f&16 else 0x1234,0xabcd,f)
                             require(raw[:10]==expected and raw[10:12]==raw[12:14] and raw[14]==program['labels']['signal_context']>>16 and raw[16:18]==b'\xef\xbe','Serial IRQ native context: '+raw.hex())
                             observed['context']=raw.hex()
@@ -153,7 +154,7 @@ def main():
                         checks=data(bridge,program['image'],'checks',True)
                         count=18 if variant==0 else 15
                         require(checks[:count]==[1]*count and checks[count:]==[0]*(32-count),'IRQ queue: '+str(checks))
-                        if point==99: require(bridge.peek16(0x20a0)>0,'IRQ NMI checkpoints did not execute')
+                        if point==99: require(bridge.peek16(adapter.PROBE1)>0,'IRQ NMI checkpoints did not execute')
                         observed=dict(checks=checks,order=data(bridge,program['image'],'order'))
                     elif fixture in ('wait','lifecycle'):
                         checks=data(bridge,program['image'],'checks',True)
@@ -190,7 +191,7 @@ def main():
                     if point<0: require(result['signal_nmi_checkpoints']>0,'Signal checkpoint did not execute')
                     if fixture=='far': require(result['native_irq_count']>0,'No concurrent timer IRQ')
                 except Exception:
-                    (program['output']/'failure.json').write_text(json.dumps(dict(regs=bridge.regs(),state=bridge.memdump(0x2000,64).hex()),indent=2)+'\n')
+                    (program['output']/'failure.json').write_text(json.dumps(dict(regs=bridge.regs(),state=bridge.memdump(adapter.STATE,64).hex()),indent=2)+'\n')
                     raise
                 report['cases'].append(dict(name=name,status='pass',build=program['build'],runtime=result,observed=observed))
         report['status']='pass'

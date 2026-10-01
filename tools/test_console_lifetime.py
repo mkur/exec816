@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Configured console startup, rollback, close/reopen and service retirement."""
+import adapter_state as adapter
 import argparse,json
 import generate_tasks
 from pathlib import Path
@@ -39,11 +40,11 @@ def run(t,out,mode,optimize,paced=False,from_build=None):
         def at(name):return next(x['address'] for x in p['image']['data'] if '_NATIVECONSOLELIFETIME_'+name+'_' in x['name'])
         def rendezvous(condition):
             b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition)
-            b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
                 r=original();pc=int(r['PC'].lstrip('$'),16)
-                if pc in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(0x2000)==0xffff,'Console stopped before lifecycle checkpoint')
+                if pc in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(adapter.STATE)==0xffff,'Console stopped before lifecycle checkpoint')
                 return r
             b.regs=regs
             try:run_to(b,p['labels']['native_nmi'],3000,60,condition)

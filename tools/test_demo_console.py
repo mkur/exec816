@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """D1: actual keys and tiles, prime progress, startup rollback and clean exit."""
+import adapter_state as adapter
 import argparse
 import json
 from pathlib import Path
@@ -41,12 +42,12 @@ def run(out, mode, reuse=False):
             b.bp_clear_all()
             marker = p['labels']['native_nmi']
             b.bp_set(marker, condition=condition)
-            b.bp_set(p['labels']['done'], condition='dw($2000)!=$ffff')
+            b.bp_set(p['labels']['done'], condition=adapter.STOPPED)
             original = b.regs
             def regs():
                 state = original()
                 if int(state['PC'].lstrip('$'), 16) in (p['labels']['done'], p['labels']['done']+2):
-                    require(b.peek16(0x2000) == 0xffff, 'Demo stopped before checkpoint')
+                    require(b.peek16(adapter.STATE) == 0xffff, 'Demo stopped before checkpoint')
                 return state
             b.regs = regs
             try:

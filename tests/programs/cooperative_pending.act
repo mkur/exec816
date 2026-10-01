@@ -2,7 +2,7 @@ MODULE PENDING
 USE EXEC
 USE EXECOS
 INCLUDE "../../lib/exec/exec-abi.inc"
-VOLATILE BYTE osBusy=$2006
+VOLATILE BYTE osBusy=E816_OS_BUSY
 TaskRecord task0=E816_TASK0
 BYTE phase,peerPhase
 CARD overflow,writeStatus

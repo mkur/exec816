@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Build and execute the shipped resident entry without test hooks."""
+import adapter_state as adapter
 import argparse,json,time
 from pathlib import Path
 from native_program import ROOT,build,compiler,require,sha256,verify_machine
@@ -30,7 +31,7 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
         if not no_mount:b.mount(0,str(media))
         cs=p['build']['memory']['console_storage'];ready=cs['INSTANCE']+51
         def wait(condition):
-            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             run_to(b,p['labels']['native_nmi'],12000,240,condition)
         def key(name,value):
             require(b._cmd_ok(f'KEY {name} {value}')['raw_scan'],'Nonphysical entry input');schedule.append(dict(key=name,state=value,frame=b.eval_expr('@frame')))

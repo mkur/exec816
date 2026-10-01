@@ -1,7 +1,8 @@
 MODULE LISTSPROBE
+INCLUDE "../../lib/exec/exec-abi.inc"
 ; Test-only observations. Production EXECLISTS has no dependency on this module.
-PUBLIC VOLATILE CARD ticks=$2034
-VOLATILE BYTE current=$2023
+PUBLIC VOLATILE CARD ticks=E816_VBI_COUNT
+VOLATILE BYTE current=E816_CURRENT
 PUBLIC VOLATILE BYTE enabled,sharedMode
 PUBLIC VOLATILE CARD mutations
 PUBLIC CARD ARRAY probeVisits(2),probeFailures(2),probeOverlaps(2)

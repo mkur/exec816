@@ -3,6 +3,7 @@
 These are separate from passive serial timing; race copies deliberately stop
 inside partial metadata mutations until both real hardware entries execute.
 """
+import adapter_state as adapter
 from library_paths import read_source
 import json
 from native_program import ROOT,build,command,compiler,execute,platform_files,require,sha256,verify_machine
@@ -123,7 +124,7 @@ def case(bridge,toolchain,output,optimize,variant,bank=1):
     except Exception:
         observed={n:data(bridge,program['image'],n) for n in
                   (('phase','badIndex','created','consumed','sharedBlock','clearBlock','stage','before','after') if variant=='lifetime' else ('checks',))}
-        (output/'diagnostic.json').write_text(json.dumps(dict(regs=bridge.regs(),state=list(bridge.memdump(0x2000,64)),observed=observed),indent=2)+'\n')
+        (output/'diagnostic.json').write_text(json.dumps(dict(regs=bridge.regs(),state=list(bridge.memdump(adapter.STATE,64)),observed=observed),indent=2)+'\n')
         raise
     require(data(bridge,program['image'],'checks',True)==[1],'Concurrent heap fixture incomplete')
     if variant=='lifetime':

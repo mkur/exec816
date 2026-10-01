@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Public RAW streams: physical keys, shared endpoint, rollback and large output."""
+import adapter_state as adapter
 import argparse,hashlib,json,shutil,time
 from pathlib import Path
 from native_program import ROOT,build,compiler,require,sha256,verify_machine
@@ -29,7 +30,7 @@ def run(t,out,mode,bank=1):
         cs=p['build']['memory']['console_storage'];instance=cs['INSTANCE'];ts=p['build']['task_storage']
         def readfar(addr,n):return bytes(b.eval_expr(f'db(${addr+i:x})') for i in range(n))
         def rendezvous(condition,seconds=240,frames=12000):
-            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs;last_report=time.monotonic()
             def regs():
                 nonlocal last_report
@@ -39,7 +40,7 @@ def run(t,out,mode,bank=1):
                     actual=int.from_bytes(readfar(request+26,4),'little') if request else None
                     print('RAW progress',b.peek16(at('checks')),actual,'frame',b.eval_expr('@frame'),flush=True)
                     last_report=time.monotonic()
-                if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(0x2000)==0xffff,'RAW stopped before checkpoint')
+                if int(r['PC'].lstrip('$'),16) in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(adapter.STATE)==0xffff,'RAW stopped before checkpoint')
                 return r
             b.regs=regs
             try:run_to(b,p['labels']['native_nmi'],frames,seconds,condition)
@@ -89,7 +90,7 @@ def run(t,out,mode,bank=1):
         except Exception:
             request=int.from_bytes(readfar(instance+37,3),'little')
             (out/'failure-device.json').write_text(json.dumps(dict(instance=readfar(instance,62).hex(),request=readfar(request,42).hex() if request else None),indent=2)+'\n')
-            print('RAW checks',data(b,p['image'],'checks',True),'child',data(b,p['image'],'otherChecks',True),'phase',data(b,p['image'],'phase'),'status',b.peek16(0x2000),flush=True);raise
+            print('RAW checks',data(b,p['image'],'checks',True),'child',data(b,p['image'],'otherChecks',True),'phase',data(b,p['image'],'phase'),'status',b.peek16(adapter.STATE),flush=True);raise
         require(data(b,p['image'],'phase')==[6],'Missing RAW completion')
         require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'Console ownership not restored')
         ownership(b,p,out);require(sha256(media)==digest,'Read-only media changed')

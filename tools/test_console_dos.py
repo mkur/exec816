@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Physical typing and bounded line editing alongside one real MyDOS Read."""
+import adapter_state as adapter
 import argparse,hashlib,json,shutil
 from pathlib import Path
 from native_program import ROOT,build,compiler,verify_machine,require,sha256
@@ -27,11 +28,11 @@ def run(t,out,optimize,size,bank=1):
         cs=p['build']['memory']['console_storage'];instance=cs['INSTANCE'];ts=p['build']['task_storage']
         def readfar(at,n):return bytes(b.eval_expr(f'db(${at+i:x})') for i in range(n))
         def rendezvous(condition,timeout=120,frames=6000):
-            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
                 r=original();pc=int(r['PC'].lstrip('$'),16)
-                if pc in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(0x2000)==0xffff,'Console/DOS stopped before checkpoint')
+                if pc in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(adapter.STATE)==0xffff,'Console/DOS stopped before checkpoint')
                 return r
             b.regs=regs
             try:run_to(b,p['labels']['native_nmi'],frames,timeout,condition)
@@ -87,7 +88,7 @@ def run(t,out,optimize,size,bank=1):
             b.poke(at('GATE'),1);b.bp_clear_all()
         try:rt,_=execute(b,p,before_run=before,timeout=1800,frame_limit=30000)
         except Exception:
-            print('Native status',b.memdump(0x2000,64).hex(),flush=True)
+            print('Native status',b.memdump(adapter.STATE,64).hex(),flush=True)
             for index,pool in enumerate(p['build']['memory']['task_pools']):(out/f'fault-stack-{index}.bin').write_bytes(b.memdump(pool['stack_base'],pool.get('stack_bytes',1536)))
             print('Console/DOS counters',{name:b.memdump(at(name),22 if name=='READER' else 2).hex() for name in ('CHECKPOINT','TYPED','DURINGREAD','TEXTREADS','ERRORS','READER')},flush=True);raise
         require(data(b,p['image'],'checkpoint')==[3],'Missing cleanup checkpoint')

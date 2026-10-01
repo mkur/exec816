@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run three DOS fixture tasks in the eight-slot profile and inspect stack use."""
+import adapter_state as adapter
 import argparse,json
 from pathlib import Path
 import test_dos_client as fixture
@@ -13,7 +14,7 @@ def execute(b,p,**kwargs):
     def dump(address,size):
         # execute reads STATUS immediately at the completion breakpoint, before
         # its far-memory helper reuses retired bank-zero stack space.
-        if address==0x2000 and size==64 and not snapshots:
+        if address==adapter.STATE and size==64 and not snapshots:
             for pool in p['build']['memory']['task_pools']:
                 snapshots.append(original_dump(pool['stack_base'],pool.get('stack_bytes',1536)))
             low,high=p['build']['memory']['regions']['kernel-stack']

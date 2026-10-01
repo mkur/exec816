@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Freeze slice 5 execution evidence and reject incomplete ownership gates."""
+from image_data_usage import used as image_data_used
 import argparse,json
 from pathlib import Path
 from native_program import ROOT,require,sha256
@@ -62,8 +63,7 @@ def collect(out):
         for name,digest in {**b['task_inputs'],**b['platform_inputs'],**b['banked_inputs']}.items():
             require(sha256(ROOT/name)==digest,'Source changed: '+name);r['inputs'][name]=digest
         image=json.loads((path.parent/'program.a816.json').read_text())
-        near=sum(len(s['bytes']) for s in image['segments'] if 0x8800<=s['address']<0x9000)
-        near+=sum(s['size'] for s in image['zero_fill'] if 0x8800<=s['address']<0x9000)
+        near=image_data_used(image,b['memory'])
         r['cases'].append(dict(mode=item['mode'],name=item['name'],compiler_revision=b['revision'],override=b['override'],
             image_sha256=b['image_sha256'],xex_sha256=b['xex_sha256'],source_sha256=b['source_sha256'],
             kernel_bank=b['memory']['constants']['KERNEL_BANK'],bank_zero=account(b['memory']),near_image_used=near,

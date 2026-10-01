@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Compile a native Action! image and package it with the hosted XEX launcher."""
+import adapter_state as adapter
 from library_paths import module_args, read_source
 import argparse
 import json
@@ -316,6 +317,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             task_generate(output)
             task_modules = generate_tasks.policy_modules(output,policy_probe,memory,manual_wake,irq_probe,io_test_device,dos_test,dos_system,console_native,sio_request_probe=sio_request_probe,sio_lifetime_probe=sio_lifetime_probe)
         memory['config']['stack_checks']=stack_checks_enabled
+        generate_memory.reserve_image_data(memory)
         memory_hash = generate_memory.generate(output, memory)
         if tasks:
             generate_heap.install_policy(output)
@@ -448,7 +450,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             label, result = "heap_fault", "None"
             arguments, outgoing = [{"alignment":2,"offset":0,"size":2}], 3
         elif name == "EXECOS.Write":
-            label, peak = "console_write", 10
+            label, peak = "console_write", 266 if banked else 10
             arguments = [{"alignment": 1, "offset": 0, "size": 3},
                          {"alignment": 2, "offset": 4, "size": 2}]
             outgoing = 7
@@ -563,6 +565,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
              *([] if optimize else ["--no-opt"]), compile_source], timeout=600)
     require(image_path.stat().st_size <= (64 * 1024 * 1024 if banked else MAX_IMAGE_JSON), "Image manifest too large")
     image = json.loads(image_path.read_text())
+    if banked:
+        generate_memory.validate_compiled_data(image, memory)
     if foreign_image is not None:
         # Foreign functions have their own calling convention and no Action!
         # frame maps. Their load ranges still undergo every image/owner check.
@@ -747,6 +751,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                            "platform/altirraos/hosted.s", "platform/altirraos/layout.inc",
                            "platform/altirraos/hosted.cfg", "lib/exec/execos.act",
                            "abi/exec816-v1.json", "platform/altirraos/exec-abi.inc",
+                           "tools/adapter_state.py", "tools/generate_exec_abi.py",
                            "platform/altirraos/cooperative.s", "lib/exec/exec-abi.inc",
                            "platform/altirraos/cooperative-probe.s", "platform/altirraos/preemptive.s",
                            "lib/exec/exec.act", "lib/exec/execpolicy.act", "tools/library_paths.py")},
@@ -858,10 +863,10 @@ def execute(bridge, program, expected_status=0, timer_irq=False, before_run=None
         before_run(bridge)
     # STATUS starts at $FFFF and is published by finish before restoring the
     # host. Qualify both the breakpoint and polling: REGS exposes only PC16.
-    completion = 'dw($2000)!=$ffff'
+    completion = adapter.STOPPED
     bridge.bp_set(program["labels"]["done"], condition=completion)
     run_to(bridge, program["labels"]["done"], frame_limit, timeout=timeout, condition=completion)
-    state = bridge.memdump(0x2000, 64)
+    state = bridge.memdump(adapter.STATE, 64)
     word = lambda offset: int.from_bytes(state[offset:offset+2], "little")
     result = {"status": word(0), "native_nmi_count": word(2), "native_irq_count": word(4),
               "os_busy": state[6], "return_s": word(8), "return_d": word(10), "return_p": state[12],
@@ -880,18 +885,18 @@ def execute(bridge, program, expected_status=0, timer_irq=False, before_run=None
         require(bridge.memdump(0x02E7, 2) == old_memlo, "OS memory reservation not restored")
     cooperative = program["build"].get("cooperative", False)
     guards = [0x0100, 0x21F0, 0x2300, 0x41F0, 0x4800]
-    domains = [(0x2200, 0x2040 if cooperative else 0x2000, 0, 0x4300, 0x47FF)]
+    domains = [(0x2200, adapter.TASK0 if cooperative else adapter.STATE, 0, 0x4300, 0x47FF)]
     if cooperative:
         guards += [0x23F0, 0x2500, 0x25F0, 0x2700, 0x49F0, 0x5000, 0x51F0, 0x5800]
-        domains += [(0x2400, 0x2050, 0, 0x5300, 0x57FF), (0x2600, 0x2060, 1, 0x4B00, 0x4FFF)]
+        domains += [(0x2400, adapter.TASK1, 0, 0x5300, 0x57FF), (0x2600, adapter.KERNEL_OWNER, 1, 0x4B00, 0x4FFF)]
         result.update({"current": state[35], "switching": state[36], "switches": word(38),
                        "gateway_calls": word(40), "os_calls": word(42), "forwarded_cops": word(44),
                        "os_owner": state[50], "tick_pending": state[48], "vbi_count": word(52),
-                       "vbi_dispatches": word(54), "irq_depth": word(56), "tasks": list(bridge.memdump(0x2040, 32))})
+                       "vbi_dispatches": word(54), "irq_depth": word(56), "tasks": list(bridge.memdump(adapter.TASK0, 32))})
     if program['build'].get('tasks'):
         from generate_tasks import ABI as task_abi
         guards = [0x0100, 0x25F0, 0x2700, 0x49F0, 0x5000]
-        domains = [(0x2600, 0x2060, 1, 0x4B00, 0x4FFF)]
+        domains = [(0x2600, adapter.KERNEL_OWNER, 1, 0x4B00, 0x4FFF)]
         task_records = []
         task_constants = program['build']['task_storage']
         from banked_test_memory import read as far_read
@@ -913,7 +918,7 @@ def execute(bridge, program, expected_status=0, timer_irq=False, before_run=None
         result['live_tasks'] = read_task(task_constants['LIVE'], 1)[0]
         result['idle_runs'] = int.from_bytes(read_task(task_constants['IDLE_RUNS'], 2), 'little')
         result['created'] = int.from_bytes(read_task(task_constants['CREATED'], 2), 'little')
-        result['signal_nmi_checkpoints'] = bridge.peek16(0x2080) if program['build'].get('signal_probe') else 0
+        result['signal_nmi_checkpoints'] = bridge.peek16(adapter.PROBE0) if program['build'].get('signal_probe') else 0
         result['wake_queue'] = list(read_task(task_constants['WAKE'],9))
         result['root_task'] = list(read_task(task_constants['ROOT'],task_constants['TASK_SIZE']))
         padding=min(value for key,value in program['build']['task_storage'].items() if key.startswith('TCB_PADDING') or key=='TCB_LIFETIMEPAD')

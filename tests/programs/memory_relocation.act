@@ -1,0 +1,90 @@
+MODULE MEMORYRELOCATION
+USE EXEC
+USE EXECTASKS
+USE EXECMEMORY
+USE EXECOS
+USE HEAPCORE
+INCLUDE "../../lib/exec/exec-abi.inc"
+
+BYTE hostInput,hostGate
+CARD checks
+VOLATILE CARD ticks=E816_VBI_COUNT
+VOLATILE BYTE finished
+BYTE ARRAY values=[17 34 51 68]
+BYTE ARRAY blank(256)
+BYTE POINTER alias
+EXEC.Task POINTER parent
+
+; Keep a failure bounded and visible to the native observer.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff90)
+  FI
+  checks==+1
+
+RETURN
+
+; Change upper globals from a second Task and notify after its final work.
+PROC Worker()
+  CARD start
+
+  Require(alias(2)=51)
+  alias(2)=99
+  start=ticks
+  WHILE ticks-start<2 DO
+  OD
+  EXEC.Forbid()
+  finished=1
+  EXEC.Signal(parent,$10000)
+
+RETURN
+
+; Repeated adoption must preserve the live heap ownership after boot retirement.
+PROC Main()
+  BYTE POINTER allocation
+  EXECMEMORY.BankRecord before,after
+  CARD bank,index,ignored
+
+  Require(hostInput=$5a)
+  Require(values(0)=17 AND values(3)=68 AND finished=0)
+  FOR index=0 TO 255 DO
+    Require(blank(index)=0)
+    blank(index)=32
+  OD
+  alias=BYTE POINTER(values)
+  parent=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(16)=16)
+  Require(EXEC.CreateTask(c"relocation",0,@Worker,1024)<>NULL)
+  Require(EXEC.Wait($10000)=$10000)
+  Require(finished=1 AND values(2)=99)
+  ignored=EXECTASKS.Sleep(2)
+  Require(hostGate=$a6)
+
+  allocation=EXEC.AllocVec(257,EXEC.MEMF_CLEAR)
+  Require(allocation<>NULL)
+  bank=CARD(ADDRESS(allocation) RSH 16)
+  EXEC.Forbid()
+  Require(EXECMEMORY.Query(bank,@before)=0)
+  Require(before.state=3 AND before.owner=5)
+  Require(EXECMEMORY.Adopt()=0)
+  Require(EXECMEMORY.Init()=0)
+  Require(EXECMEMORY.Query(bank,@after)=0)
+  Require(before.state=after.state AND before.owner=after.owner)
+  EXEC.Permit()
+  Require(allocation(0)=0 AND allocation(256)=0)
+  allocation(256)=123
+  Require(allocation(256)=123)
+  EXEC.FreeVec(allocation)
+  EXEC.FreeSignal(16)
+
+  Require(EXECOS.Write(NULL,0)=1)
+  Require(EXECOS.Write(BYTE POINTER(blank),255)=1)
+  Require(EXECOS.Write(BYTE POINTER(blank),256)=$ff01)
+  Require(EXECOS.Write(BYTE POINTER($8800),1)=$ff01)
+  Require(EXECOS.Write(BYTE POINTER(c"UPPER GLOBALS OK"),16)=1)
+  finished=2
+
+RETURN
+
+ENDMODULE

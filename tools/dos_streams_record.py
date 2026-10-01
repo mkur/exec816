@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Collect completed DOS stream slices without rewriting earlier evidence."""
+from image_data_usage import used as image_data_used
 import argparse
 import json
 from pathlib import Path
@@ -97,8 +98,7 @@ def collect(directory):
                 require(sha256(ROOT / relative) == digest, 'Source changed during slice: ' + relative)
                 record['inputs'][relative] = digest
             image = json.loads((path / 'program.a816.json').read_text())
-            near = sum(len(s['bytes']) for s in image['segments'] if 0x8800 <= s['address'] < 0x9000)
-            near += sum(s['size'] for s in image['zero_fill'] if 0x8800 <= s['address'] < 0x9000)
+            near=image_data_used(image,build['memory'])
             baseline_near = None
             if result['name'] in ('files', 'directories', 'lifetime', 'retry'):
                 old_path = ROOT / 'build/compiler-qualification-ae1f555' / ('dos-' + group['mode']) / result['name']

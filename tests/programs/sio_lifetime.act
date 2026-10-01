@@ -6,6 +6,7 @@ USE SIODRIVER
 USE TASKSTACKS
 USE IORESIDENTMETA
 USE HEAPCORE
+INCLUDE "../../lib/exec/exec-abi.inc"
 EXEC.Task first,second,stopper
 EXEC.Task POINTER parent
 PROC POINTER absent()
@@ -31,7 +32,7 @@ PROC UntilCheckpoint(BYTE value)
   CARD POINTER clock
   CARD before
 
-  clock=CARD POINTER($2034)
+  clock=CARD POINTER(E816_VBI_COUNT)
   before=clock^
   WHILE checkpoint^<>value DO
     IF CARD(clock^-before)>100 THEN

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Qualify INITAD loading, bank policy and banked preemption on pinned Altirra."""
+import adapter_state as adapter
 from library_paths import read_source
 from native_abi import FIELDS
 import argparse
@@ -146,7 +147,7 @@ done:
     bridge.memload(c['READY'],boot)
     bridge.memload(0x25f0,bytes([0xa5])*0x120)
     bridge.memload(0x2600,bytes(256))
-    bridge.memload(0x2600+FIELDS["owner_pointer"]["offset"],struct.pack('<HBBHH',0x2060,0,1,0x4b00,0x4fff))
+    bridge.memload(0x2600+FIELDS["owner_pointer"]["offset"],struct.pack('<HBBHH',adapter.KERNEL_OWNER,0,1,0x4b00,0x4fff))
     bridge.memload(0x49f0,bytes([0xa5])*0x620)
     bridge.bp_set(labels['done'])
     try:
@@ -197,7 +198,7 @@ def load_to_start(bridge, program, poison=False, bounds=None):
         bridge.memload(c['TABLE'],bytes([0xa5])*c['TABLE_BYTES'])
         far_write(bridge,0x10000,bytes([0x5a])*4096,program['output'])
         if bounds == 'bounds-low':
-            bridge.memload(0x2e7,struct.pack('<H',0x2001))
+            bridge.memload(0x2e7,struct.pack('<H',(adapter.STATE+1)))
         elif bounds == 'bounds-top':
             program['test_memtop'] = bridge.memdump(0x2e5,2)
             bridge.memload(0x2e5,struct.pack('<H',0x8fff))
@@ -307,7 +308,11 @@ timer_chain:
         return {'context':raw.hex(),'callback_vbi':True,'callback_irq_count':irq_count,
                 'xex_sha256':sha256(program['xex'])}
     segs = xex_segments(program['xex'].read_bytes())
-    first = next(i for i,(a,d) in enumerate(segs) if a == c['STAGE'] and len(d)>8)
+    # The first extent may be BSS now that ordinary globals live in upper RAM.
+    # A ZERO record has only its eight-byte header, but still mutates the image.
+    first = next(i for i,(a,d) in enumerate(segs)
+                 if a == c['STAGE'] and int.from_bytes(d[4:6],'little'))
+    expected_image = bytearray([0x5a])*4096
     expected_error = 3
     if variant in ('bounds-low','bounds-top'):
         expected_error = 1
@@ -319,6 +324,14 @@ timer_chain:
         segs.append((0x2e0,struct.pack('<H',program['labels']['loader_start'])))
         expected_error = 4
     elif variant == 'replay':
+        # The original record is accepted before its replay is rejected.
+        index, offset, count, kind, _ = struct.unpack('<HHHBB',segs[first][1][:8])
+        descriptor = (output/'manifest.bin').read_bytes()[32+c['TABLE_BYTES']+index*8:]
+        destination = int.from_bytes(descriptor[:3],'little')+offset
+        payload = bytes(count) if kind == 1 else segs[first][1][8:]
+        for i,value in enumerate(payload):
+            if 0x10000 <= destination+i < 0x11000:
+                expected_image[destination+i-0x10000] = value
         segs[first+2:first+2] = segs[first:first+2]
     elif variant == 'extra-callbacks':
         segs = [item for pair in ((item,(0x2e2,struct.pack('<H',program['labels']['loader_init'])))
@@ -344,7 +357,7 @@ timer_chain:
         require(bridge.memdump(c['TABLE'],c['TABLE_BYTES']) == bytes([0xa5])*c['TABLE_BYTES'],
                 'Manifest failure published partial claims')
     if variant in ('index','offset','count','kind','reserved','manifest','early','replay','bounds-low','bounds-top'):
-        require(far_read(bridge,0x10000,4096,output) == bytes([0x5a])*4096,'Rejected record wrote image bytes')
+        require(far_read(bridge,0x10000,4096,output) == bytes(expected_image),'Rejected record wrote image bytes')
     return {'error':error,'initialized':bridge.memdump(program['labels']['loader_initialized'],1)[0],
             'xex_sha256':sha256(program['xex'])}
 

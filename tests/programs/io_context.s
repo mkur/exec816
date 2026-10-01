@@ -1,3 +1,4 @@
+.include "exec-abi.inc"
 ; Qualification only: native caller, arbitrary DBR, exact result/context capture.
 .setcpu "65816"
 .smart
@@ -35,10 +36,10 @@
         tcd
     .elseif VARIANT=3
         lda #1
-        sta f:$2038
+        sta f:E816_IRQ_DEPTH
     .elseif VARIANT=4
         lda #1
-        sta f:$2024
+        sta f:E816_SWITCHING
     .endif
     jsl CALL
     sta f:CHECKS

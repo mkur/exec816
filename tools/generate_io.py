@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate the current native device contract and validate implemented bindings."""
+import adapter_state as adapter
 import argparse
 import json
 from pathlib import Path
@@ -151,7 +152,7 @@ def registration_include(output,memory,test_device=False):
     write(Path(output)/'io-storage-action.inc',HEADER+''.join(
         f'CONST IS_{name}=${value:x}\n' for name,value in memory['io_storage'].items())+
         f'CONST IS_TEST_DEVICE={int(test_device)}\n',False)
-    switching=json.loads((ROOT/'abi/exec816-v1.json').read_text())['addresses']['SWITCHING']
+    switching=adapter.addresses(memory['profile'])['SWITCHING']
     meta='MODULE IORESIDENTMETA\n'+f'PUBLIC CONST TAG=${ABI["resident_dispatch"]["tag"]:x}, BASE=${memory["io_storage"]["BASE"]:x}, TEST_DEVICE={int(test_device)}, SWITCHING=${switching:x}\n'
     for name,resident in ABI['resident_dispatch']['residents'].items():
         meta+=f'PUBLIC CONST {name}={resident["id"]}\n'

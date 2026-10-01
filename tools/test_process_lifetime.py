@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Focused P1 emitted-code lifecycle, rollback and capacity regression."""
+import adapter_state as adapter
 from library_paths import library_file, read_source
 import argparse
 import json
@@ -65,8 +66,8 @@ def exercise(program, mode, modified):
     def inspect_entries(bridge):
         for label in ('general_task_start','general_finalizer_start'):
             address = program['labels'][label]
-            bridge.bp_set(address,condition='db($2023)=1')
-            run_to(bridge,address,frame_limit=4000,timeout=60,condition='db($2023)=1')
+            bridge.bp_set(address,condition=f'db(${adapter.CURRENT:04x})=1')
+            run_to(bridge,address,frame_limit=4000,timeout=60,condition=f'db(${adapter.CURRENT:04x})=1')
             registers = bridge.regs()
             require(int(registers['P'].lstrip('$'),16)&0x3c == 0, 'Invalid Process entry/return width, decimal or IRQ state')
             snapshots.append(dict(routine=label,address=address,registers=registers))
@@ -76,7 +77,7 @@ def exercise(program, mode, modified):
         try:
             runtime,_ = execute(bridge,program,before_run=inspect_entries,timeout=180,frame_limit=9000)
         except Exception:
-            print('Process state:',{name:data(bridge,program['image'],name,True) for name in ('checks','iteration','entered','completed')},bridge.memdump(0x2000,64).hex(),flush=True)
+            print('Process state:',{name:data(bridge,program['image'],name,True) for name in ('checks','iteration','entered','completed')},bridge.memdump(adapter.STATE,64).hex(),flush=True)
             raise
         for prefix in ('M_PROCESS_RUN_','M_PROCESS_FINISH_','M_PROCESSLIFETIME_CHILD_'):
             routine = next(r for r in program['image']['routines'] if r['name'].startswith(prefix))

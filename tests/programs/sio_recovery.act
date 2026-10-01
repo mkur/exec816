@@ -9,6 +9,7 @@ USE TASKSTACKS
 USE EXECLISTS
 USE HEAPCORE
 USE IORESIDENTMETA
+INCLUDE "../../lib/exec/exec-abi.inc"
 
 TYPE ActiveSlot=[EXEC.IORequest POINTER value]
 EXEC.MsgPort POINTER port
@@ -227,7 +228,7 @@ PROC LatePreparing()
   INT error
 
   offline=BYTE POINTER($0f082d)
-  clock=CARD POINTER($2034)
+  clock=CARD POINTER(E816_VBI_COUNT)
   checkpoint^=1
   before=clock^
   EXEC.SendIO(EXEC.IORequest POINTER(queued))

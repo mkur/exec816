@@ -1,4 +1,5 @@
 """Real D8 short-frame failure, queued D1 work, software cleanup and reset latch."""
+import adapter_state as adapter
 import argparse,json,os,shutil
 from pathlib import Path
 from native_program import ROOT,build,compiler,verify_machine,sha256,require
@@ -31,7 +32,7 @@ def run(t,out,mode):
             print('Fault armed',flush=True)
         try:runtime,_=execute(b,p,before_run=before,expected_status=0xff93,timeout=600,frame_limit=30000)
         except Exception:
-            print('native state',b.memdump(0x2000,64).hex(),'checks',data(b,p['image'],'checks',True),flush=True)
+            print('native state',b.memdump(adapter.STATE,64).hex(),'checks',data(b,p['image'],'checks',True),flush=True)
             for i,pool in enumerate(p['build']['memory']['task_pools']):(out/f'fault-stack-{i}.bin').write_bytes(b.memdump(pool['stack_base'],pool.get('stack_bytes',1536)))
             raise
         hardware=read(b,p['build']['task_storage']['BASE']+0x800,128,out)

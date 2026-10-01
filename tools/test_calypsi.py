@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run the Calypsi message example through native Tasks, console and cleanup."""
+import adapter_state as adapter
 import argparse
 import json
 from pathlib import Path
@@ -100,7 +101,7 @@ def seed_and_observe(bridge, program, foreign):
     pools = program['build']['memory']['task_pools']
     for slot in (0, 2):
         entry = program['labels']['task_start' if slot == 0 else 'general_task_start']
-        condition = f'db($2023)={slot}'
+        condition = f'db(${adapter.CURRENT:04x})={slot}'
         bridge.bp_set(entry, condition=condition)
         run_to(bridge, entry, frame_limit=3000, timeout=90, condition=condition)
         bridge.bp_clear_all()
@@ -118,7 +119,7 @@ def seed_and_observe(bridge, program, foreign):
     observations = []
     for slot in (2, 0):
         progress = foreign['symbols']['progress'] + (2 if slot == 2 else 0)
-        condition = f'(db($2023)={slot})&(dw(${progress:x})>0)&(dw(${progress:x})<30000)'
+        condition = f'(db(${adapter.CURRENT:04x})={slot})&(dw(${progress:x})>0)&(dw(${progress:x})<30000)'
         bridge.bp_set(marker, condition=condition)
         run_to(bridge, marker, frame_limit=3000, timeout=90, condition=condition)
         bridge.bp_clear_all()

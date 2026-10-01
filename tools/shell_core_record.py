@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """Collect emitted shell/parser, real keys/display and shipped-entry evidence."""
+from image_data_usage import used as image_data_used
 import argparse,json
 from library_paths import record_input_paths
 from pathlib import Path
 from native_program import ROOT,require,sha256
-from ports_budget import account,current
+from ports_budget import historical,account,current
 CASES={'physical','parser','start-failure','entry','entry-no-mount','heap'}
 STAGES={'startup','initial','quoted-echo','one','thirty-six','thirty-seven','back-to-thirty-six','max-line','max-command','overflow','tab','typeahead','input-loss-resync','exit'}
 
-def validate(r):
+def validate(r,*,current_layout=False):
+    budgets=current()['after'] if current_layout else historical()
     r=record_input_paths(r)
     require(r['status']=='pass' and len(r['cases'])==12,'Incomplete shell core')
     require({(c['mode'],c['name'])for c in r['cases']}=={(m,n)for m in ('raw','opt')for n in CASES},'Missing shell mode/case')
@@ -17,7 +19,7 @@ def validate(r):
     for c in r['cases']:
         require(c['status']=='pass' and c['runtime']['status']==0 and c['runtime']['guards']=='intact','Native shell failure')
         require(c['compiler_revision']==r['compiler']['revision'] and not c['override'],'Compiler override')
-        require(c['bank_zero']==current()['after']['eight'],'Wrong task/bank-zero budget')
+        require(c['bank_zero']==budgets['eight'],'Wrong task/bank-zero budget')
         require(all(r['inputs'][p]==h for p,h in c['inputs'].items()),'Mixed shell sources')
         require(all(s['untouched_above_floor']>=0 for s in c['runtime']['stack_observations']),'Task interrupt reserve used')
         require(c['runtime']['kernel_stack_observation']['interrupt_reserve_bytes_touched']==0,'Kernel reserve used')
@@ -51,7 +53,7 @@ def collect(directory):
             inputs={**b['task_inputs'],**b['platform_inputs'],**b['banked_inputs'],**c['source_inputs']}
             for path,h in inputs.items():require(sha256(ROOT/path)==h,'Changed core input: '+path);r['inputs'][path]=h
             im=json.loads((out/'program.a816.json').read_text())
-            near=sum(len(s['bytes'])for s in im['segments']if 0x8800<=s['address']<0x9000)+sum(s['size']for s in im['zero_fill']if 0x8800<=s['address']<0x9000)
+            near=image_data_used(im,b['memory'])
             result=dict(name=name,mode=mode,status=c['status'],compiler_revision=b['revision'],override=b['override'],compiler_binary_sha256=b['binary_sha256'],abi_sha256=b['abi_sha256'],
                 inputs=inputs,generated=b['task_generated'],image_sha256=b['image_sha256'],xex_sha256=b['xex_sha256'],source_sha256=b['source_sha256'],
                 bank_zero=account(b['memory']),near_image_used=near,runtime={k:v for k,v in c['runtime'].items()if not isinstance(v,list)or k=='stack_observations'},machine=c['machine'],
@@ -63,7 +65,7 @@ def collect(directory):
             r['cases'].append(result)
     for path in ('tools/shell_core_record.py','toolchain/altirra-shell-console.json','toolchain/patches/altirra-shell-keys.patch'):
         r['inputs'][path]=sha256(ROOT/path)
-    validate(r);return r
+    validate(r,current_layout=True);return r
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('directory',type=Path);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
     a.output.write_text(json.dumps(collect(a.directory),indent=2)+'\n')

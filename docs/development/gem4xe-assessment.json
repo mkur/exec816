@@ -1,0 +1,500 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-01",
+  "tier": "development",
+  "scope": "Source assessment and host layout arithmetic only. No combined link, target execution, emulator run or hardware qualification.",
+  "exec816": {
+    "revision": "477f091e8725d22cc57c270f0673b8220fc8c0ef",
+    "source_sha256": {
+      "tools/generate_memory.py": "306c95ef796fe36c77952f4b930a3d5a737e62c76ffa47617c78473652ff3a86",
+      "tools/task_capacity.py": "370d8a8d68bc1a2da63c177f94a70b329d208efa6595d7d14a772dcd739cdff2",
+      "platform/altirraos/memory-1m.json": "238638b9783f3b0f553a2c39d8630b6b9936dc85b7d69d4cc48b29d0989cf976",
+      "config/kernel.json": "84f866b52a8c694bd888c67d93cc5b131c8d4a762901a327dc7d70ba45d4fd1d",
+      "abi/native-dp.json": "a403ba71b1faeba2cbdb0c7d2ed82854d79d3f7ae35ff734bfb3789569f860c4",
+      "platform/altirraos/cooperative.s": "e1d99ca66c6b269fd92c28d9570204a4d4d89741f3e41141600739b1c3087c2b",
+      "platform/altirraos/preemptive.s": "9f16a897205e863a33a8bdc6e67c512a008cf1969f0c6b208ea2ca6ea811bd11",
+      "platform/altirraos/sio.s": "83c0e50912d802acf0e2f8c7c8f03cd085161ef752fe4b02a1939a766b49670d",
+      "platform/altirraos/console.s": "ff4ed9356239bb00c32866cc362633f91efcfd97ddaebd23e047586510b29406",
+      "tools/build_calypsi.py": "4b711ea60816a8b8ee9a0e6e815712208a143f363e5f6d1750c52ba2a02f7680",
+      "toolchain/actionc.json": "33200a57d20a8df748283333aad8534e9c890ff1eebbdc1167eb74f45ece09d2",
+      "toolchain/altirra-shell-paced.json": "8cecbf5e11039cbc8163ad11b2b53a2c7a5c4a6f27286bdeef284252135af068"
+    }
+  },
+  "gem4xe": {
+    "repository": "https://github.com/slaapliedje/gem4xe.git",
+    "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+    "version": "0.9.4",
+    "source_sha256": {
+      "VERSION": "a61cc7a990558a2b76c4a814eb233267e219158dcf184b6b30ce458d27027674",
+      "Makefile": "95d773ab3aeea30ff121dbddda2bd7b9dfc5d2da736e8bd7f1ef08e919a4ea44",
+      "src/gem.c": "e34162defae860183d59dff61784a87f29300ba0241d682ce258b7787d5ef2c1",
+      "src/gem4xe.scm": "2659e9a335454bec85491c3706e3914d33e87b869e0c0309856830b0db8c521b",
+      "src/portab.h": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+      "src/sys/abi.s": "7af96d18f3ce39340bc0655f69cea13e23fa3b971c90875d1d0fe2c4352a83af",
+      "src/sys/sei.s": "9a2b725e27bcdc60b142d8e2552316708f2f4c6766d829560ed0d9908b7f8f0a",
+      "src/sys/ctx.s": "d02f03ef6783d53bc0242d44be6fcf751dcc3f13b16df4ba0c58e6738c0ea3cc",
+      "src/sys/ctx.h": "7991b9d8f9b7ac3bfcbdaccf698b03c5b72a68d64cd551a90bdc7e9879006aa9",
+      "src/sys/app.c": "42057abdb9b13f750653d092b736a63b2e34b38beb82cd6ed62e672ca0014395",
+      "src/sys/farmem.c": "8371aa887a336c9f6be42c3861b74f84c34cdb868afa65f3cd49b62162e46874",
+      "src/sys/gemdos.c": "48b41c9fa80609569bf4338b009b4339ce96fdcce98960265c9c7adf50595d91",
+      "src/sys/irq.c": "21ee1e81a572840526300e4bfd04f82dd2e9e924d13b1271b82cac49df1dc8fa",
+      "src/app/crt_gemapp.s": "527d6111c05f3f4bad4d14fec68871fdd46f5c2ffffe5b8f24ef881e5c1ff938",
+      "src/aes/proc.h": "c52d75a0badc5705c3c38f3cb85dcc6b81338372113095948936a96fd6c48382",
+      "src/aes/proc.c": "f35c9c417f7ab09ff701d437180e55784ca4f558bc122946322a5533a9eb4aa2",
+      "src/aes/event.c": "5b406b1fef399c0b0f47bafa5908b8f453c8ca9dc842d792fb01c056e8c48e43",
+      "src/aes/wind.c": "d621c0d8a48991dfa79f001d62745ab9a13b2f7d7c4d5a982c5961347328a527",
+      "src/aes/shel.c": "c6d8e484e72bb03a1a62894e1b6b7e16678204bd5912581b3a549fb45e67cc1e",
+      "src/aes/rsrc.c": "9eb1ca4609392d765247cc169e331d52461008e392241982d877aa827e1aed28",
+      "src/vdi/pointer.h": "781f7b81138a7d935d2336ab858b08e87a8f5f6a4597349417b9dd81d1977b78",
+      "src/vdi/vdidev.h": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f",
+      "src/vbxe/vbxe.h": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+      "src/antic/antic.h": "6d62e2a025821c158df30efd71cd2de27a55c2f9100420b553ae511f5453ef95"
+    }
+  },
+  "layout_generation": {
+    "functions": [
+      "generate_memory.layout(upper_table=True)",
+      "task_capacity.configure(memory, 8, 1024, 512)"
+    ],
+    "bank_zero_budget": {
+      "fixed_runtime": 10560,
+      "public": [
+        2080,
+        1568,
+        1568,
+        1568,
+        1568,
+        1568,
+        1568,
+        1568
+      ],
+      "idle": 1056,
+      "runtime_excluding_os": 24672,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 61536,
+      "loading_including_os": 57232
+    },
+    "task_pools": [
+      {
+        "stack_bytes": 1536,
+        "dp_reserved_bytes": 512,
+        "interrupt_reserve": 256,
+        "dp": 8704,
+        "stack_base": 16896
+      },
+      {
+        "stack_bytes": 1024,
+        "dp_reserved_bytes": 512,
+        "interrupt_reserve": 256,
+        "dp": 9216,
+        "stack_base": 20992
+      },
+      {
+        "stack_bytes": 1024,
+        "dp_reserved_bytes": 512,
+        "interrupt_reserve": 256,
+        "dp": 10240,
+        "stack_base": 26640
+      },
+      {
+        "stack_bytes": 1024,
+        "dp_reserved_bytes": 512,
+        "interrupt_reserve": 256,
+        "dp": 10752,
+        "stack_base": 27696
+      },
+      {
+        "stack_bytes": 1024,
+        "dp_reserved_bytes": 512,
+        "interrupt_reserve": 256,
+        "dp": 11776,
+        "stack_base": 28752
+      },
+      {
+        "stack_bytes": 1024,
+        "dp_reserved_bytes": 512,
+        "interrupt_reserve": 256,
+        "dp": 22272,
+        "stack_base": 29808
+      },
+      {
+        "stack_bytes": 1024,
+        "dp_reserved_bytes": 512,
+        "interrupt_reserve": 256,
+        "dp": 22784,
+        "stack_base": 30864
+      },
+      {
+        "stack_bytes": 1024,
+        "dp_reserved_bytes": 512,
+        "interrupt_reserve": 256,
+        "dp": 23296,
+        "stack_base": 31920
+      },
+      {
+        "stack_bytes": 512,
+        "dp_reserved_bytes": 512,
+        "interrupt_reserve": 256,
+        "dp": 23808,
+        "stack_base": 32976
+      }
+    ],
+    "runtime_reservations": [
+      {
+        "name": "os-low",
+        "address": 0,
+        "size": 8192
+      },
+      {
+        "name": "state",
+        "address": 8192,
+        "size": 256
+      },
+      {
+        "name": "dp0",
+        "address": 8688,
+        "size": 512
+      },
+      {
+        "name": "dp1",
+        "address": 9200,
+        "size": 512
+      },
+      {
+        "name": "kernel-dp",
+        "address": 9712,
+        "size": 288
+      },
+      {
+        "name": "dp2",
+        "address": 10224,
+        "size": 512
+      },
+      {
+        "name": "dp3",
+        "address": 10736,
+        "size": 512
+      },
+      {
+        "name": "boot-state",
+        "address": 11264,
+        "size": 256
+      },
+      {
+        "name": "dp4",
+        "address": 11760,
+        "size": 512
+      },
+      {
+        "name": "resident",
+        "address": 12288,
+        "size": 4096
+      },
+      {
+        "name": "stack0",
+        "address": 16880,
+        "size": 1568
+      },
+      {
+        "name": "kernel-stack",
+        "address": 18928,
+        "size": 1568
+      },
+      {
+        "name": "stack1",
+        "address": 20976,
+        "size": 1056
+      },
+      {
+        "name": "dp5",
+        "address": 22256,
+        "size": 512
+      },
+      {
+        "name": "dp6",
+        "address": 22768,
+        "size": 512
+      },
+      {
+        "name": "dp7",
+        "address": 23280,
+        "size": 512
+      },
+      {
+        "name": "dp8",
+        "address": 23792,
+        "size": 512
+      },
+      {
+        "name": "manifest",
+        "address": 24576,
+        "size": 2048
+      },
+      {
+        "name": "stack2",
+        "address": 26624,
+        "size": 1056
+      },
+      {
+        "name": "stack3",
+        "address": 27680,
+        "size": 1056
+      },
+      {
+        "name": "stack4",
+        "address": 28736,
+        "size": 1056
+      },
+      {
+        "name": "stack5",
+        "address": 29792,
+        "size": 1056
+      },
+      {
+        "name": "stack6",
+        "address": 30848,
+        "size": 1056
+      },
+      {
+        "name": "stack7",
+        "address": 31904,
+        "size": 1056
+      },
+      {
+        "name": "stack8",
+        "address": 32960,
+        "size": 544
+      },
+      {
+        "name": "near-image",
+        "address": 34816,
+        "size": 2048
+      },
+      {
+        "name": "os-high",
+        "address": 36864,
+        "size": 28672
+      }
+    ]
+  },
+  "findings": {
+    "unreserved_bytes": 4000,
+    "largest_unreserved_span": 1312,
+    "unreserved_spans": [
+      {
+        "address": 8448,
+        "size": 240
+      },
+      {
+        "address": 10000,
+        "size": 224
+      },
+      {
+        "address": 11248,
+        "size": 16
+      },
+      {
+        "address": 11520,
+        "size": 240
+      },
+      {
+        "address": 12272,
+        "size": 16
+      },
+      {
+        "address": 16384,
+        "size": 496
+      },
+      {
+        "address": 18448,
+        "size": 480
+      },
+      {
+        "address": 20496,
+        "size": 480
+      },
+      {
+        "address": 22032,
+        "size": 224
+      },
+      {
+        "address": 24304,
+        "size": 272
+      },
+      {
+        "address": 33504,
+        "size": 1312
+      }
+    ],
+    "gem_engine_and_pool": {
+      "address": 8192,
+      "size": 24576,
+      "overlaps": [
+        {
+          "name": "state",
+          "address": 8192,
+          "size": 256
+        },
+        {
+          "name": "dp0",
+          "address": 8688,
+          "size": 512
+        },
+        {
+          "name": "dp1",
+          "address": 9200,
+          "size": 512
+        },
+        {
+          "name": "kernel-dp",
+          "address": 9712,
+          "size": 288
+        },
+        {
+          "name": "dp2",
+          "address": 10224,
+          "size": 512
+        },
+        {
+          "name": "dp3",
+          "address": 10736,
+          "size": 512
+        },
+        {
+          "name": "boot-state",
+          "address": 11264,
+          "size": 256
+        },
+        {
+          "name": "dp4",
+          "address": 11760,
+          "size": 512
+        },
+        {
+          "name": "resident",
+          "address": 12288,
+          "size": 4096
+        },
+        {
+          "name": "stack0",
+          "address": 16880,
+          "size": 1568
+        },
+        {
+          "name": "kernel-stack",
+          "address": 18928,
+          "size": 1568
+        },
+        {
+          "name": "stack1",
+          "address": 20976,
+          "size": 1056
+        },
+        {
+          "name": "dp5",
+          "address": 22256,
+          "size": 512
+        },
+        {
+          "name": "dp6",
+          "address": 22768,
+          "size": 512
+        },
+        {
+          "name": "dp7",
+          "address": 23280,
+          "size": 512
+        },
+        {
+          "name": "dp8",
+          "address": 23792,
+          "size": 512
+        },
+        {
+          "name": "manifest",
+          "address": 24576,
+          "size": 2048
+        },
+        {
+          "name": "stack2",
+          "address": 26624,
+          "size": 1056
+        },
+        {
+          "name": "stack3",
+          "address": 27680,
+          "size": 1056
+        },
+        {
+          "name": "stack4",
+          "address": 28736,
+          "size": 1056
+        },
+        {
+          "name": "stack5",
+          "address": 29792,
+          "size": 1056
+        },
+        {
+          "name": "stack6",
+          "address": 30848,
+          "size": 1056
+        },
+        {
+          "name": "stack7",
+          "address": 31904,
+          "size": 864
+        }
+      ]
+    },
+    "gem_vbxe_aperture": {
+      "address": 32768,
+      "size": 4096,
+      "overlaps": [
+        {
+          "name": "stack7",
+          "address": 32768,
+          "size": 192
+        },
+        {
+          "name": "stack8",
+          "address": 32960,
+          "size": 544
+        },
+        {
+          "name": "near-image",
+          "address": 34816,
+          "size": 2048
+        }
+      ]
+    },
+    "gem_antic_framebuffer": {
+      "address": 33024,
+      "size": 7680,
+      "overlaps": [
+        {
+          "name": "stack8",
+          "address": 33024,
+          "size": 480
+        },
+        {
+          "name": "near-image",
+          "address": 34816,
+          "size": 2048
+        },
+        {
+          "name": "os-high",
+          "address": 36864,
+          "size": 3840
+        }
+      ]
+    },
+    "matches_existing_demo_layout": true
+  },
+  "bank_zero_reservation_delta": {
+    "fixed_bytes": 0,
+    "per_task_bytes": 0,
+    "reason": "Assessment only; no implementation or memory profile changed."
+  },
+  "qualification": "not_run"
+}

@@ -1,4 +1,5 @@
 """Compare serialized system heap policy with an independent region model."""
+import adapter_state as adapter
 import hashlib
 import json
 import struct
@@ -57,7 +58,7 @@ def case(bridge,toolchain,output,optimize):
         result,_=execute(bridge,program,timer_irq=True,frame_limit=12000,timeout=1200)
     except Exception:
         # Safe parsed state only; bridge transport logs contain credentials.
-        diagnostic=dict(regs=bridge.regs(),state=list(bridge.memdump(0x2000,64)),
+        diagnostic=dict(regs=bridge.regs(),state=list(bridge.memdump(adapter.STATE,64)),
                         completed=data(bridge,program['image'],'completed',True),
                         checks=data(bridge,program['image'],'checks',True))
         (output/'diagnostic.json').write_text(json.dumps(diagnostic,indent=2)+'\n')

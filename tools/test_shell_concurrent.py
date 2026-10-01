@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Eight live Tasks: physical input/display, one DOS Read, memory/messages/signals."""
+import adapter_state as adapter
 from library_paths import read_source
 import argparse,hashlib,json,os,shutil,time
 from pathlib import Path
@@ -50,12 +51,12 @@ def execute_case(p,out,size,speed,trace,marks,schedule=None):
         q=q['address'];m=m['address'];cs=p['build']['memory']['console_storage'];ts=p['build']['task_storage'];instance=cs['INSTANCE']
         def readfar(at,n):return bytes(b.eval_expr(f'db(${at+i:x})') for i in range(n))
         def rendezvous(condition,point='native_nmi',long=False):
-            b.bp_clear_all();address=p['labels'][point];b.bp_set(address,condition=condition);b.bp_set(p['labels']['done'],condition='dw($2000)!=$ffff')
+            b.bp_clear_all();address=p['labels'][point];b.bp_set(address,condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs;last_report=time.monotonic()
             def regs():
                 nonlocal last_report
                 r=original();pc=int(r['PC'].lstrip('$'),16)
-                if pc in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(0x2000)==0xffff,'Concurrent console stopped before checkpoint')
+                if pc in (p['labels']['done'],p['labels']['done']+2):require(b.peek16(adapter.STATE)==0xffff,'Concurrent console stopped before checkpoint')
                 if time.monotonic()-last_report>30:
                     print('Concurrent progress: frame',b.eval_expr('@frame'),'serial completions',b.eval_expr(f'dw(${ts["BASE"]+0x838:x})'),flush=True)
                     last_report=time.monotonic()
@@ -128,7 +129,7 @@ def execute_case(p,out,size,speed,trace,marks,schedule=None):
         except Exception:
             sp=symbol('SHELL')['address'];sp=int.from_bytes(b.memdump(sp,3),'little')
             print('Shell pointer/state',hex(sp),[b.eval_expr(f'dw(${sp+i:x})')for i in (24,28,54)],'readerTask',b.memdump(symbol('READERTASK')['address'],61).hex(),flush=True)
-            print('Native status',b.memdump(0x2000,64).hex(),'probe',b.memdump(q,26).hex(),'mix',b.memdump(m,34).hex(),'reader',b.memdump(reader,22).hex(),flush=True)
+            print('Native status',b.memdump(adapter.STATE,64).hex(),'probe',b.memdump(q,26).hex(),'mix',b.memdump(m,34).hex(),'reader',b.memdump(reader,22).hex(),flush=True)
             for i,pool in enumerate(p['build']['memory']['task_pools']):(out/f'fault-stack-{i}.bin').write_bytes(b.memdump(pool['stack_base'],pool.get('stack_bytes',1536)))
             raise
         if trace:b.profile_stop()

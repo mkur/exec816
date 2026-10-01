@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Qualify simultaneously resident signal Tasks with checked bank-zero pools."""
+import adapter_state as adapter
 import argparse
 import json
 import os
@@ -59,7 +60,7 @@ def check_case(bridge,program,result,args):
         require(queued==[1]*n,'Queue never reached capacity: '+str(queued))
         require(result['created']==n-1 and result['idle_runs']>=2,'Missing burst admission/idle path')
         if args.burst==3:
-            require(bridge.peek16(0x2080)==2 and result['native_irq_count']>=2,'Protected IRQ window failed')
+            require(bridge.peek16(adapter.PROBE0)==2 and result['native_irq_count']>=2,'Protected IRQ window failed')
             require(int.from_bytes(bytes(result['root_task'][24:28]),'little')==2,'Window signal lost/consumed')
         observed=dict(checks=checks,masks=masks,queued=queued)
     else:
@@ -75,12 +76,14 @@ def check_case(bridge,program,result,args):
     if c['TABLE']>=65536:
         table=read(bridge,c['TABLE'],c['TABLE_BYTES'],program['output'])
         require(c['TABLE']==bank<<16 and table[bank*4]==2,'Upper kernel table not adopted')
-        require(program['build']['memory']['profile']['code_origin']==program['build']['memory']['heap_storage']['BASE']+program['build']['memory']['heap_storage']['BYTES'],'Kernel-bank placement mismatch')
+        memory=program['build']['memory'];arena=memory['image_data']
+        require(memory['profile']['code_origin']==arena['address']+arena['size'] and
+                arena['address']>>16==bank,'Kernel-bank placement mismatch')
         observed['bank_table']=list(table)
     contexts=[]
     if args.flags!=0x100:
         for slot,pool in enumerate(program['build']['memory']['task_pools'][:n]):
-            raw=bridge.memdump(0x2080+slot*32,24);f=args.flags
+            raw=bridge.memdump(adapter.PROBE0+slot*32,24);f=args.flags
             expected=struct.pack('<BHHHHBHHHHH',0x12,pool['dp'],0x78 if f&0x10 else 0x5678,0x34 if f&0x10 else 0x1234,0xab01,f,pool['stack_base']+pool.get('stack_bytes',1536)-8,0xbeef,0xff10,0xff11,0xff10)
             require(raw[:20]==expected,'Capacity register restoration: '+str(slot)+' '+raw.hex())
             contexts.append(raw.hex())
