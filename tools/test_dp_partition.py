@@ -52,10 +52,10 @@ def run(output, mode, capacity=4, from_build=None, nmi=0):
         # The pinned bridge supports bank-zero breakpoints only. Relocate whole
         # prologue/epilogue instructions to two temporary bank-zero rendezvous.
         # JML preserves flags and adds no stack bytes; the body is unmodified.
-        probe = 0x2e00
+        probe = adapter.TEST_DP_OBSERVER
         require(all(probe+32 <= r['address'] or probe >= r['address']+r['size']
-                    for r in program['build']['memory']['runtime_reservations']),
-                'DP observer overlaps runtime storage')
+                    for phase in program['build']['memory']['phase_reservations'].values() for r in phase),
+                'DP observer overlaps live storage')
         jump = lambda address: bytes([0x5c])+address.to_bytes(3,'little')
         saved = {}
         observations = []
@@ -87,8 +87,6 @@ def run(output, mode, capacity=4, from_build=None, nmi=0):
                 # executing and retains valid metadata and reserved-zero bytes.
                 for i,pool in enumerate(pools):
                     b.memload(pool['dp'],bytes(((index*17+i*31+1) % 255)+1 for index in range(256)))
-                saved['tail'] = b.memdump(tail,256)
-                b.memload(tail,bytes([0x6d])*256)
             previous = None
             if initial and slot:
                 # Earlier Task pages are initialized but still inactive. Poison
@@ -98,6 +96,7 @@ def run(output, mode, capacity=4, from_build=None, nmi=0):
                 b.memload(pools[slot-1]['dp'],bytes([0xa7])*256)
             before = [b.memdump(p['dp'],256) for p in pools]
             kernel = b.memdump(adapter.KERNEL_DP,256)
+            tail_before = b.memdump(tail,256)
             stop(b, probe+16)
             pool = pools[slot]
             expected = bytearray(256)
@@ -112,7 +111,7 @@ def run(output, mode, capacity=4, from_build=None, nmi=0):
             after = b.memdump(adapter.KERNEL_DP,256)
             require(after[:128] == kernel[:128] and after[192:] == kernel[192:],
                     'Task initialization changed the kernel domain')
-            require(b.memdump(tail,256) == bytes([0x6d])*256,
+            require(b.memdump(tail,256) == tail_before,
                     'Initialization exceeded the last DP')
             if previous is not None:
                 b.memload(pools[slot-1]['dp'],previous)
@@ -128,17 +127,18 @@ def run(output, mode, capacity=4, from_build=None, nmi=0):
             stop(b, program['labels']['general_domains'])
             neighbours = (adapter.KERNEL_DP-256,adapter.KERNEL_DP+256)
             originals = [b.memdump(address,256) for address in neighbours]
-            for address in (adapter.KERNEL_DP,*neighbours):
-                b.memload(address,bytes([0x79])*256)
+            # Adjacent pages contain live boot state and the bootstrap root DP.
+            # Only the uninitialized kernel page may be poisoned here.
+            b.memload(adapter.KERNEL_DP,bytes([0x79])*256)
             stop(b, program['labels']['general_domains_done'])
             expected = bytearray(256)
-            expected[0xc0:0xc8] = adapter.KERNEL_OWNER.to_bytes(3,'little')+struct.pack('<BHH',1,0x4b00,0x4fff)
+            expected[0xc0:0xc8] = adapter.KERNEL_OWNER.to_bytes(3,'little')+struct.pack(
+                '<BHH',1,adapter.KERNEL_STACK_FLOOR,adapter.KERNEL_STACK_CEILING)
             require(b.memdump(adapter.KERNEL_DP,256) == expected,
                     'Kernel bootstrap did not initialize exactly its DP')
             for address,original in zip(neighbours,originals):
-                require(b.memdump(address,256) == bytes([0x79])*256,
+                require(b.memdump(address,256) == original,
                         'Kernel bootstrap changed a neighbouring page')
-                b.memload(address,original)
             for _ in range(capacity+1):
                 observe(b, True)
             require([o['slot'] for o in observations] == list(range(capacity+1)),
@@ -150,7 +150,6 @@ def run(output, mode, capacity=4, from_build=None, nmi=0):
                 observe(b, False)
             require([o['slot'] for o in observations[capacity+1:]] ==
                     list(range(1,capacity))+[2], 'Missing interior-slot reuse')
-            b.memload(tail,saved['tail'])
 
         runtime, _ = execute(bridge, program, before_run=seed_kernel,
                              frame_limit=3000, timeout=180)
@@ -168,7 +167,7 @@ def run(output, mode, capacity=4, from_build=None, nmi=0):
                 runtime=runtime, checks=checks, kernel_initialization='exact page; neighbours intact', initialization=observations, machine=machine, platform=PIN,
                 emulator_sha256=sha256(bridge_dir / 'AltirraBridgeServer'),
                 bank_zero_delta=dict(fixed=0, per_task=0),
-                observer=dict(temporary_bank_zero_bytes=288,code_and_state_bytes=32,boundary_sentinel_bytes=256,
+                observer=dict(temporary_bank_zero_bytes=32,code_and_state_bytes=32,boundary_sentinel_bytes=0,
                               address=probe,boundary_address=tail,restored=True,
                               entry=entry,exit=end,entry_bytes=entry_bytes.hex(),exit_bytes=exit_bytes.hex()))
 

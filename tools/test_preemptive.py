@@ -36,7 +36,7 @@ def check(bridge, program, fixture, result, screen):
     if flags != 0x100:
         observed["probe_switch_counts"] = []
         for task in (0, 1):
-            before, after = struct.unpack("<HH", bridge.memdump(adapter.PROBE0+task*32+20, 4))
+            before, after = struct.unpack("<HH", bridge.memdump(adapter.probe_address(task)+20, 4))
             require((before == after) if flags & 4 else (after > before),
                     f"Incorrect I-mask preemption: task={task}, flags={flags:x}, {before}->{after}")
             observed["probe_switch_counts"].append([before, after])

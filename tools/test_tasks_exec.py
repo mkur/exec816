@@ -77,7 +77,7 @@ def check(bridge,program,fixture,result):
     if flags != 0x100:
         observed['contexts'] = []
         for slot,pool in enumerate(program['build']['memory']['task_pools'][:4]):
-            raw = bridge.memdump(adapter.PROBE0+slot*32,24)
+            raw = bridge.memdump(adapter.probe_address(slot),24)
             expected = struct.pack('<BHHHHBHHHHH',0x12,pool['dp'],
                 0x78 if flags & 0x10 else 0x5678,0x34 if flags & 0x10 else 0x1234,
                 0xab01,flags,pool['stack_base']+0x5f8,0xbeef,0xff10,0xff11,0xff10)
@@ -178,7 +178,8 @@ def main():
                 except Exception:
                     (program['output']/'failure.json').write_text(json.dumps({
                         'regs':bridge.regs(),'state':bridge.memdump(adapter.STATE,64).hex(),
-                        'private':bridge.memdump(0x2d00,240).hex(),'globals':bridge.memdump(0x8800,1024).hex()},indent=2)+'\n')
+                        'globals':bridge.memdump(program['build']['memory']['image_data']['address'],
+                                                 program['build']['memory']['image_data']['size']).hex()},indent=2)+'\n')
                     raise
                 report['cases'].append({'name':name,'status':'pass','build':program['build'],
                                         'runtime':result,'observed':observed})

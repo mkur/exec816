@@ -143,7 +143,7 @@ def main():
                         if point>=104:
                             import struct
                             raw=bridge.memdump(adapter.PROBE0,18);f=0xc9+(point-104)*16
-                            expected=struct.pack('<BHHHHB',0x12,0x2200,0x78 if f&16 else 0x5678,0x34 if f&16 else 0x1234,0xabcd,f)
+                            expected=struct.pack('<BHHHHB',0x12,adapter.TASK0_DP,0x78 if f&16 else 0x5678,0x34 if f&16 else 0x1234,0xabcd,f)
                             require(raw[:10]==expected and raw[10:12]==raw[12:14] and raw[14]==program['labels']['signal_context']>>16 and raw[16:18]==b'\xef\xbe','Serial IRQ native context: '+raw.hex())
                             observed['context']=raw.hex()
                     elif fixture=='irq_targets':

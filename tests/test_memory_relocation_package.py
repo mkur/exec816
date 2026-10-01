@@ -16,6 +16,15 @@ from banked_image import validate_extents, manifest
 
 
 class MemoryRelocationTests(unittest.TestCase):
+    def test_resident_linker_layout_survives_sorted_metadata(self):
+        from adapter_state import hosted_config, resident_addresses
+        profile=json.loads(json.dumps(layout()['profile'],sort_keys=True))
+        self.assertEqual(hosted_config(profile),hosted_config())
+        self.assertEqual(resident_addresses(profile)['RESIDENT_BASE'],0x1400)
+        profile['resident_segments']['FAULT']=profile['resident_segments']['EXIT']
+        with self.assertRaisesRegex(ValueError,'resident adapter layout'):
+            resident_addresses(profile)
+
     def test_data_placement_follows_metadata_and_kernel_bank(self):
         for bank in (1, 3):
             m = layout(kernel_bank=bank, upper_table=True)
@@ -67,10 +76,10 @@ class MemoryRelocationTests(unittest.TestCase):
         m = layout(upper_table=True)
         pools = configure(m, 8)
         self.assertEqual([p['dp'] for p in pools],
-                         [0x2200+i*256 for i in range(9)])
+                         [0x0b00+i*256 for i in range(9)])
         self.assertEqual([p['stack_base'] for p in pools],
-                         [0x4200, 0x5200, 0x6810, 0x6c30, 0x7050,
-                          0x7470, 0x7890, 0x0d20, 0x7cb0])
+                         [0x2410, 0x3050, 0x3470, 0x3890, 0x3cb0,
+                          0x40d0, 0x44f0, 0x4910, 0x4d30])
 
     def test_aperture_reserved_during_loading_and_runtime(self):
         for capacity in (4, 8):
@@ -79,7 +88,7 @@ class MemoryRelocationTests(unittest.TestCase):
                 configure(memory, 8)
             validate_memory(memory)
             self.assertEqual(memory['regions']['vbxe-aperture'], [0x8000, 0x9000])
-            self.assertEqual(memory['regions']['staging'], [0x0900, 0x0d10])
+            self.assertEqual(memory['regions']['staging'], [0x5bf0, 0x6000])
             spans = memory['runtime_reservations']
             self.assertEqual(sum(r['size'] for r in spans if r['name'] == 'vbxe-aperture'), 4096)
             for name, (start, end) in memory['regions'].items():
@@ -109,7 +118,7 @@ class MemoryRelocationTests(unittest.TestCase):
     def test_retirement_separates_loading_and_runtime_reservations(self):
         from ports_budget import current
         budgets = current()
-        for capacity, total, saving, loading in (('four',51632,192,96),('eight',53056,2336,544)):
+        for capacity, total, saving, loading in (('four',51392,432,336),('eight',53056,2336,544)):
             before, after = budgets['before'][capacity], budgets['after'][capacity]
             self.assertEqual(after['runtime_including_os'], total)
             self.assertEqual(after['runtime_including_os']-before['runtime_including_os'], -6144-saving)
@@ -122,7 +131,7 @@ class MemoryRelocationTests(unittest.TestCase):
         self.assertEqual(m['regions']['manifest'], [0x6000,0x6800])
         self.assertNotIn('manifest', [r['name'] for r in m['runtime_reservations']])
         self.assertEqual(m['startup_retirement']['address'], m['constants']['RETIRED'])
-        self.assertEqual(m['constants']['RETIRED'], 0x2c23)
+        self.assertEqual(m['constants']['RETIRED'], 0x0923)
 
 
 if __name__ == '__main__':

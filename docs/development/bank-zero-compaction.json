@@ -1,0 +1,5073 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-01",
+  "status": "pass",
+  "tier": "development",
+  "base_revision": "26654ece3ca74aeb995cd917f59c799b41c27d83",
+  "source_state": "Uncommitted implementation atop base revision; final source hashes and per-case build/report hashes identify the checked inputs.",
+  "baseline": {
+    "path": "docs/development/dp-compaction.json",
+    "sha256": "cafcce27e8e713018ede8e6d9273457a480597cb798789c2d0a8218fdebd10b4"
+  },
+  "scope": [
+    "Pack persistent bank-zero reservations and generate the resident linker placement from the platform profile.",
+    "Consolidate boot-only staging/manifest/loader storage and publish checked phase ownership.",
+    "Preserve Task capacity, separate DPs, stack sizes, guards and asynchronous context restoration.",
+    "Relocate observer scratch and rebuild the standard OF816 demo."
+  ],
+  "inputs": {
+    "lib/exec/exec-abi.inc": "08b9edf94a89108cc667934fa9deadc03c818bf3b3093a4d71f74b00bea048a2",
+    "platform/altirraos/cooperative-probe.s": "33bf45dbc31e93966db2a317f49a0496ffd7e1a9ecfe91c6ee0dfb918b44f5f5",
+    "platform/altirraos/exec-abi.inc": "fb0d5886a21bb9b15fa97d2590f92720a097814458e00458d3ad7e012eeda7ec",
+    "platform/altirraos/hosted.cfg": "bdfb99d263550d5920ee4d60765b194c725bcafd3e7f485faf30a0b6e1af7bff",
+    "platform/altirraos/memory-1m.json": "26df4287de5193101c5f61cd127347f0bebf4679a3b9d5daff24636b5adeeb5c",
+    "platform/of816/boot.s": "57d67ad7cd3defe906f0d60c8ec51ae85adc5beea9b38d2a0adf610ecd60e151",
+    "tests/programs/dp_partition.act": "5b7f8563da00c708936fd93e4230d799c52941a7ad6b128e1ddb39f5d403e4e5",
+    "tests/programs/heap_context.s": "c3db2f80e0a051c456ac6694fa600e4aedbd1771d27b3b1c8161fa4840c13974",
+    "tests/programs/memory_relocation.act": "992168f2c3d7a7f9e791705c072d2cea02fb5470ed8f78ea3c8a4e58be3dd439",
+    "tests/programs/tasks_exec_admission.act": "9c6c80dfc2b30eaa80fb18e6b28ffcb695704925cfa09fdafab30aca3b05f723",
+    "tests/test_capacity_package.py": "9d50889e38176d736f43474fca47936502320a66ef901751a1bb94062fa4d4b7",
+    "tests/test_memory_relocation_package.py": "bd3fdcfd949b33b6c6dc263099e90b65fbd835b4e2ae68734d7fe06ed743e35f",
+    "tests/test_of816_package.py": "29447e8296c4dd73c2513e8af851efac961c2135b2d3a05dedf6167fd3360c29",
+    "tests/test_tasks_package.py": "014b12d3fa4011b748a69096127e7b681c5c814710ad28fe3f3311419d6e43d8",
+    "tools/adapter_state.py": "52c5c42aba4c01d79cb03746439ae3103a4411d625776f7e9ab0f33a31f16801",
+    "tools/bridge_memory.py": "b6aaffe3f63793d333d697e9344144b48818024e6c0080973f8a41fcdc997f59",
+    "tools/build_demo.py": "f91c6f0857994a980c21e8c38a23be434d7fa33ce8f6fbfcd5fc028746979a8c",
+    "tools/build_of816.py": "6bafec0be0aecdea2f726edb768c5b70e158129169e39da871acab5b8d41e85e",
+    "tools/dos_context_probe.py": "df66c6be3f0763639b993c24d21d633f43a456cff09f90898e3c00421d1d0d75",
+    "tools/dos_streams_timing.py": "916ce30fd8c059cbfcff3f07339395632658977fd715745657708c751924d574",
+    "tools/generate_exec_abi.py": "a0ce424eca9183418d43aa5c9f6fd757997599e23c424bbd775468af552f0878",
+    "tools/generate_memory.py": "80de68371ebe3d538d88dd09bc6a76d3b0fdd2c676a34e37c72e49c0ed79f2e3",
+    "tools/generate_tasks.py": "8fd67da8a0f03b2936cc42b0dc28489b14938647d6bcc9f8350cc989d5096e78",
+    "tools/native_program.py": "d02be5d6891e993979fa134f6eed7904768a7d45bc3d27f6156af488f0dd8d3b",
+    "tools/ports_budget.py": "bcfbc031fa5864b9df56cf25893bcf051e9dc5f3cbba16c89c4c89cc80ff11c2",
+    "tools/task_capacity.py": "a500b076abe2159557be75fe36c313e7609a6e2d305bdc0220840e20eeb8e7e6",
+    "tools/test_banked.py": "a406515ca7c736d9503c75ca27c1aeea310ee39bfc7b28b82e62841b1a3e62e0",
+    "tools/test_cooperative.py": "bebb9d46720dc1aab17e36c8ad86cc1fad2e8f72136473262e092d9d34e7e680",
+    "tools/test_create_task.py": "93cf61f03ca74345e0bb6f00fd538aba93b0bdb0139680e2fcd72f57687f22a7",
+    "tools/test_dp_partition.py": "5207a2b20cbaf43c010459bce9094bfb9ffd77a948fe8042bab043b0400355b3",
+    "tools/test_heap_api.py": "822d3fc9543ed2760707830f1e342f5964c1d9c6769a74bf4b02ba7b381fc310",
+    "tools/test_heap_concurrent.py": "62ff063ad182714eef0b61ab2338bf31e999dfbbc469a3f7929f5d5c55492fb4",
+    "tools/test_hosted.py": "e038c0bbacfc2e1df981bdf3380d2ba5d1d6cdac8fd79f468cb280da760923a6",
+    "tools/test_io_services.py": "52c0566d45dbc5d127352da00c38c3d5299826355477bd6cda53dbebc9a909aa",
+    "tools/test_memory_relocation.py": "93209b6e1a03947fa1fb28d2a889a67c025f2fef6578908dcdcf31b7d945463f",
+    "tools/test_of816.py": "f4e20c1b23732f71bcfdaf0e6f73f8bc6721ea49425888d047f71e678920f824",
+    "tools/test_ports_services.py": "2696b145fccb15d3a66185c1eec4cac8bd7f9357681f18c559ee2128a63eda57",
+    "tools/test_preemptive.py": "b25a897a7b92fbc2602c7330ecc0ab4df88c534bb46898ee597f533e1f2d9bc7",
+    "tools/test_signals.py": "ab504d662bbed62d2a0e61834731c8fcc2ccc4513402d4f3c505ee0e5d37aec6",
+    "tools/test_stack_checks.py": "d0b37add3f82ca728a9962a561e1c77b75fde665e6ca220532fadcc54d67fc77",
+    "tools/test_task_capacity.py": "9334d7095044881fb6669368f49ae835711630555e7fc250ebb2e6b6d4a98c25",
+    "tools/test_tasks_exec.py": "0997e24f3564520cecc5e9e1bddeb7a774d7df809db359f076f8eba22a3885b4"
+  },
+  "compiler": {
+    "revision": "27119ab2804e795b0bbb067c269826b934271754",
+    "changes": [],
+    "override": false,
+    "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "pins": {
+    "toolchain/actionc.json": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "27119ab2804e795b0bbb067c269826b934271754",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "toolchain/altirra.json": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 1,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false
+      }
+    },
+    "toolchain/altirra-1m.json": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 1,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false
+      }
+    },
+    "toolchain/altirra-signals-1m.json": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      }
+    },
+    "toolchain/altirra-shell-paced.json": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ]
+    },
+    "toolchain/of816.json": {
+      "repository": "https://github.com/mgcaret/of816.git",
+      "revision": "8c923624520fab2196d5c75a97ab94da599d420a",
+      "license": "BSD-2-Clause",
+      "scope": "Pinned Forth core for the experimental AltirraOS XEX boot monitor"
+    }
+  },
+  "bank_zero": {
+    "before": {
+      "four": {
+        "fixed_runtime": 11792,
+        "public": [
+          1824,
+          1824,
+          1824,
+          1824
+        ],
+        "idle": 1824,
+        "runtime_excluding_os": 20912,
+        "loading_excluding_os": 23648,
+        "runtime_including_os": 51632,
+        "loading_including_os": 54368
+      },
+      "eight": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 22336,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 53056,
+        "loading_including_os": 52592
+      }
+    },
+    "after": {
+      "four": {
+        "fixed_runtime": 11552,
+        "public": [
+          1824,
+          1824,
+          1824,
+          1824
+        ],
+        "idle": 1824,
+        "runtime_excluding_os": 20672,
+        "loading_excluding_os": 23408,
+        "runtime_including_os": 51392,
+        "loading_including_os": 54128
+      },
+      "eight": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 22336,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 53056,
+        "loading_including_os": 52592
+      }
+    },
+    "deltas": {
+      "four": {
+        "fixed": -240,
+        "per_public_task": 0,
+        "idle": 0,
+        "runtime": -240,
+        "loading": -240
+      },
+      "eight": {
+        "fixed": 0,
+        "per_public_task": 0,
+        "idle": 0,
+        "runtime": 0,
+        "loading": 0
+      }
+    },
+    "upper_reservation_delta": 0,
+    "accounting": "Full reservations, including stack guards, alignment, bank-table capacity, resident segment padding and the VBXE aperture.",
+    "largest_free_before": {
+      "four": 6144,
+      "eight": 4592
+    },
+    "largest_free_after": {
+      "four": 14144,
+      "eight": 12480
+    },
+    "hole_count_before": {
+      "four": 10,
+      "eight": 9
+    },
+    "hole_count_after": {
+      "four": 1,
+      "eight": 1
+    },
+    "of816_borrowing": {
+      "before": 3392,
+      "after": 3392
+    },
+    "diagnostics": {
+      "register_extension": {
+        "address": 32000,
+        "bytes": 128,
+        "delta": 0
+      },
+      "far_write": {
+        "address": 31744,
+        "bytes": 256,
+        "delta": 0
+      },
+      "dp_observer": {
+        "address": 32128,
+        "bytes": 32,
+        "delta": -256
+      },
+      "retirement_sentinel": {
+        "address": 32256,
+        "bytes": 256,
+        "delta": 0
+      },
+      "production_reservation": 0
+    }
+  },
+  "placement": {
+    "four": {
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13936,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 15504,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17072,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        }
+      ],
+      "runtime_reservations": [
+        {
+          "name": "os-low",
+          "address": 0,
+          "size": 2048
+        },
+        {
+          "name": "state",
+          "address": 2048,
+          "size": 256
+        },
+        {
+          "name": "boot-state",
+          "address": 2304,
+          "size": 256
+        },
+        {
+          "name": "kernel-dp",
+          "address": 2560,
+          "size": 256
+        },
+        {
+          "name": "dp0",
+          "address": 2816,
+          "size": 256
+        },
+        {
+          "name": "dp1",
+          "address": 3072,
+          "size": 256
+        },
+        {
+          "name": "dp2",
+          "address": 3328,
+          "size": 256
+        },
+        {
+          "name": "dp3",
+          "address": 3584,
+          "size": 256
+        },
+        {
+          "name": "dp4",
+          "address": 3840,
+          "size": 256
+        },
+        {
+          "name": "table",
+          "address": 4096,
+          "size": 1024
+        },
+        {
+          "name": "resident",
+          "address": 5120,
+          "size": 4096
+        },
+        {
+          "name": "stack0",
+          "address": 9216,
+          "size": 1568
+        },
+        {
+          "name": "kernel-stack",
+          "address": 10784,
+          "size": 1568
+        },
+        {
+          "name": "stack1",
+          "address": 12352,
+          "size": 1568
+        },
+        {
+          "name": "stack2",
+          "address": 13920,
+          "size": 1568
+        },
+        {
+          "name": "stack3",
+          "address": 15488,
+          "size": 1568
+        },
+        {
+          "name": "stack4",
+          "address": 17056,
+          "size": 1568
+        },
+        {
+          "name": "vbxe-aperture",
+          "address": 32768,
+          "size": 4096
+        },
+        {
+          "name": "os-high",
+          "address": 36864,
+          "size": 28672
+        }
+      ],
+      "runtime_free_ranges": [
+        {
+          "address": 18624,
+          "size": 14144
+        }
+      ],
+      "phase_reservations": {
+        "loading": [
+          {
+            "name": "os-low",
+            "address": 0,
+            "size": 2048
+          },
+          {
+            "name": "state",
+            "address": 2048,
+            "size": 256
+          },
+          {
+            "name": "boot-state",
+            "address": 2304,
+            "size": 256
+          },
+          {
+            "name": "kernel-dp",
+            "address": 2560,
+            "size": 256
+          },
+          {
+            "name": "dp0",
+            "address": 2816,
+            "size": 256
+          },
+          {
+            "name": "dp1",
+            "address": 3072,
+            "size": 256
+          },
+          {
+            "name": "table",
+            "address": 4096,
+            "size": 1024
+          },
+          {
+            "name": "resident",
+            "address": 5120,
+            "size": 4096
+          },
+          {
+            "name": "stack0",
+            "address": 9216,
+            "size": 1568
+          },
+          {
+            "name": "kernel-stack",
+            "address": 10784,
+            "size": 1568
+          },
+          {
+            "name": "stack1",
+            "address": 12352,
+            "size": 1568
+          },
+          {
+            "name": "staging",
+            "address": 23536,
+            "size": 1040
+          },
+          {
+            "name": "manifest",
+            "address": 24576,
+            "size": 2048
+          },
+          {
+            "name": "loader",
+            "address": 26624,
+            "size": 5120
+          },
+          {
+            "name": "vbxe-aperture",
+            "address": 32768,
+            "size": 4096
+          },
+          {
+            "name": "os-high",
+            "address": 36864,
+            "size": 28672
+          }
+        ],
+        "initialization": [
+          {
+            "name": "os-low",
+            "address": 0,
+            "size": 2048
+          },
+          {
+            "name": "state",
+            "address": 2048,
+            "size": 256
+          },
+          {
+            "name": "boot-state",
+            "address": 2304,
+            "size": 256
+          },
+          {
+            "name": "kernel-dp",
+            "address": 2560,
+            "size": 256
+          },
+          {
+            "name": "dp0",
+            "address": 2816,
+            "size": 256
+          },
+          {
+            "name": "dp1",
+            "address": 3072,
+            "size": 256
+          },
+          {
+            "name": "dp2",
+            "address": 3328,
+            "size": 256
+          },
+          {
+            "name": "dp3",
+            "address": 3584,
+            "size": 256
+          },
+          {
+            "name": "dp4",
+            "address": 3840,
+            "size": 256
+          },
+          {
+            "name": "table",
+            "address": 4096,
+            "size": 1024
+          },
+          {
+            "name": "resident",
+            "address": 5120,
+            "size": 4096
+          },
+          {
+            "name": "stack0",
+            "address": 9216,
+            "size": 1568
+          },
+          {
+            "name": "kernel-stack",
+            "address": 10784,
+            "size": 1568
+          },
+          {
+            "name": "stack1",
+            "address": 12352,
+            "size": 1568
+          },
+          {
+            "name": "stack2",
+            "address": 13920,
+            "size": 1568
+          },
+          {
+            "name": "stack3",
+            "address": 15488,
+            "size": 1568
+          },
+          {
+            "name": "stack4",
+            "address": 17056,
+            "size": 1568
+          },
+          {
+            "name": "manifest",
+            "address": 24576,
+            "size": 2048
+          },
+          {
+            "name": "vbxe-aperture",
+            "address": 32768,
+            "size": 4096
+          },
+          {
+            "name": "os-high",
+            "address": 36864,
+            "size": 28672
+          }
+        ],
+        "runtime": [
+          {
+            "name": "os-low",
+            "address": 0,
+            "size": 2048
+          },
+          {
+            "name": "state",
+            "address": 2048,
+            "size": 256
+          },
+          {
+            "name": "boot-state",
+            "address": 2304,
+            "size": 256
+          },
+          {
+            "name": "kernel-dp",
+            "address": 2560,
+            "size": 256
+          },
+          {
+            "name": "dp0",
+            "address": 2816,
+            "size": 256
+          },
+          {
+            "name": "dp1",
+            "address": 3072,
+            "size": 256
+          },
+          {
+            "name": "dp2",
+            "address": 3328,
+            "size": 256
+          },
+          {
+            "name": "dp3",
+            "address": 3584,
+            "size": 256
+          },
+          {
+            "name": "dp4",
+            "address": 3840,
+            "size": 256
+          },
+          {
+            "name": "table",
+            "address": 4096,
+            "size": 1024
+          },
+          {
+            "name": "resident",
+            "address": 5120,
+            "size": 4096
+          },
+          {
+            "name": "stack0",
+            "address": 9216,
+            "size": 1568
+          },
+          {
+            "name": "kernel-stack",
+            "address": 10784,
+            "size": 1568
+          },
+          {
+            "name": "stack1",
+            "address": 12352,
+            "size": 1568
+          },
+          {
+            "name": "stack2",
+            "address": 13920,
+            "size": 1568
+          },
+          {
+            "name": "stack3",
+            "address": 15488,
+            "size": 1568
+          },
+          {
+            "name": "stack4",
+            "address": 17056,
+            "size": 1568
+          },
+          {
+            "name": "vbxe-aperture",
+            "address": 32768,
+            "size": 4096
+          },
+          {
+            "name": "os-high",
+            "address": 36864,
+            "size": 28672
+          }
+        ]
+      },
+      "diagnostic_scratch": [
+        {
+          "name": "far-write",
+          "address": 31744,
+          "size": 256
+        },
+        {
+          "name": "register-extension",
+          "address": 32000,
+          "size": 128
+        },
+        {
+          "name": "dp-observer",
+          "address": 32128,
+          "size": 32
+        },
+        {
+          "name": "relocation-sentinel",
+          "address": 32256,
+          "size": 256
+        }
+      ]
+    },
+    "eight": {
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13424,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 14480,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 15536,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4096,
+          "dp_reserved_bytes": 256,
+          "stack_base": 16592,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4352,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17648,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4608,
+          "dp_reserved_bytes": 256,
+          "stack_base": 18704,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4864,
+          "dp_reserved_bytes": 256,
+          "stack_base": 19760,
+          "stack_bytes": 512,
+          "interrupt_reserve": 256
+        }
+      ],
+      "runtime_reservations": [
+        {
+          "name": "os-low",
+          "address": 0,
+          "size": 2048
+        },
+        {
+          "name": "state",
+          "address": 2048,
+          "size": 256
+        },
+        {
+          "name": "boot-state",
+          "address": 2304,
+          "size": 256
+        },
+        {
+          "name": "kernel-dp",
+          "address": 2560,
+          "size": 256
+        },
+        {
+          "name": "dp0",
+          "address": 2816,
+          "size": 256
+        },
+        {
+          "name": "dp1",
+          "address": 3072,
+          "size": 256
+        },
+        {
+          "name": "dp2",
+          "address": 3328,
+          "size": 256
+        },
+        {
+          "name": "dp3",
+          "address": 3584,
+          "size": 256
+        },
+        {
+          "name": "dp4",
+          "address": 3840,
+          "size": 256
+        },
+        {
+          "name": "dp5",
+          "address": 4096,
+          "size": 256
+        },
+        {
+          "name": "dp6",
+          "address": 4352,
+          "size": 256
+        },
+        {
+          "name": "dp7",
+          "address": 4608,
+          "size": 256
+        },
+        {
+          "name": "dp8",
+          "address": 4864,
+          "size": 256
+        },
+        {
+          "name": "resident",
+          "address": 5120,
+          "size": 4096
+        },
+        {
+          "name": "stack0",
+          "address": 9216,
+          "size": 1568
+        },
+        {
+          "name": "kernel-stack",
+          "address": 10784,
+          "size": 1568
+        },
+        {
+          "name": "stack1",
+          "address": 12352,
+          "size": 1056
+        },
+        {
+          "name": "stack2",
+          "address": 13408,
+          "size": 1056
+        },
+        {
+          "name": "stack3",
+          "address": 14464,
+          "size": 1056
+        },
+        {
+          "name": "stack4",
+          "address": 15520,
+          "size": 1056
+        },
+        {
+          "name": "stack5",
+          "address": 16576,
+          "size": 1056
+        },
+        {
+          "name": "stack6",
+          "address": 17632,
+          "size": 1056
+        },
+        {
+          "name": "stack7",
+          "address": 18688,
+          "size": 1056
+        },
+        {
+          "name": "stack8",
+          "address": 19744,
+          "size": 544
+        },
+        {
+          "name": "vbxe-aperture",
+          "address": 32768,
+          "size": 4096
+        },
+        {
+          "name": "os-high",
+          "address": 36864,
+          "size": 28672
+        }
+      ],
+      "runtime_free_ranges": [
+        {
+          "address": 20288,
+          "size": 12480
+        }
+      ],
+      "phase_reservations": {
+        "loading": [
+          {
+            "name": "os-low",
+            "address": 0,
+            "size": 2048
+          },
+          {
+            "name": "state",
+            "address": 2048,
+            "size": 256
+          },
+          {
+            "name": "boot-state",
+            "address": 2304,
+            "size": 256
+          },
+          {
+            "name": "kernel-dp",
+            "address": 2560,
+            "size": 256
+          },
+          {
+            "name": "dp0",
+            "address": 2816,
+            "size": 256
+          },
+          {
+            "name": "dp1",
+            "address": 3072,
+            "size": 256
+          },
+          {
+            "name": "resident",
+            "address": 5120,
+            "size": 4096
+          },
+          {
+            "name": "stack0",
+            "address": 9216,
+            "size": 1568
+          },
+          {
+            "name": "kernel-stack",
+            "address": 10784,
+            "size": 1568
+          },
+          {
+            "name": "stack1",
+            "address": 12352,
+            "size": 1056
+          },
+          {
+            "name": "staging",
+            "address": 23536,
+            "size": 1040
+          },
+          {
+            "name": "manifest",
+            "address": 24576,
+            "size": 2048
+          },
+          {
+            "name": "loader",
+            "address": 26624,
+            "size": 5120
+          },
+          {
+            "name": "vbxe-aperture",
+            "address": 32768,
+            "size": 4096
+          },
+          {
+            "name": "os-high",
+            "address": 36864,
+            "size": 28672
+          }
+        ],
+        "initialization": [
+          {
+            "name": "os-low",
+            "address": 0,
+            "size": 2048
+          },
+          {
+            "name": "state",
+            "address": 2048,
+            "size": 256
+          },
+          {
+            "name": "boot-state",
+            "address": 2304,
+            "size": 256
+          },
+          {
+            "name": "kernel-dp",
+            "address": 2560,
+            "size": 256
+          },
+          {
+            "name": "dp0",
+            "address": 2816,
+            "size": 256
+          },
+          {
+            "name": "dp1",
+            "address": 3072,
+            "size": 256
+          },
+          {
+            "name": "dp2",
+            "address": 3328,
+            "size": 256
+          },
+          {
+            "name": "dp3",
+            "address": 3584,
+            "size": 256
+          },
+          {
+            "name": "dp4",
+            "address": 3840,
+            "size": 256
+          },
+          {
+            "name": "dp5",
+            "address": 4096,
+            "size": 256
+          },
+          {
+            "name": "dp6",
+            "address": 4352,
+            "size": 256
+          },
+          {
+            "name": "dp7",
+            "address": 4608,
+            "size": 256
+          },
+          {
+            "name": "dp8",
+            "address": 4864,
+            "size": 256
+          },
+          {
+            "name": "resident",
+            "address": 5120,
+            "size": 4096
+          },
+          {
+            "name": "stack0",
+            "address": 9216,
+            "size": 1568
+          },
+          {
+            "name": "kernel-stack",
+            "address": 10784,
+            "size": 1568
+          },
+          {
+            "name": "stack1",
+            "address": 12352,
+            "size": 1056
+          },
+          {
+            "name": "stack2",
+            "address": 13408,
+            "size": 1056
+          },
+          {
+            "name": "stack3",
+            "address": 14464,
+            "size": 1056
+          },
+          {
+            "name": "stack4",
+            "address": 15520,
+            "size": 1056
+          },
+          {
+            "name": "stack5",
+            "address": 16576,
+            "size": 1056
+          },
+          {
+            "name": "stack6",
+            "address": 17632,
+            "size": 1056
+          },
+          {
+            "name": "stack7",
+            "address": 18688,
+            "size": 1056
+          },
+          {
+            "name": "stack8",
+            "address": 19744,
+            "size": 544
+          },
+          {
+            "name": "manifest",
+            "address": 24576,
+            "size": 2048
+          },
+          {
+            "name": "vbxe-aperture",
+            "address": 32768,
+            "size": 4096
+          },
+          {
+            "name": "os-high",
+            "address": 36864,
+            "size": 28672
+          }
+        ],
+        "runtime": [
+          {
+            "name": "os-low",
+            "address": 0,
+            "size": 2048
+          },
+          {
+            "name": "state",
+            "address": 2048,
+            "size": 256
+          },
+          {
+            "name": "boot-state",
+            "address": 2304,
+            "size": 256
+          },
+          {
+            "name": "kernel-dp",
+            "address": 2560,
+            "size": 256
+          },
+          {
+            "name": "dp0",
+            "address": 2816,
+            "size": 256
+          },
+          {
+            "name": "dp1",
+            "address": 3072,
+            "size": 256
+          },
+          {
+            "name": "dp2",
+            "address": 3328,
+            "size": 256
+          },
+          {
+            "name": "dp3",
+            "address": 3584,
+            "size": 256
+          },
+          {
+            "name": "dp4",
+            "address": 3840,
+            "size": 256
+          },
+          {
+            "name": "dp5",
+            "address": 4096,
+            "size": 256
+          },
+          {
+            "name": "dp6",
+            "address": 4352,
+            "size": 256
+          },
+          {
+            "name": "dp7",
+            "address": 4608,
+            "size": 256
+          },
+          {
+            "name": "dp8",
+            "address": 4864,
+            "size": 256
+          },
+          {
+            "name": "resident",
+            "address": 5120,
+            "size": 4096
+          },
+          {
+            "name": "stack0",
+            "address": 9216,
+            "size": 1568
+          },
+          {
+            "name": "kernel-stack",
+            "address": 10784,
+            "size": 1568
+          },
+          {
+            "name": "stack1",
+            "address": 12352,
+            "size": 1056
+          },
+          {
+            "name": "stack2",
+            "address": 13408,
+            "size": 1056
+          },
+          {
+            "name": "stack3",
+            "address": 14464,
+            "size": 1056
+          },
+          {
+            "name": "stack4",
+            "address": 15520,
+            "size": 1056
+          },
+          {
+            "name": "stack5",
+            "address": 16576,
+            "size": 1056
+          },
+          {
+            "name": "stack6",
+            "address": 17632,
+            "size": 1056
+          },
+          {
+            "name": "stack7",
+            "address": 18688,
+            "size": 1056
+          },
+          {
+            "name": "stack8",
+            "address": 19744,
+            "size": 544
+          },
+          {
+            "name": "vbxe-aperture",
+            "address": 32768,
+            "size": 4096
+          },
+          {
+            "name": "os-high",
+            "address": 36864,
+            "size": 28672
+          }
+        ]
+      },
+      "diagnostic_scratch": [
+        {
+          "name": "far-write",
+          "address": 31744,
+          "size": 256
+        },
+        {
+          "name": "register-extension",
+          "address": 32000,
+          "size": 128
+        },
+        {
+          "name": "dp-observer",
+          "address": 32128,
+          "size": 32
+        },
+        {
+          "name": "relocation-sentinel",
+          "address": 32256,
+          "size": 256
+        }
+      ]
+    }
+  },
+  "validation": {
+    "host": {
+      "path": "build/bank-zero-compaction-host.log",
+      "sha256": "bcd956baf9826794370d44f953de80a6f4fde2f6c7084272ffdd7b3427ce1d38",
+      "status": "pass",
+      "tests": 255,
+      "passed": 251,
+      "skipped": 4,
+      "skip_reason": "Historical source audits require the private pre-publication archive."
+    },
+    "generators": {
+      "status": "pass",
+      "exec_abi": true,
+      "task_api": true,
+      "per_image_memory": [
+        "demo",
+        "dp4-opt",
+        "dp8-nmi"
+      ]
+    },
+    "direct": {
+      "path": "build/bank-zero-compaction-direct/result.json",
+      "sha256": "28a022273457ea396578e69028e021064e1b05aeae01a7ea66c3b6570d4cda56",
+      "status": 0,
+      "guards": "intact",
+      "native_nmi_count": 1,
+      "native_irq_count": 0,
+      "return_s": 10766,
+      "return_d": 2816,
+      "os_busy": 0
+    },
+    "dp_lifetime": [
+      {
+        "path": "build/bank-zero-compaction-dp4-raw/results.json",
+        "sha256": "3146edd6b6dae561a2b49ea63f9c04df57a8f53c8fdae817c3d19f5863b4b49b",
+        "status": "pass",
+        "mode": "raw",
+        "capacity": 4,
+        "nmi_checkpoint": 0,
+        "checks": 14395,
+        "observer": {
+          "temporary_bank_zero_bytes": 32,
+          "code_and_state_bytes": 32,
+          "boundary_sentinel_bytes": 0,
+          "address": 32128,
+          "boundary_address": 4096,
+          "restored": true,
+          "entry": 97888,
+          "exit": 98319,
+          "entry_bytes": "3baac5c6",
+          "exit_bytes": "6914001b6b"
+        },
+        "initialization": [
+          {
+            "slot": 0,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          }
+        ],
+        "kernel_initialization": "exact page; neighbours intact",
+        "build": {
+          "revision": "27119ab2804e795b0bbb067c269826b934271754",
+          "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+          "optimize": false,
+          "probe_nmi": 0,
+          "probe_flags": 256,
+          "source": "probe.act",
+          "source_sha256": "efe0dbed8a8b0d3914383208c286fae9eec99c1c28f82c9cdab1aa924e1486cc",
+          "image_sha256": "045996f32f9dcd11cc846d5d910ebf44739eb7459dffec8d11aa40e33a10789e",
+          "xex_sha256": "15d981700f0da3daee124c8ac83b9f382d9674a1a0aa1c488d7c9447f63490ab",
+          "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "native_nmi_count": 25,
+          "native_irq_count": 0,
+          "return_s": 10766,
+          "return_d": 2816,
+          "vbi_dispatches": 17,
+          "created": 4,
+          "idle_runs": 5,
+          "os_busy": 0,
+          "switching": 0
+        }
+      },
+      {
+        "path": "build/bank-zero-compaction-dp4-opt/results.json",
+        "sha256": "1cfd0a37e108060757b9e64ec1726d12e607a4fa4af03eba4c4b1f0a3bd2f9b1",
+        "status": "pass",
+        "mode": "opt",
+        "capacity": 4,
+        "nmi_checkpoint": 0,
+        "checks": 13243,
+        "observer": {
+          "temporary_bank_zero_bytes": 32,
+          "code_and_state_bytes": 32,
+          "boundary_sentinel_bytes": 0,
+          "address": 32128,
+          "boundary_address": 4096,
+          "restored": true,
+          "entry": 94544,
+          "exit": 94914,
+          "entry_bytes": "3baac5c6",
+          "exit_bytes": "690c001b6b"
+        },
+        "initialization": [
+          {
+            "slot": 0,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          }
+        ],
+        "kernel_initialization": "exact page; neighbours intact",
+        "build": {
+          "revision": "27119ab2804e795b0bbb067c269826b934271754",
+          "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+          "optimize": true,
+          "probe_nmi": 0,
+          "probe_flags": 256,
+          "source": "probe.act",
+          "source_sha256": "efe0dbed8a8b0d3914383208c286fae9eec99c1c28f82c9cdab1aa924e1486cc",
+          "image_sha256": "aee10084c3bb7ebd7c21b24005b10c7c62da565a36baf3043e81a49ea9e05679",
+          "xex_sha256": "d6754d42f6936c7fe339a98b95d166941f6b1c0f3272aa93d790181274c56d8f",
+          "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "native_nmi_count": 21,
+          "native_irq_count": 0,
+          "return_s": 10766,
+          "return_d": 2816,
+          "vbi_dispatches": 15,
+          "created": 4,
+          "idle_runs": 5,
+          "os_busy": 0,
+          "switching": 0
+        }
+      },
+      {
+        "path": "build/bank-zero-compaction-dp8-raw/results.json",
+        "sha256": "f9ad1bc78267a86d2855ea56b83bd9f53ce8b34bcfc96301ca2bf9dd99505248",
+        "status": "pass",
+        "mode": "raw",
+        "capacity": 8,
+        "nmi_checkpoint": 0,
+        "checks": 25448,
+        "observer": {
+          "temporary_bank_zero_bytes": 32,
+          "code_and_state_bytes": 32,
+          "boundary_sentinel_bytes": 0,
+          "address": 32128,
+          "boundary_address": 5120,
+          "restored": true,
+          "entry": 98462,
+          "exit": 98893,
+          "entry_bytes": "3baac5c6",
+          "exit_bytes": "6914001b6b"
+        },
+        "initialization": [
+          {
+            "slot": 0,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 8,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          }
+        ],
+        "kernel_initialization": "exact page; neighbours intact",
+        "build": {
+          "revision": "27119ab2804e795b0bbb067c269826b934271754",
+          "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+          "optimize": false,
+          "probe_nmi": 0,
+          "probe_flags": 256,
+          "source": "probe.act",
+          "source_sha256": "efe0dbed8a8b0d3914383208c286fae9eec99c1c28f82c9cdab1aa924e1486cc",
+          "image_sha256": "abca88facfa82c3e6452b20fd2e0b756ba7cf74541cc53a1e4c0998a23395266",
+          "xex_sha256": "ca0122e92a18437ef5f17df712c6cc71831a001fc555511584e99b7ed0a5a521",
+          "memory_sha256": "d321fad223111e98e0b07b98838873a5b2bd902ecf5e5ef4e1a1d4950acbfbb9"
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "native_nmi_count": 43,
+          "native_irq_count": 0,
+          "return_s": 10766,
+          "return_d": 2816,
+          "vbi_dispatches": 33,
+          "created": 8,
+          "idle_runs": 5,
+          "os_busy": 0,
+          "switching": 0
+        }
+      },
+      {
+        "path": "build/bank-zero-compaction-dp8-opt/results.json",
+        "sha256": "e639cc032ef91dcaffff54af4d3572b6d7df79e4d9bc31995d2a5d7db11ac577",
+        "status": "pass",
+        "mode": "opt",
+        "capacity": 8,
+        "nmi_checkpoint": 0,
+        "checks": 26607,
+        "observer": {
+          "temporary_bank_zero_bytes": 32,
+          "code_and_state_bytes": 32,
+          "boundary_sentinel_bytes": 0,
+          "address": 32128,
+          "boundary_address": 5120,
+          "restored": true,
+          "entry": 95116,
+          "exit": 95486,
+          "entry_bytes": "3baac5c6",
+          "exit_bytes": "690c001b6b"
+        },
+        "initialization": [
+          {
+            "slot": 0,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 8,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          }
+        ],
+        "kernel_initialization": "exact page; neighbours intact",
+        "build": {
+          "revision": "27119ab2804e795b0bbb067c269826b934271754",
+          "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+          "optimize": true,
+          "probe_nmi": 0,
+          "probe_flags": 256,
+          "source": "probe.act",
+          "source_sha256": "efe0dbed8a8b0d3914383208c286fae9eec99c1c28f82c9cdab1aa924e1486cc",
+          "image_sha256": "3f3fa4b9ae48dbe1b973c19a99cc6416797ec1168b47eb698a2ccee5288746f8",
+          "xex_sha256": "74f35c80ed73594800a0972ddd4313e5cf287e2fbcbfe84e11bd2d17ff812b41",
+          "memory_sha256": "d321fad223111e98e0b07b98838873a5b2bd902ecf5e5ef4e1a1d4950acbfbb9"
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "native_nmi_count": 39,
+          "native_irq_count": 0,
+          "return_s": 10766,
+          "return_d": 2816,
+          "vbi_dispatches": 28,
+          "created": 8,
+          "idle_runs": 5,
+          "os_busy": 0,
+          "switching": 0
+        }
+      },
+      {
+        "path": "build/bank-zero-compaction-dp8-nmi/results.json",
+        "sha256": "9b2498699be26fc6560fd95f878b0f08887d3b33816e2c3d7d32b80d89f02450",
+        "status": "pass",
+        "mode": "opt",
+        "capacity": 8,
+        "nmi_checkpoint": 15,
+        "checks": 29423,
+        "observer": {
+          "temporary_bank_zero_bytes": 32,
+          "code_and_state_bytes": 32,
+          "boundary_sentinel_bytes": 0,
+          "address": 32128,
+          "boundary_address": 5120,
+          "restored": true,
+          "entry": 95116,
+          "exit": 95486,
+          "entry_bytes": "3baac5c6",
+          "exit_bytes": "690c001b6b"
+        },
+        "initialization": [
+          {
+            "slot": 0,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 8,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          }
+        ],
+        "kernel_initialization": "exact page; neighbours intact",
+        "build": {
+          "revision": "27119ab2804e795b0bbb067c269826b934271754",
+          "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+          "optimize": true,
+          "probe_nmi": 15,
+          "probe_flags": 256,
+          "source": "probe.act",
+          "source_sha256": "efe0dbed8a8b0d3914383208c286fae9eec99c1c28f82c9cdab1aa924e1486cc",
+          "image_sha256": "1657bc2d6bbccf151795932905e09c9c71aef0a3cde999ddaec8a97f320cc072",
+          "xex_sha256": "dc9f43d43b6db90e0ccc9f2acf9c303d08cacacf93bddb272a28c2d452a1a74f",
+          "memory_sha256": "d321fad223111e98e0b07b98838873a5b2bd902ecf5e5ef4e1a1d4950acbfbb9"
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "native_nmi_count": 236,
+          "native_irq_count": 0,
+          "return_s": 10766,
+          "return_d": 2816,
+          "vbi_dispatches": 18,
+          "created": 8,
+          "idle_runs": 1,
+          "os_busy": 0,
+          "switching": 0
+        }
+      }
+    ],
+    "capacity": [
+      {
+        "path": "build/bank-zero-compaction-cap4/results.json",
+        "sha256": "b7db8a6fa575ad13e2d327c939b920c5e2fc2dc33e9267c69369e4389463c6b5",
+        "status": "pass",
+        "observer": null,
+        "cases": [
+          {
+            "name": "4-bank1-raw-c9",
+            "status": "pass",
+            "diagnostic_bank_zero_delta": 0,
+            "build": {
+              "revision": "27119ab2804e795b0bbb067c269826b934271754",
+              "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+              "optimize": false,
+              "probe_nmi": 0,
+              "probe_flags": 201,
+              "source": "signals_capacity.act",
+              "source_sha256": "320954056037ceadbb96703ed1952f72806a16dc3b317a43f1e3b2126ae310fa",
+              "image_sha256": "f88601f19e99c5ae7ec0e7924ba2dab4b097ea202ebc6d6fb1efb7918e5dbfd6",
+              "xex_sha256": "a8661c04d2a4ebd09afb1ead288065c81a31d0d6a57c3c6eae02b1a72a9cc8bf",
+              "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+            },
+            "runtime": {
+              "status": 0,
+              "guards": "intact",
+              "native_nmi_count": 71,
+              "native_irq_count": 1,
+              "return_s": 10766,
+              "return_d": 2816,
+              "vbi_dispatches": 9,
+              "created": 4,
+              "idle_runs": 22,
+              "os_busy": 0,
+              "switching": 0
+            },
+            "contexts": [
+              "12000b7856341201abc9082aefbe10ff11ff10ff00000000",
+              "12000c7856341201abc94836efbe10ff11ff10ff40004200",
+              "12000d7856341201abc9683cefbe10ff11ff10ff02000600",
+              "12000e7856341201abc98842efbe10ff11ff10ff03000700"
+            ],
+            "checks": [
+              3,
+              3,
+              1,
+              1,
+              1,
+              1,
+              1,
+              3,
+              1,
+              1,
+              1,
+              3,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "name": "4-bank1-opt-c9",
+            "status": "pass",
+            "diagnostic_bank_zero_delta": 0,
+            "build": {
+              "revision": "27119ab2804e795b0bbb067c269826b934271754",
+              "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+              "optimize": true,
+              "probe_nmi": 0,
+              "probe_flags": 201,
+              "source": "signals_capacity.act",
+              "source_sha256": "320954056037ceadbb96703ed1952f72806a16dc3b317a43f1e3b2126ae310fa",
+              "image_sha256": "68b69db7f677a45357227d9324a9a38b8baadcb09d035cb087292332d7b7ff9e",
+              "xex_sha256": "14a2ce4bce394453dab6fe45becc34e8e5015547cd7870c9fe49e28041d532ae",
+              "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+            },
+            "runtime": {
+              "status": 0,
+              "guards": "intact",
+              "native_nmi_count": 69,
+              "native_irq_count": 1,
+              "return_s": 10766,
+              "return_d": 2816,
+              "vbi_dispatches": 9,
+              "created": 4,
+              "idle_runs": 24,
+              "os_busy": 0,
+              "switching": 0
+            },
+            "contexts": [
+              "12000b7856341201abc9082aefbe10ff11ff10ff00000000",
+              "12000c7856341201abc94836efbe10ff11ff10ff44004600",
+              "12000d7856341201abc9683cefbe10ff11ff10ff02000600",
+              "12000e7856341201abc98842efbe10ff11ff10ff03000700"
+            ],
+            "checks": [
+              3,
+              3,
+              1,
+              1,
+              1,
+              1,
+              1,
+              3,
+              1,
+              1,
+              1,
+              3,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "path": "build/bank-zero-compaction-cap8-raw/results.json",
+        "sha256": "bd5941410ad0af666c1c6830d34d931f522f10f4a574929d70821b5c1a1c05f4",
+        "status": "pass",
+        "observer": null,
+        "cases": [
+          {
+            "name": "8-bank1-raw-c9",
+            "status": "pass",
+            "diagnostic_bank_zero_delta": 128,
+            "build": {
+              "revision": "27119ab2804e795b0bbb067c269826b934271754",
+              "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+              "optimize": false,
+              "probe_nmi": 0,
+              "probe_flags": 201,
+              "source": "signals_capacity.act",
+              "source_sha256": "320954056037ceadbb96703ed1952f72806a16dc3b317a43f1e3b2126ae310fa",
+              "image_sha256": "a9f1e36350621c5f552f50427bf9681fcc119ddce4c7d7f5ee1ee92c1e95f404",
+              "xex_sha256": "7973b092443145bbe6fafda63fa9c422c44e10f4fac24765f01dc3d34fb7c5cd",
+              "memory_sha256": "d321fad223111e98e0b07b98838873a5b2bd902ecf5e5ef4e1a1d4950acbfbb9"
+            },
+            "runtime": {
+              "status": 0,
+              "guards": "intact",
+              "native_nmi_count": 95,
+              "native_irq_count": 1,
+              "return_s": 10766,
+              "return_d": 2816,
+              "vbi_dispatches": 19,
+              "created": 8,
+              "idle_runs": 3,
+              "os_busy": 0,
+              "switching": 0
+            },
+            "contexts": [
+              "12000b7856341201abc9082aefbe10ff11ff10ff00000000",
+              "12000c7856341201abc94834efbe10ff11ff10ff36003800",
+              "12000d7856341201abc96838efbe10ff11ff10ff02000a00",
+              "12000e7856341201abc9883cefbe10ff11ff10ff03000b00",
+              "12000f7856341201abc9a840efbe10ff11ff10ff04000c00",
+              "1200107856341201abc9c844efbe10ff11ff10ff05000d00",
+              "1200117856341201abc9e848efbe10ff11ff10ff06000e00",
+              "1200127856341201abc9084defbe10ff11ff10ff07000f00"
+            ],
+            "scratch": {
+              "address": 32000,
+              "size": 128,
+              "restored": true
+            },
+            "checks": [
+              7,
+              7,
+              1,
+              1,
+              1,
+              1,
+              1,
+              7,
+              1,
+              1,
+              1,
+              7,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "path": "build/bank-zero-compaction-cap8-opt/results.json",
+        "sha256": "62636e0606c5ebf7ef04dea48029f503da8e023184c65ed7787e724f9fc76058",
+        "status": "pass",
+        "observer": null,
+        "cases": [
+          {
+            "name": "8-bank1-opt-f9",
+            "status": "pass",
+            "diagnostic_bank_zero_delta": 128,
+            "build": {
+              "revision": "27119ab2804e795b0bbb067c269826b934271754",
+              "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+              "optimize": true,
+              "probe_nmi": 0,
+              "probe_flags": 249,
+              "source": "signals_capacity.act",
+              "source_sha256": "320954056037ceadbb96703ed1952f72806a16dc3b317a43f1e3b2126ae310fa",
+              "image_sha256": "6450354fbc24ebf5f4e41e6666c6033c2106b95cfe6b0ba8ff564cf8e9797a75",
+              "xex_sha256": "524b053a5f2eb05e41511385607c3a4fe0fe3229f7d37dada2ad775327fb2b63",
+              "memory_sha256": "d321fad223111e98e0b07b98838873a5b2bd902ecf5e5ef4e1a1d4950acbfbb9"
+            },
+            "runtime": {
+              "status": 0,
+              "guards": "intact",
+              "native_nmi_count": 95,
+              "native_irq_count": 1,
+              "return_s": 10766,
+              "return_d": 2816,
+              "vbi_dispatches": 17,
+              "created": 8,
+              "idle_runs": 11,
+              "os_busy": 0,
+              "switching": 0
+            },
+            "contexts": [
+              "12000b7800340001abf9082aefbe10ff11ff10ff00000000",
+              "12000c7800340001abf94834efbe10ff11ff10ff41004300",
+              "12000d7800340001abf96838efbe10ff11ff10ff02000a00",
+              "12000e7800340001abf9883cefbe10ff11ff10ff03000b00",
+              "12000f7800340001abf9a840efbe10ff11ff10ff04000c00",
+              "1200107800340001abf9c844efbe10ff11ff10ff05000d00",
+              "1200117800340001abf9e848efbe10ff11ff10ff06000e00",
+              "1200127800340001abf9084defbe10ff11ff10ff07000f00"
+            ],
+            "scratch": {
+              "address": 32000,
+              "size": 128,
+              "restored": true
+            },
+            "checks": [
+              7,
+              7,
+              1,
+              1,
+              1,
+              1,
+              1,
+              7,
+              1,
+              1,
+              1,
+              7,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "retirement": {
+      "path": "build/bank-zero-compaction-retirement/results.json",
+      "sha256": "d3f2d4c8c83735c6297b9c9ff9e750c073b74e5494583bc9ee85e41fb3406e34",
+      "status": "pass",
+      "cases": [
+        {
+          "name": "raw",
+          "status": "pass",
+          "build": {
+            "revision": "27119ab2804e795b0bbb067c269826b934271754",
+            "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+            "optimize": false,
+            "probe_nmi": 0,
+            "probe_flags": 256,
+            "source": "memory_relocation.act",
+            "source_sha256": "992168f2c3d7a7f9e791705c072d2cea02fb5470ed8f78ea3c8a4e58be3dd439",
+            "image_sha256": "40bb2698cfe24077056f57c0c2f4bc0252c9bdfce04a7d10347766e034643fce",
+            "xex_sha256": "fbab0912ac95bbebc87fdab30cb2aea10dcd202ea9148dbf4202f53ec94038c9",
+            "memory_sha256": "d321fad223111e98e0b07b98838873a5b2bd902ecf5e5ef4e1a1d4950acbfbb9"
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 5,
+            "native_irq_count": 0,
+            "return_s": 10766,
+            "return_d": 2816,
+            "vbi_dispatches": 2,
+            "created": 1,
+            "idle_runs": 3,
+            "os_busy": 0,
+            "switching": 0
+          },
+          "scratch": {
+            "address": 32256,
+            "size": 256,
+            "restored": true
+          },
+          "checks": 278,
+          "retired_ranges_intact": true,
+          "table_restored": true,
+          "far_stimuli": [
+            "bootstrap",
+            "native-nmi"
+          ]
+        },
+        {
+          "name": "opt",
+          "status": "pass",
+          "build": {
+            "revision": "27119ab2804e795b0bbb067c269826b934271754",
+            "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+            "optimize": true,
+            "probe_nmi": 0,
+            "probe_flags": 256,
+            "source": "memory_relocation.act",
+            "source_sha256": "992168f2c3d7a7f9e791705c072d2cea02fb5470ed8f78ea3c8a4e58be3dd439",
+            "image_sha256": "93245cdc698bd33f3667d1615b5e4f5bc58adc5d22057ee1e595c7de27c78977",
+            "xex_sha256": "f46cb770449aee7f92f1113e2f1a35f03869fe68f59d323c5d8318690d25ca9e",
+            "memory_sha256": "d321fad223111e98e0b07b98838873a5b2bd902ecf5e5ef4e1a1d4950acbfbb9"
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 4,
+            "native_irq_count": 0,
+            "return_s": 10766,
+            "return_d": 2816,
+            "vbi_dispatches": 2,
+            "created": 1,
+            "idle_runs": 3,
+            "os_busy": 0,
+            "switching": 0
+          },
+          "scratch": {
+            "address": 32256,
+            "size": 256,
+            "restored": true
+          },
+          "checks": 278,
+          "retired_ranges_intact": true,
+          "table_restored": true,
+          "far_stimuli": [
+            "bootstrap",
+            "native-nmi"
+          ]
+        },
+        {
+          "name": "nmi-stack",
+          "status": "pass",
+          "build": {
+            "revision": "27119ab2804e795b0bbb067c269826b934271754",
+            "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+            "optimize": true,
+            "probe_nmi": 3,
+            "probe_flags": 256,
+            "source": "memory_relocation.act",
+            "source_sha256": "992168f2c3d7a7f9e791705c072d2cea02fb5470ed8f78ea3c8a4e58be3dd439",
+            "image_sha256": "ceab9ab628b1e668d99b6f3a4aee6e0562a010d57636646870e943f68c9ad8a5",
+            "xex_sha256": "e45906ad7c91be68b6a76c30e773043363cf7a58825ae5b2b5b8fd13b16e59fc",
+            "memory_sha256": "d321fad223111e98e0b07b98838873a5b2bd902ecf5e5ef4e1a1d4950acbfbb9"
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 6,
+            "native_irq_count": 0,
+            "return_s": 10766,
+            "return_d": 2816,
+            "vbi_dispatches": 2,
+            "created": 1,
+            "idle_runs": 3,
+            "os_busy": 0,
+            "switching": 0
+          },
+          "scratch": {
+            "address": 32256,
+            "size": 256,
+            "restored": true
+          },
+          "checks": 278,
+          "retired_ranges_intact": true,
+          "table_restored": true,
+          "far_stimuli": [
+            "bootstrap",
+            "native-nmi"
+          ]
+        }
+      ]
+    },
+    "stack_limits": {
+      "path": "build/bank-zero-compaction-stack/results.json",
+      "sha256": "ea294e33cf4fbba0e8074d17d45fa91df65618b4405575856a9bfa8b5ac7a7fe",
+      "status": "pass",
+      "cases": [
+        {
+          "mode": "raw",
+          "target": "compiler",
+          "runtime": {
+            "status": 1,
+            "guards": "intact",
+            "native_nmi_count": 0,
+            "native_irq_count": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "os_busy": 0
+          },
+          "injection": {
+            "entry_s_low": 250,
+            "original_floor": 9488,
+            "injected_floor": 10767,
+            "stopped_at": 8197
+          }
+        },
+        {
+          "mode": "raw",
+          "target": "assembly",
+          "runtime": {
+            "status": 1,
+            "guards": "intact",
+            "native_nmi_count": 0,
+            "native_irq_count": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "os_busy": 0
+          },
+          "injection": {
+            "entry_s_low": 246,
+            "original_floor": 9488,
+            "injected_floor": 10767,
+            "stopped_at": 8197
+          }
+        },
+        {
+          "mode": "opt",
+          "target": "compiler",
+          "runtime": {
+            "status": 1,
+            "guards": "intact",
+            "native_nmi_count": 0,
+            "native_irq_count": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "os_busy": 0
+          },
+          "injection": {
+            "entry_s_low": 252,
+            "original_floor": 9488,
+            "injected_floor": 10767,
+            "stopped_at": 8197
+          }
+        },
+        {
+          "mode": "opt",
+          "target": "assembly",
+          "runtime": {
+            "status": 1,
+            "guards": "intact",
+            "native_nmi_count": 0,
+            "native_irq_count": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "os_busy": 0
+          },
+          "injection": {
+            "entry_s_low": 248,
+            "original_floor": 9488,
+            "injected_floor": 10767,
+            "stopped_at": 8197
+          }
+        },
+        {
+          "mode": "raw",
+          "target": "recursion",
+          "runtime": {
+            "status": 1,
+            "guards": "intact",
+            "native_nmi_count": 1,
+            "native_irq_count": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "os_busy": 0
+          },
+          "injection": null
+        },
+        {
+          "mode": "opt",
+          "target": "recursion",
+          "runtime": {
+            "status": 1,
+            "guards": "intact",
+            "native_nmi_count": 1,
+            "native_irq_count": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "os_busy": 0
+          },
+          "injection": null
+        }
+      ]
+    },
+    "task_boundaries": {
+      "path": "build/bank-zero-compaction-task-boundaries/results.json",
+      "sha256": "ba7e6807fa729a339b5652b1c77c03ba9756f3859d64caeb728e24b20ddaea0d",
+      "status": "pass",
+      "cases": [
+        {
+          "name": "admission-raw",
+          "status": "pass",
+          "build": {
+            "revision": "27119ab2804e795b0bbb067c269826b934271754",
+            "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+            "optimize": false,
+            "probe_nmi": 0,
+            "probe_flags": 256,
+            "source": "tasks_exec_admission.act",
+            "source_sha256": "9c6c80dfc2b30eaa80fb18e6b28ffcb695704925cfa09fdafab30aca3b05f723",
+            "image_sha256": "a6d447462181def93d9f5e5f70513d4d72a04bd0790d5f522841f0b506e5f3a9",
+            "xex_sha256": "fd4e65763eb1254e43794b9195dfb228237ad1be81dd9b62f6ff2ec3cda5651e",
+            "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 45,
+            "native_irq_count": 0,
+            "return_s": 10766,
+            "return_d": 2816,
+            "vbi_dispatches": 15,
+            "created": 4,
+            "idle_runs": 1,
+            "os_busy": 0,
+            "switching": 0
+          },
+          "checks": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "name": "admission-opt",
+          "status": "pass",
+          "build": {
+            "revision": "27119ab2804e795b0bbb067c269826b934271754",
+            "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+            "optimize": true,
+            "probe_nmi": 0,
+            "probe_flags": 256,
+            "source": "tasks_exec_admission.act",
+            "source_sha256": "9c6c80dfc2b30eaa80fb18e6b28ffcb695704925cfa09fdafab30aca3b05f723",
+            "image_sha256": "b98d3fec2838ee9c2c7f69d570d406a6c19eed274fdfd3de83f464e624ed1e6b",
+            "xex_sha256": "9debfa0e65776e844de94bcffaa7b8dd45ced6abe03728f737baa719519bc307",
+            "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 40,
+            "native_irq_count": 0,
+            "return_s": 10766,
+            "return_d": 2816,
+            "vbi_dispatches": 13,
+            "created": 4,
+            "idle_runs": 1,
+            "os_busy": 0,
+            "switching": 0
+          },
+          "checks": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "name": "fault-2-opt",
+          "status": "pass",
+          "build": {
+            "revision": "27119ab2804e795b0bbb067c269826b934271754",
+            "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+            "optimize": true,
+            "probe_nmi": 0,
+            "probe_flags": 256,
+            "source": "tasks_exec_faults.act",
+            "source_sha256": "1839e1a8d8085e5cb7d8f416dad2f7733036e0eaceb4505bd3ec7d831420ebb7",
+            "image_sha256": "d9c43679a71aff48b1d06e1e77d2c5910e2a4b5d6de4a185a6dc0934f4199f80",
+            "xex_sha256": "4c6aad4ce2cd8aea91f574f75c03ec7bbdd2dfdb9bf32a6acacb99189c47a3e5",
+            "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+          },
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 0,
+            "native_irq_count": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "vbi_dispatches": 0,
+            "created": 0,
+            "idle_runs": 0,
+            "os_busy": 0,
+            "switching": 1
+          }
+        },
+        {
+          "name": "nmi-15-opt",
+          "status": "pass",
+          "build": {
+            "revision": "27119ab2804e795b0bbb067c269826b934271754",
+            "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+            "optimize": true,
+            "probe_nmi": 15,
+            "probe_flags": 256,
+            "source": "tasks_exec.act",
+            "source_sha256": "11534644bd731371fd6ba513f56d0d31c1e6e98e248bd6996134005727e6ddf7",
+            "image_sha256": "bc2627b9e93626fb175b6e6a13d1d6b7813c9709d49ed15b3ab10d15351ecd4c",
+            "xex_sha256": "ad05d0677de4c3b14e27482256719124e85c4b2c0644829a0aa37f17c255cb9c",
+            "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 29,
+            "native_irq_count": 0,
+            "return_s": 10766,
+            "return_d": 2816,
+            "vbi_dispatches": 2,
+            "created": 3,
+            "idle_runs": 1,
+            "os_busy": 0,
+            "switching": 0
+          },
+          "checks": [
+            2048,
+            128,
+            0,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "saved_d_fault": {
+      "path": "build/bank-zero-compaction-saved-d/results.json",
+      "sha256": "d1873ec1521dbbb8604902f0f2b841d94771f13f055ef83723843041a3dc04a5",
+      "status": "pass",
+      "cases": [
+        {
+          "name": "fault-9-opt",
+          "status": "pass",
+          "build": {
+            "revision": "27119ab2804e795b0bbb067c269826b934271754",
+            "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+            "optimize": true,
+            "probe_nmi": 0,
+            "probe_flags": 256,
+            "source": "tasks_exec_faults.act",
+            "source_sha256": "1839e1a8d8085e5cb7d8f416dad2f7733036e0eaceb4505bd3ec7d831420ebb7",
+            "image_sha256": "7da4cccb88e13f90c03f122b6d4b53f6e852bcc0a675d1c72774dd9b88f5ee88",
+            "xex_sha256": "0e4d196602fe80e3226fae0a1c496bc69f6cf492444857dde5a71e6d88b0545f",
+            "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+          },
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 0,
+            "native_irq_count": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "vbi_dispatches": 0,
+            "created": 0,
+            "idle_runs": 0,
+            "os_busy": 0,
+            "switching": 0
+          }
+        }
+      ]
+    },
+    "heap_packet_bounds": {
+      "path": "build/bank-zero-compaction-heap-context/results.json",
+      "sha256": "6432a94773f40ddafa0a715f87a055680d58960fc7dafd7fb2f8e0f6df3ebbd7",
+      "status": "pass",
+      "cases": [
+        {
+          "variant": 0,
+          "build": {
+            "revision": "27119ab2804e795b0bbb067c269826b934271754",
+            "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+            "optimize": true,
+            "probe_nmi": 0,
+            "probe_flags": 256,
+            "source": "heap_context.act",
+            "source_sha256": "4aa93b19fa8381912df4c3b17a4e8d96ab0acb9697b3ec07356a5f303107428f",
+            "image_sha256": "a1d24093f6a0aefdfef2e678ef85bf3374a6f221f8dce2ae7116dc6ea4426612",
+            "xex_sha256": "d460fc5b8d0cac6d57136eacb2513b9d870909969329c5ccd7409da51350a604",
+            "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "native_nmi_count": 2,
+            "native_irq_count": 0,
+            "return_s": 10766,
+            "return_d": 2816,
+            "vbi_dispatches": 0,
+            "created": 0,
+            "idle_runs": 1,
+            "os_busy": 0,
+            "switching": 0
+          }
+        },
+        {
+          "variant": 4,
+          "build": {
+            "revision": "27119ab2804e795b0bbb067c269826b934271754",
+            "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+            "optimize": true,
+            "probe_nmi": 0,
+            "probe_flags": 256,
+            "source": "heap_context.act",
+            "source_sha256": "4aa93b19fa8381912df4c3b17a4e8d96ab0acb9697b3ec07356a5f303107428f",
+            "image_sha256": "1e0a7b907991a1f70e3e7a69e55c2158178612aaf48cdbdba5ab004dd1e78be0",
+            "xex_sha256": "875bac1d457b87ac420a2999d77b0c89a125a4b5393de76422eb9a68cf9b174c",
+            "memory_sha256": "85e73fa7eb135e15d5475e253e3134fc0d1f89676c5faf9ab53e30c35077bb1c"
+          },
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "native_nmi_count": 1,
+            "native_irq_count": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "vbi_dispatches": 0,
+            "created": 0,
+            "idle_runs": 0,
+            "os_busy": 0,
+            "switching": 1
+          }
+        }
+      ]
+    },
+    "loader_and_policy": {
+      "path": "build/bank-zero-compaction-loader/results.json",
+      "sha256": "4ac3f141a26048508eb44eec93bc3279486476ad7444e54a82d97cc14f2926b4",
+      "status": "pass",
+      "cases": [
+        {
+          "name": "loader-count",
+          "status": "pass"
+        },
+        {
+          "name": "loader-replay",
+          "status": "pass"
+        },
+        {
+          "name": "loader-context",
+          "status": "pass"
+        },
+        {
+          "name": "policy-16-opt",
+          "status": "pass",
+          "checks": 575
+        }
+      ]
+    },
+    "calypsi_raw": {
+      "path": "build/bank-zero-compaction-calypsi-raw/results.json",
+      "sha256": "d0ebdf52523718f01e7f6d0625bd4ddaf8fce48ba1240f97222b41dfd4e70e45",
+      "status": "pass",
+      "mode": "raw",
+      "build": {
+        "revision": "27119ab2804e795b0bbb067c269826b934271754",
+        "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+        "optimize": false,
+        "probe_nmi": 0,
+        "probe_flags": 256,
+        "source": "launcher.act",
+        "source_sha256": "313c2ad1c112106c04bc5c0c017ff7aab9584ff4870cd9177ed47c687949c8c0",
+        "image_sha256": "f1a2e4cd865bd0ac9700b8f18f860d73325aa384b66cbc1c509e007d85dcf3f1",
+        "xex_sha256": "d2210feca0991a74493953f937afe058bcd8bd99959f9e578ba39ae2bbc7cb44",
+        "memory_sha256": "c9789b3041b9fbcc5229905aaf3f31c8afbcc8025f38afc9ab955b8642f9d075"
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 77,
+        "native_irq_count": 1,
+        "return_s": 10766,
+        "return_d": 2816,
+        "vbi_dispatches": 67,
+        "created": 2,
+        "idle_runs": 2,
+        "os_busy": 0,
+        "switching": 0
+      }
+    },
+    "calypsi_opt": {
+      "path": "build/bank-zero-compaction-calypsi-opt/results.json",
+      "sha256": "839ab277a2edae27fa7a1ea1be6fa4e67e683e5727fc22d6e449a592199277d5",
+      "status": "pass",
+      "mode": "opt",
+      "build": {
+        "revision": "27119ab2804e795b0bbb067c269826b934271754",
+        "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+        "optimize": true,
+        "probe_nmi": 0,
+        "probe_flags": 256,
+        "source": "launcher.act",
+        "source_sha256": "bf9ed66bf4a7dfd6a7d0b4d3e0ec54e7ec4ecfca7d8981226f523ad5a6a9858b",
+        "image_sha256": "7196a3d3151152da9753c9b61d06ee9674be1733c3297a1723a530073fe022f5",
+        "xex_sha256": "8de42a6dad5c71cf623f4375e0346679ca260be5c9dfe051ebb09edfacc90efc",
+        "memory_sha256": "c9789b3041b9fbcc5229905aaf3f31c8afbcc8025f38afc9ab955b8642f9d075"
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 72,
+        "native_irq_count": 1,
+        "return_s": 10766,
+        "return_d": 2816,
+        "vbi_dispatches": 62,
+        "created": 2,
+        "idle_runs": 3,
+        "os_busy": 0,
+        "switching": 0
+      }
+    },
+    "cooperative": [
+      {
+        "path": "build/cooperative-tests/registers-c9-raw.json",
+        "sha256": "3a67d9cb0142b9f8b22cfc2e27011359635347e4107c254bc134dddaa33488fe",
+        "status": "pass",
+        "cases": [
+          {
+            "name": "registers-c9-raw",
+            "status": "pass",
+            "build": {
+              "revision": "27119ab2804e795b0bbb067c269826b934271754",
+              "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+              "optimize": false,
+              "probe_nmi": 0,
+              "probe_flags": 201,
+              "source": "cooperative.act",
+              "source_sha256": "5456594154c44f11e6feb40069afcba4e56dfbd6cc9300681dad7fea4c489186",
+              "image_sha256": "f5848974a6f96735f15174376c3a794a71e89066ecb5e3a111f3fb150fd14ddf",
+              "xex_sha256": "57cd403f7ace7f08125d0077f92d215abcec539647b666fe43f2a99e6fbd4736"
+            }
+          }
+        ]
+      },
+      {
+        "path": "build/cooperative-tests/registers-c9-opt.json",
+        "sha256": "1e77f59d35bceef23c230b48b8365db94daea5161d8ff4f35e3b3193fa2f851e",
+        "status": "pass",
+        "cases": [
+          {
+            "name": "registers-c9-opt",
+            "status": "pass",
+            "build": {
+              "revision": "27119ab2804e795b0bbb067c269826b934271754",
+              "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+              "optimize": true,
+              "probe_nmi": 0,
+              "probe_flags": 201,
+              "source": "cooperative.act",
+              "source_sha256": "5456594154c44f11e6feb40069afcba4e56dfbd6cc9300681dad7fea4c489186",
+              "image_sha256": "9dfcba572ed1a76735b3a8b3b99f511d863e2d67a42b1340433beddb91940684",
+              "xex_sha256": "16fca9ce15f89b46c2ee699ae0f4a1355f0c3f6ffac6e18bf70a413e1fa50b3e"
+            }
+          }
+        ]
+      }
+    ],
+    "of816": {
+      "path": "build/bank-zero-compaction-demo/of816/results.json",
+      "sha256": "1e6aba7f22106d13ddc849fffc8ff47eb4298af678fc5a996b438fb32c206e55",
+      "status": "pass",
+      "routes": [
+        {
+          "route": "autoboot",
+          "frames": 249,
+          "clock_wrap": true,
+          "boot_guards": "intact",
+          "dp_neighbours_intact": true,
+          "os_restored_at_handoff": true,
+          "shell": {
+            "status": "pass",
+            "tier": "development",
+            "bundle_manifest_sha256": "5049f53d45797143021107a79b929bb7a9ec81b3af4cf7b122a5bb92de1dedda",
+            "xex_sha256": "c52b66008153800c98e3501cf1130d5b798e66247a6ff6d435b777ebf1e4ebf1",
+            "media_sha256": "1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2",
+            "screenshot_sha256": "d2baf68d040e6678537176be6e8159ba0e0caa6523735c63d6db0a6047dc8288",
+            "runner_sha256": "ce5084f025f575f300de270be5ac11286e8c72313ad9064299bda64b683a9bf0",
+            "runtime": {
+              "status": 0,
+              "native_nmi_count": 1189,
+              "native_irq_count": 12289,
+              "os_busy": 0,
+              "return_s": 15502,
+              "return_d": 3584,
+              "return_p": 0,
+              "fault_required": 0,
+              "fault_s": 0,
+              "clock_start": 234,
+              "clock_end": 143,
+              "return_dbr": 0,
+              "return_e": 0,
+              "current": 8,
+              "switching": 0,
+              "switches": 3761,
+              "gateway_calls": 17121,
+              "os_calls": 0,
+              "forwarded_cops": 0,
+              "os_owner": 255,
+              "tick_pending": 0,
+              "vbi_count": 1189,
+              "vbi_dispatches": 427,
+              "irq_depth": 0,
+              "tasks": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_records": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  14,
+                  42,
+                  1,
+                  42,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  11,
+                  16,
+                  37,
+                  14,
+                  42,
+                  195,
+                  35,
+                  8,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  78,
+                  52,
+                  7,
+                  52,
+                  0,
+                  1,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  12,
+                  80,
+                  49,
+                  78,
+                  52,
+                  0,
+                  0,
+                  3,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  110,
+                  56,
+                  53,
+                  56,
+                  0,
+                  2,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  13,
+                  112,
+                  53,
+                  110,
+                  56,
+                  209,
+                  72,
+                  3,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  142,
+                  60,
+                  129,
+                  60,
+                  0,
+                  3,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  14,
+                  144,
+                  57,
+                  142,
+                  60,
+                  0,
+                  0,
+                  6,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  174,
+                  64,
+                  143,
+                  64,
+                  0,
+                  4,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  15,
+                  176,
+                  61,
+                  174,
+                  64,
+                  136,
+                  242,
+                  6,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  206,
+                  68,
+                  175,
+                  68,
+                  0,
+                  5,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  16,
+                  208,
+                  65,
+                  206,
+                  68,
+                  136,
+                  242,
+                  6,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  3,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  238,
+                  72,
+                  207,
+                  72,
+                  0,
+                  6,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  17,
+                  240,
+                  69,
+                  238,
+                  72,
+                  136,
+                  242,
+                  6,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  14,
+                  77,
+                  253,
+                  76,
+                  0,
+                  7,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  18,
+                  16,
+                  74,
+                  14,
+                  77,
+                  195,
+                  35,
+                  8,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  46,
+                  79,
+                  29,
+                  79,
+                  3,
+                  8,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  19,
+                  48,
+                  78,
+                  46,
+                  79,
+                  195,
+                  35,
+                  8,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ],
+              "ready_queue": [
+                67,
+                2,
+                15,
+                0,
+                0,
+                0,
+                64,
+                2,
+                15
+              ],
+              "live_tasks": 0,
+              "idle_runs": 5260,
+              "created": 8,
+              "signal_nmi_checkpoints": 0,
+              "wake_queue": [
+                76,
+                2,
+                15,
+                0,
+                0,
+                0,
+                73,
+                2,
+                15
+              ],
+              "root_task": [
+                164,
+                8,
+                1,
+                64,
+                2,
+                15,
+                1,
+                0,
+                232,
+                13,
+                1,
+                0,
+                6,
+                255,
+                255,
+                0,
+                255,
+                255,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                42,
+                0,
+                0,
+                16,
+                36,
+                0,
+                0,
+                16,
+                42,
+                0,
+                202,
+                2,
+                15,
+                0,
+                0,
+                0,
+                199,
+                2,
+                15,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "guards": "intact",
+              "stack_observations": [
+                {
+                  "slot": 0,
+                  "reserved_bytes": 1536,
+                  "touched_bytes": 476,
+                  "untouched_above_floor": 804
+                },
+                {
+                  "slot": 1,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 179,
+                  "untouched_above_floor": 589
+                },
+                {
+                  "slot": 2,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 132,
+                  "untouched_above_floor": 636
+                },
+                {
+                  "slot": 3,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 243,
+                  "untouched_above_floor": 525
+                },
+                {
+                  "slot": 4,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 261,
+                  "untouched_above_floor": 507
+                },
+                {
+                  "slot": 5,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 337,
+                  "untouched_above_floor": 431
+                },
+                {
+                  "slot": 6,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 327,
+                  "untouched_above_floor": 441
+                },
+                {
+                  "slot": 7,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 18,
+                  "untouched_above_floor": 750
+                },
+                {
+                  "slot": 8,
+                  "reserved_bytes": 512,
+                  "touched_bytes": 50,
+                  "untouched_above_floor": 206
+                }
+              ],
+              "kernel_stack_observation": {
+                "reserved_bytes": 1536,
+                "touched_bytes": 272,
+                "untouched_from_base": 1264,
+                "interrupt_reserve_bytes_touched": 0
+              }
+            },
+            "machine": {
+              "ok": true,
+              "basic": false,
+              "machine": "800XL",
+              "memory": "64K",
+              "video": "pal",
+              "selftest": false,
+              "fastboot": false,
+              "fppatch": false,
+              "stereo": false,
+              "stereomono": false,
+              "siopatch": "off",
+              "burstio": false,
+              "accuratedisk": true,
+              "casautoboot": true,
+              "casautobasicboot": false,
+              "artifact": "none",
+              "axlonmemsize": "none",
+              "highbanks": 15,
+              "highbanks_overridden": false,
+              "randmem": false,
+              "randdelay": false,
+              "diskemu": "generic56k",
+              "vbxe": false,
+              "covox": false,
+              "soundboard": false,
+              "rapidus": false,
+              "slightsid": false,
+              "addons": "off",
+              "exeloadmode": "default",
+              "kernel_id": "$c017f1e4033f056f",
+              "actual_kernel_id": "$c017f1e4033f056f",
+              "basic_id": "$0000000000000000",
+              "actual_basic_id": "$0000000000000005",
+              "debugbrkrun": true
+            },
+            "observations": [
+              {
+                "stage": "startup",
+                "prime_frames": 1,
+                "prime_count": 26,
+                "guest_frame": 482
+              },
+              {
+                "stage": "system-volume",
+                "prime_frames": 1,
+                "prime_count": 26,
+                "guest_frame": 483
+              },
+              {
+                "stage": "MOUNT",
+                "prime_frames": 1,
+                "prime_count": 26,
+                "guest_frame": 515
+              },
+              {
+                "stage": "CD SYS:WORK",
+                "prime_frames": 3,
+                "prime_count": 62,
+                "guest_frame": 599
+              },
+              {
+                "stage": "CD",
+                "prime_frames": 3,
+                "prime_count": 62,
+                "guest_frame": 613
+              },
+              {
+                "stage": "SYS:HELLO",
+                "prime_frames": 5,
+                "prime_count": 95,
+                "guest_frame": 718
+              },
+              {
+                "stage": "TYPE D1:STORY.TXT",
+                "prime_frames": 8,
+                "prime_count": 139,
+                "guest_frame": 862
+              },
+              {
+                "stage": "TYPE SYS:STORY.TXT",
+                "prime_frames": 10,
+                "prime_count": 168,
+                "guest_frame": 956
+              },
+              {
+                "stage": "SYS:CAT SYS:STORY.TXT | SYS:WC",
+                "prime_frames": 20,
+                "prime_count": 303,
+                "guest_frame": 1463
+              },
+              {
+                "stage": "CD SYS:",
+                "prime_frames": 20,
+                "prime_count": 303,
+                "guest_frame": 1497
+              },
+              {
+                "stage": "CD",
+                "prime_frames": 20,
+                "prime_count": 303,
+                "guest_frame": 1511
+              },
+              {
+                "stage": "HELLO",
+                "prime_frames": 21,
+                "prime_count": 317,
+                "guest_frame": 1555
+              },
+              {
+                "stage": "boot-smoke",
+                "prime_frames": 21,
+                "prime_count": 317,
+                "guest_frame": 1559
+              }
+            ],
+            "screenshots": [],
+            "boot_xex_sha256": null,
+            "cache": {
+              "requested": 512,
+              "blocks": 512,
+              "captured": 512
+            },
+            "cache_commands": null,
+            "startup_memory": null,
+            "baseline_memory": null,
+            "baseline_ownership": null,
+            "peak_tasks": 7,
+            "system_drive": 1,
+            "sys_cache": {
+              "physical": {
+                "hits": 6,
+                "misses": 20
+              },
+              "system": {
+                "hits": 16,
+                "misses": 20
+              }
+            },
+            "retired_manifest_intact": true,
+            "aperture_intact": true,
+            "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+            "bank_zero_delta": {
+              "fixed": 0,
+              "per_task": 0
+            }
+          },
+          "screenshot": {
+            "name": "autoboot-shell.png",
+            "sha256": "d2baf68d040e6678537176be6e8159ba0e0caa6523735c63d6db0a6047dc8288"
+          }
+        },
+        {
+          "route": "forth-command",
+          "cancel": {
+            "key": "RETURN",
+            "delay_frames": 240,
+            "held_frames": 2,
+            "seconds_remaining": 1,
+            "cancelled": true,
+            "key_consumed": true,
+            "stays_in_forth": true
+          },
+          "system_drive": 2,
+          "cache_request": 128,
+          "arithmetic": 42,
+          "boot_guards": "intact",
+          "dp_neighbours_intact": true,
+          "os_restored_at_handoff": true,
+          "shell": {
+            "status": "pass",
+            "tier": "development",
+            "bundle_manifest_sha256": "5049f53d45797143021107a79b929bb7a9ec81b3af4cf7b122a5bb92de1dedda",
+            "xex_sha256": "c52b66008153800c98e3501cf1130d5b798e66247a6ff6d435b777ebf1e4ebf1",
+            "media_sha256": "1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2",
+            "screenshot_sha256": "13bb08a29a4041eeae88d3a6f58d89f5c0afd40ea90ce802d5e3917a4c189d7e",
+            "runner_sha256": "ce5084f025f575f300de270be5ac11286e8c72313ad9064299bda64b683a9bf0",
+            "runtime": {
+              "status": 0,
+              "native_nmi_count": 1189,
+              "native_irq_count": 12316,
+              "os_busy": 0,
+              "return_s": 15502,
+              "return_d": 3584,
+              "return_p": 0,
+              "fault_required": 0,
+              "fault_s": 0,
+              "clock_start": 20,
+              "clock_end": 185,
+              "return_dbr": 0,
+              "return_e": 0,
+              "current": 8,
+              "switching": 0,
+              "switches": 3782,
+              "gateway_calls": 17156,
+              "os_calls": 0,
+              "forwarded_cops": 0,
+              "os_owner": 255,
+              "tick_pending": 0,
+              "vbi_count": 1189,
+              "vbi_dispatches": 403,
+              "irq_depth": 0,
+              "tasks": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_records": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  14,
+                  42,
+                  1,
+                  42,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  11,
+                  16,
+                  37,
+                  14,
+                  42,
+                  195,
+                  35,
+                  8,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  78,
+                  52,
+                  7,
+                  52,
+                  0,
+                  1,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  12,
+                  80,
+                  49,
+                  78,
+                  52,
+                  0,
+                  0,
+                  3,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  110,
+                  56,
+                  53,
+                  56,
+                  0,
+                  2,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  13,
+                  112,
+                  53,
+                  110,
+                  56,
+                  209,
+                  72,
+                  3,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  142,
+                  60,
+                  129,
+                  60,
+                  0,
+                  3,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  14,
+                  144,
+                  57,
+                  142,
+                  60,
+                  0,
+                  0,
+                  6,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  174,
+                  64,
+                  143,
+                  64,
+                  0,
+                  4,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  15,
+                  176,
+                  61,
+                  174,
+                  64,
+                  136,
+                  242,
+                  6,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  206,
+                  68,
+                  175,
+                  68,
+                  0,
+                  5,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  16,
+                  208,
+                  65,
+                  206,
+                  68,
+                  136,
+                  242,
+                  6,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  3,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  238,
+                  72,
+                  207,
+                  72,
+                  0,
+                  6,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  17,
+                  240,
+                  69,
+                  238,
+                  72,
+                  136,
+                  242,
+                  6,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  14,
+                  77,
+                  253,
+                  76,
+                  0,
+                  7,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  18,
+                  16,
+                  74,
+                  14,
+                  77,
+                  195,
+                  35,
+                  8,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  46,
+                  79,
+                  29,
+                  79,
+                  3,
+                  8,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  19,
+                  48,
+                  78,
+                  46,
+                  79,
+                  195,
+                  35,
+                  8,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ],
+              "ready_queue": [
+                67,
+                2,
+                15,
+                0,
+                0,
+                0,
+                64,
+                2,
+                15
+              ],
+              "live_tasks": 0,
+              "idle_runs": 5311,
+              "created": 8,
+              "signal_nmi_checkpoints": 0,
+              "wake_queue": [
+                76,
+                2,
+                15,
+                0,
+                0,
+                0,
+                73,
+                2,
+                15
+              ],
+              "root_task": [
+                164,
+                8,
+                1,
+                64,
+                2,
+                15,
+                1,
+                0,
+                232,
+                13,
+                1,
+                0,
+                6,
+                255,
+                255,
+                0,
+                255,
+                255,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                42,
+                0,
+                0,
+                16,
+                36,
+                0,
+                0,
+                16,
+                42,
+                0,
+                202,
+                2,
+                15,
+                0,
+                0,
+                0,
+                199,
+                2,
+                15,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "guards": "intact",
+              "stack_observations": [
+                {
+                  "slot": 0,
+                  "reserved_bytes": 1536,
+                  "touched_bytes": 496,
+                  "untouched_above_floor": 784
+                },
+                {
+                  "slot": 1,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 180,
+                  "untouched_above_floor": 588
+                },
+                {
+                  "slot": 2,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 132,
+                  "untouched_above_floor": 636
+                },
+                {
+                  "slot": 3,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 243,
+                  "untouched_above_floor": 525
+                },
+                {
+                  "slot": 4,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 280,
+                  "untouched_above_floor": 488
+                },
+                {
+                  "slot": 5,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 337,
+                  "untouched_above_floor": 431
+                },
+                {
+                  "slot": 6,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 327,
+                  "untouched_above_floor": 441
+                },
+                {
+                  "slot": 7,
+                  "reserved_bytes": 1024,
+                  "touched_bytes": 18,
+                  "untouched_above_floor": 750
+                },
+                {
+                  "slot": 8,
+                  "reserved_bytes": 512,
+                  "touched_bytes": 46,
+                  "untouched_above_floor": 210
+                }
+              ],
+              "kernel_stack_observation": {
+                "reserved_bytes": 1536,
+                "touched_bytes": 268,
+                "untouched_from_base": 1268,
+                "interrupt_reserve_bytes_touched": 0
+              }
+            },
+            "machine": {
+              "ok": true,
+              "basic": false,
+              "machine": "800XL",
+              "memory": "64K",
+              "video": "pal",
+              "selftest": false,
+              "fastboot": false,
+              "fppatch": false,
+              "stereo": false,
+              "stereomono": false,
+              "siopatch": "off",
+              "burstio": false,
+              "accuratedisk": true,
+              "casautoboot": true,
+              "casautobasicboot": false,
+              "artifact": "none",
+              "axlonmemsize": "none",
+              "highbanks": 15,
+              "highbanks_overridden": false,
+              "randmem": false,
+              "randdelay": false,
+              "diskemu": "generic56k",
+              "vbxe": false,
+              "covox": false,
+              "soundboard": false,
+              "rapidus": false,
+              "slightsid": false,
+              "addons": "off",
+              "exeloadmode": "default",
+              "kernel_id": "$c017f1e4033f056f",
+              "actual_kernel_id": "$c017f1e4033f056f",
+              "basic_id": "$0000000000000000",
+              "actual_basic_id": "$0000000000000005",
+              "debugbrkrun": true
+            },
+            "observations": [
+              {
+                "stage": "startup",
+                "prime_frames": 1,
+                "prime_count": 26,
+                "guest_frame": 1143
+              },
+              {
+                "stage": "system-volume",
+                "prime_frames": 1,
+                "prime_count": 26,
+                "guest_frame": 1144
+              },
+              {
+                "stage": "MOUNT",
+                "prime_frames": 1,
+                "prime_count": 26,
+                "guest_frame": 1176
+              },
+              {
+                "stage": "CD SYS:WORK",
+                "prime_frames": 3,
+                "prime_count": 62,
+                "guest_frame": 1260
+              },
+              {
+                "stage": "CD",
+                "prime_frames": 3,
+                "prime_count": 62,
+                "guest_frame": 1274
+              },
+              {
+                "stage": "SYS:HELLO",
+                "prime_frames": 5,
+                "prime_count": 95,
+                "guest_frame": 1379
+              },
+              {
+                "stage": "TYPE D2:STORY.TXT",
+                "prime_frames": 8,
+                "prime_count": 139,
+                "guest_frame": 1523
+              },
+              {
+                "stage": "TYPE SYS:STORY.TXT",
+                "prime_frames": 10,
+                "prime_count": 168,
+                "guest_frame": 1617
+              },
+              {
+                "stage": "SYS:CAT SYS:STORY.TXT | SYS:WC",
+                "prime_frames": 20,
+                "prime_count": 303,
+                "guest_frame": 2124
+              },
+              {
+                "stage": "CD SYS:",
+                "prime_frames": 20,
+                "prime_count": 303,
+                "guest_frame": 2158
+              },
+              {
+                "stage": "CD",
+                "prime_frames": 20,
+                "prime_count": 303,
+                "guest_frame": 2172
+              },
+              {
+                "stage": "HELLO",
+                "prime_frames": 21,
+                "prime_count": 317,
+                "guest_frame": 2216
+              },
+              {
+                "stage": "boot-smoke",
+                "prime_frames": 21,
+                "prime_count": 317,
+                "guest_frame": 2220
+              }
+            ],
+            "screenshots": [],
+            "boot_xex_sha256": null,
+            "cache": {
+              "requested": 128,
+              "blocks": 128,
+              "captured": 128
+            },
+            "cache_commands": null,
+            "startup_memory": null,
+            "baseline_memory": null,
+            "baseline_ownership": null,
+            "peak_tasks": 7,
+            "system_drive": 2,
+            "sys_cache": {
+              "physical": {
+                "hits": 6,
+                "misses": 20
+              },
+              "system": {
+                "hits": 16,
+                "misses": 20
+              }
+            },
+            "retired_manifest_intact": true,
+            "aperture_intact": true,
+            "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+            "bank_zero_delta": {
+              "fixed": 0,
+              "per_task": 0
+            }
+          },
+          "screenshot": {
+            "name": "forth-command-shell.png",
+            "sha256": "13bb08a29a4041eeae88d3a6f58d89f5c0afd40ea90ce802d5e3917a4c189d7e"
+          }
+        }
+      ],
+      "exit_cases": [
+        {
+          "case": "bye",
+          "status": "pass",
+          "os_restored": true,
+          "cancel": {
+            "key": "RETURN",
+            "delay_frames": 240,
+            "held_frames": 2,
+            "seconds_remaining": 1,
+            "cancelled": true,
+            "key_consumed": true,
+            "stays_in_forth": true
+          }
+        },
+        {
+          "case": "occupied-iocb",
+          "status": "pass",
+          "os_restored": true
+        }
+      ]
+    }
+  },
+  "distribution": {
+    "path": "build/bank-zero-compaction-demo/exec816-demo.zip",
+    "sha256": "baf28b3aac7f53ae4de13f8813835cb51b330f32fbeab40c592ef29fa4e811a1",
+    "bytes": 164592,
+    "members": [
+      "exec816-demo/ALTIRRAOS-LICENSE.txt",
+      "exec816-demo/EXEC816-GPL-3.0.txt",
+      "exec816-demo/EXEC816-LICENSING.md",
+      "exec816-demo/EXEC816-MIT.txt",
+      "exec816-demo/Exec-of816.xex",
+      "exec816-demo/OF816-LICENSE.txt",
+      "exec816-demo/README.txt",
+      "exec816-demo/SHA256SUMS",
+      "exec816-demo/altirraos-816.rom",
+      "exec816-demo/system.atr"
+    ],
+    "checksums": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6  ALTIRRAOS-LICENSE.txt\nfb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0  EXEC816-GPL-3.0.txt\n7664031943ccb87450b867698b59fb409f43fc3a62910e393c310e9b41254b54  EXEC816-LICENSING.md\n2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0  EXEC816-MIT.txt\n9d7fe609cb382c2176efb00b92b73496893da585e7aa6bd658c1c566bd98cdfd  Exec-of816.xex\n0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1  OF816-LICENSE.txt\naa5a79db7bf0313b67e814251e5631825175a51c543ec499a0a9c13b3d51594b  README.txt\n85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7  altirraos-816.rom\n1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2  system.atr\n"
+  },
+  "artifacts": [
+    {
+      "path": "build/bank-zero-compaction-demo/build.json",
+      "sha256": "2d59c2887f57f5aae63509a2803f8bbb2707c133ed941192ff082412b0cca2d5"
+    },
+    {
+      "path": "build/bank-zero-compaction-demo/memory.json",
+      "sha256": "bb23ae88f48a0a0bf516bf15c03cfeeca72b7bea9e5e5b4130fd62b99e3ad3e8"
+    },
+    {
+      "path": "build/bank-zero-compaction-demo/program.xex",
+      "sha256": "c52b66008153800c98e3501cf1130d5b798e66247a6ff6d435b777ebf1e4ebf1"
+    },
+    {
+      "path": "build/bank-zero-compaction-demo/system.atr",
+      "sha256": "1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2"
+    },
+    {
+      "path": "build/bank-zero-compaction-demo/of816/Exec-of816.xex",
+      "sha256": "9d7fe609cb382c2176efb00b92b73496893da585e7aa6bd658c1c566bd98cdfd"
+    },
+    {
+      "path": "build/bank-zero-compaction-demo/of816/of816.json",
+      "sha256": "2ffb25070745aba432936ed491559a060d3aa9f0531be73b052db281f9847d44"
+    }
+  ],
+  "observer_repairs": [
+    "Derive stack/domain/adapter addresses; remove the unused near context reservation and stale failure dump.",
+    "Never poison live boot state or code adjacent to the DP area; compare neighbour contents around initialization.",
+    "Move isolated bank-policy code outside the relocated kernel stack.",
+    "Raw memory/port/I/O/DOS register observers must compare Y with PROFILE_TAG, not the independent Task feature version. The memory packet fixture exposed the stale assertion."
+  ],
+  "limits": [
+    "Focused development checks; full hosted-system release qualification remains separate.",
+    "VBXE aperture is reserved but no mapped VBXE driver or GEM renderer is implemented.",
+    "The contiguous free area is not registered with the heap and does not enlarge GUI stacks.",
+    "Historical evidence and independently linked OS/SIO/ABI fixtures retain their own addresses."
+  ]
+}

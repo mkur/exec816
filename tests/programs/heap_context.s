@@ -33,7 +33,7 @@
     .elseif VARIANT=3
         ldy #$0000
     .elseif VARIANT=4
-        ldx #$47ff             ; packet extends beyond root stack
+        ldx #ROOT_CEILING      ; packet extends beyond root stack
     .elseif VARIANT=5
         lda #$011e             ; nonzero reserved A bits
     .elseif VARIANT=6

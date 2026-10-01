@@ -22,6 +22,41 @@ def integer(value, low, high, name):
     return value
 
 
+def reservation_maps(memory, loading=None, initialization=None, runtime=None):
+    """Publish checked phase ownership, including full reserved table capacity."""
+    if runtime is None:
+        live = [dict(r) for r in memory['profile']['regions']]
+        loading = live
+        initialization = [r for r in live if r['name'] not in ('loader','staging')]
+        runtime = [r for r in initialization if r['name'] != 'manifest']
+    phases = dict(loading=loading, initialization=initialization, runtime=runtime)
+    for phase,regions in phases.items():
+        regions.sort(key=lambda r:r['address'])
+        require(all(type(r['address']) is int and type(r['size']) is int and
+                    0 <= r['address'] < r['address']+r['size'] <= 65536 for r in regions),
+                'Invalid bank-zero extent: '+phase)
+        require(all(a['address']+a['size'] <= b['address'] for a,b in zip(regions,regions[1:])),
+                'Bank-zero reservations overlap: '+phase)
+    scratch = sorted((dict(r) for r in memory['profile']['test_scratch']), key=lambda r:r['address'])
+    adapter.diagnostic_addresses(memory['profile'])
+    require(all(a['address']+a['size'] <= b['address'] for a,b in zip(scratch,scratch[1:])),
+            'Diagnostic scratch overlaps')
+    for r in scratch:
+        require(all(r['address']+r['size'] <= s['address'] or r['address'] >= s['address']+s['size']
+                    for regions in phases.values() for s in regions),
+                'Diagnostic scratch overlaps live storage: '+r['name'])
+    free = []
+    end = 0
+    for r in runtime:
+        if end < r['address']:
+            free.append(dict(address=end,size=r['address']-end))
+        end = r['address']+r['size']
+    if end < 65536:
+        free.append(dict(address=end,size=65536-end))
+    memory.update(phase_reservations=phases,runtime_reservations=runtime,
+                  runtime_free_ranges=free,diagnostic_scratch=scratch)
+
+
 def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upper_table=False):
     cfg = json.loads(Path(config).read_text())
     platform = json.loads(Path(profile).read_text())
@@ -66,7 +101,8 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
             <= regions['staging'][1] - regions['staging'][0], 'Staging does not fit')
     require(regions['boot-state'][1] - regions['boot-state'][0] >= 256,
             'Boot state/work area does not fit')
-    require(regions['resident'] == [0x3000,0x4000], 'Resident layout differs from hosted.cfg')
+    require(adapter.resident_addresses(platform) == adapter.resident_addresses(),
+            'Resident layout differs from generated hosted bindings')
     dp = adapter.direct_pages(platform)
     require(dp == adapter.direct_pages(), 'DP placement differs from generated hosted bindings')
     fixed = {'os-low':[0,adapter.STATE], 'state':[adapter.STATE,adapter.STATE+256],
@@ -125,6 +161,9 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
     memory['reclaimed_after_startup'] = ['manifest']
     memory['startup_retirement'] = dict(address=c['RETIRED'], value=1,
         boundary='startup_complete', ranges=['manifest'])
+    reservation_maps(memory)
+    require(adapter.diagnostic_addresses(platform) == adapter.diagnostic_addresses(),
+            'Diagnostic placement differs from generated hosted bindings')
     return memory
 
 

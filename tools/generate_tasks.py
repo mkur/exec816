@@ -180,7 +180,7 @@ def generate(output, memory=None):
 def generate_kernel(output, labels=None, entries=(), writable=(0,0), *, memory):
     output = Path(output)
     c = generate(output,memory)
-    c.update(RETURN=(labels or {}).get('native_return',0x3000)-1,
+    c.update(RETURN=(labels or {}).get('native_return',adapter.RESIDENT_BASE)-1,
              TASK_START=(labels or {}).get('general_task_start',0x3a00),
              IDLE_ENTRY=(labels or {}).get('idle_start',0x3a00))
     require(len(entries) <= c['ENTRY_CAPACITY'], 'Too many task entries')

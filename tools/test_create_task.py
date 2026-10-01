@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Focused CreateTask admission and retirement checks through native code."""
+import adapter_state as adapter
 import argparse
 import json
 from pathlib import Path
@@ -82,7 +83,7 @@ def main():
                                     5: 1, 6: 1, 7: 1, 8: 1, 9: 4, 10: 1, 11: 0, 12: 0, 13: 0}[variant]
                 require(runtime['created'] == expected_created, 'Failed admission changed capacity')
                 # Scan untouched fill, including the interrupt reserve, after shutdown.
-                stacks = [('kernel', 0x4a00, 1536)] + [
+                stacks = [('kernel', adapter.KERNEL_STACK_BASE, 1536)] + [
                     (str(slot), pool['stack_base'], pool.get('stack_bytes', 1536))
                     for slot, pool in enumerate(program['build']['memory']['task_pools'])]
                 runtime['stack_high_water'] = {}

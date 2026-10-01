@@ -10,6 +10,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Exec and project history
 
+- [Bank zero compaction](bank-zero-compaction-plan.md): complete; one 12,480-byte
+  free range in the eight-Task build, consolidated boot storage, and 240 fixed
+  bytes recovered in four-Task builds;
+  [development evidence](../development/bank-zero-compaction.json).
 - [Direct page guard removal and compaction](dp-compaction-plan.md): complete;
   contiguous 256-byte Task DPs with separate kernel ownership and unchanged stacks.
   Saves 2,336 bytes with eight Tasks or 192 with four;

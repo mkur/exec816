@@ -66,7 +66,7 @@ through memory adoption, Task initialization and boot-setting capture. The
 adapter publishes `M_RETIRED=1` at `startup_complete`, before Task dispatch;
 only then is that entire range reusable. Failed startup does not publish it.
 Repeated memory adoption/initialization uses the live adoption state and never
-revalidates retired manifest bytes. The boot-state page at `$2C00–$2CFF` stays
+revalidates retired manifest bytes. The boot-state page at `$0900–$09FF` stays
 reserved, including shutdown information. Restarting retired bootstrap code is
 unsupported; a cold boot reloads the manifest.
 
@@ -84,26 +84,52 @@ unused; packaging rejects code/metadata overlap, arena overflow and resident
 image payload in bank zero.
 
 The profile reserves **`$8000–$8FFF` (4 KiB) for the VBXE CPU aperture** during
-loading and runtime. Boot staging is at `$0900–$0D0F`. In the eight-Task layout,
-slot 7's stack is at `$0D20–$111F` and idle at `$7CB0–$7EAF`, each with
-16-byte guards on both ends. Both supported layouts fit below the aperture. Staging and the retired
-manifest remain unavailable to a general heap until explicitly registered.
+loading and runtime. Persistent Exec reservations are packed below it:
+
+| Eight-Task range | Ownership |
+| --- | --- |
+| `$0800–$08FF` | Adapter state |
+| `$0900–$09FF` | Boot state |
+| `$0A00–$0AFF` | Kernel DP |
+| `$0B00–$12FF` | Public Task DPs |
+| `$1300–$13FF` | Idle DP |
+| `$1400–$23FF` | Resident platform adapter, including segment padding |
+| `$2400–$4F3F` | Root, kernel, worker and idle stacks, including guards |
+| `$4F40–$7FFF` | 12,480 unreserved bytes after startup |
 
 The [platform profile](../../platform/altirraos/memory-1m.json) defines physical
-DP placement and the supported stack maps. Kernel DP is `$2100–$21FF`; public
-Task slot `i` owns `$2200+i*$100`, and idle owns slot `capacity`. The complete
-DP area ends at `$26FF` for four public Tasks and `$2AFF` for eight. Generated
-assembly/Action! constants and per-image pool metadata use this description.
-The four-Task near bank table still reserves `$2800–$2BFF`; the eight-Task table
-is in upper RAM. Unsupported capacities and overlaps are rejected.
+placement. Kernel DP is `$0A00`; public slot `i` owns `$0B00+i*$100`, and idle
+owns slot `capacity`. Four-Task DPs end at `$0FFF`, followed by the full near
+bank-table reservation at `$1000–$13FF`. The eight-Task table is in upper RAM.
+Generated assembly/Action! constants and the resident linker configuration use
+this profile. Unsupported capacities and overlaps are rejected.
 
-[DP compaction](../development/dp-compaction.json) removes 32 fixed bytes and
-32 bytes per public Task/idle in the four-Task layout, or 256 bytes per public
-Task/idle in the eight-Task layout. Runtime savings are 192 and 2,336 bytes;
-loading savings are 96 and 544 bytes. Stack bases, sizes, guards and interrupt
-reserves are unchanged. These freed holes are not registered with the heap.
-OF816 borrows only the root's 256-byte DP before handoff, plus the existing
-root and kernel stacks: 3,392 bank-zero bytes for that temporary lifetime.
+The root stack starts at `$2410`, the kernel stack at `$2A30`; each reserves
+1,536 stack bytes with 16-byte guards at both ends. Other stack bases and sizes
+are published in `task_pools`; see [Task capacity](../architecture/task-capacity.md).
+All DPs remain exactly 256 bytes without guards. All stacks retain their sizes,
+checked bounds and internal 256-byte interrupt reserve.
+
+Temporary staging occupies `$5BF0–$5FFF`, the manifest `$6000–$67FF`, and the
+loader `$6800–$7BFF`. They form one boot arena clear of every persistent pool.
+`phase_reservations` records loading, initialization and runtime ownership;
+`runtime_free_ranges` records the complement after startup. Initialization
+retains the manifest after retiring loader/staging. The full free range becomes
+reusable only at `startup_complete`; it is not registered with the general heap.
+
+[Bank-zero compaction](../development/bank-zero-compaction.json) combines nine
+holes into one for eight Tasks, with zero change in total reservations or
+per-Task cost. Removing an obsolete near context reservation also saves 240
+fixed bytes for four Tasks, leaving `$48C0–$7FFF` (14,144 bytes) contiguous.
+Both budgets include guards and full reserved capacity. The earlier
+[DP compaction record](../development/dp-compaction.json) preserves its separate
+192/2,336-byte savings and historical addresses.
+
+OF816 borrows the root DP and guarded root/kernel stacks before handoff:
+3,392 bytes for that temporary lifetime. Test-only scratch is declared separately
+in `diagnostic_scratch` and checked against every live phase. It does not reserve
+production bytes; instrumented runs must report their borrowing and restore
+scratch when the observation ends.
 
 This reserves address space only. The current adapter does not enable VBXE,
 manage its window registers or hand display ownership to GEM. The

@@ -20,14 +20,14 @@ class OF816PackageTests(unittest.TestCase):
         seed = b'\2\0\1\0'+b'\2\0\2\0'+b'\1\0\0\0'*2
         (self.folder/'manifest.bin').write_bytes(bytes(32)+seed)
         self.xex = self.folder/'program.xex'
-        self.xex.write_bytes(b'\xff\xff'+xex_segment(0x3000,b'\xea'))
+        self.xex.write_bytes(b'\xff\xff'+xex_segment(0x1400,b'\xea'))
         self.program = dict(output=self.folder,xex=self.xex,labels=dict(loader_start=0x6800),
             image=dict(segments=[dict(address=0x10000,bytes=[0x6b])],zero_fill=[]),
             build=dict(tasks=True,banked=True,dos_mounts=[],system_mount=None,task_storage=dict(CAPACITY=4),memory=dict(
-                task_pools=[dict(dp=0x2200,stack_base=0x4200),dict(dp=0x2300,stack_base=0x5200)],
-                regions={'kernel-stack':[0x49f0,0x5010],'boot-state':[0x2c00,0x2d00]},
-                boot_config=dict(abi=BOOT_ABI,address=0x2c80,cache_blocks=512,system_slot=255,system_drive=0,allowed_drives=0),
-                constants=dict(TABLE_BYTES=16,STAGE=0x7c00,OLD_MEMLO=0x2c08),usable_banks=[1,2,3])))
+                task_pools=[dict(dp=0x0b00,stack_base=0x2410),dict(dp=0x0c00,stack_base=0x3050)],
+                regions={'kernel-stack':[0x2a20,0x3040],'boot-state':[0x0900,0x0a00]},
+                boot_config=dict(abi=BOOT_ABI,address=0x0980,cache_blocks=512,system_slot=255,system_drive=0,allowed_drives=0),
+                constants=dict(TABLE_BYTES=16,STAGE=0x5bf0,OLD_MEMLO=0x0908),usable_banks=[1,2,3])))
 
     def test_boot_uses_free_banks_and_preserves_manifest(self):
         before = (self.folder/'manifest.bin').read_bytes()
@@ -36,7 +36,7 @@ class OF816PackageTests(unittest.TestCase):
         self.assertEqual((self.folder/'manifest.bin').read_bytes(),before)
 
     def test_rejects_unknown_boot_contract_and_location(self):
-        for field,value in [('abi',{}),('address',0x2c00),('cache_blocks',513)]:
+        for field,value in [('abi',{}),('address',0x0900),('cache_blocks',513)]:
             bad = copy.deepcopy(self.program)
             bad['build']['memory']['boot_config'][field] = value
             with self.subTest(field=field),self.assertRaisesRegex(RuntimeError,'boot configuration'):
@@ -57,9 +57,9 @@ class OF816PackageTests(unittest.TestCase):
         self.program['build']['memory']['task_pools'][0]['stack_bytes'] = 1536
         self.program['build']['memory']['task_pools'][1]['stack_bytes'] = 1024
         layout = boot_layout(self.program)
-        self.assertEqual(layout['OF_ADAPTER'],0x4a00)
+        self.assertEqual(layout['OF_ADAPTER'],0x2a30)
         # Both adapter code/state and its startup stack fit inside this arena.
-        self.assertLessEqual(layout['OF_ADAPTER']+1536,0x5000)
+        self.assertLessEqual(layout['OF_ADAPTER']+1536,0x3030)
 
     def test_rejects_insufficient_banks_or_other_task_layout(self):
         (self.folder/'manifest.bin').write_bytes(bytes(32)+b'\2\0\1\0'*4)
@@ -75,18 +75,18 @@ class OF816PackageTests(unittest.TestCase):
             boot_layout(bad)
 
     def test_rejects_payload_and_bss_in_borrowed_storage(self):
-        for address in (0x2200,0x22ff,0x4200,0x49ff,0x4fff):
+        for address in (0x0b00,0x0bff,0x2410,0x2a2f,0x302f):
             with self.subTest(address=address):
                 self.xex.write_bytes(b'\xff\xff'+xex_segment(address,b'\x01'))
                 with self.assertRaisesRegex(RuntimeError,'payload overlaps'):
                     boot_layout(self.program)
-        self.xex.write_bytes(b'\xff\xff'+xex_segment(0x3000,b'\xea'))
-        self.program['image']['zero_fill'] = [dict(address=0x47ff,size=2)]
+        self.xex.write_bytes(b'\xff\xff'+xex_segment(0x1400,b'\xea'))
+        self.program['image']['zero_fill'] = [dict(address=0x2a0f,size=2)]
         with self.assertRaisesRegex(RuntimeError,'image data overlaps'):
             boot_layout(self.program)
 
     def test_dp_neighbours_are_not_borrowed_by_of816(self):
-        for address in (0x21ff,0x2300):
+        for address in (0x0aff,0x0c00):
             self.xex.write_bytes(b'\xff\xff'+xex_segment(address,b'\x01'))
             boot_layout(self.program)
 

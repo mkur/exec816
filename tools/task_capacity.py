@@ -1,6 +1,7 @@
 """Resolve compact DP ownership and fixed guarded stacks from the platform map."""
 from os_boundary import require
 from adapter_state import direct_pages
+from generate_memory import reservation_maps
 
 
 def configure(memory, capacity, worker_stack=None, idle_stack=None):
@@ -23,8 +24,6 @@ def configure(memory, capacity, worker_stack=None, idle_stack=None):
     if memory['constants']['TABLE'] < 65536:
         table = next(r for r in profile['regions'] if r['name'] == 'table')
         fixed.append((table['address'],table['address']+table['size'],'table'))
-    if capacity == 4:
-        fixed.append((0x2d00,0x2df0,'task records'))
     fixed.sort()
     require(all(a[1] <= b[0] for a,b in zip(fixed,fixed[1:])), 'Fixed reservation overlaps')
     used = list(fixed)
@@ -64,8 +63,13 @@ def configure(memory, capacity, worker_stack=None, idle_stack=None):
     memory['task_pools'] = pools
     memory['task_capacity'] = capacity
     memory['reclaimed_after_adopt'] = ['loader','staging']
-    memory['runtime_reservations'] = [dict(name=n,address=a,size=b-a)
-                                    for a,b,n in sorted(used) if n != 'manifest']
+    encode = lambda spans:[dict(name=n,address=a,size=b-a) for a,b,n in spans]
+    bootstrap = fixed+[(p['dp'],p['dp']+256,f'dp{i}') for i,p in enumerate(pools[:2])]
+    bootstrap += [(p['stack_base']-16,p['stack_base']+p['stack_bytes']+16,f'stack{i}')
+                  for i,p in enumerate(pools[:2])]
+    bootstrap += [(*regions[n],n) for n in ('loader','staging')]
+    reservation_maps(memory,encode(bootstrap),encode(used),
+                     encode([(a,b,n) for a,b,n in used if n != 'manifest']))
     fixed_bytes = sum(b-a for a,b,n in fixed if not n.startswith('os-') and n != 'manifest')
     public = [p['dp_reserved_bytes']+p['stack_bytes']+32 for p in pools[:-1]]
     idle = pools[-1]['dp_reserved_bytes']+pools[-1]['stack_bytes']+32
@@ -75,4 +79,6 @@ def configure(memory, capacity, worker_stack=None, idle_stack=None):
     memory['bank_zero_budget'] = dict(fixed_runtime=fixed_bytes,public=public,idle=idle,
         runtime_excluding_os=fixed_bytes+sum(public)+idle,loading_excluding_os=loading,
         runtime_including_os=fixed_bytes+sum(public)+idle+os_bytes,loading_including_os=loading+os_bytes)
+    require(sum(r['size'] for r in memory['phase_reservations']['loading']) == loading+os_bytes,
+            'Loading ownership differs from budget')
     return pools

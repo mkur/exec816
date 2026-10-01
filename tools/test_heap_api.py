@@ -1,4 +1,5 @@
 """Execute the public memory API through current Task-native bindings."""
+import adapter_state as adapter
 import json
 from pathlib import Path
 from native_program import ROOT,build,command,compiler,execute,platform_files,require,sha256,verify_machine
@@ -15,6 +16,7 @@ def context(bridge,toolchain,output,optimize,variant):
     checks=next(d['address'] for d in image['data'] if '_CHECKS_' in d['name'])
     (output/'context.cfg').write_text(f'MEMORY {{ RAM: start=${base:x},size=$1000,file=%O; }} SEGMENTS {{ PROBE: load=RAM,type=ro; }}\n')
     command(['ca65','-I',output,'-D',f'VARIANT={variant}','-D',f'CHECKS={checks}',
+             '-D',f'ROOT_CEILING={adapter.TASK0_STACK_CEILING}',
              '-D',f'AVAIL={program["labels"]["heap_avail_mem"]}',
              '-o',output/'context.o',ROOT/'tests/programs/heap_context.s'])
     command(['ld65','-C',output/'context.cfg','-o',output/'context.bin',output/'context.o'])
@@ -30,7 +32,7 @@ def context(bridge,toolchain,output,optimize,variant):
         c=program['build']['memory']['constants'];seed=(output/'manifest.bin').read_bytes()[32:32+c['TABLE_BYTES']]
         total=sum(seed[b*4]==1 for b in range(c['MAX_BANKS']))*65536
         require(words[0]+(words[1]<<16)==total,'32-bit COP result mismatch')
-        require(words[2]==TASK_ABI['version'] and words[3]==0x2200 and words[4]==words[6] and
+        require(words[2]==TASK_ABI['constants']['PROFILE_TAG'] and words[3]==adapter.TASK0_DP and words[4]==words[6] and
                 words[5]&255==0x12 and (words[5]>>8)&0x3c==0 and words[7]==1,
                 f'Memory COP context mismatch: {words}')
     clean_ownership(bridge,program,output)

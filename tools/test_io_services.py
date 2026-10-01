@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Execute generic device services against explicit test-only residents."""
+import adapter_state as adapter
 from library_paths import read_source
 import argparse
 import json
@@ -39,7 +40,7 @@ def context(bridge,t,output,optimize,variant,from_build=None):
     snapshot=read(bridge,labels['CHECKS'],16,output)
     checks=[int.from_bytes(snapshot[i:i+2],'little') for i in range(0,16,2)]
     if mode:require(checks[7]==0,'Invalid context returned')
-    else:require(checks[:4]==[0,7,tasks['version'],0x2200] and checks[4]==checks[6] and
+    else:require(checks[:4]==[0,7,tasks['constants']['PROFILE_TAG'],adapter.TASK0_DP] and checks[4]==checks[6] and
                  checks[5]&255==0x12 and checks[5]&0x3c00==0 and checks[7]==1,'I/O context: '+str(checks))
     clean_ownership(bridge,program,output)
     return dict(build=program['build'],runtime=runtime,checks=checks,variant=variant,native_probe_sha256=sha256(output/'context.bin'))

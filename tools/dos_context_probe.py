@@ -1,4 +1,5 @@
 """Native caller-domain and exact register/result probe for DOSCORE.Current."""
+import adapter_state as adapter
 from native_program import ROOT,build,command,execute,require,sha256
 from test_banked import changed_image
 from test_cooperative import data
@@ -20,6 +21,6 @@ def run(b,t,out,optimize,variant):
     if variant:require(checks[7]==0,'Invalid DOS caller returned')
     else:
         slot=p['build']['memory']['dos_storage']['BASE']
-        require(checks[:4]==[slot&65535,slot>>16,ABI['version'],0x2200] and checks[4]==checks[6] and checks[5]&255==0x12 and checks[5]&0x3c00==0 and checks[7]==1,'DOS native context/result: '+str(checks))
+        require(checks[:4]==[slot&65535,slot>>16,ABI['constants']['PROFILE_TAG'],adapter.TASK0_DP] and checks[4]==checks[6] and checks[5]&255==0x12 and checks[5]&0x3c00==0 and checks[7]==1,'DOS native context/result: '+str(checks))
     clean_ownership(b,p,out)
     return dict(status='pass',case='context-'+str(variant),build=p['build'],runtime=runtime,checks=checks,probe_sha256=sha256(out/'context.bin'))

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Execute the hosted native-program acceptance matrix on the pinned emulator."""
+import adapter_state as adapter
 import argparse
 import json
 from pathlib import Path
@@ -76,7 +77,7 @@ def main(argv=None, toolchain=None, output=None, modes=(False, True)):
                     globals_seen["entered"] = global_word(bridge, program["image"], "entered")
                     require(globals_seen["entered"] > 1 and result["fault_required"] > 0,
                             "Expected recursive stack overflow was not observed")
-                    require(0x4300 <= result["fault_s"] < 0x4400, "Stack fault happened outside its expected bound")
+                    require(adapter.TASK0_STACK_FLOOR <= result["fault_s"] < adapter.TASK0_STACK_FLOOR+256, "Stack fault happened outside its expected bound")
                 report["cases"].append({"name": name, "status": "pass", "build": program["build"],
                                         "observed": result, "globals": globals_seen})
         report["status"] = "pass"

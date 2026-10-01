@@ -2,14 +2,17 @@
 
 Reads use the debugger expression evaluator. Far writes are test stimuli at a
 paused bank-zero bootstrap or IRQ-masked rendezvous, never a production API.
-A short target trampoline borrows and restores $2000-$20ff and leaves A/P, the
+A short target trampoline borrows profile-defined test scratch and leaves A/P, the
 stack pointer, D, DBR and X/Y unchanged. It uses up to three stack bytes. NMI is
 masked for the transfer, so these writes are not interrupt qualification runs.
 """
 import struct
+import adapter_state as adapter
 
 
 def install(bridge):
+    base = adapter.TEST_FAR_WRITE
+    capacity = adapter.TEST_FAR_WRITE_BYTES
     near_dump, near_load = bridge.memdump, bridge.memload
     near_peek, near_peek16 = bridge.peek, bridge.peek16
     near_poke, near_poke16 = bridge.poke, bridge.poke16
@@ -32,13 +35,14 @@ def install(bridge):
         regs = bridge.regs()
         pc = bridge.eval_expr('@xpc')
         flags = int(regs['P'].lstrip('$'),16)
-        require(regs['mode'] == '65C816' and 0x2100 <= pc < 0x9000,
+        require(regs['mode'] == '65C816' and adapter.RESIDENT_BASE <= pc < 0x8000 and
+                (pc+3 <= base or pc >= base+capacity),
                 'Far write requires a paused bank-zero bootstrap/adapter rendezvous')
         require(flags & 4 or flags & 0x30 == 0x30,
                 'Far write requires masked IRQs or an emulation bootstrap')
         nmien = int(bridge.antic()['NMIEN'].lstrip('$'),16)
         original_entry = near_dump(pc,3)
-        scratch = near_dump(0x2000,256)
+        scratch = near_dump(base,capacity)
         bridge.hwpoke(0xd40e,0)
         try:
             for offset in range(0,len(payload),32):
@@ -47,10 +51,11 @@ def install(bridge):
                 for i,value in enumerate(payload[offset:offset+32]):
                     code += bytes([0xa9,value,0x8f])+(address+offset+i).to_bytes(3,'little')
                 code += bytes([0xc2,0x20,0x68,0x28])
-                done = 0x2000+len(code)
+                done = base+len(code)
                 code += b'\x4c'+struct.pack('<H',done)
-                near_load(0x2000,code)
-                near_load(pc,b'\x4c\x00\x20')
+                require(len(code) <= capacity, 'Far-write trampoline exceeds scratch')
+                near_load(base,code)
+                near_load(pc,b'\x4c'+struct.pack('<H',base))
                 stop = bridge.bp_set(done)
                 try:
                     run_to(bridge,done,frame_limit=10,timeout=5)
@@ -65,7 +70,7 @@ def install(bridge):
                     bridge.bp_clear(back)
         finally:
             near_load(pc,original_entry)
-            near_load(0x2000,scratch)
+            near_load(base,scratch)
             bridge.hwpoke(0xd40e,nmien)
         return dict(ok=True,addr=f'${address:x}',length=len(payload))
 

@@ -83,7 +83,7 @@ def check_case(bridge,program,result,args):
     contexts=[]
     if args.flags!=0x100:
         for slot,pool in enumerate(program['build']['memory']['task_pools'][:n]):
-            raw=bridge.memdump(adapter.PROBE0+slot*32,24);f=args.flags
+            raw=bridge.memdump(adapter.probe_address(slot),24);f=args.flags
             expected=struct.pack('<BHHHHBHHHHH',0x12,pool['dp'],0x78 if f&0x10 else 0x5678,0x34 if f&0x10 else 0x1234,0xab01,f,pool['stack_base']+pool.get('stack_bytes',1536)-8,0xbeef,0xff10,0xff11,0xff10)
             require(raw[:20]==expected,'Capacity register restoration: '+str(slot)+' '+raw.hex())
             contexts.append(raw.hex())
@@ -133,11 +133,27 @@ def main():
                     os.environ['EXEC816_LATENCY_PCS']=','.join(f'{v:x}' for v in sorted(set(markers.values())|set.union(*returns.values())))
                 with emulator(args.bridge_dir.resolve(),args.rom.resolve(),out/name,pin=pin) as bridge:
                     machine=verify_machine(bridge,args.rom,pin)
+                    borrowed = {}
+                    extra = max(0,args.capacity*32-128) if args.flags!=0x100 else 0
+                    def before_run(b):
+                        if extra:
+                            require(extra <= adapter.TEST_REGISTER_EXTENSION_BYTES,'Register scratch too small')
+                            borrowed['bytes'] = b.memdump(adapter.TEST_REGISTER_EXTENSION,extra)
+                        if args.observe:
+                            b.profile_start()
                     result,_=execute(bridge,program,frame_limit=6000,timeout=480,load_timeout=180,
-                        before_run=(lambda b:b.profile_start()) if args.observe else None)
-                    observed=check_case(bridge,program,result,args)
+                        before_run=before_run)
+                    try:
+                        observed=check_case(bridge,program,result,args)
+                    finally:
+                        if extra:
+                            bridge.memload(adapter.TEST_REGISTER_EXTENSION,borrowed['bytes'])
+                    if extra:
+                        require(bridge.memdump(adapter.TEST_REGISTER_EXTENSION,extra) == borrowed['bytes'],
+                                'Register scratch not restored')
+                        observed['scratch']=dict(address=adapter.TEST_REGISTER_EXTENSION,size=extra,restored=True)
                 case=dict(name=name,status='pass',build=program['build'],runtime=result,machine=machine,observed=observed,
-                    diagnostic_bank_zero_delta=max(0,args.capacity*32-128) if args.flags!=0x100 else 0)
+                    diagnostic_bank_zero_delta=extra)
                 if args.observe:
                     case['timing']=measure(out/name/'emulator.log',markers,returns)
                     case['trace_sha256']=sha256(out/name/'emulator.log')

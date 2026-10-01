@@ -97,6 +97,8 @@ def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=Fal
              ROOT / "platform/altirraos/hosted.s"])
     cfg = ROOT/'platform/altirraos/hosted.cfg'
     config = cfg.read_text().replace('\r\n', '\n')
+    require(config == adapter.hosted_config(memory['profile'] if memory else None),
+            'Stale generated resident linker layout')
     if tasks:
         from generate_tasks import storage
         from generate_sio_adapter import ABI as sio_adapter
@@ -735,7 +737,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         payload, loader_labels = emit(output, image, memory, labels)
         labels.update(loader_labels)
     else:
-        payload = b"\xff\xff" + xex_segment(0x3000, (output / "hosted.bin").read_bytes())
+        payload = b"\xff\xff" + xex_segment(adapter.RESIDENT_BASE, (output / "hosted.bin").read_bytes())
         for address, data in regions:
             payload += xex_segment(address, data)
         payload += xex_segment(0x02E0, struct.pack("<H", labels["start"]))
@@ -884,18 +886,21 @@ def execute(bridge, program, expected_status=0, timer_irq=False, before_run=None
         require(bridge.memdump(0x0222, 2) == old_vbi, "Immediate VBI vector not restored")
         require(bridge.memdump(0x02E7, 2) == old_memlo, "OS memory reservation not restored")
     cooperative = program["build"].get("cooperative", False)
-    guards = [0x0100, 0x41F0, 0x4800]
-    domains = [(adapter.TASK0_DP, adapter.TASK0 if cooperative else adapter.STATE, 0, 0x4300, 0x47FF)]
+    guards = [0x0100, adapter.TASK0_STACK_BASE-16, adapter.TASK0_STACK_CEILING+1]
+    domains = [(adapter.TASK0_DP, adapter.TASK0 if cooperative else adapter.STATE, 0,
+                adapter.TASK0_STACK_FLOOR, adapter.TASK0_STACK_CEILING)]
     if cooperative:
-        guards += [0x49F0, 0x5000, 0x51F0, 0x5800]
-        domains += [(adapter.TASK1_DP, adapter.TASK1, 0, 0x5300, 0x57FF), (adapter.KERNEL_DP, adapter.KERNEL_OWNER, 1, 0x4B00, 0x4FFF)]
+        guards += [adapter.KERNEL_STACK_BASE-16, adapter.KERNEL_STACK_CEILING+1,
+                   adapter.TASK1_STACK_BASE-16, adapter.TASK1_STACK_CEILING+1]
+        domains += [(adapter.TASK1_DP, adapter.TASK1, 0, adapter.TASK1_STACK_FLOOR, adapter.TASK1_STACK_CEILING),
+                    (adapter.KERNEL_DP, adapter.KERNEL_OWNER, 1, adapter.KERNEL_STACK_FLOOR, adapter.KERNEL_STACK_CEILING)]
         result.update({"current": state[35], "switching": state[36], "switches": word(38),
                        "gateway_calls": word(40), "os_calls": word(42), "forwarded_cops": word(44),
                        "os_owner": state[50], "tick_pending": state[48], "vbi_count": word(52),
                        "vbi_dispatches": word(54), "irq_depth": word(56), "tasks": list(bridge.memdump(adapter.TASK0, 32))})
     if program['build'].get('tasks'):
-        guards = [0x0100, 0x49F0, 0x5000]
-        domains = [(adapter.KERNEL_DP, adapter.KERNEL_OWNER, 1, 0x4B00, 0x4FFF)]
+        guards = [0x0100, adapter.KERNEL_STACK_BASE-16, adapter.KERNEL_STACK_CEILING+1]
+        domains = [(adapter.KERNEL_DP, adapter.KERNEL_OWNER, 1, adapter.KERNEL_STACK_FLOOR, adapter.KERNEL_STACK_CEILING)]
         task_records = []
         task_constants = program['build']['task_storage']
         from banked_test_memory import read as far_read
@@ -942,7 +947,7 @@ def execute(bridge, program, expected_status=0, timer_irq=False, before_run=None
                     and result["switching"] == 0 and result["irq_depth"] == 0,
                     f"Cooperative cleanup mismatch: {result}")
         else:
-            require((result["return_s"], result["return_d"], result["os_busy"]) == (0x47FE, 0x2200, 0),
+            require((result["return_s"], result["return_d"], result["os_busy"]) == (adapter.TASK0_STACK_TOP, adapter.TASK0_DP, 0),
                     f"Native return context mismatch: {result}")
         require(result["return_p"] & 0x3C == program["build"]["initial_i"], "Native boundary flags changed")
         require(result["return_dbr"] == 0 and result["return_e"] == 0, "Native bank/mode boundary changed")

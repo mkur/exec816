@@ -3,6 +3,16 @@
 .segment "BOOT"
 .a16
 .i16
+.macro probe_slot_offset
+    .if GENERAL_TASKS
+        ; Four captures fit in adapter state; the rest use test-only scratch.
+        cmp #4*32
+        bcc :+
+        clc
+        adc #E816_TEST_REGISTER_EXTENSION-E816_PROBE0-4*32
+:
+    .endif
+.endmacro
 raw_context_probe:
     .if BANKED
         ; Keep the original near return frame, but interrupt with PBR=$02.
@@ -23,6 +33,7 @@ bankprobe:
         asl a
         asl a
         asl a
+        probe_slot_offset
         tax
         lda E816_SWITCH_COUNT
         sta E816_PROBE0+20,x
@@ -61,6 +72,7 @@ bankprobe:
     asl a
     asl a
     asl a
+    probe_slot_offset
     tay
     .repeat 5, offset
         lda f:1+offset*2,x
@@ -85,11 +97,7 @@ bankprobe:
     cop E816_COP
     sta E816_PROBE0+14,y
     phd
-    .if GENERAL_TASKS
-        lda #$1000               ; outside every generated Task DP pool
-    .else
-        lda #$2800
-    .endif
+    lda #E816_KERNEL_DP           ; not a public Task's domain
     tcd
     lda #E816_SERVICE_VERSION
     cop E816_COP

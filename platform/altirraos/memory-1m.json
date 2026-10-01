@@ -34,47 +34,47 @@
     },
     {
       "name": "task0-dp",
-      "address": 8704,
+      "address": 2816,
       "size": 256
     },
     {
       "name": "task1-dp",
-      "address": 8960,
+      "address": 3072,
       "size": 256
     },
     {
       "name": "kernel-dp",
-      "address": 8448,
+      "address": 2560,
       "size": 256
     },
     {
       "name": "table",
-      "address": 10240,
+      "address": 4096,
       "size": 1024
     },
     {
       "name": "boot-state",
-      "address": 11264,
+      "address": 2304,
       "size": 256
     },
     {
       "name": "resident",
-      "address": 12288,
+      "address": 5120,
       "size": 4096
     },
     {
       "name": "task0-stack",
-      "address": 16880,
+      "address": 9216,
       "size": 1568
     },
     {
       "name": "kernel-stack",
-      "address": 18928,
+      "address": 10784,
       "size": 1568
     },
     {
       "name": "task1-stack",
-      "address": 20976,
+      "address": 12352,
       "size": 1568
     },
     {
@@ -89,7 +89,7 @@
     },
     {
       "name": "staging",
-      "address": 2304,
+      "address": 23536,
       "size": 1040
     },
     {
@@ -105,18 +105,18 @@
   ],
   "image_data_bytes": 2048,
   "direct_pages": {
-    "kernel": 8448,
-    "task_base": 8704,
+    "kernel": 2560,
+    "task_base": 2816,
     "task_stride": 256
   },
   "task_stacks": {
     "4": {
       "bases": [
-        16896,
-        20992,
-        26880,
-        28928,
-        30976
+        9232,
+        12368,
+        13936,
+        15504,
+        17072
       ],
       "sizes": [
         1536,
@@ -128,15 +128,15 @@
     },
     "8": {
       "bases": [
-        16896,
-        20992,
-        26640,
-        27696,
-        28752,
-        29808,
-        30864,
-        3360,
-        31920
+        9232,
+        12368,
+        13424,
+        14480,
+        15536,
+        16592,
+        17648,
+        18704,
+        19760
       ],
       "sizes": [
         1536,
@@ -150,5 +150,38 @@
         512
       ]
     }
-  }
+  },
+  "resident_segments": {
+    "BOOT": 0,
+    "NMI": 1024,
+    "IRQ": 1280,
+    "GATE": 1536,
+    "CONSOLE": 2048,
+    "STUBS": 2560,
+    "FAULT": 3072,
+    "EXIT": 3328,
+    "COOP_BOOT": 3584
+  },
+  "test_scratch": [
+    {
+      "name": "far-write",
+      "address": 31744,
+      "size": 256
+    },
+    {
+      "name": "register-extension",
+      "address": 32000,
+      "size": 128
+    },
+    {
+      "name": "dp-observer",
+      "address": 32128,
+      "size": 32
+    },
+    {
+      "name": "relocation-sentinel",
+      "address": 32256,
+      "size": 256
+    }
+  ]
 }

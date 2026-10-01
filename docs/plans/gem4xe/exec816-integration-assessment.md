@@ -80,13 +80,15 @@ kernel calls are not the integration boundary.
 The [bank-zero relocation plan](../bank-zero-relocation-plan.md) is implemented:
 state is at `$0800`, ordinary globals occupy upper RAM, and the manifest retires
 after successful startup. The subsequent
-[aperture reservation](../../development/vbxe-aperture.json) moves the last
-worker and idle stacks clear of `$8000–$8FFF`, and moves boot staging to `$0900`.
-The [relocation record](../../development/bank-zero-relocation.json) and earlier
-analysis record remain snapshots of their respective layouts.
-[DP compaction](../../development/dp-compaction.json) subsequently places the
-kernel at `$2100` and Task pages contiguously from `$2200`, without DP canaries
-or padding. Stack reservations remain unchanged.
+[aperture reservation](../../development/vbxe-aperture.json) protects
+`$8000–$8FFF`, and [DP compaction](../../development/dp-compaction.json) removes
+DP guards and padding. These records preserve their historical layouts.
+
+[Bank-zero compaction](../bank-zero-compaction-plan.md) now packs persistent
+Exec storage into `$0800–$4F3F`: boot state at `$0900`, kernel/Task DPs at
+`$0A00–$13FF`, the resident adapter at `$1400–$23FF`, and guarded stacks at
+`$2400–$4F3F`. Staging, manifest and loader occupy `$5BF0–$7BFF` temporarily.
+See the [development record](../../development/bank-zero-compaction.json).
 
 The generated eight-Task layout now reserves:
 
@@ -98,15 +100,15 @@ The generated eight-Task layout now reserves:
 | Seven other public Task pools | 9,184 |
 | Private idle | 800 |
 | Total reserved in bank zero | 53,056 |
-| Unreserved across all holes | 12,480 |
-| Largest individual hole, `$5610–$67FF` | 4,592 |
+| One unreserved range, `$4F40–$7FFF` | 12,480 |
 
-These totals include guards and unused reserved capacity. They recover 8,480 bytes
-from the assessed baseline after reserving the aperture and compacting DPs,
-before assigning other GEM storage. The largest hole includes the retired
-manifest, so it becomes available only after `startup_complete`. A separate
-4,048-byte hole lies at `$1130–$20FF`. Neither hole is yet a heap arena. The no-resident-Atari-DOS boot contract requires the original
-MEMLO to be at most `$0800`. Exec's own DOS/file services remain operational.
+These totals include guards and unused reserved capacity. They recover 8,480
+bytes from the assessed baseline after reserving the aperture and compacting
+DPs. Whole-map compaction adds no eight-Task savings; it combines the nine holes
+into one 12,480-byte range. The range becomes fully reusable after
+`startup_complete`, when the manifest retires. It is not yet a heap arena. The
+no-resident-Atari-DOS boot contract requires the original MEMLO to be at most
+`$0800`. Exec's own DOS/file services remain operational.
 
 Each ordinary worker reserves a 1,024-byte stack, 32 stack-guard bytes and a
 256-byte aligned DP reservation without external guards. The stack includes

@@ -89,8 +89,9 @@ def policy_probe(bridge, toolchain, output, count, optimize):
     memory_hash = generate(output,memory)
     (output/'execmemory.act').write_text(read_source(ROOT/'lib/exec/execmemory.act'))
     (output/'banks.act').write_text((ROOT/'tests/programs/banks.act').read_text())
+    origin = 0x5000  # Isolated harness, outside the relocated kernel stack.
     (output/'layout.json').write_text(json.dumps({'code_origin':0x10000,'data_origin':0x8800,
-        'stack_overflow':0x30f0,'nmi_extra_stack':0,'imports':[]}))
+        'stack_overflow':origin+0xf0,'nmi_extra_stack':0,'imports':[]}))
     command([toolchain['binary'],'--module-path',output,'--layout',output/'layout.json',
              '-o',output/'program.json',*([] if optimize else ['--no-opt']),output/'banks.act'])
     image = json.loads((output/'program.json').read_text())
@@ -110,7 +111,7 @@ start:
     .i16
     lda #${adapter.KERNEL_DP:04x}
     tcd
-    lda #$4ffd
+    lda #${adapter.KERNEL_STACK_TOP-1:04x}
     tcs
     sep #$20
     .a8
@@ -124,7 +125,7 @@ done:
     .res $f0-(*-start),$ea
     jmp done
 '''
-    labels = assemble_probe(output,source)
+    labels = assemble_probe(output,source,origin)
     bridge.bp_clear_all(); bridge.boot(str(output/'probe.xex')); run_to(bridge,labels['start'])
     for segment in image['segments']:
         far_write(bridge,segment['address'],bytes(segment['bytes']),output)
@@ -147,8 +148,9 @@ done:
     boot = bytearray(256);boot[0] = 1;boot[16:32] = bytes(range(16))
     bridge.memload(c['READY'],boot)
     bridge.memload(adapter.KERNEL_DP,bytes(256))
-    bridge.memload(adapter.KERNEL_DP+FIELDS["owner_pointer"]["offset"],struct.pack('<HBBHH',adapter.KERNEL_OWNER,0,1,0x4b00,0x4fff))
-    bridge.memload(0x49f0,bytes([0xa5])*0x620)
+    bridge.memload(adapter.KERNEL_DP+FIELDS["owner_pointer"]["offset"],struct.pack(
+        '<HBBHH',adapter.KERNEL_OWNER,0,1,adapter.KERNEL_STACK_FLOOR,adapter.KERNEL_STACK_CEILING))
+    bridge.memload(adapter.KERNEL_STACK_BASE-16,bytes([0xa5])*0x620)
     bridge.bp_set(labels['done'])
     try:
         run_to(bridge,labels['done'],frame_limit=12000,timeout=120 if count == 256 else 60)
@@ -158,7 +160,7 @@ done:
     failures = data(bridge,image,'failures',True)[0]
     checks = data(bridge,image,'checks',True)[0]
     require(failures == 0 and checks > count*4, f'Bank policy failed: {failures}/{checks}')
-    for address in (c['TABLE']-16,c['TABLE']+c['TABLE_BYTES'],0x49f0,0x5000):
+    for address in (c['TABLE']-16,c['TABLE']+c['TABLE_BYTES'],adapter.KERNEL_STACK_BASE-16,adapter.KERNEL_STACK_CEILING+1):
         # At MAX_BANKS=256 the table ends at the boot record, not a spare guard.
         if address == c['READY']:
             continue

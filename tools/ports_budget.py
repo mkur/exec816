@@ -26,7 +26,7 @@ def current():
     return dict(before=before,after=observed,fixed_delta=fixed(new)-fixed(old),
                 per_task_delta=new['public'][1]-old['public'][1],idle_delta=new['idle']-old['idle'],
                 diagnostic_delta=0,
-                accounting='Generated maps; stack guards, table slack, retained legacy contexts and VBXE aperture; exact 256-byte direct pages.')
+                accounting='Generated maps; stack guards, full bank-table capacity and VBXE aperture; exact 256-byte direct pages.')
 
 
 

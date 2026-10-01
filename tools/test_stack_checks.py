@@ -39,10 +39,10 @@ def run(toolchain, out, checked_only=False):
                         floor_at = adapter.TASK0_DP + FIELDS["stack_floor"]["offset"]
                         floor = b.peek16(floor_at)
                         stack_low = int(b.regs()['S'].lstrip('$'),16)
-                        observation.update(entry_s_low=stack_low, original_floor=floor, injected_floor=0x47ff)
+                        observation.update(entry_s_low=stack_low, original_floor=floor, injected_floor=adapter.TASK0_STACK_CEILING)
                         # Raise only the logical floor. Physical stack/interrupt
                         # space remains ample for the unchecked bounded program.
-                        b.poke(floor_at, 0xff); b.poke(floor_at+1, 0x47)
+                        b.poke16(floor_at, adapter.TASK0_STACK_CEILING)
                         stop = program['labels']['stack_overflow' if checks else 'native_return']
                         b.bp_set(stop)
                         run_to(b, stop)
@@ -53,7 +53,7 @@ def run(toolchain, out, checked_only=False):
                         b.bp_clear_all()
                     runtime, _ = execute(bridge, program, expected_status=1 if checks else 0, before_run=inject)
                     if checks:
-                        require(0x4300 <= runtime['fault_s'] < 0x47ff and
+                        require(adapter.TASK0_STACK_FLOOR <= runtime['fault_s'] < adapter.TASK0_STACK_CEILING and
                                 runtime['fault_s'] & 255 == observation['entry_s_low'], f'Fault changed entry S: {target}, {runtime}, {observation}')
                     else:
                         require(global_word(bridge, program['image'], 'result') == 42, 'Unchecked call result differs')
@@ -64,7 +64,7 @@ def run(toolchain, out, checked_only=False):
         for optimize in (False, True):
             program = build(toolchain, ROOT/'tests/programs/stack_fault.act', out/f'recursion-{optimize}', optimize=optimize)
             runtime, _ = execute(bridge, program, expected_status=1)
-            require(0x4300 <= runtime['fault_s'] < 0x4400 and runtime['fault_required'] > 0, 'Recursion fault outside stack floor')
+            require(adapter.TASK0_STACK_FLOOR <= runtime['fault_s'] < adapter.TASK0_STACK_FLOOR+256 and runtime['fault_required'] > 0, 'Recursion fault outside stack floor')
             cases.append(dict(mode='opt' if optimize else 'raw', stack_checks=True, target='recursion', runtime=runtime))
     return dict(status='pass', machine=machine, cases=cases)
 

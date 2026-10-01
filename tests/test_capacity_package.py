@@ -46,20 +46,43 @@ class CapacityPackaging(unittest.TestCase):
 
     def test_compact_maps_preserve_all_stack_reservations(self):
         for capacity,bases,total,loading in (
-            (4,[0x4200,0x5200,0x6900,0x7100,0x7900],51632,54368),
-            (8,[0x4200,0x5200,0x6810,0x6c30,0x7050,0x7470,0x7890,0x0d20,0x7cb0],53056,52592)):
+            (4,[0x2410,0x3050,0x3670,0x3c90,0x42b0],51392,54128),
+            (8,[0x2410,0x3050,0x3470,0x3890,0x3cb0,0x40d0,0x44f0,0x4910,0x4d30],53056,52592)):
             with self.subTest(capacity=capacity):
                 m=layout(upper_table=capacity==8)
                 pools=configure(m,capacity)
-                self.assertEqual(m['regions']['kernel-dp'],[0x2100,0x2200])
-                self.assertEqual([p['dp'] for p in pools],[0x2200+i*256 for i in range(capacity+1)])
+                self.assertEqual(m['regions']['kernel-dp'],[0x0a00,0x0b00])
+                self.assertEqual([p['dp'] for p in pools],[0x0b00+i*256 for i in range(capacity+1)])
                 self.assertEqual([p['stack_base'] for p in pools],bases)
                 self.assertTrue(all(p['dp_reserved_bytes']==256 for p in pools))
                 budget=m['bank_zero_budget']
                 self.assertEqual(budget['runtime_including_os'],total)
                 self.assertEqual(budget['loading_including_os'],loading)
                 self.assertEqual(sum(r['size'] for r in m['runtime_reservations']),total)
-                self.assertEqual(m['regions']['kernel-stack'],[0x49f0,0x5010])
+                self.assertEqual(m['regions']['kernel-stack'],[0x2a20,0x3040])
+                end = 0x48c0 if capacity == 4 else 0x4f40
+                self.assertEqual(m['runtime_free_ranges'],[dict(address=end,size=0x8000-end)])
+                phases=m['phase_reservations']
+                self.assertEqual(sum(r['size'] for r in phases['loading']),loading)
+                self.assertEqual(sum(r['size'] for r in phases['initialization']),total+2048)
+                self.assertEqual([r['name'] for r in phases['initialization'] if r['name'] in ('loader','staging')],[])
+                # Even the union of future pools and temporary loading bytes fits.
+                combined=sorted(m['runtime_reservations']+[
+                    dict(name=n,address=m['regions'][n][0],size=m['regions'][n][1]-m['regions'][n][0])
+                    for n in ('loader','staging','manifest')],key=lambda r:r['address'])
+                self.assertTrue(all(a['address']+a['size'] <= b['address'] for a,b in zip(combined,combined[1:])))
+
+    def test_diagnostics_do_not_borrow_live_storage(self):
+        from generate_memory import reservation_maps
+        m=layout(upper_table=True)
+        configure(m,8)
+        for phase in m['phase_reservations'].values():
+            for scratch in m['diagnostic_scratch']:
+                self.assertTrue(all(scratch['address']+scratch['size'] <= r['address'] or
+                                    scratch['address'] >= r['address']+r['size'] for r in phase))
+        m['profile']['test_scratch'][0]['address']=0x2000
+        with self.assertRaisesRegex(ValueError,'scratch overlaps live'):
+            reservation_maps(m,**m['phase_reservations'])
 
     def test_dp_alignment_ownership_and_reserved_capacity(self):
         for key,value in (('task_base',0x2201),('task_stride',512),('kernel',0x2101)):
@@ -67,14 +90,14 @@ class CapacityPackaging(unittest.TestCase):
             m['profile']['direct_pages'][key]=value
             with self.subTest(key=key),self.assertRaises(ValueError):
                 configure(m,8)
-        for capacity,base in ((4,0x2400),(8,0x2500),(8,0x2100),(8,0xff00)):
+        for capacity,base in ((4,0x0d00),(8,0x0e00),(8,0x0a00),(8,0xff00)):
             m=layout(upper_table=capacity==8)
             m['profile']['direct_pages']['task_base']=base
             with self.subTest(capacity=capacity,base=base),self.assertRaisesRegex(RuntimeError,'overlaps'):
                 configure(m,capacity)
         # The unused portion of the near bank table remains reserved too.
         m=layout()
-        m['regions']['foreign']=[0x2bf0,0x2c00]
+        m['regions']['foreign']=[0x13f0,0x1400]
         with self.assertRaisesRegex(RuntimeError,'overlaps'):
             configure(m,4)
         m=layout(upper_table=True)

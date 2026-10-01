@@ -62,14 +62,14 @@ PROC InvalidStorage()
   result=EXEC.AddTask(EXEC.Task POINTER(@Worker),@Worker,missing)
   checks(1)=CARD(result=EXEC.Task POINTER(0))
   PrepareTask(@candidate,TASKSTACKS.LOWER1,BYTE POINTER(0))
-  candidate.tc_SPReg=$0157fe
+  candidate.tc_SPReg=TASKSTACKS.UPPER1+SIZE($10000)-SIZE(2)
   ExpectFailure(2)
-  candidate.tc_SPReg=$57fd
+  candidate.tc_SPReg=TASKSTACKS.UPPER1-SIZE(3)
   ExpectFailure(3)
-  candidate.tc_SPReg=$5310
+  candidate.tc_SPReg=TASKSTACKS.LOWER1+SIZE($110)
   ExpectFailure(4)
-  candidate.tc_SPReg=$57fe
-  candidate.tc_SPUpper=$015800
+  candidate.tc_SPReg=TASKSTACKS.UPPER1-SIZE(2)
+  candidate.tc_SPUpper=TASKSTACKS.UPPER1+SIZE($10000)
   ExpectFailure(5)
 
 RETURN

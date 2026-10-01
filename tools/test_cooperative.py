@@ -39,7 +39,7 @@ def check(bridge, program, fixture, result, screen):
                 "Missing switches or forwarded OS calls")
         require(result["native_nmi_count"] > 0 and result["clock_start"] != result["clock_end"],
                 "OS VBI did not advance")
-        require((result["return_s"], result["return_d"]) == (0x57FE, adapter.TASK1_DP), "Last task return mismatch")
+        require((result["return_s"], result["return_d"]) == (adapter.TASK1_STACK_TOP, adapter.TASK1_DP), "Last task return mismatch")
         require(result["tasks"][8:10] == result["tasks"][24:26] == [0, 0], "Implicit task exit failed")
     elif fixture == "locks":
         expect("results", [0xFF12, 0, 0, 0, 0, 0, 0, 2], True)
@@ -55,11 +55,11 @@ def check(bridge, program, fixture, result, screen):
     if flags != 0x100:
         snapshots = []
         for task in (0, 1):
-            raw = bridge.memdump(adapter.PROBE0+task*32, 20)
+            raw = bridge.memdump(adapter.probe_address(task), 20)
             expected = struct.pack("<BHHHHBHHHHH", 0x12, (adapter.TASK0_DP, adapter.TASK1_DP)[task],
                                    0x78 if flags & 0x10 else 0x5678,
                                    0x34 if flags & 0x10 else 0x1234, 0xAB01, flags,
-                                   0x47F8+task*0x1000, 0xBEEF, 0xFF10, 0xFF11, 0xFF12)
+                                   (adapter.TASK0_STACK_TOP,adapter.TASK1_STACK_TOP)[task]-6, 0xBEEF, 0xFF10, 0xFF11, 0xFF12)
             require(raw == expected, f"Task {task} context: {raw.hex()}, expected {expected.hex()}")
             snapshots.append(raw.hex())
         observed["contexts"] = snapshots

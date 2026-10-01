@@ -42,7 +42,8 @@ def retired_case(bridge, program, memlo=None):
         b.poke(symbol('hostInput'),0x5a)
         require(b.peek(c['RETIRED']) == b'\0', 'Retirement survived a cold boot')
         require(b.peek16(c['MANIFEST']+4) == 1, 'Cold boot did not reload manifest')
-        b.memload(0x2000, bytes([0x6d])*256)
+        observed['scratch_original'] = b.memdump(adapter.TEST_RELOCATION_SENTINEL,256).hex()
+        b.memload(adapter.TEST_RELOCATION_SENTINEL, bytes([0x6d])*256)
         b.memload(0x8800, bytes([0x97])*2048)
         stop_at(b, program['labels']['startup_complete'])
         require(b.peek(c['RETIRED']) == b'\1' and b.peek16(c['ADOPTED']) == 1,
@@ -78,8 +79,10 @@ def retired_case(bridge, program, memlo=None):
             'Upper array/pointer mutation failed')
     require(runtime['vbi_dispatches'] > 0 and runtime['created'] == 1,
             'No preempted Task lifetime')
-    for address, size, value in ((0x2000,256,0x6d),(0x8800,2048,0x97),(c['MANIFEST'],2048,0xd3)):
+    for address, size, value in ((adapter.TEST_RELOCATION_SENTINEL,256,0x6d),(0x8800,2048,0x97),(c['MANIFEST'],2048,0xd3)):
         require(bridge.memdump(address,size) == bytes([value])*size, f'Retired bytes changed at ${address:x}')
+    bridge.memload(adapter.TEST_RELOCATION_SENTINEL,bytes.fromhex(observed.pop('scratch_original')))
+    observed['scratch'] = dict(address=adapter.TEST_RELOCATION_SENTINEL,size=256,restored=True)
     table = bytes(bridge.eval_expr(f'db(${c["TABLE"]+i:x})') & 255 for i in range(c['TABLE_BYTES']))
     require(table == (program['output']/'manifest.bin').read_bytes()[32:32+c['TABLE_BYTES']],
             'Shutdown did not restore heap ownership')

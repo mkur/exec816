@@ -9,7 +9,7 @@ from test_signal_concurrency import masked_intervals
 def endpoint_marks(p):
     marks={}
     idle=p['labels']['idle_start']
-    native=(p['output']/'hosted.bin').read_bytes();offset=idle-0x3000
+    native=(p['output']/'hosted.bin').read_bytes();offset=idle-p['build']['memory']['regions']['resident'][0]
     require(native[offset]==0x78 and native[offset+19:offset+21]==b'\xcb\x58','Idle SEI/WAI/CLI layout changed')
     marks['stream_idle_cli_after']=idle+21
     for r in p['image']['routines']:

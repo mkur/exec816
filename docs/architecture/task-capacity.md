@@ -28,8 +28,9 @@ all slots have the same size.
 
 Stacks and aligned DPs require bank zero; public records and private scheduling
 metadata can live in upper RAM. The eight-slot profile uses smaller worker and
-idle stacks and places the bank ownership table in upper RAM. It reuses selected
-loader/staging memory only after image adoption has retired bootstrap use.
+idle stacks and places the bank ownership table in upper RAM. Persistent pools
+are packed below the temporary boot arena, so initializing a later slot does
+not overwrite loader/staging storage.
 
 The packager rejects image/reservation overlap. Kernel-bank selection changes the
 resident image placement, not the fundamental bank-zero CPU requirement. Stack
@@ -45,7 +46,7 @@ and `bank_zero_budget`. Account separately for:
 - Root, each other public slot and private idle.
 - Each aligned 256-byte DP, with no external guards or stride padding.
 - Stack allocations, guards and interrupt reserve.
-- Loading-only ranges and the later runtime ranges that reuse them.
+- Loading-only ranges and the free area available after their retirement.
 
 Payload bytes and reserved bytes answer different questions. A small live object
 inside a larger reserved arena does not make the rest of that arena free.
@@ -65,32 +66,44 @@ bytes respectively. Stack reservations and public Task capacity are unchanged.
 | Reservation after startup | Four public Tasks | Eight public Tasks |
 | --- | ---: | ---: |
 | OS ranges | 30,720 | 30,720 |
-| Fixed Exec runtime, including aperture, guards and slack | 11,792 | 10,528 |
+| Fixed Exec runtime, including aperture, guards and slack | 11,552 | 10,528 |
 | Public and idle pools | 9,120 | 11,808 |
-| Total reserved | 51,632 | 53,056 |
-| Unreserved across all holes | 13,904 | 12,480 |
+| Total reserved | 51,392 | 53,056 |
+| One contiguous unreserved range | 14,144 | 12,480 |
 
 The manifest still occupies 2 KiB during loading. Total loading reservations
-are 54,368 and 52,592 bytes respectively. Every DP now reserves exactly 256
+are 54,128 and 52,592 bytes respectively. Every DP now reserves exactly 256
 bytes. Eight-Task worker stacks remain 1,024 bytes plus 32 external guard bytes,
 with 256 bytes of interrupt reserve inside the stack. Root has 1,536 stack bytes
 and idle 512; every four-Task stack has 1,536 bytes.
 
-Kernel DP is `$2100`. Public slot `i` has DP `$2200+i*$100`; idle is slot
-`capacity`. The four-Task DP area ends at `$26FF`, before the full near bank table
-at `$2800–$2BFF`. The eight-Task area ends at `$2AFF`, before boot state at
-`$2C00`. No compatibility map with DP guards remains.
+[Bank-zero compaction](../development/bank-zero-compaction.json) packs the
+persistent reservations together, with no additional eight-Task byte savings.
+It removes the obsolete 240-byte near context reservation in four-Task builds;
+current Task metadata remains in upper RAM. Per-Task costs do not change.
 
-Stack placement is explicit in the platform profile, independent of DP packing.
-Four-Task bases, including idle, are `$4200`, `$5200`, `$6900`, `$7100`, `$7900`.
-Eight-Task bases are `$4200`, `$5200`, `$6810`, `$6C30`, `$7050`, `$7470`, `$7890`,
-`$0D20`, `$7CB0`. Kernel stack stays at `$4A00`, with 1,536 bytes. Every stack
-retains 16-byte guards at both ends.
+Kernel DP is `$0A00`. Public slot `i` has DP `$0B00+i*$100`; idle is slot
+`capacity`. The four-Task DP area ends at `$0FFF`, followed by the full near
+bank table at `$1000–$13FF`. The eight-Task DP area ends at `$13FF`. Both
+capacities then place the resident adapter at `$1400–$23FF`.
 
-Starting the low pool after staging also keeps the diagnostic eight-Task
-register capture at `$0900–$097F` clear of live pools. That probe adds 128
-temporary runtime bytes in instrumented builds only; it runs after loading.
-The production map reserves the full VBXE aperture but does not yet map it.
+Stack placement is explicit in the platform profile. Four-Task bases, including
+idle, are `$2410`, `$3050`, `$3670`, `$3C90`, `$42B0`. Eight-Task bases are
+`$2410`, `$3050`, `$3470`, `$3890`, `$3CB0`, `$40D0`, `$44F0`, `$4910`, `$4D30`.
+Kernel stack starts at `$2A30`, with 1,536 bytes. Every stack retains 16-byte
+guards at both ends; adjacent guarded reservations have no extra padding.
+
+After startup, the free range is `$48C0–$7FFF` for four Tasks or `$4F40–$7FFF`
+for eight. Staging, manifest and loader temporarily occupy `$5BF0–$7BFF` inside
+this area. The manifest remains live until `startup_complete`. Generated
+`phase_reservations` and `runtime_free_ranges` describe these lifetimes; free
+space remains unregistered with the heap.
+
+The diagnostic eight-Task register capture stores its additional 128 bytes
+at `$7D00–$7D7F`, clear of boot state and production pools. Other observer
+scratch is declared in `diagnostic_scratch` and checked against every phase.
+Instrumented builds account for this temporary borrowing separately. The
+production map reserves the full VBXE aperture but does not yet map it.
 
 The [capacity implementation record](../history/task-capacity.md) preserves exact
 maps, before/after totals and experiments for its recorded revision. Its old code

@@ -72,7 +72,7 @@ RETURN
     c=program['build']['memory']['constants'];seed=(output/'manifest.bin').read_bytes()[32:32+c['TABLE_BYTES']]
     labels={name:next(d['address'] for d in image['data'] if '_'+name+'_' in d['name'])
             for name in ('ACTIVE','WAKES','IRQREADS','CHECKPOINTS')}
-    fault_offset=program['labels']['heap_fault']-0x3000
+    fault_offset=program['labels']['heap_fault']-program['build']['memory']['regions']['resident'][0]
     resident=(output/'hosted.bin').read_bytes()
     require(resident[fault_offset+2]==0x4c,'Fault thunk changed')
     finish=int.from_bytes(resident[fault_offset+3:fault_offset+5],'little')

@@ -1,4 +1,5 @@
 """Public port services, executed through emitted raw and optimized code."""
+import adapter_state as adapter
 import json
 from native_program import ROOT,build,command,compiler,execute,platform_files,require,sha256,verify_machine
 from test_banked import PIN
@@ -113,7 +114,7 @@ def queue_context(bridge,toolchain,output,optimize,variant,waiting=False,nonempt
     words=data(bridge,image,'checks',True)
     if fault:require(words[7]==0,'Invalid context returned')
     else:
-        require(words[:4]==[0,0,TASK_ABI['version'],0x2200] and words[4]==words[6] and
+        require(words[:4]==[0,0,TASK_ABI['constants']['PROFILE_TAG'],adapter.TASK0_DP] and words[4]==words[6] and
                 words[5]&255==0x12 and (words[5]>>8)&0x3c==(4 if variant else 0) and words[7]==1,
                 'Port native context: '+str(words))
     clean_ownership(bridge,program,output)
