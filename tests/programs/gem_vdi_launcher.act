@@ -1,0 +1,16 @@
+; Native startup owns the machine; main admits two ordinary C Tasks.
+MODULE GEMVDI
+INCLUDE "c-image.inc"
+
+CARD FUNC POINTER cMain()
+CARD result
+
+PROC Main()
+
+  LET entry=ADDRESS POINTER(@cMain)
+  entry^=C_MAIN
+  result=cMain()
+
+RETURN
+
+ENDMODULE

@@ -9,7 +9,7 @@ The next executable milestone is the
 building on the completed larger Task stacks.
 Its [G0 hosting contracts](hosting-contracts.md) define the frozen packet,
 display ownership and source boundaries; the [port directory](../../../ports/gem4xe/README.md)
-contains pinned inputs and the hosted detection runner.
+contains pinned inputs, reproducible extraction and the G0/G1 runners.
 
 **Preserved analysis:** these three documents were moved from GEM4XE's
 `docs/kernel/` into Exec816 on 2026-10-01 so the upstream checkout can

@@ -171,4 +171,6 @@ storage, driver state, font data and runtime globals in validated upper RAM.
 G1 records complete CPU placement; G3 records VRAM extents and slack separately.
 The donor's BCB comment says 1 KiB, but `MAX_BCB=12` uses 252 bytes at `$30100`,
 before cursor storage at `$30200`; validate actual extents instead of importing
-that comment as an overlapping reservation. No GEM stack measurement exists yet.
+that comment as an overlapping reservation. The
+[G1 record](../../development/gem-vdi-g1.json) measures the recording-device call
+chain; hardware drawing stack measurements remain pending.

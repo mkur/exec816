@@ -18,7 +18,7 @@ PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 CASES = {'depth':0, 'overflow':1, 'coexistence':2, 'process':3, 'compiler':4, 'assembly':5}
 
 
-def observe(bridge, program, progress, slots=(6,7), code_bank=None):
+def observe(bridge, program, progress, slots=(6,7), code_bank=None, pc_range=None):
     """Read the full saved frame at the unchanged bank-zero NMI rendezvous."""
     marker = program['labels']['native_nmi']
     prologue = bytes.fromhex('c23048da5a0b8bd83baa2900ffc90001f004a9ef011bda')
@@ -27,6 +27,12 @@ def observe(bridge, program, progress, slots=(6,7), code_bank=None):
     observations = []
     for index,slot in enumerate(slots):
         condition = f'(db(${adapter.CURRENT:04x})={slot})&(dw(${progress[index]:x})>0)'
+        if pc_range is not None:
+            low, high = pc_range
+            require(low >> 16 == (high-1) >> 16, 'Observer PC range crosses a bank')
+            condition += (f'&(db(dw($1ee)+13)={low >> 16})'
+                          f'&(dw(dw($1ee)+11)>={low & 65535})'
+                          f'&(dw(dw($1ee)+11)<{((high-1) & 65535)+1})')
         bridge.bp_clear_all()
         bridge.bp_set(marker,condition=condition)
         run_to(bridge,marker,frame_limit=3000,timeout=90,condition=condition)
@@ -40,6 +46,8 @@ def observe(bridge, program, progress, slots=(6,7), code_bank=None):
         pc = int.from_bytes(frame[10:13],'little')
         if code_bank is not None:
             require(pc >> 16 == code_bank, 'NMI did not interrupt C code')
+        if pc_range is not None:
+            require(low <= pc < high, 'NMI did not interrupt the selected routine')
         observations.append(dict(slot=slot,saved_s=stack,saved_d=pool['dp'],pc=pc,
                                  depth=pool['stack_base']+pool['stack_bytes']-stack-1,
                                  frame=frame.hex()))

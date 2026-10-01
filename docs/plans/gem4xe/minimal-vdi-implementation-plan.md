@@ -229,9 +229,10 @@ does not replace a bounded target-side wait.
 
 ## Executable slices
 
-G0 inputs and contracts are implemented; its development evidence is linked
-below. G1–G6 remain pending. Complete their development gates in order. Keep
-builds, source downloads, maps and logs under `build/gem-vdi/`. Paths named as
+G0 inputs/contracts and G1 extraction/C entry checks are implemented; their
+development evidence is linked below. G2–G6 remain pending. Complete their
+development gates in order. Keep builds, source downloads, maps and logs under
+`build/gem-vdi/`. Paths named as
 new tools or modules below are proposed deliverables unless linked as completed.
 
 G0 deliverables: [source/compiler inputs](../../../ports/gem4xe/inputs.json),
@@ -242,6 +243,15 @@ G0 deliverables: [source/compiler inputs](../../../ports/gem4xe/inputs.json),
 The [development record](../../development/gem-vdi.json) covers read-only
 identity detection in raw/optimized emitted code, including absent and
 unsupported cores. It does not establish mapped rendering or execute GEM C.
+
+G1 deliverables: [selection and patch](../../../ports/gem4xe/README.md),
+[checked builder](../../../tools/build_gem_vdi.py),
+[C/Task runner](../../../tools/test_gem_vdi_context.py) and
+[development record](../../development/gem-vdi-g1.json). The selected C entry
+points run with a recording device and computing peer in both compiler modes.
+The linked VBXE backend is inactive; message service, hardware fences and pixel
+correctness remain G2–G4 work. CPU code/data fit the existing checked banks;
+fixed and per-Task reserved bank-zero deltas are zero.
 
 | Slice | Deliverable and acceptance gate |
 | --- | --- |

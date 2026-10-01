@@ -1,0 +1,399 @@
+--- a/src/portab.h
++++ b/src/portab.h
+@@ -1,69 +1,14 @@
+ /* SPDX-License-Identifier: LGPL-2.1-or-later */
+-/* portab.h -- the compiler's dialect, in one place.
+- *
+- * gem4xe is C, but a 65816 C compiler has to say things ISO C cannot:
+- * which address space a pointer or an object lives in, how a function is
+- * entered, where the linker should put a thing.  Every such word the
+- * tree uses is defined here and nowhere else, so that building with a
+- * second compiler means a second block in this file and a second set of
+- * assembly sources -- not a sweep through 26,000 lines of C.  The C is
+- * kept free of the dialect by tests/host/test_portab.py, and the
+- * generators under tools/ emit these names too.
+- *
+- * What each name means, for whoever writes the next block:
+- *
+- *   FAR         qualifies a pointer or an object to say it is addressed
+- *               with 24 bits -- anywhere in the machine, not only in the
+- *               bank the data segment lives in.  A FAR pointer is four
+- *               bytes; a plain one is two and addressed through DB.
+- *   NEAR        the opposite, said explicitly: an object placed in the
+- *               near data bank even where the surrounding code would
+- *               default to something else.
+- *   TINY        an object placed in the direct page, so that the hot
+- *               loops that use it get the short addressing mode.  Only
+- *               file-scope statics carry it.
+- *   SIMPLE_CALL a function whose arguments are passed in registers rather
+- *               than on the stack.  gem4xe's three system-call stubs use
+- *               it so the parameter block's address arrives in X:C, which
+- *               is where the COP handler looks.
+- *   TASK        a function that is entered but never returned from, and
+- *               so need not preserve anything on entry: main().
+- *   SECTION(s)  place the object or function in the named linker section.
+- *   memcpy_far  memcpy whose pointers are both FAR.  The library's own
+- *               memcpy takes near pointers under the small data model.
+- *   cpu_sei()   disable interrupts; the instruction of the same name.
+- *   cpu_cli()   enable them.
++/* Hosted adaptation of GEM4XE portab.h. Exec owns S, D and DBR.
++ * All ordinary objects/pointers use Calypsi huge data. No private DP,
++ * saveds entry, fixed near section or interrupt helper is imported.
+  */
+ #ifndef GEM4XE_PORTAB_H
+ #define GEM4XE_PORTAB_H
+-
+-#if defined(__CALYPSI__)
+-
+-#include <calypsi/intrinsics65816.h>
+-
+-#define FAR          __far
+-#define NEAR         __near
+-#define TINY         __attribute__((tiny))
+-#define SIMPLE_CALL  __simple_call
+-#define TASK         __task
+-/* A function that establishes its OWN direct page and data bank on entry
+- * and gives the caller's back on exit.  What it costs is `phb phd`, two
+- * immediate loads and `pld plb`; what it buys is a function that can be
+- * called from a separately linked module and still find its own globals.
+- * That is exactly a control panel extension's entry point (src/app/cpx.h)
+- * -- without it a module reads its host's memory at its own addresses,
+- * silently, which is this project's oldest failure shape. */
+-#define SAVEDS       __attribute__((saveds))
+-#define SECTION(s)   __attribute__((section(s)))
+-#define memcpy_far   __memcpy_far
+-/* Not __disable_interrupts(): an SEI in native mode can start an IRQ
+- * storm on Windows Altirra (src/sys/sei.s). */
+-void irq_sei(void);
+-#define cpu_sei()    irq_sei()
+-#define cpu_cli()    __enable_interrupts()
+-
+-#else
+-#error "portab.h: no dialect for this compiler -- add one here"
++#if !defined(__CALYPSI_CORE_65816__) || !defined(__CALYPSI_DATA_MODEL_HUGE__) || !defined(__CALYPSI_CODE_MODEL_LARGE__)
++#error "Hosted GEM requires Calypsi 65816 large code and huge data"
+ #endif
+-
+-#endif /* GEM4XE_PORTAB_H */
++#define FAR
++#define TINY
++#define SECTION(s) __attribute__((section(s)))
++#endif
+--- a/src/sys/zwin.h
++++ b/src/sys/zwin.h
+@@ -1,28 +1,5 @@
+-/* zwin.h -- bank-$00 bss in the banked window.
+- *
+- * ZWIN on a definition puts it in section `zwin`, which src/gem4xe.scm
+- * places at $4000-$47FF: the first 2 KB of the window a DOS may bank over
+- * while it services a call, ahead of the application pool.  It is for
+- * data that only gem4xe's own code touches from its own calls -- never an
+- * interrupt handler, which can run with a bank in, and never anything a
+- * test polls from the host while a DOS call is in flight (m14).  What
+- * lives there is the large and the read-mostly: on a Rapidus this window
+- * reads at full speed but writes through to the bus (src/sys/rapidus.c),
+- * and taking it out of $2000-$3FFF is what gave the stack its room.
+- *
+- * IT DOES NOT GROW AT THE POOL'S EXPENSE.  That was tried, for two
+- * buffers worth 512 bytes, and turned test-m28 red: the conformance
+- * runner's pool is 1.5 KB smaller than GEM.COM's and must hold the
+- * desktop beside an accessory, and rs_load peaks at the WHOLE resource
+- * file (src/aes/rsrc.c).  There were 348 bytes of headroom, not 860.
+- * tools/memreport.py models both pools and that peak now, so the next
+- * attempt fails at `make memcheck` rather than in the emulator.
+- */
++/* Hosted adaptation: former ZWIN objects are ordinary upper-RAM data. */
+ #ifndef GEM4XE_ZWIN_H
+ #define GEM4XE_ZWIN_H
+-
+-#include "portab.h"
+-
+-#define ZWIN SECTION("zwin")
+-
++#define ZWIN
+ #endif
+--- a/src/vbxe/vbxe.c
++++ b/src/vbxe/vbxe.c
+@@ -12,7 +12,7 @@
+ 
+ uint16_t vbxe_base = 0;
+ 
+-#define REG(off)  (*(volatile uint8_t *)(vbxe_base + (off)))
++#define REG(off)  (*(volatile uint8_t *)((uint32_t)vbxe_base + (off)))
+ #define WIN       ((volatile uint8_t *)MEMAC_WIN_ADDR)
+ 
+ void vbxe_reg(uint8_t off, uint8_t val) { REG(off) = val; }
+--- a/src/vdi/dev_vbxe.c
++++ b/src/vdi/dev_vbxe.c
+@@ -780,3 +780,12 @@
+     }
+     vbxe_palette(1, 0, hw, 16);
+ }
++
++const VDIDEV FAR hosted_vbxe_device = {
++    .w=640, .h=240, .stride=320,
++    .font_w=8, .font_h=8, .font_top=6, .font_ascent=6, .font_half=4,
++    .font_descent=1, .font_bottom=1, .font_point=9, .font_face=font8x8,
++    .fill_rect=dev_fill_rect, .glyph=dev_glyph, .font_changed=dev_font_changed,
++    .line_diag=dev_line_diag, .clear_screen=dev_clear_screen,
++    .palette_all=dev_palette_all, .flush=dev_flush, .text_prefill=1
++};
+--- a/src/vdi/font.c
++++ b/src/vdi/font.c
+@@ -1,24 +1,4 @@
+-/* font.c -- loading a GEM .FNT, and the face the VDI draws with.  See font.h.
+- *
+- * THE FORMAT is DRI's, the one every GEM font file has: an 88-byte header
+- * (EmuTOS's `Fonthead`, big-endian), then the offset table, then the strip --
+- * `form_width` bytes a row, `form_height` rows, character N's byte on row r
+- * at r*form_width + N.  For a monospaced 8-wide font of 256 characters that
+- * strip IS the layout vdi_font_expand() reads, so loading one is a read into
+- * far memory and an expansion, not a conversion.
+- *
+- * WHAT IS REFUSED, and why each: a form that is not 256x8 (the cell is fixed
+- * -- font.h says why), a first/last character range that is not 0..255 (the
+- * strip would have to be placed rather than copied), a `top` that is not the
+- * linked font's (the AES asks for the cell once, at start-up, and lays the
+- * desktop out with the answer), and the colour or word-swapped variants of
+- * the format.  A refusal leaves the face that was in use, and says so by
+- * returning 0; nothing here can leave the VDI with half a font.
+- *
+- * CIO has no seek, so the strip is reached by reading the file to it and
+- * dropping what is passed -- 514 bytes of offset table for a 256-glyph font.
+- */
+-#include <string.h>
++/* Built-in face initialization extracted from GEM4XE font.c. */
+ #include "font.h"
+ #include "vdidev.h"
+ 
+--- a/src/vdi/font.h
++++ b/src/vdi/font.h
+@@ -1,42 +1,8 @@
+-/* font.h -- the system font, and loading another one.
+- *
+- * gem4xe links one 8x8 face (src/vdi/font8x8.c, EmuTOS's Atari ST set) and
+- * expands it into VRAM as glyph masks.  A translation usually needs a
+- * different CHARACTER SET rather than a different size -- Latin-2 for Polish
+- * and Czech, Cyrillic, Greek -- so what is loadable here is the strip: a GEM
+- * .FNT file whose cell is the same 8x8 and whose 2 KB of glyphs replace the
+- * linked ones (docs/shipping.md, section 5).
+- *
+- * The cell does not change, and that is a decision rather than an oversight.
+- * The AES's geometry is in character cells (gl_wchar, gl_hchar) and is asked
+- * for once at start-up; the blitter has no shifter, so every glyph is also a
+- * pre-shifted second copy in VRAM; and the host reference draws the same
+- * cells.  A face of another SIZE is all of that again, and would earn its
+- * place only when there is something to do with it.  A face of another
+- * ALPHABET is 2 KB and a file.
+- */
++/* Hosted subset of GEM4XE font.h: linked face only. */
+ #ifndef GEM4XE_VDI_FONT_H
+ #define GEM4XE_VDI_FONT_H
+-
+ #include <stdint.h>
+ #include "vdi.h"
+-
+-#define FONT_FILE     "SYSTEM.FNT"  /* what the system looks for at start-up */
+-#define FONT_NAME_MAX 33            /* 32 characters and a NUL, as the format */
+-#define FONT_ID_SYS   1             /* the face that is linked in */
+-#define FONT_SYSTEM   1             /* vqt_name's index for it */
+-#define FONT_LOADED   2             /* and for the one from the file */
+-
+-/* The strip the VDI draws from: a far address, the linked font until a file
+- * replaces it.  Set before the first vdi_font_expand(). */
+ extern uint32_t vdi_font;
+-
+-void        vdi_font_where(const char *cioname);  /* where to look for it */
+-WORD        vdi_font_load(void);                  /* 1 if a font was taken */
+-void        vdi_font_default(void);               /* back to the linked one */
+-WORD        vdi_font_faces(void);                 /* 1, or 2 with one loaded */
+-WORD        vdi_font_id(WORD face);               /* its font_id */
+-const char *vdi_font_name(WORD face);             /* its name, NUL-terminated */
+-WORD        vdi_font_select(WORD id);             /* the face now drawn with */
+-
+-#endif /* GEM4XE_VDI_FONT_H */
++void vdi_font_default(void);
++#endif
+--- a/src/vdi/vdi.c
++++ b/src/vdi/vdi.c
+@@ -8,6 +8,8 @@
+  */
+ #include "portab.h"
+ #include "vdi.h"
++#include "vdidev.h"
++#include "font.h"
+ 
+ /* The device this VDI is drawing on (vdidev.h).  The PROGRAM sets it
+  * before vdi_init() and it does not move afterwards; every SCR_ and
+@@ -64,11 +66,8 @@
+ 
+ static void paint_rect(WORD x1, WORD y1, WORD x2, WORD y2, WORD pen)
+ {
+-    switch (vwk.wrt_mode + 1) {
+-    case MD_XOR:    dev_xor_rect(x1, y1, x2, y2);              break;
+-    case MD_ERASE:  return;                 /* nothing is clear: no-op */
+-    default:        dev_fill_rect(x1, y1, x2, y2, pen);        break;
+-    }
++    /* The hosted validator admits replace mode only. */
++    dev_fill_rect(x1, y1, x2, y2, pen);
+     /* no flush: vdi() flushes once, after the call (see there) */
+ }
+ 
+@@ -197,38 +196,35 @@
+     intout[3]  = 372;               /* pixel width  in microns (approx) */
+     intout[4]  = 372;               /* pixel height in microns */
+     intout[5]  = 1;                 /* one character height */
+-    intout[6]  = 7;                 /* line types */
++    intout[6]  = 1;                 /* line types */
+     intout[7]  = 1;                 /* line widths (1 = continuous) */
+-    intout[8]  = 6;                 /* marker types */
+-    intout[9]  = 8;                 /* marker sizes */
++    intout[8] = 0;                 /* marker types */
++    intout[9] = 0;                 /* marker sizes */
+     intout[10] = 1;                 /* faces */
+-    intout[11] = 24;                /* patterns */
+-    intout[12] = 12;                /* hatches */
+-    intout[13] = dev_colours();     /* colours available at once */
++    intout[11] = 0;                /* patterns */
++    intout[12] = 0;                /* hatches */
++    intout[13] = 16;     /* colours available at once */
+     /* The ten GDPs, and for each of them the attribute it draws with:
+      * 3 = fill area, 2 = text, 0 = polyline.  A program reads these
+      * rather than assuming, which is the whole point of the table. */
+-    intout[14] = 10;
+-    for (i = 0; i < 10; i++) {
+-        intout[15 + i] = (WORD)(i + 1);
+-        intout[25 + i] = gdp_attr[i];
+-    }
+-    intout[35] = (WORD)(dev_colours() > 2);  /* can do colour */
++    intout[14] = 1;
++    intout[15] = GDP_BAR;
++    intout[25] = 3;
++    intout[35] = (WORD)(16 > 2);  /* can do colour */
+     intout[36] = 0;                 /* no text rotation */
+     intout[37] = 1;                 /* can do fill area */
+     intout[38] = 0;                 /* no cell array */
+-    intout[39] = dev_colours();     /* palette: >2 means colour */
+-    intout[40] = 1;                 /* locators */
+-    intout[41] = 1;                 /* valuators */
+-    intout[42] = 1;                 /* choice devices */
+-    intout[43] = 1;                 /* string devices */
+-    intout[44] = 2;                 /* workstation type: input/output */
++    intout[39] = 16;     /* palette: >2 means colour */
++    intout[40] = 0;                 /* locators */
++    intout[41] = 0;                 /* valuators */
++    intout[42] = 0;                 /* choice devices */
++    intout[43] = 0;                 /* string devices */
++    intout[44] = 0;                 /* workstation type: output only */
+     ptsout[0] = 8;  ptsout[1] = 8;  /* min char width / height */
+     ptsout[2] = 8;  ptsout[3] = 8;  /* max char width / height */
+     ptsout[4] = 1;  ptsout[5] = 0;  /* min line width */
+     ptsout[6] = 1;  ptsout[7] = 0;  /* max line width */
+-    ptsout[8]  = DEF_MKWD;  ptsout[9]  = DEF_MKHT;   /* min marker */
+-    ptsout[10] = MAX_MKWD;  ptsout[11] = MAX_MKHT;   /* max marker */
++    /* Marker support is omitted. */
+     contrl[2] = 6;
+     contrl[4] = 45;
+ }
+@@ -249,7 +245,7 @@
+     vwk.ymx_clip   = SCR_H - 1;
+     vwk.wrt_mode   = MD_REPLACE - 1;
+     vwk.line_width = 1;
+-    vwk.fill_per   = 1;
++    vwk.fill_per   = 0;
+     vwk.ud_ls      = 0xFFFF;
+     l = intin[1];  vwk.line_index = (l < 1 || l > 7)  ? 1 : l;
+     l = intin[2];  vwk.line_color = (l < 0 || l > 15) ? 1 : l;
+@@ -265,42 +261,22 @@
+     l = intin[4];  vwk.mark_color = (l < 0 || l > 15) ? 1 : l;
+     vwk.mark_height = DEF_MKHT;
+     vwk.mark_scale  = 1;
+-    st_fl_ptr();
++    vwk.patsrc = PAT_SOLID;
+ }
+ 
+ static void vdi_v_opnwk(void)
+ {
+-    WORD i;
+-    /* The physical workstation, and every virtual one closed with it --
+-     * whoever owned them: this is the device being opened, not a program
+-     * ending. */
+-    for (i = 0; i < NUM_VWK; i++) {
+-        vwk_tab[i].handle = 0;
+-        vwk_own[i] = 0;
+-    }
+-    vwk_cur = 0;
++    /* One physical workstation; input and virtual workstations are omitted. */
+     init_wk(VDI_PHYS_HANDLE);
+-    vwk_tab[0] = vwk;
+-    dev_invalidate();
+-    /* Opening the device resets the driver, cursor included: the saved
+-     * block under the pointer belongs to a screen that no longer applies. */
+-    cur_hide  = 1;
+-    cur_drawn = 0;
+-    dev_cursor_discard();
+-    dev_cursor_form(cur_bg, cur_fg, cur_mask, cur_data);
+-    load_palette();
++    dev_palette_all(gem_rgb);
++    vdi_font_default();
+     fill_workout();
+     contrl[6] = vwk.handle;
+ }
+ 
+ static void vdi_v_clrwk(void)
+ {
+-    WORD was_drawn = cur_drawn;
+-    dev_cursor_discard();               /* discard, do not restore */
+-    cur_drawn = 0;
+     dev_clear_screen();
+-    if (was_drawn && cur_hide == 0)
+-        cursor_show_now();
+ }
+ 
+ static void vdi_vs_clip(void)
+@@ -326,19 +302,12 @@
+     order(&y1, &y2);
+     if (!clip_rect(&x1, &y1, &x2, &y2))
+         return;
+-    fill_rect(x1, y1, x2, y2, vwk.fill_color);
++    paint_rect(x1, y1, x2, y2, vwk.fill_color);
+ }
+ 
+ static void draw_line(WORD x1, WORD y1, WORD x2, WORD y2)
+ {
+-    UWORD mask = (vwk.line_index == 7) ? vwk.ud_ls
+-               : line_styles[(vwk.line_index >= 1 && vwk.line_index <= 6)
+-                             ? vwk.line_index : 1];
+-
+-    if ((y1 == y2 || x1 == x2) && mask != 0xFFFF) {
+-        dev_style_line(x1, y1, x2, y2, mask);
+-        return;
+-    }
++    UWORD mask = 0xFFFF;
+     if (y1 == y2 && mask == 0xFFFF) {
+         WORD a = x1, b = x2;
+         order(&a, &b);
+@@ -363,8 +332,6 @@
+     for (i = 0; i + 1 < n; i++)
+         draw_line(ptsin[i * 2], ptsin[i * 2 + 1],
+                   ptsin[i * 2 + 2], ptsin[i * 2 + 3]);
+-    if (vwk.line_beg == LE_ARROWED || vwk.line_end == LE_ARROWED)
+-        line_ends(ptsin, n);
+ }
+ 
+ static void vdi_vsl_color(void)
+@@ -379,7 +346,7 @@
+     WORD v = intin[0];
+     if (v < FIS_HOLLOW || v > FIS_USER) v = FIS_HOLLOW;
+     vwk.fill_style = v;  intout[0] = v;  contrl[4] = 1;
+-    st_fl_ptr();
++    vwk.patsrc = PAT_SOLID;
+ }
+ 
+ static void vdi_vsf_color(void)
+@@ -403,3 +370,5 @@
+     vwk.wrt_mode = (WORD)(v - 1);
+     intout[0] = v;  contrl[4] = 1;
+ }
++
++#include "hosted-dispatch.inc"

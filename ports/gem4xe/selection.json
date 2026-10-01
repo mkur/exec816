@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "outputs": {
+    "src/vdi/vdi.c": {
+      "source": "src/vdi/vdi.c",
+      "ranges": [
+        [
+          1,
+          10
+        ],
+        [
+          21,
+          31
+        ],
+        [
+          38,
+          57
+        ],
+        [
+          76,
+          79
+        ],
+        [
+          83,
+          96
+        ],
+        [
+          114,
+          122
+        ],
+        [
+          358,
+          365
+        ],
+        [
+          367,
+          377
+        ],
+        [
+          384,
+          393
+        ],
+        [
+          397,
+          403
+        ],
+        [
+          405,
+          475
+        ],
+        [
+          490,
+          537
+        ],
+        [
+          669,
+          702
+        ],
+        [
+          704,
+          727
+        ],
+        [
+          885,
+          893
+        ],
+        [
+          895,
+          909
+        ],
+        [
+          913,
+          921
+        ],
+        [
+          927,
+          953
+        ],
+        [
+          957,
+          965
+        ],
+        [
+          1996,
+          2001
+        ],
+        [
+          2002,
+          2008
+        ],
+        [
+          2032,
+          2037
+        ],
+        [
+          2038,
+          2043
+        ],
+        [
+          2044,
+          2050
+        ]
+      ]
+    },
+    "src/vdi/dev_vbxe.c": {
+      "source": "src/vdi/dev_vbxe.c",
+      "ranges": [
+        [
+          1,
+          20
+        ],
+        [
+          23,
+          130
+        ],
+        [
+          539,
+          1014
+        ],
+        [
+          1025,
+          1165
+        ],
+        [
+          1353,
+          1364
+        ],
+        [
+          1420,
+          1439
+        ]
+      ]
+    },
+    "src/vdi/font.c": {
+      "source": "src/vdi/font.c",
+      "ranges": [
+        [
+          1,
+          30
+        ],
+        [
+          56,
+          56
+        ],
+        [
+          83,
+          88
+        ]
+      ]
+    },
+    "src/vdi/vdi.h": {
+      "source": "src/vdi/vdi.h"
+    },
+    "src/vdi/vdidev.h": {
+      "source": "src/vdi/vdidev.h"
+    },
+    "src/vdi/font.h": {
+      "source": "src/vdi/font.h"
+    },
+    "src/vdi/font8x8.c": {
+      "source": "src/vdi/font8x8.c"
+    },
+    "src/vbxe/vbxe.c": {
+      "source": "src/vbxe/vbxe.c"
+    },
+    "src/vbxe/vbxe.h": {
+      "source": "src/vbxe/vbxe.h"
+    },
+    "src/portab.h": {
+      "source": "src/portab.h"
+    },
+    "src/sys/zwin.h": {
+      "source": "src/sys/zwin.h"
+    },
+    "COPYING": {
+      "source": "COPYING"
+    },
+    "COPYING.LIB": {
+      "source": "COPYING.LIB"
+    },
+    "docs/licence.md": {
+      "source": "docs/licence.md"
+    }
+  }
+}

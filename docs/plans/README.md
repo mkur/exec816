@@ -66,8 +66,9 @@ assuming work is pending. Current behavior belongs in the
 ## Programs and shell
 
 - [Minimal hosted GEM VDI subset](gem4xe/minimal-vdi-implementation-plan.md):
-  G0 inputs/contracts and hosted detection implemented; rendering service,
-  VBXE ownership, measured GEM C stack use and concurrent I/O remain pending.
+  G0 detection and G1 selected C entry/layout checks implemented, including
+  measured stack use with a recording device. Message service, VBXE ownership,
+  real drawing and concurrent I/O remain pending.
 - [GEM4XE as the GUI layer for Exec816](gem4xe/exec816-integration-assessment.md):
   VBXE-only integration with expandable upper RAM, bank-zero and hardware
   constraints, and proposed executable slices. The

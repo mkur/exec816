@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the G0 hosted VBXE identity gate; drawing is not implemented yet."""
+"""Run a hosted GEM development slice (G0 identity or G1 C extraction)."""
 import argparse
 import copy
 import json
@@ -104,6 +104,9 @@ def run(output, mode):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
+    parser.add_argument('--slice', choices=('g0', 'g1'), default='g0')
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
-    run(args.output or ROOT/'build/gem-vdi'/('g0-'+args.mode), args.mode)
+    if args.slice == 'g1':
+        from test_gem_vdi_context import run
+    run(args.output or ROOT/'build/gem-vdi'/(args.slice+'-'+args.mode), args.mode)
