@@ -967,8 +967,26 @@ def platform_files(bridge_dir, rom):
 def verify_machine(bridge, rom, pin=PLATFORM_PIN):
     config = bridge.config()
     for key, value in {"machine": "800XL", "memory": "64K", "video": "pal",
-                       "basic": False, "highbanks": pin['machine']['high_banks'], "addons": "off"}.items():
+                       "basic": False, "highbanks": pin['machine']['high_banks'],
+                       "addons": pin['machine'].get('addons', 'off')}.items():
         require(config.get(key) == value, f"Incorrect machine setting: {key}")
+    for key, value in pin.get('startup_configuration', {}).items():
+        require(config.get(key) == value, f"Incorrect machine setting: {key}")
+    if 'devices' in pin:
+        installed = sorted(d['tag'] for d in bridge.device_list()['installed'] if not d['internal'])
+        require(installed == sorted(d['tag'] for d in pin['devices']), 'Incorrect device set')
+        for device in pin['devices']:
+            actual = bridge.device_get(device['tag'])
+            require(actual['present'] and actual['settings'] == device['settings'],
+                    'Incorrect device settings: '+device['tag'])
+            for probe in device.get('readback', []):
+                require(bridge.memdump(probe['address'], len(probe['bytes'])) == bytes(probe['bytes']),
+                        'Incorrect device identity: '+device['tag'])
+        regs = bridge.regs()
+        for key, value in dict(mode=pin['machine']['cpu'],
+                               clock_multiplier=pin['machine']['clock_multiplier'],
+                               shadow_rom=pin['machine'].get('shadow_rom', False)).items():
+            require(regs.get(key) == value, 'Incorrect CPU setting: '+key)
     raw = rom.read_bytes()
     require(bridge.memdump(0xC000, 0x1000) == raw[:0x1000], "Wrong mapped kernel")
     require(bridge.memdump(0xD800, 0x2800) == raw[0x1800:], "Wrong mapped upper kernel")

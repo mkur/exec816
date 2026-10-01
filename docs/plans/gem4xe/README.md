@@ -7,6 +7,9 @@ For the current comparison against GEM4XE 0.9.4 and implemented Exec816, read
 The next executable milestone is the
 [minimal hosted VDI implementation plan](minimal-vdi-implementation-plan.md),
 building on the completed larger Task stacks.
+Its [G0 hosting contracts](hosting-contracts.md) define the frozen packet,
+display ownership and source boundaries; the [port directory](../../../ports/gem4xe/README.md)
+contains pinned inputs and the hosted detection runner.
 
 **Preserved analysis:** these three documents were moved from GEM4XE's
 `docs/kernel/` into Exec816 on 2026-10-01 so the upstream checkout can

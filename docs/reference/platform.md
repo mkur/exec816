@@ -147,6 +147,12 @@ manage its window registers or hand display ownership to GEM. The
 unmapped RAM reservation, loading, Task execution and OF816 handoff; mapped
 VBXE hardware requires a separate configuration pin and integration checks.
 
+The optional [GEM development pin](../../toolchain/altirra-gem-vdi.json) selects
+FX 1.26 at `$D600` with private 512 KiB VRAM. Its
+[G0 probe](../../ports/gem4xe/README.md) reads identity without enabling mapping
+or presentation, and rejects absent/unsupported hardware. Display ownership and
+mapped rendering remain pending; existing standard pins still require add-ons off.
+
 Heap and resident metadata stay in upper RAM
 where the profile permits. See [Task capacity](../architecture/task-capacity.md)
 for supported layouts; do not copy old code origins or memory totals into new

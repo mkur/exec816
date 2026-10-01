@@ -2,15 +2,15 @@
 
 [Implementation plans](../README.md) · [GEM assessment](exec816-integration-assessment.md) · [Larger Task stacks](../larger-task-stacks-implementation-plan.md)
 
-Status: proposed on 2026-10-01. This plan turns the assessment's first memory,
+Status: implementation started on 2026-10-01. This plan turns the assessment's first memory,
 C and display milestones into a bounded executable: one GEM rendering service,
 one client drawing a test scene, and a computing peer under Exec preemption.
 The display backend is VBXE only. Success means correct drawing, measured memory
 and stack use, concurrent disk I/O, and a clean return to text presentation.
 It does not require AES, a desktop or a GEM application loader.
 
-The prerequisite is the implemented mixed eight-Task layout, currently in the
-working tree above Exec816 `d8dbea4`. Its
+The prerequisite is the implemented mixed eight-Task layout, committed in
+Exec816 `acef1f3`. Its
 [development record](../../development/larger-task-stacks.json) proves the
 larger pools with bounded Action! and C fixtures, not with GEM. Freeze the actual
 implementation revision and source hashes at the start of this work. Upstream
@@ -229,9 +229,19 @@ does not replace a bounded target-side wait.
 
 ## Executable slices
 
-All slices below are pending. Complete their development gates in order. Keep
+G0 inputs and contracts are implemented; its development evidence is linked
+below. G1–G6 remain pending. Complete their development gates in order. Keep
 builds, source downloads, maps and logs under `build/gem-vdi/`. Paths named as
-new tools or modules below are proposed deliverables, not commands that exist.
+new tools or modules below are proposed deliverables unless linked as completed.
+
+G0 deliverables: [source/compiler inputs](../../../ports/gem4xe/inputs.json),
+[platform pin](../../../toolchain/altirra-gem-vdi.json),
+[operation manifest](../../../abi/gem-vdi.json),
+[hosting contracts](hosting-contracts.md), and
+[probe instructions](../../../ports/gem4xe/README.md).
+The [development record](../../development/gem-vdi.json) covers read-only
+identity detection in raw/optimized emitted code, including absent and
+unsupported cores. It does not establish mapped rendering or execute GEM C.
 
 | Slice | Deliverable and acceptance gate |
 | --- | --- |

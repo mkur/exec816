@@ -1,0 +1,392 @@
+{
+  "abi": "exec816.gem-vdi",
+  "revision": 1,
+  "status": "G0 frozen contract; service and generated bindings pending G2",
+  "byte_order": "little",
+  "pointer_bits": 24,
+  "alignment": 2,
+  "limits": {
+    "commands": 16,
+    "payload_bytes": 2048,
+    "packet_bytes": 2204,
+    "reply_words": 57,
+    "outstanding_per_client": 1,
+    "clients": 1
+  },
+  "mode": {
+    "width": 640,
+    "height": 240,
+    "colours": 16,
+    "font_width": 8,
+    "font_height": 8,
+    "physical_handle": 1
+  },
+  "services": {
+    "OPEN": 1,
+    "SUBMIT": 2,
+    "CLOSE": 3,
+    "STOP": 4
+  },
+  "results": {
+    "OK": 0,
+    "UNSUPPORTED": 1,
+    "BAD_PACKET": 2,
+    "BAD_SESSION": 3,
+    "BUSY": 4,
+    "NO_MEMORY": 5,
+    "DEVICE_FAULT": 6,
+    "STOPPING": 7,
+    "EXHAUSTED": 8
+  },
+  "records": {
+    "Request": {
+      "size": 156,
+      "alignment": 2,
+      "fields": [
+        [
+          "message",
+          "ExecMessage",
+          0,
+          16
+        ],
+        [
+          "version",
+          "u16",
+          16,
+          2
+        ],
+        [
+          "total_bytes",
+          "u16",
+          18,
+          2
+        ],
+        [
+          "operation",
+          "u16",
+          20,
+          2
+        ],
+        [
+          "flags",
+          "u16",
+          22,
+          2
+        ],
+        [
+          "session",
+          "u32",
+          24,
+          4
+        ],
+        [
+          "sequence",
+          "u32",
+          28,
+          4
+        ],
+        [
+          "command_count",
+          "u16",
+          32,
+          2
+        ],
+        [
+          "result",
+          "u16",
+          34,
+          2
+        ],
+        [
+          "completed_count",
+          "u16",
+          36,
+          2
+        ],
+        [
+          "reserved",
+          "u16",
+          38,
+          2
+        ],
+        [
+          "reply_words",
+          "u16",
+          40,
+          2
+        ],
+        [
+          "reply",
+          "i16[57]",
+          42,
+          114
+        ]
+      ]
+    },
+    "Command": {
+      "size": 12,
+      "alignment": 2,
+      "fields": [
+        [
+          "opcode",
+          "u16",
+          0,
+          2
+        ],
+        [
+          "subopcode",
+          "u16",
+          2,
+          2
+        ],
+        [
+          "point_pairs",
+          "u16",
+          4,
+          2
+        ],
+        [
+          "int_words",
+          "u16",
+          6,
+          2
+        ],
+        [
+          "points_offset",
+          "u16",
+          8,
+          2
+        ],
+        [
+          "ints_offset",
+          "u16",
+          10,
+          2
+        ]
+      ]
+    }
+  },
+  "vdi_operations": [
+    {
+      "name": "v_opnwk",
+      "opcode": 1,
+      "subopcode": 0,
+      "point_pairs": [
+        0,
+        0
+      ],
+      "int_words": [
+        11,
+        11
+      ],
+      "transport": "OPEN",
+      "int_values": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "name": "v_clswk",
+      "opcode": 2,
+      "subopcode": 0,
+      "point_pairs": [
+        0,
+        0
+      ],
+      "int_words": [
+        0,
+        0
+      ],
+      "transport": "CLOSE"
+    },
+    {
+      "name": "v_clrwk",
+      "opcode": 3,
+      "subopcode": 0,
+      "point_pairs": [
+        0,
+        0
+      ],
+      "int_words": [
+        0,
+        0
+      ],
+      "transport": "SUBMIT"
+    },
+    {
+      "name": "v_updwk",
+      "opcode": 4,
+      "subopcode": 0,
+      "point_pairs": [
+        0,
+        0
+      ],
+      "int_words": [
+        0,
+        0
+      ],
+      "transport": "SUBMIT"
+    },
+    {
+      "name": "v_pline",
+      "opcode": 6,
+      "subopcode": 0,
+      "point_pairs": [
+        2,
+        16
+      ],
+      "int_words": [
+        0,
+        0
+      ],
+      "transport": "SUBMIT"
+    },
+    {
+      "name": "v_gtext",
+      "opcode": 8,
+      "subopcode": 0,
+      "point_pairs": [
+        1,
+        1
+      ],
+      "int_words": [
+        0,
+        64
+      ],
+      "transport": "SUBMIT",
+      "glyph_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "name": "v_bar",
+      "opcode": 11,
+      "subopcode": 1,
+      "point_pairs": [
+        2,
+        2
+      ],
+      "int_words": [
+        0,
+        0
+      ],
+      "transport": "SUBMIT"
+    },
+    {
+      "name": "vsl_color",
+      "opcode": 17,
+      "subopcode": 0,
+      "point_pairs": [
+        0,
+        0
+      ],
+      "int_words": [
+        1,
+        1
+      ],
+      "transport": "SUBMIT",
+      "value_range": [
+        0,
+        15
+      ]
+    },
+    {
+      "name": "vst_color",
+      "opcode": 22,
+      "subopcode": 0,
+      "point_pairs": [
+        0,
+        0
+      ],
+      "int_words": [
+        1,
+        1
+      ],
+      "transport": "SUBMIT",
+      "value_range": [
+        0,
+        15
+      ]
+    },
+    {
+      "name": "vsf_interior",
+      "opcode": 23,
+      "subopcode": 0,
+      "point_pairs": [
+        0,
+        0
+      ],
+      "int_words": [
+        1,
+        1
+      ],
+      "transport": "SUBMIT",
+      "int_values": [
+        1
+      ]
+    },
+    {
+      "name": "vsf_color",
+      "opcode": 25,
+      "subopcode": 0,
+      "point_pairs": [
+        0,
+        0
+      ],
+      "int_words": [
+        1,
+        1
+      ],
+      "transport": "SUBMIT",
+      "value_range": [
+        0,
+        15
+      ]
+    },
+    {
+      "name": "vswr_mode",
+      "opcode": 32,
+      "subopcode": 0,
+      "point_pairs": [
+        0,
+        0
+      ],
+      "int_words": [
+        1,
+        1
+      ],
+      "transport": "SUBMIT",
+      "int_values": [
+        1
+      ]
+    },
+    {
+      "name": "vs_clip",
+      "opcode": 129,
+      "subopcode": 0,
+      "point_pairs": [
+        2,
+        2
+      ],
+      "int_words": [
+        1,
+        1
+      ],
+      "transport": "SUBMIT",
+      "value_range": [
+        0,
+        1
+      ]
+    }
+  ]
+}

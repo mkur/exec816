@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/slaapliedje/gem4xe.git",
+  "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+  "release": "0.9.4",
+  "exec_baseline": "acef1f301f29737b051ceb0a7848c6e6135668b7",
+  "actionc_pin": "toolchain/actionc.json",
+  "actionc_pin_sha256": "33200a57d20a8df748283333aad8534e9c890ff1eebbdc1167eb74f45ece09d2",
+  "platform_pin": "toolchain/altirra-gem-vdi.json",
+  "platform_pin_sha256": "871b54f06a4ce95625b84a1d77e9e00d35c8db0ab0e2261e1db5164122ef5b0a",
+  "calypsi": {
+    "tools": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    },
+    "runtime": {
+      "name": "clib-lc-hd.a",
+      "sha256": "321e782d2e18972ff29d32acf446a401012bd6da6959bb4b69c359c1412082db"
+    },
+    "flags": [
+      "--code-model=large",
+      "--data-model=huge"
+    ],
+    "optimization": [
+      "-O0",
+      "-O2"
+    ]
+  },
+  "files": {
+    "COPYING": {
+      "sha256": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "role": "notice"
+    },
+    "COPYING.LIB": {
+      "sha256": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "role": "notice"
+    },
+    "docs/licence.md": {
+      "sha256": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "role": "notice"
+    },
+    "src/portab.h": {
+      "sha256": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+      "role": "adapt"
+    },
+    "src/vdi/vdi.c": {
+      "sha256": "fd2c7a95d3afb65cde3e327347b1abb4ef89d31108bc9e5c6c14e338cb1c6524",
+      "role": "extract"
+    },
+    "src/vdi/vdi.h": {
+      "sha256": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+      "role": "adapt"
+    },
+    "src/vdi/vdidev.h": {
+      "sha256": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f",
+      "role": "adapt"
+    },
+    "src/vdi/dev_vbxe.c": {
+      "sha256": "efc6fb3fbecfb70ba4ae03598dabf707c91ee60038d93cfe15914a6e43e56573",
+      "role": "extract"
+    },
+    "src/vdi/font.c": {
+      "sha256": "745b1ff06f2a4363511c9ac9232ce5521635172780892a8f574d8183ce80ca7d",
+      "role": "extract-default-font-only"
+    },
+    "src/vdi/font.h": {
+      "sha256": "ddcfb21c646a790d3ca96b8c4c6441a4a6df09dbfc94cb985bba6dc1feff8088",
+      "role": "adapt"
+    },
+    "src/vdi/font8x8.c": {
+      "sha256": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+      "role": "unchanged-font"
+    },
+    "src/vbxe/vbxe.c": {
+      "sha256": "1bf9722b712dcc5dc8c235ea168a276af321f60d925c34fb3e90fcc2bd3e3f6b",
+      "role": "adapt"
+    },
+    "src/vbxe/vbxe.h": {
+      "sha256": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+      "role": "adapt"
+    },
+    "src/sys/zwin.h": {
+      "sha256": "9530d12d510af3f10f0c7c18cf06298f5bd6fc292427cb27d711c5f2d83efa1b",
+      "role": "replace"
+    },
+    "src/sys/farmem.h": {
+      "sha256": "c15c2d2dee0281ceadf3ee1d625c999b2156ad6c19aa69f788cefbc58362157c",
+      "role": "replace"
+    },
+    "src/vdi/pointer.c": {
+      "sha256": "88668a6e435010a05676dd636fc47343a6aad870c95e66dd2e5e2d8aaeb2542d",
+      "role": "reference-only"
+    },
+    "src/vdi/pointer.h": {
+      "sha256": "781f7b81138a7d935d2336ab858b08e87a8f5f6a4597349417b9dd81d1977b78",
+      "role": "reference-only"
+    },
+    "src/vdi/print.h": {
+      "sha256": "7fc51b95d34933a3ebe5497c40349919adf4a2eb2756b23e6b8b503902c28ab6",
+      "role": "reference-only"
+    },
+    "src/sys/ctx.h": {
+      "sha256": "7991b9d8f9b7ac3bfcbdaccf698b03c5b72a68d64cd551a90bdc7e9879006aa9",
+      "role": "reference-only"
+    },
+    "src/sys/irq.h": {
+      "sha256": "48c95d1d51d143572206d4592e49c1b286b00eb75e7ce1f0636dce04295dfe71",
+      "role": "reference-only"
+    },
+    "src/vdi/fillpat.c": {
+      "sha256": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+      "role": "reference-only"
+    },
+    "src/vdi/sintbl.c": {
+      "sha256": "4d990d00f911037464b9eac35bcf2cc85bc176807a2b49dc800aaa20001b6244",
+      "role": "reference-only"
+    }
+  },
+  "excluded_runtime": [
+    "src/sys startup, context switching, IRQ/COP handlers and memory probing",
+    "src/vdi/pointer.c",
+    "src/vdi/dev_antic.c",
+    "src/vdi/dev_print.c",
+    "src/vdi/fillpat.c",
+    "src/vdi/sintbl.c",
+    "CIO font loading, virtual workstations, AES and GEMDOS"
+  ]
+}

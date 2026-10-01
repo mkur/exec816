@@ -132,6 +132,14 @@ def emulator(bridge_dir, rom, output_dir=OUT, pin=PIN):
                 bridge.pause()
                 from bridge_memory import install
                 install(bridge)
+                # Only explicit platform pins request devices. Device insertion
+                # may cold-reset the machine; finish it before loading any XEX.
+                for device in pin.get('devices', []):
+                    bridge.device_set(device['tag'], **device['settings'])
+                    bridge.pause()
+                for key, value in pin.get('startup_configuration', {}).items():
+                    bridge.config(key, value)
+                bridge.pause()
                 yield bridge
             finally:
                 if bridge:
