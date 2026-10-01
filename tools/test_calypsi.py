@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the Calypsi message example through native Tasks, console and cleanup."""
 import adapter_state as adapter
+from stack_budget import bank_zero_delta, stack_usage
 import argparse
 import json
 from pathlib import Path
@@ -17,7 +18,7 @@ LINES = ('C sends: 10,20', 'C reply: 60,70', 'C message returned; resources rele
 PROMPT = 'Press RETURN to exit.'
 
 
-def run(output, mode, from_build=None, context=False):
+def run(output, mode, from_build=None, context=False, large_stacks=False):
     output.mkdir(parents=True, exist_ok=True)
     if from_build:
         program = read_build(from_build/'program')
@@ -26,15 +27,16 @@ def run(output, mode, from_build=None, context=False):
         for name, digest in foreign['provenance']['source_inputs'].items():
             require(sha256(ROOT/name) == digest, 'C source changed: ' + name)
     else:
-        program, foreign = build_example(output, optimize=mode == 'opt', context=context)
+        program, foreign = build_example(output, optimize=mode == 'opt', context=context, large_stacks=large_stacks)
     require(program['build']['optimize'] == (mode == 'opt'), 'Wrong compiler mode')
-    require(foreign['provenance'].get('context_probe', False) == context, 'Wrong C fixture')
+    require(foreign['provenance'].get('context_probe', False) == context and
+            foreign['provenance'].get('large_stacks',False) == large_stacks, 'Wrong C fixture')
     bridge_dir = ROOT/'build/shell-paced-bridge'
     rom = ROOT/'build/firmware/altirraos-816.rom'
     require(sha256(bridge_dir/'AltirraBridgeServer') == PIN['emulator']['sha256'], 'Wrong emulator')
     require(sha256(rom) == PIN['rom']['sha256'], 'Wrong ROM')
     report = dict(status='running', tier='development', mode=mode, build=program['build'], pin=PIN,
-                  bank_zero_delta=dict(fixed=0, per_task=0))
+                  bank_zero_delta=bank_zero_delta(program['build']['memory']))
     try:
         with emulator(bridge_dir, rom, output, pin=PIN) as bridge:
             report['machine'] = verify_machine(bridge, rom, PIN)
@@ -44,6 +46,8 @@ def run(output, mode, from_build=None, context=False):
                 saved.update(address=b.peek16(88), cursor=b.peek(752), mask=b.peek(16))
                 saved['screen'] = b.memdump(saved['address'], 960)
                 b._cmd_ok('KEY ALL up')
+                if large_stacks:
+                    report['c_preemption'] = seed_large(b, program, foreign)
                 if context:
                     report['c_preemption'] = seed_and_observe(b, program, foreign)
                 prompt_address = saved['address']+len(LINES)*40
@@ -52,7 +56,15 @@ def run(output, mode, from_build=None, context=False):
                 condition += f'&(db(${cursor_address:x})=128)'
                 marker = program['labels']['native_nmi']
                 b.bp_set(marker, condition=condition)
-                run_to(b, marker, frame_limit=3000, timeout=90, condition=condition)
+                try:
+                    run_to(b, marker, frame_limit=3000, timeout=90, condition=condition)
+                except Exception:
+                    report['failure_state'] = b.memdump(adapter.STATE,64).hex()
+                    report['failure_symbols'] = {name:b.memdump(address,12).hex()
+                        for name,address in foreign['symbols'].items()
+                        if name in ('failures','progress','checksum','completed','received_x')}
+                    (output/'failure.screen.bin').write_bytes(b.memdump(saved['address'],960))
+                    raise
                 screen = b.memdump(saved['address'], 960)
                 expected = bytearray(960)
                 for row, line in enumerate((*LINES, PROMPT)):
@@ -64,6 +76,8 @@ def run(output, mode, from_build=None, context=False):
                     require(b.eval_expr(f'dw(${foreign["symbols"][symbol]:x})') == value, 'Wrong C result: ' + symbol)
                 if context:
                     check_context(b, program, foreign)
+                if large_stacks:
+                    check_large(b, program, foreign)
                 report['output'] = list(LINES)
                 require(b._cmd_ok('KEY RETURN down')['raw_scan'], 'Physical Return required')
                 capture = program['build']['memory']['console_storage']['CAPTURE']
@@ -77,7 +91,11 @@ def run(output, mode, from_build=None, context=False):
 
             runtime, _ = execute(bridge, program, before_run=before_run, frame_limit=3000, timeout=90)
             report['runtime'] = runtime
-            require(runtime['created'] == 2, 'Wrong C/console Task count')
+            require(runtime['created'] == (3 if large_stacks else 2), 'Wrong C/console Task count')
+            report['stack_usage'] = stack_usage(bridge,program['build']['memory'])
+            if large_stacks:
+                require(all(768 < report['stack_usage'][str(i)]['peak'] < 2304 for i in (6,7)),
+                        'C call chain did not exercise both larger stacks')
             require(runtime['os_calls'] == 0, 'C example used ROM output adapter')
             require(runtime['root_task'][16:20] == [255, 255, 0, 0], 'Root leaked a signal')
             require(bridge.memdump(saved['address'], 960) == saved['screen'] and
@@ -125,7 +143,7 @@ def seed_and_observe(bridge, program, foreign):
         bridge.bp_clear_all()
         stack = bridge.peek16(0x1ee)
         pool = pools[slot]
-        require(pool['stack_base'] <= stack < pool['stack_base']+1536-13,
+        require(pool['stack_base'] <= stack < pool['stack_base']+pool['stack_bytes']-13,
                 'NMI did not enter from the C Task stack')
         frame = bridge.memdump(stack+10, 4)  # nine saved register bytes
         require(frame[3] == 12, 'VBI did not interrupt the C code bank')
@@ -151,12 +169,50 @@ def check_context(bridge, program, foreign):
     require(bridge.memdump(adapter.KERNEL_DP, 128) == pattern(4), 'Kernel lower DP workspace changed')
 
 
+def seed_large(bridge, program, foreign):
+    from test_large_stacks import observe
+    pools=program['build']['memory']['task_pools']
+    slots=[i for i,p in enumerate(pools[:-1]) if p['stack_bytes']==2560]
+    require(len(slots)==2,'Expected two large C worker pools')
+    workspace=foreign['provenance']['dp_workspace_bytes']
+    for slot in slots:
+        marker=program['labels']['general_task_start']
+        condition=f'db(${adapter.CURRENT:04x})={slot}'
+        bridge.bp_set(marker,condition=condition)
+        run_to(bridge,marker,frame_limit=3000,timeout=90,condition=condition)
+        bridge.bp_clear_all()
+        bridge.memload(pools[slot]['dp']+8,pattern(slot)[8:16])
+        bridge.memload(pools[slot]['dp']+workspace,pattern(slot)[workspace:])
+    bridge.memload(adapter.KERNEL_DP,pattern(4))
+    progress=foreign['symbols']['progress']
+    return observe(bridge,program,[progress+2,progress+4],slots,code_bank=12)
+
+
+def check_large(bridge, program, foreign):
+    require(bridge.eval_expr(f'dw(${foreign["symbols"]["failures"]:x})')==0,'Deep C data/API check failed')
+    for who in range(3):
+        a,b=0x12345678+who,0x87654321-who
+        for index in range(30000):
+            a=((a << 1) ^ (a >> 31) ^ b) & 0xffffffff
+            b=(b+(a ^ index)) & 0xffffffff
+        address=foreign['symbols']['checksum']+who*4
+        actual=bridge.eval_expr(f'dw(${address:x})') | bridge.eval_expr(f'dw(${address+2:x})') << 16
+        require(actual==a ^ b,'Deep C computation corrupted: '+str(who))
+    workspace=foreign['provenance']['dp_workspace_bytes']
+    for slot in (6,7):
+        pool=program['build']['memory']['task_pools'][slot]
+        require(bridge.memdump(pool['dp']+workspace,128-workspace)==pattern(slot)[workspace:],
+                'Unused C DP workspace changed')
+    require(bridge.memdump(adapter.KERNEL_DP,128)==pattern(4),'Kernel lower DP changed')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--mode', choices=('raw', 'opt'), required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--context', action='store_true', help='Run C preemption and API boundary probe')
+    parser.add_argument('--large-stacks', action='store_true', help='Run two deep C workers in the eight-Task layout')
     args = parser.parse_args()
-    run(args.output.resolve(), args.mode, args.from_build.resolve() if args.from_build else None, args.context)
+    run(args.output.resolve(), args.mode, args.from_build.resolve() if args.from_build else None, args.context, args.large_stacks)
     print('Calypsi C example passed:', args.mode)

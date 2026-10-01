@@ -11,7 +11,7 @@ from library_paths import read_source
 from native_program import ROOT, build, command, compiler, require, sha256
 
 
-def build_example(output, optimize=True, context=False):
+def build_example(output, optimize=True, context=False, large_stacks=False):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     tools = {}
@@ -32,7 +32,9 @@ def build_example(output, optimize=True, context=False):
              '-o', layout_object, ROOT/'c/calypsi/layout-check.c'])
     layouts = check_layout(layout_object, expected_layout())
     objects = []
-    example = ROOT/('tests/programs/calypsi_context.c' if context else 'c/examples/messages.c')
+    require(not (context and large_stacks), 'Select one C context fixture')
+    example = ROOT/('tests/programs/calypsi_large_stacks.c' if large_stacks else
+                    'tests/programs/calypsi_context.c' if context else 'c/examples/messages.c')
     for source in (ROOT/'c/calypsi/exec.c', ROOT/'c/calypsi/dos.c', example):
         obj = output/(source.stem+'.o')
         command([tools['cc65816']['path'], *flags, '-c', '-I', ROOT/'c/include', '-I', output,
@@ -59,10 +61,10 @@ def build_example(output, optimize=True, context=False):
     source_inputs[str(example.relative_to(ROOT))] = sha256(example)
     foreign['provenance'].update(tools=tools, runtime=dict(path=str(runtime), sha256=sha256(runtime)),
                                  compiler_flags=flags, source_inputs=source_inputs,
-                                 checked_layout=layouts, context_probe=context)
+                                 checked_layout=layouts, context_probe=context, large_stacks=large_stacks)
     (output/'c-image.json').write_text(json.dumps(foreign, indent=2)+'\n')
     program = build(compiler(ROOT/'build/actionc'), source, output/'program', optimize=optimize,
-                    tasks=True, task_capacity=4, console=True, foreign_image=foreign)
+                    tasks=True, task_capacity=8 if large_stacks else 4, console=True, foreign_image=foreign)
     return program, foreign
 
 

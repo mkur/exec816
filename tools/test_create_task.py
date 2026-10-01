@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Focused CreateTask admission and retirement checks through native code."""
 import adapter_state as adapter
+from stack_budget import bank_zero_delta, stack_usage
 import argparse
 import json
 from pathlib import Path
@@ -13,7 +14,10 @@ CASES = {'return': 0, 'self-removal': 1, 'boundaries': 2, 'capacity': 3,
          'reservations': 4, 'held-removal': 5, 'producer-removal': 6,
          'memory-list-removal': 7, 'dos-removal': 8, 'concurrent': 9,
          'retired-result': 10, 'packet-extent': 11, 'packet-tag': 12, 'packet-width': 13}
-FAULTS = {5, 6, 7, 8, 11, 12, 13}
+LARGE_CASES = {'large-bounds':14, 'large-order':15, 'large-return':16,
+               'large-self-removal':17, 'large-concurrent':18, 'large-reservations':19,
+               'large-held-removal':20, 'large-producer-removal':21, 'large-memory-removal':22}
+FAULTS = {5, 6, 7, 8, 11, 12, 13, 20, 21, 22}
 
 
 def packet_probe(program, variant, out):
@@ -42,6 +46,9 @@ def main():
     parser.add_argument('--suite', default=','.join(CASES))
     parser.add_argument('--from-build', type=Path)
     args = parser.parse_args()
+    require(not (set(args.suite.split(',')) & set(LARGE_CASES)) or
+            args.capacity == 8 and args.worker_stack is None, 'Large cases need the default eight-Task map')
+    CASES.update(LARGE_CASES)
     out = args.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
     program = read_build(args.from_build) if args.from_build else build(
@@ -50,7 +57,7 @@ def main():
         worker_stack=args.worker_stack)
     require(program['build']['optimize'] == (args.mode == 'opt'), 'Wrong compiler mode')
     report = dict(status='running', tier='development', build=program['build'], cases=[],
-                  pin=PIN, bank_zero_delta=dict(fixed=0, per_task=0))
+                  pin=PIN, bank_zero_delta=bank_zero_delta(program['build']['memory']))
     try:
         with emulator(ROOT/'build/shell-paced-bridge', ROOT/'build/firmware/altirraos-816.rom', out, pin=PIN) as bridge:
             report['machine'] = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
@@ -66,7 +73,7 @@ def main():
                         b.state_save(slot='loaded')
                     symbol = next(d for d in program['image']['data'] if '_VARIANT_' in d['name'])
                     b.poke(symbol['address'], variant)
-                    if variant >= 11:
+                    if variant in (11,12,13):
                         from banked_test_memory import write
                         write(b, program['image']['entry'], packet_probe(program, variant, caseout), caseout)
 
@@ -80,7 +87,7 @@ def main():
                 if variant in (0, 1):
                     require(data(bridge, program['image'], 'finished') == [4], 'Workers did not finish')
                 expected_created = {0: 4, 1: 4, 2: 2, 3: args.capacity, 4: 4,
-                                    5: 1, 6: 1, 7: 1, 8: 1, 9: 4, 10: 1, 11: 0, 12: 0, 13: 0}[variant]
+                                    5: 1, 6: 1, 7: 1, 8: 1, 9: 4, 10: 1, 11: 0, 12: 0, 13: 0, 14:4, 15:8, 16:8, 17:8, 18:5, 19:2, 20:1, 21:1, 22:1}[variant]
                 require(runtime['created'] == expected_created, 'Failed admission changed capacity')
                 # Scan untouched fill, including the interrupt reserve, after shutdown.
                 stacks = [('kernel', adapter.KERNEL_STACK_BASE, 1536)] + [
@@ -93,6 +100,7 @@ def main():
                     runtime['stack_high_water'][label] = size-first
                 if variant in (0, 1, 9):
                     require(runtime['native_nmi_count'] > 0, 'No native VBI observed')
+                runtime['stack_usage'] = stack_usage(bridge,program['build']['memory'])
                 report['cases'].append(dict(name=name, status='pass', runtime=runtime,
                                            checks=data(bridge, program['image'], 'checks', True)))
                 print('Passed', args.mode, name, flush=True)

@@ -4,6 +4,9 @@
 
 For the current comparison against GEM4XE 0.9.4 and implemented Exec816, read
 [GEM4XE as the GUI layer for Exec816](exec816-integration-assessment.md).
+The next executable milestone is the
+[minimal hosted VDI implementation plan](minimal-vdi-implementation-plan.md),
+building on the completed larger Task stacks.
 
 **Preserved analysis:** these three documents were moved from GEM4XE's
 `docs/kernel/` into Exec816 on 2026-10-01 so the upstream checkout can

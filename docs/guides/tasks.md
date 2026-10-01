@@ -64,6 +64,15 @@ The stack request includes interrupt headroom and native frames, excludes guards
 and may select a larger existing pool. Zero, oversized or unavailable requests
 return NULL. Keep borrowed names, code and shared data alive until retirement.
 
+The eight-Task profile offers five 1,024-byte worker stacks and two 2,560-byte
+worker stacks. Request `2560` for a worker that needs the larger allocation;
+it includes 256 bytes of interrupt reserve, leaving 2,304 bytes before native
+frames and adapter nesting. Both large workers can run together. Small requests
+prefer smaller pools but may occupy a larger one, so admission still needs a
+failure path. Root and private idle cannot satisfy a creation request.
+Four-Task builds retain their 1,536-byte pools. Measure the actual call chain
+and keep stack checks enabled; the request does not dynamically grow a stack.
+
 [tasks.act](../../examples/tasks.act) deliberately retains AddTask: it teaches
 caller-owned records, explicit generated stack bounds and a custom finalizer.
 Use the [Task reference](../reference/tasks.md) for those lower-level contracts.

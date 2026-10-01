@@ -1,0 +1,187 @@
+MODULE LARGESTACKS
+USE EXEC
+USE EXECTASKS
+USE TASKSTACKS
+USE HEAPCORE
+USE DOS
+USE PROCESS
+USE PROCESSSTATE
+INCLUDE "../../lib/exec/exec-abi.inc"
+
+CONST DONE=$10000,STACK_BYTES=2560
+EXEC.Task POINTER parent
+VOLATILE CARD ticks=E816_VBI_COUNT
+VOLATILE BYTE ready,finished,stop
+VOLATILE CARD ARRAY progress(2)
+CARD checks
+BYTE variant
+BYTE ARRAY diskName=c"D1:DATA.BIN",consoleName=c"CON:",text=c"Large stacks running\n"
+BYTE ARRAY buffer(128)
+TYPE Holder=[EXEC.Task POINTER item]
+Holder ARRAY holders(6)
+
+; Keep the failed assertion visible without returning through a bad activation.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+  checks==+1
+
+RETURN
+
+; Retain six distinct local arrays across preemption and nested kernel calls.
+PROC Deep(BYTE who,depth)
+  BYTE ARRAY local(192)
+  CARD index,start
+
+  FOR index=0 TO 191 DO
+    local(index)=BYTE(index) XOR who XOR depth
+  OD
+  IF depth<>0 THEN
+    Deep(who,depth-1)
+  ELSE
+    EXEC.Forbid()
+    ready==+1
+    EXEC.Permit()
+    start=ticks
+    progress(who)=1
+    WHILE stop=0 OR ticks-start<4 DO
+      progress(who)==+1
+    OD
+    ; A gateway activation must fit while every local frame remains live.
+    Require(EXEC.FindTask(NULL)<>NULL)
+    index=EXECTASKS.Sleep(1)
+  FI
+  FOR index=0 TO 191 DO
+    Require(local(index)=(BYTE(index) XOR who XOR depth))
+  OD
+
+RETURN
+
+; Natural checked exhaustion must fault before entering a physical guard.
+PROC Exhaust(CARD depth)
+
+  progress(0)=depth
+  Exhaust(depth+1)
+
+RETURN
+
+; Run the selected depth probe and publish completion atomically with retirement.
+PROC Worker()
+
+  LET self=EXEC.FindTask(NULL)
+  IF variant=1 THEN
+    Exhaust(1)
+  FI
+  Deep(BYTE(self.tc_UserData),5)
+  EXEC.Forbid()
+  finished==+1
+  EXEC.Signal(parent,DONE)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+; A real Process retirement remains unavailable until its owner collects it.
+LONGINT FUNC Child()
+
+RETURN(42)
+
+; Hold a pool until the parent removes this waiting activation.
+PROC Blocked()
+
+  LET ignored=EXEC.Wait(1)
+
+RETURN
+
+; Fill the smaller pools so Process launch and collection exercise slot seven.
+PROC ProcessCase()
+  BYTE slot
+  CARD ignored
+  PROCESS.Result outcome
+
+  FOR slot=0 TO 4 DO
+    holders(slot).item=EXEC.CreateTask(NULL,0,@Blocked,1024)
+    Require(holders(slot).item<>NULL)
+  OD
+  holders(5).item=EXEC.CreateTask(NULL,0,@Blocked,2560)
+  Require(holders(5).item<>NULL)
+  LET identity=PROCESS.Start(@Child,NULL,0)
+  Require(identity<>0)
+  LET table=PROCESSSTATE.Registry()
+  WHILE table.entries(7).state<>PROCESSSTATE.STATE_RETIRED DO
+    ignored=EXECTASKS.Sleep(1)
+  OD
+  Require(EXEC.CreateTask(NULL,0,@Blocked,2560)=NULL)
+  Require(PROCESS.Collect(identity,@outcome)<>0 AND outcome.primary=42)
+  EXEC.Forbid()
+  LET child=EXEC.CreateTask(NULL,0,@Blocked,2560)
+  Require(child<>NULL)
+  Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(7)))
+  EXEC.RemTask(child)
+  FOR slot=0 TO 5 DO
+    EXEC.RemTask(holders(slot).item)
+  OD
+  EXEC.Permit()
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+; Complete physical console and disk I/O while both deep workers remain live.
+PROC DeviceWork()
+  CARD index
+
+  LET console=DOS.Open(consoleName,DOS.MODE_READWRITE)
+  Require(console<>NULL)
+  Require(DOS.Write(console,text,21)=21)
+  LET file=DOS.Open(diskName,DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,buffer,128)=128)
+  FOR index=0 TO 127 DO
+    Require(buffer(index)=(BYTE(index) XOR $5a))
+  OD
+  Require(DOS.Close(file)<>0)
+  Require(DOS.Close(console)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+; Act as a computing peer, then collect completion from both deep workers.
+PROC Main()
+  EXEC.Task POINTER child
+  CARD start,ignored
+
+  parent=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(16)=16)
+  EXEC.Forbid()
+  child=EXEC.CreateTask(c"deep zero",0,@Worker,STACK_BYTES)
+  Require(child<>NULL)
+  child.tc_UserData=0
+  child=EXEC.CreateTask(c"deep one",0,@Worker,STACK_BYTES)
+  Require(child<>NULL)
+  child.tc_UserData=1
+  EXEC.Permit()
+  WHILE ready<>2 DO
+    ignored=EXECTASKS.Sleep(1)
+  OD
+  start=ticks
+  WHILE ticks-start<4 DO
+    checks==+1
+  OD
+  IF variant=2 THEN
+    DeviceWork()
+  FI
+  stop=1
+  WHILE finished<>2 DO
+    BEGIN
+      LET observed=EXEC.Wait(DONE)
+    END
+  OD
+  Require(progress(0)<>0 AND progress(1)<>0)
+  IF variant=3 THEN
+    ProcessCase()
+  FI
+  EXEC.FreeSignal(16)
+
+RETURN
+ENDMODULE

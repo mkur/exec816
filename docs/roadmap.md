@@ -26,6 +26,9 @@ These are possible next milestones, without a delivery order:
   [two-command foreground pipeline](guides/shell.md).
 - Broader C bindings and more Amiga examples beyond the
   [standalone Calypsi binding](guides/calypsi-c.md).
+- A [minimal hosted GEM VDI subset](plans/gem4xe/minimal-vdi-implementation-plan.md):
+  bounded VBXE drawing in an Exec service, with explicit display ownership and
+  measured C memory/stack use before AES or desktop integration.
 - Priority scheduling and larger Task capacities. Current priorities are stored
   but selection is FIFO; capacities beyond the supported four/eight layouts need
   separate memory budgeting and qualification.

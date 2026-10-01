@@ -94,8 +94,8 @@ loading and runtime. Persistent Exec reservations are packed below it:
 | `$0B00–$12FF` | Public Task DPs |
 | `$1300–$13FF` | Idle DP |
 | `$1400–$23FF` | Resident platform adapter, including segment padding |
-| `$2400–$4F3F` | Root, kernel, worker and idle stacks, including guards |
-| `$4F40–$7FFF` | 12,480 unreserved bytes after startup |
+| `$2400–$5B3F` | Root, kernel, worker and idle stacks, including guards |
+| `$5B40–$7FFF` | 9,408 unreserved bytes after startup |
 
 The [platform profile](../../platform/altirraos/memory-1m.json) defines physical
 placement. Kernel DP is `$0A00`; public slot `i` owns `$0B00+i*$100`, and idle
@@ -107,8 +107,10 @@ this profile. Unsupported capacities and overlaps are rejected.
 The root stack starts at `$2410`, the kernel stack at `$2A30`; each reserves
 1,536 stack bytes with 16-byte guards at both ends. Other stack bases and sizes
 are published in `task_pools`; see [Task capacity](../architecture/task-capacity.md).
-All DPs remain exactly 256 bytes without guards. All stacks retain their sizes,
-checked bounds and internal 256-byte interrupt reserve.
+All DPs remain exactly 256 bytes without guards. In the eight-Task profile,
+slots 1–5 have 1,024-byte stacks, slots 6–7 have 2,560 bytes and private idle
+has 512 bytes. Every stack retains checked bounds and an internal 256-byte
+interrupt reserve. Four-Task pools remain 1,536 bytes each.
 
 Temporary staging occupies `$5BF0–$5FFF`, the manifest `$6000–$67FF`, and the
 loader `$6800–$7BFF`. They form one boot arena clear of every persistent pool.
@@ -116,6 +118,14 @@ loader `$6800–$7BFF`. They form one boot arena clear of every persistent pool.
 `runtime_free_ranges` records the complement after startup. Initialization
 retains the manifest after retiring loader/staging. The full free range becomes
 reusable only at `startup_complete`; it is not registered with the general heap.
+
+The [larger-stack development record](../development/larger-task-stacks.json)
+accounts for the 3,072-byte increase over the compact eight-Task map: fixed
+delta 0, slots 6 and 7 +1,536 bytes each, all other pools unchanged. Runtime
+reserves 56,128 bytes including OS ranges; initialization reserves 58,176
+while the manifest is live, and loading remains 52,592. The guarded idle stack
+ends at `$5B40` exclusive, leaving 176 bytes before staging. Pools may not
+overlap any part of the boot arena, even when phase lifetimes differ.
 
 [Bank-zero compaction](../development/bank-zero-compaction.json) combines nine
 holes into one for eight Tasks, with zero change in total reservations or

@@ -36,10 +36,10 @@ RETURN
 ; Notification is published under Forbid so the parent resumes after retirement.
 PROC Worker()
 
-  finished==+1
   EXEC.Forbid()
+  finished==+1
   EXEC.Signal(parent,DONE)
-  IF variant=1 THEN
+  IF variant=1 OR variant=17 THEN
     EXEC.RemTask(NULL)
   FI
 
@@ -183,7 +183,8 @@ RETURN
 PROC RemovalFault(BYTE kind)
 
   EXEC.Forbid()
-  LET child=EXEC.CreateTask(NULL,0,@Blocked,1)
+  LET bytes=IF variant>=20 THEN LONGCARD(2560) ELSE LONGCARD(1) FI
+  LET child=EXEC.CreateTask(NULL,0,@Blocked,bytes)
   Require(child<>NULL)
   CASE kind OF
   WHEN 5 THEN
@@ -227,7 +228,8 @@ PROC Creator()
   Require(EXEC.AllocSignal(16)=16)
   DO
     EXEC.Forbid()
-    child=EXEC.CreateTask(NULL,0,@Grandchild,1)
+    child=EXEC.CreateTask(NULL,0,@Grandchild,
+        IF variant=18 THEN LONGCARD(2560) ELSE LONGCARD(1) FI)
     IF child<>NULL THEN
       child.tc_UserData=ADDRESS(self)
       EXEC.Permit()
@@ -272,6 +274,126 @@ PROC Concurrent(BYTE unused)
 
 RETURN
 
+; Keep both larger pools live while checking exact fit and failure rollback.
+PROC LargeBounds()
+  EXEC.Task POINTER first,second
+  CARD lower,upper
+
+  Require(TASKSTACKS.CAPACITY=8)
+  EXEC.Forbid()
+  first=EXEC.CreateTask(c"large first",0,@Blocked,2559)
+  second=EXEC.CreateTask(c"large second",0,@Blocked,2560)
+  Require(first<>NULL AND second<>NULL)
+  Require(first.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(6)))
+  Require(second.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(7)))
+  Require(first.tc_SPUpper-first.tc_SPLower=ADDRESS(2560))
+  Require(second.tc_SPUpper-second.tc_SPLower=ADDRESS(2560))
+  first.tc_UserData=$123456
+  Require(EXEC.CreateTask(NULL,0,@Blocked,2560)=NULL)
+  Require(EXEC.CreateTask(NULL,0,@Blocked,2561)=NULL)
+  Require(first.tc_UserData=$123456)
+  EXEC.RemTask(second)
+  second=EXEC.CreateTask(NULL,0,@Blocked,1025)
+  Require(second<>NULL)
+  Require(second.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(7)))
+  EXEC.RemTask(first)
+  EXEC.RemTask(second)
+
+  lower=TASKSTACKS.StackLower(7)
+  upper=TASKSTACKS.StackUpper(7)
+  borrowed.tc_Node.ln_Type=EXEC.NT_TASK
+  EXECLISTS.NewList(@borrowed.tc_MemEntry)
+  borrowed.tc_SPLower=ADDRESS($4910)
+  borrowed.tc_SPUpper=ADDRESS($4d10)
+  borrowed.tc_SPReg=borrowed.tc_SPUpper-SIZE(2)
+  Require(EXEC.AddTask(@borrowed,@Blocked,absent)=NULL)
+  borrowed.tc_SPLower=ADDRESS(lower)
+  borrowed.tc_SPUpper=ADDRESS(upper-16)
+  Require(EXEC.AddTask(@borrowed,@Blocked,absent)=NULL)
+  borrowed.tc_SPUpper=ADDRESS(upper)
+  borrowed.tc_SPReg=ADDRESS(lower+$100)
+  Require(EXEC.AddTask(@borrowed,@Blocked,absent)=NULL)
+  borrowed.tc_SPReg=ADDRESS(upper-33)
+  Require(EXEC.AddTask(@borrowed,@Blocked,absent)=NULL)
+  borrowed.tc_SPReg=ADDRESS(upper-32)
+  Require(EXEC.AddTask(@borrowed,@Blocked,absent)=@borrowed)
+  Require(EXEC.AddTask(@borrowed,@Blocked,absent)=NULL)
+  EXEC.RemTask(@borrowed)
+  EXEC.Permit()
+
+RETURN
+
+; Ordinary requests prefer small pools but can occupy both larger pools.
+PROC LargeOrder()
+  BYTE slot
+  EXEC.Task POINTER child
+
+  EXEC.Forbid()
+  FOR slot=1 TO 7 DO
+    children(slot-1).item=EXEC.CreateTask(NULL,0,@Blocked,1024)
+    child=children(slot-1).item
+    Require(child<>NULL)
+    Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot)))
+  OD
+
+  EXEC.RemTask(children(0).item)
+  Require(EXEC.CreateTask(NULL,0,@Blocked,2560)=NULL)
+  EXEC.RemTask(children(5).item)
+  children(5).item=EXEC.CreateTask(NULL,0,@Blocked,2560)
+  Require(children(5).item<>NULL)
+  FOR slot=2 TO 7 DO
+    EXEC.RemTask(children(slot-1).item)
+  OD
+  EXEC.Permit()
+
+RETURN
+
+; Both larger pools retire by return or self-removal before either is reused.
+PROC LargeReuse()
+  BYTE round
+
+  FOR round=1 TO 4 DO
+    EXEC.Forbid()
+    children(0).item=EXEC.CreateTask(NULL,0,@Worker,2560)
+    children(1).item=EXEC.CreateTask(NULL,0,@Worker,2560)
+    Require(children(0).item<>NULL AND children(1).item<>NULL)
+    EXEC.Permit()
+    WHILE finished<round*2 DO
+      BEGIN
+        LET ignored=EXEC.Wait(DONE)
+      END
+    OD
+  OD
+
+RETURN
+
+; Private fixture mutations verify the same ownership predicate on large pools.
+PROC LargeReserved()
+  EXEC.Task POINTER child
+  LONGCARD POINTER incarnation
+
+  EXEC.Forbid()
+  LET table=PROCESSSTATE.Registry()
+  table.entries(6).state=PROCESSSTATE.STATE_PREPARING
+  table.entries(7).state=PROCESSSTATE.STATE_RETIRED
+  Require(EXEC.CreateTask(NULL,0,@Blocked,2560)=NULL)
+  table.entries(7).state=PROCESSSTATE.STATE_FREE
+  child=EXEC.CreateTask(NULL,0,@Blocked,2560)
+  Require(child<>NULL)
+  Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(7)))
+  incarnation=LONGCARD POINTER(child.tc_ExecPrivate+SIZE(40))
+  EXEC.RemTask(child)
+  incarnation^=SYS.MAXLONGCARD
+  Require(EXEC.CreateTask(NULL,0,@Blocked,2560)=NULL)
+  table.entries(6).state=PROCESSSTATE.STATE_FREE
+  child=EXEC.CreateTask(NULL,0,@Blocked,2560)
+  Require(child<>NULL)
+  Require(child.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(6)))
+  EXEC.RemTask(child)
+  EXEC.Permit()
+
+RETURN
+
 PROC Main()
 
   parent=EXEC.FindTask(NULL)
@@ -297,6 +419,21 @@ PROC Main()
       Require(finished=1)
       Require(EXEC.Wait(DONE)=DONE)
     END
+  WHEN 14 THEN
+    LargeBounds()
+  WHEN 15 THEN
+    LargeOrder()
+  WHEN 16,17 THEN
+    LargeReuse()
+  WHEN 18 THEN
+    children(0).item=EXEC.CreateTask(NULL,0,@Blocked,2560)
+    Require(children(0).item<>NULL)
+    Concurrent(0)
+    EXEC.RemTask(children(0).item)
+  WHEN 19 THEN
+    LargeReserved()
+  WHEN 20,21,22 THEN
+    RemovalFault(variant-15)
   ESAC
   EXEC.FreeSignal(16)
 

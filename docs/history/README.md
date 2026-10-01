@@ -38,6 +38,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 - [Signals implementation record](signals-implementation.md)
 - [Signals and Wait: classic Exec design](signals-wait-design.md)
 - [Eight-task configuration](task-capacity.md)
+- [Two larger Task stacks](larger-task-stacks.md): implemented mixed eight-Task
+  layout and bounded Action!/C development evidence.
 - [Task API review and migration](tasks-exec-update.md)
 - [General task management](tasks.md)
 

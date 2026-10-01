@@ -34,20 +34,20 @@ class CapacityPackaging(unittest.TestCase):
         m=layout(upper_table=True)
         pools=configure(m,8)
         self.assertEqual(len(pools),9)
-        self.assertEqual([p['stack_bytes'] for p in pools],[1536]+[1024]*7+[512])
+        self.assertEqual([p['stack_bytes'] for p in pools],[1536]+[1024]*5+[2560]*2+[512])
         self.assertTrue(all(p['dp']%256==0 for p in pools))
         spans=m['runtime_reservations']
         self.assertTrue(all(a['address']+a['size']<=b['address'] for a,b in zip(spans,spans[1:])))
         c=storage(m)
         self.assertEqual((c['CAPACITY'],c['IDLE'],c['PUBLIC_CONTEXT_BYTES'],c['METADATA_BYTES']),(8,8,512,1216))
-        self.assertEqual(m['bank_zero_budget']['runtime_excluding_os'],22336)
+        self.assertEqual(m['bank_zero_budget']['runtime_excluding_os'],25408)
         self.assertEqual(m['bank_zero_budget']['loading_excluding_os'],21872)
         self.assertTrue(all(p['dp_reserved_bytes']==256 for p in pools))
 
     def test_compact_maps_preserve_all_stack_reservations(self):
         for capacity,bases,total,loading in (
             (4,[0x2410,0x3050,0x3670,0x3c90,0x42b0],51392,54128),
-            (8,[0x2410,0x3050,0x3470,0x3890,0x3cb0,0x40d0,0x44f0,0x4910,0x4d30],53056,52592)):
+            (8,[0x2410,0x3050,0x3470,0x3890,0x3cb0,0x40d0,0x44f0,0x4f10,0x5930],56128,52592)):
             with self.subTest(capacity=capacity):
                 m=layout(upper_table=capacity==8)
                 pools=configure(m,capacity)
@@ -60,7 +60,7 @@ class CapacityPackaging(unittest.TestCase):
                 self.assertEqual(budget['loading_including_os'],loading)
                 self.assertEqual(sum(r['size'] for r in m['runtime_reservations']),total)
                 self.assertEqual(m['regions']['kernel-stack'],[0x2a20,0x3040])
-                end = 0x48c0 if capacity == 4 else 0x4f40
+                end = 0x48c0 if capacity == 4 else 0x5b40
                 self.assertEqual(m['runtime_free_ranges'],[dict(address=end,size=0x8000-end)])
                 phases=m['phase_reservations']
                 self.assertEqual(sum(r['size'] for r in phases['loading']),loading)
@@ -113,6 +113,36 @@ class CapacityPackaging(unittest.TestCase):
         with self.assertRaises((ValueError,RuntimeError)):
             configure(layout(upper_table=True),16,1536,1536)
         with self.assertRaises(RuntimeError):configure(layout(),8)
+
+    def test_mixed_sizes_overrides_and_costs(self):
+        from stack_budget import bank_zero_delta
+        for override in (None,512,1024):
+            m=layout(upper_table=True)
+            pools=configure(m,8,override)
+            expected=[1024]*5+[2560]*2 if override is None else [override]*7
+            self.assertEqual([p['stack_bytes'] for p in pools[1:8]],expected)
+            self.assertEqual(m['stack_overrides'],dict(worker=override,idle=None))
+            delta=bank_zero_delta(m)
+            self.assertEqual(delta['fixed'],0)
+            self.assertEqual(delta['idle'],0)
+            self.assertEqual(delta['per_public_task'],[0]+[n-1024 for n in expected])
+            self.assertEqual(delta['runtime'],sum(n-1024 for n in expected))
+        m=layout()
+        configure(m,4)
+        self.assertEqual(bank_zero_delta(m)['per_public_task'],[0]*4)
+
+    def test_stacks_cannot_borrow_retired_boot_storage(self):
+        for slot,base in ((6,0x5c00),(7,0x6810),(8,0x5c00)):
+            m=layout(upper_table=True)
+            m['profile']['task_stacks']['8']['bases'][slot]=base
+            with self.subTest(slot=slot),self.assertRaisesRegex(RuntimeError,'overlaps'):
+                configure(m,8)
+        for field,value in (('bases',0xfff0),('bases',0x44f1),
+                            ('sizes',2561),('sizes',2576),('sizes',True)):
+            m=layout(upper_table=True)
+            m['profile']['task_stacks']['8'][field][6]=value
+            with self.subTest(field=field,value=value),self.assertRaises(RuntimeError):
+                configure(m,8)
 
     def test_full_bank_table_size(self):
         m=layout(max_banks=256,kernel_bank=3,upper_table=True)

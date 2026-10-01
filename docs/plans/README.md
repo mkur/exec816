@@ -10,6 +10,12 @@ assuming work is pending. Current behavior belongs in the
 
 ## Exec and project history
 
+- [Two larger Task stacks](../history/larger-task-stacks.md): implemented; two
+  2,560-byte worker stacks within the eight-Task layout, costing 3,072 bank-zero
+  bytes and leaving 9,408 bytes free after startup. Raw/optimized Action! and C,
+  admission/reuse, selected interrupts and the OF816 demo passed development
+  checks; [implementation plan](larger-task-stacks-implementation-plan.md) and
+  [evidence](../development/larger-task-stacks.json).
 - [Bank zero compaction](bank-zero-compaction-plan.md): complete; one 12,480-byte
   free range in the eight-Task build, consolidated boot storage, and 240 fixed
   bytes recovered in four-Task builds;
@@ -59,6 +65,9 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [Minimal hosted GEM VDI subset](gem4xe/minimal-vdi-implementation-plan.md):
+  proposed; one rendering service, a bounded drawing client, VBXE ownership,
+  measured C memory/stack use and concurrent Exec execution.
 - [GEM4XE as the GUI layer for Exec816](gem4xe/exec816-integration-assessment.md):
   VBXE-only integration with expandable upper RAM, bank-zero and hardware
   constraints, and proposed executable slices. The

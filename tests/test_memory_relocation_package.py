@@ -79,7 +79,7 @@ class MemoryRelocationTests(unittest.TestCase):
                          [0x0b00+i*256 for i in range(9)])
         self.assertEqual([p['stack_base'] for p in pools],
                          [0x2410, 0x3050, 0x3470, 0x3890, 0x3cb0,
-                          0x40d0, 0x44f0, 0x4910, 0x4d30])
+                          0x40d0, 0x44f0, 0x4f10, 0x5930])
 
     def test_aperture_reserved_during_loading_and_runtime(self):
         for capacity in (4, 8):
@@ -118,13 +118,17 @@ class MemoryRelocationTests(unittest.TestCase):
     def test_retirement_separates_loading_and_runtime_reservations(self):
         from ports_budget import current
         budgets = current()
-        for capacity, total, saving, loading in (('four',51392,432,336),('eight',53056,2336,544)):
+        for capacity, total, saving, loading in (('four',51392,432,336),('eight',56128,-736,544)):
             before, after = budgets['before'][capacity], budgets['after'][capacity]
             self.assertEqual(after['runtime_including_os'], total)
             self.assertEqual(after['runtime_including_os']-before['runtime_including_os'], -6144-saving)
             self.assertEqual(after['loading_including_os']-before['loading_including_os'], -4096-loading)
             per_task = 32 if capacity == 'four' else 256
-            self.assertEqual(after['public'], [v-per_task for v in before['public']])
+            expected = [v-per_task for v in before['public']]
+            if capacity == 'eight':
+                expected[6] += 1536
+                expected[7] += 1536
+            self.assertEqual(after['public'], expected)
             self.assertEqual(after['idle'], before['idle']-per_task)
         m = layout(upper_table=True)
         configure(m,8)

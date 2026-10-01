@@ -11,8 +11,8 @@ def configure(memory, capacity, worker_stack=None, idle_stack=None):
     spec = profile['task_stacks'][str(capacity)]
     require(len(spec['bases']) == len(spec['sizes']) == capacity+1, 'Invalid stack map')
     for value in (worker_stack, idle_stack):
-        require(value is None or type(value) is int and 512 <= value <= 1536 and value % 16 == 0,
-                'Stack reservation must be 512..1536 bytes, aligned to 16')
+        require(value is None or type(value) is int and 512 <= value <= 2560 and value % 16 == 0,
+                'Stack reservation must be 512..2560 bytes, aligned to 16')
     require(capacity == 4 or memory['constants']['TABLE'] >= 65536,
             'Capacity profile requires an upper bank table')
     dp = direct_pages(profile)
@@ -31,7 +31,9 @@ def configure(memory, capacity, worker_stack=None, idle_stack=None):
     def reserve(start, size, name):
         end = start+size
         require(regions['state'][1] <= start < end <= 0x9000 and
-                all(end <= a or start >= b for a,b,_ in used),
+                all(end <= a or start >= b for a,b,_ in used) and
+                all(end <= regions[n][0] or start >= regions[n][1]
+                    for n in ('loader','staging')),
                 'Task pool overlaps reserved memory: '+name)
         used.append((start,end,name))
 
@@ -42,7 +44,7 @@ def configure(memory, capacity, worker_stack=None, idle_stack=None):
         elif 0 < i < capacity and worker_stack is not None:
             size = worker_stack
         require(type(base) is int and base % 16 == 0 and type(size) is int and
-                512 <= size <= 1536 and size % 16 == 0, 'Invalid stack map entry')
+                512 <= size <= 2560 and size % 16 == 0, 'Invalid stack map entry')
         if i < 2:
             require(base == regions[f'task{i}-stack'][0]+16,
                     'Bootstrap stack differs from its reservation')
@@ -62,6 +64,7 @@ def configure(memory, capacity, worker_stack=None, idle_stack=None):
             r.update(address=a,size=b-a)
     memory['task_pools'] = pools
     memory['task_capacity'] = capacity
+    memory['stack_overrides'] = dict(worker=worker_stack, idle=idle_stack)
     memory['reclaimed_after_adopt'] = ['loader','staging']
     encode = lambda spans:[dict(name=n,address=a,size=b-a) for a,b,n in spans]
     bootstrap = fixed+[(p['dp'],p['dp']+256,f'dp{i}') for i,p in enumerate(pools[:2])]

@@ -278,7 +278,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         memory['boot_config'].update(system_selection)
         if upper_table:
             from task_capacity import configure
-            configure(memory,task_capacity,1024 if worker_stack is None else worker_stack,512 if idle_stack is None else idle_stack)
+            configure(memory,task_capacity,worker_stack,idle_stack)
         if tasks:
             import generate_heap
             generate_heap.reserve_metadata(memory)

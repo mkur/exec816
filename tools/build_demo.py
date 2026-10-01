@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Build the text-console demo with OF816 boot, system disk and pinned AltirraOS ROM."""
+from stack_budget import bank_zero_delta
 import argparse
 import hashlib
 import json
@@ -69,7 +70,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128):
                         ROOT/'tools/make_data_disk.py',ROOT/'tools/sdfs_reference.py',ROOT/'tools/sdfs_reference.cpp',
                         ROOT/'tools/make_shell_disk.py',Path(__file__),*sources,
                         *sorted((ROOT/'lib/dos').glob('*.act'))]},
-        bank_zero_delta=dict(fixed=0,per_task=0),task_capacity=8,expected_peak_tasks=7,
+        bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=8,expected_peak_tasks=7,
         qualification='Focused development checks only; full release and general compiler qualification remain separate.')
     (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
     # Package the boot XEX, matching system disk and pinned ROM together.

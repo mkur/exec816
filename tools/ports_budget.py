@@ -15,7 +15,7 @@ def current():
     observed={}
     for capacity,key in [(4,'four'),(8,'eight')]:
         memory=layout(upper_table=capacity==8)
-        if capacity==8:configure(memory,8,1024,512)
+        if capacity==8:configure(memory,8)
         reserve_metadata(memory)
         from generate_ports import reserve_metadata as reserve_ports
         reserve_ports(memory);validate_memory(memory)
@@ -24,7 +24,7 @@ def current():
     old,new = before['eight'],observed['eight']
     fixed = lambda b:b['runtime_including_os']-sum(b['public'])-b['idle']
     return dict(before=before,after=observed,fixed_delta=fixed(new)-fixed(old),
-                per_task_delta=new['public'][1]-old['public'][1],idle_delta=new['idle']-old['idle'],
+                per_public_task_delta=[a-b for a,b in zip(new['public'],old['public'])],idle_delta=new['idle']-old['idle'],
                 diagnostic_delta=0,
                 accounting='Generated maps; stack guards, full bank-table capacity and VBXE aperture; exact 256-byte direct pages.')
 

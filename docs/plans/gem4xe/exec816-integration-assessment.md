@@ -84,10 +84,11 @@ after successful startup. The subsequent
 `$8000–$8FFF`, and [DP compaction](../../development/dp-compaction.json) removes
 DP guards and padding. These records preserve their historical layouts.
 
-[Bank-zero compaction](../bank-zero-compaction-plan.md) now packs persistent
-Exec storage into `$0800–$4F3F`: boot state at `$0900`, kernel/Task DPs at
+[Bank-zero compaction](../bank-zero-compaction-plan.md) packed persistent
+Exec storage below the boot arena. With the two larger stacks, it now occupies
+`$0800–$5B3F`: boot state at `$0900`, kernel/Task DPs at
 `$0A00–$13FF`, the resident adapter at `$1400–$23FF`, and guarded stacks at
-`$2400–$4F3F`. Staging, manifest and loader occupy `$5BF0–$7BFF` temporarily.
+`$2400–$5B3F`. Staging, manifest and loader occupy `$5BF0–$7BFF` temporarily.
 See the [development record](../../development/bank-zero-compaction.json).
 
 The generated eight-Task layout now reserves:
@@ -97,27 +98,38 @@ The generated eight-Task layout now reserves:
 | OS ranges | 30,720 |
 | Fixed Exec runtime, including VBXE aperture | 10,528 |
 | Root Task | 1,824 |
-| Seven other public Task pools | 9,184 |
+| Seven other public Task pools | 12,256 |
 | Private idle | 800 |
-| Total reserved in bank zero | 53,056 |
-| One unreserved range, `$4F40–$7FFF` | 12,480 |
+| Total reserved in bank zero | 56,128 |
+| One unreserved range, `$5B40–$7FFF` | 9,408 |
 
-These totals include guards and unused reserved capacity. They recover 8,480
-bytes from the assessed baseline after reserving the aperture and compacting
-DPs. Whole-map compaction adds no eight-Task savings; it combines the nine holes
-into one 12,480-byte range. The range becomes fully reusable after
+These totals include guards and unused reserved capacity. They recover 5,408
+bytes from the assessed baseline after reserving the aperture, compacting DPs
+and enlarging two stacks. Whole-map compaction added no eight-Task savings;
+the larger pools consume 3,072 bytes of the resulting contiguous free range.
+The remaining range becomes fully reusable after
 `startup_complete`, when the manifest retires. It is not yet a heap arena. The
 no-resident-Atari-DOS boot contract requires the original MEMLO to be at most
 `$0800`. Exec's own DOS/file services remain operational.
 
-Each ordinary worker reserves a 1,024-byte stack, 32 stack-guard bytes and a
+Each of five ordinary workers reserves a 1,024-byte stack, 32 stack-guard bytes and a
 256-byte aligned DP reservation without external guards. The stack includes
 256 bytes of interrupt reserve. The root stack is 1,536 bytes. GEM's present
 engine alone reserves **2,048 stack bytes**, before adapting its call chain to
-Exec. The current configurable pool generator accepts at most 1,536 stack
+Exec. The current configurable pool generator accepts at most 2,560 stack
 bytes. Passing a larger number to `CreateTask` does not allocate new space.
 See [Task capacity](../../architecture/task-capacity.md) and
 [pool generator](../../../tools/task_capacity.py).
+
+The [two larger Task stacks](../../history/larger-task-stacks.md) provide two
+2,560-byte worker pools within the existing eight slots. The
+[implementation plan](../larger-task-stacks-implementation-plan.md) and
+[development evidence](../../development/larger-task-stacks.json) cover their
+admission, reuse, checked Action! overflow, C preemption and device coexistence.
+Both C workers reached 1,140 bytes of stack use, leaving 1,164 bytes above the
+interrupt floor in the bounded fixture. C functions still lack automatic
+entry checks. GEM's actual adapted link map and call chains remain unmeasured;
+these results make that next experiment possible without proving it fits.
 
 GEM's [linker layout][gem-layout] reserves `$2000–$3FFF` for engine DP, data,
 stack and near code, `$4000–$47FF` for additional state, and `$4800–$7FFF` for
@@ -283,6 +295,11 @@ retires. A desktop resident alongside applications is a deliberate shell
 adaptation. Exec preemption alone supplies none of these GUI semantics.
 
 ## Proposed executable slices
+
+The [minimal hosted VDI implementation plan](minimal-vdi-implementation-plan.md)
+details the next bounded milestone: one rendering service, scripted drawing,
+VBXE ownership and concurrent Exec work. It covers the memory/C boundary and
+drawing portion of stages 1–2 below; native input and AES remain follow-on work.
 
 | Slice | Concrete result | Acceptance evidence |
 | --- | --- | --- |

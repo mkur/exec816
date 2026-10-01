@@ -67,6 +67,13 @@ headroom and may select a larger existing pool. The kernel selects and owns the
 Task record; failures return NULL. The C shim rejects pointers outside 24 bits
 before narrowing them. It does not scan or reserve pools itself.
 
+An eight-Task build provides two 2,560-byte worker pools through the same call,
+for example `CreateTask("worker", 0, (APTR)Receiver, 2560UL)`. The request
+includes 256 bytes of interrupt reserve and excludes external guards. Smaller
+Tasks and Process reservations can occupy these pools; handle NULL when neither
+is available. See [Task capacity](../architecture/task-capacity.md) for placement
+and the 3,072-byte bank-zero cost. The ordinary C example remains a four-Task build.
+
 A managed result is borrowed and may already be retired when the call returns.
 Do not free it or poll it after removal. Use Forbid across any initial setup that
 requires a live Task. The example's final notification uses
@@ -158,7 +165,7 @@ User-defined tiny/near storage is not part of this target's linker layout.
 C functions do **not** have Action!'s compiler-inserted stack-overflow checks.
 The platform still checks native domains/guards and the development runner
 checks stack watermarks, but these are not equivalent to checking every C
-function entry. Keep C examples bounded and their stacks small.
+function entry. Keep C call depth bounded and measure the linked program.
 
 Focused development checks:
 
@@ -167,6 +174,8 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 python3 tools/test_calypsi.py --mode opt --output build/calypsi/messages --from-build build/calypsi/messages
 python3 tools/test_calypsi.py --mode raw --context --output build/calypsi/context-raw
 python3 tools/test_calypsi.py --mode opt --context --output build/calypsi/context-opt
+python3 tools/test_calypsi.py --mode raw --large-stacks --output build/calypsi/large-raw
+python3 tools/test_calypsi.py --mode opt --large-stacks --output build/calypsi/large-opt
 ```
 
 The separate C context fixture covers signals, memory clearing/cleanup, nested
@@ -177,6 +186,15 @@ both computations against host results, C callee-saved DP registers, untouched
 caller workspace and the kernel's lower DP. The runner also checks native
 guards, bounded completion, console output, physical Return and OS restoration.
 These are development checks on the recorded inputs, not release qualification.
+
+The larger-stack fixture runs two C workers with nested local arrays, a computing
+root peer and message round trips. Its observer captures an NMI frame from each
+worker's C code and checks saved S/D, computation results, live local data,
+unused DP workspace, guards and cleanup. Messages use aligned `AllocMem`
+storage because a C stack object can have an odd address. The
+[larger-stack record](../development/larger-task-stacks.json) retains measured
+depth and compiler/runtime inputs; it does not establish general C overflow
+protection or demonstrate that the GEM engine fits.
 
 The [CreateTask development record](../development/create-task.json) records
 the current binding, packet checks, raw/optimized C preemption probes and

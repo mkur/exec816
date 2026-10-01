@@ -1,0 +1,32 @@
+MODULE LARGESTACKCHECKS
+USE EXEC
+USE EXECOS
+
+BYTE variant
+CARD checks
+BYTE ARRAY message=c"Stack checks"
+
+; Force a checked compiler frame in a Task using a larger pool.
+CARD FUNC Work(CARD value)
+  BYTE ARRAY local(16)
+
+  local(value & 15)=BYTE(value)
+
+RETURN(CARD(local(value & 15))+1)
+
+; The observer raises the logical floor at the selected reservation site.
+PROC Worker()
+
+  checks=Work(41)
+  checks=EXECOS.Write(message,12)
+
+RETURN
+
+; Keep root waiting while the larger Task enters the selected checked helper.
+PROC Main()
+
+  LET worker=EXEC.CreateTask(NULL,0,@Worker,2560)
+  LET ignored=EXEC.Wait(1)
+
+RETURN
+ENDMODULE

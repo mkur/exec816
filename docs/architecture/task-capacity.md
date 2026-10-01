@@ -27,8 +27,9 @@ all slots have the same size.
 ## Checked placement and lifetime
 
 Stacks and aligned DPs require bank zero; public records and private scheduling
-metadata can live in upper RAM. The eight-slot profile uses smaller worker and
-idle stacks and places the bank ownership table in upper RAM. Persistent pools
+metadata can live in upper RAM. The eight-slot profile uses five ordinary worker
+stacks, two larger worker stacks and a smaller idle stack, and places the bank
+ownership table in upper RAM. Persistent pools
 are packed below the temporary boot arena, so initializing a later slot does
 not overwrite loader/staging storage.
 
@@ -67,15 +68,31 @@ bytes respectively. Stack reservations and public Task capacity are unchanged.
 | --- | ---: | ---: |
 | OS ranges | 30,720 | 30,720 |
 | Fixed Exec runtime, including aperture, guards and slack | 11,552 | 10,528 |
-| Public and idle pools | 9,120 | 11,808 |
-| Total reserved | 51,392 | 53,056 |
-| One contiguous unreserved range | 14,144 | 12,480 |
+| Public and idle pools | 9,120 | 14,880 |
+| Total reserved | 51,392 | 56,128 |
+| One contiguous unreserved range | 14,144 | 9,408 |
 
 The manifest still occupies 2 KiB during loading. Total loading reservations
 are 54,128 and 52,592 bytes respectively. Every DP now reserves exactly 256
-bytes. Eight-Task worker stacks remain 1,024 bytes plus 32 external guard bytes,
-with 256 bytes of interrupt reserve inside the stack. Root has 1,536 stack bytes
-and idle 512; every four-Task stack has 1,536 bytes.
+bytes. Eight-Task slots 1–5 have 1,024 stack bytes; slots 6–7 have 2,560 bytes.
+Each adds 32 external guard bytes and includes 256 bytes of interrupt reserve.
+Root has 1,536 stack bytes and idle 512; every four-Task stack has 1,536 bytes.
+Initialization retains the 2 KiB manifest in addition to the runtime budget.
+
+`CreateTask` chooses the smallest free pool that fits the rounded request,
+breaking equal-size ties by slot order. A 2,560-byte request uses one of the
+two larger pools; a third fails while both remain owned. Small requests use
+ordinary pools first but can consume the larger ones. Root and idle are never
+creation candidates. Process launch still selects its first free slot and has
+no stack-size parameter. These are shared pools, with no reservation for GEM.
+
+The larger allocation leaves 2,304 bytes above the interrupt floor before
+native frames and nested adapter use. Passing a larger size to `CreateTask`
+does not allocate bank-zero memory. Explicit build-time `--worker-stack`
+overrides replace every worker size without moving bases; the packager rejects
+overlap, including overlap with boot storage. Omitted overrides use the profile.
+The [development record](../development/larger-task-stacks.json) measures the
+two-pool change: fixed delta 0, slots 6–7 +1,536 bytes each, total +3,072.
 
 [Bank-zero compaction](../development/bank-zero-compaction.json) packs the
 persistent reservations together, with no additional eight-Task byte savings.
@@ -89,11 +106,11 @@ capacities then place the resident adapter at `$1400–$23FF`.
 
 Stack placement is explicit in the platform profile. Four-Task bases, including
 idle, are `$2410`, `$3050`, `$3670`, `$3C90`, `$42B0`. Eight-Task bases are
-`$2410`, `$3050`, `$3470`, `$3890`, `$3CB0`, `$40D0`, `$44F0`, `$4910`, `$4D30`.
+`$2410`, `$3050`, `$3470`, `$3890`, `$3CB0`, `$40D0`, `$44F0`, `$4F10`, `$5930`.
 Kernel stack starts at `$2A30`, with 1,536 bytes. Every stack retains 16-byte
 guards at both ends; adjacent guarded reservations have no extra padding.
 
-After startup, the free range is `$48C0–$7FFF` for four Tasks or `$4F40–$7FFF`
+After startup, the free range is `$48C0–$7FFF` for four Tasks or `$5B40–$7FFF`
 for eight. Staging, manifest and loader temporarily occupy `$5BF0–$7BFF` inside
 this area. The manifest remains live until `startup_complete`. Generated
 `phase_reservations` and `runtime_free_ranges` describe these lifetimes; free

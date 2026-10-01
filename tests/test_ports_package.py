@@ -50,7 +50,7 @@ class PortPackageTests(unittest.TestCase):
         from task_capacity import configure
         for capacity in (4,8):
             memory=layout(upper_table=capacity==8)
-            if capacity==8:configure(memory,8,1024,512)
+            if capacity==8:configure(memory,8)
             heap(memory);old=memory['profile']['code_origin'];reserve_metadata(memory)
             self.assertEqual(memory['ports_storage'],dict(BASE=old,BYTES=16,ACTIVE_BYTES=11))
             self.assertEqual(memory['profile']['code_origin'],old+16)

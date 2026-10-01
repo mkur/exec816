@@ -48,7 +48,7 @@ class DosPackageTests(unittest.TestCase):
         for capacity in (4,8):
             for bank in (1,3):
                 memory=layout(kernel_bank=bank,upper_table=capacity==8)
-                if capacity==8:configure(memory,8,1024,512)
+                if capacity==8:configure(memory,8)
                 heap(memory);ports(memory);io(memory);validate_memory(memory);before=account(memory)
                 reserve_metadata(memory,capacity)
                 self.assertEqual(account(memory),before)
