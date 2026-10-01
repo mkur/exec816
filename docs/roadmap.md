@@ -29,9 +29,9 @@ These are possible next milestones, without a delivery order:
 - A [minimal hosted GEM VDI subset](plans/gem4xe/minimal-vdi-implementation-plan.md):
   bounded VBXE drawing in an Exec service, with explicit display ownership and
   measured C memory/stack use before AES or desktop integration. G0 detection
-  through G4 C extraction, message service, display ownership and real VDI rendering
-  are implemented. G5 combines drawing, a computing peer, physical SDFS I/O and
-  failure cleanup.
+  through G5 C extraction, service, display ownership, real drawing and concurrent
+  physical SDFS/failure checks are implemented. G6 publishes the optional graphics
+  artifact and current documentation.
 - Priority scheduling and larger Task capacities. Current priorities are stored
   but selection is FIFO; capacities beyond the supported four/eight layouts need
   separate memory budgeting and qualification.

@@ -231,7 +231,8 @@ does not replace a bounded target-side wait.
 
 G0 inputs/contracts, G1 extraction/C entry checks, G2 message service, G3
 display ownership/adapter and G4 real VDI rendering are implemented; development
-evidence is linked below. G5–G6 remain pending.
+evidence is linked below. G5 adds combined physical-I/O and lifecycle checks;
+G6 documentation/artifact integration remains pending.
 Complete their development gates in order. Keep builds, source downloads, maps and logs under
 `build/gem-vdi/`. Paths named as
 new tools or modules below are proposed deliverables unless linked as completed.
@@ -284,7 +285,20 @@ packet bank-boundary rejection, atomic batch rejection and honest completed-pref
 fault replies. Reopening restores the default workstation. Raw/optimized stack
 measurements fit the existing large pool; fixed, per-Task and idle bank-zero
 reservation deltas are zero. The combined renderer/peer/physical-SDFS workload
-and broader failure cleanup remain G5.
+and broader failure cleanup are covered by G5 below.
+
+G5 deliverables: [combined workload](../../../tests/programs/gem_concurrent.c),
+[Action launcher](../../../tests/programs/gem_concurrent_launcher.act),
+[runner](../../../tools/test_gem_concurrent.py) and
+[development record](../../development/gem-vdi-g5.json). A 12-command, 768-glyph
+batch runs alongside a non-yielding C peer and a cold 2 KiB physical SDFS read.
+Progress between active IRQ samples with an unchanged terminal-post count proves
+actual wire overlap. Raw/optimized cases cover accepted queued/active stop,
+large-pool/signal admission, real allocation exhaustion, recoverable device fault
+and retained reset-required ownership. Console restart, pixel hash, full saved
+C frames, lower DP, all stack guards/headroom and final allocation ownership are
+checked. Fixed, per-public-Task and private-idle reserved bank-zero deltas are zero.
+Diagnostic timing includes owner-side VRAM readback; it is not a throughput claim.
 
 | Slice | Deliverable and acceptance gate |
 | --- | --- |

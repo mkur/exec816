@@ -103,3 +103,16 @@ The [renderer backend](adapter/README.md) documents integration and the raw/opti
 pixel corpus. Its [development record](../../docs/development/gem-vdi-g4.json)
 keeps exact pixels, scanout, font/palette checks and measured stack use together.
 G5 remains the combined drawing, computing-peer and physical SDFS workload.
+
+## G5 concurrent workload
+
+```sh
+python3 tools/test_gem_concurrent.py --mode raw --output build/gem-vdi/g5-final-raw
+python3 tools/test_gem_concurrent.py --mode opt --output build/gem-vdi/g5-final-opt
+```
+
+The [G5 record](../../docs/development/gem-vdi-g5.json) records the fixed drawing,
+computing and physical-SDFS workload and 12 lifecycle/failure controls per mode.
+The diagnostic start rendezvous borrows `$6000` only in the test environment.
+Renderer/peer progress is observed during live physical transactions; a pending
+reply alone does not count as overlap. The optional artifact is integrated in G6.

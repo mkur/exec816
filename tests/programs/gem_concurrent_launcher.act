@@ -1,0 +1,82 @@
+MODULE GEMCONCURRENT
+USE EXEC
+USE DOS
+USE CONSOLEDRIVER
+USE DISPLAY
+USE DISPLAYBOOT
+USE DISPLAYADAPTER
+USE HEAPCORE
+INCLUDE "c-image.inc"
+INCLUDE "../../c/calypsi/display-bridge.inc"
+CARD FUNC POINTER cMain()
+CARD checks,result
+BYTE checkpoint
+BYTE ARRAY diskData(128)
+DOS.FileHandle POINTER file
+
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($f800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Run(CARD stage)
+
+  LET value=CARD POINTER(C_STAGE)
+  value^=stage
+  result=cMain()
+  Require(result=0)
+
+RETURN
+
+PROC Main()
+  CARD index,block
+
+  LET entry=ADDRESS POINTER(@cMain)
+  entry^=C_MAIN
+  BindDisplay()
+  ; Admit both large Tasks before any small DOS or console workers.
+  Run(0)
+  file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(CONSOLEDRIVER.Stop()<>0)
+  Require(DISPLAY.State()=DISPLAY.FREE)
+  DISPLAYBOOT.Authorize()
+  Run(1)
+  Require(DISPLAY.State()=DISPLAY.ACTIVE)
+  Require(CONSOLEDRIVER.Start()=0)
+  checkpoint=1
+  Run(2)
+  ; First disk access: no metadata or data cache can satisfy this read.
+  file=DOS.Open(BYTE POINTER(c"D1:DATA.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  FOR block=0 TO 15 DO
+    Require(DOS.Read(file,diskData,128)=128)
+    FOR index=0 TO 127 DO
+      Require(diskData(index)=(BYTE(index+block*128) XOR $5a))
+    OD
+  OD
+
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Run(3)
+  Require(DISPLAY.State()=DISPLAY.FREE)
+  Require(CONSOLEDRIVER.Start()<>0)
+  file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,BYTE POINTER(c"GEM workload complete\n"),22)=22)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(CONSOLEDRIVER.Stop()<>0)
+  Run(4)
+  checkpoint=2
+
+RETURN
+
+ENDMODULE

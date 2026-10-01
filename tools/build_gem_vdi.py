@@ -218,13 +218,70 @@ def build_render_probe(output, optimize=True, instrument=True):
     return program,foreign
 
 
+def build_concurrent_probe(output, optimize=True, instrument=True):
+    """The G5 workload also supplies the uninstrumented optional G6 artifact."""
+    from generate_gem_vdi import expected_layout
+    from make_data_disk import make
+    from generate_dos_mounts import validate_mounts
+    from filesystem_formats import SDFS
+    output=Path(output).resolve()
+    output.mkdir(parents=True,exist_ok=True)
+    extraction=extract(output/'selected')
+    src=output/'selected/src'
+    service=PORT/'service'
+    adapter=PORT/'adapter'
+    hardware=(ROOT/'platform/altirraos/vbxe.c').read_text()
+    backend=(adapter/'gem-vbxe.c').read_text()
+    if instrument:
+        hardware=hardware.replace('#define BUSY ', 'extern UBYTE ProbeBusy(void);\nextern volatile UWORD stopped;\n#define BUSY ')
+        hardware=hardware.replace('REG(BUSY)&3','ProbeBusy()&3').replace('REG(BUSY)=0;', 'REG(BUSY)=0; stopped=1;')
+        backend=backend.replace('static struct VbxeDisplay display;', 'extern void ProbeDraw(void);\nextern void ProbeCommand(void);\nextern void ProbeSnapshot(struct VbxeDisplay *);\nstatic struct VbxeDisplay display;')
+        backend=backend.replace('VbxeBlit(&display,source,ss,dest,ds,bytes,rows,am,xm,mode));', 'VbxeBlit(&display,source,ss,dest,ds,bytes,rows,am,xm,mode));\n    if (!fault) ProbeDraw();')
+        backend=backend.replace('return GemVdiCommand(cmd->opcode', 'ProbeCommand();\n    return GemVdiCommand(cmd->opcode')
+        backend=backend.replace('return fault ? GEM_DEVICE_FAULT : GEM_OK;', 'if (!fault) ProbeSnapshot(&display);\n    return fault ? GEM_DEVICE_FAULT : GEM_OK;')
+    (output/'vbxe-concurrent.c').write_text(hardware)
+    (output/'gem-vbxe-concurrent.c').write_text(backend)
+    sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',output/'vbxe-concurrent.c',
+        service/'gem-validation.c',service/'gem-service.c',service/'gem-client.c',
+        src/'vdi/vdi.c',src/'vdi/font.c',src/'vdi/font8x8.c',src/'vdi/dev_vbxe.c',
+        output/'gem-vbxe-concurrent.c',ROOT/'tests/programs/gem_concurrent.c']
+    foreign=emit(output,sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
+        ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s'],
+        ['GemServiceWorker','Peer','Blocker'],optimize=optimize,includes=[src,service,adapter],
+        definitions={'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
+                     'gem_concurrent.c':['-DGEM_DIAGNOSTIC'] if instrument else []},
+        probes=[(service/'gem-layout.c',expected_layout())])
+    paths=[*adapter.glob('*'),*service.glob('*'),*PORT.glob('hosted/*'),*PORT.glob('patches/*'),
+        ROOT/'platform/altirraos/vbxe.c',ROOT/'platform/altirraos/vbxe-map.s',
+        ROOT/'tests/programs/gem_concurrent.c',ROOT/'tests/programs/gem_concurrent_launcher.act',
+        *ROOT.glob('tools/*gem*.py'),*ROOT.glob('c/calypsi/*'),*ROOT.glob('c/include/**/*.h'),
+        *ROOT.glob('lib/display/*')]
+    foreign['provenance'].update(slice='G5',hardware_execution=True,local_inputs=local_inputs(),
+        extraction=extraction,diagnostic=instrument,
+        source_inputs={p.relative_to(ROOT).as_posix():sha256(p) for p in sorted(set(paths)) if p.is_file()})
+    (output/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
+    include=output/'c-image.inc'
+    include.write_text(''.join(f'CONST C_{name.upper()}=${foreign["symbols"][name]:x}\n'
+        for name in ('main','stage','ExecDisplayEntries')))
+    source=output/'launcher.act'
+    source.write_text(read_source(ROOT/'tests/programs/gem_concurrent_launcher.act',{'c-image.inc':include}))
+    media=output/'media'
+    media.mkdir(exist_ok=True)
+    (media/'DATA.BIN').write_bytes(bytes((i&255)^0x5a for i in range(2048)))
+    make(output/'system.atr',media,binary_names={'DATA.BIN'})
+    mounts=validate_mounts([dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=SDFS)])
+    program=build(compiler(ROOT/'build/actionc'),source,output/'program',optimize=optimize,
+        tasks=True,task_capacity=8,console=True,foreign_image=foreign,dos_mounts=mounts)
+    return program,foreign
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path)
     parser.add_argument('--no-opt',action='store_true')
-    parser.add_argument('--slice',choices=('g1','g2','g3','g4'),default='g1')
+    parser.add_argument('--slice',choices=('g1','g2','g3','g4','g5'),default='g1')
     args = parser.parse_args()
-    builder = {'g1':build_probe,'g2':build_service_probe,'g3':build_display_probe,'g4':build_render_probe}[args.slice]
+    builder = {'g1':build_probe,'g2':build_service_probe,'g3':build_display_probe,'g4':build_render_probe,'g5':build_concurrent_probe}[args.slice]
     output = args.output or ROOT/'build/gem-vdi'/(args.slice+('-raw' if args.no_opt else '-opt'))
     program,_ = builder(output,not args.no_opt)
     print(args.slice.upper(),'image ready:',program['xex'])
