@@ -18,9 +18,10 @@ reservation checks. Packaging requires the compiler image and platform setting
 to agree.
 
 Build reports record the resolved setting; the shell prints it at startup.
-Disabling emitted checks does not enlarge a stack, remove physical guards,
-change DP ownership or remove the interrupt reserve. Context ownership and
-argument-range validation remain separate from stack-overflow checks.
+Disabling emitted checks does not enlarge a stack, remove physical stack guards,
+change DP ownership or remove the interrupt reserve. DPs occupy exactly one page
+and have no external canaries. Context ownership and argument-range validation
+remain separate from stack-overflow checks.
 
 A checked reservation failure takes the nonreturning fault path before the
 invalid reservation. Guards and compiler checks do not prove every possible

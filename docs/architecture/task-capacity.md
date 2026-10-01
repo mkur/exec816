@@ -16,8 +16,8 @@ adding execution pools once their shared service exists.
 
 Select `--task-capacity 8` when packaging a suitable resident application. The
 [signal example](../guides/tasks.md) fills that profile with root, console and six
-workers. A ninth admission is rejected. Larger candidate layouts accepted by a
-generator are not thereby qualified configurations.
+workers. A ninth admission is rejected. Other capacities need a new checked platform stack map; the current packager
+rejects them.
 
 Use generated `TASKSTACKS.StackLower(slot)` and `StackUpper(slot)` values, with
 an exclusive upper bound. Prepare `tc_SPReg=tc_SPUpper-SIZE(2)` as required by the
@@ -43,7 +43,7 @@ and `bank_zero_budget`. Account separately for:
 
 - OS and fixed Exec reservations, including kernel/interrupt storage.
 - Root, each other public slot and private idle.
-- Each DP's alignment, external guards and unused reserved padding.
+- Each aligned 256-byte DP, with no external guards or stride padding.
 - Stack allocations, guards and interrupt reserve.
 - Loading-only ranges and the later runtime ranges that reuse them.
 
@@ -57,26 +57,36 @@ after startup recovered **10,240 fixed bank-zero bytes; 0 bytes per Task**;
 see the [relocation record](../development/bank-zero-relocation.json).
 The subsequent [VBXE aperture reservation](../development/vbxe-aperture.json)
 assigns 4,096 of those bytes to `$8000–$8FFF`, leaving a net recovery of
-6,144 bytes. Pool sizes and public Task capacity remain unchanged.
+6,144 bytes. The subsequent [DP compaction record](../development/dp-compaction.json)
+recovers another 192 bytes for four Tasks or 2,336 bytes for eight. The fixed
+saving is 32 bytes in either layout; each public Task and idle save 32 or 256
+bytes respectively. Stack reservations and public Task capacity are unchanged.
 
 | Reservation after startup | Four public Tasks | Eight public Tasks |
 | --- | ---: | ---: |
 | OS ranges | 30,720 | 30,720 |
-| Fixed Exec runtime, including aperture, guards and slack | 11,824 | 10,560 |
-| Public and idle pools | 9,280 | 14,112 |
-| Total reserved | 51,824 | 55,392 |
-| Unreserved across all holes | 13,712 | 10,144 |
+| Fixed Exec runtime, including aperture, guards and slack | 11,792 | 10,528 |
+| Public and idle pools | 9,120 | 11,808 |
+| Total reserved | 51,632 | 53,056 |
+| Unreserved across all holes | 13,904 | 12,480 |
 
 The manifest still occupies 2 KiB during loading. Total loading reservations
-are 54,464 and 53,136 bytes respectively. The eight-Task worker DP stride remains
-512 bytes: 256 usable DP bytes, 32 guard bytes and 224 bytes of reserved spacing.
-Worker stacks remain 1,024 bytes plus 32 external guard bytes, with 256 bytes of
-interrupt reserve inside the stack. Root and idle retain their separate sizes.
+are 54,368 and 52,592 bytes respectively. Every DP now reserves exactly 256
+bytes. Eight-Task worker stacks remain 1,024 bytes plus 32 external guard bytes,
+with 256 bytes of interrupt reserve inside the stack. Root has 1,536 stack bytes
+and idle 512; every four-Task stack has 1,536 bytes.
 
-The eight-Task allocator prefers the established arena above `$2000`, then the
-low RAM after boot staging. Slot 7 uses `$0D20–$111F`, with a complete guarded
-reservation of `$0D10–$112F`; idle uses `$7CB0–$7EAF`, guarded at
-`$7CA0–$7EBF`. Root, slots 1–6 and all DPs keep their previous addresses.
+Kernel DP is `$2100`. Public slot `i` has DP `$2200+i*$100`; idle is slot
+`capacity`. The four-Task DP area ends at `$26FF`, before the full near bank table
+at `$2800–$2BFF`. The eight-Task area ends at `$2AFF`, before boot state at
+`$2C00`. No compatibility map with DP guards remains.
+
+Stack placement is explicit in the platform profile, independent of DP packing.
+Four-Task bases, including idle, are `$4200`, `$5200`, `$6900`, `$7100`, `$7900`.
+Eight-Task bases are `$4200`, `$5200`, `$6810`, `$6C30`, `$7050`, `$7470`, `$7890`,
+`$0D20`, `$7CB0`. Kernel stack stays at `$4A00`, with 1,536 bytes. Every stack
+retains 16-byte guards at both ends.
+
 Starting the low pool after staging also keeps the diagnostic eight-Task
 register capture at `$0900–$097F` clear of live pools. That probe adds 128
 temporary runtime bytes in instrumented builds only; it runs after loading.

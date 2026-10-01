@@ -67,8 +67,7 @@ class MemoryRelocationTests(unittest.TestCase):
         m = layout(upper_table=True)
         pools = configure(m, 8)
         self.assertEqual([p['dp'] for p in pools],
-                         [0x2200, 0x2400, 0x2800, 0x2a00, 0x2e00,
-                          0x5700, 0x5900, 0x5b00, 0x5d00])
+                         [0x2200+i*256 for i in range(9)])
         self.assertEqual([p['stack_base'] for p in pools],
                          [0x4200, 0x5200, 0x6810, 0x6c30, 0x7050,
                           0x7470, 0x7890, 0x0d20, 0x7cb0])
@@ -110,13 +109,14 @@ class MemoryRelocationTests(unittest.TestCase):
     def test_retirement_separates_loading_and_runtime_reservations(self):
         from ports_budget import current
         budgets = current()
-        for capacity, total in (('four',51824),('eight',55392)):
+        for capacity, total, saving, loading in (('four',51632,192,96),('eight',53056,2336,544)):
             before, after = budgets['before'][capacity], budgets['after'][capacity]
             self.assertEqual(after['runtime_including_os'], total)
-            self.assertEqual(after['runtime_including_os']-before['runtime_including_os'], -6144)
-            self.assertEqual(after['loading_including_os']-before['loading_including_os'], -4096)
-            self.assertEqual(after['public'], before['public'])
-            self.assertEqual(after['idle'], before['idle'])
+            self.assertEqual(after['runtime_including_os']-before['runtime_including_os'], -6144-saving)
+            self.assertEqual(after['loading_including_os']-before['loading_including_os'], -4096-loading)
+            per_task = 32 if capacity == 'four' else 256
+            self.assertEqual(after['public'], [v-per_task for v in before['public']])
+            self.assertEqual(after['idle'], before['idle']-per_task)
         m = layout(upper_table=True)
         configure(m,8)
         self.assertEqual(m['regions']['manifest'], [0x6000,0x6800])

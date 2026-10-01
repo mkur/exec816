@@ -356,28 +356,6 @@
       "services": "Core Task, signal, lifetime and public platform producer calls; Version/Yield/Poll/Sleep retain their ABI. The packet tag is independent of the feature version."
     }
   },
-  "pools": [
-    {
-      "dp": 8704,
-      "stack_base": 16896
-    },
-    {
-      "dp": 9216,
-      "stack_base": 20992
-    },
-    {
-      "dp": 11776,
-      "stack_base": 26880
-    },
-    {
-      "dp": 23040,
-      "stack_base": 28928
-    },
-    {
-      "dp": 23552,
-      "stack_base": 30976
-    }
-  ],
   "constants": {
     "CAPACITY": 4,
     "IDLE": 4,

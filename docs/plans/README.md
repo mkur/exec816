@@ -10,6 +10,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Exec and project history
 
+- [Direct page guard removal and compaction](dp-compaction-plan.md): complete;
+  contiguous 256-byte Task DPs with separate kernel ownership and unchanged stacks.
+  Saves 2,336 bytes with eight Tasks or 192 with four;
+  [development evidence](../development/dp-compaction.json).
 - [Bank zero relocation and boot manifest retirement](bank-zero-relocation-plan.md):
   complete; state at `$0800`, resident globals in upper RAM, and manifest
   reclamation after startup. Recovers 10 KiB while retaining existing Task pools;

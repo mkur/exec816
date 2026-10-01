@@ -67,12 +67,18 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
     require(regions['boot-state'][1] - regions['boot-state'][0] >= 256,
             'Boot state/work area does not fit')
     require(regions['resident'] == [0x3000,0x4000], 'Resident layout differs from hosted.cfg')
+    dp = adapter.direct_pages(platform)
+    require(dp == adapter.direct_pages(), 'DP placement differs from generated hosted bindings')
     fixed = {'os-low':[0,adapter.STATE], 'state':[adapter.STATE,adapter.STATE+256],
-             'task0-dp':[0x21f0,0x2310], 'task1-dp':[0x23f0,0x2510],
-             'kernel-dp':[0x25f0,0x2710], 'task0-stack':[0x41f0,0x4810],
-             'kernel-stack':[0x49f0,0x5010], 'task1-stack':[0x51f0,0x5810],
+             'task0-dp':[dp['TASK0_DP'],dp['TASK0_DP']+256],
+             'task1-dp':[dp['TASK1_DP'],dp['TASK1_DP']+256],
+             'kernel-dp':[dp['KERNEL_DP'],dp['KERNEL_DP']+256],
              'vbxe-aperture':[0x8000,0x9000],
              'os-high':[0x9000,0x10000]}
+    stacks = adapter.stack_addresses()
+    fixed.update({owner+'-stack':[stacks[owner.upper()+'_STACK_BASE']-16,
+                                 stacks[owner.upper()+'_STACK_CEILING']+17]
+                  for owner in ('task0','task1','kernel')})
     require(all(regions.get(k) == v for k,v in fixed.items()),
             'Fixed OS/adapter reservation differs from hosted layout')
     integer(platform['image_data_bytes'], 1, 65536, 'image data capacity')

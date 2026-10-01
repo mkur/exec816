@@ -3,6 +3,7 @@
 .export tasks_find_task, tasks_find_task_end, tasks_set_task_pri, tasks_set_task_pri_end
 .export tasks_forbid, tasks_forbid_end, tasks_permit, tasks_permit_end
 .export idle_start, general_task_start, general_finalizer_start, tasks_sleep, tasks_sleep_end
+.export general_domains, general_domains_done
 .segment "COOP_BOOT"
 .a16
 .i16
@@ -18,12 +19,6 @@ general_domains:
         rep #$20
     .endif
     lda #$a5a5
-    ldx #$011e
-:
-    sta E816_KERNEL_DP-$10,x
-    dex
-    dex
-    bpl :-
     ldx #$061e
 :
     sta E816_KERNEL_STACK_BASE-$10,x
@@ -53,6 +48,7 @@ general_domains:
     lda #A816_DOMAIN_IRQ
     sta E816_KERNEL_DP+A816_DP_DOMAIN_KIND_OFFSET
     rep #$20
+general_domains_done:
     rts
 
 .segment "STUBS"

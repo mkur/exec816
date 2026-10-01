@@ -40,9 +40,47 @@ class CapacityPackaging(unittest.TestCase):
         self.assertTrue(all(a['address']+a['size']<=b['address'] for a,b in zip(spans,spans[1:])))
         c=storage(m)
         self.assertEqual((c['CAPACITY'],c['IDLE'],c['PUBLIC_CONTEXT_BYTES'],c['METADATA_BYTES']),(8,8,512,1216))
-        self.assertEqual(m['bank_zero_budget']['runtime_excluding_os'],24672)
-        self.assertEqual(m['bank_zero_budget']['loading_excluding_os'],22416)
-        self.assertTrue(all(p['dp_reserved_bytes']==512 for p in pools))
+        self.assertEqual(m['bank_zero_budget']['runtime_excluding_os'],22336)
+        self.assertEqual(m['bank_zero_budget']['loading_excluding_os'],21872)
+        self.assertTrue(all(p['dp_reserved_bytes']==256 for p in pools))
+
+    def test_compact_maps_preserve_all_stack_reservations(self):
+        for capacity,bases,total,loading in (
+            (4,[0x4200,0x5200,0x6900,0x7100,0x7900],51632,54368),
+            (8,[0x4200,0x5200,0x6810,0x6c30,0x7050,0x7470,0x7890,0x0d20,0x7cb0],53056,52592)):
+            with self.subTest(capacity=capacity):
+                m=layout(upper_table=capacity==8)
+                pools=configure(m,capacity)
+                self.assertEqual(m['regions']['kernel-dp'],[0x2100,0x2200])
+                self.assertEqual([p['dp'] for p in pools],[0x2200+i*256 for i in range(capacity+1)])
+                self.assertEqual([p['stack_base'] for p in pools],bases)
+                self.assertTrue(all(p['dp_reserved_bytes']==256 for p in pools))
+                budget=m['bank_zero_budget']
+                self.assertEqual(budget['runtime_including_os'],total)
+                self.assertEqual(budget['loading_including_os'],loading)
+                self.assertEqual(sum(r['size'] for r in m['runtime_reservations']),total)
+                self.assertEqual(m['regions']['kernel-stack'],[0x49f0,0x5010])
+
+    def test_dp_alignment_ownership_and_reserved_capacity(self):
+        for key,value in (('task_base',0x2201),('task_stride',512),('kernel',0x2101)):
+            m=layout(upper_table=True)
+            m['profile']['direct_pages'][key]=value
+            with self.subTest(key=key),self.assertRaises(ValueError):
+                configure(m,8)
+        for capacity,base in ((4,0x2400),(8,0x2500),(8,0x2100),(8,0xff00)):
+            m=layout(upper_table=capacity==8)
+            m['profile']['direct_pages']['task_base']=base
+            with self.subTest(capacity=capacity,base=base),self.assertRaisesRegex(RuntimeError,'overlaps'):
+                configure(m,capacity)
+        # The unused portion of the near bank table remains reserved too.
+        m=layout()
+        m['regions']['foreign']=[0x2bf0,0x2c00]
+        with self.assertRaisesRegex(RuntimeError,'overlaps'):
+            configure(m,4)
+        m=layout(upper_table=True)
+        m['profile']['task_stacks']['8']['bases'][3]=0x6800
+        with self.assertRaisesRegex(RuntimeError,'overlaps'):
+            configure(m,8)
 
     def test_invalid_or_oversized_pools(self):
         for capacity in (0,1,17,True):

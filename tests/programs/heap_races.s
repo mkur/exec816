@@ -52,7 +52,7 @@ relevant_pointer:
     cmp #1
     jne failed
     tdc
-    cmp #$2600
+    cmp #E816_KERNEL_DP
     jne failed
     lda f:E816_VBI_COUNT
     sta $00

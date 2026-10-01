@@ -751,7 +751,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                            "platform/altirraos/hosted.s", "platform/altirraos/layout.inc",
                            "platform/altirraos/hosted.cfg", "lib/exec/execos.act",
                            "abi/exec816-v1.json", "platform/altirraos/exec-abi.inc",
-                           "tools/adapter_state.py", "tools/generate_exec_abi.py",
+                           "tools/adapter_state.py", "tools/generate_exec_abi.py", "platform/altirraos/memory-1m.json",
                            "platform/altirraos/cooperative.s", "lib/exec/exec-abi.inc",
                            "platform/altirraos/cooperative-probe.s", "platform/altirraos/preemptive.s",
                            "lib/exec/exec.act", "lib/exec/execpolicy.act", "tools/library_paths.py")},
@@ -884,30 +884,27 @@ def execute(bridge, program, expected_status=0, timer_irq=False, before_run=None
         require(bridge.memdump(0x0222, 2) == old_vbi, "Immediate VBI vector not restored")
         require(bridge.memdump(0x02E7, 2) == old_memlo, "OS memory reservation not restored")
     cooperative = program["build"].get("cooperative", False)
-    guards = [0x0100, 0x21F0, 0x2300, 0x41F0, 0x4800]
-    domains = [(0x2200, adapter.TASK0 if cooperative else adapter.STATE, 0, 0x4300, 0x47FF)]
+    guards = [0x0100, 0x41F0, 0x4800]
+    domains = [(adapter.TASK0_DP, adapter.TASK0 if cooperative else adapter.STATE, 0, 0x4300, 0x47FF)]
     if cooperative:
-        guards += [0x23F0, 0x2500, 0x25F0, 0x2700, 0x49F0, 0x5000, 0x51F0, 0x5800]
-        domains += [(0x2400, adapter.TASK1, 0, 0x5300, 0x57FF), (0x2600, adapter.KERNEL_OWNER, 1, 0x4B00, 0x4FFF)]
+        guards += [0x49F0, 0x5000, 0x51F0, 0x5800]
+        domains += [(adapter.TASK1_DP, adapter.TASK1, 0, 0x5300, 0x57FF), (adapter.KERNEL_DP, adapter.KERNEL_OWNER, 1, 0x4B00, 0x4FFF)]
         result.update({"current": state[35], "switching": state[36], "switches": word(38),
                        "gateway_calls": word(40), "os_calls": word(42), "forwarded_cops": word(44),
                        "os_owner": state[50], "tick_pending": state[48], "vbi_count": word(52),
                        "vbi_dispatches": word(54), "irq_depth": word(56), "tasks": list(bridge.memdump(adapter.TASK0, 32))})
     if program['build'].get('tasks'):
-        from generate_tasks import ABI as task_abi
-        guards = [0x0100, 0x25F0, 0x2700, 0x49F0, 0x5000]
-        domains = [(0x2600, adapter.KERNEL_OWNER, 1, 0x4B00, 0x4FFF)]
+        guards = [0x0100, 0x49F0, 0x5000]
+        domains = [(adapter.KERNEL_DP, adapter.KERNEL_OWNER, 1, 0x4B00, 0x4FFF)]
         task_records = []
         task_constants = program['build']['task_storage']
         from banked_test_memory import read as far_read
         metadata = far_read(bridge,task_constants['BASE'],task_constants['METADATA_BYTES'],program['output'])
         read_task = lambda address,size: metadata[address-task_constants['BASE']:address-task_constants['BASE']+size]
-        for slot, pool in enumerate(program['build']['memory'].get('task_pools',task_abi['pools'])):
+        for slot, pool in enumerate(program['build']['memory']['task_pools']):
             dp, base = pool['dp'], pool['stack_base']
             stack_bytes=pool.get('stack_bytes',1536)
-            guards += [dp-16,dp+256,base-16,base+stack_bytes]
-            if pool.get('dp_reserved_bytes',288)>288:
-                require(bridge.memdump(dp+272,pool['dp_reserved_bytes']-288)==bytes([0xa5])*(pool['dp_reserved_bytes']-288),'DP stride padding changed')
+            guards += [base-16,base+stack_bytes]
             owner = task_constants['BASE']+slot*task_constants['SIZE']
             domains.append((dp,owner,0,base+256,base+stack_bytes-1))
             task_records.append(list(read_task(owner, task_constants['SIZE'])))

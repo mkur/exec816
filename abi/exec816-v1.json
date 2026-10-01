@@ -22,18 +22,6 @@
     "READY": 1,
     "EXITED": 2
   },
-  "addresses": {
-    "TASK1_DP": 9216,
-    "KERNEL_DP": 9728,
-    "TASK1_STACK_BASE": 20992,
-    "TASK1_STACK_FLOOR": 21248,
-    "TASK1_STACK_TOP": 22526,
-    "TASK1_STACK_CEILING": 22527,
-    "KERNEL_STACK_BASE": 18944,
-    "KERNEL_STACK_FLOOR": 19200,
-    "KERNEL_STACK_TOP": 20478,
-    "KERNEL_STACK_CEILING": 20479
-  },
   "task_record": {
     "size": 16,
     "fields": [

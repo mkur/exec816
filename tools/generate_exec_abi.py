@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Generate shared Exec gateway/record constants; --check rejects stale files."""
-from adapter_state import addresses
+from adapter_state import addresses, direct_pages, stack_addresses
 import argparse
 import json
 from pathlib import Path
@@ -13,8 +13,9 @@ def generate():
     constants = {"E816_VERSION": abi["version"], "E816_COP": abi["cop_signature"]}
     for group, prefix in (("services", "SERVICE"), ("errors", "ERROR"), ("task_states", "STATE")):
         constants.update({f"E816_{prefix}_{key}": value for key, value in abi[group].items()})
-    constants.update({f"E816_{key}": value for key, value in abi["addresses"].items()})
     constants.update({f"E816_{key}": value for key, value in addresses().items()})
+    constants.update({f"E816_{key}": value for key, value in direct_pages().items()})
+    constants.update({f"E816_{key}": value for key, value in stack_addresses().items()})
     constants.update({f"E816_FRAME_{key.upper()}": value for key, value in abi["compiler_frame"].items()})
     cursor = 0
     for field in abi["task_record"]["fields"]:

@@ -17,7 +17,7 @@ class TaskPackageTests(unittest.TestCase):
         validate_memory(memory)
         self.assertEqual(memory['reclaimed_after_adopt'], ['loader', 'staging'])
         self.assertEqual(len(memory['task_pools']), 5)
-        for address in (0x2d00, 0x2e00, 0x5a00, 0x5c00, 0x7100, 0x7900):
+        for address in (0x2d00, 0x2100, 0x2300, 0x2600, 0x7100, 0x7900):
             damaged = layout()
             damaged['regions']['foreign'] = [address, address+16]
             with self.assertRaisesRegex(RuntimeError, 'overlaps'):

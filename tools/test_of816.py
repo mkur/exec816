@@ -22,8 +22,7 @@ def screen_text(raw):
 
 
 def check_boot_guards(bridge, layout):
-    guards = [layout['OF_DP']-16, layout['OF_DP']+256,
-              layout['OF_STACK']-16, layout['OF_STACK']+1536, layout['OF_STACK']+512,
+    guards = [layout['OF_STACK']-16, layout['OF_STACK']+1536, layout['OF_STACK']+512,
               layout['OF_ADAPTER']-16, layout['OF_ADAPTER']+1536, layout['OF_ADAPTER']+0x4f0]
     for address in guards:
         require(bridge.memdump(address,16) == bytes([0xa5])*16, f'OF guard changed: ${address:x}')

@@ -30,7 +30,9 @@ have separate storage. The current D-relative partition is defined in
 | `$C4–$C7` | Stack floor and ceiling. |
 | `$C8–$FF` | Reserved zero. |
 
-Initialization may clear the page before a new owner runs. During its lifetime,
+Each DP reservation is exactly 256 bytes, with no external canaries or stride
+padding. Initialization clears that page and publishes metadata before a new
+owner runs. Stack canaries and checked stack bounds remain enabled. During its lifetime,
 the lower half may contain arbitrary caller state. Temporary stack-based D values
 and the ROM's DP have their separately defined layouts. Native register, bank,
 mode and stack restoration must preserve the complete interrupted context.
@@ -83,10 +85,25 @@ image payload in bank zero.
 
 The profile reserves **`$8000–$8FFF` (4 KiB) for the VBXE CPU aperture** during
 loading and runtime. Boot staging is at `$0900–$0D0F`. In the eight-Task layout,
-slot 7's stack moves to `$0D20–$111F` and idle to `$7CB0–$7EAF`, each with
-16-byte guards on both ends. Other pools retain their locations and sizes;
-the four-Task layout already fits below the aperture. Staging and the retired
+slot 7's stack is at `$0D20–$111F` and idle at `$7CB0–$7EAF`, each with
+16-byte guards on both ends. Both supported layouts fit below the aperture. Staging and the retired
 manifest remain unavailable to a general heap until explicitly registered.
+
+The [platform profile](../../platform/altirraos/memory-1m.json) defines physical
+DP placement and the supported stack maps. Kernel DP is `$2100–$21FF`; public
+Task slot `i` owns `$2200+i*$100`, and idle owns slot `capacity`. The complete
+DP area ends at `$26FF` for four public Tasks and `$2AFF` for eight. Generated
+assembly/Action! constants and per-image pool metadata use this description.
+The four-Task near bank table still reserves `$2800–$2BFF`; the eight-Task table
+is in upper RAM. Unsupported capacities and overlaps are rejected.
+
+[DP compaction](../development/dp-compaction.json) removes 32 fixed bytes and
+32 bytes per public Task/idle in the four-Task layout, or 256 bytes per public
+Task/idle in the eight-Task layout. Runtime savings are 192 and 2,336 bytes;
+loading savings are 96 and 544 bytes. Stack bases, sizes, guards and interrupt
+reserves are unchanged. These freed holes are not registered with the heap.
+OF816 borrows only the root's 256-byte DP before handoff, plus the existing
+root and kernel stacks: 3,392 bank-zero bytes for that temporary lifetime.
 
 This reserves address space only. The current adapter does not enable VBXE,
 manage its window registers or hand display ownership to GEM. The

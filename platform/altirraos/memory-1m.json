@@ -34,18 +34,18 @@
     },
     {
       "name": "task0-dp",
-      "address": 8688,
-      "size": 288
+      "address": 8704,
+      "size": 256
     },
     {
       "name": "task1-dp",
-      "address": 9200,
-      "size": 288
+      "address": 8960,
+      "size": 256
     },
     {
       "name": "kernel-dp",
-      "address": 9712,
-      "size": 288
+      "address": 8448,
+      "size": 256
     },
     {
       "name": "table",
@@ -103,5 +103,52 @@
       "size": 28672
     }
   ],
-  "image_data_bytes": 2048
+  "image_data_bytes": 2048,
+  "direct_pages": {
+    "kernel": 8448,
+    "task_base": 8704,
+    "task_stride": 256
+  },
+  "task_stacks": {
+    "4": {
+      "bases": [
+        16896,
+        20992,
+        26880,
+        28928,
+        30976
+      ],
+      "sizes": [
+        1536,
+        1536,
+        1536,
+        1536,
+        1536
+      ]
+    },
+    "8": {
+      "bases": [
+        16896,
+        20992,
+        26640,
+        27696,
+        28752,
+        29808,
+        30864,
+        3360,
+        31920
+      ],
+      "sizes": [
+        1536,
+        1024,
+        1024,
+        1024,
+        1024,
+        1024,
+        1024,
+        1024,
+        512
+      ]
+    }
+  }
 }

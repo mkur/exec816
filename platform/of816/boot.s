@@ -94,8 +94,6 @@ of_start:
     lda #$a5a5
     ldx #14
 @guards:
-    sta OF_DP-16,x
-    sta OF_DP+256,x
     sta OF_STACK-16,x
     sta OF_STACK+1536,x
     sta OF_STACK+512,x

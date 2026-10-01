@@ -36,6 +36,11 @@ def run(output, record, program):
                 run_to(bridge,labels['of_start'],3000,90)
                 bridge.bp_clear_all()
                 saved = dict(vectors=bridge.memdump(0x256,9),iocb=bridge.memdump(0x340,32))
+                dp_neighbours = (record['layout']['OF_DP']-256,record['layout']['OF_DP']+256)
+                neighbour_patterns = (bytes((i*29+7)&255 for i in range(256)),
+                                      bytes((i*43+11)&255 for i in range(256)))
+                for address,pattern in zip(dp_neighbours,neighbour_patterns):
+                    bridge.memload(address,pattern)
                 screen = bridge.peek16(88)
                 bridge._cmd_ok('KEY ALL up')
                 if manual:
@@ -81,6 +86,10 @@ def run(output, record, program):
                     case.update(frames=elapsed,clock_wrap=True)
                 check_boot_guards(bridge,record['layout'])
                 case['boot_guards'] = 'intact'
+                for address,pattern in zip(dp_neighbours,neighbour_patterns):
+                    require(bridge.memdump(address,256) == pattern,
+                            'OF816 DP initialization changed an adjacent page')
+                case['dp_neighbours_intact'] = True
                 bridge.bp_clear_all()
                 bridge.bp_set(native['labels']['start'])
                 run_to(bridge,native['labels']['start'],3000,60)

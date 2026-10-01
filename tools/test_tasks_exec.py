@@ -76,7 +76,7 @@ def check(bridge,program,fixture,result):
     flags = program['build']['probe_flags']
     if flags != 0x100:
         observed['contexts'] = []
-        for slot,pool in enumerate(abi['pools'][:4]):
+        for slot,pool in enumerate(program['build']['memory']['task_pools'][:4]):
             raw = bridge.memdump(adapter.PROBE0+slot*32,24)
             expected = struct.pack('<BHHHHBHHHHH',0x12,pool['dp'],
                 0x78 if flags & 0x10 else 0x5678,0x34 if flags & 0x10 else 0x1234,

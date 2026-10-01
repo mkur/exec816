@@ -3,9 +3,13 @@ USE EXECOS
 CARD result,status
 BYTE ARRAY message=[83 84 65 67 75 32 67 72 69 67 75 83 155]
 
+; Force an actual local frame so the injected limit tests this routine's prologue.
 CARD FUNC Work(CARD value)
+  BYTE ARRAY local(16)
 
-RETURN(value+1)
+  local(value & 15)=BYTE(value)
+
+RETURN(CARD(local(value & 15))+1)
 
 ; Exercise native frame checks around bounded stack use.
 PROC Main()

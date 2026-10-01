@@ -1,0 +1,2740 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-01",
+  "status": "pass",
+  "tier": "development",
+  "base_revision": "b50bb580e15893eb452501c9439324338a9eca00",
+  "source_state": "Uncommitted implementation atop base revision. Modified source and observer hashes below; native build/report hashes identify executed images.",
+  "baseline": {
+    "path": "docs/development/vbxe-aperture.json",
+    "sha256": "efcee58af2bddb0679364f529658a9235864a4690f4a53e812bab047bdaae19f"
+  },
+  "scope": [
+    "Remove DP guards and stride padding; kernel $2100, Task base $2200, stride $0100",
+    "Preserve stack geometry, stack checks/canaries, domain ownership and public Task/native field ABIs",
+    "Use one platform layout source for generated physical addresses and four/eight Task pools",
+    "Migrate hosted/cooperative/Task/OF816 initialization and current observers together"
+  ],
+  "inputs": {
+    "abi/exec816-v1.json": "80e56ce274d167d75e051b4a9eeb07ac7eff5366939f820d46259df07ab8937b",
+    "abi/tasks.json": "8232a1bfff5442ec869926b61504c07adbc32f5e50d612d9d2b7e912eb2b57de",
+    "lib/exec/exec-abi.inc": "05da6abcfe4930c64fb81f77af4f8795eb2dd3d97d929fdf7fe4f823c9501c55",
+    "lib/exec/taskpolicy.act": "d88576974b82e8a0117b8e30af14386d89b014795f9bbe45b8bf30229636cd17",
+    "platform/altirraos/cooperative.s": "0fa764e68e04a7bfcac606e50e96f44cb63883500ed0f3f00570dcc9a88c83b7",
+    "platform/altirraos/exec-abi.inc": "ffaca1f5b853e9004cc6d1c8aeaf7aa26e5eb0faef6ecb10c78866f39e4a8550",
+    "platform/altirraos/hosted.s": "1487560d774818c5925c70fd73e8df6202199674717ac8524401c0d43ec2c953",
+    "platform/altirraos/layout.inc": "f4398f0acb8814f0f040d4a7041b61020c1f12353e9448a6c7f6e8446ff8139d",
+    "platform/altirraos/memory-1m.json": "0905013d59f5708c14dc6b32fc1c3d0aca2e686d06cc6731efe15fe2586c823b",
+    "platform/altirraos/tasks.s": "124c667f24b1aba2ed75abc78d1b021b605e19fdadfa33882fac8f19b99d7051",
+    "platform/of816/boot.s": "57d67ad7cd3defe906f0d60c8ec51ae85adc5beea9b38d2a0adf610ecd60e151",
+    "tests/programs/banks.act": "cbad8687501692b4e619705fd0258bd386858bf64f1d30c44da4ce36039f2f48",
+    "tests/programs/dp_partition.act": "5b7f8563da00c708936fd93e4230d799c52941a7ad6b128e1ddb39f5d403e4e5",
+    "tests/programs/heap_races.s": "6ac71b71a0e85c105fd59eb0681d4372b10e43f4ae0f82ce30fa2ce8b0d342a0",
+    "tests/programs/stack_checks.act": "1436d1a0bdad2b4c7654e8935e011a0a7968255e815c4114c8e5a008e2d35f72",
+    "tests/test_capacity_package.py": "be528e72e647daf13bc5d3039630b4f087fc9d3b49d671990028ee7559117bac",
+    "tests/test_memory_relocation_package.py": "bce82521bf933c79e3fb10e014b1fc27b3cc417347066139540fcb3561512dcb",
+    "tests/test_of816_package.py": "13c5af695849970931c6a60467bab88fa9dc9a5039bf294da21fda930610db64",
+    "tests/test_tasks_package.py": "7549c4796350fab8e494bb49be98349b7962ef7a2b2f6c1c99315d8f2a146746",
+    "tools/adapter_state.py": "b16d448a98487d8fd1414f597089d31b577afec84fec4bea132f7075045e7a79",
+    "tools/build_of816.py": "6bafec0be0aecdea2f726edb768c5b70e158129169e39da871acab5b8d41e85e",
+    "tools/generate_exec_abi.py": "becfd0372a92dd82b0844b70f8b4f0b7eccae90f9ead09367234326b7f24b5c0",
+    "tools/generate_memory.py": "886e5a7035c8131a56804f7c5a300dd553dec662e8e4fb3ab3cb69fccd26ab9b",
+    "tools/generate_tasks.py": "461516e71c0a6f79bb2640c9058cc2698a116ed2a19f0341c96c90a401e14aac",
+    "tools/native_program.py": "1afc0ed55d6651ab660e57a2e27a4e6bc13bfd80e43c0c1f3c5101456ebccb05",
+    "tools/ports_budget.py": "8c54f85e371a91e74aa4ca60e52e22795569519f9d57a9f9d4c4d13e6a385973",
+    "tools/task_capacity.py": "b57c9170935e9f1d0357e90b23850bbf00b4cbe63247cebdbedea4bf61f270c5",
+    "tools/test_banked.py": "9af0738491a569fa92e6f030f818b89d997ac30bb62cf677dcc3975945c6516a",
+    "tools/test_calypsi.py": "cd68ce80e7d771a9ad5ff548b95dd3397f3d766f4be89960037b4d401de55dc7",
+    "tools/test_cooperative.py": "a90dac347bd88217b1970998350d3afb77c386c3a42812e1b92f1269aa9ce2eb",
+    "tools/test_dp_partition.py": "f49a36f78c0502c340af54edac06b227369d58927fda2123c89467c0e19241e8",
+    "tools/test_of816.py": "f4e20c1b23732f71bcfdaf0e6f73f8bc6721ea49425888d047f71e678920f824",
+    "tools/test_of816_shell.py": "14d5d2f240bc537836e7fb740b1639c12dbc68d36a661221f2fbf114380f2200",
+    "tools/test_stack_checks.py": "c89265162e0b5e5b8da972876e4747ab00bce4ec2eac01896e12fd8154b9e40c",
+    "tools/test_tasks_exec.py": "b092f1d9aefc3dda99b26cd55e9ba9701bbeba823c17066e279ff9ad3d2211a6",
+    "abi/native-dp.json": "a403ba71b1faeba2cbdb0c7d2ed82854d79d3f7ae35ff734bfb3789569f860c4",
+    "toolchain/actionc.json": "33200a57d20a8df748283333aad8534e9c890ff1eebbdc1167eb74f45ece09d2",
+    "tools/build_demo.py": "f91c6f0857994a980c21e8c38a23be434d7fa33ce8f6fbfcd5fc028746979a8c",
+    "tools/package_demo.py": "ed77dae838cb96071f6434aad7252458fed3d3e0a1de02ca13fe05cb797d821b"
+  },
+  "compiler": {
+    "revision": "27119ab2804e795b0bbb067c269826b934271754",
+    "changes": [],
+    "override": false,
+    "binary_sha256": "94606de661953fa209dce8f9d07dbec0bf3259374a53233ff56d37ccc7434d98",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "pins": {
+    "toolchain/actionc.json": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "27119ab2804e795b0bbb067c269826b934271754",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "toolchain/altirra-signals-1m.json": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      }
+    },
+    "toolchain/altirra-shell-paced.json": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ]
+    },
+    "toolchain/altirra.json": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 1,
+        "memory": "64K",
+        "high_banks": 0,
+        "video": "PAL",
+        "basic": false,
+        "dli": false
+      }
+    },
+    "toolchain/of816.json": {
+      "repository": "https://github.com/mgcaret/of816.git",
+      "revision": "8c923624520fab2196d5c75a97ab94da599d420a",
+      "license": "BSD-2-Clause",
+      "scope": "Pinned Forth core for the experimental AltirraOS XEX boot monitor"
+    }
+  },
+  "calypsi": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "bank_zero": {
+    "before": {
+      "four": {
+        "fixed_runtime": 11824,
+        "public": [
+          1856,
+          1856,
+          1856,
+          1856
+        ],
+        "idle": 1856,
+        "runtime_excluding_os": 21104,
+        "runtime_including_os": 51824,
+        "loading_excluding_os": 23744,
+        "loading_including_os": 54464
+      },
+      "eight": {
+        "fixed_runtime": 10560,
+        "public": [
+          2080,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568
+        ],
+        "idle": 1056,
+        "runtime_excluding_os": 24672,
+        "loading_excluding_os": 22416,
+        "runtime_including_os": 55392,
+        "loading_including_os": 53136
+      }
+    },
+    "after": {
+      "four": {
+        "fixed_runtime": 11792,
+        "public": [
+          1824,
+          1824,
+          1824,
+          1824
+        ],
+        "idle": 1824,
+        "runtime_excluding_os": 20912,
+        "loading_excluding_os": 23648,
+        "runtime_including_os": 51632,
+        "loading_including_os": 54368
+      },
+      "eight": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 22336,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 53056,
+        "loading_including_os": 52592
+      }
+    },
+    "deltas": {
+      "four": {
+        "fixed": -32,
+        "per_public_task": [
+          -32,
+          -32,
+          -32,
+          -32
+        ],
+        "idle": -32,
+        "runtime": -192,
+        "loading": -96
+      },
+      "eight": {
+        "fixed": -32,
+        "per_public_task": [
+          -256,
+          -256,
+          -256,
+          -256,
+          -256,
+          -256,
+          -256,
+          -256
+        ],
+        "idle": -256,
+        "runtime": -2336,
+        "loading": -544
+      }
+    },
+    "upper_reservation_delta": 0,
+    "accounting": "All OS reservations, exact 256-byte DPs, stack guards and interrupt reserves, full near bank-table slack and retained legacy contexts.",
+    "of816_borrowing": {
+      "before": 3424,
+      "after": 3392,
+      "delta": -32,
+      "additional_permanent_saving": false
+    },
+    "diagnostic_register_probe": {
+      "bytes": 128,
+      "delta": 0
+    },
+    "dp_boundary_observer": {
+      "temporary_peak_bytes": 288,
+      "code_and_state_bytes": 32,
+      "boundary_bytes": 256,
+      "scope": "Test-only RAM, restored; not a production reservation. Bootstrap and runtime sentinel phases do not overlap."
+    }
+  },
+  "placement": {
+    "four": {
+      "kernel_dp": [
+        8448,
+        8704
+      ],
+      "pools": [
+        {
+          "dp": 8704,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 16896,
+          "stack_bytes": 1536
+        },
+        {
+          "dp": 8960,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 20992,
+          "stack_bytes": 1536
+        },
+        {
+          "dp": 9216,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 26880,
+          "stack_bytes": 1536
+        },
+        {
+          "dp": 9472,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 28928,
+          "stack_bytes": 1536
+        },
+        {
+          "dp": 9728,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 30976,
+          "stack_bytes": 1536
+        }
+      ],
+      "runtime_reservations": [
+        {
+          "address": 0,
+          "name": "os-low",
+          "size": 2048
+        },
+        {
+          "address": 2048,
+          "name": "state",
+          "size": 256
+        },
+        {
+          "address": 8448,
+          "name": "kernel-dp",
+          "size": 256
+        },
+        {
+          "address": 8704,
+          "name": "dp0",
+          "size": 256
+        },
+        {
+          "address": 8960,
+          "name": "dp1",
+          "size": 256
+        },
+        {
+          "address": 9216,
+          "name": "dp2",
+          "size": 256
+        },
+        {
+          "address": 9472,
+          "name": "dp3",
+          "size": 256
+        },
+        {
+          "address": 9728,
+          "name": "dp4",
+          "size": 256
+        },
+        {
+          "address": 10240,
+          "name": "table",
+          "size": 1024
+        },
+        {
+          "address": 11264,
+          "name": "boot-state",
+          "size": 256
+        },
+        {
+          "address": 11520,
+          "name": "task records",
+          "size": 240
+        },
+        {
+          "address": 12288,
+          "name": "resident",
+          "size": 4096
+        },
+        {
+          "address": 16880,
+          "name": "stack0",
+          "size": 1568
+        },
+        {
+          "address": 18928,
+          "name": "kernel-stack",
+          "size": 1568
+        },
+        {
+          "address": 20976,
+          "name": "stack1",
+          "size": 1568
+        },
+        {
+          "address": 26864,
+          "name": "stack2",
+          "size": 1568
+        },
+        {
+          "address": 28912,
+          "name": "stack3",
+          "size": 1568
+        },
+        {
+          "address": 30960,
+          "name": "stack4",
+          "size": 1568
+        },
+        {
+          "address": 32768,
+          "name": "vbxe-aperture",
+          "size": 4096
+        },
+        {
+          "address": 36864,
+          "name": "os-high",
+          "size": 28672
+        }
+      ],
+      "free_after_startup": [
+        {
+          "address": 2304,
+          "size": 6144
+        },
+        {
+          "address": 9984,
+          "size": 256
+        },
+        {
+          "address": 11760,
+          "size": 528
+        },
+        {
+          "address": 16384,
+          "size": 496
+        },
+        {
+          "address": 18448,
+          "size": 480
+        },
+        {
+          "address": 20496,
+          "size": 480
+        },
+        {
+          "address": 22544,
+          "size": 4320
+        },
+        {
+          "address": 28432,
+          "size": 480
+        },
+        {
+          "address": 30480,
+          "size": 480
+        },
+        {
+          "address": 32528,
+          "size": 240
+        }
+      ]
+    },
+    "eight": {
+      "kernel_dp": [
+        8448,
+        8704
+      ],
+      "pools": [
+        {
+          "dp": 8704,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 16896,
+          "stack_bytes": 1536
+        },
+        {
+          "dp": 8960,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 20992,
+          "stack_bytes": 1024
+        },
+        {
+          "dp": 9216,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 26640,
+          "stack_bytes": 1024
+        },
+        {
+          "dp": 9472,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 27696,
+          "stack_bytes": 1024
+        },
+        {
+          "dp": 9728,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 28752,
+          "stack_bytes": 1024
+        },
+        {
+          "dp": 9984,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 29808,
+          "stack_bytes": 1024
+        },
+        {
+          "dp": 10240,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 30864,
+          "stack_bytes": 1024
+        },
+        {
+          "dp": 10496,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 3360,
+          "stack_bytes": 1024
+        },
+        {
+          "dp": 10752,
+          "dp_reserved_bytes": 256,
+          "interrupt_reserve": 256,
+          "stack_base": 31920,
+          "stack_bytes": 512
+        }
+      ],
+      "runtime_reservations": [
+        {
+          "address": 0,
+          "name": "os-low",
+          "size": 2048
+        },
+        {
+          "address": 2048,
+          "name": "state",
+          "size": 256
+        },
+        {
+          "address": 3344,
+          "name": "stack7",
+          "size": 1056
+        },
+        {
+          "address": 8448,
+          "name": "kernel-dp",
+          "size": 256
+        },
+        {
+          "address": 8704,
+          "name": "dp0",
+          "size": 256
+        },
+        {
+          "address": 8960,
+          "name": "dp1",
+          "size": 256
+        },
+        {
+          "address": 9216,
+          "name": "dp2",
+          "size": 256
+        },
+        {
+          "address": 9472,
+          "name": "dp3",
+          "size": 256
+        },
+        {
+          "address": 9728,
+          "name": "dp4",
+          "size": 256
+        },
+        {
+          "address": 9984,
+          "name": "dp5",
+          "size": 256
+        },
+        {
+          "address": 10240,
+          "name": "dp6",
+          "size": 256
+        },
+        {
+          "address": 10496,
+          "name": "dp7",
+          "size": 256
+        },
+        {
+          "address": 10752,
+          "name": "dp8",
+          "size": 256
+        },
+        {
+          "address": 11264,
+          "name": "boot-state",
+          "size": 256
+        },
+        {
+          "address": 12288,
+          "name": "resident",
+          "size": 4096
+        },
+        {
+          "address": 16880,
+          "name": "stack0",
+          "size": 1568
+        },
+        {
+          "address": 18928,
+          "name": "kernel-stack",
+          "size": 1568
+        },
+        {
+          "address": 20976,
+          "name": "stack1",
+          "size": 1056
+        },
+        {
+          "address": 26624,
+          "name": "stack2",
+          "size": 1056
+        },
+        {
+          "address": 27680,
+          "name": "stack3",
+          "size": 1056
+        },
+        {
+          "address": 28736,
+          "name": "stack4",
+          "size": 1056
+        },
+        {
+          "address": 29792,
+          "name": "stack5",
+          "size": 1056
+        },
+        {
+          "address": 30848,
+          "name": "stack6",
+          "size": 1056
+        },
+        {
+          "address": 31904,
+          "name": "stack8",
+          "size": 544
+        },
+        {
+          "address": 32768,
+          "name": "vbxe-aperture",
+          "size": 4096
+        },
+        {
+          "address": 36864,
+          "name": "os-high",
+          "size": 28672
+        }
+      ],
+      "free_after_startup": [
+        {
+          "address": 2304,
+          "size": 1040
+        },
+        {
+          "address": 4400,
+          "size": 4048
+        },
+        {
+          "address": 11008,
+          "size": 256
+        },
+        {
+          "address": 11520,
+          "size": 768
+        },
+        {
+          "address": 16384,
+          "size": 496
+        },
+        {
+          "address": 18448,
+          "size": 480
+        },
+        {
+          "address": 20496,
+          "size": 480
+        },
+        {
+          "address": 22032,
+          "size": 4592
+        },
+        {
+          "address": 32448,
+          "size": 320
+        }
+      ]
+    }
+  },
+  "validation": {
+    "host": {
+      "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+      "tests": 253,
+      "passed": 249,
+      "skipped": 4,
+      "reason": "Pre-publication source commits absent from the public repository",
+      "log": {
+        "path": "build/dp-host.log",
+        "sha256": "265de33e38aaeaa360449ac8e089c5e27ca9831168b2f51901f4e384b7eb34a6"
+      }
+    },
+    "generators": [
+      "tools/generate_exec_abi.py --check",
+      "tools/generate_tasks.py --check"
+    ],
+    "dp_lifetime": [
+      {
+        "name": "4-raw",
+        "report": {
+          "path": "build/dp-compaction-4-raw/results.json",
+          "sha256": "b597fe43200517bb602ff6f0327c091f0e661a4824ddaea323a4b79b1f42cd05"
+        },
+        "image": {
+          "image_sha256": "574644e6f9d563677ccf45d3b93fcfdadbd33d74b79144639655076a8406ccb0",
+          "xex_sha256": "682c54ac6e6392e030ed64250e94cafc04c64aad9c7636d0db35a08fb6c57f64",
+          "optimize": false,
+          "probe_nmi": 0,
+          "stack_checks": true
+        },
+        "checks": 14395,
+        "initialization": [
+          {
+            "slot": 0,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          }
+        ],
+        "kernel_initialization": "exact page; neighbours intact",
+        "observer": {
+          "temporary_bank_zero_bytes": 288,
+          "code_and_state_bytes": 32,
+          "boundary_sentinel_bytes": 256,
+          "address": 11776,
+          "boundary_address": 9984,
+          "restored": true,
+          "entry": 97888,
+          "exit": 98319,
+          "entry_bytes": "3baac5c6",
+          "exit_bytes": "6914001b6b"
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "created": 4,
+          "idle_runs": 5,
+          "native_nmi_count": 25,
+          "native_irq_count": 0,
+          "vbi_dispatches": 17,
+          "switches": 51,
+          "return_d": 8704
+        }
+      },
+      {
+        "name": "4-opt",
+        "report": {
+          "path": "build/dp-compaction-4-opt/results.json",
+          "sha256": "f29079387b4a66ea9a9930613bfdafa1e33c28663dc19f5c7389b46eac874d0c"
+        },
+        "image": {
+          "image_sha256": "611c636d322f188b2341bf6abe1bf4be213f8d4e26a7a840e3e3fdc257644246",
+          "xex_sha256": "9f9bcca5e91bdbe1b0b592d6bb019deaa62a649837a328009da2fcb243aa69f6",
+          "optimize": true,
+          "probe_nmi": 0,
+          "stack_checks": true
+        },
+        "checks": 13243,
+        "initialization": [
+          {
+            "slot": 0,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          }
+        ],
+        "kernel_initialization": "exact page; neighbours intact",
+        "observer": {
+          "temporary_bank_zero_bytes": 288,
+          "code_and_state_bytes": 32,
+          "boundary_sentinel_bytes": 256,
+          "address": 11776,
+          "boundary_address": 9984,
+          "restored": true,
+          "entry": 94544,
+          "exit": 94914,
+          "entry_bytes": "3baac5c6",
+          "exit_bytes": "690c001b6b"
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "created": 4,
+          "idle_runs": 5,
+          "native_nmi_count": 21,
+          "native_irq_count": 0,
+          "vbi_dispatches": 15,
+          "switches": 44,
+          "return_d": 8704
+        }
+      },
+      {
+        "name": "8-raw",
+        "report": {
+          "path": "build/dp-compaction-8-raw/results.json",
+          "sha256": "0de6a052b1988660f34536bb266a25feeb8f1069d9479095bd6702062b3dc827"
+        },
+        "image": {
+          "image_sha256": "2edb6197989adaf4a0013af925852f597652e305cc4f0888b4569ad2a12c4701",
+          "xex_sha256": "cb5d6c4408232b70528dad8bb796934b3b7039a9c33b6024b61b10ca286389e9",
+          "optimize": false,
+          "probe_nmi": 0,
+          "stack_checks": true
+        },
+        "checks": 26223,
+        "initialization": [
+          {
+            "slot": 0,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 8,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          }
+        ],
+        "kernel_initialization": "exact page; neighbours intact",
+        "observer": {
+          "temporary_bank_zero_bytes": 288,
+          "code_and_state_bytes": 32,
+          "boundary_sentinel_bytes": 256,
+          "address": 11776,
+          "boundary_address": 11008,
+          "restored": true,
+          "entry": 98462,
+          "exit": 98893,
+          "entry_bytes": "3baac5c6",
+          "exit_bytes": "6914001b6b"
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "created": 8,
+          "idle_runs": 5,
+          "native_nmi_count": 43,
+          "native_irq_count": 0,
+          "vbi_dispatches": 33,
+          "switches": 85,
+          "return_d": 8704
+        }
+      },
+      {
+        "name": "8-opt",
+        "report": {
+          "path": "build/dp-compaction-8-opt/results.json",
+          "sha256": "054a268f0df5bda2499529068a6861b56b2f3dc123134f4fc257eb295bb34dd8"
+        },
+        "image": {
+          "image_sha256": "c430a62a597b0110692683f9cb86a07d6c70dfc1b4f255938dcadac3792af4be",
+          "xex_sha256": "915aea262c4390d8de5372969e11d12616834cf6019489e330e730a4007488fd",
+          "optimize": true,
+          "probe_nmi": 0,
+          "stack_checks": true
+        },
+        "checks": 26607,
+        "initialization": [
+          {
+            "slot": 0,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 8,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          }
+        ],
+        "kernel_initialization": "exact page; neighbours intact",
+        "observer": {
+          "temporary_bank_zero_bytes": 288,
+          "code_and_state_bytes": 32,
+          "boundary_sentinel_bytes": 256,
+          "address": 11776,
+          "boundary_address": 11008,
+          "restored": true,
+          "entry": 95116,
+          "exit": 95486,
+          "entry_bytes": "3baac5c6",
+          "exit_bytes": "690c001b6b"
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "created": 8,
+          "idle_runs": 5,
+          "native_nmi_count": 39,
+          "native_irq_count": 0,
+          "vbi_dispatches": 28,
+          "switches": 73,
+          "return_d": 8704
+        }
+      },
+      {
+        "name": "8-nmi15",
+        "report": {
+          "path": "build/dp-compaction-8-nmi15/results.json",
+          "sha256": "f696f558b1afb084217b29962e240de2a70993c4d2e736e1057ae62731421c1b"
+        },
+        "image": {
+          "image_sha256": "16782381f55a1c39f3076831224f98f996ea9a4134bcd2ad363518a1f1fc9b6c",
+          "xex_sha256": "cf155cc33bd6ff40951b4c1bd1184a34ac51d8f7666870790e90c4c8c49f9ab2",
+          "optimize": true,
+          "probe_nmi": 15,
+          "stack_checks": true
+        },
+        "checks": 29423,
+        "initialization": [
+          {
+            "slot": 0,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 8,
+            "phase": "startup",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 1,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 3,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 4,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 5,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 6,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 7,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          },
+          {
+            "slot": 2,
+            "phase": "admission",
+            "exact_page": true,
+            "neighbours_intact": true
+          }
+        ],
+        "kernel_initialization": "exact page; neighbours intact",
+        "observer": {
+          "temporary_bank_zero_bytes": 288,
+          "code_and_state_bytes": 32,
+          "boundary_sentinel_bytes": 256,
+          "address": 11776,
+          "boundary_address": 11008,
+          "restored": true,
+          "entry": 95116,
+          "exit": 95486,
+          "entry_bytes": "3baac5c6",
+          "exit_bytes": "690c001b6b"
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "created": 8,
+          "idle_runs": 1,
+          "native_nmi_count": 236,
+          "native_irq_count": 0,
+          "vbi_dispatches": 18,
+          "switches": 166,
+          "return_d": 8704
+        }
+      }
+    ],
+    "full_capacity": {
+      "report": {
+        "path": "build/dp-compaction-capacity/results.json",
+        "sha256": "3ce835d66a2da0f1ab3b5a677afeae613aa76613f1de7371c4168fefdc761358"
+      },
+      "cases": [
+        {
+          "name": "4-opt-nmi0-flags100",
+          "image": {
+            "image_sha256": "c0a4d28392d6e6a90afe8027bcd1d7b40b199e228d296d6eb3b9f34a16a8d0e7",
+            "xex_sha256": "e35d125477a178126997625e7b465cf36286c2099088e394d4b90dffb9cef534",
+            "optimize": true,
+            "probe_nmi": 0,
+            "stack_checks": true
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 4,
+            "idle_runs": 33,
+            "native_nmi_count": 34,
+            "native_irq_count": 1,
+            "vbi_dispatches": 2,
+            "switches": 77,
+            "return_d": 8704
+          },
+          "restored_register_contexts": 0,
+          "aperture_intact": true,
+          "retired_manifest_intact": true
+        },
+        {
+          "name": "8-raw-nmi0-flags100",
+          "image": {
+            "image_sha256": "f8478976509960245963f1042c2e787f79df370cf7871844c1e5b3a9823d7e40",
+            "xex_sha256": "8590440ef26d4f41185009f6a7636c98e62e78be3315f5c9e5f76093f446629d",
+            "optimize": false,
+            "probe_nmi": 0,
+            "stack_checks": true
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 8,
+            "idle_runs": 33,
+            "native_nmi_count": 36,
+            "native_irq_count": 1,
+            "vbi_dispatches": 1,
+            "switches": 86,
+            "return_d": 8704
+          },
+          "restored_register_contexts": 0,
+          "aperture_intact": true,
+          "retired_manifest_intact": true
+        },
+        {
+          "name": "8-opt-nmi0-flagsc9",
+          "image": {
+            "image_sha256": "35fba83d7acfe75c585fc5958a7e545d3acf4c64479fd625a494a71d3996d2ec",
+            "xex_sha256": "82679a96d21dd10dfb0ca9604023779a3d7115d81295e384e10b9f20ac6530e3",
+            "optimize": true,
+            "probe_nmi": 0,
+            "stack_checks": true
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 8,
+            "idle_runs": 34,
+            "native_nmi_count": 45,
+            "native_irq_count": 1,
+            "vbi_dispatches": 10,
+            "switches": 96,
+            "return_d": 8704
+          },
+          "restored_register_contexts": 8,
+          "aperture_intact": true,
+          "retired_manifest_intact": true
+        },
+        {
+          "name": "8-opt-nmi3-flags100",
+          "image": {
+            "image_sha256": "2c55db7cd7b124239ffde8f17e8e9ea1c5759e5bc5ce7a400cfe367350208a6d",
+            "xex_sha256": "ac3bf9499713e1085a537fe321f400303c9ae8f5d838d2114bb86df0d6948fc2",
+            "optimize": true,
+            "probe_nmi": 3,
+            "stack_checks": true
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 8,
+            "idle_runs": 33,
+            "native_nmi_count": 35,
+            "native_irq_count": 1,
+            "vbi_dispatches": 2,
+            "switches": 87,
+            "return_d": 8704
+          },
+          "restored_register_contexts": 0,
+          "aperture_intact": true,
+          "retired_manifest_intact": true
+        }
+      ]
+    },
+    "loading_and_retirement": {
+      "report": {
+        "path": "build/dp-compaction-relocation/results.json",
+        "sha256": "964b4a4e107ff8b283c13fc7a374ea15b6d804fff2b2ec598da6fe55b9c4adb8"
+      },
+      "cases": [
+        {
+          "name": "raw",
+          "image": {
+            "image_sha256": "3fafc060fa700e9845659aaa4bed34fbae69cfc7c96d87420a1ffb0a3ff3a821",
+            "xex_sha256": "78a89ff211a754c4eb1e39ee108ba0616589a632567b0fcd70d1efda96ce41f4",
+            "optimize": false,
+            "probe_nmi": 0,
+            "stack_checks": true
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 1,
+            "idle_runs": 3,
+            "native_nmi_count": 5,
+            "native_irq_count": 0,
+            "vbi_dispatches": 2,
+            "switches": 7,
+            "return_d": 8704
+          },
+          "retired_ranges_intact": true
+        },
+        {
+          "name": "opt",
+          "image": {
+            "image_sha256": "93ade02ed3a4ae622975b01066d28f9df5af6cdf16f7afe49b1d559e912d1540",
+            "xex_sha256": "c27f4c3980d96c5ff966ca5b166d1433392e7e1cb15de57c7bb94bd355b55547",
+            "optimize": true,
+            "probe_nmi": 0,
+            "stack_checks": true
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 1,
+            "idle_runs": 3,
+            "native_nmi_count": 4,
+            "native_irq_count": 0,
+            "vbi_dispatches": 2,
+            "switches": 7,
+            "return_d": 8704
+          },
+          "retired_ranges_intact": true
+        },
+        {
+          "name": "nmi-stack",
+          "image": {
+            "image_sha256": "a85930ebe4b247d9ca7327076789277a3e9c4c0a6e8c52c8b0ae3edf25f2b540",
+            "xex_sha256": "306432e2266f31cad0a22a1ed3b4c32130c87e35873abdcc487ee193d3273524",
+            "optimize": true,
+            "probe_nmi": 3,
+            "stack_checks": true
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 1,
+            "idle_runs": 3,
+            "native_nmi_count": 6,
+            "native_irq_count": 0,
+            "vbi_dispatches": 2,
+            "switches": 7,
+            "return_d": 8704
+          },
+          "retired_ranges_intact": true
+        }
+      ],
+      "rejections": [
+        "loader-memlo-0801",
+        "hosted-memlo-0801",
+        "invalid-first-adoption",
+        "direct-xex-memlo-0801"
+      ],
+      "cold_restart": {
+        "stale_reader_check": "All identity, count and seed bytes poisoned before repeat Adopt/Init",
+        "manifest_poisoned_at": 12527,
+        "far_stimuli": [
+          "bootstrap",
+          "native-nmi"
+        ],
+        "checks": 278,
+        "retired_ranges_intact": true,
+        "table_restored": true,
+        "runtime": {
+          "status": 0,
+          "native_nmi_count": 5,
+          "native_irq_count": 0,
+          "os_busy": 0,
+          "return_s": 18430,
+          "return_d": 8704,
+          "return_p": 0,
+          "fault_required": 0,
+          "fault_s": 0,
+          "clock_start": 35,
+          "clock_end": 41,
+          "return_dbr": 0,
+          "return_e": 0,
+          "current": 8,
+          "switching": 0,
+          "switches": 7,
+          "gateway_calls": 22,
+          "os_calls": 2,
+          "forwarded_cops": 2,
+          "os_owner": 255,
+          "tick_pending": 0,
+          "vbi_count": 6,
+          "vbi_dispatches": 3,
+          "irq_depth": 0,
+          "tasks": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "task_records": [
+            [
+              0,
+              0,
+              0,
+              0,
+              254,
+              71,
+              241,
+              71,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              34,
+              0,
+              67,
+              254,
+              71,
+              41,
+              160,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              254,
+              85,
+              241,
+              85,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              35,
+              0,
+              83,
+              254,
+              85,
+              212,
+              158,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              14,
+              108,
+              253,
+              107,
+              0,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              36,
+              16,
+              105,
+              14,
+              108,
+              41,
+              160,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              46,
+              112,
+              29,
+              112,
+              0,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              37,
+              48,
+              109,
+              46,
+              112,
+              41,
+              160,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              78,
+              116,
+              61,
+              116,
+              0,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              38,
+              80,
+              113,
+              78,
+              116,
+              41,
+              160,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              110,
+              120,
+              93,
+              120,
+              0,
+              5,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              39,
+              112,
+              117,
+              110,
+              120,
+              41,
+              160,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              142,
+              124,
+              125,
+              124,
+              0,
+              6,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              40,
+              144,
+              121,
+              142,
+              124,
+              41,
+              160,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              30,
+              17,
+              13,
+              17,
+              0,
+              7,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              41,
+              32,
+              14,
+              30,
+              17,
+              41,
+              160,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              174,
+              126,
+              157,
+              126,
+              3,
+              8,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              42,
+              176,
+              125,
+              174,
+              126,
+              41,
+              160,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "ready_queue": [
+            67,
+            2,
+            15,
+            0,
+            0,
+            0,
+            64,
+            2,
+            15
+          ],
+          "live_tasks": 0,
+          "idle_runs": 3,
+          "created": 1,
+          "signal_nmi_checkpoints": 0,
+          "wake_queue": [
+            76,
+            2,
+            15,
+            0,
+            0,
+            0,
+            73,
+            2,
+            15
+          ],
+          "root_task": [
+            67,
+            2,
+            15,
+            64,
+            2,
+            15,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            6,
+            255,
+            255,
+            0,
+            255,
+            255,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            241,
+            71,
+            0,
+            0,
+            0,
+            66,
+            0,
+            0,
+            0,
+            72,
+            0,
+            202,
+            2,
+            15,
+            0,
+            0,
+            0,
+            199,
+            2,
+            15,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "guards": "intact"
+        }
+      },
+      "direct_boundary": {
+        "status": 0,
+        "native_nmi_count": 1,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 18430,
+        "return_d": 8704,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 4,
+        "clock_end": 5,
+        "return_dbr": 0,
+        "return_e": 0,
+        "guards": "intact"
+      }
+    },
+    "context_fault_and_dispatch_nmi": {
+      "report": {
+        "path": "build/dp-compaction-fault/results.json",
+        "sha256": "7add4d78f1d1bba3a4934a6f392890b56dcbc5317cdd07deea459644cd46def2"
+      },
+      "cases": [
+        {
+          "name": "fault-9-opt",
+          "image": {
+            "image_sha256": "0cb32eaf347c833d1696e40eabb149fa1effa7be4d8c96c16b9a296c6d2b0148",
+            "xex_sha256": "ee796a5f1c38f287c03f8c05e2860c70b1a635466a9cb93e1443915751be57ce",
+            "optimize": true,
+            "probe_nmi": 0,
+            "stack_checks": true
+          },
+          "runtime": {
+            "status": 4,
+            "guards": "intact",
+            "created": 0,
+            "idle_runs": 0,
+            "native_nmi_count": 0,
+            "native_irq_count": 0,
+            "vbi_dispatches": 0,
+            "switches": 0,
+            "return_d": 0
+          }
+        },
+        {
+          "name": "nmi-15-opt",
+          "image": {
+            "image_sha256": "7274dc8ec705242d4ef04edf72d5536c39006d606be4611e916f075f78379982",
+            "xex_sha256": "d84f7e875192c4927fd5a565f2f68310ffc4ed03189ed4acfcc232f760ec14bf",
+            "optimize": true,
+            "probe_nmi": 15,
+            "stack_checks": true
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 3,
+            "idle_runs": 1,
+            "native_nmi_count": 29,
+            "native_irq_count": 0,
+            "vbi_dispatches": 2,
+            "switches": 9,
+            "return_d": 8704
+          }
+        }
+      ]
+    },
+    "stack_limits": {
+      "report": {
+        "path": "build/dp-compaction-stack/results.json",
+        "sha256": "85096123eca0c0c560e4d8cf61b1216e5b67db4bd5ff7713c0e1c719e0fbff36"
+      },
+      "cases": [
+        {
+          "mode": "raw",
+          "target": "compiler",
+          "status": 1,
+          "guards": "intact",
+          "fault_s": 18410
+        },
+        {
+          "mode": "raw",
+          "target": "assembly",
+          "status": 1,
+          "guards": "intact",
+          "fault_s": 18406
+        },
+        {
+          "mode": "opt",
+          "target": "compiler",
+          "status": 1,
+          "guards": "intact",
+          "fault_s": 18412
+        },
+        {
+          "mode": "opt",
+          "target": "assembly",
+          "status": 1,
+          "guards": "intact",
+          "fault_s": 18408
+        },
+        {
+          "mode": "raw",
+          "target": "recursion",
+          "status": 1,
+          "guards": "intact",
+          "fault_s": 17152
+        },
+        {
+          "mode": "opt",
+          "target": "recursion",
+          "status": 1,
+          "guards": "intact",
+          "fault_s": 17156
+        }
+      ]
+    },
+    "calypsi": [
+      {
+        "mode": "raw",
+        "report": {
+          "path": "build/dp-compaction-c-raw/results.json",
+          "sha256": "c87466c03b51addf5eea182b0d73f1b18777625a86b5970a2ab259103174cf71"
+        },
+        "image": {
+          "image_sha256": "908c31ad3f4565b2cf53b13ab400ec04310cf0a755f67fa2aba384659956ea43",
+          "xex_sha256": "a92ac98efc62b6aa47a717685ac17c11be46d06f21be54a9874ffef0ad895d6f",
+          "optimize": false,
+          "probe_nmi": 0,
+          "stack_checks": true
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "created": 2,
+          "idle_runs": 2,
+          "native_nmi_count": 77,
+          "native_irq_count": 1,
+          "vbi_dispatches": 67,
+          "switches": 104,
+          "return_d": 8704
+        },
+        "context": [
+          {
+            "slot": 2,
+            "pc": 789770,
+            "progress": 40
+          },
+          {
+            "slot": 0,
+            "pc": 789813,
+            "progress": 894
+          }
+        ]
+      },
+      {
+        "mode": "opt",
+        "report": {
+          "path": "build/dp-compaction-c-opt/results.json",
+          "sha256": "7801a630d98437c2b0255f814f729e24731b2253572856edb0575ed68b5e4ad9"
+        },
+        "image": {
+          "image_sha256": "a3230fe389825cd685e6542eb1f5cf7f78d6cac195c33dfe38061ddf635741a0",
+          "xex_sha256": "0ec71c327add17916d16fff968f1d9943c264dbcb7c9d1bcc470496aa1e39f9d",
+          "optimize": true,
+          "probe_nmi": 0,
+          "stack_checks": true
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "created": 2,
+          "idle_runs": 3,
+          "native_nmi_count": 72,
+          "native_irq_count": 1,
+          "vbi_dispatches": 62,
+          "switches": 102,
+          "return_d": 8704
+        },
+        "context": [
+          {
+            "slot": 2,
+            "pc": 789214,
+            "progress": 979
+          },
+          {
+            "slot": 0,
+            "pc": 789191,
+            "progress": 1445
+          }
+        ]
+      }
+    ],
+    "cooperative": {
+      "report": {
+        "path": "build/cooperative-tests/registers-c9-opt.json",
+        "sha256": "f8a456b5834a802e25230ba83d207239edf320827cbc6248a6db0134d6f82d7e"
+      },
+      "cases": [
+        "registers-c9-opt"
+      ]
+    },
+    "loader_policy": [
+      {
+        "name": "loader-count",
+        "report": {
+          "path": "build/banked-tests/loader-count.json",
+          "sha256": "e97d62f72cb7806e98db4d185263ddb5287275928db77965f6ca6b59a7c5b2fb"
+        }
+      },
+      {
+        "name": "loader-replay",
+        "report": {
+          "path": "build/banked-tests/loader-replay.json",
+          "sha256": "6a0bc74b34a1bd71f4099d745fb28e12f49f3b3763e6adf8d83fb7d825f04bd5"
+        }
+      },
+      {
+        "name": "policy-16-opt",
+        "report": {
+          "path": "build/banked-tests/policy-16-opt.json",
+          "sha256": "1aa98de840b07bc970c9694dadbd1d8ff63726d712735aabeb60139c8cc0a821"
+        }
+      }
+    ],
+    "of816": {
+      "report": {
+        "path": "build/dp-compaction-demo/of816/results.json",
+        "sha256": "d9a902b28fc54b4e9633c1d8469066f1ce0842da9973aa5bb0649558f2671f9e"
+      },
+      "borrowed_bank_zero_bytes": 3392,
+      "routes": [
+        {
+          "route": "autoboot",
+          "dp_neighbours_intact": true,
+          "boot_guards": "intact",
+          "os_restored_at_handoff": true,
+          "frames": 249,
+          "shell_status": "pass",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 8,
+            "idle_runs": 5254,
+            "native_nmi_count": 1189,
+            "native_irq_count": 12263,
+            "vbi_dispatches": 423,
+            "switches": 3754,
+            "return_d": 9472
+          },
+          "aperture_intact": true,
+          "retired_manifest_intact": true
+        },
+        {
+          "route": "forth-command",
+          "dp_neighbours_intact": true,
+          "boot_guards": "intact",
+          "os_restored_at_handoff": true,
+          "frames": null,
+          "shell_status": "pass",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "created": 8,
+            "idle_runs": 5311,
+            "native_nmi_count": 1189,
+            "native_irq_count": 12317,
+            "vbi_dispatches": 403,
+            "switches": 3782,
+            "return_d": 9472
+          },
+          "aperture_intact": true,
+          "retired_manifest_intact": true
+        }
+      ],
+      "exits": [
+        {
+          "case": "bye",
+          "status": "pass",
+          "os_restored": true,
+          "cancel": {
+            "key": "RETURN",
+            "delay_frames": 240,
+            "held_frames": 2,
+            "seconds_remaining": 1,
+            "cancelled": true,
+            "key_consumed": true,
+            "stays_in_forth": true
+          }
+        },
+        {
+          "case": "occupied-iocb",
+          "status": "pass",
+          "os_restored": true
+        }
+      ],
+      "scope": "Five-second autoboot and clock wrap; final-second cancel, Forth handoff; shell/prime, disk HELLO, TYPE, CAT/WC pipeline, EXIT, BYE and occupied IOCB cleanup"
+    }
+  },
+  "distribution": {
+    "path": "build/dp-compaction-demo/exec816-demo.zip",
+    "sha256": "afdeffc0a8eb999442d770c90dcb6ac74bba1d67938dcbb1623e0214a6f57e5e",
+    "bytes": 164592,
+    "members": [
+      "exec816-demo/ALTIRRAOS-LICENSE.txt",
+      "exec816-demo/EXEC816-GPL-3.0.txt",
+      "exec816-demo/EXEC816-LICENSING.md",
+      "exec816-demo/EXEC816-MIT.txt",
+      "exec816-demo/Exec-of816.xex",
+      "exec816-demo/OF816-LICENSE.txt",
+      "exec816-demo/README.txt",
+      "exec816-demo/SHA256SUMS",
+      "exec816-demo/altirraos-816.rom",
+      "exec816-demo/system.atr"
+    ],
+    "checksums": "all verified"
+  },
+  "artifacts": [
+    {
+      "path": "build/dp-compaction-demo/build.json",
+      "sha256": "37f0d6f88eed0a7582eee6f4aaa0eeb78e2f8c1d773cd0f7280fd8773b242348"
+    },
+    {
+      "path": "build/dp-compaction-demo/memory.json",
+      "sha256": "9a1ab4140c426a777d810ece0787d5aac7807c210f01cfd60d03d78fb4b0936e"
+    },
+    {
+      "path": "build/dp-compaction-demo/program.a816.json",
+      "sha256": "691cd96d3e8ae143fdc1d9c11c307076bc3784e87f6013daa8755594afaa8565"
+    },
+    {
+      "path": "build/dp-compaction-demo/program.xex",
+      "sha256": "a2b8b31a6c740dc16487e4eb3d4cc2d64bd69d8adfaefcdbab91757acac85c63"
+    },
+    {
+      "path": "build/dp-compaction-demo/of816/of816.json",
+      "sha256": "9b8ce84dbce5ccb34d700aa675aff3df6ee28e3829525de387e80aab81259086"
+    },
+    {
+      "path": "build/dp-compaction-demo/of816/Exec-of816.xex",
+      "sha256": "5d57f937ef05bdcfcfa000622895b9e2e2b6a5e2cd0a0ea1cc791c9ccc9a0197"
+    },
+    {
+      "path": "build/dp-compaction-demo/system.atr",
+      "sha256": "1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2"
+    }
+  ],
+  "test_repairs": [
+    "The original stack-limit fixture compiled Work without a local frame, so raising its floor tested a later call. Work now has a real local array and the observer requires a nonzero compiler frame.",
+    "The isolated bank-policy fixture used owner 5 as invalid, although 5 is the current heap owner; use M_OWNER_HEAP+1.",
+    "The pinned bridge exposes PC16/S8 and cannot directly break in upper code. The DP observer checks and relocates whole entry/exit instructions through a temporary bank-zero rendezvous, captures S with TSC, and restores patched bytes. The production body and DP geometry are unchanged."
+  ],
+  "limits": [
+    "Focused development checks, not release qualification.",
+    "External DP canaries are gone; out-of-range writes can corrupt adjacent domains.",
+    "Reclaimed holes are not registered with the general heap; manifest remains protected until startup_complete.",
+    "VBXE aperture is reserved but hardware mapping, GEM rendering and GUI stack enlargement remain future work.",
+    "Only the checked four/eight public Task layouts are supported."
+  ],
+  "gem4xe_repository": {
+    "path": "/Users/michalkurcewicz/atari/gem4xe",
+    "modified": false
+  }
+}

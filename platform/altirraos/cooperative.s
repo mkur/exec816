@@ -493,13 +493,6 @@ cooperative_init:
         jmp general_domains
     .else
     lda #$a5a5
-    ldx #$011e
-guard_domains:
-    sta E816_TASK1_DP-$10,x
-    sta E816_KERNEL_DP-$10,x
-    dex
-    dex
-    bpl guard_domains
     ldx #$061e
 guard_private_stacks:
     sta E816_TASK1_STACK_BASE-$10,x

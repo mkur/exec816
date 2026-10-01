@@ -1,10 +1,10 @@
 ; Initial bank-zero hosted layout. Native images occupy $6000-$8fff.
 STATE = E816_STATE
-TASK_DP = $2200
-STACK_BASE = $4200
-STACK_FLOOR = $4300             ; includes a conservative interrupt reserve
-STACK_CEILING = $47ff
-STACK_TOP = $47fe
+TASK_DP = E816_TASK0_DP
+STACK_BASE = E816_TASK0_STACK_BASE
+STACK_FLOOR = E816_TASK0_STACK_FLOOR             ; includes a conservative interrupt reserve
+STACK_CEILING = E816_TASK0_STACK_CEILING
+STACK_TOP = E816_TASK0_STACK_TOP
 OS_STACK_TOP = $01ef
 APP_BASE = $6000
 APP_LIMIT = $9000

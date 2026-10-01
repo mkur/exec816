@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Append a pinned OF816 boot monitor to an existing hosted Exec XEX."""
 import argparse
+import adapter_state as adapter
 import json
 import shutil
 import struct
@@ -42,7 +43,7 @@ def boot_layout(program):
             'Inconsistent packaged system-volume selection')
     root = memory['task_pools'][0]
     require(program['build']['tasks'] and program['build']['banked'], 'Native Task image required')
-    require(root['dp'] == 0x2200 and root['stack_base'] == 0x4200 and
+    require(root['dp'] == adapter.TASK0_DP and root['stack_base'] == adapter.TASK0_STACK_BASE and
             root.get('stack_bytes',1536) == 1536, 'Root Task pool changed')
     # The kernel stack is idle until native startup. Unlike a worker stack it
     # retains enough room for the adapter and its caller stack in both profiles.
@@ -57,7 +58,7 @@ def boot_layout(program):
                   OF_STAGE=c['STAGE'], EXEC_LOADER=program['labels']['loader_start'],
                   EXEC_OLD_MEMLO=c['OLD_MEMLO'])
     # Reject even one payload byte in an arena borrowed by the monitor.
-    borrowed = [(root['dp']-16,root['dp']+272),
+    borrowed = [(root['dp'],root['dp']+256),
                 (root['stack_base']-16,root['stack_base']+1552),
                 (kernel_low,kernel_high)]
     require(all(high <= other_low or low >= other_high
@@ -157,6 +158,8 @@ SEGMENTS {{
     (output/'README.md').write_bytes((ROOT/'docs/guides/boot-monitor.md').read_bytes())
     inputs = [ROOT/'docs/guides/boot-monitor.md', *PORT.glob('*.s'), ROOT/'tools/build_of816.py', ROOT/'toolchain/of816.json',
               ROOT/'toolchain/altirra.json', ROOT/'tools/boot_config.py', ROOT/'abi/boot-v1.json']
+    kernel_low,kernel_high = program['build']['memory']['regions']['kernel-stack']
+    borrowed_bytes = 256+program['build']['memory']['task_pools'][0]['stack_bytes']+32+kernel_high-kernel_low
     record = dict(format='exec816-of816-boot-v1', of816=PIN, exec_build=str(program['output']),
                   exec_xex_sha256=program['build']['xex_sha256'], xex_sha256=sha256(xex),
                   rom=dict(name=rom.name,bytes=ROM_PIN['bytes'],sha256=sha256(output/rom.name),
@@ -166,7 +169,7 @@ SEGMENTS {{
                   boot_config=program['build']['memory']['boot_config'],
                   guide_sha256=sha256(output/'README.md'),
                   boot_definitions_sha256=sha256(output/'boot-config.inc'),
-                  bank_zero_delta=dict(fixed=0,per_task=0), boot_only_reused_bank_zero_bytes=3424,
+                  bank_zero_delta=dict(fixed=0,per_task=0), boot_only_reused_bank_zero_bytes=borrowed_bytes,
                   task_capacity=program['build']['task_storage']['CAPACITY'],media=media,
                   transient_upper_banks=[layout['OF_CODE'] >> 16,layout['OF_DATA'] >> 16],
                   assembler=command(['ca65','--version'],stderr=subprocess.STDOUT).strip(),

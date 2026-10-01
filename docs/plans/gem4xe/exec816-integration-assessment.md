@@ -31,7 +31,7 @@ record the inspected inputs. This is source analysis, not an executed port.
   DOS/file services remain part of the system.
 - **Bank zero is the main memory constraint.** Prioritize moving eligible data
   and metadata upward, reserving a safe VBXE aperture, and budgeting the GUI
-  stack and direct page with all guards and interrupt headroom.
+  stack and direct page with stack guards and interrupt headroom.
 
 ## What has changed since the earlier analysis
 
@@ -84,27 +84,32 @@ after successful startup. The subsequent
 worker and idle stacks clear of `$8000–$8FFF`, and moves boot staging to `$0900`.
 The [relocation record](../../development/bank-zero-relocation.json) and earlier
 analysis record remain snapshots of their respective layouts.
+[DP compaction](../../development/dp-compaction.json) subsequently places the
+kernel at `$2100` and Task pages contiguously from `$2200`, without DP canaries
+or padding. Stack reservations remain unchanged.
 
 The generated eight-Task layout now reserves:
 
 | Current eight-Task reservation | Bytes |
 | --- | ---: |
 | OS ranges | 30,720 |
-| Fixed Exec runtime, including VBXE aperture | 10,560 |
-| Root Task | 2,080 |
-| Seven other public Task pools | 10,976 |
-| Private idle | 1,056 |
-| Total reserved in bank zero | 55,392 |
-| Unreserved across all holes | 10,144 |
-| Largest individual hole, `$1130–$21EF` | 4,288 |
+| Fixed Exec runtime, including VBXE aperture | 10,528 |
+| Root Task | 1,824 |
+| Seven other public Task pools | 9,184 |
+| Private idle | 800 |
+| Total reserved in bank zero | 53,056 |
+| Unreserved across all holes | 12,480 |
+| Largest individual hole, `$5610–$67FF` | 4,592 |
 
-These totals include guards and unused reserved capacity. They recover 6 KiB
-from the assessed baseline after reserving the aperture, before assigning any
-other GEM storage. The no-resident-Atari-DOS boot contract requires the original
+These totals include guards and unused reserved capacity. They recover 8,480 bytes
+from the assessed baseline after reserving the aperture and compacting DPs,
+before assigning other GEM storage. The largest hole includes the retired
+manifest, so it becomes available only after `startup_complete`. A separate
+4,048-byte hole lies at `$1130–$20FF`. Neither hole is yet a heap arena. The no-resident-Atari-DOS boot contract requires the original
 MEMLO to be at most `$0800`. Exec's own DOS/file services remain operational.
 
 Each ordinary worker reserves a 1,024-byte stack, 32 stack-guard bytes and a
-512-byte DP reservation including alignment and guards. The stack includes
+256-byte aligned DP reservation without external guards. The stack includes
 256 bytes of interrupt reserve. The root stack is 1,536 bytes. GEM's present
 engine alone reserves **2,048 stack bytes**, before adapting its call chain to
 Exec. The current configurable pool generator accepts at most 1,536 stack

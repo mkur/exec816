@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Execute compiler/assembly limit probes without crossing physical stack bounds."""
 import argparse
+import adapter_state as adapter
 import json
 from pathlib import Path
 
@@ -25,6 +26,8 @@ def run(toolchain, out, checked_only=False):
                                 optimize=optimize, kernel_config=config_path,
                                 stack_checks=True if checks else None)
                 require(program['build']['stack_checks'] == checks, 'Build setting differs')
+                work = next(r for r in program['image']['routines'] if '_WORK_' in r['name'])
+                require(work['fixed_frame'] > 0, 'Compiler probe must reserve a checked frame')
                 for target in ('compiler', 'assembly'):
                     observation = {}
                     def inject(b):
@@ -33,9 +36,9 @@ def run(toolchain, out, checked_only=False):
                         b.bp_set(address)
                         run_to(b, address)
                         b.bp_clear_all()
-                        floor_at = 0x2200 + FIELDS["stack_floor"]["offset"]
+                        floor_at = adapter.TASK0_DP + FIELDS["stack_floor"]["offset"]
                         floor = b.peek16(floor_at)
-                        stack_low = int(b.regs()['S'].lstrip('$'), 16)
+                        stack_low = int(b.regs()['S'].lstrip('$'),16)
                         observation.update(entry_s_low=stack_low, original_floor=floor, injected_floor=0x47ff)
                         # Raise only the logical floor. Physical stack/interrupt
                         # space remains ample for the unchecked bounded program.
@@ -51,7 +54,7 @@ def run(toolchain, out, checked_only=False):
                     runtime, _ = execute(bridge, program, expected_status=1 if checks else 0, before_run=inject)
                     if checks:
                         require(0x4300 <= runtime['fault_s'] < 0x47ff and
-                                runtime['fault_s']&255 == observation['entry_s_low'], 'Fault changed entry S')
+                                runtime['fault_s'] & 255 == observation['entry_s_low'], f'Fault changed entry S: {target}, {runtime}, {observation}')
                     else:
                         require(global_word(bridge, program['image'], 'result') == 42, 'Unchecked call result differs')
                         require(global_word(bridge, program['image'], 'status') == 1, 'Unchecked assembly result differs')

@@ -223,11 +223,6 @@ PROC PrepareDomain(TaskControl POINTER ctx)
   CARD POINTER words,word
 
   ctx.dp=poolDp(ctx.id)
-  words=CARD POINTER(ADDRESS(ctx.dp-16))
-  FOR index=0 TO (poolDpBytes(ctx.id) RSH 1)-1 DO
-    words(index)=$a5a5
-  OD
-
   words=CARD POINTER(ADDRESS(ctx.dp))
   FOR index=0 TO 127 DO
     words(index)=0

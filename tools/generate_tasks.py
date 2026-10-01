@@ -189,9 +189,9 @@ def generate_kernel(output, labels=None, entries=(), writable=(0,0), *, memory):
         f'CONST T_{name}=${c[name]:x}\n' for name in ('RETURN','TASK_START','IDLE_ENTRY'))
     action += 'TYPE TaskMetadata=[\n'+''.join(f'  {kind} {name}\n' for name,kind,_ in ABI['metadata']['header']['fields'])+']\n'
     action += 'TYPE WritableRange=[ADDRESS base SIZE bytes]\n'
-    pools=memory.get('task_pools',ABI['pools'])
+    validate_memory(memory)
+    pools=memory['task_pools']
     action += 'CARD ARRAY poolSize=['+' '.join(str(p.get('stack_bytes',1536)) for p in pools)+']\n'
-    action += 'CARD ARRAY poolDpBytes=['+' '.join(str(p.get('dp_reserved_bytes',288)) for p in pools)+']\n'
     action += 'CARD ARRAY poolDp=['+' '.join(str(p['dp']) for p in pools)+']\n'
     action += 'CARD ARRAY poolStack=['+' '.join(str(p['stack_base']) for p in pools)+']\n'
     (output/'tasks-action.inc').write_text(action)
@@ -201,38 +201,10 @@ def generate_kernel(output, labels=None, entries=(), writable=(0,0), *, memory):
     (output/'tasks-bindings.inc').write_text(bound)
 
 
-def validate_pools(memory):
-    """Pools may reclaim only the dead INITAD loader/staging after Adopt."""
-    reserved = list(memory['regions'].items())
-    spans = [(0x2d00, 0x2df0, 'task records')]
-    for i, pool in enumerate(ABI['pools']):
-        spans += [(pool['dp']-16, pool['dp']+272, f'dp{i}'),
-                  (pool['stack_base']-16, pool['stack_base']+1552, f'stack{i}')]
-    for a, b, name in spans:
-        for other, (x, y) in reserved:
-            if a < y and x < b:
-                require(other in ('task0-dp', 'task1-dp', 'task0-stack', 'task1-stack', 'loader', 'staging'),
-                        f'Task pool {name} overlaps {other}')
-    for i, (a, b, _) in enumerate(spans):
-        require(all(b <= x or a >= y for x, y, _ in spans[i+1:]), 'Task pools overlap')
-    # Every new permanent reservation must also be excluded from image writes.
-    memory['task_pools'] = ABI['pools']
-    memory['reclaimed_after_adopt'] = ['loader', 'staging']
-    # Preserve loading geometry, but publish only post-startup reservations.
-    excluded = {'task0-dp','task1-dp','task0-stack','task1-stack','loader','staging','manifest','table'}
-    runtime = [(a,b,name) for name,(a,b) in memory['regions'].items() if name not in excluded]
-    runtime += spans
-    table = memory['constants']['TABLE']
-    runtime.append((table,table+1024,'table'))
-    memory['runtime_reservations'] = [dict(name=name,address=a,size=b-a) for a,b,name in sorted(runtime)]
-    from ports_budget import account
-    memory.pop('bank_zero_budget',None)
-    memory['bank_zero_budget'] = account(memory)
-
-
-
 def validate_memory(memory):
-    if 'task_capacity' not in memory: validate_pools(memory)
+    if 'task_pools' not in memory:
+        from task_capacity import configure
+        configure(memory, memory.get('task_capacity', ABI['constants']['CAPACITY']))
     c=storage(memory)
     require(c['WRITABLE_POINTER']+4 == c['ENTRY_COUNT']+c['BINDINGS_BYTES'], 'Invalid binding extent')
 
@@ -253,7 +225,8 @@ def policy_modules(output, policy_probe=0, memory=None, manual_wake=False, irq_p
     generate_io.generate(output)
     generate_io.registration_include(output,memory,io_test_device)
     generate_ports.registration_include(output,memory)
-    pools=(memory or {}).get('task_pools',ABI['pools'])
+    validate_memory(memory)
+    pools=memory['task_pools']
     capacity=(memory or {}).get('task_capacity',ABI['constants']['CAPACITY'])
     directory=Path(output)/'task-kernel';directory.mkdir(parents=True,exist_ok=True)
     from generate_process import state_source, reserve_metadata as reserve_process, check_public as check_process

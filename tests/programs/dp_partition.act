@@ -11,19 +11,15 @@ INCLUDE "../../lib/exec/exec-abi.inc"
 INCLUDE "task-types.inc"
 CONST WORKSPACE_BYTES=A816ABI.DP_CALLER_WORKSPACE_SIZE
 CONST BUFFER_BYTES=513
-CONST READY_SIGNAL=$20000
 CONST GO_SIGNAL=$10000
 
-EXEC.Task worker
-EXEC.Task POINTER parent
-EXEC.MsgPort POINTER inbox,reply
-EXEC.Message message
-VOLATILE BYTE ready,finished
+BYTE ARRAY records(496)
+EXEC.MsgPort POINTER reply
+VOLATILE BYTE readyCount,finished
 VOLATILE CARD ticks=E816_VBI_DISPATCHES
-CARD checks,workerDp,firstDp
-BYTE incarnation
+CARD checks
+BYTE slot
 PROC POINTER noFinalizer()
-INCLUDE "tasks_exec_helpers.inc"
 
 ; Every assertion is also an ordinary Action! call in the owning domain.
 PROC Require(BYTE okay)
@@ -83,82 +79,109 @@ PROC Calls(BYTE POINTER page BYTE pattern)
 
 RETURN
 
-; Keep a distinct caller workspace live across scheduling and kernel calls.
+; Locate a public test record independently of its private execution slot.
+EXEC.Task POINTER FUNC TaskAt(BYTE id)
+
+RETURN(EXEC.Task POINTER(ADDRESS(records)+SIZE(id)*EXEC.TASK_SIZE))
+
+; Use the actual stack extent in either supported capacity profile.
+PROC Prepare(BYTE id)
+  CARD index
+
+  LET item=TaskAt(id)
+  LET bytes=BYTE POINTER(item)
+  FOR index=0 TO EXEC.TASK_SIZE-1 DO
+    bytes(index)=0
+  OD
+
+  item.tc_Node.ln_Type=EXEC.NT_TASK
+  item.tc_UserData=SIZE(id)
+  item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(id))
+  item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(id))
+  item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@item.tc_MemEntry)
+
+RETURN
+
+; Keep every worker's distinct caller workspace live across calls and switches.
 PROC WorkerEntry()
   CARD index
-  LONGCARD received
-  EXEC.Message POINTER item
 
+  LET self=EXEC.FindTask(NULL)
+  LET pattern=BYTE(self.tc_UserData)+$80
   LET page=Workspace()
-  workerDp=CARD(ADDRESS(page))
-  ; Reusing a released slot starts a fresh ownership lifetime.
   FOR index=0 TO WORKSPACE_BYTES-1 DO
     Require(page(index)=0)
   OD
 
-  Seed(page,$a7)
+  Seed(page,pattern)
   Require(EXEC.AllocSignal(16)=16)
-  inbox=EXEC.CreateMsgPort()
-  Require(inbox<>NULL)
-  ready=1
-  EXEC.Signal(parent,READY_SIGNAL)
-  received=EXEC.Wait(GO_SIGNAL)
-  Require(received=GO_SIGNAL)
-  Calls(page,$a7)
-  item=EXEC.WaitPort(inbox)
-  Require(item=@message)
-  item=EXEC.GetMsg(inbox)
-  EXEC.ReplyMsg(item)
-  ; Busy computation gives VBI a chance to preempt a live Action! task.
+  Calls(page,pattern)
+  EXEC.Forbid()
+  readyCount==+1
+  EXEC.Permit()
+  Require(EXEC.Wait(GO_SIGNAL)=GO_SIGNAL)
+  Preserved(page,pattern)
+  ; Busy computation also exercises asynchronous preemption of each owner.
   LET start=ticks
   WHILE CARD(ticks-start)<3 DO
-    Preserved(page,$a7)
+    Preserved(page,pattern)
   OD
 
-  EXEC.DeleteMsgPort(inbox)
+  Calls(page,pattern)
   EXEC.FreeSignal(16)
-  Preserved(page,$a7)
 
 RETURN
 
-; Exercise caller direct-page preservation across calls and Task switches.
+; Wait for complete retirement before reusing a record or its direct page.
+PROC AwaitRemoval(EXEC.Task POINTER item)
+  CARD status
+
+  WHILE item.tc_State<>EXEC.TS_REMOVED DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+; Fill every slot, then reuse an interior DP while both neighbours stay live.
 PROC Main()
-  EXEC.Message POINTER item
   CARD status
 
   LET page=Workspace()
-  parent=EXEC.FindTask(NULL)
   Seed(page,$59)
   reply=EXEC.CreateMsgPort()
-  Require(reply<>NULL AND EXEC.AllocSignal(17)=17)
-  FOR incarnation=0 TO 1 DO
-    PrepareTask(@worker,TASKSTACKS.LOWER1,NULL)
-    ready=0
-    Require(EXEC.AddTask(@worker,@WorkerEntry,noFinalizer)=@worker)
-    Require(EXEC.Wait(READY_SIGNAL)=READY_SIGNAL AND ready=1)
-    IF incarnation=0 THEN
-      firstDp=workerDp
-    ELSE
-      Require(workerDp=firstDp)
-    FI
+  Require(reply<>NULL)
+  FOR slot=1 TO TASKSTACKS.CAPACITY-1 DO
+    Prepare(slot)
+    Require(EXEC.AddTask(TaskAt(slot),@WorkerEntry,noFinalizer)=TaskAt(slot))
+  OD
 
-    Calls(page,$59)
-    EXEC.Signal(@worker,GO_SIGNAL)
-    message.mn_ReplyPort=reply
-    EXEC.PutMsg(inbox,@message)
-    item=EXEC.WaitPort(reply)
-    Require(item=@message)
-    item=EXEC.GetMsg(reply)
-    Require(item=@message)
-    WHILE worker.tc_State<>EXEC.TS_REMOVED DO
-      status=EXECTASKS.Sleep(1)
-    OD
+  WHILE readyCount<>TASKSTACKS.CAPACITY-1 DO
+    status=EXECTASKS.Sleep(1)
+  OD
 
-    Preserved(page,$59)
+  Calls(page,$59)
+  EXEC.Signal(TaskAt(2),GO_SIGNAL)
+  AwaitRemoval(TaskAt(2))
+  LET left=TaskAt(1)
+  LET right=TaskAt(3)
+  Require(left.tc_State=EXEC.TS_WAIT AND right.tc_State=EXEC.TS_WAIT)
+  Prepare(2)
+  Require(EXEC.AddTask(TaskAt(2),@WorkerEntry,noFinalizer)=TaskAt(2))
+  WHILE readyCount<>TASKSTACKS.CAPACITY DO
+    status=EXECTASKS.Sleep(1)
+  OD
+
+  Preserved(page,$59)
+  FOR slot=1 TO TASKSTACKS.CAPACITY-1 DO
+    EXEC.Signal(TaskAt(slot),GO_SIGNAL)
+  OD
+
+  FOR slot=1 TO TASKSTACKS.CAPACITY-1 DO
+    AwaitRemoval(TaskAt(slot))
   OD
 
   EXEC.DeleteMsgPort(reply)
-  EXEC.FreeSignal(17)
   Preserved(page,$59)
   finished=1
 

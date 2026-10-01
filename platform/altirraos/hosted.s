@@ -112,12 +112,6 @@ clear_state:
     stz VIRQN+2
     rep #$20
     lda #$a5a5
-    ldx #$011e
-guard_dp:
-    sta TASK_DP-$10,x
-    dex
-    dex
-    bpl guard_dp
     ldx #$061e
 guard_stack:
     sta STACK_BASE-$10,x

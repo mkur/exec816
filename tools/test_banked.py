@@ -58,6 +58,7 @@ def assemble_probe(output, source, origin=0x3000):
 def profile_probe(bridge, output):
     # Writes all samples first, then reads all of them. Aliasing cannot pass
     # merely because each write was immediately followed by its own read.
+    # This isolated probe never enters the hosted kernel or initializes its DP.
     addresses = [(b<<16)|off for b in range(1,16) for off in (0,0x100,0x2100,0xd500,0xffff)]
     lines = ['.setcpu "65816"','.segment "CODE"','.export start,done',
              'start:','lda #$5a','sta $2100']
@@ -107,7 +108,7 @@ start:
     rep #$30
     .a16
     .i16
-    lda #$2600
+    lda #${adapter.KERNEL_DP:04x}
     tcd
     lda #$4ffd
     tcs
@@ -145,9 +146,8 @@ done:
     bridge.memload(c['MANIFEST'],header+seed)
     boot = bytearray(256);boot[0] = 1;boot[16:32] = bytes(range(16))
     bridge.memload(c['READY'],boot)
-    bridge.memload(0x25f0,bytes([0xa5])*0x120)
-    bridge.memload(0x2600,bytes(256))
-    bridge.memload(0x2600+FIELDS["owner_pointer"]["offset"],struct.pack('<HBBHH',adapter.KERNEL_OWNER,0,1,0x4b00,0x4fff))
+    bridge.memload(adapter.KERNEL_DP,bytes(256))
+    bridge.memload(adapter.KERNEL_DP+FIELDS["owner_pointer"]["offset"],struct.pack('<HBBHH',adapter.KERNEL_OWNER,0,1,0x4b00,0x4fff))
     bridge.memload(0x49f0,bytes([0xa5])*0x620)
     bridge.bp_set(labels['done'])
     try:
@@ -158,11 +158,14 @@ done:
     failures = data(bridge,image,'failures',True)[0]
     checks = data(bridge,image,'checks',True)[0]
     require(failures == 0 and checks > count*4, f'Bank policy failed: {failures}/{checks}')
-    for address in (c['TABLE']-16,c['TABLE']+c['TABLE_BYTES'],0x25f0,0x2700,0x49f0,0x5000):
+    for address in (c['TABLE']-16,c['TABLE']+c['TABLE_BYTES'],0x49f0,0x5000):
         # At MAX_BANKS=256 the table ends at the boot record, not a spare guard.
         if address == c['READY']:
             continue
         require(bridge.memdump(address,16) == bytes([0xa5])*16,f'Policy guard at {address:x}')
+    reserved = FIELDS['reserved_zero']
+    require(bridge.memdump(adapter.KERNEL_DP+reserved['offset'],reserved['size']) == bytes(reserved['size']),
+            'Policy DP reserved bytes changed')
     expected = bytearray(seed)
     if count > 1:
         expected[4:8] = b'\2\0\2\0'

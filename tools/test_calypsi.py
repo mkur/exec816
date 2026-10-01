@@ -108,7 +108,7 @@ def seed_and_observe(bridge, program, foreign):
         dp = pools[slot]['dp']
         bridge.memload(dp+8, pattern(slot)[8:16])  # callee-preserved registers
         bridge.memload(dp+20, pattern(slot)[20:])  # unused caller workspace
-    bridge.memload(0x2600, pattern(4))
+    bridge.memload(adapter.KERNEL_DP, pattern(4))
     marker = program['labels']['native_nmi']
     # REGS/@s expose only S8. Observe the unmodified NMI prologue just after
     # it pushes the full native saved S onto the OS stack. Validate its bytes
@@ -148,7 +148,7 @@ def check_context(bridge, program, foreign):
         if slot == 0:  # main returns; the worker deliberately removes itself.
             require(bridge.memdump(dp+8, 8) == pattern(slot)[8:16], 'C callee-saved registers changed')
         require(bridge.memdump(dp+20, 108) == pattern(slot)[20:], 'Unused C workspace changed')
-    require(bridge.memdump(0x2600, 128) == pattern(4), 'Kernel lower DP workspace changed')
+    require(bridge.memdump(adapter.KERNEL_DP, 128) == pattern(4), 'Kernel lower DP workspace changed')
 
 
 if __name__ == '__main__':
