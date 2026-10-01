@@ -65,8 +65,7 @@ Firmware Manager, then select **Exec816 AltirraOS** in **Operating system**.
    press a key during the countdown; type `EXEC816` to continue booting.
 
 Wait for `SYS: -> D1: ready, read-only` and the `>` prompt. The lower part of
-the screen should already be searching for primes. Run these commands in order;
-`TASKS` comes first to keep the boot messages visible in the first screenshot:
+the screen should already be searching for primes. Run these commands in order:
 
 ```text
 TASKS
