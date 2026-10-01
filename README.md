@@ -10,9 +10,6 @@ instructions are below.
 
 <img src="docs/images/demo-boot.png" alt="Exec816 boot messages and TASKS listing, with the prime task running below" width="672" style="image-rendering: pixelated;">
 
-Just after boot, `TASKS` lists the running tasks while the startup messages
-are still visible.
-
 The demo boots through [OF816](https://github.com/mgcaret/of816) into a text shell
 while a second program searches for primes. It includes disk-loaded commands,
 two-command pipes, read-only MyDOS and SpartaDOS, a shared sector cache and `SYS:`
