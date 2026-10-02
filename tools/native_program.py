@@ -247,7 +247,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     dos_system=tasks and not dos_test
     require(type(dos_test) is bool and (not dos_test or tasks),'DOS fixtures require tasks')
     require(type(io_test_device) is bool and (not io_test_device or tasks),'I/O test devices require tasks')
-    require(irq_probe in range(11) and (irq_probe == 0 or tasks), 'Invalid IRQ checkpoint profile')
+    require(irq_probe in range(12) and (irq_probe == 0 or tasks), 'Invalid IRQ checkpoint profile')
     require(not console_native or (tasks and irq_probe!=10),'Console fixtures require Tasks and exclude the disposable probe')
     require(policy_probe == 0 or tasks, 'Signal checkpoints require tasks')
     require(not tasks or kernel_init_name == 'EXECMEMORY.Init',
@@ -317,6 +317,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             import generate_sio_adapter
             require((ROOT/'platform/altirraos/sio-state.inc').read_text()==generate_sio_adapter.assembly(),'Stale private SIO layout')
             generate_sio_adapter.generate(output,generate_tasks.storage(memory)['BASE'])
+            import generate_platform_timer
+            generate_platform_timer.generate(output, generate_tasks.storage(memory)['BASE'], memory)
             generate_tasks.validate_memory(memory)
             task_generate(output)
             task_modules = generate_tasks.policy_modules(output,policy_probe,memory,manual_wake,irq_probe,io_test_device,dos_test,dos_system,console_native,sio_request_probe=sio_request_probe,sio_lifetime_probe=sio_lifetime_probe)
@@ -425,12 +427,20 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         elif tasks and name in ('SIOPROBE.Emulation','SIOPROBE.Stall','SIOPROBE.Stale'):
             require(io_test_device,'SIO test entry is unavailable in production')
             label,result,peak='sio_probe_'+name.split('.')[1].lower(),'None',31 if name.endswith('Stale') else 19
+        elif tasks and name.startswith('TIMERPROBE.'):
+            require(irq_probe == 11, 'Timer probe is unavailable in production')
+            operation = name.split('.')[1]
+            require(operation in ('Start','Stop'), 'Unknown timer probe operation')
+            label = 'timer_probe_'+operation.lower()
+            result = 'Some(NativeResult(A8ZeroExtended))' if operation == 'Start' else 'None'
+            peak = 25
         elif tasks and name.startswith('SIOADAPTER.'):
+
 
             operation=name.split('.')[1]
             label='sio_'+operation.lower()
             result='Some(NativeResult(A8ZeroExtended))' if operation in ('Init','Start','Retire','Recovered') else 'None'
-            peak=19
+            peak=25
         elif tasks and name.startswith('EXECPRODUCER.'):
             operation=name.split('.')[1]
             shape=generate_tasks.ABI['producer_imports'][operation]
@@ -596,6 +606,11 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         task_storage = generate_tasks.storage(memory)
         image['segments'].append({'address':task_storage['BASE']+0x1000,'bytes':list((output/'hosted.bin.signals').read_bytes()),'writable':False,'executable':True})
         require(task_storage['METADATA_BYTES']<=0x800,'Task metadata overlaps SIO descriptor')
+        timer = memory['timer_storage']
+        image['segments'].append(dict(address=timer['BASE'], bytes=[0]*timer['BYTES'],
+                                      writable=True, executable=False))
+        image['data'].append(dict(kind='global', id=max(d['id'] for d in image['data'])+1,
+            name='M_TASKPOLICY_SHARED_TIMER', address=timer['BASE'], size=timer['BYTES'], alignment=2))
         descriptor=bytearray(128)
         image['segments'].append({'address':task_storage['BASE']+0x800,'bytes':list(descriptor),'writable':True,'executable':False})
         image['data'].append(dict(kind='global',id=max(d['id'] for d in image['data'])+1,
@@ -793,7 +808,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'abi/ports.json','lib/exec/exec-port-types.inc','lib/exec/port-call-types.inc','tools/generate_ports.py',
                 'lib/exec/task-ports.inc','lib/exec/portcore.act','platform/altirraos/ports.s',
                 'abi/tasks.json','lib/exec/taskpolicy.act','lib/exec/taskmemory.act','lib/exec/task-signals.inc','lib/exec/task-wakes.inc',
-                'abi/sio-adapter.json','tools/generate_sio_adapter.py','platform/altirraos/sio.s','platform/altirraos/sio-state.inc','lib/io/sioadapter.act',
+                'abi/platform-timer.json','tools/generate_platform_timer.py','platform/altirraos/platform-timer.s','platform/altirraos/platform-timer.inc','abi/sio-adapter.json','tools/generate_sio_adapter.py','platform/altirraos/sio.s','platform/altirraos/sio-state.inc','lib/io/sioadapter.act',
                 'platform/altirraos/signal-irq.s','platform/altirraos/signal-atomic.s','platform/altirraos/fast-services.s','platform/altirraos/fast-getmsg.inc','platform/altirraos/serial-irq.inc',
                 'platform/altirraos/heap.s','platform/altirraos/heap-probe.s','lib/exec/task-memory.inc','lib/exec/heap-call-types.inc',
                 'lib/exec/heappolicy.act','lib/exec/heap-system.inc','lib/exec/heapcore.act','lib/exec/heap-constants.inc','lib/exec/exec-memory-types.inc','tools/generate_heap.py',
@@ -804,7 +819,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             task_generated={name:sha256(output/name) for name in (
                 'execbuild.act','exec-build.json',
                 'dos.inc','dos-action.inc','dos-storage-action.inc','task-kernel/dosraw.act','task-kernel/doscore.act',
-                'io.inc','io-action.inc','io-storage-action.inc','sio-storage-action.inc',
+                'io.inc','io-action.inc','io-storage-action.inc','sio-storage-action.inc','timer-storage-action.inc',
                 'ports.inc','ports-action.inc','port-packets.inc','ports-storage.inc','ports-storage-action.inc',
                 'heappolicy.act','heap-storage.inc','heap.inc','heap-action.inc','heap.json','tasks.inc','tasks-action.inc','tasks-bindings.inc','signal-gateway.inc',
                 'task-kernel/processstate.act','task-kernel/exec.act','task-kernel/taskpolicy.act','task-kernel/taskmemory.act','task-kernel/task-wakes.inc',

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "state_offset": 3888,
+  "state_bytes": 32,
+  "divisor": 7,
+  "audctl": 40,
+  "fields": {
+    "TM_USERS": 0,
+    "TM_POINTER": 1,
+    "TM_ALARM": 2,
+    "TM_AUDF1": 3,
+    "TM_AUDCTL": 4,
+    "TM_RESERVED": 5,
+    "TM_VECTOR": 6,
+    "TM_TICKS": 8,
+    "TM_SAMPLES": 10,
+    "TM_PORT": 12,
+    "TM_TRIGGER": 13,
+    "TM_CHANGES": 14
+  }
+}

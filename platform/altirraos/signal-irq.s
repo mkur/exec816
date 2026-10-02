@@ -14,6 +14,7 @@ SIO_OS_BUSY = OS_BUSY
 SIO_EMULATION_ENTRY = signal_emulation_entry
 .include "serial-irq.inc"
 .include "sio-state.inc"
+.include "platform-timer.inc"
 
 .macro signal_stack_check bytes
 .local check_floor, overflow, stack_ok
@@ -88,6 +89,19 @@ signal_route:
     beq :+
     jml sio_route
 :
+    lda f:TM_USERS
+    beq :+
+    jsr timer_poll
+    .if INPUT_NATIVE
+        jsl input_route
+    .endif
+    lda f:$d20e
+    eor #$ff
+    and f:$0010
+    bne signal_unowned
+    sec
+    rtl
+:
     .if INPUT_NATIVE
         jml input_route
     .elseif SIGNAL_IRQ_PROBE = 10
@@ -146,6 +160,16 @@ signal_release_end:
 .export signal_release_shutdown
 signal_release_shutdown:
     jsl sio_shutdown_unchecked
+    sep #$20
+    lda f:TM_USERS
+    and #2
+    beq :+
+    lda #0
+    sta f:TM_POINTER
+    lda #2
+    jsr timer_release
+:
+    rep #$20
     ; finish may arrive with M=1 or an invalid compiler domain after a fault.
     ; It owns shutdown, has masked IRQ/NMI, and supplies the small return frame.
     rep #$30

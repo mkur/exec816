@@ -29,7 +29,7 @@ sio_leave:
     rtl
 
 sio_init:
-    signal_stack_check 19
+    signal_stack_check 25
     jsr sio_enter
     lda f:SD_OWNED
     and #$ff
@@ -46,10 +46,19 @@ sio_init:
     beq :+
     jmp sio_init_busy
 :
-    ; Existing timer owners have no protocol for lending their configuration.
+    ; Timer 2 remains private to SIO. Timer 1 can already have a pointer
+    ; owner; joining it must not reset active hardware clocks.
     lda f:$0010
-    and #3
+    and #2
     beq :+
+    jmp sio_init_busy
+:
+    sep #$20
+    lda #1
+    jsr timer_acquire
+    rep #$20
+    and #$ff
+    bne :+
     jmp sio_init_busy
 :
     ; The serial binding is already stable, with sources disabled. Take timer
@@ -77,12 +86,17 @@ sio_init:
     ; Establish the platform's silent baseline. No reads of write-only aliases.
     lda #0
     ldx #8
-:
+sio_init_audio:
     sta f:SD_SHADOW,x
     sta f:SD_SAVED_AUDIO,x
+    cpx #8
+    beq :+
+    cpx #2
+    bcc :+
     sta f:$d200,x
+:
     dex
-    bpl :-
+    bpl sio_init_audio
     lda #3
     sta f:$0232
     sta f:$d20f
@@ -93,8 +107,6 @@ sio_init:
     sta f:$020c
     lda #sio_emu_complete
     sta f:$020e
-    lda #sio_emu_alarm
-    sta f:$0210
     lda #sio_emu_watchdog
     sta f:$0212
     php
@@ -119,7 +131,7 @@ sio_init_busy:
 sio_init_end:
 
 sio_start:
-    signal_stack_check 19
+    signal_stack_check 25
     jsr sio_enter
     lda f:SD_OWNED
     and #$ff
@@ -170,9 +182,8 @@ sio_start:
     ; A retired safe frame leaves the serial engine idle. Resetting SKCTL to
     ; zero here also resets keyboard scan/debounce and reissues a held key.
     ; Keep scanning enabled; STIMER below establishes the transaction phase.
-    lda #7
+    lda f:TM_AUDF1
     sta f:SD_SHADOW
-    sta f:$d200
     lda #$ff
     sta f:SD_SHADOW+2
     sta f:$d202
@@ -182,9 +193,8 @@ sio_start:
     lda #0
     sta f:SD_SHADOW+6
     sta f:$d206
-    lda #$28
+    lda f:TM_AUDCTL
     sta f:SD_SHADOW+8
-    sta f:$d208
     lda #$23
     sta f:$0232
     sta f:$d20f
@@ -249,7 +259,7 @@ sio_cancel:
 sio_cancel_end:
 
 sio_retire:
-    signal_stack_check 19
+    signal_stack_check 25
     jsr sio_enter
     lda f:SD_PHASE
     and #$ff
@@ -276,7 +286,7 @@ sio_retire_end:
 ; Clean completion may retire immediately; errors retain the worker's quiet
 ; interval. A late byte or uncertain outcome permanently owns the bus offline.
 sio_recovered:
-    signal_stack_check 19
+    signal_stack_check 25
     jsr sio_enter
     lda f:SD_PHASE
     and #$ff
@@ -297,7 +307,7 @@ sio_recovered_busy:
 sio_recovered_end:
 
 sio_shutdown:
-    signal_stack_check 19
+    signal_stack_check 25
     jsr sio_enter
     lda f:SD_OFFLINE
     and #$ff
@@ -319,6 +329,9 @@ sio_shutdown_unchecked:
     jmp sio_shutdown_done
 :
     sep #$20
+    lda #0
+    sta f:TM_ALARM
+    sta f:SD_ALARM
     lda f:$0010
     and #($ff-SIO_OWNED_MASK)
     jsr sio_mask
@@ -332,21 +345,29 @@ sio_shutdown_unchecked:
     sta f:SD_CURSOR
     sta f:SD_DATA
     ldx #0
-:
+sio_restore_vectors:
+    cpx #6
+    beq :+
     lda f:SD_VECTORS,x
     sta f:$020a,x
+:
     inx
     inx
     cpx #10
-    bcc :-
+    bcc sio_restore_vectors
     sep #$20
     ldx #8
-:
+sio_restore_audio:
     lda f:SD_SAVED_AUDIO,x
     sta f:SD_SHADOW,x
+    cpx #8
+    beq :+
+    cpx #2
+    bcc :+
     sta f:$d200,x
+:
     dex
-    bpl :-
+    bpl sio_restore_audio
     .if INPUT_NATIVE
         lda f:CI_ACTIVE
         beq :+
@@ -361,7 +382,6 @@ sio_shutdown_unchecked:
     .endif
     sta f:$0232
     sta f:$d20f
-    sta f:$d209
     lda f:$d303
     and #$c7
     ora f:SD_OLD_PBCTL
@@ -372,6 +392,8 @@ sio_shutdown_unchecked:
     jsr sio_mask
     lda f:SD_OLD_CRITIC
     sta f:$0042
+    lda #1
+    jsr timer_release
 sio_shutdown_done:
     rep #$30
     plp
@@ -401,6 +423,7 @@ sio_route_private:
     sta f:$d20e
     jsr sio_discard
 sio_route_private_done:
+    jsr timer_poll
     jmp sio_route_exit
 sio_route_active:
     lda f:SD_CANCEL
@@ -437,11 +460,13 @@ sio_route_active:
         .endif
         and #bitmask
         beq .ident(.sprintf("sio_source_done_%d", source))
-        lda f:$0010
-        and #($ff-bitmask)
-        sta f:$d20e
-        lda f:$0010
-        sta f:$d20e
+        .if source<>4
+            lda f:$0010
+            and #($ff-bitmask)
+            sta f:$d20e
+            lda f:$0010
+            sta f:$d20e
+        .endif
         .if source=0
             jsr sio_rx
         .elseif source=1
@@ -449,7 +474,7 @@ sio_route_active:
         .elseif source=2
             jsr sio_complete
         .elseif source=4
-            jsr sio_alarm
+            jsr timer_ack
             ; Starting COMMAND/write sends its first byte from the alarm
             ; handler. TX-ready can assert during the subsequent prefetch;
             ; scanline DMA can make a full return/re-entry miss that first
@@ -550,7 +575,7 @@ sio_console_service:
     cmp #15
     bne sio_console_active
 sio_console_inactive:
-    rts
+    jmp timer_poll
 sio_console_active:
     lda f:$d20e
     eor #$ff
@@ -603,12 +628,7 @@ sio_console_alarm:
     eor #$ff
     and #$01
     beq sio_console_tx
-    lda f:$0010
-    and #$fe
-    sta f:$d20e
-    lda f:$0010
-    sta f:$d20e
-    jsr sio_alarm
+    jsr timer_ack
 sio_console_tx:
     ; The alarm may have started COMMAND/write and prefetched its next byte.
     ; Refill once with the current enable shadow, including on the second
@@ -656,16 +676,53 @@ sio_console_return:
 .endif
 
 sio_mask:
-    sta f:$0010
-    sta f:$d20e
-    rts
+    jmp timer_mask
 sio_arm:
-    sta f:SD_ALARM
+    jmp timer_arm
+
+; At most one RX and one TX refill on each side of a pointer sample. Hardware
+; reads can stall behind display DMA; a byte arriving during the sample cannot
+; wait through native restoration and another interrupt entry. Also used by
+; the emulation timer callback, whose enclosing ROM IRQ owns the activation.
+sio_pointer_service:
+    lda f:SD_OWNED
+    beq sio_pointer_done
     lda f:$0010
-    and #$fe
+    and #$20
+    beq sio_pointer_tx
+    lda f:$d20e
+    and #$20
+    bne sio_pointer_tx
+    lda f:$0010
+    and #$df
     sta f:$d20e
-    ora #1
-    jmp sio_mask
+    lda f:$0010
+    sta f:$d20e
+    lda f:SD_PHASE
+    beq sio_pointer_discard
+    cmp #SIO_TERMINAL
+    beq sio_pointer_discard
+    cmp #15
+    beq sio_pointer_discard
+    jsr sio_rx
+    bra sio_pointer_tx
+sio_pointer_discard:
+    jsr sio_discard
+sio_pointer_tx:
+    lda f:$0010
+    and #$10
+    beq sio_pointer_done
+    lda f:$d20e
+    and #$10
+    bne sio_pointer_done
+    lda f:$0010
+    and #$ef
+    sta f:$d20e
+    lda f:$0010
+    sta f:$d20e
+    jsr sio_tx
+sio_pointer_done:
+    rts
 
 sio_alarm:
     rep #$20
@@ -678,6 +735,8 @@ sio_alarm:
     dec a
     sta f:SD_ALARM
     bne sio_alarm_done
+    lda #0
+    sta f:TM_ALARM
     lda f:$0010
     and #$fe
     jsr sio_mask
@@ -1024,6 +1083,11 @@ sio_terminal:
 :
     lda f:$0010
     and #($ff-SIO_OWNED_MASK)
+    pha
+    lda #0
+    sta f:TM_ALARM
+    sta f:SD_ALARM
+    pla
     ora #$20
     jsr sio_mask
     lda #$13
@@ -1077,6 +1141,11 @@ sio_emulation:
     inc a
     sta f:SD_EMULATIONS
     sep #$20
+    cpx #3
+    bne :+
+    jsr timer_tick
+    jmp sio_emulation_done
+:
     lda f:SD_PHASE
     beq sio_emulation_private
     cmp #SIO_TERMINAL
@@ -1163,7 +1232,7 @@ sio_emu_common:
 ; rejected outside I/O fixture builds. The ordinary driver never calls this.
 .export sio_probe_emulation,sio_probe_emulation_end
 sio_probe_emulation:
-    signal_stack_check 19
+    signal_stack_check 25
     jsr sio_enter
     php
     sei
@@ -1229,7 +1298,7 @@ sio_probe_os:
 .i16
 .export sio_probe_stall,sio_probe_stall_end,sio_probe_stale,sio_probe_stale_end
 sio_probe_stall:
-    signal_stack_check 19
+    signal_stack_check 25
     jsr sio_enter
     php
     sei

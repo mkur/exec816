@@ -249,6 +249,23 @@ publication, cancellation and retirement follow the IRQ/NMI protocol, retaining
 Task and signal lifetime until all posts and wakes retire. See
 [resident drivers](resident-drivers.md) and [device I/O](device-io.md).
 
+POKEY timer 1 configuration, its emulation vector and IRQ enable composition
+belong to the fixed platform timing component. It has independent SIO-alarm and
+pointer-sampling demands. Each acknowledged edge advances an armed alarm at
+most once; serial RX/TX receive bounded service opportunities around sampling.
+SIO retains timer 2 and its watchdog, transfer and recovery policy. Timer 1 keeps
+the existing divisor 7 and SIO alarm units. SIO transaction setup still resets
+STIMER; joining an existing timing owner does not reset it.
+
+The first compatible owner establishes a silent baseline for its audio/timing
+registers using write shadows, never POKEY's unrelated read aliases. Existing
+timer ownership outside this protocol is incompatible. SIO release restores its
+serial resources while preserving surviving sampling demand; last timer release
+restores its vector and silent baseline. Task-side transitions use SWITCHING and
+local IRQ masking, covering asynchronous NMI entry as well as IRQ. At the M1
+boundary the sampling backend is diagnostic only; public pointer admission
+remains unsupported. See [mouse development](../history/gem-mouse.md).
+
 Peripheral speed, RX/TX timing, recovery and coexistence are profile-dependent.
 Pinned emulator evidence does not qualify other profiles or real hardware.
 

@@ -35,3 +35,38 @@ Runtime memory is unchanged: fixed bank-zero delta **0 bytes**, each of the eigh
 public Task deltas **0 bytes**, private-idle delta **0 bytes**, including guards,
 alignment and unused reservation capacity. No upper-runtime or VRAM reservation
 is added by this observation fixture.
+
+## M1 Shared timer ownership
+
+[M1 evidence](../development/gem-mouse-m1.json) records independent SIO-alarm
+and diagnostic sampling demands on timer 1. Timer configuration, vector
+ownership, acknowledgement and enable composition now live in one platform
+component. SIO keeps its existing watchdog, alarm units and transfer policy.
+The timer-1 divisor remains 7. Joining an owner does not reset clocks; SIO's
+transaction STIMER reset is included in the gap measurements.
+
+Raw/optimized emitted checks cover both acquisition orders, both release orders,
+capture admission and release during an armed alarm, incompatible ownership,
+native IRQ and ROM emulation callbacks. The fixed sampler continues after SIO
+shutdown and through cancellation/offline recovery. It is not public pointer
+capture. An initial fastest-rate SIO overrun led to bounded RX/TX checks before
+and after sampling; the same byte and phase deadlines then passed. Across the
+six ownership runs the largest measured sampling gap is **254.52 µs**, below the
+unchanged 1 ms gate. Independent POKEY-latch accounting finds no duplicate timer
+dispatch or backend service. These limits apply to this diagnostic workload;
+M3 must repeat them with the complete decoder.
+
+The SIO-only raw transaction/timing check, real active cancellation and timeout
+wrap checks with sampling, and the optimized interactive keyboard case pass.
+Observed and unobserved optimized combined runs have identical XEX hashes,
+results, checks and runtime records. The interactive image excludes diagnostic
+timer entry points. All 287 host tests pass, with four historical audits skipped.
+These are development checks, not hosted-system qualification.
+
+Timer state reserves **32 upper bytes**, including 16 currently unused bytes,
+at Task-arena offset `$0F30`, after the console tables. The upper native-code
+reservation grows **512 bytes**, from 9,728 to 10,240; interactive native payload
+grows 474 bytes. Both fit the existing reserved 64 KiB Task arena: whole-bank
+reservation delta **0**. Fixed bank-zero, each of eight public Tasks, and private
+idle all change by **0 bytes**, counting guards, alignment and unused capacity.
+There are no additional Tasks or VRAM reservations.

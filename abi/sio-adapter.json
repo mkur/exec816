@@ -3,7 +3,7 @@
   "state_offset": 2048,
   "state_bytes": 128,
   "native_offset": 4096,
-  "native_reserved_bytes": 9728,
+  "native_reserved_bytes": 10240,
   "owned_irq_mask": 59,
   "terminal_phase": 13,
   "fields": {
