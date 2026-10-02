@@ -360,13 +360,59 @@ def record_i5(base, host):
                      'Responsiveness/failure closure and production packaging remain I6-I7.'])
 
 
+def record_i6(base, host):
+    from test_gem_interactive import CASES
+    runs={}; peaks={}; latency={}; maps={}
+    for mode in ('raw','opt'):
+        run=read_native_run(base/('i6-'+mode),'tools/test_gem_interactive.py')
+        require([c['name'] for c in run['cases']]==CASES,'Missing concurrency/failure cases')
+        require(run['observation_sha256']==sha256(ROOT/'tools/gem_interactive_observe.py'),'Stale latency observer')
+        cases={c['name']:c for c in run['cases']}
+        latency[mode]={name:cases[name]['latency'] for name in ('latency','latency-wrap')}
+        for measurement in latency[mode].values():
+            require(measurement['maximum_ticks']<=16 and any(s['wire_overlap'] for s in measurement['samples']),
+                    'Missing latency bound or wire overlap')
+        frames=cases['context']['c_preemption']
+        require([v['slot'] for v in frames]==[6,7] and all(len(bytes.fromhex(v['frame']))==13 for v in frames),
+                'Missing full interrupted C contexts')
+        for c in run['cases']:
+            for slot,value in c['stack_usage'].items():peaks[slot]=max(peaks.get(slot,0),value['peak'])
+        runs[mode]=run
+        runs['pointer-'+mode]=read_native_run(base/('i6-pointer-'+mode),'tools/test_gem_pointer.py')
+        runs['service-'+mode]=read_native_run(base/('i6-service-'+mode),'tools/test_gem_service.py')
+        require({c['name'] for c in runs['service-'+mode]['cases']}==
+                {'worker-port','worker-scratch','stop-port','stop-packet','startup-signal','stop-exhausted'},
+                'Missing service failure controls')
+    production=read_native_run(base/'i6-production','tools/test_gem_interactive.py')
+    require(production['production'] and [c['name'] for c in production['cases']]==['keyboard','latency'],
+            'Missing uninstrumented production replay')
+    runs['production']=production
+    for name in ('raw','opt','production'):
+        folder=base/('i6-'+name); image=json.loads((folder/'c-image.json').read_text())
+        maps[name]=dict(zero_fill=image['zero_fill'],symbols=image['symbols'],
+                        segments=[dict(address=s['address'],bytes=len(s['bytes']),executable=s['executable']) for s in image['segments']],
+                        link_sha256=sha256(folder/'link.lst'))
+    return dict(format='exec816-gem-input-i6-development-v1',status='pass',tier='development',qualification=False,
+        base_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        scope='Physical keyboard/serial latency, wrapped ticks, C contexts, allocation/signal pressure and failure closure.',
+        runs=runs,maps=maps,latency=latency,maximum_observed_stack_bytes=peaks,host_checks=host_checks(host),
+        bank_zero=dict(fixed_delta_bytes=0,per_public_task_delta_bytes=[0]*8,private_idle_delta_bytes=0,
+                       accounting='Complete reservations include guards, alignment and unused capacity.'),
+        source_inputs={p:sha256(ROOT/p) for p in ('tools/record_input_slice.py','tools/gem_interactive_observe.py')},
+        limitations=['Focused development evidence on the pinned emulator, not full qualification or physical hardware.',
+                     'The latency bound covers the recorded small keyboard redraw workload, not arbitrary VDI packets.',
+                     'Wrap cases seed the diagnostic tick counter; they retain native key capture timestamps.',
+                     'Unquiesced rendering and uncertain missing-drive SIO retain resources at FF93 for reset.',
+                     'No physical mouse or AES support.'])
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice', choices=['i0', 'i1', 'i2', 'i3', 'i4', 'i5'], required=True)
+    p.add_argument('--slice', choices=['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6'], required=True)
     p.add_argument('--base', type=Path, default=ROOT/'build/gem-input')
     p.add_argument('--host-log', type=Path, required=True)
     args = p.parse_args()
-    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2, 'i3': record_i3, 'i4': record_i4, 'i5': record_i5}[args.slice](args.base.resolve(), args.host_log)
+    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2, 'i3': record_i3, 'i4': record_i4, 'i5': record_i5, 'i6': record_i6}[args.slice](args.base.resolve(), args.host_log)
     output = ROOT/'docs/development'/('gem-input-'+args.slice+'.json')
     output.write_text(json.dumps(report, indent=2)+'\n')
     print(output)

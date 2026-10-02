@@ -11,6 +11,18 @@ static struct InputEvent injectCopy __attribute__((aligned(2)));
 volatile UWORD injectRequest, injectDone, injectCount, injectResults[33];
 volatile UWORD injectQueued, injectLost, injectWhilePending;
 volatile UWORD holdCursor, cursorHeld, holdLossAck, lossAck, injectAckPhase;
+volatile UWORD holdInput, inputHeld, exhaustReady, exhaustedReady;
+volatile UWORD faultNext, faultInjected, blitsStarted, stopped, permanent;
+UBYTE UiBusy(void)
+{
+    if (faultInjected && (permanent || !stopped)) return 2;
+    return *(volatile UBYTE *)0xd653UL;
+}
+void UiBlitStarted(void)
+{
+    ++blitsStarted;
+    if (faultNext) { faultNext=0; faultInjected=1; }
+}
 void UiLossAck(void)
 {
     UWORD tick;
@@ -38,6 +50,8 @@ static struct InputConfig occupiedConfig __attribute__((aligned(2)));
 static void *held[32];
 static ULONG sizes[32];
 static UWORD heldCount;
+static BYTE heldBits[16];
+static UWORD bitCount;
 static void check(UWORD good)
 {
     ++checks;
@@ -86,6 +100,12 @@ static void restore(void)
 {
     while (heldCount) { --heldCount; FreeMem(held[heldCount],sizes[heldCount]); }
 }
+static void exhaustSignals(void)
+{
+    BYTE bit;
+    while ((bit=AllocSignal(-1))>=0 && bitCount<16) heldBits[bitCount++]=bit;
+    check(AllocSignal(-1)<0);
+}
 void UiProbe(UWORD point)
 {
     if (point==0) {
@@ -95,7 +115,21 @@ void UiProbe(UWORD point)
         check(!ExecSameAddress(address,(void *)((ULONG)&boot|0x1000000UL)));
     }
     if ((point==0 && variant==8) || (point==1 && variant==7)) exhaust();
-    if (point==2) restore();
+    if (point==0 && variant==17) exhaustSignals();
+    if (point==5 && variant==18) exhaustSignals();
+    if (point==2) {
+        restore();
+        while (bitCount) FreeSignal(heldBits[--bitCount]);
+    }
+    if (point==7 && inputHeld==0 && holdInput) {
+        Forbid(); inputHeld=1;
+        while (holdInput) { }
+        inputHeld=0; Permit();
+    }
+    if (point==7 && exhaustReady && !exhaustedReady) {
+        exhaust(); exhaustedReady=1;
+    }
+    if (point==8 && exhaustedReady) restore();
     if (point==3 && variant>=100) {
         application=FindTask(NULL);
         injectorBit=AllocSignal(-1); check(injectorBit>=0);

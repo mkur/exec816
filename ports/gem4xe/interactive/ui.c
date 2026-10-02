@@ -93,6 +93,7 @@ static UWORD finishGraphics(void)
     if (client.session) status=GemClose(&client);
     if (server.state==GEM_RUNNING) status=GemServiceStop(&server);
     if (client.server) check(GemClientDispose(&client)==GEM_OK);
+    PROBE(8);
     return status;
 }
 static UWORD startGraphics(void)
@@ -102,6 +103,7 @@ static UWORD startGraphics(void)
     if (!status) status=GemClientInit(&client,&server);
     if (!status) status=GemOpen(&client);
     if (!status) {
+        PROBE(5);
         inputBit=AllocSignal(-1);
         if (inputBit<0) status=GEM_NO_MEMORY;
     }
@@ -290,6 +292,7 @@ void GemApplication(void)
     Signal(boot.root,boot.rootMask);
     for (;;) {
         busy=controls();
+        PROBE(7);
         if (input.state==INPUT_ACTIVE) {
             for (n=0;n<8;++n) {
                 status=InputTake(&input,&event);

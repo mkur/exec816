@@ -245,3 +245,41 @@ bytes and 16 index/flag/counter bytes within the existing upper C banks. Fixed,
 each public Task and private-idle bank-zero deltas remain zero, including guards,
 alignment and unused capacity. These are development checks; physical mouse
 support and AES remain unsupported.
+
+## I6 Concurrency and failure closure
+
+[I6 evidence](../development/gem-input-i6.json) records native matrix-key capture,
+consumption, packet submission/completion and frame-by-frame scanout checks while
+root performs physical `generic56k` SIO. Serial phase and unchanged terminal-post
+counts prove that input and visible rendering progress within one live transfer.
+Three successive field edits have a maximum capture-to-visible latency of twelve
+PAL ticks in raw mode and eleven in optimized mode, within the sixteen-tick
+target. Separate runs cross the 16-bit tick boundary. They seed the diagnostic
+clock, then use real capture timestamps; pointer injection is excluded.
+
+Each mode runs 25 interactive cases, plus the pointer regression and six service
+startup/shutdown controls. Cases include real heap and signal exhaustion,
+occupied input/display, both large pools occupied, a full 64-record raw ring,
+normalized overflow/stale identity, Escape during actual SIO and outstanding
+rendering, media errors, normal stop, recoverable timeout and permanent busy.
+Heap exhaustion after readiness still permits redraw, exact collection and
+allocation-free shutdown. A renderer failure after readiness now produces
+`GEM renderer failed` after restoring text; the first failure is preserved.
+
+The context case snapshots all thirteen bytes of interrupted native C context
+in each large Task and checks continued exact rendering, unused lower-DP bytes,
+root's preserved C registers and kernel DP. Stack high-water measurements do not
+refill live stacks. Ordinary exits check every guard, input/Task leases, renderer
+resources, root signals, control queues, allocator ownership and OS/aperture
+restoration. Permanent blitter busy retains the accepted packet and ownership at
+`$FF93`; uncertain missing-drive SIO retains its separate offline bus ownership.
+
+The optimized production image repeats keyboard pixels, orderly exit and physical
+latency without the diagnostic producer, gates or hardware-status substitution.
+The bound describes this small redraw workload on the pinned emulator, not
+arbitrary VDI batches or physical hardware. These are development checks, not
+hosted qualification. Fixed, every public Task and private-idle bank-zero
+reservation deltas remain zero, including guards, alignment and reserved slack.
+Across the interactive cases, maximum observed root/application/renderer/kernel
+stack use is 432/230/472/280 bytes. The host suite passes 284 tests, with four
+historical source audits skipped.

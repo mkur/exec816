@@ -3,14 +3,15 @@
 [Implementation plans](../README.md) · [Design note](input-and-events-design.md) ·
 [Current VDI contract](../../reference/gem-vdi.md) · [Roadmap](../../roadmap.md)
 
-Status: I0–I5 implemented and development-checked; I6–I7 remain pending.
+Status: I0–I6 implemented and development-checked; I7 remains pending.
 See the [implementation record](../../history/gem-input.md) and
 [I0 evidence](../../development/gem-input-i0.json) and
 [I1 evidence](../../development/gem-input-i1.json), plus
 [I2 evidence](../../development/gem-input-i2.json) and
 [I3 evidence](../../development/gem-input-i3.json) and
 [I4 evidence](../../development/gem-input-i4.json) and
-[I5 evidence](../../development/gem-input-i5.json). This plan implements
+[I5 evidence](../../development/gem-input-i5.json) and
+[I6 evidence](../../development/gem-input-i6.json). This plan implements
 the design recorded in commit `ad50a42`. I0–I7 deliver native keyboard interaction
 with a small VDI scene during physical SDFS reads, safe console handoff and a
 renderer-owned cursor tested with injected pointer events. Physical mouse support

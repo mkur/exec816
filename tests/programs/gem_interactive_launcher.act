@@ -14,7 +14,7 @@ INCLUDE "c-image.inc"
 INCLUDE "../../c/calypsi/display-bridge.inc"
 INCLUDE "../../c/calypsi/input-bridge.inc"
 CARD FUNC POINTER cMain()
-CARD checks,result,mediaError,startError
+CARD checks,result,mediaError,startError,runtimeError
 LONGINT mediaDetail
 BYTE checkpoint
 BYTE ARRAY diskData(128)
@@ -139,6 +139,8 @@ PROC Main()
 
   Require(DOS.ReleaseContext()<>0)
   Require(Run(3,mediaError)=0)
+  LET boot=GEMCONTROL.Boot POINTER(C_BOOT)
+  runtimeError=boot.result
   Require(DISPLAY.State()=DISPLAY.FREE)
   Require(CONSOLEDRIVER.Start()<>0)
   file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
@@ -151,6 +153,8 @@ PROC Main()
     FI
   ELSEIF startError<>0 THEN
     Require(DOS.Write(file,BYTE POINTER(c"GEM startup failed\n"),19)=19)
+  ELSEIF runtimeError<>0 THEN
+    Require(DOS.Write(file,BYTE POINTER(c"GEM renderer failed\n"),20)=20)
   ELSE
     Require(DOS.Write(file,BYTE POINTER(c"GEM session complete\n"),21)=21)
   FI

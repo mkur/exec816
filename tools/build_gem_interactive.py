@@ -22,7 +22,13 @@ def build_interactive(output,optimize=True,instrument=True):
     extraction=extract(output/'selected'); src=output/'selected/src'
     service=PORT/'service'; adapter=PORT/'adapter'; ui=PORT/'interactive'
     backend=adapter/'gem-vbxe.c'
+    hardware=ROOT/'platform/altirraos/vbxe.c'
     if instrument:
+        text=hardware.read_text().replace('#define BUSY ',
+            'extern UBYTE UiBusy(void);\nextern void UiBlitStarted(void);\nextern volatile UWORD stopped;\n#define BUSY ')
+        text=text.replace('REG(BUSY)&3','UiBusy()&3').replace('REG(BUSY)=0;','REG(BUSY)=0; stopped=1;')
+        text=text.replace('REG(BUSY)=1;','REG(BUSY)=1; UiBlitStarted();')
+        hardware=output/'vbxe-ui.c'; hardware.write_text(text)
         text=backend.read_text().replace('static struct VbxeDisplay display;',
             'extern void UiCursorGate(void);\nstatic struct VbxeDisplay display;')
         text=text.replace('    (void)context;\n    cursor_hide();\n    cursorX=',
@@ -36,7 +42,7 @@ def build_interactive(output,optimize=True,instrument=True):
             'memcpy(e,&lossEvent,sizeof(*e)); uiLoss=0; UiLossAck();')
         events=output/'ui-events-probe.c';events.write_text(text)
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',ROOT/'c/calypsi/input.c',
-        ROOT/'platform/altirraos/vbxe.c',service/'gem-validation.c',service/'gem-service.c',service/'gem-client.c',
+        hardware,service/'gem-validation.c',service/'gem-service.c',service/'gem-client.c',
         src/'vdi/vdi.c',src/'vdi/font.c',src/'vdi/font8x8.c',src/'vdi/dev_vbxe.c',backend,ui/'ui.c',events]
     if instrument: sources.append(ROOT/'tests/programs/gem_interactive_probe.c')
     foreign=emit(output,sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',ROOT/'c/calypsi/input.s',
@@ -47,14 +53,14 @@ def build_interactive(output,optimize=True,instrument=True):
         probes=[(service/'gem-layout.c',gem_layout()),(ui/'ui-layout.c',ui_layout()),
                 (ROOT/'c/calypsi/input-layout.c',input_layout())])
     paths=[*adapter.glob('*'),*service.glob('*'),*ui.glob('*'),*PORT.glob('hosted/*'),*PORT.glob('patches/*'),
-        ROOT/'platform/altirraos/vbxe.c',ROOT/'platform/altirraos/vbxe-map.s',ROOT/'abi/console.json',
+        ROOT/'platform/altirraos/vbxe.c',ROOT/'platform/altirraos/vbxe-map.s',ROOT/'platform/altirraos/vbxe-vram.json',ROOT/'abi/console.json',
         ROOT/'abi/gem-interactive.json',ROOT/'abi/gem-vdi.json',ROOT/'abi/input.json',
         ROOT/'tests/programs/gem_interactive_launcher.act',ROOT/'tests/programs/gem_interactive_probe.c',ROOT/'tools/build_gem_interactive.py',
         ROOT/'tools/generate_gem_interactive.py',*ROOT.glob('c/calypsi/*'),*ROOT.glob('c/include/**/*.h'),
         *ROOT.glob('lib/display/*'),*ROOT.glob('lib/input/*')]
-    foreign['provenance'].update(slice='I4',hardware_execution=True,local_inputs=local_inputs(),
+    foreign['provenance'].update(slice='I6',hardware_execution=True,local_inputs=local_inputs(),
         extraction=extraction,diagnostic=instrument,
-        backend_sha256=sha256(backend),events_sha256=sha256(events),
+        backend_sha256=sha256(backend),events_sha256=sha256(events),hardware_sha256=sha256(hardware),
         source_inputs={p.relative_to(ROOT).as_posix():sha256(p) for p in sorted(set(paths)) if p.is_file()})
     (output/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     include=output/'c-image.inc'
