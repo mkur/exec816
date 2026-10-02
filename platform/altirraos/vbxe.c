@@ -163,37 +163,71 @@ UWORD VbxeRead(struct VbxeDisplay *d, ULONG address, void *destination, UWORD by
 static void word(UBYTE *p,UWORD value)
 { p[0]=(UBYTE)value; p[1]=(UBYTE)(value>>8); }
 
-/* A bounded constant-source fill BCB, suitable for adapter tests and clearing.
- * General raster primitives are integrated with the selected VDI in G4. */
-UWORD VbxeFill(struct VbxeDisplay *d, ULONG address, UWORD stride,
-               UWORD bytes, UWORD rows, UBYTE value)
+/* Half-open full-operation extents; command storage is never raster data. */
+UWORD VbxeBlitExtent(ULONG address,UWORD stride,UWORD bytes,UWORD rows)
 {
-    UBYTE bcb[21];
-    UWORD i,status=check(d);
     ULONG end;
-    if (status!=DISPLAY_OK) return status;
-    if (!bytes || bytes>512 || !rows || rows>256 || stride<bytes || stride>4095)
-        return DISPLAY_BAD_ARGUMENT;
+    if (!bytes || bytes>512 || !rows || rows>256 || stride>4095 ||
+        address>=VBXE_VRAM_BYTES) return 0;
     end=address+(ULONG)(rows-1)*stride+bytes;
-    if (address>=VBXE_SCREEN_BYTES || end>VBXE_SCREEN_BYTES)
+    return end<=VBXE_VRAM_BYTES &&
+        !(address<VBXE_BCB+VBXE_BCB_BYTES && end>VBXE_BCB);
+}
+
+static UWORD getword(const UBYTE *p)
+{ return (UWORD)p[0]|((UWORD)p[1]<<8); }
+static ULONG address(const UBYTE *p)
+{ return (ULONG)getword(p)|((ULONG)p[2]<<16); }
+
+/* Validate every record before mapping or starting DMA. Upload directly into
+ * the private arena so no second 4 KiB CPU buffer or mutable client chain is
+ * needed. Only the owner may enter; the caller retains the CPU records. */
+UWORD VbxeSubmit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
+{
+    const UBYTE *p;
+    volatile UBYTE *window=(volatile UBYTE *)0x8000UL;
+    ULONG work=0;
+    UWORD i,j,n,bytes,rows,status=check(d);
+    if (status!=DISPLAY_OK) return status;
+    if (!count) return DISPLAY_OK;
+    if (count>VBXE_LIST_RECORDS || !extent(0,records,count*21))
         return DISPLAY_BAD_ARGUMENT;
-    status=VbxeFence(d);
-    if (status!=DISPLAY_OK) return status;
-    for (i=0;i<21;i++) bcb[i]=0;
-    bcb[5]=bcb[11]=1;
-    word(bcb+6,(UWORD)address);
-    bcb[8]=(UBYTE)(address>>16);
-    word(bcb+9,stride);
-    word(bcb+12,bytes-1);
-    bcb[14]=(UBYTE)(rows-1);
-    bcb[16]=value;
-    status=VbxeWrite(d,VBXE_BCB,bcb,21);
-    if (status!=DISPLAY_OK) return status;
+    p=records;
+    for (i=0;i<count;i++,p+=21) {
+        n=getword(p+12);
+        if (n>=512 || p[5]!=1 || p[11]!=1 || p[17] || p[18] || p[19] || p[20]>6)
+            return DISPLAY_BAD_ARGUMENT;
+        bytes=n+1; rows=(UWORD)p[14]+1;
+        if (!VbxeBlitExtent(address(p),getword(p+3),bytes,rows) ||
+            !VbxeBlitExtent(address(p+6),getword(p+9),bytes,rows))
+            return DISPLAY_BAD_ARGUMENT;
+        work+=(ULONG)bytes*rows*(p[20] ? 3 : 2);
+        if (work>VBXE_LIST_WORK) return DISPLAY_BAD_ARGUMENT;
+    }
+    if (idle()!=DISPLAY_OK) return recover(d);
+    map(d,(UBYTE)(0x80|(VBXE_BCB>>12)),0x88);
+    p=records; n=0;
+    for (i=0;i<count;i++) {
+        for (j=0;j<20;j++) window[n++]=*p++;
+        window[n++]=(UBYTE)(*p++ | (i+1<count ? 8 : 0));
+    }
+    map(d,0,0);
     REG(0xd650)=d->blit[0]=(UBYTE)VBXE_BCB;
     REG(0xd651)=d->blit[1]=(UBYTE)(VBXE_BCB>>8);
     REG(0xd652)=d->blit[2]=(UBYTE)(VBXE_BCB>>16);
     REG(BUSY)=1;
-    return VbxeFence(d);
+    return idle()==DISPLAY_OK ? DISPLAY_OK : recover(d);
+}
+
+UWORD VbxeFill(struct VbxeDisplay *d, ULONG address, UWORD stride,
+               UWORD bytes, UWORD rows, UBYTE value)
+{
+    UWORD status=check(d);
+    if (status!=DISPLAY_OK) return status;
+    if (!bytes || !rows || stride<bytes || !VbxeBlitExtent(address,stride,bytes,rows) ||
+        address+(ULONG)(rows-1)*stride+bytes>VBXE_SCREEN_BYTES)
+        return DISPLAY_BAD_ARGUMENT;
+    return VbxeBlit(d,0,0,address,stride,bytes,rows,0,value,0);
 }
 
 UWORD VbxeWaitFrame(struct VbxeDisplay *d)
@@ -260,26 +294,28 @@ UWORD VbxeBlit(struct VbxeDisplay *d, ULONG source, UWORD sourceStride,
                UBYTE andMask, UBYTE xorMask, UBYTE mode)
 {
     UBYTE bcb[21];
-    UWORD i,status=check(d);
+    UWORD i,n,limit,status=check(d);
     if (status!=DISPLAY_OK) return status;
-    if (!bytes || bytes>512 || !rows || rows>256 || mode>6 ||
-        sourceStride>4095 || destinationStride>4095 ||
-        source>=VBXE_VRAM_BYTES || destination>=VBXE_VRAM_BYTES ||
-        (ULONG)(rows-1)*sourceStride+bytes>VBXE_VRAM_BYTES-source ||
-        (ULONG)(rows-1)*destinationStride+bytes>VBXE_VRAM_BYTES-destination)
+    if (mode>6 || !VbxeBlitExtent(source,sourceStride,bytes,rows) ||
+        !VbxeBlitExtent(destination,destinationStride,bytes,rows))
         return DISPLAY_BAD_ARGUMENT;
+    limit=(UWORD)VBXE_LIST_WORK/(bytes*(mode ? 3 : 2));
+    if (limit>VBXE_CHUNK_ROWS) limit=VBXE_CHUNK_ROWS;
     for (i=0;i<21;i++) bcb[i]=0;
-    word(bcb,(UWORD)source); bcb[2]=(UBYTE)(source>>16);
     word(bcb+3,sourceStride); bcb[5]=1;
-    word(bcb+6,(UWORD)destination); bcb[8]=(UBYTE)(destination>>16);
     word(bcb+9,destinationStride); bcb[11]=1;
-    word(bcb+12,bytes-1); bcb[14]=(UBYTE)(rows-1);
+    word(bcb+12,bytes-1);
     bcb[15]=andMask; bcb[16]=xorMask; bcb[20]=mode;
-    status=VbxeWrite(d,VBXE_BCB,bcb,21);
-    if (status!=DISPLAY_OK) return status;
-    REG(0xd650)=d->blit[0]=(UBYTE)VBXE_BCB;
-    REG(0xd651)=d->blit[1]=(UBYTE)(VBXE_BCB>>8);
-    REG(0xd652)=d->blit[2]=(UBYTE)(VBXE_BCB>>16);
-    REG(BUSY)=1;
-    return VbxeFence(d);
+    while (rows) {
+        n=rows<limit ? rows : limit;
+        word(bcb,(UWORD)source); bcb[2]=(UBYTE)(source>>16);
+        word(bcb+6,(UWORD)destination); bcb[8]=(UBYTE)(destination>>16);
+        bcb[14]=(UBYTE)(n-1);
+        status=VbxeSubmit(d,bcb,1);
+        if (status!=DISPLAY_OK) return status;
+        source+=(ULONG)n*sourceStride;
+        destination+=(ULONG)n*destinationStride;
+        rows-=n;
+    }
+    return DISPLAY_OK;
 }

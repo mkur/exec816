@@ -2,7 +2,7 @@
  * The donor's window pointers address a private upper-RAM staging page. Flushing
  * it uses the checked G3 transfer and always closes the CPU aperture. A fault
  * latches for the whole call: subsequent void donor callbacks cannot touch HW.
- * Single, synchronous BCBs trade throughput for an explicit completion boundary.
+ * Lists are bounded by count and work; every dependency drains queued DMA.
  */
 #include "gem-vbxe.h"
 #include <hardware/vbxe.h>
@@ -18,6 +18,9 @@ static struct VbxeDisplay display;
 static UBYTE page[4096];
 static ULONG pageAddress;
 static UWORD dirty, fault;
+static UBYTE commands[VBXE_BCB_BYTES];
+static UWORD commandCount;
+static ULONG commandWork;
 #define CURSOR_SAVE 0x37000UL
 #define CURSOR_AND  0x37100UL
 #define CURSOR_OR   0x37200UL
@@ -28,14 +31,22 @@ static UWORD cursorMaskParity;
 
 
 static void latch(UWORD status) { if (status && !fault) fault=status; }
+static void drain(void)
+{
+    if (commandCount && !fault) latch(VbxeSubmit(&display,commands,commandCount));
+    commandCount=0;
+    commandWork=0;
+}
 static void flush(void)
 {
+    drain();
     if (dirty && !fault) latch(VbxeWrite(&display,pageAddress,page,sizeof(page)));
     dirty=0;
 }
 volatile uint8_t *vram_win(uint32_t address)
 {
     ULONG base=address&~0xfffUL;
+    drain();
     if (!dirty || base!=pageAddress) {
         flush();
         if (!fault) latch(VbxeRead(&display,base,page,sizeof(page)));
@@ -46,13 +57,41 @@ volatile uint8_t *vram_win(uint32_t address)
 }
 void blit_start(void) { flush(); }
 void blit_run(void) { flush(); }
-uint8_t blit_pending(void) { return 0; }
+uint8_t blit_pending(void) { return (uint8_t)(commandCount!=0 || dirty); }
 void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
                uint16_t bytes, uint16_t rows, uint8_t am, uint8_t xm, uint8_t mode)
 {
-    flush();
-    if (!fault) latch(VbxeBlit(&display,source,ss,dest,ds,bytes,rows,am,xm,mode));
+    UWORD i,n,limit;
+    ULONG work;
+    UBYTE *record;
+    if (fault) return;
+    /* Check the whole operation before an arena flush could draw a prefix. */
+    if (mode>6 || !VbxeBlitExtent(source,ss,bytes,rows) ||
+        !VbxeBlitExtent(dest,ds,bytes,rows)) {
+        latch(DISPLAY_BAD_ARGUMENT); return;
+    }
+    if (dirty) flush();
+    limit=(UWORD)VBXE_LIST_WORK/(bytes*(mode ? 3 : 2));
+    if (limit>VBXE_CHUNK_ROWS) limit=VBXE_CHUNK_ROWS;
+    while (rows && !fault) {
+        n=rows<limit ? rows : limit;
+        work=(ULONG)bytes*n*(mode ? 3 : 2);
+        if (commandCount==VBXE_LIST_RECORDS || commandWork+work>VBXE_LIST_WORK) drain();
+        if (fault) return;
+        record=commands+commandCount*21;
+        for (i=0;i<21;i++) record[i]=0;
+        record[0]=(UBYTE)source; record[1]=(UBYTE)(source>>8); record[2]=(UBYTE)(source>>16);
+        record[3]=(UBYTE)ss; record[4]=(UBYTE)(ss>>8); record[5]=1;
+        record[6]=(UBYTE)dest; record[7]=(UBYTE)(dest>>8); record[8]=(UBYTE)(dest>>16);
+        record[9]=(UBYTE)ds; record[10]=(UBYTE)(ds>>8); record[11]=1;
+        record[12]=(UBYTE)(bytes-1); record[13]=(UBYTE)((bytes-1)>>8);
+        record[14]=(UBYTE)(n-1); record[15]=am; record[16]=xm; record[20]=mode;
+        commandCount++;
+        commandWork+=work;
+        source+=(ULONG)n*ss; dest+=(ULONG)n*ds; rows-=n;
+    }
 }
+
 void blit_fill(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
 { blit_mask(0,0,d,s,b,r,0,v,0); }
 void blit_and(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
@@ -124,14 +163,16 @@ static UWORD close_backend(void *context)
      * never returns from the driver's reset-required path. */
     if (display.lease.state && VbxeClose(&display)!=DISPLAY_OK) status=GEM_DEVICE_FAULT;
     if (fault) status=GEM_DEVICE_FAULT;
-    dirty=0;
+    dirty=commandCount=0;
+    commandWork=0;
     return status;
 }
 static UWORD open_backend(void *context,WORD *out)
 {
     UWORD status;
     (void)context;
-    dirty=fault=0;
+    dirty=fault=commandCount=0;
+    commandWork=0;
     cursorX=cursorY=cursorVisible=cursorDrawn=cursorBytes=cursorRows=0;
     cursorAddress=0;
     cursorMaskParity=2;

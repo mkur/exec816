@@ -3,8 +3,8 @@
 [Design note](bitmap-console-design.md) · [Implementation plans](../README.md) ·
 [GEM work](README.md) · [Roadmap](../../roadmap.md)
 
-Status: implementation started, 3 October 2026. B0 development baseline recorded;
-B1–B9 remain unimplemented. This plan implements
+Status: implementation started, 3 October 2026. B0 baseline and B1 bounded lists have passed development checks;
+B2–B9 remain unimplemented. This plan implements
 the design's 80×30 bitmap backend for the existing console, improving the shared
 VDI drawing path first. Each slice must leave an executable, reviewable result;
 commit it with its focused development evidence before starting the next slice.
@@ -124,6 +124,16 @@ empty/oversized/malformed lists, arena exhaustion, scratch reuse, cursor drawing
 partial-command failure, timeout wrap, recoverable STOP and reset-required park.
 B0 reports fewer submissions for long strings without changed pixels or GEM
 completion counts. Commit the adapter and hosted backend together.
+
+B1 development evidence: [bounded lists](../../development/bitmap-console-b1.json).
+Raw/optimized drawing, maximum/invalid lists, mapping interruption, fault
+recovery, cursor and a concurrent physical-SDFS workload passed. A 64-character
+line drops from 480 to 185 ms without ST capture; 129 submissions become three.
+Chunked full-screen copies cost more total time than the previous long command;
+B3/B7/B8 retain the original latency gate. These are development measurements,
+not achieved desktop responsiveness. Added reservations: bank zero 0 in every
+category, upper construction storage 4,096 bytes inside the existing C bank,
+and VRAM +3,840 bytes including unused command capacity.
 
 ## B2 Optimize text and request construction
 

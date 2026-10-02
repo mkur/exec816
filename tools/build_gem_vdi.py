@@ -236,7 +236,10 @@ def build_concurrent_probe(output, optimize=True, instrument=True):
         hardware=hardware.replace('#define BUSY ', 'extern UBYTE ProbeBusy(void);\nextern volatile UWORD stopped;\n#define BUSY ')
         hardware=hardware.replace('REG(BUSY)&3','ProbeBusy()&3').replace('REG(BUSY)=0;', 'REG(BUSY)=0; stopped=1;')
         backend=backend.replace('static struct VbxeDisplay display;', 'extern void ProbeDraw(void);\nextern void ProbeCommand(void);\nextern void ProbeSnapshot(struct VbxeDisplay *);\nstatic struct VbxeDisplay display;')
-        backend=backend.replace('VbxeBlit(&display,source,ss,dest,ds,bytes,rows,am,xm,mode));', 'VbxeBlit(&display,source,ss,dest,ds,bytes,rows,am,xm,mode));\n    if (!fault) ProbeDraw();')
+        draw_hook='if (commandCount && !fault) latch(VbxeSubmit(&display,commands,commandCount));'
+        require(draw_hook in backend,'Changed queued-drawing observer boundary')
+        backend=backend.replace(draw_hook,
+            'if (commandCount && !fault) { latch(VbxeSubmit(&display,commands,commandCount)); if (!fault) ProbeDraw(); }')
         backend=backend.replace('return GemVdiCommand(cmd->opcode', 'ProbeCommand();\n    return GemVdiCommand(cmd->opcode')
         backend=backend.replace('return fault ? GEM_DEVICE_FAULT : GEM_OK;', 'if (!fault) ProbeSnapshot(&display);\n    return fault ? GEM_DEVICE_FAULT : GEM_OK;')
     (output/'vbxe-concurrent.c').write_text(hardware)

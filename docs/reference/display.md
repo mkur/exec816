@@ -42,6 +42,25 @@ validated before writes. `VbxePalette` installs 16 RGB entries in overlay palett
 1; `VbxeShow` enables fixed 640×240 presentation without replacing that palette.
 `VbxePresent` is the grayscale test-pattern convenience operation.
 
+`VbxeSubmit(display,records,count)` synchronously submits 0–64 packed 21-byte
+CPU records. The caller retains unchanged records until return. All records
+are checked before mapping: dimensions, complete positive-step VRAM extents,
+X steps of one, modes 0–6, zero pattern/zoom/collision and chain bits, and a
+maximum estimated work of 8,192 bus accesses (two per copied byte, three for
+other modes). The driver inserts chain bits while uploading into its own arena;
+clients cannot provide a hardware list address. Invalid lists execute no prefix.
+A zero count is a no-op after owner validation. CPU buffers may not overlap the
+MEMAC aperture or exceed the CPU address space.
+
+The command arena is the full 4 KiB at `$38000–$38FFF`; raster sources and
+destinations cannot intersect it. Both list count and work limit apply, despite
+physical space for 195 records. The hosted renderer reserves one 4 KiB upper-RAM
+construction buffer, separate from its existing clipped-pixel staging page.
+`VbxeBlit` and `VbxeFill` validate the whole operation, then split it into lists
+of at most sixteen rows, reduced further by the work limit. An error after an
+earlier chunk leaves that prefix drawn and follows normal device recovery.
+These limits bound work; they are not a measured two-millisecond guarantee.
+
 Only the cold-boot inactive full FX 1.26 core at `$D600`, private 512 KiB VRAM,
 with VBXE interrupts off is supported. The launcher's private boot authorization
 is required in addition to exact identity reads. Standard text launchers do not

@@ -32,8 +32,8 @@ class DisplayABI(unittest.TestCase):
         for left,right in zip(regions,regions[1:]):
             self.assertLessEqual(left['base']+left['reserved_bytes'],right['base'])
         bcb=next(r for r in regions if r['name']=='bcb')
-        self.assertEqual(bcb['capacity_bytes'],12*21)
-        self.assertEqual(bcb['base']+bcb['reserved_bytes'],0x30200)
+        self.assertEqual(bcb['capacity_bytes'],195*21)
+        self.assertEqual(bcb['base']+bcb['reserved_bytes'],0x39000)
         for diagnostic in memory['diagnostics']:
             self.assertTrue(all(diagnostic['base']+diagnostic['bytes']<=r['base'] or
                                 diagnostic['base']>=r['base']+r['reserved_bytes'] for r in regions))

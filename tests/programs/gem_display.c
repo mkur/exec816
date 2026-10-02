@@ -11,6 +11,7 @@ struct VbxeDisplay display,other;
 static struct Task *parent,*renderer,*peer;
 static struct TaskLease peerLease,rendererLease;
 static UBYTE readback[320],crossing[32];
+static UBYTE list[VBXE_BCB_BYTES];
 static ULONG rootMask;
 static BYTE rootBit;
 static volatile UWORD retired;
@@ -50,6 +51,7 @@ void Peer(void)
 {
     Wait(1);
     check(VbxeFence(&display)==DISPLAY_INVALID_OWNER);
+    check(VbxeSubmit(&display,NULL,0)==DISPLAY_INVALID_OWNER);
     check(VbxeClose(&display)==DISPLAY_INVALID_OWNER);
     check(VbxeOpen(&other)==DISPLAY_BUSY);
     compute(0);
@@ -58,6 +60,53 @@ void Peer(void)
     retired++;
     Signal(parent,rootMask);
     RemTask(NULL);
+}
+
+/* Invalid later records must not execute an earlier valid prefix. The valid
+ * maximum list paints independently known bytes and guards the unused arena. */
+static void lists(void)
+{
+    UWORD i;
+    UBYTE *r;
+    memset(list,0,sizeof(list));
+    check(VbxeSubmit(&display,NULL,0)==DISPLAY_OK);
+    check(VbxeSubmit(&display,NULL,1)==DISPLAY_BAD_ARGUMENT);
+    check(VbxeSubmit(&display,(UBYTE *)0x8000UL,1)==DISPLAY_BAD_ARGUMENT);
+    check(VbxeSubmit(&display,(UBYTE *)0xffffffUL,1)==DISPLAY_BAD_ARGUMENT);
+    check(VbxeSubmit(&display,list,65)==DISPLAY_BAD_ARGUMENT);
+    for (i=0;i<64;i++) {
+        r=list+i*21;
+        r[5]=r[11]=1;
+        r[6]=(UBYTE)(640+i); r[7]=2;
+        r[16]=(UBYTE)(i+1);
+    }
+    memset(readback,0xa5,320);
+    check(VbxeWrite(&display,640,readback,64)==DISPLAY_OK);
+    check(VbxeWrite(&display,VBXE_BCB+64*21,readback,32)==DISPLAY_OK);
+    list[21+20]=8;
+    check(VbxeSubmit(&display,list,2)==DISPLAY_BAD_ARGUMENT);
+    check(VbxeRead(&display,640,readback,64)==DISPLAY_OK);
+    for (i=0;i<64;i++) check(readback[i]==0xa5);
+    list[41]=0;
+    list[12]=255; list[13]=1; list[14]=255;
+    check(VbxeSubmit(&display,list,1)==DISPLAY_BAD_ARGUMENT);
+    list[12]=list[13]=list[14]=0;
+    list[8]=8;
+    check(VbxeSubmit(&display,list,1)==DISPLAY_BAD_ARGUMENT);
+    list[6]=0; list[7]=0x80; list[8]=3;
+    check(VbxeSubmit(&display,list,1)==DISPLAY_BAD_ARGUMENT);
+    list[6]=0x80; list[7]=2; list[8]=0;
+    list[4]=0x10;
+    check(VbxeSubmit(&display,list,1)==DISPLAY_BAD_ARGUMENT);
+    list[4]=0;
+    list[19]=128;
+    check(VbxeSubmit(&display,list,1)==DISPLAY_BAD_ARGUMENT);
+    list[19]=0;
+    check(VbxeSubmit(&display,list,64)==DISPLAY_OK);
+    check(VbxeRead(&display,640,readback,64)==DISPLAY_OK);
+    for (i=0;i<64;i++) check(readback[i]==i+1);
+    check(VbxeRead(&display,VBXE_BCB+64*21,readback,32)==DISPLAY_OK);
+    for (i=0;i<32;i++) check(readback[i]==0xa5);
 }
 
 static void pattern(void)
@@ -71,6 +120,7 @@ static void pattern(void)
     memset(readback,0,sizeof(readback));
     check(VbxeRead(&display,0x3fff0UL,readback,32)==DISPLAY_OK);
     check(!memcmp(readback,crossing,32));
+    lists();
     memset(readback,0xa5,sizeof(readback));
     check(VbxeWrite(&display,VBXE_SCREEN_BYTES,readback,16)==DISPLAY_OK);
     check(VbxeWrite(&display,VBXE_XDL+12,readback,244)==DISPLAY_OK);

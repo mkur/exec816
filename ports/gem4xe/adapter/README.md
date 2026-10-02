@@ -22,9 +22,15 @@ The donor device's window pointers refer to a private 4,096-byte upper-RAM stagi
 page. Changing pages flushes the previous page through checked VRAM transfers;
 issuing a blit flushes and invalidates it first. The driver closes MEMAC before
 returning. The selected fill, glyph expansion and clipped-raster algorithms remain
-upstream code. Individual 21-byte blits execute synchronously through `VbxeBlit`;
-there is no donor command queue or unbounded hardware wait. This first integration
-prioritizes explicit completion and ownership over throughput.
+upstream code. The adapter queues records in one 4,096-byte upper-RAM construction arena.
+It drains at 64 records or 8,192 estimated bus accesses, before CPU staging
+reads/writes or scratch reuse, and at the command's final fence. `blit_pending`
+reports retained work; `blit_start` and `blit_run` both complete the bounded list
+synchronously. Long rectangles are split into at most sixteen-row chunks,
+further reduced by the work budget. No VBXE IRQ or second aperture is enabled.
+The driver validates each full list and inserts chaining itself. A failed
+submission latches the command fault; a partially flushed VDI command is not
+reported complete.
 
 Because donor callbacks return void, the backend latches the first hardware
 error. Further callbacks cannot touch hardware, and the service fence reports
@@ -43,8 +49,8 @@ bounded correctness, not a frame-rate guarantee.
 
 G4 reserves zero additional bank-zero bytes: fixed, each public Task, and idle.
 The existing whole C code/data banks remain reserved (131,072 bytes including
-unused capacity); staging consumes 4,096 bytes within the data bank. VRAM now
-reserves 108,032 bytes including padding: screen 81,920, XDL 256, BCB 256,
+unused capacity); staging consumes 4,096 bytes within the data bank. B1 adds 4,096 construction bytes inside the existing data bank. VRAM now
+reserves 111,872 bytes including padding: screen 81,920, XDL 256, BCB 4,096,
 font masks 20,480 (18,432 used), glyph scratch 4,096 and cursor storage 1,024. These reservations are
 separate from CPU RAM. The test's 76,800-byte CPU readback allocation, font copy
 and borrowed observer scratch are diagnostics, not production renderer storage.
