@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "alignment": 2,
+  "constants": {
+    "SOURCE_KEYBOARD": 2,
+    "OK": 0, "EMPTY": 1, "BUSY": 2, "BAD_ARGUMENT": 3,
+    "INVALID_OWNER": 4, "EXHAUSTED": 5, "UNSUPPORTED": 6, "NO_MEMORY": 7,
+    "FREE": 0, "ACQUIRING": 1, "ACTIVE": 2, "RELEASING": 3,
+    "EVENT_KEY": 1, "EVENT_POINTER": 2, "EVENT_BUTTON": 3, "EVENT_LOSS": 4, "EVENT_CANCEL": 5,
+    "TICK_VALID": 1, "INJECTED": 2, "SHIFT": 1, "CONTROL": 2, "LEFT": 1,
+    "LOSS_RAW": 1, "LOSS_NORMALIZED": 2, "LOSS_HARDWARE": 3,
+    "CANCEL_BREAK": 1, "CANCEL_KEY_FILTER": 2, "CAPTURE_BREAK": 1,
+    "PENDING_DATA": 1, "PENDING_LOSS": 2, "PENDING_CANCEL": 4,
+    "ROUTE_SLOTS": 16, "RAW_SLOTS": 64
+  },
+  "records": {
+    "Lease": {
+      "bytes": 32,
+      "fields": [
+        ["owner", "TaskLease", 0], ["acquisition", "u32", 12],
+        ["route", "u32", 16], ["wakeMask", "u32", 20],
+        ["state", "u16", 24], ["flags", "u16", 26], ["reserved", "u32", 28]
+      ]
+    },
+    "Config": {
+      "bytes": 16,
+      "fields": [
+        ["version", "u16", 0], ["source", "u16", 2], ["wakeMask", "u32", 4],
+        ["filter0Value", "u8", 8], ["filter0Mask", "u8", 9],
+        ["filter1Value", "u8", 10], ["filter1Mask", "u8", 11],
+        ["filterCount", "u8", 12], ["flags", "u8", 13], ["reserved", "u16", 14]
+      ]
+    },
+    "Event": {
+      "bytes": 24,
+      "fields": [
+        ["acquisition", "u32", 0], ["route", "u32", 4], ["tick", "u16", 8],
+        ["kind", "u8", 10], ["flags", "u8", 11], ["code", "u16", 12],
+        ["qualifiers", "u16", 14], ["x", "i16", 16], ["y", "i16", 18],
+        ["buttons", "u16", 20], ["reserved", "u16", 22]
+      ]
+    }
+  }
+}

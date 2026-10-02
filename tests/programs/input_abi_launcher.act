@@ -1,0 +1,72 @@
+MODULE INPUTABI
+USE EXEC
+USE INPUT
+USE HEAPCORE
+INCLUDE "c-image.inc"
+INCLUDE "../../c/calypsi/input-bridge.inc"
+CARD FUNC POINTER cMain()
+CARD checks,result
+
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($f800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Observe all four bytes of the scalar argument without pretending admission
+; succeeded. The ordinary runtime entry still reports UNSUPPORTED in I1.
+CARD FUNC ProbePublish(LONGCARD lease,recordValue,value)
+
+  Require(value=$1234567f)
+
+RETURN(CInputPublishRoute(lease,recordValue,value))
+
+PROC Main()
+
+  LET entry=ADDRESS POINTER(@cMain)
+  entry^=C_MAIN
+  BindInput()
+  LET entries=ADDRESS POINTER(C_EXECINPUTENTRIES)
+  entries(2)=ADDRESS(@ProbePublish)
+  Require(SIZEOF(INPUT.Lease)=INPUT.LEASE_BYTES)
+  Require(SIZEOF(INPUT.Config)=INPUT.CONFIG_BYTES)
+  Require(SIZEOF(INPUT.Event)=INPUT.EVENT_BYTES)
+  result=cMain()
+  Require(result=0)
+  LET config=INPUT.Config POINTER(C_CONFIG)
+  Require(config.version=1 AND config.source=2)
+  Require(config.wakeMask=$92345678)
+  Require(config.filter0Value=$1c AND config.filter0Mask=$3f)
+  Require(config.filter1Value=$92 AND config.filter1Mask=$bf)
+  Require(config.filterCount=2 AND config.flags=1 AND config.reserved=0)
+  LET lease=INPUT.Lease POINTER(C_LEASE)
+  Require(ADDRESS(lease.owner.task)=$061234 AND lease.owner.pad=$ab)
+  Require(lease.owner.incarnation=$55667788)
+  Require(lease.owner.identity=$089abc AND lease.owner.pad2=$cd)
+  Require(lease.acquisition=$11223344 AND lease.route=$89abcdef)
+  Require(lease.wakeMask=$80706050 AND lease.state=$1234)
+  Require(lease.flags=$beef AND lease.reserved=$fedcba98)
+  LET event=INPUT.Event POINTER(C_EVENT)
+  event.acquisition=$12345678
+  event.route=$abcdef03
+  event.tick=$fffe
+  event.kind=INPUT.EVENT_BUTTON
+  event.flags=INPUT.INJECTED
+  event.code=INPUT.LEFT
+  event.qualifiers=3
+  event.x=-123
+  event.y=239
+  event.buttons=1
+  event.reserved=0
+  LET stage=CARD POINTER(C_STAGE)
+  stage^=1
+  result=cMain()
+  Require(result=0)
+
+RETURN
+
+ENDMODULE

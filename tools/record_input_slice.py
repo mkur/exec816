@@ -28,8 +28,8 @@ def read_run(folder):
             continue
         require(sha256(ROOT/path) == digest, 'Stale source: '+path)
     if 'harness_sha256' in report:
-        runner = ROOT/('tools/test_gem_concurrent.py' if report['slice'] == 'G5'
-                       else 'tools/test_'+report['slice']+'.py')
+        runner = ROOT/{'G5': 'tools/test_gem_concurrent.py',
+                       'I1': 'tools/test_input.py'}[report['slice']]
         require(sha256(runner) == report['harness_sha256'], 'Stale observer')
     xex = folder/'program/program.xex'
     digest = sha256(xex)
@@ -69,6 +69,13 @@ def distribution(folder, run):
                 bytes=archive.stat().st_size, members=hashes)
 
 
+def host_checks(host):
+    log = host.read_text()
+    match = re.search(r'Ran (\d+) tests', log)
+    require(match and re.search(r'\nOK(?: \(skipped=\d+\))?\s*$', log), 'Host checks failed')
+    return dict(tests=int(match[1]), log_sha256=sha256(host))
+
+
 def record_i0(base, host):
     from test_gem_concurrent import CASES
     runs = {name: read_run(base/name) for name in
@@ -94,9 +101,6 @@ def record_i0(base, host):
     for text in maps:
         match = re.search(r"^server in section 'zhuge'.* of size ([0-9a-f]+)$", text, re.M)
         require(match and int(match[1], 16) == 84, 'Unmeasured server record')
-    log = host.read_text()
-    match = re.search(r'Ran (\d+) tests', log)
-    require(match and re.search(r'\nOK(?: \(skipped=\d+\))?\s*$', log), 'Host checks failed')
     paths = ['tools/record_input_slice.py', 'tools/build_gem_artifact.py',
              'tools/package_demo.py', 'tests/test_demo_package.py',
              'docs/gem-vdi-distribution.txt']
@@ -112,18 +116,50 @@ def record_i0(base, host):
                        heap_lifetime_delta_bytes=192, peak_heap_delta_bytes=0),
         maximum_observed_stack_bytes=peaks, runs=runs, distribution=package,
         source_inputs={p: sha256(ROOT/p) for p in paths},
-        host_checks=dict(tests=int(match[1]), log_sha256=sha256(host)),
+        host_checks=host_checks(host),
         limitations=['Focused development evidence on the pinned emulator, not full qualification.',
                      'Keyboard interaction and cursor remain later slices; no mouse or AES claim.'])
 
 
+def record_i1(base, host):
+    from generate_input import ABI, expected_layout, files
+    for path, content in files().items():
+        require(path.read_text() == content, 'Stale generated input ABI')
+    runs = {mode: read_run(base/('i1-'+mode)) for mode in ('raw', 'opt')}
+    for mode, run in runs.items():
+        require(run['mode'] == mode and [c['name'] for c in run['cases']] == ['abi'],
+                'Missing input ABI probe')
+        require(all(run['layout'][label] == value for label, value in expected_layout()),
+                'Emitted input layout mismatch')
+        require(run['cases'][0]['c_context'] and run['cases'][0]['failures'] == 0,
+                'Missing guarded C context')
+        require(run['bank_zero_delta'] == dict(fixed=0, per_task=[0]*8, private_idle=0),
+                'Unexpected bank-zero reservation')
+    paths = ['abi/input.json', 'abi/tasks.json', 'tools/record_input_slice.py',
+             'tools/library_paths.py', 'tests/test_input_abi.py', 'LICENSING.md']
+    return dict(format='exec816-gem-input-i1-development-v1', status='pass', tier='development',
+        qualification=False, base_revision=subprocess.check_output(
+            ['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+        scope='Generated input records and checked C/native marshalling; no hardware admission.',
+        abi=ABI, runs=runs, host_checks=host_checks(host),
+        bank_zero=dict(fixed_delta_bytes=0, per_public_task_delta_bytes=[0]*8,
+                       private_idle_delta_bytes=0,
+                       accounting='Complete reservations include guards, alignment and unused capacity.'),
+        upper_ram=dict(c_entry_table_bytes=24, lease_bytes=32, config_bytes=16, event_bytes=24,
+                       reserved_c_banks=[12, 13], reserved_c_bytes=131072,
+                       reserved_c_delta_bytes=0, heap_lifetime_delta_bytes=0),
+        source_inputs={p: sha256(ROOT/p) for p in paths},
+        limitations=['Acquire and all other runtime operations explicitly return UNSUPPORTED until I3.',
+                     'No keyboard, physical pointer, AES or hosted qualification claim.'])
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice', choices=['i0'], required=True)
+    p.add_argument('--slice', choices=['i0', 'i1'], required=True)
     p.add_argument('--base', type=Path, default=ROOT/'build/gem-input')
     p.add_argument('--host-log', type=Path, required=True)
     args = p.parse_args()
-    report = record_i0(args.base.resolve(), args.host_log)
+    report = {'i0': record_i0, 'i1': record_i1}[args.slice](args.base.resolve(), args.host_log)
     output = ROOT/'docs/development'/('gem-input-'+args.slice+'.json')
     output.write_text(json.dumps(report, indent=2)+'\n')
     print(output)
