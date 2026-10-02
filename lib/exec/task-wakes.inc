@@ -74,6 +74,10 @@ SignalBinding POINTER FUNC ProducerBinding(CARD source)
     RETURN(KeyboardBinding())
   FI
 
+  IF source=T_PRODUCER_POINTER_INPUT THEN
+    RETURN(PointerBinding())
+  FI
+
 RETURN(NULL)
 
 ; Keep both the recipient and controller alive until inactive wakes retire.
@@ -84,7 +88,7 @@ BYTE FUNC BoundProducer(TaskControl POINTER ctx)
     RETURN(1)
   FI
 
-  FOR source=T_PRODUCER_SERIAL TO T_PRODUCER_KEYBOARD DO
+  FOR source=T_PRODUCER_SERIAL TO T_PRODUCER_POINTER_INPUT DO
     BEGIN
       LET binding=ProducerBinding(source)
       IF binding<>NULL THEN
@@ -102,7 +106,7 @@ RETURN(0)
 BYTE FUNC ProducerSignalBound(TaskControl POINTER ctx LONGCARD mask)
   CARD source
 
-  FOR source=T_PRODUCER_SERIAL TO T_PRODUCER_KEYBOARD DO
+  FOR source=T_PRODUCER_SERIAL TO T_PRODUCER_POINTER_INPUT DO
     BEGIN
       LET binding=ProducerBinding(source)
       IF binding<>NULL THEN
@@ -155,8 +159,10 @@ CARD FUNC ProducerControl(TaskControl POINTER caller CARD saved BYTE service)
     IF binding.context<>NULL THEN
       IF source=T_PRODUCER_SERIAL THEN
         SerialRelease()
-      ELSE
+      ELSEIF source=T_PRODUCER_KEYBOARD THEN
         KeyboardRelease()
+      ELSE
+        PointerRelease()
       FI
     FI
 
@@ -202,8 +208,10 @@ CARD FUNC ProducerControl(TaskControl POINTER caller CARD saved BYTE service)
   binding.pad=caller.id
   IF source=T_PRODUCER_SERIAL THEN
     base=CARD(SerialClaim())
-  ELSE
+  ELSEIF source=T_PRODUCER_KEYBOARD THEN
     base=CARD(KeyboardClaim())
+  ELSE
+    base=CARD(PointerClaim())
   FI
   IF base=0 THEN
     binding.task=NULL

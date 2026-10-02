@@ -342,7 +342,9 @@ ENDMODULE
         '"input-storage.act.inc"', '"'+str(Path(output)/'input-storage.act.inc')+'"')
     if irq_probe == 10:
         input_policy = ('PROC InputInit()\nRETURN\nSignalBinding POINTER FUNC KeyboardBinding()\n'
-                        'RETURN(NULL)\nBYTE FUNC KeyboardClaim()\nRETURN(0)\nPROC KeyboardRelease()\nRETURN\n')
+                        'RETURN(NULL)\nBYTE FUNC KeyboardClaim()\nRETURN(0)\nPROC KeyboardRelease()\nRETURN\n'
+                        'SignalBinding POINTER FUNC PointerBinding()\nRETURN(NULL)\n'
+                        'BYTE FUNC PointerClaim()\nRETURN(0)\nPROC PointerRelease()\nRETURN\n')
     (directory/'task-input.inc').write_text(input_policy)
     driver = read_source(ROOT/'lib/input/input.act').replace(
         '"input-storage.act.inc"', '"'+str(Path(output)/'input-storage.act.inc')+'"')

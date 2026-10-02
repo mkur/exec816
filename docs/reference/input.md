@@ -8,7 +8,8 @@ interactive GEM application use the same implementation. It owns hardware captur
 and route identities; consumers own text translation, focus and interaction.
 It adds no Task, private kernel service or COP signature. The public C surface is
 [exec/input.h](../../c/include/exec/input.h); exact generated records and constants
-come from [input.json](../../abi/input.json). Version is 1.
+come from [input.json](../../abi/input.json). Configuration version is 2; rebuild
+callers when updating from version 1.
 Standalone C images bind the eight-entry native table through
 [input-bridge.inc](../../c/calypsi/input-bridge.inc) before admitting C callers,
 as shown by the [interactive launcher](../../tests/programs/gem_interactive_launcher.act).
@@ -26,10 +27,12 @@ in Exec's shared address space.
 | Record | Bytes | Contents |
 | --- | ---: | --- |
 | InputLease | 32 | Task lease, acquisition generation, published route, wake mask, state and reserved fields. Zero before Acquire; otherwise opaque and address-stable. |
-| InputConfig | 16 | Version, source, wake mask, two raw-key value/mask pairs, filter count, flags and reserved word. |
+| InputConfig | 32 | Version, source, wake mask, keyboard filters/flags, pointer protocol/port, initial position, inclusive bounds and zero reserved fields. |
 | InputEvent | 24 | Acquisition and route u32; tick u16; kind/flags u8; code/qualifiers u16; x/y i16; buttons/reserved u16. |
 
-Only `SOURCE_KEYBOARD=2` is admitted. Other sources return UNSUPPORTED. Supply a
+Only `SOURCE_KEYBOARD=2` is admitted at the M2 boundary. `SOURCE_POINTER=3`
+configuration is validated, but Acquire returns UNSUPPORTED until its capture
+backend is installed. Supply a
 nonzero wake mask whose bits are already allocated to the current Task. Acquire
 copies configuration, retains the consumer and its signal binding, and activates
 capture only after admission succeeds. It starts with route zero, which discards
@@ -43,6 +46,15 @@ only flag is `CAPTURE_BREAK=1`. A matching raw scan becomes durable cancellation
 without an additional ordinary KEY. GEM selects Escape `$1C/$3F` plus BREAK;
 console selects Ctrl-C `$92/$BF` plus BREAK. IRQ work matches raw codes and latches
 routes; it never translates characters or invokes application callbacks.
+
+Keyboard configurations require bytes 16–31 to be zero. Pointer configurations
+require the keyboard fields at 8–15 to be zero, `pointerProtocol=POINTER_ST=1`
+at offset 16 and `pointerPort=1` at 18. Signed 16-bit `initialX`, `initialY`,
+`maxX`, `maxY` occupy offsets 20, 22, 24 and 26. Bounds are inclusive, start at
+zero, and must contain the initial position; negative values are malformed.
+The reserved u32 at offset 28 is zero for both sources. Unknown source, protocol
+or port returns UNSUPPORTED; malformed fields/version return BAD_ARGUMENT before
+hardware changes.
 
 ## Calls and ownership
 
@@ -66,7 +78,10 @@ publication guards serialize state with Task switching, IRQ and NMI.
 
 Status values are OK=0, EMPTY=1, BUSY=2, BAD_ARGUMENT=3, INVALID_OWNER=4,
 EXHAUSTED=5, UNSUPPORTED=6 and NO_MEMORY=7. Failed admission unwinds its partial
-ownership. Acquisition uses a monotonic 32-bit generation; routes use
+ownership. Existing leases are located by their address in fixed source
+descriptors before complete identity validation. Acquisition uses one monotonic
+32-bit allocator shared by all sources; each source retains its own generation,
+capture state, route slots and notices. Routes use
 `(epoch << 4) | slot` with a 28-bit epoch. Both refuse exhaustion before wrap.
 Release purges the old acquisition before its storage can serve another consumer.
 

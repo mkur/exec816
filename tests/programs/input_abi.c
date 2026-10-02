@@ -4,6 +4,7 @@
 
 struct InputLease lease;
 struct InputConfig config;
+struct InputConfig pointerConfig;
 struct InputEvent event;
 volatile UWORD stage, checks, failures, first_failure, progress;
 volatile ULONG checksum;
@@ -70,6 +71,35 @@ UWORD main(void)
     config.filter0Value = 0x1c; config.flags = 2;
     check(InputAcquire(&lease, &config) == INPUT_BAD_ARGUMENT);
     config.flags = INPUT_CAPTURE_BREAK;
+    /* M2 validates the complete pointer record before rejecting admission. */
+    pointerConfig.version = INPUT_VERSION;
+    pointerConfig.source = INPUT_SOURCE_POINTER;
+    pointerConfig.wakeMask = 0x10000UL;
+    pointerConfig.pointerProtocol = INPUT_POINTER_ST;
+    pointerConfig.pointerPort = 1;
+    pointerConfig.initialX = 320; pointerConfig.initialY = 120;
+    pointerConfig.maxX = 639; pointerConfig.maxY = 239;
+    check(InputAcquire(&lease, &pointerConfig) == INPUT_UNSUPPORTED);
+    pointerConfig.version = 1;
+    check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
+    pointerConfig.version = INPUT_VERSION; pointerConfig.reserved2 = 1;
+    check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
+    pointerConfig.reserved2 = 0; pointerConfig.pointerProtocol = 2;
+    check(InputAcquire(&lease, &pointerConfig) == INPUT_UNSUPPORTED);
+    pointerConfig.pointerProtocol = INPUT_POINTER_ST; pointerConfig.pointerPort = 2;
+    check(InputAcquire(&lease, &pointerConfig) == INPUT_UNSUPPORTED);
+    pointerConfig.pointerPort = 1; pointerConfig.flags = INPUT_CAPTURE_BREAK;
+    check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
+    pointerConfig.flags = 0; pointerConfig.initialX = 640;
+    check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
+    pointerConfig.initialX = 320; pointerConfig.initialY = -1;
+    check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
+    pointerConfig.initialY = 120; pointerConfig.maxX = -1;
+    check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
+    pointerConfig.maxX = 639;
+    config.pointerPort = 1;
+    check(InputAcquire(&lease, &config) == INPUT_BAD_ARGUMENT);
+    config.pointerPort = 0;
     bank = AllocMem(65536UL, MEMF_PUBLIC|MEMF_CLEAR);
     check(bank != NULL && ((ULONG)bank & 0xffffUL) == 0);
     if (bank) {
@@ -77,14 +107,23 @@ UWORD main(void)
         check(InputAcquire((struct InputLease *)(bank+65506UL), &config) == INPUT_BAD_ARGUMENT);
         check(InputTake(&lease, (struct InputEvent *)(bank+65512UL)) == INPUT_INVALID_OWNER);
         check(InputTake(&lease, (struct InputEvent *)(bank+65514UL)) == INPUT_BAD_ARGUMENT);
-        memcpy(bank+65520UL, &config, sizeof(config));
-        check(InputAcquire(&lease, (struct InputConfig *)(bank+65520UL)) == INPUT_BAD_ARGUMENT);
-        check(InputAcquire(&lease, (struct InputConfig *)(bank+65522UL)) == INPUT_BAD_ARGUMENT);
+        memcpy(bank+65504UL, &config, sizeof(config));
+        check(InputAcquire(&lease, (struct InputConfig *)(bank+65504UL)) == INPUT_BAD_ARGUMENT);
+        check(InputAcquire(&lease, (struct InputConfig *)(bank+65506UL)) == INPUT_BAD_ARGUMENT);
         FreeMem(bank, 65536UL);
     }
     /* Exercise successful calls through the same checked huge-pointer bridge. */
     check(AllocSignal(16) == 16);
     config.wakeMask = 0x10000UL;
+    bank = AllocMem(65536UL, MEMF_PUBLIC|MEMF_CLEAR);
+    check(bank != NULL);
+    if (bank) {
+        memcpy(bank+65504UL, &config, sizeof(config));
+        check(InputAcquire(&lease, (struct InputConfig *)(bank+65504UL)) == INPUT_OK);
+        check(InputRelease(&lease) == INPUT_OK);
+        check(InputAcquire(&lease, (struct InputConfig *)(bank+65506UL)) == INPUT_BAD_ARGUMENT);
+        FreeMem(bank, 65536UL);
+    }
     check(InputAcquire(&lease, &config) == INPUT_OK);
     check(InputCreateRoute(&lease, 0, &tag) == INPUT_OK && tag != 0);
     check(InputPublishRoute(&lease, tag) == INPUT_OK);

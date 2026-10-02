@@ -728,7 +728,8 @@
   },
   "producer_sources": {
     "SERIAL": 1,
-    "KEYBOARD": 2
+    "KEYBOARD": 2,
+    "POINTER_INPUT": 3
   },
   "producer_packet": {
     "size": 10,

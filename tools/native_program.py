@@ -606,6 +606,19 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         task_storage = generate_tasks.storage(memory)
         image['segments'].append({'address':task_storage['BASE']+0x1000,'bytes':list((output/'hosted.bin.signals').read_bytes()),'writable':False,'executable':True})
         require(task_storage['METADATA_BYTES']<=0x800,'Task metadata overlaps SIO descriptor')
+        input_storage = memory['input_storage']
+        pointer_reserve = bytearray(input_storage['POINTER_RESERVED_BYTES'])
+        guard = input_storage['POINTER_GUARD_BYTES']
+        pointer_reserve[:guard] = bytes([0xa5])*guard
+        end = guard+input_storage['POINTER_CAPTURE_BYTES']
+        pointer_reserve[end:end+guard] = bytes([0xa5])*guard
+        for name, address, payload in (
+            ('INPUT_ACQUISITIONS', input_storage['ACQUISITIONS'], bytes(4)),
+            ('POINTER_DESCRIPTOR', input_storage['POINTER_STATE'], bytes(input_storage['STATE_BYTES'])),
+            ('POINTER_CAPTURE', input_storage['POINTER_RESERVE'], pointer_reserve)):
+            image['segments'].append(dict(address=address, bytes=list(payload), writable=True, executable=False))
+            image['data'].append(dict(kind='global', id=max(d['id'] for d in image['data'])+1,
+                name='M_TASKPOLICY_'+name, address=address, size=len(payload), alignment=2))
         timer = memory['timer_storage']
         image['segments'].append(dict(address=timer['BASE'], bytes=[0]*timer['BYTES'],
                                       writable=True, executable=False))

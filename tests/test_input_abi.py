@@ -13,10 +13,12 @@ class InputAbiTests(unittest.TestCase):
             self.assertEqual(path.read_text(), content, str(path))
         layout = dict(expected_layout())
         self.assertEqual([layout['Input'+name+' size'] for name in ('Lease', 'Config', 'Event')],
-                         [32, 16, 24])
+                         [32, 32, 24])
         self.assertEqual(layout['InputLease acquisition'], 12)
         self.assertEqual(layout['InputConfig filterCount'], 12)
         self.assertEqual(layout['InputEvent x'], 16)
+        self.assertEqual(layout['InputConfig pointerProtocol'], 16)
+        self.assertEqual(layout['InputConfig reserved2'], 28)
 
     def test_overlapping_unaligned_and_duplicate_fields_rejected(self):
         for offset in (10, 11, 13, 14):
@@ -48,7 +50,7 @@ class InputAbiTests(unittest.TestCase):
         from generate_memory import layout
         import tempfile
         values, source = native.definitions()
-        self.assertEqual(values['STATE_SIZE'],128)
+        self.assertEqual(values['STATE_SIZE'],144)
         self.assertEqual(values['CAPTURE_SIZE'],560)
         self.assertEqual(values['RAWEVENT_SIZE'],8)
         self.assertEqual((native.ROOT/'lib/input/inputnative.act').read_text(),source)
@@ -57,4 +59,20 @@ class InputAbiTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as output:
             native.generate(output,memory)
         self.assertEqual(memory['runtime_reservations'],before)
-        self.assertLessEqual(memory['input_storage']['STATE']+128,memory['input_storage']['CAPTURE'])
+        self.assertLessEqual(memory['input_storage']['STATE']+144,memory['input_storage']['CAPTURE'])
+
+    def test_pointer_storage_is_disjoint_and_guarded(self):
+        import generate_input_native as native
+        from generate_memory import layout
+        import tempfile
+        memory = layout()
+        with tempfile.TemporaryDirectory() as output:
+            native.generate(output, memory)
+        storage = memory['input_storage']
+        values, _ = native.definitions()
+        self.assertEqual(values['POINTERSAMPLE_SIZE'], 24)
+        self.assertEqual(values['POINTERCAPTURE_EVENTS'], 128)
+        self.assertEqual(storage['POINTER_RESERVED_BYTES'], 1536)
+        self.assertLessEqual(storage['POINTER_STATE']+144, storage['POINTER_RESERVE'])
+        self.assertEqual(storage['POINTER_CAPTURE']-storage['POINTER_RESERVE'], 16)
+        self.assertEqual(storage['POINTER_RESERVED_BYTES']-storage['POINTER_CAPTURE_BYTES']-32, 224)

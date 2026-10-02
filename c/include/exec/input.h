@@ -2,7 +2,7 @@
 #ifndef EXEC_INPUT_H
 #define EXEC_INPUT_H
 #include <exec/tasklease.h>
-#define INPUT_VERSION 1
+#define INPUT_VERSION 2
 #define INPUT_SOURCE_KEYBOARD 2
 #define INPUT_OK 0
 #define INPUT_EMPTY 1
@@ -37,8 +37,11 @@
 #define INPUT_PENDING_CANCEL 4
 #define INPUT_ROUTE_SLOTS 16
 #define INPUT_RAW_SLOTS 64
+#define INPUT_SOURCE_POINTER 3
+#define INPUT_POINTER_ST 1
+#define INPUT_POINTER_RAW_SLOTS 32
 #define INPUT_LEASE_BYTES 32
-#define INPUT_CONFIG_BYTES 16
+#define INPUT_CONFIG_BYTES 32
 #define INPUT_EVENT_BYTES 24
 struct InputLease {
     struct TaskLease owner;
@@ -60,6 +63,13 @@ struct InputConfig {
     UBYTE filterCount;
     UBYTE flags;
     UWORD reserved;
+    UWORD pointerProtocol;
+    UWORD pointerPort;
+    WORD initialX;
+    WORD initialY;
+    WORD maxX;
+    WORD maxY;
+    ULONG reserved2;
 };
 struct InputEvent {
     ULONG acquisition;

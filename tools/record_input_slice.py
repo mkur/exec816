@@ -9,6 +9,7 @@ import zipfile
 from pathlib import Path
 
 from native_program import ROOT, require, sha256
+from generate_input import ABI as INPUT_ABI
 
 
 def read_run(folder):
@@ -155,7 +156,7 @@ def record_i1(base, host):
         bank_zero=dict(fixed_delta_bytes=0, per_public_task_delta_bytes=[0]*8,
                        private_idle_delta_bytes=0,
                        accounting='Complete reservations include guards, alignment and unused capacity.'),
-        upper_ram=dict(c_entry_table_bytes=24, lease_bytes=32, config_bytes=16, event_bytes=24,
+        upper_ram=dict(c_entry_table_bytes=24, lease_bytes=32, config_bytes=INPUT_ABI['records']['Config']['bytes'], event_bytes=24,
                        reserved_c_banks=[12, 13], reserved_c_bytes=131072,
                        reserved_c_delta_bytes=0, heap_lifetime_delta_bytes=0),
         source_inputs={p: sha256(ROOT/p) for p in paths},
@@ -324,7 +325,7 @@ def record_i4(base, host):
                        accounting='Complete reservations include guards, alignment and unused capacity.'),
         upper_ram=dict(reserved_c_banks=[12,13],reserved_c_bytes=131072,reserved_c_delta_bytes=0,
                        boot_descriptor_bytes=48,control_slots=4,control_bytes_per_slot=32,
-                       embedded_ports=4,port_bytes=27,input_lease_bytes=32,input_config_bytes=16,
+                       embedded_ports=4,port_bytes=27,input_lease_bytes=32,input_config_bytes=INPUT_ABI['records']['Config']['bytes'],
                        input_event_bytes=24,text_bytes=25,
                        note='Static records and alignment use existing C banks; maps record all linked storage.'),
         source_inputs={'tools/record_input_slice.py':sha256(Path(__file__))},

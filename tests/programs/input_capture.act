@@ -47,11 +47,11 @@ PROC Admission()
   BYTE index
   BYTE POINTER src,dst
 
-  Require(SIZEOF(INPUTNATIVE.State)=128)
+  Require(SIZEOF(INPUTNATIVE.State)=144)
   Require(SIZEOF(INPUTNATIVE.Capture)=560)
   Require(SIZEOF(INPUTNATIVE.RawEvent)=8)
   Require(EXEC.AllocSignal(16)=16)
-  config.version=1
+  config.version=INPUT.VERSION
   config.source=INPUT.SOURCE_KEYBOARD
   config.wakeMask=$10000
   config.filter0Value=$1c
@@ -111,9 +111,11 @@ PROC Records()
   CARD bit
   INPUTNATIVE.Capture POINTER capture
   INPUTNATIVE.State POINTER state
+  LONGCARD POINTER acquisitions
 
   capture=INPUTNATIVE.Capture POINTER($0f0c00)
   state=INPUTNATIVE.State POINTER($0f0a60)
+  acquisitions=LONGCARD POINTER($0f0f50)
   Require(INPUT.CreateRoute(@lease,0,@tag)=INPUT.OK)
   Require(INPUT.CreateRoute(@lease,0,@other)=INPUT.OK)
   EXEC.Forbid()
@@ -172,10 +174,10 @@ PROC Records()
   capture.breakMask=bit
   capture.lostMask=bit
   Require(INPUT.Release(@lease)=INPUT.OK)
-  state.generation=$ffffffff
+  acquisitions^=$ffffffff
   Require(INPUT.Acquire(@lease,@config)=INPUT.EXHAUSTED)
   Require(lease.state=INPUT.FREE AND capture.active=0)
-  state.generation=oldGeneration
+  acquisitions^=oldGeneration
   Require(INPUT.Take(@lease,@event)=INPUT.INVALID_OWNER)
   Require(INPUT.Acquire(@lease,@config)=INPUT.OK)
   Require(lease.acquisition>oldGeneration)

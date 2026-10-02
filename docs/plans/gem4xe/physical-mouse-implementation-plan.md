@@ -3,7 +3,7 @@
 [Implementation plans](../README.md) · [Design note](physical-mouse-design.md) ·
 [Current input contract](../../reference/input.md) · [Roadmap](../../roadmap.md)
 
-Status: in progress, 2026-10-02. M0–M1 passed development checks; M2–M6 are pending.
+Status: in progress, 2026-10-02. M0–M2 passed development checks; M3–M6 are pending.
 See the [execution record](../../history/gem-mouse.md). Implement the configured
 **ST mouse on joystick port 1**, with motion and the left button, using Altirra's
 existing controller. The endpoint is the current interactive GEM scene accepting
@@ -66,7 +66,9 @@ the implemented version until the corresponding slice passes.
 Keep the eight existing INPUT operations and their checked C/native bridge.
 Keep InputLease at 32 bytes and InputEvent at 24 bytes, with existing field
 offsets, event kinds and status values. Add `SOURCE_POINTER=3` beside KEYBOARD=2
-in INPUT and `POINTER=3` beside SERIAL=1/KEYBOARD=2 in EXECPRODUCER.
+in INPUT and `POINTER_INPUT=3` beside SERIAL=1/KEYBOARD=2 in EXECPRODUCER.
+M2 uses `POINTER_INPUT` because `POINTER` is an Action! keyword; the numeric
+source and packet contract are unchanged.
 
 Set InputConfig version to 2 and size to 32 bytes, aligned to two bytes:
 

@@ -57,7 +57,10 @@ rules.
 ## Fixed platform producers
 
 `EXECPRODUCER.Bind(source, task, bits)` returns one on success and zero on busy
-or invalid admission. Source is a CARD: SERIAL=1 and KEYBOARD=2. The target must
+or invalid admission. Source is a CARD: SERIAL=1, KEYBOARD=2 and POINTER_INPUT=3.
+At the M2 boundary, pointer binding always rejects admission until the backend
+is installed; empty-source Release/Drain are supported. `POINTER_INPUT` avoids
+the Action! keyword `POINTER`. The target must
 be live and retained by a Task lease, and every nonzero mask bit must already be
 allocated to it. Unsupported sources reject without changing a binding. There
 is one binding per source; native helpers activate only that fixed backend.

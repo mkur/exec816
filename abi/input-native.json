@@ -2,7 +2,13 @@
   "schema_version": 1,
   "storage": {
     "state_offset": 2656,
-    "capture_offset": 3072
+    "capture_offset": 3072,
+    "acquisitions_offset": 3920,
+    "pointer_state_offset": 18048,
+    "pointer_reserve_offset": 18432,
+    "pointer_capture_offset": 18448,
+    "pointer_reserved_bytes": 1536,
+    "pointer_guard_bytes": 16
   },
   "records": {
     "Binding": {
@@ -179,7 +185,7 @@
       ]
     },
     "State": {
-      "size": 128,
+      "size": 144,
       "alignment": 2,
       "fields": [
         [
@@ -204,30 +210,431 @@
         ],
         [
           "config",
-          "BYTE[16]",
+          "BYTE[32]",
           12
         ],
         [
           "tags",
           "LONGCARD[16]",
-          28
+          44
         ],
         [
           "cancelCode",
           "BYTE[16]",
-          92
+          108
         ],
         [
           "lossCode",
           "BYTE[16]",
-          108
+          124
         ],
         [
           "ownerIncarnation",
           "LONGCARD",
-          124
+          140
+        ]
+      ]
+    },
+    "PointerSample": {
+      "size": 24,
+      "alignment": 2,
+      "fields": [
+        [
+          "acquisition",
+          "LONGCARD",
+          0
+        ],
+        [
+          "route",
+          "LONGCARD",
+          4
+        ],
+        [
+          "tick",
+          "CARD",
+          8
+        ],
+        [
+          "kind",
+          "BYTE",
+          10
+        ],
+        [
+          "buttons",
+          "BYTE",
+          11
+        ],
+        [
+          "xCount",
+          "LONGINT",
+          12
+        ],
+        [
+          "yCount",
+          "LONGINT",
+          16
+        ],
+        [
+          "epoch",
+          "CARD",
+          20
+        ],
+        [
+          "flags",
+          "CARD",
+          22
+        ]
+      ]
+    },
+    "PointerOutput": {
+      "size": 24,
+      "alignment": 2,
+      "fields": [
+        [
+          "acquisition",
+          "LONGCARD",
+          0
+        ],
+        [
+          "route",
+          "LONGCARD",
+          4
+        ],
+        [
+          "tick",
+          "CARD",
+          8
+        ],
+        [
+          "kind",
+          "BYTE",
+          10
+        ],
+        [
+          "flags",
+          "BYTE",
+          11
+        ],
+        [
+          "code",
+          "CARD",
+          12
+        ],
+        [
+          "qualifiers",
+          "CARD",
+          14
+        ],
+        [
+          "x",
+          "INT",
+          16
+        ],
+        [
+          "y",
+          "INT",
+          18
+        ],
+        [
+          "buttons",
+          "CARD",
+          20
+        ],
+        [
+          "reserved",
+          "CARD",
+          22
+        ]
+      ]
+    },
+    "PointerNotice": {
+      "size": 24,
+      "alignment": 2,
+      "fields": [
+        [
+          "route",
+          "LONGCARD",
+          0
+        ],
+        [
+          "acquisition",
+          "LONGCARD",
+          4
+        ],
+        [
+          "epoch",
+          "CARD",
+          8
+        ],
+        [
+          "code",
+          "CARD",
+          10
+        ],
+        [
+          "xCount",
+          "LONGINT",
+          12
+        ],
+        [
+          "yCount",
+          "LONGINT",
+          16
+        ],
+        [
+          "buttons",
+          "BYTE",
+          20
+        ],
+        [
+          "flags",
+          "BYTE",
+          21
+        ],
+        [
+          "reserved",
+          "CARD",
+          22
+        ]
+      ]
+    },
+    "PointerCapture": {
+      "size": 1280,
+      "alignment": 2,
+      "fields": [
+        [
+          "active",
+          "BYTE",
+          0
+        ],
+        [
+          "head",
+          "BYTE",
+          1
+        ],
+        [
+          "tail",
+          "BYTE",
+          2
+        ],
+        [
+          "lost",
+          "BYTE",
+          3
+        ],
+        [
+          "savedMask",
+          "BYTE",
+          4
+        ],
+        [
+          "savedSkctl",
+          "BYTE",
+          5
+        ],
+        [
+          "keyVector",
+          "CARD",
+          6
+        ],
+        [
+          "breakVector",
+          "CARD",
+          8
+        ],
+        [
+          "nativeEvents",
+          "CARD",
+          10
+        ],
+        [
+          "emulationEvents",
+          "CARD",
+          12
+        ],
+        [
+          "errors",
+          "BYTE",
+          14
+        ],
+        [
+          "hardwareLost",
+          "BYTE",
+          15
+        ],
+        [
+          "binding",
+          "Binding",
+          16
+        ],
+        [
+          "route",
+          "LONGCARD",
+          28
+        ],
+        [
+          "takenRoute",
+          "LONGCARD",
+          32
+        ],
+        [
+          "breakRoute",
+          "LONGCARD",
+          36
+        ],
+        [
+          "breakPending",
+          "BYTE",
+          40
+        ],
+        [
+          "pad",
+          "BYTE",
+          41
+        ],
+        [
+          "breakMask",
+          "CARD",
+          42
+        ],
+        [
+          "lostMask",
+          "CARD",
+          44
+        ],
+        [
+          "padding",
+          "BYTE[2]",
+          46
+        ],
+        [
+          "acquisition",
+          "LONGCARD",
+          48
+        ],
+        [
+          "xCount",
+          "LONGINT",
+          52
+        ],
+        [
+          "yCount",
+          "LONGINT",
+          56
+        ],
+        [
+          "epoch",
+          "CARD",
+          60
+        ],
+        [
+          "phase",
+          "BYTE",
+          62
+        ],
+        [
+          "buttons",
+          "BYTE",
+          63
+        ],
+        [
+          "seeded",
+          "BYTE",
+          64
+        ],
+        [
+          "needsBaseline",
+          "BYTE",
+          65
+        ],
+        [
+          "disabled",
+          "BYTE",
+          66
+        ],
+        [
+          "pad2",
+          "BYTE",
+          67
+        ],
+        [
+          "directionX",
+          "BYTE",
+          68
+        ],
+        [
+          "directionY",
+          "BYTE",
+          69
+        ],
+        [
+          "x",
+          "INT",
+          70
+        ],
+        [
+          "y",
+          "INT",
+          72
+        ],
+        [
+          "previousButtons",
+          "CARD",
+          74
+        ],
+        [
+          "consumedX",
+          "LONGINT",
+          76
+        ],
+        [
+          "consumedY",
+          "LONGINT",
+          80
+        ],
+        [
+          "consumedEpoch",
+          "CARD",
+          84
+        ],
+        [
+          "pending",
+          "BYTE",
+          86
+        ],
+        [
+          "pad3",
+          "BYTE",
+          87
+        ],
+        [
+          "output",
+          "PointerOutput",
+          88
+        ],
+        [
+          "reserved",
+          "BYTE[16]",
+          112
+        ],
+        [
+          "events",
+          "PointerSample[32]",
+          128
+        ],
+        [
+          "notices",
+          "PointerNotice[16]",
+          896
         ]
       ]
     }
+  },
+  "constants": {
+    "POINTER_MOTION": 1,
+    "POINTER_STATE_SAMPLE": 2,
+    "POINTER_BASELINE": 1,
+    "POINTER_SLOTS": 32,
+    "POINTER_DISABLED": 1
   }
 }

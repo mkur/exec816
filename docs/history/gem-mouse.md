@@ -70,3 +70,36 @@ grows 474 bytes. Both fit the existing reserved 64 KiB Task arena: whole-bank
 reservation delta **0**. Fixed bank-zero, each of eight public Tasks, and private
 idle all change by **0 bytes**, counting guards, alignment and unused capacity.
 There are no additional Tasks or VRAM reservations.
+
+## M2 Input records and source descriptors
+
+[M2 evidence](../development/gem-mouse-m2.json) records Config version 2 at 32
+bytes, retaining the 32-byte lease, 24-byte event and eight library operations.
+Generated Action!, C and assembly layouts agree. Keyboard callers now use the
+new record; version 1 is rejected. Pointer protocol/port, signed bounds, initial
+position and reserved fields are checked before admission, which remains
+UNSUPPORTED at this slice boundary.
+
+Fixed source descriptors now identify existing leases by address, then validate
+their complete retained identity. A single monotonic 32-bit allocator supplies
+acquisition identities; source route epochs and notices remain independent.
+Kernel removal, signal retention and release/drain enumerate the added source.
+Its public producer name is `POINTER_INPUT=3`: the planned spelling `POINTER`
+is an Action! keyword. Gateway packet profile 7 and its shapes are unchanged.
+
+Raw and optimized emitted C/Action! checks cover layouts, malformed fields,
+complete 32-byte bank-end extents, owner identity, routes and allocator exhaustion.
+Both standalone keyboard-capture modes pass. Selected producer lifetime,
+independent-source and unsupported-pointer cleanup cases pass, and the rebuilt
+optimized interactive keyboard scene passes. All 288 host tests pass, with four
+historical audits skipped. This is development validation; concurrent live
+pointer capture is M3 work.
+
+The keyboard descriptor grows 16 upper bytes. A second descriptor reserves 144,
+the global allocator 4, and pointer capture 1,536: 128 control, 768 raw-ring,
+384 notice, 32 guard and 224 unused bytes. Total additional occupied/reserved
+extents inside the existing Task arena are **1,700 bytes**; the arena's whole-bank
+reservation does not grow. Each caller's configuration grows 16 bytes, including
+the GEM C configuration and console configuration. Fixed bank-zero, each public
+Task and private idle all change by **0 bytes**, including guards, alignment and
+unused capacity. There are no new Tasks or VRAM reservations.
