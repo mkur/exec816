@@ -9,10 +9,12 @@ is separate from the G5 computing-peer regression. It also supplies the optional
 production artifact through `tools/build_demo.py --gem-vdi`.
 
 The application owns the renderer, its sole client and a reusable keyboard input
-lease. Tab cycles a 24-character text field, Count and Exit. Printable keys and
+lease, plus an independent ST mouse lease for joystick port 1. Tab cycles a 24-character text field, Count and Exit. Printable keys and
 Backspace edit the field; Return activates a button; Escape or BREAK exits.
 Count advances the number and the colored indicator. Disk completion leaves the
-scene open until explicit exit. There is no AES or physical mouse backend.
+scene open until explicit exit. Left-click selects the field or activates Count/Exit
+on matching release. Mouse admission errors display `KeysOnly`; keyboard input
+continues. There is no AES.
 
 `abi/gem-interactive.json` generates the 32-byte control message and 48-byte boot
 descriptor for Action! and C. A root-issued nonzero session identifies four
@@ -33,7 +35,8 @@ Forbid publishes retirement, signals root, releases its final holds and removes
 itself. STOP replies acknowledge admission; both exit directions use this same
 retirement handshake. The launcher retains all notification storage until then.
 
-A turn drains at most eight input records, eight control messages and one exact
+A turn drains at most eight keyboard records, eight mouse records, eight
+normalized events, eight control messages and one exact
 render completion. `GemTryCollect` returns a separate ready flag; an empty port
 preserves pending ownership and sequence state. An unexpected message remains
 queued and cannot authorize freeing the request. Busy turns yield, and waits
@@ -76,3 +79,8 @@ Native keyboard/SIO latency, context, exhaustion and cleanup cases are recorded
 in [I6 evidence](../../../docs/development/gem-input-i6.json): maximum observed
 small-redraw latency is 12 raw / 11 optimized PAL ticks. The current reusable
 contract is [input](../../../docs/reference/input.md), not an AES event API.
+
+`tools/test_gem_mouse.py --mode raw|opt --case controls --case close-held
+--output DIR` uses the existing ST controller and checks exact visible pixels.
+See [M4 evidence](../../../docs/development/gem-mouse-m4.json) for source identity,
+partial startup, source-specific cleanup and concurrent cold-read coverage.

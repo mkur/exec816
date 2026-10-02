@@ -20,20 +20,23 @@ PIN=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
 CASES=['keyboard','early-escape','late-escape','break','root-stop','input-busy','display-busy',
        'client-allocation','renderer-allocation','admission','wrong-disk','no-disk','short-file','corrupt-file',
        'latency','latency-wrap','context','app-signal','input-signal','ready-exhausted','raw-full',
-       'render-timeout','render-busy','escape-sio','escape-render']
+       'render-timeout','render-busy','escape-sio','escape-render',
+       'mouse-signal','mouse-after-signal','mouse-after-lease','mouse-after-route','mouse-busy']
+MOUSE_VARIANTS={'mouse-signal':30,'mouse-after-signal':31,'mouse-after-lease':32,'mouse-after-route':33,'mouse-busy':34}
 
-def scene(output,text=b'',focus=0,count=0,progress=2048,done=True):
+def scene(output,text=b'',focus=0,count=0,progress=2048,done=True,cursor=(320,120),mouse_status=0):
     r=Raster(font_bytes(output/'selected/src/vdi/font8x8.c'))
     labels=[b'GEM/Exec',text.ljust(24)[0:8],text.ljust(24)[8:16],text.ljust(24)[16:24],
             f'Count{count%1000:03}'.encode(),b'Exit    ',f'Disk{progress*100//2048:03}%'.encode(),b'Tab/Ente',
-            b'Done    ' if done else b'Reading ']
+            b'KeysOnly' if mouse_status else b'Done    ' if done else b'Reading ']
     for tile,label in enumerate(labels):
         x=32+(tile-1)*64 if 1<=tile<=3 else 176 if tile==5 else 32
         y=24 if tile==0 else 64 if tile<=3 else 104 if tile<=5 else 144 if tile==6 else 168 if tile==7 else 184
         pen=2+count%14 if tile==4 else 0
         if (1<=tile<=3 and focus==0) or (tile==5 and focus==2):pen=6
         r.apply(25,ints=[pen]);r.apply(11,[x,y-10,x+63,y-8]);r.apply(22,ints=[2 if tile==4 and focus==1 else 1]);r.apply(8,[x,y],label)
-    return r.packed()
+    from test_gem_cursor import overlay
+    return overlay(r,cursor)
 
 def pixels(b,folder,expected):
     b.screenshot(str(folder/'scene.png'))
@@ -115,7 +118,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                     saved.update(hardware())
                     b.memload(0x8000,aperture)
                     key('ALL','up')
-                    if 'variant' in sy:b.memload(sy['variant'],CASES.index(name).to_bytes(2,'little'))
+                    if 'variant' in sy:b.memload(sy['variant'],MOUSE_VARIANTS.get(name,CASES.index(name)).to_bytes(2,'little'))
                     if name=='context':
                         for slot in (0,6,7):
                             reach(f'db(${adapter.CURRENT:x})={slot}','task_start' if slot==0 else 'general_task_start')
@@ -177,6 +180,14 @@ def run(output,mode,cases=None,replay=False,production=False):
                         else:
                             if name=='render-busy':b.memload(sy['permanent'],b'\x01\x00')
                             b.memload(sy['faultNext'],b'\x01\x00'); key('A','down')
+                    elif name in MOUSE_VARIANTS:
+                        idle()
+                        require(read('mouseStatus')==(2 if name=='mouse-busy' else 7), 'Wrong optional mouse status')
+                        require(b.memdump(sy['mouseInput'],32)==bytes(32), 'Partial mouse admission retained a lease')
+                        press('A'); idle()
+                        require(read('length')==1, 'Keyboard fallback is not usable')
+                        case['scanout_sha256']=pixels(b,folder,scene(output,b'a',cursor=None,mouse_status=read('mouseStatus')))
+                        key('ESC','down')
                     elif name in ('keyboard','context'):
                         if name=='context':press('A')
                         press('B');press('BACKSPACE');press('TAB');press('RETURN');idle()
@@ -218,7 +229,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                     case.update(status='pass',retained_request=b.memdump(pending,236).hex()); continue
                 require(read('finished')==1 and not read('failures'),'Incomplete application/assertion failure')
                 require(b.peek16(sy['boot']+42)==1,'Application did not retire')
-                require(b.memdump(sy['input'],32)==bytes(32),'Input lease leaked')
+                require(b.memdump(sy['input'],32)==bytes(32) and b.memdump(sy['mouseInput'],32)==bytes(32),'Input lease leaked')
                 require(read('submitted')==read('collected'),'Render packet leaked')
                 require(runtime['root_task'][16:20]==[255,255,0,0],'Root signal leaked')
                 require(b.memdump(sy['boot']+24,12)==bytes(12) and

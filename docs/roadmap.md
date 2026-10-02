@@ -35,7 +35,8 @@ These are possible next milestones, without a delivery order:
   [physical mouse design](plans/gem4xe/physical-mouse-design.md) targets the
   configured ST mouse on port 1, with shared SIO timing and reusable capture
   feeding the existing cursor and controls. Shared timing and reusable ST capture
-  now pass M0–M3 development checks; GUI integration and acceptance remain. Its
+  now pass M0–M4 development checks, including GUI controls; timing/failure
+  acceptance and the artifact refresh remain. Its
   [M0–M6 implementation plan](plans/gem4xe/physical-mouse-implementation-plan.md)
   separates timing migration, input capture, GUI integration and artifact checks.
 - Priority scheduling and larger Task capacities. Current priorities are stored

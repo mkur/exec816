@@ -149,3 +149,26 @@ guards and slack are unchanged. The existing 64 KiB Task-arena reservation does
 not grow. Fixed bank-zero, each of eight public Tasks and private idle all change
 by **0 bytes**, including guards, alignment and unused reserved capacity. No
 extra Task, large stack or VRAM reservation is introduced.
+
+## M4 Interactive integration
+
+[M4 evidence](../development/gem-mouse-m4.json) records physical ST/port 1 motion,
+field selection and typing, Count and Exit clicks, release outside a control,
+and Escape while held in raw and optimized builds. Independent controller traces
+agree with final coordinates; exact scanout pixels match the scene oracle.
+Both input leases, signals and graphics requests retire, with hardware and stack
+checks intact. Optimized checks also cover five mouse-admission failure boundaries,
+keyboard input, wrong disk, early Escape/root stop and 24 injected gesture cases.
+
+The application validates full mouse identity before translating to the current
+private queue session, drains eight events per source per turn and includes both
+sources in Pending/Wait. Failed mouse admission displays `KeysOnly` and leaves
+keyboard controls available. Closing the association purges queued mouse events
+and disarms gestures before releasing the source.
+
+Optimized diagnostic C code grows 2,107 bytes, initialized data eight bytes and
+zero-fill 88 bytes, within the existing two upper banks. No Task or VRAM is added.
+Reserved bank-zero delta is zero for fixed/root storage, each of eight Tasks and
+private idle, including guards, alignment and slack. The host suite passes 288
+tests with four historical skips. This is development coverage; the declared
+sampling/visible-response envelope remains an M5 gate.

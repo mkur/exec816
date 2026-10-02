@@ -18,6 +18,12 @@ struct UiBoot boot __attribute__((aligned(2)));
 struct GemServer server;
 struct GemClient client;
 struct InputLease input __attribute__((aligned(2)));
+struct InputLease mouseInput __attribute__((aligned(2)));
+static struct InputConfig mouseConfig __attribute__((aligned(2)));
+static ULONG mouseRoute __attribute__((aligned(2)));
+static BYTE mouseBit=-1;
+static UWORD mousePending __attribute__((aligned(2)));
+volatile UWORD mouseStatus, mouseReceived;
 static struct InputConfig config __attribute__((aligned(2)));
 static struct InputEvent event __attribute__((aligned(2)));
 static struct TaskLease selfLease, rootLease;
@@ -40,7 +46,7 @@ volatile UWORD lastSubmit, lastComplete, maxCommands, maxGlyphs;
 UBYTE text[25];
 static UWORD renderTile, cursorTurn;
 volatile WORD pointerX, pointerY, armed=-1;
-volatile UWORD pointerVisible, pointerDirty, pointerReady=1, pointerButtons;
+volatile UWORD pointerVisible, pointerDirty, pointerReady, pointerButtons;
 volatile UWORD pointerEvents, pointerActivations, inputLosses, cursorPackets;
 
 static void check(UWORD good)
@@ -82,10 +88,49 @@ static void failure(UWORD status)
     if (!boot.result) boot.result=status;
     requestExit();
 }
+/* Optional mouse admission owns only its lease, route and signal. An idle
+ * port is indistinguishable from an absent mouse and still admits normally. */
+void UiDisarmPointer(void)
+{
+    armed=-1; pointerReady=0; pointerButtons=0;
+}
+static void stopMouse(void)
+{
+    UiMouseClose();
+    if (mouseInput.state==INPUT_ACTIVE) check(InputRelease(&mouseInput)==INPUT_OK);
+    if (mouseBit>=0) { FreeSignal(mouseBit); mouseBit=-1; }
+    mouseRoute=0;
+}
+static void startMouse(void)
+{
+    PROBE(16);
+    mouseBit=AllocSignal(-1);
+    mouseStatus=mouseBit<0 ? INPUT_NO_MEMORY : INPUT_OK;
+    PROBE(12);
+    if (!mouseStatus) {
+        memset(&mouseConfig,0,sizeof(mouseConfig));
+        mouseConfig.version=INPUT_VERSION;
+        mouseConfig.source=INPUT_SOURCE_POINTER;
+        mouseConfig.wakeMask=1UL<<mouseBit;
+        mouseConfig.pointerProtocol=INPUT_POINTER_ST;
+        mouseConfig.pointerPort=1;
+        mouseConfig.initialX=320; mouseConfig.initialY=120;
+        mouseConfig.maxX=639; mouseConfig.maxY=239;
+        mouseStatus=InputAcquire(&mouseInput,&mouseConfig);
+    }
+    PROBE(13);
+    if (!mouseStatus) mouseStatus=InputCreateRoute(&mouseInput,0,&mouseRoute);
+    PROBE(14);
+    if (!mouseStatus) mouseStatus=InputPublishRoute(&mouseInput,mouseRoute);
+    if (!mouseStatus) mouseStatus=UiMouseOpen();
+    if (mouseStatus) stopMouse();
+    PROBE(15);
+}
 static UWORD finishGraphics(void)
 {
     UWORD status=GEM_OK;
     UiEventsClose();
+    stopMouse();
     PROBE(4);
     if (input.state==INPUT_ACTIVE) check(InputRelease(&input)==INPUT_OK);
     if (inputBit>=0) { FreeSignal(inputBit); inputBit=-1; }
@@ -121,6 +166,7 @@ static UWORD startGraphics(void)
     if (!status) status=InputPublishRoute(&input,route);
     if (status) { finishGraphics(); PROBE(2); return status; }
     UiEventsOpen();
+    startMouse();
     dirty=511;
     return GEM_OK;
 }
@@ -239,7 +285,7 @@ static UWORD paint(void)
     memcpy(client.packet+1,commands,sizeof(commands));
     values=(WORD *)((UBYTE *)client.packet+DATA);
     label=tile==0 ? "GEM/Exec" : tile==4 ? "Count000" : tile==5 ? "Exit    " :
-          tile==6 ? "Disk000%" : tile==7 ? "Tab/Ente" : boot.diskDone ? "Done    " : "Reading ";
+          tile==6 ? "Disk000%" : tile==7 ? "Tab/Ente" : mouseStatus ? "KeysOnly" : boot.diskDone ? "Done    " : "Reading ";
     x=tile>=1 && tile<=3 ? 32+(tile-1)*64 : tile==5 ? 176 : 32;
     y=tile==0 ? 24 : tile<=3 ? 64 : tile<=5 ? 104 : tile==6 ? 144 : tile==7 ? 168 : 184;
     if (tile==4) pen=2+count%14;
@@ -301,6 +347,14 @@ void GemApplication(void)
                 UiPostCaptured(&event); ++busy;
             }
         }
+        if (mouseInput.state==INPUT_ACTIVE) {
+            for (n=0;n<8;++n) {
+                status=InputTake(&mouseInput,&event);
+                if (status==INPUT_EMPTY) break;
+                if (status) { failure(status); break; }
+                UiPostMouse(&event); ++mouseReceived; ++busy;
+            }
+        }
         for (n=0;n<8;++n) {
             if (UiTakeEvent(&event)==INPUT_EMPTY) break;
             keyEvent(&event); ++busy;
@@ -325,12 +379,13 @@ void GemApplication(void)
             if (status) failure(status);
             ++busy;
         }
-        inputPending=0;
+        inputPending=mousePending=0;
         if (input.state==INPUT_ACTIVE) check(InputPending(&input,&inputPending)==INPUT_OK);
-        if (busy || inputPending || UiEventsPending() || !IsListEmpty(&appPort.mp_MsgList) ||
+        if (mouseInput.state==INPUT_ACTIVE) check(InputPending(&mouseInput,&mousePending)==INPUT_OK);
+        if (busy || mousePending || inputPending || UiEventsPending() || !IsListEmpty(&appPort.mp_MsgList) ||
             (client.pending && !IsListEmpty(&client.replies->mp_MsgList))) ExecYield();
         else Wait(mask(&appPort) | (inputBit<0 ? 0 : 1UL<<inputBit) |
-                  (client.pending ? mask(client.replies) : 0));
+                  (mouseBit<0 ? 0 : 1UL<<mouseBit) | (client.pending ? mask(client.replies) : 0));
     }
     status=finishGraphics();
     if (status && !boot.result) boot.result=status;

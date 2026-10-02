@@ -171,8 +171,13 @@ Loss, cancellation or release elsewhere disarms it. Diagnostic pointer producers
 copy validated records and stop before application storage retires; production
 ships without those producers or injection entry points.
 
-Physical mouse capture is available to INPUT clients; integration into the GEM
-scene is the next slice. Amiga/right-button protocols, AES events, timed waits
+The GEM scene now acquires keyboard and ST/port 1 leases independently. It
+validates the full mouse acquisition/route and current session before forwarding
+records into its private queue. Each turn drains up to eight records from each
+source. Mouse admission failure leaves keyboard controls usable and displays
+`KeysOnly`; teardown retires the mouse association before releasing its lease
+and signal. [M4 evidence](../development/gem-mouse-m4.json) covers physical clicks,
+held-button close and partial admission rollback. Amiga/right-button protocols, AES events, timed waits
 and arbitrary registered ISR callbacks are unsupported. [I6 evidence](../development/gem-input-i6.json)
 measures native keyboard-to-visible-update maxima of 12 raw / 11 optimized PAL
 ticks for the recorded small-redraw workload during physical SIO, including wrap

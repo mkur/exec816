@@ -65,7 +65,7 @@ def run(output, mode, replay=False):
                 return item
             def picture(name,focus,count,position):
                 idle(); folder=output/name; folder.mkdir(exist_ok=True)
-                packed=scene(output,focus=focus,count=count)
+                packed=scene(output,focus=focus,count=count,cursor=None)
                 model=SimpleNamespace(pixels=bytes(v for pair in packed for v in (pair>>4,pair&15)))
                 digest=pixels(b,folder,overlay(model,position))
                 report['cases'].append(dict(name=name,status='pass',scanout_sha256=digest))

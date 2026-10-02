@@ -4,6 +4,9 @@
 #define UI_EVENT_CAPACITY 32
 void UiEventsOpen(void);
 void UiEventsClose(void);
+UWORD UiMouseOpen(void);
+void UiMouseClose(void);
+UWORD UiPostMouse(const struct InputEvent *event);
 UWORD UiPostCaptured(const struct InputEvent *event);
 UWORD UiPostPointer(const struct InputEvent *event);
 UWORD UiTakeEvent(struct InputEvent *event);

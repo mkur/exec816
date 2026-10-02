@@ -3,7 +3,8 @@
 #include "ui.h"
 #include "ui-events.h"
 #include <string.h>
-extern struct InputLease input;
+extern struct InputLease input, mouseInput;
+static ULONG mouseAcquisition, mouseRoute, mouseSession;
 static struct InputEvent events[UI_EVENT_CAPACITY] __attribute__((aligned(2)));
 static struct InputEvent lossEvent, cancelEvent;
 static UWORD head, tail, closed=1;
@@ -20,6 +21,7 @@ void UiEventsClose(void)
 {
     Forbid();
     closed=1;
+    mouseAcquisition=mouseRoute=mouseSession=0;
     head=tail=uiQueued=uiLoss=uiCancel=0;
     Permit();
 }
@@ -41,7 +43,9 @@ static UWORD publish(const struct InputEvent *e)
                events[last].kind==INPUT_EVENT_POINTER && events[last].acquisition==e->acquisition &&
                events[last].route==e->route && events[last].buttons==e->buttons &&
                events[last].qualifiers==e->qualifiers && events[last].flags==e->flags) {
-        memcpy(&events[last],e,sizeof(*e)); ++uiCoalesced;
+        UWORD firstTick=events[last].tick;
+        memcpy(&events[last],e,sizeof(*e));
+        events[last].tick=firstTick; ++uiCoalesced;
     } else if (uiQueued==UI_EVENT_CAPACITY) {
         memset(&lossEvent,0,sizeof(lossEvent));
         lossEvent.acquisition=e->acquisition; lossEvent.route=e->route;
@@ -55,6 +59,67 @@ static UWORD publish(const struct InputEvent *e)
     }
     Signal(input.owner.task,input.wakeMask);
     return result;
+}
+/* Record the complete source identity before canonicalizing into the GUI's
+ * existing keyboard/session queue. Late samples cannot borrow a new session. */
+UWORD UiMouseOpen(void)
+{
+    UWORD status=INPUT_INVALID_OWNER;
+    Forbid();
+    if (!closed && boot.session && input.state==INPUT_ACTIVE && input.route &&
+        mouseInput.state==INPUT_ACTIVE && mouseInput.route &&
+        mouseInput.owner.task==input.owner.task) {
+        UiMouseClose();
+        mouseAcquisition=mouseInput.acquisition;
+        mouseRoute=mouseInput.route;
+        mouseSession=boot.session;
+        status=INPUT_OK;
+    }
+    Permit();
+    return status;
+}
+void UiMouseClose(void)
+{
+    UWORD n, kept=0, index, destination;
+    Forbid();
+    mouseAcquisition=mouseRoute=mouseSession=0;
+    UiDisarmPointer();
+    /* Remove old normalized pointer records too. Keyboard records and durable
+     * cancel/loss notices survive this bounded Task-only queue walk. */
+    for (n=0;n<uiQueued;++n) {
+        index=(tail+n)&(UI_EVENT_CAPACITY-1);
+        if (events[index].kind==INPUT_EVENT_POINTER || events[index].kind==INPUT_EVENT_BUTTON) continue;
+        destination=(tail+kept)&(UI_EVENT_CAPACITY-1);
+        if (destination!=index) memcpy(&events[destination],&events[index],sizeof(events[index]));
+        ++kept;
+    }
+    uiQueued=kept; head=(tail+kept)&(UI_EVENT_CAPACITY-1);
+    Permit();
+}
+UWORD UiPostMouse(const struct InputEvent *e)
+{
+    struct InputEvent copy;
+    UWORD status=INPUT_INVALID_OWNER;
+    if (!GemUpperExtent(e,sizeof(*e)) || e->reserved || e->qualifiers ||
+        (e->flags&~INPUT_TICK_VALID) || (!(e->flags&INPUT_TICK_VALID) && e->tick) ||
+        e->x<0 || e->x>639 || e->y<0 || e->y>239 || (e->buttons&~INPUT_LEFT) ||
+        (e->kind==INPUT_EVENT_POINTER ? e->code!=0 :
+         e->kind==INPUT_EVENT_BUTTON ? e->code!=INPUT_LEFT :
+         e->kind==INPUT_EVENT_LOSS ? (e->code<INPUT_LOSS_RAW || e->code>INPUT_LOSS_HARDWARE || e->flags || e->tick) : 1))
+        return INPUT_BAD_ARGUMENT;
+    Forbid();
+    if (mouseSession && (mouseSession!=boot.session || mouseInput.state!=INPUT_ACTIVE ||
+        mouseInput.acquisition!=mouseAcquisition || mouseInput.route!=mouseRoute)) UiMouseClose();
+    if (!closed && mouseSession && mouseSession==boot.session &&
+        mouseInput.state==INPUT_ACTIVE && mouseInput.acquisition==mouseAcquisition &&
+        mouseInput.route==mouseRoute && e->acquisition==mouseAcquisition && e->route==mouseRoute &&
+        input.state==INPUT_ACTIVE && input.route) {
+        memcpy(&copy,e,sizeof(copy));
+        copy.acquisition=input.acquisition; copy.route=input.route;
+        status=publish(&copy);
+    }
+    Permit();
+    return status;
 }
 UWORD UiPostCaptured(const struct InputEvent *e)
 {

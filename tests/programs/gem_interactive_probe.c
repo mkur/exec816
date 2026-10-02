@@ -4,6 +4,7 @@
 #include <clib/alib_protos.h>
 #include <string.h>
 volatile UWORD variant;
+extern volatile UWORD mouseStatus;
 /* Mailbox stimulus is copied by a real small diagnostic Task. Only the
  * ordinary queue publication path can change application input state. */
 struct InputEvent injectEvents[33] __attribute__((aligned(2)));
@@ -108,6 +109,10 @@ static void exhaustSignals(void)
 }
 void UiProbe(UWORD point)
 {
+    if (point==16 && variant==30) exhaustSignals();
+    if ((point==12 && variant==31) || (point==13 && variant==32) ||
+        (point==14 && variant==33)) mouseStatus=INPUT_NO_MEMORY;
+    if (point==15) while (bitCount) FreeSignal(heldBits[--bitCount]);
     if (point==0) {
         void EXEC_PTR *address=&boot;
         check(ExecSameAddress(address,&boot));
@@ -149,16 +154,17 @@ void UiProbe(UWORD point)
     }
     if (point==3 && variant==9) check(CreateTask("third large",0,(APTR)UiUnusedTask,2560UL)==NULL);
     if (point==10) {
-        if (variant==5) {
+        if (variant==5 || variant==34) {
             occupiedConfig.version=INPUT_VERSION;
-            occupiedConfig.source=INPUT_SOURCE_KEYBOARD;
+            occupiedConfig.source=variant==34 ? INPUT_SOURCE_POINTER : INPUT_SOURCE_KEYBOARD;
             occupiedConfig.wakeMask=boot.rootMask;
+            if (variant==34) { occupiedConfig.pointerProtocol=INPUT_POINTER_ST; occupiedConfig.pointerPort=1; }
             check(InputAcquire(&occupiedInput,&occupiedConfig)==INPUT_OK);
         }
         if (variant==6) check(VbxeOpen(&occupiedDisplay)==DISPLAY_OK);
     }
     if (point==11) {
-        if (variant==5) check(InputRelease(&occupiedInput)==INPUT_OK);
+        if (variant==5 || variant==34) check(InputRelease(&occupiedInput)==INPUT_OK);
         if (variant==6) check(VbxeClose(&occupiedDisplay)==DISPLAY_OK);
     }
 }
