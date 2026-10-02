@@ -77,18 +77,6 @@ PROC Main()
   LONGCARD bits
 
   parent=EXEC.FindTask(NULL)
-  IF kind=10 THEN
-    Require(EXEC.AllocSignal(16)=16)
-    Require(EXEC.RetainTask(parent,@lease)=1)
-    Require(EXECPRODUCER.Bind(EXECPRODUCER.POINTER_INPUT,parent,$10000)=0)
-    EXECPRODUCER.Release(EXECPRODUCER.POINTER_INPUT)
-    EXECPRODUCER.Drain(EXECPRODUCER.POINTER_INPUT)
-    Require(EXEC.ReleaseTask(@lease)=1)
-    EXEC.FreeSignal(16)
-    finished=1
-    RETURN
-  FI
-
   Require(EXEC.AllocSignal(16)=16 AND EXEC.AllocSignal(17)=17)
   Prepare(@recipient,1)
   Require(EXEC.AddTask(@recipient,@RecipientEntry,absent)=@recipient)

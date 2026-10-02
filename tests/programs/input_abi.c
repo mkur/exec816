@@ -1,14 +1,17 @@
 #include <exec/input.h>
 #include <proto/exec.h>
+#include <exec816/runtime.h>
 #include <string.h>
 
 struct InputLease lease;
+struct InputLease pointerLease;
 struct InputConfig config;
 struct InputConfig pointerConfig;
 struct InputEvent event;
 volatile UWORD stage, checks, failures, first_failure, progress;
 volatile ULONG checksum;
 ULONG tag = 0xdeadbeefUL;
+ULONG pointerTag;
 UWORD pending = 0xa55a;
 
 static void check(UWORD good)
@@ -71,7 +74,7 @@ UWORD main(void)
     config.filter0Value = 0x1c; config.flags = 2;
     check(InputAcquire(&lease, &config) == INPUT_BAD_ARGUMENT);
     config.flags = INPUT_CAPTURE_BREAK;
-    /* M2 validates the complete pointer record before rejecting admission. */
+    /* Pointer fields validate before signal ownership or hardware admission. */
     pointerConfig.version = INPUT_VERSION;
     pointerConfig.source = INPUT_SOURCE_POINTER;
     pointerConfig.wakeMask = 0x10000UL;
@@ -79,7 +82,7 @@ UWORD main(void)
     pointerConfig.pointerPort = 1;
     pointerConfig.initialX = 320; pointerConfig.initialY = 120;
     pointerConfig.maxX = 639; pointerConfig.maxY = 239;
-    check(InputAcquire(&lease, &pointerConfig) == INPUT_UNSUPPORTED);
+    check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
     pointerConfig.version = 1;
     check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
     pointerConfig.version = INPUT_VERSION; pointerConfig.reserved2 = 1;
@@ -133,7 +136,21 @@ UWORD main(void)
     check(InputPublishRoute(&lease, 0) == INPUT_OK);
     check(InputDiscard(&lease, tag) == INPUT_OK);
     check(InputRetireRoute(&lease, tag) == INPUT_OK);
+    check(AllocSignal(17) == 17);
+    pointerConfig.wakeMask = 0x20000UL;
+    check(InputAcquire(&pointerLease, &pointerConfig) == INPUT_OK);
+    check(pointerLease.acquisition != lease.acquisition);
     check(InputRelease(&lease) == INPUT_OK);
+    check(InputPending(&pointerLease, &pending) == INPUT_OK && pending == 0);
+    check(InputCreateRoute(&pointerLease, 0, &pointerTag) == INPUT_OK);
+    check(InputPublishRoute(&pointerLease, pointerTag) == INPUT_OK);
+    for (i=0; i<256; ++i) {
+        if (InputTake(&pointerLease, &event) == INPUT_OK) break;
+        ExecYield();
+    }
+    check(i<256 && event.kind==INPUT_EVENT_POINTER && event.flags==INPUT_TICK_VALID);
+    check(event.acquisition==pointerLease.acquisition && event.route==pointerTag);
+    check(event.x==320 && event.y==120 && event.buttons==0 && event.code==0);
     FreeSignal(16);
     config.wakeMask = 0x92345678UL;
     /* Layout-only values, never submitted as a live lease. */
@@ -152,5 +169,8 @@ UWORD main(void)
         progress = i+1;
     }
     checksum = a ^ b;
+    /* Timer IRQs run throughout the C context/checksum workload. */
+    check(InputRelease(&pointerLease) == INPUT_OK);
+    FreeSignal(17);
     return failures;
 }

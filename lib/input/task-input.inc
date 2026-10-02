@@ -2,6 +2,8 @@
 INCLUDE "input-storage.act.inc"
 PUBLIC EXTERNAL BYTE FUNC InputClaim()
 PUBLIC EXTERNAL PROC InputRelease()
+PUBLIC EXTERNAL BYTE FUNC PointerCaptureClaim()
+PUBLIC EXTERNAL PROC PointerCaptureRelease()
 
 PROC InputInit()
   CARD index
@@ -52,11 +54,12 @@ SignalBinding POINTER FUNC PointerBinding()
 
 RETURN(SignalBinding POINTER(ADDRESS(IN_POINTER_CAPTURE+16)))
 
-; The source has a retention descriptor, but no hardware admission before M3.
 BYTE FUNC PointerClaim()
 
-RETURN(0)
+RETURN(PointerCaptureClaim())
 
 PROC PointerRelease()
+
+  PointerCaptureRelease()
 
 RETURN

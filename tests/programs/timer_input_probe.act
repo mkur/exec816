@@ -1,0 +1,73 @@
+; Diagnostic fixture: public INPUT admission and real addressed queue/wakes
+; while the existing timer/SIO test runs its byte/deadline assertions.
+MODULE TIMERPROBE
+USE EXEC
+USE INPUT
+INPUT.Lease lease
+INPUT.Config config
+INPUT.Event event
+LONGCARD route
+PUBLIC CARD samples,losses
+
+PUBLIC BYTE FUNC Start()
+  CARD status
+
+  IF lease.state<>INPUT.FREE THEN
+    RETURN(0)
+  FI
+
+  IF EXEC.AllocSignal(30)<>30 THEN
+    RETURN(0)
+  FI
+
+  config.version=INPUT.VERSION
+  config.source=INPUT.SOURCE_POINTER
+  config.wakeMask=$40000000
+  config.pointerProtocol=INPUT.POINTER_ST
+  config.pointerPort=1
+  config.initialX=100
+  config.initialY=100
+  config.maxX=639
+  config.maxY=239
+  status=INPUT.Acquire(@lease,@config)
+  IF status=INPUT.OK THEN
+    status=INPUT.CreateRoute(@lease,0,@route)
+  FI
+
+  IF status=INPUT.OK THEN
+    status=INPUT.PublishRoute(@lease,route)
+  FI
+
+  IF status<>INPUT.OK THEN
+    IF lease.state=INPUT.ACTIVE THEN
+      status=INPUT.Release(@lease)
+    FI
+
+    EXEC.FreeSignal(30)
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+PUBLIC PROC Stop()
+  CARD status,index
+
+  IF lease.state=INPUT.ACTIVE THEN
+    FOR index=0 TO INPUT.POINTER_RAW_SLOTS+16 DO
+      status=INPUT.Take(@lease,@event)
+      IF status=INPUT.EMPTY THEN
+        EXIT
+      FI
+
+      samples==+1
+      IF status<>INPUT.OK OR event.kind=INPUT.EVENT_LOSS THEN
+        losses==+1
+      FI
+    OD
+
+    status=INPUT.Release(@lease)
+    EXEC.FreeSignal(30)
+  FI
+
+RETURN
+ENDMODULE

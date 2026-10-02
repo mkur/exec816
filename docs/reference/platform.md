@@ -262,9 +262,9 @@ registers using write shadows, never POKEY's unrelated read aliases. Existing
 timer ownership outside this protocol is incompatible. SIO release restores its
 serial resources while preserving surviving sampling demand; last timer release
 restores its vector and silent baseline. Task-side transitions use SWITCHING and
-local IRQ masking, covering asynchronous NMI entry as well as IRQ. At the M1
-boundary the sampling backend is diagnostic only; public pointer admission
-remains unsupported. See [mouse development](../history/gem-mouse.md).
+local IRQ masking, covering asynchronous NMI entry as well as IRQ. The fixed
+ST/port 1 pointer backend uses this clock for public INPUT capture; diagnostic
+sampling counters and test entry points are excluded from production. See [mouse development](../history/gem-mouse.md).
 
 Peripheral speed, RX/TX timing, recovery and coexistence are profile-dependent.
 Pinned emulator evidence does not qualify other profiles or real hardware.

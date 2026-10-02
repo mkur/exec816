@@ -160,15 +160,9 @@ signal_release_end:
 .export signal_release_shutdown
 signal_release_shutdown:
     jsl sio_shutdown_unchecked
-    sep #$20
-    lda f:TM_USERS
-    and #2
-    beq :+
-    lda #0
-    sta f:TM_POINTER
-    lda #2
-    jsr timer_release
-:
+    .if INPUT_NATIVE
+        jsl pointer_release_unchecked
+    .endif
     rep #$20
     ; finish may arrive with M=1 or an invalid compiler domain after a fault.
     ; It owns shutdown, has masked IRQ/NMI, and supplies the small return frame.

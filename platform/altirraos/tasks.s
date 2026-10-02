@@ -180,6 +180,7 @@ general_finalizer_start:
     .endif
     .if INPUT_NATIVE
         .include "input.s"
+        .include "pointer.s"
     .endif
     .if CONSOLE_NATIVE
         .include "console.s"

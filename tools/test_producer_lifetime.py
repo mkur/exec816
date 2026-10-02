@@ -35,8 +35,8 @@ def run(output, mode, selected=None, replay=False):
         report.update(build=program['build'], pin=PIN, harness_sha256=sha256(Path(__file__)),
             xex_sha256=sha256(program['xex']), producer_imports=ABI['producer_imports'],
             bank_zero_delta=dict(fixed=0, per_task=[0]*8, private_idle=0))
-        specs = [(prefix+'-'+name, source, kind) for prefix, source in [('serial',1), ('keyboard',2)]
-                 for name, kind in CASES.items()]+[('old-profile', 0, 9), ('pointer-unsupported', 3, 10)]
+        specs = [(prefix+'-'+name, source, kind) for prefix, source in [('serial',1), ('keyboard',2), ('pointer',3)]
+                 for name, kind in CASES.items()]+[('old-profile', 0, 9)]
         if selected:
             require(set(selected) <= {s[0] for s in specs}, 'Unknown producer case')
             specs = [s for s in specs if s[0] in selected]
@@ -66,7 +66,7 @@ def run(output, mode, selected=None, replay=False):
                         bridge.memload(program['image']['entry'], code)
                         result['old_profile_probe'] = code.hex()
 
-                fault = kind not in (0,7,10)
+                fault = kind not in (0,7)
                 runtime, _ = execute(b, {**program,'output':folder}, before_run=before,
                     preloaded=bool(number), expected_status=4 if fault else 0,
                     frame_limit=3000, timeout=120)

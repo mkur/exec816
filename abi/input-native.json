@@ -352,24 +352,29 @@
       "alignment": 2,
       "fields": [
         [
-          "route",
+          "acquisition",
           "LONGCARD",
           0
         ],
         [
-          "acquisition",
+          "route",
           "LONGCARD",
           4
         ],
         [
-          "epoch",
+          "tick",
           "CARD",
           8
         ],
         [
           "code",
-          "CARD",
+          "BYTE",
           10
+        ],
+        [
+          "buttons",
+          "BYTE",
+          11
         ],
         [
           "xCount",
@@ -382,17 +387,12 @@
           16
         ],
         [
-          "buttons",
-          "BYTE",
+          "epoch",
+          "CARD",
           20
         ],
         [
           "flags",
-          "BYTE",
-          21
-        ],
-        [
-          "reserved",
           "CARD",
           22
         ]
@@ -423,42 +423,52 @@
           3
         ],
         [
-          "savedMask",
+          "samplePhase",
           "BYTE",
           4
         ],
         [
-          "savedSkctl",
+          "sampleButtons",
           "BYTE",
           5
         ],
         [
-          "keyVector",
-          "CARD",
+          "deltaX",
+          "BYTE",
           6
         ],
         [
-          "breakVector",
-          "CARD",
+          "deltaY",
+          "BYTE",
+          7
+        ],
+        [
+          "sampleKind",
+          "BYTE",
           8
         ],
         [
-          "nativeEvents",
+          "sampleFlags",
+          "BYTE",
+          9
+        ],
+        [
+          "slot",
           "CARD",
           10
         ],
         [
-          "emulationEvents",
+          "scratch",
           "CARD",
           12
         ],
         [
-          "errors",
+          "pad4",
           "BYTE",
           14
         ],
         [
-          "hardwareLost",
+          "pad5",
           "BYTE",
           15
         ],
@@ -478,12 +488,12 @@
           32
         ],
         [
-          "breakRoute",
+          "lossRoute",
           "LONGCARD",
           36
         ],
         [
-          "breakPending",
+          "lossCode",
           "BYTE",
           40
         ],
@@ -613,9 +623,19 @@
           88
         ],
         [
-          "reserved",
-          "BYTE[16]",
+          "consumedRoute",
+          "LONGCARD",
           112
+        ],
+        [
+          "pendingEpoch",
+          "CARD",
+          116
+        ],
+        [
+          "reserved",
+          "BYTE[10]",
+          118
         ],
         [
           "events",

@@ -149,9 +149,12 @@ timer_poll_done:
     rts
 
 timer_sample:
+.if INPUT_NATIVE
+    jsr pointer_sample
+.endif
 .if SIGNAL_IRQ_PROBE = 11
-    ; Fixed bounded electrical sampler. M3 substitutes the real decoder and
-    ; repeats gap/cost checks; this code is absent from production images.
+    ; Passive counters around the real M3 backend. These diagnostic counters
+    ; and entry points are absent from production images.
     rep #$20
     lda f:TM_SAMPLES
     inc a
@@ -178,34 +181,9 @@ timer_sample:
 .a16
 .export timer_probe_start,timer_probe_start_end,timer_probe_stop,timer_probe_stop_end
 timer_probe_start:
-    signal_stack_check 25
-    jsr sio_enter
-    sep #$20
-    lda #2
-    jsr timer_acquire
-    beq :+
-    php
-    sei
-    lda #1
-    sta f:TM_POINTER
-    lda f:$0010
-    jsr timer_mask
-    plp
-    lda #1
-:
-    rep #$20
-    and #$ff
-    jmp sio_leave
+    jmp pointer_claim
 timer_probe_start_end:
 timer_probe_stop:
-    signal_stack_check 25
-    jsr sio_enter
-    sep #$20
-    lda #0
-    sta f:TM_POINTER
-    lda #2
-    jsr timer_release
-    rep #$20
-    jmp sio_leave
+    jmp pointer_release
 timer_probe_stop_end:
 .endif

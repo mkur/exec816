@@ -103,3 +103,49 @@ reservation does not grow. Each caller's configuration grows 16 bytes, including
 the GEM C configuration and console configuration. Fixed bank-zero, each public
 Task and private idle all change by **0 bytes**, including guards, alignment and
 unused capacity. There are no new Tasks or VRAM reservations.
+
+
+## M3 Native ST capture
+
+[M3 evidence](../development/gem-mouse-m3.json) records the reusable ST/port 1
+backend, admitted independently of the keyboard through INPUT and the C bridge.
+A fixed timer decoder reads both axes and TRIG0, maintains checked signed
+counters, and publishes 32 bounded samples plus sixteen durable route notices.
+Motion coalesces without crossing reversal/button/loss boundaries and retains
+its earliest tick. Task normalization clips coordinates and expands simultaneous
+movement/button changes in the required old-buttons/new-buttons order.
+
+Route-qualified notice epochs invalidate older samples and retained BUTTON
+output. Discarding an old route preserves another route's coordinate reference;
+exhaustion disables addressed capture until reacquisition. The native interface
+copies one record under saved I, with no masked ring scan. No PIA, POTGO,
+trigger-latch or SKCTL writes were added. Shared field ownership and NMI guards
+are documented in the [input contract](../reference/input.md#st-mouse-capture).
+
+Raw and optimized standalone consumers receive the independent controller's
+32 axis transitions and two button edges, plus the initial baseline. They cover
+combined movement/button expansion, loss, copied leases, contention, route
+retirement and reacquisition, with keyboard capture retained concurrently.
+C checks include pointer baseline delivery and timer IRQs throughout the C
+checksum/context workload. Producer tests reject premature signal freeing and
+Task/controller removal, and cover either source's independent release.
+Addressed capture, queue publication and wake posts also run during exact-byte
+FASTEST125 SIO transfers, including ROM emulation entry. The largest measured
+sampling gap is **260.51 µs**, below 1 ms in those workloads. The rebuilt keyboard
+GEM scene continues to pass. The complete rate/visible-response envelope is M5
+work; these development checks do not qualify the hosted system.
+
+A signed-assignment defect exposed by the negative-counter fixture was fixed in
+actionc commit `f1ff4ce0`, and the Exec pin was updated. NIR now explicitly widens
+signed store operands, including record and volatile destinations. Focused raw
+and optimized 65816, 6502 and 68k execution regressions pass. Compiler snapshots
+and the 51-fixture sweep pass. A stale broad-corpus assertion (362 expected,
+363 actual) also fails on the clean old pin; all remaining compiler tests pass.
+The Exec host checks pass: 288 tests, four historical audits skipped.
+
+The upper native-code reservation grows **2,048 bytes** to 12,288, ending exactly
+before the provider table at arena offset `$4000`. Pointer capture's M2 storage,
+guards and slack are unchanged. The existing 64 KiB Task-arena reservation does
+not grow. Fixed bank-zero, each of eight public Tasks and private idle all change
+by **0 bytes**, including guards, alignment and unused reserved capacity. No
+extra Task, large stack or VRAM reservation is introduced.

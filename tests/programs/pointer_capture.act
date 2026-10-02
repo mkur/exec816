@@ -1,0 +1,155 @@
+MODULE POINTERTEST
+USE EXEC
+USE INPUT
+USE INPUTNATIVE
+USE HEAPCORE
+INPUT.Lease keys,mouse,copied
+INPUT.Config keyConfig,mouseConfig
+INPUT.Event event
+INPUT.Event ARRAY events(64)
+CARD checks,pending,received,keyCount
+LONGCARD tag,keyTag,oldAcquisition,other
+BYTE stage,stop
+
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($f800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Records()
+
+  LET hardware=INPUTNATIVE.PointerCapture POINTER($0f4810)
+  Require(INPUT.CreateRoute(@mouse,0,@tag)=INPUT.OK)
+  ; Route zero keeps the IRQ from publishing while the task fixture constructs
+  ; a state sample with simultaneous movement and a left-button transition.
+  hardware.consumedRoute=tag
+  hardware.consumedEpoch=hardware.epoch
+  hardware.head=1
+  hardware.tail=0
+  hardware.events(0).acquisition=mouse.acquisition
+  hardware.events(0).route=tag
+  hardware.events(0).tick=123
+  hardware.events(0).kind=INPUTNATIVE.POINTER_STATE_SAMPLE
+  hardware.events(0).buttons=1
+  hardware.events(0).xCount=4
+  hardware.events(0).yCount=-3
+  hardware.events(0).epoch=hardware.epoch
+  hardware.events(0).flags=0
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK)
+  Require(event.kind=INPUT.EVENT_POINTER AND event.buttons=0
+      AND event.x=104 AND event.y=97 AND event.tick=123)
+  Require(INPUT.Pending(@mouse,@pending)=INPUT.OK AND pending=INPUT.PENDING_DATA)
+  Require(INPUT.RetireRoute(@mouse,tag)=INPUT.BUSY)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK)
+  Require(event.kind=INPUT.EVENT_BUTTON AND event.buttons=1
+      AND event.x=104 AND event.y=97 AND event.tick=123)
+  Require(INPUT.Take(@mouse,@event)=INPUT.EMPTY)
+  ; A pending expansion cannot survive a durable loss boundary.
+  hardware.head=2
+  hardware.events(1)=hardware.events(0)
+  hardware.events(1).buttons=0
+  hardware.events(1).xCount=7
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_POINTER)
+  Require(INPUT.Discard(@mouse,tag)=INPUT.OK)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_LOSS
+      AND event.code=INPUT.LOSS_RAW AND event.flags=0 AND event.tick=0)
+  Require(INPUT.Take(@mouse,@event)=INPUT.EMPTY)
+  Require(INPUT.RetireRoute(@mouse,tag)=INPUT.OK)
+  ; Discarding an old route advances the allocator, not another route's
+  ; consumer baseline. Its next cumulative snapshot must retain the delta.
+  Require(INPUT.CreateRoute(@mouse,0,@other)=INPUT.OK)
+  Require(INPUT.CreateRoute(@mouse,0,@tag)=INPUT.OK)
+  hardware.consumedRoute=tag
+  hardware.consumedEpoch=hardware.epoch
+  hardware.consumedX=0
+  hardware.consumedY=0
+  hardware.previousButtons=0
+  hardware.x=100
+  hardware.y=100
+  Require(INPUT.Discard(@mouse,other)=INPUT.OK)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_LOSS
+      AND event.route=other)
+  Require(hardware.consumedRoute=tag AND hardware.consumedEpoch<>hardware.epoch)
+  hardware.head=1
+  hardware.tail=0
+  hardware.events(0).route=tag
+  hardware.events(0).acquisition=mouse.acquisition
+  hardware.events(0).epoch=hardware.epoch
+  hardware.events(0).xCount=5
+  hardware.events(0).yCount=0
+  hardware.events(0).buttons=0
+  hardware.events(0).flags=0
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=105 AND event.y=100)
+  Require(INPUT.Release(@mouse)=INPUT.OK)
+  Require(INPUT.Acquire(@mouse,@mouseConfig)=INPUT.OK)
+  Require(mouse.acquisition>oldAcquisition)
+  Require(INPUT.PublishRoute(@mouse,tag)=INPUT.BAD_ARGUMENT)
+  Require(INPUT.CreateRoute(@mouse,0,@tag)=INPUT.OK)
+  Require(INPUT.PublishRoute(@mouse,tag)=INPUT.OK)
+
+RETURN
+
+PROC Main()
+  LONGCARD ignored
+  CARD status
+  BYTE index
+
+  Require(EXEC.AllocSignal(16)=16 AND EXEC.AllocSignal(17)=17)
+  keyConfig.version=INPUT.VERSION
+  keyConfig.source=INPUT.SOURCE_KEYBOARD
+  keyConfig.wakeMask=$10000
+  mouseConfig.version=INPUT.VERSION
+  mouseConfig.source=INPUT.SOURCE_POINTER
+  mouseConfig.wakeMask=$20000
+  mouseConfig.pointerProtocol=INPUT.POINTER_ST
+  mouseConfig.pointerPort=1
+  mouseConfig.initialX=100
+  mouseConfig.initialY=100
+  mouseConfig.maxX=200
+  mouseConfig.maxY=200
+  Require(INPUT.Acquire(@keys,@keyConfig)=INPUT.OK)
+  Require(INPUT.Acquire(@mouse,@mouseConfig)=INPUT.OK)
+  Require(mouse.acquisition<>keys.acquisition)
+  oldAcquisition=mouse.acquisition
+  copied=mouse
+  Require(INPUT.Take(@copied,@event)=INPUT.INVALID_OWNER)
+  Require(INPUT.Release(@copied)=INPUT.INVALID_OWNER)
+  Require(INPUT.Acquire(@copied,@mouseConfig)=INPUT.BUSY)
+  Require(INPUT.CreateRoute(@keys,0,@keyTag)=INPUT.OK)
+  Require(INPUT.PublishRoute(@keys,keyTag)=INPUT.OK)
+  Records()
+  stage=1
+  WHILE stop=0 DO
+    FOR index=0 TO 7 DO
+      status=INPUT.Take(@mouse,@event)
+      IF status=INPUT.OK THEN
+        Require(received<64)
+        events(received)=event
+        received==+1
+      FI
+    OD
+
+    IF INPUT.Take(@keys,@event)=INPUT.OK THEN
+      keyCount==+1
+    FI
+
+    Require(INPUT.Pending(@mouse,@pending)=INPUT.OK)
+    IF pending=0 AND stop=0 THEN
+      ignored=EXEC.Wait($30000)
+    FI
+  OD
+
+  Require(INPUT.Release(@keys)=INPUT.OK)
+  Require(INPUT.Pending(@mouse,@pending)=INPUT.OK)
+  Require(INPUT.Release(@mouse)=INPUT.OK)
+  EXEC.FreeSignal(16)
+  EXEC.FreeSignal(17)
+  stage=2
+
+RETURN
+ENDMODULE

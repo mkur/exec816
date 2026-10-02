@@ -30,9 +30,9 @@ in Exec's shared address space.
 | InputConfig | 32 | Version, source, wake mask, keyboard filters/flags, pointer protocol/port, initial position, inclusive bounds and zero reserved fields. |
 | InputEvent | 24 | Acquisition and route u32; tick u16; kind/flags u8; code/qualifiers u16; x/y i16; buttons/reserved u16. |
 
-Only `SOURCE_KEYBOARD=2` is admitted at the M2 boundary. `SOURCE_POINTER=3`
-configuration is validated, but Acquire returns UNSUPPORTED until its capture
-backend is installed. Supply a
+`SOURCE_KEYBOARD=2` and `SOURCE_POINTER=3` admit independent consumers. The
+pointer backend decodes an ST mouse on joystick port 1, including its left
+button. Supply a
 nonzero wake mask whose bits are already allocated to the current Task. Acquire
 copies configuration, retains the consumer and its signal binding, and activates
 capture only after admission succeeds. It starts with route zero, which discards
@@ -71,7 +71,7 @@ publication guards serialize state with Task switching, IRQ and NMI.
 | `CreateRoute(lease, flags, outTag)` | Reserve one of sixteen route slots; flags must be zero. Return a nonzero, nonrepeating tag. |
 | `PublishRoute(lease, tag)` | Select an admitted route, or zero to stop addressed capture. Queued records retain their captured identities. |
 | `RetireRoute(lease, tag)` | Release an unpublished route only after queued records and notices no longer refer to it; otherwise BUSY. |
-| `Discard(lease, tag)` | Discard ordinary captured records and loss for the route, preserving cancellation. Arrivals after the clear boundary survive. |
+| `Discard(lease, tag)` | Keyboard: discard ordinary records and loss, preserving cancellation. Pointer: establish a durable RAW loss boundary that invalidates earlier samples and pending button output for this route. Later arrivals survive. |
 | `Pending(lease, outMask)` | Observe DATA=1, LOSS=2 and CANCEL=4. This does not authorize clearing a wake or consuming work. |
 | `Take(lease, event)` | Copy and acknowledge one event: cancellation first, then loss, then ordinary input. EMPTY leaves the output unchanged. |
 | `Release(lease)` | Stop capture, purge routes/records, retire producer wakes and release ownership. Only success permits reuse of the lease, signal or storage. |
@@ -87,7 +87,7 @@ Release purges the old acquisition before its storage can serve another consumer
 
 ## Capture, loss and cancellation
 
-The resident ring has 64 eight-byte raw records: scan byte, kind, capture tick
+The keyboard ring has 64 eight-byte raw records: scan byte, kind, capture tick
 and route. A full ring drops the new ordinary record and latches explicit loss.
 Sixteen route mailboxes retain cancellation and loss independently of ring space.
 Take acknowledges one mailbox atomically; a later arrival remains pending.
@@ -97,7 +97,7 @@ Release's purge boundary makes that safe across reacquisition.
 | Kind | Code and fields |
 | --- | --- |
 | KEY=1 | Raw scan byte in code, SHIFT=1 and CONTROL=2 in qualifiers; capture tick is valid. Translation and Caps state belong to the consumer. |
-| POINTER=2 | Code zero; x/y position and resulting buttons. Reserved for normalized backends; native keyboard Take does not produce it. |
+| POINTER=2 | Code zero; bounded x/y position and button state before any simultaneous button edge. |
 | BUTTON=3 | Changed-button mask in code, resulting state in buttons. Initially LEFT=1 is the only defined button. |
 | LOSS=4 | RAW=1, NORMALIZED=2 or HARDWARE=3 in code. Consumers abandon incomplete gestures. |
 | CANCEL=5 | BREAK=1 or KEY_FILTER=2 in code. Delivery survives ordinary queue overflow and Discard. |
@@ -113,10 +113,52 @@ consumer runnable while Pending reports work; otherwise remaining records could
 be stranded after their wake bit was consumed. Wait only after observing every
 work source, without clearing notifications across that observation boundary.
 
-Native capture services serial IRQ work first, shares SKCTL through the platform
+Keyboard capture services serial IRQ work first, shares SKCTL through the platform
 ownership protocol and restores the prior keyboard vectors/masks on release.
 IRQ/NMI never traverse console instance records or arbitrary application data.
 The console maps generic tags to its focus/foreground records in Task context.
+
+## ST mouse capture
+
+Timer 1 samples PORTA's low nibble and TRIG0 through the shared platform timer.
+It does not program PIA direction, POTGO, trigger latching or SKCTL. Native and
+ROM emulation interrupt paths use the same decoder; keyboard and SIO ownership
+remain independent. Route zero continues tracking electrical phase and counters
+without addressed output. A newly published route receives a position baseline;
+consumers require a released-button observation before arming gestures.
+
+The fixed capture reservation contains 32 private 24-byte samples and sixteen
+durable route notices. One legal phase transition means one pixel, without
+acceleration. Task code clips to the configured inclusive bounds. Unchanged
+samples produce no event. Adjacent motion coalesces only within the same
+acquisition, route, epoch and button state, and stops on either axis reversing.
+Coalescing preserves the earliest outstanding tick. Button changes are barriers.
+Movement and a simultaneous button edge expand to POINTER with the previous
+buttons, followed by a retained BUTTON with the new state. Pending includes that
+retained output, and retirement, Discard, loss and Release account for it.
+
+Opposite quadrature phases and signed counter overflow produce HARDWARE loss;
+a full raw ring produces RAW loss. A per-route notice epoch prevents older
+samples or pending output from restoring a gesture after its loss. Loss retains
+the first unacknowledged cause and the latest counter baseline. Epoch exhaustion
+disables addressed capture until reacquisition, with durable loss and no wrapping
+identity. Three or four transitions hidden between samples can alias legal or
+unchanged phase values and cannot be detected from PORTA alone. The 1,000
+transitions/second/axis envelope and GUI response bound remain M5 validation
+work; arbitrary host bursts are not guaranteed.
+
+| Shared fields | Writers and serialization |
+| --- | --- |
+| Phase, button level, cumulative counters, epoch, disabled/baseline flags | Timer IRQ; claim, publication and Discard transactions save/set I. |
+| Ring head, last motion counts and coalescing directions | Timer IRQ. Take copies a complete sample and advances tail under saved I; no masked ring walk. |
+| Route, acquisition and binding activation | Admitted Task/kernel publication under Forbid or SWITCHING plus saved I. IRQ reads fixed resident storage. |
+| Notice payloads and loss mask | IRQ or Discard under saved I; Take copies and acknowledges one notice atomically. Notice identity/epoch remain after acknowledgement. |
+| Coordinates, consumed counters/route/epoch and retained BUTTON | Consumer Task under Forbid. Pending is published last; native Take checks it against the retained notice epoch before copying. |
+
+Task operations hold Forbid; short native copies/publication transactions save
+and set I. The IRQ adapter preserves the full native context. Nested NMI retains
+the interrupted I state, and IRQ_DEPTH/Forbid prevent a switch during the shared
+transaction. IRQ capture never traverses application storage or allocates.
 
 ## Interactive subset and limits
 
@@ -129,14 +171,17 @@ Loss, cancellation or release elsewhere disarms it. Diagnostic pointer producers
 copy validated records and stop before application storage retires; production
 ships without those producers or injection entry points.
 
-Physical mouse hardware, donor POKEY timer sampling, AES events, timed waits and
-arbitrary registered ISR callbacks are unsupported. [I6 evidence](../development/gem-input-i6.json)
+Physical mouse capture is available to INPUT clients; integration into the GEM
+scene is the next slice. Amiga/right-button protocols, AES events, timed waits
+and arbitrary registered ISR callbacks are unsupported. [I6 evidence](../development/gem-input-i6.json)
 measures native keyboard-to-visible-update maxima of 12 raw / 11 optimized PAL
 ticks for the recorded small-redraw workload during physical SIO, including wrap
 controls. This is focused development evidence on the pinned emulator, not a
 general latency guarantee or hosted-system qualification.
 
-Capture reuses its existing 560-byte reservation plus 128 bytes of existing
-upper Task-arena slack. No additional input Task or reserved bank-zero memory is
+Keyboard capture uses 560 bytes and a 144-byte descriptor. Pointer capture
+reserves 1,536 bytes including two 16-byte guards and 224 bytes of unused
+capacity, plus a 144-byte descriptor. The shared acquisition allocator uses four
+bytes. All are inside the existing 64 KiB upper Task arena. No additional input Task or reserved bank-zero memory is
 introduced: fixed, each public Task and private-idle deltas are zero, counting
 guards, alignment and unused reserved capacity.

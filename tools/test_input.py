@@ -49,7 +49,7 @@ def run(output, mode, case='abi', replay=False):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     report = dict(status='running', tier='development', slice='I3', mode=mode, cases=[],
-                  qualification=False, scope='Records and C/native bridge against implemented admission; no hardware in the ABI case')
+                  qualification=False, scope='Records, C/native bridge, concurrent source admission and timer IRQ context during the C checksum workload')
     try:
         if replay:
             program = read_build(output/'program')

@@ -410,20 +410,27 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             label,result,peak='console_span','None',0
             arguments=[dict(alignment=1,offset=0,size=3),dict(alignment=1,offset=3,size=3),dict(alignment=2,offset=6,size=2)]
             outgoing=9
-        elif tasks and name in ('TASKPOLICY.InputClaim','TASKPOLICY.InputRelease'):
-            require(irq_probe != 10,'Keyboard backend excluded by disposable probe')
-            label={'InputClaim':'input_claim','InputRelease':'input_release'}[name.split('.')[1]]
+        elif tasks and name in ('TASKPOLICY.InputClaim','TASKPOLICY.InputRelease',
+                               'TASKPOLICY.PointerCaptureClaim','TASKPOLICY.PointerCaptureRelease'):
+            require(irq_probe != 10,'Input backend excluded by disposable probe')
+            label={'InputClaim':'input_claim','InputRelease':'input_release',
+                   'PointerCaptureClaim':'pointer_claim','PointerCaptureRelease':'pointer_release'}[name.split('.')[1]]
             result='Some(NativeResult(A8ZeroExtended))' if name.endswith('Claim') else 'None'
-            peak=3
+            peak=40 if 'Pointer' in name else 3
         elif tasks and name.startswith('INPUTCAPTURE.'):
-            require(irq_probe != 10,'Keyboard backend excluded by disposable probe')
+            require(irq_probe != 10,'Input backend excluded by disposable probe')
             operation=name.split('.')[1]
-            require(operation in ('Take','ResetInput','Discard','Publish','TakeBreak'),'Unknown console adapter import')
-            label={'Take':'input_take','ResetInput':'input_reset_input','Discard':'input_discard','Publish':'input_publish','TakeBreak':'input_take_break'}[operation]
-            if operation in ('Publish','Discard'):
+            input_labels={'Take':'input_take','ResetInput':'input_reset_input','Discard':'input_discard',
+                    'Publish':'input_publish','TakeBreak':'input_take_break',
+                    'PointerPublish':'pointer_publish','PointerDiscard':'pointer_discard','PointerTake':'pointer_take'}
+            require(operation in input_labels,'Unknown input adapter import')
+            label=input_labels[operation]
+            if operation in ('Publish','Discard','PointerPublish','PointerDiscard'):
                 arguments=[dict(alignment=2,offset=0,size=4)];outgoing=5;result='None'
+            elif operation=='PointerTake':
+                arguments=[dict(alignment=1,offset=0,size=3)];outgoing=3;result='Some(NativeResult(A16))'
             else:result='Some(NativeResult(A16X16))' if operation in ('Take','TakeBreak') else 'None'
-            peak=5 if operation in ('Take','Discard') else 1 if operation in ('ResetInput','Discard','Publish','TakeBreak') else 0
+            peak=40 if operation.startswith('Pointer') else 5 if operation in ('Take','Discard') else 1
         elif tasks and name in ('SIOPROBE.Emulation','SIOPROBE.Stall','SIOPROBE.Stale'):
             require(io_test_device,'SIO test entry is unavailable in production')
             label,result,peak='sio_probe_'+name.split('.')[1].lower(),'None',31 if name.endswith('Stale') else 19
@@ -433,7 +440,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             require(operation in ('Start','Stop'), 'Unknown timer probe operation')
             label = 'timer_probe_'+operation.lower()
             result = 'Some(NativeResult(A8ZeroExtended))' if operation == 'Start' else 'None'
-            peak = 25
+            peak = 40
         elif tasks and name.startswith('SIOADAPTER.'):
 
 
@@ -803,7 +810,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             task_storage=task_storage, signal_probe=policy_probe, signal_irq_probe=irq_probe,
             manual_wake=manual_wake, pump_count=pump_count if irq_probe==8 else None,
             task_inputs={name:sha256(ROOT/name) for name in (
-                'abi/input-native.json','abi/input.json','tools/generate_input_native.py','tools/generate_input.py','lib/input/inputnative.act','lib/input/input.act','lib/input/input-types.inc','lib/input/inputcapture.act','lib/input/task-input.inc','platform/altirraos/input.s','platform/altirraos/input-native.inc','platform/altirraos/input.inc','abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
+                'abi/input-native.json','abi/input.json','tools/generate_input_native.py','tools/generate_input.py','lib/input/inputnative.act','lib/input/input.act','lib/input/input-types.inc','lib/input/inputcapture.act','lib/input/task-input.inc','platform/altirraos/input.s','platform/altirraos/pointer.s','platform/altirraos/input-native.inc','platform/altirraos/input.inc','abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
                 'lib/spartados/sdfs.act','lib/spartados/sdfstypes.act','lib/spartados/sdfsfile.act',
                 'lib/spartados/sdfsdir.act','lib/spartados/sdfsname.act','lib/spartados/sdfsdate.act',
                 'lib/fs/fsformats.act','lib/fs/fsbtypes.act','lib/fs/fsbackend.act',

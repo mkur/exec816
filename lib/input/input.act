@@ -222,11 +222,6 @@ PUBLIC CARD FUNC Acquire(Lease POINTER lease Config POINTER config)
     RETURN(status)
   FI
 
-  ; M2 defines and validates the pointer configuration. M3 installs capture.
-  IF config.source=SOURCE_POINTER THEN
-    RETURN(UNSUPPORTED)
-  FI
-
   EXEC.Forbid()
   LET state=SourceState(config.source)
   LET capture=Capture(state)
@@ -272,7 +267,10 @@ PUBLIC CARD FUNC Acquire(Lease POINTER lease Config POINTER config)
     state.config(index)=bytes(index)
   OD
 
-  INPUTCAPTURE.Publish(0)
+  IF config.source=SOURCE_KEYBOARD THEN
+    INPUTCAPTURE.Publish(0)
+  FI
+
   IF EXECPRODUCER.Bind(config.source,self,lease.wakeMask)=0 THEN
     state.current=NULL
     ignored=EXEC.ReleaseTask(@lease.owner)
@@ -343,11 +341,10 @@ PUBLIC CARD FUNC PublishRoute(Lease POINTER lease LONGCARD tag)
   FI
 
   IF SourceOf(Shared(lease))=SOURCE_POINTER THEN
-    EXEC.Permit()
-    RETURN(UNSUPPORTED)
+    INPUTCAPTURE.PointerPublish(tag)
+  ELSE
+    INPUTCAPTURE.Publish(tag)
   FI
-
-  INPUTCAPTURE.Publish(tag)
   lease.route=tag
   EXEC.Permit()
 
@@ -399,11 +396,10 @@ PUBLIC CARD FUNC Discard(Lease POINTER lease LONGCARD tag)
   FI
 
   IF SourceOf(Shared(lease))=SOURCE_POINTER THEN
-    EXEC.Permit()
-    RETURN(UNSUPPORTED)
+    INPUTCAPTURE.PointerDiscard(tag)
+  ELSE
+    INPUTCAPTURE.Discard(tag)
   FI
-
-  INPUTCAPTURE.Discard(tag)
   EXEC.Permit()
 
 RETURN(OK)
@@ -436,8 +432,143 @@ PUBLIC CARD FUNC Pending(Lease POINTER lease CARD POINTER mask)
     value=value OR PENDING_CANCEL
   FI
 
+  IF SourceOf(Shared(lease))=SOURCE_POINTER THEN
+    BEGIN
+      LET hardware=INPUTNATIVE.PointerCapture POINTER(ADDRESS(IN_POINTER_CAPTURE))
+      IF hardware.pending<>0 THEN
+        value=value OR PENDING_DATA
+      FI
+    END
+  FI
+
   mask^=value
   EXEC.Permit()
+
+RETURN(OK)
+
+; Difference is unsigned after ordering signed endpoints. This avoids signed
+; overflow even at opposite extremes. An unrepresentable distance is loss.
+BYTE FUNC PointerDeltaValid(LONGINT current,previous)
+
+  IF current>=previous THEN
+    RETURN(LONGCARD(current)-LONGCARD(previous)<=$7fffffff)
+  FI
+
+RETURN(LONGCARD(previous)-LONGCARD(current)<=$7fffffff)
+
+INT FUNC PointerCoordinate(INT position,maximum LONGINT current,previous)
+  LONGCARD distance
+
+  IF current>=previous THEN
+    distance=LONGCARD(current)-LONGCARD(previous)
+    IF distance>LONGCARD(maximum-position) THEN
+      RETURN(maximum)
+    FI
+
+    RETURN(position+INT(distance))
+  FI
+
+  distance=LONGCARD(previous)-LONGCARD(current)
+  IF distance>LONGCARD(position) THEN
+    RETURN(0)
+  FI
+
+RETURN(position-INT(distance))
+
+CARD FUNC PointerRead(Lease POINTER lease Event POINTER event)
+  INPUTNATIVE.PointerSample sample
+  CARD status,index,oldButtons
+  BYTE baseline,moved
+
+  LET hardware=INPUTNATIVE.PointerCapture POINTER(ADDRESS(IN_POINTER_CAPTURE))
+  LET state=SourceState(SOURCE_POINTER)
+  LET config=Config POINTER(@state.config)
+  FOR index=0 TO INPUTNATIVE.POINTER_SLOTS DO
+    status=INPUTCAPTURE.PointerTake(BYTE POINTER(@sample))
+    IF status=0 THEN
+      RETURN(EMPTY)
+    FI
+
+    IF status=3 THEN
+      BEGIN
+        LET destination=BYTE POINTER(event)
+        LET sourceBytes=BYTE POINTER(@sample)
+        FOR index=0 TO EVENT_BYTES-1 DO
+          destination(index)=sourceBytes(index)
+        OD
+      END
+      RETURN(OK)
+    FI
+
+    IF status<>4 AND sample.acquisition=lease.acquisition THEN
+      EXIT
+    FI
+  OD
+
+  IF status=4 OR sample.acquisition<>lease.acquisition THEN
+    RETURN(EMPTY)
+  FI
+
+  event.acquisition=sample.acquisition
+  event.route=sample.route
+  event.tick=sample.tick
+  event.kind=EVENT_POINTER
+  event.flags=TICK_VALID
+  event.code=0
+  event.qualifiers=0
+  event.reserved=0
+  oldButtons=hardware.previousButtons
+  baseline=(sample.flags & INPUTNATIVE.POINTER_BASELINE)<>0
+      OR hardware.consumedRoute<>sample.route
+  IF status<>2 AND baseline=0 THEN
+    IF PointerDeltaValid(sample.xCount,hardware.consumedX)=0
+        OR PointerDeltaValid(sample.yCount,hardware.consumedY)=0 THEN
+      ; Establish the same native boundary used by raw overflow. No signed
+      ; subtraction has occurred and no ordinary output can cross it.
+      INPUTCAPTURE.PointerDiscard(sample.route)
+      RETURN(PointerRead(lease,event))
+    FI
+
+    hardware.x=PointerCoordinate(hardware.x,config.maxX,
+        sample.xCount,hardware.consumedX)
+    hardware.y=PointerCoordinate(hardware.y,config.maxY,
+        sample.yCount,hardware.consumedY)
+  FI
+
+  moved=sample.xCount<>hardware.consumedX OR sample.yCount<>hardware.consumedY
+  IF status<>2 OR hardware.consumedRoute=sample.route THEN
+    hardware.consumedX=sample.xCount
+    hardware.consumedY=sample.yCount
+    hardware.consumedEpoch=sample.epoch
+    hardware.consumedRoute=sample.route
+    hardware.previousButtons=CARD(sample.buttons)
+  FI
+  event.x=hardware.x
+  event.y=hardware.y
+  event.buttons=CARD(sample.buttons)
+  IF status=2 THEN
+    event.kind=EVENT_LOSS
+    event.flags=0
+    event.tick=0
+    event.code=CARD(sample.kind)
+  ELSEIF baseline=0 AND CARD(sample.buttons)<>oldButtons THEN
+    event.kind=EVENT_BUTTON
+    event.code=LEFT
+    IF moved<>0 THEN
+      BEGIN
+        LET destination=BYTE POINTER(@hardware.output)
+        LET sourceBytes=BYTE POINTER(event)
+        FOR index=0 TO EVENT_BYTES-1 DO
+          destination(index)=sourceBytes(index)
+        OD
+      END
+      hardware.pendingEpoch=sample.epoch
+      hardware.pending=1
+      event.kind=EVENT_POINTER
+      event.code=0
+      event.buttons=oldButtons
+    FI
+  FI
 
 RETURN(OK)
 
@@ -458,8 +589,9 @@ PUBLIC CARD FUNC Take(Lease POINTER lease Event POINTER event)
   FI
 
   IF SourceOf(Shared(lease))=SOURCE_POINTER THEN
+    code=PointerRead(lease,event)
     EXEC.Permit()
-    RETURN(UNSUPPORTED)
+    RETURN(code)
   FI
 
   LET capture=Capture(Shared(lease))

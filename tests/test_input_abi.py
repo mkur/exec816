@@ -70,6 +70,9 @@ class InputAbiTests(unittest.TestCase):
             native.generate(output, memory)
         storage = memory['input_storage']
         values, _ = native.definitions()
+        from generate_sio_adapter import ABI as sio
+        from generate_program import ABI as program
+        self.assertLessEqual(sio['native_offset']+sio['native_reserved_bytes'], program['provider_offset'])
         self.assertEqual(values['POINTERSAMPLE_SIZE'], 24)
         self.assertEqual(values['POINTERCAPTURE_EVENTS'], 128)
         self.assertEqual(storage['POINTER_RESERVED_BYTES'], 1536)

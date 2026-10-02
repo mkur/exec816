@@ -3,7 +3,7 @@
 [Implementation plans](../README.md) · [Design note](physical-mouse-design.md) ·
 [Current input contract](../../reference/input.md) · [Roadmap](../../roadmap.md)
 
-Status: in progress, 2026-10-02. M0–M2 passed development checks; M3–M6 are pending.
+Status: in progress, 2026-10-02. M0–M3 passed development checks; M4–M6 are pending.
 See the [execution record](../../history/gem-mouse.md). Implement the configured
 **ST mouse on joystick port 1**, with motion and the left button, using Altirra's
 existing controller. The endpoint is the current interactive GEM scene accepting
