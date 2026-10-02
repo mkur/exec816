@@ -85,12 +85,12 @@ RETURN
 ; Check captured-event ownership and overflow before involving real hardware
 ; input.
 PROC RingChecks()
-  CONSOLETYPES.Capture POINTER capture
+  INPUTNATIVE.Capture POINTER capture
   CARD index
   BYTE turn
   LONGCARD event
 
-  capture=CONSOLETYPES.Capture POINTER($0f0c00)
+  capture=INPUTNATIVE.Capture POINTER($0f0c00)
   ; Two complete rings, including byte-counter wrap at 255 -> 0. Unlike the
   ; throwaway probe, all 64 slots are usable without sacrificing one slot.
   FOR turn=0 TO 1 DO
@@ -110,21 +110,21 @@ PROC RingChecks()
     FI
 
     FOR index=0 TO 63 DO
-      event=CONSOLECAPTURE.Take()
+      event=INPUTCAPTURE.Take()
       Require(BYTE(event)=BYTE(index) AND CARD(event RSH 16)=$ffc0+index)
       Require(capture.takenRoute=LONGCARD(index)+$12345600)
     OD
 
-    Require(CONSOLECAPTURE.Take()=LONGCARD($ffffffff))
+    Require(INPUTCAPTURE.Take()=LONGCARD($ffffffff))
   OD
 
   capture.head=20
   capture.tail=1
   capture.lost=1
   capture.lostMask=CARD(1) LSH CARD(window.route & 15)
-  Require(CONSOLECAPTURE.Take()=LONGCARD($fffffffe))
+  Require(INPUTCAPTURE.Take()=LONGCARD($fffffffe))
   Require(capture.tail=1 AND capture.lost=0 AND capture.takenRoute=window.route)
-  CONSOLECAPTURE.ResetInput()
-  Require(CONSOLECAPTURE.Take()=LONGCARD($ffffffff))
+  INPUTCAPTURE.ResetInput()
+  Require(INPUTCAPTURE.Take()=LONGCARD($ffffffff))
 
 RETURN

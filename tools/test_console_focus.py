@@ -2,6 +2,7 @@
 """Focused native tiled-screen, captured focus, break and loss isolation checks."""
 import adapter_state as adapter
 import argparse,hashlib,json
+import generate_tasks
 from pathlib import Path
 from native_program import ROOT,build,compiler,require,verify_machine,sha256
 from os_boundary import emulator,run_to
@@ -23,10 +24,25 @@ def expected(stage):
     if cursor is not None:result[cursor]^=128
     return bytes(result)
 
-def run(out,mode,bank):
+def run(out,mode,bank,quota=False):
     out.mkdir(parents=True,exist_ok=True)
     source=ROOT/'tests/programs/console_focus.act'
-    p=build(compiler(ROOT/'build/actionc'),source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,dos_mounts=[])
+    original=generate_tasks.policy_modules
+    def instrument(*args,**kwargs):
+        directory=original(*args,**kwargs)
+        path=directory/'consoledriver.act'
+        text=path.read_text().replace('PUBLIC CONSOLETYPES.Service POINTER FUNC GetService()',
+            'BYTE quotaCount\nPUBLIC CONSOLETYPES.Service POINTER FUNC GetService()')
+        needle='      pumped=CONSOLEINPUT.Pump(defaultInstance)'
+        require(text.count(needle)==1,'Missing worker quota boundary')
+        text=text.replace(needle,needle+'\n      IF CONSOLEINPUT.Pending()<>0 THEN\n'
+            '        quotaCount==+1\n        bits=EXEC.SetSignal(0,$c0000000)\n      FI')
+        path.write_text(text)
+        return directory
+    if quota:generate_tasks.policy_modules=instrument
+    try:
+        p=build(compiler(ROOT/'build/actionc'),source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,dos_mounts=[])
+    finally:generate_tasks.policy_modules=original
     def at(name):return next(x['address'] for x in p['image']['data'] if '_CONSOLEFOCUSTEST_'+name.upper()+'_' in x['name'])
     saved={};observations=[];events=[]
     with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
@@ -72,14 +88,24 @@ def run(out,mode,bank):
             b.bp_clear_all()
         try:runtime,_=execute(b,p,before_run=before,timeout=180,frame_limit=9000)
         except Exception:
+            from generate_console import constants
+            fields=constants()
+            for name in ('a','b'):
+                address=int.from_bytes(b.memdump(at(name),3),'little')
+                print(name,{f:int.from_bytes(b.memdump(address+fields['INSTANCE_'+f.upper()],n),'little') for f,n in [('inputCount',2),('inputLost',1),('lastTick',2),('lastKey',2)]},flush=True)
             print('Focus checks/phase/status',data(b,p['image'],'checks',True),data(b,p['image'],'phase'),hex(b.peek16(adapter.STATE)),flush=True);raise
         require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'OS screen/input restoration')
         require(runtime['kernel_stack_observation']['interrupt_reserve_bytes_touched']==0,'Kernel interrupt reserve touched')
         ownership(b,p,out)
-        return dict(status='pass',tier='development',mode=mode,bank=bank,checks=data(b,p['image'],'checks',True),build=p['build'],pin=PIN,machine=machine,runtime=runtime,observations=observations,events=events,source_inputs={str(source.relative_to(ROOT)):sha256(source),'tools/test_console_focus.py':sha256(ROOT/'tools/test_console_focus.py')})
+        quota_drains=0
+        if quota:
+            address=next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_CONSOLEDRIVER_QUOTACOUNT_'))
+            quota_drains=b.memdump(address,1)[0]
+            require(quota_drains>0,'Quota boundary was not exercised')
+        return dict(quota_probe=quota,quota_drains=quota_drains,status='pass',tier='development',mode=mode,bank=bank,checks=data(b,p['image'],'checks',True),build=p['build'],pin=PIN,machine=machine,runtime=runtime,observations=observations,events=events,source_inputs={str(source.relative_to(ROOT)):sha256(source),'tools/test_console_focus.py':sha256(ROOT/'tools/test_console_focus.py')})
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--case',choices=('raw','opt'),required=True);parser.add_argument('--bank',type=int,choices=(1,3),default=1);parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()
-    result=run(args.output.resolve(),args.case,args.bank)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--case',choices=('raw','opt'),required=True);parser.add_argument('--bank',type=int,choices=(1,3),default=1);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--quota',action='store_true');args=parser.parse_args()
+    result=run(args.output.resolve(),args.case,args.bank,args.quota)
     (args.output/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('Console focus/presentation development checks passed',args.case,args.bank,flush=True)

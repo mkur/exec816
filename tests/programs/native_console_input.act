@@ -5,6 +5,8 @@ USE EXECLISTS
 USE EXECTASKS
 USE TASKSTACKS
 USE EXECPRODUCER
+USE INPUTCAPTURE
+USE INPUTNATIVE
 USE CONSOLECAPTURE
 USE CONSOLEINPUT
 USE CONSOLETYPES
@@ -42,10 +44,8 @@ BYTE ARRAY translated(64)
 
 PROC Claim()
 
-  Require(EXECPRODUCER.Bind(EXECPRODUCER.KEYBOARD,EXEC.FindTask(BYTE POINTER(0)),0)=0)
-  Require(EXECPRODUCER.Bind(EXECPRODUCER.KEYBOARD,EXEC.FindTask(BYTE POINTER(0)),$80000)=0)
-  Require(EXECPRODUCER.Bind(EXECPRODUCER.KEYBOARD,EXEC.FindTask(BYTE POINTER(0)),$10000)=1)
-  Require(EXECPRODUCER.Bind(EXECPRODUCER.KEYBOARD,EXEC.FindTask(BYTE POINTER(0)),$10000)=0)
+  Require(CONSOLECAPTURE.Acquire()=1)
+  Require(CONSOLECAPTURE.Acquire()=0)
 
 RETURN
 
@@ -78,10 +78,22 @@ RETURN
 PROC ReaderEntry()
   LONGCARD bits
 
-  Require(EXEC.AllocSignal(16)=16 AND EXEC.AllocSignal(17)=17)
+  Require(EXEC.AllocSignal(30)=30 AND EXEC.AllocSignal(17)=17)
   Require(EXEC.AllocSignal(18)=18)
   Require(EXEC.RetainTask(EXEC.FindTask(NULL),@readerLease)=1)
   Claim()
+  EXEC.Forbid()
+  Require(CONSOLEFOREGROUND.Register(window)<>0)
+  window.state=CONSOLETYPES.WIN_LIVE
+  LET windows=CONSOLEWINDOWS.Registry()
+  windows.focusSlot=0
+  windows.liveCount=1
+  CONSOLECAPTURE.Publish(window.route)
+  EXEC.Permit()
+  TranslationChecks()
+  FifoChecks()
+  LossChecks()
+  RingChecks()
   EXEC.Signal(parent,$10000)
   IF mode=4 THEN
     bits=EXEC.Wait($40000)
@@ -89,18 +101,17 @@ PROC ReaderEntry()
   FI
 
   WHILE finished=0 DO
-    bits=EXEC.Wait($10000)
+    bits=EXEC.Wait($40000000)
     CollectKeys()
   OD
 
   EXEC.Signal(parent,$10000)
   bits=EXEC.Wait($20000)
-  EXECPRODUCER.Release(EXECPRODUCER.KEYBOARD)
-  EXECPRODUCER.Drain(EXECPRODUCER.KEYBOARD)
+  CONSOLECAPTURE.Release()
   Require(EXEC.ReleaseTask(@readerLease)=1)
   EXEC.FreeSignal(18)
   EXEC.FreeSignal(17)
-  EXEC.FreeSignal(16)
+  EXEC.FreeSignal(30)
 
 RETURN
 
@@ -154,17 +165,6 @@ PROC Setup()
   window.unit=0
   window.instance=BYTE POINTER(instance)
   window.state=CONSOLETYPES.WIN_CREATING
-  EXEC.Forbid()
-  Require(CONSOLEFOREGROUND.Register(window)<>0)
-  window.state=CONSOLETYPES.WIN_LIVE
-  windows.focusSlot=0
-  windows.liveCount=1
-  CONSOLECAPTURE.Publish(window.route)
-  EXEC.Permit()
-  TranslationChecks()
-  FifoChecks()
-  LossChecks()
-  RingChecks()
   CONSOLEINPUT.Init(instance,fifo)
   IF order=0 THEN
     StartReader()

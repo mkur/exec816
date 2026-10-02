@@ -1,6 +1,10 @@
 MODULE INPUT
 USE EXEC
 USE TASKMEMORY
+USE EXECPRODUCER
+USE INPUTNATIVE
+USE INPUTCAPTURE
+INCLUDE "input-storage.act.inc"
 INCLUDE "input-types.inc"
 
 ; Validate full huge values before conversion. Records cannot straddle a bank,
@@ -63,30 +67,179 @@ PUBLIC CARD FUNC CheckConfig(Config POINTER config)
 
 RETURN(OK)
 
-; I1 establishes records and checked calling conventions only. Until I3 adds
-; the capture owner, every well-formed runtime operation reports UNSUPPORTED.
+INPUTNATIVE.State POINTER FUNC Shared()
+
+RETURN(INPUTNATIVE.State POINTER(ADDRESS(IN_STATE)))
+
+INPUTNATIVE.Capture POINTER FUNC Capture()
+
+RETURN(INPUTNATIVE.Capture POINTER(ADDRESS(IN_CAPTURE)))
+
+; Called under Forbid. Identity protects against copied/stale authority.
+BYTE FUNC Valid(Lease POINTER lease BYTE consumer)
+
+  LET state=Shared()
+  IF state.current=NULL OR BYTE POINTER(lease)<>state.current THEN
+    RETURN(0)
+  FI
+
+  LET capture=Capture()
+  LET config=Config POINTER(@state.config)
+  IF lease.state<>ACTIVE OR lease.acquisition<>state.generation
+      OR lease.flags<>0 OR lease.reserved<>0
+      OR lease.owner.identity<>ADDRESS(@lease.owner)
+      OR lease.owner.task=NULL OR lease.owner.task<>EXEC.Task POINTER(capture.binding.task)
+      OR lease.owner.incarnation<>state.ownerIncarnation
+      OR lease.owner.pad<>0 OR lease.owner.pad2<>0
+      OR lease.wakeMask<>config.wakeMask OR lease.route<>capture.route THEN
+    RETURN(0)
+  FI
+
+RETURN(consumer=0 OR lease.owner.task=EXEC.FindTask(NULL))
+
+BYTE FUNC RouteValid(LONGCARD tag)
+
+  LET state=Shared()
+
+RETURN(tag<>0 AND state.tags(BYTE(tag & 15))=tag)
+
+; Published tags and retained notices/records forbid slot reuse.
+BYTE FUNC Referenced(LONGCARD tag)
+  CARD bit
+  BYTE index,head
+
+  LET capture=Capture()
+  IF capture.route=tag THEN
+    RETURN(1)
+  FI
+
+  bit=CARD(1) LSH BYTE(tag & 15)
+  IF ((capture.breakMask OR capture.lostMask) & bit)<>0 THEN
+    RETURN(1)
+  FI
+
+  head=capture.head
+  index=capture.tail
+  WHILE index<>head DO
+    IF capture.events(index & 63).kind<>255
+        AND capture.events(index & 63).route=tag THEN
+      RETURN(1)
+    FI
+
+    index==+1
+  OD
+
+RETURN(0)
+
 PUBLIC CARD FUNC Acquire(Lease POINTER lease Config POINTER config)
+  CARD status,index
+  BYTE ignored
+  BYTE POINTER bytes
 
   IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0 THEN
     RETURN(BAD_ARGUMENT)
   FI
 
-  LET status=CheckConfig(config)
+  status=CheckConfig(config)
   IF status<>OK THEN
     RETURN(status)
   FI
 
-RETURN(UNSUPPORTED)
+  EXEC.Forbid()
+  LET state=Shared()
+  LET capture=Capture()
+  IF state.current<>NULL OR capture.binding.context<>NULL THEN
+    EXEC.Permit()
+    RETURN(BUSY)
+  FI
+
+  bytes=BYTE POINTER(lease)
+  FOR index=0 TO LEASE_BYTES-1 DO
+    IF bytes(index)<>0 THEN
+      EXEC.Permit()
+      RETURN(INVALID_OWNER)
+    FI
+  OD
+
+  LET self=EXEC.FindTask(NULL)
+  IF (self.tc_SigAlloc & config.wakeMask)<>config.wakeMask THEN
+    EXEC.Permit()
+    RETURN(BAD_ARGUMENT)
+  FI
+
+  IF state.generation=$ffffffff THEN
+    EXEC.Permit()
+    RETURN(EXHAUSTED)
+  FI
+
+  IF EXEC.RetainTask(self,@lease.owner)=0 THEN
+    EXEC.Permit()
+    RETURN(NO_MEMORY)
+  FI
+
+  state.ownerIncarnation=lease.owner.incarnation
+  state.generation==+1
+  lease.acquisition=state.generation
+  lease.wakeMask=config.wakeMask
+  lease.state=ACQUIRING
+  state.current=BYTE POINTER(lease)
+  bytes=BYTE POINTER(config)
+  FOR index=0 TO CONFIG_BYTES-1 DO
+    state.config(index)=bytes(index)
+  OD
+
+  INPUTCAPTURE.Publish(0)
+  IF EXECPRODUCER.Bind(SOURCE_KEYBOARD,self,lease.wakeMask)=0 THEN
+    state.current=NULL
+    ignored=EXEC.ReleaseTask(@lease.owner)
+    bytes=BYTE POINTER(lease)
+    FOR index=0 TO LEASE_BYTES-1 DO
+      bytes(index)=0
+    OD
+
+    EXEC.Permit()
+    RETURN(BUSY)
+  FI
+
+  lease.state=ACTIVE
+  EXEC.Permit()
+
+RETURN(OK)
 
 PUBLIC CARD FUNC CreateRoute(Lease POINTER lease CARD flags
     LONGCARD POINTER tag)
+  BYTE slot
 
   IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0
       OR Extent(LONGCARD(ADDRESS(tag)),4)=0 OR flags<>0 THEN
     RETURN(BAD_ARGUMENT)
   FI
 
-RETURN(UNSUPPORTED)
+  EXEC.Forbid()
+  IF Valid(lease,0)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  LET state=Shared()
+  IF state.epoch=$0fffffff THEN
+    EXEC.Permit()
+    RETURN(EXHAUSTED)
+  FI
+
+  FOR slot=0 TO ROUTE_SLOTS-1 DO
+    IF state.tags(slot)=0 THEN
+      state.epoch==+1
+      state.tags(slot)=(state.epoch LSH 4) OR LONGCARD(slot)
+      tag^=state.tags(slot)
+      EXEC.Permit()
+      RETURN(OK)
+    FI
+  OD
+
+  EXEC.Permit()
+
+RETURN(BUSY)
 
 PUBLIC CARD FUNC PublishRoute(Lease POINTER lease LONGCARD tag)
 
@@ -94,36 +247,209 @@ PUBLIC CARD FUNC PublishRoute(Lease POINTER lease LONGCARD tag)
     RETURN(BAD_ARGUMENT)
   FI
 
-RETURN(UNSUPPORTED)
+  EXEC.Forbid()
+  IF Valid(lease,0)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF tag<>0 AND RouteValid(tag)=0 THEN
+    EXEC.Permit()
+    RETURN(BAD_ARGUMENT)
+  FI
+
+  INPUTCAPTURE.Publish(tag)
+  lease.route=tag
+  EXEC.Permit()
+
+RETURN(OK)
 
 PUBLIC CARD FUNC RetireRoute(Lease POINTER lease LONGCARD tag)
 
-RETURN(PublishRoute(lease,tag))
+  IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0 THEN
+    RETURN(BAD_ARGUMENT)
+  FI
+
+  EXEC.Forbid()
+  IF Valid(lease,0)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF RouteValid(tag)=0 THEN
+    EXEC.Permit()
+    RETURN(BAD_ARGUMENT)
+  FI
+
+  IF Referenced(tag)<>0 THEN
+    EXEC.Permit()
+    RETURN(BUSY)
+  FI
+
+  LET state=Shared()
+  state.tags(BYTE(tag & 15))=0
+  EXEC.Permit()
+
+RETURN(OK)
 
 PUBLIC CARD FUNC Discard(Lease POINTER lease LONGCARD tag)
 
-RETURN(PublishRoute(lease,tag))
+  IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0 THEN
+    RETURN(BAD_ARGUMENT)
+  FI
+
+  EXEC.Forbid()
+  IF Valid(lease,0)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF RouteValid(tag)=0 THEN
+    EXEC.Permit()
+    RETURN(BAD_ARGUMENT)
+  FI
+
+  INPUTCAPTURE.Discard(tag)
+  EXEC.Permit()
+
+RETURN(OK)
 
 PUBLIC CARD FUNC Pending(Lease POINTER lease CARD POINTER mask)
+  CARD value
 
   IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0
       OR Extent(LONGCARD(ADDRESS(mask)),2)=0 THEN
     RETURN(BAD_ARGUMENT)
   FI
 
-RETURN(UNSUPPORTED)
+  EXEC.Forbid()
+  IF Valid(lease,0)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  LET capture=Capture()
+  value=0
+  IF capture.head<>capture.tail THEN
+    value=value OR PENDING_DATA
+  FI
+
+  IF capture.lostMask<>0 THEN
+    value=value OR PENDING_LOSS
+  FI
+
+  IF capture.breakMask<>0 THEN
+    value=value OR PENDING_CANCEL
+  FI
+
+  mask^=value
+  EXEC.Permit()
+
+RETURN(OK)
 
 PUBLIC CARD FUNC Take(Lease POINTER lease Event POINTER event)
+  LONGCARD raw
+  CARD code,index
+  BYTE kind,flags
 
   IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0
       OR Extent(LONGCARD(ADDRESS(event)),EVENT_BYTES)=0 THEN
     RETURN(BAD_ARGUMENT)
   FI
 
-RETURN(UNSUPPORTED)
+  EXEC.Forbid()
+  IF Valid(lease,1)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  LET capture=Capture()
+  flags=0
+  raw=INPUTCAPTURE.TakeBreak()
+  IF raw<>0 THEN
+    kind=EVENT_CANCEL
+    code=CARD(raw)
+  ELSE
+    index=0
+    DO
+      raw=INPUTCAPTURE.Take()
+      IF raw=$ffffffff THEN
+        EXEC.Permit()
+        RETURN(EMPTY)
+      FI
+
+      index==+1
+    UNTIL raw=$fffffffe OR BYTE(raw RSH 8)<>255 OR index=RAW_SLOTS
+    OD
+
+    IF raw=$fffffffe THEN
+      kind=EVENT_LOSS
+      code=CARD(capture.padding(0))
+    ELSEIF BYTE(raw RSH 8)=255 THEN
+      EXEC.Permit()
+      RETURN(EMPTY)
+    ELSE
+      kind=EVENT_KEY
+      flags=TICK_VALID
+      code=CARD(BYTE(raw))
+    FI
+  FI
+
+  event.acquisition=lease.acquisition
+  event.route=capture.takenRoute
+  event.tick=0
+  event.kind=kind
+  event.flags=flags
+  event.code=code
+  event.qualifiers=0
+  event.x=0
+  event.y=0
+  event.buttons=0
+  event.reserved=0
+  IF kind=EVENT_KEY THEN
+    event.tick=CARD(raw RSH 16)
+    event.qualifiers=(code RSH 6) & 3
+  FI
+
+  EXEC.Permit()
+
+RETURN(OK)
 
 PUBLIC CARD FUNC Release(Lease POINTER lease)
+  BYTE ignored,index
+  BYTE POINTER bytes
 
-RETURN(PublishRoute(lease,0))
+  IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0 THEN
+    RETURN(BAD_ARGUMENT)
+  FI
+
+  EXEC.Forbid()
+  IF Valid(lease,1)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  LET state=Shared()
+  lease.state=RELEASING
+  INPUTCAPTURE.Publish(0)
+  EXECPRODUCER.Release(SOURCE_KEYBOARD)
+  EXECPRODUCER.Drain(SOURCE_KEYBOARD)
+  FOR index=0 TO ROUTE_SLOTS-1 DO
+    state.tags(index)=0
+    state.cancelCode(index)=0
+    state.lossCode(index)=0
+  OD
+
+  ignored=EXEC.ReleaseTask(@lease.owner)
+  bytes=BYTE POINTER(lease)
+  FOR index=0 TO LEASE_BYTES-1 DO
+    bytes(index)=0
+  OD
+
+  state.current=NULL
+  state.ownerIncarnation=0
+  EXEC.Permit()
+
+RETURN(OK)
 
 ENDMODULE

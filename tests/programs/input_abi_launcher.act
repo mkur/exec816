@@ -6,6 +6,7 @@ INCLUDE "c-image.inc"
 INCLUDE "../../c/calypsi/input-bridge.inc"
 CARD FUNC POINTER cMain()
 CARD checks,result
+BYTE scalarChecked
 
 PROC Require(BYTE good)
 
@@ -18,10 +19,13 @@ PROC Require(BYTE good)
 RETURN
 
 ; Observe all four bytes of the scalar argument without pretending admission
-; succeeded. The ordinary runtime entry still reports UNSUPPORTED in I1.
+; succeeded. The ordinary runtime entry rejects this inactive lease.
 CARD FUNC ProbePublish(LONGCARD lease,recordValue,value)
 
-  Require(value=$1234567f)
+  IF scalarChecked=0 THEN
+    Require(value=$1234567f)
+    scalarChecked=1
+  FI
 
 RETURN(CInputPublishRoute(lease,recordValue,value))
 

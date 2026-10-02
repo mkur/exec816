@@ -131,7 +131,9 @@ def run(t,out,optimize,mode=1,order=0,sector_size=128,trace=False,program=None,n
                 cap=p['build']['task_storage']['BASE']+0xc00
                 observations['raw_before_release']=[b.eval_expr(f'db(${cap+i:x})') for i in range(4)]
                 observations['skstat']=b.memdump(0xd20f,1).hex()
-                if mode==4:require(observations['raw_before_release']==[1,64,0,1],'Raw ring did not fill/drop new')
+                if mode==4:
+                    active,head,tail,lost=observations['raw_before_release']
+                    require(active==1 and (head-tail)&255==64 and lost==1,'Raw ring did not fill/drop new')
                 else:require(int(observations['skstat'],16)&0x40==0,'No physical keyboard overrun')
                 b.poke(symbol('gate'),1)
                 cond=f'db(${symbol("losses"):x})=1'
@@ -161,8 +163,8 @@ def run(t,out,optimize,mode=1,order=0,sector_size=128,trace=False,program=None,n
         require(saved==restored,'Shared hardware state was not restored: '+str((saved,restored))+ ' capture='+far_read(b,p['build']['task_storage']['BASE']+0xc00,32,out).hex())
         count=data(b,p['image'],'received',True)[0]
         captured=data(b,p['image'],'events',True)[:count]
-        from generate_console import constants
-        cp=far_read(b,p['build']['task_storage']['BASE']+0xc00,constants()['CAPTURE_SIZE'] if native else 288,out)
+        from generate_input_native import definitions
+        cp=far_read(b,p['build']['task_storage']['BASE']+0xc00,definitions()[0]['CAPTURE_SIZE'] if native else 288,out)
         c=p['build']['memory']['constants']
         require(far_read(b,c['TABLE'],c['TABLE_BYTES'],out)==(out/'manifest.bin').read_bytes()[32:32+c['TABLE_BYTES']],
                 'Bank ownership leak')
@@ -195,7 +197,7 @@ def run(t,out,optimize,mode=1,order=0,sector_size=128,trace=False,program=None,n
             require(entered is None and durations,'Incomplete IRQ trace')
             timing['combined_irq_routing']=stats(durations)
             timing['capture_sio_phases']=[int(event[5],16)&255 for tick,event in observed
-                if event[0]=='cpu' and int(event[4],16)==p['labels']['console_capture_phase' if native else 'console_probe_phase']]
+                if event[0]=='cpu' and int(event[4],16)==p['labels']['input_capture_phase' if native else 'console_probe_phase']]
             require(11 in timing['capture_sio_phases'],'No keyboard event captured during a serial payload')
             timing['alarms']=check_alarms(observed,p['labels'])
             (out/'timing.json').write_text(json.dumps(timing,indent=2)+'\n')

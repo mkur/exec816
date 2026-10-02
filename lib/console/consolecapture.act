@@ -1,14 +1,67 @@
-; Native ring access has no dependency on public Exec calls. Both the protected
-; policy and the worker use these same checked imports.
+; Console owns translation and scope policy; INPUT owns the one capture lease.
 MODULE CONSOLECAPTURE
+USE EXEC
+USE INPUT
+USE CONSOLETYPES
+USE HEAPCORE
+INCLUDE "console-storage-action.inc"
+INPUT.Lease lease
+INPUT.Config config
 
-PUBLIC EXTERNAL LONGCARD FUNC Take()
+PUBLIC INPUT.Lease POINTER FUNC GetLease()
 
-PUBLIC EXTERNAL PROC ResetInput()
+RETURN(@lease)
 
-PUBLIC EXTERNAL PROC ClearUnit(LONGCARD unit)
+PUBLIC BYTE FUNC Acquire()
 
-PUBLIC EXTERNAL PROC Publish(LONGCARD route)
+  config.version=INPUT.VERSION
+  config.source=INPUT.SOURCE_KEYBOARD
+  config.wakeMask=$40000000
+  config.filter0Value=$92
+  config.filter0Mask=$bf
+  config.filterCount=1
+  config.flags=INPUT.CAPTURE_BREAK
 
-PUBLIC EXTERNAL LONGCARD FUNC TakeBreak()
-  ENDMODULE
+RETURN(INPUT.Acquire(@lease,@config)=INPUT.OK)
+
+PUBLIC PROC Release()
+  BYTE slot
+
+  EXEC.Forbid()
+
+  IF INPUT.Release(@lease)<>INPUT.OK THEN
+    HEAPCORE.Abort($ff95)
+  FI
+
+  LET routes=CONSOLETYPES.Routes POINTER(ADDRESS(CS_ROUTES))
+  FOR slot=0 TO 15 DO
+    routes.items(slot).tag=0
+    routes.items(slot).scope=NULL
+  OD
+
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC Publish(LONGCARD tag)
+
+  IF INPUT.PublishRoute(@lease,tag)<>INPUT.OK THEN
+    HEAPCORE.Abort($ff95)
+  FI
+
+RETURN
+
+PUBLIC PROC ClearUnit(LONGCARD unit)
+  BYTE slot
+  CARD ignored
+
+  LET routes=CONSOLETYPES.Routes POINTER(ADDRESS(CS_ROUTES))
+  FOR slot=0 TO 15 DO
+    IF routes.items(slot).tag<>0 AND routes.items(slot).unit=unit THEN
+      ignored=INPUT.Discard(@lease,routes.items(slot).tag)
+    FI
+  OD
+
+RETURN
+
+ENDMODULE

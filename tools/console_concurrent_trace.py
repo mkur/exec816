@@ -126,7 +126,7 @@ def analyze(path,marks,media,size,speed,file_bytes,key_count=8,keyboard_boundary
         feed=[t for t in times('terminal_feed') if first<=t<=last]
         check(alloc and drawing and feed,'missing kernel/output progress during file Read')
         result['read_progress']=dict(allocator_entries=len(alloc),draw_quanta=len(drawing),terminal_feeds=len(feed))
-    capture,reply,collect,visible=[times(n) for n in ('console_capture','read_reply_begin','read_collected','echo_visible')]
+    capture,reply,collect,visible=[times(n) for n in ('input_capture','read_reply_begin','read_collected','echo_visible')]
     check(len(capture)==len(reply)==len(collect)==len(visible)==key_count,'lost/duplicate key, read reply or visible echo')
     check(all(a<=b<=c<=d for a,b,c,d in zip(capture,reply,collect,visible)),'keyboard/echo order')
     result['keyboard']=dict(

@@ -8,12 +8,17 @@
 .a16
 .i16
 general_domains:
-    .if CONSOLE_NATIVE
+    .if INPUT_NATIVE
         ; Fault cleanup must be safe even before ConsoleInit has run.
         sep #$20
         lda #0
         sta f:CI_ACTIVE
-        sta f:CI_BINDING+CON_BINDING_ACTIVE
+        sta f:CI_BINDING+IN_BINDING_ACTIVE
+        rep #$20
+    .endif
+    .if CONSOLE_NATIVE
+        sep #$20
+        lda #0
         sta f:CS_BASE+CON_SERVICE_STATE
         sta f:CS_PRESENTATION+CON_PRESENTATION_CLAIMED
         rep #$20
@@ -171,6 +176,9 @@ general_finalizer_start:
     .include "display.s"
     .if SIGNAL_IRQ_PROBE = 10
         .include "console-probe.s"
+    .endif
+    .if INPUT_NATIVE
+        .include "input.s"
     .endif
     .if CONSOLE_NATIVE
         .include "console.s"

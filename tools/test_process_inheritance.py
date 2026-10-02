@@ -46,13 +46,13 @@ def instrument(output, *args, **kwargs):
              '  IF (carry=1 AND PROCESSPROBE.failure=6) OR (carry=0 AND PROCESSPROBE.failure=7) THEN RETURN(0) FI\n'),
             ('  CONSOLECAPTURE.ClearUnit(previous.unit)',
              '  CONSOLECAPTURE.ClearUnit(previous.unit)\n'
-             '  PROCESSPROBE.CaptureAfterClear(CONSOLETYPES.Capture POINTER(ADDRESS(CS_CAPTURE)),previous.generation)')],
+             '  PROCESSPROBE.CaptureAfterClear(INPUTNATIVE.Capture POINTER(ADDRESS(CS_CAPTURE)),previous.generation)')],
     }
     for name, replacements in edits.items():
         path = directory/(name+'.act')
         source = path if name == 'consoleforeground' else library_file(path.name)
         text = read_source(source)
-        text = text.replace('USE EXEC\n', 'USE EXEC\nUSE PROCESSPROBE\n', 1)
+        text = text.replace('USE EXEC\n', 'USE EXEC\nUSE INPUTNATIVE\nUSE PROCESSPROBE\n', 1)
         for old, new in replacements:
             require(text.count(old) == (2 if name == 'fsfiles' else 1), 'Stale Process hook: '+name)
             text = text.replace(old, new)

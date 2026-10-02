@@ -188,8 +188,8 @@ sio_start:
     lda #$23
     sta f:$0232
     sta f:$d20f
-    .if CONSOLE_NATIVE
-        jsr console_before_reset
+    .if INPUT_NATIVE
+        jsr input_before_reset
     .elseif SIGNAL_IRQ_PROBE = 10
         jsr console_probe_errors
     .endif
@@ -347,7 +347,7 @@ sio_shutdown_unchecked:
     sta f:$d200,x
     dex
     bpl :-
-    .if CONSOLE_NATIVE
+    .if INPUT_NATIVE
         lda f:CI_ACTIVE
         beq :+
         lda f:SD_OLD_SKCTL
@@ -507,14 +507,14 @@ sio_route_exit:
     eor #$ff
     and f:$0010
     and #($ff-SIO_OWNED_MASK)
-    .if CONSOLE_NATIVE .or SIGNAL_IRQ_PROBE = 10
+    .if INPUT_NATIVE .or SIGNAL_IRQ_PROBE = 10
         bit #$c0
         beq :+
         ; An edge may have arrived since the serial scan. Do not carry it
         ; through keyboard status reads, route publication and the wake post.
         jsr sio_console_service
-        .if CONSOLE_NATIVE
-            jsl console_route
+        .if INPUT_NATIVE
+            jsl input_route
         .else
             jsl console_probe_route
         .endif
@@ -535,7 +535,7 @@ sio_route_exit:
     clc
     rtl
 
-.if CONSOLE_NATIVE .or SIGNAL_IRQ_PROBE = 10
+.if INPUT_NATIVE .or SIGNAL_IRQ_PROBE = 10
 ; At most three RX checks, one watchdog, phase alarm and TX refill per call. The console
 ; calls this between raw publication and its potentially queued wake post;
 ; the route calls it again before exit. A timer asserted after the route's

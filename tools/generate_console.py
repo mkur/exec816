@@ -24,9 +24,9 @@ def constants(abi=ABI):
         require(record['alignment']==alignment and record['size']==(cursor+alignment-1)//alignment*alignment,
                 'Invalid console size: '+name)
         widths[name]=(record['size'],alignment);result[name.upper()+'_SIZE']=record['size']
-    require(result['BINDING_SIZE']==12 and result['CAPTURE_SIZE']==560 and result['RAW_SLOTS']==64
+    require(result['RAW_SLOTS']==64
             and result['INPUT_BYTES']==128 and result['CELL_BYTES']==960,'Invalid console capacity')
-    require(result['CONERR_INPUTOVERFLOW']==1 and result['RAWEVENT_SIZE']==8,'Invalid console event/error contract')
+    require(result['CONERR_INPUTOVERFLOW']==1,'Invalid console event/error contract')
     require(result['ROUTE_SIZE']==16 and result['ROUTES_SIZE']==264,'Invalid route retention capacity')
     require(result['SOURCE_QUANTUM']==64 and result['MAX_WIDTH']==40
             and result['MAX_HEIGHT']==24,'Invalid initial console geometry/quanta')
@@ -36,9 +36,9 @@ def constants(abi=ABI):
         start=s[key];require(start>=end,'Overlapping console metadata')
         end=start+abi['records'][name]['size']
     require(end<=s['reserved_bytes'] and s['reserved_bytes']%16==0,'Console metadata exceeds reservation')
-    require(s['capture_offset']>=0xa60 and s['capture_offset']+result['CAPTURE_SIZE']<=0x1000,
+    require(s['capture_offset']>=0xa60 and s['capture_offset']+560<=0x1000,
             'Console capture overlaps DOS descriptors or native code')
-    require(s['glyph_offset']>=s['capture_offset']+result['CAPTURE_SIZE']
+    require(s['glyph_offset']>=s['capture_offset']+560
             and s['keymap_offset']==s['glyph_offset']+128
             and s['keymap_offset']+128<=0x1000,'Console tables overlap arena reservations')
     require(set(abi['keymaps'])=={'normal','shifted'} and all(len(v)==64 and all(type(x) is int and 0<=x<128 for x in v) for v in abi['keymaps'].values()),'Invalid keyboard map')

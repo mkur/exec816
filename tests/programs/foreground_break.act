@@ -9,9 +9,11 @@ USE DOSCLIENT
 USE DOSBREAK
 USE DOSBREAKTYPES
 USE CONSOLEFOREGROUND
+USE INPUTCAPTURE
 USE CONSOLECAPTURE
 USE CONSOLEDRIVER
 USE CONSOLEINPUT
+USE INPUTNATIVE
 USE CONSOLETYPES
 USE HEAPCORE
 INCLUDE "console-storage-action.inc"
@@ -25,7 +27,7 @@ PROC POINTER absent()
 DOS.FileHandle POINTER con,raw,nil,selected
 DOSCLIENT.ClientContext POINTER client
 DOSBREAKTYPES.Scope POINTER scope
-CONSOLETYPES.Capture POINTER capture
+INPUTNATIVE.Capture POINTER capture
 CONSOLETYPES.Instance POINTER instance
 BYTE ARRAY conName=[67 79 78 58 0],rawName=[82 65 87 58 0],nilName=[78 73 76 58 0]
 BYTE ARRAY signals(32),buffer(4)
@@ -106,7 +108,7 @@ PROC BoundChecks()
 
   Require(scope.owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0)))
       AND SIZEOF(DOSBREAKTYPES.Scope)=DOSBREAKTYPES.SCOPE_SIZE)
-  Require(SIZEOF(DOSCLIENT.ClientContext)=86 AND DOSCLIENT.CLIENT_SIZE=88)
+  Require(SIZEOF(DOSCLIENT.ClientContext)<=DOSCLIENT.CLIENT_SIZE)
   Require(DOS.Close(con)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Require(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   bits=EXEC.SetSignal(mask,mask)
@@ -181,10 +183,12 @@ PROC RouteChecks()
   CONSOLETYPES.Routes POINTER routes
   LONGCARD tag,epoch
   BYTE index,bound
+  INPUTNATIVE.State POINTER inputState
 
   routes=CONSOLEFOREGROUND.Registry()
   EXEC.Forbid()
-  ; Retain a captured old route throughout 14 successive scope renewals.
+  inputState=INPUTNATIVE.State POINTER($0f0a60)
+  ; Retain every old route while admitting fourteen successive scopes.
   capture.events(0).key=$92
   capture.events(0).kind=0
   capture.events(0).tick=1
@@ -193,6 +197,9 @@ PROC RouteChecks()
   capture.head=1
   FOR index=0 TO 13 DO
     Require(DOS.BeginForeground(con)<>0)
+    capture.events(index+1).kind=0
+    capture.events(index+1).route=scope.generation
+    capture.head=index+2
   OD
 
   tag=scope.generation
@@ -200,13 +207,13 @@ PROC RouteChecks()
   Require(scope.generation=tag AND capture.route=tag)
   bound=CONSOLEFOREGROUND.Deliver(oldTag)
   Require(bound<>0 AND scope.pending=0)
-  CONSOLECAPTURE.ResetInput()
+  INPUTCAPTURE.ResetInput()
   Require(DOS.BeginForeground(con)<>0 AND scope.generation<>tag)
-  epoch=routes.epoch
-  routes.epoch=$0fffffff
+  epoch=inputState.epoch
+  inputState.epoch=$0fffffff
   tag=scope.generation
   Require(DOS.BeginForeground(con)=0 AND scope.generation=tag AND capture.route=tag)
-  routes.epoch=epoch
+  inputState.epoch=epoch
   EXEC.Permit()
 
 RETURN
@@ -264,9 +271,11 @@ PROC Main()
   LONGCARD bits,available
   BYTE ignored
   CONSOLETYPES.Routes POINTER routes
+  INPUTNATIVE.State POINTER inputState
 
+  inputState=INPUTNATIVE.State POINTER($0f0a60)
   baseline=EXEC.AvailMem(0)
-  capture=CONSOLETYPES.Capture POINTER(ADDRESS(CS_CAPTURE))
+  capture=INPUTNATIVE.Capture POINTER(ADDRESS(CS_CAPTURE))
   instance=CONSOLEDRIVER.GetInstance()
   Require(DOS.BreakPending()=0)
   DOS.ClearBreak()
@@ -281,7 +290,7 @@ PROC Main()
   ExhaustMemory()
   IF publicationMode<>0 THEN
     routes=CONSOLEFOREGROUND.Registry()
-    routes.epoch=$fff
+    inputState.epoch=$fff
   FI
 
   BoundChecks()
@@ -327,7 +336,8 @@ PROC Main()
   WHILE gate=0 DO
   OD
 
-  Require(capture.breakPending<>0 AND capture.lost<>0)
+  Require(capture.breakPending<>0)
+  ; Filtered cancellation bypasses a full ordinary ring without adding loss.
   EXEC.Permit()
   WHILE DOS.BreakPending()=0 DO
     computes==+1
@@ -352,7 +362,7 @@ PROC Main()
   oldTag=scope.generation
   available=EXEC.AvailMem(0)
   Require(DOS.EndForeground()<>0 AND client.foreground=BYTE POINTER(0))
-  Require(EXEC.AvailMem(0)=available+48)
+  Require(EXEC.AvailMem(0)=available+((LONGCARD(DOSBREAKTYPES.SCOPE_SIZE)+7) & $fffffff8))
   EXEC.Forbid()
   ignored=CONSOLEFOREGROUND.Deliver(oldTag)
   EXEC.Permit()

@@ -23,7 +23,7 @@ def run(out,optimize,bank,publication=False,removal=False,trace=False):
     # route stores until a real NMI runs. Keep the original guard and stack use.
     race={}
     if publication:
-        start=p['labels']['console_publish'];end=p['labels']['console_publish_end']
+        start=p['labels']['input_publish'];end=p['labels']['input_publish_end']
         segment=next(s for s in p['image']['segments'] if s['address']<=start< s['address']+len(s['bytes']))
         offset=start-segment['address'];original=bytes(segment['bytes'][offset:offset+end-start])
         route=p['build']['memory']['console_storage']['CAPTURE']+28
@@ -32,12 +32,15 @@ def run(out,optimize,bank,publication=False,removal=False,trace=False):
         stage=at('publishStage').to_bytes(3,'little');gate=at('publishGate').to_bytes(3,'little')
         # A8: skip a released gate; otherwise expose the half-store and wait.
         delay=b'\xe2\x20\xaf'+gate+b'\xd0\x12\xa9\x01\x8f'+stage+b'\xaf'+gate+b'\xf0\xfa\xa9\x00\x8f'+stage+b'\xc2\x20'
-        payload=original[:split]+delay+original[split:];base=0xe0000
+        # Admission also publishes zero before enabling hardware. Stall the
+        # first high-word rollover route, after the console has acquired input.
+        guard=bytes.fromhex('a307c90100d0')+bytes([len(delay)])
+        payload=original[:split]+guard+delay+original[split:];base=0xe0000
         p['image']['segments'].append(dict(address=base,bytes=list(payload),writable=False,executable=True))
         segment['bytes'][offset:offset+4]=[0x5c,0,0,14]
         changed_image(p)
         race.update(half=base+split,payload_sha256=hashlib.sha256(payload).hexdigest())
-    marks=dict(capture=p['labels']['console_capture'],durable=call_marker(p,'M_CONSOLEFOREGROUND_DELIVER_','tasks_signal'))
+    marks=dict(capture=p['labels']['input_capture'],durable=call_marker(p,'M_CONSOLEFOREGROUND_NOTIFYONE_','tasks_signal'))
     for key in ('EXEC816_LATENCY_TRACE','EXEC816_MASK_TRACE','EXEC816_LATENCY_PCS'):os.environ.pop(key,None)
     if trace:os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{v:x}' for v in marks.values()))
     events=[];saved={}
@@ -90,7 +93,10 @@ def run(out,optimize,bank,publication=False,removal=False,trace=False):
                 phase(20)
                 scope=int.from_bytes(b.memdump(at('scope'),3),'little')
                 rendezvous(f'db(${scope+18:x})=1')
-                require(b.eval_expr(f'dw(${capture+28:x})')==0 and b.eval_expr(f'dw(${capture+30:x})')==1,'IRQ route torn after publication')
+                published=int.from_bytes(b.memdump(capture+28,4),'little')
+                scope_tag=int.from_bytes(b.memdump(scope+14,4),'little')
+                require(published==scope_tag and published>>16==1,'IRQ route torn after publication')
+                race['published_route']=published
                 up(False);b.poke(at('gate'),1)
             phase(1);b.poke(at('gate'),1);frames(2);down(True);phase(2);up(True)
             b.poke(at('gate'),1);frames(2);down(False);phase(21);up(False)
@@ -105,7 +111,7 @@ def run(out,optimize,bank,publication=False,removal=False,trace=False):
             rendezvous(f'db(${capture+40:x})=1');up(True);b.poke(at('gate'),1);phase(9)
             rendezvous(f'(db(${capture+40:x})=0)&(db(${capture+1:x})=db(${capture+2:x}))')
             b.poke(at('gate'),1);phase(10);b.poke(at('gate'),1);frames(2);down(True)
-            phase(11);up(True);b.bp_clear_all()
+            phase(11);key('C','up');key('CTRL','up');b.bp_clear_all()
         runtime,_=execute(b,p,before_run=before,expected_status=4 if removal else 0,timeout=1200,frame_limit=60000)
         if trace:b.profile_stop()
         if removal:

@@ -43,7 +43,7 @@ def instrument(out,size):
     return {name:sha256(out/name) for name in ('shell-break-common.inc','shell-observed.inc','breakprobe.act','consoledriver.act','doscooked.act')}
 
 def markers(p):
-    names=('native_nmi','native_irq','console_capture','sio_start','sio_retire','sio_shutdown','sio_terminal','signal_post','sio_alarm','sio_watchdog','tasks_forbid','tasks_permit')
+    names=('native_nmi','native_irq','input_capture','sio_start','sio_retire','sio_shutdown','sio_terminal','signal_post','sio_alarm','sio_watchdog','tasks_forbid','tasks_permit')
     result={n:p['labels'][n] for n in names}
     for name,prefix in (('visible','M_BREAKPROBE_VISIBILITY_'),('usable','M_BREAKPROBE_USABLE_'),('retained','M_BREAKPROBE_COMMIT_'),('prompt_collected','M_BREAKPROBE_RETAINED_'),('allocation_cycle','M_SHELLBREAKTEST_ALLOCATECYCLE_'),('collected','M_FSOPERATION_COLLECT_')):
         result[name]=next(r['address'] for r in p['image']['routines'] if r['name'].startswith(prefix))
@@ -174,7 +174,7 @@ def run_case(p,out,name,size,profile,trace,marks,schedule=None):
                 if '[SIOPOC] ' in line or '[SIOTXN] ' in line:dst.write(line)
         events=read_events(out/'trace.log');times=lambda key:[t for t,e in events if e[0]=='cpu' and int(e[4],16)==marks[key]]
         durable=times('durable');require(len(durable)==1,'Missing/duplicate durable break')
-        capture=max(t for t in times('console_capture') if t<=durable[0]);visible=min(t for t in times('visible') if t>=durable[0]);retained=min(t for t in times('retained') if t>=durable[0])
+        capture=max(t for t in times('input_capture') if t<=durable[0]);visible=min(t for t in times('visible') if t>=durable[0]);retained=min(t for t in times('retained') if t>=durable[0])
         usable=min(t for t in times('usable') if t>=durable[0]);completed=max(visible,usable)
         result['operation_observations']={key:[t for t in times(key) if capture<=t<=completed] for key in ('cancel','queued_reply','collected','sector_end','prompt_collected')}
         result['break_timing']=dict(capture=capture,durable=durable[0],retained=retained,physical=visible,usable=usable,physical_ms=(visible-capture)/BASE_HZ*1000,ready_ms=(usable-capture)/BASE_HZ*1000,delivery_ms=(durable[0]-capture)/BASE_HZ*1000,prompt_ms=(completed-capture)/BASE_HZ*1000)

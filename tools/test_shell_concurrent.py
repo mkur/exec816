@@ -22,7 +22,7 @@ MIX=dict(readyA=0,readyB=1,readyC=2,stopA=3,stopPeers=4,replies=5,destination=8,
 LIMITS=dict(checkpoint_host_seconds=180,checkpoint_guest_frames=9000,completion_host_seconds=1800,completion_guest_frames=30000)
 
 def marks_for(p):
-    names=('native_nmi','native_irq','sio_start','sio_retire','sio_shutdown','sio_terminal','signal_post','sio_alarm','sio_watchdog','console_capture','console_notify','tasks_forbid','tasks_permit')
+    names=('native_nmi','native_irq','sio_start','sio_retire','sio_shutdown','sio_terminal','signal_post','sio_alarm','sio_watchdog','input_capture','input_notify','tasks_forbid','tasks_permit')
     marks={n:p['labels'][n] for n in names}
     for short,prefix in [('read_collected','M_SHELLEDITPROBE_READCOLLECTED_'),('echo_visible','M_SHELLEDITPROBE_EDITORWRITEOBSERVED_'),('allocation_cycle','M_CONSOLECONCURRENT_ALLOCATECYCLE_'),('display_quantum','M_CONSOLEDISPLAY_QUANTUM_'),('terminal_feed','M_CONSOLECORE_FEED_'),('command_begin','M_CONSOLECONCURRENT_COMMANDBEGIN_'),('command_end','M_CONSOLECONCURRENT_COMMANDEND_')]:
         values=[r['address'] for r in p['image']['routines'] if r['name'].startswith(prefix)];require(len(values)==1,'Ambiguous marker '+short);marks[short]=values[0]

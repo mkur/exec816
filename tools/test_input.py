@@ -31,7 +31,7 @@ def build_abi(output, optimize):
              ROOT/'tools/calypsi_build.py', ROOT/'tools/calypsi_image.py',
              *ROOT.glob('c/calypsi/*'), *ROOT.glob('c/include/**/*.h'),
              *ROOT.glob('lib/input/*'), *ROOT.glob('tests/programs/input_abi*')]
-    foreign['provenance'].update(slice='I1', hardware_execution=False,
+    foreign['provenance'].update(slice='I3', hardware_execution=False,
         source_inputs={p.relative_to(ROOT).as_posix(): sha256(p) for p in paths if p.is_file()})
     (output/'c-image.json').write_text(json.dumps(foreign, indent=2)+'\n')
     include = output/'c-image.inc'
@@ -48,8 +48,8 @@ def build_abi(output, optimize):
 def run(output, mode, case='abi', replay=False):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
-    report = dict(status='running', tier='development', slice='I1', mode=mode, cases=[],
-                  qualification=False, scope='Records and C/native bridge; no active input producer')
+    report = dict(status='running', tier='development', slice='I3', mode=mode, cases=[],
+                  qualification=False, scope='Records and C/native bridge against implemented admission; no hardware in the ABI case')
     try:
         if replay:
             program = read_build(output/'program')
@@ -85,6 +85,7 @@ def run(output, mode, case='abi', replay=False):
                 bridge.memload(dp+8, pattern(0)[8:16])
                 bridge.memload(adapter.KERNEL_DP, pattern(4))
                 saved['display'] = bridge.memdump(0x22f, 3)
+                saved['keyboard'] = {a:bridge.memdump(a,n) for a,n in ((16,1),(0x208,2),(0x232,1),(0x236,2))}
                 saved['aperture'] = bytes((i*37+11)&255 for i in range(4096))
                 bridge.memload(0x8000, saved['aperture'])
                 result['c_context'] = observe(bridge, program, [symbols['progress']], slots=(0,),
@@ -105,6 +106,8 @@ def run(output, mode, case='abi', replay=False):
             require(b.memdump(dp+8, 8) == pattern(0)[8:16], 'C callee-preserved DP changed')
             require(b.memdump(adapter.KERNEL_DP, 128) == pattern(4), 'Kernel lower DP changed')
             require(b.memdump(0x22f, 3) == saved['display'], 'Display changed')
+            require(all(b.memdump(a,len(raw))==raw for a,raw in saved['keyboard'].items()),
+                    'C admission did not restore keyboard ownership')
             require(b.memdump(0x8000, 4096) == saved['aperture'], 'Aperture changed')
             require(all(u['remaining_above_floor'] > 0 for u in result['stack_usage'].values()), 'Stack floor reached')
             clean_ownership(b, program, program['output'])
@@ -124,8 +127,12 @@ def run(output, mode, case='abi', replay=False):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--mode', choices=['raw', 'opt'], required=True)
-    p.add_argument('--case', choices=['abi'], default='abi')
+    p.add_argument('--case', choices=['abi','capture'], default='abi')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--replay', action='store_true')
     args = p.parse_args()
-    run(args.output, args.mode, args.case, args.replay)
+    if args.case == 'capture':
+        from test_input_capture import run as capture
+        capture(args.output,args.mode,args.replay)
+    else:
+        run(args.output, args.mode, args.case, args.replay)

@@ -88,7 +88,7 @@ def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=Fal
              "-D", f"IO_OPEN={io_open}", "-D", f"IO_WAIT={io_wait}", "-D", f"IO_DO={io_do}",
              "-D", f"IO_CLOSE={io_close}", "-D", f"IO_BEGIN={io_begin}", "-D", f"IO_SEND={io_send}", "-D", f"IO_ABORT={io_abort}",
              "-D", f"SIGNAL_PROBE={policy_probe}", "-D", f"SIGNAL_IRQ_PROBE={irq_probe}", "-D", f"SIGNAL_AUTO={int(not manual_wake)}", "-D", f"PUMP_COUNT={pump_count}",
-             "-D", f"CONSOLE_NATIVE={int(console_test)}", "-D", f"CONSOLE_STARTUP={int(console_enabled)}", "-D", f"CONSOLE_START={console_start}",
+             "-D", f"INPUT_NATIVE={int(tasks and irq_probe != 10)}", "-D", f"CONSOLE_NATIVE={int(console_test)}", "-D", f"CONSOLE_STARTUP={int(console_enabled)}", "-D", f"CONSOLE_START={console_start}",
              "-D", f"COOPERATIVE={int(cooperative)}", "-D", f"DISPATCH_ENTRY={dispatch}",
              "-D", f"BANKED={int(memory is not None)}", "-D", f"MEMORY_INIT={kernel_init}",
              "-D", f"PROBE_FLAGS={probe_flags}",
@@ -290,6 +290,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             generate_dos.reserve_metadata(memory,task_capacity)
             import generate_process
             generate_process.reserve_metadata(memory,task_capacity)
+            import generate_input_native
+            generate_input_native.generate(output, memory)
             if console_native:
                 import generate_console
                 require((ROOT/'lib/console/consoletypes.act').read_text()==generate_console.types(),'Stale console types')
@@ -406,20 +408,20 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             label,result,peak='console_span','None',0
             arguments=[dict(alignment=1,offset=0,size=3),dict(alignment=1,offset=3,size=3),dict(alignment=2,offset=6,size=2)]
             outgoing=9
-        elif tasks and name in ('TASKPOLICY.ConsoleClaim','TASKPOLICY.ConsoleRelease'):
-            require(console_native,'Console native ownership is unavailable in this build')
-            label={'ConsoleClaim':'console_claim','ConsoleRelease':'console_release'}[name.split('.')[1]]
+        elif tasks and name in ('TASKPOLICY.InputClaim','TASKPOLICY.InputRelease'):
+            require(irq_probe != 10,'Keyboard backend excluded by disposable probe')
+            label={'InputClaim':'input_claim','InputRelease':'input_release'}[name.split('.')[1]]
             result='Some(NativeResult(A8ZeroExtended))' if name.endswith('Claim') else 'None'
             peak=3
-        elif tasks and name.startswith('CONSOLECAPTURE.'):
-            require(console_native,'Console adapter is unavailable in this build')
+        elif tasks and name.startswith('INPUTCAPTURE.'):
+            require(irq_probe != 10,'Keyboard backend excluded by disposable probe')
             operation=name.split('.')[1]
-            require(operation in ('Take','ResetInput','ClearUnit','Publish','TakeBreak'),'Unknown console adapter import')
-            label={'Take':'console_take','ResetInput':'console_reset_input','ClearUnit':'console_clear_unit','Publish':'console_publish','TakeBreak':'console_take_break'}[operation]
-            if operation in ('Publish','ClearUnit'):
+            require(operation in ('Take','ResetInput','Discard','Publish','TakeBreak'),'Unknown console adapter import')
+            label={'Take':'input_take','ResetInput':'input_reset_input','Discard':'input_discard','Publish':'input_publish','TakeBreak':'input_take_break'}[operation]
+            if operation in ('Publish','Discard'):
                 arguments=[dict(alignment=2,offset=0,size=4)];outgoing=5;result='None'
             else:result='Some(NativeResult(A16X16))' if operation in ('Take','TakeBreak') else 'None'
-            peak=5 if operation in ('Take','ClearUnit') else 1 if operation in ('ResetInput','ClearUnit','Publish','TakeBreak') else 0
+            peak=5 if operation in ('Take','Discard') else 1 if operation in ('ResetInput','Discard','Publish','TakeBreak') else 0
         elif tasks and name in ('SIOPROBE.Emulation','SIOPROBE.Stall','SIOPROBE.Stale'):
             require(io_test_device,'SIO test entry is unavailable in production')
             label,result,peak='sio_probe_'+name.split('.')[1].lower(),'None',31 if name.endswith('Stale') else 19
@@ -773,7 +775,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             task_storage=task_storage, signal_probe=policy_probe, signal_irq_probe=irq_probe,
             manual_wake=manual_wake, pump_count=pump_count if irq_probe==8 else None,
             task_inputs={name:sha256(ROOT/name) for name in (
-                'abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
+                'abi/input-native.json','abi/input.json','tools/generate_input_native.py','tools/generate_input.py','lib/input/inputnative.act','lib/input/input.act','lib/input/input-types.inc','lib/input/inputcapture.act','lib/input/task-input.inc','platform/altirraos/input.s','platform/altirraos/input-native.inc','platform/altirraos/input.inc','abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
                 'lib/spartados/sdfs.act','lib/spartados/sdfstypes.act','lib/spartados/sdfsfile.act',
                 'lib/spartados/sdfsdir.act','lib/spartados/sdfsname.act','lib/spartados/sdfsdate.act',
                 'lib/fs/fsformats.act','lib/fs/fsbtypes.act','lib/fs/fsbackend.act',

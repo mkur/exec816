@@ -3,8 +3,8 @@
 ; All state except two bytes in the existing STATE arena lives in upper RAM.
 ; Publish a stable binding while inactive; Claim atomically activates it.
 ; Release quiesces serial sources before Task/context removal is permitted.
-.ifndef CONSOLE_NATIVE
-CONSOLE_NATIVE = 0
+.ifndef INPUT_NATIVE
+INPUT_NATIVE = 0
 .endif
 SIO_ACTIVE = T_SERIAL_BINDING+T_BINDING_ACTIVE
 SIO_SAVED_MASK = T_SERIAL_STATE
@@ -88,8 +88,8 @@ signal_route:
     beq :+
     jml sio_route
 :
-    .if CONSOLE_NATIVE
-        jml console_route
+    .if INPUT_NATIVE
+        jml input_route
     .elseif SIGNAL_IRQ_PROBE = 10
         jml console_probe_route
     .endif

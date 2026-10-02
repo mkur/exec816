@@ -7,6 +7,7 @@ USE CONSOLEWINDOWS
 USE CONSOLEDRIVER
 USE CONSOLEFOREGROUND
 USE CONSOLEINPUT
+USE INPUTNATIVE
 USE CONSOLETYPES
 USE DOSBREAKTYPES
 CARD checks
@@ -15,7 +16,7 @@ LONGCARD first,second,third,baseline
 CONSOLETYPES.Windows POINTER windows
 CONSOLETYPES.Window POINTER wa,wb,wc
 CONSOLETYPES.Instance POINTER a,b,c
-CONSOLETYPES.Capture POINTER capture
+INPUTNATIVE.Capture POINTER capture
 DOSBREAKTYPES.Scope sa,sb
 EXEC.MsgPort POINTER port
 EXEC.IOStdReq POINTER ra,rb,rc
@@ -122,7 +123,7 @@ PROC Setup()
   c=CONSOLETYPES.Instance POINTER(wc.instance)
   service=CONSOLEDRIVER.GetService()
   ; Capture is adjacent to the generated boot binding in the Task arena.
-  capture=CONSOLETYPES.Capture POINTER($0f0c00)
+  capture=INPUTNATIVE.Capture POINTER($0f0c00)
   Require(CONSOLE.Show(first,0,0)=0 AND CONSOLE.Focus(first)=0)
   Require(CONSOLE.Hide(0)<>0 AND windows.focusSlot=255)
   Require(CONSOLE.Show(first,0,0)<>0 AND windows.focusSlot=BYTE(first & 3))
@@ -202,7 +203,7 @@ PROC Overflow()
   FOR index=0 TO 63 DO
     capture.events(index).key=21
     capture.events(index).kind=0
-    capture.events(index).tick=index
+    capture.events(index).tick=$8000+index
     capture.events(index).route=wb.route
   OD
 

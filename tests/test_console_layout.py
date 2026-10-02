@@ -4,6 +4,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 import generate_console as console
 import generate_memory as memory
 import generate_tasks
+import generate_input_native
 
 class ConsoleLayoutTests(unittest.TestCase):
     def test_generated_files_and_public_request(self):
@@ -12,7 +13,8 @@ class ConsoleLayoutTests(unittest.TestCase):
         io=json.loads((console.ROOT/'abi/io.json').read_text())
         self.assertEqual(io['records']['IOStdReq']['size'],42)
         c=console.constants()
-        self.assertEqual((c['RAWEVENT_SIZE'],c['RAWEVENT_ROUTE'],c['CAPTURE_SIZE']), (8,4,560))
+        native=generate_input_native.definitions()[0]
+        self.assertEqual((native['RAWEVENT_SIZE'],native['RAWEVENT_ROUTE'],native['CAPTURE_SIZE']), (8,4,560))
         self.assertEqual((c['ROUTE_SIZE'],c['ROUTES_SIZE']), (16,264))
 
     def test_console_build_admission(self):
@@ -37,7 +39,7 @@ class ConsoleLayoutTests(unittest.TestCase):
         for failure in ('offset','size','overlap','capture','tables','keymap'):
             a=copy.deepcopy(console.ABI)
             if failure=='offset':a['records']['Instance']['fields'][1][2]+=1
-            if failure=='size':a['records']['RawEvent']['size']+=2
+            if failure=='size':a['records']['Instance']['size']+=2
             if failure=='overlap':a['storage']['instance_offset']=0
             if failure=='capture':a['storage']['capture_offset']=0xff0
             if failure=='tables':a['storage']['glyph_offset']=0xff0

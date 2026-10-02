@@ -21,7 +21,7 @@ def run(probe, output):
     events = read_events(source)
     marks = result['marks']
     capture = next(i for i, (_, e) in enumerate(events)
-                   if e[0] == 'cpu' and int(e[4], 16) == marks['console_capture'])
+                   if e[0] == 'cpu' and int(e[4], 16) == marks['input_capture'])
     arrival = next(t for t, e in events if e[0] == 'receive')
     read = next(i for i, (t, e) in enumerate(events) if e[0] == 'read' and t >= arrival)
     # 140 base cycles is the physical byte interval. Keep CPU/mask events

@@ -1,21 +1,26 @@
 ; The single worker owns translated bytes and each instance's keyboard state.
 MODULE CONSOLEINPUT
 USE EXEC
+USE INPUT
 USE CONSOLETYPES
 USE CONSOLECAPTURE
 USE CONSOLEFOREGROUND
 USE CONSOLEWINDOWS
 INCLUDE "console-storage-action.inc"
+CARD pendingMask
+INPUT.Event capturedEvent
 
 ; An empty observation only skips this turn's drain. IRQ publication retains
 ; its signal, so an event arriving after these reads still wakes the worker.
 ; Take and the caller's Forbid continue to protect actual ring consumption.
 PUBLIC BYTE FUNC Pending()
-  CONSOLETYPES.Capture POINTER capture
 
-  capture=CONSOLETYPES.Capture POINTER(ADDRESS(CS_CAPTURE))
+  ; Output records must be upper-RAM; the resident worker owns this mailbox.
+  IF INPUT.Pending(CONSOLECAPTURE.GetLease(),@pendingMask)<>INPUT.OK THEN
+    RETURN(0)
+  FI
 
-RETURN(capture.breakPending<>0 OR capture.lost<>0 OR capture.head<>capture.tail)
+RETURN(pendingMask<>0)
 
 ; Attach private input storage and reset this terminal's keyboard state.
 PUBLIC PROC Init(CONSOLETYPES.Instance POINTER instance BYTE POINTER fifo)
@@ -156,38 +161,34 @@ RETURN
 ; Route a bounded batch of captured input to its original terminal or break
 ; scope.
 PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
-  LONGCARD event
   CARD consumed
   BYTE bound
-  CONSOLETYPES.Capture POINTER capture
+  LONGCARD raw
   CONSOLETYPES.Window POINTER entry
 
-  capture=CONSOLETYPES.Capture POINTER(ADDRESS(CS_CAPTURE))
-  CONSOLEFOREGROUND.Pump()
   consumed=0
   WHILE consumed<CONSOLETYPES.RAW_SLOTS DO
-    event=CONSOLECAPTURE.Take()
-    IF event=LONGCARD(CONSOLETYPES.EVENT_EMPTY) THEN
+    IF INPUT.Take(CONSOLECAPTURE.GetLease(),@capturedEvent)<>INPUT.OK THEN
       EXIT
     FI
 
-    IF event=LONGCARD(CONSOLETYPES.EVENT_LOST) THEN
-      entry=CONSOLEFOREGROUND.Resolve(capture.takenRoute)
-      IF entry<>CONSOLETYPES.Window POINTER(0) THEN
+    entry=CONSOLEFOREGROUND.Resolve(capturedEvent.route)
+    IF capturedEvent.kind=INPUT.EVENT_LOSS THEN
+      IF entry<>NULL THEN
         Lose(CONSOLETYPES.Instance POINTER(entry.instance))
       FI
-    ELSE
-      bound=0
-      IF BYTE(event RSH 8)=1 OR (CARD(event) & $ffbf)=$92 THEN
-        bound=CONSOLEFOREGROUND.Deliver(capture.takenRoute)
+    ELSEIF capturedEvent.kind=INPUT.EVENT_CANCEL THEN
+      bound=CONSOLEFOREGROUND.Deliver(capturedEvent.route)
+      IF bound=0 AND entry<>NULL THEN
+        ; Durable mailbox notices have no fabricated capture tick. They are
+        ; already coalesced; do not suppress two separate acknowledgements.
+        instance=CONSOLETYPES.Instance POINTER(entry.instance)
+        instance.lastValid=0
+        Deliver(instance,$100)
       FI
-
-      IF bound=0 THEN
-        entry=CONSOLEFOREGROUND.Resolve(capture.takenRoute)
-        IF entry<>CONSOLETYPES.Window POINTER(0) THEN
-          Deliver(CONSOLETYPES.Instance POINTER(entry.instance),event)
-        FI
-      FI
+    ELSEIF capturedEvent.kind=INPUT.EVENT_KEY AND entry<>NULL THEN
+      raw=LONGCARD(capturedEvent.code) OR (LONGCARD(capturedEvent.tick) LSH 16)
+      Deliver(CONSOLETYPES.Instance POINTER(entry.instance),raw)
     FI
 
     consumed==+1

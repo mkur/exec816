@@ -39,16 +39,16 @@ UWORD main(void)
     config.filter1Value = 0x92; config.filter1Mask = 0xbf;
     config.filterCount = 2; config.flags = INPUT_CAPTURE_BREAK;
     memset(&event, 0xa5, sizeof(event));
-    check(InputAcquire(&lease, &config) == INPUT_UNSUPPORTED);
-    check(InputCreateRoute(&lease, 0, &tag) == INPUT_UNSUPPORTED && tag == 0xdeadbeefUL);
+    check(InputAcquire(&lease, &config) == INPUT_BAD_ARGUMENT);
+    check(InputCreateRoute(&lease, 0, &tag) == INPUT_INVALID_OWNER && tag == 0xdeadbeefUL);
     check(InputCreateRoute(&lease, 1, &tag) == INPUT_BAD_ARGUMENT);
-    check(InputPublishRoute(&lease, 0x1234567fUL) == INPUT_UNSUPPORTED);
-    check(InputRetireRoute(&lease, 0x1234567fUL) == INPUT_UNSUPPORTED);
-    check(InputDiscard(&lease, 0x1234567fUL) == INPUT_UNSUPPORTED);
-    check(InputPending(&lease, &pending) == INPUT_UNSUPPORTED && pending == 0xa55a);
-    check(InputTake(&lease, &event) == INPUT_UNSUPPORTED);
+    check(InputPublishRoute(&lease, 0x1234567fUL) == INPUT_INVALID_OWNER);
+    check(InputRetireRoute(&lease, 0x1234567fUL) == INPUT_INVALID_OWNER);
+    check(InputDiscard(&lease, 0x1234567fUL) == INPUT_INVALID_OWNER);
+    check(InputPending(&lease, &pending) == INPUT_INVALID_OWNER && pending == 0xa55a);
+    check(InputTake(&lease, &event) == INPUT_INVALID_OWNER);
     for (i = 0; i < sizeof(event); ++i) check(((UBYTE *)&event)[i] == 0xa5);
-    check(InputRelease(&lease) == INPUT_UNSUPPORTED);
+    check(InputRelease(&lease) == INPUT_INVALID_OWNER);
     check(InputAcquire((struct InputLease *)0x010d0000UL, &config) == INPUT_BAD_ARGUMENT);
     check(InputAcquire(&lease, (struct InputConfig *)0x010d0000UL) == INPUT_BAD_ARGUMENT);
     check(InputAcquire((struct InputLease *)0xdfff0UL, &config) == INPUT_BAD_ARGUMENT);
@@ -73,15 +73,30 @@ UWORD main(void)
     bank = AllocMem(65536UL, MEMF_PUBLIC|MEMF_CLEAR);
     check(bank != NULL && ((ULONG)bank & 0xffffUL) == 0);
     if (bank) {
-        check(InputAcquire((struct InputLease *)(bank+65504UL), &config) == INPUT_UNSUPPORTED);
+        check(InputAcquire((struct InputLease *)(bank+65504UL), &config) == INPUT_BAD_ARGUMENT);
         check(InputAcquire((struct InputLease *)(bank+65506UL), &config) == INPUT_BAD_ARGUMENT);
-        check(InputTake(&lease, (struct InputEvent *)(bank+65512UL)) == INPUT_UNSUPPORTED);
+        check(InputTake(&lease, (struct InputEvent *)(bank+65512UL)) == INPUT_INVALID_OWNER);
         check(InputTake(&lease, (struct InputEvent *)(bank+65514UL)) == INPUT_BAD_ARGUMENT);
         memcpy(bank+65520UL, &config, sizeof(config));
-        check(InputAcquire(&lease, (struct InputConfig *)(bank+65520UL)) == INPUT_UNSUPPORTED);
+        check(InputAcquire(&lease, (struct InputConfig *)(bank+65520UL)) == INPUT_BAD_ARGUMENT);
         check(InputAcquire(&lease, (struct InputConfig *)(bank+65522UL)) == INPUT_BAD_ARGUMENT);
         FreeMem(bank, 65536UL);
     }
+    /* Exercise successful calls through the same checked huge-pointer bridge. */
+    check(AllocSignal(16) == 16);
+    config.wakeMask = 0x10000UL;
+    check(InputAcquire(&lease, &config) == INPUT_OK);
+    check(InputCreateRoute(&lease, 0, &tag) == INPUT_OK && tag != 0);
+    check(InputPublishRoute(&lease, tag) == INPUT_OK);
+    check(InputPending(&lease, &pending) == INPUT_OK && pending == 0);
+    check(InputTake(&lease, &event) == INPUT_EMPTY);
+    check(InputRetireRoute(&lease, tag) == INPUT_BUSY);
+    check(InputPublishRoute(&lease, 0) == INPUT_OK);
+    check(InputDiscard(&lease, tag) == INPUT_OK);
+    check(InputRetireRoute(&lease, tag) == INPUT_OK);
+    check(InputRelease(&lease) == INPUT_OK);
+    FreeSignal(16);
+    config.wakeMask = 0x92345678UL;
     /* Layout-only values, never submitted as a live lease. */
     lease.owner.task = (struct Task EXEC_PTR *)0x061234UL;
     lease.owner.pad = 0xab;

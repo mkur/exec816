@@ -630,6 +630,9 @@ reset_required:
         lda #0
         sta 1,s
         rep #$20
+        .if INPUT_NATIVE
+            jsl input_release_unchecked
+        .endif
         .if CONSOLE_NATIVE
             jsl console_shutdown
         .endif

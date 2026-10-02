@@ -13,6 +13,7 @@ class TaskBindingsTests(unittest.TestCase):
     def test_boot_configuration_is_not_a_task_entry(self):
         from generate_tasks import application_entry
         self.assertFalse(application_entry({'name':'M_BOOTCONFIG_INIT_1234'}))
+        self.assertFalse(application_entry({'name':'M_CONSOLECAPTURE_RELEASE_1234'}))
         self.assertTrue(application_entry({'name':'M_APPLICATION_WORKER_1234'}))
 
     def test_borrowed_storage_excludes_kernel_globals_and_preserves_bank_width(self):

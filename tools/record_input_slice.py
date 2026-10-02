@@ -228,13 +228,57 @@ def record_i2(base, host):
             'Console physical wire tests use the unchanged pinned console emulator and its FASTEST125 control.'])
 
 
+def record_i3(base, host):
+    specs = {'abi': 'test_input', 'capture': 'test_input_capture',
+             'focus': 'test_console_focus', 'break': 'test_foreground_break',
+             'life': 'test_console_lifetime', 'console-emu': 'test_console_input'}
+    runs = {}
+    baseline = json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+    for mode in ('raw', 'opt'):
+        for name, runner in specs.items():
+            key = name+'-'+mode
+            runs[key] = read_native_run(base/('i3-'+key), 'tools/'+runner+'.py')
+        for order in (0, 1):
+            key = 'console-'+mode+'-'+str(order)
+            runs[key] = read_native_run(base/('i3-'+key), 'tools/test_console_input.py')
+        require(runs['capture-'+mode]['cases'][0]['checks'][0] >= 217,
+                'Missing input lifetime checks')
+        require(runs['break-'+mode]['publication']['nmi_after'] >
+                runs['break-'+mode]['publication']['nmi_before'], 'No split-publication NMI')
+    for name in ('console-full-raw', 'console-loss-opt'):
+        runs[name] = read_native_run(base/('i3-'+name), 'tools/test_console_input.py')
+    runs['quota-raw'] = read_native_run(base/'i3-quota-raw','tools/test_console_focus.py')
+    require(runs['quota-raw']['quota_probe'] and runs['quota-raw']['quota_drains']>0,
+            'Missing empty-notification/nonempty-queue check')
+    for run in runs.values():
+        memory = run['build']['memory']
+        for key in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
+            require(memory[key] == baseline[key], 'Input changed '+key)
+    return dict(format='exec816-gem-input-i3-development-v1',status='pass',tier='development',
+        qualification=False,base_revision=subprocess.check_output(
+            ['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        scope='Exclusive reusable keyboard capture and console migration; native and emulation input.',
+        runs=runs,host_checks=host_checks(host),
+        bank_zero=dict(fixed_delta_bytes=0,per_public_task_delta_bytes=[0]*8,
+                       private_idle_delta_bytes=0,
+                       accounting='Complete reservations include guards, alignment and unused capacity.'),
+        upper_ram=dict(capture_bytes=560,capture_delta_bytes=0,
+                       generic_state_bytes=128,generic_state_reserved_delta_bytes=0,
+                       state_location='Existing Task arena slack at +$A60; capture remains +$C00.',
+                       console_image_state_delta_bytes=78,additional_tasks=0),
+        source_inputs={'tools/record_input_slice.py':sha256(Path(__file__))},
+        limitations=['Development checks on the recorded pins; not hosted qualification.',
+                     'No physical mouse, cursor or AES support. GUI work remains I4 onward.',
+                     'Console physical SIO controls use FASTEST125; interactive latency is measured separately in I6.'])
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice', choices=['i0', 'i1', 'i2'], required=True)
+    p.add_argument('--slice', choices=['i0', 'i1', 'i2', 'i3'], required=True)
     p.add_argument('--base', type=Path, default=ROOT/'build/gem-input')
     p.add_argument('--host-log', type=Path, required=True)
     args = p.parse_args()
-    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2}[args.slice](args.base.resolve(), args.host_log)
+    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2, 'i3': record_i3}[args.slice](args.base.resolve(), args.host_log)
     output = ROOT/'docs/development'/('gem-input-'+args.slice+'.json')
     output.write_text(json.dumps(report, indent=2)+'\n')
     print(output)

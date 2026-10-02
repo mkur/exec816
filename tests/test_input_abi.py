@@ -42,3 +42,19 @@ class InputAbiTests(unittest.TestCase):
         abi['alignment'] = 4
         with self.assertRaises(ValueError):
             validate(abi)
+
+    def test_native_state_reuses_existing_task_arena_slack(self):
+        import generate_input_native as native
+        from generate_memory import layout
+        import tempfile
+        values, source = native.definitions()
+        self.assertEqual(values['STATE_SIZE'],128)
+        self.assertEqual(values['CAPTURE_SIZE'],560)
+        self.assertEqual(values['RAWEVENT_SIZE'],8)
+        self.assertEqual((native.ROOT/'lib/input/inputnative.act').read_text(),source)
+        memory=layout()
+        before=copy.deepcopy(memory['runtime_reservations'])
+        with tempfile.TemporaryDirectory() as output:
+            native.generate(output,memory)
+        self.assertEqual(memory['runtime_reservations'],before)
+        self.assertLessEqual(memory['input_storage']['STATE']+128,memory['input_storage']['CAPTURE'])

@@ -1,11 +1,13 @@
 ; Immutable captured routes; IRQ never follows a Task or instance pointer.
 MODULE CONSOLEFOREGROUND
 USE EXEC
+USE INPUT
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
 USE CONSOLECAPTURE
 USE DOSBREAKTYPES
 INCLUDE "console-storage-action.inc"
+LONGCARD freshTag
 
 PUBLIC CONSOLETYPES.Routes POINTER FUNC Registry()
 
@@ -13,18 +15,12 @@ RETURN(CONSOLETYPES.Routes POINTER(ADDRESS(CS_ROUTES)))
 
 ; Caller holds Forbid; published/base tags of every admitted lifetime survive.
 PROC Reclaim(CONSOLETYPES.Routes POINTER routes)
-  CONSOLETYPES.Capture POINTER capture
   CONSOLETYPES.Windows POINTER windows
   BYTE index,slot,keep
 
-  capture=CONSOLETYPES.Capture POINTER(ADDRESS(CS_CAPTURE))
   windows=CONSOLEWINDOWS.Registry()
-  IF capture.head<>capture.tail OR capture.breakPending<>0 OR capture.lost<>0 THEN
-    RETURN
-  FI
-
   FOR index=0 TO 15 DO
-    keep=routes.items(index).tag=capture.route
+    keep=routes.items(index).tag=0
     FOR slot=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
       IF windows.items(slot).state<>CONSOLETYPES.WIN_FREE THEN
         IF routes.items(index).tag=windows.items(slot).route
@@ -35,8 +31,11 @@ PROC Reclaim(CONSOLETYPES.Routes POINTER routes)
     OD
 
     IF keep=0 THEN
-      routes.items(index).tag=0
-      routes.items(index).scope=BYTE POINTER(0)
+      IF INPUT.RetireRoute(CONSOLECAPTURE.GetLease(),
+          routes.items(index).tag)=INPUT.OK THEN
+        routes.items(index).tag=0
+        routes.items(index).scope=NULL
+      FI
     FI
   OD
 
@@ -50,31 +49,18 @@ LONGCARD FUNC Allocate(LONGCARD unit BYTE POINTER scope BYTE bound)
 
   routes=Registry()
   Reclaim(routes)
-  IF routes.epoch=LONGCARD($0fffffff) THEN
+  IF INPUT.CreateRoute(CONSOLECAPTURE.GetLease(),0,@freshTag)<>INPUT.OK THEN
     RETURN(0)
   FI
 
-  index=0
-  used=0
-  WHILE index<16 DO
-    IF routes.items(index).tag=0 THEN
-      EXIT
-    FI
-
-    index==+1
-  OD
-
-  IF index=16 THEN
-    RETURN(0)
-  FI
-
-  routes.epoch==+1
-  route=@routes.items(index)
-  route.tag=(routes.epoch LSH 4) OR LONGCARD(index)
+  route=@routes.items(BYTE(freshTag & 15))
+  route.tag=freshTag
+  routes.epoch=freshTag RSH 4
   route.scope=scope
   route.unit=unit
   route.bound=bound
   route.retired=0
+  used=0
   FOR index=0 TO 15 DO
     IF routes.items(index).tag<>0 THEN
       used==+1
@@ -106,9 +92,12 @@ PUBLIC PROC Unregister(CONSOLETYPES.Window POINTER entry)
   CONSOLETYPES.Windows POINTER windows
 
   windows=CONSOLEWINDOWS.Registry()
+  LET lease=CONSOLECAPTURE.GetLease()
   IF windows.focusSlot=BYTE(entry.unit & 3) THEN
     windows.focusSlot=255
-    CONSOLECAPTURE.Publish(0)
+    IF lease.state=INPUT.ACTIVE THEN
+      CONSOLECAPTURE.Publish(0)
+    FI
   FI
 
   entry.route=0
@@ -353,21 +342,5 @@ PUBLIC BYTE FUNC Deliver(LONGCARD tag)
   EXEC.Permit()
 
 RETURN(1)
-
-; Drain a bounded batch of captured BREAK routes in worker context.
-PUBLIC PROC Pump()
-  LONGCARD tag
-  BYTE ignored,index
-
-  FOR index=0 TO 15 DO
-    tag=CONSOLECAPTURE.TakeBreak()
-    IF tag=0 THEN
-      EXIT
-    FI
-
-    ignored=Deliver(tag)
-  OD
-
-RETURN
 
 ENDMODULE

@@ -342,6 +342,7 @@ PUBLIC CARD FUNC Init()
 
   InitPorts()
   DosInit()
+  InputInit()
   ConsoleInit()
   ProcessInit()
   IF InitIO()=0 THEN
@@ -828,6 +829,7 @@ INCLUDE "../io/task-io.inc"
 INCLUDE "task-lifetime.inc"
 INCLUDE "../dos/task-dos.inc"
 INCLUDE "../dos/task-process.inc"
+INCLUDE "../input/task-input.inc"
 INCLUDE "../console/task-console.inc"
 
 ; Validate service tags and caller CPU widths before decoding arguments.

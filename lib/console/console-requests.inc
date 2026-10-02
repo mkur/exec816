@@ -360,7 +360,8 @@ RETURN
 BYTE FUNC Runnable(CONSOLETYPES.Service POINTER service)
   BYTE index
 
-  IF service.stop<>0 OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0 THEN
+  IF CONSOLEINPUT.Pending()<>0 OR service.stop<>0
+      OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0 THEN
     RETURN(1)
   FI
 

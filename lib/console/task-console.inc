@@ -2,10 +2,6 @@
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-action.inc"
 
-PUBLIC EXTERNAL BYTE FUNC ConsoleClaim()
-
-PUBLIC EXTERNAL PROC ConsoleRelease()
-
 ; Initialize kernel-side console admission and producer ownership.
 PROC ConsoleInit()
   BYTE POINTER bytes
@@ -16,27 +12,7 @@ PROC ConsoleInit()
     bytes(index)=0
   OD
 
-  bytes=BYTE POINTER(ADDRESS(CS_CAPTURE))
-  FOR index=0 TO CON_CAPTURE_SIZE-1 DO
-    bytes(index)=0
-  OD
-
   ConsoleNames()
-
-RETURN
-
-; Fixed keyboard backend for the public source-qualified producer API.
-SignalBinding POINTER FUNC KeyboardBinding()
-
-RETURN(SignalBinding POINTER(ADDRESS(CS_CAPTURE+CON_CAPTURE_BINDING)))
-
-BYTE FUNC KeyboardClaim()
-
-RETURN(ConsoleClaim())
-
-PROC KeyboardRelease()
-
-  ConsoleRelease()
 
 RETURN
 

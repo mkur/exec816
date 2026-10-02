@@ -15,7 +15,7 @@ from sio_concurrent_trace import LIMITS
 def run(out,optimize,toolchain=None):
     out.mkdir(parents=True,exist_ok=True)
     p=build(toolchain if toolchain is not None else compiler(ROOT/'build/actionc'),ROOT/'tests/programs/native_console_tx.act',out,optimize=optimize,tasks=True,task_capacity=8,console=True)
-    marks={k:v for k,v in p['labels'].items() if k in ('native_nmi','native_irq','sio_start','sio_retire','sio_shutdown','sio_terminal','signal_post','sio_alarm','sio_watchdog','console_capture')}
+    marks={k:v for k,v in p['labels'].items() if k in ('native_nmi','native_irq','sio_start','sio_retire','sio_shutdown','sio_terminal','signal_post','sio_alarm','sio_watchdog','input_capture')}
     cases=[];schedule=None
     for observed in (True,False):
         dest=out/('observed' if observed else 'replay');dest.mkdir(exist_ok=True);disk_image(dest/'disk.atr',128);original=(dest/'disk.atr').read_bytes()

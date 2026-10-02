@@ -320,12 +320,12 @@ ENDMODULE
         'ports-storage-action.inc', 'io-action.inc', 'io-storage-action.inc',
         'sio-storage-action.inc', 'dos-action.inc', 'dos-storage-action.inc')}
     policy_includes.update({name: directory/name for name in (
-        'task-console.inc', 'task-signals.inc', 'task-wakes.inc')})
+        'task-input.inc', 'task-console.inc', 'task-signals.inc', 'task-wakes.inc')})
     policy=read_source(ROOT/'lib/exec/taskpolicy.act', policy_includes)
     init='PROC InitResidentStorage()\n  BYTE POINTER bytes\n  CARD POINTER name\n  CARD i\n  bytes=BYTE POINTER(ADDRESS(IS_BASE+64))\n  FOR i=0 TO 191 DO bytes(i)=0 OD\n  name=CARD POINTER(ADDRESS(IS_BASE+224))\n  name(0)=$6973 name(1)=$2e6f name(2)=$6564 name(3)=$6976 name(4)=$6563 name(5)=0\nRETURN\n'
     policy=policy.replace('PUBLIC CARD FUNC Init()',init+'\nPUBLIC CARD FUNC Init()')
     if console:
-        for module in ('consoledriver','consoleinput','consoledisplay','consoleforeground','consolewindows'):
+        for module in ('consoledriver','consoleinput','consoledisplay','consoleforeground','consolewindows','consolecapture'):
             driver=read_source(library_file(module+'.act'))
             driver=driver.replace('"console-storage-action.inc"','"'+str(Path(output)/'console-storage-action.inc')+'"')
             (directory/(module+'.act')).write_text(driver)
@@ -334,18 +334,20 @@ ENDMODULE
             console_policy=console_policy.replace('"'+name+'"','"'+str(Path(output)/name)+'"')
     else:
         (directory/'consoleforeground.act').write_text('MODULE CONSOLEFOREGROUND\nUSE DOSBREAKTYPES\nPUBLIC BYTE FUNC Begin(DOSBREAKTYPES.Scope POINTER scope)\nRETURN(0)\nPUBLIC PROC End(DOSBREAKTYPES.Scope POINTER scope)\nRETURN\nPUBLIC PROC Notify(DOSBREAKTYPES.Scope POINTER scope)\nRETURN\nPUBLIC BYTE FUNC Handoff(DOSBREAKTYPES.Scope POINTER previous,target BYTE carry)\nRETURN(0)\nENDMODULE\n')
-        console_policy='''PROC ConsoleInit()
-RETURN
-SignalBinding POINTER FUNC KeyboardBinding()
-RETURN(NULL)
-BYTE FUNC KeyboardClaim()
-RETURN(0)
-PROC KeyboardRelease()
-RETURN
-'''
+        console_policy='PROC ConsoleInit()\nRETURN\n'
     if not console:
         console_policy+='BYTE FUNC ConsoleName(BYTE POINTER name)\nRETURN(0)\nBYTE FUNC ConsoleDevice(IORequest POINTER request)\nRETURN(0)\n'
     (directory/'task-console.inc').write_text(console_policy)
+    input_policy = read_source(ROOT/'lib/input/task-input.inc').replace(
+        '"input-storage.act.inc"', '"'+str(Path(output)/'input-storage.act.inc')+'"')
+    if irq_probe == 10:
+        input_policy = ('PROC InputInit()\nRETURN\nSignalBinding POINTER FUNC KeyboardBinding()\n'
+                        'RETURN(NULL)\nBYTE FUNC KeyboardClaim()\nRETURN(0)\nPROC KeyboardRelease()\nRETURN\n')
+    (directory/'task-input.inc').write_text(input_policy)
+    driver = read_source(ROOT/'lib/input/input.act').replace(
+        '"input-storage.act.inc"', '"'+str(Path(output)/'input-storage.act.inc')+'"')
+    (directory/'input.act').write_text(driver)
+
     signals=read_source(ROOT/'lib/exec/task-signals.inc')
     require(0 <= policy_probe <= 6, 'Invalid signal NMI checkpoint')
     (directory/'task-signals.inc').write_text(signals)
@@ -375,7 +377,7 @@ def application_entry(routine):
         return False
     if routine['name'].startswith('M_PROCESS_') and not re.fullmatch(r'M_PROCESS_(?:RUN|FINISH|EXECUTEIMAGE)_[0-9A-F]+',routine['name']):
         return False
-    if routine['name'].startswith(('M_BOOTCONFIG_', 'M_DISPLAY_', 'M_DISPLAYBOOT_', 'M_DISPLAYADAPTER_', 'M_PROGRAM_', 'M_PROGRAMAPI_', 'M_PROGRAMIMAGE_', 'M_PROGRAMPLACE_', 'M_PROGRAMPROVIDERS_', 'M_PROGRAMLIBRARIES_', 'M_CSTRING_IMPL_')):
+    if routine['name'].startswith(('M_BOOTCONFIG_', 'M_CONSOLECAPTURE_', 'M_DISPLAY_', 'M_DISPLAYBOOT_', 'M_DISPLAYADAPTER_', 'M_PROGRAM_', 'M_PROGRAMAPI_', 'M_PROGRAMIMAGE_', 'M_PROGRAMPLACE_', 'M_PROGRAMPROVIDERS_', 'M_PROGRAMLIBRARIES_', 'M_CSTRING_IMPL_')):
         return False
     if routine['name'].startswith(('M_DOSPROCESS_','M_DOSINHERIT_','M_FSFILES_','M_FSOBJECTS_','M_DOSCANCEL_','M_FSOPERATION_','M_FSABORT_','M_FSACTIVE_','M_DOSBREAK_','M_CONSOLE_', 'M_CONSOLEWINDOWS_','M_CONSOLETILING_','M_CONSOLEFOREGROUND_','M_CONSOLEDISPLAY_','M_CONSOLEDRIVER_','M_CONSOLEINPUT_','M_CONSOLECORE_','M_DOS_','M_DOSCALLS_','M_DOSRAW_','M_DOSSTREAMS_','M_DOSOBJECTS_','M_FSDIRECTORY_','M_FSMUX_','M_FSMOUNT_','M_FSMANAGER_','M_FSPACKET_','M_FSINFO_','M_FSIO_','M_FSINIT_','M_FSBOOT_','M_FSWORKER_','M_FSREGISTRY_','M_FSTYPES_','M_FSHANDLER_','M_FSPORTS_','M_FSNAMES_','M_DOSCLIENT_','M_DOSCORE_','M_DOSWIRE_','M_BLOCKIO_','M_BLOCKWIRE_','M_BLOCKTYPES_','M_MYDOSFILE_','M_MYDOS_','M_FS83_','M_FSCORE_','M_MYDOSTYPES_')):return False
     if re.match(r'M_(?:EXEC|EXECLISTS|EXECMEMORY|HEAPCORE|HEAPPOLICY|PORTCORE|IOCORE|IORESIDENT|IOTESTDRIVER|PRODUCERPROBE|EXECTASKS|TASKPOLICY)_', routine['name']):

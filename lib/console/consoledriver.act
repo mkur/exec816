@@ -14,7 +14,6 @@ USE CONSOLEWINDOWS
 USE CONSOLEFOREGROUND
 USE CONSOLECAPTURE
 USE CONSOLEINPUT
-USE EXECPRODUCER
 USE CONSOLEDISPLAY
 USE DISPLAY
 INCLUDE "console-storage-action.inc"
@@ -241,6 +240,21 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
     RETURN(0)
   FI
 
+  IF EXEC.AllocSignal(30)<>30 THEN
+    RETURN(0)
+  FI
+
+  IF EXEC.AllocSignal(31)<>31 THEN
+    EXEC.FreeSignal(30)
+    RETURN(0)
+  FI
+
+  IF CONSOLECAPTURE.Acquire()=0 THEN
+    EXEC.FreeSignal(31)
+    EXEC.FreeSignal(30)
+    RETURN(0)
+  FI
+
   EXEC.Forbid()
   registered=CONSOLEFOREGROUND.Register(entry)
   IF registered<>0 THEN
@@ -252,23 +266,12 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
 
   EXEC.Permit()
   IF registered=0 THEN
-    RETURN(0)
-  FI
-
-  IF EXEC.AllocSignal(30)<>30 THEN
-    RETURN(0)
-  FI
-
-  IF EXEC.AllocSignal(31)<>31 THEN
+    CONSOLECAPTURE.Release()
     EXEC.FreeSignal(30)
-    RETURN(0)
-  FI
-
-  IF EXECPRODUCER.Bind(EXECPRODUCER.KEYBOARD,EXEC.FindTask(NULL),$40000000)=0 THEN
     EXEC.FreeSignal(31)
-    EXEC.FreeSignal(30)
     RETURN(0)
   FI
+
 
 RETURN(1)
 
@@ -349,8 +352,7 @@ PUBLIC PROC Worker()
   FI
 
   IF registered=0 THEN
-    EXECPRODUCER.Release(EXECPRODUCER.KEYBOARD)
-    EXECPRODUCER.Drain(EXECPRODUCER.KEYBOARD)
+    CONSOLECAPTURE.Release()
     EXEC.FreeSignal(30)
     EXEC.FreeSignal(31)
     FreeStorage(service,defaultInstance)
@@ -422,8 +424,7 @@ PUBLIC PROC Worker()
 
   registered=EXEC.UnregisterResident()
   EXEC.FreeSignal(29)
-  EXECPRODUCER.Release(EXECPRODUCER.KEYBOARD)
-  EXECPRODUCER.Drain(EXECPRODUCER.KEYBOARD)
+  CONSOLECAPTURE.Release()
   EXEC.FreeSignal(30)
   EXEC.FreeSignal(31)
   FreeStorage(service,defaultInstance)

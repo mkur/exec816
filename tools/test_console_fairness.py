@@ -26,7 +26,7 @@ def timing(path,marks,media):
         values=[(b-a)/BASE_HZ*1000 for a,b in zip(starts,ends)]
         require(all(0<=v<=LIMITS[name] for v in values),name+' exceeded: '+str(values))
         return dict(samples=len(values),max_ms=max(values),limit_ms=LIMITS[name])
-    capture=times('console_capture');require(len(capture)==4,'Expected Z, A, Return, BREAK captures')
+    capture=times('input_capture');require(len(capture)==4,'Expected Z, A, Return, BREAK captures')
     result={}
     for name,end in [('small_collected_ms','small_collected'),('small_visible_ms','small_visible')]:result[name]=bounded(name,times('small_begin'),times(end))
     require(len(times('small_begin'))==8 and len(times('flood_begin'))>=16,'Missing per-window progress')
@@ -52,7 +52,7 @@ def run(out,mode,from_build=None):
         matches=[r['address'] for r in p['image']['routines'] if r['name'].startswith(prefix)]
         require(len(matches)==1,'Ambiguous marker '+prefix);return matches[0]
     def at(name):return next(x['address'] for x in p['image']['data'] if '_WINDOWFAIR_'+name.upper()+'_' in x['name'])
-    marks={n:p['labels'][n] for n in ('native_irq','native_nmi','sio_start','sio_retire','sio_shutdown','signal_post','sio_alarm','sio_watchdog','console_capture','tasks_forbid','tasks_permit')}
+    marks={n:p['labels'][n] for n in ('native_irq','native_nmi','sio_start','sio_retire','sio_shutdown','signal_post','sio_alarm','sio_watchdog','input_capture','tasks_forbid','tasks_permit')}
     for name,r in dict(small_begin='SmallBegin',small_collected='SmallCollected',small_visible='SmallVisible',flood_begin='FloodBegin',flood_collected='FloodCollected',third_collected='ThirdCollected',third_visible='ThirdVisible',echo_visible='EchoVisible',read_begin='FileBegin',read_end='FileCollected').items():marks[name]=routine('M_WINDOWFAIR_'+r.upper()+'_')
     marks['sector_end']=sector_end_marker(p)
     marks['forbid_retire_sio']=call_marker(p,'M_SIODRIVER_RETIREWORKER_','tasks_rem_task')

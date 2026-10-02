@@ -1,5 +1,6 @@
 MODULE PROCESSPROBE
 USE EXEC
+USE INPUTNATIVE
 USE CONSOLETYPES
 ; Only recorded test module copies call these injection points.
 PUBLIC BYTE allocation,failAllocation,failure
@@ -14,7 +15,7 @@ PUBLIC BYTE POINTER FUNC Allocate(SIZE bytes LONGCARD flags)
 RETURN(EXEC.AllocMem(bytes,flags))
 
 ; Simulate an IRQ publishing Return on the old route after the clear snapshot.
-PUBLIC PROC CaptureAfterClear(CONSOLETYPES.Capture POINTER capture LONGCARD route)
+PUBLIC PROC CaptureAfterClear(INPUTNATIVE.Capture POINTER capture LONGCARD route)
   BYTE index
 
   index=capture.head & 63

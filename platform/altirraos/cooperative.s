@@ -68,6 +68,8 @@ native_cop:
         lda f:SD_OWNED
         .if CONSOLE_NATIVE
             ora f:CS_BASE+CON_SERVICE_STATE
+        .endif
+        .if INPUT_NATIVE
             ora f:CI_ACTIVE
         .endif
         and #$ff

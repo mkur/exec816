@@ -1,0 +1,8 @@
+; Bounded native transactions; callers serialize consumption with Forbid.
+MODULE INPUTCAPTURE
+PUBLIC EXTERNAL LONGCARD FUNC Take()
+PUBLIC EXTERNAL PROC ResetInput()
+PUBLIC EXTERNAL PROC Discard(LONGCARD tag)
+PUBLIC EXTERNAL PROC Publish(LONGCARD tag)
+PUBLIC EXTERNAL LONGCARD FUNC TakeBreak()
+ENDMODULE

@@ -11,7 +11,7 @@ def run(probe,out):
     require(r['status']=='pass'and r['case']['speed']==0,'Controls need a passing FASTEST125 run')
     original=probe/'observed/trace.log';events=read_events(original);marks=r['marks']
     def marker(name):return next(i for i,(_,e)in enumerate(events)if e[0]=='cpu'and int(e[4],16)==marks[name])
-    capture=marker('console_capture');command=marker('command_end')
+    capture=marker('input_capture');command=marker('command_end')
     arrival=next(t for t,e in events if e[0]=='receive')
     index=next(i for i,(t,e)in enumerate(events)if e[0]=='read'and t>=arrival)
     delayed=list(events);_,fields=delayed.pop(index);fields=list(fields);fields[1]=str(arrival+141)

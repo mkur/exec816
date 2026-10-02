@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "storage": {
+    "state_offset": 2656,
+    "capture_offset": 3072
+  },
+  "records": {
+    "Binding": {
+      "size": 12,
+      "alignment": 2,
+      "fields": [
+        [
+          "task",
+          "BYTE POINTER",
+          0
+        ],
+        [
+          "context",
+          "BYTE POINTER",
+          3
+        ],
+        [
+          "mask",
+          "LONGCARD",
+          6
+        ],
+        [
+          "active",
+          "BYTE",
+          10
+        ],
+        [
+          "pad",
+          "BYTE",
+          11
+        ]
+      ]
+    },
+    "RawEvent": {
+      "size": 8,
+      "alignment": 2,
+      "fields": [
+        [
+          "key",
+          "BYTE",
+          0
+        ],
+        [
+          "kind",
+          "BYTE",
+          1
+        ],
+        [
+          "tick",
+          "CARD",
+          2
+        ],
+        [
+          "route",
+          "LONGCARD",
+          4
+        ]
+      ]
+    },
+    "Capture": {
+      "size": 560,
+      "alignment": 2,
+      "fields": [
+        [
+          "active",
+          "BYTE",
+          0
+        ],
+        [
+          "head",
+          "BYTE",
+          1
+        ],
+        [
+          "tail",
+          "BYTE",
+          2
+        ],
+        [
+          "lost",
+          "BYTE",
+          3
+        ],
+        [
+          "savedMask",
+          "BYTE",
+          4
+        ],
+        [
+          "savedSkctl",
+          "BYTE",
+          5
+        ],
+        [
+          "keyVector",
+          "CARD",
+          6
+        ],
+        [
+          "breakVector",
+          "CARD",
+          8
+        ],
+        [
+          "nativeEvents",
+          "CARD",
+          10
+        ],
+        [
+          "emulationEvents",
+          "CARD",
+          12
+        ],
+        [
+          "errors",
+          "BYTE",
+          14
+        ],
+        [
+          "hardwareLost",
+          "BYTE",
+          15
+        ],
+        [
+          "binding",
+          "Binding",
+          16
+        ],
+        [
+          "route",
+          "LONGCARD",
+          28
+        ],
+        [
+          "takenRoute",
+          "LONGCARD",
+          32
+        ],
+        [
+          "breakRoute",
+          "LONGCARD",
+          36
+        ],
+        [
+          "breakPending",
+          "BYTE",
+          40
+        ],
+        [
+          "pad",
+          "BYTE",
+          41
+        ],
+        [
+          "breakMask",
+          "CARD",
+          42
+        ],
+        [
+          "lostMask",
+          "CARD",
+          44
+        ],
+        [
+          "padding",
+          "BYTE[2]",
+          46
+        ],
+        [
+          "events",
+          "RawEvent[64]",
+          48
+        ]
+      ]
+    },
+    "State": {
+      "size": 128,
+      "alignment": 2,
+      "fields": [
+        [
+          "current",
+          "BYTE POINTER",
+          0
+        ],
+        [
+          "pad",
+          "BYTE",
+          3
+        ],
+        [
+          "generation",
+          "LONGCARD",
+          4
+        ],
+        [
+          "epoch",
+          "LONGCARD",
+          8
+        ],
+        [
+          "config",
+          "BYTE[16]",
+          12
+        ],
+        [
+          "tags",
+          "LONGCARD[16]",
+          28
+        ],
+        [
+          "cancelCode",
+          "BYTE[16]",
+          92
+        ],
+        [
+          "lossCode",
+          "BYTE[16]",
+          108
+        ],
+        [
+          "ownerIncarnation",
+          "LONGCARD",
+          124
+        ]
+      ]
+    }
+  }
+}

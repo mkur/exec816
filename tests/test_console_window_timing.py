@@ -9,7 +9,7 @@ from sio_transaction_trace import BASE_HZ
 class WindowTimingTests(unittest.TestCase):
     def observations(self):
         points={
-            'console_capture':[30000,40000,45000,70000],
+            'input_capture':[30000,40000,45000,70000],
             'small_begin':[14000+i*1000 for i in range(8)],
             'small_collected':[14500+i*1000 for i in range(8)],
             'small_visible':[14700+i*1000 for i in range(8)],

@@ -103,3 +103,56 @@ alignment and unused capacity; native code reservation growth is also zero.
 These are focused development checks. Reusable acquisition and console capture
 migration remain I3, and no interactive GEM, mouse, AES or new hosted
 qualification is claimed by I2.
+
+## I3 Reusable keyboard capture
+
+[I3 evidence](../development/gem-input-i3.json) records the shared input library
+and console migration. Keyboard hardware ownership, the 64-slot raw ring and
+native/emulation entry paths now live in `input.s`, independently of console
+presentation. Serial retains first service at shared IRQ entry. No input Task,
+second keyboard producer or private kernel service is introduced.
+
+Acquire copies configuration before activating the source and retains the
+consumer's signal and address-stable Task lease. Every operation checks that
+original lease and acquisition; copied/stale leases fail. Consumption and release
+belong to the consumer, while bounded route operations may run on another Task's
+stack under Forbid. Sixteen generic tags retain captured identity, cancellation
+and loss independently. Generations refuse wrap, and release purges the old
+acquisition before reusing storage. IRQ code never resolves console units or
+foreground pointers. Filtered cancellation has one durable mailbox delivery,
+without a duplicate ordinary key; mailbox events do not invent timestamps.
+
+Console policy still owns Caps, translation, typeahead and foreground scopes.
+It maps retained generic tags to its own records, preserves cancellation through
+CLEAR and drops retired scope delivery. Input remaining after a bounded pump
+keeps the worker runnable even after its wake signal has been consumed. The
+quota regression deliberately consumes that notification in worker context and
+checks that the remaining queue drains without another key press.
+
+Both compiler modes passed 217 standalone checks, including physical native
+keys, modifiers, Escape/BREAK, copied leases, cross-Task permissions, route
+capacity, acquisition/route exhaustion, raw counter wrap, cancellation/loss
+priority, per-route discard and two acquisitions. The C bridge passed 71 checks
+per mode, including successful admission, route operations and release, full
+pointer/scalar marshalling, unchanged empty outputs, interrupted computation,
+DP preservation and hardware restoration. Console controls cover focus,
+foreground BREAK without Read, rollback/restart, both physical SIO acquisition
+orders and emulation capture. Split-publication probes retain a real NMI between
+route words while excluding IRQ observation. Full raw-ring and hardware-overrun
+controls check explicit loss. All 284 host tests passed, with four historical
+source audits skipped; these remain development checks, not qualification.
+
+The migration also refreshed affected test assumptions: scope allocation follows
+its current generated size; the publication probe selects an active rollover
+route after admission's initial zero publication; ring fullness uses the modular
+head/tail distance; synthetic focus timestamps avoid coinciding with later real
+keys. Console teardown stops input before freeing its records and does not
+republish a route through a released lease.
+
+The existing 560-byte capture reservation is reused. Generic state consumes 128
+bytes of previously unused upper Task-arena space at offset `$A60`, including
+configuration, tags, mailbox reasons and lease identity. Console adds 78 bytes
+of static upper-image lease/config/event scratch. There is no additional Task
+or reserved upper arena. Fixed, every public Task and private-idle bank-zero
+deltas remain zero, including guards, alignment and unused capacity. The optional
+interactive application, cursor and responsiveness evidence remain I4–I6.
