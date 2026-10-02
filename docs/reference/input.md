@@ -177,7 +177,11 @@ records into its private queue. Each turn drains up to eight records from each
 source. Mouse admission failure leaves keyboard controls usable and displays
 `KeysOnly`; teardown retires the mouse association before releasing its lease
 and signal. [M4 evidence](../development/gem-mouse-m4.json) covers physical clicks,
-held-button close and partial admission rollback. Amiga/right-button protocols, AES events, timed waits
+held-button close and partial admission rollback. [M5 evidence](../development/gem-mouse-m5.json) records a maximum sampling gap
+of 275.946 µs in selected GUI/FASTEST125 tests, seven PAL ticks for cursor
+updates and ten for small keyboard redraws. Legal phases must be at least
+1 ms apart and button levels at least 10 ms long; faster bursts can alias.
+Amiga/right-button protocols, AES events, timed waits
 and arbitrary registered ISR callbacks are unsupported. [I6 evidence](../development/gem-input-i6.json)
 measures native keyboard-to-visible-update maxima of 12 raw / 11 optimized PAL
 ticks for the recorded small-redraw workload during physical SIO, including wrap

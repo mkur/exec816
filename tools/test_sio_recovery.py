@@ -80,7 +80,7 @@ def run(t,out,optimize,names,trace=False,sector_size=128,prepared=None):
             posts=int.from_bytes(hardware[56:58],'little')
             baseline=data(b,p['image'],p['recovery_posts_baseline'],True)[0]if 'recovery_posts_baseline'in p else 0
             require(posts==baseline+(0 if kind==8 else 1 if offline else 2),'Duplicate/lost terminal post')
-            if not offline:clean_ownership(b,p,out)
+            if not offline:clean_ownership(b,p,p['output'])
             cases.append(dict(name=name,status='pass',runtime=runtime,checks=data(b,p['image'],'checks',True),hardware=hardware.hex(),fault=fault,timing=timing,cleanup_reached=cleanup_reached,posts_baseline=baseline))
             (out/'cases.json').write_text(json.dumps(cases,indent=2)+'\n')
     return dict(status='pass',build=p['build'],machine=machine,cases=cases,sector_size=sector_size,loaded_snapshot='Paused after banked loader, before native start; restored for each independent case')

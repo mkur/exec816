@@ -172,3 +172,51 @@ Reserved bank-zero delta is zero for fixed/root storage, each of eight Tasks and
 private idle, including guards, alignment and slack. The host suite passes 288
 tests with four historical skips. This is development coverage; the declared
 sampling/visible-response envelope remains an M5 gate.
+
+## M5 Coexistence and failure closure
+
+[M5 evidence](../development/gem-mouse-m5.json) records raw/optimized decoder,
+GUI, keyboard/context and FASTEST125 native/emulation checks, targeted SIO
+cancellation/error/recovery (128-byte functional and timeout cases, plus a
+256-byte active-cancellation timing case), 62 cursor cases in each compiler mode, full source
+identity rejection and production-link checks. Observed and unobserved optimized
+GUI/production replays have identical XEX hashes, final coordinates and pixels.
+
+The final maximum sample gap is 270.660 µs in the GUI and 275.946 µs in the
+selected FASTEST125 fixture, below the unchanged 1 ms ceiling. Maximum observed
+controller-to-capture delay is 125.321 µs. Sampling work takes at most 80.634 µs;
+native IRQ entry through fixed source routing takes at most 120.881 µs in the
+measured GUI cases, excluding scheduler/RTI. Keyboard small-redraw maxima are
+10 PAL ticks, including wrap; first-outstanding-motion to visible cursor is seven
+PAL ticks in raw, optimized and production cases. Both retain the 12-tick ceiling.
+
+The existing controller's fastest interval respecting the minimum 1 ms spacing
+is 16 scanlines, 1,028.506 µs (about 972 transitions/s). Sustained diagonal input
+at that quantization has no unreported count errors. No synthetic exactly-1-kHz
+controller replaces it; the separate sampling-gap assertion stays strictly below
+1 ms. Button levels are held for at least 10 ms. Faster host bursts reach one
+scanline (64.282 µs), produce loss and alias counts; quadrature cannot reveal
+all hidden three/four-transition sequences. They are negative controls, not a
+wider supported rate.
+
+The decoder fixture found and fixed a missing M=16 annotation that selected the
+wrong durable notice slot for a second route. Early typing before SIO admission
+also exposed a fresh owned timer edge being delegated to the ROM IRQ path; the
+adapter now leaves that edge for its next native entry. Both regressions pass
+in the final emitted builds. Diagnostic NMI, ring saturation, signed-counter
+endpoints, epoch exhaustion, held recovery and reacquisition checks remain bounded.
+
+The initial keyboard runs exceeded 12 ticks. The final renderer prepackages and
+caches arrow masks, skips cursor restoration for conservatively disjoint text
+and bars (including saved edge nibbles), and repaints only the edited field tile
+and necessary glyphs. A pixel observer was also corrected to wait for disk
+progress and scanout to stabilize. Failed iterations are retained in the record;
+acceptance limits were not raised.
+
+Compared with M4, optimized diagnostic C code grows 498 bytes, initialized data
+960 bytes and zero-fill four bytes (two are diagnostic-only). Native production
+code grows 30 bytes, within the existing 12,288-byte allowance. No upper bank,
+Task, VRAM or stack reservation is added. Reserved bank-zero delta remains zero
+for fixed/root storage, every public Task and private idle, including guards,
+alignment and unused capacity. These are development checks on the pinned
+emulator; general hosted-system and physical-hardware qualification remain open.

@@ -108,6 +108,11 @@ def run(output,mode,replay=False,unquiesced=False):
                 operation('under-text',8,[17,46],list(b'Changed'))
                 operation('under-line',6,[0,20,80,100]);operation('restored-new-background',0xff00,[20,40],[0])
                 operation('before-invalid',0xff00,[21,41],[1])
+                operation('edge-color',25,values=[5])
+                operation('saved-edge-nibble',11,[20,41,20,56])
+                operation('disjoint-text',8,[300,64],list(b'outside'))
+                operation('edge-restored',0xff00,[21,41],[0])
+                operation('edge-visible',0xff00,[21,41],[1])
                 for bad in range(1,14):
                     operation('invalid-'+str(bad),0xff00,[500,200],[1],bad=bad,status=3 if bad in (11,12) else 1 if bad==13 else 2)
                 operation('close',2);operation('reopen-hidden',1)

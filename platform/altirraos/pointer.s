@@ -21,7 +21,7 @@ PI_LOSS_CODE = PI+40
 .segment "SIGNAL_CODE"
 .export pointer_claim,pointer_claim_end,pointer_release,pointer_release_end
 .export pointer_publish,pointer_publish_end,pointer_discard,pointer_discard_end
-.export pointer_take,pointer_take_end,pointer_sample,pointer_notify
+.export pointer_take,pointer_take_end,pointer_sample,pointer_notify,pointer_port_read
 .a16
 .i16
 pointer_claim:
@@ -164,6 +164,7 @@ pointer_sample:
     bne :+
     rts
 :
+pointer_port_read:
     lda f:$d300
     and #15
     sta f:PI_NEW_PHASE
@@ -171,6 +172,19 @@ pointer_sample:
     and #1
     eor #1
     sta f:PI_NEW_BUTTONS
+pointer_decode:
+    ; Most ticks observe an idle mouse. Keep both electrical reads, but avoid
+    ; table decoding, counter arithmetic and queue work for an unchanged level.
+    lda f:PI_NEW_PHASE
+    cmp f:PI+62
+    bne pointer_changed
+    lda f:PI_NEW_BUTTONS
+    cmp f:PI+63
+    bne pointer_changed
+    lda f:PI+65
+    bne pointer_changed
+    rts
+pointer_changed:
     lda f:PI+62
     and #3
     asl
@@ -468,6 +482,7 @@ pointer_loss_tag:
     sep #$20
     rts
 :
+    .a16                         ; nonzero route branch still has M=16
     lda f:PI_LOSS_TAG
     and #15
     asl
@@ -534,6 +549,7 @@ pointer_notice_store:
     sta f:PI+65
     bra pointer_notify
 pointer_loss_other_route:
+    .a16
     lda f:PI_ROUTE
     ora f:PI_ROUTE+2
     sep #$20
@@ -702,3 +718,48 @@ pointer_obsolete_no:
     rts
 pointer_gray:
     .byte 0,255,1,2, 1,0,2,255, 255,2,0,1, 2,1,255,0
+
+; Diagnostic-only decoder entry. The real-controller acceptance path never
+; uses it. A fixture holds Forbid; saved I protects the same shared scratch.
+.if SIGNAL_IRQ_PROBE = 12
+.export pointer_probe_suspend,pointer_probe_suspend_end
+.export pointer_probe_sample,pointer_probe_sample_end
+.export pointer_probe_nmi,pointer_probe_nmi_end
+.a16
+pointer_probe_suspend:
+    signal_stack_check 40
+    php
+    sei
+    sep #$20
+    lda #0
+    sta f:TM_POINTER
+    lda f:$0010
+    jsr timer_mask
+    rep #$20
+    plp
+    rtl
+pointer_probe_suspend_end:
+pointer_probe_sample:
+    signal_stack_check 40
+    php
+    sei
+    lda 5,s
+    sta f:PI_NEW_PHASE
+    sep #$20
+    jsr pointer_decode
+    rep #$20
+    plp
+    rtl
+pointer_probe_sample_end:
+pointer_probe_nmi:
+    signal_stack_check 40
+    php
+    sei
+    lda f:E816_VBI_COUNT
+:
+    cmp f:E816_VBI_COUNT
+    beq :-
+    plp
+    rtl
+pointer_probe_nmi_end:
+.endif

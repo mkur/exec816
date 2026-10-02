@@ -98,6 +98,10 @@ signal_route:
     lda f:$d20e
     eor #$ff
     and f:$0010
+    ; A new timer edge may arrive during keyboard capture. Timer 1 is still
+    ; ours: leave it latched for the next native entry, never chain the ROM
+    ; while the fixed sampling owner retains its emulation vector.
+    and #$fe
     bne signal_unowned
     sec
     rtl

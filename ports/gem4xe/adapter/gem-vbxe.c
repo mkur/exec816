@@ -23,9 +23,8 @@ static UWORD dirty, fault;
 #define CURSOR_OR   0x37200UL
 static UWORD cursorX, cursorY, cursorVisible, cursorDrawn, cursorBytes, cursorRows;
 static ULONG cursorAddress;
-/* Fixed 16x16 arrow, hotspot (0,0): black outline, white interior. */
-static const UWORD cursorBlack[16]={0x8000,0xc000,0xa000,0x9000,0x8800,0x8400,0x8200,0x8100,0x8080,0x87c0,0x9400,0xa400,0xca00,0x8a00,0x0600,0x0000};
-static const UWORD cursorWhite[16]={0x0000,0x0000,0x4000,0x6000,0x7000,0x7800,0x7c00,0x7e00,0x7f00,0x7800,0x6800,0x4800,0x0400,0x0400,0x0000,0x0000};
+static UWORD cursorMaskParity;
+#include "gem-cursor-masks.h"
 
 
 static void latch(UWORD status) { if (status && !fault) fault=status; }
@@ -81,7 +80,7 @@ static void cursor_hide(void)
 }
 static void cursor_show(void)
 {
-    UWORD width,row,col,offset,shift,bit;
+    UWORD width;
     if (!cursorVisible || cursorDrawn || fault) return;
     flush();
     if (fault) return;
@@ -93,18 +92,13 @@ static void cursor_show(void)
     cursorAddress=(ULONG)cursorY*320+cursorX/2;
     latch(VbxeBlit(&display,cursorAddress,320,CURSOR_SAVE,16,cursorBytes,cursorRows,255,0,0));
     if (fault) return;
-    memset(page,255,256);
-    memset(page+256,0,256);
-    for (row=0;row<cursorRows;++row) for (col=0;col<width;++col) {
-        bit=0x8000U>>col;
-        if ((cursorBlack[row]|cursorWhite[row])&bit) {
-            offset=row*16+((cursorX&1)+col)/2;
-            shift=((cursorX+col)&1) ? 0 : 4;
-            page[offset]&=(UBYTE)~(15U<<shift);
-            if (cursorBlack[row]&bit) page[256+offset]|=(UBYTE)(15U<<shift);
-        }
+    /* Prepacked masks keep redraw/cursor work bounded in raw C builds too.
+     * Clipping changes the blit extent; unused edge nibbles remain preserved. */
+    if (cursorMaskParity!=(cursorX&1)) {
+        memcpy(page,cursorMasks[cursorX&1],512);
+        latch(VbxeWrite(&display,CURSOR_AND,page,512));
+        if (!fault) cursorMaskParity=cursorX&1;
     }
-    latch(VbxeWrite(&display,CURSOR_AND,page,512));
     if (!fault) latch(VbxeBlit(&display,CURSOR_AND,16,cursorAddress,320,cursorBytes,cursorRows,255,0,4));
     if (!fault) latch(VbxeBlit(&display,CURSOR_OR,16,cursorAddress,320,cursorBytes,cursorRows,255,0,3));
     if (!fault) cursorDrawn=1;
@@ -140,6 +134,7 @@ static UWORD open_backend(void *context,WORD *out)
     dirty=fault=0;
     cursorX=cursorY=cursorVisible=cursorDrawn=cursorBytes=cursorRows=0;
     cursorAddress=0;
+    cursorMaskParity=2;
     status=VbxeOpen(&display);
     if (status!=DISPLAY_OK)
         return status==DISPLAY_BUSY ? GEM_BUSY : status==DISPLAY_UNSUPPORTED ? GEM_UNSUPPORTED : GEM_DEVICE_FAULT;
@@ -149,12 +144,33 @@ static UWORD open_backend(void *context,WORD *out)
     if (status || fault) { close_backend(context); return GEM_DEVICE_FAULT; }
     return GEM_OK;
 }
+/* The saved background includes the edge nibbles, not just visible arrow
+ * pixels. Disjoint text/bars cannot invalidate it and need no cursor blits.
+ * Other drawing remains conservative. Long arithmetic avoids WORD wrapping. */
+static UWORD cursor_intersects(const struct GemCommand *cmd,const WORD *points)
+{
+    LONG left,right,top,bottom,swap;
+    if (!cursorDrawn) return 0;
+    if (cmd->opcode==8) {
+        if (!cmd->int_words) return 0;
+        left=(LONG)points[0]-1;
+        right=(LONG)points[0]+(LONG)cmd->int_words*8;
+        top=(LONG)points[1]-16; bottom=(LONG)points[1]+16;
+    } else if (cmd->opcode==11) {
+        left=points[0]; right=points[2]; top=points[1]; bottom=points[3];
+        if (left>right) { swap=left; left=right; right=swap; }
+        if (top>bottom) { swap=top; top=bottom; bottom=swap; }
+    } else return 1;
+    return !(right<(LONG)(cursorX&~1U) || left>(LONG)((cursorX+15)|1U) ||
+             bottom<(LONG)cursorY || top>(LONG)cursorY+15);
+}
 static UWORD command_backend(void *context,const struct GemCommand *cmd,
     const WORD *points,const WORD *ints,WORD *reply)
 {
     (void)context;
     if (cmd->opcode!=17 && cmd->opcode!=22 && cmd->opcode!=23 &&
-        cmd->opcode!=25 && cmd->opcode!=32 && cmd->opcode!=129) cursor_hide();
+        cmd->opcode!=25 && cmd->opcode!=32 && cmd->opcode!=129 &&
+        cursor_intersects(cmd,points)) cursor_hide();
     if (fault) return GEM_DEVICE_FAULT;
     return GemVdiCommand(cmd->opcode,cmd->subopcode,cmd->point_pairs,cmd->int_words,points,ints,reply);
 }

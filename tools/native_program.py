@@ -247,7 +247,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     dos_system=tasks and not dos_test
     require(type(dos_test) is bool and (not dos_test or tasks),'DOS fixtures require tasks')
     require(type(io_test_device) is bool and (not io_test_device or tasks),'I/O test devices require tasks')
-    require(irq_probe in range(12) and (irq_probe == 0 or tasks), 'Invalid IRQ checkpoint profile')
+    require(irq_probe in range(13) and (irq_probe == 0 or tasks), 'Invalid IRQ checkpoint profile')
     require(not console_native or (tasks and irq_probe!=10),'Console fixtures require Tasks and exclude the disposable probe')
     require(policy_probe == 0 or tasks, 'Signal checkpoints require tasks')
     require(not tasks or kernel_init_name == 'EXECMEMORY.Init',
@@ -434,6 +434,14 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         elif tasks and name in ('SIOPROBE.Emulation','SIOPROBE.Stall','SIOPROBE.Stale'):
             require(io_test_device,'SIO test entry is unavailable in production')
             label,result,peak='sio_probe_'+name.split('.')[1].lower(),'None',31 if name.endswith('Stale') else 19
+        elif tasks and name.startswith('POINTERPROBE.'):
+            require(irq_probe == 12, 'Pointer probe is unavailable in production')
+            operation=name.split('.')[1]
+            require(operation in ('Suspend','Sample','Nmi'), 'Unknown pointer probe')
+            label='pointer_probe_'+operation.lower()
+            result='None';peak=40
+            if operation=='Sample':
+                arguments=[dict(alignment=2,offset=0,size=2)];outgoing=3
         elif tasks and name.startswith('TIMERPROBE.'):
             require(irq_probe == 11, 'Timer probe is unavailable in production')
             operation = name.split('.')[1]

@@ -151,6 +151,8 @@ timer_poll_done:
 timer_sample:
 .if INPUT_NATIVE
     jsr pointer_sample
+.export pointer_sample_return
+pointer_sample_return:
 .endif
 .if SIGNAL_IRQ_PROBE = 11
     ; Passive counters around the real M3 backend. These diagnostic counters

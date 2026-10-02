@@ -6,7 +6,7 @@ import os
 import re
 from pathlib import Path
 
-from native_program import ROOT, build, compiler, execute, require, verify_machine, sha256
+from native_program import ROOT, build, compiler, execute, require, verify_machine, sha256, read_build
 from os_boundary import emulator
 from sio_transactions import disk_image
 from sio_adapter_trace import analyze
@@ -196,12 +196,14 @@ def run(out, mode, order, emulation=False, unobserved=False, capture=False):
     return report
 
 
-def recovery_run(out, mode):
+def recovery_run(out, mode, capture=False, replay=False):
     """Keep the sampler alive through real cancellation and offline recovery."""
     import test_sio_recovery
     out.mkdir(parents=True, exist_ok=True)
     for name in ('timerprobe.act', 'producerprobe.act', 'sioprobe.act'):
         (out/name).write_text((ROOT/'tests/programs'/name).read_text())
+    if capture:
+        (out/'timerprobe.act').write_text((ROOT/'tests/programs/timer_input_probe.act').read_text())
     source = ROOT/'tests/programs/sio_recovery.act'
     text = re.sub(r'INCLUDE "([^"]+)"',
                   lambda m: 'INCLUDE "'+str((source.parent/m[1]).resolve())+'"', source.read_text())
@@ -216,11 +218,21 @@ def recovery_run(out, mode):
         '  Require(timerSamples^<>sampleBefore)\n  Cleanup()')
     path = out/'timer_recovery.act'
     path.write_text(text)
-    report = dict(status='running', slice='M1', tier='development', mode=mode)
+    report = dict(status='running', slice='M5' if capture else 'M1', tier='development', mode=mode,capture=capture,
+                      stimulus='Idle physical port during fault recovery; motion uses the pinned main mouse bridge.')
     try:
-        p = build(compiler(ROOT/'build/actionc'), path, out, optimize=mode == 'opt',
+        p = read_build(out) if replay else build(compiler(ROOT/'build/actionc'), path, out, optimize=mode == 'opt',
                   tasks=True, task_capacity=8, io_test_device=True, irq_probe=11)
-        report['result'] = test_sio_recovery.run(None, out, mode == 'opt', ['active', 'wrap'], True, prepared=p)
+        for name in ('functional','timed','active-256'):(out/name).mkdir(exist_ok=True)
+        report['result'] = test_sio_recovery.run(None, out/'functional', mode == 'opt',
+                ['queued','active','terminal','checksum','nak'], False, prepared=p)
+        report['timed'] = test_sio_recovery.run(None, out/'timed', mode == 'opt',
+                ['wrap','absent'], True, prepared=p)
+        # A 256-byte read keeps the active payload window open long enough
+        # for a Task-driven abort under capture/trace load. Terminal-won
+        # cancellation is covered separately; retain the existing time bound.
+        report['timed_active_256'] = test_sio_recovery.run(None, out/'active-256', mode == 'opt',
+                ['active'], True, sector_size=256, prepared=p)
         report['status'] = 'pass'
     except Exception as error:
         report.update(status='fail', error=str(error))
@@ -238,9 +250,10 @@ if __name__ == '__main__':
     p.add_argument('--unobserved', action='store_true')
     p.add_argument('--capture', action='store_true')
     p.add_argument('--recovery', action='store_true')
+    p.add_argument('--replay',action='store_true',help='Reuse a built recovery fixture')
     p.add_argument('--output', type=Path, required=True)
     args = p.parse_args()
     if args.recovery:
-        recovery_run(args.output.resolve(), args.mode)
+        recovery_run(args.output.resolve(), args.mode,args.capture,args.replay)
     else:
         run(args.output.resolve(), args.mode, args.order, args.emulation, args.unobserved, args.capture)

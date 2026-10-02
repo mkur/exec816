@@ -103,8 +103,8 @@ UWORD UiPostMouse(const struct InputEvent *e)
     if (!GemUpperExtent(e,sizeof(*e)) || e->reserved || e->qualifiers ||
         (e->flags&~INPUT_TICK_VALID) || (!(e->flags&INPUT_TICK_VALID) && e->tick) ||
         e->x<0 || e->x>639 || e->y<0 || e->y>239 || (e->buttons&~INPUT_LEFT) ||
-        (e->kind==INPUT_EVENT_POINTER ? e->code!=0 :
-         e->kind==INPUT_EVENT_BUTTON ? e->code!=INPUT_LEFT :
+        (e->kind==INPUT_EVENT_POINTER ? (e->code!=0 || e->flags!=INPUT_TICK_VALID) :
+         e->kind==INPUT_EVENT_BUTTON ? (e->code!=INPUT_LEFT || e->flags!=INPUT_TICK_VALID) :
          e->kind==INPUT_EVENT_LOSS ? (e->code<INPUT_LOSS_RAW || e->code>INPUT_LOSS_HARDWARE || e->flags || e->tick) : 1))
         return INPUT_BAD_ARGUMENT;
     Forbid();

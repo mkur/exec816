@@ -1,0 +1,171 @@
+MODULE POINTERFAIL
+USE EXEC
+USE EXECTASKS
+USE INPUT
+USE INPUTNATIVE
+USE POINTERPROBE
+USE HEAPCORE
+INPUT.Lease mouse
+INPUT.Config config
+INPUT.Event event
+INPUTNATIVE.PointerCapture POINTER hardware
+CARD checks,index,axis,phase
+LONGCARD tag,other
+BYTE ARRAY forward=[15 13 12 14]
+BYTE ARRAY reverse=[15 14 12 13]
+
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($f000+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Sample(CARD value)
+
+  EXEC.Forbid()
+  POINTERPROBE.Sample(value)
+  EXEC.Permit()
+
+RETURN
+
+PROC Open()
+
+  Require(INPUT.Acquire(@mouse,@config)=INPUT.OK)
+  EXEC.Forbid()
+  POINTERPROBE.Suspend()
+  EXEC.Permit()
+  Require(INPUT.CreateRoute(@mouse,0,@tag)=INPUT.OK)
+  Require(INPUT.PublishRoute(@mouse,tag)=INPUT.OK)
+  hardware.phase=15
+  Sample(15)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_POINTER)
+  Require(INPUT.Take(@mouse,@event)=INPUT.EMPTY)
+
+RETURN
+
+PROC Loss(CARD reason)
+
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_LOSS
+      AND event.code=reason AND event.flags=0 AND event.tick=0)
+  Require(INPUT.Take(@mouse,@event)=INPUT.EMPTY)
+
+RETURN
+
+PROC Main()
+  LONGCARD oldAcquisition
+
+  hardware=INPUTNATIVE.PointerCapture POINTER($0f4810)
+  Require(EXEC.AllocSignal(17)=17)
+  config.version=INPUT.VERSION
+  config.source=INPUT.SOURCE_POINTER
+  config.wakeMask=$20000
+  config.pointerProtocol=INPUT.POINTER_ST
+  config.pointerPort=1
+  config.initialX=100
+  config.initialY=100
+  config.maxX=200
+  config.maxY=200
+  Open()
+  ; Every transition on each axis, forward and reverse, including coalescing.
+  FOR axis=0 TO 1 DO
+    FOR index=1 TO 8 DO
+      phase=forward(index AND 3)
+      IF axis=1 THEN
+        phase=((phase AND 3) LSH 2) OR 3
+      FI
+      Sample(phase)
+    OD
+    Require(INPUT.Take(@mouse,@event)=INPUT.OK)
+    IF axis=0 THEN
+      Require(event.x=108 AND event.y=100)
+    ELSE
+      Require(event.x=100 AND event.y=108)
+    FI
+    FOR index=1 TO 8 DO
+      phase=reverse(index AND 3)
+      IF axis=1 THEN
+        phase=((phase AND 3) LSH 2) OR 3
+      FI
+      Sample(phase)
+    OD
+    Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=100 AND event.y=100)
+  OD
+  ; Clip the intervening extreme before applying a reversal.
+  hardware.x=200
+  Sample(13)
+  Sample(12)
+  Sample(13)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=200)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=199)
+  Sample(15)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=198)
+  ; Opposite state is observable hardware loss; held input cannot manufacture
+  ; a missing edge. The next baseline carries the held level without motion.
+  Sample(12+256)
+  Loss(INPUT.LOSS_HARDWARE)
+  Sample(12+256)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_POINTER
+      AND event.x=198 AND event.buttons=1)
+  Sample(12)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_BUTTON
+      AND event.buttons=0)
+  ; Signed counter endpoints fail before wrap.
+  hardware.xCount=$7fffffff
+  Sample(14)
+  Loss(INPUT.LOSS_HARDWARE)
+  Require(hardware.xCount=0)
+  Sample(14)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK)
+  hardware.xCount=-2147483648
+  Sample(12)
+  Loss(INPUT.LOSS_HARDWARE)
+  Require(hardware.xCount=0)
+  Sample(12)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK)
+  ; Full ring uses durable storage; all pre-loss entries become obsolete.
+  FOR index=0 TO 32 DO
+    Sample(12+((index+1) AND 1)*256)
+  OD
+  Require(hardware.head-hardware.tail=32)
+  Loss(INPUT.LOSS_RAW)
+  Sample(12)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK)
+  ; Three hidden positive edges alias one negative; four alias unchanged.
+  ; These deliberately unsupported observations must not claim detection.
+  hardware.phase=15
+  hardware.xCount=0
+  hardware.consumedX=0
+  hardware.x=100
+  Sample(14)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=99)
+  Sample(14)
+  Require(INPUT.Take(@mouse,@event)=INPUT.EMPTY)
+  ; A second retained route cannot escape epoch exhaustion on the live one.
+  Require(INPUT.CreateRoute(@mouse,0,@other)=INPUT.OK)
+  hardware.epoch=$fffe
+  Require(INPUT.Discard(@mouse,other)=INPUT.OK)
+  Require(hardware.disabled=1 AND hardware.epoch=$ffff)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_LOSS)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_LOSS)
+  Sample(15)
+  Require(INPUT.Take(@mouse,@event)=INPUT.EMPTY)
+  oldAcquisition=mouse.acquisition
+  Require(INPUT.Release(@mouse)=INPUT.OK)
+  Open()
+  Require(mouse.acquisition>oldAcquisition AND hardware.disabled=0)
+  ; Force an NMI during the IRQ-excluded native transaction. Forbid protects
+  ; scheduling while the platform preserves the interrupted I and context.
+  EXEC.Forbid()
+  POINTERPROBE.Nmi()
+  EXEC.Permit()
+  Sample(5)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=101 AND event.y=101)
+  Require(INPUT.Release(@mouse)=INPUT.OK)
+  EXEC.FreeSignal(17)
+
+RETURN
+ENDMODULE

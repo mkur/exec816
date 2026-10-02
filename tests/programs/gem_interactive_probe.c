@@ -9,6 +9,7 @@ extern volatile UWORD mouseStatus;
  * ordinary queue publication path can change application input state. */
 struct InputEvent injectEvents[33] __attribute__((aligned(2)));
 static struct InputEvent injectCopy __attribute__((aligned(2)));
+volatile UWORD injectSource;
 volatile UWORD injectRequest, injectDone, injectCount, injectResults[33];
 volatile UWORD injectQueued, injectLost, injectWhilePending;
 volatile UWORD holdCursor, cursorHeld, holdLossAck, lossAck, injectAckPhase;
@@ -71,8 +72,11 @@ void UiInjector(void)
             Forbid();
             for (i=0;i<injectCount && i<33;++i) {
                 memcpy(&injectCopy,&injectEvents[i],sizeof(injectCopy));
-                injectCopy.flags|=INPUT_INJECTED;
-                injectResults[i]=UiPostPointer(&injectCopy);
+                if (injectSource) injectResults[i]=UiPostMouse(&injectCopy);
+                else {
+                    injectCopy.flags|=INPUT_INJECTED;
+                    injectResults[i]=UiPostPointer(&injectCopy);
+                }
             }
             injectQueued=uiQueued;
             injectLost=uiLoss;

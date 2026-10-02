@@ -73,6 +73,19 @@ def run(output, mode, replay=False):
             def before(bridge):
                 put('variant',100)
                 reach(f'{ex("initialReady")}=1'); idle()
+                mouse_acq=int.from_bytes(b.memdump(sy['mouseInput']+12,4),'little')
+                mouse_route=int.from_bytes(b.memdump(sy['mouseInput']+16,4),'little')
+                put('injectSource',1)
+                before_events=get('pointerEvents');before_packets=get('cursorPackets')
+                invalid=[event(flags=1),event(acquisition=mouse_acq^0x10000,route=mouse_route,flags=1),
+                         event(acquisition=mouse_acq,route=mouse_route^0x10000,flags=1),
+                         event(acquisition=mouse_acq,route=mouse_route,flags=2),
+                         event(acquisition=mouse_acq,route=mouse_route,flags=0),
+                         event(acquisition=mouse_acq,route=mouse_route,flags=1,kind=1)]
+                publish('mouse-source-validation',invalid,[4,4,4,3,3,3]);idle()
+                require(get('pointerEvents')==before_events and get('cursorPackets')==before_packets,
+                        'Rejected mouse identity mutated state')
+                put('injectSource',0)
                 before_coalesce=get('uiCoalesced')
                 item=publish('adjacent-motion',[event(20,40),event(21,40),event(22,40)])
                 require(item['queued']==1 and get('uiCoalesced')==before_coalesce+2,'Motion not coalesced')

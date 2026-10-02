@@ -64,7 +64,7 @@ def latency(b,p,foreign,folder,wrap=False,source=None):
         samples.append(item)
         (folder/'latency.json').write_text(json.dumps(samples,indent=2)+'\n')
         require(scans[-1]['matches'],'No visible text update')
-        require(item['latency_ticks']<=16,'Keyboard latency exceeded sixteen PAL ticks')
+        require(item['latency_ticks']<=12,'Keyboard latency exceeded twelve PAL ticks')
     require(any(s['wire_overlap'] for s in samples),'No input/render progress within an active serial transaction')
     if wrap:require(any(s['capture']['event_tick']>s['scanouts'][-1]['tick'] for s in samples),'Tick wrap not exercised')
     b._cmd_ok('KEY ESC down'); b.bp_clear_all()

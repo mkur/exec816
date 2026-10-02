@@ -263,8 +263,8 @@ static void keyEvent(struct InputEvent *e)
     key=decode(e);
     if (key==9) { focus=(focus+1)%3; dirty|=62; }
     else if (key==10 || key==13) activate(focus);
-    else if (!focus && key==8 && length) { text[--length]=0; dirty|=14; }
-    else if (!focus && key>=32 && key<127 && length<24) { text[length++]=(UBYTE)key; dirty|=14; }
+    else if (!focus && key==8 && length) { text[--length]=0; dirty|=1U<<(1+length/8); }
+    else if (!focus && key>=32 && key<127 && length<24) { text[length++]=(UBYTE)key; dirty|=1U<<(1+(length-1)/8); }
 }
 /* Each tile is one immutable packet. Construct payload in its final owned
  * storage; the renderer never observes temporary stack arrays or live text. */
@@ -277,13 +277,21 @@ static UWORD paint(void)
     };
     WORD *values;
     const char *label;
-    UWORD i,tile,status,x,y,pen=0;
+    UWORD i,tile,status,x,y,glyphs=8,pen=0;
     for (tile=0;tile<9;++tile) if (dirty&(1<<tile)) break;
     if (tile==9) return GEM_OK;
     status=GemPrepare(&client,GEM_OP_SUBMIT,4,4*GEM_COMMAND_BYTES+32);
     if (status) return status;
     memcpy(client.packet+1,commands,sizeof(commands));
     values=(WORD *)((UBYTE *)client.packet+DATA);
+    if (tile>=1 && tile<=3) {
+        UWORD first=(tile-1)*8;
+        /* Repaint live text and one trailing blank for Backspace. The rest
+         * of this tile is already blank; each edit dirties its own tile. */
+        glyphs=length>=first ? length-first+1 : 1;
+        if (glyphs>8) glyphs=8;
+        ((struct GemCommand *)(client.packet+1))[3].int_words=glyphs;
+    }
     label=tile==0 ? "GEM/Exec" : tile==4 ? "Count000" : tile==5 ? "Exit    " :
           tile==6 ? "Disk000%" : tile==7 ? "Tab/Ente" : mouseStatus ? "KeysOnly" : boot.diskDone ? "Done    " : "Reading ";
     x=tile>=1 && tile<=3 ? 32+(tile-1)*64 : tile==5 ? 176 : 32;
@@ -294,7 +302,7 @@ static UWORD paint(void)
     values[1]=x; values[2]=y-10; values[3]=x+63; values[4]=y-8;
     values[5]=tile==4 && focus==1 ? 2 : 1;
     values[6]=x; values[7]=y;
-    for (i=0;i<8;++i) {
+    for (i=0;i<glyphs;++i) {
         UWORD glyph=label[i];
         if (tile>=1 && tile<=3) glyph=(tile-1)*8+i<length ? text[(tile-1)*8+i] : ' ';
         values[8+i]=glyph;
