@@ -1,15 +1,18 @@
 MODULE GEMCONCURRENT
 USE EXEC
+USE EXECTASKS
 USE DOS
 USE CONSOLEDRIVER
 USE DISPLAY
 USE DISPLAYBOOT
 USE DISPLAYADAPTER
 USE HEAPCORE
+USE SIODRIVER
 INCLUDE "c-image.inc"
 INCLUDE "../../c/calypsi/display-bridge.inc"
 CARD FUNC POINTER cMain()
-CARD checks,result
+CARD checks,result,mediaError
+LONGINT mediaDetail
 BYTE checkpoint
 BYTE ARRAY diskData(128)
 DOS.FileHandle POINTER file
@@ -33,8 +36,53 @@ PROC Run(CARD stage)
 
 RETURN
 
-PROC Main()
+; Preserve the first media failure while retiring the owned DOS resources.
+PROC MediaFailure(CARD reason)
+
+  IF mediaError=0 THEN
+    mediaError=reason
+    mediaDetail=DOS.IoErr()
+  FI
+
+RETURN
+
+PROC ReadMedia()
   CARD index,block
+
+  file=DOS.Open(BYTE POINTER(c"D1:DATA.BIN"),DOS.MODE_OLDFILE)
+  IF file=NULL THEN
+    MediaFailure(1)
+    RETURN
+  FI
+
+  FOR block=0 TO 15 DO
+    IF DOS.Read(file,diskData,128)<>128 THEN
+      MediaFailure(2)
+      EXIT
+    FI
+
+    FOR index=0 TO 127 DO
+      IF diskData(index)<>(BYTE(index+block*128) XOR $5a) THEN
+        MediaFailure(3)
+        EXIT
+      FI
+    OD
+
+    IF mediaError<>0 THEN
+      EXIT
+    FI
+  OD
+
+  IF DOS.Close(file)=0 THEN
+    MediaFailure(4)
+  ELSE
+    file=NULL
+  FI
+
+RETURN
+
+PROC Main()
+  CARD ignored
 
   LET entry=ADDRESS POINTER(@cMain)
   entry^=C_MAIN
@@ -54,23 +102,32 @@ PROC Main()
   checkpoint=1
   Run(2)
   ; First disk access: no metadata or data cache can satisfy this read.
-  file=DOS.Open(BYTE POINTER(c"D1:DATA.BIN"),DOS.MODE_OLDFILE)
-  Require(file<>NULL)
-  FOR block=0 TO 15 DO
-    Require(DOS.Read(file,diskData,128)=128)
-    FOR index=0 TO 127 DO
-      Require(diskData(index)=(BYTE(index+block*128) XOR $5a))
-    OD
-  OD
-
-  Require(DOS.Close(file)<>0)
-  Require(DOS.ReleaseContext()<>0)
+  ReadMedia()
   Run(3)
   Require(DISPLAY.State()=DISPLAY.FREE)
+  ; A refused close retains its handle. Never discard it or abort while the
+  ; renderer still owns presentation; cleanup failure after this point is fatal.
+  IF file<>NULL THEN
+    Require(DOS.Close(file)<>0)
+    file=NULL
+  FI
+
+  Require(DOS.ReleaseContext()<>0)
   Require(CONSOLEDRIVER.Start()<>0)
   file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
   Require(file<>NULL)
-  Require(DOS.Write(file,BYTE POINTER(c"GEM workload complete\n"),22)=22)
+  IF mediaError=0 THEN
+    Require(DOS.Write(file,BYTE POINTER(c"GEM workload complete\n"),22)=22)
+  ELSE
+    Require(DOS.Write(file,BYTE POINTER(c"GEM disk error\n"),15)=15)
+    Require(DOS.Write(file,BYTE POINTER(c"Mount gem-vdi/graphics.atr\n"),27)=27)
+    IF SIODRIVER.Unavailable()<>0 THEN
+      Require(DOS.Write(file,BYTE POINTER(c"SIO offline; reset required\n"),28)=28)
+    FI
+  FI
+
+  checkpoint=3
+  ignored=EXECTASKS.Sleep(250)
   Require(DOS.Close(file)<>0)
   Require(DOS.ReleaseContext()<>0)
   Require(CONSOLEDRIVER.Stop()<>0)

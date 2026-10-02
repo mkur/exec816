@@ -133,11 +133,13 @@ UWORD main(void)
             check(blocker!=NULL);
         }
         if (variant==12) while ((bit=AllocSignal(-1))!=-1) bits[count++]=bit;
-        if (variant==5 || variant==6) exhaust(variant==6 ? 32 : 0);
+        if (variant==5 || variant==6) exhaust(variant==6 ? 224 : 192);
+        if (variant==9 || variant==10) exhaust(variant==10 ? 32 : 0);
         status=GemServiceStart(&server,&GemVbxeBackend);
-        if (variant==5 || variant==6 || variant==11 || variant==12) {
+        if (variant==5 || variant==6 || variant==9 || variant==10 || variant==11 || variant==12) {
             check(status==GEM_NO_MEMORY && !server.worker && !server.port && !server.scratch);
             check(!server.owner_lease.task && !server.worker_lease.task);
+            check(!server.stop_packet && !server.stop_replies);
             restore();
             if (variant==11) {
                 Signal(blocker,1);
@@ -190,18 +192,19 @@ UWORD main(void)
                 check(!client.session && !server.session);
                 check(GemOpen(&client)==GEM_OK); ++crossings;
             }
-            if (variant==9 || variant==10) {
-                exhaust(variant==10 ? 32 : 0);
-                check(GemServiceStop(&server)==GEM_NO_MEMORY && server.state==GEM_RUNNING);
+            if (variant==13) {
+                exhaust(0);
+                check(GemServiceStop(&server)==GEM_OK); ++crossings;
                 restore();
-                check(GemCall(&client,4,0,0,0,NULL,NULL)==GEM_OK); ++crossings;
+            } else {
+                check(GemClose(&client)==GEM_OK); ++crossings;
+                check(GemServiceStop(&server)==GEM_OK); ++crossings;
             }
-            check(GemClose(&client)==GEM_OK); ++crossings;
-            check(GemServiceStop(&server)==GEM_OK); ++crossings;
         }
         check(GemClientDispose(&client)==GEM_OK);
         check(!server.port && !server.scratch && !server.worker);
         check(!server.owner_lease.task && !server.worker_lease.task);
+        check(!server.stop_packet && !server.stop_replies);
     } else {
         while (progress[0]!=30000) { }
         Forbid();

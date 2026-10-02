@@ -90,6 +90,10 @@ renderer lease and final notification under the existing Forbid/retirement
 protocol; do not leave a pointer to an unretained Task after waking its owner.
 Allocation or partial-startup failure unwinds in reverse order before publishing
 readiness. There is no forced client kill or timeout-based buffer reclamation.
+Startup reserves the supervisor's STOP packet and reply port before readiness.
+STOP performs no allocation, including when a drawing reply remains pending;
+the client still must collect that exact drawing reply. Failed startup frees
+the reserve, and successful shutdown frees it after exact STOP collection.
 
 ## Drawing semantics
 
@@ -177,8 +181,10 @@ its 256-byte interrupt reserve. C uses 20 bytes of each Task's existing lower
 bytes. The adapter's 4 KiB staging page is inside that data bank; the CPU aperture
 `$8000–$8FFF` is an existing reservation, mapped only during owner transfers.
 Protocol storage, leases, driver state and globals remain in upper RAM. Steady
-service/client heap allocations total 2,464 rounded bytes, rising to 2,656 for
-STOP. Task stacks and external guards are already in the platform budget.
+service/client heap allocations total 2,656 rounded bytes, including the
+192-byte STOP reserve. The server's upper-RAM record grows by four bytes for
+the reply-port pointer. Task stacks and external guards are already in the
+platform budget.
 
 [VBXE extents](../../platform/altirraos/vbxe-vram.json) reserve 107,008 bytes of
 private VRAM, including screen slack, XDL, 252-byte BCB capacity rounded to 256,

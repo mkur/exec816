@@ -13,7 +13,7 @@ LICENSE_FILES = {
     'EXEC816-LICENSING.md': 'LICENSING.md',
 }
 
-GEM_FILES = ('Exec-gem-vdi.xex', 'system.atr', 'README.txt', 'GEM-COPYING.txt',
+GEM_FILES = ('Exec-gem-vdi.xex', 'graphics.atr', 'README.txt', 'GEM-COPYING.txt',
              'GEM-COPYING.LIB.txt', 'GEM-LICENSING.md', 'GEM-FONT-NOTICE.txt')
 
 

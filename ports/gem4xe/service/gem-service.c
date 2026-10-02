@@ -146,6 +146,20 @@ static void release_worker(struct GemServer *s)
     }
 }
 
+/* Startup owns this reserve until the supervisor collects the terminal STOP.
+ * The worker never frees a port whose signal belongs to the supervisor. */
+static void release_stop(struct GemServer *s)
+{
+    if (s->stop_packet) {
+        FreeMem(s->stop_packet, GEM_REQUEST_BYTES);
+        s->stop_packet = NULL;
+    }
+    if (s->stop_replies) {
+        DeleteMsgPort(s->stop_replies);
+        s->stop_replies = NULL;
+    }
+}
+
 void GemServiceWorker(void)
 {
     struct Task *self = FindTask(NULL);
@@ -216,7 +230,6 @@ void GemServiceWorker(void)
     Forbid();
     s->state = GEM_RETIRED;
     s->worker = NULL;
-    s->stop_packet = NULL;
     ReleaseTask(&s->owner_lease);
     ReleaseTask(&s->worker_lease);
     ReplyMsg(&stop->message);
@@ -237,6 +250,16 @@ UWORD GemServiceStart(struct GemServer *s, const struct GemBackend *backend)
     s->backend = backend;
     s->state = GEM_STARTING;
     s->startup_result = GEM_NO_MEMORY;
+    s->stop_replies = CreateMsgPort();
+    if (s->stop_replies)
+        s->stop_packet = AllocMem(GEM_REQUEST_BYTES, MEMF_PUBLIC | MEMF_CLEAR);
+    if (!s->stop_replies || !GemUpperExtent(s->stop_packet, GEM_REQUEST_BYTES)) {
+        release_stop(s);
+        s->state = GEM_RETIRED;
+        FreeSignal(bit);
+        s->ready_mask = 0;
+        return GEM_NO_MEMORY;
+    }
     Forbid();
     if (RetainTask(s->owner, &s->owner_lease)) {
         s->worker = CreateTask("GEM service", 0, (APTR)GemServiceWorker, 2560UL);
@@ -258,5 +281,7 @@ UWORD GemServiceStart(struct GemServer *s, const struct GemBackend *backend)
     }
     FreeSignal(bit);
     s->ready_mask = 0;
+    if (s->startup_result != GEM_OK)
+        release_stop(s);
     return s->startup_result;
 }

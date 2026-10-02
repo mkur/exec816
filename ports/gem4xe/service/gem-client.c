@@ -188,16 +188,10 @@ UWORD GemServiceStop(struct GemServer *s)
         return GEM_BAD_SESSION;
     if (s->state != GEM_RUNNING)
         return GEM_STOPPING;
-    replies = CreateMsgPort();
-    if (!replies)
-        return GEM_NO_MEMORY;
-    r = AllocMem(GEM_REQUEST_BYTES, MEMF_PUBLIC | MEMF_CLEAR);
-    if (!GemUpperExtent(r, GEM_REQUEST_BYTES)) {
-        if (r)
-            FreeMem(r, GEM_REQUEST_BYTES);
-        DeleteMsgPort(replies);
-        return GEM_NO_MEMORY;
-    }
+    replies = s->stop_replies;
+    r = s->stop_packet;
+    if (!replies || !GemUpperExtent(r, GEM_REQUEST_BYTES))
+        return GEM_BAD_PACKET;
     r->message.mn_ReplyPort = replies;
     r->message.mn_Length = r->total_bytes = GEM_REQUEST_BYTES;
     r->version = GEM_VERSION;
@@ -212,5 +206,7 @@ UWORD GemServiceStop(struct GemServer *s)
     status = r->result;
     FreeMem(r, GEM_REQUEST_BYTES);
     DeleteMsgPort(replies);
+    s->stop_packet = NULL;
+    s->stop_replies = NULL;
     return status;
 }

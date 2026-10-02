@@ -34,6 +34,7 @@ struct GemServer {
     struct GemRequest *inflight, *stop_packet;
     ULONG generation, session, next_sequence;
     ULONG ready_mask;
+    struct MsgPort *stop_replies;
 };
 
 struct GemClient {

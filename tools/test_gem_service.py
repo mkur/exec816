@@ -17,7 +17,7 @@ from test_large_stacks import observe
 PIN = json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
 CASES = ['protocol','stop-queued','stop-active','admission','startup-signal',
          'worker-port','worker-scratch','client-port','client-packet','stop-port',
-         'stop-packet','held-renderer','held-client']
+         'stop-packet','held-renderer','held-client','stop-exhausted']
 
 
 def run(output, mode, cases=None):

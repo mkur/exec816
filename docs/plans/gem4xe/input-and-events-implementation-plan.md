@@ -3,7 +3,9 @@
 [Implementation plans](../README.md) · [Design note](input-and-events-design.md) ·
 [Current VDI contract](../../reference/gem-vdi.md) · [Roadmap](../../roadmap.md)
 
-Status: planned; no slice below is implemented or validated. This plan implements
+Status: I0 implemented and development-checked; I1–I7 remain in progress.
+See the [implementation record](../../history/gem-input.md) and
+[I0 evidence](../../development/gem-input-i0.json). This plan implements
 the design recorded in commit `ad50a42`. I0–I7 deliver native keyboard interaction
 with a small VDI scene during physical SDFS reads, safe console handoff and a
 renderer-owned cursor tested with injected pointer events. Physical mouse support
@@ -215,8 +217,13 @@ together. Root `system.atr` keeps its standard role.
 
 Acceptance: extend the concurrent runner with wrong standard disk, no disk,
 short/corrupt file and stop-under-exhaustion cases in raw/optimized mode. Verify
-readable error scanout, normal cleanup rather than `$FF93` for media errors,
-all guards, display/OS restoration and allocator ownership. Check one successful
+readable error scanout and normal cleanup for terminal media errors,
+all guards, display/OS restoration and allocator ownership. A missing drive can
+produce an uncertain SIO timeout: retire graphics and console, display the reset
+requirement, and retain the offline bus at `$FF93` under the existing
+[device contract](../../reference/device-io.md). I0 execution exposed this
+exception to the original normal-return requirement; clearing the offline latch
+would falsely claim that late serial traffic had quiesced. Check one successful
 physical workload as a control. Any refreshed ZIP goes through `build_demo.py`.
 
 ## I1 Input records and checked C entry

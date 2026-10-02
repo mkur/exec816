@@ -13,10 +13,31 @@ from stack_budget import stack_usage
 from test_heap_api import clean_ownership
 from test_calypsi import pattern
 from test_large_stacks import observe
+from test_console_display import terminal
+from test_cooperative import data
+from make_data_disk import make
 
 PIN=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
 CASES=['concurrent','stop-queued','stop-active','device-fault','unquiesced',
-       'worker-port','worker-scratch','client-port','client-packet','stop-port','stop-packet','admission','startup-signal']
+       'worker-port','worker-scratch','client-port','client-packet','stop-port','stop-packet','admission','startup-signal',
+       'stop-exhausted','wrong-disk','no-disk','short-file','corrupt-file']
+MEDIA_ERRORS={'wrong-disk':1,'no-disk':1,'short-file':2,'corrupt-file':3}
+
+
+def media(output,folder,name):
+    if name=='no-disk': return None
+    if name=='wrong-disk':
+        make(folder/'wrong.atr')
+        return folder/'wrong.atr'
+    if name in ('short-file','corrupt-file'):
+        source=folder/'media'; source.mkdir(exist_ok=True)
+        payload=bytearray((i&255)^0x5a for i in range(2048))
+        if name=='short-file': payload=payload[:129]
+        else: payload[511]^=1
+        (source/'DATA.BIN').write_bytes(payload)
+        make(folder/'media.atr',source,binary_names={'DATA.BIN'})
+        return folder/'media.atr'
+    return output/'system.atr'
 
 
 def scene_pixels(output):
@@ -54,7 +75,10 @@ def run(output,mode,cases=None,replay=False,production=False):
             variant=CASES.index(name); folder=output/name; folder.mkdir(exist_ok=True)
             case=dict(name=name,status='running'); report['cases'].append(case)
             with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',folder,pin=PIN) as b:
-                b.config('diskemu','generic56k'); b.mount(0,str(output/'system.atr'))
+                b.config('diskemu','generic56k')
+                disk=media(output,folder,name)
+                if disk is not None: b.mount(0,str(disk))
+                case['media_sha256']=None if disk is None else sha256(disk)
                 case['machine']=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
                 read=lambda k,n=2:int.from_bytes(b.memdump(sy[k],n),'little')
                 saved={}
@@ -113,11 +137,26 @@ def run(output,mode,cases=None,replay=False,production=False):
                         require(actual==expected,'Optional artifact pixels/palette differ')
                         case['scanout_sha256']=hashlib.sha256(actual).hexdigest()
                         case['screenshot_sha256']=sha256(folder/'scene.png')
+                    if variant!=4:
+                        checkpoint=next(d['address'] for d in program['image']['data'] if '_CHECKPOINT_' in d['name'])
+                        inst=memory['console_storage']['INSTANCE']; view=memory['console_storage']['PRESENTATION']
+                        reach('native_nmi',f'(db(${checkpoint:x})=3)&(dw(${inst+14:x})>=dw(${inst+16:x}))&'
+                            f'(dw(${view+10:x})=dw(${inst+54:x})+dw(${inst+10:x}))')
+                        payload=b'GEM disk error\nMount gem-vdi/graphics.atr\n' if name in MEDIA_ERRORS else b'GEM workload complete\n'
+                        if name=='no-disk': payload+=b'SIO offline; reset required\n'
+                        pointer=lambda address:int.from_bytes(b.memdump(address,3),'little')
+                        expected=terminal(payload)
+                        require(b.memdump(pointer(inst),960)==expected[0],'Completion text differs')
+                        require(b.memdump(pointer(view+3),960)==expected[1],'Completion screen differs')
+                        b.screenshot(str(folder/'completion.png'))
+                        case['completion_sha256']=sha256(folder/'completion.png')
                     b.bp_clear_all()
                 try:
                     runtime,_=execute(b,{**program,'output':folder},before_run=before,
-                        expected_status=0xff93 if variant==4 else 0,frame_limit=24000,timeout=360)
+                        expected_status=0xff93 if variant==4 or name=='no-disk' else 0,frame_limit=24000,timeout=360)
                     case.update(runtime=runtime,checks=read('checks'),failures=read('failures'),first_failure=read('first_failure'))
+                    case['media_error']=data(b,program['image'],'mediaError',True)[0]
+                    require(case['media_error']==MEDIA_ERRORS.get(name,0),'Unexpected media result')
                     require(not case['failures'],f'Target assertion {case["first_failure"]}')
                     if variant==4:
                         # Hardware cannot prove idle: pending request, port, scratch
@@ -131,7 +170,15 @@ def run(output,mode,cases=None,replay=False,production=False):
                         require(read('finished')==0 and read('inject')==1,'Unquiesced path escaped')
                     else:
                         require(read('finished')==1,'Incomplete target')
-                        clean_ownership(b,program,program["output"])
+                        if name=='no-disk':
+                            offset=json.loads((ROOT/'abi/sio-adapter.json').read_text())['fields']['SD_OFFLINE']
+                            require(b.peek(program['labels']['SIO_STATE']+offset)[0]==1,'Missing offline bus hold')
+                            require(b.peek16(sy['server'])==4,'GEM renderer not retired')
+                            require(all(b.memdump(sy['server']+o,n)==bytes(n) for o,n in
+                                ((8,4),(12,12),(24,12),(36,8),(56,8),(80,4))), 'GEM resources leaked')
+                            case['retirement']='GEM and console retired; uncertain SIO bus retained for reset'
+                        else:
+                            clean_ownership(b,program,program["output"])
                         require(runtime['native_irq_count']>0,'No physical SIO IRQ')
                         require(b.memdump(0x22f,3)==saved['os'],'OS display was not restored')
                         require(b.memdump(0x8000,4096)==saved['aperture'],'CPU aperture changed')
@@ -156,7 +203,8 @@ def run(output,mode,cases=None,replay=False,production=False):
                             require(b.memdump(adapter.KERNEL_DP,128)==pattern(4),'Kernel lower DP changed')
                     case['status']='pass'
                     print(mode,name,'pass',flush=True)
-                except Exception:
+                except Exception as error:
+                    case.update(status='fail',error=str(error))
                     print('target', {k:read(k) for k in ('stage','checks','failures','first_failure','entered','commandCount','completed','finished') if k in sy},flush=True)
                     raise
         report['status']='pass'

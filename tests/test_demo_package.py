@@ -86,6 +86,8 @@ class DemoPackageTests(unittest.TestCase):
             files={name.removeprefix('exec816-demo/'):archive.read(name) for name in archive.namelist()}
         self.assertEqual(files['Exec-of816.xex'],self.boot_files['Exec-of816.xex'])
         self.assertEqual(files['system.atr'],self.boot_files['system.atr'])
+        self.assertIn('gem-vdi/graphics.atr',files)
+        self.assertNotIn('gem-vdi/system.atr',files)
         self.assertEqual({name.removeprefix('gem-vdi/'):content for name,content in files.items()
             if name.startswith('gem-vdi/')},expected)
         checksums=dict(line.split('  ',1)[::-1] for line in files['SHA256SUMS'].decode().splitlines())

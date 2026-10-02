@@ -8,11 +8,15 @@ a desktop or an AES application environment.
 2. Select Atari 800XL, 64 KiB base RAM plus fifteen CPU high banks, 65C816 at 8x,
    shadow ROM and PAL. Enable VBXE full FX 1.26 at $D600, private 512 KiB VRAM,
    no shared RAM and no VBXE IRQ. Other cores/bases are unsupported.
-3. Mount gem-vdi/system.atr as drive 1. Select physical generic56k disk emulation:
+3. Mount gem-vdi/graphics.atr as drive 1. Select physical generic56k disk emulation:
    SIO patch OFF, burst OFF, random delay OFF and accurate sector timing ON.
 4. Load gem-vdi/Exec-gem-vdi.xex directly, not as a shell command. The workload
    renders twelve rows of the built-in font while another Task computes and
-   a cold 2 KiB file is read. It restores text and exits when finished.
+   a cold 2 KiB file is read. It restores text, displays completion for five
+   seconds and exits. A media error also restores text and names the required
+   gem-vdi/graphics.atr disk. The root system.atr is for the standard demo.
+   If the error says "SIO offline; reset required", cold-reset after correcting
+   the mounted disk. The uncertain serial transaction cannot return to the OS.
 
 Use a cold inactive graphics baseline; do not chain-load this program over
 another VBXE owner. A permanently busy blitter deliberately parks for reset,

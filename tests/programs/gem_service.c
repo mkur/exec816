@@ -381,11 +381,14 @@ int main(void)
         while ((bit = AllocSignal(-1)) != -1)
             bits[count++] = bit;
     if (variant == 5 || variant == 6)
-        exhaust(variant == 6 ? 32 : 0);
+        exhaust(variant == 6 ? 224 : 192);
+    if (variant == 9 || variant == 10)
+        exhaust(variant == 10 ? 32 : 0);
     status = GemServiceStart(&server, &backend);
-    if (variant >= 3 && variant <= 6) {
+    if ((variant >= 3 && variant <= 6) || variant == 9 || variant == 10) {
         check(status == GEM_NO_MEMORY && !server.worker && !server.port && !server.scratch);
         check(!server.owner_lease.task && !server.worker_lease.task);
+        check(!server.stop_packet && !server.stop_replies);
         if (variant == 4)
             while (count)
                 FreeSignal(bits[--count]);
@@ -432,13 +435,10 @@ int main(void)
     } else {
         check(GemOpen(&client) == GEM_OK);
     }
-    if (variant == 9 || variant == 10) {
-        exhaust(variant == 10 ? 32 : 0);
-        check(GemServiceStop(&server) == GEM_NO_MEMORY && server.state == GEM_RUNNING);
-        restore_heap();
-        check(GemCall(&client, 3, 0, 0, 0, NULL, NULL) == GEM_OK);
-    }
+    if (variant == 13)
+        exhaust(0);
     check(GemServiceStop(&server) == GEM_OK);
+    restore_heap();
 dispose:
     check(server.state == GEM_RETIRED && !server.worker && !server.port && !backend_live);
     check(!server.owner_lease.task && !server.worker_lease.task);

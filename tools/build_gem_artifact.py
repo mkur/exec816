@@ -10,6 +10,7 @@ def build(output):
     output=Path(output).resolve()
     program,foreign=build_concurrent_probe(output,optimize=True,instrument=False)
     shutil.copyfile(program['xex'],output/'Exec-gem-vdi.xex')
+    shutil.copyfile(output/'system.atr',output/'graphics.atr')
     shutil.copyfile(ROOT/'docs/gem-vdi-distribution.txt',output/'README.txt')
     for source,name in [('COPYING','GEM-COPYING.txt'),('COPYING.LIB','GEM-COPYING.LIB.txt'),
                         ('docs/licence.md','GEM-LICENSING.md')]:
