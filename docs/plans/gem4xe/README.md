@@ -19,6 +19,12 @@ with [current input contracts](../../reference/input.md) and
 [development evidence](../../history/gem-input.md). Physical pointer hardware and AES
 remain separately gated work.
 
+The [physical mouse design](physical-mouse-design.md) targets the configured
+ST mouse on port 1. It uses Altirra's existing model and proposes shared SIO
+timing, reusable capture and integration with the existing cursor.
+The [implementation plan](physical-mouse-implementation-plan.md) defines M0–M6,
+their ABI choices, executable checks and commit boundaries; all are pending.
+
 **Preserved analysis:** these three documents were moved from GEM4XE's
 `docs/kernel/` into Exec816 on 2026-10-01 so the upstream checkout can
 be updated independently. Source paths, “current” and “this repository”

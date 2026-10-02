@@ -66,6 +66,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [Physical mouse design for hosted GEM](gem4xe/physical-mouse-design.md): proposed
+  ST mouse on port 1 using Altirra's existing configuration, with shared SIO
+  timing, reusable capture, lifetime, memory and acceptance rules. The
+  [implementation plan](gem4xe/physical-mouse-implementation-plan.md) defines
+  pending slices M0–M6, from device observation through the optional artifact.
 - [Hosted GEM input and events implementation](gem4xe/input-and-events-implementation-plan.md):
   I0–I7 complete: media recovery, shared keyboard capture, console handoff,
   interactive controls during disk I/O, serialized cursor drawing and the optional

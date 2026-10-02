@@ -31,8 +31,12 @@ These are possible next milestones, without a delivery order:
   The [optional interactive demo](guides/gem-vdi.md) now provides keyboard controls,
   console handoff and bounded redraws during physical I/O. The completed
   [I0–I7 plan](plans/gem4xe/input-and-events-implementation-plan.md) records the
-  cursor/injected-event boundary; an exact physical device and its SIO coexistence
-  must be selected and checked before importing a mouse backend.
+  cursor/injected-event boundary. The proposed
+  [physical mouse design](plans/gem4xe/physical-mouse-design.md) targets the
+  configured ST mouse on port 1, with shared SIO timing and reusable capture
+  feeding the existing cursor and controls. Its
+  [M0–M6 implementation plan](plans/gem4xe/physical-mouse-implementation-plan.md)
+  separates timing migration, input capture, GUI integration and artifact checks.
 - Priority scheduling and larger Task capacities. Current priorities are stored
   but selection is FIFO; capacities beyond the supported four/eight layouts need
   separate memory budgeting and qualification.
