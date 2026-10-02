@@ -352,7 +352,7 @@
     },
     "profile_tag": {
       "register": "y_high",
-      "value": 6,
+      "value": 7,
       "services": "Core Task, signal, lifetime and public platform producer calls; Version/Yield/Poll/Sleep retain their ABI. The packet tag is independent of the feature version."
     }
   },
@@ -369,7 +369,7 @@
     "BINDING_BYTES": 12,
     "USER_SIGNAL_FIRST": 16,
     "SIGNAL_COUNT": 32,
-    "PROFILE_TAG": 1536,
+    "PROFILE_TAG": 1792,
     "WAKE_LINKED": 1,
     "WAKE_CLAIMED": 2,
     "MANAGED_STRIDE": 64
@@ -626,27 +626,44 @@
     "Bind": {
       "arguments": [
         {
-          "alignment": 1,
+          "alignment": 2,
           "offset": 0,
+          "size": 2
+        },
+        {
+          "alignment": 1,
+          "offset": 2,
           "size": 3
         },
         {
           "alignment": 2,
-          "offset": 4,
+          "offset": 6,
           "size": 4
         }
       ],
-      "outgoing_bytes": 9,
+      "outgoing_bytes": 11,
       "result_bytes": 1
     },
     "Release": {
-      "arguments": [],
-      "outgoing_bytes": 1,
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 2
+        }
+      ],
+      "outgoing_bytes": 3,
       "result_bytes": 0
     },
     "Drain": {
-      "arguments": [],
-      "outgoing_bytes": 1,
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 2
+        }
+      ],
+      "outgoing_bytes": 3,
       "result_bytes": 0
     }
   },
@@ -706,6 +723,35 @@
         "stackSize",
         "LONGCARD",
         12
+      ]
+    ]
+  },
+  "producer_sources": {
+    "SERIAL": 1,
+    "KEYBOARD": 2
+  },
+  "producer_packet": {
+    "size": 10,
+    "fields": [
+      [
+        "source",
+        "CARD",
+        0
+      ],
+      [
+        "target",
+        "Task POINTER",
+        2
+      ],
+      [
+        "pad",
+        "BYTE",
+        5
+      ],
+      [
+        "bits",
+        "LONGCARD",
+        6
       ]
     ]
   }

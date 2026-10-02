@@ -11,7 +11,7 @@ PUBLIC BYTE FUNC Bind(EXEC.Task POINTER task LONGCARD bits)
     RETURN(0)
   FI
 
-  okay=EXECPRODUCER.Bind(task,bits)
+  okay=EXECPRODUCER.Bind(EXECPRODUCER.SERIAL,task,bits)
   IF okay=0 THEN
     ignored=EXEC.ReleaseTask(@lease)
   FI
@@ -21,15 +21,15 @@ RETURN(okay)
 PUBLIC PROC Release()
   BYTE ignored
 
-  EXECPRODUCER.Release()
-  EXECPRODUCER.Drain()
+  EXECPRODUCER.Release(EXECPRODUCER.SERIAL)
+  EXECPRODUCER.Drain(EXECPRODUCER.SERIAL)
   ignored=EXEC.ReleaseTask(@lease)
 
 RETURN
 
 PUBLIC PROC Drain()
 
-  EXECPRODUCER.Drain()
+  EXECPRODUCER.Drain(EXECPRODUCER.SERIAL)
 
 RETURN
 

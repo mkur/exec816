@@ -411,15 +411,12 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             label={'ConsoleClaim':'console_claim','ConsoleRelease':'console_release'}[name.split('.')[1]]
             result='Some(NativeResult(A8ZeroExtended))' if name.endswith('Claim') else 'None'
             peak=3
-        elif tasks and name.startswith(('CONSOLEADAPTER.','CONSOLECAPTURE.')):
+        elif tasks and name.startswith('CONSOLECAPTURE.'):
             require(console_native,'Console adapter is unavailable in this build')
             operation=name.split('.')[1]
-            require(operation in ('Bind','Release','Take','ResetInput','ClearUnit','Publish','TakeBreak'),'Unknown console adapter import')
-            label={'Bind':'console_bind','Release':'console_unbind','Take':'console_take','ResetInput':'console_reset_input','ClearUnit':'console_clear_unit','Publish':'console_publish','TakeBreak':'console_take_break'}[operation]
-            if operation=='Bind':
-                arguments=[dict(alignment=1,offset=0,size=3),dict(alignment=2,offset=4,size=4)]
-                outgoing,result=9,'Some(NativeResult(A8ZeroExtended))'
-            elif operation in ('Publish','ClearUnit'):
+            require(operation in ('Take','ResetInput','ClearUnit','Publish','TakeBreak'),'Unknown console adapter import')
+            label={'Take':'console_take','ResetInput':'console_reset_input','ClearUnit':'console_clear_unit','Publish':'console_publish','TakeBreak':'console_take_break'}[operation]
+            if operation in ('Publish','ClearUnit'):
                 arguments=[dict(alignment=2,offset=0,size=4)];outgoing=5;result='None'
             else:result='Some(NativeResult(A16X16))' if operation in ('Take','TakeBreak') else 'None'
             peak=5 if operation in ('Take','ClearUnit') else 1 if operation in ('ResetInput','ClearUnit','Publish','TakeBreak') else 0
@@ -828,7 +825,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         provenance['console_enabled']=console_enabled
         provenance['console_start']=console_start
         provenance['console_inputs']={name:sha256(ROOT/name) for name in ('abi/console.json','tools/generate_console.py',
-            'lib/console/console.act','lib/console/consolewindows.act','lib/console/consoletiling.act','lib/console/consoleforeground.act','lib/dos/dosbreaktypes.act','lib/console/consoledisplay.act','lib/console/consoletypes.act','lib/console/consolecore.act','lib/console/consoledriver.act','lib/console/console-requests.inc','lib/console/console-lifetime.inc','lib/console/consoleadapter.act','lib/console/consolecapture.act','lib/console/consoleinput.act','lib/console/task-console.inc',
+            'lib/console/console.act','lib/console/consolewindows.act','lib/console/consoletiling.act','lib/console/consoleforeground.act','lib/dos/dosbreaktypes.act','lib/console/consoledisplay.act','lib/console/consoletypes.act','lib/console/consolecore.act','lib/console/consoledriver.act','lib/console/console-requests.inc','lib/console/console-lifetime.inc','lib/console/consolecapture.act','lib/console/consoleinput.act','lib/console/task-console.inc',
             'platform/altirraos/console-layout.inc','platform/altirraos/console.s')}
         provenance['task_generated'].update({name:sha256(output/name) for name in ('console-storage.inc','console-storage-action.inc','console-action.inc','console-tables.bin','task-kernel/consoleforeground.act','task-kernel/consoledriver.act','task-kernel/consoleinput.act','task-kernel/consoledisplay.act')})
     if tasks and (dos_test or dos_system):provenance['task_generated']['task-kernel/dos.act']=sha256(output/'task-kernel/dos.act')

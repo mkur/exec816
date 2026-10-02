@@ -8,10 +8,11 @@ USE HEAPCORE
 USE CONSOLEDRIVER
 USE CONSOLESTARTPROBE
 USE CONSOLETYPES
-USE CONSOLEADAPTER
+USE EXECPRODUCER
 CARD checks
 BYTE mode,checkpoint,childReady,childDone,gate,heldCount,holdReady
 EXEC.Task child
+EXEC.TaskLease bindingLease
 PROC POINTER absent()
 EXEC.MsgPort POINTER port
 EXEC.IOStdReq POINTER request
@@ -182,10 +183,13 @@ PROC BindingFailure(BYTE unused)
   baseline=EXEC.AvailMem(0)
   signalBit=EXEC.AllocSignal(28)
   Require(signalBit=28)
-  Require(CONSOLEADAPTER.Bind(EXEC.FindTask(BYTE POINTER(0)),$10000000)=1)
+  Require(EXEC.RetainTask(EXEC.FindTask(NULL),@bindingLease)=1)
+  Require(EXECPRODUCER.Bind(EXECPRODUCER.KEYBOARD,EXEC.FindTask(BYTE POINTER(0)),$10000000)=1)
   Require(CONSOLEDRIVER.Start()=0 AND service.state=0)
   Require(EXEC.AvailMem(0)=baseline)
-  CONSOLEADAPTER.Release()
+  EXECPRODUCER.Release(EXECPRODUCER.KEYBOARD)
+  EXECPRODUCER.Drain(EXECPRODUCER.KEYBOARD)
+  Require(EXEC.ReleaseTask(@bindingLease)=1)
   EXEC.FreeSignal(28)
 
 RETURN

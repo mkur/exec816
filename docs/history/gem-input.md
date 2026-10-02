@@ -70,3 +70,36 @@ or live capture storage is added yet. The existing two C banks remain reserved
 at 131,072 bytes. Fixed, each public Task and private-idle bank-zero increments
 remain zero, including guards, alignment and unused capacity. Task packet profile
 6 is unchanged; I2 migrates producer callers before advancing it.
+
+## I2 Shared producer admission
+
+[I2 evidence](../development/gem-input-i2.json) records the profile-7 producer
+migration. Serial and keyboard now use source-qualified Bind, Release and Drain.
+Admission validates the complete CARD source, native pointer and 32-bit mask,
+a live retained target, and its allocated signals. Both recipient and controller
+remain protected until publication stops and queued wakes retire. Active Drain
+keeps the binding; wrong-controller retirement faults before mutation. Console's
+private admission selectors and its obsolete adapter module are removed.
+
+Each compiler mode passed 19 source/lifetime cases, five Task lifetime cases,
+six SIO lifetime cases, two creation/profile cases, console rollback/restart,
+two physical keyboard/SIO acquisition orders, an NMI posting control and the C
+gateway/context control. Invalid sources include values with nonzero high bytes;
+mask checks cover both words. The previous profile is rejected through an
+otherwise valid emitted packet. Each keyboard posting control observed 84 real
+NMI checkpoints, with hardware state restored. All 283 host tests passed, with
+four historical source audits skipped; generated definitions are current.
+
+The larger instrumented console image initially exceeded the native code region
+by 100 bytes. Sharing its test-only VBI wait removed repeated instructions and
+kept the existing reservation; the extra two-byte return frame exists only in
+probe builds. BootConfig.Init is excluded from public Task entry admission as a
+boot helper, keeping the existing sixteen-entry capacity. These changes do not
+alter production producer semantics or expand reservations.
+
+Two existing 12-byte upper-RAM binding records provide the source state. Fixed,
+each public Task and private-idle bank-zero deltas are zero, including guards,
+alignment and unused capacity; native code reservation growth is also zero.
+These are focused development checks. Reusable acquisition and console capture
+migration remain I3, and no interactive GEM, mouse, AES or new hosted
+qualification is claimed by I2.

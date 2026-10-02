@@ -63,42 +63,103 @@ BYTE FUNC DrainWakes()
 
 RETURN(count+1)
 
-; Keep any Task retained by a service or serial binding from being removed.
-BYTE FUNC BoundProducer(TaskControl POINTER ctx)
+; Fixed source dispatch uses resident binding storage, never caller callbacks.
+SignalBinding POINTER FUNC ProducerBinding(CARD source)
 
-  LET binding=SignalBinding POINTER(T_SERIAL_BINDING)
-  IF DosWorkerBound(ctx)<>0 OR ConsoleProducerBound(ctx)<>0 THEN
+  IF source=T_PRODUCER_SERIAL THEN
+    RETURN(SignalBinding POINTER(T_SERIAL_BINDING))
+  FI
+
+  IF source=T_PRODUCER_KEYBOARD THEN
+    RETURN(KeyboardBinding())
+  FI
+
+RETURN(NULL)
+
+; Keep both the recipient and controller alive until inactive wakes retire.
+BYTE FUNC BoundProducer(TaskControl POINTER ctx)
+  CARD source
+
+  IF DosWorkerBound(ctx)<>0 THEN
     RETURN(1)
   FI
 
-RETURN(binding.context<>NULL AND (binding.context=ctx OR binding.pad=ctx.id))
+  FOR source=T_PRODUCER_SERIAL TO T_PRODUCER_KEYBOARD DO
+    BEGIN
+      LET binding=ProducerBinding(source)
+      IF binding<>NULL THEN
+        IF binding.context<>NULL
+            AND (binding.context=ctx OR binding.pad=ctx.id) THEN
+          RETURN(1)
+        FI
+      FI
+    END
+  OD
 
-; Prevent reuse of signal bits still retained by the serial producer.
+RETURN(0)
+
+; Released bindings still protect their signal until Drain removes the hold.
 BYTE FUNC ProducerSignalBound(TaskControl POINTER ctx LONGCARD mask)
+  CARD source
 
-  LET binding=SignalBinding POINTER(T_SERIAL_BINDING)
+  FOR source=T_PRODUCER_SERIAL TO T_PRODUCER_KEYBOARD DO
+    BEGIN
+      LET binding=ProducerBinding(source)
+      IF binding<>NULL THEN
+        IF binding.context=ctx AND (binding.mask & mask)<>0 THEN
+          RETURN(1)
+        FI
+      FI
+    END
+  OD
 
-RETURN(binding.context=ctx AND (binding.mask & mask)<>0)
+RETURN(0)
 
-; Bind, retire or drain the serial producer using the caller's ownership.
+; Bind, release or drain one source through the caller's retained authority.
 CARD FUNC ProducerControl(TaskControl POINTER caller CARD saved BYTE service)
-  CARD base
+  CARD base,bytes
 
-  LET binding=SignalBinding POINTER(T_SERIAL_BINDING)
   IF (Flags(saved) & 4)<>0 OR osBusy<>0 THEN
     RETURN(T_FAULT)
   FI
 
-  IF service=T_SERVICE_RELEASE_PRODUCER THEN
-    IF binding.context=NULL THEN
+  bytes=2
+  IF service=T_SERVICE_BIND_PRODUCER THEN
+    bytes=T_PRODUCER_BYTES
+  FI
+
+  base=SavedWord(saved,T_FRAME_X)
+  IF base<caller.stackFloor OR base>caller.stackTop
+      OR bytes>caller.stackTop-base+1 THEN
+    RETURN(T_FAULT)
+  FI
+
+  LET args=ProducerArguments POINTER(ArgumentPointer(saved))
+  LET source=args.source
+  LET binding=ProducerBinding(source)
+  IF binding=NULL THEN
+    IF service=T_SERVICE_BIND_PRODUCER THEN
+      Result(saved,0)
       RETURN(saved)
     FI
 
-    IF binding.context<>caller AND binding.pad<>caller.id THEN
-      RETURN(T_FAULT)
+    RETURN(T_FAULT)
+  FI
+
+  IF service<>T_SERVICE_BIND_PRODUCER AND binding.context<>NULL
+      AND binding.context<>caller AND binding.pad<>caller.id THEN
+    RETURN(T_FAULT)
+  FI
+
+  IF service=T_SERVICE_RELEASE_PRODUCER THEN
+    IF binding.context<>NULL THEN
+      IF source=T_PRODUCER_SERIAL THEN
+        SerialRelease()
+      ELSE
+        KeyboardRelease()
+      FI
     FI
 
-    SerialRelease()
     RETURN(saved)
   FI
 
@@ -108,10 +169,6 @@ CARD FUNC ProducerControl(TaskControl POINTER caller CARD saved BYTE service)
     FI
 
     IF binding.active=0 AND binding.context<>NULL THEN
-      IF binding.context<>caller AND binding.pad<>caller.id THEN
-        RETURN(T_FAULT)
-      FI
-
       binding.task=NULL
       binding.context=NULL
       binding.mask=0
@@ -122,17 +179,11 @@ CARD FUNC ProducerControl(TaskControl POINTER caller CARD saved BYTE service)
     RETURN(Switch(caller,saved))
   FI
 
-  IF binding.context<>NULL THEN
+  IF binding.context<>NULL OR args.pad<>0 THEN
     Result(saved,0)
     RETURN(saved)
   FI
 
-  base=SavedWord(saved,T_FRAME_X)
-  IF base<caller.stackFloor OR base>caller.stackTop OR 8>caller.stackTop-base+1 THEN
-    RETURN(T_FAULT)
-  FI
-
-  LET args=SignalArguments POINTER(ArgumentPointer(saved))
   LET target=Lookup(args.target)
   IF target=NULL THEN
     Result(saved,0)
@@ -149,7 +200,11 @@ CARD FUNC ProducerControl(TaskControl POINTER caller CARD saved BYTE service)
   binding.context=target
   binding.mask=args.bits
   binding.pad=caller.id
-  base=CARD(SerialClaim())
+  IF source=T_PRODUCER_SERIAL THEN
+    base=CARD(SerialClaim())
+  ELSE
+    base=CARD(KeyboardClaim())
+  FI
   IF base=0 THEN
     binding.task=NULL
     binding.context=NULL

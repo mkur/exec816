@@ -191,7 +191,7 @@ PROC RemovalFault(BYTE kind)
     Require(EXEC.RetainTask(child,@lease)=1)
   WHEN 6 THEN
     Require(EXEC.RetainTask(child,@lease)=1)
-    Require(EXECPRODUCER.Bind(child,1)=1)
+    Require(EXECPRODUCER.Bind(EXECPRODUCER.SERIAL,child,1)=1)
     Require(EXEC.ReleaseTask(@lease)=1)
   WHEN 7 THEN
     EXECLISTS.AddTail(@child.tc_MemEntry,@memoryNode)

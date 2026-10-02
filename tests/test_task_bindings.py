@@ -10,6 +10,11 @@ from generate_tasks import ABI, check_routine, constants, generate_kernel, polic
 
 
 class TaskBindingsTests(unittest.TestCase):
+    def test_boot_configuration_is_not_a_task_entry(self):
+        from generate_tasks import application_entry
+        self.assertFalse(application_entry({'name':'M_BOOTCONFIG_INIT_1234'}))
+        self.assertTrue(application_entry({'name':'M_APPLICATION_WORKER_1234'}))
+
     def test_borrowed_storage_excludes_kernel_globals_and_preserves_bank_width(self):
         image = {'segments':[
             {'address':0x8800,'bytes':[0]*100,'writable':True,'executable':False},
@@ -81,7 +86,7 @@ class TaskBindingsTests(unittest.TestCase):
             self.assertEqual(c['METADATA_BYTES'], 704 if capacity == 4 else 1216)
 
     def test_collision_with_other_service_families(self):
-        for selector in (0, 32, 40, 52, 243):
+        for selector in (0, 32, 40, 52):
             bad = copy.deepcopy(ABI)
             bad['services']['CREATE_TASK'] = selector
             with self.assertRaisesRegex(RuntimeError, 'collision'):

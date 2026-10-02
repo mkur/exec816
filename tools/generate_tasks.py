@@ -47,6 +47,9 @@ def constants(abi=ABI):
     c['LEASE_SIZE']=abi['lease']['size']
     c.update(fields(abi['create_packet'], 'CREATE'))
     c['CREATE_BYTES']=abi['create_packet']['size']
+    c.update(fields(abi['producer_packet'], 'PRODUCER'))
+    c['PRODUCER_BYTES']=abi['producer_packet']['size']
+    c.update({'PRODUCER_'+name:value for name,value in abi['producer_sources'].items()})
     c.update(fields(abi['metadata']['header'],'META'))
     c.update(fields({'size':abi['constants']['BINDING_BYTES'],
                      'fields':abi['metadata']['binding_fields']}, 'BINDING'))
@@ -133,6 +136,17 @@ PUBLIC EXTERNAL BYTE FUNC UnregisterResident()
 '''
 
 
+def producer_api():
+    return HEADER+'MODULE EXECPRODUCER\nUSE EXEC\n\n'+''.join(
+        f'PUBLIC CONST {name}={value}\n' for name,value in ABI['producer_sources'].items())+'''
+PUBLIC EXTERNAL BYTE FUNC Bind(CARD source EXEC.Task POINTER task LONGCARD bits)
+PUBLIC EXTERNAL PROC Release(CARD source)
+PUBLIC EXTERNAL PROC Drain(CARD source)
+
+ENDMODULE
+'''
+
+
 def check_routine(routine, name):
     expected = ABI['imports'][name]
     args = [{k:a[k] for k in ('alignment','offset','size')} for a in routine['arguments']]
@@ -171,6 +185,7 @@ def generate(output, memory=None):
     text += 'TYPE CreateArguments=[\n'+''.join(f'  {kind} {name}\n' for name,kind,_ in ABI['create_packet']['fields'])+']\n'
     text += 'TYPE TaskControl=[\n'+''.join(f'  {kind} {name}\n' for name,kind,_ in ABI['context']['fields'])+']\n'
     text += 'TYPE SignalBinding=[\n'+''.join(f'  {kind} {name}\n' for name,kind,_ in ABI['metadata']['binding_fields'])+']\n'
+    text += 'TYPE ProducerArguments=[\n'+''.join(f'  {kind} {name}\n' for name,kind,_ in ABI['producer_packet']['fields'])+']\n'
     (output/'task-types.inc').write_text(text)
     (output/'task-abi.inc').write_text(HEADER+''.join(f'T_{name} = ${value:06x}\n' for name,value in c.items()))
     (output/'signal-gateway.inc').write_text(gateway())
@@ -287,8 +302,8 @@ ENDMODULE
         probe=directory/'sio-lifetime-probe.inc'
         probe.write_text(read_source(ROOT/'tests/programs/sio_lifetime_probe.inc')+lifetime)
         driver=driver.replace(str((ROOT/'lib/io/sio-lifetime.inc').resolve()),str(probe.resolve()))
-        before='    okay=EXECPRODUCER.Bind(EXEC.FindTask(BYTE POINTER(0)),LONGCARD($40000000))\n'
-        after='  SIOADAPTER.Shutdown()\n  EXECPRODUCER.Release()\n  EXECPRODUCER.Drain()\n'
+        before='    okay=EXECPRODUCER.Bind(EXECPRODUCER.SERIAL,EXEC.FindTask(BYTE POINTER(0)),LONGCARD($40000000))\n'
+        after='  SIOADAPTER.Shutdown()\n  EXECPRODUCER.Release(EXECPRODUCER.SERIAL)\n  EXECPRODUCER.Drain(EXECPRODUCER.SERIAL)\n'
         require(driver.count(before)==driver.count(after)==1,'Stale SIO binding checkpoints')
         driver=driver.replace(before,'    LifecycleCheckpoint(7)\n'+before).replace(after,after+'  LifecycleCheckpoint(9)\n')
     for filename in ('sio-storage-action.inc','io-storage-action.inc'):
@@ -321,12 +336,12 @@ ENDMODULE
         (directory/'consoleforeground.act').write_text('MODULE CONSOLEFOREGROUND\nUSE DOSBREAKTYPES\nPUBLIC BYTE FUNC Begin(DOSBREAKTYPES.Scope POINTER scope)\nRETURN(0)\nPUBLIC PROC End(DOSBREAKTYPES.Scope POINTER scope)\nRETURN\nPUBLIC PROC Notify(DOSBREAKTYPES.Scope POINTER scope)\nRETURN\nPUBLIC BYTE FUNC Handoff(DOSBREAKTYPES.Scope POINTER previous,target BYTE carry)\nRETURN(0)\nENDMODULE\n')
         console_policy='''PROC ConsoleInit()
 RETURN
-BYTE FUNC ConsoleService(BYTE service)
+SignalBinding POINTER FUNC KeyboardBinding()
+RETURN(NULL)
+BYTE FUNC KeyboardClaim()
 RETURN(0)
-BYTE FUNC ConsoleProducerBound(TaskControl POINTER ctx)
-RETURN(0)
-CARD FUNC ConsoleProducerControl(TaskControl POINTER caller CARD saved BYTE service)
-RETURN(T_FAULT)
+PROC KeyboardRelease()
+RETURN
 '''
     if not console:
         console_policy+='BYTE FUNC ConsoleName(BYTE POINTER name)\nRETURN(0)\nBYTE FUNC ConsoleDevice(IORequest POINTER request)\nRETURN(0)\n'
@@ -360,7 +375,7 @@ def application_entry(routine):
         return False
     if routine['name'].startswith('M_PROCESS_') and not re.fullmatch(r'M_PROCESS_(?:RUN|FINISH|EXECUTEIMAGE)_[0-9A-F]+',routine['name']):
         return False
-    if routine['name'].startswith(('M_DISPLAY_', 'M_DISPLAYBOOT_', 'M_DISPLAYADAPTER_', 'M_PROGRAM_', 'M_PROGRAMAPI_', 'M_PROGRAMIMAGE_', 'M_PROGRAMPLACE_', 'M_PROGRAMPROVIDERS_', 'M_PROGRAMLIBRARIES_', 'M_CSTRING_IMPL_')):
+    if routine['name'].startswith(('M_BOOTCONFIG_', 'M_DISPLAY_', 'M_DISPLAYBOOT_', 'M_DISPLAYADAPTER_', 'M_PROGRAM_', 'M_PROGRAMAPI_', 'M_PROGRAMIMAGE_', 'M_PROGRAMPLACE_', 'M_PROGRAMPROVIDERS_', 'M_PROGRAMLIBRARIES_', 'M_CSTRING_IMPL_')):
         return False
     if routine['name'].startswith(('M_DOSPROCESS_','M_DOSINHERIT_','M_FSFILES_','M_FSOBJECTS_','M_DOSCANCEL_','M_FSOPERATION_','M_FSABORT_','M_FSACTIVE_','M_DOSBREAK_','M_CONSOLE_', 'M_CONSOLEWINDOWS_','M_CONSOLETILING_','M_CONSOLEFOREGROUND_','M_CONSOLEDISPLAY_','M_CONSOLEDRIVER_','M_CONSOLEINPUT_','M_CONSOLECORE_','M_DOS_','M_DOSCALLS_','M_DOSRAW_','M_DOSSTREAMS_','M_DOSOBJECTS_','M_FSDIRECTORY_','M_FSMUX_','M_FSMOUNT_','M_FSMANAGER_','M_FSPACKET_','M_FSINFO_','M_FSIO_','M_FSINIT_','M_FSBOOT_','M_FSWORKER_','M_FSREGISTRY_','M_FSTYPES_','M_FSHANDLER_','M_FSPORTS_','M_FSNAMES_','M_DOSCLIENT_','M_DOSCORE_','M_DOSWIRE_','M_BLOCKIO_','M_BLOCKWIRE_','M_BLOCKTYPES_','M_MYDOSFILE_','M_MYDOS_','M_FS83_','M_FSCORE_','M_MYDOSTYPES_')):return False
     if re.match(r'M_(?:EXEC|EXECLISTS|EXECMEMORY|HEAPCORE|HEAPPOLICY|PORTCORE|IOCORE|IORESIDENT|IOTESTDRIVER|PRODUCERPROBE|EXECTASKS|TASKPOLICY)_', routine['name']):
@@ -471,6 +486,11 @@ if __name__ == '__main__':
         require(path.read_text().replace('\r\n','\n') == public_api(), 'Stale Task definitions')
     else:
         path.write_text(public_api())
+    path = ROOT/'lib/exec/execproducer.act'
+    if args.check:
+        require(path.read_text() == producer_api(), 'Stale producer definitions')
+    else:
+        path.write_text(producer_api())
     if args.output:
         from generate_memory import layout
         generate(args.output,layout())

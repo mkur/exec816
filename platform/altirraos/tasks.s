@@ -183,6 +183,11 @@ general_finalizer_start:
 .a16
 .i16
 signal_bind:
+    ; Canonicalize the native packet's alignment byte before admission.
+    sep #$20
+    lda #0
+    sta 9,s
+    rep #$20
     tsc
     clc
     adc #4
@@ -194,6 +199,10 @@ signal_bind:
 signal_bind_end:
 .macro producer_signal_stub label, end_label, service
 label:
+    tsc
+    clc
+    adc #4
+    tax
     ldy #T_PROFILE_TAG
     lda #service
     cop E816_COP

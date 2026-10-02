@@ -50,3 +50,17 @@ class InputEvidenceTests(unittest.TestCase):
             (folder/'program/program.xex').write_bytes(b'changed binary')
             with patch.object(recorder, 'ROOT', root), self.assertRaisesRegex(RuntimeError, 'Changed tested XEX'):
                 recorder.read_run(folder)
+
+    def test_native_evidence_rejects_stale_platform_and_failed_cases(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            folder, report = self.fixture(root)
+            report['build']['platform_inputs'] = {'source.c': recorder.sha256(root/'source.c')}
+            (root/'source.c').write_text('changed platform\n')
+            (folder/'results.json').write_text(json.dumps(report))
+            with patch.object(recorder, 'ROOT', root), self.assertRaisesRegex(RuntimeError, 'Stale source'):
+                recorder.read_native_run(folder, 'runner.py')
+            report['cases'][0]['status'] = 'fail'
+            (folder/'results.json').write_text(json.dumps(report))
+            with self.assertRaisesRegex(RuntimeError, 'failed native cases'):
+                recorder.read_native_run(folder, 'runner.py')

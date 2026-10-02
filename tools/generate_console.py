@@ -13,8 +13,6 @@ WIDTHS={'BYTE':(1,1),'CARD':(2,2),'LONGCARD':(4,2),'BYTE POINTER':(3,1),
 def constants(abi=ABI):
     require(abi['schema_version']==1,'Invalid console schema')
     widths=dict(WIDTHS);result=dict(abi['constants'])
-    require(abi['private_services']==dict(BIND=0xf3,RELEASE=0xf4),'Invalid private console services')
-    result.update({'PRIVATE_'+k:v for k,v in abi['private_services'].items()})
     for name,record in abi['records'].items():
         cursor=0;alignment=1;names=set()
         for field,kind,offset in record['fields']:

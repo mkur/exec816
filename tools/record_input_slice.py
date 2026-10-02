@@ -153,13 +153,88 @@ def record_i1(base, host):
                      'No keyboard, physical pointer, AES or hosted qualification claim.'])
 
 
+def read_native_run(folder, runner):
+    """Audit native-only and mixed C reports using their actual build paths."""
+    folder = Path(folder).resolve()
+    report = json.loads((folder/'results.json').read_text())
+    require(report['status'] == 'pass', 'Failed/incomplete run: '+str(folder))
+    if 'cases' in report:
+        require(report['cases'] and all(c['status'] == 'pass' for c in report['cases']),
+                'Missing or failed native cases')
+    build = report['build']
+    inputs = {}
+    for key in ('platform_inputs', 'task_inputs', 'banked_inputs', 'console_inputs',
+                'console_fixture_inputs'):
+        inputs.update(build.get(key, {}))
+    inputs.update(build.get('foreign_image', {}).get('source_inputs', {}))
+    for path, digest in inputs.items():
+        require(sha256(ROOT/path) == digest, 'Stale source: '+path)
+    candidates = [ROOT/p for p in subprocess.check_output(
+        ['rg', '--files', '-g', build['source']], cwd=ROOT, text=True).splitlines()]
+    if 'foreign_image' in build:
+        # C builders emit their native launcher beside the frozen C image.
+        candidates.append(folder/build['source'])
+    require(any(p.exists() and sha256(p) == build['source_sha256'] for p in candidates),
+            'Changed native fixture: '+build['source'])
+    digest = sha256(ROOT/runner)
+    require(report.get('harness_sha256', digest) == digest, 'Stale native observer')
+    xex = folder/'program/program.xex'
+    if not xex.exists():
+        xex = folder/'program.xex'
+    require(sha256(xex) == build['xex_sha256'], 'Changed tested native XEX')
+    require(report.get('xex_sha256', build['xex_sha256']) == build['xex_sha256'],
+            'Mismatched native XEX')
+    report.update(evidence_path=str(folder.relative_to(ROOT)),
+                  evidence_sha256=sha256(folder/'results.json'),
+                  observer=dict(path=runner, sha256=digest))
+    return report
+
+
+def record_i2(base, host):
+    from test_producer_lifetime import CASES
+    specs = {'producer': 'test_producer_lifetime', 'task': 'test_task_lifetime',
+             'sio': 'test_sio_lifetime', 'create': 'test_create_task',
+             'calypsi': 'test_calypsi', 'console-life': 'test_console_lifetime',
+             'console-nmi': 'test_console_input'}
+    runs = {}
+    for mode in ('raw', 'opt'):
+        for name, runner in specs.items():
+            key = name+'-'+mode
+            runs[key] = read_native_run(base/('i2-'+key), 'tools/'+runner+'.py')
+        for order in (0, 1):
+            key = 'console-'+mode+'-'+str(order)
+            runs[key] = read_native_run(base/('i2-'+key), 'tools/test_console_input.py')
+        require(len(runs['producer-'+mode]['cases']) == 2*len(CASES)+1,
+                'Missing producer admission cases')
+        require(runs['console-nmi-'+mode]['input_observations']['post_nmi_checkpoints'] > 0,
+                'Missing asynchronous publication checkpoints')
+    abi = json.loads((ROOT/'abi/tasks.json').read_text())
+    require(abi['raw']['profile_tag']['value'] == 7, 'Wrong producer profile')
+    return dict(format='exec816-gem-input-i2-development-v1', status='pass',
+        tier='development', qualification=False,
+        base_revision=subprocess.check_output(['git','rev-parse','HEAD'], cwd=ROOT, text=True).strip(),
+        scope='Source-qualified serial/keyboard admission, signal and Task retention, retirement.',
+        profile_tag=7, producer_packet=abi['producer_packet'], producer_imports=abi['producer_imports'],
+        runs=runs, host_checks=host_checks(host),
+        bank_zero=dict(fixed_delta_bytes=0, per_public_task_delta_bytes=[0]*8,
+                       private_idle_delta_bytes=0,
+                       accounting='Complete reservations include guards, alignment and unused capacity.'),
+        upper_ram=dict(binding_bytes_per_source=12, binding_storage_delta_bytes=0,
+                       native_code_reservation_delta_bytes=0),
+        source_inputs={'tools/record_input_slice.py': sha256(Path(__file__))},
+        limitations=['Focused development checks, not hosted qualification.',
+            'No reusable input acquisition, interactive application, mouse or AES claim.',
+            'Task/SIO legacy runners record their actual paced binary separately from the older signal pin.',
+            'Console physical wire tests use the unchanged pinned console emulator and its FASTEST125 control.'])
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice', choices=['i0', 'i1'], required=True)
+    p.add_argument('--slice', choices=['i0', 'i1', 'i2'], required=True)
     p.add_argument('--base', type=Path, default=ROOT/'build/gem-input')
     p.add_argument('--host-log', type=Path, required=True)
     args = p.parse_args()
-    report = {'i0': record_i0, 'i1': record_i1}[args.slice](args.base.resolve(), args.host_log)
+    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2}[args.slice](args.base.resolve(), args.host_log)
     output = ROOT/'docs/development'/('gem-input-'+args.slice+'.json')
     output.write_text(json.dumps(report, indent=2)+'\n')
     print(output)

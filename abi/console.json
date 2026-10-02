@@ -695,10 +695,6 @@
       ]
     }
   },
-  "private_services": {
-    "BIND": 243,
-    "RELEASE": 244
-  },
   "keymaps": {
     "normal": [
       108,

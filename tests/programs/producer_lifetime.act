@@ -1,0 +1,159 @@
+MODULE PRODUCERLIFETIME
+USE EXEC
+USE EXECLISTS
+USE EXECPRODUCER
+USE TASKSTACKS
+USE HEAPCORE
+EXEC.Task recipient,intruder
+EXEC.Task POINTER parent
+EXEC.TaskLease lease
+PROC POINTER absent()
+CARD source,checks
+BYTE kind,checkpoint,finished
+
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Prepare(EXEC.Task POINTER item BYTE slot)
+
+  item.tc_Node.ln_Type=EXEC.NT_TASK
+  item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@item.tc_MemEntry)
+
+RETURN
+
+PROC RecipientEntry()
+  LONGCARD bits
+
+  Require(EXEC.AllocSignal(16)=16)
+  EXEC.Signal(parent,$10000)
+  bits=EXEC.Wait(1)
+  IF kind=3 OR kind=4 OR kind=8 THEN
+    checkpoint=kind
+    EXEC.FreeSignal(16)
+    HEAPCORE.Abort($fa90)
+  FI
+
+  IF kind=7 THEN
+    EXECPRODUCER.Release(source)
+    EXECPRODUCER.Drain(source)
+    EXEC.Signal(parent,$10000)
+    bits=EXEC.Wait(1)
+  FI
+
+  EXEC.FreeSignal(16)
+  EXEC.Forbid()
+  finished=1
+  EXEC.Signal(parent,$20000)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+PROC IntruderEntry()
+  LONGCARD bits
+
+  bits=EXEC.Wait(1)
+  checkpoint=kind
+  IF kind=5 THEN
+    EXECPRODUCER.Release(source)
+  ELSE
+    EXECPRODUCER.Drain(source)
+  FI
+
+  HEAPCORE.Abort($fa91)
+
+RETURN
+
+PROC Main()
+  LONGCARD bits
+
+  parent=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(16)=16 AND EXEC.AllocSignal(17)=17)
+  Prepare(@recipient,1)
+  Require(EXEC.AddTask(@recipient,@RecipientEntry,absent)=@recipient)
+  bits=EXEC.Wait($10000)
+  Require(EXECPRODUCER.Bind(0,@recipient,$10000)=0)
+  Require(EXECPRODUCER.Bind($ffff,@recipient,$10000)=0)
+  Require(EXECPRODUCER.Bind(source,@recipient,$10000)=0)
+  Require(EXEC.RetainTask(@recipient,@lease)=1)
+  Require(EXECPRODUCER.Bind($0101,@recipient,$10000)=0)
+  Require(EXECPRODUCER.Bind($0102,@recipient,$10000)=0)
+  Require(EXECPRODUCER.Bind(source,@recipient,0)=0)
+  Require(EXECPRODUCER.Bind(source,@recipient,$80000000)=0)
+  Require(EXECPRODUCER.Bind(source,@recipient,$80010000)=0)
+  Require(EXECPRODUCER.Bind(source,@recipient,$10000)=1)
+  Require(EXECPRODUCER.Bind(source,@recipient,$10000)=0)
+
+  IF kind=1 THEN
+    Require(EXEC.ReleaseTask(@lease)=1)
+    checkpoint=kind
+    EXEC.RemTask(@recipient)
+    HEAPCORE.Abort($fa92)
+  FI
+
+  IF kind=2 THEN
+    checkpoint=kind
+    EXEC.RemTask(NULL)
+    HEAPCORE.Abort($fa93)
+  FI
+
+  IF kind=4 OR kind=6 THEN
+    EXECPRODUCER.Release(source)
+  FI
+
+  IF kind=5 OR kind=6 THEN
+    Prepare(@intruder,2)
+    Require(EXEC.AddTask(@intruder,@IntruderEntry,absent)=@intruder)
+    EXEC.Signal(@intruder,1)
+    bits=EXEC.Wait($20000)
+    HEAPCORE.Abort($fa94)
+  FI
+
+  IF kind=8 THEN
+    Require(EXECPRODUCER.Bind(IF source=1 THEN 2 ELSE 1 FI,
+        @recipient,$10000)=1)
+    EXECPRODUCER.Release(source)
+    EXECPRODUCER.Drain(source)
+  FI
+
+  IF kind=3 OR kind=4 OR kind=8 THEN
+    EXEC.Signal(@recipient,1)
+    bits=EXEC.Wait($20000)
+    HEAPCORE.Abort($fa95)
+  FI
+
+  IF kind=7 THEN
+    EXEC.Signal(@recipient,1)
+    bits=EXEC.Wait($10000)
+  ELSE
+    EXECPRODUCER.Drain(source)
+    Require(EXECPRODUCER.Bind(source,@recipient,$10000)=0)
+    EXECPRODUCER.Release(source)
+    Require(EXECPRODUCER.Bind(source,@recipient,$10000)=0)
+    EXECPRODUCER.Drain(source)
+  FI
+
+  Require(EXECPRODUCER.Bind(source,@recipient,$10000)=1)
+  EXECPRODUCER.Release(source)
+  EXECPRODUCER.Drain(source)
+  EXECPRODUCER.Release(source)
+  EXECPRODUCER.Drain(source)
+  Require(EXEC.ReleaseTask(@lease)=1)
+  EXEC.Signal(@recipient,1)
+  bits=EXEC.Wait($20000)
+  Require(finished=1 AND recipient.tc_State=EXEC.TS_REMOVED)
+  EXEC.FreeSignal(17)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+ENDMODULE

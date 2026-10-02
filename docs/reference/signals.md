@@ -54,6 +54,30 @@ scan unrelated Tasks. Removal and reuse follow the [Task lifetime contract](task
 The [platform contract](platform.md) defines interrupt and context-transition
 rules.
 
+## Fixed platform producers
+
+`EXECPRODUCER.Bind(source, task, bits)` returns one on success and zero on busy
+or invalid admission. Source is a CARD: SERIAL=1 and KEYBOARD=2. The target must
+be live and retained by a Task lease, and every nonzero mask bit must already be
+allocated to it. Unsupported sources reject without changing a binding. There
+is one binding per source; native helpers activate only that fixed backend.
+
+The binding protects both its controller and recipient from removal, and its
+recipient's bits from FreeSignal. `Release(source)` stops publication but keeps
+those protections. `Drain(source)` retires queued wakes and clears an inactive
+binding; draining an active binding keeps its protections. Only the controller
+or recipient may release or drain a live binding. An unknown Release/Drain
+source or unauthorized caller faults. Release and Drain on an empty supported
+source are harmless. Release, drain, release Task leases, then free or reuse
+the signal/storage. These operations require an ordinary native Task context
+with interrupts enabled and no active OS call.
+
+The current native packet profile is 7; rebuild callers after this ABI change.
+Bind carries source at offset 0, a three-byte Task pointer at 2, zero padding at
+5 and a four-byte mask at 6. Release and Drain carry the two-byte source. The
+generated compiler argument schema defines outgoing frames. Console uses this
+same keyboard binding; its earlier private admission selectors are removed.
+
 Try the [signal example](../guides/tasks.md). The original design, ABI migration
 and revision-specific timing discussion remain in the
 [historical signal design](../history/signals-wait-design.md) and

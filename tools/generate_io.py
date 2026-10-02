@@ -67,7 +67,7 @@ def constants(abi=ABI,sio=SIO):
     for group,prefix,low,high in [('services','SERVICE',0,255),('errors','ERROR',0xff00,0xffff)]:
         values=list(abi[group].values())
         require(len(values)==len(set(values)),'Duplicate I/O '+group)
-        existing={*json.loads((ROOT/'abi/console.json').read_text())['private_services'].values()} if group=='services' else set()
+        existing=set()
         for name in ('exec816-v1.json','tasks.json','heap-v1.json','ports.json'):
             existing.update(json.loads((ROOT/'abi'/name).read_text())[group].values())
         for name,value in abi[group].items():

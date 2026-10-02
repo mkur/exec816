@@ -241,15 +241,15 @@ BYTE FUNC HardwareInit()
 
   okay=EXEC.RegisterResident(LONGCARD(STOP_MASK))
   IF okay<>0 THEN
-    okay=EXECPRODUCER.Bind(EXEC.FindTask(BYTE POINTER(0)),LONGCARD($40000000))
+    okay=EXECPRODUCER.Bind(EXECPRODUCER.SERIAL,EXEC.FindTask(BYTE POINTER(0)),LONGCARD($40000000))
     IF okay<>0 THEN
       okay=SIOADAPTER.Init()
       IF okay<>0 THEN
         RETURN(1)
       FI
 
-      EXECPRODUCER.Release()
-      EXECPRODUCER.Drain()
+      EXECPRODUCER.Release(EXECPRODUCER.SERIAL)
+      EXECPRODUCER.Drain(EXECPRODUCER.SERIAL)
     FI
 
     okay=EXEC.UnregisterResident()
@@ -362,8 +362,8 @@ PUBLIC PROC Worker()
 
   EXEC.Forbid()
   SIOADAPTER.Shutdown()
-  EXECPRODUCER.Release()
-  EXECPRODUCER.Drain()
+  EXECPRODUCER.Release(EXECPRODUCER.SERIAL)
+  EXECPRODUCER.Drain(EXECPRODUCER.SERIAL)
   okay=EXEC.UnregisterResident()
   EXEC.FreeSignal(29)
   EXEC.FreeSignal(30)

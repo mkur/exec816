@@ -1,4 +1,5 @@
-; Private serial producer. Only bounded assembly executes in IRQ context.
+; Fixed producer wake publication and serial activation. Only bounded assembly
+; executes in IRQ context; keyboard uses the same signal_post_binding path.
 ; All state except two bytes in the existing STATE arena lives in upper RAM.
 ; Publish a stable binding while inactive; Claim atomically activates it.
 ; Release quiesces serial sources before Task/context removal is permitted.
@@ -40,26 +41,11 @@ stack_ok:
 ; for a real VBI. Never extend a live emulation/OS activation across a VBI.
 ; Save flags and A so the injected wait does not change transaction decisions.
 .macro signal_irq_checkpoint wide
-.local skip, wait_tick
     .if SIGNAL_IRQ_PROBE = 1
         php
         rep #$20
         pha
-        tsc
-        cmp #$0200
-        bcc skip
-        lda f:E816_VBI_COUNT
-        pha
-wait_tick:
-        wai
-        lda f:E816_VBI_COUNT
-        cmp 1,s
-        beq wait_tick
-        pla
-        lda f:E816_PROBE1
-        inc a
-        sta f:E816_PROBE1
-skip:
+        jsr signal_irq_wait_tick
         pla
         plp
         .if wide
@@ -71,6 +57,28 @@ skip:
 .endmacro
 
 .segment "SIGNAL_CODE"
+.if SIGNAL_IRQ_PROBE = 1
+; Share test-only waits so instrumented console images fit the same reservation.
+; The extra two-byte JSR frame is included in observed probe stack usage.
+.a16
+signal_irq_wait_tick:
+    tsc
+    cmp #$0200
+    bcc signal_irq_wait_done
+    lda f:E816_VBI_COUNT
+    pha
+signal_irq_wait_loop:
+    wai
+    lda f:E816_VBI_COUNT
+    cmp 1,s
+    beq signal_irq_wait_loop
+    pla
+    lda f:E816_PROBE1
+    inc a
+    sta f:E816_PROBE1
+signal_irq_wait_done:
+    rts
+.endif
 .export signal_route, signal_claim, signal_claim_end, signal_release, signal_release_end
 .export signal_post, signal_post_end, signal_post_return
 .a8

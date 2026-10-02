@@ -833,14 +833,6 @@ INCLUDE "../console/task-console.inc"
 ; Validate service tags and caller CPU widths before decoding arguments.
 BYTE FUNC RequestValid(CARD saved BYTE service)
 
-  IF ConsoleService(service)<>0 THEN
-    IF (Flags(saved) & $34)<>0 OR SavedWord(saved,T_FRAME_Y)<>T_PROFILE_TAG THEN
-      RETURN(0)
-    FI
-
-    RETURN(SavedWord(saved,T_FRAME_A_FULL)=CARD(service))
-  FI
-
   IF service=DOS_SERVICE_CONTEXT OR service=DOS_SERVICE_MOUNT_REFERENCE THEN
     IF (Flags(saved) & $34)<>0 OR SavedWord(saved,T_FRAME_Y)<>T_PROFILE_TAG THEN
       RETURN(0)
@@ -908,10 +900,6 @@ RETURN(1)
 
 ; Dispatch general Task services after entry validation and deferred work.
 CARD FUNC Route(TaskControl POINTER ctx CARD saved BYTE service)
-
-  IF ConsoleService(service)<>0 THEN
-    RETURN(ConsoleProducerControl(ctx,saved,service))
-  FI
 
   IF service=DOS_SERVICE_CONTEXT THEN
     RETURN(DosCurrent(ctx,saved))

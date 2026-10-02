@@ -28,7 +28,6 @@ CI_ROUTES = CS_ROUTES+CON_ROUTES_ITEMS
 CI_EVENTS = CS_CAPTURE+CON_CAPTURE_EVENTS
 .segment "SIGNAL_CODE"
 .export console_claim,console_claim_end,console_release,console_release_end
-.export console_bind,console_bind_end,console_unbind,console_unbind_end
 .export console_take,console_take_end,console_reset_input,console_reset_input_end
 .export console_clear_unit,console_clear_unit_end
 .export console_route,console_capture_phase,console_before_reset
@@ -179,23 +178,6 @@ console_clear_done:
     plp
     rtl
 console_clear_unit_end:
-
-console_bind:
-    tsc
-    clc
-    adc #4
-    tax
-    ldy #T_PROFILE_TAG
-    lda #CON_PRIVATE_BIND
-    cop E816_COP
-    rtl
-console_bind_end:
-console_unbind:
-    ldy #T_PROFILE_TAG
-    lda #CON_PRIVATE_RELEASE
-    cop E816_COP
-    rtl
-console_unbind_end:
 
 console_claim:
     signal_stack_check 3
