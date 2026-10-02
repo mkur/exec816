@@ -1,0 +1,168 @@
+{
+  "abi": "exec816.gem-interactive",
+  "version": 1,
+  "alignment": 2,
+  "commands": {
+    "START": 1,
+    "PROGRESS": 2,
+    "STOP": 3,
+    "DISK_DONE": 4,
+    "EXIT": 5
+  },
+  "records": {
+    "Control": {
+      "size": 32,
+      "fields": [
+        [
+          "message",
+          "Message",
+          0,
+          16
+        ],
+        [
+          "version",
+          "u16",
+          16,
+          2
+        ],
+        [
+          "command",
+          "u16",
+          18,
+          2
+        ],
+        [
+          "session",
+          "u32",
+          20,
+          4
+        ],
+        [
+          "value",
+          "u32",
+          24,
+          4
+        ],
+        [
+          "result",
+          "u16",
+          28,
+          2
+        ],
+        [
+          "reserved",
+          "u16",
+          30,
+          2
+        ]
+      ]
+    },
+    "Boot": {
+      "size": 48,
+      "fields": [
+        [
+          "version",
+          "u16",
+          0,
+          2
+        ],
+        [
+          "ready",
+          "u16",
+          2,
+          2
+        ],
+        [
+          "session",
+          "u32",
+          4,
+          4
+        ],
+        [
+          "root",
+          "Task",
+          8,
+          3
+        ],
+        [
+          "pad0",
+          "u8",
+          11,
+          1
+        ],
+        [
+          "app",
+          "Task",
+          12,
+          3
+        ],
+        [
+          "pad1",
+          "u8",
+          15,
+          1
+        ],
+        [
+          "rootPort",
+          "Port",
+          16,
+          3
+        ],
+        [
+          "pad2",
+          "u8",
+          19,
+          1
+        ],
+        [
+          "appPort",
+          "Port",
+          20,
+          3
+        ],
+        [
+          "pad3",
+          "u8",
+          23,
+          1
+        ],
+        [
+          "appLease",
+          "Lease",
+          24,
+          12
+        ],
+        [
+          "rootMask",
+          "u32",
+          36,
+          4
+        ],
+        [
+          "exitRequested",
+          "u16",
+          40,
+          2
+        ],
+        [
+          "retired",
+          "u16",
+          42,
+          2
+        ],
+        [
+          "result",
+          "u16",
+          44,
+          2
+        ],
+        [
+          "diskDone",
+          "u16",
+          46,
+          2
+        ]
+      ]
+    }
+  }
+}

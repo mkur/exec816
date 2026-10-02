@@ -156,3 +156,59 @@ of static upper-image lease/config/event scratch. There is no additional Task
 or reserved upper arena. Fixed, every public Task and private-idle bank-zero
 deltas remain zero, including guards, alignment and unused capacity. The optional
 interactive application, cursor and responsiveness evidence remain I4–I6.
+
+## I4 Interactive keyboard application
+
+[I4 evidence](../development/gem-input-i4.json) records the new application in
+large slot 6 and its renderer in large slot 7. Root remains the disk supervisor.
+The application is the renderer's sole owner/client and holds input; the G5
+computing-peer fixture remains a separate workload. Generated Action!/C probes
+verify the 32-byte control message and 48-byte boot descriptor.
+
+Four preallocated messages and four embedded ports provide startup, coalesced
+progress, disk completion and exit. The ports share one allocated notification
+bit per participant. A durable exit flag stops new reads after the current DOS
+call settles. Root closes its file/context and collects its own replies before
+releasing the application's creation lease and acknowledging EXIT. The
+application settles input and rendering, collects that acknowledgment and uses
+the retained release/notify/remove protocol. Root keeps storage until retirement.
+STOP acknowledges admission and then follows this same handshake.
+
+The scene has a 24-character field, a counter/color button, Exit and disk status.
+Tab changes focus, printable keys and Backspace edit, Return activates, and
+Escape/BREAK exits. A completed disk read leaves the scene interactive. Turns
+bound input/control drains and collect one render completion. Four-command,
+eight-glyph packets copy a tile into owned request storage; dirty UI state can
+change while the submitted packet remains immutable. Empty nonblocking collection
+preserves pending ownership and sequence state, and an unexpected reply remains
+queued for diagnosis rather than authorizing disposal.
+
+Each compiler mode passed fourteen GUI scenarios: keyboard state and exact pixels,
+early/late Escape, BREAK, root stop, occupied input/display, real client/renderer
+allocation exhaustion, third-large-Task refusal and four media errors. Both
+keyboard runs consumed five input records while a render reply was outstanding,
+then produced the same independently checked scanout. All accepted render packets
+were collected. Ordinary exits restored OS/keyboard/display state, aperture RAM
+and heap ownership; the missing-drive case retired the GUI but retained the
+uncertain offline SIO bus at `$FF93`. The service protocol regression passed 353
+checks per mode, including empty and unexpected nonblocking replies. The host
+suite passed 284 tests, with four historical source audits skipped.
+
+The C bridge now compares stored addresses through `ExecSameAddress`, also used
+by `IsListEmpty`. Calypsi 5.18's implicit far24/static-symbol comparison emitted
+an incorrect bank relocation; emitted probes now check matching addresses,
+different banks and invalid fourth bytes at the shared boundary. Static control
+messages explicitly request even alignment. The scene builder constructs fixed
+commands and payload directly in final request storage; the initial temporary
+array builder produced malformed coordinates under Calypsi. No Action! compiler
+or kernel semantics were changed, and final checks use ordinary `-O0`/`-O2`
+without a compiler override.
+
+Both images reserve the existing two C banks and use 6,105 zero-filled C bytes,
+as recorded in their maps. Embedded ports use 108 bytes and the four messages
+128 bytes, with placement/alignment included within those existing banks.
+Maximum observed root/application/renderer/kernel stack use was
+408/228/472/280 bytes across the cases. Fixed, each public Task and private-idle
+bank-zero reservation deltas remain zero, including guards and unused capacity.
+These are focused development checks; cursor/pointer semantics, measured latency,
+deeper failure closure and the optional packaged artifact remain I5–I7.

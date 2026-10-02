@@ -1,0 +1,167 @@
+MODULE GEMINTERACTIVE
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE CONSOLEDRIVER
+USE DISPLAY
+USE DISPLAYBOOT
+USE DISPLAYADAPTER
+USE INPUT
+USE GEMCONTROL
+USE HEAPCORE
+USE SIODRIVER
+INCLUDE "c-image.inc"
+INCLUDE "../../c/calypsi/display-bridge.inc"
+INCLUDE "../../c/calypsi/input-bridge.inc"
+CARD FUNC POINTER cMain()
+CARD checks,result,mediaError,startError
+LONGINT mediaDetail
+BYTE checkpoint
+BYTE ARRAY diskData(128)
+DOS.FileHandle POINTER file
+
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($f800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+CARD FUNC Run(CARD stage,value)
+
+  LET target=CARD POINTER(C_STAGE)
+  target^=stage
+  LET payload=CARD POINTER(C_ROOTVALUE)
+  payload^=value
+
+RETURN(cMain())
+
+BYTE FUNC Exiting()
+
+  LET boot=GEMCONTROL.Boot POINTER(C_BOOT)
+
+RETURN(boot.exitRequested<>0)
+
+PROC MediaFailure(CARD reason)
+
+  IF mediaError=0 THEN
+    mediaError=reason
+    mediaDetail=DOS.IoErr()
+  FI
+
+RETURN
+
+PROC ReadMedia()
+  CARD index,block
+
+  IF Exiting()<>0 THEN
+    RETURN
+  FI
+
+  file=DOS.Open(BYTE POINTER(c"D1:DATA.BIN"),DOS.MODE_OLDFILE)
+  IF file=NULL THEN
+    MediaFailure(1)
+    RETURN
+  FI
+
+  FOR block=0 TO 15 DO
+    IF Exiting()<>0 THEN
+      EXIT
+    FI
+
+    IF DOS.Read(file,diskData,128)<>128 THEN
+      MediaFailure(2)
+      EXIT
+    FI
+
+    FOR index=0 TO 127 DO
+      IF diskData(index)<>(BYTE(index+block*128) XOR $5a) THEN
+        MediaFailure(3)
+        EXIT
+      FI
+    OD
+
+    IF mediaError<>0 THEN
+      EXIT
+    FI
+
+    Require(Run(2,(block+1)*128)=0)
+  OD
+
+  IF DOS.Close(file)=0 THEN
+    MediaFailure(4)
+  ELSE
+    file=NULL
+  FI
+
+RETURN
+
+PROC Main()
+  CARD ignored
+
+  LET entry=ADDRESS POINTER(@cMain)
+  entry^=C_MAIN
+  BindDisplay()
+  BindInput()
+  Require(SIZEOF(GEMCONTROL.Control)=32)
+  Require(SIZEOF(GEMCONTROL.Boot)=48)
+  ; Application and its renderer occupy the large pools before small services.
+  result=Run(0,0)
+  IF result<>0 THEN
+    checkpoint=2
+    RETURN
+  FI
+
+  file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Close(file)<>0)
+  file=NULL
+  Require(DOS.ReleaseContext()<>0)
+  Require(CONSOLEDRIVER.Stop()<>0)
+  Require(DISPLAY.State()=DISPLAY.FREE)
+  DISPLAYBOOT.Authorize()
+  Require(Run(10,0)=0)
+  startError=Run(1,0)
+  Require(Run(11,0)=0)
+  checkpoint=1
+  IF startError=0 THEN
+    ReadMedia()
+  FI
+
+  ; Settle root's file context before the EXIT acknowledgment can retire it.
+  IF file<>NULL THEN
+    Require(DOS.Close(file)<>0)
+    file=NULL
+  FI
+
+  Require(DOS.ReleaseContext()<>0)
+  Require(Run(3,mediaError)=0)
+  Require(DISPLAY.State()=DISPLAY.FREE)
+  Require(CONSOLEDRIVER.Start()<>0)
+  file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  IF mediaError<>0 THEN
+    Require(DOS.Write(file,BYTE POINTER(c"GEM disk error\n"),15)=15)
+    Require(DOS.Write(file,BYTE POINTER(c"Mount gem-vdi/graphics.atr\n"),27)=27)
+    IF SIODRIVER.Unavailable()<>0 THEN
+      Require(DOS.Write(file,BYTE POINTER(c"SIO offline; reset required\n"),28)=28)
+    FI
+  ELSEIF startError<>0 THEN
+    Require(DOS.Write(file,BYTE POINTER(c"GEM startup failed\n"),19)=19)
+  ELSE
+    Require(DOS.Write(file,BYTE POINTER(c"GEM session complete\n"),21)=21)
+  FI
+
+  checkpoint=3
+  ignored=EXECTASKS.Sleep(250)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(CONSOLEDRIVER.Stop()<>0)
+  checkpoint=2
+
+RETURN
+
+ENDMODULE

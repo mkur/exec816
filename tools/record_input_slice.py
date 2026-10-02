@@ -272,13 +272,65 @@ def record_i3(base, host):
                      'Console physical SIO controls use FASTEST125; interactive latency is measured separately in I6.'])
 
 
+def record_i4(base, host):
+    from test_gem_interactive import CASES
+    from generate_gem_interactive import files, expected_layout
+    for path, content in files().items():
+        require(path.read_text() == content, 'Stale interactive ABI')
+    runs = {}
+    peaks = {}
+    maps = {}
+    for mode in ('raw', 'opt'):
+        run = read_native_run(base/('i4-'+mode), 'tools/test_gem_interactive.py')
+        require([c['name'] for c in run['cases']] == CASES, 'Missing I4 cases')
+        require(all(run['layout'][expr] == value for expr, value in expected_layout()),
+                'Unverified control-message/boot layout')
+        for case in run['cases']:
+            require(case['failures'] == 0, 'Target assertion failed')
+            require(case['counters']['submitted'] == case['counters']['collected'], 'Uncollected packet')
+            for slot, usage in case['stack_usage'].items():
+                peaks[slot] = max(peaks.get(slot, 0), usage['peak'])
+        keyboard = run['cases'][0]
+        require(keyboard['scanout_sha256'] and keyboard['counters']['inputWhilePending'] > 0,
+                'Missing keyboard/render overlap or pixel check')
+        require(keyboard['counters']['maxCommands'] <= 4 and keyboard['counters']['maxGlyphs'] <= 8,
+                'Unbounded interactive packet')
+        image = json.loads((base/('i4-'+mode)/'c-image.json').read_text())
+        maps[mode] = dict(segments=[dict(address=part['address'], bytes=len(part['bytes']),
+                         executable=part['executable']) for part in image['segments']],
+                         zero_fill=image['zero_fill'], symbols=image['symbols'],
+                         compiler=image['provenance']['compiler_flags'],
+                         link_sha256=sha256(base/('i4-'+mode)/'link.lst'))
+        runs[mode] = run
+        service = read_native_run(base/('i4-service-'+mode), 'tools/test_gem_service.py')
+        require([c['name'] for c in service['cases']] == ['protocol'], 'Missing exact-collection check')
+        runs['service-'+mode] = service
+    return dict(format='exec816-gem-input-i4-development-v1', status='pass', tier='development',
+        qualification=False, base_revision=subprocess.check_output(
+            ['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        scope='Two large Tasks, bounded keyboard scene, nonblocking exact collection and retained disk/exit handshake.',
+        runs=runs, maps=maps, maximum_observed_stack_bytes=peaks, host_checks=host_checks(host),
+        bank_zero=dict(fixed_delta_bytes=0,per_public_task_delta_bytes=[0]*8,private_idle_delta_bytes=0,
+                       accounting='Complete reservations include guards, alignment and unused capacity.'),
+        upper_ram=dict(reserved_c_banks=[12,13],reserved_c_bytes=131072,reserved_c_delta_bytes=0,
+                       boot_descriptor_bytes=48,control_slots=4,control_bytes_per_slot=32,
+                       embedded_ports=4,port_bytes=27,input_lease_bytes=32,input_config_bytes=16,
+                       input_event_bytes=24,text_bytes=25,
+                       note='Static records and alignment use existing C banks; maps record all linked storage.'),
+        source_inputs={'tools/record_input_slice.py':sha256(Path(__file__))},
+        limitations=['Development checks, not hosted qualification or a latency claim.',
+                     'Cursor, normalized pointer input, deeper failure closure and artifact remain I5-I7.',
+                     'No physical mouse or AES support.',
+                     'Uncertain missing-drive timeout retains the offline SIO bus at FF93 after GUI retirement.'])
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice', choices=['i0', 'i1', 'i2', 'i3'], required=True)
+    p.add_argument('--slice', choices=['i0', 'i1', 'i2', 'i3', 'i4'], required=True)
     p.add_argument('--base', type=Path, default=ROOT/'build/gem-input')
     p.add_argument('--host-log', type=Path, required=True)
     args = p.parse_args()
-    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2, 'i3': record_i3}[args.slice](args.base.resolve(), args.host_log)
+    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2, 'i3': record_i3, 'i4': record_i4}[args.slice](args.base.resolve(), args.host_log)
     output = ROOT/'docs/development'/('gem-input-'+args.slice+'.json')
     output.write_text(json.dumps(report, indent=2)+'\n')
     print(output)

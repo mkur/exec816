@@ -99,18 +99,29 @@ UWORD GemSubmit(struct GemClient *c)
     return result(c, status);
 }
 
-UWORD GemCollect(struct GemClient *c)
+UWORD GemTryCollect(struct GemClient *c, UWORD *ready)
 {
     struct GemRequest *r = c->pending;
     UWORD status;
+    if (!ready) return result(c, GEM_BAD_PACKET);
+    *ready = 0;
     if (!c->server || FindTask(NULL) != c->server->owner || c->server->client != c || !r)
         return result(c, GEM_BAD_SESSION);
     /* The private reply port contains only this exact request. Do not consume
      * an unexpected message, or release any storage whose ownership is unclear. */
-    if (WaitPort(c->replies) != &r->message)
+    Forbid();
+    if (IsListEmpty(&c->replies->mp_MsgList)) {
+        Permit();
+        return GEM_OK;
+    }
+    if (c->replies->mp_MsgList.lh_Head != &r->message.mn_Node) {
+        Permit();
         return result(c, GEM_BAD_PACKET);
-    if (GetMsg(c->replies) != &r->message)
+    }
+    if (GetMsg(c->replies) != &r->message) {
+        Permit();
         return result(c, GEM_BAD_PACKET);
+    }
     status = r->result;
     c->pending = NULL;
     c->server->inflight = NULL;
@@ -128,7 +139,17 @@ UWORD GemCollect(struct GemClient *c)
         c->session = 0;
         c->next_sequence = 1;
     }
+    *ready = 1;
+    Permit();
     return result(c, status);
+}
+
+UWORD GemCollect(struct GemClient *c)
+{
+    UWORD ready, status = GemTryCollect(c, &ready);
+    if (status != GEM_OK || ready) return status;
+    WaitPort(c->replies);
+    return GemTryCollect(c, &ready);
 }
 
 UWORD GemCall(struct GemClient *c, UWORD opcode, UWORD subopcode,

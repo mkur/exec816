@@ -1,6 +1,7 @@
 #ifndef EXEC_LISTS_H
 #define EXEC_LISTS_H
 #include <exec/nodes.h>
+#include <exec816/address.h>
 
 struct MinList {
     struct MinNode EXEC_PTR *mlh_Head;
@@ -16,6 +17,6 @@ struct List {
     UBYTE lh_Pad;
 };
 
-#define IsListEmpty(list) ((list)->lh_Head == (struct Node *)&(list)->lh_Tail)
+#define IsListEmpty(list) ExecSameAddress((list)->lh_Head, &(list)->lh_Tail)
 
 #endif

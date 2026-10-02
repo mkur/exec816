@@ -58,6 +58,7 @@ UWORD GemClientDispose(struct GemClient *client);
 UWORD GemPrepare(struct GemClient *client, UWORD operation, UWORD commands, UWORD payload_bytes);
 UWORD GemSubmit(struct GemClient *client);
 UWORD GemCollect(struct GemClient *client);
+UWORD GemTryCollect(struct GemClient *client, UWORD *ready);
 UWORD GemStatus(const struct GemClient *client);
 UWORD GemOpen(struct GemClient *client);
 UWORD GemClose(struct GemClient *client);

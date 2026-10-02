@@ -267,7 +267,8 @@ static void limits(void)
 static void protocol(void)
 {
     ULONG hash, generation;
-    UWORD before;
+    UWORD before, ready;
+    static struct Message unexpected __attribute__((aligned(2)));
     WORD letter = 256, xy[2] = {4, 5};
     check(GemOpen(&client) == GEM_OK);
     generation = client.session;
@@ -277,7 +278,16 @@ static void protocol(void)
     check(GemClientInit(&other_client, &server) == GEM_BUSY);
     batch();
     hash = input_hash();
+    Forbid();
     check(GemSubmit(&client) == GEM_OK);
+    before = client.next_sequence;
+    ready = 1;
+    check(GemTryCollect(&client, &ready) == GEM_OK && ready == 0);
+    check(client.pending == client.packet && client.next_sequence == before && input_hash() == hash);
+    PutMsg(client.replies, &unexpected);
+    check(GemTryCollect(&client, &ready) == GEM_BAD_PACKET && ready == 0);
+    check(client.pending == client.packet && GetMsg(client.replies) == &unexpected);
+    Permit();
     check(GemSubmit(&client) == GEM_BUSY);
     check(GemPrepare(&client, GEM_OP_CLOSE, 0, 0) == GEM_BUSY);
     check(GemClientDispose(&client) == GEM_BUSY);

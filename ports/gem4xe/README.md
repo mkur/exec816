@@ -132,3 +132,7 @@ uninstrumented graphics, exact visible pixels/palette, the packaged optimized
 image, standard OF816 boot/exit routes and shell/prime controls. The ZIP includes
 only boot files, guides, notices and checksums. The standard five-second OF816
 shell/prime autoboot remains the default; graphics is selected explicitly.
+
+The [interactive application](interactive/README.md) adds the I4 keyboard scene
+and root disk supervisor in a separate development workload. Its implementation
+plan continues through cursor, failure closure and packaging in I5–I7.

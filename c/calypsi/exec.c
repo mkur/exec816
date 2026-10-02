@@ -167,3 +167,9 @@ struct MsgPort *EXEC_CALL FindPort(CONST_STRPTR name)
     struct PointerPacket args = {(APTR)name};
     return (struct MsgPort *)_ExecPacket(EXEC_FIND_PORT, &args);
 }
+
+/* Normalize stored ABI pointers through huge parameters before comparison. */
+UBYTE EXEC_CALL ExecSameAddress(const void *left, const void *right)
+{
+    return (ULONG)left == (ULONG)right;
+}

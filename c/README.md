@@ -17,3 +17,16 @@ supported calls, ABI details and current limits.
 - [calypsi/exec.c](calypsi/exec.c) and [gateway.s](calypsi/gateway.s): the shim.
 
 Build with `python3 tools/build_calypsi.py` from the repository root.
+
+Stored ABI pointers use `__far24`, while ordinary C pointers are huge. Use
+`ExecSameAddress` from `<exec816/address.h>` when comparing a stored pointer
+with a C address; it checks the complete value without narrowing. This avoids
+Calypsi 5.18's incorrect bank relocation for implicit comparisons with static
+symbols. `IsListEmpty` uses the same helper for embedded upper-bank ports.
+It is a C bridge helper, with no kernel call or selector.
+
+Exec messages and input records require even addresses. `AllocMem` provides
+suitable alignment; request `__attribute__((aligned(2)))` explicitly for static
+records. C record size alone does not guarantee this placement. The private
+[GEM application](../ports/gem4xe/interactive/README.md) demonstrates aligned
+preallocated messages and a retained retirement handshake.
