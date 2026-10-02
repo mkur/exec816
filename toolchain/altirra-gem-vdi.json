@@ -125,5 +125,42 @@
     "sector_bytes": 128,
     "exec_profile": 4,
     "nominal_baud": 57600
+  },
+  "mouse_input": {
+    "model": "ST mouse",
+    "port": 1,
+    "internal_port": 0,
+    "map": "Mouse -> ST Mouse (port 1)",
+    "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+    "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+    "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+    "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+    "commands": [
+      "MOUSE ST",
+      "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+      "MOUSE CLEAR"
+    ],
+    "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+    "tooling": {
+      "binary": "build/mouse-bridge/AltirraBridgeServer",
+      "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "patch": "toolchain/patches/altirra-mouse-observer.patch",
+      "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "source_sha256": {
+        "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+        "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+      }
+    },
+    "initial_acceptance": {
+      "transitions_per_second_per_axis": 1000,
+      "minimum_transition_spacing_us": 1000,
+      "minimum_button_level_us": 10000,
+      "required_max_sample_gap_us_exclusive": 1000,
+      "visible_response_pal_ticks": 12
+    },
+    "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
   }
 }

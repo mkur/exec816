@@ -1,0 +1,44 @@
+MODULE MOUSEOBSERVE
+USE EXEC
+USE HEAPCORE
+
+TYPE Sample=[
+  BYTE port,trigger,scanline,frame
+]
+
+VOLATILE BYTE porta=$d300
+VOLATILE BYTE trig0=$d010
+VOLATILE BYTE vcount=$d40b
+VOLATILE BYTE clock=$14
+VOLATILE BYTE stop,stage
+CARD count
+Sample ARRAY samples(256)
+
+; Read-only electrical observation, before any capture driver is installed.
+PROC Main()
+  BYTE port,trigger,previousPort,previousTrigger
+
+  previousPort=$ff
+  previousTrigger=$ff
+  stage=1
+  WHILE stop=0 DO
+    port=porta & 15
+    trigger=trig0 & 1
+    IF port<>previousPort OR trigger<>previousTrigger THEN
+      IF count=256 THEN
+        HEAPCORE.Abort($fb01)
+      FI
+
+      samples(count).port=port
+      samples(count).trigger=trigger
+      samples(count).scanline=vcount
+      samples(count).frame=clock
+      previousPort=port
+      previousTrigger=trigger
+      count==+1
+    FI
+  OD
+
+RETURN
+
+ENDMODULE

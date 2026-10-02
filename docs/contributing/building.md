@@ -74,3 +74,32 @@ explains why payload size and reserved bank-zero size are different quantities.
 Record local toolchain overrides with results; they do not change the repository
 pin or qualify the pinned system. Choose checks using the
 [testing policy](testing.md).
+
+## Mouse development observer
+
+The `mouse_input.tooling` section of
+[altirra-gem-vdi.json](../../toolchain/altirra-gem-vdi.json) pins a separate
+headless bridge for physical ST mouse tests. Apply its additive
+[observer patch](../../toolchain/patches/altirra-mouse-observer.patch) after the
+existing console, keyboard and frame-pacing patches, build the recorded target,
+and copy the binary to `build/mouse-bridge/AltirraBridgeServer`. Put the matching
+Python SDK at `build/mouse-bridge/sdk/python`. Keep the earlier baseline binaries
+at their recorded paths for historical replay.
+
+`MOUSE ST` enables the built-in `Mouse -> ST Mouse (port 1)` preset and removes
+other input maps in the test's temporary profile. `MOUSE AT delay dx dy left`
+schedules relative host movement and an optional left-button change on the
+base-cycle scheduler; `left` is -1 for unchanged, 0 for released, or 1 for pressed.
+The existing controller still schedules its electrical phases in scanline units.
+`MOUSE CLEAR` cancels queued host stimuli and releases the left button; disconnect
+does the same. Tests do not read or change the user's GUI profile.
+
+Set `EXEC816_MOUSE_TRACE=1` to record host delivery and passive controller output
+on the same base-cycle clock. Leave it unset for unobserved replay. This hook
+does not replace the ST controller, its mapping, or its phase scheduling.
+
+```sh
+python3 tools/test_mouse_observe.py --mode opt --output build/gem-mouse/m0/opt
+python3 tools/test_mouse_observe.py --mode opt --replay --output build/gem-mouse/m0/replay
+python3 tools/test_mouse_baseline.py --mode opt --case keyboard --output build/gem-mouse/m0/keyboard
+```

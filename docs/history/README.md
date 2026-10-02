@@ -21,6 +21,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 - [Minimal GEM/VDI hosting](gem-vdi.md): G0–G6 evidence, memory costs and optional artifact.
 - [Hosted GEM input and events](gem-input.md): I0–I7 reusable input, interactive controls, cursor semantics, measured concurrency and the packaged demo.
+- [Physical mouse development](gem-mouse.md): ST controller observations, shared timing and capture slices.
 
 - [Intrusive Lists — earlier guide](lists-reference.md)
 - [Build cleanup and artifact restoration](build-cleanup.md)

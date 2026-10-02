@@ -1,0 +1,188 @@
+--- a/src/Altirra/source/inputcontroller.cpp
++++ b/src/Altirra/source/inputcontroller.cpp
+@@ -33,6 +33,8 @@
+ 
+ class ATAnticEmulator;
+ 
++void (*g_ATMousePhaseObserver)(uint32, uint32, uint32) = nullptr;
++
+ ///////////////////////////////////////////////////////////////////////////
+ 
+ AT_DEFINE_ENUM_TABLE_BEGIN(ATLightPenNoiseMode)
+@@ -311,6 +313,8 @@
+ 				if (mPortBits != newBits) {
+ 					mPortBits = newBits;
+ 					SetPortOutput(mPortBits);
++					if (g_ATMousePhaseObserver)
++						g_ATMousePhaseObserver(mPortBits, mAccumX, mAccumY);
+ 				}
+ 			}
+ 			break;
+@@ -439,6 +443,8 @@
+ 	if (mPortBits != newPortBits) {
+ 		mPortBits = newPortBits;
+ 		SetPortOutput(mPortBits);
++		if (g_ATMousePhaseObserver)
++			g_ATMousePhaseObserver(mPortBits, mAccumX, mAccumY);
+ 	}
+ }
+ 
+--- a/src/AltirraSDL/source/bridge/bridge_commands_write.cpp
++++ b/src/AltirraSDL/source/bridge/bridge_commands_write.cpp
+@@ -37,6 +37,9 @@
+ #include "gtia.h"
+ #include <at/ataudio/pokey.h>
+ #include "pia.h"
++#include "inputmanager.h"
++#include "inputmap.h"
++#include <at/atcore/scheduler.h>
+ #include "diskinterface.h"   // ATDiskInterface::UnloadDisk (EJECT)
+ #include "disk.h"            // ATDiskEmulationMode
+ #include "firmwaremanager.h" // ATFirmwareManager, ATFirmwareInfo (CONFIG kernel/basicrom)
+@@ -65,6 +68,8 @@
+ #include <string>
+ #include <vector>
+ 
++extern void (*g_ATMousePhaseObserver)(uint32, uint32, uint32);
++
+ namespace ATBridge {
+ 
+ namespace {
+@@ -81,6 +86,31 @@
+ };
+ 
+ WriteState g_write;
++
++// Diagnostic commands drive the existing map, on the simulator thread.
++struct MouseStimulus final : IATSchedulerCallback {
++	struct Item { ATEvent *event = nullptr; int dx = 0, dy = 0, left = -1; };
++	Item items[512];
++	ATSimulator *sim = nullptr;
++	bool enabled = false;
++	void Clear() {
++		if (!sim) return;
++		for (auto& item : items) sim->GetScheduler()->UnsetEvent(item.event);
++		sim->GetInputManager()->OnButtonUp(0, kATInputCode_MouseLMB);
++	}
++	void OnScheduledEvent(uint32 id) override {
++		auto& item = items[id];
++		item.event = nullptr;
++		auto *input = sim->GetInputManager();
++		input->OnMouseMove(0, item.dx, item.dy);
++		if (item.left >= 0)
++			input->OnButtonChanged(0, kATInputCode_MouseLMB, item.left != 0);
++		if (getenv("EXEC816_MOUSE_TRACE"))
++			fprintf(stderr, "MOUSE_HOST %llu %d %d %d\n",
++				(unsigned long long)sim->GetScheduler()->GetTick64(),
++				item.dx, item.dy, item.left);
++	}
++} g_mouse;
+ 
+ // ---------------------------------------------------------------------------
+ // Memory address parsing helpers.
+@@ -1033,6 +1063,7 @@
+ }
+ 
+ void ShutdownWriteCommands(ATSimulator& sim) {
++	g_ATMousePhaseObserver = nullptr;
+ 	CleanupInjectedInput(sim);
+ 	if (g_write.piaInputSlot >= 0) {
+ 		sim.GetPIA().FreeInput(g_write.piaInputSlot);
+@@ -1041,6 +1072,7 @@
+ }
+ 
+ void CleanupInjectedInput(ATSimulator& sim) {
++	g_mouse.Clear();
+ 	for (int i = 0; i < 4; ++i) {
+ 		g_write.dirNibble[i] = 0;
+ 		g_write.fireDown[i]  = false;
+@@ -1214,6 +1246,60 @@
+ 	AddU32  (payload, "length", (uint32_t)bytes.size());
+ 	StripTrailingComma(payload);
+ 	return JsonOk(payload);
++}
++
++// MOUSE ST | CLEAR | AT delay_cycles dx dy left(-1 unchanged,0 up,1 down)
++std::string CmdMouse(ATSimulator& sim, const std::vector<std::string>& tokens) {
++	if (tokens.size() == 2 && tokens[1] == "ST") {
++		g_mouse.Clear();
++		g_mouse.sim = &sim;
++		if (getenv("EXEC816_MOUSE_TRACE"))
++			g_ATMousePhaseObserver = [](uint32 bits, uint32 x, uint32 y) {
++				fprintf(stderr, "MOUSE_PHASE %llu %u %u %u\n",
++					(unsigned long long)g_mouse.sim->GetScheduler()->GetTick64(), bits, x, y);
++			};
++		auto *input = sim.GetInputManager();
++		input->RemoveAllInputMaps();
++		for (uint32 i = 0; i < input->GetPresetInputMapCount(); ++i) {
++			vdrefptr<ATInputMap> map;
++			if (input->GetPresetInputMapByIndex(i, ~map) &&
++				!wcscmp(map->GetName(), L"Mouse -> ST Mouse (port 1)")) {
++				input->AddInputMap(map);
++				input->ActivateInputMap(map, true);
++				g_mouse.enabled = true;
++				return JsonOk("\"map\":\"Mouse -> ST Mouse (port 1)\"");
++			}
++		}
++		g_mouse.enabled = false;
++		return JsonError("MOUSE: ST preset unavailable");
++	}
++	if (tokens.size() == 2 && tokens[1] == "CLEAR") {
++		g_mouse.Clear();
++		return JsonOk();
++	}
++	if (tokens.size() != 6 || tokens[1] != "AT" || !g_mouse.enabled)
++		return JsonError("MOUSE: configure ST, then AT delay dx dy left or CLEAR");
++	long values[4];
++	for (int i = 0; i < 4; ++i) {
++		char *end;
++		values[i] = strtol(tokens[i+2].c_str(), &end, 10);
++		if (*end) return JsonError("MOUSE: invalid integer");
++	}
++	if (values[0] < 1 || values[0] > 100000000 ||
++		values[1] < -4096 || values[1] > 4096 ||
++		values[2] < -4096 || values[2] > 4096 ||
++		values[3] < -1 || values[3] > 1)
++		return JsonError("MOUSE: out of range");
++	for (uint32 i = 0; i < 512; ++i) {
++		auto& item = g_mouse.items[i];
++		if (item.event) continue;
++		item.dx = (int)values[1]; item.dy = (int)values[2];
++		item.left = (int)values[3];
++		item.event = sim.GetScheduler()->AddEvent((uint32)values[0], &g_mouse, i);
++		return JsonOk("\"cycle\":" + std::to_string(
++			sim.GetScheduler()->GetTick64() + values[0]));
++	}
++	return JsonError("MOUSE: queue full");
+ }
+ 
+ // ---------------------------------------------------------------------------
+--- a/src/AltirraSDL/source/bridge/bridge_commands_write.h
++++ b/src/AltirraSDL/source/bridge/bridge_commands_write.h
+@@ -42,6 +42,7 @@
+ std::string CmdMemDump(ATSimulator& sim, const std::vector<std::string>& tokens);
+ std::string CmdMemLoad(ATSimulator& sim, const std::vector<std::string>& tokens);
+ 
++std::string CmdMouse(ATSimulator& sim, const std::vector<std::string>& tokens);
+ std::string CmdJoy(ATSimulator& sim, const std::vector<std::string>& tokens);
+ std::string CmdKey(ATSimulator& sim, const std::vector<std::string>& tokens);
+ std::string CmdConsol(ATSimulator& sim, const std::vector<std::string>& tokens);
+--- a/src/AltirraSDL/source/bridge/bridge_server.cpp
++++ b/src/AltirraSDL/source/bridge/bridge_server.cpp
+@@ -205,7 +205,7 @@
+ 	return verb == "PAUSE" || verb == "RESUME" || verb == "FRAME"
+ 		|| verb == "QUIT" || verb == "POKE" || verb == "POKE16"
+ 		|| verb == "HWPOKE" || verb == "MEMLOAD" || verb == "JOY"
+-		|| verb == "KEY" || verb == "CONSOL" || verb == "BOOT"
++		|| verb == "MOUSE" || verb == "KEY" || verb == "CONSOL" || verb == "BOOT"
+ 		|| verb == "BOOT_BARE" || verb == "MOUNT" || verb == "EJECT"
+ 		|| verb == "CART_EJECT" || verb == "COLD_RESET"
+ 		|| verb == "WARM_RESET" || verb == "FRESH"
+@@ -348,6 +348,7 @@
+ 	if (verb == "HWPOKE")     return CmdHwPoke(sim, tokens);
+ 	if (verb == "MEMDUMP")    return CmdMemDump(sim, tokens);
+ 	if (verb == "MEMLOAD")    return CmdMemLoad(sim, tokens);
++	if (verb == "MOUSE")      return CmdMouse(sim, tokens);
+ 	if (verb == "JOY")        return CmdJoy(sim, tokens);
+ 	if (verb == "KEY")        return CmdKey(sim, tokens);
+ 	if (verb == "CONSOL")     return CmdConsol(sim, tokens);
