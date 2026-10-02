@@ -17,6 +17,7 @@ struct GemBackend {
                      const WORD *points, const WORD *ints, WORD *reply);
     UWORD (*fence)(void *context);
     UWORD (*close)(void *context);
+    UWORD (*cursor)(void *context, const struct GemCursor *cursor);
     void *context;
 };
 
@@ -56,6 +57,7 @@ UWORD GemServiceStop(struct GemServer *server);
 UWORD GemClientInit(struct GemClient *client, struct GemServer *server);
 UWORD GemClientDispose(struct GemClient *client);
 UWORD GemPrepare(struct GemClient *client, UWORD operation, UWORD commands, UWORD payload_bytes);
+UWORD GemPrepareCursor(struct GemClient *client, WORD x, WORD y, UWORD visible);
 UWORD GemSubmit(struct GemClient *client);
 UWORD GemCollect(struct GemClient *client);
 UWORD GemTryCollect(struct GemClient *client, UWORD *ready);

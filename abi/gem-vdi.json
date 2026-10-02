@@ -1,7 +1,7 @@
 {
   "abi": "exec816.gem-vdi",
-  "revision": 1,
-  "status": "G2 private service ABI; hardware backend pending G3/G4",
+  "revision": 2,
+  "status": "Private hosted service ABI with renderer-owned cursor",
   "byte_order": "little",
   "pointer_bits": 24,
   "alignment": 2,
@@ -25,7 +25,8 @@
     "OPEN": 1,
     "SUBMIT": 2,
     "CLOSE": 3,
-    "STOP": 4
+    "STOP": 4,
+    "CURSOR": 5
   },
   "results": {
     "OK": 0,
@@ -161,6 +162,36 @@
           "ints_offset",
           "u16",
           10,
+          2
+        ]
+      ]
+    },
+    "Cursor": {
+      "size": 8,
+      "alignment": 2,
+      "fields": [
+        [
+          "x",
+          "i16",
+          0,
+          2
+        ],
+        [
+          "y",
+          "i16",
+          2,
+          2
+        ],
+        [
+          "visible",
+          "u16",
+          4,
+          2
+        ],
+        [
+          "reserved",
+          "u16",
+          6,
           2
         ]
       ]

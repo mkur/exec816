@@ -23,4 +23,9 @@ const UWORD GemWireLayout[] = {
     offsetof(struct GemCommand, int_words),
     offsetof(struct GemCommand, points_offset),
     offsetof(struct GemCommand, ints_offset),
+    sizeof(struct GemCursor),
+    offsetof(struct GemCursor, x),
+    offsetof(struct GemCursor, y),
+    offsetof(struct GemCursor, visible),
+    offsetof(struct GemCursor, reserved),
 };

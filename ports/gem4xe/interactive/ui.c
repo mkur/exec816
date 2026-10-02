@@ -2,6 +2,7 @@
  * control slots/ports have static upper-RAM storage, independent of the heap. */
 #include "ui.h"
 #include "ui-keymap.h"
+#include "ui-events.h"
 #include <clib/alib_protos.h>
 #include <string.h>
 
@@ -37,7 +38,10 @@ volatile UWORD focus, count, length, diskProgress, dirty, initialReady;
 volatile UWORD received, submitted, collected, inputWhilePending, lastCapture, lastConsume;
 volatile UWORD lastSubmit, lastComplete, maxCommands, maxGlyphs;
 UBYTE text[25];
-static UWORD renderTile;
+static UWORD renderTile, cursorTurn;
+volatile WORD pointerX, pointerY, armed=-1;
+volatile UWORD pointerVisible, pointerDirty, pointerReady=1, pointerButtons;
+volatile UWORD pointerEvents, pointerActivations, inputLosses, cursorPackets;
 
 static void check(UWORD good)
 {
@@ -81,6 +85,8 @@ static void failure(UWORD status)
 static UWORD finishGraphics(void)
 {
     UWORD status=GEM_OK;
+    UiEventsClose();
+    PROBE(4);
     if (input.state==INPUT_ACTIVE) check(InputRelease(&input)==INPUT_OK);
     if (inputBit>=0) { FreeSignal(inputBit); inputBit=-1; }
     if (client.pending) status=GemCollect(&client);
@@ -112,6 +118,7 @@ static UWORD startGraphics(void)
     if (!status) status=InputCreateRoute(&input,0,&route);
     if (!status) status=InputPublishRoute(&input,route);
     if (status) { finishGraphics(); PROBE(2); return status; }
+    UiEventsOpen();
     dirty=511;
     return GEM_OK;
 }
@@ -163,14 +170,47 @@ static void activate(UWORD target)
     if (target==1) { ++count; dirty|=16; }
     else if (target==2) requestExit();
 }
+static WORD hit(WORD x, WORD y)
+{
+    if (y>=52 && y<=72 && x>=32 && x<224) return 0;
+    if (y>=92 && y<=112 && x>=32 && x<96) return 1;
+    if (y>=92 && y<=112 && x>=176 && x<240) return 2;
+    return -1;
+}
+static void pointerEvent(struct InputEvent *e)
+{
+    WORD target=hit(e->x,e->y);
+    ++pointerEvents;
+    pointerX=e->x; pointerY=e->y; pointerVisible=pointerDirty=1;
+    if (!pointerReady) {
+        if (!e->buttons) { pointerReady=1; pointerButtons=0; }
+        return;
+    }
+    if (e->kind==INPUT_EVENT_BUTTON) {
+        if (e->buttons && !pointerButtons) {
+            armed=target;
+            if (target>=0) { focus=target; dirty|=62; }
+        } else if (!e->buttons && pointerButtons) {
+            if (armed>=0 && armed==target) { ++pointerActivations; activate(target); }
+            armed=-1;
+        }
+    } else if (e->buttons!=pointerButtons) {
+        /* A state change without its BUTTON record cannot complete a click. */
+        armed=-1;
+    }
+    pointerButtons=e->buttons;
+}
 static void keyEvent(struct InputEvent *e)
 {
     UWORD key;
     if (e->acquisition!=input.acquisition || e->route!=route) return;
+    if (boot.exitRequested) return;
+    if (e->kind==INPUT_EVENT_LOSS) { armed=-1; pointerReady=0; ++inputLosses; return; }
+    if (e->kind==INPUT_EVENT_POINTER || e->kind==INPUT_EVENT_BUTTON) { pointerEvent(e); return; }
     ++received;
     if (client.pending) ++inputWhilePending;
     lastCapture=e->tick; lastConsume=DisplayTicks();
-    if (e->kind==INPUT_EVENT_CANCEL) { requestExit(); return; }
+    if (e->kind==INPUT_EVENT_CANCEL) { armed=-1; pointerReady=0; requestExit(); return; }
     if (e->kind!=INPUT_EVENT_KEY) return;
     key=decode(e);
     if (key==9) { focus=(focus+1)%3; dirty|=62; }
@@ -220,7 +260,7 @@ static UWORD paint(void)
     }
     status=GemSubmit(&client);
     if (!status) {
-        dirty&=~(1<<tile); renderTile=tile; ++submitted;
+        dirty&=~(1<<tile); renderTile=tile; cursorTurn=0; ++submitted;
         lastSubmit=DisplayTicks(); maxCommands=4; maxGlyphs=8;
     }
     return status;
@@ -255,8 +295,12 @@ void GemApplication(void)
                 status=InputTake(&input,&event);
                 if (status==INPUT_EMPTY) break;
                 if (status) { failure(status); break; }
-                keyEvent(&event); ++busy;
+                UiPostCaptured(&event); ++busy;
             }
+        }
+        for (n=0;n<8;++n) {
+            if (UiTakeEvent(&event)==INPUT_EMPTY) break;
+            keyEvent(&event); ++busy;
         }
         if (client.pending) {
             status=GemTryCollect(&client,&ready);
@@ -269,14 +313,18 @@ void GemApplication(void)
             ReplyMsg(&startMessage->message); startMessage=NULL;
         }
         if (boot.exitRequested && boot.diskDone && !client.pending) break;
-        if (!boot.exitRequested && client.session && dirty && !client.pending) {
-            status=paint();
+        if (!boot.exitRequested && client.session && (dirty || pointerDirty) && !client.pending) {
+            if (pointerDirty && (!dirty || !cursorTurn)) {
+                status=GemPrepareCursor(&client,pointerX,pointerY,pointerVisible);
+                if (!status) status=GemSubmit(&client);
+                if (!status) { pointerDirty=0; cursorTurn=1; ++submitted; ++cursorPackets; lastSubmit=DisplayTicks(); }
+            } else status=paint();
             if (status) failure(status);
             ++busy;
         }
         inputPending=0;
         if (input.state==INPUT_ACTIVE) check(InputPending(&input,&inputPending)==INPUT_OK);
-        if (busy || inputPending || !IsListEmpty(&appPort.mp_MsgList) ||
+        if (busy || inputPending || UiEventsPending() || !IsListEmpty(&appPort.mp_MsgList) ||
             (client.pending && !IsListEmpty(&client.replies->mp_MsgList))) ExecYield();
         else Wait(mask(&appPort) | (inputBit<0 ? 0 : 1UL<<inputBit) |
                   (client.pending ? mask(client.replies) : 0));

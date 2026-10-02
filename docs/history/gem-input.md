@@ -212,3 +212,36 @@ Maximum observed root/application/renderer/kernel stack use was
 bank-zero reservation deltas remain zero, including guards and unused capacity.
 These are focused development checks; cursor/pointer semantics, measured latency,
 deeper failure closure and the optional packaged artifact remain I5–I7.
+
+## I5 Cursor and normalized pointer events
+
+[I5 evidence](../development/gem-input-i5.json) records revision-2 CURSOR packets,
+the renderer-owned 16×16 arrow and the application's 32-record normalized queue.
+The renderer validates coordinates, visibility, extent, generation and sequence
+before changing any state. Every OPEN starts hidden. Scene changes restore the
+old background before drawing, then save and overlay the arrow again. Cursor
+operations leave VDI attributes alone and fence before scratch reuse or reply.
+
+Each compiler mode passes 57 cursor cases with independent full-scene pixels:
+odd/even placement, screen edges, hide/move, stationary redraw, rejected packets,
+reopen and recoverable failures after hardware launch in restore, save and both
+mask phases. A separate permanently busy draw retains the request, display and
+renderer resources at `$FF93`. No synthetic status authorizes unsafe retirement.
+
+A small diagnostic Task copies marked pointer records through the same validated
+publication path as a future backend. Production omits that Task and its gates.
+Gesture cases cover motion coalescing, inside/outside release, duplicate edges,
+field focus, Exit, stale/invalid records and a click while an immutable cursor
+packet is outstanding. Three full-queue cases check durable LOSS, disarming and
+fresh-release resynchronization. A producer queued during loss acknowledgment
+runs after the bounded Forbid region; its new loss survives the old acknowledgment.
+All ordinary exits retire the producer, input lease, messages and heap ownership.
+
+Cursor VRAM grows by 1,024 bytes at `$37000`: 256 saved-background bytes, two
+256-byte mask planes and 256 reserved slack bytes. Total reserved VRAM is
+108,032 bytes, leaving 416,256. CPU staging remains the existing 4,096-byte page;
+glyph scratch is separate. The queue adds 768 payload bytes, 48 durable-event
+bytes and 16 index/flag/counter bytes within the existing upper C banks. Fixed,
+each public Task and private-idle bank-zero deltas remain zero, including guards,
+alignment and unused capacity. These are development checks; physical mouse
+support and AES remain unsupported.

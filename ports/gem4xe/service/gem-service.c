@@ -35,6 +35,13 @@ UWORD GemValidatePacket(const struct GemRequest *r)
         return GEM_BAD_PACKET;
     if (r->operation == GEM_OP_CLOSE || r->operation == GEM_OP_STOP)
         return r->command_count == 0 && r->total_bytes == GEM_REQUEST_BYTES ? GEM_OK : GEM_BAD_PACKET;
+    if (r->operation == GEM_OP_CURSOR) {
+        const struct GemCursor *cursor = (const struct GemCursor *)(r + 1);
+        if (r->command_count || r->total_bytes != GEM_REQUEST_BYTES + GEM_CURSOR_BYTES)
+            return GEM_BAD_PACKET;
+        return cursor->x >= 0 && cursor->x <= 639 && cursor->y >= 0 && cursor->y <= 239 &&
+               cursor->visible <= 1 && !cursor->reserved ? GEM_OK : GEM_BAD_PACKET;
+    }
     if (r->operation != GEM_OP_OPEN && r->operation != GEM_OP_SUBMIT)
         return GEM_UNSUPPORTED;
     if (!r->command_count || r->command_count > GEM_LIMIT_COMMANDS ||
@@ -108,6 +115,16 @@ static UWORD process(struct GemServer *s, struct GemRequest *r)
         return close_session(s);
     if (s->next_sequence == 0xffffffffUL)
         return GEM_EXHAUSTED; /* The final sequence is reserved for CLOSE. */
+    if (r->operation == GEM_OP_CURSOR) {
+        status = s->backend->cursor(s->backend->context, (const struct GemCursor *)(r + 1));
+        if (status == GEM_OK) status = s->backend->fence(s->backend->context);
+        if (status != GEM_OK) {
+            close_session(s);
+            return GEM_DEVICE_FAULT;
+        }
+        ++s->next_sequence;
+        return GEM_OK;
+    }
     ++s->next_sequence;
     for (i = 0; i < r->command_count; ++i) {
         struct GemCommand command = commands[i];
@@ -240,7 +257,7 @@ UWORD GemServiceStart(struct GemServer *s, const struct GemBackend *backend)
 {
     BYTE bit;
     if (!GemAddressExtent(s, sizeof(*s)) || s->state != GEM_DOWN || !backend ||
-        !backend->open || !backend->command || !backend->fence || !backend->close)
+        !backend->open || !backend->command || !backend->fence || !backend->close || !backend->cursor)
         return GEM_BAD_PACKET;
     bit = AllocSignal(-1);
     if (bit == -1)

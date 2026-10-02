@@ -21,13 +21,27 @@ def build_interactive(output,optimize=True,instrument=True):
         if p.read_text()!=content: raise RuntimeError('Stale '+str(p))
     extraction=extract(output/'selected'); src=output/'selected/src'
     service=PORT/'service'; adapter=PORT/'adapter'; ui=PORT/'interactive'
+    backend=adapter/'gem-vbxe.c'
+    if instrument:
+        text=backend.read_text().replace('static struct VbxeDisplay display;',
+            'extern void UiCursorGate(void);\nstatic struct VbxeDisplay display;')
+        text=text.replace('    (void)context;\n    cursor_hide();\n    cursorX=',
+            '    (void)context;\n    UiCursorGate();\n    cursor_hide();\n    cursorX=')
+        backend=output/'gem-ui-backend.c';backend.write_text(text)
+    events=ui/'ui-events.c'
+    if instrument:
+        text=events.read_text().replace('static struct InputEvent events[',
+            'extern void UiLossAck(void);\nstatic struct InputEvent events[')
+        text=text.replace('memcpy(e,&lossEvent,sizeof(*e)); uiLoss=0;',
+            'memcpy(e,&lossEvent,sizeof(*e)); uiLoss=0; UiLossAck();')
+        events=output/'ui-events-probe.c';events.write_text(text)
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',ROOT/'c/calypsi/input.c',
         ROOT/'platform/altirraos/vbxe.c',service/'gem-validation.c',service/'gem-service.c',service/'gem-client.c',
-        src/'vdi/vdi.c',src/'vdi/font.c',src/'vdi/font8x8.c',src/'vdi/dev_vbxe.c',adapter/'gem-vbxe.c',ui/'ui.c']
+        src/'vdi/vdi.c',src/'vdi/font.c',src/'vdi/font8x8.c',src/'vdi/dev_vbxe.c',backend,ui/'ui.c',events]
     if instrument: sources.append(ROOT/'tests/programs/gem_interactive_probe.c')
     foreign=emit(output,sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',ROOT/'c/calypsi/input.s',
         ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s'],
-        ['GemApplication','GemServiceWorker']+(['UiUnusedTask'] if instrument else []),optimize=optimize,includes=[src,service,adapter,ui],
+        ['GemApplication','GemServiceWorker']+(['UiUnusedTask','UiInjector'] if instrument else []),optimize=optimize,includes=[src,service,adapter,ui],
         definitions={'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
                      'ui.c':['-DGEM_DIAGNOSTIC'] if instrument else []},
         probes=[(service/'gem-layout.c',gem_layout()),(ui/'ui-layout.c',ui_layout()),
@@ -40,6 +54,7 @@ def build_interactive(output,optimize=True,instrument=True):
         *ROOT.glob('lib/display/*'),*ROOT.glob('lib/input/*')]
     foreign['provenance'].update(slice='I4',hardware_execution=True,local_inputs=local_inputs(),
         extraction=extraction,diagnostic=instrument,
+        backend_sha256=sha256(backend),events_sha256=sha256(events),
         source_inputs={p.relative_to(ROOT).as_posix():sha256(p) for p in sorted(set(paths)) if p.is_file()})
     (output/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     include=output/'c-image.inc'

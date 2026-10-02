@@ -153,10 +153,10 @@ def record_i1(base, host):
                      'No keyboard, physical pointer, AES or hosted qualification claim.'])
 
 
-def read_native_run(folder, runner):
+def read_native_run(folder, runner, report_name='results.json'):
     """Audit native-only and mixed C reports using their actual build paths."""
     folder = Path(folder).resolve()
-    report = json.loads((folder/'results.json').read_text())
+    report = json.loads((folder/report_name).read_text())
     require(report['status'] == 'pass', 'Failed/incomplete run: '+str(folder))
     if 'cases' in report:
         require(report['cases'] and all(c['status'] == 'pass' for c in report['cases']),
@@ -185,7 +185,7 @@ def read_native_run(folder, runner):
     require(report.get('xex_sha256', build['xex_sha256']) == build['xex_sha256'],
             'Mismatched native XEX')
     report.update(evidence_path=str(folder.relative_to(ROOT)),
-                  evidence_sha256=sha256(folder/'results.json'),
+                  evidence_sha256=sha256(folder/report_name),
                   observer=dict(path=runner, sha256=digest))
     return report
 
@@ -324,13 +324,49 @@ def record_i4(base, host):
                      'Uncertain missing-drive timeout retains the offline SIO bus at FF93 after GUI retirement.'])
 
 
+def record_i5(base, host):
+    runs={}; peaks={}; maps={}
+    for mode in ('raw','opt'):
+        for name,runner in (('cursor','test_gem_cursor'),('cursor-fault','test_gem_cursor'),
+                            ('pointer','test_gem_pointer'),('service','test_gem_service'),
+                            ('keyboard','test_gem_interactive')):
+            folder=base/('i5-'+name+'-'+mode)
+            run=read_native_run(folder,'tools/'+runner+'.py',
+                                'unquiesced-results.json' if name=='cursor-fault' else 'results.json')
+            runs[name+'-'+mode]=run
+            usages=[run.get('stack_usage',{})]+[c.get('stack_usage',{}) for c in run['cases']]
+            for usage in usages:
+                for slot,value in usage.items(): peaks[slot]=max(peaks.get(slot,0),value['peak'])
+        require(len(runs['cursor-'+mode]['cases'])==57,'Missing cursor cases')
+        require(runs['cursor-fault-'+mode]['retained_request'],'Missing unquiesced retention')
+        require(runs['pointer-'+mode]['counters']['uiOverflow']==3,'Missing normalized loss cases')
+        require(runs['pointer-'+mode]['counters']['failures']==0,'Pointer target assertion')
+        image=json.loads((base/('i5-pointer-'+mode)/'c-image.json').read_text())
+        maps[mode]=dict(zero_fill=image['zero_fill'],symbols=image['symbols'],
+                        segments=[dict(address=s['address'],bytes=len(s['bytes']),executable=s['executable']) for s in image['segments']],
+                        link_sha256=sha256(base/('i5-pointer-'+mode)/'link.lst'))
+    return dict(format='exec816-gem-input-i5-development-v1',status='pass',tier='development',qualification=False,
+        base_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        scope='Revision-2 cursor transport, fenced save/restore/draw, normalized pointer gestures and durable queue loss.',
+        runs=runs,maps=maps,maximum_observed_stack_bytes=peaks,host_checks=host_checks(host),
+        bank_zero=dict(fixed_delta_bytes=0,per_public_task_delta_bytes=[0]*8,private_idle_delta_bytes=0,
+                       accounting='Complete reservations include guards, alignment and unused capacity.'),
+        upper_ram=dict(queue_payload_bytes=768,durable_events_bytes=48,queue_indices_and_flags_bytes=16,
+                       reserved_c_bytes=131072,reserved_c_delta_bytes=0,additional_production_tasks=0),
+        vram=json.loads((ROOT/'platform/altirraos/vbxe-vram.json').read_text()),
+        source_inputs={p:sha256(ROOT/p) for p in ('tools/record_input_slice.py','abi/gem-vdi.json','platform/altirraos/vbxe-vram.json')},
+        limitations=['Development checks, not hosted qualification.',
+                     'Pointer stimuli come from a diagnostic Task; no physical mouse or AES support.',
+                     'Responsiveness/failure closure and production packaging remain I6-I7.'])
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice', choices=['i0', 'i1', 'i2', 'i3', 'i4'], required=True)
+    p.add_argument('--slice', choices=['i0', 'i1', 'i2', 'i3', 'i4', 'i5'], required=True)
     p.add_argument('--base', type=Path, default=ROOT/'build/gem-input')
     p.add_argument('--host-log', type=Path, required=True)
     args = p.parse_args()
-    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2, 'i3': record_i3, 'i4': record_i4}[args.slice](args.base.resolve(), args.host_log)
+    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2, 'i3': record_i3, 'i4': record_i4, 'i5': record_i5}[args.slice](args.base.resolve(), args.host_log)
     output = ROOT/'docs/development'/('gem-input-'+args.slice+'.json')
     output.write_text(json.dumps(report, indent=2)+'\n')
     print(output)

@@ -44,10 +44,37 @@
       "capacity_bytes": 4096,
       "g3_used_bytes": 0,
       "g4_used_bytes": 4096
+    },
+    {
+      "name": "cursor",
+      "base": 225280,
+      "reserved_bytes": 1024,
+      "capacity_bytes": 768,
+      "i5_used_bytes": 768,
+      "parts": {
+        "saved_background": {
+          "offset": 0,
+          "bytes": 256
+        },
+        "and_mask": {
+          "offset": 256,
+          "bytes": 256
+        },
+        "or_mask": {
+          "offset": 512,
+          "bytes": 256
+        },
+        "reserved_slack": {
+          "offset": 768,
+          "bytes": 256
+        }
+      },
+      "g3_used_bytes": 0,
+      "g4_used_bytes": 0
     }
   ],
-  "reserved_bytes": 107008,
-  "unassigned_bytes": 417280,
+  "reserved_bytes": 108032,
+  "unassigned_bytes": 416256,
   "diagnostics": [
     {
       "name": "cross_page_transfer",
@@ -55,5 +82,5 @@
       "bytes": 32
     }
   ],
-  "note": "Exclusive display ownership. G4 assigns both font parities and one glyph scratch page; no AES, cursor or second screen allocation. CPU staging is a separate 4096-byte upper-RAM page."
+  "note": "Exclusive display ownership. Font/glyph regions are unchanged. I5 reserves a cursor save area, two mask planes and slack; CPU staging remains the existing 4096-byte upper-RAM page. No AES or second screen allocation."
 }

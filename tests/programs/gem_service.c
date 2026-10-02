@@ -122,8 +122,15 @@ static UWORD backend_close(void *context)
     return GEM_OK;
 }
 
+static UWORD backend_cursor(void *context, const struct GemCursor *cursor)
+{
+    check(context == &server && backend_live);
+    check(cursor->x >= 0 && cursor->x < 640 && cursor->y >= 0 && cursor->y < 240);
+    return GEM_OK;
+}
+
 static const struct GemBackend backend = {
-    backend_open, backend_command, backend_fence, backend_close, &server
+    backend_open, backend_command, backend_fence, backend_close, backend_cursor, &server
 };
 
 static struct GemCommand *commands(void) { return (struct GemCommand *)(client.packet + 1); }
@@ -164,7 +171,7 @@ static UWORD exchange(void)
 static void malformed(void)
 {
     UWORD kind;
-    for (kind = 0; kind < 23; ++kind) {
+    for (kind = 0; kind < 24; ++kind) {
         UWORD expected = GEM_BAD_PACKET, before = calls;
         ULONG sequence = server.next_sequence, hash;
         struct GemCommand *c;
@@ -194,6 +201,7 @@ static void malformed(void)
         case 20: c[0].opcode = 1; expected = GEM_UNSUPPORTED; break;
         case 21: --client.packet->sequence; expected = GEM_BAD_SESSION; break;
         case 22: ++client.packet->session; expected = GEM_BAD_SESSION; break;
+        case 23: client.packet->version = 1; break;
         }
         hash = input_hash();
         check(exchange() == expected);

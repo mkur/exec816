@@ -75,6 +75,21 @@ UWORD GemPrepare(struct GemClient *c, UWORD operation, UWORD commands, UWORD pay
     return result(c, GEM_OK);
 }
 
+UWORD GemPrepareCursor(struct GemClient *c, WORD x, WORD y, UWORD visible)
+{
+    UWORD status;
+    struct GemCursor *cursor;
+    if (x < 0 || x > 639 || y < 0 || y > 239 || visible > 1)
+        return result(c, GEM_BAD_PACKET);
+    status = GemPrepare(c, GEM_OP_CURSOR, 0, GEM_CURSOR_BYTES);
+    if (status != GEM_OK) return status;
+    cursor = (struct GemCursor *)(c->packet + 1);
+    cursor->x = x;
+    cursor->y = y;
+    cursor->visible = visible;
+    return GEM_OK;
+}
+
 UWORD GemSubmit(struct GemClient *c)
 {
     struct GemServer *s = c->server;

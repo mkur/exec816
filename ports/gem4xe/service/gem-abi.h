@@ -2,7 +2,7 @@
 #ifndef GEM_ABI_H
 #define GEM_ABI_H
 #include <proto/exec.h>
-#define GEM_VERSION 1
+#define GEM_VERSION 2
 #define GEM_MAX_POINT_PAIRS 16
 #define GEM_MAX_INT_WORDS 64
 #define GEM_LIMIT_COMMANDS 16
@@ -15,6 +15,7 @@
 #define GEM_OP_SUBMIT 2
 #define GEM_OP_CLOSE 3
 #define GEM_OP_STOP 4
+#define GEM_OP_CURSOR 5
 #define GEM_OK 0
 #define GEM_UNSUPPORTED 1
 #define GEM_BAD_PACKET 2
@@ -48,6 +49,13 @@ struct GemCommand {
     UWORD int_words;
     UWORD points_offset;
     UWORD ints_offset;
+};
+#define GEM_CURSOR_BYTES 8
+struct GemCursor {
+    WORD x;
+    WORD y;
+    UWORD visible;
+    UWORD reserved;
 };
 UWORD GemValidateCommand(UWORD operation, const struct GemCommand *command, const WORD *ints);
 UWORD GemCommandReplyWords(UWORD opcode);
