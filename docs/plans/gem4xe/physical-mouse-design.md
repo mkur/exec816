@@ -4,10 +4,12 @@
 [Current input contract](../../reference/input.md) ·
 [Platform contract](../../reference/platform.md) · [Roadmap](../../roadmap.md)
 
-Status: proposed, 2026-10-02. This follows the completed
+Status: implemented through M0–M6 development checks, 2026-10-02. This follows the completed
 [I0–I7 input milestone](input-and-events-implementation-plan.md). The selected
 emulator device is **ST mouse on joystick port 1**, matching the user's confirmed
-Altirra configuration. Exec capture and integration remain implementation work.
+Altirra configuration. See the [execution record](../../history/gem-mouse.md)
+and [current input contract](../../reference/input.md). The design discussion
+below preserves its pre-implementation rationale; it is not a qualification claim.
 
 The result should be a mouse that moves the existing cursor and operates the
 field, Count and Exit controls while keyboard input and physical SDFS reads

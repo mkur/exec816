@@ -121,10 +121,12 @@ distribution and exact machine configuration.
 ## Current optional artifact
 
 ```sh
-python3 tools/build_demo.py --gem-vdi --output build/gem-input/i7-demo
+python3 tools/build_demo.py --gem-vdi --output build/gem-mouse/m6-demo
 python3 tools/test_gem_interactive.py --mode opt --production --replay \
-  --case keyboard --output build/gem-input/i7-demo/gem-vdi
-python3 tools/test_of816.py --output build/gem-input/i7-demo/of816
+  --case keyboard --case wrong-disk --case no-disk --output build/gem-mouse/m6-demo/gem-vdi
+python3 tools/test_gem_mouse.py --mode opt --production --replay \
+  --case controls --case close-held --output build/gem-mouse/m6-demo/gem-vdi
+python3 tools/test_of816.py --output build/gem-mouse/m6-demo/of816
 ```
 
 The historical [G6 record](../../docs/development/gem-vdi-g6.json) covers raw/optimized
@@ -134,8 +136,10 @@ only boot files, guides, notices and checksums. The standard five-second OF816
 shell/prime autoboot remains the default; graphics is selected explicitly.
 
 The current artifact is the [interactive application](interactive/README.md):
-a native keyboard scene with root supervising disk I/O and the application owning
+a native keyboard and ST mouse scene with root supervising disk I/O and the application owning
 the renderer. [I0–I7](../../docs/history/gem-input.md) record reusable input,
 cursor/injected gestures, measured concurrency, failures and the refreshed bundle.
-There is no physical mouse or AES support. The G5 computing-peer regression remains
+[M0–M6](../../docs/history/gem-mouse.md) add ST mouse motion and the left
+button on port 1 through INPUT, bounded timing checks and the current bundle.
+There is no AES support. The G5 computing-peer regression remains
 available through its development runner and retains its historical evidence.

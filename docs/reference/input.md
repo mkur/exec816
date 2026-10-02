@@ -1,10 +1,11 @@
 # Native input ownership and events
 
 [Reference index](README.md) · [Signals and producers](signals.md) ·
-[Console](console.md) · [Implementation evidence](../history/gem-input.md)
+[Console](console.md) · [Keyboard evidence](../history/gem-input.md) ·
+[Mouse evidence](../history/gem-mouse.md)
 
-`INPUT` is the reusable, exclusive keyboard-capture library. The console and the
-interactive GEM application use the same implementation. It owns hardware capture
+`INPUT` provides reusable, exclusive keyboard and ST/port 1 pointer sources.
+The console and interactive GEM application use the same implementation. It owns hardware capture
 and route identities; consumers own text translation, focus and interaction.
 It adds no Task, private kernel service or COP signature. The public C surface is
 [exec/input.h](../../c/include/exec/input.h); exact generated records and constants
@@ -40,7 +41,7 @@ unaddressed input. An existing consumer returns BUSY without changing ownership.
 Lease states are FREE, ACQUIRING, ACTIVE and RELEASING. Do not copy, move or alter
 a live lease; a copied record or stale acquisition fails identity validation.
 
-Configuration permits zero to two filters. Each active mask is nonzero, with no
+Keyboard configuration permits zero to two filters. Each active mask is nonzero, with no
 value bits outside that mask; unused pairs and reserved fields are zero. The
 only flag is `CAPTURE_BREAK=1`. A matching raw scan becomes durable cancellation,
 without an additional ordinary KEY. GEM selects Escape `$1C/$3F` plus BREAK;
@@ -143,9 +144,11 @@ samples or pending output from restoring a gesture after its loss. Loss retains
 the first unacknowledged cause and the latest counter baseline. Epoch exhaustion
 disables addressed capture until reacquisition, with durable loss and no wrapping
 identity. Three or four transitions hidden between samples can alias legal or
-unchanged phase values and cannot be detected from PORTA alone. The 1,000
-transitions/second/axis envelope and GUI response bound remain M5 validation
-work; arbitrary host bursts are not guaranteed.
+unchanged phase values and cannot be detected from PORTA alone. M5 checks phases
+spaced at least 1 ms apart, with a maximum sample gap below 276 µs in the selected
+workloads. The existing controller's fastest qualifying quantization is
+16 scanlines, about 972 transitions/second/axis; exactly 1 kHz was not directly
+generated. Arbitrary host bursts are not guaranteed.
 
 | Shared fields | Writers and serialization |
 | --- | --- |
@@ -191,6 +194,7 @@ general latency guarantee or hosted-system qualification.
 Keyboard capture uses 560 bytes and a 144-byte descriptor. Pointer capture
 reserves 1,536 bytes including two 16-byte guards and 224 bytes of unused
 capacity, plus a 144-byte descriptor. The shared acquisition allocator uses four
-bytes. All are inside the existing 64 KiB upper Task arena. No additional input Task or reserved bank-zero memory is
+bytes. All are inside the existing 64 KiB upper Task arena. No additional input
+Task or reserved bank-zero memory is
 introduced: fixed, each public Task and private-idle deltas are zero, counting
 guards, alignment and unused reserved capacity.

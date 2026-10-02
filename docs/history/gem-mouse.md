@@ -3,6 +3,9 @@
 [History](README.md) · [Plan](../plans/gem4xe/physical-mouse-implementation-plan.md) ·
 [Design](../plans/gem4xe/physical-mouse-design.md)
 
+M0–M6 are complete at the development tier on the pinned PAL emulator.
+Use the [current demo guide](../guides/gem-vdi.md) for ST/port 1 setup.
+
 ## M0 Controller and baseline
 
 [M0 evidence](../development/gem-mouse-m0.json) records the existing ST/port 1
@@ -220,3 +223,48 @@ Task, VRAM or stack reservation is added. Reserved bank-zero delta remains zero
 for fixed/root storage, every public Task and private idle, including guards,
 alignment and unused capacity. These are development checks on the pinned
 emulator; general hosted-system and physical-hardware qualification remain open.
+
+## M6 Contracts and production artifact
+
+[M6 evidence](../development/gem-mouse-m6.json) records the freshly built
+`build/gem-mouse/m6-demo/exec816-demo.zip`, produced through `tools/build_demo.py`
+with OF816 and the optional production graphics image. Its SHA-256 is
+`da22d514b7cf50b791ad2f12f11856611163dc7ee1b3b06443e330d17a950949`.
+The 316,938-byte ZIP passes the exact file whitelist, per-file checksums, matching
+XEX/disk/ROM and license-notice checks. Build inputs, maps and reports remain
+outside the distribution. G0–G6 and I0–I7 evidence is unchanged.
+
+The packaged optimized scene passes physical ST/port 1 field selection and
+typing, Count and Exit clicks, release outside a control, and Escape while held.
+Keyboard, wrong-disk and missing-disk controls pass with the same production
+XEX. Exact scanout, lease/request retirement, hardware restoration and guards
+pass. Diagnostic injectors, native probe entries and stimulus storage are absent.
+The [guide screenshot](../images/gem-mouse.png) is copied unchanged from the
+executed Count scene; its image hash, frame, tested XEX/disk and independent pixel
+comparison are recorded. Automation drives Altirra's existing controller through
+its input manager. SDL capture/release instructions were checked against source;
+an interactive host-capture session was not separately exercised.
+
+The standard bundled OF816 path still waits five PAL seconds, including a clock
+wrap, before the shell/prime demo. Manual countdown cancellation, Forth arithmetic
+and boot settings, Forth-to-shell handoff, physical keyboard input, disk HELLO,
+CAT/WC pipeline and EXIT pass, as do OF816 return and busy-IOCB controls. Adjacent
+direct pages, stack/domain guards, retired manifest storage, VBXE aperture and OS
+state remain intact. The host suite passes 288 tests with four historical skips.
+M6 replays optimized production artifacts; raw/optimized timing, failure and
+observer-disabled comparisons remain in M5.
+
+Production GEM C occupies 43,149 code bytes, 3,666 initialized data bytes and
+6,729 zero-fill bytes inside the existing two reserved upper banks. Native
+production support occupies 11,781 of its 12,288 reserved bytes. The maximum
+observed graphics application/renderer stack use is 271/484 bytes in their
+existing 2,560-byte stacks; these observations are not worst-case stack proofs.
+Runtime bank-zero reservation remains 56,128 bytes including OS regions, leaving
+9,408 bytes free. M6 changes fixed/root/kernel, each of eight public Tasks and
+private idle by **zero reserved bytes**, including guards, alignment and unused
+capacity. Upper-bank, Task, stack and VRAM reservation deltas are also zero.
+
+The [current input contract](../reference/input.md), producer/platform references,
+guide, design/plan status and indexes now describe this implemented boundary.
+Amiga, additional buttons/ports, wheel, physical hardware, NTSC, AES and desktop
+work remain outside this milestone; these checks are not full hosted qualification.

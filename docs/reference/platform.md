@@ -255,7 +255,9 @@ pointer-sampling demands. Each acknowledged edge advances an armed alarm at
 most once; serial RX/TX receive bounded service opportunities around sampling.
 SIO retains timer 2 and its watchdog, transfer and recovery policy. Timer 1 keeps
 the existing divisor 7 and SIO alarm units. SIO transaction setup still resets
-STIMER; joining an existing timing owner does not reset it.
+STIMER; joining an existing timing owner does not reset it. A new owned timer
+edge arriving during keyboard capture remains latched for the next native IRQ;
+it is never delegated to the ROM handler while the timing owner remains live.
 
 The first compatible owner establishes a silent baseline for its audio/timing
 registers using write shadows, never POKEY's unrelated read aliases. Existing

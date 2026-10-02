@@ -3,8 +3,9 @@
 [Implementation plans](../README.md) · [Design note](physical-mouse-design.md) ·
 [Current input contract](../../reference/input.md) · [Roadmap](../../roadmap.md)
 
-Status: in progress, 2026-10-02. M0–M5 passed development checks; M6 is pending.
-See the [execution record](../../history/gem-mouse.md). Implement the configured
+Status: complete, 2026-10-02. M0–M6 passed the recorded development checks;
+this is not full hosted-system or physical-hardware qualification.
+See the [execution record](../../history/gem-mouse.md). The slices implement the configured
 **ST mouse on joystick port 1**, with motion and the left button, using Altirra's
 existing controller. The endpoint is the current interactive GEM scene accepting
 mouse and keyboard input during physical SDFS reads and returning cleanly to text.
@@ -31,10 +32,10 @@ label facilities that remain unsupported at that boundary. Do not retain old ABI
 profiles or compatibility implementations. Update generators, callers and tests
 together. Compiler defects belong in actionc with focused regressions.
 
-Write each slice's reports under `build/gem-mouse/mN/`, then freeze a passing
-record as `docs/development/gem-mouse-mN.json`. These are future outputs, not
-existing evidence. Add a history page when execution starts and link each record
-there. Preserve the G0–G6 and I0–I7 records and original hashes.
+Each slice's reports live under `build/gem-mouse/mN/`, with the M6 distribution
+under `build/gem-mouse/m6-demo/`. Passing records are frozen as
+`docs/development/gem-mouse-mN.json` and linked in the execution record.
+The G0–G6 and I0–I7 records and original hashes remain unchanged.
 
 ## Inputs and boundaries
 
@@ -58,8 +59,8 @@ kernel operations, if needed, require a reusable public ABI and a plan update.
 
 ## Interfaces selected for implementation
 
-These are proposed M2/M3 contracts. Current reference pages continue to describe
-the implemented version until the corresponding slice passes.
+These contracts were implemented in M2/M3. The slice descriptions below retain
+their original sequencing; use the current references for the supported API.
 
 ### Generated public records
 

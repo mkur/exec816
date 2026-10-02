@@ -26,19 +26,19 @@ These are possible next milestones, without a delivery order:
   [two-command foreground pipeline](guides/shell.md).
 - Broader C bindings and more Amiga examples beyond the
   [standalone Calypsi binding](guides/calypsi-c.md).
-- Physical pointer support, AES and desktop integration beyond the implemented
-  [minimal hosted VDI subset](reference/gem-vdi.md) and [keyboard input](reference/input.md).
-  The [optional interactive demo](guides/gem-vdi.md) now provides keyboard controls,
-  console handoff and bounded redraws during physical I/O. The completed
+- Additional pointer protocols, AES and desktop integration beyond the implemented
+  [minimal hosted VDI subset](reference/gem-vdi.md) and [input sources](reference/input.md).
+  The [optional interactive demo](guides/gem-vdi.md) provides keyboard and ST mouse
+  controls, console handoff and bounded redraws during physical I/O. The completed
   [I0–I7 plan](plans/gem4xe/input-and-events-implementation-plan.md) records the
-  cursor/injected-event boundary. The proposed
-  [physical mouse design](plans/gem4xe/physical-mouse-design.md) targets the
-  configured ST mouse on port 1, with shared SIO timing and reusable capture
-  feeding the existing cursor and controls. Shared timing and reusable ST capture
-  now pass M0–M5 development checks, including GUI controls and bounded
-  timing/failure cases; the artifact refresh remains. Its
+  cursor/injected-event boundary. The implemented
+  [physical mouse design](plans/gem4xe/physical-mouse-design.md) adds ST mouse
+  motion and the left button on port 1, with shared SIO timing and reusable
+  capture. M0–M6 development checks cover GUI controls, bounded timing/failures
+  and the packaged production scene. Its
   [M0–M6 implementation plan](plans/gem4xe/physical-mouse-implementation-plan.md)
-  separates timing migration, input capture, GUI integration and artifact checks.
+  and [execution record](history/gem-mouse.md) preserve the measured envelope;
+  physical hardware and other configurations remain unqualified.
 - Priority scheduling and larger Task capacities. Current priorities are stored
   but selection is FIFO; capacities beyond the supported four/eight layouts need
   separate memory budgeting and qualification.

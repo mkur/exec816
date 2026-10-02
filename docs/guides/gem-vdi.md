@@ -1,18 +1,18 @@
 # Optional interactive GEM/VDI demo
 
 [Guides](README.md) · [Supported interface](../reference/gem-vdi.md) ·
-[Input and concurrency measurements](../history/gem-input.md)
+[Physical mouse measurements](../history/gem-mouse.md)
 
 Build the optional graphics program alongside the standard OF816 demo:
 
 ```sh
-python3 tools/build_demo.py --gem-vdi --output build/gem-input/i7-demo
+python3 tools/build_demo.py --gem-vdi --output build/gem-mouse/m6-demo
 ```
 
 This uses the pinned Action! compiler, Calypsi 5.18 and GEM source inputs. See
 [build prerequisites](../contributing/building.md) and the
 [port instructions](../../ports/gem4xe/README.md) for obtaining and verifying
-those inputs. The output is `build/gem-input/i7-demo/exec816-demo.zip`.
+those inputs. The output is `build/gem-mouse/m6-demo/exec816-demo.zip`.
 
 The ZIP still boots `Exec-of816.xex` into OF816, with its five-second countdown
 and standard shell/prime demo. An additional `gem-vdi/` directory contains the
@@ -27,17 +27,29 @@ VBXE IRQ. Mount **`gem-vdi/graphics.atr`** as drive 1 and load
 burst and random delay disabled and accurate sector timing enabled. The exact
 emulator/ROM hashes and settings are in the [platform pin](../../toolchain/altirra-gem-vdi.json).
 
+Enable **Mouse → ST Mouse (port 1)** in Altirra's input maps and disable other
+maps that drive that port. Use **Capture Mouse** (F12 in the pinned SDL build) to
+send host motion; Right Alt / Right Option releases capture. Opening a menu or
+losing window focus also releases it. The driver uses one pixel per electrical
+transition, without acceleration, and supports the left button only.
+
 The application displays a text field, Count and Exit buttons while the Action!
 root supervisor reads a cold 2 KiB file. Application and renderer use the two
 existing 2,560-byte Task stacks. Root owns file work; the application owns input
 and the renderer client. Disk completion leaves the scene open for interaction.
 
-| Key | Action |
+| Input | Action |
 | --- | --- |
+| Left click | Select the field or activate Count/Exit on matching release over the same control. |
 | Tab | Cycle the text field, Count and Exit. |
 | Printable keys / Backspace | Edit the focused 24-character field. |
 | Return | Activate the focused button. Count advances its number and color. |
 | Escape / BREAK | Exit from any control, settling any active disk request first. |
+
+Mouse admission failure displays `KeysOnly`; the keyboard controls remain
+available. An idle or absent mouse cannot be distinguished reliably, so an
+unconfigured port does not prevent startup. Loss disarms a press; release and
+press again before clicking.
 
 Exit restores text, displays completion for five seconds and returns to the OS.
 A missing, wrong, short or corrupt disk file follows cleanup and displays the
@@ -45,19 +57,25 @@ matching disk name in text. The root `system.atr` belongs to the standard demo;
 graphics requires **the `gem-vdi/graphics.atr` shipped with its XEX**.
 If a missing drive leaves the serial bus offline, the message also requests a
 reset; the program preserves that bus ownership instead of returning to the OS.
-Start from an inactive VBXE baseline; unknown previous ownership is unsupported. A device that remains
-busy after bounded recovery requires reset and retains its resources.
+Start from an inactive VBXE baseline; unknown previous ownership is unsupported.
+A device that remains busy after bounded recovery requires reset and retains its resources.
 
-![The interactive keyboard scene](../images/gem-input.png)
+![The executed production mouse scene](../images/gem-mouse.png)
 
-The [I6 measurements](../development/gem-input-i6.json) bound the recorded small
-keyboard redraw workload at 12 raw / 11 optimized PAL ticks from native capture
-to visible update during physical SIO, including wrap controls. The renderer's
-fixed cursor and button gestures are tested with injected pointer events.
-The distributed image contains no injector, timing gates or substituted hardware
-status; it has no physical mouse backend. AES, desktop, GEMDOS, virtual workstations,
-external fonts and multiple GUI clients remain unsupported. These are focused
-development results on the pinned emulator, not general hardware qualification.
+[M5 development measurements](../history/gem-mouse.md#m5-coexistence-and-failure-closure)
+keep the maximum observed sample gap below 276 µs during the selected GUI and
+FASTEST125 SIO workloads. First captured motion reaches visible pixels within
+seven PAL ticks; the selected small keyboard redraws take at most ten. The
+acceptance ceiling remains 12 ticks. Phases must be at least 1 ms apart and
+button levels held at least 10 ms; the existing controller's fastest qualifying
+quantization is 16 scanlines (about 972 transitions/s). Fast host bursts can lose
+distance even when a missing full quadrature cycle cannot be detected.
+
+The distributed image has real mouse capture and no injector, timing gates or
+substituted hardware status. Amiga mice, other ports, right/middle buttons,
+wheel, physical hardware, NTSC, AES, desktop, GEMDOS, virtual workstations,
+external fonts and multiple GUI clients remain outside this milestone. These
+are focused results on the pinned emulator, not general hosted qualification.
 
 To return to the usual demo, use its no-add-ons configuration, mount the root
 `system.atr` and boot the root `Exec-of816.xex`.
@@ -66,8 +84,10 @@ Reproduce the focused graphics check for the exact packaged image:
 
 ```sh
 python3 tools/test_gem_interactive.py --mode opt --production --replay \
-  --case keyboard --output build/gem-input/i7-demo/gem-vdi
-python3 tools/test_of816.py --output build/gem-input/i7-demo/of816
+  --case keyboard --case wrong-disk --case no-disk --output build/gem-mouse/m6-demo/gem-vdi
+python3 tools/test_gem_mouse.py --mode opt --production --replay \
+  --case controls --case close-held --output build/gem-mouse/m6-demo/gem-vdi
+python3 tools/test_of816.py --output build/gem-mouse/m6-demo/of816
 ```
 
 The checker verifies visible pixels and palette against an independent font

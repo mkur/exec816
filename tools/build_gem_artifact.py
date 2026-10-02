@@ -18,7 +18,7 @@ def build(output):
     font=(output/'selected/src/vdi/font8x8.c').read_text().split('*/',1)[0]+'*/\n'
     (output/'GEM-FONT-NOTICE.txt').write_text(font)
     from package_demo import GEM_FILES
-    record=dict(format='exec816-gem-vdi-artifact-v1',diagnostic=False,workload='interactive-keyboard',
+    record=dict(format='exec816-gem-vdi-artifact-v1',diagnostic=False,workload='interactive-keyboard-st-mouse',
         files={name:sha256(output/name) for name in GEM_FILES},
         pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text()),
         provenance=foreign['provenance'],build=program['build'],

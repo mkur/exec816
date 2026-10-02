@@ -15,11 +15,13 @@ Supported operations are OPEN/CLOSE, clear/update, 2–16-point solid polylines,
 solid bars, inclusive clipping, up to 64 glyph indices per text call, line/text/
 fill colors 0–15, solid fill interior 1 and replace writing mode 1. Virtual
 workstations, raster copies, polygon/contour fill, external fonts, rotation,
-markers, physical mouse input, AES, GEMDOS, callbacks and dynamic loading are
+markers, AES, GEMDOS, callbacks and dynamic loading are
 unsupported. A validated request never silently succeeds as an omitted service.
 The interactive application consumes native [keyboard input](input.md) separately
 and can request the fixed renderer-owned cursor. Diagnostic injected pointer
-events establish button semantics; they do not provide a physical mouse backend.
+events establish button semantics. The application also admits the reusable
+ST/port 1 motion and left-button source; see [input](input.md) and the
+[demo guide](../guides/gem-vdi.md).
 
 ## Service protocol
 

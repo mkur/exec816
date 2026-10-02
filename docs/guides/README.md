@@ -8,7 +8,7 @@
 - [Shell](shell.md): commands, paths, redirection and pipes.
 - [OF816 boot monitor](boot-monitor.md): interrupt autoboot and choose boot settings.
 
-- [Optional interactive GEM/VDI demo](gem-vdi.md): keyboard controls and concurrent disk I/O with VBXE graphics.
+- [Optional interactive GEM/VDI demo](gem-vdi.md): ST mouse and keyboard controls during disk I/O, with VBXE graphics.
 
 ## Writing programs
 

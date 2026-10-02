@@ -10,12 +10,17 @@ a desktop or an AES application environment.
    no shared RAM and no VBXE IRQ. Other cores/bases are unsupported.
 3. Mount gem-vdi/graphics.atr as drive 1. Select physical generic56k disk emulation:
    SIO patch OFF, burst OFF, random delay OFF and accurate sector timing ON.
-4. Load gem-vdi/Exec-gem-vdi.xex directly, not as a shell command. The application
+4. Enable Mouse -> ST Mouse (port 1); disable conflicting maps for that port.
+   Use Capture Mouse (F12 in the pinned SDL build). Right Alt / Right Option
+   releases capture; menus and window focus loss also release it.
+5. Load gem-vdi/Exec-gem-vdi.xex directly, not as a shell command. The application
    displays a text field, Count and Exit buttons while root reads a cold 2 KiB
    file. Tab changes focus. Printable keys and Backspace edit the field; Return
-   activates a button. Count changes the number and colored indicator.
+   activates a button. Left-click selects the field; press and release over
+   Count or Exit to activate it. Count changes the number and colored indicator.
+   KeysOnly means mouse admission failed; keyboard controls still work.
    Escape or BREAK exits from any control. Disk completion leaves the scene open.
-5. On exit it restores text, displays completion for five seconds and returns
+6. On exit it restores text, displays completion for five seconds and returns
    to the OS. A media error also restores text and names the required
    gem-vdi/graphics.atr disk. The root system.atr is for the standard demo.
    If the error says "SIO offline; reset required", cold-reset after correcting
@@ -29,12 +34,16 @@ system.atr and boot the main Exec-of816.xex.
 
 Supported drawing: 640x240, sixteen colors, built-in 8x8 text, polylines, solid
 bars, clipping, clear/update, basic color setters, solid fill and replace mode.
-Native keyboard input is supported. The renderer has a fixed software cursor;
-pointer/button injection is a development test and is absent from this artifact.
-There is no physical mouse, AES, desktop, GEMDOS, virtual workstation, loaded font
-or multiple GUI clients. Recorded small keyboard redraws take at most 12 raw /
-11 optimized PAL ticks during physical SIO. Evidence is development testing on the pinned emulator;
-it is not physical-hardware or full-system qualification.
+Native keyboard and ST/port 1 mouse motion/left-button input are supported.
+Motion is one pixel per electrical transition without acceleration. Release and
+press again after input loss. Fast host bursts can lose distance: quadrature
+cannot expose every missed cycle. Supported phases are at least 1 ms apart and
+button levels at least 10 ms long. The measured sample gap is below 276 us in
+selected GUI/SIO tests; cursor updates take at most seven PAL ticks and selected
+small keyboard redraws ten (acceptance ceiling twelve).
+No Amiga, other ports, right/middle buttons, wheel, AES, desktop, GEMDOS, virtual
+workstation, loaded fonts or multiple GUI clients are provided. Testing covers
+the pinned PAL emulator, not physical hardware, NTSC or full-system qualification.
 
 Sources and reproducible build instructions:
 https://github.com/mkur/exec816
