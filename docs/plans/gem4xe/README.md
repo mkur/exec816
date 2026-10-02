@@ -27,6 +27,14 @@ through M0–M6 development checks, including the optional production artifact.
 See its [execution record](../../history/gem-mouse.md); physical hardware and
 broader hosted qualification remain separate work.
 
+The next proposed milestone is the [bitmap console](bitmap-console-design.md):
+an 80×30 CON: backend on the existing 640×240 display, sharing faster glyph and
+copy operations with VDI. The [implementation plan](bitmap-console-implementation-plan.md)
+defines B0–B9, from reproducible measurements and bounded blitter lists through
+console integration, scrolling, coexistence and the optional artifact. It keeps
+the existing console worker, one large stack pool and zero additional bank-zero
+reservations. Overlapping desktop windows remain later work.
+
 **Preserved analysis:** these three documents were moved from GEM4XE's
 `docs/kernel/` into Exec816 on 2026-10-01 so the upstream checkout can
 be updated independently. Source paths, “current” and “this repository”
@@ -294,3 +302,7 @@ support for additional custom boards as a board-port task.
 The repository records its licensing/provenance in [licence.md](https://github.com/slaapliedje/gem4xe/blob/01c2e17b072e079443a11eff11d3ab3229db5ed5/docs/licence.md)
 and [COPYING](https://github.com/slaapliedje/gem4xe/blob/01c2e17b072e079443a11eff11d3ab3229db5ed5/COPYING). Preserve those records when extracting code;
 choosing a kernel/service boundary does not itself establish a new license grant.
+
+The [B0 development baseline](../../development/bitmap-console-b0.json) records
+26 graphical workloads and the current text-console timings, with observer/replay
+separation. It is not desktop or hardware qualification.

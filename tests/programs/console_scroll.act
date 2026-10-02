@@ -12,7 +12,7 @@ BYTE clockHigh=$13,clockLow=$14
 CARD ARRAY elapsed(8)
 CARD checks
 CONSOLETYPES.Instance local
-CONSOLETYPES.Presentation display
+CONSOLETYPES.Presentation presentation
 CONSOLETYPES.Instance POINTER instance
 CONSOLETYPES.Service POINTER service
 CONSOLETYPES.Presentation POINTER view
@@ -92,18 +92,18 @@ PROC Direct()
   OD
 
   elapsed(0)=Clock()-started
-  Require(CONSOLEDISPLAY.Claim(@display,@local,snapshot)=1)
+  Require(CONSOLEDISPLAY.Claim(@presentation,@local,snapshot)=1)
   started=Clock()
   FOR index=0 TO 15 DO
     local.dirtyFirst=0
     local.dirtyEnd=960
     WHILE local.dirtyEnd<>0 DO
-      CONSOLEDISPLAY.Quantum(@display,@local)
+      CONSOLEDISPLAY.Quantum(@presentation,@local)
     OD
   OD
 
   elapsed(1)=Clock()-started
-  CONSOLEDISPLAY.Release(@display)
+  CONSOLEDISPLAY.Release(@presentation)
   FOR index=0 TO 319 DO
     Require(cells(index)=BYTE(33+(index & 63)))
   OD

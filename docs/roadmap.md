@@ -16,7 +16,37 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
 
 ## Follow-on capabilities
 
-These are possible next milestones, without a delivery order:
+The next graphics milestone is a **fast bitmap console**, before overlapping
+windows or AES. The [design note](plans/gem4xe/bitmap-console-design.md) and
+[implementation plan](plans/gem4xe/bitmap-console-implementation-plan.md) define
+the proposed B0–B9 slices. Start with one full-screen 80×30 console in the existing
+640×240 VBXE mode and built-in 8×8 font. Reuse the
+[console device](reference/console.md), retained cells, input routes, DOS cooked
+editing and shell. The current [instance geometry](reference/console-windows.md)
+is limited to 40×24; widen that contract and its storage explicitly rather than
+creating a separate terminal implementation. Keep the existing console worker
+as display owner, using one already reserved 2,560-byte pool and the shared
+drawing library through a checked ordinary-call bridge.
+
+First measure and improve the shared VDI text path: batch glyph work, amortize
+command preparation and driver checks, and preserve bounded completion and
+ownership. Add dirty text spans and a VRAM copy/fill scrolling path, with full
+redraw as the correctness fallback. Keep the same rendering improvements usable
+by later GUI clients. Start with a text caret; mouse-cursor optimization and
+window composition remain separate work.
+
+Proposed responsiveness goals on the pinned PAL 65C816 ×8/VBXE configuration are
+visible typing or a short edit within **40 ms**, a synchronized one-row scroll
+fenced within **20 ms** and visible within the following frame, and a full
+80×30 repaint visible within **500 ms**. These are design targets, not achieved
+measurements. The design defines acceptance and timing boundaries separately
+for accepted console bytes, hardware completion and visible scanout. Measure
+with physical disk I/O and input capture active as well as idle.
+Require exact pixels, responsive cancellation, bounded memory and clean display
+handoff. Existing request completion semantics and SIO deadlines must survive
+the performance work.
+
+The other possible milestones have no delivery order:
 
 - Filesystem writing, beginning with a separate SpartaDOS milestone. Current
   [disk support](reference/dos.md) is read-only.
