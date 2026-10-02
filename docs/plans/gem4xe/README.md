@@ -14,6 +14,8 @@ it, or the [implementation record](../../history/gem-vdi.md) for G0–G6 evidenc
 The proposed next milestone is [input ownership and event delivery](input-and-events-design.md):
 native keyboard interaction during disk I/O, explicit console handoff and
 renderer-owned cursor updates, followed by a separately pinned physical pointer.
+The [implementation plan](input-and-events-implementation-plan.md) defines I0–I7,
+initial ABI layouts, source migrations and focused acceptance checks.
 
 **Preserved analysis:** these three documents were moved from GEM4XE's
 `docs/kernel/` into Exec816 on 2026-10-01 so the upstream checkout can

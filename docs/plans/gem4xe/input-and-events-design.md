@@ -1,12 +1,13 @@
 # Input ownership and events for hosted GEM
 
-[Implementation plans](../README.md) · [GEM work](README.md) ·
+[Implementation plan](input-and-events-implementation-plan.md) · [GEM work](README.md) ·
 [Current VDI contract](../../reference/gem-vdi.md) · [Roadmap](../../roadmap.md)
 
 Status: proposed design, following completed G0–G6. This note selects the
 boundaries for an interactive graphics workload; it adds no supported API or
-executable behavior. A subsequent implementation plan must freeze the record
-layouts, source changes and executable gates before implementation.
+executable behavior. The companion implementation plan selects initial record
+layouts, source changes and executable gates; its emitted ABI probes must pass
+before runtime migration.
 
 The next milestone is one application that accepts native keyboard input,
 updates a small graphical dialog during physical disk I/O, and exits cleanly.

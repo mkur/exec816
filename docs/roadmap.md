@@ -30,8 +30,9 @@ These are possible next milestones, without a delivery order:
   [minimal hosted VDI subset](reference/gem-vdi.md). The
   [optional graphics workload](guides/gem-vdi.md) covers drawing and concurrent
   physical I/O. The proposed [input and events design](plans/gem4xe/input-and-events-design.md)
-  selects keyboard capture, console handoff and an interactive scene next;
-  physical pointer support, AES and desktop integration remain future work.
+  and [implementation plan](plans/gem4xe/input-and-events-implementation-plan.md)
+  select media-error cleanup, keyboard capture, console handoff and an interactive
+  scene next. Physical pointer support, AES and desktop integration remain future work.
 - Priority scheduling and larger Task capacities. Current priorities are stored
   but selection is FIFO; capacities beyond the supported four/eight layouts need
   separate memory budgeting and qualification.

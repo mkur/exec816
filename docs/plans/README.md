@@ -66,10 +66,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
-- [Input ownership and events for hosted GEM](gem4xe/input-and-events-design.md):
-  proposed next milestone after G0–G6; reusable keyboard capture, console handoff,
-  an interactive scene during disk I/O, serialized cursor drawing and a separate
-  physical-pointer coexistence gate.
+- [Hosted GEM input and events implementation](gem4xe/input-and-events-implementation-plan.md):
+  planned I0–I7 slices for media-error cleanup, shared keyboard capture, console
+  handoff, an interactive scene during disk I/O and serialized cursor drawing;
+  based on the [design note](gem4xe/input-and-events-design.md). Physical pointer
+  support and AES have separate follow-on gates.
 - [Minimal hosted GEM VDI subset](gem4xe/minimal-vdi-implementation-plan.md):
   G0–G6 complete, including concurrent physical-SDFS/failure checks and the
   optional artifact. See the [current contract](../reference/gem-vdi.md),
