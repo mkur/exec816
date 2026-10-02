@@ -3,9 +3,10 @@
 [Port overview](../README.md) ·
 [Input implementation plan](../../../docs/plans/gem4xe/input-and-events-implementation-plan.md)
 
-The I4 workload gives the C application and renderer the two existing 2,560-byte
+The interactive workload gives the C application and renderer the two existing 2,560-byte
 Task pools. Root supervises a cold `D1:DATA.BIN` read. This development launcher
-is separate from the G5 computing-peer regression; distribution changes are I7.
+is separate from the G5 computing-peer regression. It also supplies the optional
+production artifact through `tools/build_demo.py --gem-vdi`.
 
 The application owns the renderer, its sole client and a reusable keyboard input
 lease. Tab cycles a 24-character text field, Count and Exit. Printable keys and
@@ -58,3 +59,20 @@ Build with `tools/build_gem_interactive.py --output DIR`, or use
 or display ownership, exhaust the allocator, or request a third large Task.
 The production build omits those hooks. Checks, maps and transcripts stay outside
 any distribution ZIP. Focused development checks do not qualify the hosted system.
+
+The 32-record normalized queue has independent durable loss and cancellation.
+Pointer publication validates the complete record and active acquisition/route.
+Only adjacent motion with matching identity/buttons can coalesce. A press arms
+one control, a matching release activates once, and loss/cancellation disarms.
+Overflow drops the incomplete sequence and requires a fresh released-button state.
+The application alternates dirty scene and cursor work through its single pending
+packet. The renderer saves/restores its fixed arrow around scene updates.
+
+`tools/test_gem_pointer.py` supplies a copied-event producer Task and checks
+gesture/pixel outcomes, including publication during loss acknowledgment and an
+outstanding cursor packet. `tools/test_gem_cursor.py` checks edges, malformed
+requests and hardware failure phases. Production omits the producer and gates.
+Native keyboard/SIO latency, context, exhaustion and cleanup cases are recorded
+in [I6 evidence](../../../docs/development/gem-input-i6.json): maximum observed
+small-redraw latency is 12 raw / 11 optimized PAL ticks. The current reusable
+contract is [input](../../../docs/reference/input.md), not an AES event API.

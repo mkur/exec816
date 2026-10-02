@@ -77,6 +77,9 @@ Bind carries source at offset 0, a three-byte Task pointer at 2, zero padding at
 5 and a four-byte mask at 6. Release and Drain carry the two-byte source. The
 generated compiler argument schema defines outgoing frames. Console uses this
 same keyboard binding; its earlier private admission selectors are removed.
+Keyboard consumers normally use the [input lease API](input.md), which owns
+binding activation, route publication and release/drain. Console and graphics
+share that API rather than installing independent keyboard handlers.
 
 Try the [signal example](../guides/tasks.md). The original design, ABI migration
 and revision-specific timing discussion remain in the

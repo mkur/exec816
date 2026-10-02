@@ -20,7 +20,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 ## Exec and project history
 
 - [Minimal GEM/VDI hosting](gem-vdi.md): G0–G6 evidence, memory costs and optional artifact.
-- [Hosted GEM input and events](gem-input.md): I0–I6 reusable input, interactive controls, cursor semantics and measured concurrency/failure closure.
+- [Hosted GEM input and events](gem-input.md): I0–I7 reusable input, interactive controls, cursor semantics, measured concurrency and the packaged demo.
 
 - [Intrusive Lists — earlier guide](lists-reference.md)
 - [Build cleanup and artifact restoration](build-cleanup.md)

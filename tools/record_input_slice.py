@@ -65,6 +65,16 @@ def distribution(folder, run):
     require(hashes['Exec-of816.xex'] == boot['xex_sha256'] and
             hashes['system.atr'] == boot['media']['sha256'] and
             hashes['altirraos-816.rom'] == boot['rom']['sha256'], 'Mismatched OF816 bundle')
+    notices={'EXEC816-GPL-3.0.txt':ROOT/'LICENSE','EXEC816-MIT.txt':ROOT/'LICENSE-MIT',
+             'EXEC816-LICENSING.md':ROOT/'LICENSING.md','OF816-LICENSE.txt':folder/'of816/OF816-LICENSE.txt',
+             'ALTIRRAOS-LICENSE.txt':folder/'of816/ALTIRRAOS-LICENSE.txt',
+             'gem-vdi/GEM-COPYING.txt':folder/'gem-vdi/selected/COPYING',
+             'gem-vdi/GEM-COPYING.LIB.txt':folder/'gem-vdi/selected/COPYING.LIB',
+             'gem-vdi/GEM-LICENSING.md':folder/'gem-vdi/selected/docs/licence.md'}
+    for name,path in notices.items():require(files[name]==path.read_bytes(),'Changed license notice: '+name)
+    font=(folder/'gem-vdi/selected/src/vdi/font8x8.c').read_text().split('*/',1)[0]+'*/\n'
+    require(files['gem-vdi/GEM-FONT-NOTICE.txt']==font.encode(),'Changed font notice')
+    require(files['gem-vdi/README.txt']==(ROOT/'docs/gem-vdi-distribution.txt').read_bytes(),'Stale graphics guide')
     return dict(path=str(archive.relative_to(ROOT)), sha256=sha256(archive),
                 bytes=archive.stat().st_size, members=hashes)
 
@@ -406,13 +416,64 @@ def record_i6(base, host):
                      'No physical mouse or AES support.'])
 
 
+def record_i7(base, host):
+    folder=base/'i7-demo'
+    production=read_native_run(folder/'gem-vdi','tools/test_gem_interactive.py')
+    require(production['booted_image']==str((folder/'gem-vdi/Exec-gem-vdi.xex').relative_to(ROOT)),
+            'Packaged XEX was not booted')
+    require(production['cases'][0]['mounted_media']==str((folder/'gem-vdi/graphics.atr').relative_to(ROOT)),
+            'Packaged graphics disk was not mounted')
+    package=distribution(folder,production)
+    of=json.loads((folder/'of816/results.json').read_text())
+    boot=json.loads((folder/'of816/of816.json').read_text())
+    demo=json.loads((folder/'demo-manifest.json').read_text())
+    require(of['status']=='pass' and of['boot']==boot,'Missing or stale OF816 controls')
+    require([c['route'] for c in of['cases']]==['autoboot','forth-command'] and
+            all(c['shell']['status']=='pass' for c in of['cases']),'Missing shell boot routes')
+    require({c['case'] for c in of['exit_cases']}=={'bye','occupied-iocb'} and
+            all(c['status']=='pass' for c in of['exit_cases']),'Missing OF816 exit controls')
+    inputs={**of['inputs'],**boot['inputs'],**demo['source_inputs']}
+    for key in ('platform_inputs','task_inputs','banked_inputs','console_inputs'):
+        inputs.update(demo['kernel'].get(key,{}))
+    for path,digest in inputs.items():require(sha256(ROOT/path)==digest,'Stale standard demo input: '+path)
+    require(sha256(folder/'program.xex')==demo['kernel']['xex_sha256']==boot['exec_xex_sha256'],
+            'Standard shell image differs')
+    for case in of['cases']:
+        require(case['shell']['xex_sha256']==boot['exec_xex_sha256'] and
+                case['shell']['media_sha256']==boot['media']['sha256'],'OF816 control used another bundle')
+    baseline=json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+    for key in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
+        require(demo['kernel']['memory'][key]==baseline[key],'Standard demo bank-zero change: '+key)
+    artifact=json.loads((folder/'gem-vdi/graphics.json').read_text())
+    require(artifact['workload']=='interactive-keyboard' and not artifact['diagnostic'],'Wrong distributed workload')
+    image=json.loads((folder/'gem-vdi/c-image.json').read_text())
+    require(not any(k in image['symbols'] for k in ('UiPostPointer','UiInjector','injectEvents','UiProbe','UiBusy')),
+            'Injection entry point/storage survived production linking')
+    return dict(format='exec816-gem-input-i7-development-v1',status='pass',tier='development',qualification=False,
+        base_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        scope='Exact packaged interactive XEX/disk, standard OF816 shell routes, notices, checksum/ZIP whitelist and current contracts.',
+        production=production,of816=of,distribution=package,host_checks=host_checks(host),
+        artifact_manifest_sha256=sha256(folder/'gem-vdi/graphics.json'),
+        demo_manifest_sha256=sha256(folder/'demo-manifest.json'),of816_evidence_sha256=sha256(folder/'of816/results.json'),
+        map=dict(zero_fill=image['zero_fill'],symbols=image['symbols'],
+                 segments=[dict(address=s['address'],bytes=len(s['bytes']),executable=s['executable']) for s in image['segments']],
+                 link_sha256=sha256(folder/'gem-vdi/link.lst')),
+        bank_zero=dict(fixed_delta_bytes=0,per_public_task_delta_bytes=[0]*8,private_idle_delta_bytes=0,
+                       accounting='Complete reservations include guards, alignment and unused capacity.'),
+        source_inputs={p:sha256(ROOT/p) for p in ('tools/record_input_slice.py','tools/build_gem_artifact.py',
+            'tools/package_demo.py','tests/test_demo_package.py','docs/gem-vdi-distribution.txt','docs/reference/input.md')},
+        limitations=['Focused development checks on the pinned emulators; not physical hardware or full-system qualification.',
+                     'No physical mouse or AES support; the production image has no pointer injector.',
+                     'G0-G6 and I0-I6 evidence remains immutable.'])
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice', choices=['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6'], required=True)
+    p.add_argument('--slice', choices=['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7'], required=True)
     p.add_argument('--base', type=Path, default=ROOT/'build/gem-input')
     p.add_argument('--host-log', type=Path, required=True)
     args = p.parse_args()
-    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2, 'i3': record_i3, 'i4': record_i4, 'i5': record_i5, 'i6': record_i6}[args.slice](args.base.resolve(), args.host_log)
+    report = {'i0': record_i0, 'i1': record_i1, 'i2': record_i2, 'i3': record_i3, 'i4': record_i4, 'i5': record_i5, 'i6': record_i6, 'i7': record_i7}[args.slice](args.base.resolve(), args.host_log)
     output = ROOT/'docs/development'/('gem-input-'+args.slice+'.json')
     output.write_text(json.dumps(report, indent=2)+'\n')
     print(output)

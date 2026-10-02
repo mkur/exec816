@@ -1,18 +1,18 @@
-# Optional GEM/VDI graphics workload
+# Optional interactive GEM/VDI demo
 
 [Guides](README.md) · [Supported interface](../reference/gem-vdi.md) ·
-[Measurements](../history/gem-vdi.md)
+[Input and concurrency measurements](../history/gem-input.md)
 
 Build the optional graphics program alongside the standard OF816 demo:
 
 ```sh
-python3 tools/build_demo.py --gem-vdi --output build/gem-input/i0-demo
+python3 tools/build_demo.py --gem-vdi --output build/gem-input/i7-demo
 ```
 
 This uses the pinned Action! compiler, Calypsi 5.18 and GEM source inputs. See
 [build prerequisites](../contributing/building.md) and the
 [port instructions](../../ports/gem4xe/README.md) for obtaining and verifying
-those inputs. The output is `build/gem-input/i0-demo/exec816-demo.zip`.
+those inputs. The output is `build/gem-input/i7-demo/exec816-demo.zip`.
 
 The ZIP still boots `Exec-of816.xex` into OF816, with its five-second countdown
 and standard shell/prime demo. An additional `gem-vdi/` directory contains the
@@ -27,24 +27,37 @@ VBXE IRQ. Mount **`gem-vdi/graphics.atr`** as drive 1 and load
 burst and random delay disabled and accurate sector timing enabled. The exact
 emulator/ROM hashes and settings are in the [platform pin](../../toolchain/altirra-gem-vdi.json).
 
-The program submits twelve 64-glyph rows while another C Task computes and the
-Action supervisor reads a cold 2 KiB file. Both workers use 2,560-byte stacks.
-It holds the completed scene for three seconds, restores text, prints completion
-for five seconds and returns to the OS. A missing, wrong, short or corrupt disk
-file follows the same cleanup and displays the matching disk name in text.
+The application displays a text field, Count and Exit buttons while the Action!
+root supervisor reads a cold 2 KiB file. Application and renderer use the two
+existing 2,560-byte Task stacks. Root owns file work; the application owns input
+and the renderer client. Disk completion leaves the scene open for interaction.
+
+| Key | Action |
+| --- | --- |
+| Tab | Cycle the text field, Count and Exit. |
+| Printable keys / Backspace | Edit the focused 24-character field. |
+| Return | Activate the focused button. Count advances its number and color. |
+| Escape / BREAK | Exit from any control, settling any active disk request first. |
+
+Exit restores text, displays completion for five seconds and returns to the OS.
+A missing, wrong, short or corrupt disk file follows cleanup and displays the
+matching disk name in text. The root `system.atr` belongs to the standard demo;
+graphics requires **the `gem-vdi/graphics.atr` shipped with its XEX**.
 If a missing drive leaves the serial bus offline, the message also requests a
 reset; the program preserves that bus ownership instead of returning to the OS.
-It needs no keyboard or mouse. Start from an inactive
-VBXE baseline; unknown previous ownership is unsupported. A device that remains
+Start from an inactive VBXE baseline; unknown previous ownership is unsupported. A device that remains
 busy after bounded recovery requires reset and retains its resources.
 
-![The optional workload's twelve font rows](../images/gem-vdi.png)
+![The interactive keyboard scene](../images/gem-input.png)
 
-This workload demonstrates text and concurrency. The separate G4 corpus covers
-lines, bars, colors, clipping and the other [supported drawing operations](../reference/gem-vdi.md).
-There is no AES, desktop, GEMDOS, virtual workstation, external font, physical
-input or multi-client GUI support. Evidence applies to the pinned emulator and
-the recorded development cases.
+The [I6 measurements](../development/gem-input-i6.json) bound the recorded small
+keyboard redraw workload at 12 raw / 11 optimized PAL ticks from native capture
+to visible update during physical SIO, including wrap controls. The renderer's
+fixed cursor and button gestures are tested with injected pointer events.
+The distributed image contains no injector, timing gates or substituted hardware
+status; it has no physical mouse backend. AES, desktop, GEMDOS, virtual workstations,
+external fonts and multiple GUI clients remain unsupported. These are focused
+development results on the pinned emulator, not general hardware qualification.
 
 To return to the usual demo, use its no-add-ons configuration, mount the root
 `system.atr` and boot the root `Exec-of816.xex`.
@@ -52,13 +65,18 @@ To return to the usual demo, use its no-add-ons configuration, mount the root
 Reproduce the focused graphics check for the exact packaged image:
 
 ```sh
-python3 tools/test_gem_concurrent.py --mode opt --production --replay \
-  --output build/gem-input/i0-demo/gem-vdi
+python3 tools/test_gem_interactive.py --mode opt --production --replay \
+  --case keyboard --output build/gem-input/i7-demo/gem-vdi
+python3 tools/test_of816.py --output build/gem-input/i7-demo/of816
 ```
 
 The checker verifies visible pixels and palette against an independent font
-model, physical IRQs and file contents, computation, guards, stack headroom,
-allocator ownership and OS/display restoration. It introduces no target-side
-status substitutions, drawing counters, readback or start rendezvous in this
-artifact. The G5 runner without `--production` executes those diagnostic paths
-and the failure cases separately.
+model, native keyboard state, physical IRQs and file contents, guards, stack
+headroom, allocator ownership and OS/display restoration. The OF816 control checks
+automatic and Forth-command shell routes, ordinary input, disk commands and exit.
+
+The G5 computing-peer/font workload remains available as a separate development
+regression through `tools/test_gem_concurrent.py`. The G4 corpus covers the
+[supported drawing primitives](../reference/gem-vdi.md); I5 adds exact cursor
+pixels, and I6 covers concurrency and failures. Their historical records remain
+unchanged when the optional artifact is refreshed.

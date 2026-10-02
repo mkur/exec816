@@ -283,3 +283,28 @@ reservation deltas remain zero, including guards, alignment and reserved slack.
 Across the interactive cases, maximum observed root/application/renderer/kernel
 stack use is 432/230/472/280 bytes. The host suite passes 284 tests, with four
 historical source audits skipped.
+
+## I7 Current contracts and interactive artifact
+
+[I7 evidence](../development/gem-input-i7.json) records the fresh
+`build/gem-input/i7-demo/exec816-demo.zip`, produced by `build_demo.py --gem-vdi`.
+The optional `gem-vdi/Exec-gem-vdi.xex` now runs the interactive keyboard scene
+with its matching `gem-vdi/graphics.atr`. The production replay boots and mounts
+those exact distributed files, checks independent scene pixels and normal
+retirement, and rejects diagnostic producer/gate/status symbols. ZIP membership,
+every shipped checksum and all notices are checked. Build maps, extracted source,
+manifests and test output stay outside the archive.
+
+OF816 remains included with the pinned AltirraOS ROM, root `system.atr`, notices
+and the five-second automatic handoff into the standard shell/prime demo. Fresh
+controls exercise both automatic and Forth-command routes, native shell input,
+disk commands and exit, plus BYE and occupied-IOCB restoration. These affected
+development controls do not constitute a release qualification matrix.
+
+The current [input contract](../reference/input.md), [GEM contract](../reference/gem-vdi.md),
+signal/console references and [run guide](../guides/gem-vdi.md) now describe the
+implemented boundaries. The G5 computing-peer/font workload and all earlier
+G0–G6/I0–I6 evidence remain available and unchanged. Physical mouse support,
+AES and desktop integration retain their separate follow-on gates. Fixed,
+every public Task and private-idle bank-zero reservation deltas remain zero,
+including guards, alignment and unused reserved capacity.

@@ -11,11 +11,13 @@ defines the packet, display ownership and supported source boundary. The
 reproducible runners. Use the [artifact guide](../../guides/gem-vdi.md) to run
 it, or the [implementation record](../../history/gem-vdi.md) for G0–G6 evidence.
 
-The proposed next milestone is [input ownership and event delivery](input-and-events-design.md):
+The completed next milestone is [input ownership and event delivery](input-and-events-design.md):
 native keyboard interaction during disk I/O, explicit console handoff and
 renderer-owned cursor updates, followed by a separately pinned physical pointer.
-The [implementation plan](input-and-events-implementation-plan.md) defines I0–I7,
-initial ABI layouts, source migrations and focused acceptance checks.
+The [implementation plan](input-and-events-implementation-plan.md) records I0–I7,
+with [current input contracts](../../reference/input.md) and
+[development evidence](../../history/gem-input.md). Physical pointer hardware and AES
+remain separately gated work.
 
 **Preserved analysis:** these three documents were moved from GEM4XE's
 `docs/kernel/` into Exec816 on 2026-10-01 so the upstream checkout can

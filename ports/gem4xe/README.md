@@ -118,21 +118,24 @@ Renderer/peer progress is observed during live physical transactions; a pending
 reply alone does not count as overlap. The [optional artifact guide](../../docs/guides/gem-vdi.md) describes the G6
 distribution and exact machine configuration.
 
-## G6 optional artifact
+## Current optional artifact
 
 ```sh
-python3 tools/build_demo.py --gem-vdi --output build/gem-vdi/g6-demo
-python3 tools/test_gem_concurrent.py --mode opt --production --replay \
-  --output build/gem-vdi/g6-demo/gem-vdi
-python3 tools/test_of816.py --output build/gem-vdi/g6-demo/of816
+python3 tools/build_demo.py --gem-vdi --output build/gem-input/i7-demo
+python3 tools/test_gem_interactive.py --mode opt --production --replay \
+  --case keyboard --output build/gem-input/i7-demo/gem-vdi
+python3 tools/test_of816.py --output build/gem-input/i7-demo/of816
 ```
 
-The [G6 record](../../docs/development/gem-vdi-g6.json) covers raw/optimized
+The historical [G6 record](../../docs/development/gem-vdi-g6.json) covers raw/optimized
 uninstrumented graphics, exact visible pixels/palette, the packaged optimized
 image, standard OF816 boot/exit routes and shell/prime controls. The ZIP includes
 only boot files, guides, notices and checksums. The standard five-second OF816
 shell/prime autoboot remains the default; graphics is selected explicitly.
 
-The [interactive application](interactive/README.md) adds the I4 keyboard scene
-and root disk supervisor in a separate development workload. Its implementation
-plan continues through cursor, failure closure and packaging in I5–I7.
+The current artifact is the [interactive application](interactive/README.md):
+a native keyboard scene with root supervising disk I/O and the application owning
+the renderer. [I0–I7](../../docs/history/gem-input.md) record reusable input,
+cursor/injected gestures, measured concurrency, failures and the refreshed bundle.
+There is no physical mouse or AES support. The G5 computing-peer regression remains
+available through its development runner and retains its historical evidence.

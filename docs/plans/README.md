@@ -67,8 +67,9 @@ assuming work is pending. Current behavior belongs in the
 ## Programs and shell
 
 - [Hosted GEM input and events implementation](gem4xe/input-and-events-implementation-plan.md):
-  I0 media-error cleanup and I1 input ABI complete; I2–I7 cover shared capture, console
-  handoff, an interactive scene during disk I/O and serialized cursor drawing;
+  I0–I7 complete: media recovery, shared keyboard capture, console handoff,
+  interactive controls during disk I/O, serialized cursor drawing and the optional
+  artifact. See [input](../reference/input.md) and the [implementation record](../history/gem-input.md),
   based on the [design note](gem4xe/input-and-events-design.md). Physical pointer
   support and AES have separate follow-on gates.
 - [Minimal hosted GEM VDI subset](gem4xe/minimal-vdi-implementation-plan.md):

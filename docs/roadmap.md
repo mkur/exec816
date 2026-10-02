@@ -26,13 +26,13 @@ These are possible next milestones, without a delivery order:
   [two-command foreground pipeline](guides/shell.md).
 - Broader C bindings and more Amiga examples beyond the
   [standalone Calypsi binding](guides/calypsi-c.md).
-- GUI input and higher GEM layers beyond the implemented
-  [minimal hosted VDI subset](reference/gem-vdi.md). The
-  [optional graphics workload](guides/gem-vdi.md) covers drawing and concurrent
-  physical I/O. The proposed [input and events design](plans/gem4xe/input-and-events-design.md)
-  and [implementation plan](plans/gem4xe/input-and-events-implementation-plan.md)
-  select media-error cleanup, keyboard capture, console handoff and an interactive
-  scene next. Physical pointer support, AES and desktop integration remain future work.
+- Physical pointer support, AES and desktop integration beyond the implemented
+  [minimal hosted VDI subset](reference/gem-vdi.md) and [keyboard input](reference/input.md).
+  The [optional interactive demo](guides/gem-vdi.md) now provides keyboard controls,
+  console handoff and bounded redraws during physical I/O. The completed
+  [I0–I7 plan](plans/gem4xe/input-and-events-implementation-plan.md) records the
+  cursor/injected-event boundary; an exact physical device and its SIO coexistence
+  must be selected and checked before importing a mouse backend.
 - Priority scheduling and larger Task capacities. Current priorities are stored
   but selection is FIFO; capacities beyond the supported four/eight layouts need
   separate memory budgeting and qualification.

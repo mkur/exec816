@@ -57,6 +57,12 @@ def run(output,mode,cases=None,replay=False,production=False):
         require(foreign['provenance']['diagnostic']==(not production),'Wrong instrumentation')
         require(p['build']['foreign_image']==foreign['provenance'],'C image/build provenance differs')
         require(p['build']['optimize']==(mode=='opt') and sha256(p['xex'])==p['build']['xex_sha256'],'Wrong or changed replay image')
+        packaged=production and (output/'Exec-gem-vdi.xex').exists()
+        if packaged:
+            require(sha256(output/'Exec-gem-vdi.xex')==sha256(p['xex']) and
+                    sha256(output/'graphics.atr')==sha256(output/'system.atr'),'Packaged pair differs from recorded build')
+            p={**p,'xex':output/'Exec-gem-vdi.xex'}
+        report['booted_image']=str(p['xex'].relative_to(ROOT))
         sy=foreign['symbols'];memory=p['build']['memory']
         if production:
             require(not any(k in sy for k in ('UiProbe','UiInjector','UiUnusedTask','UiCursorGate','UiLossAck','UiBusy','faultNext')),
@@ -73,6 +79,8 @@ def run(output,mode,cases=None,replay=False,production=False):
             case=dict(name=name,status='running',stimuli=[]);report['cases'].append(case)
             with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',folder,pin=PIN) as b:
                 b.config('diskemu','generic56k');disk=media(output,folder,name)
+                if packaged and disk==output/'system.atr':disk=output/'graphics.atr'
+                case['mounted_media']=str(disk.relative_to(ROOT)) if disk is not None else None
                 if disk is not None:b.mount(0,str(disk))
                 case['machine']=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
                 read=lambda k,n=2:int.from_bytes(b.memdump(sy[k],n),'little')

@@ -44,8 +44,8 @@ bounded correctness, not a frame-rate guarantee.
 G4 reserves zero additional bank-zero bytes: fixed, each public Task, and idle.
 The existing whole C code/data banks remain reserved (131,072 bytes including
 unused capacity); staging consumes 4,096 bytes within the data bank. VRAM now
-reserves 107,008 bytes including padding: screen 81,920, XDL 256, BCB 256,
-font masks 20,480 (18,432 used), and glyph scratch 4,096. These reservations are
+reserves 108,032 bytes including padding: screen 81,920, XDL 256, BCB 256,
+font masks 20,480 (18,432 used), glyph scratch 4,096 and cursor storage 1,024. These reservations are
 separate from CPU RAM. The test's 76,800-byte CPU readback allocation, font copy
 and borrowed observer scratch are diagnostics, not production renderer storage.
 
@@ -70,6 +70,12 @@ not compiler-enforced whole-program bounds.
 
 [G4 evidence](../../../docs/development/gem-vdi-g4.json) records the executed
 scope. Combining this renderer with a computing peer, physical SDFS traffic,
-console transitions and the broader service failure matrix remains G5. AES,
-input, virtual workstations, external fonts, raster copies and dynamic loading
-remain unsupported. The standard OF816 shell/prime demo is separate.
+console transitions and the broader service failure matrix is recorded by G5.
+The [input implementation](../../../docs/history/gem-input.md) adds a supervised
+keyboard application and renderer-owned cursor. The fixed arrow uses 256-byte
+save, AND and OR planes plus 256 reserved slack bytes at `$37000`. Hide/restore
+precedes each scene mutation; fence saves and redraws without changing VDI
+attributes. CPU staging is reused only after flushing; glyph scratch stays separate.
+I5 checks exact odd/even/edge pixels, stationary redraws, reopen and each fault phase.
+AES, physical mouse input, virtual workstations, external fonts, raster copies
+and dynamic loading remain unsupported. The standard OF816 demo is separate.

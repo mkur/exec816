@@ -1,8 +1,8 @@
-# G2 hosted message service
+# Hosted message service
 
 [Port overview](../README.md) · [Hosting contract](../../../docs/reference/gem-vdi.md)
 
-G2 implements the private OPEN/SUBMIT/CLOSE/STOP transport using ordinary Exec
+The service implements private OPEN/SUBMIT/CLOSE/STOP/CURSOR transport using ordinary Exec
 Tasks, messages, signals and removal leases. The test executable supplies an
 explicit fixture backend. It links neither the GEM renderer nor VBXE drawing;
 its workstation outputs are test values. This is a development integration
@@ -21,7 +21,9 @@ The [builder](../../../tools/build_gem_vdi.py) uses the shared checked C emissio
 and native packaging paths. It verifies emitted `sizeof`/`offsetof` constants for
 every wire field and the public Task lease. Definitions, operation validation
 and reply widths come from [gem-vdi.json](../../../abi/gem-vdi.json). G2 adds reply
-width metadata without changing revision-1 packet offsets. Maps, manifests and
+width metadata in the original revision-1 layout. Current revision 2 preserves
+those header offsets and adds the eight-byte CURSOR payload; old revisions fail.
+Maps, manifests and
 results remain under `build/gem-vdi/g2-{raw,opt}/`; the retained
 [development record](../../../docs/development/gem-vdi-g2.json) includes the C
 context and G1 control runs.
@@ -43,8 +45,10 @@ alter live records except the packet fields prepared below.
 | `GemPrepare(client, operation, count, payload_bytes)` | Reset the owned packet and fill its header. The caller fills command descriptors and inline arrays before submission. Payload bytes include the complete descriptor table. |
 | `GemSubmit(client)` | Check placement/ownership, mark one request outstanding and publish it under Forbid. The packet stays immutable until collection, even if a reply has already arrived. |
 | `GemCollect(client)` | Wait for and remove the exact reply before releasing outstanding ownership. Update local session/sequence state. An unexpected reply stays queued and storage remains retained. |
+| `GemTryCollect(client, ready)` | Collect the exact pending reply without waiting. An empty queue returns OK with ready zero and leaves pending ownership/session/sequence unchanged. |
+| `GemPrepareCursor(client, x, y, visible)` | Validate coordinates/visibility and prepare a 164-byte revision-2 request. Submit and collect through the same single-packet ownership path. |
 | `GemOpen`, `GemCall`, `GemClose` | Synchronous helpers over prepare/submit/collect. `GemCall` copies borrowed input arrays into the packet before publication. All helpers return a status; `GemStatus` also exposes it for drawing calls corresponding to classic void VDI operations. |
-| `GemServiceStop(server)` | Allocate a separate control request, withdraw submission under Forbid, enqueue STOP after accepted work and await retirement. It can run while the client's drawing reply remains uncollected. Allocation failure leaves the service running. |
+| `GemServiceStop(server)` | Use the control request and reply port reserved by startup, withdraw submission under Forbid, enqueue STOP after accepted work and await retirement without allocation. The client's drawing reply remains its separate collection obligation. |
 | `GemClientDispose(client)` | Reject outstanding work or an open live session. After close or service stop and exact collection, detach, free packet/port and release the client lease. |
 
 Admit any computing peer with a 2,560-byte request before smaller workers can
@@ -89,13 +93,14 @@ only after releasing its removal hold. Submissions after withdrawal fail STOPPIN
 The backend interface is synchronous and renderer-owned. It must not retain
 borrowed descriptors, input/output pointers or request storage. Open failure must
 roll back its own resources. Close must return only after quiescence and release;
-an unquiesced future hardware backend must take the controlled platform fault path
-instead of returning. G3 still owns real display exclusion, bounded hardware waits,
-fences and recovery. G4 still owns the GEM connection and pixel correctness.
+an unquiesced hardware backend must take the controlled platform fault path
+instead of returning. The backend also implements a synchronous cursor callback.
+The [VBXE adapter](../adapter/README.md) supplies real display exclusion, bounded
+waits, fences, recovery and cursor save/restore.
 
 ## Measured scope and memory
 
-Each compiler mode runs 13 cases: protocol/limits, queued and active stop, Task
+The historical G2 record covers 13 cases per mode: protocol/limits, queued and active stop, Task
 admission, startup signal exhaustion, worker port/scratch exhaustion, client
 port/packet exhaustion, stop port/packet exhaustion, and held renderer/client
 removal. Protocol checks include no partial mutation, exact reply collection,
@@ -117,8 +122,13 @@ per public Task 0; idle 0**, including guards, alignment and unused capacity.
 The C executable retains its checked `$0C` code and `$0D` data/BSS reservations
 (131,072 upper-RAM bytes including slack), and its existing 20-byte lower-DP
 workspace. Dynamic upper-RAM allocations are the 27-byte renderer port, 192-byte
-scratch, 27-byte client port, 2,204-byte client packet and temporary 27-byte stop
+scratch, 27-byte client port, 2,204-byte client packet and preallocated 27-byte stop
 port/156-byte stop request. With the heap's eight-byte rounding, these occupy
-2,464 bytes normally and 2,656 while stopping, excluding allocator metadata
+2,656 bytes throughout the service/client lifetime, excluding allocator metadata
 already reserved by Exec. Caller state and fixture data are in the recorded C BSS.
 G2 reserves no VRAM. The standard OF816 demo is unchanged.
+
+[Input implementation evidence](../../../docs/history/gem-input.md) records the
+later allocation-free stop, nonblocking collection, revision-2 cursor and real
+allocation/signal-exhaustion controls. The interactive application owns the
+renderer and client; root has only disk/control responsibilities.

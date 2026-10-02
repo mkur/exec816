@@ -57,10 +57,14 @@ hidden or clipped state. The [console refactor record](../history/console-refact
 contains the changes and measured development results; an old benchmark is not
 a promise of current timing.
 
-Keyboard capture retains the instance and route generation at capture time.
+Keyboard capture uses the shared [input lease and route API](input.md). The
+console maps captured generic route tags to retained instance/foreground state.
 Focus changes do not redirect already captured keys. Input loss is explicit;
 BREAK delivery has retained route state independent of the ordinary key FIFO.
 IRQs do not scan instance records or follow arbitrary application pointers.
+The worker keeps running when a bounded drain leaves input pending. Stopping the
+console releases input ownership before its signal/storage and display retire;
+hiding a window does not release either ownership domain.
 
 ## Lifetime and limits
 

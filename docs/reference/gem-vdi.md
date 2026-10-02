@@ -1,10 +1,10 @@
 # Minimal VDI hosting contracts
 
 [Reference index](README.md) · [Run the workload](../guides/gem-vdi.md) ·
-[Implementation record](../history/gem-vdi.md)
+[Drawing record](../history/gem-vdi.md) · [Input record](../history/gem-input.md)
 
 This is the current supervised hosting contract for the selected GEM4XE VDI
-subset. It uses one renderer Task and one root-owned client. It is a private,
+subset. It uses one renderer Task and one client owned by its supervising Task. It is a private,
 rebuilt client/service ABI, not a discoverable resident service or an AES/GEMDOS
 environment. [Display ownership](display.md) is a reusable platform interface.
 The exact operation numbers, limits and packet offsets are generated from
@@ -15,18 +15,24 @@ Supported operations are OPEN/CLOSE, clear/update, 2–16-point solid polylines,
 solid bars, inclusive clipping, up to 64 glyph indices per text call, line/text/
 fill colors 0–15, solid fill interior 1 and replace writing mode 1. Virtual
 workstations, raster copies, polygon/contour fill, external fonts, rotation,
-markers, physical input/cursor, AES, GEMDOS, callbacks and dynamic loading are
+markers, physical mouse input, AES, GEMDOS, callbacks and dynamic loading are
 unsupported. A validated request never silently succeeds as an omitted service.
+The interactive application consumes native [keyboard input](input.md) separately
+and can request the fixed renderer-owned cursor. Diagnostic injected pointer
+events establish button semantics; they do not provide a physical mouse backend.
 
 ## Service protocol
 
-The renderer is an ordinary Task. Root owns the one client and the supervisor
-stop authority. Startup passes their Task identities directly; this first
-service is not discoverable by unrelated applications. Create the renderer and
-computing peer with 2,560-byte requests before admitting smaller workers. Retain
+The renderer is an ordinary Task. Its caller owns the one client and supervisor
+stop authority. In the interactive workload that caller is the application;
+root supervises disk I/O. Startup passes Task identities directly; the service
+is not discoverable by unrelated applications. Create the application and
+renderer with 2,560-byte requests before admitting smaller workers. The separate
+G5 regression uses a computing peer instead of the application. Retain
 participants with public Task leases before publishing the service port.
 
-All fields are little endian. The aligned 156-byte Request begins with the
+The current packet revision is 2; old revisions are rejected and callers must
+be rebuilt. All fields are little endian. The aligned 156-byte Request begins with the
 16-byte Exec Message. Its trailing 57-word output array is large enough for the
 classic workstation response. Up to 16 twelve-byte Command records follow it;
 their read-only coordinate and integer arrays follow the entire command table.
@@ -50,7 +56,8 @@ not memory isolation against arbitrary invalid pointers in a shared address spac
 | OPEN | Session 0, sequence 1, exactly one `v_opnwk` descriptor with the fixed eleven-word work-in in the manifest. Acquire presentation and initialize defaults before replying with a nonzero generation, handle 1 and workstation output. A second open returns BUSY. |
 | SUBMIT | Live generation and next sequence, 1–16 supported commands. Validate the complete batch before execution. Return the completed count and outputs in command order after hardware completion. |
 | CLOSE | Live generation and next sequence, zero commands, exactly 156 bytes. Drain accepted drawing, restore presentation and invalidate the session before replying. This implements the hosted `v_clswk` helper. |
-| STOP | Root supervisor only, zero commands, exactly 156 bytes; generation/sequence zero. Withdraw admission, finish accepted work, close any live session, release participant leases and acknowledge retirement. |
+| STOP | Admitted supervisor only, zero commands, exactly 156 bytes; generation/sequence zero. Withdraw admission, finish accepted work, close any live session, release participant leases and acknowledge retirement. |
+| CURSOR=5 | Live generation and next sequence, zero commands, exactly 164 bytes. Payload: x/y i16, visible u16 (0/1), reserved u16 zero. Position is the top-left hotspot, x=0–639 and y=0–239, including hidden requests. Fence before success; advance sequence with zero completed_count/reply_words. |
 
 OPEN returns the 45 integer and 12 coordinate words of `work_out`, with the
 physical handle implied by the successful generation. The manifest's handle 1
@@ -83,6 +90,11 @@ the OPEN generation. Synchronous helpers use submit/collect internally and expos
 failure through a status accessor, including classic void-return calls. The
 supervisor can instead submit, perform Action! DOS I/O, then collect; no request
 borrows a C activation that has already returned.
+`GemTryCollect` collects the exact reply without waiting and returns a separate
+ready flag. Empty queues retain ownership and sequence/session state; unexpected
+messages stay queued and cannot authorize disposal. `GemPrepareCursor` prepares
+the owned packet without submitting it. The application keeps at most one VDI
+or cursor packet pending and tracks new dirty state separately.
 
 No request may be accessed by the service once ReplyMsg begins publication.
 Normal Task removal is held by leases until close/stop completes. Release the
@@ -103,7 +115,7 @@ pens 0–15 with the selected GEM palette. Defaults are solid one-pixel lines,
 solid fills, pen 1, replace mode, clipping off and the built-in 8×8 face.
 Text is at most 64 explicit glyph indices, each 0–255, without a terminator;
 empty text is valid. It uses the upstream default left/baseline alignment and
-unrotated metrics. Physical keyboard, mouse and cursor initialization are absent.
+unrotated metrics. Donor keyboard/mouse initialization remains excluded.
 
 Coordinates are signed 16-bit raster positions. Use wide intermediate arithmetic
 for clipping and text extents; extreme values must not wrap into visible pixels.
@@ -111,6 +123,14 @@ Rectangle corners and clip corners are ordered, bounds are inclusive, and the
 screen extent always constrains drawing. Clip-off still supplies two ignored
 point pairs for the classic calling convention. An empty intersection draws
 nothing. Session open/close cannot appear inside a SUBMIT batch.
+
+The fixed 16×16 black/white arrow starts hidden on every OPEN. The renderer
+restores its saved background before scene mutation, then saves and redraws at
+the latest accepted position. It clips at screen edges and preserves adjacent
+nibbles at odd x positions. Cursor work leaves VDI clipping, pens and text
+attributes unchanged. Malformed requests change no cursor, sequence or pixels.
+Save/restore/mask phases use fenced blits; a hardware fault follows the same
+generation-retirement or reset-required path as drawing.
 
 ## Display lease and transitions
 
@@ -172,7 +192,7 @@ DMA storage, release ownership or claim a clean return to the OS.
 the extracted renderer. The selected workstation, clipping, line, rectangle,
 text and palette code runs through the Exec [backend](../../ports/gem4xe/adapter/README.md).
 The donor's low-level hardware/startup code is excluded. The built-in font is
-unchanged. There are no printer, CIO font-loading, keyboard, legacy context or
+unchanged. There are no printer, CIO font-loading, donor keyboard, legacy context or
 full opcode-table dependencies, and no near/TINY/ZWIN reservations.
 
 The mixed eight-Task layout supplies two 2,560-byte large stacks, each including
@@ -186,11 +206,14 @@ service/client heap allocations total 2,656 rounded bytes, including the
 the reply-port pointer. Task stacks and external guards are already in the
 platform budget.
 
-[VBXE extents](../../platform/altirraos/vbxe-vram.json) reserve 107,008 bytes of
+[VBXE extents](../../platform/altirraos/vbxe-vram.json) reserve 108,032 bytes of
 private VRAM, including screen slack, XDL, 252-byte BCB capacity rounded to 256,
-expanded font and strip scratch. CPU and VRAM reservations are separate.
+expanded font and strip scratch. Cursor storage at `$37000–$373FF` adds a 256-byte
+save area, two 256-byte mask planes and 256 reserved slack bytes. It reuses the
+existing CPU staging page and does not borrow glyph scratch. VRAM leaves
+416,256 bytes unassigned. CPU and VRAM reservations are separate.
 Fixed, per-public-Task and private-idle bank-zero increments are all zero for
-G0–G6; the existing eight-Task budget includes 56,128 reserved bytes with OS
+G0–G6 and I0–I7; the existing eight-Task budget includes 56,128 reserved bytes with OS
 memory and leaves 9,408 bytes free after startup.
 
 [G4](../development/gem-vdi-g4.json) records the primitive corpus and
@@ -199,3 +222,7 @@ cleanup. [G6](../development/gem-vdi-g6.json) records the optional artifact and
 standard OF816 controls. These are measured development paths on the pinned
 emulator, not a general C stack bound, hardware certification or full hosted
 qualification. Calypsi does not add automatic stack checks to these C calls.
+[I5](../development/gem-input-i5.json) records cursor pixels and injected gestures;
+[I6](../development/gem-input-i6.json) records bounded keyboard latency during
+physical SIO, interrupted application/renderer contexts and failure closure.
+The current optional artifact is the interactive application described in the guide.
