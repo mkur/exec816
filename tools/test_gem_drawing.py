@@ -72,6 +72,23 @@ def run(out,mode):
                                     model.pixel(32+(pen&1)+i*8+col,8+pen*9+row,pen)
                 report['pixels_sha256']=pixels(b,out,model.packed())
                 b.memload(sy['gate'],b'\1\0')
+                condition=f'dw(${sy["checkpoint"]:x})=2'
+                b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=4000,timeout=60)
+                b.bp_clear_all();require(b.peek16(sy['failures'])==0,'Text run boundary failure')
+                condition=f'@frame>{b.eval_expr("@frame")+1}'
+                b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=10,timeout=5);b.bp_clear_all()
+                model=Raster(font_bytes(src/'vdi/font8x8.c'));model.apply(25,ints=[5]);model.apply(11,[0,0,639,239])
+                def text_run(x,y,text,ink,paper):
+                    for i,ch in enumerate(text):
+                        for row in range(8):
+                            for col in range(8):
+                                model.pixel(x+i*8+col,y+row,ink if model.font[row*256+ch]&(128>>col) else paper)
+                for i in range(4):text_run(0,i*8,range(i*64,(i+1)*64),i,5)
+                cross=[i*7&255 for i in range(80)]
+                text_run(0,200,cross,1,5);text_run(512,204,cross[:16],0,3)
+                text_run(632,232,b'A',0,1)
+                report['text_run_pixels_sha256']=pixels(b,out,model.packed())
+                b.memload(sy['gate'],b'\2\0')
             runtime,_=execute(b,p,before_run=before,frame_limit=4000,timeout=120)
             require(b.peek16(sy['finished'])==1 and b.peek16(sy['failures'])==0,'Incomplete fixture')
             clean_ownership(b,p,p['output'])

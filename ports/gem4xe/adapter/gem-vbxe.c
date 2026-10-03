@@ -232,6 +232,15 @@ UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWOR
     return fence_owner();
 }
 
+/* Called only by the admitted ordinary drawing operation. No caller pointers
+ * or validation state survives this synchronous invocation. */
+void blit_text(uint32_t font,uint16_t x,uint16_t y,const uint8_t *text,
+               uint16_t count,uint8_t ink,uint8_t paper)
+{
+    flush();
+    if (!fault) latch(VbxeOwnerText(&display,font,x,y,text,count,ink,paper));
+}
+
 #ifndef GEM_DRAWING_ONLY
 #define CURSOR_SAVE 0x37000UL
 #define CURSOR_AND  0x37100UL

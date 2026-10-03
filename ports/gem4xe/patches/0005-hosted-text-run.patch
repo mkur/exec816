@@ -1,0 +1,19 @@
+--- a/src/vdi/dev_vbxe.c
++++ b/src/vdi/dev_vbxe.c
+@@ -217,6 +217,16 @@
+  * mask AND path because the stencil treats zero as transparent. */
+ extern void blit_glyph(uint32_t,uint16_t,uint32_t,uint16_t,uint8_t);
+ 
++/* The ordinary hosted drawing entry validates complete, even-X runs. The
++ * driver can derive every glyph extent from the immutable atlas geometry. */
++extern void blit_text(uint32_t,uint16_t,uint16_t,const uint8_t *,uint16_t,uint8_t,uint8_t);
++void vbxe_text_run(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
++                   uint16_t foreground,uint16_t background)
++{
++    blit_text(VR_FONT,x,y,text,count,
++              (uint8_t)(HW(foreground)*17),(uint8_t)(HW(background)*17));
++}
++
+ static void draw_glyph(WORD ch, WORD cx, WORD cy, WORD hwink, WORD cleared)
+ {
+     uint32_t src, dst;

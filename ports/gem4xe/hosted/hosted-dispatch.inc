@@ -101,9 +101,15 @@ uint16_t GemBitmapText(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
     uint16_t i;
     uint32_t address=(uint32_t)text;
     if (!vdev || x>640 || y>232 || count>(640-x)/8 || foreground>15 || background>15 ||
-        (count && (!text || address>0xffffffUL || count>0x1000000UL-address)))
+        (count && (!text || address>0xffffffUL || count>0x1000000UL-address ||
+                   (address<0x9000UL && address+count>0x8000UL))))
         return 1;
     if (!count) return 0;
+    if (!(x&1)) {
+        extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);
+        vbxe_text_run(x,y,text,count,foreground,background);
+        return 0;
+    }
     color=vwk.text_color; mode=vwk.wrt_mode; clip=vwk.clip;
     vwk.text_color=(WORD)foreground; vwk.wrt_mode=0; vwk.clip=0;
     dev_fill_rect((WORD)x,(WORD)y,(WORD)(x+count*8-1),(WORD)(y+7),(WORD)background);

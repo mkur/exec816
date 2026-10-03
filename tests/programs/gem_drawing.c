@@ -13,6 +13,7 @@ WORD workout[57];
 static struct InputLease mouse __attribute__((aligned(2)));
 static struct InputConfig config __attribute__((aligned(2)));
 static const UBYTE text[]="AB W 09";
+static UBYTE glyphs[256];
 static void check(UWORD good) { ++checks; if (!good) ++failures; }
 
 /* Test-only pause after owner admission with queued glyph work. The owner
@@ -44,8 +45,9 @@ void DrawingPeer(void)
 UWORD main(void)
 {
     WORD bit;
-    UWORD pen,before;
+    UWORD pen,before,i;
     ULONG id;
+    UBYTE *allocation,*cross;
     struct VbxeCopy copy;
     if (!stage) return 0;
     Forbid();
@@ -91,6 +93,31 @@ UWORD main(void)
     check(InputAcquire(&mouse,&config)==INPUT_OK);
     checkpoint=1;
     while (!gate) { }
+    /* Every byte glyph, both hardware-zero/nonzero ink, 32-record batch
+     * boundaries, bottom/right screen edges and CPU/VRAM bank crossings. */
+    check(GemDrawingFill(0,0,640,240,5)==DISPLAY_OK);
+    for (i=0;i<256;i++) glyphs[i]=(UBYTE)i;
+    for (i=0;i<4;i++)
+        check(GemDrawingText(0,i*8,glyphs+i*64,64,i,5)==DISPLAY_OK);
+    allocation=AllocMem(131072UL,MEMF_UPPER|MEMF_LINEAR);
+    check(allocation!=NULL);
+    if (allocation) {
+        cross=(UBYTE *)((((ULONG)allocation+65551UL)&0xffff0000UL)-16UL);
+        for (i=0;i<80;i++) cross[i]=(UBYTE)(i*7);
+        check(GemDrawingText(0,200,cross,80,1,5)==DISPLAY_OK);
+        check(GemDrawingText(512,204,cross,16,0,3)==DISPLAY_OK);
+        FreeMem(allocation,131072UL);
+    }
+    check(GemDrawingText(632,232,text,1,0,1)==DISPLAY_OK);
+    check(GemDrawingText(640,232,NULL,0,1,0)==DISPLAY_OK);
+    check(GemDrawingText(638,232,text,1,1,0)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingText(0,233,text,1,1,0)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingText(0,0,text,81,1,0)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingText(0,0,NULL,1,1,0)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingText(0,0,(UBYTE *)0xffffffUL,2,1,0)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingText(0,0,(UBYTE *)0x8000UL,1,1,0)==DISPLAY_BAD_ARGUMENT);
+    checkpoint=2;
+    while (gate<2) { }
     check(InputRelease(&mouse)==INPUT_OK);
     FreeSignal(bit);
     check(GemDrawingClose()==DISPLAY_OK);

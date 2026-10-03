@@ -10,6 +10,10 @@ UWORD VbxeOwnerClose(struct VbxeDisplay *display);
 UWORD VbxeOwnerWrite(struct VbxeDisplay *display, ULONG address, const void *source, UWORD bytes);
 UWORD VbxeOwnerRead(struct VbxeDisplay *display, ULONG address, void *destination, UWORD bytes);
 UWORD VbxeOwnerSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD count);
+/* Opaque even-X 8x8 text from a 256-glyph mask atlas, stride 1024. Validates
+ * the whole run before generating bounded lists in the private command arena. */
+UWORD VbxeOwnerText(struct VbxeDisplay *display, ULONG font, UWORD x, UWORD y,
+                    const UBYTE *text, UWORD count, UBYTE ink, UBYTE paper);
 UWORD VbxeOwnerFill(struct VbxeDisplay *display, ULONG address, UWORD stride, UWORD bytes, UWORD rows, UBYTE value);
 UWORD VbxeOwnerCopyRect(struct VbxeDisplay *display, const struct VbxeCopy *copy);
 UWORD VbxeOwnerScrollStart(struct VbxeDisplay *display, const struct VbxeCopy *copy,

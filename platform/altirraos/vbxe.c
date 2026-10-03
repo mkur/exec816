@@ -210,6 +210,14 @@ static UWORD stepped(ULONG at,WORD pitch,BYTE x,UWORD bytes,UWORD rows)
 /* Only fully validated records reach this synchronous driver-owned launch.
  * CopyRect validates its entire geometry once, then constructs bounded records
  * on its retained owner's stack. Public lists validate every supplied record. */
+static void start(struct VbxeDisplay *d)
+{
+    REG(0xd650)=d->blit[0]=(UBYTE)VBXE_BCB;
+    REG(0xd651)=d->blit[1]=(UBYTE)(VBXE_BCB>>8);
+    REG(0xd652)=d->blit[2]=(UBYTE)(VBXE_BCB>>16);
+    REG(BUSY)=1;
+}
+
 static void launch(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
 {
     struct VbxeUpload upload;
@@ -217,10 +225,7 @@ static void launch(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
     map(d,(UBYTE)(0x80|(VBXE_BCB>>12)),0x88);
     _VbxeUpload(&upload);
     map(d,0,0);
-    REG(0xd650)=d->blit[0]=(UBYTE)VBXE_BCB;
-    REG(0xd651)=d->blit[1]=(UBYTE)(VBXE_BCB>>8);
-    REG(0xd652)=d->blit[2]=(UBYTE)(VBXE_BCB>>16);
-    REG(BUSY)=1;
+    start(d);
 }
 
 static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
@@ -229,6 +234,45 @@ static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
     if (status!=DISPLAY_OK) return status;
     launch(d,records,count);
     return VbxeOwnerFence(d);
+}
+
+/* The descriptor proves every possible byte glyph stays in the atlas and
+ * every destination stays on screen. Unlike Submit, no caller-supplied raw
+ * records are trusted. Each generated list has a fill and at most 32 glyphs:
+ * 33 records / 693 bytes, at most 5120 bus accesses, within existing limits.
+ * All glyphs (including blank masks) follow the same checked geometry. */
+UWORD VbxeOwnerText(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
+                    const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper)
+{
+    struct VbxeTextUpload upload;
+    UWORD status,n;
+    if ((x&1) || x>640 || y>232 || count>(640-x)/8 ||
+        font<VBXE_SCREEN_BYTES || font>VBXE_VRAM_BYTES-8192 ||
+        (font<VBXE_BCB+VBXE_BCB_BYTES && font+8192>VBXE_BCB) ||
+        (ink&15)!=(ink>>4) || (paper&15)!=(paper>>4) ||
+        (count && !extent(0,text,count))) return DISPLAY_BAD_ARGUMENT;
+    if (!count) return DISPLAY_OK;
+    status=VbxeOwnerFence(d);
+    if (status!=DISPLAY_OK) return status;
+    upload.text=(ULONG)text;
+    upload.font=font;
+    upload.destination=(ULONG)y*320+x/2;
+    upload.ink=ink;
+    upload.paper=paper;
+    while (count) {
+        n=count>32 ? 32 : count;
+        upload.count=n;
+        map(d,(UBYTE)(0x80|(VBXE_BCB>>12)),0x88);
+        _VbxeTextUpload(&upload);
+        map(d,0,0);
+        start(d);
+        status=VbxeOwnerFence(d);
+        if (status!=DISPLAY_OK) return status;
+        upload.text+=n;
+        upload.destination+=n*4;
+        count-=n;
+    }
+    return DISPLAY_OK;
 }
 
 /* A completion record outlives each poll. No borrowed descriptor survives

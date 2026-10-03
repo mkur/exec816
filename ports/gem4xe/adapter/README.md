@@ -36,6 +36,7 @@ reported complete.
 `DISPLAY_*` calls. `GemDrawingOpen` returns the existing 57-word workstation
 description; fill uses half-open pixel bounds, and text uses top-left 8×8 cells
 with explicit foreground/background pens. Text must fit completely on screen.
+The CPU string must not overlap the mapped `$8000–$8FFF` aperture.
 An empty valid rectangle or string does not draw. Every successful operation
 in this original synchronous group fences before returning. Build with `GEM_DRAWING_ONLY` to omit service and cursor
 policy; the caller must own the display. There remains one drawing session per
@@ -71,6 +72,23 @@ preinitialized records avoid repeated generic rectangle setup, while submission
 still validates the whole list. The maintained fourth extraction patch supplies
 these changes. The 256-byte ink cache and 21-byte template fit inside the
 existing C bank reservations; B2 adds no bank-zero or VRAM reservation.
+
+Even-X `GemDrawingText` runs use a driver-generated list instead of repeating
+the generic device and list-validation path for every glyph. The driver checks
+the entire CPU string, screen rectangle, colours and 256-glyph atlas before
+submitting any prefix. A private native uploader writes one background fill and
+up to 32 fixed 8×8 glyph records directly into the existing command arena. This
+uses at most 33 records, 693 arena bytes and 5,120 blitter bus accesses per batch,
+within the existing limits. Every field, including chain termination, is written
+anew; hardware-zero ink uses inverse-mask AND and other ink uses the stencil.
+The operation fences every batch before reusing the arena or returning.
+
+The fifth extraction patch connects the ordinary text entry to this path. Odd-X
+text and VDI opcode 8 retain their existing device glyph path. Public raw-list
+submission still validates every supplied record. No cached admission, new Task,
+bank-zero reservation, extra arena or completion API is introduced. The uploader
+uses call-clobbered Task DP scratch `$80–$99`; its 16-byte packet layout is checked
+through emitted C, and its source reads carry across CPU bank boundaries.
 
 Because donor callbacks return void, the backend latches the first hardware
 error. Further callbacks cannot touch hardware, and the service fence reports

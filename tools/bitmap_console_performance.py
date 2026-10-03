@@ -79,18 +79,18 @@ def markers(program,foreign,output):
     for path in output.glob('*vbxe.lst'):
         for line in path.read_text().splitlines():
             if '.section ' in line:current=None
-            start=re.search(r'\\ ([0-9a-f]{6})\s+(?:[0-9a-f.]+\s+)?(idle|submit|launch):',line)
+            start=re.search(r'\\ ([0-9a-f]{6})\s+(?:[0-9a-f.]+\s+)?(idle|submit|launch|start):',line)
             if start:
                 current=start[2]
                 if current=='idle':result['idle']=dict(entry=foreign['symbols']['idle'],returns=[])
-            if current in ('submit','launch') and busy_next and 'jsl ' in line:
+            if current in ('submit','launch','start') and busy_next and 'jsl ' in line:
                 address=int(re.search(r'\\ ([0-9a-f]{6})',line)[1],16)
                 result['launch']=dict(entry=foreign['symbols'][current]+address,returns=[])
                 busy_next=False
-            if current in ('submit','launch') and re.search(r'\\ ([0-9a-f]{6}) 8f53d600\s+sta',line):
+            if current in ('submit','launch','start') and re.search(r'\\ ([0-9a-f]{6}) 8f53d600\s+sta',line):
                 address=int(re.search(r'\\ ([0-9a-f]{6})',line)[1],16)
                 result['launch']=dict(entry=foreign['symbols'][current]+address+4,returns=[])
-            busy_next=current in ('submit','launch') and bool(re.search(r' a901\s+lda\s+#1$',line))
+            busy_next=current in ('submit','launch','start') and bool(re.search(r' a901\s+lda\s+#1$',line))
             ret=re.search(r'\\ ([0-9a-f]{6}) 6b\s+(?:`[^`]+`: *)?rtl',line)
             if current=='idle' and ret:result['idle']['returns'].append(foreign['symbols']['idle']+int(ret[1],16))
     require(result.get('idle',{}).get('returns') and 'launch' in result,'Missing hardware fence markers')

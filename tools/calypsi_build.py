@@ -27,7 +27,10 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
     include_args = [part for path in (ROOT/'c/include', ROOT/'platform/altirraos', output, *includes) for part in ('-I', path)]
     if ROOT/'platform/altirraos/vbxe-map.s' in assembly:
         probes=(*probes,(ROOT/'c/calypsi/vbxe-upload-layout.c',[
-            ('VbxeUpload size',6),('VbxeUpload records',0),('VbxeUpload count',4)]))
+            ('VbxeUpload size',6),('VbxeUpload records',0),('VbxeUpload count',4),
+            ('VbxeTextUpload size',16),('VbxeTextUpload text',0),('VbxeTextUpload font',4),
+            ('VbxeTextUpload destination',8),('VbxeTextUpload count',12),
+            ('VbxeTextUpload ink',14),('VbxeTextUpload paper',15)]))
     checked = {}
     for number, (source, expected) in enumerate(((ROOT/'c/calypsi/layout-check.c', expected_layout()), *probes)):
         obj = output/f'layout-{number}.o'

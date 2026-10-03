@@ -46,9 +46,39 @@ interrupt bodies. Text accounts for 47.15 ms of that turn's CPU charge. Renderin
 and command preparation dominate synchronous blitter waiting, while scheduling
 and interrupt load further stretch the interval before the next input check.
 
-The optimization slice will batch aligned text runs through a checked driver
-operation, retaining complete geometry admission and public raw-list validation.
-The whole-rectangle asynchronous scroll remains the production geometry.
+## Batched aligned text
+
+The [second slice evidence](../development/console-responsiveness-s2.json) records
+aligned ordinary drawing calls batched through a checked driver
+operation. The complete CPU string, screen rectangle, colours and atlas extents
+are validated before any drawing. A native helper builds a background fill and
+up to 32 fixed glyph records directly in the existing command arena. Each batch
+fits the existing record/work limits and completes before storage reuse. Blank
+glyphs and hardware-zero ink have the same bounded path. Odd-X text and VDI
+opcode 8 retain the existing device path; public raw-list validation is intact.
+
+The [adapter contract](../../ports/gem4xe/adapter/README.md) describes the
+limits. Raw and optimized emitted checks cover all 256 glyphs, all pens, both X
+parities, batch boundaries, CPU string and VRAM destination bank crossings,
+screen edges, invalid arguments with no drawn prefix, owner preemption and
+display restoration. Fault cases stop the first full text batch and require no
+later batch, covering both quiesced cleanup and retained reset-required state.
+
+The first loaded comparison reduces maximum text-call charged CPU from 49.78 to
+6.18 ms, total text-call charge from 2357.91 to 446.71 ms, and maximum complete
+turn charge from 67.26 to 21.99 ms. Visible-input samples improve to 94.24 ms for
+the raw glyph and 105.55 ms for cooked glyph/caret. The 40 ms goal still fails.
+Time off CPU remains substantial (up to 96.54 ms per turn), and input/model
+editing plus multiple drawing operations also exceed a 4 ms complete-turn budget.
+The third slice repeats the benchmark at the existing input phases and replays
+the final image without observers; these first samples are not a worst-case bound.
+
+The whole-rectangle asynchronous scroll remains the production geometry. No
+scheduler policy, worker quantum, input deadline or font was changed. Fixed,
+root/kernel, per-Task and idle bank-zero reservation deltas are all **0 bytes**,
+including guards, alignment and unused capacity. The new assembly uses the
+existing call-clobbered DP area, not additional reserved workspace. Its 16-byte
+stack packet is covered by the existing C stack reservations and emitted guards.
 
 ## Validation and reproduction
 
