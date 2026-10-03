@@ -68,7 +68,8 @@ def run(out,mode,replay=False,observe=False,performance=False):
                 if sample['kind']=='idle':require(not sample['calls'],'Clean console submitted work: '+str(sample))
                 elif sample['stage'] in (2,3,7):
                     require(sample['calls'].get('GemDrawingCopy',0)+sample['calls'].get('GemDrawingScrollStart',0)>0,'Eligible scroll did not copy')
-                    require(sample['calls'].get('blit_glyph',0)<=4,'Eligible scroll redrew unchanged glyphs')
+                    glyphs=sum(sample['calls'].get(name,0) for name in ('blit_glyph','_text_record'))
+                    require(glyphs<=4,'Eligible scroll redrew unchanged glyphs')
                 elif sample['stage']==8:require(sample['calls'].get('GemDrawingCopy',0)==0,'Height-one copy is not empty')
         if performance and observe:result['performance']=summarize(out/'emulator.log',timing,result['operations'])
         result['status']='pass'

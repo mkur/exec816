@@ -56,7 +56,16 @@ between polls. The [measurement record](history/drawing-validation-and-async-scr
 also records 177–216 ms sampled visible input under eight-Task SDFS/ST load.
 A smaller asynchronous candidate improves that latency but still misses 40 ms and
 slows scrolling. The 20 ms scroll and 40 ms input goals remain open; complete-turn
-CPU attribution and long service gaps are the next performance investigation.
+CPU attribution is now implemented in the
+[console responsiveness slices](history/console-responsiveness.md). Batched
+aligned text reduces the maximum measured text-call CPU charge from 49.8 to
+6.2 ms. Loaded visible input improves to 79–110 ms across three sampled phases,
+but still misses 40 ms. Whole turns reach 22.5 ms CPU charge; time off CPU and
+non-text worker work remain significant. Isolated scrolling is 31–33 ms and a
+full repaint reaches its final fence in 251 ms. The next investigation should
+separate ready-queue delay from deliberate worker yielding and bound the remaining
+work between input checks. The 4 ms turn, 20 ms scroll and 40 ms visible-input
+targets remain unchanged; these development measurements do not qualify them.
 
 The other possible milestones have no delivery order:
 

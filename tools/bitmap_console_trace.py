@@ -7,7 +7,7 @@ from sio_transaction_trace import read_events
 @contextmanager
 def observation(foreign,program,enabled,performance=None):
     marks={k:foreign['symbols'][k] for k in ('GemDrawingText','GemDrawingCopy','GemDrawingScrollStart',
-        'GemDrawingScrollPoll','GemDrawingFill','blit_glyph','VbxeSubmit','submit') if k in foreign['symbols']}
+        'GemDrawingScrollPoll','GemDrawingFill','blit_glyph','_text_record','VbxeSubmit','submit') if k in foreign['symbols']}
     for routine,key in [('READY','ready'),('CONTINUING','continuing')]:
         rows=[r for r in program['image']['routines'] if r['name'].startswith('M_BITMAPSCROLL_'+routine+'_')]
         if len(rows)!=1:raise RuntimeError('Missing trace marker '+routine)
