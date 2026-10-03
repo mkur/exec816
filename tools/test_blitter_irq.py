@@ -12,11 +12,12 @@ from test_heap_api import clean_ownership
 from stack_budget import stack_usage
 
 
-def run(out, mode, replay=False, timer=False, lost=False, wrap=False, observe=False):
+def run(out, mode, replay=False, timer=False, lost=False, wrap=False, observe=False, before_wait=False):
+    require(not observe or not (timer or lost or wrap),'Timing requires uninterrupted completion')
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(out/'program') if replay else build(compiler(ROOT/'build/actionc'),ROOT/'tests/programs/blitter_irq.act',
             out/'program',tasks=True,task_capacity=8,console=False,optimize=mode=='opt')
-    report=dict(status='running',tier='development',mode=mode,timer_irq=timer,lost_irq=lost,tick_wrap=wrap,build=p['build'])
+    report=dict(status='running',tier='development',mode=mode,timer_irq=timer,lost_irq=lost,tick_wrap=wrap,before_wait=before_wait,build=p['build'])
     marks={name:p['labels'][name] for name in ('blitter_launched','blitter_irq_complete',
         'native_irq','interrupt_schedule','blitter_watchdog','blitter_watchdog_done')}
     if observe:
@@ -34,16 +35,16 @@ def run(out, mode, replay=False, timer=False, lost=False, wrap=False, observe=Fa
                 shadow_address=next(d['address'] for d in p['image']['data'] if '_SHADOWADDRESS_' in d['name'])
                 b.memload(shadow_address,(p['build']['task_storage']['BLITTER_STATE']+28).to_bytes(4,'little'))
                 mode_address=next(d['address'] for d in p['image']['data'] if '_FAULTMODE_' in d['name'])
-                b.memload(mode_address,bytes([int(lost)|int(wrap)*2]))
+                b.memload(mode_address,bytes([int(lost)|int(wrap)*2|int(timer)*4|int(before_wait)*8]))
             runtime,_=execute(b,p,before_run=before,timeout=90,frame_limit=4000,timer_irq=timer)
             require(b.memdump(0x216,2)==saved['irq'],'IRQ vector not restored')
             require(b.memdump(0x210,2)==saved['timer'],'Timer vector not restored')
             require(b.peek(0xd654)==b'\0','VBXE IRQ left asserted')
             at=p['build']['task_storage']['BLITTER_STATE']
             emulations=b.peek16(at+30)
-            require(emulations==1,'Expected one emulation IRQ completion')
+            require(emulations==(0 if timer else 1),'Unexpected emulation IRQ completions')
             clean_ownership(b,p,p['output'])
-            require(data(b,p['image'],'checks',True)==[17],'Incomplete IRQ fixture')
+            require(data(b,p['image'],'checks',True)==[5 if timer else 19 if before_wait else 17],'Incomplete IRQ fixture')
             if observe:b.profile_stop()
             elapsed=data(b,p['image'],'elapsed',True)[0]
             if lost: require(elapsed>=15 and elapsed<20,'Watchdog wake outside sixteen-tick bound')
@@ -69,7 +70,7 @@ def run(out, mode, replay=False, timer=False, lost=False, wrap=False, observe=Fa
                 body_ms={key:value/BASE_HZ*1000 for key,value in totals.items()},counts=counts)
     except Exception as error:
         report.update(status='fail',error=str(error));raise
-    finally:(out/('results-observed.json' if observe else 'results-lost-wrap.json' if wrap else 'results-lost.json' if lost else 'results-timer.json' if timer else 'results.json')).write_text(json.dumps(report,indent=2)+'\n')
+    finally:(out/('results-before-wait.json' if before_wait else 'results-observed.json' if observe else 'results-lost-wrap.json' if wrap else 'results-lost.json' if lost else 'results-timer.json' if timer else 'results.json')).write_text(json.dumps(report,indent=2)+'\n')
     print('Blitter IRQ passed',mode,report['checks'],flush=True)
 
 
@@ -82,4 +83,5 @@ if __name__=='__main__':
     parser.add_argument('--lost',action='store_true')
     parser.add_argument('--wrap',action='store_true')
     parser.add_argument('--observe',action='store_true')
-    args=parser.parse_args();run(args.output,args.mode,args.replay,args.timer,args.lost,args.wrap,args.observe)
+    parser.add_argument('--before-wait',action='store_true')
+    args=parser.parse_args();run(args.output,args.mode,args.replay,args.timer,args.lost,args.wrap,args.observe,args.before_wait)

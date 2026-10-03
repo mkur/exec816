@@ -20,9 +20,14 @@ CASES = {'lifetime': 0, 'target-removal': 1, 'controller-removal': 2,
 def run(output, mode, selected=None, replay=False):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
+    pin=PIN
+    bridge=ROOT/'build/shell-paced-bridge'
+    if selected is None or any(name.startswith('blitter-') for name in selected):
+        from test_mouse_observe import PIN as BLITTER_PIN, BRIDGE
+        pin=BLITTER_PIN;bridge=BRIDGE
     report = dict(status='running', tier='development', mode=mode, cases=[])
     try:
-        require(sha256(ROOT/'build/shell-paced-bridge/AltirraBridgeServer') == PIN['emulator']['sha256'],
+        require(sha256(bridge/'AltirraBridgeServer') == (pin['mouse_input']['tooling']['sha256'] if 'mouse_input' in pin else pin['emulator']['sha256']),
                 'Unpinned producer emulator')
         program = read_build(output/'program') if replay else build(compiler(ROOT/'build/actionc'),
             ROOT/'tests/programs/producer_lifetime.act', output/'program', optimize=mode=='opt',
@@ -32,16 +37,16 @@ def run(output, mode, selected=None, replay=False):
         baseline = json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
         for key in ('bank_zero_budget', 'task_pools', 'runtime_reservations', 'phase_reservations'):
             require(memory[key] == baseline[key], 'Producer changed '+key)
-        report.update(build=program['build'], pin=PIN, harness_sha256=sha256(Path(__file__)),
+        report.update(build=program['build'], pin=pin, harness_sha256=sha256(Path(__file__)),
             xex_sha256=sha256(program['xex']), producer_imports=ABI['producer_imports'],
             bank_zero_delta=dict(fixed=0, per_task=[0]*8, private_idle=0))
-        specs = [(prefix+'-'+name, source, kind) for prefix, source in [('serial',1), ('keyboard',2), ('pointer',3)]
+        specs = [(prefix+'-'+name, source, kind) for prefix, source in [('serial',1), ('keyboard',2), ('pointer',3), ('blitter',4)]
                  for name, kind in CASES.items()]+[('old-profile', 0, 9)]
         if selected:
             require(set(selected) <= {s[0] for s in specs}, 'Unknown producer case')
             specs = [s for s in specs if s[0] in selected]
-        with emulator(ROOT/'build/shell-paced-bridge', ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as b:
-            report['machine'] = verify_machine(b, ROOT/'build/firmware/altirraos-816.rom', PIN)
+        with emulator(bridge, ROOT/'build/firmware/altirraos-816.rom', output, pin=pin) as b:
+            report['machine'] = verify_machine(b, ROOT/'build/firmware/altirraos-816.rom', pin)
             for number, (name, source, kind) in enumerate(specs):
                 folder = output/name
                 folder.mkdir(exist_ok=True)

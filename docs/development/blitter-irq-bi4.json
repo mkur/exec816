@@ -1,0 +1,2766 @@
+{
+  "schema_version": 1,
+  "slice": "BI4",
+  "status": "pass",
+  "tier": "development",
+  "cases": [
+    {
+      "artifact": "build/blitter-irq/bi4-producer-opt/results.json",
+      "sha256": "2296c3ef2170129c4c69f01b873a10b7a1df0a3b3456637cefbd021dcf98acc7",
+      "image_sha256": "08cee489f39c541a2dce76a8062559b5c6c35f8599f26d80a9bb775043d51129",
+      "status": "pass",
+      "mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "blitter-lifetime",
+          "status": "pass",
+          "checks": 20,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 52,
+              "remaining_above_floor": 1228
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 48,
+              "remaining_above_floor": 720
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 165,
+              "remaining_above_floor": 1115
+            }
+          }
+        },
+        {
+          "name": "blitter-target-removal",
+          "status": "pass",
+          "checks": 16,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 52,
+              "remaining_above_floor": 1228
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 42,
+              "remaining_above_floor": 726
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 162,
+              "remaining_above_floor": 1118
+            }
+          }
+        },
+        {
+          "name": "blitter-controller-removal",
+          "status": "pass",
+          "checks": 15,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 52,
+              "remaining_above_floor": 1228
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 42,
+              "remaining_above_floor": 726
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 162,
+              "remaining_above_floor": 1118
+            }
+          }
+        },
+        {
+          "name": "blitter-active-signal",
+          "status": "pass",
+          "checks": 15,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 52,
+              "remaining_above_floor": 1228
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 42,
+              "remaining_above_floor": 726
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 165,
+              "remaining_above_floor": 1115
+            }
+          }
+        },
+        {
+          "name": "blitter-released-signal",
+          "status": "pass",
+          "checks": 15,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 52,
+              "remaining_above_floor": 1228
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 42,
+              "remaining_above_floor": 726
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 165,
+              "remaining_above_floor": 1115
+            }
+          }
+        },
+        {
+          "name": "blitter-wrong-release",
+          "status": "pass",
+          "checks": 16,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 52,
+              "remaining_above_floor": 1228
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 42,
+              "remaining_above_floor": 726
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 38,
+              "remaining_above_floor": 730
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 165,
+              "remaining_above_floor": 1115
+            }
+          }
+        },
+        {
+          "name": "blitter-wrong-drain",
+          "status": "pass",
+          "checks": 16,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 52,
+              "remaining_above_floor": 1228
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 42,
+              "remaining_above_floor": 726
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 38,
+              "remaining_above_floor": 730
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 165,
+              "remaining_above_floor": 1115
+            }
+          }
+        },
+        {
+          "name": "blitter-recipient-release",
+          "status": "pass",
+          "checks": 18,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 52,
+              "remaining_above_floor": 1228
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 48,
+              "remaining_above_floor": 720
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 170,
+              "remaining_above_floor": 1110
+            }
+          }
+        },
+        {
+          "name": "blitter-independent-sources",
+          "status": "pass",
+          "checks": 16,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 52,
+              "remaining_above_floor": 1228
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 42,
+              "remaining_above_floor": 726
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 165,
+              "remaining_above_floor": 1115
+            }
+          }
+        }
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi4-producer-raw/results.json",
+      "sha256": "afbee60c31822fd17b7bd9cc291773c07fa30b3d4168ac04a73820e2a8e0377f",
+      "image_sha256": "bb7b8c0f9aed4b7a179f4d67ba1d47b62567325ed2963bee17df40f26b1eedfc",
+      "status": "pass",
+      "mode": "raw",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cases": [
+        {
+          "name": "blitter-lifetime",
+          "status": "pass",
+          "checks": 20,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 58,
+              "remaining_above_floor": 710
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 189,
+              "remaining_above_floor": 1091
+            }
+          }
+        },
+        {
+          "name": "blitter-target-removal",
+          "status": "pass",
+          "checks": 16,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 52,
+              "remaining_above_floor": 716
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 178,
+              "remaining_above_floor": 1102
+            }
+          }
+        },
+        {
+          "name": "blitter-controller-removal",
+          "status": "pass",
+          "checks": 15,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 52,
+              "remaining_above_floor": 716
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 178,
+              "remaining_above_floor": 1102
+            }
+          }
+        },
+        {
+          "name": "blitter-active-signal",
+          "status": "pass",
+          "checks": 15,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 52,
+              "remaining_above_floor": 716
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 189,
+              "remaining_above_floor": 1091
+            }
+          }
+        },
+        {
+          "name": "blitter-released-signal",
+          "status": "pass",
+          "checks": 15,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 52,
+              "remaining_above_floor": 716
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 189,
+              "remaining_above_floor": 1091
+            }
+          }
+        },
+        {
+          "name": "blitter-wrong-release",
+          "status": "pass",
+          "checks": 16,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 52,
+              "remaining_above_floor": 716
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 48,
+              "remaining_above_floor": 720
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 189,
+              "remaining_above_floor": 1091
+            }
+          }
+        },
+        {
+          "name": "blitter-wrong-drain",
+          "status": "pass",
+          "checks": 16,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 52,
+              "remaining_above_floor": 716
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 48,
+              "remaining_above_floor": 720
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 189,
+              "remaining_above_floor": 1091
+            }
+          }
+        },
+        {
+          "name": "blitter-recipient-release",
+          "status": "pass",
+          "checks": 18,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 58,
+              "remaining_above_floor": 710
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 189,
+              "remaining_above_floor": 1091
+            }
+          }
+        },
+        {
+          "name": "blitter-independent-sources",
+          "status": "pass",
+          "checks": 16,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 52,
+              "remaining_above_floor": 716
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 18,
+              "remaining_above_floor": 238
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 189,
+              "remaining_above_floor": 1091
+            }
+          }
+        }
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi4-display-opt/results.json",
+      "sha256": "b932b55b4adfe4dc16dd30d3fb1306c99a56a28df8f31cfc4353f3d405abb45f",
+      "image_sha256": "18a213f40ef2dcd3984f987793294d1b2cee034efb79a2cd1e914f76948933f9",
+      "status": "pass",
+      "mode": "opt",
+      "cases": [
+        {
+          "name": "async-scroll",
+          "status": "pass",
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": 1722,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_checks": 0,
+          "copy_failures": 0,
+          "copy_first_failure": 0,
+          "scroll_checks": 1231,
+          "scroll_failures": 0,
+          "scroll_first_failure": 0,
+          "scroll_busy_seen": 1,
+          "scroll_polls": 1,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 368,
+              "remaining_above_floor": 912
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 242,
+              "remaining_above_floor": 526
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 242,
+              "remaining_above_floor": 526
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 249,
+              "remaining_above_floor": 2055
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 29,
+              "remaining_above_floor": 227
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          }
+        },
+        {
+          "name": "async-lost-irq",
+          "status": "pass",
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": 1722,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_checks": 0,
+          "copy_failures": 0,
+          "copy_first_failure": 0,
+          "scroll_checks": 1233,
+          "scroll_failures": 0,
+          "scroll_first_failure": 0,
+          "scroll_busy_seen": 1,
+          "scroll_polls": 1,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 368,
+              "remaining_above_floor": 912
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 242,
+              "remaining_above_floor": 526
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 242,
+              "remaining_above_floor": 526
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 249,
+              "remaining_above_floor": 2055
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 44,
+              "remaining_above_floor": 212
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          }
+        }
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi4-display-raw/results.json",
+      "sha256": "c0baeb8d88dbb89c7bc8f91f5f9d0f817e6697f44819bdc58c7c1bab9938d041",
+      "image_sha256": "f3d0b0b8568330fde480ccb3427d25218d2e1d853b918fa45c43b311c104396d",
+      "status": "pass",
+      "mode": "raw",
+      "cases": [
+        {
+          "name": "async-scroll",
+          "status": "pass",
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": 1723,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_checks": 0,
+          "copy_failures": 0,
+          "copy_first_failure": 0,
+          "scroll_checks": 1231,
+          "scroll_failures": 0,
+          "scroll_first_failure": 0,
+          "scroll_busy_seen": 1,
+          "scroll_polls": 1,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 408,
+              "remaining_above_floor": 872
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 264,
+              "remaining_above_floor": 504
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 158,
+              "remaining_above_floor": 610
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 264,
+              "remaining_above_floor": 504
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 246,
+              "remaining_above_floor": 2058
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 29,
+              "remaining_above_floor": 227
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 266,
+              "remaining_above_floor": 1014
+            }
+          }
+        },
+        {
+          "name": "async-lost-irq",
+          "status": "pass",
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": 1723,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_checks": 0,
+          "copy_failures": 0,
+          "copy_first_failure": 0,
+          "scroll_checks": 1233,
+          "scroll_failures": 0,
+          "scroll_first_failure": 0,
+          "scroll_busy_seen": 1,
+          "scroll_polls": 1,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 408,
+              "remaining_above_floor": 872
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 264,
+              "remaining_above_floor": 504
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 158,
+              "remaining_above_floor": 610
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 264,
+              "remaining_above_floor": 504
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 243,
+              "remaining_above_floor": 2061
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 37,
+              "remaining_above_floor": 219
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 266,
+              "remaining_above_floor": 1014
+            }
+          }
+        }
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi4-startup/results.json",
+      "sha256": "6645155153bac9400fac3f9b2507a1aaf639891110b1b1ab6ac6498e20f41b90",
+      "image_sha256": "4ae458ba43c4105344771486c573a1366da577b558f3c8a803e9b711e82db4b3",
+      "status": "pass",
+      "mode": "opt",
+      "cases": [
+        {
+          "name": "rollback",
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            489
+          ]
+        },
+        {
+          "name": "absent",
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": false,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "off",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            0
+          ]
+        },
+        {
+          "name": "unsupported",
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi4-native/results-timer.json",
+      "sha256": "f2ba4c43951004cfa132676793a5118a37932adf7bbdb4eda01437e9d72f4c45",
+      "image_sha256": "a0502f984dfb2fe57c9330ccc42ac5d9dc470c722b08aeaff169b1737614bc73",
+      "status": "pass",
+      "mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": [
+        5
+      ],
+      "timer_irq": true,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 96,
+          "remaining_above_floor": 1184
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 179,
+          "remaining_above_floor": 1101
+        }
+      }
+    },
+    {
+      "artifact": "build/blitter-irq/bi4-before-wait-opt/results-before-wait.json",
+      "sha256": "e291cf19d09c9a17b4eb89c7e80d5d5deb46ffaaee2a0336bc0dec523ed54e38",
+      "image_sha256": "a7f6254432635b5897d9bc8924b1c97e154ae4eae5e426fa14dcf7deefd500c6",
+      "status": "pass",
+      "mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": [
+        19
+      ],
+      "before_wait": true,
+      "timer_irq": false,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 94,
+          "remaining_above_floor": 1186
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 158,
+          "remaining_above_floor": 1122
+        }
+      }
+    },
+    {
+      "artifact": "build/blitter-irq/bi4-before-wait-raw/results-before-wait.json",
+      "sha256": "5eaf9411db2b0076613f506f2bb27f3755ea927b0b352e8cba77d7e04b1a06b3",
+      "image_sha256": "ceebc252cfcea7b87713bc6d0653511da7ff2c21a65d47c2d57c210a1210c5ca",
+      "status": "pass",
+      "mode": "raw",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": [
+        19
+      ],
+      "before_wait": true,
+      "timer_irq": false,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 100,
+          "remaining_above_floor": 1180
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 178,
+          "remaining_above_floor": 1102
+        }
+      }
+    },
+    {
+      "artifact": "build/blitter-irq/bi4-fault-raw/results.json",
+      "sha256": "50bdec67854f04c79dca5df2eab7624426f09b885b515ed96c93ebea37bbea0b",
+      "image_sha256": "46e7c83700bd19b3b3bd951a75450efbb939fccef8f81a1365f7cf6cc9233fd1",
+      "status": "pass",
+      "mode": "raw",
+      "cases": [
+        {
+          "fault": 1,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            9
+          ]
+        },
+        {
+          "fault": 2,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            2
+          ]
+        },
+        {
+          "fault": 3,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            39
+          ]
+        },
+        {
+          "fault": 4,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            32
+          ]
+        },
+        {
+          "fault": 5,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            9
+          ]
+        },
+        {
+          "fault": 6,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi4-control-raw/results.json",
+      "sha256": "5def23ae7355c11966610554d3011ce10c1eece7b1ecd13b64833018c6311fa8",
+      "image_sha256": "80d7aa9b7ead4a9e97df559749c3edd958c33565c5e2689b4b46949465e9c822",
+      "status": "pass",
+      "mode": "raw",
+      "cases": [
+        {
+          "variant": 5,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            38
+          ],
+          "pixels_sha256": "5a29ae81a24d991bb7a079ab25c1bdcc0b20e78a2e1c518443121567e12cfceb",
+          "pendingReads": 1,
+          "busyReads": 1
+        },
+        {
+          "variant": 10,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            38
+          ],
+          "pendingReads": 1,
+          "busyReads": 0
+        },
+        {
+          "variant": 11,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            43
+          ],
+          "pendingReads": 1,
+          "busyReads": 0
+        },
+        {
+          "variant": 12,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": [
+            42
+          ],
+          "pixels_sha256": "5a29ae81a24d991bb7a079ab25c1bdcc0b20e78a2e1c518443121567e12cfceb",
+          "pendingReads": 1,
+          "busyReads": 1
+        }
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi3-loaded-final/replay-results.json",
+      "sha256": "3b68ff3e9ccf5c60783f1275712828a18f455548da7ebf52576037e31c5045c3",
+      "image_sha256": "02a8a818b0bbe73a7a8f9a7f76cf67b884c2b09905a0d1b81702e3654538adbb",
+      "status": "pass",
+      "mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    }
+  ],
+  "scope": "Emitted raw/optimized producer ownership and signal lifetime, C Wait/Poll and lost-IRQ timeout across wrap, coalesced completion before Wait under Forbid, native/emulation delivery, startup rollback, raw console cancellation/destruction/faults, and loaded same-image replay. Development checks only.",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "upper_production_reservation_delta": 0,
+  "changes": [
+    "No production code change in this slice.",
+    "Producer fixture now covers VBXE source 4 and rejects a mismatched prepared owner, both controller/recipient removal, active/released signal free, foreign Release/Drain and independent source retention.",
+    "C lost-source case suppresses only IRQ delivery, waits for EXPIRED through tick wrap, verifies real completed pixels, and then reuses the driver for new nonreused operation IDs.",
+    "Forbid fixture allows real IRQ completion before Wait and coalesces two more signals; exactly one durable result is consumed. The second operation completes in emulation context.",
+    "Occupied external timer prevents binding and rolls back the allocated signal without changing vectors.",
+    "Startup exhaustion fixture now tracks 64 allocations for the current 4 MiB pin instead of failing at its old 16-entry fixture capacity."
+  ],
+  "coverage_links": [
+    "blitter-irq-bi2.json",
+    "blitter-irq-bi3.json"
+  ],
+  "host_checks": {
+    "tests": 319,
+    "skipped": 4
+  },
+  "limits": [
+    "Fault-stop park intentionally retains unquiesced storage; it is not a recoverable normal close.",
+    "The finite race cases establish these boundaries; they are not an exhaustive emulator/platform qualification matrix."
+  ]
+}

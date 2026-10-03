@@ -16,7 +16,7 @@ from test_large_stacks import observe
 
 CASES=['pattern','unknown-baseline','absent','unsupported','busy-timeout','vcount-timeout',
        'unquiesced','retained-owner','wrap-timeout','map-nmi','bitmap-copy','copy-fault',
-       'async-scroll','async-timeout','async-wrap','async-unquiesced']
+       'async-scroll','async-timeout','async-wrap','async-unquiesced','async-lost-irq']
 
 
 def run(output,mode,cases=None,replay=False,production=False):
@@ -61,6 +61,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                 def before_run(b):
                     b.memload(symbols['variant'],variant.to_bytes(2,'little'))
                     b.memload(symbols['tickAddress'],adapter.VBI_COUNT.to_bytes(4,'little'))
+                    b.memload(symbols['notifyControl'],(program['build']['task_storage']['BLITTER_STATE']+28).to_bytes(4,'little'))
                     b.memload(0x8000,sentinel)
                     saved['os']=b.memdump(0x22f,3)
                     saved['screen_at']=b.peek16(0x58)

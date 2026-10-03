@@ -7,6 +7,7 @@ extern volatile UWORD variant,ownerChecks,fault_arm,ProbeStopped;
 extern volatile ULONG tickAddress;
 volatile UWORD scrollChecks,scrollFailures,scrollFirstFailure,scrollLaunches;
 volatile UWORD scrollBusySeen,scrollPolls;
+volatile ULONG notifyControl;
 static UBYTE row[320];
 static struct VbxeCopy copy;
 
@@ -45,7 +46,7 @@ void ScrollCases(void)
         memset(row,(UBYTE)y,sizeof(row));
         check(VbxeWrite(&display,(ULONG)y*320,row,sizeof(row))==DISPLAY_OK);
     }
-    if (variant==14) *(volatile UWORD *)tickAddress=0xfffe;
+    if (variant==14 || variant==16) *(volatile UWORD *)tickAddress=0xfffe;
     started=DisplayTicks();
     launches=scrollLaunches; before=ownerChecks;
     check(VbxeScrollStart(&display,&copy,0xa5,&id)==DISPLAY_OK);
@@ -58,15 +59,25 @@ void ScrollCases(void)
     check(VbxeScrollPoll(&display,id+1)==DISPLAY_BAD_ARGUMENT);
     /* The completed launch owns its records; the original descriptor can die. */
     memset(&copy,0xcc,sizeof(copy));
-    if (variant>=13) { fault_arm=1; ProbeStopped=0; }
-    if (variant==12) check((Wait(completion)&completion)!=0);
+    if (variant>=13 && variant<=15) { fault_arm=1; ProbeStopped=0; }
+    if (variant==16) {
+        /* Lost source delivery: retain the actual ARMED mailbox and timer.
+         * The list completes normally, but only its independent timeout wakes. */
+        *(volatile UBYTE *)0xd654UL=0;
+        *(volatile UBYTE *)notifyControl=0;
+    }
+    if (variant==12 || variant==16) check((Wait(completion)&completion)!=0);
+    if (variant==16) {
+        check(*(volatile UBYTE *)(notifyControl-13)==3);
+        check((UWORD)(DisplayTicks()-started)>=15 && DisplayTicks()<32);
+    }
     do {
         before=ownerChecks;
         status=VbxeScrollPoll(&display,id);
         check((UWORD)(ownerChecks-before)==1);
         ++scrollPolls;
     } while (status==DISPLAY_BUSY);
-    if (variant>=13) {
+    if (variant>=13 && variant<=15) {
         check(status==DISPLAY_DEVICE_FAULT && !display.scrollPending);
         check(display.lease.state==DISPLAY_FREE && ProbeStopped);
         /* DONE with injected BUSY is an immediate contradiction, not a

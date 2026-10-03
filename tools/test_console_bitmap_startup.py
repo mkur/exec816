@@ -38,7 +38,12 @@ def run(out,mode,replay=False):
                 def before(b):
                     saved['at']=b.peek16(88);saved['screen']=b.memdump(saved['at'],960)
                     saved['os']=b.memdump(0x22f,3);saved['input']=b.memdump(0x208,2)
-                runtime,_=execute(b,p,before_run=before,expected_status=0 if name=='rollback' else 0xf731,frame_limit=15000,timeout=120)
+                try:
+                    runtime,_=execute(b,p,before_run=before,expected_status=0 if name=='rollback' else 0xf731,frame_limit=15000,timeout=120)
+                except Exception:
+                    names=('checks','heldCount','baseline','remaining','heldReady')
+                    print('Startup failure',name,{n:data(b,p['image'],n,n=='checks') for n in names},flush=True)
+                    raise
                 require(b.memdump(saved['at'],960)==saved['screen'] and b.memdump(0x22f,3)==saved['os'],'Startup changed OS display')
                 require(b.memdump(0x208,2)==saved['input'],'Startup changed input')
                 ownership(b,p,p['output'])

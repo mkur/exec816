@@ -60,7 +60,7 @@ assuming work is pending. Current behavior belongs in the
 
 ## Console and interaction
 
-- [Blitter completion IRQs](blitter-irq-implementation-plan.md): BI0–BI3 complete; remaining
+- [Blitter completion IRQs](blitter-irq-implementation-plan.md): BI0–BI4 complete; remaining
   slices replace scroll polling with a retained completion signal and independent
   timeout wake, preserving input service, one in-flight list and driver ownership.
 - [Drawing validation and asynchronous scrolling](drawing-validation-implementation-plan.md):

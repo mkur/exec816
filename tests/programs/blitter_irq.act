@@ -111,6 +111,15 @@ PROC Main()
 
   DISPLAYBOOT.Authorize()
   Require(DISPLAY.Acquire(@lease,DISPLAY.VBXE)=DISPLAY.OK)
+  IF (faultMode & 4)<>0 THEN
+    Require(BLITTER.Open(@lease)=DISPLAY.UNSUPPORTED)
+    Require(EXEC.AllocSignal(16)=16)
+    EXEC.FreeSignal(16)
+    Require(DISPLAY.BeginRelease(@lease)=DISPLAY.OK)
+    Require(DISPLAY.Release(@lease)=DISPLAY.OK)
+    RETURN
+  FI
+
   Require(BLITTER.Open(@lease)=DISPLAY.OK)
   Require(DISPLAY.Activate(@lease)=DISPLAY.OK)
   completion=BLITTER.Mask(@lease)
@@ -133,7 +142,22 @@ PROC Main()
     expectedEvent=3
   FI
   LET started=ticks
-  bits=EXEC.Wait(completion)
+  IF (faultMode & 8)<>0 THEN
+    ; Real hardware completes while Forbid prevents Task switching. Repeated
+    ; notifications coalesce; Wait must consume the already durable result.
+    EXEC.Forbid()
+    WHILE CARD(ticks-started)<2 DO
+    OD
+
+    Require(BLITTERADAPTER.State(1)=2)
+    EXEC.Signal(EXEC.FindTask(NULL),completion)
+    EXEC.Signal(EXEC.FindTask(NULL),completion)
+    bits=EXEC.Wait(completion)
+    Require((EXEC.SetSignal(0,completion) & completion)=0)
+    EXEC.Permit()
+  ELSE
+    bits=EXEC.Wait(completion)
+  FI
   elapsed=ticks-started
   Require((bits & completion)<>0)
   Require(BLITTERADAPTER.State(1)=expectedEvent)

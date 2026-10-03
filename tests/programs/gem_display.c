@@ -55,6 +55,7 @@ static void compute(UWORD who)
 void Peer(void)
 {
     Wait(1);
+    check(VbxeCompletionMask(&display)==0);
     check(VbxeFence(&display)==DISPLAY_INVALID_OWNER);
     check(VbxeSubmit(&display,NULL,0)==DISPLAY_INVALID_OWNER);
     check(VbxeScrollStart(&display,NULL,0,NULL)==DISPLAY_INVALID_OWNER);

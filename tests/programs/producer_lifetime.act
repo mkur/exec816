@@ -2,6 +2,7 @@ MODULE PRODUCERLIFETIME
 USE EXEC
 USE EXECLISTS
 USE EXECPRODUCER
+USE BLITTERADAPTER
 USE TASKSTACKS
 USE HEAPCORE
 EXEC.Task recipient,intruder
@@ -85,6 +86,12 @@ PROC Main()
   Require(EXECPRODUCER.Bind($ffff,@recipient,$10000)=0)
   Require(EXECPRODUCER.Bind(source,@recipient,$10000)=0)
   Require(EXEC.RetainTask(@recipient,@lease)=1)
+  IF source=EXECPRODUCER.VBXE_BLITTER THEN
+    ; Exercise the fixed backend's prepared-owner check without launching DMA.
+    BLITTERADAPTER.Prepare(parent,1)
+    Require(EXECPRODUCER.Bind(source,@recipient,$10000)=0)
+    BLITTERADAPTER.Prepare(@recipient,1)
+  FI
   Require(EXECPRODUCER.Bind($0101,@recipient,$10000)=0)
   Require(EXECPRODUCER.Bind($0102,@recipient,$10000)=0)
   Require(EXECPRODUCER.Bind(source,@recipient,0)=0)
@@ -147,6 +154,10 @@ PROC Main()
   EXECPRODUCER.Drain(source)
   EXECPRODUCER.Release(source)
   EXECPRODUCER.Drain(source)
+  IF source=EXECPRODUCER.VBXE_BLITTER THEN
+    BLITTERADAPTER.Prepare(NULL,0)
+  FI
+
   Require(EXEC.ReleaseTask(@lease)=1)
   EXEC.Signal(@recipient,1)
   bits=EXEC.Wait($20000)

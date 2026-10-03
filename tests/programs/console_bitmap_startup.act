@@ -17,9 +17,10 @@ CONSOLETYPES.Service POINTER service
 CONSOLETYPES.Instance POINTER instance
 DISPLAY.Lease displayLease
 EXEC.TaskLease bindingLease
+CONST MAX_HELD=64
 BYTE heldCount
-ADDRESS ARRAY held(16)
-LONGCARD ARRAY heldSizes(16)
+ADDRESS ARRAY held(MAX_HELD)
+LONGCARD ARRAY heldSizes(MAX_HELD)
 BYTE POINTER firstBlock,secondBlock,thirdBlock
 LONGCARD baseline,remaining
 
@@ -46,7 +47,7 @@ PROC Exhaust(BYTE unused)
 
     block=EXEC.AllocMem(size,0)
     Require(block<>BYTE POINTER(0))
-    Require(heldCount<16)
+    Require(heldCount<MAX_HELD)
     held(heldCount)=ADDRESS(block)
     heldSizes(heldCount)=size
     heldCount==+1
