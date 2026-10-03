@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "kind": "archived_existing_measurement",
+  "recorded_for": "Input registration and lifetime design",
+  "archive_date": "2026-10-03",
+  "scope": "Preserves the existing passive active-key profile of the unchanged optimized circular-console image. Archiving rechecks source hashes; it performs no new guest execution or qualification.",
+  "tier": "development",
+  "sources": {
+    "analysis": {
+      "path": "build/console-circular/key-service/analysis.json",
+      "sha256": "a8e7c3d0b1f50ee0b0eee1e9790f60646155ffd38565fce739a70229ca0b5992"
+    },
+    "results": {
+      "path": "build/console-circular/key-service/results.json",
+      "sha256": "1413df2c0f79c657bc448837db1659d6d6062061c9843e4a570c95db4f361eea"
+    },
+    "trace": {
+      "path": "build/console-circular/key-service/observed-trace.log",
+      "sha256": "b26bf8eadd2872fec8dc13fc3c1ecf2cdcca9c8e9e1ab7af60cefe9866a63114"
+    },
+    "observer_script": {
+      "path": "build/console-circular/key-service/profile.py",
+      "sha256": "bbe36d5de7c9ccf48eea11efadd402360cf5faa2d382293277e12b8e4c38474e"
+    },
+    "analysis_script": {
+      "path": "build/console-circular/trace-analysis/analyze.py",
+      "sha256": "a3b62e12344bf0aca341af773cac9c016b218f5e2a55192de6927eb4f1010cc5"
+    },
+    "loaded_trace_summary": {
+      "path": "build/console-circular/trace-analysis/summary.json",
+      "sha256": "e81d7e41126c939762e326c6e50634d03d7b86c50856c4bfaa8e1e3274eb0ce5"
+    },
+    "existing_console_evidence": {
+      "path": "docs/development/console-circular-buffer-cb4.json",
+      "sha256": "b9995f2174aea84b0eb9ae591272f6cfcbb6ce9abc6d5f91b20709cc11abc270"
+    }
+  },
+  "compiler": {
+    "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "override": false,
+    "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "emulator": {
+    "path": "build/mouse-bridge/AltirraBridgeServer",
+    "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59"
+  },
+  "rom": {
+    "path": "build/firmware/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "profile": {
+    "scope": "Additional passive entry/return markers on unchanged optimized CB4 image, phase zero. No production source or baseline workload changes.",
+    "tier": "development",
+    "status": "pass",
+    "xex_sha256": "4f550bec54114de1ec3209a5d1a304f4c8a2ff6abcd3dd253c085e5552be53dc",
+    "trace_sha256": "b26bf8eadd2872fec8dc13fc3c1ecf2cdcca9c8e9e1ab7af60cefe9866a63114",
+    "exact_match_to_saved_CB4": [
+      "input latency",
+      "capture-relative scanout samples",
+      "all complete worker-turn durations and CPU/interrupt/off-worker partitions"
+    ],
+    "absolute_clock_offset_base_cycles": -35568,
+    "writable_range_table": {
+      "count": 28,
+      "first_matching_record_one_based": 22,
+      "lease": "0x011382",
+      "event": "0x0113c6",
+      "common_range": "0x01137e..0x011402",
+      "validations_per_key": 4,
+      "record_visits_per_key": 88
+    },
+    "keys": [
+      {
+        "key": "Z",
+        "service_cpu_ms": 8.891720786772657,
+        "parts": {
+          "key_pump": {
+            "calls": 1,
+            "cpu_ms": 7.074286100941809
+          },
+          "key_take": {
+            "calls": 2,
+            "cpu_ms": 6.750834180318279
+          },
+          "key_extent": {
+            "calls": 4,
+            "cpu_ms": 4.5697011047691
+          },
+          "key_writable": {
+            "calls": 4,
+            "cpu_ms": 4.404979566635043
+          },
+          "key_valid": {
+            "calls": 2,
+            "cpu_ms": 1.5604493507701807
+          },
+          "key_find_task": {
+            "calls": 2,
+            "cpu_ms": 1.1523459250978672
+          },
+          "key_resolve": {
+            "calls": 1,
+            "cpu_ms": 0.12278344862196372
+          },
+          "key_deliver": {
+            "calls": 1,
+            "cpu_ms": 0.10544433934469445
+          },
+          "key_decode": {
+            "calls": 1,
+            "cpu_ms": 0.06646658556286555
+          }
+        },
+        "take_cpu_ms": [
+          3.409742887793408,
+          3.34109129252487
+        ]
+      },
+      {
+        "key": "A",
+        "service_cpu_ms": 8.735386866541017,
+        "parts": {
+          "key_pump": {
+            "calls": 1,
+            "cpu_ms": 7.931162326485559
+          },
+          "key_take": {
+            "calls": 2,
+            "cpu_ms": 7.60735798494176
+          },
+          "key_extent": {
+            "calls": 4,
+            "cpu_ms": 5.426929751233121
+          },
+          "key_writable": {
+            "calls": 4,
+            "cpu_ms": 5.264675159540951
+          },
+          "key_valid": {
+            "calls": 2,
+            "cpu_ms": 1.5562202997269443
+          },
+          "key_find_task": {
+            "calls": 2,
+            "cpu_ms": 1.1507952730486806
+          },
+          "key_resolve": {
+            "calls": 1,
+            "cpu_ms": 0.11834294502656549
+          },
+          "key_deliver": {
+            "calls": 1,
+            "cpu_ms": 0.10530337097658655
+          },
+          "key_decode": {
+            "calls": 1,
+            "cpu_ms": 0.06632561719475766
+          }
+        },
+        "take_cpu_ms": [
+          3.404315605621255,
+          4.203042379320505
+        ]
+      },
+      {
+        "key": "Return",
+        "service_cpu_ms": 8.593572688224489,
+        "parts": {
+          "key_pump": {
+            "calls": 1,
+            "cpu_ms": 7.8193039263919575
+          },
+          "key_take": {
+            "calls": 2,
+            "cpu_ms": 7.492116344013567
+          },
+          "key_extent": {
+            "calls": 4,
+            "cpu_ms": 4.6928369743113345
+          },
+          "key_writable": {
+            "calls": 4,
+            "cpu_ms": 4.52818592036133
+          },
+          "key_valid": {
+            "calls": 2,
+            "cpu_ms": 1.6583518824211034
+          },
+          "key_find_task": {
+            "calls": 2,
+            "cpu_ms": 1.2310062745020645
+          },
+          "key_resolve": {
+            "calls": 1,
+            "cpu_ms": 0.12271296443790977
+          },
+          "key_deliver": {
+            "calls": 1,
+            "cpu_ms": 0.09980560462037923
+          },
+          "key_decode": {
+            "calls": 1,
+            "cpu_ms": 0.06026397736611882
+          }
+        },
+        "take_cpu_ms": [
+          3.9831317250722114,
+          3.508984618941356
+        ]
+      }
+    ],
+    "caveats": [
+      "CPU charge includes kernel/scheduling tails and bus stalls, excluding native interrupt bodies and off-worker time.",
+      "Parts are nested: writable is within extent; FindTask is within validity; decoding is within delivery; all are within service.",
+      "No changed implementation or new raw-NIR qualification is claimed."
+    ]
+  },
+  "note": "The archived profile reports equality of capture-relative timings and all complete turn partitions against the saved phase-zero run. Absolute timestamps differ by one PAL frame. Nested routine spans are not additive. It is the Action console path, not a C-bridge timing measurement.",
+  "loaded_pointer_sampling": [
+    {
+      "phase_base_cycles": 0,
+      "count": 29807,
+      "rate_hz": 7913.994985292206
+    },
+    {
+      "phase_base_cycles": 3547,
+      "count": 28743,
+      "rate_hz": 7914.510534101002
+    },
+    {
+      "phase_base_cycles": 14188,
+      "count": 29858,
+      "rate_hz": 7914.107462419771
+    }
+  ]
+}

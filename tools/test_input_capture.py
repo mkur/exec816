@@ -8,8 +8,7 @@ from os_boundary import emulator, run_to
 from stack_budget import stack_usage
 from test_cooperative import data
 from test_heap_api import clean_ownership
-
-PIN = json.loads((ROOT/'toolchain/altirra-console.json').read_text())
+from test_mouse_observe import PIN, BRIDGE, ROM
 
 
 def run(output, mode, replay=False):
@@ -17,7 +16,7 @@ def run(output, mode, replay=False):
     output.mkdir(parents=True,exist_ok=True)
     report=dict(status='running',tier='development',slice='I3',mode=mode,cases=[])
     try:
-        require(sha256(ROOT/'build/console-bridge/AltirraBridgeServer')==PIN['emulator']['sha256'],
+        require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],
                 'Wrong capture emulator')
         p=read_build(output/'program') if replay else build(compiler(ROOT/'build/actionc'),
             ROOT/'tests/programs/input_capture.act',output/'program',optimize=mode=='opt',
@@ -31,8 +30,8 @@ def run(output, mode, replay=False):
         report.update(build=p['build'],pin=PIN,harness_sha256=sha256(Path(__file__)),
             xex_sha256=sha256(p['xex']),bank_zero_delta=dict(fixed=0,per_task=[0]*8,private_idle=0))
         at=lambda name:next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_INPUTTEST_'+name.upper()+'_'))
-        with emulator(ROOT/'build/console-bridge',ROOT/'build/firmware/altirraos-816.rom',output,pin=PIN) as b:
-            report['machine']=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
+        with emulator(BRIDGE,ROM,output,pin=PIN) as b:
+            report['machine']=verify_machine(b,ROM,PIN)
             case=dict(name='capture',status='running',stimuli=[])
             report['cases'].append(case)
             hardware=lambda:{k:b.memdump(a,n).hex() for k,a,n in (

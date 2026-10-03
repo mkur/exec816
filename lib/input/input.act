@@ -7,16 +7,24 @@ USE INPUTCAPTURE
 INCLUDE "input-storage.act.inc"
 INCLUDE "input-types.inc"
 
-; Validate full huge values before conversion. Records cannot straddle a bank,
-; enter bank zero, or address absent/read-only memory. Heap ownership remains
-; the caller's obligation in Exec's shared address space.
-PUBLIC BYTE FUNC Extent(LONGCARD start CARD bytes)
+; Check the complete huge value before conversion or any memory access.
+PUBLIC BYTE FUNC Shape(LONGCARD start CARD bytes)
 
   IF start<$10000 OR start>$ffffff OR (start & 1)<>0 OR bytes=0 THEN
     RETURN(0)
   FI
 
   IF LONGCARD(bytes)>LONGCARD($10000)-(start & $ffff) THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Lifecycle and diagnostic memory audit. Heap ownership remains the caller's
+; obligation in Exec's shared address space.
+PUBLIC BYTE FUNC Extent(LONGCARD start CARD bytes)
+
+  IF Shape(start,bytes)=0 THEN
     RETURN(0)
   FI
 
@@ -105,6 +113,11 @@ RETURN(INPUTNATIVE.State POINTER(ADDRESS(IN_POINTER_STATE)))
 INPUTNATIVE.State POINTER FUNC Shared(Lease POINTER lease)
   CARD source
 
+  ; Free descriptors contain NULL; they are not registrations.
+  IF lease=NULL THEN
+    RETURN(NULL)
+  FI
+
   FOR source=SOURCE_KEYBOARD TO SOURCE_POINTER DO
     BEGIN
       LET state=SourceState(source)
@@ -130,15 +143,10 @@ INPUTNATIVE.Capture POINTER FUNC Capture(INPUTNATIVE.State POINTER state)
   ; arrays have separate layouts and are accessed through their actual types.
 RETURN(INPUTNATIVE.Capture POINTER(ADDRESS(IN_POINTER_CAPTURE)))
 
-; Called under Forbid. Identity protects against copied/stale authority.
-BYTE FUNC Valid(Lease POINTER lease BYTE consumer)
+; Audit the already resolved registration under Forbid.
+BYTE FUNC Valid(Lease POINTER lease INPUTNATIVE.State POINTER state
+    INPUTNATIVE.Capture POINTER capture BYTE consumer)
 
-  LET state=Shared(lease)
-  IF state=NULL THEN
-    RETURN(0)
-  FI
-
-  LET capture=Capture(Shared(lease))
   LET config=Config POINTER(@state.config)
   IF lease.state<>ACTIVE OR lease.acquisition<>state.generation
       OR lease.flags<>0 OR lease.reserved<>0
@@ -150,20 +158,22 @@ BYTE FUNC Valid(Lease POINTER lease BYTE consumer)
     RETURN(0)
   FI
 
-RETURN(consumer=0 OR lease.owner.task=EXEC.FindTask(NULL))
+  IF consumer<>0 THEN
+    RETURN(lease.owner.task=EXEC.FindTask(NULL))
+  FI
 
-BYTE FUNC RouteValid(Lease POINTER lease LONGCARD tag)
+RETURN(1)
 
-  LET state=Shared(lease)
+BYTE FUNC RouteValid(INPUTNATIVE.State POINTER state LONGCARD tag)
 
 RETURN(tag<>0 AND state.tags(BYTE(tag & 15))=tag)
 
 ; Published tags and retained notices/records forbid slot reuse.
-BYTE FUNC Referenced(Lease POINTER lease LONGCARD tag)
+BYTE FUNC Referenced(INPUTNATIVE.State POINTER state
+    INPUTNATIVE.Capture POINTER capture LONGCARD tag)
   CARD bit
   BYTE index,head
 
-  LET capture=Capture(Shared(lease))
   IF capture.route=tag THEN
     RETURN(1)
   FI
@@ -173,7 +183,7 @@ BYTE FUNC Referenced(Lease POINTER lease LONGCARD tag)
     RETURN(1)
   FI
 
-  IF SourceOf(Shared(lease))=SOURCE_POINTER THEN
+  IF SourceOf(state)=SOURCE_POINTER THEN
     BEGIN
       LET hardware=INPUTNATIVE.PointerCapture POINTER(ADDRESS(IN_POINTER_CAPTURE))
       IF hardware.pending<>0 AND hardware.output.route=tag THEN
@@ -298,12 +308,18 @@ PUBLIC CARD FUNC CreateRoute(Lease POINTER lease CARD flags
   FI
 
   EXEC.Forbid()
-  IF Valid(lease,0)=0 THEN
+  LET state=Shared(lease)
+  IF state=NULL THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
-  LET state=Shared(lease)
+  LET capture=Capture(state)
+  IF Valid(lease,state,capture,0)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
   IF state.epoch=$0fffffff THEN
     EXEC.Permit()
     RETURN(EXHAUSTED)
@@ -330,17 +346,24 @@ PUBLIC CARD FUNC PublishRoute(Lease POINTER lease LONGCARD tag)
   FI
 
   EXEC.Forbid()
-  IF Valid(lease,0)=0 THEN
+  LET state=Shared(lease)
+  IF state=NULL THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
-  IF tag<>0 AND RouteValid(lease,tag)=0 THEN
+  LET capture=Capture(state)
+  IF Valid(lease,state,capture,0)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF tag<>0 AND RouteValid(state,tag)=0 THEN
     EXEC.Permit()
     RETURN(BAD_ARGUMENT)
   FI
 
-  IF SourceOf(Shared(lease))=SOURCE_POINTER THEN
+  IF SourceOf(state)=SOURCE_POINTER THEN
     INPUTCAPTURE.PointerPublish(tag)
   ELSE
     INPUTCAPTURE.Publish(tag)
@@ -357,22 +380,28 @@ PUBLIC CARD FUNC RetireRoute(Lease POINTER lease LONGCARD tag)
   FI
 
   EXEC.Forbid()
-  IF Valid(lease,0)=0 THEN
+  LET state=Shared(lease)
+  IF state=NULL THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
-  IF RouteValid(lease,tag)=0 THEN
+  LET capture=Capture(state)
+  IF Valid(lease,state,capture,0)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF RouteValid(state,tag)=0 THEN
     EXEC.Permit()
     RETURN(BAD_ARGUMENT)
   FI
 
-  IF Referenced(lease,tag)<>0 THEN
+  IF Referenced(state,capture,tag)<>0 THEN
     EXEC.Permit()
     RETURN(BUSY)
   FI
 
-  LET state=Shared(lease)
   state.tags(BYTE(tag & 15))=0
   EXEC.Permit()
 
@@ -385,17 +414,24 @@ PUBLIC CARD FUNC Discard(Lease POINTER lease LONGCARD tag)
   FI
 
   EXEC.Forbid()
-  IF Valid(lease,0)=0 THEN
+  LET state=Shared(lease)
+  IF state=NULL THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
-  IF RouteValid(lease,tag)=0 THEN
+  LET capture=Capture(state)
+  IF Valid(lease,state,capture,0)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF RouteValid(state,tag)=0 THEN
     EXEC.Permit()
     RETURN(BAD_ARGUMENT)
   FI
 
-  IF SourceOf(Shared(lease))=SOURCE_POINTER THEN
+  IF SourceOf(state)=SOURCE_POINTER THEN
     INPUTCAPTURE.PointerDiscard(tag)
   ELSE
     INPUTCAPTURE.Discard(tag)
@@ -413,12 +449,18 @@ PUBLIC CARD FUNC Pending(Lease POINTER lease CARD POINTER mask)
   FI
 
   EXEC.Forbid()
-  IF Valid(lease,0)=0 THEN
+  LET state=Shared(lease)
+  IF state=NULL THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
-  LET capture=Capture(Shared(lease))
+  LET capture=Capture(state)
+  IF Valid(lease,state,capture,0)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
   value=0
   IF capture.head<>capture.tail THEN
     value=value OR PENDING_DATA
@@ -432,7 +474,7 @@ PUBLIC CARD FUNC Pending(Lease POINTER lease CARD POINTER mask)
     value=value OR PENDING_CANCEL
   FI
 
-  IF SourceOf(Shared(lease))=SOURCE_POINTER THEN
+  IF SourceOf(state)=SOURCE_POINTER THEN
     BEGIN
       LET hardware=INPUTNATIVE.PointerCapture POINTER(ADDRESS(IN_POINTER_CAPTURE))
       IF hardware.pending<>0 THEN
@@ -475,13 +517,13 @@ INT FUNC PointerCoordinate(INT position,maximum LONGINT current,previous)
 
 RETURN(position-INT(distance))
 
-CARD FUNC PointerRead(Lease POINTER lease Event POINTER event)
+CARD FUNC PointerRead(Lease POINTER lease INPUTNATIVE.State POINTER state
+    Event POINTER event)
   INPUTNATIVE.PointerSample sample
   CARD status,index,oldButtons
   BYTE baseline,moved
 
   LET hardware=INPUTNATIVE.PointerCapture POINTER(ADDRESS(IN_POINTER_CAPTURE))
-  LET state=SourceState(SOURCE_POINTER)
   LET config=Config POINTER(@state.config)
   FOR index=0 TO INPUTNATIVE.POINTER_SLOTS DO
     status=INPUTCAPTURE.PointerTake(BYTE POINTER(@sample))
@@ -526,7 +568,7 @@ CARD FUNC PointerRead(Lease POINTER lease Event POINTER event)
       ; Establish the same native boundary used by raw overflow. No signed
       ; subtraction has occurred and no ordinary output can cross it.
       INPUTCAPTURE.PointerDiscard(sample.route)
-      RETURN(PointerRead(lease,event))
+      RETURN(PointerRead(lease,state,event))
     FI
 
     hardware.x=PointerCoordinate(hardware.x,config.maxX,
@@ -583,18 +625,24 @@ PUBLIC CARD FUNC Take(Lease POINTER lease Event POINTER event)
   FI
 
   EXEC.Forbid()
-  IF Valid(lease,1)=0 THEN
+  LET state=Shared(lease)
+  IF state=NULL THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
-  IF SourceOf(Shared(lease))=SOURCE_POINTER THEN
-    code=PointerRead(lease,event)
+  LET capture=Capture(state)
+  IF Valid(lease,state,capture,1)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
+  IF SourceOf(state)=SOURCE_POINTER THEN
+    code=PointerRead(lease,state,event)
     EXEC.Permit()
     RETURN(code)
   FI
 
-  LET capture=Capture(Shared(lease))
   flags=0
   raw=INPUTCAPTURE.TakeBreak()
   IF raw<>0 THEN
@@ -655,12 +703,18 @@ PUBLIC CARD FUNC Release(Lease POINTER lease)
   FI
 
   EXEC.Forbid()
-  IF Valid(lease,1)=0 THEN
+  LET state=Shared(lease)
+  IF state=NULL THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
-  LET state=Shared(lease)
+  LET capture=Capture(state)
+  IF Valid(lease,state,capture,1)=0 THEN
+    EXEC.Permit()
+    RETURN(INVALID_OWNER)
+  FI
+
   lease.state=RELEASING
   LET source=SourceOf(state)
   IF source=SOURCE_KEYBOARD THEN

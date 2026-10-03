@@ -84,6 +84,17 @@ CPU per call and about 30.5 ms isolated scrolling. Loaded raw typing improves,
 but cooked typing regresses in two sampled phases. The 4/20/40 ms targets remain
 open; scheduling delay and the remaining per-turn work still need attention.
 
+The proposed [input registration and lifetime design](plans/input-registration-lifetime-design.md)
+addresses measured active-key validation cost. Keep IRQ capture and bounded
+queues, establish authority at acquisition, trust valid storage and the owning
+consumer during use, and retire producers before releasing storage. Full
+per-event memory and lease audits move to diagnostic builds; queue, route,
+loss/cancellation and teardown coordination remain. Action! and C consumers
+must migrate together. The [refactor plan](plans/input-registration-lifetime-implementation-plan.md)
+defines five executable slices, reuses saved profiling evidence and adds no
+Task or bank-zero reservation. Sampling frequency, scheduling and other
+subsystem contracts remain separate work.
+
 The other possible milestones have no delivery order:
 
 - Filesystem writing, beginning with a separate SpartaDOS milestone. Current
