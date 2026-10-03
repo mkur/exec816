@@ -1,0 +1,200 @@
+MODULE BITMAPSTARTUP
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE DISPLAY
+USE INPUT
+USE EXECPRODUCER
+USE CONSOLEDRIVER
+USE CONSOLESTARTPROBE
+USE CONSOLETYPES
+USE HEAPCORE
+CARD checks
+BYTE heldReady
+EXEC.Task ARRAY heldTasks(2)
+PROC POINTER absent()
+CONSOLETYPES.Service POINTER service
+CONSOLETYPES.Instance POINTER instance
+DISPLAY.Lease displayLease
+EXEC.TaskLease bindingLease
+BYTE heldCount
+ADDRESS ARRAY held(16)
+LONGCARD ARRAY heldSizes(16)
+BYTE POINTER firstBlock,secondBlock,thirdBlock
+LONGCARD baseline,remaining
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Exhaust(BYTE unused)
+  LONGCARD size
+  BYTE POINTER block
+
+  heldCount=0
+  DO
+    size=EXEC.AvailMem(EXEC.MEMF_LARGEST)
+    IF size=0 THEN
+      EXIT
+    FI
+
+    block=EXEC.AllocMem(size,0)
+    Require(block<>BYTE POINTER(0))
+    Require(heldCount<16)
+    held(heldCount)=ADDRESS(block)
+    heldSizes(heldCount)=size
+    heldCount==+1
+  OD
+
+RETURN
+
+PROC ReleaseHeld(BYTE unused)
+
+  WHILE heldCount<>0 DO
+    heldCount==-1
+    EXEC.FreeMem(BYTE POINTER(held(heldCount)),heldSizes(heldCount))
+  OD
+
+RETURN
+
+PROC AllocationFailure(BYTE which)
+
+  baseline=EXEC.AvailMem(0)
+  firstBlock=EXEC.AllocMem(2400,0)
+  secondBlock=EXEC.AllocMem(128,0)
+  thirdBlock=EXEC.AllocMem(960,0)
+  Require(firstBlock<>BYTE POINTER(0) AND secondBlock<>BYTE POINTER(0)
+      AND thirdBlock<>BYTE POINTER(0))
+  Exhaust(0)
+  IF which=1 OR which=3 THEN
+    EXEC.FreeMem(secondBlock,128)
+    secondBlock=BYTE POINTER(0)
+  FI
+
+  IF which=2 OR which=3 THEN
+    EXEC.FreeMem(firstBlock,2400)
+    firstBlock=BYTE POINTER(0)
+  FI
+
+  remaining=EXEC.AvailMem(0)
+  Require(CONSOLEDRIVER.Start()=0 AND service.state=0)
+  Require(EXEC.AvailMem(0)=remaining AND instance.cells=BYTE POINTER(0)
+      AND instance.fifo=BYTE POINTER(0) AND service.snapshot=BYTE POINTER(0))
+  IF firstBlock<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(firstBlock,2400)
+  FI
+
+  IF secondBlock<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(secondBlock,128)
+  FI
+
+  EXEC.FreeMem(thirdBlock,960)
+  ReleaseHeld(0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC SignalFailure(BYTE number)
+  LONGCARD value
+
+  baseline=EXEC.AvailMem(0)
+  ; The fixture reserves a newborn worker signal before its first instruction.
+  CONSOLESTARTPROBE.reservedBit=number
+  Require(CONSOLEDRIVER.Start()=0 AND service.state=0)
+  CONSOLESTARTPROBE.reservedBit=0
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC BindingFailure(BYTE unused)
+  BYTE signalBit
+
+  baseline=EXEC.AvailMem(0)
+  signalBit=EXEC.AllocSignal(28)
+  Require(signalBit=28)
+  Require(EXEC.RetainTask(EXEC.FindTask(NULL),@bindingLease)=1)
+  Require(EXECPRODUCER.Bind(EXECPRODUCER.KEYBOARD,EXEC.FindTask(BYTE POINTER(0)),$10000000)=1)
+  Require(CONSOLEDRIVER.Start()=0 AND service.state=0)
+  Require(EXEC.AvailMem(0)=baseline)
+  EXECPRODUCER.Release(EXECPRODUCER.KEYBOARD)
+  EXECPRODUCER.Drain(EXECPRODUCER.KEYBOARD)
+  Require(EXEC.ReleaseTask(@bindingLease)=1)
+  EXEC.FreeSignal(28)
+
+RETURN
+
+PROC HoldEntry()
+  LONGCARD ignored
+
+  Require(EXEC.AllocSignal(16)=16)
+  EXEC.Forbid()
+  heldReady==+1
+  EXEC.Permit()
+  ignored=EXEC.Wait($10000)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+PROC PoolFailure(BYTE unused)
+  BYTE index
+  EXEC.Task POINTER item
+
+  FOR index=0 TO 1 DO
+    item=@heldTasks(index)
+    item.tc_Node.ln_Type=EXEC.NT_TASK
+    item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(6+index))
+    item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(6+index))
+    item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+    EXECLISTS.NewList(@item.tc_MemEntry)
+    Require(EXEC.AddTask(item,@HoldEntry,absent)=item)
+  OD
+
+  WHILE heldReady<>2 DO
+    EXEC.Yield()
+  OD
+
+  baseline=EXEC.AvailMem(0)
+  Require(CONSOLEDRIVER.Start()=0 AND service.state=0)
+  Require(EXEC.AvailMem(0)=baseline)
+  FOR index=0 TO 1 DO
+    item=@heldTasks(index)
+    EXEC.Signal(item,$10000)
+    WHILE item.tc_State<>EXEC.TS_REMOVED DO
+      EXEC.Yield()
+    OD
+  OD
+
+RETURN
+
+PROC Main()
+  BYTE index
+
+  service=CONSOLEDRIVER.GetService()
+  instance=CONSOLEDRIVER.GetInstance()
+  Require(CONSOLEDRIVER.Stop()<>0)
+  FOR index=0 TO 3 DO
+    AllocationFailure(index)
+  OD
+
+  baseline=EXEC.AvailMem(0)
+  Require(DISPLAY.Acquire(@displayLease,DISPLAY.TEXT)=DISPLAY.OK)
+  Require(CONSOLEDRIVER.Start()=0 AND service.state=0)
+  Require(EXEC.AvailMem(0)=baseline)
+  Require(DISPLAY.BeginRelease(@displayLease)=DISPLAY.OK)
+  Require(DISPLAY.Release(@displayLease)=DISPLAY.OK)
+  SignalFailure(30)
+  SignalFailure(31)
+  SignalFailure(29)
+  BindingFailure(0)
+  PoolFailure(0)
+  Require(CONSOLEDRIVER.Start()<>0)
+
+RETURN
+
+ENDMODULE

@@ -14,6 +14,8 @@
 #define VBXE_LIST_WORK 8192UL
 #define VBXE_CHUNK_ROWS 16
 #define VBXE_WAIT_TICKS 16
+#define VBXE_VIDEO_XDL 1
+#define VBXE_VIDEO_OPAQUE_ZERO 4
 
 struct VbxeMapState { UBYTE pendingBank, pendingControl, bank, control; };
 /* Zero once before use. Opaque, address-stable, upper CPU RAM, never VRAM. */

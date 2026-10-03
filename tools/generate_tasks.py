@@ -325,7 +325,7 @@ ENDMODULE
     init='PROC InitResidentStorage()\n  BYTE POINTER bytes\n  CARD POINTER name\n  CARD i\n  bytes=BYTE POINTER(ADDRESS(IS_BASE+64))\n  FOR i=0 TO 191 DO bytes(i)=0 OD\n  name=CARD POINTER(ADDRESS(IS_BASE+224))\n  name(0)=$6973 name(1)=$2e6f name(2)=$6564 name(3)=$6976 name(4)=$6563 name(5)=0\nRETURN\n'
     policy=policy.replace('PUBLIC CARD FUNC Init()',init+'\nPUBLIC CARD FUNC Init()')
     if console:
-        for module in ('consoledriver','consoleinput','consoledisplay','consolecontrol','consoleforeground','consolewindows','consolecapture'):
+        for module in ('consoledriver','consoleinput','consoledisplay','consolebitmap','consolecontrol','consoleforeground','consolewindows','consolecapture'):
             driver=read_source(library_file(module+'.act'))
             driver=driver.replace('"console-storage-action.inc"','"'+str(Path(output)/'console-storage-action.inc')+'"')
             (directory/(module+'.act')).write_text(driver)

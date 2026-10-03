@@ -12,7 +12,8 @@ allocates no Task, stack, direct page or physical screen.
 
 `CONSOLE.Create(width,height)` returns a nonzero opaque LONGCARD unit, or zero
 if geometry, capacity, identity space, route storage or memory prevents creation.
-Width is 1–40 and height is 1–24. New instances start blank, at cursor (0,0),
+Width and height must fit the active display: 1–40 by 1–24 for text, or
+1–80 by 1–30 for bitmap. New instances start blank, at cursor (0,0),
 and hidden; writes still complete into their retained cells. These functions
 do not use DOS IoErr.
 

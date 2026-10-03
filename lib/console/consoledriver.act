@@ -15,6 +15,7 @@ USE CONSOLEFOREGROUND
 USE CONSOLECAPTURE
 USE CONSOLEINPUT
 USE CONSOLEDISPLAY
+USE CONSOLEBITMAP
 USE CONSOLECONTROL
 USE DISPLAY
 USE DISPLAYADAPTER
@@ -35,7 +36,7 @@ PUBLIC CARD FUNC ScreenWidth()
   LET service=GetService()
   EXEC.Forbid()
   width=0
-  IF service.state=2 AND service.stop=0 THEN
+  IF service.state=2 AND service.stop=0 AND CONSOLEBITMAP.Failed()=0 THEN
     width=CONSOLEDISPLAY.Width()
   FI
 
@@ -49,7 +50,7 @@ PUBLIC CARD FUNC ScreenHeight()
   LET service=GetService()
   EXEC.Forbid()
   height=0
-  IF service.state=2 AND service.stop=0 THEN
+  IF service.state=2 AND service.stop=0 AND CONSOLEBITMAP.Failed()=0 THEN
     height=CONSOLEDISPLAY.Height()
   FI
 
@@ -148,6 +149,16 @@ PROC WriteQuantum(CONSOLETYPES.Instance POINTER instance
     FI
   FI
 
+  IF CONSOLEBITMAP.Failed()<>0 THEN
+    IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
+      CONSOLECORE.EditQuantum(instance)
+    FI
+
+    request.io_Error=BYTE(EXEC.IOERR_SELFTEST)
+    FinishWrite(instance,request)
+    RETURN
+  FI
+
   IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
     CONSOLEDISPLAY.Edit(view,instance)
     IF instance.operation=CONSOLETYPES.OP_IDLE THEN
@@ -202,6 +213,10 @@ PROC ReadQuantum(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
 
   IF instance.readCancel<>0 THEN
     request.io_Error=BYTE(EXEC.IOERR_ABORTED)
+  FI
+
+  IF CONSOLEBITMAP.Failed()<>0 THEN
+    request.io_Error=BYTE(EXEC.IOERR_SELFTEST)
   FI
 
   IF request.io_Error=0 THEN

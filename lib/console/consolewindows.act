@@ -1,6 +1,7 @@
 ; Permanent registry entries outlive every borrowed instance pointer.
 MODULE CONSOLEWINDOWS
 USE CONSOLETYPES
+USE CONSOLEBITMAP
 USE EXEC
 USE HEAPCORE
 USE EXECLISTS
@@ -103,7 +104,7 @@ PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
 
   IF instance.readReady<>0 THEN
     IF instance.readReady=1 OR instance.readCancel<>0 OR instance.inputCount<>0
-        OR instance.inputLost<>0 THEN
+        OR instance.inputLost<>0 OR CONSOLEBITMAP.Failed()<>0 THEN
       RETURN(1)
     FI
   FI

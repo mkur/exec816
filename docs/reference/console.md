@@ -2,17 +2,19 @@
 
 [Reference index](README.md) · [Console example](../guides/console-example.md)
 
-One console worker serves the default text console and additional instances.
-It retains cells, accepts output, routes input and updates the shared 40×24
-physical screen. An instance adds upper-RAM state, not a Task, stack or DP.
-The common retained model supports up to 80×30 cells; the current text backend
-continues to admit at most 40×24. Bitmap presentation is a subsequent slice.
+One console worker serves the default console and additional instances.
+It retains cells, accepts output, routes input and updates one shared display.
+The normal text backend admits 40×24 cells. The optional bitmap backend admits
+80×30 on the pinned 640×240 VBXE display. An instance adds upper-RAM state,
+not a Task, stack or DP. The backend is selected before startup; live conversion
+is unsupported.
 
 ## Public interface
 
 `CONSOLE.ScreenWidth()` and `ScreenHeight()` return the active display capacity
 in cells when the worker is ready and accepting work, and zero while stopped,
-starting, stopping or after failed startup. The text backend reports 40 and 24.
+starting, stopping or after failed startup. The text backend reports 40 and 24; the bitmap backend reports 80 and 30.
+A terminal bitmap display fault also makes these queries return zero.
 Instance creation and Show use these capabilities rather than the model maximum.
 
 Open `console.device` with unit zero for the default instance or an opaque
@@ -45,7 +47,10 @@ Damage is retained separately for each changed row, so distant edits do not
 force the rows between them to redraw. A bounded presentation cannot discard a
 newer edit when it acknowledges completed work.
 
-Printable ASCII uses the available ROM glyphs, with `?` for unavailable glyphs.
+The text backend uses the available ROM glyphs, with `?` for unavailable glyphs.
+Bitmap output uses the shared GEM 8×8 font, black ink and an opaque white
+background. Its initial backend redraws damage after retained scrolling; pixel
+scrolling and the bitmap caret are subsequent implementation slices.
 Output control bytes have these effects:
 
 | Byte | Effect |
@@ -82,6 +87,22 @@ The worker and console registry are resident system services. Instance owners,
 open bindings and active presentation/worker borrows prevent premature removal
 or destruction. IRQs remain enabled during ordinary processing; asynchronous
 entry follows the [platform protocol](platform.md).
+
+The optional bitmap build defers automatic startup, binds its checked ordinary
+C call and display callbacks, then starts the existing worker in an available
+2,560-byte pool. It adds no bank-zero storage. The shared drawing image reserves
+upper banks `$0C/$0D`; the loader validates these alongside native reservations.
+The [implementation plan](../plans/gem4xe/bitmap-console-implementation-plan.md)
+tracks the current development gate and later distribution work.
+
+A quiesced bitmap hardware fault restores the OS display and latches terminal
+backend failure. Waiting READ/WRITE requests receive `IOERR_SELFTEST` once;
+WRITE retains its accepted-byte count. New opens and requests are rejected.
+Existing bindings can close, controls can retire, and Stop retains its usual
+live-instance/open-binding checks. Restart after a completed Stop retries
+acquisition. Unquiesced DMA retains ownership and requests in reset-required
+park. An unrelated fatal kernel exit while bitmap ownership remains active also
+parks; emergency exit never copies bitmap pointers as text screen addresses.
 
 There is no overlapping-window compositor, resizing, scrollback or terminal
 escape-sequence emulator. The [instance contract](console-windows.md) owns those

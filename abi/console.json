@@ -37,7 +37,8 @@
     "glyph_offset": 3632,
     "keymap_offset": 3760,
     "routes_offset": 416,
-    "windows_offset": 688
+    "windows_offset": 688,
+    "bitmap_offset": 868
   },
   "records": {
     "Instance": {

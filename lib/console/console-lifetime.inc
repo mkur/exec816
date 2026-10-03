@@ -106,12 +106,15 @@ BYTE FUNC AdmitWorker(CONSOLETYPES.Service POINTER service)
 
   added=NULL
   FOR slot=1 TO TASKSTACKS.CAPACITY-1 DO
-    item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
-    item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
-    item.tc_SPReg=item.tc_SPUpper-SIZE(2)
-    added=EXEC.AddTask(item,@Worker,noFinal)
-    IF added<>NULL THEN
-      EXIT
+    IF CONSOLEBITMAP.Enabled()=0 OR
+        TASKSTACKS.StackUpper(slot)-TASKSTACKS.StackLower(slot)>=2560 THEN
+      item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+      item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+      item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+      added=EXEC.AddTask(item,@Worker,noFinal)
+      IF added<>NULL THEN
+        EXIT
+      FI
     FI
   OD
 
@@ -141,8 +144,9 @@ PUBLIC BYTE FUNC Start()
   EXEC.Forbid()
   LET service=GetService()
   IF service.state=2 AND service.stop=0 THEN
+    okay=CONSOLEBITMAP.Failed()=0
     EXEC.Permit()
-    RETURN(1)
+    RETURN(okay)
   FI
 
   IF (service.state<>0 AND service.state<>1) OR service.stop<>0 THEN

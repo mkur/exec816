@@ -1,0 +1,80 @@
+MODULE BITMAPTEST
+USE EXEC
+USE HEAPCORE
+USE DOS
+USE CONSOLE
+USE CONSOLECORE
+USE CONSOLEDRIVER
+USE CONSOLETYPES
+USE CONSOLEINPUT
+CARD checks,checkpoint,gate
+BYTE ARRAY rawName=[82 65 87 58 0]
+BYTE ARRAY text(80),input(4)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f740+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Settled(BYTE unused)
+
+  LET instance=CONSOLEDRIVER.GetInstance()
+  WHILE instance.dirtyRows<>0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Pause(CARD value)
+
+  Settled(0)
+  checkpoint=value
+  WHILE gate<value DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Main()
+  DOS.FileHandle POINTER file
+  CARD row,column
+
+  Require(CONSOLE.ScreenWidth()=80 AND CONSOLE.ScreenHeight()=30)
+  file=DOS.Open(rawName,DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  ; Twenty-nine dense rows followed by a partial row avoid final wrap-scroll.
+  FOR row=0 TO 29 DO
+    FOR column=0 TO 79 DO
+      text(column)=BYTE(33+(row*7+column) MOD 90)
+    OD
+
+    IF row=29 THEN
+      Require(DOS.Write(file,text,79)=79)
+    ELSE
+      Require(DOS.Write(file,text,80)=80)
+    FI
+  OD
+
+  Pause(1)
+  Require(CONSOLE.Hide(0)<>0)
+  Pause(2)
+  Require(CONSOLE.Show(0,0,0)<>0)
+  Pause(3)
+  text(0)=12
+  Require(DOS.Write(file,text,1)=1)
+  Pause(4)
+  LET instance=CONSOLEDRIVER.GetInstance()
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(instance,$0001003f)
+  EXEC.Permit()
+  Require(DOS.Read(file,input,4)=1 AND input(0)=97)
+  Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

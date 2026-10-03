@@ -1,0 +1,114 @@
+; Private binding and packet producer for the shared ordinary-call C library.
+MODULE CONSOLEBITMAP
+USE EXEC
+USE DISPLAY
+USE CONSOLETYPES
+USE HEAPCORE
+INCLUDE "console-storage-action.inc"
+INCLUDE "console-bitmap-types.inc"
+
+PUBLIC EXTERNAL PROC Call(ADDRESS entry)
+
+PUBLIC Binding POINTER FUNC GetBinding()
+
+RETURN(Binding POINTER(ADDRESS(CS_BITMAP)))
+
+PUBLIC BYTE FUNC Enabled()
+
+  LET state=GetBinding()
+
+RETURN(state.enabled)
+
+PUBLIC BYTE FUNC Failed()
+
+  LET state=GetBinding()
+
+RETURN(state.failed)
+
+; Foreign-image validation reserves these exact C code/data banks. Runtime
+; checks prevent truncation, an odd packet or rebinding a live service.
+PUBLIC BYTE FUNC Bind(LONGCARD entry,packet)
+
+  LET state=GetBinding()
+  LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
+  IF service.state<>0 OR state.enabled<>0 OR entry<$c0000 OR entry>$cffff
+      OR packet<$d0000 OR packet>$dffcc OR (packet & 1)<>0 THEN
+    RETURN(0)
+  FI
+
+  state.entry=ADDRESS(entry)
+  state.packet=BYTE POINTER(ADDRESS(packet))
+  state.failed=0
+  state.enabled=1
+
+RETURN(1)
+
+PUBLIC Packet POINTER FUNC GetPacket()
+
+  LET state=GetBinding()
+
+RETURN(Packet POINTER(state.packet))
+
+; All production calls originate in the resident worker. The packet never
+; retains source buffers after return; each drawing operation is fenced.
+PUBLIC BYTE FUNC Run(CARD operation)
+
+  LET state=GetBinding()
+  LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
+  IF state.enabled=0 OR service.worker<>BYTE POINTER(EXEC.FindTask(NULL)) THEN
+    HEAPCORE.Abort(4)
+  FI
+
+  IF state.failed<>0 AND operation<>OP_CLOSE THEN
+    RETURN(0)
+  FI
+
+  LET packet=GetPacket()
+  packet.operation=operation
+  packet.status=DISPLAY.BAD_ARGUMENT
+  Call(state.entry)
+  IF packet.status<>DISPLAY.OK THEN
+    state.failed=1
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Open()
+
+  LET state=GetBinding()
+  state.failed=0
+
+RETURN(Run(OP_OPEN))
+
+PUBLIC PROC Close()
+  BYTE ignored
+
+  ignored=Run(OP_CLOSE)
+
+RETURN
+
+PUBLIC BYTE FUNC Fill(CARD left,top,width,height,pen)
+
+  LET packet=GetPacket()
+  packet.x=left
+  packet.y=top
+  packet.width=width
+  packet.height=height
+  packet.background=pen
+
+RETURN(Run(OP_FILL))
+
+PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
+
+  LET packet=GetPacket()
+  packet.x=x
+  packet.y=y
+  packet.text=LONGCARD(ADDRESS(text))
+  packet.width=count
+  packet.foreground=1
+  packet.background=0
+
+RETURN(Run(OP_TEXT))
+
+ENDMODULE

@@ -1,0 +1,1453 @@
+{
+  "slice": "B6",
+  "date": "2026-10-03",
+  "status": "development-pass",
+  "tier": "development",
+  "reports": {
+    "opt": {
+      "path": "build/bitmap-console/b6/opt/results.json",
+      "sha256": "7ac1a2ae0d886652d6b7f5b08424fe0726b6ddb247d3c5eb68aa983f3d060cf7",
+      "xex_sha256": "2640be9b8fac1c81c6cae9c0ca0a6d874c45ba0591ac4ee9916be3dd73797a6a",
+      "checks": [
+        37
+      ],
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "ef7c0fef4ff3112e676bf4179bb2f2d7882eef6c08eba3d9797686b23c12745b"
+        },
+        {
+          "stage": 2,
+          "pixels": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        },
+        {
+          "stage": 3,
+          "pixels": "ef7c0fef4ff3112e676bf4179bb2f2d7882eef6c08eba3d9797686b23c12745b"
+        },
+        {
+          "stage": 4,
+          "pixels": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        }
+      ],
+      "bridge_context": [
+        {
+          "stack": 10712,
+          "dp": 2816,
+          "registers": "e33d7856bc9ad829000b0000005a015a025a035a045a055a065a075a085a095ad829000b00000000"
+        },
+        {
+          "stack": 10711,
+          "dp": 2816,
+          "registers": "e33d7856bc9ad729000b0000005a015a025a035a045a055a065a075a085a095ad729000b00000000"
+        }
+      ],
+      "cases": [
+        {
+          "checks": [
+            37
+          ],
+          "status": 0,
+          "native_irq_count": 4002,
+          "native_nmi_count": 408,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 384,
+              "untouched_above_floor": 896
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 484,
+              "untouched_above_floor": 1820
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 275,
+            "untouched_from_base": 1261,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "raw": {
+      "path": "build/bitmap-console/b6/raw/results.json",
+      "sha256": "cfc81474675b86972ad86d192cc4c0f249bffd4c1bdb766173989ba97ecbbe73",
+      "xex_sha256": "50e4b3125741fb92f8270654fdbf49b76371f3ba44a63f300feaf76e29c8010f",
+      "checks": [
+        37
+      ],
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "ef7c0fef4ff3112e676bf4179bb2f2d7882eef6c08eba3d9797686b23c12745b"
+        },
+        {
+          "stage": 2,
+          "pixels": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        },
+        {
+          "stage": 3,
+          "pixels": "ef7c0fef4ff3112e676bf4179bb2f2d7882eef6c08eba3d9797686b23c12745b"
+        },
+        {
+          "stage": 4,
+          "pixels": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        }
+      ],
+      "bridge_context": [
+        {
+          "stack": 10708,
+          "dp": 2816,
+          "registers": "e33d7856bc9ad429000b0000005a015a025a035a045a055a065a075a085a095ad429000b00000000"
+        },
+        {
+          "stack": 10707,
+          "dp": 2816,
+          "registers": "e33d7856bc9ad329000b0000005a015a025a035a045a055a065a075a085a095ad329000b00000000"
+        }
+      ],
+      "cases": [
+        {
+          "checks": [
+            37
+          ],
+          "status": 0,
+          "native_irq_count": 3924,
+          "native_nmi_count": 400,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 418,
+              "untouched_above_floor": 862
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 470,
+              "untouched_above_floor": 1834
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "start-opt": {
+      "path": "build/bitmap-console/b6/start-opt/results.json",
+      "sha256": "add492eae563d5b67f950f0b8600ec8149767ebd28e493d4b9697922a1260f4b",
+      "xex_sha256": "7b7ad394e8a9f4ec9306128b9c5ac93710b7fe3f45de2dc7dd896807366efce9",
+      "cases": [
+        {
+          "name": "rollback",
+          "checks": [
+            113
+          ],
+          "status": 0,
+          "native_irq_count": 0,
+          "native_nmi_count": 353,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 142,
+              "untouched_above_floor": 1138
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 484,
+              "untouched_above_floor": 1820
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 48,
+              "untouched_above_floor": 2256
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "absent",
+          "checks": [
+            0
+          ],
+          "status": 63281,
+          "native_irq_count": 0,
+          "native_nmi_count": 2,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 110,
+              "untouched_above_floor": 1170
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 314,
+              "untouched_above_floor": 1990
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "unsupported",
+          "checks": [
+            0
+          ],
+          "status": 63281,
+          "native_irq_count": 0,
+          "native_nmi_count": 2,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 110,
+              "untouched_above_floor": 1170
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 314,
+              "untouched_above_floor": 1990
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "start-raw": {
+      "path": "build/bitmap-console/b6/start-raw/results.json",
+      "sha256": "70aeadde5ad86755cad4bc014f0ab79c59703f5916143ebf4cca809563598ddb",
+      "xex_sha256": "babf5f33bc4feee712290cf003fd90e2d7fb17e7ef9d1b68ca96c98c14aefb2e",
+      "cases": [
+        {
+          "name": "rollback",
+          "checks": [
+            105
+          ],
+          "status": 0,
+          "native_irq_count": 0,
+          "native_nmi_count": 332,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 150,
+              "untouched_above_floor": 1130
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 470,
+              "untouched_above_floor": 1834
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 54,
+              "untouched_above_floor": 2250
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "absent",
+          "checks": [
+            0
+          ],
+          "status": 63281,
+          "native_irq_count": 0,
+          "native_nmi_count": 2,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 114,
+              "untouched_above_floor": 1166
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 330,
+              "untouched_above_floor": 1974
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "name": "unsupported",
+          "checks": [
+            0
+          ],
+          "status": 63281,
+          "native_irq_count": 0,
+          "native_nmi_count": 2,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 114,
+              "untouched_above_floor": 1166
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 330,
+              "untouched_above_floor": 1974
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "fault-opt": {
+      "path": "build/bitmap-console/b6/fault-opt/results.json",
+      "sha256": "3c209123698548e9b20354331e7a50608f7a383de39e80f3baf9f2033c52a8b5",
+      "xex_sha256": "9f2b7998b43888c55029e49d0dc177e9ecbaf3bdcaea7284af8093fc478e1cc1",
+      "cases": [
+        {
+          "fault": 1,
+          "checks": [
+            8
+          ],
+          "status": 0,
+          "native_irq_count": 0,
+          "native_nmi_count": 102,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 248,
+              "untouched_above_floor": 1032
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 484,
+              "untouched_above_floor": 1820
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "fault": 2,
+          "checks": [
+            2
+          ],
+          "status": 65427,
+          "native_irq_count": 0,
+          "native_nmi_count": 113,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 248,
+              "untouched_above_floor": 1032
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 484,
+              "untouched_above_floor": 1820
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "platform_reset_required": true
+        }
+      ]
+    },
+    "fault-raw": {
+      "path": "build/bitmap-console/b6/fault-raw/results.json",
+      "sha256": "8f306a4401d74404023c00bbb9dc2f50651f8e60bc971cf2b6731c2719bd073b",
+      "xex_sha256": "7a16f0df7f952dee511310395bbb3f47a422890ab2c67ae48f8be6fdc329bff4",
+      "cases": [
+        {
+          "fault": 1,
+          "checks": [
+            8
+          ],
+          "status": 0,
+          "native_irq_count": 0,
+          "native_nmi_count": 100,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 272,
+              "untouched_above_floor": 1008
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 502,
+              "untouched_above_floor": 1802
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "fault": 2,
+          "checks": [
+            2
+          ],
+          "status": 65427,
+          "native_irq_count": 0,
+          "native_nmi_count": 111,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 272,
+              "untouched_above_floor": 1008
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 490,
+              "untouched_above_floor": 1814
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          },
+          "platform_reset_required": true
+        }
+      ]
+    },
+    "text-opt": {
+      "path": "build/bitmap-console/b6/text-opt/results.json",
+      "sha256": "51f25926358c0a00af5c6c2da5fd9d26d0c50fea0adb3e6a2660e2b9c1331308",
+      "xex_sha256": "fe44946e672e101c3207b47c65c4c34a18d36bc484d87e9c845f6dcea36507d1",
+      "checks": [
+        4026
+      ],
+      "observations": [
+        {
+          "stage": 1,
+          "screen_sha256": "52f47c12227a2f8c876efbc72458c84c09cd4a03d872f6ba711bd9dc07cf223a",
+          "cells_sha256": "ead022e0ef36511f25d66e1a169d75ce67dc8cb2b7e52b62e655cc6a2621c6bc"
+        },
+        {
+          "stage": 2,
+          "screen_sha256": "52f47c12227a2f8c876efbc72458c84c09cd4a03d872f6ba711bd9dc07cf223a",
+          "cells_sha256": "ead022e0ef36511f25d66e1a169d75ce67dc8cb2b7e52b62e655cc6a2621c6bc",
+          "physical_key_during_active_write": true
+        },
+        {
+          "stage": 3,
+          "screen_sha256": "52f47c12227a2f8c876efbc72458c84c09cd4a03d872f6ba711bd9dc07cf223a",
+          "cells_sha256": "bd1762fb6e40879dd1101a43a72360143e73bb08665df3b8d57daf7e2106989e"
+        },
+        {
+          "stage": 4,
+          "screen_sha256": "66736a84df9fc673380198daca15ed807c56ff0913eac2045efa4c631b495712",
+          "cells_sha256": "bd1762fb6e40879dd1101a43a72360143e73bb08665df3b8d57daf7e2106989e"
+        }
+      ],
+      "cases": [
+        {
+          "checks": [
+            4026
+          ],
+          "status": 0,
+          "native_irq_count": 1,
+          "native_nmi_count": 60,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 248,
+              "untouched_above_floor": 1032
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 238,
+              "untouched_above_floor": 530
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "text-raw": {
+      "path": "build/bitmap-console/b6/text-raw/results.json",
+      "sha256": "813347703037db751ec9eca500194a7cac3a49b47a26ad8a41524d04a3dbc000",
+      "xex_sha256": "ce9355c0c154d541f828722316859b848149510088ccdfc6d23d59b78a398a06",
+      "checks": [
+        4026
+      ],
+      "observations": [
+        {
+          "stage": 1,
+          "screen_sha256": "52f47c12227a2f8c876efbc72458c84c09cd4a03d872f6ba711bd9dc07cf223a",
+          "cells_sha256": "ead022e0ef36511f25d66e1a169d75ce67dc8cb2b7e52b62e655cc6a2621c6bc"
+        },
+        {
+          "stage": 2,
+          "screen_sha256": "52f47c12227a2f8c876efbc72458c84c09cd4a03d872f6ba711bd9dc07cf223a",
+          "cells_sha256": "ead022e0ef36511f25d66e1a169d75ce67dc8cb2b7e52b62e655cc6a2621c6bc",
+          "physical_key_during_active_write": true
+        },
+        {
+          "stage": 3,
+          "screen_sha256": "52f47c12227a2f8c876efbc72458c84c09cd4a03d872f6ba711bd9dc07cf223a",
+          "cells_sha256": "bd1762fb6e40879dd1101a43a72360143e73bb08665df3b8d57daf7e2106989e"
+        },
+        {
+          "stage": 4,
+          "screen_sha256": "66736a84df9fc673380198daca15ed807c56ff0913eac2045efa4c631b495712",
+          "cells_sha256": "bd1762fb6e40879dd1101a43a72360143e73bb08665df3b8d57daf7e2106989e"
+        }
+      ],
+      "cases": [
+        {
+          "checks": [
+            4026
+          ],
+          "status": 0,
+          "native_irq_count": 1,
+          "native_nmi_count": 76,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 274,
+              "untouched_above_floor": 1006
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 258,
+              "untouched_above_floor": 510
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    }
+  },
+  "compiler": {
+    "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "override": false,
+    "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 15,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 1,
+      "internal_port": 0,
+      "map": "Mouse -> ST Mouse (port 1)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "memory": {
+    "bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "private_idle": 0
+    },
+    "bank_zero_reserved": 56128,
+    "bank_zero_free": 9408,
+    "default_metadata_reserved": 880,
+    "default_metadata_delta": 0,
+    "upper_alignment_delta": 0,
+    "binding_payload_in_existing_slack": 8,
+    "c_packet_and_workout_payload": 166,
+    "shared_c_bank_reservation": 131072,
+    "c_bank_reservation_delta_vs_gem": 0,
+    "c_bank_reservation_delta_vs_text": 131072,
+    "vram_reservation_delta": 0,
+    "default_cells_bytes": 2400,
+    "default_cells_delta_vs_text": 1440,
+    "worker_pool": 6,
+    "worker_reserved_stack_bytes": 2560
+  },
+  "linked_image_comparison": {
+    "bitmap_fixture": {
+      "build": "build/bitmap-console/b6/opt/program/build.json",
+      "build_sha256": "b2bbcaa9cce4c931027a62252a22c63b939b4454df16be92443b5f4ff85d92dd",
+      "xex_sha256": "2640be9b8fac1c81c6cae9c0ca0a6d874c45ba0591ac4ee9916be3dd73797a6a",
+      "loaded_image_bytes": 421843,
+      "zero_fill_bytes": 9963,
+      "initial_free_upper_banks": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        14
+      ],
+      "initial_free_upper_bank_capacity": 393216
+    },
+    "standard_text_demo": {
+      "build": "build/demo/build.json",
+      "build_sha256": "bc1476a06f00d54e83f6c214cb8d845e1921a4ada8a3ef1a2c01378ae083827a",
+      "xex_sha256": "bc4ca48e8fb31f72f9445b58dae88c781f5b691642f9b1008031f244ad9ca729",
+      "loaded_image_bytes": 470107,
+      "zero_fill_bytes": 86,
+      "initial_free_upper_banks": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "initial_free_upper_bank_capacity": 393216
+    },
+    "gem_mouse_demo": {
+      "build": "build/gem-mouse/m6-demo/gem-vdi/program/build.json",
+      "build_sha256": "bc355aa5018c9ad277c1bdfc03590fb8f2a98a5f26b7f32a7867a6f71c478788",
+      "xex_sha256": "b62474c32a694a65ddd772b7d9429e878b5ac11fdcce6ff9a2dba01c6b90d5ce",
+      "loaded_image_bytes": 423732,
+      "zero_fill_bytes": 7014,
+      "initial_free_upper_banks": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        14
+      ],
+      "initial_free_upper_bank_capacity": 393216
+    }
+  },
+  "scope": [
+    "Exact independent 640x240 scanout for an 80x30 mixed-character model, hide, show and clear; native read and WRITE accepted-byte semantics; full OS/input/display cleanup.",
+    "Two emitted inner bridge calls with opposite stack parities retain full A/X/Y/P/D/DBR/S and all twenty lower-DP bytes; target registers are deliberately clobbered. Timer IRQs and native NMIs remain enabled.",
+    "Malformed binding addresses, allocation exhaustion at every allocated startup resource, signals 29/30/31, keyboard capture conflict, another display owner and exhaustion of both large pools reject/unwind.",
+    "Absent VBXE and unsupported core version reject with OS state restored.",
+    "Pending READ and active WRITE complete once with IOERR_SELFTEST after a confirmed STOP. Exactly 64 source bytes remain accepted. Unquiesced STOP retains pending READ and display ownership at reset-required park.",
+    "Text-only raw/optimized presentation remains an exact regression control."
+  ],
+  "limits": [
+    "No performance acceptance claim, bitmap caret or physical-scroll optimization in B6.",
+    "Physical SDFS coexistence and detailed interrupt-phase/latency measurements remain B8; timer IRQ/NMI execution does not claim every asynchronous phase.",
+    "Linked image comparisons use different programs: current bitmap fixture versus existing standard OF816/text and GEM/mouse builds. Free-bank capacity precedes heap headers and live allocation. They are budget references, not paired performance or code-size experiments.",
+    "Fault images instrument BUSY/STOP; screen/context fixtures preserve production hardware reads and include a fixture-only bridge probe before normal startup.",
+    "Full hosted-system qualification and physical hardware remain open."
+  ],
+  "host_checks": {
+    "tests": 294,
+    "skipped": 4,
+    "status": "pass",
+    "generators": [
+      "console",
+      "console_bitmap"
+    ],
+    "diff_check": "pass"
+  }
+}

@@ -349,7 +349,7 @@ UWORD VbxeShow(struct VbxeDisplay *d)
     REG(0xd641)=d->xdl[0]=(UBYTE)VBXE_XDL;
     REG(0xd642)=d->xdl[1]=(UBYTE)(VBXE_XDL>>8);
     REG(0xd643)=d->xdl[2]=(UBYTE)(VBXE_XDL>>16);
-    REG(0xd640)=d->video=5;
+    REG(0xd640)=d->video=VBXE_VIDEO_XDL|VBXE_VIDEO_OPAQUE_ZERO;
     return DISPLAY_OK;
 }
 

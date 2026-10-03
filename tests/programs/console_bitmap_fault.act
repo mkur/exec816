@@ -1,0 +1,80 @@
+MODULE BITMAPFAULT
+USE EXEC
+USE CONSOLE
+USE CONSOLEDRIVER
+USE CONSOLETYPES
+USE HEAPCORE
+CARD checks,checkpoint,gate
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER owner,read,write
+BYTE ARRAY name=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY text(512),input(4)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f780+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  CARD index
+
+  port=EXEC.CreateMsgPort()
+  owner=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  read=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  write=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(port<>NULL AND owner<>NULL AND read<>NULL AND write<>NULL)
+  Require(EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(owner),0)=0)
+  LET instance=CONSOLETYPES.Instance POINTER(owner.io_Unit)
+  WHILE instance.dirtyRows<>0 DO
+    EXEC.Yield()
+  OD
+
+  read.io_Device=owner.io_Device
+  read.io_Unit=owner.io_Unit
+  read.io_Command=EXEC.CMD_READ
+  read.io_Data=input
+  read.io_Length=4
+  EXEC.SendIO(EXEC.IORequest POINTER(read))
+  WHILE instance.readReady<>2 DO
+    EXEC.Yield()
+  OD
+
+  FOR index=0 TO 511 DO
+    text(index)=65+BYTE(index & 15)
+  OD
+
+  checkpoint=1
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+  write.io_Device=owner.io_Device
+  write.io_Unit=owner.io_Unit
+  write.io_Command=EXEC.CMD_WRITE
+  write.io_Data=text
+  write.io_Length=512
+  EXEC.SendIO(EXEC.IORequest POINTER(write))
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(read))=EXEC.IOERR_SELFTEST)
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(write))=EXEC.IOERR_SELFTEST)
+  Require(read.io_Actual=0 AND write.io_Actual=64)
+  Require(CONSOLE.ScreenWidth()=0 AND CONSOLEDRIVER.Start()=0)
+  Require(CONSOLE.Hide(0)<>0)
+  Require(CONSOLEDRIVER.Stop()=0)
+  read.io_Device=NULL
+  read.io_Unit=NULL
+  write.io_Device=NULL
+  write.io_Unit=NULL
+  EXEC.CloseDevice(EXEC.IORequest POINTER(owner))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(read))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(write))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(owner))
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+ENDMODULE

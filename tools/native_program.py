@@ -228,13 +228,15 @@ def kernel_source(text, source_dir=None):
 
 def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, cooperative=False,
           probe_flags=0x100, forward_signature=0, preemptive=False, banked=False,
-          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None):
+          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False):
     configuration=json.loads(Path(kernel_config or ROOT/'config/kernel.json').read_text())
     stack_checks_enabled=configuration.get('stack_checks',True) if stack_checks is None else stack_checks
     require(type(stack_checks_enabled) is bool,'Stack checks option must be boolean')
     console_enabled=configuration.get('console',False) if console is None else console
-    require(type(console_enabled) is bool and type(console_test) is bool,'Console build options must be boolean')
-    console_native=console_enabled or console_test
+    require(type(console_enabled) is bool and type(console_test) is bool and type(console_deferred) is bool,'Console build options must be boolean')
+    console_native=console_enabled or console_test or console_deferred
+    require(not console_deferred or (tasks and not console_enabled),
+            'Deferred console requires Tasks without automatic startup')
     require(not console_enabled or tasks,'Configured console requires Tasks')
     require(foreign_image is None or tasks, 'Foreign code requires Task packaging')
     require(type(pump_count) is int and 2 <= pump_count <= 65535, 'Invalid diagnostic pump length')
@@ -405,6 +407,11 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             label='console_probe_'+operation.lower()
             result='Some(NativeResult(A16))' if operation=='Take' else 'None'
             peak=5
+        elif tasks and name=='CONSOLEBITMAP.Call':
+            require(console_native,'Bitmap call requires console support')
+            label,result,peak='console_bitmap_call','None',36
+            arguments=[dict(alignment=2,offset=0,size=3)]
+            outgoing=3
         elif tasks and name=='CONSOLEDISPLAY.Span':
             require(console_native,'Console span is unavailable in this build')
             label,result,peak='console_span','None',0
@@ -866,13 +873,14 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         provenance['task_inputs']['platform/altirraos/console-probe.s']=sha256(ROOT/'platform/altirraos/console-probe.s')
         provenance['console_probe_storage']={'base':task_storage['BASE']+0xc00,'bytes':288,'arena_reserved_bytes':4096,'added_bank_zero_bytes':0}
     if console_native:
+        provenance['console_deferred']=console_deferred
         provenance['console_test']=console_test
         provenance['console_enabled']=console_enabled
         provenance['console_start']=console_start
-        provenance['console_inputs']={name:sha256(ROOT/name) for name in ('abi/console.json','tools/generate_console.py',
+        provenance['console_inputs']={name:sha256(ROOT/name) for name in ('abi/console.json','abi/console-bitmap.json','tools/generate_console.py','tools/generate_console_bitmap.py','lib/console/consolebitmap.act','lib/console/console-bitmap-types.inc',
             'lib/console/console.act','lib/console/consolewindows.act','lib/console/consoletiling.act','lib/console/consoleforeground.act','lib/dos/dosbreaktypes.act','lib/console/consoledisplay.act','lib/console/consoletypes.act','lib/console/consolecore.act','lib/console/consoledriver.act','lib/console/console-requests.inc','lib/console/console-lifetime.inc','lib/console/consolecapture.act','lib/console/consoleinput.act','lib/console/task-console.inc',
             'platform/altirraos/console-layout.inc','platform/altirraos/console.s')}
-        provenance['task_generated'].update({name:sha256(output/name) for name in ('console-storage.inc','console-storage-action.inc','console-action.inc','console-tables.bin','task-kernel/consoleforeground.act','task-kernel/consoledriver.act','task-kernel/consoleinput.act','task-kernel/consoledisplay.act')})
+        provenance['task_generated'].update({name:sha256(output/name) for name in ('console-storage.inc','console-storage-action.inc','console-action.inc','console-tables.bin','task-kernel/consoleforeground.act','task-kernel/consoledriver.act','task-kernel/consoleinput.act','task-kernel/consoledisplay.act','task-kernel/consolebitmap.act')})
     if tasks and (dos_test or dos_system):provenance['task_generated']['task-kernel/dos.act']=sha256(output/'task-kernel/dos.act')
     if banked:
         provenance.update(banked=True, memory=memory, memory_sha256=memory_hash,

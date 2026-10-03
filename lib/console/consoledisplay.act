@@ -1,9 +1,10 @@
-; Borrow the pinned GRAPHICS 0 screen. Only this module writes display RAM.
+; Worker-owned presentation for pinned GRAPHICS 0 or the shared VBXE library.
 ; All copies run in task context with interrupts and preemption enabled.
 MODULE CONSOLEDISPLAY
 USE A816MEMORY
 USE CONSOLETYPES
 USE CONSOLECORE
+USE CONSOLEBITMAP
 USE DISPLAY
 USE HEAPCORE
 INCLUDE "console-storage-action.inc"
@@ -18,9 +19,17 @@ CONST ROW_BUDGET=4, CELL_BUDGET=160
 ; Physical text capabilities; the common model can retain larger geometry.
 PUBLIC CARD FUNC Width()
 
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    RETURN(80)
+  FI
+
 RETURN(40)
 
 PUBLIC CARD FUNC Height()
+
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    RETURN(30)
+  FI
 
 RETURN(24)
 
@@ -98,11 +107,11 @@ RETURN(ListValid(sdlst,savmsc))
 PUBLIC BYTE FUNC Geometry(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER instance)
 
-  IF view.width=0 OR view.height=0 OR view.left>=40 OR view.top>=24 THEN
+  IF view.width=0 OR view.height=0 OR view.left>=Width() OR view.top>=Height() THEN
     RETURN(0)
   FI
 
-  IF view.width>40-view.left OR view.height>24-view.top THEN
+  IF view.width>Width()-view.left OR view.height>Height()-view.top THEN
     RETURN(0)
   FI
 
@@ -116,6 +125,27 @@ RETURN(1)
 PUBLIC BYTE FUNC Claim(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER instance BYTE POINTER snapshot)
   BYTE POINTER screen
+
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    IF view.claimed<>0 OR CONSOLEBITMAP.Open()=0 THEN
+      RETURN(0)
+    FI
+
+    view.instance=BYTE POINTER(instance)
+    view.left=0
+    view.top=0
+    view.width=80
+    view.height=30
+    view.claimed=1
+    view.visible=1
+    view.focused=1
+    view.index=$ffff
+    view.previousCursor=$ffff
+    view.generation==+1
+    view.presentedGeneration=0
+    CONSOLECORE.Dirty(instance,0,instance.count)
+    RETURN(1)
+  FI
 
   IF view.claimed<>0 OR Validate()=0 THEN
     RETURN(0)
@@ -170,6 +200,16 @@ PUBLIC PROC Release(CONSOLETYPES.Presentation POINTER view)
     RETURN
   FI
 
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    CONSOLEBITMAP.Close()
+    view.claimed=0
+    view.visible=0
+    view.cursorOn=0
+    view.generation==+1
+    view.presentedGeneration=0
+    RETURN
+  FI
+
   IF DISPLAY.BeginRelease(@lease)<>DISPLAY.OK THEN
     HEAPCORE.Abort(4)
   FI
@@ -200,6 +240,9 @@ PROC Cursor(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   CARD index
 
   view.index=instance.lineStart+instance.column
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    RETURN
+  FI
   IF view.focused=0 THEN
     RETURN
   FI
@@ -222,6 +265,7 @@ RETURN
 PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
   CARD row,base,first,last,stop,rows,remaining
+  BYTE okay
   LONGCARD generation
 
   IF instance.dirtyRows=0 THEN
@@ -247,8 +291,18 @@ PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
           stop=view.width
         FI
 
-        Span(view.screen+SIZE(Position(view.top+row,view.left+first)),
-            instance.cells+SIZE(base+first),stop-first)
+        IF CONSOLEBITMAP.Enabled()<>0 THEN
+          okay=CONSOLEBITMAP.Text((view.left+first) LSH 3,
+              (view.top+row) LSH 3,instance.cells+SIZE(base+first),stop-first)
+          IF okay=0 THEN
+            CONSOLECORE.Clean(instance)
+            view.index=instance.lineStart+instance.column
+            RETURN
+          FI
+        ELSE
+          Span(view.screen+SIZE(Position(view.top+row,view.left+first)),
+              instance.cells+SIZE(base+first),stop-first)
+        FI
       FI
 
       CONSOLECORE.Presented(instance,row,last,generation)
@@ -279,12 +333,25 @@ RETURN
 ; Presentation admission prevents worker borrows while this bounded erase runs.
 PUBLIC PROC Erase(CONSOLETYPES.Presentation POINTER view)
   CARD row
+  BYTE okay
 
   IF view.claimed=0 OR view.visible=0 THEN
     RETURN
   FI
 
   RemoveCursor(view)
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    FOR row=0 TO view.height-1 DO
+      okay=CONSOLEBITMAP.Fill(view.left LSH 3,(view.top+row) LSH 3,
+          view.width LSH 3,8,0)
+      IF okay=0 THEN
+        RETURN
+      FI
+    OD
+
+    RETURN
+  FI
+
   FOR row=0 TO view.height-1 DO
     A816MEMORY.Clear(view.screen+SIZE(Position(view.top+row,view.left)),
         SIZE(view.width))
@@ -298,6 +365,11 @@ PUBLIC PROC Edit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
   BYTE synchronized
   CARD row
+
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    CONSOLECORE.EditQuantum(instance)
+    RETURN
+  FI
 
   LET operation=instance.operation
   synchronized=0
@@ -354,6 +426,14 @@ PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
 
   IF view.claimed=0 OR view.visible=0 THEN
     RETURN
+  FI
+
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    IF CONSOLEBITMAP.Failed()<>0 THEN
+      CONSOLECORE.Clean(instance)
+      view.index=instance.lineStart+instance.column
+      RETURN
+    FI
   FI
 
   ; A clean, settled cursor needs no screen stores. Focus changes invalidate

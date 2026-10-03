@@ -3,8 +3,8 @@
 [Design note](bitmap-console-design.md) · [Implementation plans](../README.md) ·
 [GEM work](README.md) · [Roadmap](../../roadmap.md)
 
-Status: implementation started, 3 October 2026. B0–B5 have passed development checks;
-B6–B9 remain unimplemented. This plan implements
+Status: implementation started, 3 October 2026. B0–B6 have passed development checks;
+B7–B9 remain unimplemented. This plan implements
 the design's 80×30 bitmap backend for the existing console, improving the shared
 VDI drawing path first. Each slice must leave an executable, reviewable result;
 commit it with its focused development evidence before starting the next slice.
@@ -316,6 +316,19 @@ hardware and busy-display rejection, every partial startup unwind, stack/domain
 guards, high-water marks and full OS/input/display cleanup. Complete a read,
 write, clear, hide/show and stop cycle. Report the whole linked image and heap
 cost relative to both the text demo and existing GEM build.
+
+B6 development evidence: [worker bitmap backend](../../development/bitmap-console-b6.json).
+Raw/optimized bridge and exact scanout checks pass for both stack parities,
+full registers and twenty lower-DP sentinels, with timer IRQs and native NMIs.
+The 80×30 workload covers write, read, clear, hide/show and stop. Allocation,
+signal, capture, display-busy and large-pool exhaustion unwind; absent and
+unsupported hardware leave the OS intact. Pending reads and writes retire on a
+quiesced rendering fault; unquiesced DMA retains ownership and requests for reset.
+The worker uses slot 6 from the existing large pools. Its eight-byte binding fits
+existing metadata slack, so metadata, alignment and every bank-zero reservation
+have zero delta. The shared C image reserves 131,072 upper bytes relative to text,
+with packet/workout storage inside those banks. No fast-console claim is made;
+caret, pixel scrolling, loaded SDFS latency and packaging remain B7–B9.
 
 ## B7 Present dirty runs and scroll pixels
 

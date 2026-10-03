@@ -36,7 +36,7 @@ def constants(abi=ABI):
     for name,key in [('Service','service_offset'),('Instance','instance_offset'),('Presentation','presentation_offset'),('Routes','routes_offset'),('Windows','windows_offset')]:
         start=s[key];require(start>=end,'Overlapping console metadata')
         end=start+abi['records'][name]['size']
-    require(end<=s['reserved_bytes'] and s['reserved_bytes']%16==0,'Console metadata exceeds reservation')
+    require(end<=s['bitmap_offset'] and s['bitmap_offset']+8<=s['reserved_bytes'] and s['reserved_bytes']%16==0,'Console metadata exceeds reservation')
     require(s['capture_offset']>=0xa60 and s['capture_offset']+560<=0x1000,
             'Console capture overlaps DOS descriptors or native code')
     require(s['glyph_offset']>=s['capture_offset']+560
@@ -77,7 +77,7 @@ def reserve_metadata(memory):
     memory['upper_reservations'].append(dict(name='console-resident',address=base,size=s['reserved_bytes']))
     memory['profile']['code_origin']=end
     memory['console_storage']=dict(BASE=base,BYTES=s['reserved_bytes'],INSTANCE=base+s['instance_offset'],
-        PRESENTATION=base+s['presentation_offset'],ROUTES=base+s['routes_offset'],WINDOWS=base+s['windows_offset'],CAPTURE=storage(memory)['BASE']+s['capture_offset'],
+        PRESENTATION=base+s['presentation_offset'],ROUTES=base+s['routes_offset'],WINDOWS=base+s['windows_offset'],BITMAP=base+s['bitmap_offset'],CAPTURE=storage(memory)['BASE']+s['capture_offset'],
         GLYPHS=storage(memory)['BASE']+s['glyph_offset'],KEYMAP=storage(memory)['BASE']+s['keymap_offset'])
 
 def generate(output,memory):
