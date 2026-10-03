@@ -4,9 +4,9 @@ USE EXECMEMORY
 USE HEAPPOLICY
 USE HEAPCORE
 INCLUDE "ports-storage-action.inc"
-CONST COUNT=16
+CONST COUNT=64
 CARD ARRAY checks(12)
-BYTE ARRAY snapshots(384)
+BYTE ARRAY snapshots(1536)
 LONGCARD ARRAY regions(32)
 
 PROC Snapshot(BYTE phase)
@@ -16,7 +16,7 @@ PROC Snapshot(BYTE phase)
 
   FOR bank=0 TO COUNT-1 DO
     result=EXECMEMORY.Query(bank,@item)
-    offset=(SIZE(phase) LSH 6)+(SIZE(bank) LSH 2)
+    offset=(SIZE(phase) LSH 8)+(SIZE(bank) LSH 2)
     snapshots(offset)=item.state
     snapshots(offset+1)=item.reserved
     snapshots(offset+2)=BYTE(item.owner)

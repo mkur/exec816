@@ -106,7 +106,7 @@ def case(bridge, toolchain, output, optimize, cop):
     observed = far_read(bridge,base,size,output)
     want = bytearray([0xa5]*size)
     start = 0x04ffef-base
-    for offset,value,width in [(16,0xffffffff,4),(20,0x80000001,4),(24,0xab1234cd,4),(28,0,4),(58,0x0f0040,3)]:
+    for offset,value,width in [(16,0xffffffff,4),(20,0x80000001,4),(24,0xab1234cd,4),(28,0,4),(58,0x3f0040,3)]:
         want[start+offset:start+offset+width] = value.to_bytes(width,'little')
     require(observed == want,'Task fields or padding/guards changed')
     return dict(build=program['build'],runtime=result,facts=facts,masks=masks,routines=routines,

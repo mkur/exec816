@@ -21,7 +21,7 @@ class Machine:
     def __init__(self, pin):
         self.pin = copy.deepcopy(pin)
         self.config_values = dict(machine='800XL', memory='64K', video='pal', basic=False,
-                                  highbanks=15, addons='custom', **pin['startup_configuration'])
+                                  highbanks=63, addons='custom', **pin['startup_configuration'])
         self.core = b'\x10\x26'
         self.extra = []
 
@@ -97,6 +97,7 @@ class GemInputTests(unittest.TestCase):
                 lambda b: setattr(b, 'core', b'\x10\x24'),
                 lambda b: b.extra.append(dict(tag='covox', internal=False)),
                 lambda b: b.config_values.update(siopatch='on'),
+                lambda b: b.config_values.update(highbanks=15),
                 lambda b: setattr(b, 'regs', lambda: dict(mode='6502', clock_multiplier=8, shadow_rom=True)),
             )
             for mutate in mutations:

@@ -10,7 +10,7 @@ from os_boundary import emulator
 from test_memory_relocation import stop_at
 from test_task_capacity import check_case
 
-PIN = json.loads((ROOT/'toolchain/altirra-signals-1m.json').read_text())
+PIN = json.loads((ROOT/'toolchain/altirra-signals-4m.json').read_text())
 PATTERN = bytes((i*37+(i >> 8)+0x53) & 255 for i in range(4096))
 
 

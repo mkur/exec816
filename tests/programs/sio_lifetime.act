@@ -183,7 +183,7 @@ PROC Main()
 
   parent=EXEC.FindTask(BYTE POINTER(0))
   Require(EXEC.AllocSignal(16)=16)
-  checkpoint=BYTE POINTER($0f085a)
+  checkpoint=BYTE POINTER($3f085a)
   IF kind=0 THEN
     Concurrent()
   ELSEIF kind=1 THEN

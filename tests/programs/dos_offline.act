@@ -52,7 +52,7 @@ PROC OtherRead(BYTE unused)
     EXEC.Yield()
   OD
 
-  phase=BYTE POINTER($f0801)
+  phase=BYTE POINTER($3f0801)
   WHILE phase^=0 DO
     EXEC.Yield()
   OD
@@ -82,7 +82,7 @@ RETURN
 PROC Armed(BYTE unused)
   CARD POINTER posts
 
-  posts=CARD POINTER($f0838)
+  posts=CARD POINTER($3f0838)
   postsBefore=posts^
   go=1
 
@@ -140,7 +140,7 @@ PROC Cleanup(BYTE unused)
   Require(FSMANAGER.Mount(0)=0 AND DOS.IoErr()=8)
   service=FSREGISTRY.Service()
   Require(service.mounts(0).item=FSTYPES.Mount POINTER(0))
-  posts=CARD POINTER($f0838)
+  posts=CARD POINTER($3f0838)
   postsAfter=posts^
   Require(postsAfter=postsBefore+1)
   Require(FSBOOT.Stop()<>0)

@@ -113,9 +113,9 @@ PROC Records()
   INPUTNATIVE.State POINTER state
   LONGCARD POINTER acquisitions
 
-  capture=INPUTNATIVE.Capture POINTER($0f0c00)
-  state=INPUTNATIVE.State POINTER($0f0a60)
-  acquisitions=LONGCARD POINTER($0f0f50)
+  capture=INPUTNATIVE.Capture POINTER($3f0c00)
+  state=INPUTNATIVE.State POINTER($3f0a60)
+  acquisitions=LONGCARD POINTER($3f0f50)
   Require(INPUT.CreateRoute(@lease,0,@tag)=INPUT.OK)
   Require(INPUT.CreateRoute(@lease,0,@other)=INPUT.OK)
   EXEC.Forbid()

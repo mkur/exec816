@@ -39,7 +39,7 @@ class SignalsPackageTests(unittest.TestCase):
 
     def test_metadata_tracks_actual_upper_memory_and_cannot_overlap_image(self):
         memory = layout(); c=storage(memory)
-        self.assertEqual(c['BASE'],0xf0000)
+        self.assertEqual(c['BASE'],0x3f0000)
         self.assertEqual(c['METADATA_BYTES'],704)
         self.assertEqual(c['WAKE'],c['BASE']+5*64+9)
         smaller = copy.deepcopy(memory); smaller['usable_banks']=[2,3]
@@ -52,5 +52,5 @@ class SignalsPackageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             generate(Path(temp),memory)
             assembly=(Path(temp)/'task-abi.inc').read_text()
-            self.assertIn('T_BASE = $0f0000',assembly)
+            self.assertIn('T_BASE = $3f0000',assembly)
             self.assertIn('T_TCB_WAKENODE = $000020',assembly)

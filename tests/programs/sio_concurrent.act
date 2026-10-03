@@ -342,7 +342,7 @@ PROC Background()
   BYTE POINTER phase
   CARD status
 
-  phase=BYTE POINTER($0f0801)
+  phase=BYTE POINTER($3f0801)
   activeMirror=0
   IF phase^<>0 AND phase^<>13 AND phase^<>15 THEN
     activeMirror=1

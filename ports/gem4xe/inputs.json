@@ -7,7 +7,7 @@
   "actionc_pin": "toolchain/actionc.json",
   "actionc_pin_sha256": "f31077466a9ef240f8d49fd2f62cd8503b5975c164127573834b09a7d05ba3cc",
   "platform_pin": "toolchain/altirra-gem-vdi.json",
-  "platform_pin_sha256": "d9370d0aa1e5a5b13f304bcef714b7785687b6933d23b4463b948710dcfe3abc",
+  "platform_pin_sha256": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
   "calypsi": {
     "tools": {
       "cc65816": {

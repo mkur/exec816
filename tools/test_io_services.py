@@ -104,7 +104,7 @@ def main():
     p.add_argument('--profile',choices=('1x','8x'),default='1x')
     p.add_argument('--from-build',type=Path,help='Reuse an unchanged kernel for native context overlays')
     a=p.parse_args();out=a.output.resolve();out.mkdir(parents=True,exist_ok=True)
-    pin=PIN if a.profile=='1x' else json.loads((ROOT/'toolchain/altirra-signals-1m.json').read_text())
+    pin=PIN if a.profile=='1x' else json.loads((ROOT/'toolchain/altirra-signals-4m.json').read_text())
     t=compiler(a.compiler_dir);platform_files(a.bridge_dir,a.rom)
     paths=('abi/io.json','abi/tasks.json','lib/io/task-io.inc','lib/io/iocore.act','lib/io/io-call-types.inc',
            'lib/exec/taskpolicy.act','platform/altirraos/io.s','platform/altirraos/tasks.s',

@@ -187,7 +187,7 @@ PROC RouteChecks()
 
   routes=CONSOLEFOREGROUND.Registry()
   EXEC.Forbid()
-  inputState=INPUTNATIVE.State POINTER($0f0a60)
+  inputState=INPUTNATIVE.State POINTER($3f0a60)
   ; Retain every old route while admitting fourteen successive scopes.
   capture.events(0).key=$92
   capture.events(0).kind=0
@@ -273,7 +273,7 @@ PROC Main()
   CONSOLETYPES.Routes POINTER routes
   INPUTNATIVE.State POINTER inputState
 
-  inputState=INPUTNATIVE.State POINTER($0f0a60)
+  inputState=INPUTNATIVE.State POINTER($3f0a60)
   baseline=EXEC.AvailMem(0)
   capture=INPUTNATIVE.Capture POINTER(ADDRESS(CS_CAPTURE))
   instance=CONSOLEDRIVER.GetInstance()

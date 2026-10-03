@@ -10,7 +10,7 @@ from native_program import ROOT, build, compiler, execute, platform_files, requi
 from os_boundary import emulator, run_to
 from test_cooperative import data
 
-PIN = json.loads((ROOT/'toolchain/altirra-signals-1m.json').read_text())
+PIN = json.loads((ROOT/'toolchain/altirra-signals-4m.json').read_text())
 
 
 def stop_at(bridge, address):

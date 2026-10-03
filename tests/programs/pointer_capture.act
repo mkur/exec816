@@ -23,7 +23,7 @@ RETURN
 
 PROC Records()
 
-  LET hardware=INPUTNATIVE.PointerCapture POINTER($0f4810)
+  LET hardware=INPUTNATIVE.PointerCapture POINTER($3f4810)
   Require(INPUT.CreateRoute(@mouse,0,@tag)=INPUT.OK)
   ; Route zero keeps the IRQ from publishing while the task fixture constructs
   ; a state sample with simultaneous movement and a left-button transition.

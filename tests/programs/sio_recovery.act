@@ -69,8 +69,8 @@ PROC Setup()
   EXEC.Permit()
   error=EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(queued),0)
   Require(error=0)
-  phase=BYTE POINTER($0f0801)
-  checkpoint=BYTE POINTER($0f085a)
+  phase=BYTE POINTER($3f0801)
+  checkpoint=BYTE POINTER($3f085a)
   Prepare(request)
   Prepare(queued)
 
@@ -98,7 +98,7 @@ PROC Submit()
   FI
 
   IF kind=4 THEN
-    clock=CARD POINTER($0f081a)
+    clock=CARD POINTER($3f081a)
     clock^=$fffc
   FI
 
@@ -227,7 +227,7 @@ PROC LatePreparing()
   CARD before,index
   INT error
 
-  offline=BYTE POINTER($0f082d)
+  offline=BYTE POINTER($3f082d)
   clock=CARD POINTER(E816_VBI_COUNT)
   checkpoint^=1
   before=clock^

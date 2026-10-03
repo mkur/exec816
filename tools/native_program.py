@@ -812,7 +812,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                            "platform/altirraos/hosted.s", "platform/altirraos/layout.inc",
                            "platform/altirraos/hosted.cfg", "lib/exec/execos.act",
                            "abi/exec816-v1.json", "platform/altirraos/exec-abi.inc",
-                           "tools/adapter_state.py", "tools/generate_exec_abi.py", "platform/altirraos/memory-1m.json",
+                           "tools/adapter_state.py", "tools/generate_exec_abi.py", "platform/altirraos/memory-4m.json",
                            "platform/altirraos/cooperative.s", "lib/exec/exec-abi.inc",
                            "platform/altirraos/cooperative-probe.s", "platform/altirraos/preemptive.s",
                            "lib/exec/exec.act", "lib/exec/execpolicy.act", "tools/library_paths.py")},

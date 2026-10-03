@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ABI = ROOT / 'abi/memory-v1.json'
 CONFIG = ROOT / 'config/kernel.json'
-PROFILE = ROOT / 'platform/altirraos/memory-1m.json'
+PROFILE = ROOT / 'platform/altirraos/memory-4m.json'
 
 
 def require(ok, message):

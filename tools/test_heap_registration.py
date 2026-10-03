@@ -10,7 +10,7 @@ from os_boundary import emulator
 
 def case(bridge,toolchain,output,optimize,capacity,kernel,kind):
     output.mkdir(parents=True,exist_ok=True)
-    profile=json.loads((ROOT/'platform/altirraos/memory-1m.json').read_text())
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
     if kind=='empty': profile['usable_banks']=[kernel,kernel+1,kernel+2,15]
     if kind=='holes': profile['usable_banks']=[b for b in profile['usable_banks'] if b not in (6,10)]
     (output/'profile.json').write_text(json.dumps(profile,indent=2)+'\n')

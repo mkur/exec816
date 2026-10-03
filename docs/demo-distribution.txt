@@ -24,7 +24,7 @@ Computer > CPU
 
 Computer > Memory
   Memory Size: 64K
-  High memory banks: 960K (15 banks above the base RAM).
+  High memory banks: 4032K (63 banks above the base RAM).
   Select the 65C816 CPU first to enable this control.
 
 Computer > Firmware

@@ -124,7 +124,7 @@ def main():
     parser.add_argument('--case', action='append')
     parser.add_argument('--profile', choices=('1x','8x'), default='1x')
     args = parser.parse_args()
-    pin = json.loads((ROOT/'toolchain/altirra-signals-1m.json').read_text()) if args.profile=='8x' else PIN
+    pin = json.loads((ROOT/'toolchain/altirra-signals-4m.json').read_text()) if args.profile=='8x' else PIN
     output = args.output.resolve()
     output.mkdir(parents=True,exist_ok=True)
     toolchain = compiler(args.compiler_dir)

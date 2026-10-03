@@ -71,7 +71,7 @@ def main():
     parser.add_argument('--case',action='append')
     parser.add_argument('--profile',choices=('1x','8x'),default='1x',help='Pinned functional profile; 8x also exercises the serial timing CPU profile')
     args=parser.parse_args()
-    args.pin=json.loads((ROOT/'toolchain/altirra-signals-1m.json').read_text()) if args.profile=='8x' else PIN
+    args.pin=json.loads((ROOT/'toolchain/altirra-signals-4m.json').read_text()) if args.profile=='8x' else PIN
     if args.suite!='abi':
         from test_ports_services import run
         return run(args)

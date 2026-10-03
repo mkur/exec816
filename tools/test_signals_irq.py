@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure real serial IRQ posting on the combined 8x / 1 MiB signal profile."""
+"""Measure real serial IRQ posting on the combined 8x / 4 MiB signal profile."""
 import argparse
 import json
 import os
@@ -9,7 +9,7 @@ from os_boundary import emulator
 from sio_latency import BASE_HZ
 from test_cooperative import data
 
-PIN=json.loads((ROOT/'toolchain/altirra-signals-1m.json').read_text())
+PIN=json.loads((ROOT/'toolchain/altirra-signals-4m.json').read_text())
 
 
 def events(path):

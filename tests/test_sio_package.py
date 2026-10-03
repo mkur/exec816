@@ -97,7 +97,11 @@ class SioPackageTests(unittest.TestCase):
     def test_published_record(self):
         record=json.loads((ROOT/'docs/qualification/sio-feasibility.json').read_text())
         validate_record(record)
-        self.assertEqual(record['platform'],PIN)
+        # This immutable qualification predates the 4 MiB development target.
+        historical=copy.deepcopy(record['platform'])
+        self.assertEqual(historical['machine']['high_banks'],15)
+        historical['machine']['high_banks']=63
+        self.assertEqual(historical,PIN)
         self.assertEqual(record['memory'],budget())
 
     def test_historical_input_hashes(self):

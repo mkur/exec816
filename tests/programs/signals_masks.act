@@ -108,10 +108,10 @@ PROC Admission()
   checks(21)=CARD(worker.tc_SigExcept=LONGCARD($80000000)
       AND worker.tc_State=EXEC.TS_INVALID)
   worker.tc_SigExcept=0
-  worker.tc_ExecPrivate=$0f0040
+  worker.tc_ExecPrivate=$3f0040
   item=EXEC.AddTask(@worker,@Child,missing)
   checks(22)=CARD(item=EXEC.Task POINTER(0))
-  checks(23)=CARD(worker.tc_ExecPrivate=ADDRESS($0f0040))
+  checks(23)=CARD(worker.tc_ExecPrivate=ADDRESS($3f0040))
 
 RETURN
 

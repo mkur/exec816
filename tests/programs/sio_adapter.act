@@ -62,8 +62,8 @@ PROC Transaction(BYTE wire,direction CARD length BYTE POINTER buffer)
   desc.direction=direction
   desc.length=length
   IF variant=6 THEN
-    lowPart=CARD POINTER($0f0810)
-    bankPart=BYTE POINTER($0f0812)
+    lowPart=CARD POINTER($3f0810)
+    bankPart=BYTE POINTER($3f0812)
     lowPart^=CARD(ADDRESS(buffer))
     before=EXECTASKS.Sleep(1)
     bankPart^=BYTE(ADDRESS(buffer) RSH 16)
@@ -125,8 +125,8 @@ PROC Setup()
   EXEC.Task POINTER added
   BYTE bit,okay
 
-  desc=Descriptor POINTER($0f0800)
-  command=BYTE POINTER($0f0830)
+  desc=Descriptor POINTER($3f0800)
+  command=BYTE POINTER($3f0830)
   PrepareTask(@background,TASKSTACKS.LOWER1,BYTE POINTER(0))
   added=EXEC.AddTask(@background,@BackgroundEntry,absent)
   bit=EXEC.AllocSignal(31)

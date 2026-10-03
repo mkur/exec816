@@ -139,7 +139,7 @@ class BankedPackageTests(unittest.TestCase):
             [(0x10000,b'a',1,2,2),(0x10000,b'b',1,0,2)],
             [(0x2800,b'a',1,0,2)], [(0x6800,b'a',1,0,2)],
             [(0x8800,b'a',1,2,2)], [(0x8fff,b'ab',2,0,2)],
-            [(0x100000,b'a',1,2,2)], [(0xffffff,b'ab',2,0,2)],
+            [(0x400000,b'a',1,2,2)], [(0xffffff,b'ab',2,0,2)],
             [(0x10000,b'',0,2,2)], [(0x10000,b'a',65536,2,2)],
         ]
         original = copy.deepcopy(self.memory)

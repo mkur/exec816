@@ -49,7 +49,7 @@ def run(out, mode, unobserved=False):
                     b.pause()
                     raise RuntimeError('No pointer checkpoint')
                 except Exception:
-                    raise RuntimeError(f'Pointer check {b.peek16(at("checks"))}, status {b.peek16(adapter.STATE):x}, event={b.memdump(at("event"),24).hex()}, capture={b.memdump(0xf4810,152).hex()}')
+                    raise RuntimeError(f'Pointer check {b.peek16(at("checks"))}, status {b.peek16(adapter.STATE):x}, event={b.memdump(at("event"),24).hex()}, capture={b.memdump(0x3f4810,152).hex()}')
             saved, commands = {}, []
             def hardware():
                 values = {name:b.memdump(address,n).hex() for name,address,n in

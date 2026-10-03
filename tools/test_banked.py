@@ -19,7 +19,7 @@ from banked_test_memory import read as far_read, write as far_write
 from test_cooperative import data
 from test_preemptive import check as check_preemptive
 
-PIN = json.loads((ROOT/'toolchain/altirra-1m.json').read_text())
+PIN = json.loads((ROOT/'toolchain/altirra-4m.json').read_text())
 
 
 def xex_segments(blob):
@@ -55,11 +55,11 @@ def assemble_probe(output, source, origin=0x3000):
     return labels
 
 
-def profile_probe(bridge, output):
+def profile_probe(bridge, output, banks=range(1,64)):
     # Writes all samples first, then reads all of them. Aliasing cannot pass
     # merely because each write was immediately followed by its own read.
     # This isolated probe never enters the hosted kernel or initializes its DP.
-    addresses = [(b<<16)|off for b in range(1,16) for off in (0,0x100,0x2100,0xd500,0xffff)]
+    addresses = [(b<<16)|off for b in banks for off in (0,0x100,0x2100,0xd500,0xffff)]
     lines = ['.setcpu "65816"','.segment "CODE"','.export start,done',
              'start:','lda #$5a','sta $2100']
     for i,a in enumerate(addresses):
@@ -75,7 +75,7 @@ def profile_probe(bridge, output):
     bridge.bp_set(labels['done']); run_to(bridge,labels['done'])
     require(bridge.memdump(0x2100,2) == b'\x5a\x01','Upper banks unavailable or aliased')
     require(bridge.memdump(0xc000,0x1000)+bridge.memdump(0xd800,0x2800) == rom,'OS ROM changed')
-    return {'banks':list(range(1,16)), 'samples':len(addresses), 'bank_zero_alias_guard':'intact',
+    return {'banks':list(banks), 'samples':len(addresses), 'bank_zero_alias_guard':'intact',
             'probe_sha256':sha256(output/'probe.xex')}
 
 

@@ -1,0 +1,221 @@
+{
+  "change": "4 MiB target configuration",
+  "status": "development-pass",
+  "date": "2026-10-03",
+  "tier": "development",
+  "profile": "platform/altirraos/memory-4m.json",
+  "configuration": "64 KiB base plus 63 linear high banks; max_banks=64. Standard cache remains 512 blocks.",
+  "probe": {
+    "banks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63
+    ],
+    "samples": 315,
+    "bank_zero_alias_guard": "intact",
+    "probe_sha256": "05c8e9003acfcdb4dd88aaa86cf1b87dd96067e3c917f7bff18c7a5ac6fadf34",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "raw_shell": {
+    "report": "build/bitmap-console/b8/demo-4m-raw/program/loading-results.json",
+    "sha256": "bda8924bd579ad05787b32ec3aaed296b5cdf702de079a14fc43bbd3470317dc",
+    "xex_sha256": "5d427055c7db5783f79eb689b7e11c54296ce530762f7f4e692cc6de5b823904",
+    "scope": "Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration",
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "native_nmi_count": 1184,
+      "native_irq_count": 11611,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 540,
+          "untouched_above_floor": 740
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 166,
+          "untouched_above_floor": 602
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 246,
+          "untouched_above_floor": 522
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 342,
+          "untouched_above_floor": 426
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 358,
+          "untouched_above_floor": 410
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 350,
+          "untouched_above_floor": 418
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 472,
+          "untouched_above_floor": 1832
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 50,
+          "untouched_above_floor": 206
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 280,
+        "untouched_from_base": 1256,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "memory": [
+      3257672,
+      65536,
+      3257672,
+      3211264
+    ]
+  },
+  "host": "294 tests, 4 skips",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0,
+    "includes": "guards, alignment and unused reserved capacity",
+    "reserved_bytes": 56128,
+    "free_bytes": 9408
+  },
+  "upper_metadata_delta": {
+    "bank_table": 192,
+    "heap_metadata": 1600,
+    "alignment": 0,
+    "total": 1792
+  },
+  "vram_delta": 0,
+  "limits": "Focused emitted raw shell/pipeline/loading BREAK/cleanup and all-bank write/read alias probe. No new full hosted qualification; historical evidence preserves its original 1 MiB configuration."
+}

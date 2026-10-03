@@ -90,7 +90,7 @@ PROC RingChecks()
   BYTE turn
   LONGCARD event
 
-  capture=INPUTNATIVE.Capture POINTER($0f0c00)
+  capture=INPUTNATIVE.Capture POINTER($3f0c00)
   ; Two complete rings, including byte-counter wrap at 255 -> 0. Unlike the
   ; throwaway probe, all 64 slots are usable without sacrificing one slot.
   FOR turn=0 TO 1 DO

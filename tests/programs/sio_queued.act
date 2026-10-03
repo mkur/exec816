@@ -30,7 +30,7 @@ RETURN
 PROC BackgroundEntry()
   BYTE POINTER phase
 
-  phase=BYTE POINTER($0f0801)
+  phase=BYTE POINTER($3f0801)
   WHILE stop=0 DO
     IF phase^<>0 AND phase^<>13 THEN
       progress==+1

@@ -14,11 +14,11 @@ class CapacityPackaging(unittest.TestCase):
         for bank in (1,3):
             m=layout(kernel_bank=bank,upper_table=True)
             self.assertEqual(m['constants']['TABLE'],bank<<16)
-            self.assertEqual(m['profile']['code_origin'],(bank<<16)+64)
+            self.assertEqual(m['profile']['code_origin'],(bank<<16)+256)
             self.assertNotIn('table',m['regions'])
             with self.assertRaises(ValueError):
                 validate_extents([(bank<<16,b'x',1,0,2)],m)
-        for bank in (0,16,256,-1,True):
+        for bank in (0,64,256,-1,True):
             with self.assertRaises(ValueError):layout(kernel_bank=bank)
         with self.assertRaises(ValueError):layout(max_banks=3,kernel_bank=3)
 

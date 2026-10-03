@@ -37,6 +37,14 @@ the lower half may contain arbitrary caller state. Temporary stack-based D value
 and the ROM's DP have their separately defined layouts. Native register, bank,
 mode and stack restoration must preserve the complete interrupted context.
 
+The current target has 4 MiB of CPU address space: 64 KiB base RAM plus 63
+linear 64 KiB high banks (4,032 KiB). Select 63 high banks in Altirra; this is
+separate from Atari extended-memory modes and VBXE's private VRAM. Current
+builds use `max_banks=64` and the [4 MiB map](../../platform/altirraos/memory-4m.json).
+The [development check](../development/memory-4m.json) covers every upper bank
+and raw shell/pipeline cleanup. Historical 1 MiB pins and evidence retain their
+original configuration.
+
 The bank manager validates usable banks and image reservations before payload
 writes. The [heap](memory.md) allocates byte ranges from registered memory.
 `kernel_bank` in [kernel.json](../../config/kernel.json) selects the resident
@@ -97,7 +105,7 @@ loading and runtime. Persistent Exec reservations are packed below it:
 | `$2400–$5B3F` | Root, kernel, worker and idle stacks, including guards |
 | `$5B40–$7FFF` | 9,408 unreserved bytes after startup |
 
-The [platform profile](../../platform/altirraos/memory-1m.json) defines physical
+The [platform profile](../../platform/altirraos/memory-4m.json) defines physical
 placement. Kernel DP is `$0A00`; public slot `i` owns `$0B00+i*$100`, and idle
 owns slot `capacity`. Four-Task DPs end at `$0FFF`, followed by the full near
 bank-table reservation at `$1000–$13FF`. The eight-Task table is in upper RAM.

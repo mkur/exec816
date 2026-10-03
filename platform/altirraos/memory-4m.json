@@ -1,0 +1,235 @@
+{
+  "name": "altirraos-4m",
+  "pin": "toolchain/altirra-4m.json",
+  "usable_banks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63
+  ],
+  "code_origin": 65536,
+  "memlo_limit": 2048,
+  "memtop_required": 36864,
+  "regions": [
+    {
+      "name": "os-low",
+      "address": 0,
+      "size": 2048
+    },
+    {
+      "name": "state",
+      "address": 2048,
+      "size": 256
+    },
+    {
+      "name": "task0-dp",
+      "address": 2816,
+      "size": 256
+    },
+    {
+      "name": "task1-dp",
+      "address": 3072,
+      "size": 256
+    },
+    {
+      "name": "kernel-dp",
+      "address": 2560,
+      "size": 256
+    },
+    {
+      "name": "table",
+      "address": 4096,
+      "size": 1024
+    },
+    {
+      "name": "boot-state",
+      "address": 2304,
+      "size": 256
+    },
+    {
+      "name": "resident",
+      "address": 5120,
+      "size": 4096
+    },
+    {
+      "name": "task0-stack",
+      "address": 9216,
+      "size": 1568
+    },
+    {
+      "name": "kernel-stack",
+      "address": 10784,
+      "size": 1568
+    },
+    {
+      "name": "task1-stack",
+      "address": 12352,
+      "size": 1568
+    },
+    {
+      "name": "manifest",
+      "address": 24576,
+      "size": 2048
+    },
+    {
+      "name": "loader",
+      "address": 26624,
+      "size": 5120
+    },
+    {
+      "name": "staging",
+      "address": 23536,
+      "size": 1040
+    },
+    {
+      "name": "vbxe-aperture",
+      "address": 32768,
+      "size": 4096
+    },
+    {
+      "name": "os-high",
+      "address": 36864,
+      "size": 28672
+    }
+  ],
+  "image_data_bytes": 2048,
+  "direct_pages": {
+    "kernel": 2560,
+    "task_base": 2816,
+    "task_stride": 256
+  },
+  "task_stacks": {
+    "4": {
+      "bases": [
+        9232,
+        12368,
+        13936,
+        15504,
+        17072
+      ],
+      "sizes": [
+        1536,
+        1536,
+        1536,
+        1536,
+        1536
+      ]
+    },
+    "8": {
+      "bases": [
+        9232,
+        12368,
+        13424,
+        14480,
+        15536,
+        16592,
+        17648,
+        20240,
+        22832
+      ],
+      "sizes": [
+        1536,
+        1024,
+        1024,
+        1024,
+        1024,
+        1024,
+        2560,
+        2560,
+        512
+      ]
+    }
+  },
+  "resident_segments": {
+    "BOOT": 0,
+    "NMI": 1024,
+    "IRQ": 1280,
+    "GATE": 1536,
+    "CONSOLE": 2048,
+    "STUBS": 2560,
+    "FAULT": 3072,
+    "EXIT": 3328,
+    "COOP_BOOT": 3584
+  },
+  "test_scratch": [
+    {
+      "name": "far-write",
+      "address": 31744,
+      "size": 256
+    },
+    {
+      "name": "register-extension",
+      "address": 32000,
+      "size": 128
+    },
+    {
+      "name": "dp-observer",
+      "address": 32128,
+      "size": 32
+    },
+    {
+      "name": "relocation-sentinel",
+      "address": 32256,
+      "size": 256
+    }
+  ]
+}

@@ -137,7 +137,7 @@ PROC Setup()
   c=CONSOLETYPES.Instance POINTER(wc.instance)
   service=CONSOLEDRIVER.GetService()
   ; Capture is adjacent to the generated boot binding in the Task arena.
-  capture=INPUTNATIVE.Capture POINTER($0f0c00)
+  capture=INPUTNATIVE.Capture POINTER($3f0c00)
   Require(CONSOLE.Show(first,0,0)=0 AND CONSOLE.Focus(first)=0)
   Require(CONSOLE.Hide(0)<>0 AND windows.focusSlot=255)
   Require(CONSOLE.Show(first,0,0)<>0 AND windows.focusSlot=BYTE(first & 3))

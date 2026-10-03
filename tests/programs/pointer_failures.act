@@ -58,7 +58,7 @@ RETURN
 PROC Main()
   LONGCARD oldAcquisition
 
-  hardware=INPUTNATIVE.PointerCapture POINTER($0f4810)
+  hardware=INPUTNATIVE.PointerCapture POINTER($3f4810)
   Require(EXEC.AllocSignal(17)=17)
   config.version=INPUT.VERSION
   config.source=INPUT.SOURCE_POINTER

@@ -17,7 +17,7 @@ python3 tools/native_program.py --compiler-dir build/actionc --tasks --console \
 ```
 
 Task builds select banked loading and VBI preemption on the
-[pinned 1 MiB machine](../../toolchain/altirra-1m.json). The examples print
+[pinned 4 MiB machine](../../toolchain/altirra-4m.json). The examples print
 `TASKS EXEC OK` and `SIGNALS OK`, respectively, through `DOS.Write` on `CON:`.
 Press Return to exit and restore the OS display. Their small
 [output helper](../../examples/example-output.inc) owns and closes the console

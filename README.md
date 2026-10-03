@@ -43,7 +43,7 @@ Select the CPU before setting high memory.
 | Computer → CPU | CPU selection | **65C816 (14.28MHz)** (8× speed) |
 | Computer → CPU | Shadow ROMs in fast RAM | Checked |
 | Computer → Memory | Memory Size | **64K** |
-| Computer → Memory | High memory banks | **960K** (15 banks above the base RAM) |
+| Computer → Memory | High memory banks | **4032K** (63 banks above the base RAM) |
 | Computer → Firmware | Operating system | The included `altirraos-816.rom`; import it as described below |
 | Computer → Firmware | Enable internal BASIC (boot without Option pressed) | Unchecked |
 | Computer → Acceleration | SIO Patch | Unchecked |

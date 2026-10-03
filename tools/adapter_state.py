@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def resident_addresses(profile=None):
     """Resolve the near adapter arena and its linker segment offsets."""
-    profile = profile or json.loads((ROOT/'platform/altirraos/memory-1m.json').read_text())
+    profile = profile or json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
     region = next(r for r in profile['regions'] if r['name'] == 'resident')
     base, size = region['address'], region['size']
     offsets = profile['resident_segments']
@@ -35,7 +35,7 @@ def hosted_config(profile=None):
 
 def diagnostic_addresses(profile=None):
     """Test-only borrowing; these bytes are not production reservations."""
-    profile = profile or json.loads((ROOT/'platform/altirraos/memory-1m.json').read_text())
+    profile = profile or json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
     result = {}
     for r in profile['test_scratch']:
         key = 'TEST_'+r['name'].upper().replace('-','_')
@@ -54,7 +54,7 @@ def probe_address(slot):
 
 def direct_pages(profile=None):
     """Resolve the physical DP map independently of the native field ABI."""
-    profile = profile or json.loads((ROOT/'platform/altirraos/memory-1m.json').read_text())
+    profile = profile or json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
     dp = profile['direct_pages']
     if (dp['task_stride'] != 256 or any(type(dp[k]) is not int or
             not 0 <= dp[k] <= 0xff00 or dp[k] % 256 for k in ('kernel','task_base'))):
@@ -65,7 +65,7 @@ def direct_pages(profile=None):
 
 def stack_addresses(profile=None):
     """Resolve fixed bootstrap stacks; per-Task sizes use the capacity map."""
-    profile = profile or json.loads((ROOT/'platform/altirraos/memory-1m.json').read_text())
+    profile = profile or json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
     regions = {r['name']:r for r in profile['regions']}
     result = {}
     for owner in ('task0','task1','kernel'):
@@ -79,7 +79,7 @@ def stack_addresses(profile=None):
 
 
 def addresses(profile=None):
-    profile = profile or json.loads((ROOT/'platform/altirraos/memory-1m.json').read_text())
+    profile = profile or json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
     region = next(r for r in profile['regions'] if r['name'] == 'state')
     offsets = json.loads((ROOT/'abi/exec816-v1.json').read_text())['state_offsets']
     if region['size'] != 256 or any(not 0 <= value < 256 for value in offsets.values()):

@@ -91,7 +91,7 @@ PROC Fields()
   item.tc_SigWait=LONGCARD($80000001)
   item.tc_SigRecvd=LONGCARD($ab1234cd)
   item.tc_SigExcept=0
-  item.tc_ExecPrivate=$0f0040
+  item.tc_ExecPrivate=$3f0040
   masks(0)=item.tc_SigAlloc
   masks(1)=item.tc_SigWait
   masks(2)=item.tc_SigRecvd

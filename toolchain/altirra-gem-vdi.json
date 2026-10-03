@@ -25,7 +25,7 @@
     "cpu": "65C816",
     "clock_multiplier": 8,
     "memory": "64K",
-    "high_banks": 15,
+    "high_banks": 63,
     "video": "PAL",
     "basic": false,
     "dli": false,

@@ -98,9 +98,9 @@ VOLATILE BYTE pokmsk=$10''')
     for name, pointer in [('sharedUsers','timerUsers'), ('sharedAlarm','timerAlarm'), ('sharedSamples','timerSamples')]:
         text = re.sub(r'\b'+name+r'\b', pointer+'^', text)
     text = text.replace('PROC Main()\n', 'PROC Main()\n\n'
-        '  timerUsers=BYTE POINTER($0f0f30)\n'
-        '  timerAlarm=BYTE POINTER($0f0f32)\n'
-        '  timerSamples=CARD POINTER($0f0f3a)\n')
+        '  timerUsers=BYTE POINTER($3f0f30)\n'
+        '  timerAlarm=BYTE POINTER($3f0f32)\n'
+        '  timerSamples=CARD POINTER($3f0f3a)\n')
     path = out/'shared_timer.act'
     path.write_text(text)
     return path
@@ -154,8 +154,8 @@ def run(out, mode, order, emulation=False, unobserved=False, capture=False):
                 runtime, _ = execute(b, p, before_run=before, timeout=120, frame_limit=6000)
             except Exception:
                 report['failure'] = dict(checks=data(b, p['image'], 'checks', True),
-                    descriptor=b.memdump(0xf0800, 128).hex(),
-                    timer=b.memdump(0xf0f30, 32).hex(),
+                    descriptor=b.memdump(0x3f0800, 128).hex(),
+                    timer=b.memdump(0x3f0f30, 32).hex(),
                     progress=data(b, p['image'], 'progress', True))
                 raise
             if not unobserved:
@@ -210,7 +210,7 @@ def recovery_run(out, mode, capture=False, replay=False):
     text = text.replace('USE EXEC\n', 'USE EXEC\nUSE TIMERPROBE\n')
     text = text.replace('CARD checks,sectorSize', 'CARD checks,sectorSize,sampleBefore\nCARD POINTER timerSamples')
     text = text.replace('  Rollback()',
-        '  timerSamples=CARD POINTER($0f0f3a)\n'
+        '  timerSamples=CARD POINTER($3f0f3a)\n'
         '  Require(TIMERPROBE.Start()=1)\n  Rollback()')
     text = text.replace('  cleanupReached=1', '  TIMERPROBE.Stop()\n  cleanupReached=1')
     text = text.replace('  Cleanup()',
