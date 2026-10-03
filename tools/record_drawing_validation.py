@@ -43,6 +43,23 @@ def record(slice_name, paths):
             require(report['bank_zero_budget']==control['bank_zero_budget'], 'Changed bank-zero budget')
             require(report['task_pools']==control['task_pools'], 'Changed Task reservations')
         result['baseline_sha256']=sha256(baseline)
+        if slice_name == 'D3':
+            before=next(r['performance'] for r in old['reports'].values() if r.get('performance'))
+            after=next(r['performance'] for r in reports.values() if r.get('performance'))
+            result['comparison']=[]
+            for stage in (2,3):
+                a=next(s for s in before['stages'] if s['stage']==stage)
+                b=next(s for s in after['stages'] if s['stage']==stage)
+                ar=a['scroll_input'][0]['routines'];br=b['scroll_input'][0]['routines']
+                require(ar['DisplayCheck']['calls']==49 and br['DisplayCheck']['calls']==16,
+                    'Ownership count gate failed')
+                require(ar['launch_to_idle']['calls']==br['launch_to_idle']['calls']==30,
+                    'Hardware batching changed during validation comparison')
+                validation=1-br['display_check']['total_ms']/ar['display_check']['total_ms']
+                elapsed=1-b['edit_through_final_chunk_ms'][0]/a['edit_through_final_chunk_ms'][0]
+                require(validation>=0.60 and elapsed>=0.10, 'Validation performance gate failed')
+                result['comparison'].append(dict(stage=stage,
+                    native_validation_elapsed_reduction=validation,scroll_elapsed_reduction=elapsed))
     target=ROOT/f'docs/development/drawing-validation-{slice_name.lower()}.json'
     target.write_text(json.dumps(result,indent=2)+'\n')
     print(target.relative_to(ROOT))

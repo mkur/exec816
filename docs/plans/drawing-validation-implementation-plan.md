@@ -48,6 +48,16 @@ measure responsiveness separately from scroll throughput.
   Host checks: 304 tests, four historical-source skips. Reserved bank-zero delta:
   fixed/root/kernel, each public Task and idle all **0 bytes**, including guards
   and capacity.
+- D3: [development evidence](../development/drawing-validation-d3.json) passes
+  the fixed-chunk comparison: isolated scrolls take 97.33/97.50 ms, with 16 owner
+  checks and all 30 launches. Native validation elapsed falls 65.2/68.5%; total
+  scroll elapsed falls 20.1/20.2%. Repeated scrolls take 104–106 ms. Thirteen
+  raw/optimized pixel scenes, optimized unobserved replay, continuation controls,
+  four fault cases and eight-Task SDFS/ST fairness plus unobserved replay pass.
+  Existing SIO/ST bounds remain enforced. Host checks: 304 tests, four historical
+  skips. Reserved bank-zero delta is **0 bytes** in every category. This passes
+  the validation-savings gate; the 20 ms scroll and 40 ms first-visible input
+  targets remain open.
 
 ## Baseline and intended gain
 

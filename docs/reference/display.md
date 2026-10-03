@@ -107,6 +107,12 @@ launch/fence routine as public list submission; it does not repeat validation
 of caller geometry for every chunk. This is driver implementation, with no
 additional kernel entry or weaker public-list checks.
 
+Public `Vbxe*` drawing operations validate lease and Task identity once at entry.
+Nested transfer, drawing and fence work uses private driver helpers within that
+synchronous invocation. Public list records still receive complete validation
+before any of that list executes. A later public call validates again; lifecycle
+and fault transitions retain their own checks.
+
 Copies use opaque mode zero, including zero-valued source pixels. Each chunk
 is at most sixteen rows and 8,192 estimated bus accesses; errors may leave a
 completed prefix of chunks, so callers must invalidate presentation after a
