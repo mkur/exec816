@@ -23,8 +23,17 @@ def run(out,mode):
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',ROOT/'c/calypsi/input.c',
              ROOT/'platform/altirraos/vbxe.c',src/'vdi/vdi.c',src/'vdi/font.c',
              src/'vdi/font8x8.c',src/'vdi/dev_vbxe.c',ad/'gem-vbxe.c',ROOT/'tests/programs/gem_drawing.c']
+    admission=(ROOT/'c/calypsi/display.c').read_text().replace(
+        'UWORD DisplayCheck(struct DisplayLease *p) {',
+        'extern volatile UWORD ownerChecks;\nUWORD DisplayCheck(struct DisplayLease *p) { ++ownerChecks;')
+    (out/'display-probe.c').write_text(admission)
+    sources[sources.index(ROOT/'c/calypsi/display.c')]=out/'display-probe.c'
+    backend=(ad/'gem-vbxe.c').read_text().replace('static void drain(void)\n{',
+        'extern void DrawingAdmissionProbe(void);\nstatic void drain(void)\n{\n    DrawingAdmissionProbe();')
+    (out/'gem-vbxe.c').write_text(backend)
+    sources[sources.index(ad/'gem-vbxe.c')]=out/'gem-vbxe.c'
     foreign=emit(out,sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
-        ROOT/'c/calypsi/input.s',ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s'],[],
+        ROOT/'c/calypsi/input.s',ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s'],['DrawingPeer'],
         optimize=mode=='opt',includes=[src,ad],definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
             'gem-vbxe.c':['-DGEM_DRAWING_ONLY']},probes=[(ROOT/'c/calypsi/input-layout.c',expected_layout())])

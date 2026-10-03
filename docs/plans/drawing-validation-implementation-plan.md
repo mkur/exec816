@@ -39,6 +39,15 @@ measure responsiveness separately from scroll throughput.
   rejection, pixels, context, stack guards and restoration pass. Host checks:
   304 tests, four historical-source skips. Reserved bank-zero delta is **0 bytes**
   for fixed/root/kernel, each public Task and idle, including guards and capacity.
+- D2: [development evidence](../development/drawing-validation-d2.json) records
+  raw/optimized shared drawing and service text/attribute cases, plus 62 optimized
+  cursor cases including recovery. The shared fixture preempts the owner with
+  pending work; a second Task's draw/fence/close/open attempts leave its pixels
+  intact. Normal and empty/invalid drawing entries have one admission. Service
+  callbacks admit before mutation, and cursor initialization follows acquisition.
+  Host checks: 304 tests, four historical-source skips. Reserved bank-zero delta:
+  fixed/root/kernel, each public Task and idle all **0 bytes**, including guards
+  and capacity.
 
 ## Baseline and intended gain
 

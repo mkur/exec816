@@ -200,7 +200,7 @@ def build_render_probe(output, optimize=True, instrument=True):
     backend=(adapter/'gem-vbxe.c').read_text()
     backend=backend.replace('static struct VbxeDisplay display;', 'extern void ProbeSnapshot(struct VbxeDisplay *);\nextern void ProbeAcquired(struct VbxeDisplay *);\nextern void ProbePalette(const UBYTE *);\nextern void ProbeCommand(void);\nstatic struct VbxeDisplay display;')
     backend=backend.replace('status=GemVdiOpen(out);', 'ProbeAcquired(&display);\n    status=GemVdiOpen(out);')
-    backend=backend.replace('if (!fault) latch(VbxePalette(&display,rgb));','ProbePalette(rgb);\n    if (!fault) latch(VbxePalette(&display,rgb));')
+    backend=backend.replace('if (!fault) latch(VbxeOwnerPalette(&display,rgb));','ProbePalette(rgb);\n    if (!fault) latch(VbxeOwnerPalette(&display,rgb));')
     backend=backend.replace('return GemVdiCommand(cmd->opcode', 'ProbeCommand();\n    return GemVdiCommand(cmd->opcode')
     backend=backend.replace('return fault ? GEM_DEVICE_FAULT : GEM_OK;', 'if (!fault) ProbeSnapshot(&display);\n    return fault ? GEM_DEVICE_FAULT : GEM_OK;')
     (output/'gem-vbxe-probe.c').write_text(backend)
@@ -250,10 +250,10 @@ def build_concurrent_probe(output, optimize=True, instrument=True):
         hardware=hardware.replace('#define BUSY ', 'extern UBYTE ProbeBusy(void);\nextern volatile UWORD stopped;\n#define BUSY ')
         hardware=hardware.replace('REG(BUSY)&3','ProbeBusy()&3').replace('REG(BUSY)=0;', 'REG(BUSY)=0; stopped=1;')
         backend=backend.replace('static struct VbxeDisplay display;', 'extern void ProbeDraw(void);\nextern void ProbeCommand(void);\nextern void ProbeSnapshot(struct VbxeDisplay *);\nstatic struct VbxeDisplay display;')
-        draw_hook='if (commandCount && !fault) latch(VbxeSubmit(&display,commands,commandCount));'
+        draw_hook='if (commandCount && !fault) latch(VbxeOwnerSubmit(&display,commands,commandCount));'
         require(draw_hook in backend,'Changed queued-drawing observer boundary')
         backend=backend.replace(draw_hook,
-            'if (commandCount && !fault) { latch(VbxeSubmit(&display,commands,commandCount)); if (!fault) ProbeDraw(); }')
+            'if (commandCount && !fault) { latch(VbxeOwnerSubmit(&display,commands,commandCount)); if (!fault) ProbeDraw(); }')
         backend=backend.replace('return GemVdiCommand(cmd->opcode', 'ProbeCommand();\n    return GemVdiCommand(cmd->opcode')
         backend=backend.replace('return fault ? GEM_DEVICE_FAULT : GEM_OK;', 'if (!fault) ProbeSnapshot(&display);\n    return fault ? GEM_DEVICE_FAULT : GEM_OK;')
     (output/'vbxe-concurrent.c').write_text(hardware)

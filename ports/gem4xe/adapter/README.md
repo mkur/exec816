@@ -42,6 +42,13 @@ policy; the caller must own the display. There remains one drawing session per
 image, shared with the service when linked together. This is a C interface;
 calling it from Action! requires the separately tested language bridge in B6.
 
+Copy, Fill, Text and Fence each check the display owner once at public entry.
+Their internal drain, transfer and fence helpers reuse admission within that
+invocation, retaining full driver argument/list validation. Every independent
+service command, cursor, fence and close callback also admits its owner before
+mutating shared renderer state. Open initializes cursor state only after acquiring
+the display. Admission never survives a return or becomes a session-wide cache.
+
 `GemDrawingCopy` fences preceding drawing and calls the shared
 [`VbxeCopyRect`](../../../docs/reference/display.md#bitmap-rectangle-copies)
 operation. It accepts explicit VRAM surfaces and preserves opaque pixels in

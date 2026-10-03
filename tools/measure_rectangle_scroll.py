@@ -41,7 +41,7 @@ def whole_rectangle(enabled):
             if original.name=='vbxe.c':
                 text+='\n'+(ROOT/'tests/programs/rectangle_scroll.inc.c').read_text()
             else:
-                text=replace_once(text,'    status=VbxeCopyRect(&display,copy);',
+                text=replace_once(text,'    status=VbxeOwnerCopyRect(&display,copy);',
                     '    status=BenchmarkRectangleScroll(&display,copy);')
                 text=replace_once(text,'static struct VbxeDisplay display;',
                     'extern UWORD BenchmarkRectangleScroll(struct VbxeDisplay *,const struct VbxeCopy *);\n'

@@ -23,12 +23,12 @@ def build_cursor(output,optimize=True):
         'if (cursorDrawn && !fault) {\n        ProbeCursorPhase(1);\n        latch(')
     backend=backend.replace('cursorBytes,cursorRows,255,0,0));\n    cursorDrawn=0;',
         'cursorBytes,cursorRows,255,0,0));\n    }\n    cursorDrawn=0;')
-    backend=backend.replace('    latch(VbxeBlit(&display,cursorAddress',
-        '    ProbeCursorPhase(2);\n    latch(VbxeBlit(&display,cursorAddress')
-    backend=backend.replace('    if (!fault) latch(VbxeBlit(&display,CURSOR_AND',
-        '    if (!fault) ProbeCursorPhase(3);\n    if (!fault) latch(VbxeBlit(&display,CURSOR_AND')
-    backend=backend.replace('    if (!fault) latch(VbxeBlit(&display,CURSOR_OR',
-        '    if (!fault) ProbeCursorPhase(4);\n    if (!fault) latch(VbxeBlit(&display,CURSOR_OR')
+    backend=backend.replace('    latch(VbxeOwnerBlit(&display,cursorAddress',
+        '    ProbeCursorPhase(2);\n    latch(VbxeOwnerBlit(&display,cursorAddress')
+    backend=backend.replace('    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_AND',
+        '    if (!fault) ProbeCursorPhase(3);\n    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_AND')
+    backend=backend.replace('    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_OR',
+        '    if (!fault) ProbeCursorPhase(4);\n    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_OR')
     (output/'gem-cursor-backend.c').write_text(backend)
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',output/'vbxe-cursor.c',
         service/'gem-validation.c',service/'gem-service.c',service/'gem-client.c',

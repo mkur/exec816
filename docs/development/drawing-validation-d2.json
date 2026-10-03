@@ -1,0 +1,6031 @@
+{
+  "slice": "D2",
+  "status": "development-pass",
+  "reports": {
+    "build/drawing-validation/d2-opt/results.json": {
+      "sha256": "4d8fda5223233b61051ac7919e704386847d30e10337882baf0e87ecee28d36e",
+      "xex_sha256": "ac7f738835850104d62620ce9fb735f0b76e80c7acaebc5273f292705d2b0261",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "override": false,
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "optimize": true
+      },
+      "pin": null,
+      "mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 56128,
+        "loading_including_os": 52592
+      },
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13424,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 14480,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 15536,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4096,
+          "dp_reserved_bytes": 256,
+          "stack_base": 16592,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4352,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17648,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4608,
+          "dp_reserved_bytes": 256,
+          "stack_base": 20240,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4864,
+          "dp_reserved_bytes": 256,
+          "stack_base": 22832,
+          "stack_bytes": 512,
+          "interrupt_reserve": 256
+        }
+      ],
+      "checks": 52,
+      "cases": null,
+      "performance": null,
+      "timing": null
+    },
+    "build/drawing-validation/d2-raw/results.json": {
+      "sha256": "70fc35e9e07587165ffb9a419068bdebd9305b4f95efb6105559ef4855c309f9",
+      "xex_sha256": "3b298bbd6db390d38f43baa44d452200a5e3cd34da4fd06a237dda44379d2315",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "override": false,
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "optimize": false
+      },
+      "pin": null,
+      "mode": "raw",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 56128,
+        "loading_including_os": 52592
+      },
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13424,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 14480,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 15536,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4096,
+          "dp_reserved_bytes": 256,
+          "stack_base": 16592,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4352,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17648,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4608,
+          "dp_reserved_bytes": 256,
+          "stack_base": 20240,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4864,
+          "dp_reserved_bytes": 256,
+          "stack_base": 22832,
+          "stack_bytes": 512,
+          "interrupt_reserve": 256
+        }
+      ],
+      "checks": 52,
+      "cases": null,
+      "performance": null,
+      "timing": null
+    },
+    "build/drawing-validation/d2-service/results.json": {
+      "sha256": "6124e414fcef6c8da30786aaf20eb6bf8f0343e0bc268c05319f619429ee9745",
+      "xex_sha256": "c7c16f4faec69e4931a5b86cc0fa6e1180d0f5fadab53fe840b6b63b8ed2161a",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "override": false,
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "optimize": true
+      },
+      "pin": null,
+      "mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 56128,
+        "loading_including_os": 52592
+      },
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13424,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 14480,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 15536,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4096,
+          "dp_reserved_bytes": 256,
+          "stack_base": 16592,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4352,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17648,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4608,
+          "dp_reserved_bytes": 256,
+          "stack_base": 20240,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4864,
+          "dp_reserved_bytes": 256,
+          "stack_base": 22832,
+          "stack_bytes": 512,
+          "interrupt_reserve": 256
+        }
+      ],
+      "checks": 5,
+      "cases": [
+        {
+          "name": "open",
+          "op": 1,
+          "points": [],
+          "ints": [],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 57,
+          "workout": [
+            639,
+            239,
+            0,
+            372,
+            372,
+            1,
+            1,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            16,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            16,
+            0,
+            0,
+            0,
+            0,
+            0,
+            8,
+            8,
+            8,
+            8,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "font_masks_sha256": "52d84ea7b9972fe5097b733107de9be70090edbbae040a4e4af728d43ac3eb79",
+          "palette_rgb": "ffffffff000000ff00ffff000000ffff00ff00ffffbbbbbb777777bb000000bb00bbbb000000bbbb00bb00bbbb000000",
+          "pixels_sha256": "e2cc2a1fa6131cf4d86faa3baf78851f35a36853e2467c257b3df9d89e85cce5",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "text-pen-0",
+          "op": 22,
+          "points": [],
+          "ints": [
+            0
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-0-0",
+          "op": 8,
+          "points": [
+            32,
+            16
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "e2cc2a1fa6131cf4d86faa3baf78851f35a36853e2467c257b3df9d89e85cce5",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "text-0-1",
+          "op": 8,
+          "points": [
+            33,
+            16
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "e2cc2a1fa6131cf4d86faa3baf78851f35a36853e2467c257b3df9d89e85cce5",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "text-pen-1",
+          "op": 22,
+          "points": [],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-1-0",
+          "op": 8,
+          "points": [
+            32,
+            25
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "08754dc0d88ca0ff601638f0ad7807036aab3775d975eca3cd2e212e886918b5",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            19,
+            86,
+            25
+          ]
+        },
+        {
+          "name": "text-1-1",
+          "op": 8,
+          "points": [
+            33,
+            25
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "7027250b1d94a176839f48df1e4c58ed24c555d31056357d8f5b2e1c7c764a4a",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            19,
+            87,
+            25
+          ]
+        },
+        {
+          "name": "text-pen-2",
+          "op": 22,
+          "points": [],
+          "ints": [
+            2
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-2-0",
+          "op": 8,
+          "points": [
+            32,
+            34
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "3b830863ac4e258577697626539580887f114307088b48eef9b86af9bc8a24cc",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            28,
+            86,
+            34
+          ]
+        },
+        {
+          "name": "text-2-1",
+          "op": 8,
+          "points": [
+            33,
+            34
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "9388ab5aad6310632208dbbec5191130d82ed4e6ff8920db2e57db0ec12e600f",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            28,
+            87,
+            34
+          ]
+        },
+        {
+          "name": "text-pen-3",
+          "op": 22,
+          "points": [],
+          "ints": [
+            3
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-3-0",
+          "op": 8,
+          "points": [
+            32,
+            43
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "d30b8948249c6894204571b5243bdbc5965220bc3d9d7cd3f8440f456db95e6a",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            37,
+            86,
+            43
+          ]
+        },
+        {
+          "name": "text-3-1",
+          "op": 8,
+          "points": [
+            33,
+            43
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "b8286977f7d76a1aa556a3e0f3d1279fa24f143cd9273ac14ddfe953b8494d9b",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            37,
+            87,
+            43
+          ]
+        },
+        {
+          "name": "text-pen-4",
+          "op": 22,
+          "points": [],
+          "ints": [
+            4
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-4-0",
+          "op": 8,
+          "points": [
+            32,
+            52
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "73e2c0f73a8ed393ff37aaf3ac3c9e9eacf39a0f950026d049a84c484fa7b0a5",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            46,
+            86,
+            52
+          ]
+        },
+        {
+          "name": "text-4-1",
+          "op": 8,
+          "points": [
+            33,
+            52
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "02521ef2a1641496323dfed7b0a70be9bd6e7f0b15771b8f50f22822f3ec3d62",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            46,
+            87,
+            52
+          ]
+        },
+        {
+          "name": "text-pen-5",
+          "op": 22,
+          "points": [],
+          "ints": [
+            5
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-5-0",
+          "op": 8,
+          "points": [
+            32,
+            61
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "3043d1f5c9f0e731465ee831664aa3783296bb7f8cee7b0e39c076b385052024",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            55,
+            86,
+            61
+          ]
+        },
+        {
+          "name": "text-5-1",
+          "op": 8,
+          "points": [
+            33,
+            61
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "4fbd3b71880bdd5c690cb4995a6def668680d1c14ea07478a97e43a9ee437d95",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            55,
+            87,
+            61
+          ]
+        },
+        {
+          "name": "text-pen-6",
+          "op": 22,
+          "points": [],
+          "ints": [
+            6
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-6-0",
+          "op": 8,
+          "points": [
+            32,
+            70
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "31f2eff390edbe1cab508cef618924071a2d1f4f87760e5a181f5c90aabbef6e",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            64,
+            86,
+            70
+          ]
+        },
+        {
+          "name": "text-6-1",
+          "op": 8,
+          "points": [
+            33,
+            70
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "40132e51ac886ef34ea75bd787883426287df9075b87d0d9703c6a9fda8078b0",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            64,
+            87,
+            70
+          ]
+        },
+        {
+          "name": "text-pen-7",
+          "op": 22,
+          "points": [],
+          "ints": [
+            7
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-7-0",
+          "op": 8,
+          "points": [
+            32,
+            79
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "78031dd3bdd2a559f93bf8a367be9afab245e44361c3e7aba526a3f52d6b48df",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            73,
+            86,
+            79
+          ]
+        },
+        {
+          "name": "text-7-1",
+          "op": 8,
+          "points": [
+            33,
+            79
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "5e4665f6a3cab4d6739e7f83b83332504c97a045db421ea2e1779a01a4cb139e",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            73,
+            87,
+            79
+          ]
+        },
+        {
+          "name": "text-pen-8",
+          "op": 22,
+          "points": [],
+          "ints": [
+            8
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-8-0",
+          "op": 8,
+          "points": [
+            32,
+            88
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "be5cdea697a5d29ec6ce98e4aaf5dc6738264454d89a7bf3c220072919953a6e",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            82,
+            86,
+            88
+          ]
+        },
+        {
+          "name": "text-8-1",
+          "op": 8,
+          "points": [
+            33,
+            88
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "1a1f946ce17b1975c745bd10c82086824f6119ce23fb4bee0ce9e97743bceb20",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            82,
+            87,
+            88
+          ]
+        },
+        {
+          "name": "text-pen-9",
+          "op": 22,
+          "points": [],
+          "ints": [
+            9
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-9-0",
+          "op": 8,
+          "points": [
+            32,
+            97
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "d544826fcfea171e030d29d50b7d602ed1fc388607cd51feb71c111b05b126b9",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            91,
+            86,
+            97
+          ]
+        },
+        {
+          "name": "text-9-1",
+          "op": 8,
+          "points": [
+            33,
+            97
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "b7d9e93496d590a62f1aa2478938ba31fbcd2877bb1b00e271920eb5111dd154",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            91,
+            87,
+            97
+          ]
+        },
+        {
+          "name": "text-pen-10",
+          "op": 22,
+          "points": [],
+          "ints": [
+            10
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-10-0",
+          "op": 8,
+          "points": [
+            32,
+            106
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "4582b6eb38d2ed9939a903b62162e92a18780406665cdb027990f7cf61689985",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            100,
+            86,
+            106
+          ]
+        },
+        {
+          "name": "text-10-1",
+          "op": 8,
+          "points": [
+            33,
+            106
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "b8ebdb9022e90a6100a7b2cd603a638f28b67b63713e44e139587153ab0048ba",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            100,
+            87,
+            106
+          ]
+        },
+        {
+          "name": "text-pen-11",
+          "op": 22,
+          "points": [],
+          "ints": [
+            11
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-11-0",
+          "op": 8,
+          "points": [
+            32,
+            115
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "d8b09c5a1bf8bb7ee745530755046c8d51f9aa86b6b5f61a2e6d66096a3bece3",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            109,
+            86,
+            115
+          ]
+        },
+        {
+          "name": "text-11-1",
+          "op": 8,
+          "points": [
+            33,
+            115
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "9d9646b6ece94899861c32b2de0086c4aff72efcec5ecc344b96bb037b2dad82",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            109,
+            87,
+            115
+          ]
+        },
+        {
+          "name": "text-pen-12",
+          "op": 22,
+          "points": [],
+          "ints": [
+            12
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-12-0",
+          "op": 8,
+          "points": [
+            32,
+            124
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "b2db88935558126779f91b47b93d721ae8c37c6ad536e5e93e036f4efe21d8da",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            118,
+            86,
+            124
+          ]
+        },
+        {
+          "name": "text-12-1",
+          "op": 8,
+          "points": [
+            33,
+            124
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "95bd5d72d7419cb1924cd52400b96d9e4963f3967a7104fbbc96fb451b6f3796",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            118,
+            87,
+            124
+          ]
+        },
+        {
+          "name": "text-pen-13",
+          "op": 22,
+          "points": [],
+          "ints": [
+            13
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-13-0",
+          "op": 8,
+          "points": [
+            32,
+            133
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "19785e61b0146ca30c4cf8f689cb495866cf0db16d01b643ffc2c0ffaefc2d2d",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            127,
+            86,
+            133
+          ]
+        },
+        {
+          "name": "text-13-1",
+          "op": 8,
+          "points": [
+            33,
+            133
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "7a50d92635b6909fb4e429c4f468e9c30f5302520a79201f19b34072169ab6ec",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            127,
+            87,
+            133
+          ]
+        },
+        {
+          "name": "text-pen-14",
+          "op": 22,
+          "points": [],
+          "ints": [
+            14
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-14-0",
+          "op": 8,
+          "points": [
+            32,
+            142
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "bc0ce6a3b45b784233f7bf7c3556b2912e92c312dca394da58168ef771bb5345",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            136,
+            86,
+            142
+          ]
+        },
+        {
+          "name": "text-14-1",
+          "op": 8,
+          "points": [
+            33,
+            142
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "06c652e135cc551a82202e06a9f3bf027e163159e089d03250d93559f37a91bc",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            136,
+            87,
+            142
+          ]
+        },
+        {
+          "name": "text-pen-15",
+          "op": 22,
+          "points": [],
+          "ints": [
+            15
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-15-0",
+          "op": 8,
+          "points": [
+            32,
+            151
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "9d2e58bc82fd077dd103af86df0ee8534366d4ce4aca358da8d228bb9c1ab6c8",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            145,
+            86,
+            151
+          ]
+        },
+        {
+          "name": "text-15-1",
+          "op": 8,
+          "points": [
+            33,
+            151
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "f32f1f15cf894ba61bf25b4bc8a62b2e8fb8aca5d5e810f511d584187a6d9c74",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            145,
+            87,
+            151
+          ]
+        },
+        {
+          "name": "clip-0",
+          "op": 129,
+          "points": [
+            401,
+            180,
+            415,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-0",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 61,
+          "changed_bounds": [
+            401,
+            180,
+            414,
+            186
+          ]
+        },
+        {
+          "name": "clip-1",
+          "op": 129,
+          "points": [
+            402,
+            180,
+            414,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-1",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-2",
+          "op": 129,
+          "points": [
+            403,
+            180,
+            413,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-2",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-3",
+          "op": 129,
+          "points": [
+            404,
+            180,
+            412,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-3",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-4",
+          "op": 129,
+          "points": [
+            405,
+            180,
+            411,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-4",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-5",
+          "op": 129,
+          "points": [
+            406,
+            180,
+            410,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-5",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-6",
+          "op": 129,
+          "points": [
+            407,
+            180,
+            409,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-6",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-7",
+          "op": 129,
+          "points": [
+            408,
+            180,
+            408,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-7",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-off",
+          "op": 129,
+          "points": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "ints": [
+            0
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "common-fill",
+          "op": 4,
+          "points": [],
+          "ints": [],
+          "common": 1,
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "26fbdc730513300d940130eb949ebff90645c74ad2bfcadbd2a9ad7773538e02",
+          "changed_pixels": 960,
+          "changed_bounds": [
+            32,
+            180,
+            79,
+            199
+          ]
+        },
+        {
+          "name": "common-text",
+          "op": 4,
+          "points": [],
+          "ints": [],
+          "common": 2,
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "a07d11f7d636c2101eab5775cf50f9ff53c19b196f0ea51028a8dbbb1c74a03d",
+          "changed_pixels": 81,
+          "changed_bounds": [
+            34,
+            184,
+            63,
+            190
+          ]
+        },
+        {
+          "name": "common-invalid-empty-busy",
+          "op": 4,
+          "points": [],
+          "ints": [],
+          "common": 3,
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "a07d11f7d636c2101eab5775cf50f9ff53c19b196f0ea51028a8dbbb1c74a03d",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "preserved-vdi-attributes",
+          "op": 8,
+          "points": [
+            110,
+            190
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            67
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "6bae3b3e848052427335e5b2eb5f194f0c3326779f6bcddc760b3fe58967c42c",
+          "changed_pixels": 81,
+          "changed_bounds": [
+            111,
+            184,
+            140,
+            190
+          ]
+        },
+        {
+          "name": "empty-text",
+          "op": 8,
+          "points": [
+            0,
+            0
+          ],
+          "ints": [],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "6bae3b3e848052427335e5b2eb5f194f0c3326779f6bcddc760b3fe58967c42c",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "update",
+          "op": 4,
+          "points": [],
+          "ints": [],
+          "screenshot": true,
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "6bae3b3e848052427335e5b2eb5f194f0c3326779f6bcddc760b3fe58967c42c",
+          "changed_pixels": 0,
+          "changed_bounds": null,
+          "scanout_sha256": "dcb138423e8f22575d6f79d065e1a2f2ac7e2483d662977812f16d6e03f778ad",
+          "screenshot_sha256": "e1e7e64c3354729115c1902353659bf1771d936c8b338eafce8bdf44856493d1"
+        },
+        {
+          "name": "close",
+          "op": 2,
+          "points": [],
+          "ints": [],
+          "answer": 0,
+          "completed": 0,
+          "reply_words": 0
+        }
+      ],
+      "performance": null,
+      "timing": null
+    },
+    "build/drawing-validation/d2-service-raw/results.json": {
+      "sha256": "13bd10e0dc0eaa0f66ec6bd310ab9170cb637c80bfbf7cbe68a9c2e96d5638e3",
+      "xex_sha256": "7711c56fbdffad5930a487f71715fce6399498d26c1ba6672e0e2879e3a642e7",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "override": false,
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "optimize": false
+      },
+      "pin": null,
+      "mode": "raw",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 56128,
+        "loading_including_os": 52592
+      },
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13424,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 14480,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 15536,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4096,
+          "dp_reserved_bytes": 256,
+          "stack_base": 16592,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4352,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17648,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4608,
+          "dp_reserved_bytes": 256,
+          "stack_base": 20240,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4864,
+          "dp_reserved_bytes": 256,
+          "stack_base": 22832,
+          "stack_bytes": 512,
+          "interrupt_reserve": 256
+        }
+      ],
+      "checks": 5,
+      "cases": [
+        {
+          "name": "open",
+          "op": 1,
+          "points": [],
+          "ints": [],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 57,
+          "workout": [
+            639,
+            239,
+            0,
+            372,
+            372,
+            1,
+            1,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            16,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            16,
+            0,
+            0,
+            0,
+            0,
+            0,
+            8,
+            8,
+            8,
+            8,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "font_masks_sha256": "52d84ea7b9972fe5097b733107de9be70090edbbae040a4e4af728d43ac3eb79",
+          "palette_rgb": "ffffffff000000ff00ffff000000ffff00ff00ffffbbbbbb777777bb000000bb00bbbb000000bbbb00bb00bbbb000000",
+          "pixels_sha256": "e2cc2a1fa6131cf4d86faa3baf78851f35a36853e2467c257b3df9d89e85cce5",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "text-pen-0",
+          "op": 22,
+          "points": [],
+          "ints": [
+            0
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-0-0",
+          "op": 8,
+          "points": [
+            32,
+            16
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "e2cc2a1fa6131cf4d86faa3baf78851f35a36853e2467c257b3df9d89e85cce5",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "text-0-1",
+          "op": 8,
+          "points": [
+            33,
+            16
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "e2cc2a1fa6131cf4d86faa3baf78851f35a36853e2467c257b3df9d89e85cce5",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "text-pen-1",
+          "op": 22,
+          "points": [],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-1-0",
+          "op": 8,
+          "points": [
+            32,
+            25
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "08754dc0d88ca0ff601638f0ad7807036aab3775d975eca3cd2e212e886918b5",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            19,
+            86,
+            25
+          ]
+        },
+        {
+          "name": "text-1-1",
+          "op": 8,
+          "points": [
+            33,
+            25
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "7027250b1d94a176839f48df1e4c58ed24c555d31056357d8f5b2e1c7c764a4a",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            19,
+            87,
+            25
+          ]
+        },
+        {
+          "name": "text-pen-2",
+          "op": 22,
+          "points": [],
+          "ints": [
+            2
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-2-0",
+          "op": 8,
+          "points": [
+            32,
+            34
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "3b830863ac4e258577697626539580887f114307088b48eef9b86af9bc8a24cc",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            28,
+            86,
+            34
+          ]
+        },
+        {
+          "name": "text-2-1",
+          "op": 8,
+          "points": [
+            33,
+            34
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "9388ab5aad6310632208dbbec5191130d82ed4e6ff8920db2e57db0ec12e600f",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            28,
+            87,
+            34
+          ]
+        },
+        {
+          "name": "text-pen-3",
+          "op": 22,
+          "points": [],
+          "ints": [
+            3
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-3-0",
+          "op": 8,
+          "points": [
+            32,
+            43
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "d30b8948249c6894204571b5243bdbc5965220bc3d9d7cd3f8440f456db95e6a",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            37,
+            86,
+            43
+          ]
+        },
+        {
+          "name": "text-3-1",
+          "op": 8,
+          "points": [
+            33,
+            43
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "b8286977f7d76a1aa556a3e0f3d1279fa24f143cd9273ac14ddfe953b8494d9b",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            37,
+            87,
+            43
+          ]
+        },
+        {
+          "name": "text-pen-4",
+          "op": 22,
+          "points": [],
+          "ints": [
+            4
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-4-0",
+          "op": 8,
+          "points": [
+            32,
+            52
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "73e2c0f73a8ed393ff37aaf3ac3c9e9eacf39a0f950026d049a84c484fa7b0a5",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            46,
+            86,
+            52
+          ]
+        },
+        {
+          "name": "text-4-1",
+          "op": 8,
+          "points": [
+            33,
+            52
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "02521ef2a1641496323dfed7b0a70be9bd6e7f0b15771b8f50f22822f3ec3d62",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            46,
+            87,
+            52
+          ]
+        },
+        {
+          "name": "text-pen-5",
+          "op": 22,
+          "points": [],
+          "ints": [
+            5
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-5-0",
+          "op": 8,
+          "points": [
+            32,
+            61
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "3043d1f5c9f0e731465ee831664aa3783296bb7f8cee7b0e39c076b385052024",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            55,
+            86,
+            61
+          ]
+        },
+        {
+          "name": "text-5-1",
+          "op": 8,
+          "points": [
+            33,
+            61
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "4fbd3b71880bdd5c690cb4995a6def668680d1c14ea07478a97e43a9ee437d95",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            55,
+            87,
+            61
+          ]
+        },
+        {
+          "name": "text-pen-6",
+          "op": 22,
+          "points": [],
+          "ints": [
+            6
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-6-0",
+          "op": 8,
+          "points": [
+            32,
+            70
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "31f2eff390edbe1cab508cef618924071a2d1f4f87760e5a181f5c90aabbef6e",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            64,
+            86,
+            70
+          ]
+        },
+        {
+          "name": "text-6-1",
+          "op": 8,
+          "points": [
+            33,
+            70
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "40132e51ac886ef34ea75bd787883426287df9075b87d0d9703c6a9fda8078b0",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            64,
+            87,
+            70
+          ]
+        },
+        {
+          "name": "text-pen-7",
+          "op": 22,
+          "points": [],
+          "ints": [
+            7
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-7-0",
+          "op": 8,
+          "points": [
+            32,
+            79
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "78031dd3bdd2a559f93bf8a367be9afab245e44361c3e7aba526a3f52d6b48df",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            73,
+            86,
+            79
+          ]
+        },
+        {
+          "name": "text-7-1",
+          "op": 8,
+          "points": [
+            33,
+            79
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "5e4665f6a3cab4d6739e7f83b83332504c97a045db421ea2e1779a01a4cb139e",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            73,
+            87,
+            79
+          ]
+        },
+        {
+          "name": "text-pen-8",
+          "op": 22,
+          "points": [],
+          "ints": [
+            8
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-8-0",
+          "op": 8,
+          "points": [
+            32,
+            88
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "be5cdea697a5d29ec6ce98e4aaf5dc6738264454d89a7bf3c220072919953a6e",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            82,
+            86,
+            88
+          ]
+        },
+        {
+          "name": "text-8-1",
+          "op": 8,
+          "points": [
+            33,
+            88
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "1a1f946ce17b1975c745bd10c82086824f6119ce23fb4bee0ce9e97743bceb20",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            82,
+            87,
+            88
+          ]
+        },
+        {
+          "name": "text-pen-9",
+          "op": 22,
+          "points": [],
+          "ints": [
+            9
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-9-0",
+          "op": 8,
+          "points": [
+            32,
+            97
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "d544826fcfea171e030d29d50b7d602ed1fc388607cd51feb71c111b05b126b9",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            91,
+            86,
+            97
+          ]
+        },
+        {
+          "name": "text-9-1",
+          "op": 8,
+          "points": [
+            33,
+            97
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "b7d9e93496d590a62f1aa2478938ba31fbcd2877bb1b00e271920eb5111dd154",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            91,
+            87,
+            97
+          ]
+        },
+        {
+          "name": "text-pen-10",
+          "op": 22,
+          "points": [],
+          "ints": [
+            10
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-10-0",
+          "op": 8,
+          "points": [
+            32,
+            106
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "4582b6eb38d2ed9939a903b62162e92a18780406665cdb027990f7cf61689985",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            100,
+            86,
+            106
+          ]
+        },
+        {
+          "name": "text-10-1",
+          "op": 8,
+          "points": [
+            33,
+            106
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "b8ebdb9022e90a6100a7b2cd603a638f28b67b63713e44e139587153ab0048ba",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            100,
+            87,
+            106
+          ]
+        },
+        {
+          "name": "text-pen-11",
+          "op": 22,
+          "points": [],
+          "ints": [
+            11
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-11-0",
+          "op": 8,
+          "points": [
+            32,
+            115
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "d8b09c5a1bf8bb7ee745530755046c8d51f9aa86b6b5f61a2e6d66096a3bece3",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            109,
+            86,
+            115
+          ]
+        },
+        {
+          "name": "text-11-1",
+          "op": 8,
+          "points": [
+            33,
+            115
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "9d9646b6ece94899861c32b2de0086c4aff72efcec5ecc344b96bb037b2dad82",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            109,
+            87,
+            115
+          ]
+        },
+        {
+          "name": "text-pen-12",
+          "op": 22,
+          "points": [],
+          "ints": [
+            12
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-12-0",
+          "op": 8,
+          "points": [
+            32,
+            124
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "b2db88935558126779f91b47b93d721ae8c37c6ad536e5e93e036f4efe21d8da",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            118,
+            86,
+            124
+          ]
+        },
+        {
+          "name": "text-12-1",
+          "op": 8,
+          "points": [
+            33,
+            124
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "95bd5d72d7419cb1924cd52400b96d9e4963f3967a7104fbbc96fb451b6f3796",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            118,
+            87,
+            124
+          ]
+        },
+        {
+          "name": "text-pen-13",
+          "op": 22,
+          "points": [],
+          "ints": [
+            13
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-13-0",
+          "op": 8,
+          "points": [
+            32,
+            133
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "19785e61b0146ca30c4cf8f689cb495866cf0db16d01b643ffc2c0ffaefc2d2d",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            127,
+            86,
+            133
+          ]
+        },
+        {
+          "name": "text-13-1",
+          "op": 8,
+          "points": [
+            33,
+            133
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "7a50d92635b6909fb4e429c4f468e9c30f5302520a79201f19b34072169ab6ec",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            127,
+            87,
+            133
+          ]
+        },
+        {
+          "name": "text-pen-14",
+          "op": 22,
+          "points": [],
+          "ints": [
+            14
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-14-0",
+          "op": 8,
+          "points": [
+            32,
+            142
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "bc0ce6a3b45b784233f7bf7c3556b2912e92c312dca394da58168ef771bb5345",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            136,
+            86,
+            142
+          ]
+        },
+        {
+          "name": "text-14-1",
+          "op": 8,
+          "points": [
+            33,
+            142
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "06c652e135cc551a82202e06a9f3bf027e163159e089d03250d93559f37a91bc",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            136,
+            87,
+            142
+          ]
+        },
+        {
+          "name": "text-pen-15",
+          "op": 22,
+          "points": [],
+          "ints": [
+            15
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 1
+        },
+        {
+          "name": "text-15-0",
+          "op": 8,
+          "points": [
+            32,
+            151
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "9d2e58bc82fd077dd103af86df0ee8534366d4ce4aca358da8d228bb9c1ab6c8",
+          "changed_pixels": 147,
+          "changed_bounds": [
+            33,
+            145,
+            86,
+            151
+          ]
+        },
+        {
+          "name": "text-15-1",
+          "op": 8,
+          "points": [
+            33,
+            151
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            87,
+            32,
+            48,
+            57
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "f32f1f15cf894ba61bf25b4bc8a62b2e8fb8aca5d5e810f511d584187a6d9c74",
+          "changed_pixels": 114,
+          "changed_bounds": [
+            33,
+            145,
+            87,
+            151
+          ]
+        },
+        {
+          "name": "clip-0",
+          "op": 129,
+          "points": [
+            401,
+            180,
+            415,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-0",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 61,
+          "changed_bounds": [
+            401,
+            180,
+            414,
+            186
+          ]
+        },
+        {
+          "name": "clip-1",
+          "op": 129,
+          "points": [
+            402,
+            180,
+            414,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-1",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-2",
+          "op": 129,
+          "points": [
+            403,
+            180,
+            413,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-2",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-3",
+          "op": 129,
+          "points": [
+            404,
+            180,
+            412,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-3",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-4",
+          "op": 129,
+          "points": [
+            405,
+            180,
+            411,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-4",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-5",
+          "op": 129,
+          "points": [
+            406,
+            180,
+            410,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-5",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-6",
+          "op": 129,
+          "points": [
+            407,
+            180,
+            409,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-6",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-7",
+          "op": 129,
+          "points": [
+            408,
+            180,
+            408,
+            187
+          ],
+          "ints": [
+            1
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "cut-7",
+          "op": 8,
+          "points": [
+            400,
+            186
+          ],
+          "ints": [
+            87,
+            87
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "ca751f8c35a85549fda171272aead57d566a3768bd5c623ee8587ce4310b0726",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "clip-off",
+          "op": 129,
+          "points": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "ints": [
+            0
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0
+        },
+        {
+          "name": "common-fill",
+          "op": 4,
+          "points": [],
+          "ints": [],
+          "common": 1,
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "26fbdc730513300d940130eb949ebff90645c74ad2bfcadbd2a9ad7773538e02",
+          "changed_pixels": 960,
+          "changed_bounds": [
+            32,
+            180,
+            79,
+            199
+          ]
+        },
+        {
+          "name": "common-text",
+          "op": 4,
+          "points": [],
+          "ints": [],
+          "common": 2,
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "a07d11f7d636c2101eab5775cf50f9ff53c19b196f0ea51028a8dbbb1c74a03d",
+          "changed_pixels": 81,
+          "changed_bounds": [
+            34,
+            184,
+            63,
+            190
+          ]
+        },
+        {
+          "name": "common-invalid-empty-busy",
+          "op": 4,
+          "points": [],
+          "ints": [],
+          "common": 3,
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "a07d11f7d636c2101eab5775cf50f9ff53c19b196f0ea51028a8dbbb1c74a03d",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "preserved-vdi-attributes",
+          "op": 8,
+          "points": [
+            110,
+            190
+          ],
+          "ints": [
+            65,
+            66,
+            32,
+            67
+          ],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "6bae3b3e848052427335e5b2eb5f194f0c3326779f6bcddc760b3fe58967c42c",
+          "changed_pixels": 81,
+          "changed_bounds": [
+            111,
+            184,
+            140,
+            190
+          ]
+        },
+        {
+          "name": "empty-text",
+          "op": 8,
+          "points": [
+            0,
+            0
+          ],
+          "ints": [],
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "6bae3b3e848052427335e5b2eb5f194f0c3326779f6bcddc760b3fe58967c42c",
+          "changed_pixels": 0,
+          "changed_bounds": null
+        },
+        {
+          "name": "update",
+          "op": 4,
+          "points": [],
+          "ints": [],
+          "screenshot": true,
+          "answer": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "pixels_sha256": "6bae3b3e848052427335e5b2eb5f194f0c3326779f6bcddc760b3fe58967c42c",
+          "changed_pixels": 0,
+          "changed_bounds": null,
+          "scanout_sha256": "dcb138423e8f22575d6f79d065e1a2f2ac7e2483d662977812f16d6e03f778ad",
+          "screenshot_sha256": "e1e7e64c3354729115c1902353659bf1771d936c8b338eafce8bdf44856493d1"
+        },
+        {
+          "name": "close",
+          "op": 2,
+          "points": [],
+          "ints": [],
+          "answer": 0,
+          "completed": 0,
+          "reply_words": 0
+        }
+      ],
+      "performance": null,
+      "timing": null
+    },
+    "build/drawing-validation/d2-cursor/results.json": {
+      "sha256": "837b49315c01408163fa1670fda9bd3bc20e25a86fa4ca746c494ebf55fdb28e",
+      "xex_sha256": "31069ce11d8023546b246b52c1647b0929792d925d2ec6d91376f45e444e838b",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "override": false,
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "optimize": true
+      },
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 63,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true,
+          "addons": "custom"
+        },
+        "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+          "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+          "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+        },
+        "observer": {
+          "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ],
+        "devices": [
+          {
+            "tag": "vbxe",
+            "settings": {
+              "version": 126,
+              "alt_page": false,
+              "shared_mem": false
+            },
+            "readback": [
+              {
+                "address": 54848,
+                "bytes": [
+                  16,
+                  38
+                ]
+              }
+            ],
+            "vram_bytes": 524288,
+            "register_base": 54784
+          }
+        ],
+        "startup_configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true,
+          "diskemu": "generic56k"
+        },
+        "disk_workload": {
+          "format": "SDFS",
+          "unit": 49,
+          "sectors": 720,
+          "sector_bytes": 128,
+          "exec_profile": 4,
+          "nominal_baud": 57600
+        },
+        "mouse_input": {
+          "model": "ST mouse",
+          "port": 1,
+          "internal_port": 0,
+          "map": "Mouse -> ST Mouse (port 1)",
+          "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+          "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+          "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+          "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+          "commands": [
+            "MOUSE ST",
+            "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+            "MOUSE CLEAR"
+          ],
+          "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+          "tooling": {
+            "binary": "build/mouse-bridge/AltirraBridgeServer",
+            "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+            "patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "source_sha256": {
+              "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+              "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+              "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+              "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+            }
+          },
+          "initial_acceptance": {
+            "transitions_per_second_per_axis": 1000,
+            "minimum_transition_spacing_us": 1000,
+            "minimum_button_level_us": 10000,
+            "required_max_sample_gap_us_exclusive": 1000,
+            "visible_response_pal_ticks": 12
+          },
+          "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+        }
+      },
+      "mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 56128,
+        "loading_including_os": 52592
+      },
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13424,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 14480,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 15536,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4096,
+          "dp_reserved_bytes": 256,
+          "stack_base": 16592,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4352,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17648,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4608,
+          "dp_reserved_bytes": 256,
+          "stack_base": 20240,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4864,
+          "dp_reserved_bytes": 256,
+          "stack_base": 22832,
+          "stack_bytes": 512,
+          "interrupt_reserve": 256
+        }
+      ],
+      "checks": 5,
+      "cases": [
+        {
+          "name": "open",
+          "status": "pass",
+          "opcode": 1,
+          "points": [],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 57,
+          "sequence_before": 0,
+          "sequence_after": 2,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 20,
+          "scanout_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        },
+        {
+          "name": "blue",
+          "status": "pass",
+          "opcode": 25,
+          "points": [],
+          "ints": [
+            4
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 1,
+          "sequence_before": 2,
+          "sequence_after": 3,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        },
+        {
+          "name": "background",
+          "status": "pass",
+          "opcode": 11,
+          "points": [
+            0,
+            0,
+            639,
+            239
+          ],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 3,
+          "sequence_after": 4,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 20,
+          "scanout_sha256": "a418e8c1813f14dd0ec5246d398b9afbff60ba4f06f6a145ac3971608efc58c1"
+        },
+        {
+          "name": "green-text",
+          "status": "pass",
+          "opcode": 22,
+          "points": [],
+          "ints": [
+            3
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 1,
+          "sequence_before": 4,
+          "sequence_after": 5,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "a418e8c1813f14dd0ec5246d398b9afbff60ba4f06f6a145ac3971608efc58c1"
+        },
+        {
+          "name": "title",
+          "status": "pass",
+          "opcode": 8,
+          "points": [
+            17,
+            46
+          ],
+          "ints": [
+            67,
+            117,
+            114,
+            115,
+            111,
+            114
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 5,
+          "sequence_after": 6,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 1,
+          "scanout_sha256": "908aba035b1f9b47945cbde963e608bff5c93b752561cc70790d990ebfcd5b2c"
+        },
+        {
+          "name": "red-line",
+          "status": "pass",
+          "opcode": 17,
+          "points": [],
+          "ints": [
+            2
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 1,
+          "sequence_before": 6,
+          "sequence_after": 7,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "908aba035b1f9b47945cbde963e608bff5c93b752561cc70790d990ebfcd5b2c"
+        },
+        {
+          "name": "line",
+          "status": "pass",
+          "opcode": 6,
+          "points": [
+            0,
+            0,
+            639,
+            239
+          ],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 7,
+          "sequence_after": 8,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "b1507c3129897f69b47a4d94713e27db438bcafac5575f56488a22b99cabb15f"
+        },
+        {
+          "name": "clip",
+          "status": "pass",
+          "opcode": 129,
+          "points": [
+            10,
+            10,
+            629,
+            229
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 8,
+          "sequence_after": 9,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "b1507c3129897f69b47a4d94713e27db438bcafac5575f56488a22b99cabb15f"
+        },
+        {
+          "name": "magenta",
+          "status": "pass",
+          "opcode": 25,
+          "points": [],
+          "ints": [
+            7
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 1,
+          "sequence_before": 9,
+          "sequence_after": 10,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "b1507c3129897f69b47a4d94713e27db438bcafac5575f56488a22b99cabb15f"
+        },
+        {
+          "name": "panel",
+          "status": "pass",
+          "opcode": 11,
+          "points": [
+            16,
+            16,
+            160,
+            120
+          ],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 10,
+          "sequence_after": 11,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 3,
+          "scanout_sha256": "5da98c5c88542384dc03ebdc313527097767d87ba623d86664654acd5c9c3852"
+        },
+        {
+          "name": "move-0",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            0,
+            0
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 11,
+          "sequence_after": 12,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 3,
+          "blits_started": 3,
+          "scanout_sha256": "ea523782a0fbb82e4ef29cb626894a688d89a20be63e22cfbf16d5f9afcdd283"
+        },
+        {
+          "name": "move-1",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            1,
+            0
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 12,
+          "sequence_after": 13,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 1,
+            "cursorY": 0,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 4,
+          "scanout_sha256": "85045a93bae8eda3a0f840fafd97094c7206890bd73a8f623eaac8212e364193"
+        },
+        {
+          "name": "move-2",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            21,
+            41
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 13,
+          "sequence_after": 14,
+          "cursor_before": {
+            "cursorX": 1,
+            "cursorY": 0,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 4,
+          "scanout_sha256": "c47553bec6daf2bd64e42a8f7c92f64d56aaf16ac029773f680a72ebe04d2dd4"
+        },
+        {
+          "name": "move-3",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            22,
+            41
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 14,
+          "sequence_after": 15,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 22,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 4,
+          "scanout_sha256": "3dea0b7fe792b392cdf57ef2dee0cbf916ab70f65eac6236a1321df2cd51b939"
+        },
+        {
+          "name": "move-4",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            639,
+            0
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 15,
+          "sequence_after": 16,
+          "cursor_before": {
+            "cursorX": 22,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 639,
+            "cursorY": 0,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 4,
+          "scanout_sha256": "9890759666738b9ccaef342d04f77e5cd8d48b0952afad09494be5d4359c8c3f"
+        },
+        {
+          "name": "move-5",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            0,
+            239
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 16,
+          "sequence_after": 17,
+          "cursor_before": {
+            "cursorX": 639,
+            "cursorY": 0,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 239,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 4,
+          "scanout_sha256": "f94769a1411259322bb98e1774902989c6ce3041a395eb2c888fd0972eb7c31e"
+        },
+        {
+          "name": "move-6",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            639,
+            239
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 17,
+          "sequence_after": 18,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 239,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 639,
+            "cursorY": 239,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 4,
+          "scanout_sha256": "a381f351f6798ae38ae2428dd92b7316f70d66b016a1fb73a44060debf1843e6"
+        },
+        {
+          "name": "move-7",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            625,
+            225
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 18,
+          "sequence_after": 19,
+          "cursor_before": {
+            "cursorX": 639,
+            "cursorY": 239,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 625,
+            "cursorY": 225,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 4,
+          "scanout_sha256": "b7dfc82ae5d65dd328f919a575414fbb6bb6d5cb277740c40156d7599a5b5cf6"
+        },
+        {
+          "name": "move-8",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            626,
+            226
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 19,
+          "sequence_after": 20,
+          "cursor_before": {
+            "cursorX": 625,
+            "cursorY": 225,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 626,
+            "cursorY": 226,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 4,
+          "scanout_sha256": "c2209b2fb559175514338f9030a87c92d14b0d7b7afb97788175a89429623130"
+        },
+        {
+          "name": "move-9",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            320,
+            120
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 20,
+          "sequence_after": 21,
+          "cursor_before": {
+            "cursorX": 626,
+            "cursorY": 226,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 320,
+            "cursorY": 120,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 4,
+          "scanout_sha256": "3ecb869ceaee0447b2e7741ab747ee18142c23eccf3de7657958bfbe4db400ab"
+        },
+        {
+          "name": "hide",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            320,
+            120
+          ],
+          "ints": [
+            0
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 21,
+          "sequence_after": 22,
+          "cursor_before": {
+            "cursorX": 320,
+            "cursorY": 120,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 320,
+            "cursorY": 120,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 1,
+          "blits_started": 1,
+          "scanout_sha256": "5da98c5c88542384dc03ebdc313527097767d87ba623d86664654acd5c9c3852"
+        },
+        {
+          "name": "stationary",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            20,
+            40
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 22,
+          "sequence_after": 23,
+          "cursor_before": {
+            "cursorX": 320,
+            "cursorY": 120,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 3,
+          "blits_started": 3,
+          "scanout_sha256": "7382d6bedf4c1d3c0b69846e4ec8d99fed88f4ddbaaff219c5edba594a64df34"
+        },
+        {
+          "name": "under-color",
+          "status": "pass",
+          "opcode": 25,
+          "points": [],
+          "ints": [
+            3
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 1,
+          "sequence_before": 23,
+          "sequence_after": 24,
+          "cursor_before": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "7382d6bedf4c1d3c0b69846e4ec8d99fed88f4ddbaaff219c5edba594a64df34"
+        },
+        {
+          "name": "under-bar",
+          "status": "pass",
+          "opcode": 11,
+          "points": [
+            0,
+            0,
+            60,
+            80
+          ],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 24,
+          "sequence_after": 25,
+          "cursor_before": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 5,
+          "scanout_sha256": "2a22998f68a618a4511853f8b6429ce37ffd1ca129d8d9139d71560e85c30b68"
+        },
+        {
+          "name": "under-text",
+          "status": "pass",
+          "opcode": 8,
+          "points": [
+            17,
+            46
+          ],
+          "ints": [
+            67,
+            104,
+            97,
+            110,
+            103,
+            101,
+            100
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 25,
+          "sequence_after": 26,
+          "cursor_before": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 5,
+          "scanout_sha256": "2b57a09af51dba80a21f15a9857524e962cef49a37d1113b61e91b7e04eac033"
+        },
+        {
+          "name": "under-line",
+          "status": "pass",
+          "opcode": 6,
+          "points": [
+            0,
+            20,
+            80,
+            100
+          ],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 26,
+          "sequence_after": 27,
+          "cursor_before": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 4,
+          "scanout_sha256": "cc0e302b32ca6519a37cbcf62735558c10cf4de4150bed59eb1be284cac63b06"
+        },
+        {
+          "name": "restored-new-background",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            20,
+            40
+          ],
+          "ints": [
+            0
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 27,
+          "sequence_after": 28,
+          "cursor_before": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 1,
+          "blits_started": 1,
+          "scanout_sha256": "726a4f5aeff6aabbd725adebadc6b8e89e8a91f5475f62e468d8b0ea101c32d8"
+        },
+        {
+          "name": "before-invalid",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            21,
+            41
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 28,
+          "sequence_after": 29,
+          "cursor_before": {
+            "cursorX": 20,
+            "cursorY": 40,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 3,
+          "blits_started": 3,
+          "scanout_sha256": "d97854ac63b2a879dbb52fe0f3b5fd180228e6f4237107030ac0db608fa504d7"
+        },
+        {
+          "name": "edge-color",
+          "status": "pass",
+          "opcode": 25,
+          "points": [],
+          "ints": [
+            5
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 1,
+          "sequence_before": 29,
+          "sequence_after": 30,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "d97854ac63b2a879dbb52fe0f3b5fd180228e6f4237107030ac0db608fa504d7"
+        },
+        {
+          "name": "saved-edge-nibble",
+          "status": "pass",
+          "opcode": 11,
+          "points": [
+            20,
+            41,
+            20,
+            56
+          ],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 30,
+          "sequence_after": 31,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 4,
+          "blits_started": 5,
+          "scanout_sha256": "f0f942a216c51dc134ee7cd474bbe54146955ecba6a983605b257b672a20898e"
+        },
+        {
+          "name": "disjoint-text",
+          "status": "pass",
+          "opcode": 8,
+          "points": [
+            300,
+            64
+          ],
+          "ints": [
+            111,
+            117,
+            116,
+            115,
+            105,
+            100,
+            101
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 31,
+          "sequence_after": 32,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 1,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "edge-restored",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            21,
+            41
+          ],
+          "ints": [
+            0
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 32,
+          "sequence_after": 33,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 1,
+          "blits_started": 1,
+          "scanout_sha256": "171bf2e7bca87b5a76e9905c3e3329d7c3203e4b2eac5b561bc27ee769aae067"
+        },
+        {
+          "name": "edge-visible",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            21,
+            41
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 33,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 3,
+          "blits_started": 3,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-1",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 1,
+          "fault": 0,
+          "result": 2,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-2",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 2,
+          "fault": 0,
+          "result": 2,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-3",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 3,
+          "fault": 0,
+          "result": 2,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-4",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 4,
+          "fault": 0,
+          "result": 2,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-5",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 5,
+          "fault": 0,
+          "result": 2,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-6",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 6,
+          "fault": 0,
+          "result": 2,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-7",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 7,
+          "fault": 0,
+          "result": 2,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-8",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 8,
+          "fault": 0,
+          "result": 2,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-9",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 9,
+          "fault": 0,
+          "result": 2,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-10",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 10,
+          "fault": 0,
+          "result": 2,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-11",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 11,
+          "fault": 0,
+          "result": 3,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-12",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 12,
+          "fault": 0,
+          "result": 3,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "invalid-13",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            500,
+            200
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 13,
+          "fault": 0,
+          "result": 1,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 34,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "124ed5bc483700a530e3639bfeaebfb5c2027fc5ddfb84de19ca82772f9c75ae"
+        },
+        {
+          "name": "close",
+          "status": "pass",
+          "opcode": 2,
+          "points": [],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 34,
+          "sequence_after": 0,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 1,
+          "blits_started": 1
+        },
+        {
+          "name": "reopen-hidden",
+          "status": "pass",
+          "opcode": 1,
+          "points": [],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 57,
+          "sequence_before": 0,
+          "sequence_after": 2,
+          "cursor_before": {
+            "cursorX": 21,
+            "cursorY": 41,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 20,
+          "scanout_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        },
+        {
+          "name": "old-attributes-reset",
+          "status": "pass",
+          "opcode": 6,
+          "points": [
+            0,
+            0,
+            639,
+            239
+          ],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 0,
+          "sequence_before": 2,
+          "sequence_after": 3,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 0,
+          "scanout_sha256": "33abfa0c235e7f0a15f985c6602c7df1abeee16f7120998cfb98dc42a7e55509"
+        },
+        {
+          "name": "new-session-cursor",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            41,
+            41
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 3,
+          "sequence_after": 4,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 3,
+          "blits_started": 3,
+          "scanout_sha256": "fc46f5421d366af70db141d4fd68526731fc6d3b305b281dfc84383fd2b64e88"
+        },
+        {
+          "name": "fault-1",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            80,
+            60
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 1,
+          "result": 6,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 4,
+          "sequence_after": 0,
+          "cursor_before": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 1,
+          "blits_started": 1
+        },
+        {
+          "name": "reopen-1",
+          "status": "pass",
+          "opcode": 1,
+          "points": [],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 57,
+          "sequence_before": 0,
+          "sequence_after": 2,
+          "cursor_before": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 20,
+          "scanout_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        },
+        {
+          "name": "show-1",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            41,
+            41
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 2,
+          "sequence_after": 3,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 3,
+          "blits_started": 3,
+          "scanout_sha256": "0c6beff4b7e9cff1ccae6671eb81c04afcab404b6626d3b8937b4f888015c645"
+        },
+        {
+          "name": "fault-2",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            80,
+            60
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 2,
+          "result": 6,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 3,
+          "sequence_after": 0,
+          "cursor_before": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 80,
+            "cursorY": 60,
+            "cursorVisible": 1,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 2,
+          "blits_started": 2
+        },
+        {
+          "name": "reopen-2",
+          "status": "pass",
+          "opcode": 1,
+          "points": [],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 57,
+          "sequence_before": 0,
+          "sequence_after": 2,
+          "cursor_before": {
+            "cursorX": 80,
+            "cursorY": 60,
+            "cursorVisible": 1,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 20,
+          "scanout_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        },
+        {
+          "name": "show-2",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            41,
+            41
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 2,
+          "sequence_after": 3,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 3,
+          "blits_started": 3,
+          "scanout_sha256": "0c6beff4b7e9cff1ccae6671eb81c04afcab404b6626d3b8937b4f888015c645"
+        },
+        {
+          "name": "fault-3",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            80,
+            60
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 3,
+          "result": 6,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 3,
+          "sequence_after": 0,
+          "cursor_before": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 80,
+            "cursorY": 60,
+            "cursorVisible": 1,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 3,
+          "blits_started": 3
+        },
+        {
+          "name": "reopen-3",
+          "status": "pass",
+          "opcode": 1,
+          "points": [],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 57,
+          "sequence_before": 0,
+          "sequence_after": 2,
+          "cursor_before": {
+            "cursorX": 80,
+            "cursorY": 60,
+            "cursorVisible": 1,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 20,
+          "scanout_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        },
+        {
+          "name": "show-3",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            41,
+            41
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 2,
+          "sequence_after": 3,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 3,
+          "blits_started": 3,
+          "scanout_sha256": "0c6beff4b7e9cff1ccae6671eb81c04afcab404b6626d3b8937b4f888015c645"
+        },
+        {
+          "name": "fault-4",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            80,
+            60
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 4,
+          "result": 6,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 3,
+          "sequence_after": 0,
+          "cursor_before": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "cursor_after": {
+            "cursorX": 80,
+            "cursorY": 60,
+            "cursorVisible": 1,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 4,
+          "blits_started": 4
+        },
+        {
+          "name": "reopen-4",
+          "status": "pass",
+          "opcode": 1,
+          "points": [],
+          "ints": [],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 1,
+          "reply_words": 57,
+          "sequence_before": 0,
+          "sequence_after": 2,
+          "cursor_before": {
+            "cursorX": 80,
+            "cursorY": 60,
+            "cursorVisible": 1,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "phase_calls": 0,
+          "blits_started": 20,
+          "scanout_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+        },
+        {
+          "name": "show-4",
+          "status": "pass",
+          "opcode": 65280,
+          "points": [
+            41,
+            41
+          ],
+          "ints": [
+            1
+          ],
+          "bad": 0,
+          "fault": 0,
+          "result": 0,
+          "completed": 0,
+          "reply_words": 0,
+          "sequence_before": 2,
+          "sequence_after": 3,
+          "cursor_before": {
+            "cursorX": 0,
+            "cursorY": 0,
+            "cursorVisible": 0,
+            "cursorDrawn": 0
+          },
+          "cursor_after": {
+            "cursorX": 41,
+            "cursorY": 41,
+            "cursorVisible": 1,
+            "cursorDrawn": 1
+          },
+          "phase_calls": 3,
+          "blits_started": 3,
+          "scanout_sha256": "0c6beff4b7e9cff1ccae6671eb81c04afcab404b6626d3b8937b4f888015c645"
+        }
+      ],
+      "performance": null,
+      "timing": null
+    }
+  },
+  "source_inputs": {
+    "platform/altirraos/vbxe.c": "1e7c4455f038524aa3f625edf41d256001e88a5cb41d3f129ae7caf5ef5f13bc",
+    "c/include/hardware/vbxe.h": "eac1b0fb9126d005add49dc49f6455c33da548dc67a6b9a582732caf90d1de5d",
+    "ports/gem4xe/adapter/gem-vbxe.c": "087981ee326e74160ae9184f0aaad71a0922510df802f761b197b71b2f1d88e1",
+    "tools/bitmap_console_performance.py": "ba6ea6179dda134ca0245db2ab4835b5df8453981154d72e3049e00f602eca72",
+    "lib/console/console-bitmap-display.inc": "f20911f935c075481f3f54224277d2de16d77603ff31f35d4f4c9dcf73b876e0",
+    "lib/console/consoledriver.act": "a1467f14ae3462ec1436111eb3900079e47691e17ba432befa1f469a2bc6572a",
+    "toolchain/actionc.json": "f31077466a9ef240f8d49fd2f62cd8503b5975c164127573834b09a7d05ba3cc",
+    "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "measurement_limits": [
+    "Routine elapsed includes preemption; it is not isolated Task CPU time.",
+    "Launch to idle is an upper bound, not an exact hardware BUSY edge.",
+    "Settled pixels and fixture completion do not prove first-visible latency."
+  ],
+  "baseline_sha256": "4997b888dceca4216cdf5be19ae1daad0386f71c16b0ce7ad13ce5937f4057ef"
+}
