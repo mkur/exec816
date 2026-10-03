@@ -60,9 +60,9 @@ assuming work is pending. Current behavior belongs in the
 
 ## Console and interaction
 
-- [Cheap idle input checking](console-idle-input-implementation-plan.md): Q0–Q2 passed
+- [Cheap idle input checking](console-idle-input-implementation-plan.md): Q0–Q3 passed
   development checks; notification-driven workers preserve loss, BREAK and wakeups.
-  Q3 measures loaded integration and the scroll gain.
+  Input checking fell from 52 ms to 9.7–10.0 ms; complete scrolling remains above target.
 - [Bitmap console design](gem4xe/bitmap-console-design.md) and
   [implementation plan](gem4xe/bitmap-console-implementation-plan.md): functional
   80×30 VBXE preview with shared VDI batching, dirty text and blitter scrolling,

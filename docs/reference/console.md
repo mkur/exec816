@@ -92,6 +92,10 @@ arrival after EMPTY still wakes it. Unexpected resident-lease errors terminate
 through the invariant-failure path. Public input validation remains unchanged.
 Stopping the console releases input ownership before its signal/storage and display retire;
 hiding a window does not release either ownership domain.
+[Idle-input development evidence](../development/console-idle-input-q3.json)
+records 9.7–10.0 ms for input checking across a full-screen bitmap scroll, down
+from 52 ms on the matched pinned configuration. Complete scrolls still take
+121.8–122.2 ms.
 
 ## Lifetime and limits
 

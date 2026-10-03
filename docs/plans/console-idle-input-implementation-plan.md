@@ -3,8 +3,9 @@
 [Implementation plans](README.md) · [Bitmap console plan](gem4xe/bitmap-console-implementation-plan.md) ·
 [Input contract](../reference/input.md) · [Signals](../reference/signals.md)
 
-Status: implementation started, 3 October 2026. Q0–Q2 passed development checks. Remove repeated input validation from console
-turns that have no captured input. Collect notifications through the existing
+Status: Q0–Q3 implemented and passed development checks, 3 October 2026.
+Repeated input validation is removed from console turns that have no captured
+input. Collect notifications through the existing
 signal API, and retain a worker-local flag until a bounded drain observes EMPTY.
 Preserve keyboard routing, loss, BREAK, ownership and shutdown. Implement and
 commit each executable slice with its focused development evidence before
@@ -270,6 +271,79 @@ guest cycle timing and report both measured scroll scenes, call counts,
 preemption limits and the full scroll result. Preserve exact pixels and existing
 loaded correctness/timing gates. Record remaining scroll cost without claiming
 the separate 20 ms, 40 ms visible-input or 500 ms repaint targets are achieved.
+
+Q3 evidence: [integration and measured gain](../development/console-idle-input-q3.json).
+The matched optimized image passes both input-checking gates:
+
+| Full-screen scroll | Previous total | Current total | Previous input checks | Current input checks | Input reduction |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Scene 2 | 164.28 ms | 121.82 ms | 52.00 ms | 9.74 ms | 81.3% |
+| Scene 3 | 165.52 ms | 122.22 ms | 52.05 ms | 10.02 ms | 80.8% |
+
+The Q3 input totals include collection, caller mask stores/stop tests, flag
+arguments/stores and clearing the local bits. The entire `Runnable` helper is
+charged conservatively when called. This extends the Q2 routine-body observation;
+it does not change the executable. Each measured scroll has sixteen signal
+collections, zero input Pending/Take calls and zero input extent validation.
+All thirteen exact-pixel scenes and their unchanged-image replay pass; all
+thirteen settled intervals have no input calls.
+
+Raw/optimized text/bitmap publication races are retained from Q2. Selected
+physical capture checks pass in native and emulation contexts, with injected NMI
+at keyboard posting, plus one-report overflow recovery. The physical focus/quota
+case covers routing, retirement and durable BREAK. All 602 cancellation checks
+pass. Physical shell BREAK has 23.67 ms capture-to-durable delivery and 138.33 ms
+prompt recovery, within its existing 100/500 ms gates; this is not the separate
+40 ms bitmap typing target.
+
+The eight-Task bitmap/SDFS workload passes with active ST mouse capture and an
+unobserved replay. Maximum active Forbid is 29.59 ms (limit 50 ms), pointer sample
+gap 271.01 microseconds (limit 1 ms), SIO alarm lateness 37.85 microseconds and
+watchdog lateness 51.17 microseconds (each limit 100 microseconds). Exact pixels,
+serial bytes, ownership, register restoration and stack/domain guards pass.
+Host checks pass: 303 tests with four historical-source skips.
+
+An extra standalone 125 kbaud SIO probe with forced NMI inside keyboard posting
+hit a receive overrun and reset-required retirement. Replacing the pump with its
+pre-Q1 body reproduces the failure. This profile is not qualified by this change;
+the required existing SDFS/ST profile-4 workload passes its unchanged limits.
+The old input runner now supports the pinned paced bridge and selects only its
+actual application Task entries. The shell runner observes the current write,
+presentation, durable cancellation and resident-retirement boundaries.
+
+Reproduce the selected checks from the repository root (build outputs stay local):
+
+```sh
+python3 tools/test_console_input_wake.py --mode raw --output build/console-idle-input/q2/wake-text-raw
+python3 tools/test_console_input_wake.py --mode opt --output build/console-idle-input/q2/wake-text-opt
+python3 tools/test_console_input_wake.py --mode raw --bitmap --output build/console-idle-input/q2/wake-bitmap-raw
+python3 tools/test_console_input_wake.py --mode opt --bitmap --output build/console-idle-input/q2/wake-bitmap-opt
+python3 tools/test_console_focus.py --case opt --quota --output build/console-idle-input/q2/focus-opt
+python3 tools/test_console_bitmap_scroll.py --mode opt --observe --performance --output build/console-idle-input/q3/scroll-opt
+# Preserve emulator.log before a replay, which replaces that local log.
+python3 tools/test_console_bitmap_scroll.py --mode opt --replay --output build/console-idle-input/q3/scroll-opt
+python3 tools/test_console_fairness.py --case opt --bitmap --pointer --output build/console-idle-input/q3/fairness-opt
+python3 tools/test_console_fairness.py --case opt --bitmap --pointer --replay --from-build build/console-idle-input/q3/fairness-opt/program --output build/console-idle-input/q3/fairness-replay
+python3 tools/test_console_cancel.py --case opt --output build/console-idle-input/q3/cancel-opt
+python3 tools/test_shell_break.py --case opt --scenario compute --size 128 --profile 4 --output build/console-idle-input/q3/shell-break-opt
+python3 tools/test_console_input.py --case opt --mode 0 --nmi --paced --output build/console-idle-input/q3/input-opt
+# Save results.json as results-mode0.json, then reuse with --mode 2 and --mode 4
+# and --from-build build/console-idle-input/q3/input-opt, preserving each report.
+python3 -m unittest discover -s tests -p 'test_*.py'
+```
+
+The 64-event pump budget is unchanged. Reserved bank-zero change is **0 bytes**
+for fixed storage, root/kernel, each of the eight public Task pools and private
+idle, including guards, alignment and unused capacity. The optimized worker's
+fixed frame remains 38 bytes and local stack peak remains 52 bytes; observed
+bitmap worker stack use remains 484 bytes in its existing 2,560-byte reservation.
+The matched image gains 203 initialized bytes and removes two zero-fill bytes;
+no upper-bank reservation grows.
+
+The separate 20 ms complete-scroll target remains unmet. Display checks, fenced
+drawing and continuation scheduling account for most remaining time. This work
+does not claim the 40 ms visible-input or 500 ms repaint targets, release
+qualification, a refreshed demo package or GitHub publication.
 
 ## Memory and completion reporting
 

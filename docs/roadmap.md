@@ -45,10 +45,11 @@ for accepted console bytes, hardware completion and visible scanout. Measure
 with physical disk I/O and input capture active as well as idle.
 Require exact pixels, responsive cancellation, bounded memory and clean display
 handoff. Existing request completion semantics and SIO deadlines must survive
-the performance work. The next bounded step is
-[cheap idle input checking](plans/console-idle-input-implementation-plan.md):
-collect notifications atomically and retain pending work across bounded drains,
-eliminating repeated input validation during output-only turns.
+the performance work. [Cheap idle input checking](plans/console-idle-input-implementation-plan.md)
+is implemented: atomic notifications and retained work eliminate repeated input
+validation during output-only turns. Development measurements reduce complete
+scrolls from about 165 ms to 122 ms. The next performance investigation is display
+validation and blitter chunk sizing; the 20 ms goal remains open.
 
 The other possible milestones have no delivery order:
 

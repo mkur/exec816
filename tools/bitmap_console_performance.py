@@ -43,6 +43,17 @@ def markers(program,foreign,output):
     result=native_markers(program,[('CONSOLEDISPLAY_'+routine,key) for routine,key in
         [('PRESENT','present'),('ADVANCE','advance'),('BITMAPEDIT','edit'),('CELLS','cells')]])
     image=program['image'];result.update(input_markers(program))
+    if 'input_collect' in result:
+        from dos_concurrent_trace import call_marker
+        # Observe caller-side stores, flag arguments and branch decisions too.
+        # Keep control processing outside the input charge; it already existed.
+        targets=dict(collect=result['input_collect']['entry'],service=result['input_service']['entry'])
+        for name,routine in [('control','CONSOLECONTROL_PROCESS'),('arrival','CONSOLEDRIVER_ARRIVAL')]:
+            targets[name]=next(r['address'] for r in image['routines'] if r['name'].startswith('M_'+routine+'_'))
+        mapped={**program,'labels':{**program['labels'],**targets}}
+        calls={name:call_marker(mapped,'M_CONSOLEDRIVER_WORKER_',name) for name in targets}
+        result['input_collect_turn']=dict(entry=calls['collect'],returns=[calls['control']])
+        result['input_service_turn']=dict(entry=calls['control']+4,returns=[calls['arrival']])
     result['call']=dict(entry=program['labels']['console_bitmap_call'],returns=[program['labels']['console_bitmap_done']])
     r=next(r for r in image['routines'] if r['name'].startswith('M_BITMAPSCROLL_REPAINTBEGIN_'))
     result['repaint']=dict(entry=r['address'],returns=[])
@@ -122,7 +133,9 @@ def summarize(path,marks,windows):
                     measured=totals(inside)
                     # Disjoint new-path spans; count the entire Runnable helper
                     # conservatively when it executes. Old Pending is inside it.
-                    components=('input_service','input_collect','runnable') if 'input_service' in marks else ('input_pending',)
+                    components=('input_pending',)
+                    if 'input_service' in marks:components=('input_service','input_collect','runnable')
+                    if 'input_service_turn' in marks:components=('input_service_turn','input_collect_turn','runnable')
                     input_checks.append(dict(worker_dp=edit['dp'],routines=measured,
                         input_check_ms=sum(measured.get(k,{}).get('total_ms',0) for k in components),
                         components=components))

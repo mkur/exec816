@@ -47,13 +47,26 @@ def check_alarms(observed,labels):
         result[name]=dict(service=stats(delays),cancelled_or_terminal=stats(cancelled+missing))
     return result
 
-def run(t,out,optimize,mode=1,order=0,sector_size=128,trace=False,program=None,native=False,nmi=False):
+def run(t,out,optimize,mode=1,order=0,sector_size=128,trace=False,program=None,native=False,nmi=False,paced=False):
+    pin=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text()) if paced else PIN
+    bridge=ROOT/('build/shell-paced-bridge' if paced else 'build/console-bridge')
     require(not trace or mode in (1,3),'Wire tracing requires continuous or recovering SIO')
     out.mkdir(parents=True,exist_ok=True)
     module='NATIVECONSOLEINPUT' if native else 'NATIVECONSOLEPROBE'
-    p=program or build(t,ROOT/('tests/programs/native_console_input.act' if native else 'tests/programs/native_console_probe.act'),out,optimize=optimize,
-            tasks=True,task_capacity=8,io_test_device=True,irq_probe=(1 if nmi else 0) if native else 10,console_test=native,
-            image_data=[(0xd0000,bytes(62))] if native else ())
+    import generate_tasks
+    original=generate_tasks.task_entries
+    def entries(image):
+        # Only Main and ReaderEntry are fixture Task entries. Keep all resident
+        # registrations; ordinary zero-argument assertion helpers are not Tasks.
+        prefix='M_'+module+'_'
+        return original(dict(image,routines=[r for r in image['routines']
+            if not r['name'].startswith(prefix) or any(r['name'].startswith(prefix+n+'_') for n in ('MAIN','READERENTRY'))]))
+    generate_tasks.task_entries=entries
+    try:
+        p=program or build(t,ROOT/('tests/programs/native_console_input.act' if native else 'tests/programs/native_console_probe.act'),out,optimize=optimize,
+                tasks=True,task_capacity=8,io_test_device=True,irq_probe=(1 if nmi else 0) if native else 10,console_test=native,
+                image_data=[(0xd0000,bytes(62))] if native else ())
+    finally:generate_tasks.task_entries=original
     if native and program is None:
         p['build']['console_fixture_inputs']={name:sha256(ROOT/name) for name in (
             'tests/programs/native_console_input.act','tests/programs/console_input_checks.inc',
@@ -65,12 +78,12 @@ def run(t,out,optimize,mode=1,order=0,sector_size=128,trace=False,program=None,n
     if trace:
         os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_MASK_TRACE='1',
             EXEC816_LATENCY_PCS=','.join(f'{v:x}' for k,v in p['labels'].items() if k.startswith(('sio_','native_','console_','signal_route'))))
-    require(sha256(ROOT/'build/console-bridge/AltirraBridgeServer')==PIN['emulator']['sha256'],'Unpinned console emulator')
+    require(sha256(bridge/'AltirraBridgeServer')==pin['emulator']['sha256'],'Unpinned console emulator')
     disk_image(machineout/'disk.atr',sector_size)
-    with emulator(ROOT/'build/console-bridge',ROOT/'build/firmware/altirraos-816.rom',machineout,pin=PIN) as b:
-        for k,v in PIN['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
+    with emulator(bridge,ROOT/'build/firmware/altirraos-816.rom',machineout,pin=pin) as b:
+        for k,v in pin['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
         b.config('diskemu','fastest')
-        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
+        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',pin)
         events=[];saved={};observations={}
         def hardware():
             return {name:b.memdump(at,n).hex() for name,at,n in (
@@ -152,7 +165,7 @@ def run(t,out,optimize,mode=1,order=0,sector_size=128,trace=False,program=None,n
             key('ESC','down');retire_probe()
         try:runtime,_=execute(b,p,before_run=before,timeout=120,frame_limit=6000)
         except Exception:
-            print('Probe counters',{n:data(b,p['image'],n,True) for n in ('checks','received','transfers')},flush=True)
+            print('Probe counters',{n:data(b,p['image'],n,True) for n in ('checks','received','transfers')},'status',hex(b.peek16(adapter.STATE)),flush=True)
             raise
         if trace:b.profile_stop()
         if native and nmi:
@@ -168,7 +181,7 @@ def run(t,out,optimize,mode=1,order=0,sector_size=128,trace=False,program=None,n
         c=p['build']['memory']['constants']
         require(far_read(b,c['TABLE'],c['TABLE_BYTES'],out)==(out/'manifest.bin').read_bytes()[32:32+c['TABLE_BYTES']],
                 'Bank ownership leak')
-        result=dict(status='observed',mode=mode,order=order,sector_size=sector_size,build=p['build'],machine=machine,runtime=runtime,
+        result=dict(status='observed',pin=pin,mode=mode,order=order,sector_size=sector_size,build=p['build'],machine=machine,runtime=runtime,
             injected=events,captured=captured,checks=data(b,p['image'],'checks',True),transfers=data(b,p['image'],'transfers',True),
             input_state=cp.hex(),native_events=int.from_bytes(cp[10:12],'little'),emulation_events=int.from_bytes(cp[12:14],'little'),
             input_observations=observations,losses=data(b,p['image'],'losses') if native else [],
@@ -205,10 +218,10 @@ def run(t,out,optimize,mode=1,order=0,sector_size=128,trace=False,program=None,n
             result['timing']=timing
         result['status']='pass'
     if trace:
-        replay=run(t,out,optimize,mode,order,sector_size,False,p,native,nmi)
+        replay=run(t,out,optimize,mode,order,sector_size,False,p,native,nmi,paced)
         for field in ('runtime','captured','checks','transfers','input_state','native_events','emulation_events','injected','failures'):
             require(result[field]==replay[field],'Observer changed '+field)
-        result['replay']={'status':'identical','xex_sha256':sha256(p['xex']),'emulator_sha256':PIN['emulator']['sha256']}
+        result['replay']={'status':'identical','xex_sha256':sha256(p['xex']),'emulator_sha256':pin['emulator']['sha256']}
     return result
 
 def main():

@@ -1,0 +1,3205 @@
+{
+  "slice": "Q3",
+  "status": "development-pass",
+  "scope": "Matched optimized PAL x8 VBXE/4MB scroll comparison; raw/optimized worker races from Q2; physical input in native/emulation contexts and overflow, cancellation, physical shell BREAK, eight-Task SDFS/ST timing and observed/control replays.",
+  "reports": {
+    "build/console-idle-input/q3/scroll-opt/results.json": "877c33418592b672be2f205cb96cc0b664526edb098b81a80fe51cb04898cac3",
+    "build/console-idle-input/q3/scroll-opt/results-replay.json": "21b688d3ae3d9701cce81a3229e8d68dc563cdc69028c5c4ff2efe77d64d3aab",
+    "build/console-idle-input/q3/fairness-opt/results.json": "8dfc10201a3ca86583cef57062495c07fcb5c47577fff1352d6c44b266419a41",
+    "build/console-idle-input/q3/fairness-replay/replay-results.json": "bb16dfbf231738d76e35e1ec30670132b6aac37314cd3d1d38d94e6e38ac0ace",
+    "build/console-idle-input/q3/cancel-opt/results.json": "cf69de043f1e6aad95648645abf670cd00ac7d2fb1b39d41ac10dc19c9b92de8",
+    "build/console-idle-input/q3/shell-break-opt/results.json": "e988444ef5ca3a6e32cc1a2748ae861e4c5952ae30ac3f4d4f8391cf30dd5c45",
+    "build/console-idle-input/q3/input-opt/results-mode0.json": "23091a6e2c0551fa5a0177a9cd7e531a16aea7e2364b766a04e8c3c582533b8f",
+    "build/console-idle-input/q3/input-opt/results-mode2.json": "ae0612b2ddaa6f3a017db19a72f5b2bb7a874a3f14a4de74ed956995e632270b",
+    "build/console-idle-input/q3/input-opt/results-mode4.json": "504eb1c40df941d5bd7eee1d766c7d9bdd3b177c1f85d0293fea758bdc58dc35"
+  },
+  "source_inputs": {
+    "tools/record_console_idle_input.py": "d92ed9e22697a6060bbf861e12e22a9bacb3333cd4f0b471efb79ac821fe192b",
+    "tools/bitmap_console_performance.py": "4fdc8beb328ac2a0a210b3e5c0d0ddfaaed2c10674b1e59d669989534261c957",
+    "tools/test_console_input.py": "926278d5bbc5c568d7bc1b6446deb38e5c2e9d43004d66d5260329611d80c8db",
+    "tools/test_console_coexistence.py": "fc3d8347fa71504fbb21eed9616beb36044616b2d93bfd07c5ca015ff57c9843",
+    "tools/test_shell_break.py": "4f3d2e31d9d19a7fdb56a3329c7aa9269d3c0b087977a053d5559653d25d0011",
+    "lib/console/consoledriver.act": "a1467f14ae3462ec1436111eb3900079e47691e17ba432befa1f469a2bc6572a",
+    "lib/console/console-requests.inc": "1d5343a05641af3f2df0da8027635956eae2fd4670e7bc8f2185a8742abfeffe",
+    "lib/console/consoleinput.act": "8dac57d714dd27ae3032ca536f0a32115c0eb5ac99751eb06720f3238fd509b5",
+    "lib/console/consolecapture.act": "c0f12e78c5c3a44c21bccb7e738e41deb0fbf3fa9737f76d43a9d102378ac471"
+  },
+  "baseline_evidence_sha256": "7e7ae900a55d1a06023893383e0682415d8a89104b625cad48ed5b98a9dfe72b",
+  "worker_evidence_sha256": "aaa615c58184df7990ce11b805ee11fbed7defb165e81cdd302404adc28b00c3",
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 1,
+      "internal_port": 0,
+      "map": "Mouse -> ST Mouse (port 1)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "comparison": [
+    {
+      "stage": 2,
+      "before_scroll_ms": 164.27924987911962,
+      "after_scroll_ms": 121.8198593417623,
+      "before_input_ms": 52.00386535265352,
+      "after_input_ms": 9.735345985714265,
+      "input_reduction_percent": 81.279572355447,
+      "routines": {
+        "signal_collect": {
+          "calls": 16,
+          "total_ms": 9.009429374142735,
+          "max_ms": 0.5969305547528191
+        },
+        "call": {
+          "calls": 16,
+          "total_ms": 81.76461383830082,
+          "max_ms": 6.413708327988283
+        },
+        "input_service_turn": {
+          "calls": 16,
+          "total_ms": 0.366165336160219,
+          "max_ms": 0.023259780737800245
+        },
+        "present": {
+          "calls": 16,
+          "total_ms": 0.17564658666241884,
+          "max_ms": 0.011206985264576483
+        },
+        "edit": {
+          "calls": 1,
+          "total_ms": 5.303582429138726,
+          "max_ms": 5.303582429138726
+        },
+        "launch_to_idle": {
+          "calls": 30,
+          "total_ms": 18.652652531298504,
+          "max_ms": 1.6197970337435983
+        },
+        "input_collect_turn": {
+          "calls": 16,
+          "total_ms": 9.369180649554046,
+          "max_ms": 0.6196969462022417
+        },
+        "advance": {
+          "calls": 16,
+          "total_ms": 95.17859987397428,
+          "max_ms": 7.231959220670474
+        },
+        "find_task": {
+          "calls": 65,
+          "total_ms": 36.31401549806239,
+          "max_ms": 0.5903755256358025
+        },
+        "idle": {
+          "calls": 76,
+          "total_ms": 18.756687186962118,
+          "max_ms": 1.6174710556698182
+        },
+        "input_collect": {
+          "calls": 16,
+          "total_ms": 9.215595612500511,
+          "max_ms": 0.609899644618744
+        },
+        "input_service": {
+          "calls": 16,
+          "total_ms": 0.16584928507892116,
+          "max_ms": 0.010643111792144961
+        }
+      },
+      "components": [
+        "input_service_turn",
+        "input_collect_turn",
+        "runnable"
+      ]
+    },
+    {
+      "stage": 3,
+      "before_scroll_ms": 165.515894888346,
+      "after_scroll_ms": 122.21830643421923,
+      "before_input_ms": 52.046367315638044,
+      "after_input_ms": 10.01700078519381,
+      "input_reduction_percent": 80.75369847727285,
+      "routines": {
+        "signal_collect": {
+          "calls": 16,
+          "total_ms": 9.291366110358497,
+          "max_ms": 0.6574059846710997
+        },
+        "call": {
+          "calls": 16,
+          "total_ms": 80.14446438363696,
+          "max_ms": 6.00024810432787
+        },
+        "input_service_turn": {
+          "calls": 16,
+          "total_ms": 0.36679969381670446,
+          "max_ms": 0.023330264921854183
+        },
+        "present": {
+          "calls": 16,
+          "total_ms": 0.1750827131899873,
+          "max_ms": 0.011206985264576483
+        },
+        "edit": {
+          "calls": 1,
+          "total_ms": 5.347564559988385,
+          "max_ms": 5.347564559988385
+        },
+        "launch_to_idle": {
+          "calls": 30,
+          "total_ms": 18.903294289794314,
+          "max_ms": 2.1244637915698097
+        },
+        "input_collect_turn": {
+          "calls": 16,
+          "total_ms": 9.650201091377106,
+          "max_ms": 0.6798904393843066
+        },
+        "advance": {
+          "calls": 16,
+          "total_ms": 94.96637199578787,
+          "max_ms": 7.146320937044937
+        },
+        "find_task": {
+          "calls": 65,
+          "total_ms": 38.8606795521153,
+          "max_ms": 2.1287633267971
+        },
+        "idle": {
+          "calls": 76,
+          "total_ms": 19.0104302495563,
+          "max_ms": 2.1221378134960296
+        },
+        "input_collect": {
+          "calls": 16,
+          "total_ms": 9.497179927796003,
+          "max_ms": 0.6703750745370246
+        },
+        "input_service": {
+          "calls": 16,
+          "total_ms": 0.16655412691946056,
+          "max_ms": 0.010643111792144961
+        }
+      },
+      "components": [
+        "input_service_turn",
+        "input_collect_turn",
+        "runnable"
+      ]
+    }
+  ],
+  "input_check_limit_ms": 13,
+  "input_reduction_required_percent": 75,
+  "timing_scope": "Elapsed guest cycles including preemption. Collection includes caller mask stores/stop test; service includes caller flag arguments/stores and clearing local bits. Whole Runnable charged conservatively if called. Nested spans are not added.",
+  "cases": [
+    {
+      "name": "scroll-opt/results.json",
+      "xex_sha256": "c6796ebbf0400abb6120381eff86d3a5cdd8ad175c683908f9022c53fa4ec57c",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "override": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 533,
+        "native_irq_count": 5228,
+        "os_busy": 0,
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 123,
+        "clock_end": 144,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 665,
+        "gateway_calls": 8681,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 533,
+        "vbi_dispatches": 353,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "live_tasks": 0,
+        "idle_runs": 228,
+        "created": 1,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          42,
+          0,
+          0,
+          16,
+          36,
+          0,
+          0,
+          16,
+          42,
+          0,
+          202,
+          2,
+          63,
+          0,
+          0,
+          0,
+          199,
+          2,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 377,
+            "untouched_above_floor": 903
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 271,
+          "untouched_from_base": 1265,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "name": "scroll-opt/results-replay.json",
+      "xex_sha256": "c6796ebbf0400abb6120381eff86d3a5cdd8ad175c683908f9022c53fa4ec57c",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "override": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 533,
+        "native_irq_count": 5228,
+        "os_busy": 0,
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 123,
+        "clock_end": 144,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 665,
+        "gateway_calls": 8681,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 533,
+        "vbi_dispatches": 353,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "live_tasks": 0,
+        "idle_runs": 228,
+        "created": 1,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          42,
+          0,
+          0,
+          16,
+          36,
+          0,
+          0,
+          16,
+          42,
+          0,
+          202,
+          2,
+          63,
+          0,
+          0,
+          0,
+          199,
+          2,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 377,
+            "untouched_above_floor": 903
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 271,
+          "untouched_from_base": 1265,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "name": "fairness-opt/results.json",
+      "xex_sha256": "76924d05a3edc7671ec6cb75dd9662f9ade955ce1eeeee5225e438e608b4fe9c",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "override": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 404,
+        "native_irq_count": 56211,
+        "os_busy": 0,
+        "return_s": 13390,
+        "return_d": 3072,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 125,
+        "clock_end": 17,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 1076,
+        "gateway_calls": 6315,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 404,
+        "vbi_dispatches": 323,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "live_tasks": 0,
+        "idle_runs": 1742,
+        "created": 7,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          64,
+          0,
+          0,
+          0,
+          0,
+          1,
+          42,
+          0,
+          0,
+          16,
+          36,
+          0,
+          0,
+          16,
+          42,
+          0,
+          202,
+          2,
+          63,
+          0,
+          0,
+          0,
+          199,
+          2,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 281,
+            "untouched_above_floor": 999
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 265,
+            "untouched_above_floor": 503
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 141,
+            "untouched_above_floor": 627
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 269,
+            "untouched_above_floor": 499
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 391,
+            "untouched_above_floor": 377
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 238,
+            "untouched_above_floor": 530
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 185,
+            "untouched_above_floor": 2119
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 290,
+          "untouched_from_base": 1246,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "name": "fairness-replay/replay-results.json",
+      "xex_sha256": "76924d05a3edc7671ec6cb75dd9662f9ade955ce1eeeee5225e438e608b4fe9c",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "override": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 404,
+        "native_irq_count": 56211,
+        "os_busy": 0,
+        "return_s": 13390,
+        "return_d": 3072,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 125,
+        "clock_end": 17,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 1076,
+        "gateway_calls": 6315,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 404,
+        "vbi_dispatches": 323,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "live_tasks": 0,
+        "idle_runs": 1742,
+        "created": 7,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          64,
+          0,
+          0,
+          0,
+          0,
+          1,
+          42,
+          0,
+          0,
+          16,
+          36,
+          0,
+          0,
+          16,
+          42,
+          0,
+          202,
+          2,
+          63,
+          0,
+          0,
+          0,
+          199,
+          2,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 281,
+            "untouched_above_floor": 999
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 265,
+            "untouched_above_floor": 503
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 141,
+            "untouched_above_floor": 627
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 269,
+            "untouched_above_floor": 499
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 391,
+            "untouched_above_floor": 377
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 238,
+            "untouched_above_floor": 530
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 185,
+            "untouched_above_floor": 2119
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 290,
+          "untouched_from_base": 1246,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "name": "cancel-opt/results.json",
+      "xex_sha256": "1428dbfce943e73f84e6154a6759829c95fa8dc1a1ea4043af67ce6431010295",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "override": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 176,
+        "native_irq_count": 21,
+        "os_busy": 0,
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 112,
+        "clock_end": 32,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 365,
+        "gateway_calls": 2886,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 176,
+        "vbi_dispatches": 76,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "live_tasks": 0,
+        "idle_runs": 103,
+        "created": 2,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          42,
+          0,
+          0,
+          16,
+          36,
+          0,
+          0,
+          16,
+          42,
+          0,
+          202,
+          2,
+          63,
+          0,
+          0,
+          0,
+          199,
+          2,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 389,
+            "untouched_above_floor": 891
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 238,
+            "untouched_above_floor": 530
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 225,
+            "untouched_above_floor": 543
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 37,
+            "untouched_above_floor": 219
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 260,
+          "untouched_from_base": 1276,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "name": "shell-break-opt/results.json",
+      "xex_sha256": "4fc67ef903f71752309bc15a06ab2d4e4cfe9edc2660ab6bf79ff5f81e50c540",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "override": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 184,
+        "native_irq_count": 3235,
+        "os_busy": 0,
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 142,
+        "clock_end": 70,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 624,
+        "gateway_calls": 4510,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 184,
+        "vbi_dispatches": 39,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "live_tasks": 0,
+        "idle_runs": 364,
+        "created": 7,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          42,
+          0,
+          0,
+          16,
+          36,
+          0,
+          0,
+          16,
+          42,
+          0,
+          202,
+          2,
+          63,
+          0,
+          0,
+          0,
+          199,
+          2,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 410,
+            "untouched_above_floor": 870
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 238,
+            "untouched_above_floor": 530
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 263,
+            "untouched_above_floor": 505
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 125,
+            "untouched_above_floor": 643
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 218,
+            "untouched_above_floor": 550
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 184,
+            "untouched_above_floor": 584
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 72,
+            "untouched_above_floor": 2232
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 88,
+            "untouched_above_floor": 2216
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 46,
+            "untouched_above_floor": 210
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 285,
+          "untouched_from_base": 1251,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "name": "input-opt/results-mode0.json",
+      "xex_sha256": "75d04a5a32b083aaa1b9105c88fbc680795b59dce3207c60e957059263aaeeeb",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "override": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 508,
+        "native_irq_count": 8,
+        "os_busy": 0,
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 62,
+        "clock_end": 58,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 61,
+        "gateway_calls": 617,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 508,
+        "vbi_dispatches": 10,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "live_tasks": 0,
+        "idle_runs": 431,
+        "created": 2,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          42,
+          0,
+          0,
+          16,
+          36,
+          0,
+          0,
+          16,
+          42,
+          0,
+          202,
+          2,
+          63,
+          0,
+          0,
+          0,
+          199,
+          2,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 178,
+            "untouched_above_floor": 1102
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 96,
+            "untouched_above_floor": 672
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 186,
+            "untouched_above_floor": 582
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 60,
+            "untouched_above_floor": 196
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 260,
+          "untouched_from_base": 1276,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "name": "input-opt/results-mode2.json",
+      "xex_sha256": "75d04a5a32b083aaa1b9105c88fbc680795b59dce3207c60e957059263aaeeeb",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "override": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 505,
+        "native_irq_count": 7,
+        "os_busy": 0,
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 62,
+        "clock_end": 57,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 60,
+        "gateway_calls": 625,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 507,
+        "vbi_dispatches": 9,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "live_tasks": 0,
+        "idle_runs": 438,
+        "created": 2,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          42,
+          0,
+          0,
+          16,
+          36,
+          0,
+          0,
+          16,
+          42,
+          0,
+          202,
+          2,
+          63,
+          0,
+          0,
+          0,
+          199,
+          2,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 178,
+            "untouched_above_floor": 1102
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 96,
+            "untouched_above_floor": 672
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 186,
+            "untouched_above_floor": 582
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 60,
+            "untouched_above_floor": 196
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 260,
+          "untouched_from_base": 1276,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "name": "input-opt/results-mode4.json",
+      "xex_sha256": "75d04a5a32b083aaa1b9105c88fbc680795b59dce3207c60e957059263aaeeeb",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "override": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 608,
+        "native_irq_count": 72,
+        "os_busy": 0,
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 62,
+        "clock_end": 158,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 53,
+        "gateway_calls": 18982,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 608,
+        "vbi_dispatches": 5,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "live_tasks": 0,
+        "idle_runs": 19,
+        "created": 2,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          42,
+          0,
+          0,
+          16,
+          36,
+          0,
+          0,
+          16,
+          42,
+          0,
+          202,
+          2,
+          63,
+          0,
+          0,
+          0,
+          199,
+          2,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 178,
+            "untouched_above_floor": 1102
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 96,
+            "untouched_above_floor": 672
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 186,
+            "untouched_above_floor": 582
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 60,
+            "untouched_above_floor": 196
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 260,
+          "untouched_from_base": 1276,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  ],
+  "loaded": {
+    "counters": {
+      "checks": 65,
+      "floods": 18,
+      "smalls": 8,
+      "reads": 3,
+      "computes": 143
+    },
+    "pointer": {
+      "samples": 3,
+      "losses": 0,
+      "lastX": 100,
+      "lastY": 100
+    },
+    "timing": {
+      "verdict": "pass",
+      "violations": [],
+      "rx_service": {
+        "count": 3799,
+        "min_us": 5.638734724315211,
+        "mean_us": 15.191929856220973,
+        "max_us": 46.23762473938473
+      },
+      "tx_refill": {
+        "count": 116,
+        "min_us": 6.766481669178253,
+        "mean_us": 16.911343194735018,
+        "max_us": 47.36537168424777
+      },
+      "command_setup": {
+        "count": 29,
+        "min_us": 1061.7737485885543,
+        "mean_us": 1067.9180250467737,
+        "max_us": 1078.6899527614999
+      },
+      "command_hold": {
+        "count": 29,
+        "min_us": 771.9427837587524,
+        "mean_us": 779.0398119462525,
+        "max_us": 789.9867348765611
+      },
+      "byte_deadline_us": 169.16204172945635,
+      "rx_byte_deadline_us": 174.80077645377156,
+      "deadline_misses": {
+        "rx": 0,
+        "tx": 0,
+        "tx_gaps": 0
+      },
+      "critic_deferral_bound": {
+        "count": 29,
+        "min_us": 46923.29488186145,
+        "mean_us": 138490.8247334932,
+        "max_us": 706852.1199528038,
+        "median_us": 93395.98437506608,
+        "p95_us": 264909.51945292996,
+        "p99_us": 706852.1199528038
+      },
+      "post_to_worker": {
+        "count": 29,
+        "min_us": 953.0871367773785,
+        "mean_us": 7984.278235392966,
+        "max_us": 26960.623305736426,
+        "median_us": 3855.766804486741,
+        "p95_us": 21116.63863745614,
+        "p99_us": 26960.623305736426
+      },
+      "post_to_sector_collection_upper_bound": {
+        "count": 29,
+        "min_us": 4825.347240332741,
+        "mean_us": 20250.786615646488,
+        "max_us": 52536.65529991725,
+        "median_us": 19300.82508785854,
+        "p95_us": 48576.21948211041,
+        "p99_us": 52536.65529991725
+      },
+      "post_to_sector_collection": {
+        "count": 29,
+        "min_us": 4825.347240332741,
+        "mean_us": 20250.786615646488,
+        "max_us": 52536.65529991725,
+        "median_us": 19300.82508785854,
+        "p95_us": 48576.21948211041,
+        "p99_us": 52536.65529991725
+      },
+      "alarms": {
+        "sio_alarm": {
+          "service": {
+            "count": 406,
+            "min_us": 22.625423081314786,
+            "mean_us": 23.409950243235365,
+            "max_us": 37.85000683696585,
+            "median_us": 23.189296553746306,
+            "p95_us": 26.572537388335434,
+            "p99_us": 32.21127211265064
+          },
+          "cancelled_or_terminal": {
+            "count": 0,
+            "max_us": null
+          },
+          "boundary": "Acknowledged physical timer-1 edge to armed SIO callback; pointer-only ticks checked separately"
+        },
+        "sio_watchdog": {
+          "service": {
+            "count": 921,
+            "min_us": 6.625513301070373,
+            "mean_us": 19.32406940952448,
+            "max_us": 51.17151762316053,
+            "median_us": 18.466856222132314,
+            "p95_us": 20.722350111858397,
+            "p99_us": 39.89404817453011
+          },
+          "cancelled_or_terminal": {
+            "count": 0,
+            "max_us": null
+          },
+          "boundary": "sio_watchdog"
+        }
+      },
+      "forbid": {
+        "count": 709,
+        "min_us": 52.1582961999157,
+        "mean_us": 1113.7388843235663,
+        "max_us": 29593.419032703252,
+        "median_us": 190.80068623401596,
+        "p95_us": 3354.271834942957,
+        "p99_us": 11240.958641290481
+      },
+      "forbid_scope": "After first serial command; cold startup excluded",
+      "active_masked_max_us": 147.87581814516642,
+      "longest_transaction_mask": {
+        "start_tick": 4310631402.0,
+        "end_tick": 4310631664.25,
+        "duration_us": 147.87581814516642,
+        "entry_pc": 805744,
+        "instruction_pc": 805744,
+        "opcode": 104,
+        "exit_pc": 6318,
+        "irq": true,
+        "nmi": false,
+        "clipped": false,
+        "transaction": 22,
+        "overlap_us": 147.87581814516642
+      },
+      "longest_resident_mask": {
+        "start_tick": 4310631402.0,
+        "end_tick": 4310631664.25,
+        "duration_us": 147.87581814516642,
+        "entry_pc": 805744,
+        "instruction_pc": 805744,
+        "opcode": 104,
+        "exit_pc": 6318,
+        "irq": true,
+        "nmi": false,
+        "clipped": false
+      },
+      "resident_masked_max_us": 147.87581814516642,
+      "wire_transactions": 29,
+      "verified_wire_bytes": 3799
+    },
+    "pointer_timing": {
+      "sample_gaps": {
+        "count": 54766,
+        "min_us": 66.81900648313525,
+        "mean_us": 126.36053705027925,
+        "max_us": 271.01168768739984
+      },
+      "sample_cost": {
+        "count": 54767,
+        "min_us": 6.343576564854612,
+        "mean_us": 6.63394046409163,
+        "max_us": 74.14936162474503
+      },
+      "sample_count": 54767,
+      "native_irq_service": {
+        "count": 56211,
+        "min_us": 28.193673621576053,
+        "mean_us": 39.61777916370483,
+        "max_us": 142.30756760490513
+      },
+      "irq_cost_scope": "Native IRQ entry through fixed source routing return; scheduler/RTI excluded",
+      "timer_accounting": {
+        "physical_edges": 54772,
+        "logical_dispatches": 54767,
+        "alarm_services": 406,
+        "pointer_samples": 54767,
+        "duplicate_dispatches": 0,
+        "duplicate_backend_services": 0
+      }
+    },
+    "replay_counters": {
+      "checks": 65,
+      "floods": 18,
+      "smalls": 8,
+      "reads": 3,
+      "computes": 143
+    },
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 1,
+        "internal_port": 0,
+        "map": "Mouse -> ST Mouse (port 1)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "shell": {
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ]
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": false,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "off",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "break_timing": {
+      "capture": 4303688178.0,
+      "durable": 4303730160.375,
+      "retained": 4303922868.5,
+      "physical": 4303926757.875,
+      "usable": 4303933505.75,
+      "physical_ms": 134.52886256852824,
+      "ready_ms": 138.33381027631208,
+      "delivery_ms": 23.67274757217228,
+      "prompt_ms": 138.33381027631208,
+      "keypress_to_observed_prompt_upper_ms": 160
+    },
+    "serial_timing": {
+      "verdict": "pass",
+      "violations": [],
+      "rx_service": {
+        "count": 2358,
+        "min_us": 5.638734724315211,
+        "mean_us": 19.602853224161976,
+        "max_us": 65.40932280205645
+      },
+      "tx_refill": {
+        "count": 72,
+        "min_us": 6.766481669178253,
+        "mean_us": 21.575991896511674,
+        "max_us": 64.2815758571934
+      },
+      "command_setup": {
+        "count": 18,
+        "min_us": 1053.3156465020816,
+        "mean_us": 1065.1569894231434,
+        "max_us": 1079.8176997063629
+      },
+      "command_hold": {
+        "count": 18,
+        "min_us": 770.8150368138893,
+        "mean_us": 783.2202532073828,
+        "max_us": 827.2023840570415
+      },
+      "byte_deadline_us": 169.16204172945635,
+      "rx_byte_deadline_us": 174.80077645377156,
+      "deadline_misses": {
+        "rx": 0,
+        "tx": 0,
+        "tx_gaps": 0
+      },
+      "critic_deferral_bound": {
+        "count": 18,
+        "min_us": 47829.58052042702,
+        "mean_us": 134951.19988359147,
+        "max_us": 689226.3514989872,
+        "median_us": 95690.52650275805,
+        "p95_us": 689226.3514989872,
+        "p99_us": 689226.3514989872
+      },
+      "post_to_worker": {
+        "count": 18,
+        "min_us": 787.7312409868349,
+        "mean_us": 1733.6133278386994,
+        "max_us": 7828.960259607347,
+        "median_us": 966.9020368519508,
+        "p95_us": 7828.960259607347,
+        "p99_us": 7828.960259607347
+      },
+      "post_to_sector_collection_upper_bound": {
+        "count": 18,
+        "min_us": 3466.341687588722,
+        "mean_us": 7284.360295726575,
+        "max_us": 21548.63620152274,
+        "median_us": 4267.746860282021,
+        "p95_us": 21548.63620152274,
+        "p99_us": 21548.63620152274
+      },
+      "post_to_sector_collection": {
+        "count": 18,
+        "min_us": 3466.341687588722,
+        "mean_us": 7284.360295726575,
+        "max_us": 21548.63620152274,
+        "median_us": 4267.746860282021,
+        "p95_us": 21548.63620152274,
+        "p99_us": 21548.63620152274
+      },
+      "alarms": {
+        "sio_alarm": {
+          "service": {
+            "count": 252,
+            "min_us": 22.625423081314786,
+            "mean_us": 25.725888082258933,
+            "max_us": 68.299174348268,
+            "median_us": 23.471233289962065,
+            "p95_us": 34.46676600237673,
+            "p99_us": 64.07012330503157
+          },
+          "cancelled_or_terminal": {
+            "count": 0,
+            "max_us": null
+          },
+          "boundary": "sio_alarm"
+        },
+        "sio_watchdog": {
+          "service": {
+            "count": 582,
+            "min_us": 6.695997485124313,
+            "mean_us": 23.4672367640621,
+            "max_us": 85.63828362553727,
+            "median_us": 20.158476639426876,
+            "p95_us": 44.405035953982285,
+            "p99_us": 63.57673401665401
+          },
+          "cancelled_or_terminal": {
+            "count": 0,
+            "max_us": null
+          },
+          "boundary": "sio_watchdog"
+        }
+      },
+      "forbid": {
+        "count": 427,
+        "min_us": 51.735391095592064,
+        "mean_us": 1115.3418935378954,
+        "max_us": 46013.55551827725,
+        "median_us": 158.30747738514955,
+        "p95_us": 4996.130418295439,
+        "p99_us": 11250.474006137762
+      },
+      "forbid_scope": "Complete observed execution",
+      "active_masked_max_us": 3891.3613174339807,
+      "longest_transaction_mask": {
+        "start_tick": 4300842562.125,
+        "end_tick": 4300849463.25,
+        "duration_us": 3891.3613174339807,
+        "entry_pc": 7981,
+        "instruction_pc": 7980,
+        "opcode": 120,
+        "exit_pc": 8001,
+        "irq": false,
+        "nmi": false,
+        "clipped": false,
+        "transaction": 0,
+        "overlap_us": 3891.3613174339807
+      },
+      "longest_resident_mask": {
+        "start_tick": 4301168896.625,
+        "end_tick": 4301195637.25,
+        "duration_us": 15078.329073739143,
+        "entry_pc": 7981,
+        "instruction_pc": 7980,
+        "opcode": 120,
+        "exit_pc": 8001,
+        "irq": false,
+        "nmi": false,
+        "clipped": false
+      },
+      "resident_masked_max_us": 15078.329073739143,
+      "wire_transactions": 18,
+      "verified_wire_bytes": 2358
+    }
+  },
+  "input": [
+    {
+      "mode": 0,
+      "captured": [
+        97,
+        98,
+        65,
+        1,
+        3,
+        10,
+        27
+      ],
+      "checks": [
+        502
+      ],
+      "native_events": 7,
+      "emulation_events": 0,
+      "losses": [
+        0
+      ],
+      "input_observations": {
+        "consumer_before_keys": 4,
+        "retired_callback_unchanged": true,
+        "post_nmi_checkpoints": 84
+      }
+    },
+    {
+      "mode": 2,
+      "captured": [
+        97,
+        98,
+        65,
+        1,
+        3,
+        10,
+        27
+      ],
+      "checks": [
+        502
+      ],
+      "native_events": 6,
+      "emulation_events": 1,
+      "losses": [
+        0
+      ],
+      "input_observations": {
+        "consumer_before_keys": 4,
+        "retired_callback_unchanged": true,
+        "post_nmi_checkpoints": 72
+      }
+    },
+    {
+      "mode": 4,
+      "captured": [
+        27
+      ],
+      "checks": [
+        497
+      ],
+      "native_events": 71,
+      "emulation_events": 0,
+      "losses": [
+        1
+      ],
+      "input_observations": {
+        "consumer_before_keys": 4,
+        "raw_before_release": [
+          1,
+          84,
+          20,
+          1
+        ],
+        "skstat": "ff",
+        "retired_callback_unchanged": true,
+        "post_nmi_checkpoints": 152
+      }
+    }
+  ],
+  "input_pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "cancel_checks": [
+    602
+  ],
+  "image_memory": {
+    "before": {
+      "initialized_image_bytes": 428251,
+      "zero_fill_bytes": 9905,
+      "worker": {
+        "size": 3362,
+        "fixed_frame": 38,
+        "spill_bytes": 28,
+        "local_stack_peak": 52
+      }
+    },
+    "after": {
+      "initialized_image_bytes": 428454,
+      "zero_fill_bytes": 9903,
+      "worker": {
+        "size": 3374,
+        "fixed_frame": 38,
+        "spill_bytes": 30,
+        "local_stack_peak": 52
+      }
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "host_checks": {
+    "tests": 303,
+    "skipped_historical": 4,
+    "status": "pass",
+    "log_sha256": "2bf7d49a55a944d06640639bbc9045a8d098c1ec82b834c563db6c7d3cce7768"
+  },
+  "supplemental_probe": {
+    "scope": "Standalone 125 kbaud continuous SIO with forced NMI inside keyboard posting",
+    "result": "First transfer overruns; io_Error=5, io_Actual=68, fixture assertion followed by reset-required FF93. Reproduces with the pre-Q1 pump. This extra profile is not qualified here.",
+    "baseline_report": "build/console-idle-input/q3/input-before-q1/results.json",
+    "baseline_report_sha256": "92f71d6f74f2a6bdb816302e4b674f28806dbe40469b92169cf06a3b0a2b63c9",
+    "changed_log_sha256": "3b2daad9ed7b701919a319a3666d25a57415c58b96daaeb4b2f1d1251c53acd0",
+    "baseline_log_sha256": "44e8832d9be8dd8543696a7bca9703987e08e7ffcf389e6bf341d1e36025324a"
+  },
+  "limits": [
+    "Development checks, not release or physical-cartridge qualification.",
+    "The separate 20 ms full scroll target remains unmet; no new 40 ms visible-input or 500 ms repaint claim.",
+    "SDFS/ST concurrency uses the existing paced profile 4 workload and unchanged SIO/pointer/Forbid limits."
+  ]
+}

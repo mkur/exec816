@@ -4,7 +4,7 @@ import adapter_state as adapter
 from library_paths import read_source
 import argparse,json,os,shutil,time
 from pathlib import Path
-from native_program import ROOT,build,compiler,require,verify_machine,sha256
+from native_program import ROOT,build,compiler,read_build,require,verify_machine,sha256
 from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
 from banked_test_memory import read as far_read
@@ -33,21 +33,31 @@ def instrument(out,size):
     core=core.replace('PROC ShellDispatch()\n  CARD index','PROC ShellDispatch()\n  CARD index\n  IF scenario=1 AND shell.command=1 THEN Compute(0) RETURN FI')
     core=core.replace('  ShellWrite(shell.console,prompt,2)','  BREAKPROBE.Prompt(prompt)\n  ShellWrite(shell.console,prompt,2)\n  BREAKPROBE.Retained(0)')
     (out/'shell-observed.inc').write_text(core)
+    requests=read_source(ROOT/'lib/console/console-requests.inc')
+    needle='  instance.write=NULL\n'
+    require(requests.count(needle)==1,'Missing write completion boundary')
+    requests=requests.replace(needle,'  BREAKPROBE.Written(instance,request)\n'+needle)
+    (out/'console-requests-probe.inc').write_text(requests)
     driver=read_source(ROOT/'lib/console/consoledriver.act').replace('USE EXEC\n','USE EXEC\nUSE BREAKPROBE\n',1)
-    driver=driver.replace('  ignored=Control(4,BYTE POINTER(request))','  BREAKPROBE.Written(instance,request)\n  ignored=Control(4,BYTE POINTER(request))')
-    driver=driver.replace('    CONSOLEDISPLAY.Quantum(CONSOLETYPES.Presentation POINTER(entry.view),instance)','    CONSOLEDISPLAY.Quantum(CONSOLETYPES.Presentation POINTER(entry.view),instance)\n    BREAKPROBE.Display(instance)')
+    driver=driver.replace(str(ROOT/'lib/console/console-requests.inc'),str(out/'console-requests-probe.inc'))
+    driver=driver.replace('"console-storage-action.inc"','"'+str(out/'console-storage-action.inc')+'"')
+    needle='        CONSOLEDISPLAY.Present(view,instance)'
+    require(driver.count(needle)==1,'Missing display completion boundary')
+    driver=driver.replace(needle,needle+'\n        BREAKPROBE.Display(instance)')
     (out/'consoledriver.act').write_text(driver)
     cooked=read_source(ROOT/'lib/dos/doscooked.act').replace('USE EXEC\n','USE EXEC\nUSE BREAKPROBE\n',1)
     cooked=cooked.replace('        state.drawn=0\n      FI','        state.drawn=0\n      FI\n      BREAKPROBE.Key(0)')
     (out/'doscooked.act').write_text(cooked)
-    return {name:sha256(out/name) for name in ('shell-break-common.inc','shell-observed.inc','breakprobe.act','consoledriver.act','doscooked.act')}
+    return {name:sha256(out/name) for name in ('shell-break-common.inc','shell-observed.inc','breakprobe.act','consoledriver.act','console-requests-probe.inc','doscooked.act')}
 
 def markers(p):
     names=('native_nmi','native_irq','input_capture','sio_start','sio_retire','sio_shutdown','sio_terminal','signal_post','sio_alarm','sio_watchdog','tasks_forbid','tasks_permit')
     result={n:p['labels'][n] for n in names}
     for name,prefix in (('visible','M_BREAKPROBE_VISIBILITY_'),('usable','M_BREAKPROBE_USABLE_'),('retained','M_BREAKPROBE_COMMIT_'),('prompt_collected','M_BREAKPROBE_RETAINED_'),('allocation_cycle','M_SHELLBREAKTEST_ALLOCATECYCLE_'),('collected','M_FSOPERATION_COLLECT_')):
         result[name]=next(r['address'] for r in p['image']['routines'] if r['name'].startswith(prefix))
-    result['durable']=call_marker(p,'M_CONSOLEFOREGROUND_DELIVER_','tasks_signal')
+    result['forbid_retire_sio']=call_marker(p,'M_SIODRIVER_RETIREWORKER_','tasks_rem_task')
+    result['forbid_retire_console']=call_marker(p,'M_CONSOLEDRIVER_RETIREWORKER_','tasks_rem_task')
+    result['durable']=call_marker(p,'M_CONSOLEFOREGROUND_NOTIFYONE_','tasks_signal')
     result['cancel']=call_marker(p,'M_FSOPERATION_REQUEST_','tasks_signal')
     result['queued_reply']=call_marker(p,'M_FSOPERATION_PUMP_','ports_reply_msg')
     result['sector_end']=sector_end_marker(p)
@@ -193,15 +203,26 @@ def run_case(p,out,name,size,profile,trace,marks,schedule=None):
     (out/'case.json').write_text(json.dumps(result,indent=2)+'\n')
     return result
 
-def run(out,mode,name,size,profile,bank,replay):
+def run(out,mode,name,size,profile,bank,replay,reuse=False):
     inputs={name:sha256(ROOT/name) for name in ('examples/shell/shell-session.inc','examples/shell/shell-commands.inc','examples/shell/shell-redirection.inc','tests/programs/shell_break.act','tests/programs/breakprobe.act','tests/programs/shell_concurrent.act','tools/test_shell_break.py','tools/shell_break_timing.py','tools/console_concurrent_trace.py')}
     out.mkdir(parents=True,exist_ok=True);observers=instrument(out,size)
     import generate_tasks
     original=generate_tasks.task_entries;entries=('MAIN','READERENTRY','PRODUCERENTRY','SIGNALENTRY','RECEIVERENTRY')
-    def select(image):return original(dict(image,routines=[r for r in image['routines'] if any(r['name'].startswith('M_SHELLBREAKTEST_'+n+'_') for n in entries)]))
+    def select(image):return original(dict(image,routines=[r for r in image['routines'] if not r['name'].startswith('M_SHELLBREAKTEST_') or any(r['name'].startswith('M_SHELLBREAKTEST_'+n+'_') for n in entries)]))
     generate_tasks.task_entries=select
-    try:p=build(compiler(ROOT/'build/actionc'),out/'shell_break.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=profile)])
-    finally:generate_tasks.task_entries=original
+    original_policy=generate_tasks.policy_modules
+    def policy(*args,**kwargs):
+        directory=original_policy(*args,**kwargs)
+        (directory/'consoledriver.act').write_bytes((out/'consoledriver.act').read_bytes())
+        return directory
+    generate_tasks.policy_modules=policy
+    try:p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc'),out/'shell_break.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=profile)])
+    finally:
+        generate_tasks.task_entries=original
+        generate_tasks.policy_modules=original_policy
+    require(p['build']['optimize']==(mode=='opt'),'Reused compiler mode differs')
+    require(p['build']['dos_mounts']==[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=profile,boot=1,format=1)],'Reused mount configuration differs')
+    require(p['build']['memory']['config']['kernel_bank']==bank,'Reused kernel bank differs')
     marks=markers(p);first=run_case(p,out/'observed',name,size,profile,True,marks)
     result=dict(status='pass',source_inputs=inputs,build=p['build'],case=first,marks=marks,observers=observers,pin=PIN,sector_bytes=size,profile=profile,bank_zero=dict(fixed_delta=0,per_task_delta=0))
     if replay:
@@ -211,9 +232,9 @@ def run(out,mode,name,size,profile,bank,replay):
     return result
 
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--scenario',choices=CASES,default='compute');a.add_argument('--size',type=int,choices=(128,256),default=256);a.add_argument('--profile',type=int,choices=(1,4),default=1);a.add_argument('--bank',type=int,choices=(1,3),default=1);a.add_argument('--replay',action='store_true');a.add_argument('--output',type=Path,required=True)
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--scenario',choices=CASES,default='compute');a.add_argument('--size',type=int,choices=(128,256),default=256);a.add_argument('--profile',type=int,choices=(1,4),default=1);a.add_argument('--bank',type=int,choices=(1,3),default=1);a.add_argument('--reuse-build',action='store_true');a.add_argument('--replay',action='store_true');a.add_argument('--output',type=Path,required=True)
     o=a.parse_args();out=o.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
-    try:r=run(out,o.case,o.scenario,o.size,o.profile,o.bank,o.replay)
+    try:r=run(out,o.case,o.scenario,o.size,o.profile,o.bank,o.replay,o.reuse_build)
     except Exception as e:r.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     print('Shell break passed',o.case,o.scenario,o.size,o.profile,flush=True)

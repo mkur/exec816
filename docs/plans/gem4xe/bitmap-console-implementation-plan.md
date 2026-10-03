@@ -11,9 +11,11 @@ VDI drawing path first. Each slice must leave an executable, reviewable result;
 commit it with its focused development evidence before starting the next slice.
 
 The [idle input implementation plan](../console-idle-input-implementation-plan.md)
-defines the next bounded B8 performance work: remove repeated input validation
-from idle console turns while preserving notification and drain semantics.
-Display validation and blitter chunking remain separate optimization work.
+records completed Q0–Q3 development checks. [Measured evidence](../../development/console-idle-input-q3.json)
+shows input checking reduced from 52 ms to 9.7–10.0 ms and complete scrolls from
+164–166 ms to 121.8–122.2 ms, with exact pixels and SDFS/ST coexistence preserved.
+The 20 ms scroll target remains unmet. Display validation and blitter chunking
+remain separate optimization work.
 
 ## Fixed decisions
 
