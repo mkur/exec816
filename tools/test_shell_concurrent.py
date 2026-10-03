@@ -4,6 +4,7 @@ import adapter_state as adapter
 from library_paths import read_source
 import argparse,hashlib,json,os,shutil,time
 from pathlib import Path
+from console_model import read_cells
 from native_program import ROOT,build,compiler,require,sha256,verify_machine
 from os_boundary import emulator,run_to
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
@@ -114,7 +115,7 @@ def execute_case(p,out,size,speed,trace,marks,schedule=None):
                     input_action(action['key'],action['state'])
             rendezvous(f'db(${q+PROBE["phase"]:x})=3',long=True)
             rendezvous(f'db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0')
-            cells=int.from_bytes(readfar(instance,3),'little');retained=readfar(cells,960);physical=b.memdump(saved['at'],960)
+            cells=int.from_bytes(readfar(instance,3),'little');retained=read_cells(readfar,instance);physical=b.memdump(saved['at'],960)
             expected_screen=bytearray(glyphs()[v] for v in retained)
             cursor=b.eval_expr(f'dw(${instance+12:x})')*40+b.eval_expr(f'dw(${instance+10:x})');expected_screen[cursor]^=128
             require(physical==expected_screen,'Physical screen does not match retained cells/cursor')

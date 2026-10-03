@@ -3,6 +3,7 @@
 import adapter_state as adapter
 import argparse,hashlib,json,shutil,time
 from pathlib import Path
+from console_model import read_cells
 from native_program import ROOT,build,compiler,require,sha256,verify_machine
 from test_console_coexistence import PIN
 from test_dos_stack import execute,ownership
@@ -56,8 +57,7 @@ def run(t,out,mode,bank=1):
             schedule.append(dict(key=name,state=state,frame=b.eval_expr('@frame')))
         def pauseframes():rendezvous(f'@frame>={b.eval_expr("@frame")+4}')
         def cells():
-            location=int.from_bytes(readfar(instance,3),'little')
-            return readfar(location,960)
+            return read_cells(readfar,instance)
         def state(label):
             ds=p['build']['memory']['dos_storage']
             raw=readfar(ds['STREAMS'],16);ep=int.from_bytes(raw[1:4],'little')

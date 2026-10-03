@@ -225,10 +225,11 @@ PROC Clipping()
   OD
 
   FOR index=0 TO 9 DO
-    cells(index)=BYTE(65+index)
+    cells((index+5) MOD 10)=BYTE(65+index)
   OD
 
   small.cells=cells
+  small.cellOrigin=5
   small.width=5
   small.height=2
   small.count=10
@@ -249,7 +250,7 @@ PROC Clipping()
   Require(CONSOLEDISPLAY.Geometry(@clipped,@small)=1)
   CONSOLEDISPLAY.Quantum(@clipped,@small)
   CheckClipping(0)
-  Require(cells(9)=74)
+  Require(cells(4)=74)
   clipped.left=39
   Require(CONSOLEDISPLAY.Geometry(@clipped,@small)=0)
   EXEC.FreeMem(screen,992)
@@ -292,6 +293,7 @@ PROC ClippedRows()
 
   cells(12)=200
   small.cells=cells
+  small.cellOrigin=0
   small.width=10
   small.height=12
   small.count=120
@@ -394,6 +396,7 @@ PROC Scrolling()
   OD
 
   small.cells=cells
+  small.cellOrigin=0
   small.width=5
   small.height=3
   small.count=15

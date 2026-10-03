@@ -2,6 +2,7 @@
 """Native retained-screen rendering, hidden output and borrowed-screen restore."""
 import adapter_state as adapter
 import argparse,json,hashlib
+from console_model import read_cells
 from pathlib import Path
 from native_program import ROOT,build,compiler,require,verify_machine,sha256
 from test_dos_stack import execute,ownership
@@ -72,7 +73,7 @@ def run(t,out,optimize,bank,paced=False):
                 require(physical==bytes(first[1] if stage<4 else last[1]),f'Physical screen oracle failed at {stage}')
                 pointer=int.from_bytes(b.memdump(address('INSTANCE'),3),'little')
                 cells=b.eval_expr(f'dw(${pointer:x})')|(b.eval_expr(f'db(${pointer+2:x})')<<16)
-                retained=readfar(cells,960)
+                retained=read_cells(readfar,pointer)
                 require(retained==bytes(first[0] if stage<3 else last[0]),f'Retained cells failed at {stage}')
                 observations.append(dict(stage=stage,screen_sha256=hashlib.sha256(physical).hexdigest(),cells_sha256=hashlib.sha256(retained).hexdigest()))
                 (out/f'stage{stage}.screen.bin').write_bytes(physical)

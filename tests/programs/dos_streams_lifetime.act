@@ -1,5 +1,6 @@
 MODULE DOSSTREAMLIFE
 USE EXEC
+USE CONSOLECORE
 USE EXECTASKS
 USE EXECLISTS
 USE TASKSTACKS
@@ -469,9 +470,12 @@ PROC DeliveryRaces(BYTE unused)
   Check(DOS.Write(handle,BYTE POINTER($d1050),4)=4)
   Check(request.io_Actual=256
       AND request.io_Message.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
-  Check(instance.cells(254)=65 AND instance.cells(255)=69
-      AND instance.cells(256)=78 AND instance.cells(257)=68
-      AND instance.cells(258)=33 AND instance.cells(259)=32)
+  Check(instance.cells(CONSOLECORE.CellOffset(instance,254))=65
+      AND instance.cells(CONSOLECORE.CellOffset(instance,255))=69
+      AND instance.cells(CONSOLECORE.CellOffset(instance,256))=78
+      AND instance.cells(CONSOLECORE.CellOffset(instance,257))=68
+      AND instance.cells(CONSOLECORE.CellOffset(instance,258))=33
+      AND instance.cells(CONSOLECORE.CellOffset(instance,259))=32)
   probe.gate=1
   WaitDone(0)
   Check(peerResult=256 AND peerError=0)

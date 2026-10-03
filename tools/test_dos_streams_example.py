@@ -2,6 +2,7 @@
 """Resident DOS streams: physical input, background 70003-byte Read, redirection."""
 import adapter_state as adapter
 import argparse,json,shutil,time
+from console_model import read_cells
 from pathlib import Path
 from native_program import ROOT,build,compiler,require,sha256,verify_machine
 from test_console_coexistence import PIN
@@ -56,7 +57,7 @@ def run(t,out,mode,nil=False):
             expected,physical,cursor=terminal(payload)
             rendezvous(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
             cells=int.from_bytes(far(instance,3),'little')
-            require(far(cells,960)==expected,'Example terminal contents differ')
+            require(read_cells(far,instance)==expected,'Example terminal contents differ')
             require(b.memdump(saved['at'],960)==physical,'Example physical screen differs')
             (out/(stage+'.cells.bin')).write_bytes(expected);(out/(stage+'.screen.bin')).write_bytes(physical)
             observations.append(dict(stage=stage,cells_sha256=sha256(out/(stage+'.cells.bin')),screen_sha256=sha256(out/(stage+'.screen.bin'))))

@@ -27,6 +27,12 @@ def run(t,out,optimize,bank,paced=False):
             print('Core checks',data(b,p['image'],'checks',True),flush=True);raise
         ownership(b,p,out)
         actual=read(b,0xd0000,1088,out)
+        actual=bytearray(actual)
+        for name,start,count in [('firstOrigin',16,24),('secondOrigin',48,10),('fullOrigin',80,960)]:
+            origin=data(b,p['image'],name,True)[0]
+            physical=actual[start:start+count]
+            require(origin<count,'Invalid snapshot origin')
+            actual[start:start+count]=physical[origin:]+physical[:origin]
         expected=bytearray([0xa5])*1088
         expected[16:40]=b'ABD     Z       Q?      '
         expected[48:58]=b'67        '
@@ -34,6 +40,11 @@ def run(t,out,optimize,bank,paced=False):
         cells[919]=33;expected[80:1040]=cells
         require(actual==expected,'Independent terminal cell/guard oracle failed')
         bitmap=read(b,0xd0ff0,2432,out)
+        bitmap=bytearray(bitmap)
+        origin=data(b,p['image'],'wideOrigin',True)[0]
+        physical=bitmap[16:2416]
+        require(origin<2400,'Invalid bitmap origin')
+        bitmap[16:2416]=physical[origin:]+physical[:origin]
         expected=bytearray([0xa5])*2432
         expected[16:2416]=bytes(v for row in range(1,30) for v in [33+row]*80)+b' '*80
         expected[16+2319]=90

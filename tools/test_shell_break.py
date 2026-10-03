@@ -4,6 +4,7 @@ import adapter_state as adapter
 from library_paths import read_source
 import argparse,json,os,shutil,time
 from pathlib import Path
+from console_model import read_cells
 from native_program import ROOT,build,compiler,read_build,require,verify_machine,sha256
 from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
@@ -113,7 +114,7 @@ def run_case(p,out,name,size,profile,trace,marks,schedule=None):
             observations.append(dict(stage=stage,frame=b.eval_expr('@frame')-origin,live=live,created=created,allocations=int.from_bytes(b.memdump(at('mix')+22,4),'little'),reader_active=b.peek(at('reader')+4)[0],sio_phase=b.eval_expr(f'db(${sd+1:x})')))
         def physical(stage):
             rendezvous(f'(db(${q+9:x})={3 if stage=="prompt" else 4})&(db(${at("visible","BREAKPROBE"):x})=1)')
-            cells=int.from_bytes(far(instance,3),'little');retained=far(cells,960);screen=b.memdump(saved['at'],960)
+            cells=int.from_bytes(far(instance,3),'little');retained=read_cells(far,instance);screen=b.memdump(saved['at'],960)
             expected=bytearray(glyphs()[v] for v in retained);cursor=int.from_bytes(far(instance+12,2),'little')*40+int.from_bytes(far(instance+10,2),'little');expected[cursor]^=128
             require(screen==expected,'Physical prompt differs from retained text/cursor')
             index=b.peek16(at('promptIndex','BREAKPROBE'));require(retained[index:index+2]==b'> ','Missing fresh prompt')

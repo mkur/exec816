@@ -42,7 +42,7 @@
   },
   "records": {
     "Instance": {
-      "size": 198,
+      "size": 200,
       "alignment": 2,
       "fields": [
         [
@@ -204,6 +204,11 @@
           "changeTick",
           "CARD",
           196
+        ],
+        [
+          "cellOrigin",
+          "CARD",
+          198
         ]
       ]
     },

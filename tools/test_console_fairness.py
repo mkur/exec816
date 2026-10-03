@@ -3,6 +3,7 @@
 import adapter_state as adapter
 import argparse,hashlib,json,os,shutil
 from pathlib import Path
+from console_model import read_cells
 from generate_console import constants as console_constants
 from native_program import ROOT,build,compiler,read_build,require,verify_machine,sha256
 from os_boundary import emulator,run_to
@@ -145,7 +146,7 @@ def run(out,mode,from_build=None,bitmap=False,pointer=False,observe=True,pointer
                     for name,left,top,w,h in [('first',0,0,20,12),('second',20,0,20,12),('third',0,12,40,12)]:
                         unit=int.from_bytes(b.memdump(at(name),4),'little');entry=cs['WINDOWS']+console['WINDOWS_ITEMS']+(unit&3)*console['WINDOW_SIZE']
                         raw=bytes(b.eval_expr(f'db(${entry+8+i:x})') for i in range(3));instance=int.from_bytes(raw,'little')
-                        raw=bytes(b.eval_expr(f'db(${instance+i:x})') for i in range(3));base=int.from_bytes(raw,'little');cells=bytes(b.eval_expr(f'db(${base+i:x})') for i in range(w*h))
+                        cells=read_cells(lambda at,n:bytes(b.eval_expr(f'db(${at+i:x})') for i in range(n)),instance)
                         for row in range(h):oracle[(top+row)*40+left:(top+row)*40+left+w]=bytes(map(glyph,cells[row*w:(row+1)*w]))
                         tiles.append(cells)
                     require(tiles[0]==b'#'*220+b' '*20,'Flood retained order/scroll contents')

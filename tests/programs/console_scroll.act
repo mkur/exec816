@@ -105,11 +105,11 @@ PROC Direct()
   elapsed(1)=Clock()-started
   CONSOLEDISPLAY.Release(@presentation)
   FOR index=0 TO 319 DO
-    Require(cells(index)=BYTE(33+(index & 63)))
+    Require(cells(CONSOLECORE.CellOffset(@local,index))=BYTE(33+(index & 63)))
   OD
 
   FOR index=320 TO 959 DO
-    Require(cells(index)=32)
+    Require(cells(CONSOLECORE.CellOffset(@local,index))=32)
   OD
 
   EXEC.FreeMem(snapshot,960)
@@ -171,7 +171,7 @@ PROC Tile()
   Clean()
   elapsed(7)=Clock()-started
   FOR index=0 TO 159 DO
-    Require(instance.cells(index)=32)
+    Require(instance.cells(CONSOLECORE.CellOffset(instance,index))=32)
   OD
 
   EXEC.CloseDevice(EXEC.IORequest POINTER(request))
@@ -212,7 +212,7 @@ PROC Worker()
   Clean()
   elapsed(3)=Clock()-started
   FOR index=0 TO 959 DO
-    Require(instance.cells(index)=32)
+    Require(instance.cells(CONSOLECORE.CellOffset(instance,index))=32)
   OD
 
   Require(instance.row=23 AND instance.column=0 AND instance.operation=0)

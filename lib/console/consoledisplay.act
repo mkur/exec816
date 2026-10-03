@@ -280,7 +280,7 @@ PROC Cursor(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   FI
 
   index=Position(view.top+instance.row,view.left+instance.column)
-  view.cursorCell=Glyph(instance.cells(view.index))
+  view.cursorCell=Glyph(instance.cells(CONSOLECORE.CellOffset(instance,view.index)))
   view.previousCursor=index
   view.cursorOn=1
   view.screen(index)=BYTE(view.cursorCell) XOR $80
@@ -293,6 +293,7 @@ PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
   CARD row,base,first,last,stop,rows,remaining
   BYTE okay
+  BYTE POINTER source
   LONGCARD generation
 
   IF instance.dirtyRows=0 THEN
@@ -318,9 +319,10 @@ PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
           stop=view.width
         FI
 
+        source=instance.cells+SIZE(CONSOLECORE.CellOffset(instance,base+first))
         IF CONSOLEBITMAP.Enabled()<>0 THEN
           okay=CONSOLEBITMAP.Text((view.left+first) LSH 3,
-              (view.top+row) LSH 3,instance.cells+SIZE(base+first),stop-first)
+              (view.top+row) LSH 3,source,stop-first)
           IF okay=0 THEN
             CONSOLECORE.Clean(instance)
             view.index=instance.lineStart+instance.column
@@ -328,7 +330,7 @@ PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
           FI
         ELSE
           Span(view.screen+SIZE(Position(view.top+row,view.left+first)),
-              instance.cells+SIZE(base+first),stop-first)
+              source,stop-first)
         FI
       FI
 
@@ -362,7 +364,8 @@ PUBLIC PROC RemoveCursor(CONSOLETYPES.Presentation POINTER view)
       row=view.previousCursor/instance.width
       column=view.previousCursor MOD instance.width
       okay=CONSOLEBITMAP.Text((view.left+column) LSH 3,
-          (view.top+row) LSH 3,instance.cells+SIZE(view.previousCursor),1)
+          (view.top+row) LSH 3,instance.cells+
+          SIZE(CONSOLECORE.CellOffset(instance,view.previousCursor)),1)
       view.cursorOn=0
       RETURN
     END

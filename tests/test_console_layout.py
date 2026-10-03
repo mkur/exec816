@@ -16,6 +16,9 @@ class ConsoleLayoutTests(unittest.TestCase):
         native=generate_input_native.definitions()[0]
         self.assertEqual((native['RAWEVENT_SIZE'],native['RAWEVENT_ROUTE'],native['CAPTURE_SIZE']), (8,4,560))
         self.assertEqual((c['ROUTE_SIZE'],c['ROUTES_SIZE']), (16,264))
+        self.assertEqual((c['INSTANCE_CELLORIGIN'],c['INSTANCE_SIZE']), (198,200))
+        self.assertLessEqual(console.ABI['storage']['instance_offset']+c['INSTANCE_SIZE'],
+                             console.ABI['storage']['presentation_offset'])
 
     def test_console_build_admission(self):
         from native_program import build
@@ -28,6 +31,10 @@ class ConsoleLayoutTests(unittest.TestCase):
         ):
             with self.subTest(options=options), self.assertRaisesRegex(RuntimeError, message):
                 build(None, None, None, **options)
+
+    def test_bitmap_helpers_are_not_application_task_entries(self):
+        for name in ('M_CONSOLEBITMAP_CLOSE_1234', 'M_CONSOLEBITMAP_POLL_1234'):
+            self.assertFalse(generate_tasks.application_entry({'name': name}))
 
     def test_glyphs(self):
         table=console.glyphs()

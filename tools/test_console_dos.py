@@ -2,6 +2,7 @@
 """Physical typing and bounded line editing alongside one real MyDOS Read."""
 import adapter_state as adapter
 import argparse,hashlib,json,shutil
+from console_model import read_cells
 from pathlib import Path
 from native_program import ROOT,build,compiler,verify_machine,require,sha256
 from os_boundary import emulator,run_to
@@ -50,7 +51,7 @@ def run(t,out,optimize,size,bank=1):
             if name!='X' or (prior+1)%8==0:print('Input',name,'consumed',prior+1,'during read',bool(active),flush=True)
         def screen(label):
             pending();rendezvous(f'db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0')
-            cells=int.from_bytes(readfar(instance,3),'little');raw=readfar(cells,960);physical=b.memdump(saved['at'],960)
+            cells=int.from_bytes(readfar(instance,3),'little');raw=read_cells(readfar,instance);physical=b.memdump(saved['at'],960)
             (out/(label+'.cells.bin')).write_bytes(raw);(out/(label+'.screen.bin')).write_bytes(physical)
             (out/(label+'.png')).write_bytes(b.screenshot())
             observations.append(dict(stage=label,live=b.eval_expr(f'db(${ts["LIVE"]:x})'),created=b.eval_expr(f'dw(${ts["CREATED"]:x})'),cells_sha256=sha256(out/(label+'.cells.bin')),screen_sha256=sha256(out/(label+'.screen.bin'))))

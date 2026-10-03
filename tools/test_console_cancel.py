@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Interrupt console requests, retain exact reply ownership and committed bytes."""
 import adapter_state as adapter
+from console_model import read_cells
 from library_paths import read_source
 import argparse,json
 from pathlib import Path
@@ -96,7 +97,7 @@ def run(out,optimize,bank):
             expected=bytes(10 if (i+1)%40==0 else 65 for i in range(count))
             cells,screen,cursor=terminal(expected)
             rendezvous(f'db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0');frames(3)
-            require(far(pointer(instance),960)==cells,'Canceled Write prefix differs from retained screen')
+            require(read_cells(far,instance)==cells,'Canceled Write prefix differs from retained screen')
             require(b.memdump(saved['at'],960)==screen,'Canceled Write prefix differs from physical screen')
             screens.append(dict(bytes=count,cursor=cursor,screen_sha256=__import__('hashlib').sha256(screen).hexdigest()))
             go();rendezvous(f'db(${at("stage","WAITPROBE"):x})=1')

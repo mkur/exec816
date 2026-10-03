@@ -1,5 +1,6 @@
 MODULE CONSOLEWINDOWTEST
 USE EXEC
+USE CONSOLECORE
 USE EXECTASKS
 USE EXECLISTS
 USE TASKSTACKS
@@ -149,15 +150,15 @@ PROC DeviceChecks()
   Collect(one,0,12)
   Collect(two,0,2)
   FOR index=0 TO 11 DO
-    Require(a.cells(index)=text(index))
+    Require(a.cells(CONSOLECORE.CellOffset(a,index))=text(index))
   OD
 
   FOR index=12 TO 23 DO
-    Require(a.cells(index)=32)
+    Require(a.cells(CONSOLECORE.CellOffset(a,index))=32)
   OD
 
   Require(a.row=1 AND a.column=4 AND b.row=0 AND b.column=2)
-  Require(b.cells(0)=120 AND b.cells(1)=121)
+  Require(b.cells(CONSOLECORE.CellOffset(b,0))=120 AND b.cells(CONSOLECORE.CellOffset(b,1))=121)
   Request(one,EXEC.CMD_READ,inputA,4)
   Request(two,EXEC.CMD_READ,inputB,4)
   WHILE a.readReady<>2 OR b.readReady<>2 DO
@@ -239,8 +240,10 @@ PROC DosChecks()
   EXEC.Permit()
   Require(DOS.Read(con,inputA,4)=3 AND inputA(0)=97 AND inputA(1)=98
       AND inputA(2)=10)
-  Require(instance.cells(8)=32 AND instance.cells(9)=97
-      AND instance.cells(10)=98 AND instance.cells(15)=32)
+  Require(instance.cells(CONSOLECORE.CellOffset(instance,8))=32
+      AND instance.cells(CONSOLECORE.CellOffset(instance,9))=97
+      AND instance.cells(CONSOLECORE.CellOffset(instance,10))=98
+      AND instance.cells(CONSOLECORE.CellOffset(instance,15))=32)
   Require(DOS.Write(raw,shortText,2)=2 AND DOS.Write(other,text,3)=3)
   Require(DOS.Close(raw)<>0 AND DOS.Close(con)<>0 AND DOS.Close(other)<>0)
   UnitName(third,1)
@@ -301,8 +304,11 @@ PROC NarrowCooked()
   CONSOLEINPUT.Deliver(instance,$0201000c)
   EXEC.Permit()
   Require(DOS.Read(file,inputA,4)=2 AND inputA(0)=97 AND inputA(1)=10)
-  Require(instance.row=0 AND instance.column=0 AND instance.cells(0)=32
-      AND instance.cells(1)=32 AND instance.cells(2)=32)
+  Require(instance.row=0
+      AND instance.column=0
+      AND instance.cells(CONSOLECORE.CellOffset(instance,0))=32
+      AND instance.cells(CONSOLECORE.CellOffset(instance,1))=32
+      AND instance.cells(CONSOLECORE.CellOffset(instance,2))=32)
   Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
   Require(CONSOLE.Destroy(unit)<>0)
 

@@ -33,6 +33,17 @@ BYTE FUNC Extent(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
 
 RETURN(1)
 
+; Map a logical cell of an initialized, borrowed instance to its allocation.
+; The caller admits the index; each row remains contiguous across ring wrap.
+PUBLIC CARD FUNC CellOffset(CONSOLETYPES.Instance POINTER instance CARD index)
+
+  index==+instance.cellOrigin
+  IF index>=instance.count THEN
+    index==-instance.count
+  FI
+
+RETURN(index)
+
 ; Reset damage bookkeeping only after the corresponding pixels are settled.
 PUBLIC PROC Clean(CONSOLETYPES.Instance POINTER instance)
   CARD row
@@ -168,6 +179,7 @@ PUBLIC BYTE FUNC Init(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
   instance.column=0
   instance.row=0
   instance.lineStart=0
+  instance.cellOrigin=0
   instance.generation=0
   instance.changeTick=0
   Clean(instance)
@@ -250,7 +262,7 @@ RETURN
 ; dirty row span, ending at a control, row edge or the source quantum.
 PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
     CARD length)
-  CARD used,limit,stop,first,index
+  CARD used,limit,stop,first,index,start
   BYTE value
 
   IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
@@ -267,8 +279,9 @@ PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
   WHILE used<limit DO
     value=bytes(used)
     IF value>=ASCII.SPACE AND value<>DELETE THEN
-      first=instance.lineStart+instance.column
-      index=first
+      first=instance.column
+      start=used
+      index=CellOffset(instance,instance.lineStart+first)
       stop=used+instance.width-instance.column
       IF stop>limit THEN
         stop=limit
@@ -290,10 +303,9 @@ PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
       UNTIL used=stop
       OD
 
-      instance.column==+index-first
+      instance.column==+used-start
       Changed(instance)
-      MarkRow(instance,instance.row,first-instance.lineStart,
-          index-instance.lineStart)
+      MarkRow(instance,instance.row,first,instance.column)
       IF instance.column=instance.width THEN
         NewLine(instance)
       FI

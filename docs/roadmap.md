@@ -75,8 +75,10 @@ The [measurements](history/blitter-completion-irqs.md) show lower completion CPU
 cost, but isolated scrolling remains about 32.5 ms and loaded visible input
 98–139 ms. Completion-to-adoption delay can still reach 52.6 ms under load.
 The next responsiveness work should examine that scheduling delay and remaining
-worker work between input checks. Circular character rows remain a separate
-preparation optimization.
+worker work between input checks. The
+[circular character buffer plan](plans/console-circular-buffer-implementation-plan.md)
+defines a separate preparation optimization: replace retained row copies with
+an origin update and one-row clear, preserving physical blits and logical damage.
 
 The other possible milestones have no delivery order:
 

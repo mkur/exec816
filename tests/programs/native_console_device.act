@@ -1,5 +1,6 @@
 MODULE NATIVECONSOLEDEVICE
 USE EXEC
+USE CONSOLECORE
 USE EXECTASKS
 USE EXECLISTS
 USE TASKSTACKS
@@ -149,7 +150,9 @@ PROC PendingAndReplies()
   Require(EXEC.GetMsg(port)=@unrelated
       AND EXEC.GetMsg(port)=EXEC.Message POINTER(0))
   Require(EXEC.CheckIO(EXEC.IORequest POINTER(first))=EXEC.IORequest POINTER(0))
-  Require(instance.cells(0)=72 AND instance.cells(4)=111 AND instance.row=1
+  Require(instance.cells(CONSOLECORE.CellOffset(instance,0))=72
+      AND instance.cells(CONSOLECORE.CellOffset(instance,4))=111
+      AND instance.row=1
       AND instance.column=0)
   EXEC.AbortIO(EXEC.IORequest POINTER(first))
   Collected(first,EXEC.IOERR_ABORTED,0)
@@ -226,15 +229,19 @@ PROC LargeWrite()
   Require(error=0 AND first.io_Actual=65560)
   Require(first.io_Data=large AND first.io_Length=65560)
   Require(instance.column=4 AND instance.row=0)
-  Require(instance.cells(0)=65 AND instance.cells(1)=66 AND instance.cells(2)=67
-      AND instance.cells(3)=90)
+  Require(instance.cells(CONSOLECORE.CellOffset(instance,0))=65
+      AND instance.cells(CONSOLECORE.CellOffset(instance,1))=66
+      AND instance.cells(CONSOLECORE.CellOffset(instance,2))=67
+      AND instance.cells(CONSOLECORE.CellOffset(instance,3))=90)
   EXEC.FreeMem(large,65560)
   large=BYTE POINTER(0)
   ; Subsequent work uses retained cells after source release.
   Prepare(second,EXEC.CMD_WRITE,message,6)
   error=EXEC.DoIO(EXEC.IORequest POINTER(second))
   Require(error=0)
-  Require(instance.cells(0)=65 AND instance.cells(3)=90 AND instance.cells(4)=72)
+  Require(instance.cells(CONSOLECORE.CellOffset(instance,0))=65
+      AND instance.cells(CONSOLECORE.CellOffset(instance,3))=90
+      AND instance.cells(CONSOLECORE.CellOffset(instance,4))=72)
 
 RETURN
 
@@ -281,7 +288,7 @@ PROC ClearPending()
   Collected(second,0,0)
   Require(instance.inputLost=0 AND instance.inputCount=0)
   Require(EXEC.CheckIO(EXEC.IORequest POINTER(first))=EXEC.IORequest POINTER(0))
-  Require(instance.cells(0)=65)
+  Require(instance.cells(CONSOLECORE.CellOffset(instance,0))=65)
   EXEC.Forbid()
   CONSOLEINPUT.Deliver(instance,$02000015)
   EXEC.Signal(@service.task,$40000000)

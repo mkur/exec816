@@ -5,7 +5,7 @@ USE CONSOLECORE
 USE INPUTNATIVE
 USE CONSOLETYPES
 INCLUDE "console-storage-action.inc"
-CARD checks,quanta,used
+CARD checks,quanta,used,firstOrigin,secondOrigin,fullOrigin,wideOrigin
 CONSOLETYPES.Instance POINTER first,second,full
 BYTE POINTER firstCells,secondCells,fullCells,output
 BYTE ARRAY input(130)
@@ -90,6 +90,9 @@ PROC Layouts()
   Offset(BYTE POINTER(first),BYTE POINTER(@first.opens),CONSOLETYPES.INSTANCE_OPENS)
   Offset(BYTE POINTER(first),BYTE POINTER(@first.lineStart),
       CONSOLETYPES.INSTANCE_LINESTART)
+  Offset(BYTE POINTER(first),BYTE POINTER(@first.cellOrigin),
+      CONSOLETYPES.INSTANCE_CELLORIGIN)
+  Require(SIZEOF(CONSOLETYPES.Instance)=CONSOLETYPES.INSTANCE_SIZE)
 
 RETURN
 
@@ -134,6 +137,7 @@ PROC RejectExtents()
   Require(CONSOLECORE.Init(first,BYTE POINTER(ADDRESS($fffff0)),8,3,24)=0)
   Require(CONSOLECORE.Init(first,BYTE POINTER(ADDRESS($8000)),8,3,24)=0)
   Require(CONSOLECORE.Init(first,BYTE POINTER(first),8,3,24)=0)
+  Require(CONSOLECORE.Init(first,BYTE POINTER(first)+198,1,1,1)=0)
   Require(first.width=8 AND first.height=3 AND first.cells=firstCells)
 
 RETURN
@@ -205,7 +209,11 @@ PROC SmallScroll()
   Require(second.operation=CONSOLETYPES.OP_SCROLL)
   used=CONSOLECORE.Feed(second,@input(1),1)
   Require(used=0)
-  Require(second.operation=0 AND secondCells(0)=54 AND secondCells(1)=55)
+  Require(second.operation=0
+      AND secondCells(CONSOLECORE.CellOffset(second,0))=54
+      AND secondCells(CONSOLECORE.CellOffset(second,1))=55)
+  firstOrigin=first.cellOrigin
+  secondOrigin=second.cellOrigin
   FOR index=0 TO 23 DO
     output(index)=firstCells(index)
   OD
@@ -219,7 +227,7 @@ PROC SmallScroll()
   Require(used=1)
   Finish(second)
   FOR index=0 TO 9 DO
-    Require(secondCells(index)=32)
+    Require(secondCells(CONSOLECORE.CellOffset(second,index))=32)
   OD
 
   Require(second.column=0 AND second.row=0 AND first.row=2)
@@ -261,11 +269,14 @@ PROC FullScroll()
   before=quanta
   Finish(full)
   Require(quanta-before=1)
+  fullOrigin=full.cellOrigin
   FOR index=0 TO 959 DO
     output(index+64)=fullCells(index)
   OD
 
-  Require(fullCells(0)=66 AND fullCells(919)=33 AND fullCells(920)=32)
+  Require(fullCells(CONSOLECORE.CellOffset(full,0))=66
+      AND fullCells(CONSOLECORE.CellOffset(full,919))=33
+      AND fullCells(CONSOLECORE.CellOffset(full,920))=32)
 
 RETURN
 
@@ -279,7 +290,7 @@ PROC FullClear()
   Finish(full)
   Require(quanta-before=1)
   FOR index=0 TO 959 DO
-    Require(fullCells(index)=32)
+    Require(fullCells(CONSOLECORE.CellOffset(full,index))=32)
   OD
 
   Require(full.row=0 AND full.column=0)
@@ -312,7 +323,7 @@ PROC EdgeScroll()
   Require(used=3 AND edge.operation=CONSOLETYPES.OP_SCROLL)
   Finish(@edge)
   FOR index=0 TO 2 DO
-    Require(cells(index)=32)
+    Require(cells(CONSOLECORE.CellOffset(@edge,index))=32)
   OD
 
   Require(CONSOLECORE.Init(@edge,cells,3,3,9)=1)
@@ -324,11 +335,11 @@ PROC EdgeScroll()
   edge.operation=CONSOLETYPES.OP_SCROLL
   Finish(@edge)
   FOR index=0 TO 5 DO
-    Require(cells(index)=BYTE(68+index))
+    Require(cells(CONSOLECORE.CellOffset(@edge,index))=BYTE(68+index))
   OD
 
   FOR index=6 TO 8 DO
-    Require(cells(index)=32)
+    Require(cells(CONSOLECORE.CellOffset(@edge,index))=32)
   OD
 
   Require((cells-1)^=$a5 AND cells(9)=$a5)
@@ -390,11 +401,13 @@ PROC BitmapModel(BYTE unused)
   Require(CONSOLECORE.Feed(wide,input,1)=1)
   Require(wide.operation=CONSOLETYPES.OP_SCROLL)
   Finish(wide)
+  wideOrigin=wide.cellOrigin
   FOR index=0 TO 2399 DO
     snapshot(index)=cells(index)
   OD
 
-  Require(wide.dirtyRows=30 AND cells(2319)=90 AND cells(2320)=32)
+  Require(wide.dirtyRows=30 AND cells(CONSOLECORE.CellOffset(wide,2319))=90
+      AND cells(CONSOLECORE.CellOffset(wide,2320))=32)
   Require((cells-1)^=$a5 AND cells(2400)=$a5)
   Require(CONSOLECORE.Init(wide,cells,1,1,1)=1)
   Finish(wide)
@@ -402,6 +415,32 @@ PROC BitmapModel(BYTE unused)
   Finish(wide)
   Require(cells^=32 AND wide.row=0 AND wide.column=0)
   FreeGuarded(BYTE POINTER(wide),CONSOLETYPES.INSTANCE_SIZE)
+
+RETURN
+
+; A seeded origin exercises row addressing and Feed before scroll rotation.
+; Logical row one crosses a CPU bank; damage remains in logical row zero.
+PROC MappedAccess(BYTE unused)
+  CONSOLETYPES.Instance mapped
+
+  LET cells=BYTE POINTER($afffd)
+  Require(CONSOLECORE.Init(@mapped,cells,5,3,15)=1)
+  Finish(@mapped)
+  CONSOLECORE.Clean(@mapped)
+  mapped.cellOrigin=10
+  input(0)=65
+  input(1)=66
+  Require(CONSOLECORE.Feed(@mapped,input,2)=2)
+  Require(cells(10)=65 AND cells(11)=66 AND cells(0)=32)
+  Require(mapped.column=2 AND mapped.lineStart=0 AND mapped.dirtyRows=1
+      AND mapped.damageFirst(0)=0 AND mapped.damageEnd(0)=2)
+  Require(CONSOLECORE.CellOffset(@mapped,5)=0
+      AND CONSOLECORE.CellOffset(@mapped,14)=9)
+  mapped.row=1
+  mapped.lineStart=5
+  mapped.column=2
+  Require(CONSOLECORE.Feed(@mapped,input,2)=2)
+  Require(cells(2)=65 AND cells(3)=66 AND mapped.column=4)
 
 RETURN
 
@@ -422,6 +461,7 @@ PROC Main()
   FullClear()
   EdgeScroll()
   BitmapModel(0)
+  MappedAccess(0)
   Cleanup()
 
 RETURN
