@@ -18,6 +18,7 @@ extern uint16_t GemVdiCommand(uint16_t op, uint16_t sub, uint16_t pairs,
 extern void GemVdiReset(void);
 extern UWORD GemBitmapFill(UWORD,UWORD,UWORD,UWORD,UWORD);
 extern UWORD GemBitmapText(UWORD,UWORD,const UBYTE *,UWORD,UWORD,UWORD);
+extern const UBYTE map_col[16];
 
 static struct VbxeDisplay display;
 static UBYTE page[4096];
@@ -197,6 +198,30 @@ UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (GemBitmapFill(left,top,right,bottom,pen)) return DISPLAY_BAD_ARGUMENT;
     return fence_owner();
+}
+UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
+{
+    UWORD status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (display.scrollPending) return DISPLAY_BUSY;
+    if (pen>=16) return DISPLAY_BAD_ARGUMENT;
+    status=fence_owner();
+    if (status!=DISPLAY_OK) return status;
+    status=VbxeOwnerScrollStart(&display,copy,(UBYTE)(map_col[pen]*17),id);
+    if (status==DISPLAY_DEVICE_FAULT) latch(status);
+    return status;
+}
+UWORD GemDrawingScrollPoll(ULONG id)
+{
+    UWORD status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    status=VbxeOwnerScrollPoll(&display,id);
+    if (status==DISPLAY_DEVICE_FAULT) latch(status);
+    return status;
 }
 UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg)
 {

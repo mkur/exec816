@@ -30,6 +30,15 @@ it retains argument checks, full-list rejection, dependency fences and recovery.
 There is no cached authorization across calls. Acquisition, retirement and fault
 transitions retain their separate mandatory ownership checks.
 
+The [asynchronous scroll contract](../../docs/reference/display.md#asynchronous-screen-scrolling)
+adds one active operation to the same owner. Start validates and uploads a copy
+and fill together; Poll reads BUSY once and uses the original sixteen-tick
+deadline. Existing synchronous operations drain that list before dependent work.
+No interrupt producer or extra arena is introduced. The display record grows by
+seven upper-RAM bytes (ID, start tick and pending flag), with a four-byte driver
+sequence counter. These fit the existing C data-bank reservation; fixed and
+per-Task bank-zero reservations, guards and stack capacities are unchanged.
+
 `VbxeFill` builds one 21-byte constant-source BCB on the caller's stack and fences
 before upload and after start. VRAM transfers validate full extents, fence, map
 one page at a time and unmap on return. They accept valid caller-stack or upper

@@ -10,6 +10,17 @@ def event(tick,pc,dp):
 
 
 class PerformanceSpans(unittest.TestCase):
+    def test_async_launch_spans_multiple_polls_until_hardware_completion(self):
+        events=[event(0,100,0x1000),event(10,200,0x1000),
+                event(20,200,0x1000),event(30,300,0x1000)]
+        marks={'launch':dict(entry=100,returns=[]),
+               'poll':dict(entry=200,returns=[],entry_only=True),
+               'complete_scroll':dict(entry=300,returns=[],entry_only=True)}
+        with patch('bitmap_console_performance.read_events',return_value=events):
+            rows=spans(None,marks)
+        intervals=[r for r in rows if r['kind']=='launch_to_idle']
+        self.assertEqual([(r['start'],r['end']) for r in intervals],[(0,30)])
+
     def test_entry_counts_do_not_require_a_unique_c_epilogue(self):
         events=[event(0,100,0x1000),event(1,200,0x1000),
                 event(2,200,0x1100),event(3,101,0x1000)]

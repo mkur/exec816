@@ -18,6 +18,8 @@ static BYTE rootBit;
 static volatile UWORD retired;
 extern void CopyCases(void);
 extern volatile UWORD copyFailures;
+extern void ScrollCases(void);
+extern volatile UWORD scrollFailures;
 
 static void check(UWORD good)
 {
@@ -29,7 +31,7 @@ static void check(UWORD good)
  * retain real Exec ticks, register writes and the complete recovery path. */
 UBYTE ProbeBusy(void)
 {
-    if (fault_arm && variant!=5 && (variant==6 || !ProbeStopped)) return 3;
+    if (fault_arm && variant!=5 && (variant==6 || variant==15 || !ProbeStopped)) return 3;
     return *(volatile UBYTE *)0xd653UL;
 }
 UBYTE ProbeVcount(void)
@@ -55,6 +57,8 @@ void Peer(void)
     Wait(1);
     check(VbxeFence(&display)==DISPLAY_INVALID_OWNER);
     check(VbxeSubmit(&display,NULL,0)==DISPLAY_INVALID_OWNER);
+    check(VbxeScrollStart(&display,NULL,0,NULL)==DISPLAY_INVALID_OWNER);
+    check(VbxeScrollPoll(&display,display.scrollId)==DISPLAY_INVALID_OWNER);
     check(VbxeClose(&display)==DISPLAY_INVALID_OWNER);
     check(VbxeOpen(&other)==DISPLAY_BUSY);
     compute(0);
@@ -212,7 +216,8 @@ void Renderer(void)
                 check(!display.mutated && display.lease.state==DISPLAY_FREE);
                 fault_arm=0;
             } else {
-                if (variant>=10) { CopyCases(); check(!copyFailures); }
+                if (variant>=12) { ScrollCases(); check(!scrollFailures); }
+                else if (variant>=10) { CopyCases(); check(!copyFailures); }
                 pattern();
                 answer=VbxeClose(&display);
                 check(answer==DISPLAY_OK);

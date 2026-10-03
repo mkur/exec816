@@ -49,7 +49,8 @@ def markers(program,foreign,output):
     # The ordinary-call boundary supplies complete drawing-call elapsed time;
     # native DISPLAY.Check spans isolate its validation work by owning Task DP.
     for name in ('DisplayCheck','GemDrawingCopy','GemDrawingFill','GemDrawingText',
-                 'GemDrawingFence','VbxeCopyRect','VbxeFill','VbxeSubmit','VbxeFence'):
+                 'GemDrawingFence','GemDrawingScrollStart','GemDrawingScrollPoll',
+                 'VbxeCopyRect','VbxeFill','VbxeSubmit','VbxeFence'):
         if name in foreign['symbols']:
             result[name]=dict(entry=foreign['symbols'][name],returns=[],entry_only=True)
     if 'input_collect' in result:
@@ -68,22 +69,24 @@ def markers(program,foreign,output):
     result['repaint']=dict(entry=r['address'],returns=[])
     # The ordinary call has one return irrespective of C tail-call epilogues.
     # Only idle has a standalone return; other optimized C exits may be shared.
+    if 'complete_scroll' in foreign['symbols']:
+        result['complete_scroll']=dict(entry=foreign['symbols']['complete_scroll'],returns=[],entry_only=True)
     current=None;busy_next=False
     for path in output.glob('*vbxe.lst'):
         for line in path.read_text().splitlines():
             if '.section ' in line:current=None
-            start=re.search(r'\\ ([0-9a-f]{6})\s+(?:[0-9a-f.]+\s+)?(idle|submit):',line)
+            start=re.search(r'\\ ([0-9a-f]{6})\s+(?:[0-9a-f.]+\s+)?(idle|submit|launch):',line)
             if start:
                 current=start[2]
                 if current=='idle':result['idle']=dict(entry=foreign['symbols']['idle'],returns=[])
-            if current=='submit' and busy_next and 'jsl ' in line:
+            if current in ('submit','launch') and busy_next and 'jsl ' in line:
                 address=int(re.search(r'\\ ([0-9a-f]{6})',line)[1],16)
-                result['launch']=dict(entry=foreign['symbols']['submit']+address,returns=[])
+                result['launch']=dict(entry=foreign['symbols'][current]+address,returns=[])
                 busy_next=False
-            if current=='submit' and re.search(r'\\ ([0-9a-f]{6}) 8f53d600\s+sta',line):
+            if current in ('submit','launch') and re.search(r'\\ ([0-9a-f]{6}) 8f53d600\s+sta',line):
                 address=int(re.search(r'\\ ([0-9a-f]{6})',line)[1],16)
-                result['launch']=dict(entry=foreign['symbols']['submit']+address+4,returns=[])
-            busy_next=current=='submit' and bool(re.search(r' a901\s+lda\s+#1$',line))
+                result['launch']=dict(entry=foreign['symbols'][current]+address+4,returns=[])
+            busy_next=current in ('submit','launch') and bool(re.search(r' a901\s+lda\s+#1$',line))
             ret=re.search(r'\\ ([0-9a-f]{6}) 6b\s+(?:`[^`]+`: *)?rtl',line)
             if current=='idle' and ret:result['idle']['returns'].append(foreign['symbols']['idle']+int(ret[1],16))
     require(result.get('idle',{}).get('returns') and 'launch' in result,'Missing hardware fence markers')
@@ -102,6 +105,9 @@ def spans(path,marks):
                     require(dp not in launch,'Overlapping hardware launch');launch[dp]=tick
                 elif name=='repaint' or m.get('entry_only'):
                     samples.append(dict(kind=name,dp=dp,start=tick,end=tick,ms=0))
+                    if name=='complete_scroll' and dp in launch:
+                        start=launch.pop(dp)
+                        samples.append(dict(kind='launch_to_idle',dp=dp,start=start,end=tick,ms=(tick-start)/BASE_HZ*1000))
                 elif m['returns']:
                     require(key not in active,'Nested performance routine '+name);active[key]=tick
             elif pc in m['returns'] and key in active:

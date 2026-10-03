@@ -99,6 +99,8 @@ def build_display_probe(output, optimize=True, instrument=True):
     # The probe substitutes only status reads. Real cases read actual hardware;
     # injected stuck-engine cases still execute the production stop/restore path.
     backend=(ROOT/'platform/altirraos/vbxe.c').read_text()
+    backend='extern void ProbeScrollLaunch(void);\n'+backend.replace(
+        'REG(BUSY)=1;', 'REG(BUSY)=1; ProbeScrollLaunch();')
     if instrument:
         backend=backend.replace('#define BUSY ', 'extern UBYTE ProbeBusy(void);\nextern UBYTE ProbeVcount(void);\nextern volatile UWORD ProbeStopped;\n#define BUSY ')
         backend=backend.replace('REG(BUSY)&3','ProbeBusy()&3').replace('REG(VCOUNT)','ProbeVcount()')
@@ -146,7 +148,8 @@ map_done_{index}:
         'extern volatile UWORD ownerChecks;\nUWORD DisplayCheck(struct DisplayLease *p) { ++ownerChecks;')
     (output/'display-probe.c').write_text(admission)
     sources=[ROOT/'c/calypsi/exec.c',output/'display-probe.c',output/'vbxe-probe.c',
-             ROOT/'tests/programs/gem_display.c',ROOT/'tests/programs/bitmap_copy.c']
+             ROOT/'tests/programs/gem_display.c',ROOT/'tests/programs/bitmap_copy.c',
+             ROOT/'tests/programs/bitmap_scroll.c']
     foreign=emit(output,sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
         ROOT/'c/calypsi/image-info.s',output/'vbxe-map-probe.s'],
         ['Renderer','Peer'],optimize=optimize,includes=[output],
@@ -159,7 +162,7 @@ map_done_{index}:
            *ROOT.glob('lib/display/*'),ROOT/'tools/build_gem_vdi.py',ROOT/'tools/test_gem_display.py',
            ROOT/'tools/generate_display.py',ROOT/'tools/calypsi_build.py',ROOT/'tools/calypsi_image.py',
            ROOT/'abi/bitmap.json',ROOT/'tools/generate_bitmap.py',ROOT/'tools/bitmap_copy_oracle.py',
-           ROOT/'tests/programs/bitmap_copy.c']
+           ROOT/'tests/programs/bitmap_copy.c',ROOT/'tests/programs/bitmap_scroll.c']
     foreign['provenance'].update(slice='G3',hardware_execution=True,local_inputs=local_inputs(),
         source_inputs={p.relative_to(ROOT).as_posix():sha256(p) for p in sorted(set(paths)) if p.is_file()},
         instrumentation=dict(busy_and_vcount_reads=instrument,mapping_nmi_gates=instrument,

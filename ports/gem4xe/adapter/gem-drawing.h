@@ -7,6 +7,10 @@
 UWORD GemDrawingOpen(WORD *workout);
 UWORD GemDrawingClose(void);
 UWORD GemDrawingCopy(const struct VbxeCopy *copy);
+/* One asynchronous screen scroll; pen is a GEM logical colour. The driver
+ * geometry, ID, storage lifetime and Poll contracts are in hardware/vbxe.h. */
+UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id);
+UWORD GemDrawingScrollPoll(ULONG id);
 UWORD GemDrawingFence(void);
 UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
 UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,

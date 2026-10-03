@@ -58,6 +58,19 @@ measure responsiveness separately from scroll throughput.
   skips. Reserved bank-zero delta is **0 bytes** in every category. This passes
   the validation-savings gate; the 20 ms scroll and 40 ms first-visible input
   targets remain open.
+- D4: [development evidence](../development/drawing-validation-d4.json) records
+  asynchronous copy/fill start and poll, one active list, stable operation IDs,
+  synchronous API ordering and bounded recovery. Raw/optimized exact pixels,
+  narrow and fill-only tiles, second-start/stale-ID rejection, descriptor reuse,
+  close/reopen, pre-launch and active timeouts, tick wrap and unquiesced retention
+  pass, as does an optimized control with original hardware reads. Shared GEM
+  calls pass in both modes. Host checks: 305 tests, four historical skips.
+  The record characterizes a Calypsi 5.18 byte-branch issue in the initial test
+  oracle; direct VRAM inspection was correct, and word-sized expected values
+  pass in both modes. Production rendering needed no change for that issue.
+  Added upper-RAM payload is seven bytes per display and a four-byte sequence
+  counter; reserved bank-zero delta remains **0 bytes** for fixed/root/kernel,
+  every public Task and idle, including guards and capacity.
 
 ## Baseline and intended gain
 

@@ -120,6 +120,38 @@ fault. There is no new kernel selector or advertised VDI opcode. Signed list
 steps support X ±1 and Y −4096…4095; validation checks both address extremes
 and rejects VRAM wrap and command-arena overlap before submission.
 
+## Asynchronous screen scrolling
+
+`VbxeScrollStart(display, copy, value, id)` submits an upward eight-pixel copy
+and exposed-strip fill in one hardware launch. Both surfaces must describe the
+640×240 screen at offset zero and pitch 320; X and width are even, source and
+destination X agree, and source Y is destination Y plus eight. The copy and fill
+must both fit the screen. A zero copy height submits only the eight-row fill.
+`value` is the packed hardware byte, including both pixel nibbles.
+
+OK means accepted, with an operation ID written to `id`; the call may return
+while hardware is busy. Descriptor fields and records are copied before return.
+Only one list can be pending. Another start returns BUSY without replacing the
+operation, changing the output ID or touching its command storage.
+`VbxeScrollPoll(display, id)` checks once and returns BUSY, completed OK or a
+terminal error. A stale/zero ID returns BAD_ARGUMENT. IDs are not reused across
+close/reopen, and exhaustion rejects new starts. Both entries validate the owner
+on every invocation; an ID never grants access to another Task.
+
+The display record, command arena and raster storage must remain live until
+completion or confirmed quiescence. MEMAC is closed when start returns. Existing
+synchronous drawing/transfer operations and Fence finish pending work before
+dependent access. Close likewise drains before release. Poll uses the original
+launch deadline, with wrap-safe subtraction and the existing STOP/reset-required
+recovery. It never restarts the deadline on a later poll. After recovery releases
+the lease, further calls must reacquire ownership; an unquiesced fault retains
+ownership and storage. Completion is not an atomic or tear-free screen update.
+
+This combined operation permits the complete rectangle's hardware work. Public
+arbitrary-list and synchronous chunk limits remain unchanged. VBXE IRQs stay
+disabled; a caller using Poll must arrange future service while pending, rather
+than wait indefinitely for a signal that has no producer.
+
 ## Mapping transition protocol
 
 The owner publishes pending BANK_SEL and CONTROL in its upper-RAM state. The

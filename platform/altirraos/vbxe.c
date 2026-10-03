@@ -7,6 +7,8 @@
 #define BUSY 0xd653UL
 #define VCOUNT 0xd40bUL
 void EXEC_CALL _VbxeMap(struct VbxeMapState *map);
+/* One hardware owner; IDs are never reused, including across close/reopen. */
+static ULONG scrollSequence;
 
 static UWORD check(struct VbxeDisplay *d)
 {
@@ -60,6 +62,7 @@ static UWORD retire(struct VbxeDisplay *d, UWORD result)
         d->mutated=0;
     }
     d->lastError=result;
+    d->scrollPending=0;
     if (DisplayRelease(&d->lease)!=DISPLAY_OK)
         DisplayResetRequired();
     return result;
@@ -85,6 +88,8 @@ UWORD VbxeOpen(struct VbxeDisplay *d)
     if (status!=DISPLAY_OK)
         return status;
     d->mutated=0;
+    d->scrollPending=0;
+    d->scrollId=0;
     /* Authorization is a launch precondition, separate from identity reads. */
     if (!DisplayBaseline() || REG(0xd640)!=0x10 || REG(0xd641)!=0x26)
         return retire(d,DISPLAY_UNSUPPORTED);
@@ -105,6 +110,12 @@ UWORD VbxeOpen(struct VbxeDisplay *d)
 
 UWORD VbxeOwnerFence(struct VbxeDisplay *d)
 {
+    UWORD status;
+    if (d->scrollPending) {
+        do { status=VbxeOwnerScrollPoll(d,d->scrollId); }
+        while (status==DISPLAY_BUSY);
+        return status;
+    }
     return idle()==DISPLAY_OK ? DISPLAY_OK : recover(d);
 }
 
@@ -199,11 +210,10 @@ static UWORD stepped(ULONG at,WORD pitch,BYTE x,UWORD bytes,UWORD rows)
 /* Only fully validated records reach this synchronous driver-owned launch.
  * CopyRect validates its entire geometry once, then constructs bounded records
  * on its retained owner's stack. Public lists validate every supplied record. */
-static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
+static void launch(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
 {
     struct VbxeUpload upload;
     upload.records=(ULONG)records; upload.count=count;
-    if (idle()!=DISPLAY_OK) return recover(d);
     map(d,(UBYTE)(0x80|(VBXE_BCB>>12)),0x88);
     _VbxeUpload(&upload);
     map(d,0,0);
@@ -211,7 +221,84 @@ static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
     REG(0xd651)=d->blit[1]=(UBYTE)(VBXE_BCB>>8);
     REG(0xd652)=d->blit[2]=(UBYTE)(VBXE_BCB>>16);
     REG(BUSY)=1;
-    return idle()==DISPLAY_OK ? DISPLAY_OK : recover(d);
+}
+
+static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
+{
+    UWORD status=VbxeOwnerFence(d);
+    if (status!=DISPLAY_OK) return status;
+    launch(d,records,count);
+    return VbxeOwnerFence(d);
+}
+
+/* A completion record outlives each poll. No borrowed descriptor survives
+ * launch, and no other list may overwrite the arena while pending is set. */
+static UWORD complete_scroll(struct VbxeDisplay *d)
+{
+    d->scrollPending=0;
+    d->lastError=DISPLAY_OK;
+    return DISPLAY_OK;
+}
+
+UWORD VbxeOwnerScrollPoll(struct VbxeDisplay *d,ULONG id)
+{
+    if (!id || id!=d->scrollId) return DISPLAY_BAD_ARGUMENT;
+    if (!d->scrollPending) return d->lastError;
+    if (!(REG(BUSY)&3)) return complete_scroll(d);
+    if ((UWORD)(DisplayTicks()-d->scrollStarted)>=VBXE_WAIT_TICKS)
+        return recover(d);
+    return DISPLAY_BUSY;
+}
+
+UWORD VbxeOwnerScrollStart(struct VbxeDisplay *d,const struct VbxeCopy *c,
+                           UBYTE value,ULONG *id)
+{
+    ULONG source,destination,bottom;
+    UWORD bytes,i,count;
+    UBYTE records[42],*fill;
+    if (d->scrollPending) return DISPLAY_BUSY;
+    if (!extent(0,c,sizeof(*c)) || !extent(0,id,sizeof(*id)))
+        return DISPLAY_BAD_ARGUMENT;
+    if (scrollSequence==0xffffffffUL) return DISPLAY_UNSUPPORTED;
+    if (c->source.offset || c->destination.offset ||
+        c->source.pitch!=320 || c->destination.pitch!=320 ||
+        c->source.width!=640 || c->destination.width!=640 ||
+        c->source.height!=240 || c->destination.height!=240 ||
+        c->sourceX!=c->destinationX || c->sourceX>640 ||
+        (c->sourceX|c->width)&1 || !c->width || c->width>640-c->sourceX ||
+        c->destinationY>232 || c->sourceY!=c->destinationY+8 ||
+        c->height>232-c->destinationY)
+        return DISPLAY_BAD_ARGUMENT;
+    bytes=c->width/2;
+    source=(ULONG)c->sourceY*320+c->sourceX/2;
+    destination=(ULONG)c->destinationY*320+c->destinationX/2;
+    bottom=destination+(ULONG)c->height*320;
+    if ((c->height && (!VbxeBlitExtent(source,320,bytes,c->height) ||
+        !VbxeBlitExtent(destination,320,bytes,c->height))) ||
+        !VbxeBlitExtent(bottom,320,bytes,8)) return DISPLAY_BAD_ARGUMENT;
+    for (i=0;i<42;i++) records[i]=0;
+    word(records,(UWORD)source); records[2]=(UBYTE)(source>>16);
+    word(records+3,320); records[5]=1;
+    word(records+6,(UWORD)destination); records[8]=(UBYTE)(destination>>16);
+    word(records+9,320); records[11]=1;
+    word(records+12,bytes-1); records[14]=(UBYTE)(c->height-1);
+    records[15]=255;
+    fill=records+21;
+    fill[5]=1;
+    word(fill+6,(UWORD)bottom); fill[8]=(UBYTE)(bottom>>16);
+    word(fill+9,320); fill[11]=1;
+    word(fill+12,bytes-1); fill[14]=7; fill[16]=value;
+    /* No pending operation can own an unexpected busy engine here. Recovery
+     * remains bounded; normal asynchronous admission never spins on BUSY. */
+    if (REG(BUSY)&3) return recover(d);
+    count=c->height ? 2 : 1;
+    d->scrollId=++scrollSequence;
+    d->scrollStarted=DisplayTicks();
+    d->lastError=DISPLAY_BUSY;
+    d->scrollPending=1;
+    *id=d->scrollId;
+    launch(d,count==2 ? records : fill,count);
+    return DISPLAY_OK;
 }
 
 /* Validate every record before mapping or starting DMA. Upload directly into
@@ -402,6 +489,21 @@ UWORD VbxeFence(struct VbxeDisplay *display)
     UWORD status=check(display);
     if (status!=DISPLAY_OK) return status;
     return VbxeOwnerFence(display);
+}
+
+UWORD VbxeScrollStart(struct VbxeDisplay *display,const struct VbxeCopy *copy,
+                      UBYTE value,ULONG *id)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerScrollStart(display,copy,value,id);
+}
+
+UWORD VbxeScrollPoll(struct VbxeDisplay *display,ULONG id)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerScrollPoll(display,id);
 }
 
 UWORD VbxeClose(struct VbxeDisplay *display)

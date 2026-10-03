@@ -12,6 +12,9 @@ UWORD VbxeOwnerRead(struct VbxeDisplay *display, ULONG address, void *destinatio
 UWORD VbxeOwnerSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD count);
 UWORD VbxeOwnerFill(struct VbxeDisplay *display, ULONG address, UWORD stride, UWORD bytes, UWORD rows, UBYTE value);
 UWORD VbxeOwnerCopyRect(struct VbxeDisplay *display, const struct VbxeCopy *copy);
+UWORD VbxeOwnerScrollStart(struct VbxeDisplay *display, const struct VbxeCopy *copy,
+                           UBYTE value, ULONG *id);
+UWORD VbxeOwnerScrollPoll(struct VbxeDisplay *display, ULONG id);
 UWORD VbxeOwnerWaitFrame(struct VbxeDisplay *display);
 UWORD VbxeOwnerShow(struct VbxeDisplay *display);
 UWORD VbxeOwnerPalette(struct VbxeDisplay *display, const UBYTE *rgb);

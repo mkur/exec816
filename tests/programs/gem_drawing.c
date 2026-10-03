@@ -30,6 +30,8 @@ void DrawingPeer(void)
     check(GemDrawingFill(0,0,0,0,0)==DISPLAY_INVALID_OWNER);
     check(GemDrawingText(0,0,NULL,0,1,0)==DISPLAY_INVALID_OWNER);
     check(GemDrawingCopy(NULL)==DISPLAY_INVALID_OWNER);
+    check(GemDrawingScrollStart(NULL,0,NULL)==DISPLAY_INVALID_OWNER);
+    check(GemDrawingScrollPoll(1)==DISPLAY_INVALID_OWNER);
     check(GemDrawingFence()==DISPLAY_INVALID_OWNER);
     check(GemDrawingClose()==DISPLAY_INVALID_OWNER);
     check(GemDrawingOpen(workout)==DISPLAY_BUSY);
@@ -43,6 +45,8 @@ UWORD main(void)
 {
     WORD bit;
     UWORD pen,before;
+    ULONG id;
+    struct VbxeCopy copy;
     if (!stage) return 0;
     Forbid();
     peer=CreateTask("drawing peer",0,DrawingPeer,2560);
@@ -52,11 +56,25 @@ UWORD main(void)
     before=ownerChecks;
     check(GemDrawingFill(0,0,640,240,5)==DISPLAY_OK);
     check((UWORD)(ownerChecks-before)==1);
+    memset(&copy,0,sizeof(copy));
+    copy.source.pitch=copy.destination.pitch=320;
+    copy.source.width=copy.destination.width=640;
+    copy.source.height=copy.destination.height=240;
+    copy.sourceY=8; copy.width=640; copy.height=232;
+    before=ownerChecks;
+    check(GemDrawingScrollStart(&copy,5,&id)==DISPLAY_OK);
+    check((UWORD)(ownerChecks-before)==1);
+    check(GemDrawingScrollStart(&copy,5,&id)==DISPLAY_BUSY);
+    check(GemDrawingScrollPoll(id+1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingFence()==DISPLAY_OK);
+    before=ownerChecks;
+    check(GemDrawingScrollPoll(id)==DISPLAY_OK);
+    check((UWORD)(ownerChecks-before)==1);
     peerArm=1;
     for (pen=0;pen<16;pen++) {
         before=ownerChecks;
         check(GemDrawingText(32+(pen&1),8+pen*9,text,7,pen,5)==DISPLAY_OK);
-        check((UWORD)(ownerChecks-before)==(pen ? 1 : 6));
+        check((UWORD)(ownerChecks-before)==(pen ? 1 : 8));
     }
     check(peerDone);
     before=ownerChecks;

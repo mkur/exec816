@@ -26,6 +26,9 @@ struct VbxeDisplay {
     UBYTE savedDma, mutated;
     UBYTE video, xdl[3], blit[3], irq, palette, color;
     UWORD lastError;
+    ULONG scrollId;
+    UWORD scrollStarted;
+    UBYTE scrollPending;
 };
 UWORD VbxeOpen(struct VbxeDisplay *display);
 UWORD VbxeFence(struct VbxeDisplay *display);
@@ -43,6 +46,19 @@ UWORD VbxePresent(struct VbxeDisplay *display);
 UWORD VbxeSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD count);
 UWORD VbxeBlitExtent(ULONG address, UWORD stride, UWORD bytes, UWORD rows);
 UWORD VbxeCopyRect(struct VbxeDisplay *display, const struct VbxeCopy *copy);
+/* Asynchronous upward eight-pixel screen scroll, then exposed-strip fill.
+ * Both surfaces must describe the 640x240 screen at offset 0, pitch 320.
+ * Even X/width, identical source/destination X, source Y = destination Y + 8.
+ * Copy height may be zero (fill only). value is a packed hardware colour byte.
+ * OK means accepted; *id identifies this operation. Descriptors are copied
+ * before return. BUSY rejects a second start without modifying *id or the list.
+ * Poll returns BUSY while pending, OK after completion, or a terminal error.
+ * Each entry admits the owner; a stale ID is BAD_ARGUMENT. Fence and existing
+ * synchronous drawing finish any pending operation before dependent access.
+ * Keep raster/command storage until completion or proven quiescence. */
+UWORD VbxeScrollStart(struct VbxeDisplay *display, const struct VbxeCopy *copy,
+                      UBYTE value, ULONG *id);
+UWORD VbxeScrollPoll(struct VbxeDisplay *display, ULONG id);
 /* Positive row steps, no chaining or IRQ. Every call completes before return. */
 UWORD VbxeBlit(struct VbxeDisplay *display, ULONG source, UWORD sourceStride,
                ULONG destination, UWORD destinationStride, UWORD bytes, UWORD rows,

@@ -37,7 +37,7 @@ reported complete.
 description; fill uses half-open pixel bounds, and text uses top-left 8×8 cells
 with explicit foreground/background pens. Text must fit completely on screen.
 An empty valid rectangle or string does not draw. Every successful operation
-fences before returning. Build with `GEM_DRAWING_ONLY` to omit service and cursor
+in this original synchronous group fences before returning. Build with `GEM_DRAWING_ONLY` to omit service and cursor
 policy; the caller must own the display. There remains one drawing session per
 image, shared with the service when linked together. This is a C interface;
 calling it from Action! requires the separately tested language bridge in B6.
@@ -54,6 +54,15 @@ the display. Admission never survives a return or becomes a session-wide cache.
 operation. It accepts explicit VRAM surfaces and preserves opaque pixels in
 overlapping copies. The descriptor remains immutable until the call returns.
 The GEM service does not advertise an additional VDI opcode for this operation.
+
+`GemDrawingScrollStart` and `GemDrawingScrollPoll` expose the driver's
+[asynchronous screen scroll](../../../docs/reference/display.md#asynchronous-screen-scrolling)
+with a logical GEM background pen. Start fences prior queued work, validates
+the complete copy/fill and returns its ID after launch. Poll performs one
+completion check. A second start returns BUSY until completion is consumed.
+Ordinary Copy/Fill/Text/Fence and Close retain synchronous completion and finish
+pending hardware work before dependent access. The caller remains the sole
+drawing owner; this adds no renderer Task, service opcode or VBXE IRQ producer.
 
 Fully visible nonzero-ink glyphs use one nibble-stencil command. Hardware-zero
 ink retains the inverse-mask AND path, and clipped glyphs retain the staged

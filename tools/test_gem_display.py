@@ -15,14 +15,15 @@ from test_calypsi import pattern
 from test_large_stacks import observe
 
 CASES=['pattern','unknown-baseline','absent','unsupported','busy-timeout','vcount-timeout',
-       'unquiesced','retained-owner','wrap-timeout','map-nmi','bitmap-copy','copy-fault']
+       'unquiesced','retained-owner','wrap-timeout','map-nmi','bitmap-copy','copy-fault',
+       'async-scroll','async-timeout','async-wrap','async-unquiesced']
 
 
 def run(output,mode,cases=None,replay=False,production=False):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     if production:
-        require(cases is None or cases in (['pattern'],['bitmap-copy']),'Production control needs a real-hardware case')
+        require(cases is None or cases in (['pattern'],['bitmap-copy'],['async-scroll']),'Production control needs a real-hardware case')
         cases=cases or ['pattern']
     report=dict(status='running',tier='development',slice='G3',mode=mode,cases=[],production_control=production)
     try:
@@ -101,7 +102,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                     b.bp_clear_all()
                 try:
                     runtime,_=execute(b,{**program,'output':folder},before_run=before_run,
-                        expected_status=0xff93 if variant in (6,7) else 0,
+                        expected_status=0xff93 if variant in (6,7,15) else 0,
                         frame_limit=16000,timeout=240)
                     case['runtime']=runtime
                     read=lambda key,size=2:int.from_bytes(b.memdump(symbols[key],size),'little')
@@ -109,8 +110,14 @@ def run(output,mode,cases=None,replay=False,production=False):
                     if variant>=10:
                         case.update(copy_checks=read('copyChecks'),copy_failures=read('copyFailures'),copy_first_failure=read('copyFirstFailure'))
                         require(not case['copy_failures'],f'Bitmap copy case {case["copy_first_failure"]} failed')
+                    if variant>=12:
+                        case.update(scroll_checks=read('scrollChecks'),scroll_failures=read('scrollFailures'),
+                            scroll_first_failure=read('scrollFirstFailure'),scroll_busy_seen=read('scrollBusySeen'),
+                            scroll_polls=read('scrollPolls'))
+                        require(not case['scroll_failures'],f'Async scroll check {case["scroll_first_failure"]} failed')
+                        require(case['scroll_busy_seen']==1,'No real async BUSY observed')
                     require(not case['failures'],f'Target check {case["first_failure"]} failed')
-                    if variant not in (6,7):
+                    if variant not in (6,7,15):
                         require(read('finished')==1 and data(b,program['image'],'result',True)==[0],'Fixture incomplete')
                         clean_ownership(b,program,program['output'])
                         require(b.memdump(0x8000,4096)==sentinel,'Underlying CPU aperture was changed')
@@ -144,9 +151,12 @@ def run(output,mode,cases=None,replay=False,production=False):
                         require(all(s['remaining_above_floor']>0 for s in case['stack_usage'].values()),'Stack floor reached')
                     else:
                         case['lease_state']=b.memdump(symbols['display']+17,1)[0]
-                        require(case['lease_state']==(4 if variant==6 else 2),f'Lost retained display state: {case["lease_state"]}')
+                        require(case['lease_state']==(4 if variant in (6,15) else 2),f'Lost retained display state: {case["lease_state"]}')
                     case['status']='pass'
                 except Exception:
+                    if variant>=12:
+                        print('Async checks/failures/first/busy/polls',*[int.from_bytes(b.memdump(symbols[k],2),'little') for k in
+                            ('scrollChecks','scrollFailures','scrollFirstFailure','scrollBusySeen','scrollPolls')],flush=True)
                     print('C checks/failures/first/stage/answer',*[int.from_bytes(b.memdump(symbols[k],2),'little') for k in ('checks','failures','first_failure','stage','answer')],flush=True)
                     print('Native checks',data(b,program['image'],'checks',True),'status',hex(b.peek16(adapter.STATUS)),'lease',b.memdump(symbols['display'],40).hex(),flush=True)
                     raise
