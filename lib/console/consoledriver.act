@@ -459,10 +459,18 @@ PUBLIC PROC Worker()
       instance=CONSOLETYPES.Instance POINTER(entry.instance)
       instance.changeTick=DISPLAYADAPTER.Ticks()
       ReadQuantum(service,instance)
-      WriteQuantum(instance,CONSOLETYPES.Presentation POINTER(entry.view))
-      CONSOLEDISPLAY.Present(CONSOLETYPES.Presentation POINTER(entry.view),instance)
-      writing=instance.write<>NULL
-      again=writing<>0 AND instance.writeCancel<>0
+      BEGIN
+        LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+        IF view.scrollState<>0 THEN
+          CONSOLEDISPLAY.Advance(view,instance,entry.unit)
+        ELSE
+          WriteQuantum(instance,view)
+        FI
+
+        CONSOLEDISPLAY.Present(view,instance)
+        writing=instance.write<>NULL
+        again=(writing<>0 AND instance.writeCancel<>0) OR view.scrollState<>0
+      END
       entry.busy=0
     FI
 

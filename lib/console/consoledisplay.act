@@ -4,6 +4,7 @@ MODULE CONSOLEDISPLAY
 USE A816MEMORY
 USE CONSOLETYPES
 USE CONSOLECORE
+USE CONSOLEWINDOWS
 USE CONSOLEBITMAP
 USE DISPLAY
 USE HEAPCORE
@@ -137,6 +138,7 @@ PUBLIC BYTE FUNC Claim(CONSOLETYPES.Presentation POINTER view
     view.width=80
     view.height=30
     view.claimed=1
+    view.scrollState=0
     view.visible=1
     view.focused=1
     view.index=$ffff
@@ -203,6 +205,7 @@ PUBLIC PROC Release(CONSOLETYPES.Presentation POINTER view)
   IF CONSOLEBITMAP.Enabled()<>0 THEN
     CONSOLEBITMAP.Close()
     view.claimed=0
+    view.scrollState=0
     view.visible=0
     view.cursorOn=0
     view.generation==+1
@@ -233,22 +236,44 @@ CARD FUNC Position(CARD row,column)
 
 RETURN((row LSH 5)+(row LSH 3)+column)
 
+CARD FUNC CursorPosition(CONSOLETYPES.Presentation POINTER view
+    CONSOLETYPES.Instance POINTER instance)
+
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    RETURN(instance.lineStart+instance.column)
+  FI
+
+RETURN(Position(view.top+instance.row,view.left+instance.column))
+
 ; Overlay a cursor only for a focused, settled cell inside the visible
 ; rectangle.
 PROC Cursor(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
   CARD index
+  BYTE okay
 
   view.index=instance.lineStart+instance.column
-  IF CONSOLEBITMAP.Enabled()<>0 THEN
-    RETURN
-  FI
   IF view.focused=0 THEN
     RETURN
   FI
 
   IF instance.operation<>CONSOLETYPES.OP_IDLE OR instance.row>=view.height
       OR instance.column>=view.width THEN
+    RETURN
+  FI
+
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    IF instance.dirtyRows<>0 OR view.scrollState<>0 THEN
+      RETURN
+    FI
+
+    okay=CONSOLEBITMAP.Fill((view.left+instance.column) LSH 3,
+        ((view.top+instance.row) LSH 3)+7,8,1,1)
+    IF okay<>0 THEN
+      view.previousCursor=view.index
+      view.cursorOn=1
+    FI
+
     RETURN
   FI
 
@@ -322,6 +347,20 @@ RETURN
 
 ; Restore the underlying glyph before moving or hiding the cursor.
 PUBLIC PROC RemoveCursor(CONSOLETYPES.Presentation POINTER view)
+  CARD row,column
+  BYTE okay
+
+  IF view.cursorOn<>0 AND CONSOLEBITMAP.Enabled()<>0 THEN
+    BEGIN
+      LET instance=CONSOLETYPES.Instance POINTER(view.instance)
+      row=view.previousCursor/instance.width
+      column=view.previousCursor MOD instance.width
+      okay=CONSOLEBITMAP.Text((view.left+column) LSH 3,
+          (view.top+row) LSH 3,instance.cells+SIZE(view.previousCursor),1)
+      view.cursorOn=0
+      RETURN
+    END
+  FI
 
   IF view.cursorOn<>0 THEN
     view.screen(view.previousCursor)=BYTE(view.cursorCell)
@@ -341,6 +380,8 @@ PUBLIC PROC Erase(CONSOLETYPES.Presentation POINTER view)
 
   RemoveCursor(view)
   IF CONSOLEBITMAP.Enabled()<>0 THEN
+    view.scrollState=0
+    view.presentedGeneration=0
     FOR row=0 TO view.height-1 DO
       okay=CONSOLEBITMAP.Fill(view.left LSH 3,(view.top+row) LSH 3,
           view.width LSH 3,8,0)
@@ -359,6 +400,8 @@ PUBLIC PROC Erase(CONSOLETYPES.Presentation POINTER view)
 
 RETURN
 
+INCLUDE "console-bitmap-display.inc"
+
 ; Complete retained and physical editing under the worker's existing borrow.
 ; Only a complete, synchronized view can reuse its translated screen bytes.
 PUBLIC PROC Edit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
@@ -367,7 +410,7 @@ PUBLIC PROC Edit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   CARD row
 
   IF CONSOLEBITMAP.Enabled()<>0 THEN
-    CONSOLECORE.EditQuantum(instance)
+    BitmapEdit(view,instance)
     RETURN
   FI
 
@@ -424,7 +467,7 @@ RETURN
 PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
 
-  IF view.claimed=0 OR view.visible=0 THEN
+  IF view.claimed=0 OR view.visible=0 OR view.scrollState<>0 THEN
     RETURN
   FI
 
@@ -442,8 +485,7 @@ PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     IF instance.operation=CONSOLETYPES.OP_IDLE THEN
       IF (view.focused=0 AND view.cursorOn=0) OR
           (view.focused<>0 AND view.cursorOn<>0 AND
-          view.previousCursor=Position(view.top+instance.row,
-              view.left+instance.column)) THEN
+          view.previousCursor=CursorPosition(view,instance)) THEN
         RETURN
       FI
     FI

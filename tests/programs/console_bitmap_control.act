@@ -1,7 +1,12 @@
-MODULE BITMAPFAULT
+MODULE BITMAPCONTROL
 USE EXEC
 USE CONSOLE
+USE CONSOLECORE
 USE CONSOLEDRIVER
+USE CONSOLEWINDOWS
+USE CONSOLETILING
+USE CONSOLEINPUT
+USE BITMAPCONTROLPROBE
 USE CONSOLETYPES
 USE HEAPCORE
 CARD checks,checkpoint,gate
@@ -31,7 +36,7 @@ PROC Main()
   Require(port<>NULL AND owner<>NULL AND read<>NULL AND write<>NULL)
   Require(EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(owner),0)=0)
   LET instance=CONSOLETYPES.Instance POINTER(owner.io_Unit)
-  IF variant>=3 THEN
+  IF 1=1 THEN
     owner.io_Command=EXEC.CMD_WRITE
     owner.io_Data=text
     FOR row=0 TO 29 DO
@@ -66,10 +71,7 @@ PROC Main()
     text(index)=65+BYTE(index & 15)
   OD
 
-  checkpoint=1
-  WHILE gate=0 DO
-    EXEC.Yield()
-  OD
+  BITMAPCONTROLPROBE.hold=1
 
   write.io_Device=owner.io_Device
   write.io_Unit=owner.io_Unit
@@ -77,17 +79,50 @@ PROC Main()
   write.io_Data=text
   write.io_Length=512
   EXEC.SendIO(EXEC.IORequest POINTER(write))
-  Require(EXEC.WaitIO(EXEC.IORequest POINTER(read))=EXEC.IOERR_SELFTEST)
-  Require(EXEC.WaitIO(EXEC.IORequest POINTER(write))=EXEC.IOERR_SELFTEST)
-  Require(read.io_Actual=0)
-  IF variant>=3 THEN
-    Require(write.io_Actual=1)
-  ELSE
-    Require(write.io_Actual=64)
+  LET entry=CONSOLEWINDOWS.Find(0)
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  WHILE view.scrollState=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(write.io_Actual=1 AND view.scrollRow=0)
+  ; Read service progresses while later model writes are deferred.
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(instance,$0001003f)
+  LET service=CONSOLEDRIVER.GetService()
+  EXEC.Signal(@service.task,$40000000)
+  EXEC.Permit()
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(read))=0)
+  Require(read.io_Actual=1 AND input(0)=97 AND view.scrollState<>0)
+  EXEC.AbortIO(EXEC.IORequest POINTER(write))
+  IF variant=1 THEN
+    Require(CONSOLE.Hide(0)<>0 AND view.scrollState=0)
+    Require(CONSOLE.Show(0,0,0)<>0)
+  ELSEIF variant>=2 THEN
+    Require(CONSOLETILING.Lock()<>0)
+    IF variant=2 THEN
+      view.generation==+1
+    ELSEIF variant=3 THEN
+      view.scrollUnit==+4
+    ELSE
+      CONSOLECORE.Dirty(instance,0,instance.count)
+    FI
+
+    CONSOLETILING.Unlock()
   FI
-  Require(CONSOLE.ScreenWidth()=0 AND CONSOLEDRIVER.Start()=0)
-  Require(CONSOLE.Hide(0)<>0)
-  Require(CONSOLEDRIVER.Stop()=0)
+
+  BITMAPCONTROLPROBE.hold=0
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(write))=EXEC.IOERR_ABORTED)
+  Require(write.io_Actual=1 AND instance.row=29 AND instance.column=0)
+  WHILE view.scrollState<>0 OR instance.dirtyRows<>0 DO
+    EXEC.Yield()
+  OD
+
+  checkpoint=1
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
   read.io_Device=NULL
   read.io_Unit=NULL
   write.io_Device=NULL

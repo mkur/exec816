@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exact bitmap CON: presentation and worker-owned ordinary C calls."""
+"""Independent scanout oracle for scrolls, narrow/hidden tiles and caret."""
 import argparse,json
 from pathlib import Path
 import adapter_state as adapter
@@ -11,18 +11,19 @@ from test_dos_stack import execute,ownership
 from test_cooperative import data
 from gem_render_oracle import Raster,font_bytes
 from test_gem_interactive import pixels
+from bitmap_console_trace import observation,intervals
 
 
-def run(out,mode,replay=False):
+def run(out,mode,replay=False,observe=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
-    p=read_build(out/'program') if replay else build_bitmap(ROOT/'tests/programs/console_bitmap.act',out,mode=='opt',probe=True)
+    p=read_build(out/'program') if replay else build_bitmap(ROOT/'tests/programs/console_bitmap_scroll.act',out,mode=='opt',probe=False)
     foreign=json.loads((out/'c-image.json').read_text());sy=foreign['symbols']
     require(p['build']['optimize']==(mode=='opt') and sha256(p['xex'])==p['build']['xex_sha256'],'Changed replay image')
-    result=dict(status='running',tier='development',mode=mode,build=p['build'],pin=PIN,
+    result=dict(observed=observe,status='running',tier='development',mode=mode,build=p['build'],pin=PIN,
         bank_zero_delta=dict(fixed=0,root_kernel=0,per_task=[0]*8,private_idle=0),observations=[])
-    address=lambda name:next(d['address'] for d in p['image']['data'] if '_BITMAPTEST_'+name+'_' in d['name'])
+    address=lambda name:next(d['address'] for d in p['image']['data'] if '_BITMAPSCROLL_'+name+'_' in d['name'])
     try:
-        with emulator(BRIDGE,ROM,out,pin=PIN) as b:
+        with observation(foreign,p,observe) as marks, emulator(BRIDGE,ROM,out,pin=PIN) as b:
             require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
             result['machine']=verify_machine(b,ROM,PIN);saved={}
             def reach(condition):
@@ -40,46 +41,37 @@ def run(out,mode,replay=False):
                     print('Status/checks/regs',b.peek16(adapter.STATE),data(b,p['image'],'checks',True),b.regs(),flush=True);raise
                 finally:b.regs=original
             def before(b):
+                if observe:b.profile_start()
                 saved.update(screen=b.peek16(88),dma=b.memdump(0x22f,3),cursor=b.memdump(0x2f0,1),input=b.memdump(0x208,2))
                 saved['bytes']=b.memdump(saved['screen'],960)
-                for stage in range(1,5):
+                from bitmap_console_oracle import scroll_scenes
+                scenes=scroll_scenes(font_bytes(out/'selected/src/vdi/font8x8.c'))
+                for stage,expected in enumerate(scenes,1):
                     reach(f'dw(${address("CHECKPOINT"):x})={stage}')
-                    if stage==1 and 'ConsoleProbeResults' in sy:
-                        raw=b.memdump(sy['ConsoleProbeResults'],80)
-                        records=[]
-                        for n in range(2):
-                            row=raw[n*40:(n+1)*40];w=lambda i:int.from_bytes(row[i:i+2],'little')
-                            require([w(0),w(2),w(4)]==[(p['labels']['console_bitmap_call']-1)&65535,0x5678,0x9abc],'Bridge lost full registers: '+row.hex())
-                            require(w(6)==w(32) and w(8)==w(34),'Bridge lost S/D')
-                            require(row[10:12]==bytes([0,0]),'Bridge lost P/DBR: '+row.hex())
-                            require([w(12+i*2) for i in range(10)]==list(range(0x5a00,0x5a0a)),'Bridge lost lower DP')
-                            records.append(dict(stack=w(6),dp=w(8),registers=row.hex()))
-                        require((records[0]['stack']^records[1]['stack'])&1,'Missing odd/even bridge entry')
-                        result['bridge_context']=records
                     reach(f'@frame>={b.eval_expr("@frame")+2}')
-                    model=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'))
-                    if stage in (1,3):
-                        for row in range(30):
-                            for col in range(79 if row==29 else 80):
-                                ch=33+(row*7+col)%90
-                                for y in range(8):
-                                    for x in range(8):
-                                        if model.font[y*256+ch]&(128>>x):model.pixel(col*8+x,row*8+y,1)
-                    if stage in (1,3,4):
-                        x,y=(632,239) if stage in (1,3) else (0,7)
-                        for column in range(8):model.pixel(x+column,y,1)
                     folder=out/f'stage-{stage}';folder.mkdir(exist_ok=True)
-                    result['observations'].append(dict(stage=stage,pixels=pixels(b,folder,model.packed())))
+                    result['observations'].append(dict(stage=stage,pixels=pixels(b,folder,expected)))
+                    reach(f'@frame>={b.eval_expr("@frame")+2}')
                     b.memload(address('GATE'),stage.to_bytes(2,'little'))
                 b.bp_clear_all()
             runtime,_=execute(b,p,before_run=before,timer_irq=True,timeout=180,frame_limit=10000)
             require(b.memdump(saved['screen'],960)==saved['bytes'] and b.memdump(0x22f,3)==saved['dma'],'OS screen not restored')
             require(b.memdump(0x2f0,1)==saved['cursor'] and b.memdump(0x208,2)==saved['input'],'OS input not restored')
+            if observe:b.profile_stop()
             ownership(b,p,p['output'])
-            result.update(status='pass',runtime=runtime,checks=data(b,p['image'],'checks',True))
+            result.update(runtime=runtime,checks=data(b,p['image'],'checks',True))
+        if observe:
+            result['operations']=intervals(out/'emulator.log',marks)
+            for sample in result['operations']:
+                if sample['kind']=='idle':require(not sample['calls'],'Clean console submitted work: '+str(sample))
+                elif sample['stage'] in (2,3,7):
+                    require(sample['calls'].get('GemDrawingCopy',0)>0,'Eligible scroll did not copy')
+                    require(sample['calls'].get('blit_glyph',0)<=4,'Eligible scroll redrew unchanged glyphs')
+                elif sample['stage']==8:require(sample['calls'].get('GemDrawingCopy',0)==0,'Height-one copy is not empty')
+        result['status']='pass'
     except Exception as error:result.update(status='fail',error=str(error));raise
-    finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
-    print('Bitmap console passed',mode,flush=True)
+    finally:(out/('results-replay.json' if replay and not observe else 'results.json')).write_text(json.dumps(result,indent=2)+'\n')
+    print('Bitmap scrolling passed',mode,flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');a=p.parse_args();run(a.output,a.mode,a.replay)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');p.add_argument('--observe',action='store_true');a=p.parse_args();run(a.output,a.mode,a.replay,a.observe)

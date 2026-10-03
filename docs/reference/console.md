@@ -49,8 +49,14 @@ newer edit when it acknowledges completed work.
 
 The text backend uses the available ROM glyphs, with `?` for unavailable glyphs.
 Bitmap output uses the shared GEM 8×8 font, black ink and an opaque white
-background. Its initial backend redraws damage after retained scrolling; pixel
-scrolling and the bitmap caret are subsequent implementation slices.
+background. A synchronized visible instance scrolls with opaque pixel copies and
+fills; hidden or invalidated presentation redraws retained damage. Each retained
+continuation revalidates unit and view/model generations between bounded chunks.
+The logical scroll commits once; cancellation preserves accepted bytes. While a
+continuation runs, new writes to that instance wait, but input, controls and other
+instances remain serviceable. A steady focused underline caret restores its cell
+before copying and redraws after presentation settles. Clean cells and an unchanged
+caret cause no drawing submissions.
 Output control bytes have these effects:
 
 | Byte | Effect |

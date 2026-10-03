@@ -1,0 +1,178 @@
+MODULE BITMAPSCROLL
+USE EXEC
+USE EXECTASKS
+USE HEAPCORE
+USE DOS
+USE CONSOLE
+USE CONSOLECORE
+USE CONSOLEDRIVER
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+CARD checks,checkpoint,gate,continued
+LONGCARD first,second
+BYTE ARRAY name(13),text(80)
+DOS.FileHandle POINTER base,a,b
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC UnitName(LONGCARD unit)
+  BYTE index,value
+
+  name(0)=82
+  name(1)=65
+  name(2)=87
+  name(3)=58
+  name(12)=0
+  FOR index=0 TO 7 DO
+    value=BYTE((unit RSH ((7-index) LSH 2)) & 15)
+    IF value<10 THEN
+      name(index+4)=value+48
+    ELSE
+      name(index+4)=value+87
+    FI
+  OD
+
+RETURN
+
+; Passive trace boundaries around the settled screen; these are fixture data.
+PROC Ready(CARD value)
+
+  checkpoint=value
+
+RETURN
+
+PROC Continuing(CARD value)
+
+  continued=value
+
+RETURN
+
+PROC Pause(CARD value)
+  BYTE busy,index
+  CARD ignored
+  CONSOLETYPES.Instance POINTER instance
+  CONSOLETYPES.Presentation POINTER view
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  DO
+    busy=0
+    FOR index=0 TO 3 DO
+      IF CONSOLEWINDOWS.Live(@windows.items(index))<>0 THEN
+        instance=CONSOLETYPES.Instance POINTER(windows.items(index).instance)
+        view=CONSOLETYPES.Presentation POINTER(windows.items(index).view)
+        IF view.visible<>0 AND (instance.dirtyRows<>0 OR view.scrollState<>0) THEN
+          busy=1
+        FI
+      FI
+    OD
+
+    IF busy<>0 THEN
+      EXEC.Yield()
+    FI
+  UNTIL busy=0
+  OD
+
+  ignored=EXECTASKS.Sleep(2)
+  Ready(value)
+  WHILE gate<value DO
+    EXEC.Yield()
+  OD
+
+  Continuing(value)
+
+RETURN
+
+PROC Pattern(DOS.FileHandle POINTER file CARD width,rows BYTE seed)
+  CARD row,column,count
+
+  FOR row=0 TO rows-1 DO
+    FOR column=0 TO width-1 DO
+      text(column)=BYTE(33+(CARD(seed)+row*7+column) MOD 90)
+    OD
+
+    count=width
+    IF row=rows-1 THEN
+      count==-1
+    FI
+
+    Require(DOS.Write(file,text,LONGCARD(count))=LONGINT(count))
+  OD
+
+RETURN
+
+PROC Bytes(DOS.FileHandle POINTER file CARD count)
+
+  Require(DOS.Write(file,text,LONGCARD(count))=LONGINT(count))
+
+RETURN
+
+PROC Main()
+
+  UnitName(0)
+  base=DOS.Open(name,DOS.MODE_READWRITE)
+  Require(base<>NULL)
+  Pattern(base,80,30,0)
+  Pause(1)
+  text(0)=90
+  Bytes(base,1)
+  Pause(2)
+  text(0)=72
+  text(1)=105
+  text(2)=10
+  Bytes(base,3)
+  Pause(3)
+  ; Several accepted wraps, including spaces and hardware-zero background.
+  Pattern(base,80,4,31)
+  Pause(4)
+  text(0)=12
+  Bytes(base,1)
+  Pause(5)
+  Require(CONSOLE.Hide(0)<>0)
+  first=CONSOLE.Create(17,3)
+  second=CONSOLE.Create(1,1)
+  Require(first<>0 AND second<>0)
+  Require(CONSOLE.Show(first,5,7)<>0 AND CONSOLE.Show(second,30,12)<>0)
+  UnitName(first)
+  a=DOS.Open(name,DOS.MODE_READWRITE)
+  UnitName(second)
+  b=DOS.Open(name,DOS.MODE_READWRITE)
+  Require(a<>NULL AND b<>NULL)
+  Pattern(a,17,3,8)
+  Pause(6)
+  text(0)=87
+  Bytes(a,1)
+  Pause(7)
+  Require(CONSOLE.Focus(second)<>0)
+  text(0)=88
+  Bytes(b,1)
+  Pause(8)
+  Require(CONSOLE.Hide(first)<>0)
+  Pattern(a,17,5,47)
+  Pause(9)
+  Require(CONSOLE.Show(first,5,7)<>0)
+  Require(CONSOLE.Focus(first)<>0)
+  Pause(10)
+  text(0)=13
+  text(1)=65
+  text(2)=8
+  text(3)=66
+  Bytes(a,4)
+  Pause(11)
+  text(0)=12
+  Bytes(a,1)
+  Pause(12)
+  Require(DOS.Close(a)<>0 AND DOS.Close(b)<>0 AND DOS.Close(base)<>0)
+  Require(CONSOLE.Destroy(first)<>0 AND CONSOLE.Destroy(second)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

@@ -97,6 +97,10 @@ PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
 
   instance=CONSOLETYPES.Instance POINTER(entry.instance)
   view=CONSOLETYPES.Presentation POINTER(entry.view)
+  IF view.scrollState<>0 THEN
+    RETURN(1)
+  FI
+
   IF instance.write<>BYTE POINTER(0)
       OR EXECLISTS.IsMinListEmpty(@instance.writes)=0 THEN
     RETURN(1)

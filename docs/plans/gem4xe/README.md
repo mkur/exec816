@@ -33,8 +33,8 @@ copy operations with VDI. The [implementation plan](bitmap-console-implementatio
 defines B0–B9, from reproducible measurements and bounded blitter lists through
 console integration, scrolling, coexistence and the optional artifact. It keeps
 the existing console worker, one large stack pool and zero additional bank-zero
-reservations. B0–B6 have focused development evidence, including the
-[bitmap backend bring-up](../../development/bitmap-console-b6.json). Scrolling,
+reservations. B0–B7 have focused development evidence, including
+[scrolling and caret integration](../../development/bitmap-console-b7.json).
 performance acceptance and packaging remain. Overlapping desktop windows remain
 later work.
 

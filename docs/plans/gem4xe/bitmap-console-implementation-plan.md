@@ -3,8 +3,8 @@
 [Design note](bitmap-console-design.md) · [Implementation plans](../README.md) ·
 [GEM work](README.md) · [Roadmap](../../roadmap.md)
 
-Status: implementation started, 3 October 2026. B0–B6 have passed development checks;
-B7–B9 remain unimplemented. This plan implements
+Status: implementation started, 3 October 2026. B0–B7 have passed development checks;
+B8–B9 remain unimplemented. This plan implements
 the design's 80×30 bitmap backend for the existing console, improving the shared
 VDI drawing path first. Each slice must leave an executable, reviewable result;
 commit it with its focused development evidence before starting the next slice.
@@ -360,6 +360,21 @@ clear, height one, narrow tiles, pending damage, generation changes and faults
 between chunks. An eligible scroll draws no unchanged-row glyphs. Compare final
 pixels against full model redraw, including the caret. Raw/optimized correctness
 passes; optimized measurements record actual list/CPU budgets and all fallbacks.
+
+B7 development evidence: [scrolling, damage and caret](../../development/bitmap-console-b7.json).
+Raw/optimized scanout matches an independent retained-model oracle for full-screen,
+narrow and height-one tiles, consecutive wraps, clear, hidden output and caret
+movement. Continuation tests cover input service, cancellation after one accepted
+byte, hide/show and stale unit/view/model identities. Faults after the first copy
+chunk cover STOP recovery and reset-required retention. Passive operation counts
+show only two or three glyphs for eligible full-screen scrolls, and no drawing
+in any settled interval; identical-image replay preserves every scanout hash.
+These intervals include fixture waits and do not establish latency acceptance.
+Each borrow copies/fills at most sixteen pixel rows, with internal list work capped
+at 8,192 pixels. Presentation payload grows sixteen upper bytes, fitted into
+existing default metadata padding; metadata remains 880 bytes and bank-zero/VRAM
+reservations have zero delta. B8 must still measure and satisfy or explicitly
+revise the responsiveness gate.
 
 ## B8 Integrate the shell and meet the measured targets
 

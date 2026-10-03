@@ -18,19 +18,21 @@ def run(out,mode,replay=False):
     at=lambda name:next(d['address'] for d in p['image']['data'] if '_BITMAPFAULT_'+name+'_' in d['name'])
     result=dict(status='running',tier='development',mode=mode,build=p['build'],cases=[])
     try:
-        for fault in (1,2):
+        for fault in (1,2,3,4):
             folder=out/f'fault-{fault}';folder.mkdir(exist_ok=True)
             with emulator(BRIDGE,ROM,folder,pin=PIN) as b:
                 machine=verify_machine(b,ROM,PIN);saved={}
                 def before(b):
+                    b.memload(at('VARIANT'),bytes([fault]))
                     saved['at']=b.peek16(88);saved['screen']=b.memdump(saved['at'],960)
                     saved['display']=b.memdump(0x22f,3)
                     marker=p['labels']['native_nmi'];condition=f'dw(${at("CHECKPOINT"):x})=1'
                     b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=8000,timeout=90);b.bp_clear_all()
                     b.memload(sy['ConsoleFaultMode'],fault.to_bytes(2,'little'));b.memload(at('GATE'),b'\1\0')
-                runtime,_=execute(b,p,before_run=before,expected_status=0 if fault==1 else 0xff93,frame_limit=8000,timeout=90)
+                runtime,_=execute(b,p,before_run=before,expected_status=0 if fault&1 else 0xff93,frame_limit=8000,timeout=90)
                 require(b.peek16(sy['ConsoleStopCount'])==1,'Missing single STOP')
-                if fault==1:
+                if fault>=3:require(b.peek16(sy['ConsoleCopyChunks'])==1,'Fault was not between copy chunks')
+                if fault&1:
                     ownership(b,p,p['output'])
                     require(b.memdump(saved['at'],960)==saved['screen'] and b.memdump(0x22f,3)==saved['display'],'Quiesced fault did not restore OS')
                 else:

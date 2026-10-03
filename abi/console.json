@@ -31,7 +31,7 @@
   "storage": {
     "service_offset": 0,
     "instance_offset": 160,
-    "presentation_offset": 368,
+    "presentation_offset": 362,
     "reserved_bytes": 880,
     "capture_offset": 3072,
     "glyph_offset": 3632,
@@ -208,7 +208,7 @@
       ]
     },
     "Presentation": {
-      "size": 38,
+      "size": 54,
       "alignment": 2,
       "fields": [
         [
@@ -300,6 +300,31 @@
           "presentedGeneration",
           "LONGCARD",
           34
+        ],
+        [
+          "scrollRow",
+          "CARD",
+          38
+        ],
+        [
+          "scrollUnit",
+          "LONGCARD",
+          40
+        ],
+        [
+          "scrollGeneration",
+          "LONGCARD",
+          44
+        ],
+        [
+          "scrollModel",
+          "LONGCARD",
+          48
+        ],
+        [
+          "scrollState",
+          "BYTE",
+          52
         ]
       ]
     },
