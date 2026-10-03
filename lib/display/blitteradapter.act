@@ -1,0 +1,9 @@
+; Private platform leaves. The BLITTER library owns admission and lifetime.
+MODULE BLITTERADAPTER
+USE EXEC
+PUBLIC EXTERNAL PROC Prepare(EXEC.Task POINTER owner LONGCARD generation)
+PUBLIC EXTERNAL CARD FUNC Arm(LONGCARD identity)
+PUBLIC EXTERNAL CARD FUNC State(LONGCARD identity)
+PUBLIC EXTERNAL PROC Reset()
+PUBLIC EXTERNAL PROC EmulationProbe()
+ENDMODULE

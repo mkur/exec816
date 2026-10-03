@@ -729,7 +729,8 @@
   "producer_sources": {
     "SERIAL": 1,
     "KEYBOARD": 2,
-    "POINTER_INPUT": 3
+    "POINTER_INPUT": 3,
+    "VBXE_BLITTER": 4
   },
   "producer_packet": {
     "size": 10,

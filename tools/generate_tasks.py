@@ -81,12 +81,13 @@ def storage(memory):
     require(memory['usable_banks'], 'Tasks need an upper metadata bank')
     base = max(memory['usable_banks']) << 16
     c['BASE'] = base
+    blitter_bytes=json.loads((ROOT/'abi/blitter.json').read_text())['state_bytes']
     cursor = base+(c['IDLE']+1)*c['SIZE']
     for name,size,align in [('READY',9,1), ('WAKE',9,1), ('LIVE',1,1),
                             ('TIMER_PENDING',1,1), ('IDLE_RUNS',2,2), ('ENTRY_COUNT',2,2),
                             ('CREATED',2,2), ('ENTRIES',3*c['ENTRY_CAPACITY'],1),
                             ('WRITABLE_COUNT',2,2), ('WRITABLE_POINTER',3,1),
-                            ('SERIAL_BINDING',c['BINDING_BYTES'],2), ('ROOT',c['TASK_SIZE'],2), ('SERIAL_STATE',4,1), ('SLEEPERS',1,1)]:
+                            ('SERIAL_BINDING',c['BINDING_BYTES'],2), ('BLITTER_STATE',blitter_bytes,2), ('ROOT',c['TASK_SIZE'],2), ('SERIAL_STATE',4,1), ('SLEEPERS',1,1)]:
         cursor = (cursor+align-1)//align*align
         c[name] = cursor
         cursor += size
@@ -379,7 +380,7 @@ def application_entry(routine):
         return False
     if routine['name'].startswith('M_PROCESS_') and not re.fullmatch(r'M_PROCESS_(?:RUN|FINISH|EXECUTEIMAGE)_[0-9A-F]+',routine['name']):
         return False
-    if routine['name'].startswith(('M_BOOTCONFIG_', 'M_CONSOLECAPTURE_', 'M_CONSOLECONTROL_', 'M_DISPLAY_', 'M_DISPLAYBOOT_', 'M_DISPLAYADAPTER_', 'M_PROGRAM_', 'M_PROGRAMAPI_', 'M_PROGRAMIMAGE_', 'M_PROGRAMPLACE_', 'M_PROGRAMPROVIDERS_', 'M_PROGRAMLIBRARIES_', 'M_CSTRING_IMPL_')):
+    if routine['name'].startswith(('M_BOOTCONFIG_', 'M_CONSOLECAPTURE_', 'M_CONSOLECONTROL_', 'M_DISPLAY_', 'M_BLITTER_', 'M_BLITTERADAPTER_', 'M_DISPLAYBOOT_', 'M_DISPLAYADAPTER_', 'M_PROGRAM_', 'M_PROGRAMAPI_', 'M_PROGRAMIMAGE_', 'M_PROGRAMPLACE_', 'M_PROGRAMPROVIDERS_', 'M_PROGRAMLIBRARIES_', 'M_CSTRING_IMPL_')):
         return False
     if routine['name'].startswith(('M_DOSPROCESS_','M_DOSINHERIT_','M_FSFILES_','M_FSOBJECTS_','M_DOSCANCEL_','M_FSOPERATION_','M_FSABORT_','M_FSACTIVE_','M_DOSBREAK_','M_CONSOLE_', 'M_CONSOLEWINDOWS_','M_CONSOLETILING_','M_CONSOLEFOREGROUND_','M_CONSOLEDISPLAY_','M_CONSOLEDRIVER_','M_CONSOLEINPUT_','M_CONSOLECORE_','M_DOS_','M_DOSCALLS_','M_DOSRAW_','M_DOSSTREAMS_','M_DOSOBJECTS_','M_FSDIRECTORY_','M_FSMUX_','M_FSMOUNT_','M_FSMANAGER_','M_FSPACKET_','M_FSINFO_','M_FSIO_','M_FSINIT_','M_FSBOOT_','M_FSWORKER_','M_FSREGISTRY_','M_FSTYPES_','M_FSHANDLER_','M_FSPORTS_','M_FSNAMES_','M_DOSCLIENT_','M_DOSCORE_','M_DOSWIRE_','M_BLOCKIO_','M_BLOCKWIRE_','M_BLOCKTYPES_','M_MYDOSFILE_','M_MYDOS_','M_FS83_','M_FSCORE_','M_MYDOSTYPES_')):return False
     if re.match(r'M_(?:EXEC|EXECLISTS|EXECMEMORY|HEAPCORE|HEAPPOLICY|PORTCORE|IOCORE|IORESIDENT|IOTESTDRIVER|PRODUCERPROBE|EXECTASKS|TASKPOLICY)_', routine['name']):

@@ -1,3 +1,6 @@
+PUBLIC EXTERNAL BYTE FUNC BlitterClaim()
+PUBLIC EXTERNAL PROC BlitterRelease()
+
 ; Public platform producer lifecycle and wake queue. Native transactions protect
 ; links against IRQ posts; SWITCHING excludes other policy activations. A head
 ; remains CLAIMED after detach until WakeMatch atomically publishes READY or
@@ -78,6 +81,10 @@ SignalBinding POINTER FUNC ProducerBinding(CARD source)
     RETURN(PointerBinding())
   FI
 
+  IF source=T_PRODUCER_VBXE_BLITTER THEN
+    RETURN(SignalBinding POINTER(T_BLITTER_STATE))
+  FI
+
 RETURN(NULL)
 
 ; Keep both the recipient and controller alive until inactive wakes retire.
@@ -88,7 +95,7 @@ BYTE FUNC BoundProducer(TaskControl POINTER ctx)
     RETURN(1)
   FI
 
-  FOR source=T_PRODUCER_SERIAL TO T_PRODUCER_POINTER_INPUT DO
+  FOR source=T_PRODUCER_SERIAL TO T_PRODUCER_VBXE_BLITTER DO
     BEGIN
       LET binding=ProducerBinding(source)
       IF binding<>NULL THEN
@@ -106,7 +113,7 @@ RETURN(0)
 BYTE FUNC ProducerSignalBound(TaskControl POINTER ctx LONGCARD mask)
   CARD source
 
-  FOR source=T_PRODUCER_SERIAL TO T_PRODUCER_POINTER_INPUT DO
+  FOR source=T_PRODUCER_SERIAL TO T_PRODUCER_VBXE_BLITTER DO
     BEGIN
       LET binding=ProducerBinding(source)
       IF binding<>NULL THEN
@@ -161,8 +168,10 @@ CARD FUNC ProducerControl(TaskControl POINTER caller CARD saved BYTE service)
         SerialRelease()
       ELSEIF source=T_PRODUCER_KEYBOARD THEN
         KeyboardRelease()
-      ELSE
+      ELSEIF source=T_PRODUCER_POINTER_INPUT THEN
         PointerRelease()
+      ELSE
+        BlitterRelease()
       FI
     FI
 
@@ -210,8 +219,10 @@ CARD FUNC ProducerControl(TaskControl POINTER caller CARD saved BYTE service)
     base=CARD(SerialClaim())
   ELSEIF source=T_PRODUCER_KEYBOARD THEN
     base=CARD(KeyboardClaim())
-  ELSE
+  ELSEIF source=T_PRODUCER_POINTER_INPUT THEN
     base=CARD(PointerClaim())
+  ELSE
+    base=CARD(BlitterClaim())
   FI
   IF base=0 THEN
     binding.task=NULL

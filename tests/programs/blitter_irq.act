@@ -1,0 +1,138 @@
+MODULE BLITTERIRQTEST
+USE EXEC
+USE EXECPRODUCER
+USE DISPLAY
+USE DISPLAYBOOT
+USE BLITTER
+USE BLITTERADAPTER
+USE HEAPCORE
+DISPLAY.Lease lease
+CARD checks
+LONGCARD completion
+VOLATILE BYTE control=$d65e,bank=$d65f,busy=$d653,irq=$d654
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f740+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Two records in the real command arena. The second exposes the last row.
+PROC List(BYTE copy)
+  CARD i
+
+  bank=$b8
+  control=$88
+  LET bytes=BYTE POINTER(ADDRESS($8000))
+  FOR i=0 TO 41 DO
+    bytes(i)=0
+  OD
+
+  bytes(5)=1
+  bytes(9)=$40
+  bytes(10)=1
+  bytes(11)=1
+  bytes(12)=$3f
+  bytes(13)=1
+  bytes(14)=231
+  bytes(16)=$55
+  bytes(20)=8
+  IF copy<>0 THEN
+    bytes(1)=$0a
+    bytes(3)=$40
+    bytes(4)=1
+    bytes(15)=$ff
+    bytes(16)=0
+  FI
+
+  bytes(26)=1
+  bytes(28)=$22
+  bytes(29)=1
+  bytes(30)=$40
+  bytes(31)=1
+  bytes(32)=1
+  bytes(33)=$3f
+  bytes(34)=1
+  bytes(35)=7
+  bytes(37)=$aa
+  IF copy<>0 THEN
+    bytes(37)=$cc
+  FI
+
+  control=0
+  bank=0
+
+RETURN
+
+PROC Pixels(BYTE copy)
+  LONGCARD offset
+  CARD i
+  BYTE expected
+
+  LET bytes=BYTE POINTER(ADDRESS($8000))
+  offset=0
+  WHILE offset<76800 DO
+    bank=BYTE($80 % (offset RSH 12))
+    control=$88
+    FOR i=0 TO 4095 DO
+      IF offset<76800 THEN
+        expected=$55
+        IF copy<>0 AND offset>=71680 THEN
+          expected=$aa
+        FI
+
+        IF offset>=74240 THEN
+          expected=IF copy<>0 THEN $cc ELSE $aa FI
+        FI
+
+        IF bytes(i)<>expected THEN
+          HEAPCORE.Abort($f770)
+        FI
+
+        offset==+1
+      FI
+    OD
+
+    control=0
+  OD
+
+  bank=0
+
+RETURN
+
+PROC Main()
+  LONGCARD bits
+
+  DISPLAYBOOT.Authorize()
+  Require(DISPLAY.Acquire(@lease,DISPLAY.VBXE)=DISPLAY.OK)
+  Require(BLITTER.Open(@lease)=DISPLAY.OK)
+  Require(DISPLAY.Activate(@lease)=DISPLAY.OK)
+  completion=BLITTER.Mask(@lease)
+  Require(completion<>0)
+  Require(EXECPRODUCER.Bind(EXECPRODUCER.VBXE_BLITTER,EXEC.FindTask(NULL),completion)=0)
+  List(0)
+  Require(BLITTERADAPTER.Arm(1)=DISPLAY.OK)
+  bits=EXEC.Wait(completion)
+  Require((bits & completion)<>0)
+  Require(BLITTERADAPTER.State(1)=2)
+  Require((busy & 3)=0 AND irq=0)
+  Require(BLITTERADAPTER.State(2)=$ffff)
+  Pixels(0)
+  List(1)
+  Require(BLITTERADAPTER.Arm(2)=DISPLAY.OK)
+  BLITTERADAPTER.EmulationProbe()
+  bits=EXEC.Wait(completion)
+  Require((bits & completion)<>0)
+  Require(BLITTERADAPTER.State(2)=2)
+  Pixels(1)
+  Require(BLITTER.Close(@lease)=DISPLAY.OK)
+  Require(irq=0)
+  Require(DISPLAY.BeginRelease(@lease)=DISPLAY.OK)
+  Require(DISPLAY.Release(@lease)=DISPLAY.OK)
+
+RETURN
+ENDMODULE

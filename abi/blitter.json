@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "state_bytes": 64,
+  "fields": {
+    "BINDING": 0,
+    "OWNER": 12,
+    "EVENT": 15,
+    "GENERATION": 16,
+    "ID": 20,
+    "STARTED": 24,
+    "OLDIRQ": 26,
+    "CONTROL": 28,
+    "EMULATIONS": 30,
+    "PROBE_STACK": 32
+  },
+  "states": {
+    "IDLE": 0,
+    "ARMED": 1,
+    "DONE": 2,
+    "EXPIRED": 3
+  },
+  "command_address": 229376
+}

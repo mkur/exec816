@@ -3,7 +3,9 @@
 [Implementation plans](README.md) · [Console contract](../reference/console.md) ·
 [Display contract](../reference/display.md) · [Signals](../reference/signals.md)
 
-Status: BI0 complete with [development evidence](../development/blitter-irq-bi0.json); BI1–BI5 pending, 3 October 2026. Replace the bitmap console's repeated scroll
+Status: BI0 and BI1 complete with [baseline](../development/blitter-irq-bi0.json) and
+[IRQ delivery evidence](../development/blitter-irq-bi1.json); BI2–BI5 pending,
+3 October 2026. Replace the bitmap console's repeated scroll
 polling with a VBXE completion interrupt that signals its existing worker.
 Keep one copy/fill list in flight, continue input and READ service, and sleep
 when all remaining work depends on that list. Implement and commit each

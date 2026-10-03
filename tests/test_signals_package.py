@@ -40,7 +40,7 @@ class SignalsPackageTests(unittest.TestCase):
     def test_metadata_tracks_actual_upper_memory_and_cannot_overlap_image(self):
         memory = layout(); c=storage(memory)
         self.assertEqual(c['BASE'],0x3f0000)
-        self.assertEqual(c['METADATA_BYTES'],704)
+        self.assertEqual(c['METADATA_BYTES'],768)
         self.assertEqual(c['WAKE'],c['BASE']+5*64+9)
         smaller = copy.deepcopy(memory); smaller['usable_banks']=[2,3]
         self.assertEqual(storage(smaller)['BASE'],0x30000)

@@ -319,6 +319,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             import generate_sio_adapter
             require((ROOT/'platform/altirraos/sio-state.inc').read_text()==generate_sio_adapter.assembly(),'Stale private SIO layout')
             generate_sio_adapter.generate(output,generate_tasks.storage(memory)['BASE'])
+            import generate_blitter
+            require((ROOT/'platform/altirraos/blitter.inc').read_text()==generate_blitter.assembly(),'Stale blitter layout')
             import generate_platform_timer
             generate_platform_timer.generate(output, generate_tasks.storage(memory)['BASE'], memory)
             generate_tasks.validate_memory(memory)
@@ -367,6 +369,27 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             shape = memory_api['imports'][name.split('.')[1]]
             arguments, outgoing, result = shape['arguments'], shape['outgoing_bytes'], 'None'
             label, peak = shape['label'], memory_api['stack_peak']
+        elif tasks and name in ('TASKPOLICY.BlitterClaim','TASKPOLICY.BlitterRelease'):
+            label='blitter_claim' if name.endswith('Claim') else 'blitter_release'
+            result='Some(NativeResult(A8ZeroExtended))' if name.endswith('Claim') else 'None'
+            peak=8
+        elif tasks and name.startswith('BLITTERADAPTER.'):
+            operation=name.split('.')[1]
+            label={'Prepare':'blitter_prepare','Arm':'blitter_arm','State':'blitter_state',
+                   'Reset':'blitter_reset','EmulationProbe':'blitter_emulation_probe'}[operation]
+            if operation=='Prepare':
+                arguments=[dict(alignment=1,offset=0,size=3),dict(alignment=2,offset=4,size=4)]
+                outgoing=9;result='None'
+            elif operation=='Arm':
+                arguments=[dict(alignment=2,offset=0,size=4)]
+                outgoing=5
+            elif operation=='State':
+                arguments=[dict(alignment=2,offset=0,size=4)]
+                outgoing=5
+            else:result='None'
+            if operation=='EmulationProbe':
+                require(source.name=='blitter_irq.act','Blitter emulation probe is fixture-only')
+            peak=48 if operation=='EmulationProbe' else 8
         elif tasks and name.startswith('DISPLAYADAPTER.'):
             operation=name.split('.')[1]
             require(operation in ('Ticks','ResetRequired'),'Unknown display adapter import')
@@ -849,7 +872,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'lib/exec/heappolicy.act','lib/exec/heap-system.inc','lib/exec/heapcore.act','lib/exec/heap-constants.inc','lib/exec/exec-memory-types.inc','tools/generate_heap.py',
                 'lib/exec/exec-task-types.inc','lib/exec/execlists.act','tools/generate_tasks.py','platform/altirraos/tasks.s',
                 'abi/display.json','tools/generate_display.py','lib/display/display.act',
-                'lib/display/display-types.inc','lib/display/displayboot.act',
+                'lib/display/display-types.inc','lib/display/displayboot.act','lib/display/blitter.act','lib/display/blitteradapter.act','abi/blitter.json','tools/generate_blitter.py','platform/altirraos/blitter.s','platform/altirraos/blitter.inc',
                 'lib/display/displayadapter.act','platform/altirraos/display.s')},
             task_generated={name:sha256(output/name) for name in (
                 'execbuild.act','exec-build.json',

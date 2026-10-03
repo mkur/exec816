@@ -85,6 +85,25 @@ signal_irq_wait_done:
 .a8
 .i16
 signal_route:
+    jsr blitter_irq_service
+    php
+    jsl signal_route_other
+    bcs signal_route_owned
+    lda f:$d20e
+    eor #$ff
+    and f:$0010
+    bne signal_route_chain
+    plp
+    rtl
+signal_route_chain:
+    plp
+    clc
+    rtl
+signal_route_owned:
+    plp
+    sec
+    rtl
+signal_route_other:
     lda f:SD_OWNED
     beq :+
     jml sio_route
@@ -163,6 +182,7 @@ signal_release_done:
 signal_release_end:
 .export signal_release_shutdown
 signal_release_shutdown:
+    jsl blitter_release_unchecked
     jsl sio_shutdown_unchecked
     .if INPUT_NATIVE
         jsl pointer_release_unchecked

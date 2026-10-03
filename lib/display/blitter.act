@@ -1,0 +1,79 @@
+; One retained owner and one durable result. Signals only announce that result.
+MODULE BLITTER
+USE EXEC
+USE EXECPRODUCER
+USE DISPLAY
+USE DISPLAYBOOT
+USE BLITTERADAPTER
+DISPLAY.Lease POINTER owner
+LONGCARD completionMask
+BYTE number
+
+; Establish source lifetime before any interrupt can publish completion.
+PUBLIC CARD FUNC Open(DISPLAY.Lease POINTER lease)
+
+  IF DISPLAY.Check(lease)<>DISPLAY.OK OR lease.kind<>DISPLAY.VBXE THEN
+    RETURN(DISPLAY.INVALID_OWNER)
+  FI
+
+  IF DISPLAYBOOT.Known()=0 THEN
+    RETURN(DISPLAY.UNSUPPORTED)
+  FI
+
+  IF owner<>NULL THEN
+    RETURN(DISPLAY.BUSY)
+  FI
+
+  number=EXEC.AllocSignal($ff)
+  IF number=$ff THEN
+    RETURN(DISPLAY.NO_MEMORY)
+  FI
+
+  completionMask=LONGCARD(1) LSH number
+  EXEC.Forbid()
+  BLITTERADAPTER.Prepare(lease.owner.task,lease.generation)
+  IF EXECPRODUCER.Bind(EXECPRODUCER.VBXE_BLITTER,lease.owner.task,completionMask)=0 THEN
+    BLITTERADAPTER.Prepare(NULL,0)
+    EXEC.FreeSignal(number)
+    completionMask=0
+    EXEC.Permit()
+    RETURN(DISPLAY.UNSUPPORTED)
+  FI
+
+  owner=lease
+  EXEC.Permit()
+
+RETURN(DISPLAY.OK)
+
+; DMA must be quiescent before detaching its source and recipient protection.
+PUBLIC CARD FUNC Close(DISPLAY.Lease POINTER lease)
+
+  IF owner=NULL THEN
+    RETURN(DISPLAY.OK)
+  FI
+
+  IF owner<>lease OR DISPLAY.Check(lease)<>DISPLAY.OK THEN
+    RETURN(DISPLAY.INVALID_OWNER)
+  FI
+
+  EXEC.Forbid()
+  BLITTERADAPTER.Reset()
+  EXECPRODUCER.Release(EXECPRODUCER.VBXE_BLITTER)
+  EXECPRODUCER.Drain(EXECPRODUCER.VBXE_BLITTER)
+  BLITTERADAPTER.Prepare(NULL,0)
+  EXEC.FreeSignal(number)
+  owner=NULL
+  completionMask=0
+  EXEC.Permit()
+
+RETURN(DISPLAY.OK)
+
+PUBLIC LONGCARD FUNC Mask(DISPLAY.Lease POINTER lease)
+
+  IF owner<>lease OR DISPLAY.Check(lease)<>DISPLAY.OK THEN
+    RETURN(0)
+  FI
+
+RETURN(completionMask)
+
+ENDMODULE

@@ -39,7 +39,7 @@ class CapacityPackaging(unittest.TestCase):
         spans=m['runtime_reservations']
         self.assertTrue(all(a['address']+a['size']<=b['address'] for a,b in zip(spans,spans[1:])))
         c=storage(m)
-        self.assertEqual((c['CAPACITY'],c['IDLE'],c['PUBLIC_CONTEXT_BYTES'],c['METADATA_BYTES']),(8,8,512,1216))
+        self.assertEqual((c['CAPACITY'],c['IDLE'],c['PUBLIC_CONTEXT_BYTES'],c['METADATA_BYTES']),(8,8,512,1280))
         self.assertEqual(m['bank_zero_budget']['runtime_excluding_os'],25408)
         self.assertEqual(m['bank_zero_budget']['loading_excluding_os'],21872)
         self.assertTrue(all(p['dp_reserved_bytes']==256 for p in pools))

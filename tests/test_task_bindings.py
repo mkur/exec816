@@ -84,7 +84,7 @@ class TaskBindingsTests(unittest.TestCase):
             self.assertEqual(c['MANAGED'] % 2, 0)
             self.assertGreaterEqual(c['MANAGED'], c['BASE'])
             self.assertLessEqual(c['METADATA_END'], c['BASE'] + 0x800)
-            self.assertEqual(c['METADATA_BYTES'], 704 if capacity == 4 else 1216)
+            self.assertEqual(c['METADATA_BYTES'], 768 if capacity == 4 else 1280)
 
     def test_collision_with_other_service_families(self):
         for selector in (0, 32, 40, 52):
