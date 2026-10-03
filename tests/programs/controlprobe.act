@@ -1,0 +1,57 @@
+MODULE CONTROLPROBE
+USE EXEC
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+CONSOLETYPES.Service POINTER service
+PUBLIC BYTE armed,entered,released
+PUBLIC BYTE idleArmed,idleEntered
+PUBLIC CARD stores,wrongOwner
+
+PUBLIC PROC Bind(CONSOLETYPES.Service POINTER owner)
+
+  service=owner
+
+RETURN
+
+; Publish a control after the worker's runnable check but before its Wait.
+PUBLIC PROC Idle(BYTE unused)
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  IF idleArmed<>0 THEN
+    idleEntered=1
+    WHILE windows.control.state<>CONSOLETYPES.CTL_PENDING DO
+      EXEC.Yield()
+    OD
+
+    idleArmed=0
+  FI
+
+RETURN
+
+; Hold the worker with a published transaction while a peer exercises admission.
+PUBLIC PROC Gate(BYTE unused)
+
+  IF armed<>0 THEN
+    entered=1
+    WHILE released=0 DO
+      EXEC.Yield()
+    OD
+
+    armed=0
+  FI
+
+RETURN
+
+; Test-only observation of physical display entry, after normal startup.
+PUBLIC PROC Store(BYTE unused)
+
+  IF service<>NULL THEN
+    stores==+1
+    IF service.worker<>BYTE POINTER(EXEC.FindTask(NULL)) THEN
+      wrongOwner==+1
+    FI
+  FI
+
+RETURN
+
+ENDMODULE

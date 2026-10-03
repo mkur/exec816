@@ -30,7 +30,8 @@ def constants(abi=ABI):
     require(result['ROUTE_SIZE']==16 and result['ROUTES_SIZE']==264,'Invalid route retention capacity')
     require(result['SOURCE_QUANTUM']==64 and result['MAX_WIDTH']==40
             and result['MAX_HEIGHT']==24,'Invalid initial console geometry/quanta')
-    require(result['WINDOW_SLOTS']==4 and result['WINDOW_SIZE']==38 and result['WINDOWS_SIZE']==172,'Invalid window capacity')
+    require(result['WINDOW_SLOTS']==4 and result['WINDOW_SIZE']==38 and result['WINDOWS_SIZE']==180,'Invalid window capacity')
+    require(result['CONTROL_SIZE']==8,'Invalid presentation transaction')
     s=abi['storage'];end=0
     for name,key in [('Service','service_offset'),('Instance','instance_offset'),('Presentation','presentation_offset'),('Routes','routes_offset'),('Windows','windows_offset')]:
         start=s[key];require(start>=end,'Overlapping console metadata')

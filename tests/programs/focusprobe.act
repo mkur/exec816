@@ -1,0 +1,4 @@
+; Test-only capture retention while blocking presentation controls still run.
+MODULE FOCUSPROBE
+PUBLIC BYTE hold
+ENDMODULE

@@ -3,8 +3,8 @@
 [Design note](bitmap-console-design.md) · [Implementation plans](../README.md) ·
 [GEM work](README.md) · [Roadmap](../../roadmap.md)
 
-Status: implementation started, 3 October 2026. B0–B3 have passed development checks;
-B4–B9 remain unimplemented. This plan implements
+Status: implementation started, 3 October 2026. B0–B4 have passed development checks;
+B5–B9 remain unimplemented. This plan implements
 the design's 80×30 bitmap backend for the existing console, improving the shared
 VDI drawing path first. Each slice must leave an executable, reviewable result;
 commit it with its focused development evidence before starting the next slice.
@@ -234,6 +234,15 @@ lifetime cases pass. Exercise concurrent control calls, caller-removal holds,
 destroy during pending redraw, input arriving during control completion, failed
 startup and lost-wakeup boundaries. Exact OS screen restoration remains required.
 Commit the ownership refactor independently of bitmap hardware bring-up.
+
+B4 development evidence: [worker presentation controls](../../development/bitmap-console-b4.json).
+Raw/optimized focus, capture identities, cancellation, window lifetime and startup
+rollback pass. A gated transaction checks competing calls, caller retention and
+input delivery; a submission just before worker Wait checks durable notification.
+The eight-byte private transaction fits a metadata reservation enlarged from
+720 to 736 upper bytes, including added alignment/slack. Every bank-zero category
+changes by zero. Presentation now enforces its existing scheduling-permitted
+precondition by rejecting outer Forbid before admission.
 
 ## B5 Widen geometry and track row damage
 

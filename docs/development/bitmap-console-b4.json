@@ -1,0 +1,1892 @@
+{
+  "slice": "B4",
+  "date": "2026-10-03",
+  "status": "development-pass",
+  "reports": {
+    "focus2-opt": {
+      "path": "build/bitmap-console/b4/focus2-opt/results.json",
+      "sha256": "e30f0aaddc461d52ac9f9b273197b31a2fed39f411f5897422ea9ad2700f9fd4",
+      "xex_sha256": "98019abb85d19ac962d1ad6f157a64ccce5a69a7bd1afd821e20150fd77e6b21",
+      "checks": [
+        114
+      ],
+      "cases": [
+        {
+          "mode": "opt",
+          "checks": [
+            114
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 246,
+              "untouched_above_floor": 1034
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 228,
+              "untouched_above_floor": 540
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "focus2-raw": {
+      "path": "build/bitmap-console/b4/focus2-raw/results.json",
+      "sha256": "58f905c66f0e2fe95d5a1ff63bb03261fd1c92cfe3c567145b7ad23f0bf1b6d7",
+      "xex_sha256": "05028207d9d7430dca98ab7b5be7f7f48e16575d1de81836e1d46cd0cbf8d80c",
+      "checks": [
+        114
+      ],
+      "cases": [
+        {
+          "mode": "raw",
+          "checks": [
+            114
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 268,
+              "untouched_above_floor": 1012
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 272,
+              "untouched_above_floor": 496
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "control-final-opt": {
+      "path": "build/bitmap-console/b4/control-final-opt/results.json",
+      "sha256": "4e4237554d23e05d1971be91c8fb76992c7b01d5a05804a71225e50e7d03e1fd",
+      "xex_sha256": "79011f597acf79cd4c1cee5823d1bf376998c5c3a728559ff35c728ee66cb58b",
+      "checks": null,
+      "cases": [
+        {
+          "scenario": 0,
+          "checks": [
+            19
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 246,
+              "untouched_above_floor": 1034
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 228,
+              "untouched_above_floor": 540
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 116,
+              "untouched_above_floor": 652
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "scenario": 1,
+          "checks": [
+            11
+          ],
+          "status": 4,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 246,
+              "untouched_above_floor": 1034
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 228,
+              "untouched_above_floor": 540
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 116,
+              "untouched_above_floor": 652
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "control-final-raw": {
+      "path": "build/bitmap-console/b4/control-final-raw/results.json",
+      "sha256": "9476e785b955e7b06541505dabc9e9f09a105223fb0882c5adecdd9173a66923",
+      "xex_sha256": "a7987f1a7e120536ce81d3c1a0401773b27e08e26556b35c48ae8b3c0238a0a1",
+      "checks": null,
+      "cases": [
+        {
+          "scenario": 0,
+          "checks": [
+            19
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 266,
+              "untouched_above_floor": 1014
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 252,
+              "untouched_above_floor": 516
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 128,
+              "untouched_above_floor": 640
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "scenario": 1,
+          "checks": [
+            11
+          ],
+          "status": 4,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 266,
+              "untouched_above_floor": 1014
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 252,
+              "untouched_above_floor": 516
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 128,
+              "untouched_above_floor": 640
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "windows-opt": {
+      "path": "build/bitmap-console/b4/windows-opt/results.json",
+      "sha256": "6633cfab197d234ee77c3d65a4d5d82e89c5dbd66473d49bf4143f1f0dcbacdf",
+      "xex_sha256": "fdee7c28f8584fcaa0b46a1f1e325c6460b68bdf9fd0c8687872cee7c9f33648",
+      "checks": null,
+      "cases": [
+        {
+          "scenario": 0,
+          "checks": [
+            118
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 406,
+              "untouched_above_floor": 874
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 228,
+              "untouched_above_floor": 540
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 362,
+              "untouched_above_floor": 406
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "scenario": 1,
+          "checks": [
+            9
+          ],
+          "status": 4,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 234,
+              "untouched_above_floor": 1046
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 228,
+              "untouched_above_floor": 540
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "scenario": 2,
+          "checks": [
+            49
+          ],
+          "status": 4,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 262,
+              "untouched_above_floor": 1018
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 228,
+              "untouched_above_floor": 540
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "windows-raw": {
+      "path": "build/bitmap-console/b4/windows-raw/results.json",
+      "sha256": "b4f31ae5b79ff2662d5c08294ccbaad6a79c64a3769add1c25e66883250621bc",
+      "xex_sha256": "fba9181312e0b4e010c606f99d118f458aae768a02f4765f3a7047513602925a",
+      "checks": null,
+      "cases": [
+        {
+          "scenario": 0,
+          "checks": [
+            118
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 454,
+              "untouched_above_floor": 826
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 272,
+              "untouched_above_floor": 496
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 394,
+              "untouched_above_floor": 374
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 276,
+            "untouched_from_base": 1260,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "scenario": 1,
+          "checks": [
+            9
+          ],
+          "status": 4,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 258,
+              "untouched_above_floor": 1022
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 272,
+              "untouched_above_floor": 496
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 276,
+            "untouched_from_base": 1260,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "scenario": 2,
+          "checks": [
+            49
+          ],
+          "status": 4,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 284,
+              "untouched_above_floor": 996
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 272,
+              "untouched_above_floor": 496
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 276,
+            "untouched_from_base": 1260,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "cancel-opt": {
+      "path": "build/bitmap-console/b4/cancel-opt/results.json",
+      "sha256": "66f02be536ff1470be34603183be93302efb6bc14d61aa502d56fb827c836c3b",
+      "xex_sha256": "1138c10e0ead085f8335885dff3346f9055da0ab8e4dca33fe7d3ef4396d0e6c",
+      "checks": [
+        602
+      ],
+      "cases": [
+        {
+          "checks": [
+            602
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 386,
+              "untouched_above_floor": 894
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 244,
+              "untouched_above_floor": 524
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 225,
+              "untouched_above_floor": 543
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 37,
+              "untouched_above_floor": 219
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 270,
+            "untouched_from_base": 1266,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "cancel-raw": {
+      "path": "build/bitmap-console/b4/cancel-raw/results.json",
+      "sha256": "6cd7f2bef6e58f008a6826ce2b46673d57946f8a9bf85c7b901d82df4f3d77e5",
+      "xex_sha256": "56b86c32d51292061eca89a658a972eab779ebbf55b5871f0eba855f87f5c10e",
+      "checks": [
+        602
+      ],
+      "cases": [
+        {
+          "checks": [
+            602
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 452,
+              "untouched_above_floor": 828
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 272,
+              "untouched_above_floor": 496
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 248,
+              "untouched_above_floor": 520
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 37,
+              "untouched_above_floor": 219
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "life-opt": {
+      "path": "build/bitmap-console/b4/life-opt/results.json",
+      "sha256": "f9454a772f121d9dd7c0db8eb0e152c709082f82753b755d28b808509c3af256",
+      "xex_sha256": "aff6d5c44013ae6e6df0aea6c9d86174fd42a83c385f87d5262926b2e7000e63",
+      "checks": [
+        9
+      ],
+      "cases": [
+        {
+          "mode": 0,
+          "checks": [
+            9
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 254,
+              "untouched_above_floor": 1026
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 228,
+              "untouched_above_floor": 540
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "life-raw": {
+      "path": "build/bitmap-console/b4/life-raw/results.json",
+      "sha256": "b46efe12f5d711d9bd533c3c30410509e7c29934ac5426dc6b3c1127c6f8b55f",
+      "xex_sha256": "488bbdabd8d271855437fe68e30c4d90a7e86d4fbcad3e43a50f224af0bb08ef",
+      "checks": [
+        9
+      ],
+      "cases": [
+        {
+          "mode": 0,
+          "checks": [
+            9
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 284,
+              "untouched_above_floor": 996
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 252,
+              "untouched_above_floor": 516
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "life-opt-5": {
+      "path": "build/bitmap-console/b4/life-opt-5/results.json",
+      "sha256": "67798565fa3e34f38fa6ac734c72b741040951e3907f1cd0943c0f975feddf9d",
+      "xex_sha256": "aff6d5c44013ae6e6df0aea6c9d86174fd42a83c385f87d5262926b2e7000e63",
+      "checks": [
+        0
+      ],
+      "cases": [
+        {
+          "mode": 5,
+          "checks": [
+            0
+          ],
+          "status": 65429,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 108,
+              "untouched_above_floor": 1172
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 148,
+              "untouched_above_floor": 620
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "life-opt-6": {
+      "path": "build/bitmap-console/b4/life-opt-6/results.json",
+      "sha256": "046b8ed4e3a53789e9f8428746bdc58cb08db4aed72fb194694ad7f5aca35dc2",
+      "xex_sha256": "aff6d5c44013ae6e6df0aea6c9d86174fd42a83c385f87d5262926b2e7000e63",
+      "checks": [
+        101
+      ],
+      "cases": [
+        {
+          "mode": 6,
+          "checks": [
+            101
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 137,
+              "untouched_above_floor": 1143
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 228,
+              "untouched_above_floor": 540
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "life-opt-7": {
+      "path": "build/bitmap-console/b4/life-opt-7/results.json",
+      "sha256": "7ab4a82d60cb386a2c9a02e37e25e422b9d699d9fbc3f0209799816f2c5b736e",
+      "xex_sha256": "aff6d5c44013ae6e6df0aea6c9d86174fd42a83c385f87d5262926b2e7000e63",
+      "checks": [
+        20
+      ],
+      "cases": [
+        {
+          "mode": 7,
+          "checks": [
+            20
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 138,
+              "untouched_above_floor": 1142
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 244,
+              "untouched_above_floor": 524
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 50,
+              "untouched_above_floor": 718
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 50,
+              "untouched_above_floor": 718
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 50,
+              "untouched_above_floor": 718
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 50,
+              "untouched_above_floor": 718
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 50,
+              "untouched_above_floor": 2254
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 50,
+              "untouched_above_floor": 2254
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "life-opt-8": {
+      "path": "build/bitmap-console/b4/life-opt-8/results.json",
+      "sha256": "a5572383ff199ee292691b1588aeec682bf55d31c16dfc500e809f49f5b25b85",
+      "xex_sha256": "aff6d5c44013ae6e6df0aea6c9d86174fd42a83c385f87d5262926b2e7000e63",
+      "checks": [
+        15
+      ],
+      "cases": [
+        {
+          "mode": 8,
+          "checks": [
+            15
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 137,
+              "untouched_above_floor": 1143
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 228,
+              "untouched_above_floor": 540
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "life-raw-5": {
+      "path": "build/bitmap-console/b4/life-raw-5/results.json",
+      "sha256": "26180ea676e05ab7436a1bde09d5851fb39e454e7f5e0d3451f0013e4d7c0895",
+      "xex_sha256": "488bbdabd8d271855437fe68e30c4d90a7e86d4fbcad3e43a50f224af0bb08ef",
+      "checks": [
+        0
+      ],
+      "cases": [
+        {
+          "mode": 5,
+          "checks": [
+            0
+          ],
+          "status": 65429,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 111,
+              "untouched_above_floor": 1169
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 168,
+              "untouched_above_floor": 600
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "life-raw-6": {
+      "path": "build/bitmap-console/b4/life-raw-6/results.json",
+      "sha256": "d7d786a908ad97de2e6a918b266e3d280eb964031227174aa8b9e75e0edc5bfe",
+      "xex_sha256": "488bbdabd8d271855437fe68e30c4d90a7e86d4fbcad3e43a50f224af0bb08ef",
+      "checks": [
+        93
+      ],
+      "cases": [
+        {
+          "mode": 6,
+          "checks": [
+            93
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 144,
+              "untouched_above_floor": 1136
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 252,
+              "untouched_above_floor": 516
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "life-raw-7": {
+      "path": "build/bitmap-console/b4/life-raw-7/results.json",
+      "sha256": "3168bc78a5d75a2c854f7e09f0f5d7172aa7c6036c3e239a6eb0026eb8bd11ca",
+      "xex_sha256": "488bbdabd8d271855437fe68e30c4d90a7e86d4fbcad3e43a50f224af0bb08ef",
+      "checks": [
+        20
+      ],
+      "cases": [
+        {
+          "mode": 7,
+          "checks": [
+            20
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 154,
+              "untouched_above_floor": 1126
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 252,
+              "untouched_above_floor": 516
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 54,
+              "untouched_above_floor": 714
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 54,
+              "untouched_above_floor": 714
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 54,
+              "untouched_above_floor": 714
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 54,
+              "untouched_above_floor": 714
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 54,
+              "untouched_above_floor": 2250
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 54,
+              "untouched_above_floor": 2250
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    "life-raw-8": {
+      "path": "build/bitmap-console/b4/life-raw-8/results.json",
+      "sha256": "ee7cc7929219d6b3ecb70afb0ff4f187338f7b642e4026678f627e03c6c16e04",
+      "xex_sha256": "488bbdabd8d271855437fe68e30c4d90a7e86d4fbcad3e43a50f224af0bb08ef",
+      "checks": [
+        15
+      ],
+      "cases": [
+        {
+          "mode": 8,
+          "checks": [
+            15
+          ],
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 148,
+              "untouched_above_floor": 1132
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 252,
+              "untouched_above_floor": 516
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    }
+  },
+  "host_tests": {
+    "tests": 294,
+    "skipped": 4,
+    "status": "pass"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "upper_metadata": {
+    "old_reserved": 720,
+    "new_reserved": 736,
+    "delta": 16,
+    "new_control_payload": 8,
+    "new_reserved_slack": 12
+  },
+  "notes": [
+    "The eight-byte control record reuses the presenter lease, window lifetime states and worker wake signal; no Task, heap allocation or signal bit is added per operation.",
+    "Explicit RUNNING gate verifies competing controls/stop rejection, caller-removal protection, input delivery and exact acknowledgement; a PENDING submission between Runnable and Wait verifies durable wakeup.",
+    "The fixture observes cursor-removal entry on the worker; erasure and ordinary presentation both pass through this boundary.",
+    "Raw/optimized focus exact screen/cursor/capture identities, cancellation, destruction and startup failure cleanup passed.",
+    "The initial focus fixture held Forbid over Focus despite the existing scheduling-permitted precondition; the fixture now pauses input pumping explicitly, and controls reject outer Forbid before admission.",
+    "Development scope only; no full hosted-system qualification claim."
+  ]
+}

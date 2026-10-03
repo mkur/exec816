@@ -5,7 +5,7 @@ USE HEAPCORE
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
 USE CONSOLEDRIVER
-USE CONSOLEDISPLAY
+USE CONSOLECONTROL
 USE CONSOLECAPTURE
 
 ; Pause new worker borrows and wait for existing ones before changing
@@ -23,8 +23,15 @@ PUBLIC BYTE FUNC Lock()
   windows=CONSOLEWINDOWS.Registry()
   service=CONSOLEDRIVER.GetService()
   owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0)))
+  ; Worker completion requires scheduling; reject an outer caller Forbid.
+  LET caller=EXEC.Task POINTER(owner)
+  IF caller.tc_TDNestCnt<>255 THEN
+    RETURN(0)
+  FI
+
   EXEC.Forbid()
-  IF windows.presenting<>0 OR service.state<>2 OR service.stop<>0 THEN
+  IF windows.presenting<>0 OR service.state<>2 OR service.stop<>0
+      OR owner=service.worker THEN
     EXEC.Permit()
     RETURN(0)
   FI
@@ -60,6 +67,10 @@ PUBLIC PROC Unlock()
   windows=CONSOLEWINDOWS.Registry()
   service=CONSOLEDRIVER.GetService()
   EXEC.Forbid()
+  IF windows.control.state<>CONSOLETYPES.CTL_IDLE THEN
+    HEAPCORE.Abort(4)
+  FI
+
   FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
     IF windows.items(index).state=CONSOLETYPES.WIN_PRESENTING THEN
       windows.items(index).state=CONSOLETYPES.WIN_LIVE
@@ -93,7 +104,10 @@ PUBLIC PROC Select(CONSOLETYPES.Window POINTER entry)
   windows=CONSOLEWINDOWS.Registry()
   IF windows.focusSlot<CONSOLETYPES.WINDOW_SLOTS THEN
     view=CONSOLETYPES.Presentation POINTER(windows.items(windows.focusSlot).view)
-    CONSOLEDISPLAY.RemoveCursor(view)
+    IF CONSOLECONTROL.Submit(CONSOLETYPES.CTL_CURSOR,view)=0 THEN
+      HEAPCORE.Abort(4)
+    FI
+
     view.focused=0
     view.index=$ffff
   FI
@@ -127,7 +141,10 @@ PUBLIC PROC HideLocked(CONSOLETYPES.Window POINTER entry)
     RETURN
   FI
 
-  CONSOLEDISPLAY.Erase(view)
+  IF CONSOLECONTROL.Submit(CONSOLETYPES.CTL_ERASE,view)=0 THEN
+    HEAPCORE.Abort(4)
+  FI
+
   view.visible=0
   windows=CONSOLEWINDOWS.Registry()
   IF windows.focusSlot<>BYTE(entry.unit & 3) THEN

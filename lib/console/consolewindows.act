@@ -126,6 +126,10 @@ PUBLIC CONSOLETYPES.Window POINTER FUNC Take()
 
   windows=Registry()
   ; With only the permanent default instance, no other slot can be runnable.
+  IF windows.presenting<>0 THEN
+    RETURN(NULL)
+  FI
+
   IF windows.liveCount=1 THEN
     entry=@windows.items(0)
     entry.busy=1

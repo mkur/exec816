@@ -20,13 +20,19 @@
     "WIN_CREATING": 1,
     "WIN_LIVE": 2,
     "WIN_RETIRING": 3,
-    "WIN_PRESENTING": 4
+    "WIN_PRESENTING": 4,
+    "CTL_IDLE": 0,
+    "CTL_PENDING": 1,
+    "CTL_RUNNING": 2,
+    "CTL_DONE": 3,
+    "CTL_CURSOR": 1,
+    "CTL_ERASE": 2
   },
   "storage": {
     "service_offset": 0,
     "instance_offset": 160,
     "presentation_offset": 240,
-    "reserved_bytes": 720,
+    "reserved_bytes": 736,
     "capture_offset": 3072,
     "glyph_offset": 3632,
     "keymap_offset": 3760,
@@ -480,8 +486,39 @@
         ]
       ]
     },
+    "Control": {
+      "size": 8,
+      "alignment": 2,
+      "fields": [
+        [
+          "view",
+          "BYTE POINTER",
+          0
+        ],
+        [
+          "operation",
+          "BYTE",
+          3
+        ],
+        [
+          "state",
+          "BYTE",
+          4
+        ],
+        [
+          "result",
+          "BYTE",
+          5
+        ],
+        [
+          "reserved",
+          "CARD",
+          6
+        ]
+      ]
+    },
     "Windows": {
-      "size": 172,
+      "size": 180,
       "alignment": 2,
       "fields": [
         [
@@ -518,6 +555,11 @@
           "items",
           "Window[4]",
           20
+        ],
+        [
+          "control",
+          "Control",
+          172
         ]
       ]
     }

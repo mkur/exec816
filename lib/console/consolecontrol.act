@@ -1,0 +1,101 @@
+; Preallocated presentation transaction. The worker alone touches display RAM.
+MODULE CONSOLECONTROL
+USE EXEC
+USE HEAPCORE
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLEDISPLAY
+INCLUDE "console-storage-action.inc"
+
+; Execute a trusted physical operation in the retained worker's context.
+BYTE FUNC Apply(BYTE operation CONSOLETYPES.Presentation POINTER view)
+
+  CASE operation OF
+  WHEN CONSOLETYPES.CTL_CURSOR THEN
+    CONSOLEDISPLAY.RemoveCursor(view)
+
+  WHEN CONSOLETYPES.CTL_ERASE THEN
+    CONSOLEDISPLAY.Erase(view)
+
+  ELSE
+    RETURN(0)
+  ESAC
+
+RETURN(1)
+
+; Service controls even when WIN_PRESENTING prevents ordinary model borrows.
+; The caller's presentation lock retains it and every target until acknowledgement.
+PUBLIC PROC Process()
+  BYTE result
+
+  LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET control=@windows.control
+  EXEC.Forbid()
+  IF control.state<>CONSOLETYPES.CTL_PENDING THEN
+    EXEC.Permit()
+    RETURN
+  FI
+
+  IF service.worker<>BYTE POINTER(EXEC.FindTask(NULL))
+      OR windows.presenting=0 OR windows.presenter.task=NULL THEN
+    HEAPCORE.Abort(4)
+  FI
+
+  control.state=CONSOLETYPES.CTL_RUNNING
+  EXEC.Permit()
+  result=Apply(control.operation,
+      CONSOLETYPES.Presentation POINTER(control.view))
+  EXEC.Forbid()
+  control.result=result
+  control.state=CONSOLETYPES.CTL_DONE
+  EXEC.Permit()
+
+RETURN
+
+; The existing caller lease and lock provide lifetime and single admission.
+; Yield needs no new allocation or signal bit, and never holds Forbid while
+; waiting. The worker wake signal is durable across its Runnable/Wait boundary.
+PUBLIC BYTE FUNC Submit(BYTE operation CONSOLETYPES.Presentation POINTER view)
+  BYTE result
+
+  LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET control=@windows.control
+  LET self=EXEC.FindTask(NULL)
+  IF view=NULL THEN
+    RETURN(0)
+  FI
+
+  IF service.worker=BYTE POINTER(self) THEN
+    RETURN(Apply(operation,view))
+  FI
+
+  EXEC.Forbid()
+  IF service.state<>2 OR service.stop<>0 OR windows.presenting=0
+      OR windows.presenter.task<>self
+      OR control.state<>CONSOLETYPES.CTL_IDLE THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  control.view=BYTE POINTER(view)
+  control.operation=operation
+  control.result=0
+  control.state=CONSOLETYPES.CTL_PENDING
+  EXEC.Signal(@service.task,$80000000)
+  EXEC.Permit()
+  WHILE control.state<>CONSOLETYPES.CTL_DONE DO
+    EXEC.Yield()
+  OD
+
+  EXEC.Forbid()
+  result=control.result
+  control.view=NULL
+  control.operation=0
+  control.state=CONSOLETYPES.CTL_IDLE
+  EXEC.Permit()
+
+RETURN(result)
+
+ENDMODULE

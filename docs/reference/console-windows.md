@@ -66,6 +66,7 @@ success, zero on rejection. The creating Task controls its instances; any
 application Task may control the permanent default. Calls require task context
 with scheduling permitted. A presentation operation already in progress rejects
 another operation; the caller can retry after yielding.
+An outer `Forbid` or a call from the console worker is rejected before admission.
 
 Show places the full retained dimensions within the existing 40×24 screen.
 Rectangles cannot overlap or extend beyond it. An already visible instance can
@@ -113,10 +114,24 @@ through their last access. Retirement prevents new borrows, waits for an existin
 quantum with scheduling enabled, then frees outside Forbid. IRQs remain enabled;
 the platform entry protocol protects NMI and context switching.
 
-Presentation transactions pause live worker borrows before changing physical
-rectangles, then resume and wake the worker. Device bindings and captured input
-remain attached while presentation is paused. Neither the transaction owner nor
-the service may retire partway through that work.
+Presentation transactions pause live worker borrows. An eight-byte preallocated
+private control record passes cursor removal and erasure to the console worker,
+which services it before ordinary borrows even while presentation is locked.
+Only that worker mutates the physical screen. The caller publishes PENDING,
+the worker sets RUNNING then DONE after the physical operation, and the caller
+acknowledges it by clearing the record to IDLE before unlocking. The existing
+presenter Task lease and registry states retain caller and instance storage
+through acknowledgement. A caller yields with scheduling enabled while waiting;
+the worker uses direct internal operations rather than waiting on itself.
+
+The transaction uses the worker's existing wake signal and allocates no memory
+or signal bit. A second control is rejected while the lock is held, and Stop
+refuses a live transaction. Device bindings and captured input remain attached;
+input pumping continues during normal control handling. After acknowledgement,
+unlock resumes borrows and wakes the worker. The record increases the rounded
+upper metadata reservation by sixteen bytes, including eight bytes of new
+payload and reserved slack. Fixed, root/kernel, per-Task and idle bank-zero
+reservations change by zero bytes.
 
 Historical fairness limits, byte budgets and W1–W3 development results are in the
 [window design record](../history/console-windows-design.md). The later

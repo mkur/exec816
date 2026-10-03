@@ -1,0 +1,117 @@
+MODULE CONSOLECONTROLTEST
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE HEAPCORE
+USE CONSOLE
+USE CONSOLEDRIVER
+USE CONSOLEWINDOWS
+USE CONSOLEINPUT
+USE CONSOLETYPES
+USE CONTROLPROBE
+CARD checks
+BYTE mode,peerDone
+LONGCARD unit,available
+EXEC.Task peer
+EXEC.Task POINTER caller
+PROC POINTER absent()
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER request
+BYTE ARRAY input(1)
+
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($e900+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; A pending presentation retains the caller and blocks competing controls/stop.
+PROC PeerEntry()
+
+  WHILE CONTROLPROBE.entered=0 DO
+    EXEC.Yield()
+  OD
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  Require(windows.presenting<>0 AND windows.presenter.task=caller)
+  Require(windows.control.state=CONSOLETYPES.CTL_RUNNING)
+  Require(CONSOLE.Hide(0)=0 AND CONSOLE.Focus(0)=0)
+  Require(CONSOLE.Destroy(unit)=0 AND CONSOLEDRIVER.Stop()=0)
+  IF mode=1 THEN
+    EXEC.RemTask(caller)
+    HEAPCORE.Abort($e9fe)
+  FI
+
+  LET entry=CONSOLEWINDOWS.Find(unit)
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(instance,$0001003f)
+  EXEC.Permit()
+  CONTROLPROBE.released=1
+  peerDone=1
+
+RETURN
+
+; Read completion survives a hide acknowledgement; retirement frees no borrowed
+; model. Physical operations are observed in the worker rather than this caller.
+PROC Main()
+
+  caller=EXEC.FindTask(NULL)
+  CONTROLPROBE.Bind(CONSOLEDRIVER.GetService())
+  Require(CONSOLE.Hide(0)<>0)
+  unit=CONSOLE.Create(8,3)
+  Require(unit<>0 AND CONSOLE.Show(unit,0,0)<>0)
+  EXEC.Forbid()
+  Require(CONSOLE.Hide(unit)=0 AND CONSOLE.Focus(unit)=0)
+  EXEC.Permit()
+  port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(request<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"console.device"),unit,
+      EXEC.IORequest POINTER(request),0)=0)
+  request.io_Command=EXEC.CMD_READ
+  request.io_Data=input
+  request.io_Length=1
+  request.io_Offset=0
+  EXEC.SendIO(EXEC.IORequest POINTER(request))
+  peer.tc_Node.ln_Type=EXEC.NT_TASK
+  peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  peer.tc_SPReg=peer.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@peer.tc_MemEntry)
+  Require(EXEC.AddTask(@peer,@PeerEntry,absent)=@peer)
+  available=EXEC.AvailMem(0)
+  LET service=CONSOLEDRIVER.GetService()
+  CONTROLPROBE.idleArmed=1
+  EXEC.Signal(@service.task,$80000000)
+  WHILE CONTROLPROBE.idleEntered=0 DO
+    EXEC.Yield()
+  OD
+
+  CONTROLPROBE.armed=1
+  Require(CONSOLE.Hide(unit)<>0)
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(request))=0)
+  Require(request.io_Actual=1 AND input(0)=97)
+  WHILE peerDone=0 OR peer.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Require(EXEC.AvailMem(0)=available)
+  LET windows=CONSOLEWINDOWS.Registry()
+  Require(windows.presenting=0 AND windows.presenter.task=NULL
+      AND windows.control.state=CONSOLETYPES.CTL_IDLE)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  Require(CONSOLE.Destroy(unit)<>0)
+  Require(CONTROLPROBE.stores<>0 AND CONTROLPROBE.wrongOwner=0)
+  Require(CONSOLEDRIVER.Stop()<>0)
+
+RETURN
+
+ENDMODULE

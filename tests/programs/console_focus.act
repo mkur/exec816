@@ -1,4 +1,5 @@
 MODULE CONSOLEFOCUSTEST
+USE FOCUSPROBE
 USE EXEC
 USE EXECLISTS
 USE HEAPCORE
@@ -85,12 +86,25 @@ PROC Freeze()
     OD
 
     IF busy=0 THEN
+      FOCUSPROBE.hold=1
+      EXEC.Permit()
       EXIT
     FI
 
     EXEC.Permit()
     EXEC.Yield()
   OD
+
+RETURN
+
+; Resume pumping after capture identities have been tested across controls.
+PROC Unfreeze()
+
+  LET service=CONSOLEDRIVER.GetService()
+  EXEC.Forbid()
+  FOCUSPROBE.hold=0
+  EXEC.Signal(@service.task,$40000000)
+  EXEC.Permit()
 
 RETURN
 
@@ -171,7 +185,7 @@ PROC Queued()
   Pause(3)
   Require(capture.breakMask=((CARD(1) LSH CARD(sa.generation & 15))
       OR (CARD(1) LSH CARD(sb.generation & 15))))
-  EXEC.Permit()
+  Unfreeze()
   WHILE sa.pending=0 OR sb.pending=0 OR a.inputCount=0 OR b.inputCount=0 DO
     EXEC.Yield()
   OD
@@ -210,7 +224,7 @@ PROC Overflow()
   Pause(5)
   Require(capture.lostMask=(CARD(1) LSH CARD(wa.route & 15)))
   Require(CONSOLE.Focus(second)<>0)
-  EXEC.Permit()
+  Unfreeze()
   WHILE capture.tail<>capture.head OR a.inputLost=0 DO
     EXEC.Yield()
   OD
@@ -246,7 +260,7 @@ PROC CloseCapture()
   Pause(8)
   EXEC.CloseDevice(EXEC.IORequest POINTER(ra))
   Require(EXEC.OpenDevice(device,first,EXEC.IORequest POINTER(ra),0)=0)
-  EXEC.Permit()
+  Unfreeze()
   WHILE capture.tail<>capture.head DO
     EXEC.Yield()
   OD
