@@ -16,6 +16,8 @@ from stack_budget import stack_usage
 from test_calypsi import pattern
 from test_large_stacks import observe
 from test_console_display import terminal
+from console_model import read_cells
+from generate_console import constants as console_constants
 PIN=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
 CASES=['keyboard','early-escape','late-escape','break','root-stop','input-busy','display-busy',
        'client-allocation','renderer-allocation','admission','wrong-disk','no-disk','short-file','corrupt-file',
@@ -203,14 +205,19 @@ def run(output,mode,cases=None,replay=False,production=False):
                     if name=='render-busy':return
                     checkpoint=next(d['address'] for d in p['image']['data'] if '_CHECKPOINT_' in d['name'])
                     inst=memory['console_storage']['INSTANCE']; view=memory['console_storage']['PRESENTATION']
-                    reach(f'(db(${checkpoint:x})=3)&(dw(${inst+14:x})>=dw(${inst+16:x}))&'
-                          f'(dw(${view+10:x})=dw(${inst+54:x})+dw(${inst+10:x}))')
+                    layout=console_constants()
+                    instance=lambda field:inst+layout['INSTANCE_'+field]
+                    presentation=lambda field:view+layout['PRESENTATION_'+field]
+                    reach(f'(db(${checkpoint:x})=3)&(dw(${instance("DIRTYROWS"):x})=0)&'
+                          f'(db(${instance("OPERATION"):x})=0)&(db(${presentation("CURSORON"):x})=1)&'
+                          f'(dw(${presentation("PREVIOUSCURSOR"):x})='
+                          f'dw(${instance("LINESTART"):x})+dw(${instance("COLUMN"):x}))')
                     payload=b'GEM disk error\nMount gem-vdi/graphics.atr\n' if name in MEDIA_ERRORS else (
                         b'GEM renderer failed\n' if name=='render-timeout' else b'GEM startup failed\n' if name in
                         ('input-busy','display-busy','client-allocation','renderer-allocation','app-signal','input-signal') else b'GEM session complete\n')
                     if name=='no-disk':payload+=b'SIO offline; reset required\n'
                     expected=terminal(payload); pointer=lambda a:int.from_bytes(b.memdump(a,3),'little')
-                    require(b.memdump(pointer(inst),960)==expected[0],'Completion text differs')
+                    require(read_cells(b.memdump,inst)==expected[0],'Completion text differs')
                     require(b.memdump(pointer(view+3),960)==expected[1],'Completion scanout differs')
                     case['completion_text']=payload.decode(); b.bp_clear_all()
                 runtime,_=execute(b,{**p,'output':folder},before_run=before,expected_status=0xff93 if name in ('no-disk','render-busy') else 0,frame_limit=24000,timeout=360)

@@ -7,7 +7,7 @@ from calypsi_build import emit
 from extract_gem_vdi import extract, PORT
 from gem_vdi_inputs import local_inputs
 from library_paths import read_source
-from native_program import ROOT, build, compiler, sha256
+from native_program import ROOT, build, compiler, sha256, require
 from generate_gem_vdi import expected_layout as gem_layout
 from generate_gem_interactive import expected_layout as ui_layout, files
 from generate_input import expected_layout as input_layout
@@ -31,8 +31,9 @@ def build_interactive(output,optimize=True,instrument=True):
         hardware=output/'vbxe-ui.c'; hardware.write_text(text)
         text=backend.read_text().replace('static struct VbxeDisplay display;',
             'extern void UiCursorGate(void);\nstatic struct VbxeDisplay display;')
-        text=text.replace('    (void)context;\n    cursor_hide();\n    cursorX=',
-            '    (void)context;\n    UiCursorGate();\n    cursor_hide();\n    cursorX=')
+        cursor_boundary='    cursor_hide();\n    if (fault) return GEM_DEVICE_FAULT;\n    cursorX='
+        require(text.count(cursor_boundary)==1,'Missing diagnostic cursor transaction boundary')
+        text=text.replace(cursor_boundary,'    UiCursorGate();\n'+cursor_boundary)
         backend=output/'gem-ui-backend.c';backend.write_text(text)
     events=ui/'ui-events.c'
     if instrument:

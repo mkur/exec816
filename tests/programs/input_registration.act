@@ -126,6 +126,12 @@ PROC Source(CARD source)
   Require(INPUT.CreateRoute(@lease,0,@tag)=INPUT.OK)
   Require(INPUT.RetireRoute(@lease,tag)=INPUT.OK)
   previousAcquisition=lease.acquisition
+  ; Release preflight remains checked even when ordinary audits are omitted.
+  lease.reserved=1
+  Require(INPUT.Release(@lease)=INPUT.INVALID_OWNER)
+  Require(lease.state=INPUT.ACTIVE AND lease.acquisition=previousAcquisition)
+  lease.reserved=0
+  Empty()
   Require(INPUT.Release(@lease)=INPUT.OK)
   Require(INPUT.Take(@lease,@event)=INPUT.INVALID_OWNER)
   Require(INPUT.Pending(@lease,@pending)=INPUT.INVALID_OWNER)
@@ -134,6 +140,14 @@ PROC Source(CARD source)
   Require(INPUT.PublishRoute(@lease,tag)=INPUT.BAD_ARGUMENT)
   Empty()
   Require(INPUT.Release(@lease)=INPUT.OK)
+  ; A different address may acquire the same source. The old record must not
+  ; resolve to it, and no retained output may cross the release boundary.
+  Require(INPUT.Acquire(@unregistered,@config)=INPUT.OK)
+  Require(unregistered.acquisition>previousAcquisition)
+  Require(INPUT.Pending(@unregistered,@pending)=INPUT.OK AND pending=0)
+  Require(INPUT.Take(@unregistered,@alternate)=INPUT.EMPTY)
+  Require(INPUT.Take(@lease,@event)=INPUT.INVALID_OWNER)
+  Require(INPUT.Release(@unregistered)=INPUT.OK)
 
 RETURN
 
