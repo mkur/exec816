@@ -5,6 +5,7 @@ USE HEAPCORE
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
 USE CONSOLEDISPLAY
+USE CONSOLEBITMAP
 INCLUDE "console-storage-action.inc"
 
 ; Execute a trusted physical operation in the retained worker's context.
@@ -27,6 +28,10 @@ RETURN(1)
 ; The caller's presentation lock retains it and every target until acknowledgement.
 PUBLIC PROC Process()
   BYTE result
+
+  IF CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN
+  FI
 
   LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
   LET windows=CONSOLEWINDOWS.Registry()

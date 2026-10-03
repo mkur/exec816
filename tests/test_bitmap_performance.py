@@ -21,6 +21,17 @@ class PerformanceSpans(unittest.TestCase):
         intervals=[r for r in rows if r['kind']=='launch_to_idle']
         self.assertEqual([(r['start'],r['end']) for r in intervals],[(0,30)])
 
+    def test_native_completion_ends_launch_when_c_helper_is_inlined(self):
+        events=[event(0,100,0x1000),event(20,200,0x1000),
+                event(30,201,0x1000),event(40,301,0x1000)]
+        marks={'launch':dict(entry=100,returns=[]),
+               'bitmap_complete':dict(entry=200,returns=[201]),
+               'idle':dict(entry=300,returns=[301])}
+        with patch('bitmap_console_performance.read_events',return_value=events):
+            rows=spans(None,marks)
+        intervals=[r for r in rows if r['kind']=='launch_to_idle']
+        self.assertEqual([(r['start'],r['end']) for r in intervals],[(0,20)])
+
     def test_entry_counts_do_not_require_a_unique_c_epilogue(self):
         events=[event(0,100,0x1000),event(1,200,0x1000),
                 event(2,200,0x1100),event(3,101,0x1000)]

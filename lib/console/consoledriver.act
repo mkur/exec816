@@ -434,13 +434,15 @@ PUBLIC PROC Worker()
   bits=0
   stopping=0
   inputPending=1
-  WHILE service.stop=0 DO
+  ; Stop may be requested after the final write reply but before DMA retires.
+  WHILE service.stop=0 OR CONSOLEBITMAP.Pending()<>0 DO
     bits=Collect(bits)
     IF (bits & STOP_MASK)<>0 THEN
       stopping=1
     FI
 
-    IF stopping<>0 THEN
+    CONSOLEDISPLAY.Poll()
+    IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
       EXEC.Forbid()
       accepted=RequestStop(service)
       EXEC.Permit()
@@ -463,20 +465,25 @@ PUBLIC PROC Worker()
       ReadQuantum(service,instance)
       BEGIN
         LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-        IF view.scrollState<>0 THEN
-          CONSOLEDISPLAY.Advance(view,instance,entry.unit)
-        ELSE
-          WriteQuantum(instance,view)
+        IF CONSOLEBITMAP.Pending()=0 THEN
+          IF view.scrollState<>0 THEN
+            CONSOLEDISPLAY.Advance(view,instance,entry.unit)
+          ELSE
+            WriteQuantum(instance,view)
+          FI
+
+          CONSOLEDISPLAY.Present(view,instance)
         FI
 
-        CONSOLEDISPLAY.Present(view,instance)
         writing=instance.write<>NULL
         again=(writing<>0 AND instance.writeCancel<>0) OR view.scrollState<>0
       END
       entry.busy=0
     FI
 
-    IF again=0 THEN
+    IF CONSOLEBITMAP.Pending()<>0 THEN
+      EXEC.Yield()
+    ELSEIF again=0 THEN
       IF writing<>0 THEN
         EXEC.Yield()
       ELSEIF Runnable(service,inputPending)=0 THEN

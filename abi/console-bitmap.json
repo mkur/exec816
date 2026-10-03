@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "packet_bytes": 52,
+  "version": 2,
+  "packet_bytes": 56,
   "fields": {
     "operation": 0,
     "status": 2,
@@ -11,7 +11,8 @@
     "height": 14,
     "foreground": 16,
     "background": 18,
-    "copy": 20
+    "copy": 20,
+    "token": 52
   },
   "operations": {
     "OPEN": 1,
@@ -19,6 +20,8 @@
     "TEXT": 3,
     "FILL": 4,
     "COPY": 5,
-    "FENCE": 6
+    "FENCE": 6,
+    "SCROLL": 7,
+    "POLL": 8
   }
 }

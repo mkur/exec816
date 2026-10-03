@@ -2,11 +2,13 @@
 #ifndef EXEC_CONSOLE_BITMAP_H
 #define EXEC_CONSOLE_BITMAP_H
 #include <hardware/vbxe-copy.h>
-struct ConsoleBitmapPacket { UWORD operation,status; ULONG text; UWORD x,y,width,height,foreground,background; struct VbxeCopy copy; };
+struct ConsoleBitmapPacket { UWORD operation,status; ULONG text; UWORD x,y,width,height,foreground,background; struct VbxeCopy copy; ULONG token; };
 #define CON_BITMAP_OPEN 1
 #define CON_BITMAP_CLOSE 2
 #define CON_BITMAP_TEXT 3
 #define CON_BITMAP_FILL 4
 #define CON_BITMAP_COPY 5
 #define CON_BITMAP_FENCE 6
+#define CON_BITMAP_SCROLL 7
+#define CON_BITMAP_POLL 8
 #endif

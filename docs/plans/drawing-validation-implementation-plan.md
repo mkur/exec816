@@ -72,6 +72,23 @@ measure responsiveness separately from scroll throughput.
   counter; reserved bank-zero delta remains **0 bytes** for fixed/root/kernel,
   every public Task and idle, including guards and capacity.
 
+
+- D5: [development evidence](../development/drawing-validation-d5.json) records
+  the console packet migration and worker start/poll integration. Thirteen exact
+  pixel scenes pass raw/optimized; the optimized image also passes unobserved
+  replay. Controls cover cancellation, hide, changed unit/view/model generation,
+  last-binding Stop and destruction/reuse while pending. A fixture hardware read
+  at READ completion proves input progress during real BUSY, rather than merely
+  delaying software acknowledgement. Raw/optimized quiesced and reset-required
+  faults pass. Eight-Task physical SDFS/ST/keyboard/BREAK coexistence and replay
+  pass their existing timing gates. Completion never borrows a presenting or
+  retiring view; its caret redraw is made runnable after normal completion.
+  Host checks: 306 tests, four historical skips. Added native association payload
+  is thirteen upper-RAM bytes; packet payload grows four bytes within the existing
+  bank reservation. Reserved bank-zero delta remains **0 bytes** for fixed,
+  root/kernel, every public Task and idle, including guards and unused capacity.
+  Performance acceptance is recorded separately in D6.
+
 ## Baseline and intended gain
 
 The [Q3 evidence](../development/console-idle-input-q3.json), recorded at

@@ -49,14 +49,26 @@ newer edit when it acknowledges completed work.
 
 The text backend uses the available ROM glyphs, with `?` for unavailable glyphs.
 Bitmap output uses the shared GEM 8×8 font, black ink and an opaque white
-background. A synchronized visible instance scrolls with opaque pixel copies and
-fills; hidden or invalidated presentation redraws retained damage. Each retained
-continuation revalidates unit and view/model generations between bounded chunks.
-The logical scroll commits once; cancellation preserves accepted bytes. While a
-continuation runs, new writes to that instance wait, but input, controls and other
-instances remain serviceable. A steady focused underline caret restores its cell
-before copying and redraws after presentation settles. Clean cells and an unchanged
-caret cause no drawing submissions.
+background. A synchronized visible instance scrolls with one asynchronous opaque
+rectangle copy followed by the exposed-strip fill in the same hardware list.
+A height-one tile submits only the fill. Hidden or invalidated presentation
+redraws retained damage; clear retains bounded fills.
+
+The worker is the sole drawing owner, with one list in flight. It polls once per
+pending turn, services input and READ replies, then yields; it never waits for a
+signal that only hardware completion could provide. Further model writes and all
+hardware drawing, including caret and presentation controls, wait for completion.
+The logical scroll commits once, and cancellation preserves accepted bytes.
+The upper-RAM association holds only unit and view/model generations, never a
+borrowed instance pointer across a turn. Completion borrows only a matching live
+entry; presenting or retired entries cannot adopt it. Invalidated views redraw
+from their retained cells. Hide, destruction and Stop settle DMA before releasing
+its storage or display ownership. Unquiesced recovery retains both.
+
+A steady focused underline caret restores its cell before copying and redraws
+after presentation settles. Completion makes that redraw runnable even if no
+WRITE remains. Clean cells and an unchanged caret cause no drawing submissions.
+The native/C packet is version 2, 56 bytes; rebuild both sides together.
 Output control bytes have these effects:
 
 | Byte | Effect |
@@ -94,8 +106,9 @@ Stopping the console releases input ownership before its signal/storage and disp
 hiding a window does not release either ownership domain.
 [Idle-input development evidence](../development/console-idle-input-q3.json)
 records 9.7–10.0 ms for input checking across a full-screen bitmap scroll, down
-from 52 ms on the matched pinned configuration. Complete scrolls still take
-121.8–122.2 ms.
+from 52 ms on that historical image. Subsequent validation and asynchronous
+scroll results are recorded in the
+[drawing implementation plan](../plans/drawing-validation-implementation-plan.md).
 
 ## Lifetime and limits
 

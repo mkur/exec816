@@ -1,8 +1,12 @@
 ; A continuation contains identities and scalars, never borrowed pointers.
-; The logical edit commits once before the first physical copy/fill chunk.
+; The logical edit commits once before the physical copy/fill launch.
 PROC BitmapEdit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
   BYTE synchronized
+
+  IF CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN
+  FI
 
   LET operation=instance.operation
   synchronized=0
@@ -42,14 +46,63 @@ PROC BitmapEdit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
 
 RETURN
 
-; Re-resolve on each worker borrow. Copy order is top-to-bottom, with opaque
-; zero pixels; no more than sixteen pixel rows cross this ordinary-call fence.
+; Resolve the permanent registry only after the DMA no longer owns its pixels.
+; Presenting/retiring entries are not borrowed. Advance invalidates any skipped
+; completion after publication. No instance pointer crosses a worker turn.
+PROC BitmapComplete()
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET entry=@windows.items(BYTE(bitmapUnit & 3))
+  entry.busy=1
+  IF entry.state=CONSOLETYPES.WIN_LIVE AND entry.unit=bitmapUnit THEN
+    BEGIN
+      LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      IF view.scrollState=3 THEN
+        view.scrollState=0
+        view.index=$ffff
+        IF view.generation=bitmapGeneration AND instance.generation=bitmapModel
+            AND view.scrollUnit=bitmapUnit
+            AND view.scrollGeneration=bitmapGeneration
+            AND view.scrollModel=bitmapModel AND view.visible<>0
+            AND view.claimed<>0 AND CONSOLEBITMAP.Failed()=0 THEN
+          view.scrollRow=view.height LSH 3
+          CONSOLECORE.Clean(instance)
+          view.presentedGeneration=instance.generation
+        ELSE
+          view.presentedGeneration=0
+          CONSOLECORE.Dirty(instance,0,instance.count)
+        FI
+      FI
+    END
+  FI
+
+  entry.busy=0
+
+RETURN
+
+; This runs even when a presentation transaction prevents normal borrows.
+; Poll once per turn; retire its identity before another instance can launch.
+PUBLIC PROC Poll()
+
+  IF CONSOLEBITMAP.Pending()=0 THEN
+    RETURN
+  FI
+
+  CONSOLEBITMAP.Poll()
+  IF CONSOLEBITMAP.Pending()=0 THEN
+    BitmapComplete()
+  FI
+
+RETURN
+
+; One scroll submission owns copy and bottom fill. Clear retains bounded fills.
 PUBLIC PROC Advance(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance LONGCARD unit)
-  CARD limit,rows
+  CARD rows
   BYTE okay
 
-  IF view.scrollState=0 THEN
+  IF view.scrollState=0 OR CONSOLEBITMAP.Pending()<>0 THEN
     RETURN
   FI
 
@@ -62,32 +115,36 @@ PUBLIC PROC Advance(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     RETURN
   FI
 
-  limit=view.height LSH 3
   IF view.scrollState=1 THEN
-    limit==-8
-    IF view.scrollRow=limit THEN
-      view.scrollState=2
+    okay=CONSOLEBITMAP.Scroll(view.left,view.top,view.width,view.height)
+    IF okay<>0 THEN
+      bitmapUnit=unit
+      bitmapGeneration=view.generation
+      bitmapModel=instance.generation
+      view.scrollState=3
+    ELSE
+      view.scrollState=0
+      view.presentedGeneration=0
     FI
+
+    RETURN
   FI
 
-  IF view.scrollState=1 THEN
-    rows=limit-view.scrollRow
-    IF rows>16 THEN
-      rows=16
-    FI
-
-    okay=CONSOLEBITMAP.Scroll(view.left,view.top,view.width,
-        view.scrollRow,rows)
-  ELSE
-    rows=(view.height LSH 3)-view.scrollRow
-    IF rows>16 THEN
-      rows=16
-    FI
-
-    okay=CONSOLEBITMAP.Fill(view.left LSH 3,(view.top LSH 3)+view.scrollRow,
-        view.width LSH 3,rows,0)
+  ; A retired/republished entry cannot adopt another operation's completion.
+  IF view.scrollState=3 THEN
+    view.scrollState=0
+    view.presentedGeneration=0
+    CONSOLECORE.Dirty(instance,0,instance.count)
+    RETURN
   FI
 
+  rows=(view.height LSH 3)-view.scrollRow
+  IF rows>16 THEN
+    rows=16
+  FI
+
+  okay=CONSOLEBITMAP.Fill(view.left LSH 3,(view.top LSH 3)+view.scrollRow,
+      view.width LSH 3,rows,0)
   IF okay=0 THEN
     view.scrollState=0
     view.presentedGeneration=0

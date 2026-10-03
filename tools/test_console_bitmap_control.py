@@ -20,13 +20,28 @@ def run(out,mode,replay=False):
     original=generate_tasks.policy_modules
     def instrument(*args,**kwargs):
         directory=original(*args,**kwargs);path=directory/'consoledriver.act';s=path.read_text().replace('USE EXEC\n','USE EXEC\nUSE BITMAPCONTROLPROBE\n',1)
-        needle='          CONSOLEDISPLAY.Advance(view,instance,entry.unit)'
+        needle='            CONSOLEDISPLAY.Advance(view,instance,entry.unit)'
         require(s.count(needle)==1,'Continuation boundary changed')
-        s=s.replace(needle,'          IF BITMAPCONTROLPROBE.hold=0 THEN\n'+needle+'\n          FI')
+        s=s.replace(needle,'            IF BITMAPCONTROLPROBE.hold<>1 THEN\n  '+needle+'\n            FI')
         needle='        again=(writing<>0 AND instance.writeCancel<>0) OR view.scrollState<>0'
         require(s.count(needle)==1,'Continuation scheduling changed')
         s=s.replace(needle,needle+'\n        IF BITMAPCONTROLPROBE.hold<>0 AND view.scrollState<>0 THEN\n          again=0\n        FI')
-        path.write_text(s);return directory
+        needle='  FinishRead(instance,request)'
+        require(s.count(needle)==1,'Read completion boundary changed')
+        s=s.replace(needle,'  IF CONSOLEBITMAP.Pending()<>0 THEN\n    BITMAPCONTROLPROBE.ReadPending()\n  FI\n\n'+needle)
+        path.write_text(s)
+        source=ROOT/'lib/console/console-bitmap-display.inc'
+        text=source.read_text();needle='  CONSOLEBITMAP.Poll()'
+        require(text.count(needle)==1,'Async completion boundary changed')
+        text=text.replace(needle,
+            '  LET pendingControl=CONSOLEWINDOWS.Registry()\n'
+            '  IF BITMAPCONTROLPROBE.hold=2 AND\n'
+            '      pendingControl.control.state<>CONSOLETYPES.CTL_PENDING THEN\n'
+            '    RETURN\n  FI\n\n'+needle)
+        target=directory/'bitmap-control.inc';target.write_text(text)
+        path=directory/'consoledisplay.act'
+        path.write_text(path.read_text().replace('USE A816MEMORY\n','USE A816MEMORY\nUSE BITMAPCONTROLPROBE\n',1).replace(str(source),str(target)))
+        return directory
     generate_tasks.policy_modules=instrument
     try:p=read_build(out/'program') if replay else build_bitmap(ROOT/'tests/programs/console_bitmap_control.act',out,mode=='opt')
     finally:generate_tasks.policy_modules=original
@@ -36,7 +51,7 @@ def run(out,mode,replay=False):
     model.feed(b'A');raster=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'));model.paint(raster,0,0,True)
     result=dict(status='running',tier='development',mode=mode,build=p['build'],cases=[])
     try:
-        for variant in range(5):
+        for variant in range(12):
             folder=out/f'case-{variant}';folder.mkdir(exist_ok=True)
             with emulator(BRIDGE,ROM,folder,pin=PIN) as b:
                 machine=verify_machine(b,ROM,PIN);saved={};observed={}
@@ -45,11 +60,16 @@ def run(out,mode,replay=False):
                     marker=p['labels']['native_nmi'];condition=f'dw(${at("CHECKPOINT"):x})=1'
                     b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=15000,timeout=90);b.bp_clear_all()
                     condition=f'@frame>={b.eval_expr("@frame")+2}';b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=30,timeout=5);b.bp_clear_all()
-                    observed['pixels_sha256']=pixels(b,folder,raster.packed());b.memload(at('GATE'),b'\1\0')
+                    if variant<10:observed['pixels_sha256']=pixels(b,folder,raster.packed())
+                    b.memload(at('GATE'),b'\1\0')
                 runtime,_=execute(b,p,before_run=before,frame_limit=8000,timeout=90)
                 ownership(b,p,p['output'])
                 require(b.memdump(saved['at'],960)==saved['screen'] and b.memdump(0x22f,3)==saved['display'],'OS state changed')
+                probes={name:next(d['address'] for d in p['image']['data'] if '_BITMAPCONTROLPROBE_'+name.upper()+'_' in d['name']) for name in ('pendingReads','busyReads')}
+                observed.update({name:b.memdump(addr,1)[0] for name,addr in probes.items()})
+                if variant>=5:require(observed['pendingReads']>0,'No input read while a scroll was pending')
                 result['cases'].append(dict(variant=variant,machine=machine,runtime=runtime,checks=data(b,p['image'],'checks',True),**observed))
+        require(any(c['busyReads'] for c in result['cases']),'No read completed during real hardware BUSY')
         result['status']='pass'
     except Exception as e:result.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')

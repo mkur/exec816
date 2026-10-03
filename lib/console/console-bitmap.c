@@ -18,6 +18,9 @@ void ConsoleBitmapEntry(void)
         else p->status=GemDrawingFill(p->x,p->y,p->x+p->width,p->y+p->height,p->background);
         break;
     case CON_BITMAP_COPY: p->status=GemDrawingCopy(&p->copy); break;
+    case CON_BITMAP_SCROLL:
+        p->status=GemDrawingScrollStart(&p->copy,p->background,&p->token); break;
+    case CON_BITMAP_POLL: p->status=GemDrawingScrollPoll(p->token); break;
     case CON_BITMAP_FENCE: p->status=GemDrawingFence(); break;
     default: p->status=DISPLAY_BAD_ARGUMENT;
     }

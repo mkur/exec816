@@ -41,7 +41,8 @@ def input_markers(program):
 
 def markers(program,foreign,output):
     result=native_markers(program,[('CONSOLEDISPLAY_'+routine,key) for routine,key in
-        [('PRESENT','present'),('ADVANCE','advance'),('BITMAPEDIT','edit'),('CELLS','cells')]])
+        [('PRESENT','present'),('ADVANCE','advance'),('BITMAPEDIT','edit'),('CELLS','cells'),
+         ('BITMAPCOMPLETE','bitmap_complete'),('POLL','bitmap_poll')]])
     image=program['image'];result.update(input_markers(program))
     result.update(native_markers(program,[('DISPLAY_CHECK','display_check'),
         ('DISPLAY_VALID','display_valid')]))
@@ -61,8 +62,11 @@ def markers(program,foreign,output):
         for name,routine in [('control','CONSOLECONTROL_PROCESS'),('arrival','CONSOLEDRIVER_ARRIVAL')]:
             targets[name]=next(r['address'] for r in image['routines'] if r['name'].startswith('M_'+routine+'_'))
         mapped={**program,'labels':{**program['labels'],**targets}}
+        if 'bitmap_poll' in result:
+            targets['poll']=result['bitmap_poll']['entry']
+            mapped['labels']['poll']=targets['poll']
         calls={name:call_marker(mapped,'M_CONSOLEDRIVER_WORKER_',name) for name in targets}
-        result['input_collect_turn']=dict(entry=calls['collect'],returns=[calls['control']])
+        result['input_collect_turn']=dict(entry=calls['collect'],returns=[calls.get('poll',calls['control'])])
         result['input_service_turn']=dict(entry=calls['control']+4,returns=[calls['arrival']])
     result['call']=dict(entry=program['labels']['console_bitmap_call'],returns=[program['labels']['console_bitmap_done']])
     r=next(r for r in image['routines'] if r['name'].startswith('M_BITMAPSCROLL_REPAINTBEGIN_'))
@@ -101,13 +105,15 @@ def spans(path,marks):
         for name,m in marks.items():
             key=(name,dp)
             if pc==m['entry']:
+                # Optimized C may inline complete_scroll. Native completion is
+                # also proof of an idle read, before caret drawing can start.
+                if name in ('complete_scroll','bitmap_complete') and dp in launch:
+                    start=launch.pop(dp)
+                    samples.append(dict(kind='launch_to_idle',dp=dp,start=start,end=tick,ms=(tick-start)/BASE_HZ*1000))
                 if name=='launch':
                     require(dp not in launch,'Overlapping hardware launch');launch[dp]=tick
                 elif name=='repaint' or m.get('entry_only'):
                     samples.append(dict(kind=name,dp=dp,start=tick,end=tick,ms=0))
-                    if name=='complete_scroll' and dp in launch:
-                        start=launch.pop(dp)
-                        samples.append(dict(kind='launch_to_idle',dp=dp,start=start,end=tick,ms=(tick-start)/BASE_HZ*1000))
                 elif m['returns']:
                     require(key not in active,'Nested performance routine '+name);active[key]=tick
             elif pc in m['returns'] and key in active:
@@ -135,7 +141,7 @@ def summarize(path,marks,windows):
         calls=[r for r in rows if r['kind']=='call']
         if repaint and calls:
             item['repaint_request_to_final_fence_ms']=(calls[-1]['end']-repaint[0]['start'])/BASE_HZ*1000
-        edits=[r for r in rows if r['kind']=='edit'];advances=[r for r in rows if r['kind']=='advance']
+        edits=[r for r in rows if r['kind']=='edit'];advances=[r for r in rows if r['kind'] in ('advance','bitmap_complete')]
         if edits and advances:
             # Consecutive edits delimit independent continuations; the last
             # Advance return is the final copy/fill fence plus acknowledgement.

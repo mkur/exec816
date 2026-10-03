@@ -6,6 +6,7 @@ USE CONSOLETYPES
 USE HEAPCORE
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-bitmap-types.inc"
+BYTE drawingPending
 
 PUBLIC EXTERNAL PROC Call(ADDRESS entry)
 
@@ -32,7 +33,7 @@ PUBLIC BYTE FUNC Bind(LONGCARD entry,packet)
   LET state=GetBinding()
   LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
   IF service.state<>0 OR state.enabled<>0 OR entry<$c0000 OR entry>$cffff
-      OR packet<$d0000 OR packet>$dffcc OR (packet & 1)<>0 THEN
+      OR packet<$d0000 OR packet>$dffc8 OR (packet & 1)<>0 THEN
     RETURN(0)
   FI
 
@@ -50,7 +51,8 @@ PUBLIC Packet POINTER FUNC GetPacket()
 RETURN(Packet POINTER(state.packet))
 
 ; All production calls originate in the resident worker. The packet never
-; retains source buffers after return; each drawing operation is fenced.
+; retains source buffers after return. SCROLL/POLL explicitly separate launch
+; from completion; all other drawing operations remain synchronous.
 PUBLIC BYTE FUNC Run(CARD operation)
 
   LET state=GetBinding()
@@ -67,6 +69,11 @@ PUBLIC BYTE FUNC Run(CARD operation)
   packet.operation=operation
   packet.status=DISPLAY.BAD_ARGUMENT
   Call(state.entry)
+  IF packet.status=DISPLAY.BUSY AND
+      (operation=OP_SCROLL OR operation=OP_POLL) THEN
+    RETURN(1)
+  FI
+
   IF packet.status<>DISPLAY.OK THEN
     state.failed=1
     RETURN(0)
@@ -79,12 +86,19 @@ PUBLIC BYTE FUNC Open()
   LET state=GetBinding()
   state.failed=0
 
-RETURN(Run(OP_OPEN))
+  IF Run(OP_OPEN)=0 THEN
+    RETURN(0)
+  FI
+
+  drawingPending=0
+
+RETURN(1)
 
 PUBLIC PROC Close()
   BYTE ignored
 
   ignored=Run(OP_CLOSE)
+  drawingPending=0
 
 RETURN
 
@@ -111,8 +125,8 @@ PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
 
 RETURN(Run(OP_TEXT))
 
-; One safe upward screen chunk; surfaces describe the whole packed bitmap.
-PUBLIC BYTE FUNC Scroll(CARD left,top,width,row,rows)
+; One complete upward copy and exposed-strip fill, retained by the C driver.
+PUBLIC BYTE FUNC Scroll(CARD left,top,width,height)
 
   LET packet=GetPacket()
   packet.copy.source.offset=0
@@ -125,11 +139,41 @@ PUBLIC BYTE FUNC Scroll(CARD left,top,width,row,rows)
   packet.copy.destination.height=240
   packet.copy.sourceX=left LSH 3
   packet.copy.destinationX=left LSH 3
-  packet.copy.sourceY=(top LSH 3)+row+8
-  packet.copy.destinationY=(top LSH 3)+row
+  packet.copy.sourceY=(top LSH 3)+8
+  packet.copy.destinationY=top LSH 3
   packet.copy.width=width LSH 3
-  packet.copy.height=rows
+  packet.copy.height=(height-1) LSH 3
+  packet.background=0
+  IF Run(OP_SCROLL)=0 OR packet.status<>DISPLAY.OK THEN
+    RETURN(0)
+  FI
 
-RETURN(Run(OP_COPY))
+  drawingPending=1
+
+RETURN(1)
+
+; Local owner state is sufficient for scheduling; public Poll admits again.
+PUBLIC BYTE FUNC Pending()
+
+RETURN(drawingPending)
+
+PUBLIC PROC Poll()
+
+  IF drawingPending=0 THEN
+    RETURN
+  FI
+
+  IF Run(OP_POLL)=0 THEN
+    drawingPending=0
+  ELSE
+    BEGIN
+      LET packet=GetPacket()
+      IF packet.status=DISPLAY.OK THEN
+        drawingPending=0
+      FI
+    END
+  FI
+
+RETURN
 
 ENDMODULE

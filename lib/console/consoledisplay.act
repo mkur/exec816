@@ -14,6 +14,7 @@ BYTE sdmctl=$22f,chbas=$2f4,chact=$2f3,gprior=$26f
 BYTE oldchr=$5d
 CARD savmsc=$58,sdlst=$230,oldadr=$5e
 DISPLAY.Lease lease
+LONGCARD bitmapUnit,bitmapGeneration,bitmapModel
 
 CONST ROW_BUDGET=4, CELL_BUDGET=160
 
@@ -350,6 +351,10 @@ PUBLIC PROC RemoveCursor(CONSOLETYPES.Presentation POINTER view)
   CARD row,column
   BYTE okay
 
+  IF CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN
+  FI
+
   IF view.cursorOn<>0 AND CONSOLEBITMAP.Enabled()<>0 THEN
     BEGIN
       LET instance=CONSOLETYPES.Instance POINTER(view.instance)
@@ -373,6 +378,10 @@ RETURN
 PUBLIC PROC Erase(CONSOLETYPES.Presentation POINTER view)
   CARD row
   BYTE okay
+
+  IF CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN
+  FI
 
   IF view.claimed=0 OR view.visible=0 THEN
     RETURN
@@ -467,7 +476,8 @@ RETURN
 PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
 
-  IF view.claimed=0 OR view.visible=0 OR view.scrollState<>0 THEN
+  IF CONSOLEBITMAP.Pending()<>0 OR view.claimed=0 OR view.visible=0
+      OR view.scrollState<>0 THEN
     RETURN
   FI
 

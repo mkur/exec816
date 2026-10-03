@@ -19,9 +19,9 @@ def drawing(out,optimize,probe=False,fault=False):
         hardware=(ROOT/'platform/altirraos/vbxe.c').read_text()
         hardware=hardware.replace('#define BUSY ', 'extern UBYTE ConsoleFaultBusy(void);\nextern void ConsoleFaultStop(void);\nextern void ConsoleFaultCopy(void);\n#define BUSY ')
         hardware=hardware.replace('REG(BUSY)&3','ConsoleFaultBusy()&3').replace('REG(BUSY)=0;', 'REG(BUSY)=0; ConsoleFaultStop();')
-        needle='        rows-=n;\n        if (rows) { src+='
-        require(hardware.count(needle)==1,'Copy chunk boundary changed')
-        hardware=hardware.replace(needle,'        ConsoleFaultCopy();\n'+needle)
+        needle='REG(BUSY)=1;'
+        require(hardware.count(needle)==1,'Scroll launch boundary changed')
+        hardware=hardware.replace(needle,needle+' if (d->scrollPending) ConsoleFaultCopy();')
         target=out/'vbxe-fault.c';target.write_text(hardware)
         sources[sources.index(ROOT/'platform/altirraos/vbxe.c')]=target
         sources.append(ROOT/'tests/programs/console_bitmap_fault.c')

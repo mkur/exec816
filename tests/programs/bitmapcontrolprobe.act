@@ -1,3 +1,15 @@
 MODULE BITMAPCONTROLPROBE
-PUBLIC BYTE hold
+PUBLIC BYTE hold,pendingReads,busyReads
+BYTE blitter=$d653
+
+; Fixture only: sample the unmodified hardware status at read completion.
+PUBLIC PROC ReadPending()
+
+  pendingReads==+1
+  IF (blitter & 3)<>0 THEN
+    busyReads==+1
+  FI
+
+RETURN
+
 ENDMODULE

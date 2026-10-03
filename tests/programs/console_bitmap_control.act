@@ -6,10 +6,12 @@ USE CONSOLEDRIVER
 USE CONSOLEWINDOWS
 USE CONSOLETILING
 USE CONSOLEINPUT
+USE CONSOLEBITMAP
 USE BITMAPCONTROLPROBE
 USE CONSOLETYPES
 USE HEAPCORE
 CARD checks,checkpoint,gate
+LONGCARD unit,replacement
 BYTE variant
 EXEC.MsgPort POINTER port
 EXEC.IOStdReq POINTER owner,read,write
@@ -28,13 +30,22 @@ RETURN
 
 PROC Main()
   CARD index,row
+  BYTE scenario
+
+  scenario=variant MOD 5
 
   port=EXEC.CreateMsgPort()
   owner=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
   read=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
   write=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
   Require(port<>NULL AND owner<>NULL AND read<>NULL AND write<>NULL)
-  Require(EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(owner),0)=0)
+  IF variant=11 THEN
+    Require(CONSOLE.Hide(0)<>0)
+    unit=CONSOLE.Create(80,30)
+    Require(unit<>0 AND CONSOLE.Show(unit,0,0)<>0)
+  FI
+
+  Require(EXEC.OpenDevice(name,unit,EXEC.IORequest POINTER(owner),0)=0)
   LET instance=CONSOLETYPES.Instance POINTER(owner.io_Unit)
   IF 1=1 THEN
     owner.io_Command=EXEC.CMD_WRITE
@@ -72,20 +83,29 @@ PROC Main()
   OD
 
   BITMAPCONTROLPROBE.hold=1
+  IF variant>=5 THEN
+    BITMAPCONTROLPROBE.hold=2
+  FI
 
   write.io_Device=owner.io_Device
   write.io_Unit=owner.io_Unit
   write.io_Command=EXEC.CMD_WRITE
   write.io_Data=text
   write.io_Length=512
+  IF variant>=10 THEN
+    write.io_Length=1
+  FI
   EXEC.SendIO(EXEC.IORequest POINTER(write))
-  LET entry=CONSOLEWINDOWS.Find(0)
+  LET entry=CONSOLEWINDOWS.Find(unit)
   LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-  WHILE view.scrollState=0 DO
+  WHILE view.scrollState=0 OR (variant>=5 AND view.scrollState<>3) DO
     EXEC.Yield()
   OD
 
   Require(write.io_Actual=1 AND view.scrollRow=0)
+  IF variant>=5 THEN
+    Require(CONSOLEBITMAP.Pending()<>0)
+  FI
   ; Read service progresses while later model writes are deferred.
   EXEC.Forbid()
   CONSOLEINPUT.Deliver(instance,$0001003f)
@@ -94,15 +114,45 @@ PROC Main()
   EXEC.Permit()
   Require(EXEC.WaitIO(EXEC.IORequest POINTER(read))=0)
   Require(read.io_Actual=1 AND input(0)=97 AND view.scrollState<>0)
+  IF variant>=10 THEN
+    ; The byte was accepted before presentation. Closing the last binding may
+    ; now race hardware completion, so retirement/Stop must drain the list.
+    Require(EXEC.WaitIO(EXEC.IORequest POINTER(write))=0)
+    read.io_Device=NULL
+    read.io_Unit=NULL
+    write.io_Device=NULL
+    write.io_Unit=NULL
+    EXEC.CloseDevice(EXEC.IORequest POINTER(owner))
+    IF variant=11 THEN
+      Require(CONSOLE.Destroy(unit)<>0 AND CONSOLEWINDOWS.Find(unit)=NULL)
+      replacement=CONSOLE.Create(80,30)
+      Require(replacement<>0 AND replacement<>unit)
+      Require(CONSOLE.Destroy(replacement)<>0)
+    FI
+
+    BITMAPCONTROLPROBE.hold=0
+    Require(CONSOLEDRIVER.Stop()<>0 AND CONSOLEBITMAP.Pending()=0)
+    EXEC.DeleteIORequest(EXEC.IORequest POINTER(read))
+    EXEC.DeleteIORequest(EXEC.IORequest POINTER(write))
+    EXEC.DeleteIORequest(EXEC.IORequest POINTER(owner))
+    EXEC.DeleteMsgPort(port)
+    checkpoint=1
+    WHILE gate=0 DO
+      EXEC.Yield()
+    OD
+
+    RETURN
+  FI
+
   EXEC.AbortIO(EXEC.IORequest POINTER(write))
-  IF variant=1 THEN
+  IF scenario=1 THEN
     Require(CONSOLE.Hide(0)<>0 AND view.scrollState=0)
     Require(CONSOLE.Show(0,0,0)<>0)
-  ELSEIF variant>=2 THEN
+  ELSEIF scenario>=2 THEN
     Require(CONSOLETILING.Lock()<>0)
-    IF variant=2 THEN
+    IF scenario=2 THEN
       view.generation==+1
-    ELSEIF variant=3 THEN
+    ELSEIF scenario=3 THEN
       view.scrollUnit==+4
     ELSE
       CONSOLECORE.Dirty(instance,0,instance.count)
