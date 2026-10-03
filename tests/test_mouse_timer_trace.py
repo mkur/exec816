@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
 from mouse_timer_trace import accounting
+from console_concurrent_trace import shared_alarm_observations
 
 
 class MouseTimerTraceTests(unittest.TestCase):
@@ -41,3 +42,19 @@ class MouseTimerTraceTests(unittest.TestCase):
     def test_missing_acknowledgement_rejected(self):
         with self.assertRaises(RuntimeError):
             self.observe('unacknowledged')
+
+    def test_armed_alarm_uses_acknowledged_edge(self):
+        cpu = lambda pc: ['cpu','0','0','8',f'{pc:06x}']
+        events = [(100,['timer','100','0']), (101,['register','101','14','0']),
+                  (110,cpu(0x1234)), (115,['timer','115','0']), (120,cpu(0x2345))]
+        self.assertEqual(shared_alarm_observations(events,self.labels),[20])
+
+    def test_pointer_only_tick_is_not_an_armed_alarm(self):
+        events = [(100,['timer','100','0']), (101,['register','101','14','0']),
+                  (400,['cpu','0','0','8','001234']),
+                  (410,['cpu','0','0','8','003456'])]
+        self.assertEqual(shared_alarm_observations(events,self.labels),[])
+
+    def test_alarm_without_dispatch_rejected(self):
+        with self.assertRaises(ValueError):
+            shared_alarm_observations([(120,['cpu','0','0','8','002345'])],self.labels)

@@ -1,5 +1,6 @@
 /* Exec-owned FX 1.26 adapter. No donor startup, IRQ hooks or unbounded waits. */
 #include <hardware/vbxe.h>
+#include <hardware/vbxe-upload.h>
 #include <proto/exec.h>
 
 #define REG(address) (*(volatile UBYTE *)(ULONG)(address))
@@ -205,15 +206,11 @@ static UWORD stepped(ULONG at,WORD pitch,BYTE x,UWORD bytes,UWORD rows)
  * on its retained owner's stack. Public lists validate every supplied record. */
 static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
 {
-    const UBYTE *p=records;
-    volatile UBYTE *window=(volatile UBYTE *)0x8000UL;
-    UWORD i,j,n=0;
+    struct VbxeUpload upload;
+    upload.records=(ULONG)records; upload.count=count;
     if (idle()!=DISPLAY_OK) return recover(d);
     map(d,(UBYTE)(0x80|(VBXE_BCB>>12)),0x88);
-    for (i=0;i<count;i++) {
-        for (j=0;j<20;j++) window[n++]=*p++;
-        window[n++]=(UBYTE)(*p++ | (i+1<count ? 8 : 0));
-    }
+    _VbxeUpload(&upload);
     map(d,0,0);
     REG(0xd650)=d->blit[0]=(UBYTE)VBXE_BCB;
     REG(0xd651)=d->blit[1]=(UBYTE)(VBXE_BCB>>8);

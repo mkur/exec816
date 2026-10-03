@@ -35,6 +35,8 @@ console integration, scrolling, coexistence and the optional artifact. It keeps
 the existing console worker, one large stack pool and zero additional bank-zero
 reservations. B0–B7 have focused development evidence, including
 [scrolling and caret integration](../../development/bitmap-console-b7.json).
+[B8 shell integration](../../development/bitmap-console-b8.json) adds functional
+SDFS/pipeline and ST coexistence checks; responsiveness acceptance remains open.
 performance acceptance and packaging remain. Overlapping desktop windows remain
 later work.
 

@@ -57,4 +57,5 @@ def scroll_scenes(font):
     tiles=[(a,5,7,True),(b,30,12,False)];snapshot(tiles)
     a.feed(b'\rA\bB');snapshot(tiles)
     a.feed(b'\x0c');snapshot(tiles)
+    base.feed(pattern(80,30,0));snapshot(default)
     return scenes

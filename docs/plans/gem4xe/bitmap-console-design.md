@@ -245,6 +245,23 @@ software pointer when its GEM session uses these same drawing primitives.
 
 ## Worker budgets and responsiveness
 
+B8 revision, 3 October 2026: ship the optional bitmap console as a functional
+**development preview** while retaining the responsiveness targets below as
+open acceptance work. The measured ordinary console scroll is about 165 ms,
+already above the 20 ms limit. Faster command upload improves VDI text, but does
+not establish fast console scheduling. Packaging this preview must not be
+reported as satisfying the fast-console milestone. Keep this design and plan
+current until those gates pass.
+
+The next performance investigation must separate Task CPU time, time awaiting a
+worker turn, and actual hardware BUSY intervals. Evaluate ordinary shared-library
+cost first; if dispatch dominates, propose a reusable public scheduling change
+with measured cost, IRQ/NMI safety and ownership semantics before implementing it.
+Do not increase source/drawing budgets merely to hide latency between peers.
+The [B8 record](../../development/bitmap-console-b8.json) states the executed
+workloads and which boundaries remain unmeasured.
+
+
 Keep 64 source bytes as the initial input-to-model quantum and at most one logical
 scroll per instance turn. Bound drawing separately by command count, estimated
 blitter cost and measured CPU work. Check control requests, keyboard/BREAK and

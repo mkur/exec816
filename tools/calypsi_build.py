@@ -25,6 +25,9 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
     require(runtime.is_file(), 'Missing Calypsi large-code/huge-data runtime')
     flags = ['--code-model=large', '--data-model=huge', '-O2' if optimize else '-O0']
     include_args = [part for path in (ROOT/'c/include', output, *includes) for part in ('-I', path)]
+    if ROOT/'platform/altirraos/vbxe-map.s' in assembly:
+        probes=(*probes,(ROOT/'c/calypsi/vbxe-upload-layout.c',[
+            ('VbxeUpload size',6),('VbxeUpload records',0),('VbxeUpload count',4)]))
     checked = {}
     for number, (source, expected) in enumerate(((ROOT/'c/calypsi/layout-check.c', expected_layout()), *probes)):
         obj = output/f'layout-{number}.o'
@@ -50,4 +53,8 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
     foreign = read_image(elf, task_entries)
     foreign['provenance'].update(tools=tools, runtime=dict(path=str(runtime), sha256=sha256(runtime)),
                                  compiler_flags=flags, checked_layout=checked)
+    if ROOT/'platform/altirraos/vbxe-map.s' in assembly:
+        foreign['provenance']['upload_inputs']={str(p.relative_to(ROOT)):sha256(p) for p in (
+            ROOT/'c/include/hardware/vbxe-upload.h',ROOT/'c/calypsi/vbxe-upload-layout.c',
+            ROOT/'platform/altirraos/vbxe-map.s',Path(__file__).resolve())}
     return foreign

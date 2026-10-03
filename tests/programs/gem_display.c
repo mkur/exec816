@@ -109,6 +109,21 @@ static void lists(void)
     for (i=0;i<64;i++) check(readback[i]==i+1);
     check(VbxeRead(&display,VBXE_BCB+64*21,readback,32)==DISPLAY_OK);
     for (i=0;i<32;i++) check(readback[i]==0xa5);
+    /* The native uploader must carry the source across a CPU bank boundary. */
+    {
+        UBYTE *allocation=AllocMem(131072UL,MEMF_UPPER|MEMF_LINEAR);
+        UBYTE *cross;
+        check(allocation!=NULL);
+        if (allocation) {
+            cross=(UBYTE *)((((ULONG)allocation+65551UL)&0xffff0000UL)-16UL);
+            memcpy(cross,list,42);
+            check(VbxeWrite(&display,640,readback+64,2)==DISPLAY_OK);
+            check(VbxeSubmit(&display,cross,2)==DISPLAY_OK);
+            check(VbxeRead(&display,640,readback,2)==DISPLAY_OK);
+            check(readback[0]==1 && readback[1]==2);
+            FreeMem(allocation,131072UL);
+        }
+    }
     /* Tall, narrow list takes the widened extent/work arithmetic path. */
     memset(list,0,21);
     list[5]=list[11]=1; list[7]=4; list[9]=1; list[14]=255;

@@ -4,7 +4,8 @@
 [GEM work](README.md) · [Roadmap](../../roadmap.md)
 
 Status: implementation started, 3 October 2026. B0–B7 have passed development checks;
-B8–B9 remain unimplemented. This plan implements
+B8 functional integration is implemented; its responsiveness gate remains open.
+B9 packages an explicitly labelled development preview. This plan implements
 the design's 80×30 bitmap backend for the existing console, improving the shared
 VDI drawing path first. Each slice must leave an executable, reviewable result;
 commit it with its focused development evidence before starting the next slice.
@@ -406,6 +407,21 @@ context/stack checks, SIO/cancellation/cleanup, and the measured latency targets
 pass. Replay the final production image without active observers. Record exactly
 which raw and optimized cases ran; broader hardware qualification remains open.
 
+B8 delivery revision: the [design revision](bitmap-console-design.md#worker-budgets-and-responsiveness)
+separates the functional development preview from fast-console acceptance.
+The [B8 evidence](../../development/bitmap-console-b8.json) covers queried
+80×24/80×6 shell tiles, seven-Task pipelines, raw/optimized loading and cleanup,
+long-line/backspace/EOF/BREAK input, eight-Task SDFS/ST coexistence, and shared
+native command upload. Command history is not implemented by the existing shell;
+this integration does not add it. All reserved bank-zero deltas are zero.
+
+The measured full-width scroll exceeds 20 ms. CPU-routine elapsed time includes
+preemption, and launch-to-idle includes software observation cost; neither is an
+isolated CPU or hardware-occupancy measurement. First-visible input timing also
+remains open. The preview must not claim these acceptance targets passed. B9 may
+package that explicitly scoped preview; the fast milestone and this plan remain
+open after packaging.
+
 ## B9 Package and document the result
 
 Add an explicit optional bitmap-console selection to
@@ -428,8 +444,8 @@ checksums, notices and matching-media instructions.
 
 Publish implemented geometry, presentation ownership, completion, fault and
 memory semantics in the console/display references; update guides and indexes.
-Move the completed design discussion to history according to repository policy,
-retaining links and evidence.
+Move the design discussion to history only once its responsiveness acceptance
+work is complete, retaining links and evidence. The B8 revision keeps it current.
 
 **Gate:** the extracted archive, production scene, standard OF816 controls,
 current contracts and fresh evidence agree. Mark B0–B9 complete only after all

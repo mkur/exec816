@@ -55,6 +55,12 @@ PROC Continuing(CARD value)
 
 RETURN
 
+PROC RepaintBegin()
+
+  continued=13
+
+RETURN
+
 PROC Pause(CARD value)
   BYTE busy,index
   CARD ignored
@@ -169,8 +175,13 @@ PROC Main()
   text(0)=12
   Bytes(a,1)
   Pause(12)
-  Require(DOS.Close(a)<>0 AND DOS.Close(b)<>0 AND DOS.Close(base)<>0)
+  Require(DOS.Close(a)<>0 AND DOS.Close(b)<>0)
   Require(CONSOLE.Destroy(first)<>0 AND CONSOLE.Destroy(second)<>0)
+  Pattern(base,80,30,0)
+  RepaintBegin()
+  Require(CONSOLE.Show(0,0,0)<>0 AND CONSOLE.Focus(0)<>0)
+  Pause(13)
+  Require(DOS.Close(base)<>0)
   Require(DOS.ReleaseContext()<>0)
 
 RETURN

@@ -7,13 +7,13 @@ INCLUDE "shell/shell-boot.inc"
 LONGCARD demoShellUnit,demoPrimeUnit,demoChild
 LONGCARD demoPass,demoFrames
 LONGCARD ARRAY demoPowers=[1000000000 100000000 10000000 1000000 100000 10000 1000 100 10 1]
-CARD demoCandidate,demoCount,demoLatest
+CARD demoCandidate,demoCount,demoLatest,demoWidth,demoShellRows
 BYTE demoStop,demoHidden
 BYTE ARRAY demoShellName(13),demoPrimeName(13)
 BYTE ARRAY demoNil=[78 73 76 58 0]
 BYTE POINTER demoFrame,demoComposite
-; Filling all 40 columns wraps directly onto the title row.
-BYTE ARRAY demoTitle="----------------------------------------PRIME SEARCH\{$0A}Primes: "
+; A full-width separator wraps directly onto the title row.
+BYTE ARRAY demoTitle="PRIME SEARCH\{$0A}Primes: "
 BYTE ARRAY demoLatestLabel="   Latest: "
 BYTE ARRAY demoPassLabel="\{$0A}Pass: "
 BYTE ARRAY demoTaskName=[112 114 105 109 101 115 0]
@@ -152,7 +152,11 @@ LONGINT FUNC DemoCompute()
     FI
 
     demoFrame(0)=12
-    used=DemoText(demoTitle,1)
+    FOR used=1 TO demoWidth DO
+      demoFrame(used)=45
+    OD
+
+    used=DemoText(demoTitle,demoWidth+1)
     used=DemoNumber(LONGCARD(demoCount),used)
     used=DemoText(demoLatestLabel,used)
     used=DemoNumber(LONGCARD(demoLatest),used)
@@ -183,12 +187,19 @@ BYTE FUNC DemoStart()
   demoFrames=0
   demoCount=0
   demoLatest=0
-  demoShellUnit=CONSOLE.Create(40,18)
+  demoWidth=CONSOLE.ScreenWidth()
+  demoShellRows=CONSOLE.ScreenHeight()
+  IF demoWidth=0 OR demoShellRows<=6 THEN
+    RETURN(0)
+  FI
+
+  demoShellRows==-6
+  demoShellUnit=CONSOLE.Create(demoWidth,demoShellRows)
   IF demoShellUnit=0 THEN
     RETURN(0)
   FI
 
-  demoPrimeUnit=CONSOLE.Create(40,6)
+  demoPrimeUnit=CONSOLE.Create(demoWidth,6)
   IF demoPrimeUnit=0 THEN
     RETURN(0)
   FI
@@ -204,7 +215,7 @@ BYTE FUNC DemoStart()
   FI
 
   demoHidden=1
-  IF CONSOLE.Show(demoShellUnit,0,0)=0 OR CONSOLE.Show(demoPrimeUnit,0,18)=0 THEN
+  IF CONSOLE.Show(demoShellUnit,0,0)=0 OR CONSOLE.Show(demoPrimeUnit,0,demoShellRows)=0 THEN
     RETURN(0)
   FI
 

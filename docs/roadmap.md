@@ -19,8 +19,9 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
 The next graphics milestone is a **fast bitmap console**, before overlapping
 windows or AES. The [design note](plans/gem4xe/bitmap-console-design.md) and
 [implementation plan](plans/gem4xe/bitmap-console-implementation-plan.md) define
-B0–B9. B0–B7 now have focused development evidence; responsiveness
-and packaging remain. The full-screen 80×30 console uses the existing
+B0–B9. B0–B7 and B8 functional integration have focused development evidence.
+B8 measurements miss the scroll/repaint targets; fast-console acceptance remains
+open. B9 packages only an explicitly labelled development preview. The full-screen 80×30 console uses the existing
 640×240 VBXE mode and built-in 8×8 font. Reuse the
 [console device](reference/console.md), retained cells, input routes, DOS cooked
 editing and shell. The [instance geometry](reference/console-windows.md) follows the selected

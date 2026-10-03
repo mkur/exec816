@@ -1,0 +1,2696 @@
+{
+  "slice": "B8",
+  "date": "2026-10-03",
+  "tier": "development",
+  "status": "functional-development-pass; responsiveness-acceptance-open",
+  "reports": {
+    "demo-4m-opt/program/demo-results.json": {
+      "path": "build/bitmap-console/b8/demo-4m-opt/program/demo-results.json",
+      "sha256": "6b94c6c0a11ee8a507771eacf7bec5e8cd06b0f3759bf42e52664c21a14aa862",
+      "status": "pass",
+      "xex_sha256": "98add5b77e51d8799bfd7f411bba77d3a250d3f335c1b5261465d1b3eef49602",
+      "scope": "Packaged optimized SDFS walkthrough",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 25,
+        "native_irq_count": 15079,
+        "native_nmi_count": 3444,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 502,
+            "untouched_above_floor": 778
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 125,
+            "untouched_above_floor": 643
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 291,
+            "untouched_above_floor": 477
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 308,
+            "untouched_above_floor": 460
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 337,
+            "untouched_above_floor": 431
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 327,
+            "untouched_above_floor": 441
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 274,
+          "untouched_from_base": 1262,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "observations": [
+        {
+          "stage": "startup",
+          "prime_frames": 1,
+          "prime_count": 26,
+          "guest_frame": 366
+        },
+        {
+          "stage": "MOUNT",
+          "prime_frames": 1,
+          "prime_count": 26,
+          "guest_frame": 418
+        },
+        {
+          "stage": "CD SYS:",
+          "prime_frames": 2,
+          "prime_count": 46,
+          "guest_frame": 461
+        },
+        {
+          "stage": "DIR",
+          "prime_frames": 5,
+          "prime_count": 95,
+          "guest_frame": 682
+        },
+        {
+          "stage": "HELLO",
+          "prime_frames": 7,
+          "prime_count": 126,
+          "guest_frame": 785
+        },
+        {
+          "stage": "TYPE README.TXT",
+          "prime_frames": 12,
+          "prime_count": 197,
+          "guest_frame": 1088
+        },
+        {
+          "stage": "TASKS",
+          "prime_frames": 15,
+          "prime_count": 239,
+          "guest_frame": 1281
+        },
+        {
+          "stage": "HELLO | WC",
+          "prime_frames": 19,
+          "prime_count": 291,
+          "guest_frame": 1569
+        },
+        {
+          "stage": "CAT STORY.TXT | WC",
+          "prime_frames": 25,
+          "prime_count": 367,
+          "guest_frame": 1933
+        },
+        {
+          "stage": "MEM",
+          "prime_frames": 26,
+          "prime_count": 378,
+          "guest_frame": 2024
+        },
+        {
+          "stage": "HELLO|WC",
+          "prime_frames": 28,
+          "prime_count": 408,
+          "guest_frame": 2148
+        },
+        {
+          "stage": "CAT <STORY.TXT | WC",
+          "prime_frames": 31,
+          "prime_count": 442,
+          "guest_frame": 2350
+        },
+        {
+          "stage": "HELLO|WC",
+          "prime_frames": 32,
+          "prime_count": 452,
+          "guest_frame": 2469
+        },
+        {
+          "stage": "CAT <STORY.TXT | WC",
+          "prime_frames": 35,
+          "prime_count": 489,
+          "guest_frame": 2670
+        },
+        {
+          "stage": "break-loading",
+          "prime_frames": 37,
+          "prime_count": 517,
+          "guest_frame": 2774
+        },
+        {
+          "stage": "HELLO | WC",
+          "prime_frames": 38,
+          "prime_count": 528,
+          "guest_frame": 2901
+        },
+        {
+          "stage": "break-pipeline",
+          "prime_frames": 42,
+          "prime_count": 575,
+          "guest_frame": 3145
+        },
+        {
+          "stage": "HELLO | WC",
+          "prime_frames": 44,
+          "prime_count": 599,
+          "guest_frame": 3278
+        },
+        {
+          "stage": "MEM",
+          "prime_frames": 45,
+          "prime_count": 610,
+          "guest_frame": 3369
+        },
+        {
+          "stage": "CAT STORY.TXT | WC",
+          "prime_frames": 48,
+          "prime_count": 647,
+          "guest_frame": 3563
+        },
+        {
+          "stage": "showcase",
+          "prime_frames": 48,
+          "prime_count": 647,
+          "guest_frame": 3569
+        }
+      ],
+      "baseline_memory": [
+        3323208,
+        65536,
+        3323208,
+        3211264
+      ],
+      "baseline_ownership": {
+        "live": 5,
+        "processes": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "objects": [
+          2,
+          0,
+          0,
+          3,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "media_sha256": "1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2"
+    },
+    "demo-4m-opt/program/editing-results.json": {
+      "path": "build/bitmap-console/b8/demo-4m-opt/program/editing-results.json",
+      "sha256": "7c5b5aaa5761c37baee96cbadeca3548858bc64d917e723025b49f9cc3220d81",
+      "status": "pass",
+      "xex_sha256": "98add5b77e51d8799bfd7f411bba77d3a250d3f335c1b5261465d1b3eef49602",
+      "scope": "Cooked 36/37-column edits, 255-byte command, BREAK recovery and physical Ctrl-D exit",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 4,
+        "native_irq_count": 739,
+        "native_nmi_count": 2720,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 428,
+            "untouched_above_floor": 852
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 125,
+            "untouched_above_floor": 643
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 202,
+            "untouched_above_floor": 566
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 308,
+            "untouched_above_floor": 460
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 59,
+            "untouched_above_floor": 197
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 260,
+          "untouched_from_base": 1276,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "observations": [
+        {
+          "stage": "startup",
+          "prime_frames": 1,
+          "prime_count": 26,
+          "guest_frame": 366
+        },
+        {
+          "stage": "ECHO aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "prime_frames": 8,
+          "prime_count": 139,
+          "guest_frame": 876
+        },
+        {
+          "stage": "ECHO aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab\bc",
+          "prime_frames": 11,
+          "prime_count": 184,
+          "guest_frame": 1107
+        },
+        {
+          "stage": "ECHO aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "prime_frames": 33,
+          "prime_count": 464,
+          "guest_frame": 2728
+        },
+        {
+          "stage": "cancel-edited-line",
+          "prime_frames": 34,
+          "prime_count": 478,
+          "guest_frame": 2786
+        },
+        {
+          "stage": "ECHO recovered",
+          "prime_frames": 35,
+          "prime_count": 489,
+          "guest_frame": 2862
+        },
+        {
+          "stage": "editing",
+          "prime_frames": 35,
+          "prime_count": 489,
+          "guest_frame": 2868
+        }
+      ],
+      "baseline_memory": null,
+      "baseline_ownership": null,
+      "media_sha256": "1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2"
+    },
+    "demo-4m-raw/program/loading-results.json": {
+      "path": "build/bitmap-console/b8/demo-4m-raw/program/loading-results.json",
+      "sha256": "bda8924bd579ad05787b32ec3aaed296b5cdf702de079a14fc43bbd3470317dc",
+      "status": "pass",
+      "xex_sha256": "5d427055c7db5783f79eb689b7e11c54296ce530762f7f4e692cc6de5b823904",
+      "scope": "Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 8,
+        "native_irq_count": 11611,
+        "native_nmi_count": 1184,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 540,
+            "untouched_above_floor": 740
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 166,
+            "untouched_above_floor": 602
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 246,
+            "untouched_above_floor": 522
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 342,
+            "untouched_above_floor": 426
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 358,
+            "untouched_above_floor": 410
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 350,
+            "untouched_above_floor": 418
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 472,
+            "untouched_above_floor": 1832
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 280,
+          "untouched_from_base": 1256,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "observations": [
+        {
+          "stage": "startup",
+          "prime_frames": 1,
+          "prime_count": 26,
+          "guest_frame": 395
+        },
+        {
+          "stage": "HELLO",
+          "prime_frames": 3,
+          "prime_count": 62,
+          "guest_frame": 518
+        },
+        {
+          "stage": "CAT STORY.TXT | WC",
+          "prime_frames": 11,
+          "prime_count": 184,
+          "guest_frame": 1029
+        },
+        {
+          "stage": "MEM",
+          "prime_frames": 12,
+          "prime_count": 197,
+          "guest_frame": 1086
+        },
+        {
+          "stage": "break-loading",
+          "prime_frames": 13,
+          "prime_count": 212,
+          "guest_frame": 1181
+        },
+        {
+          "stage": "HELLO",
+          "prime_frames": 14,
+          "prime_count": 222,
+          "guest_frame": 1245
+        },
+        {
+          "stage": "MEM",
+          "prime_frames": 15,
+          "prime_count": 239,
+          "guest_frame": 1325
+        }
+      ],
+      "baseline_memory": [
+        3257672,
+        65536,
+        3257672,
+        3211264
+      ],
+      "baseline_ownership": {
+        "live": 5,
+        "processes": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "objects": [
+          2,
+          0,
+          0,
+          3,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "media_sha256": "1c02916f6d65fb2a40d6e811b2d9c3f6de566d853a80b4c80f8abe86d1b7d5c2"
+    },
+    "drawing-raw/results.json": {
+      "path": "build/bitmap-console/b8/drawing-raw/results.json",
+      "sha256": "0239dc9a5aadfc232e2470ea4cbd793aad03f9aefe4008e8b00c2282cd6f250c",
+      "status": "pass",
+      "xex_sha256": "e687faa555f00804c19b93058d12cdabfa50ea5130c6fb46e91cf314d38f3fdf",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 0,
+        "native_irq_count": 453,
+        "native_nmi_count": 60
+      }
+    },
+    "upload-final-opt/results.json": {
+      "path": "build/bitmap-console/b8/upload-final-opt/results.json",
+      "sha256": "f20ea7ed164a8b001358bb346d0a0b871f3e93a8268f997cac613635352f43ca",
+      "status": "pass",
+      "xex_sha256": "6f41dbe13da766a953889476b1171ea86d61dc59a16f5190cfcb9d40b8a52325",
+      "cases": [
+        {
+          "name": "pattern",
+          "status": "pass",
+          "checks": 1461,
+          "copy_checks": null
+        },
+        {
+          "name": "map-nmi",
+          "status": "pass",
+          "checks": 1461,
+          "copy_checks": null
+        },
+        {
+          "name": "bitmap-copy",
+          "status": "pass",
+          "checks": 1462,
+          "copy_checks": 115
+        },
+        {
+          "name": "copy-fault",
+          "status": "pass",
+          "checks": 1462,
+          "copy_checks": 127
+        }
+      ],
+      "media_sha256": "197902f39a393a572fc1fa7a9427f6b19a2cf1c1196d09d60e66c8eaa76b7b9f"
+    },
+    "upload-final-raw/results.json": {
+      "path": "build/bitmap-console/b8/upload-final-raw/results.json",
+      "sha256": "353f2d73f60891cdccf1e2798aa201bd3dc8dec8c8a5013d2d0899b60951a735",
+      "status": "pass",
+      "xex_sha256": "3a1b5e1dd9126c51afcf60aeb16468b88e766911c50a13c091b62d25bf43e7c7",
+      "cases": [
+        {
+          "name": "pattern",
+          "status": "pass",
+          "checks": 1461,
+          "copy_checks": null
+        },
+        {
+          "name": "map-nmi",
+          "status": "pass",
+          "checks": 1461,
+          "copy_checks": null
+        },
+        {
+          "name": "bitmap-copy",
+          "status": "pass",
+          "checks": 1462,
+          "copy_checks": 115
+        },
+        {
+          "name": "copy-fault",
+          "status": "pass",
+          "checks": 1462,
+          "copy_checks": 127
+        }
+      ],
+      "media_sha256": "197902f39a393a572fc1fa7a9427f6b19a2cf1c1196d09d60e66c8eaa76b7b9f"
+    },
+    "text-upload/observed-results.json": {
+      "path": "build/bitmap-console/b8/text-upload/observed-results.json",
+      "sha256": "0fda54400ca2735cac8f96becff9b855f6b730bc4799561496083a388a533376",
+      "status": "pass",
+      "xex_sha256": "025063e2b04add7deb404a25b6af1fb81e657fb2a8d6f990d4715fee57444d82",
+      "scope": "Production VDI text, fill and driver copy, no cursor or disk; built-in 8x8, repeated strings, complete 80x30 screen. Phase 0 has no pointer capture; phase 1 retains an idle ST lease.",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "native_irq_count": 56703,
+        "native_nmi_count": 1390
+      }
+    },
+    "text-upload/results.json": {
+      "path": "build/bitmap-console/b8/text-upload/results.json",
+      "sha256": "5616f9e1f8d401ba89e2dd79fed785bbdc97590556f16885d56605a7f0e88bf3",
+      "status": "pass",
+      "xex_sha256": "025063e2b04add7deb404a25b6af1fb81e657fb2a8d6f990d4715fee57444d82",
+      "scope": "Production VDI text, fill and driver copy, no cursor or disk; built-in 8x8, repeated strings, complete 80x30 screen. Phase 0 has no pointer capture; phase 1 retains an idle ST lease.",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "native_irq_count": 56703,
+        "native_nmi_count": 1390
+      }
+    },
+    "repaint-opt/results.json": {
+      "path": "build/bitmap-console/b8/repaint-opt/results.json",
+      "sha256": "a17109e7f2715eb9be87f46e29c381dc5d099b5fcf3134899a5bdf52d3626e8c",
+      "status": "pass",
+      "xex_sha256": "83fecfc876996803396634125dc1d3346c1d748512d8b4b141a0190c40aac57d",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "native_irq_count": 5818,
+        "native_nmi_count": 593,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 377,
+            "untouched_above_floor": 903
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 277,
+          "untouched_from_base": 1259,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "b97f07666644fa6c0a71858d9fe9537d46fad61089aab5d223885e6c56c9be3d"
+        },
+        {
+          "stage": 2,
+          "pixels": "1b180323451a2192b56705012d0f19dcc5a9edf1a7f05339d02472aba906b710"
+        },
+        {
+          "stage": 3,
+          "pixels": "f1834dd3413bafef707d7931f10a2a5680c5c8b3e7f4bb811864d705cfb2fa33"
+        },
+        {
+          "stage": 4,
+          "pixels": "7c323de882ada20f004a2656a3a4f60b7c12b35a673be746bc98461e81421916"
+        },
+        {
+          "stage": 5,
+          "pixels": "1603e2a4d6f2e21a86f9db96a1b04dfca31c4953c0b28eb9cf67f4ca97bb58ab"
+        },
+        {
+          "stage": 6,
+          "pixels": "837120eea3ca81e058eae131417572dcce175500f2ed9597509aae7be1bb4b40"
+        },
+        {
+          "stage": 7,
+          "pixels": "2ba3bda31b3a5b602aab665f80b535aa7781607380fb215d1c501696b980401d"
+        },
+        {
+          "stage": 8,
+          "pixels": "8dd8ede21832b15eb6d4ac12a9d553ae8fbd8aa762f45ce911de26209bd48674"
+        },
+        {
+          "stage": 9,
+          "pixels": "780e9f86b5b03ecae98dd9bf5ce8f6c049c81b22f8d5faa588b84dc6ac3e9d8f"
+        },
+        {
+          "stage": 10,
+          "pixels": "48b663459a7e0b9fd572848258bad2d2c4b0edd9f66882f62d5d0313911bfb6b"
+        },
+        {
+          "stage": 11,
+          "pixels": "abf2efb20f3471a6ddf8c1a78d7c04fa0fcc512a9cd3bb4685b288d2442c0715"
+        },
+        {
+          "stage": 12,
+          "pixels": "165f6157c429b06fa63fec7c36eb7f0a1ac5ea810013bf69339d4a92eb135cc6"
+        },
+        {
+          "stage": 13,
+          "pixels": "b97f07666644fa6c0a71858d9fe9537d46fad61089aab5d223885e6c56c9be3d"
+        }
+      ]
+    },
+    "repaint-opt/results-replay.json": {
+      "path": "build/bitmap-console/b8/repaint-opt/results-replay.json",
+      "sha256": "1cc0e533d2deddf01ac583da07c0333a7c781cc639ebc957f412cf089e0870b1",
+      "status": "pass",
+      "xex_sha256": "83fecfc876996803396634125dc1d3346c1d748512d8b4b141a0190c40aac57d",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 1,
+        "native_irq_count": 5818,
+        "native_nmi_count": 593,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 377,
+            "untouched_above_floor": 903
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 277,
+          "untouched_from_base": 1259,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "b97f07666644fa6c0a71858d9fe9537d46fad61089aab5d223885e6c56c9be3d"
+        },
+        {
+          "stage": 2,
+          "pixels": "1b180323451a2192b56705012d0f19dcc5a9edf1a7f05339d02472aba906b710"
+        },
+        {
+          "stage": 3,
+          "pixels": "f1834dd3413bafef707d7931f10a2a5680c5c8b3e7f4bb811864d705cfb2fa33"
+        },
+        {
+          "stage": 4,
+          "pixels": "7c323de882ada20f004a2656a3a4f60b7c12b35a673be746bc98461e81421916"
+        },
+        {
+          "stage": 5,
+          "pixels": "1603e2a4d6f2e21a86f9db96a1b04dfca31c4953c0b28eb9cf67f4ca97bb58ab"
+        },
+        {
+          "stage": 6,
+          "pixels": "837120eea3ca81e058eae131417572dcce175500f2ed9597509aae7be1bb4b40"
+        },
+        {
+          "stage": 7,
+          "pixels": "2ba3bda31b3a5b602aab665f80b535aa7781607380fb215d1c501696b980401d"
+        },
+        {
+          "stage": 8,
+          "pixels": "8dd8ede21832b15eb6d4ac12a9d553ae8fbd8aa762f45ce911de26209bd48674"
+        },
+        {
+          "stage": 9,
+          "pixels": "780e9f86b5b03ecae98dd9bf5ce8f6c049c81b22f8d5faa588b84dc6ac3e9d8f"
+        },
+        {
+          "stage": 10,
+          "pixels": "48b663459a7e0b9fd572848258bad2d2c4b0edd9f66882f62d5d0313911bfb6b"
+        },
+        {
+          "stage": 11,
+          "pixels": "abf2efb20f3471a6ddf8c1a78d7c04fa0fcc512a9cd3bb4685b288d2442c0715"
+        },
+        {
+          "stage": 12,
+          "pixels": "165f6157c429b06fa63fec7c36eb7f0a1ac5ea810013bf69339d4a92eb135cc6"
+        },
+        {
+          "stage": 13,
+          "pixels": "b97f07666644fa6c0a71858d9fe9537d46fad61089aab5d223885e6c56c9be3d"
+        }
+      ]
+    },
+    "fairness-4m/results.json": {
+      "path": "build/bitmap-console/b8/fairness-4m/results.json",
+      "sha256": "b20fe0c5e3a677e056bddd45a27d49e6a70211d46f2c2c352e72cae16a42e81d",
+      "status": "pass",
+      "xex_sha256": "ab902072e878b305a25e5897d510ffcae2af373a246d11a5e86888a851d9aa65",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 7,
+        "native_irq_count": 64088,
+        "native_nmi_count": 452,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 281,
+            "untouched_above_floor": 999
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 259,
+            "untouched_above_floor": 509
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 149,
+            "untouched_above_floor": 619
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 269,
+            "untouched_above_floor": 499
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 391,
+            "untouched_above_floor": 377
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 223,
+            "untouched_above_floor": 545
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 185,
+            "untouched_above_floor": 2119
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 283,
+          "untouched_from_base": 1253,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            4,
+            4,
+            4,
+            3,
+            4
+          ],
+          "frame": 330
+        },
+        {
+          "stage": 2,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            5,
+            5,
+            3,
+            4
+          ],
+          "frame": 501
+        },
+        {
+          "stage": 3,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            5,
+            5,
+            3,
+            4
+          ],
+          "frame": 516
+        },
+        {
+          "stage": 4,
+          "live": 8,
+          "contexts": [
+            3,
+            5,
+            5,
+            5,
+            4,
+            5,
+            1,
+            4
+          ],
+          "frame": 540
+        }
+      ],
+      "counters": {
+        "checks": 67,
+        "floods": 18,
+        "smalls": 8,
+        "reads": 4,
+        "computes": 177
+      },
+      "pointer": {
+        "samples": 3,
+        "losses": 0,
+        "lastX": 100,
+        "lastY": 100
+      },
+      "screen_sha256": "96abbf862be6409d9642279d95c6e8ce56eea92464df8ca33e889f4aa0aed72e",
+      "media_sha256": "62aaa6f343eb264b8bb6a5c1a40aa1febd8fca6b0a7cb9c6efc7c3c713bf29ad",
+      "mouse": {
+        "sample_gaps": {
+          "count": 62294,
+          "min_us": 50.46667578262114,
+          "mean_us": 126.36984376159855,
+          "max_us": 271.2936244236156
+        },
+        "sample_cost": {
+          "count": 62295,
+          "min_us": 6.343576564854612,
+          "mean_us": 6.635025469548444,
+          "max_us": 74.43129836096078
+        },
+        "sample_count": 62295,
+        "timer_accounting": {
+          "physical_edges": 62302,
+          "logical_dispatches": 62295,
+          "alarm_services": 504,
+          "pointer_samples": 62295,
+          "duplicate_dispatches": 0,
+          "duplicate_backend_services": 0
+        }
+      },
+      "sio": {
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 504,
+              "min_us": 19.594603166995356,
+              "mean_us": 23.59947534706021,
+              "max_us": 53.638464065048446,
+              "median_us": 22.695907265368724,
+              "p95_us": 28.264157805629996,
+              "p99_us": 34.46676600237673
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            },
+            "boundary": "Acknowledged physical timer-1 edge to armed SIO callback; pointer-only ticks checked separately"
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 1004,
+              "min_us": 4.933892883775809,
+              "mean_us": 19.57775435805816,
+              "max_us": 78.80131777230507,
+              "median_us": 18.466856222132314,
+              "p95_us": 24.66946441887905,
+              "p99_us": 39.89404817453011
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            },
+            "boundary": "sio_watchdog"
+          }
+        },
+        "forbid": {
+          "count": 959,
+          "min_us": 52.1582961999157,
+          "mean_us": 1208.2900084056396,
+          "max_us": 28825.070942331247,
+          "median_us": 510.37597673458055,
+          "p95_us": 3216.7571918537196,
+          "p99_us": 10644.662444194148
+        },
+        "forbid_scope": "After first serial command; cold startup excluded",
+        "wire_transactions": 36,
+        "verified_wire_bytes": 4716,
+        "deadline_misses": {
+          "rx": 0,
+          "tx": 0,
+          "tx_gaps": 0
+        },
+        "violations": []
+      }
+    },
+    "fairness-4m/idle-results.json": {
+      "path": "build/bitmap-console/b8/fairness-4m/idle-results.json",
+      "sha256": "9bcba3e47541153b967bc828774e9f030e92f57f95ffef7200cc2538635d3fe7",
+      "status": "pass",
+      "xex_sha256": "ab902072e878b305a25e5897d510ffcae2af373a246d11a5e86888a851d9aa65",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 7,
+        "native_irq_count": 697,
+        "native_nmi_count": 465,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 281,
+            "untouched_above_floor": 999
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 259,
+            "untouched_above_floor": 509
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 149,
+            "untouched_above_floor": 619
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 269,
+            "untouched_above_floor": 499
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 391,
+            "untouched_above_floor": 377
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 223,
+            "untouched_above_floor": 545
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 185,
+            "untouched_above_floor": 2119
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 283,
+          "untouched_from_base": 1253,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            4,
+            4,
+            4,
+            3,
+            4
+          ],
+          "frame": 330
+        },
+        {
+          "stage": 2,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            5,
+            5,
+            3,
+            4
+          ],
+          "frame": 497
+        },
+        {
+          "stage": 3,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            5,
+            5,
+            3,
+            4
+          ],
+          "frame": 511
+        },
+        {
+          "stage": 4,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            4,
+            5,
+            3,
+            4
+          ],
+          "frame": 533
+        }
+      ],
+      "counters": {
+        "checks": 67,
+        "floods": 18,
+        "smalls": 8,
+        "reads": 4,
+        "computes": 175
+      },
+      "pointer": {
+        "samples": 1,
+        "losses": 0,
+        "lastX": 100,
+        "lastY": 100
+      },
+      "screen_sha256": "96abbf862be6409d9642279d95c6e8ce56eea92464df8ca33e889f4aa0aed72e",
+      "media_sha256": "62aaa6f343eb264b8bb6a5c1a40aa1febd8fca6b0a7cb9c6efc7c3c713bf29ad",
+      "mouse": {
+        "sample_gaps": {
+          "count": 64437,
+          "min_us": 62.58995543989884,
+          "mean_us": 126.36947983863347,
+          "max_us": 271.7870137119932
+        },
+        "sample_cost": {
+          "count": 64438,
+          "min_us": 6.343576564854612,
+          "mean_us": 6.6294937465493184,
+          "max_us": 60.12300899801093
+        },
+        "sample_count": 64438,
+        "timer_accounting": {
+          "physical_edges": 64447,
+          "logical_dispatches": 64438,
+          "alarm_services": 504,
+          "pointer_samples": 64438,
+          "duplicate_dispatches": 0,
+          "duplicate_backend_services": 0
+        }
+      },
+      "sio": {
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 504,
+              "min_us": 21.850097056721445,
+              "mean_us": 23.601153541918634,
+              "max_us": 54.20233753747997,
+              "median_us": 22.695907265368724,
+              "p95_us": 28.264157805629996,
+              "p99_us": 33.33901905751369
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            },
+            "boundary": "Acknowledged physical timer-1 edge to armed SIO callback; pointer-only ticks checked separately"
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 1170,
+              "min_us": 4.933892883775809,
+              "mean_us": 19.756054118503528,
+              "max_us": 76.54582388257899,
+              "median_us": 18.466856222132314,
+              "p95_us": 26.361084836173614,
+              "p99_us": 40.45792164696164
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            },
+            "boundary": "sio_watchdog"
+          }
+        },
+        "forbid": {
+          "count": 948,
+          "min_us": 51.87635946369994,
+          "mean_us": 1223.424540640743,
+          "max_us": 29585.87722500948,
+          "median_us": 513.5477650170078,
+          "p95_us": 3244.66892873908,
+          "p99_us": 10923.63884467964
+        },
+        "forbid_scope": "After first serial command; cold startup excluded",
+        "wire_transactions": 36,
+        "verified_wire_bytes": 4716,
+        "deadline_misses": {
+          "rx": 0,
+          "tx": 0,
+          "tx_gaps": 0
+        },
+        "violations": []
+      }
+    },
+    "fairness-4m/replay-results.json": {
+      "path": "build/bitmap-console/b8/fairness-4m/replay-results.json",
+      "sha256": "5c17b9649db839e990235135e608211213cd4e0d9e280a014ea143ec7faec290",
+      "status": "pass",
+      "xex_sha256": "ab902072e878b305a25e5897d510ffcae2af373a246d11a5e86888a851d9aa65",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 7,
+        "native_irq_count": 64088,
+        "native_nmi_count": 452,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 281,
+            "untouched_above_floor": 999
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 259,
+            "untouched_above_floor": 509
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 149,
+            "untouched_above_floor": 619
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 269,
+            "untouched_above_floor": 499
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 391,
+            "untouched_above_floor": 377
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 223,
+            "untouched_above_floor": 545
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 185,
+            "untouched_above_floor": 2119
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 283,
+          "untouched_from_base": 1253,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            4,
+            4,
+            4,
+            3,
+            4
+          ],
+          "frame": 331
+        },
+        {
+          "stage": 2,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            5,
+            5,
+            3,
+            4
+          ],
+          "frame": 502
+        },
+        {
+          "stage": 3,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            5,
+            5,
+            3,
+            4
+          ],
+          "frame": 517
+        },
+        {
+          "stage": 4,
+          "live": 8,
+          "contexts": [
+            3,
+            5,
+            5,
+            5,
+            4,
+            5,
+            1,
+            4
+          ],
+          "frame": 541
+        }
+      ],
+      "counters": {
+        "checks": 67,
+        "floods": 18,
+        "smalls": 8,
+        "reads": 4,
+        "computes": 177
+      },
+      "pointer": {
+        "samples": 3,
+        "losses": 0,
+        "lastX": 100,
+        "lastY": 100
+      },
+      "screen_sha256": "96abbf862be6409d9642279d95c6e8ce56eea92464df8ca33e889f4aa0aed72e",
+      "media_sha256": "62aaa6f343eb264b8bb6a5c1a40aa1febd8fca6b0a7cb9c6efc7c3c713bf29ad"
+    },
+    "fairness-no-st/results.json": {
+      "path": "build/bitmap-console/b8/fairness-no-st/results.json",
+      "sha256": "deacba2ce81dd1add2d4355547d1b1dcff99812f73fe269660ade25bbbebf312",
+      "status": "pass",
+      "xex_sha256": "2268749c5de243017fdd676688c85ed81a4554c54c0c0ea8353250fde22930af",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "created": 7,
+        "native_irq_count": 5123,
+        "native_nmi_count": 337,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 258,
+            "untouched_above_floor": 1022
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 243,
+            "untouched_above_floor": 525
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 125,
+            "untouched_above_floor": 643
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 250,
+            "untouched_above_floor": 518
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 372,
+            "untouched_above_floor": 396
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 220,
+            "untouched_above_floor": 548
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 484,
+            "untouched_above_floor": 1820
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 171,
+            "untouched_above_floor": 2133
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 46,
+            "untouched_above_floor": 210
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 281,
+          "untouched_from_base": 1255,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            4,
+            4,
+            4,
+            3,
+            4
+          ],
+          "frame": 308
+        },
+        {
+          "stage": 2,
+          "live": 8,
+          "contexts": [
+            1,
+            1,
+            1,
+            5,
+            5,
+            5,
+            3,
+            4
+          ],
+          "frame": 405
+        },
+        {
+          "stage": 3,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            5,
+            5,
+            3,
+            4
+          ],
+          "frame": 424
+        },
+        {
+          "stage": 4,
+          "live": 8,
+          "contexts": [
+            1,
+            3,
+            1,
+            5,
+            4,
+            5,
+            1,
+            4
+          ],
+          "frame": 439
+        }
+      ],
+      "counters": {
+        "checks": 65,
+        "floods": 19,
+        "smalls": 8,
+        "reads": 3,
+        "computes": 126
+      },
+      "pointer": null,
+      "screen_sha256": "96abbf862be6409d9642279d95c6e8ce56eea92464df8ca33e889f4aa0aed72e",
+      "media_sha256": "62aaa6f343eb264b8bb6a5c1a40aa1febd8fca6b0a7cb9c6efc7c3c713bf29ad",
+      "sio": {
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 406,
+              "min_us": 22.625423081314786,
+              "mean_us": 23.38095798033633,
+              "max_us": 53.638464065048446,
+              "median_us": 22.625423081314786,
+              "p95_us": 24.880916971040868,
+              "p99_us": 31.15400935184154
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            },
+            "boundary": "sio_alarm"
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 808,
+              "min_us": 7.1893867735018935,
+              "mean_us": 19.32487903692756,
+              "max_us": 50.04377067829749,
+              "median_us": 18.466856222132314,
+              "p95_us": 20.158476639426876,
+              "p99_us": 38.76630122966707
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            },
+            "boundary": "sio_watchdog"
+          }
+        },
+        "forbid": {
+          "count": 929,
+          "min_us": 51.805875279646,
+          "mean_us": 807.539952191936,
+          "max_us": 30078.420703178414,
+          "median_us": 618.7101676254865,
+          "p95_us": 2093.450750586076,
+          "p99_us": 7279.536044906883
+        },
+        "forbid_scope": "After first serial command; cold startup excluded",
+        "wire_transactions": 29,
+        "verified_wire_bytes": 3799,
+        "deadline_misses": {
+          "rx": 0,
+          "tx": 0,
+          "tx_gaps": 0
+        },
+        "violations": []
+      }
+    }
+  },
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act"
+  },
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 1,
+      "internal_port": 0,
+      "map": "Mouse -> ST Mouse (port 1)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "memory": {
+    "bank_zero_reserved_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "private_idle": 0
+    },
+    "reserved_bytes": 56128,
+    "free_bytes": 9408,
+    "includes": "guards, alignment and unused capacity",
+    "console_worker_slot": 6,
+    "console_worker_reserved_stack": 2560,
+    "upper_c_reservation_bytes": 131072,
+    "upper_and_vram_reservation_delta_this_slice": 0,
+    "retained_demo_cells": {
+      "bitmap": 4800,
+      "text": 1920,
+      "delta": 2880
+    },
+    "snapshot_bytes": 960,
+    "command_arena_bytes": 4096,
+    "instance_metadata_growth_from_B4": 148,
+    "platform_4m_change": "docs/development/memory-4m.json"
+  },
+  "measurements": {
+    "vdi": [
+      {
+        "phase": 0,
+        "kind": 0,
+        "glyphs": 8,
+        "calls": 8,
+        "milliseconds_per_call": 12.5,
+        "pixels_sha256": "bfd18bd784d54498745f72c651e814f88a36423abab1704bcdebe9de4edb2b12"
+      },
+      {
+        "phase": 0,
+        "kind": 1,
+        "glyphs": 64,
+        "calls": 8,
+        "milliseconds_per_call": 17.5,
+        "pixels_sha256": "5a33883eabe130992afbe51aa2e4fcaaa7e0371d78ee55495bebf8c44d903a0d"
+      },
+      {
+        "phase": 0,
+        "kind": 2,
+        "glyphs": 256,
+        "calls": 8,
+        "milliseconds_per_call": 37.5,
+        "pixels_sha256": "1717bbf2494c6e9720982ce64416cd12332192f882e441c840a2dee944dab439"
+      },
+      {
+        "phase": 0,
+        "kind": 3,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 60.0,
+        "pixels_sha256": "535fe28ada4834f9bd4b5203eef0f3a2ac791dbe66e03c0433f85288edcf7b86"
+      },
+      {
+        "phase": 0,
+        "kind": 4,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 65.0,
+        "pixels_sha256": "5e4b0c9d522a539e382879977843bde378b67cfb2a1e9ec83b202face40c802a"
+      },
+      {
+        "phase": 0,
+        "kind": 5,
+        "glyphs": 2400,
+        "calls": 60,
+        "milliseconds_per_call": 42.333333333333336,
+        "pixels_sha256": "eee2abbbc267fa32679d77bffe604923936f11458fa641b07a3cbcf14094a99e"
+      },
+      {
+        "phase": 0,
+        "kind": 6,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 25.0,
+        "pixels_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+      },
+      {
+        "phase": 0,
+        "kind": 7,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 60.0,
+        "pixels_sha256": "1ba2771134ea41a54986c901992ed793db0610633dc419e7f4c1581bee278b1f"
+      },
+      {
+        "phase": 0,
+        "kind": 8,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 42.5,
+        "pixels_sha256": "46680c2e2cab629278ab2528ceb93e7109e68e39c97cda1d3a16de2148336a66"
+      },
+      {
+        "phase": 0,
+        "kind": 9,
+        "glyphs": 64,
+        "calls": 8,
+        "milliseconds_per_call": 240.0,
+        "pixels_sha256": "9e1bb3760a0bec3f0cefdbce915c3455a42eaa70b97cc6c6c37e04d34baf0a5e"
+      },
+      {
+        "phase": 0,
+        "kind": 10,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 80.0,
+        "pixels_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+      },
+      {
+        "phase": 0,
+        "kind": 11,
+        "glyphs": 0,
+        "calls": 8,
+        "milliseconds_per_call": 50.0,
+        "pixels_sha256": "91d2d62a5700cbf9404e3c575c3b6fc19e1e31c24c6fcfc0a2cf70d41314b447"
+      },
+      {
+        "phase": 0,
+        "kind": 12,
+        "glyphs": 0,
+        "calls": 1,
+        "milliseconds_per_call": 20.0,
+        "pixels_sha256": "bbf533bf6189541b727e17348df8bd74c60f566149d0fbf83b28a10874511d05"
+      },
+      {
+        "phase": 1,
+        "kind": 0,
+        "glyphs": 8,
+        "calls": 8,
+        "milliseconds_per_call": 17.5,
+        "pixels_sha256": "bfd18bd784d54498745f72c651e814f88a36423abab1704bcdebe9de4edb2b12"
+      },
+      {
+        "phase": 1,
+        "kind": 1,
+        "glyphs": 64,
+        "calls": 8,
+        "milliseconds_per_call": 27.5,
+        "pixels_sha256": "5a33883eabe130992afbe51aa2e4fcaaa7e0371d78ee55495bebf8c44d903a0d"
+      },
+      {
+        "phase": 1,
+        "kind": 2,
+        "glyphs": 256,
+        "calls": 8,
+        "milliseconds_per_call": 50.0,
+        "pixels_sha256": "1717bbf2494c6e9720982ce64416cd12332192f882e441c840a2dee944dab439"
+      },
+      {
+        "phase": 1,
+        "kind": 3,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 85.0,
+        "pixels_sha256": "535fe28ada4834f9bd4b5203eef0f3a2ac791dbe66e03c0433f85288edcf7b86"
+      },
+      {
+        "phase": 1,
+        "kind": 4,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 90.0,
+        "pixels_sha256": "5e4b0c9d522a539e382879977843bde378b67cfb2a1e9ec83b202face40c802a"
+      },
+      {
+        "phase": 1,
+        "kind": 5,
+        "glyphs": 2400,
+        "calls": 60,
+        "milliseconds_per_call": 60.0,
+        "pixels_sha256": "eee2abbbc267fa32679d77bffe604923936f11458fa641b07a3cbcf14094a99e"
+      },
+      {
+        "phase": 1,
+        "kind": 6,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 37.5,
+        "pixels_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+      },
+      {
+        "phase": 1,
+        "kind": 7,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 85.0,
+        "pixels_sha256": "1ba2771134ea41a54986c901992ed793db0610633dc419e7f4c1581bee278b1f"
+      },
+      {
+        "phase": 1,
+        "kind": 8,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 60.0,
+        "pixels_sha256": "46680c2e2cab629278ab2528ceb93e7109e68e39c97cda1d3a16de2148336a66"
+      },
+      {
+        "phase": 1,
+        "kind": 9,
+        "glyphs": 64,
+        "calls": 8,
+        "milliseconds_per_call": 337.5,
+        "pixels_sha256": "9e1bb3760a0bec3f0cefdbce915c3455a42eaa70b97cc6c6c37e04d34baf0a5e"
+      },
+      {
+        "phase": 1,
+        "kind": 10,
+        "glyphs": 512,
+        "calls": 8,
+        "milliseconds_per_call": 112.5,
+        "pixels_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+      },
+      {
+        "phase": 1,
+        "kind": 11,
+        "glyphs": 0,
+        "calls": 8,
+        "milliseconds_per_call": 67.5,
+        "pixels_sha256": "91d2d62a5700cbf9404e3c575c3b6fc19e1e31c24c6fcfc0a2cf70d41314b447"
+      },
+      {
+        "phase": 1,
+        "kind": 12,
+        "glyphs": 0,
+        "calls": 1,
+        "milliseconds_per_call": 20.0,
+        "pixels_sha256": "bbf533bf6189541b727e17348df8bd74c60f566149d0fbf83b28a10874511d05"
+      }
+    ],
+    "console": {
+      "scope": "Passive cycle boundaries for console CPU work and fenced drawing.\n\nElapsed routine time includes preemption and is an upper bound on its CPU time.\nThe launch-to-idle-read interval bounds hardware occupancy; it is not a BUSY-edge\nmeasurement. Host screenshot/fixture Sleep intervals are outside these spans.\n",
+      "stages": [
+        {
+          "stage": 1,
+          "routines": {
+            "present": {
+              "calls": 61,
+              "total_ms": 2727.418559049535,
+              "max_ms": 60.35370373241948
+            },
+            "call": {
+              "calls": 182,
+              "total_ms": 2482.773594933033,
+              "max_ms": 43.37885671834097
+            },
+            "launch_to_idle": {
+              "calls": 232,
+              "total_ms": 61.00504807726195,
+              "max_ms": 8.203019824381608
+            },
+            "idle": {
+              "calls": 648,
+              "total_ms": 62.09494501528802,
+              "max_ms": 8.200693846307827
+            },
+            "cells": {
+              "calls": 61,
+              "total_ms": 2285.933048483251,
+              "max_ms": 60.22105249802997
+            }
+          }
+        },
+        {
+          "stage": 2,
+          "routines": {
+            "present": {
+              "calls": 18,
+              "total_ms": 18.73631725777053,
+              "max_ms": 13.918723277683721
+            },
+            "call": {
+              "calls": 19,
+              "total_ms": 96.35632010533156,
+              "max_ms": 6.609090486185805
+            },
+            "launch_to_idle": {
+              "calls": 33,
+              "total_ms": 18.21240831769759,
+              "max_ms": 1.9457159008090175
+            },
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.303864365874942,
+              "max_ms": 5.303864365874942
+            },
+            "idle": {
+              "calls": 85,
+              "total_ms": 18.334275471926855,
+              "max_ms": 1.9433899227352374
+            },
+            "advance": {
+              "calls": 16,
+              "total_ms": 96.6485475324192,
+              "max_ms": 7.203554094496736
+            },
+            "cells": {
+              "calls": 2,
+              "total_ms": 8.535493720564041,
+              "max_ms": 8.529995954207834
+            }
+          },
+          "edit_through_final_chunk_ms": [
+            164.27924987911962
+          ]
+        },
+        {
+          "stage": 3,
+          "routines": {
+            "present": {
+              "calls": 18,
+              "total_ms": 18.99048322546904,
+              "max_ms": 14.131444545158512
+            },
+            "call": {
+              "calls": 19,
+              "total_ms": 98.02186137452617,
+              "max_ms": 6.853036247196491
+            },
+            "launch_to_idle": {
+              "calls": 33,
+              "total_ms": 15.799241308242843,
+              "max_ms": 0.8823210159872227
+            },
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.3468597181478446,
+              "max_ms": 5.3468597181478446
+            },
+            "idle": {
+              "calls": 85,
+              "total_ms": 15.92315250380967,
+              "max_ms": 0.8799950379134426
+            },
+            "advance": {
+              "calls": 16,
+              "total_ms": 97.93572970161226,
+              "max_ms": 7.132365068602256
+            },
+            "cells": {
+              "calls": 2,
+              "total_ms": 8.735598319093178,
+              "max_ms": 8.729959584368864
+            }
+          },
+          "edit_through_final_chunk_ms": [
+            165.515894888346
+          ]
+        },
+        {
+          "stage": 4,
+          "routines": {
+            "present": {
+              "calls": 59,
+              "total_ms": 324.04462212724087,
+              "max_ms": 56.4104660555218
+            },
+            "call": {
+              "calls": 72,
+              "total_ms": 524.1817138652258,
+              "max_ms": 42.84860420170318
+            },
+            "launch_to_idle": {
+              "calls": 118,
+              "total_ms": 53.72283363336101,
+              "max_ms": 1.3999568636793591
+            },
+            "edit": {
+              "calls": 3,
+              "total_ms": 16.044385300382448,
+              "max_ms": 5.349115212037571
+            },
+            "idle": {
+              "calls": 308,
+              "total_ms": 54.16878706587029,
+              "max_ms": 1.397630885605579
+            },
+            "advance": {
+              "calls": 48,
+              "total_ms": 269.8526457648168,
+              "max_ms": 7.654018514785467
+            },
+            "cells": {
+              "calls": 11,
+              "total_ms": 239.77175811519652,
+              "max_ms": 44.726091412347984
+            }
+          },
+          "edit_through_final_chunk_ms": [
+            171.0116876873998,
+            169.4802073362758,
+            170.7070550439187
+          ]
+        },
+        {
+          "stage": 5,
+          "routines": {
+            "present": {
+              "calls": 17,
+              "total_ms": 9.72435045300185,
+              "max_ms": 4.874968105906715
+            },
+            "call": {
+              "calls": 17,
+              "total_ms": 102.98070565945707,
+              "max_ms": 7.477949023018725
+            },
+            "launch_to_idle": {
+              "calls": 32,
+              "total_ms": 10.056824349184287,
+              "max_ms": 1.945152027336586
+            },
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.230772267011005,
+              "max_ms": 5.230772267011005
+            },
+            "idle": {
+              "calls": 81,
+              "total_ms": 10.164524182418708,
+              "max_ms": 1.942826049262806
+            },
+            "advance": {
+              "calls": 15,
+              "total_ms": 107.67748974807543,
+              "max_ms": 8.284499541147962
+            },
+            "cells": {
+              "calls": 2,
+              "total_ms": 0.01113650108052254,
+              "max_ms": 0.0056387347243152105
+            }
+          },
+          "edit_through_final_chunk_ms": [
+            176.2968032603164
+          ]
+        },
+        {
+          "stage": 6,
+          "routines": {
+            "present": {
+              "calls": 5,
+              "total_ms": 109.98345031358413,
+              "max_ms": 29.656854798351798
+            },
+            "call": {
+              "calls": 45,
+              "total_ms": 227.0094688452858,
+              "max_ms": 14.77722063946071
+            },
+            "launch_to_idle": {
+              "calls": 45,
+              "total_ms": 10.846599631508687,
+              "max_ms": 1.584836878452844
+            },
+            "idle": {
+              "calls": 135,
+              "total_ms": 11.038175643767294,
+              "max_ms": 1.5385992537134592
+            },
+            "cells": {
+              "calls": 5,
+              "total_ms": 75.4458477062332,
+              "max_ms": 25.040634132107094
+            }
+          }
+        },
+        {
+          "stage": 7,
+          "routines": {
+            "present": {
+              "calls": 4,
+              "total_ms": 15.518925708260324,
+              "max_ms": 10.813190128267118
+            },
+            "call": {
+              "calls": 5,
+              "total_ms": 24.755102702504587,
+              "max_ms": 8.506242784181659
+            },
+            "launch_to_idle": {
+              "calls": 5,
+              "total_ms": 0.5183406895326758,
+              "max_ms": 0.28792789186034545
+            },
+            "edit": {
+              "calls": 1,
+              "total_ms": 0.6813001230653853,
+              "max_ms": 0.6813001230653853
+            },
+            "idle": {
+              "calls": 15,
+              "total_ms": 0.5468162998904675,
+              "max_ms": 0.2856019137865654
+            },
+            "advance": {
+              "calls": 2,
+              "total_ms": 14.391601668501604,
+              "max_ms": 10.034198926102972
+            },
+            "cells": {
+              "calls": 2,
+              "total_ms": 5.439898841099046,
+              "max_ms": 5.434401074742839
+            }
+          },
+          "edit_through_final_chunk_ms": [
+            23.431198273419426
+          ]
+        },
+        {
+          "stage": 8,
+          "routines": {
+            "present": {
+              "calls": 5,
+              "total_ms": 20.721151880729483,
+              "max_ms": 11.290579506864455
+            },
+            "call": {
+              "calls": 6,
+              "total_ms": 24.816001037527187,
+              "max_ms": 4.991548946331933
+            },
+            "launch_to_idle": {
+              "calls": 6,
+              "total_ms": 0.15210486918840282,
+              "max_ms": 0.03531257621102401
+            },
+            "edit": {
+              "calls": 1,
+              "total_ms": 0.5208076359745637,
+              "max_ms": 0.5208076359745637
+            },
+            "idle": {
+              "calls": 18,
+              "total_ms": 0.18516195150970075,
+              "max_ms": 0.032986598137243986
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 5.40670079040964,
+              "max_ms": 5.40670079040964
+            },
+            "cells": {
+              "calls": 4,
+              "total_ms": 5.355458788602426,
+              "max_ms": 5.338965489533804
+            }
+          },
+          "edit_through_final_chunk_ms": [
+            16.18669286798735
+          ]
+        },
+        {
+          "stage": 9,
+          "routines": {
+            "present": {
+              "calls": 9,
+              "total_ms": 0.07555904530582382,
+              "max_ms": 0.008458102086472815
+            },
+            "call": {
+              "calls": 3,
+              "total_ms": 13.19724716970759,
+              "max_ms": 5.273274229995531
+            },
+            "launch_to_idle": {
+              "calls": 3,
+              "total_ms": 0.22674762010152544,
+              "max_ms": 0.09571752194525071
+            },
+            "edit": {
+              "calls": 4,
+              "total_ms": 1.586105593765815,
+              "max_ms": 0.4518741039698102
+            },
+            "idle": {
+              "calls": 9,
+              "total_ms": 0.24309995080203953,
+              "max_ms": 0.09339154387147068
+            }
+          }
+        },
+        {
+          "stage": 10,
+          "routines": {
+            "present": {
+              "calls": 3,
+              "total_ms": 54.826122566357334,
+              "max_ms": 49.66026623286001
+            },
+            "call": {
+              "calls": 5,
+              "total_ms": 53.83870963194569,
+              "max_ms": 17.40430714751917
+            },
+            "launch_to_idle": {
+              "calls": 5,
+              "total_ms": 0.685247237372406,
+              "max_ms": 0.21525869810073317
+            },
+            "idle": {
+              "calls": 15,
+              "total_ms": 0.7121721956810112,
+              "max_ms": 0.21293272002695315
+            },
+            "cells": {
+              "calls": 3,
+              "total_ms": 49.57723586404446,
+              "max_ms": 49.56624033133205
+            }
+          }
+        },
+        {
+          "stage": 11,
+          "routines": {
+            "present": {
+              "calls": 1,
+              "total_ms": 18.771347897245338,
+              "max_ms": 18.771347897245338
+            },
+            "call": {
+              "calls": 3,
+              "total_ms": 12.106786358209082,
+              "max_ms": 4.426900147875818
+            },
+            "launch_to_idle": {
+              "calls": 3,
+              "total_ms": 0.07668679225068686,
+              "max_ms": 0.035383060395077943
+            },
+            "idle": {
+              "calls": 9,
+              "total_ms": 0.091840891822284,
+              "max_ms": 0.03305708232129792
+            },
+            "cells": {
+              "calls": 1,
+              "total_ms": 9.359030927050279,
+              "max_ms": 9.359030927050279
+            }
+          }
+        },
+        {
+          "stage": 12,
+          "routines": {
+            "present": {
+              "calls": 4,
+              "total_ms": 10.068454239553187,
+              "max_ms": 5.4067712745936936
+            },
+            "call": {
+              "calls": 4,
+              "total_ms": 17.44673862631964,
+              "max_ms": 5.1671250488102975
+            },
+            "launch_to_idle": {
+              "calls": 4,
+              "total_ms": 0.26142583865606395,
+              "max_ms": 0.15485375236650648
+            },
+            "edit": {
+              "calls": 1,
+              "total_ms": 0.6158908002633289,
+              "max_ms": 0.6158908002633289
+            },
+            "idle": {
+              "calls": 12,
+              "total_ms": 0.28228915713603026,
+              "max_ms": 0.15252777429272646
+            },
+            "advance": {
+              "calls": 2,
+              "total_ms": 11.611705449414206,
+              "max_ms": 6.747732876219905
+            },
+            "cells": {
+              "calls": 2,
+              "total_ms": 0.01099553271241466,
+              "max_ms": 0.00549776635620733
+            }
+          },
+          "edit_through_final_chunk_ms": [
+            24.58220499902027
+          ]
+        },
+        {
+          "stage": 13,
+          "routines": {
+            "present": {
+              "calls": 76,
+              "total_ms": 1704.1103556772896,
+              "max_ms": 117.90692986400782
+            },
+            "call": {
+              "calls": 38,
+              "total_ms": 1691.8269359538413,
+              "max_ms": 57.23005614770102
+            },
+            "launch_to_idle": {
+              "calls": 68,
+              "total_ms": 30.203177708953888,
+              "max_ms": 0.6155383793430592
+            },
+            "idle": {
+              "calls": 174,
+              "total_ms": 31.821917479936676,
+              "max_ms": 1.3762741778372352
+            },
+            "repaint": {
+              "calls": 1,
+              "total_ms": 0,
+              "max_ms": 0
+            },
+            "cells": {
+              "calls": 16,
+              "total_ms": 1692.4604478001181,
+              "max_ms": 113.84415101095466
+            }
+          },
+          "repaint_request_to_final_fence_ms": 1862.3307146109485
+        }
+      ],
+      "limits_ms": {
+        "cpu_quantum": 4,
+        "list_occupancy": 2,
+        "scroll": 20,
+        "repaint": 500,
+        "input_visible": 40
+      }
+    }
+  },
+  "limitations": [
+    "40 ms first-scanout input target remains unmeasured.",
+    "20 ms scroll and 500 ms full repaint targets fail; last drawing fences alone exceed both limits.",
+    "Elapsed routine spans include preemption, not isolated Task CPU time. Launch-to-idle bounds include software service, not exact hardware BUSY edges.",
+    "Cold initialization Forbid intervals are excluded from the active-I/O 50 ms bound, explicitly recorded by the oracle.",
+    "Shared timer alarm deadlines measure acknowledged physical edges to armed SIO callbacks; pointer-only ticks retain their independent 1 ms sampling bound.",
+    "Existing cooked input has a 36-character visible editing tail; shell command history is unsupported.",
+    "Eight-Task stress uses cache=16 to force ongoing SDFS I/O; production demo uses cache=512, with five idle and seven pipeline Tasks.",
+    "No physical hardware or release qualification claim."
+  ],
+  "validation": {
+    "host_tests": 297,
+    "skipped_historical_audits": 4,
+    "host_status": "pass",
+    "pixel_replays": "26 VDI cases and 13 console scenes, plus active ST/SDFS stress",
+    "source_memory_change": "4 MiB CPU address space; 63 high banks"
+  }
+}

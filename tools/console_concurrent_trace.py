@@ -8,6 +8,35 @@ from sio_concurrent_trace import LIMITS,alarm_observations
 from test_signal_concurrency import masked_intervals
 from mydos_fixtures import Image
 
+def shared_alarm_observations(events, marks):
+    """Pair armed SIO callbacks with the physical latch their tick consumed.
+
+    Timer 1 also services pointer-only ticks. Those are not SIO alarm deadlines;
+    the mouse oracle checks their sampling gap and unique dispatch separately.
+    """
+    pending = acknowledged = dispatch = None
+    consumed = set()
+    serviced = []
+    for tick, event in events:
+        if event[0] == 'timer' and int(event[2]) == 0:
+            pending = tick
+        elif event[0] == 'register' and int(event[2]) == 14 and int(event[3]) & 1 == 0:
+            if pending is not None:
+                acknowledged, pending = pending, None
+        elif event[0] == 'cpu':
+            pc = int(event[4], 16)
+            if pc == marks['timer_tick']:
+                if acknowledged is None or acknowledged in consumed:
+                    raise ValueError('Shared timer dispatch without a new acknowledged edge')
+                consumed.add(acknowledged)
+                dispatch = acknowledged
+            elif pc == marks['sio_alarm']:
+                if dispatch is None:
+                    raise ValueError('SIO alarm without a unique shared timer dispatch')
+                serviced.append(tick - dispatch)
+                dispatch = None
+    return serviced
+
 def distribution(values):
     result=stats(values)
     if values:
@@ -15,7 +44,7 @@ def distribution(values):
         for name,p in [('median_us',.5),('p95_us',.95),('p99_us',.99)]:result[name]=ordered[ceil(len(ordered)*p)-1]/BASE_HZ*1e6
     return result
 
-def analyze(path,marks,media,size,speed,file_bytes,key_count=8,keyboard_boundary=None,divisor=None):
+def analyze(path,marks,media,size,speed,file_bytes,key_count=8,keyboard_boundary=None,divisor=None,shared_timer=False,active_forbid_only=False):
     if divisor is None:divisor=40 if speed else 0
     if divisor not in (0,8,40):raise ValueError('Unqualified serial divisor')
     rx_period={0:14,8:31,40:93}[divisor]
@@ -72,10 +101,16 @@ def analyze(path,marks,media,size,speed,file_bytes,key_count=8,keyboard_boundary
         result['post_to_sector_collection']=distribution(collection)
     result['alarms']={}
     for channel,name in ((0,'sio_alarm'),(1,'sio_watchdog')):
-        serviced,cancelled,unserviced=alarm_observations(active,times(name),posts,stop,channel)
+        if shared_timer and channel==0:
+            serviced=shared_alarm_observations(active,marks)
+            cancelled,unserviced=[],[]
+            service='Acknowledged physical timer-1 edge to armed SIO callback; pointer-only ticks checked separately'
+        else:
+            service=name
+            serviced,cancelled,unserviced=alarm_observations(active,times(service),posts,stop,channel)
         check(bool(serviced),'no '+name+' observations')
         check(all(0<=v/BASE_HZ*1e6<=LIMITS['alarm_lateness_us'] for v in serviced+cancelled+unserviced),'alarm deadline '+name)
-        result['alarms'][name]=dict(service=distribution(serviced),cancelled_or_terminal=distribution(cancelled+unserviced))
+        result['alarms'][name]=dict(service=distribution(serviced),cancelled_or_terminal=distribution(cancelled+unserviced),boundary=service)
     nesting={};forbids=[]
     # Public resident shutdown ends exclusion by self-removal, with no Permit.
     # These markers identify the exact NULL RemTask calls; the native fixture
@@ -85,13 +120,16 @@ def analyze(path,marks,media,size,speed,file_bytes,key_count=8,keyboard_boundary
         if e[0]!='cpu':continue
         pc=int(e[4],16);dp=e[9]
         if pc==marks['tasks_forbid']:nesting.setdefault(dp,[]).append(t)
-        elif pc==marks['tasks_permit'] and nesting.get(dp):forbids.append(t-nesting[dp].pop())
+        elif pc==marks['tasks_permit'] and nesting.get(dp):
+            start=nesting[dp].pop()
+            if not active_forbid_only or start>=starts[0]:forbids.append(t-start)
         elif pc in retire_sites:
             check(len(nesting.get(dp,[]))==1,'Unexpected resident retirement nesting')
-            forbids.extend(t-start for start in nesting.pop(dp,[]))
+            forbids.extend(t-start for start in nesting.pop(dp,[]) if not active_forbid_only or start>=starts[0])
     check(not any(nesting.values()),'unbalanced Forbid')
     check(bool(forbids) and all(v/BASE_HZ*1e6<=LIMITS['forbid_max_us'] for v in forbids),'Forbid deadline')
     result['forbid']=distribution(forbids)
+    result['forbid_scope']='After first serial command; cold startup excluded' if active_forbid_only else 'Complete observed execution'
     # Clip the same I-transition oracle in one pass; a large file has hundreds
     # of transactions, so rescanning the entire trace for each is unnecessary.
     masks=masked_intervals(events,starts[0],stop);maximum=0;longest_active=None
