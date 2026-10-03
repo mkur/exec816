@@ -3,6 +3,7 @@ MODULE DISPLAY
 USE EXEC
 USE HEAPCORE
 INCLUDE "display-types.inc"
+INCLUDE "bitmap-types.inc"
 Lease POINTER current
 LONGCARD generation
 BYTE sharedState,sharedKind

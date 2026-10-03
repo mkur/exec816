@@ -166,6 +166,14 @@ UWORD GemDrawingFence(void)
     if (!fault) latch(VbxeFence(&display));
     return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
 }
+UWORD GemDrawingCopy(const struct VbxeCopy *copy)
+{
+    UWORD status=GemDrawingFence();
+    if (status!=DISPLAY_OK) return status;
+    status=VbxeCopyRect(&display,copy);
+    if (status==DISPLAY_DEVICE_FAULT) latch(status);
+    return status;
+}
 UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
 {
     UWORD status=DisplayCheck(&display.lease);

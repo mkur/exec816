@@ -15,6 +15,8 @@ static UBYTE list[VBXE_BCB_BYTES];
 static ULONG rootMask;
 static BYTE rootBit;
 static volatile UWORD retired;
+extern void CopyCases(void);
+extern volatile UWORD copyFailures;
 
 static void check(UWORD good)
 {
@@ -185,6 +187,7 @@ void Renderer(void)
                 check(!display.mutated && display.lease.state==DISPLAY_FREE);
                 fault_arm=0;
             } else {
+                if (variant>=10) { CopyCases(); check(!copyFailures); }
                 pattern();
                 answer=VbxeClose(&display);
                 check(answer==DISPLAY_OK);

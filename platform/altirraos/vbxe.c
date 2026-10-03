@@ -24,7 +24,9 @@ static void map(struct VbxeDisplay *d, UBYTE bank, UBYTE control)
 /* Unsigned subtraction handles a tick rollover while a wait is outstanding. */
 static UWORD idle(void)
 {
-    UWORD start=DisplayTicks();
+    UWORD start;
+    if (!(REG(BUSY)&3)) return DISPLAY_OK;
+    start=DisplayTicks();
     while (REG(BUSY)&3) {
         if ((UWORD)(DisplayTicks()-start)>=VBXE_WAIT_TICKS)
             return DISPLAY_DEVICE_FAULT;
@@ -182,36 +184,32 @@ static UWORD getword(const UBYTE *p)
 static ULONG address(const UBYTE *p)
 { return (ULONG)getword(p)|((ULONG)p[2]<<16); }
 
-/* Validate every record before mapping or starting DMA. Upload directly into
- * the private arena so no second 4 KiB CPU buffer or mutable client chain is
- * needed. Only the owner may enter; the caller retains the CPU records. */
-UWORD VbxeSubmit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
+/* Hardware Y increments are signed 13-bit, relative to each row's start.
+ * Accept only canonical sign extension so no caller bits silently disappear.
+ * Keep the frequent positive path narrow; descending endpoints use LONG. */
+static UWORD stepped(ULONG at,WORD pitch,BYTE x,UWORD bytes,UWORD rows)
 {
-    const UBYTE *p;
+    LONG low=(LONG)at,high=(LONG)at,dy,dx;
+    if (x==1 && pitch>=0) return VbxeBlitExtent(at,(UWORD)pitch,bytes,rows);
+    if ((x!=1 && x!=-1) || pitch< -4096 || pitch>4095 || at>=VBXE_VRAM_BYTES)
+        return 0;
+    dy=(LONG)(rows-1)*pitch; dx=(LONG)(bytes-1)*x;
+    if (dy<0) low+=dy; else high+=dy;
+    if (dx<0) low+=dx; else high+=dx;
+    return low>=0 && high<(LONG)VBXE_VRAM_BYTES &&
+        !(low<(LONG)(VBXE_BCB+VBXE_BCB_BYTES) && high>=(LONG)VBXE_BCB);
+}
+
+/* Only fully validated records reach this synchronous driver-owned launch.
+ * CopyRect validates its entire geometry once, then constructs bounded records
+ * on its retained owner's stack. Public lists validate every supplied record. */
+static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
+{
+    const UBYTE *p=records;
     volatile UBYTE *window=(volatile UBYTE *)0x8000UL;
-    ULONG work=0;
-    UWORD i,j,n,bytes,rows,status=check(d);
-    if (status!=DISPLAY_OK) return status;
-    if (!count) return DISPLAY_OK;
-    if (count>VBXE_LIST_RECORDS || !extent(0,records,count*21))
-        return DISPLAY_BAD_ARGUMENT;
-    p=records;
-    for (i=0;i<count;i++,p+=21) {
-        n=getword(p+12);
-        if (n>=512 || p[5]!=1 || p[11]!=1 || p[17] || p[18] || p[19] || p[20]>6)
-            return DISPLAY_BAD_ARGUMENT;
-        bytes=n+1; rows=(UWORD)p[14]+1;
-        if (!VbxeBlitExtent(address(p),getword(p+3),bytes,rows) ||
-            !VbxeBlitExtent(address(p+6),getword(p+9),bytes,rows))
-            return DISPLAY_BAD_ARGUMENT;
-        /* At most 512*16*3 = 24576 here; narrowing does not discard carry. */
-        work+=rows<=16 ? (UWORD)(bytes*rows*(p[20] ? 3 : 2))
-                       : (ULONG)bytes*rows*(p[20] ? 3 : 2);
-        if (work>VBXE_LIST_WORK) return DISPLAY_BAD_ARGUMENT;
-    }
+    UWORD i,j,n=0;
     if (idle()!=DISPLAY_OK) return recover(d);
     map(d,(UBYTE)(0x80|(VBXE_BCB>>12)),0x88);
-    p=records; n=0;
     for (i=0;i<count;i++) {
         for (j=0;j<20;j++) window[n++]=*p++;
         window[n++]=(UBYTE)(*p++ | (i+1<count ? 8 : 0));
@@ -224,6 +222,35 @@ UWORD VbxeSubmit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
     return idle()==DISPLAY_OK ? DISPLAY_OK : recover(d);
 }
 
+/* Validate every record before mapping or starting DMA. Upload directly into
+ * the private arena so no second 4 KiB CPU buffer or mutable client chain is
+ * needed. Only the owner may enter; the caller retains the CPU records. */
+UWORD VbxeSubmit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
+{
+    const UBYTE *p;
+    ULONG work=0;
+    UWORD i,n,bytes,rows,status=check(d);
+    if (status!=DISPLAY_OK) return status;
+    if (!count) return DISPLAY_OK;
+    if (count>VBXE_LIST_RECORDS || !extent(0,records,count*21))
+        return DISPLAY_BAD_ARGUMENT;
+    p=records;
+    for (i=0;i<count;i++,p+=21) {
+        n=getword(p+12);
+        if (n>=512 || p[17] || p[18] || p[19] || p[20]>6)
+            return DISPLAY_BAD_ARGUMENT;
+        bytes=n+1; rows=(UWORD)p[14]+1;
+        if (!stepped(address(p),(WORD)getword(p+3),(BYTE)p[5],bytes,rows) ||
+            !stepped(address(p+6),(WORD)getword(p+9),(BYTE)p[11],bytes,rows))
+            return DISPLAY_BAD_ARGUMENT;
+        /* At most 512*16*3 = 24576 here; narrowing does not discard carry. */
+        work+=rows<=16 ? (UWORD)(bytes*rows*(p[20] ? 3 : 2))
+                       : (ULONG)bytes*rows*(p[20] ? 3 : 2);
+        if (work>VBXE_LIST_WORK) return DISPLAY_BAD_ARGUMENT;
+    }
+    return submit(d,records,count);
+}
+
 UWORD VbxeFill(struct VbxeDisplay *d, ULONG address, UWORD stride,
                UWORD bytes, UWORD rows, UBYTE value)
 {
@@ -233,6 +260,65 @@ UWORD VbxeFill(struct VbxeDisplay *d, ULONG address, UWORD stride,
         address+(ULONG)(rows-1)*stride+bytes>VBXE_SCREEN_BYTES)
         return DISPLAY_BAD_ARGUMENT;
     return VbxeBlit(d,0,0,address,stride,bytes,rows,0,value,0);
+}
+
+static UWORD surface(const struct VbxeSurface *s)
+{
+    ULONG end;
+    if (!s->width || !s->height || !s->pitch || s->pitch>4095 ||
+        s->width>(UWORD)(s->pitch*2) || s->offset>=VBXE_VRAM_BYTES) return 0;
+    end=s->offset+(ULONG)(s->height-1)*s->pitch+(s->width+1)/2;
+    return end<=VBXE_VRAM_BYTES &&
+        !(s->offset<VBXE_BCB+VBXE_BCB_BYTES && end>VBXE_BCB);
+}
+
+UWORD VbxeCopyRect(struct VbxeDisplay *d,const struct VbxeCopy *c)
+{
+    ULONG src,dst,srcEnd,dstEnd;
+    UWORD bytes,rows,n,limit,backwards,i,status=check(d);
+    WORD ss,ds;
+    UBYTE bcb[21];
+    if (status!=DISPLAY_OK) return status;
+    if (!extent(0,c,sizeof(*c)) || !surface(&c->source) || !surface(&c->destination))
+        return DISPLAY_BAD_ARGUMENT;
+    if ((c->sourceX|c->destinationX|c->width)&1 || c->width>1024 ||
+        c->sourceX>c->source.width || c->sourceY>c->source.height ||
+        c->destinationX>c->destination.width || c->destinationY>c->destination.height ||
+        c->width>c->source.width-c->sourceX || c->height>c->source.height-c->sourceY ||
+        c->width>c->destination.width-c->destinationX || c->height>c->destination.height-c->destinationY)
+        return DISPLAY_BAD_ARGUMENT;
+    if (!c->width || !c->height) return DISPLAY_OK;
+    bytes=c->width/2; rows=c->height;
+    ss=(WORD)c->source.pitch; ds=(WORD)c->destination.pitch;
+    src=c->source.offset+(ULONG)c->sourceY*ss+c->sourceX/2;
+    dst=c->destination.offset+(ULONG)c->destinationY*ds+c->destinationX/2;
+    srcEnd=src+(ULONG)(rows-1)*ss+bytes;
+    dstEnd=dst+(ULONG)(rows-1)*ds+bytes;
+    backwards=src<dstEnd && dst<srcEnd;
+    if (backwards && ss!=ds) return DISPLAY_BAD_ARGUMENT;
+    if (src==dst && ss==ds) return DISPLAY_OK;
+    backwards=backwards && dst>src;
+    if (backwards) {
+        src=srcEnd-1; dst=dstEnd-1;
+        ss=-ss; ds=-ds;
+    }
+    limit=(UWORD)VBXE_LIST_WORK/(bytes*2);
+    if (limit>VBXE_CHUNK_ROWS) limit=VBXE_CHUNK_ROWS;
+    for (i=0;i<21;i++) bcb[i]=0;
+    word(bcb+3,(UWORD)ss); word(bcb+9,(UWORD)ds);
+    bcb[5]=bcb[11]=backwards ? 255 : 1;
+    word(bcb+12,bytes-1); bcb[15]=255;
+    while (rows) {
+        n=rows<limit ? rows : limit;
+        word(bcb,(UWORD)src); bcb[2]=(UBYTE)(src>>16);
+        word(bcb+6,(UWORD)dst); bcb[8]=(UBYTE)(dst>>16);
+        bcb[14]=(UBYTE)(n-1);
+        status=submit(d,bcb,1);
+        if (status!=DISPLAY_OK) return status;
+        rows-=n;
+        if (rows) { src+=(LONG)n*ss; dst+=(LONG)n*ds; }
+    }
+    return DISPLAY_OK;
 }
 
 UWORD VbxeWaitFrame(struct VbxeDisplay *d)

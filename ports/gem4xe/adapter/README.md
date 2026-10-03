@@ -42,6 +42,12 @@ policy; the caller must own the display. There remains one drawing session per
 image, shared with the service when linked together. This is a C interface;
 calling it from Action! requires the separately tested language bridge in B6.
 
+`GemDrawingCopy` fences preceding drawing and calls the shared
+[`VbxeCopyRect`](../../../docs/reference/display.md#bitmap-rectangle-copies)
+operation. It accepts explicit VRAM surfaces and preserves opaque pixels in
+overlapping copies. The descriptor remains immutable until the call returns.
+The GEM service does not advertise an additional VDI opcode for this operation.
+
 Fully visible nonzero-ink glyphs use one nibble-stencil command. Hardware-zero
 ink retains the inverse-mask AND path, and clipped glyphs retain the staged
 pixel path. Empty glyphs skip ink after the opaque background fill. Private

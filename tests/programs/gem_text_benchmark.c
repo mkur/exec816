@@ -11,6 +11,7 @@ struct InputLease mouse __attribute__((aligned(2)));
 struct InputConfig config __attribute__((aligned(2)));
 WORD points[4], ints[64];
 struct VbxeDisplay directDisplay;
+static const struct VbxeCopy scrollCopy={{0,320,640,240},{0,320,640,240},0,8,0,0,640,232};
 WORD bit;
 struct Result { UWORD phase, kind, glyphs, calls, start, end, ticks, status; };
 struct Result results[26];
@@ -39,7 +40,7 @@ static void measure(UWORD kind, UWORD n, UWORD repetitions, WORD x)
         for (j=0;j<repetitions && !status;++j)
             status=GemCall(&client,11,1,2,0,points,ints);
     } else if (kind==12) {
-        status=VbxeBlit(&directDisplay,2560,320,0,320,320,232,255,0,0);
+        status=VbxeCopyRect(&directDisplay,&scrollCopy);
     } else {
         for (j=0;j<repetitions && !status;++j)
             status=text(n,x,64);

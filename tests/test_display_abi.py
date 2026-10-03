@@ -7,12 +7,13 @@ import unittest
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
 from generate_display import files
+from generate_bitmap import files as bitmap_files
 from generate_tasks import application_entry
 
 
 class DisplayABI(unittest.TestCase):
     def test_generated_bindings(self):
-        for path,content in files().items():
+        for path,content in (files() | bitmap_files()).items():
             with self.subTest(path=path):
                 self.assertEqual(path.read_text(),content)
 

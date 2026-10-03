@@ -1,0 +1,1357 @@
+{
+  "slice": "B3",
+  "date": "2026-10-03",
+  "status": "development-pass",
+  "reports": {
+    "final-opt": {
+      "path": "build/bitmap-console/b3/final-opt/results.json",
+      "sha256": "a38135c52b837ab04c1667849e144ab97838405eca94342f32e75f44be59d7fd",
+      "xex_sha256": "f3d0b343d03e98790272bfa2f58e541629e5aa7f001e0f2beffece97fc1c846c",
+      "cases": [
+        {
+          "name": "bitmap-copy",
+          "status": "pass",
+          "copy_checks": 115,
+          "copy_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 368,
+              "remaining_above_floor": 912
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 244,
+              "remaining_above_floor": 524
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 244,
+              "remaining_above_floor": 524
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 130,
+              "remaining_above_floor": 2174
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 254,
+              "remaining_above_floor": 2050
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          },
+          "interrupts": {
+            "native_nmi_count": 2900,
+            "native_irq_count": 1036
+          }
+        }
+      ]
+    },
+    "final-raw": {
+      "path": "build/bitmap-console/b3/final-raw/results.json",
+      "sha256": "8386016f6c213a127d57fa7085580607b995070176df194ebad0aa8c5f5d17df",
+      "xex_sha256": "34fa025bcd671bac26cf3cbbe8b1ee8465b6a3a9d337008bc4abc235938e17c2",
+      "cases": [
+        {
+          "name": "bitmap-copy",
+          "status": "pass",
+          "copy_checks": 115,
+          "copy_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 408,
+              "remaining_above_floor": 872
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 252,
+              "remaining_above_floor": 516
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 158,
+              "remaining_above_floor": 610
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 272,
+              "remaining_above_floor": 496
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 130,
+              "remaining_above_floor": 2174
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 256,
+              "remaining_above_floor": 2048
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 266,
+              "remaining_above_floor": 1014
+            }
+          },
+          "interrupts": {
+            "native_nmi_count": 2925,
+            "native_irq_count": 1026
+          }
+        },
+        {
+          "name": "copy-fault",
+          "status": "pass",
+          "copy_checks": 127,
+          "copy_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 408,
+              "remaining_above_floor": 872
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 252,
+              "remaining_above_floor": 516
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 158,
+              "remaining_above_floor": 610
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 272,
+              "remaining_above_floor": 496
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 130,
+              "remaining_above_floor": 2174
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 256,
+              "remaining_above_floor": 2048
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 266,
+              "remaining_above_floor": 1014
+            }
+          },
+          "interrupts": {
+            "native_nmi_count": 3106,
+            "native_irq_count": 1026
+          }
+        },
+        {
+          "name": "busy-timeout",
+          "status": "pass",
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 408,
+              "remaining_above_floor": 872
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 252,
+              "remaining_above_floor": 516
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 130,
+              "remaining_above_floor": 2174
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 146,
+              "remaining_above_floor": 2158
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 276,
+              "remaining_above_floor": 1004
+            }
+          },
+          "interrupts": {
+            "native_nmi_count": 77,
+            "native_irq_count": 0
+          }
+        },
+        {
+          "name": "wrap-timeout",
+          "status": "pass",
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 408,
+              "remaining_above_floor": 872
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 252,
+              "remaining_above_floor": 516
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 130,
+              "remaining_above_floor": 2174
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 146,
+              "remaining_above_floor": 2158
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 276,
+              "remaining_above_floor": 1004
+            }
+          },
+          "wait_ticks": [
+            65534,
+            14
+          ],
+          "interrupts": {
+            "native_nmi_count": 77,
+            "native_irq_count": 0
+          }
+        },
+        {
+          "name": "unquiesced",
+          "status": "pass",
+          "interrupts": {
+            "native_nmi_count": 45,
+            "native_irq_count": 0
+          }
+        }
+      ]
+    },
+    "render": {
+      "path": "build/bitmap-console/b3/render/results.json",
+      "sha256": "3140b702d4b8ab4b4054fb38556b8d0d930a0138d07748fd3f70ca18d888af0d",
+      "xex_sha256": "bc8aa5b03e245ef01ce39a9e58e9f35a5f16210c62618e6e18380d9cd22ca3e9",
+      "cases": [
+        {
+          "name": "open",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "attribute-17",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "attribute-22",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "attribute-23",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "attribute-25",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "attribute-32",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "clear",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-0",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-0",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-1",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-1",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-2",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-2",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-3",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-3",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-4",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-4",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-5",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-5",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-6",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-6",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-7",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-7",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-8",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-8",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-9",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-9",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-10",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-10",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-11",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-11",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-12",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-12",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-13",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-13",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-14",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-14",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "pen-15",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "swatch-15",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "red-fill",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "reversed-corners",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "clip-reversed",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "clipped-bar",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "clip-off",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "line-blue",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "horizontal",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "vertical",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "diagonals",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "extreme-diagonal",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "extreme-reverse",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "green-text",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "glyphs-0",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "glyphs-1",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "glyphs-2",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "glyphs-3",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "text-left",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "text-right",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "text-top",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "text-bottom",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "empty-text",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "text-max-coordinates",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "text-min-coordinates",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "tiny-clip",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "cut-glyph",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "empty-intersection",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "invisible-bar",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "invisible-text",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "clip-off-again",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "window-crossing-bar",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "title-black",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "title",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "update",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "end-of-bank-packet",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "cross-bank-packet",
+          "status": 2,
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "boundary-readback",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "bad-mode",
+          "status": 1,
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "bad-pen",
+          "status": 1,
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "bad-glyph",
+          "status": 1,
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "virtual-workstation",
+          "status": 1,
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "invalid-batch",
+          "status": 1,
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "after-rejections",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "reopen",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "reset-line-attribute",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "reset-text-attribute",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        },
+        {
+          "name": "close",
+          "interrupts": {
+            "native_nmi_count": null,
+            "native_irq_count": null
+          }
+        }
+      ]
+    }
+  },
+  "copy_descriptor": "abi/bitmap.json",
+  "copy_vectors": [
+    {
+      "name": "up",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000008000000000080003200",
+      "status": 0,
+      "fault": 0,
+      "hash": 3135828181
+    },
+    {
+      "name": "down",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000000000000080080003200",
+      "status": 0,
+      "fault": 0,
+      "hash": 811949781
+    },
+    {
+      "name": "left",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00080000000000000078002800",
+      "status": 0,
+      "fault": 0,
+      "hash": 250556433
+    },
+    {
+      "name": "right",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000000000800000078002800",
+      "status": 0,
+      "fault": 0,
+      "hash": 659844545
+    },
+    {
+      "name": "down-right",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000000000800030078002800",
+      "status": 0,
+      "fault": 0,
+      "hash": 4073328961
+    },
+    {
+      "name": "up-left",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00080003000000000078002800",
+      "status": 0,
+      "fault": 0,
+      "hash": 153204265
+    },
+    {
+      "name": "same",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000000000000000040001400",
+      "status": 0,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "height-one",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c0000000000020000007e000100",
+      "status": 0,
+      "fault": 0,
+      "hash": 1720730494
+    },
+    {
+      "name": "page-crossing",
+      "base": 4064,
+      "packet": "00100000500080003c0000100000500080003c00000000000000000040001400",
+      "status": 0,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "bank-crossing",
+      "base": 65504,
+      "packet": "00000100500080003c0000000100500080003c00000000000000000040001400",
+      "status": 0,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "last-vram-byte",
+      "base": 516096,
+      "packet": "00e0070080000001400000e0070080000001400000003e0000003f0000010100",
+      "status": 0,
+      "fault": 0,
+      "hash": 1239003077
+    },
+    {
+      "name": "distinct-pitches",
+      "base": 258048,
+      "packet": "20f00300400078001e0000000400500080001e00000000000000000040001400",
+      "status": 0,
+      "fault": 0,
+      "hash": 1326510357
+    },
+    {
+      "name": "shifted-overlapping-views",
+      "base": 258048,
+      "packet": "20f0030050008000320033f00300500080003200000000000000000040001400",
+      "status": 0,
+      "fault": 0,
+      "hash": 478389991
+    },
+    {
+      "name": "zero-width",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000000000000000000001400",
+      "status": 0,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "zero-height",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000000000000000040000000",
+      "status": 0,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "odd-source",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00010000000000000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "odd-dest",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000000000100000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "odd-width",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c0000000000000000003f001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "bad-right",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00400000000000000042001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "bad-bottom",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000032000000000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "overflow",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00feffffff0000000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "zero-pitch",
+      "base": 258048,
+      "packet": "20f00300000080003c0020f00300000080003c00000000000000000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "large-pitch",
+      "base": 258048,
+      "packet": "20f0030000108000010020f00300001080000100000000000000000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "narrow-pitch",
+      "base": 258048,
+      "packet": "20f00300200080003c0020f00300200080003c00000000000000000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "vram-wrap",
+      "base": 258048,
+      "packet": "ffff0700500080003c00ffff0700500080003c00000000000000000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "arena",
+      "base": 258048,
+      "packet": "00800300500080003c0000800300500080003c00000000000000000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "address-overflow",
+      "base": 258048,
+      "packet": "ffffffff500080003c00ffffffff500080003c00000000000000000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "overlapping-different-pitches",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300510080003c00000000000000000040001400",
+      "status": 6,
+      "fault": 0,
+      "hash": 3056189381
+    },
+    {
+      "name": "fault-after-up-chunk",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000008000000000080003200",
+      "status": 5,
+      "fault": 1,
+      "hash": 3352381157
+    },
+    {
+      "name": "fault-after-down-chunk",
+      "base": 258048,
+      "packet": "20f00300500080003c0020f00300500080003c00000000000000080080003200",
+      "status": 5,
+      "fault": 1,
+      "hash": 3260220213
+    }
+  ],
+  "benchmark": {
+    "path": "build/bitmap-console/b3/text-final/observed-results.json",
+    "sha256": "2487b00b6f9547793707a538e25e62dd1b3acaaa887f688256b685f8d6277e0e",
+    "xex_sha256": "a88185efd01e664d712dc5da6540f5bd0ad47bd1a9f78cc5e288f0d185ce7f52",
+    "copy_cases": [
+      {
+        "case": {
+          "phase": 0,
+          "kind": 12,
+          "glyphs": 0,
+          "calls": 1,
+          "start": 620,
+          "end": 621,
+          "ticks": 1,
+          "status": "pass",
+          "seconds": 0.02,
+          "glyphs_per_second": 0.0,
+          "milliseconds_per_call": 20.0,
+          "pixels_sha256": "bbf533bf6189541b727e17348df8bd74c60f566149d0fbf83b28a10874511d05"
+        },
+        "cycles": {
+          "start": 4318453547.375,
+          "routines": {
+            "idle": {
+              "calls": 40,
+              "total_ms": 15.49277607597631,
+              "max_ms": 0.8647704541577915
+            },
+            "measure": {
+              "calls": 1,
+              "total_ms": 28.827678857141247,
+              "max_ms": 28.827678857141247
+            }
+          },
+          "entries": {
+            "measure": 1,
+            "VbxeCopyRect": 1,
+            "submit": 20,
+            "idle": 40
+          },
+          "end": 4318504671.75
+        }
+      },
+      {
+        "case": {
+          "phase": 1,
+          "kind": 12,
+          "glyphs": 0,
+          "calls": 1,
+          "start": 1458,
+          "end": 1459,
+          "ticks": 1,
+          "status": "pass",
+          "seconds": 0.02,
+          "glyphs_per_second": 0.0,
+          "milliseconds_per_call": 20.0,
+          "pixels_sha256": "bbf533bf6189541b727e17348df8bd74c60f566149d0fbf83b28a10874511d05"
+        },
+        "cycles": {
+          "start": 4348259578.875,
+          "routines": {
+            "idle": {
+              "calls": 40,
+              "total_ms": 15.876491973965962,
+              "max_ms": 0.8804884272018202
+            },
+            "measure": {
+              "calls": 1,
+              "total_ms": 34.27533095848623,
+              "max_ms": 34.27533095848623
+            }
+          },
+          "entries": {
+            "measure": 1,
+            "VbxeCopyRect": 1,
+            "submit": 20,
+            "idle": 40
+          },
+          "end": 4348320364.375
+        }
+      }
+    ],
+    "replay": {
+      "path": "build/bitmap-console/b3/text-final/results.json",
+      "sha256": "cc26ee8c500f134cf95a30d4c692dc141542dfd15bb18426e30fce44455deb2d",
+      "identical_pixels_and_ticks": true
+    }
+  },
+  "host_tests": {
+    "tests": 294,
+    "skipped": 4
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "upper_reserved_bytes_delta": 0,
+  "vram_reserved_bytes_delta": 0,
+  "limits": [
+    "Development tests on pinned emulator/ROM, not physical hardware or full system qualification.",
+    "28 snapshot-model copy vectors cover geometry/overlap/VRAM edges; two additional injected cases stop after one chunk and verify its prefix with a fresh lease.",
+    "Test-only 8192-byte readback buffer is inside the already reserved C data bank.",
+    "Copy uses 20 bounded chunks for a 640x232 region; cycle timing is 28.828 ms without ST and 34.275 ms with idle ST, still above the 20 ms target.",
+    "These copy timings exclude exposed-row fill, retained editing, caret and console scheduling; B7/B8 must measure the complete scroll.",
+    "Full VDI pixel corpus passed the common launch refactor; recovery covers timeout, tick wrap, STOP and reset-required park."
+  ]
+}

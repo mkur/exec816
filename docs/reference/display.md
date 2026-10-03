@@ -79,6 +79,35 @@ DEVICE_FAULT. If idle cannot be established, keep FAULTED ownership and storage
 and enter the platform's interrupt-disabled reset-required park (`$FF93`). This
 does not acknowledge normal completion or return hardware/storage to the OS.
 
+## Bitmap rectangle copies
+
+`VbxeCopyRect(display, copy)` is an ordinary synchronous C driver operation.
+The generated [descriptor](../../abi/bitmap.json) contains two 10-byte surfaces
+and six 16-bit coordinates/dimensions (32 bytes total). Surface offsets and row
+pitches are VRAM bytes; coordinates, widths and heights are pixels. Rows contain
+packed 4-bit pixels. Pitches are 1–4095 bytes, widths at most twice the pitch,
+and the complete surface must fit VRAM without touching the command arena.
+
+Copy X coordinates and width must be even, with width at most 1024 pixels.
+All bounds are half-open; a valid empty rectangle succeeds without mutation.
+The complete descriptor and both extents are checked before copying. Distinct
+nonoverlapping surfaces may have different pitches. Overlapping address extents
+require equal pitches; descending row and byte order preserves the source when
+the destination is higher in memory. Ambiguous overlapping views with different
+pitches are rejected. Unsupported geometry can be redrawn by the console.
+The caller retains the immutable descriptor until return. The checked operation
+constructs private stack records for each chunk and uses the same internal
+launch/fence routine as public list submission; it does not repeat validation
+of caller geometry for every chunk. This is driver implementation, with no
+additional kernel entry or weaker public-list checks.
+
+Copies use opaque mode zero, including zero-valued source pixels. Each chunk
+is at most sixteen rows and 8,192 estimated bus accesses; errors may leave a
+completed prefix of chunks, so callers must invalidate presentation after a
+fault. There is no new kernel selector or advertised VDI opcode. Signed list
+steps support X ±1 and Y −4096…4095; validation checks both address extremes
+and rejects VRAM wrap and command-arena overlap before submission.
+
 ## Mapping transition protocol
 
 The owner publishes pending BANK_SEL and CONTROL in its upper-RAM state. The

@@ -6,6 +6,7 @@
 #include <hardware/vbxe.h>
 UWORD GemDrawingOpen(WORD *workout);
 UWORD GemDrawingClose(void);
+UWORD GemDrawingCopy(const struct VbxeCopy *copy);
 UWORD GemDrawingFence(void);
 UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
 UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,

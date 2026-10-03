@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "surface_bytes": 10,
+  "surface_fields": {"offset": 0, "pitch": 4, "width": 6, "height": 8},
+  "copy_bytes": 32,
+  "copy_fields": {"source": 0, "destination": 10, "sourceX": 20, "sourceY": 22, "destinationX": 24, "destinationY": 26, "width": 28, "height": 30}
+}

@@ -90,6 +90,8 @@ def build_service_probe(output, optimize=True):
 
 def build_display_probe(output, optimize=True, instrument=True):
     from generate_display import files, expected_layout
+    from generate_bitmap import expected_layout as bitmap_layout
+    from bitmap_copy_oracle import header,corpus
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     for path,content in files().items():
@@ -101,6 +103,11 @@ def build_display_probe(output, optimize=True, instrument=True):
         backend=backend.replace('#define BUSY ', 'extern UBYTE ProbeBusy(void);\nextern UBYTE ProbeVcount(void);\nextern volatile UWORD ProbeStopped;\n#define BUSY ')
         backend=backend.replace('REG(BUSY)&3','ProbeBusy()&3').replace('REG(VCOUNT)','ProbeVcount()')
         backend=backend.replace('REG(BUSY)=0;', 'REG(BUSY)=0; ProbeStopped=1;')
+        backend='extern void ProbeCopyChunk(void);\n'+backend
+        hook='        rows-=n;\n        if (rows)'
+        require(hook in backend,'Missing bitmap-copy chunk boundary')
+        backend=backend.replace(hook,'        ProbeCopyChunk();\n'+hook)
+    (output/'bitmap-copy-cases.h').write_text(header())
     (output/'vbxe-probe.c').write_text(backend)
     mapping=(ROOT/'platform/altirraos/vbxe-map.s').read_text()
     if instrument:
@@ -135,22 +142,25 @@ map_done_{index}:
         mapping=mapping.replace(label+':',label+':'+delay)
     (output/'vbxe-map-probe.s').write_text(mapping)
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',output/'vbxe-probe.c',
-             ROOT/'tests/programs/gem_display.c']
+             ROOT/'tests/programs/gem_display.c',ROOT/'tests/programs/bitmap_copy.c']
     foreign=emit(output,sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
         ROOT/'c/calypsi/image-info.s',output/'vbxe-map-probe.s'],
-        ['Renderer','Peer'],optimize=optimize,
-        probes=[(ROOT/'c/calypsi/display-layout.c',expected_layout())])
+        ['Renderer','Peer'],optimize=optimize,includes=[output],
+        probes=[(ROOT/'c/calypsi/display-layout.c',expected_layout()),
+                (ROOT/'c/calypsi/bitmap-layout.c',bitmap_layout())])
     paths=[ROOT/'abi/display.json',ROOT/'platform/altirraos/vbxe.c',
            ROOT/'platform/altirraos/vbxe-map.s',ROOT/'platform/altirraos/vbxe-vram.json',
            ROOT/'tests/programs/gem_display.c',ROOT/'tests/programs/gem_display_launcher.act',
            *ROOT.glob('c/calypsi/*'),*ROOT.glob('c/include/**/*.h'),
            *ROOT.glob('lib/display/*'),ROOT/'tools/build_gem_vdi.py',ROOT/'tools/test_gem_display.py',
-           ROOT/'tools/generate_display.py',ROOT/'tools/calypsi_build.py',ROOT/'tools/calypsi_image.py']
+           ROOT/'tools/generate_display.py',ROOT/'tools/calypsi_build.py',ROOT/'tools/calypsi_image.py',
+           ROOT/'abi/bitmap.json',ROOT/'tools/generate_bitmap.py',ROOT/'tools/bitmap_copy_oracle.py',
+           ROOT/'tests/programs/bitmap_copy.c']
     foreign['provenance'].update(slice='G3',hardware_execution=True,local_inputs=local_inputs(),
         source_inputs={p.relative_to(ROOT).as_posix():sha256(p) for p in sorted(set(paths)) if p.is_file()},
         instrumentation=dict(busy_and_vcount_reads=instrument,mapping_nmi_gates=instrument,
             backend_sha256=sha256(output/'vbxe-probe.c'),mapping_sha256=sha256(output/'vbxe-map-probe.s')),
-        vram=json.loads((ROOT/'platform/altirraos/vbxe-vram.json').read_text()))
+        bitmap_copy_cases=corpus(),vram=json.loads((ROOT/'platform/altirraos/vbxe-vram.json').read_text()))
     (output/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     include=output/'c-image.inc'
     include.write_text(''.join(f'CONST C_{name.upper()}=${foreign["symbols"][name]:x}\n'

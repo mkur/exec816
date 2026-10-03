@@ -76,7 +76,7 @@ PROC Main()
     Require(DOS.ReleaseContext()<>0)
     checkpoint=1
     Run(2)
-    IF variant^=0 OR variant^=9 THEN
+    IF variant^=0 OR variant^>=9 THEN
       DiskWork()
     FI
 

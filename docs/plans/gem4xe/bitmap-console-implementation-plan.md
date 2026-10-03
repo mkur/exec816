@@ -3,8 +3,8 @@
 [Design note](bitmap-console-design.md) · [Implementation plans](../README.md) ·
 [GEM work](README.md) · [Roadmap](../../roadmap.md)
 
-Status: implementation started, 3 October 2026. B0–B2 have passed development checks;
-B3–B9 remain unimplemented. This plan implements
+Status: implementation started, 3 October 2026. B0–B3 have passed development checks;
+B4–B9 remain unimplemented. This plan implements
 the design's 80×30 bitmap backend for the existing console, improving the shared
 VDI drawing path first. Each slice must leave an executable, reviewable result;
 commit it with its focused development evidence before starting the next slice.
@@ -199,6 +199,16 @@ model: up/down/left/right overlap, same rectangle, distinct surfaces, height one
 VRAM 4 KiB and 64 KiB crossings, edge rejection and guard preservation. Repeat
 a chunked copy with NMI/SIO activity and test a fault between chunks. Record
 fenced full-width scroll cost separately from its future console scheduling.
+
+B3 development evidence: [checked bitmap copies](../../development/bitmap-console-b3.json).
+Raw/optimized snapshot-model copies cover all overlap directions, separate
+surfaces, VRAM boundaries and rejected geometry. Injected faults verify the
+completed chunk prefix, recoverable STOP, tick wrap and reset-required retention.
+The ordinary API validates the entire descriptor once and constructs private
+bounded records. A 640×232 copy measures 28.828 ms without ST and 34.275 ms
+with idle capture; identical-image replay preserves pixels and tick results.
+The complete console scroll remains B7/B8, and the 20 ms target is still unmet.
+Reserved bank-zero, upper-bank and VRAM deltas are all zero.
 
 ## B4 Put console presentation in its worker
 

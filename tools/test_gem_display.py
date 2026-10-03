@@ -15,15 +15,15 @@ from test_calypsi import pattern
 from test_large_stacks import observe
 
 CASES=['pattern','unknown-baseline','absent','unsupported','busy-timeout','vcount-timeout',
-       'unquiesced','retained-owner','wrap-timeout','map-nmi']
+       'unquiesced','retained-owner','wrap-timeout','map-nmi','bitmap-copy','copy-fault']
 
 
 def run(output,mode,cases=None,replay=False,production=False):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     if production:
-        require(cases is None or cases==['pattern'],'Production control runs the real pattern only')
-        cases=['pattern']
+        require(cases is None or cases in (['pattern'],['bitmap-copy']),'Production control needs a real-hardware case')
+        cases=cases or ['pattern']
     report=dict(status='running',tier='development',slice='G3',mode=mode,cases=[],production_control=production)
     try:
         if replay:
@@ -106,6 +106,9 @@ def run(output,mode,cases=None,replay=False,production=False):
                     case['runtime']=runtime
                     read=lambda key,size=2:int.from_bytes(b.memdump(symbols[key],size),'little')
                     case.update(checks=read('checks'),failures=read('failures'),first_failure=read('first_failure'))
+                    if variant>=10:
+                        case.update(copy_checks=read('copyChecks'),copy_failures=read('copyFailures'),copy_first_failure=read('copyFirstFailure'))
+                        require(not case['copy_failures'],f'Bitmap copy case {case["copy_first_failure"]} failed')
                     require(not case['failures'],f'Target check {case["first_failure"]} failed')
                     if variant not in (6,7):
                         require(read('finished')==1 and data(b,program['image'],'result',True)==[0],'Fixture incomplete')

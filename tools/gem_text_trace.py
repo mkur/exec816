@@ -7,7 +7,7 @@ from sio_transaction_trace import BASE_HZ, read_events
 
 
 def markers(output, foreign):
-    names=('GemPrepare','GemSubmit','VbxeFill','VbxeBlit','VbxeSubmit','transfer','idle')
+    names=('GemPrepare','GemSubmit','VbxeFill','VbxeBlit','VbxeCopyRect','VbxeSubmit','submit','transfer','idle')
     result={}
     for path in output.glob('*.lst'):
         current=None

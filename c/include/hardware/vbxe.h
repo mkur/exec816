@@ -1,6 +1,7 @@
 #ifndef EXEC_VBXE_H
 #define EXEC_VBXE_H
 #include <exec/display.h>
+#include <hardware/vbxe-copy.h>
 
 #define VBXE_VRAM_BYTES 0x80000UL
 #define VBXE_SCREEN 0UL
@@ -31,13 +32,15 @@ UWORD VbxeWrite(struct VbxeDisplay *display, ULONG address, const void *source, 
 UWORD VbxeRead(struct VbxeDisplay *display, ULONG address, void *destination, UWORD bytes);
 UWORD VbxeFill(struct VbxeDisplay *display, ULONG address, UWORD stride, UWORD bytes, UWORD rows, UBYTE value);
 UWORD VbxePresent(struct VbxeDisplay *display);
-/* Packed 21-byte CPU records, immutable until return. Positive steps only;
+/* Packed 21-byte CPU records, immutable until return. X steps +/-1,
+ * canonical signed 13-bit Y steps -4096..4095;
  * chain, pattern, zoom and collision fields must be zero. The driver owns
  * chaining and rejects a whole list before changing VRAM. Empty lists are OK.
  * Work counts source/destination bus accesses (2 for copy, 3 for other modes).
  * The command arena cannot be a raster source or destination. */
 UWORD VbxeSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD count);
 UWORD VbxeBlitExtent(ULONG address, UWORD stride, UWORD bytes, UWORD rows);
+UWORD VbxeCopyRect(struct VbxeDisplay *display, const struct VbxeCopy *copy);
 /* Positive row steps, no chaining or IRQ. Every call completes before return. */
 UWORD VbxeBlit(struct VbxeDisplay *display, ULONG source, UWORD sourceStride,
                ULONG destination, UWORD destinationStride, UWORD bytes, UWORD rows,
