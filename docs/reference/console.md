@@ -98,8 +98,12 @@ The optional bitmap build defers automatic startup, binds its checked ordinary
 C call and display callbacks, then starts the existing worker in an available
 2,560-byte pool. It adds no bank-zero storage. The shared drawing image reserves
 upper banks `$0C/$0D`; the loader validates these alongside native reservations.
+The optional [bitmap shell preview](../guides/bitmap-console.md) uses queried
+80×24 shell and 80×6 prime tiles; the standard demo uses 40×18 and 40×6.
 The [implementation plan](../plans/gem4xe/bitmap-console-implementation-plan.md)
-tracks the current development gate and later distribution work.
+tracks the open responsiveness gate. Functional development checks do not promise
+40 ms input, 20 ms scrolling or 500 ms repaint. A single framebuffer permits
+intermediate updates between fences and scanout.
 
 A quiesced bitmap hardware fault restores the OS display and latches terminal
 backend failure. Waiting READ/WRITE requests receive `IOERR_SELFTEST` once;

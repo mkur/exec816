@@ -104,6 +104,49 @@ class DemoPackageTests(unittest.TestCase):
                 package_demo.package(self.bundle,self.archive,graphics)
         self.assertFalse(self.archive.exists())
 
+    def bitmap(self):
+        folder=self.root/'bitmap'
+        folder.mkdir()
+        files={name:('bitmap '+name).encode() for name in package_demo.BITMAP_FILES}
+        for name,content in files.items(): (folder/name).write_bytes(content)
+        (folder/'debug.lst').write_text('Development only')
+        (folder/'bitmap.json').write_text(json.dumps(dict(diagnostic=False,
+            files={name:hashlib.sha256(content).hexdigest() for name,content in files.items()})))
+        return folder,files
+
+    def test_bitmap_preserves_standard_boot_and_matching_media(self):
+        bitmap,expected=self.bitmap()
+        with patch.object(package_demo,'ROOT',self.root):
+            package_demo.package(self.bundle,self.archive,bitmap=bitmap)
+        with zipfile.ZipFile(self.archive) as archive:
+            files={name.removeprefix('exec816-demo/'):archive.read(name) for name in archive.namelist()}
+        self.assertEqual(files['Exec-of816.xex'],self.boot_files['Exec-of816.xex'])
+        self.assertEqual(files['system.atr'],self.boot_files['system.atr'])
+        self.assertEqual({name.removeprefix('bitmap-console/'):content for name,content in files.items()
+            if name.startswith('bitmap-console/')},expected)
+        checksums=dict(line.split('  ',1)[::-1] for line in files['SHA256SUMS'].decode().splitlines())
+        self.assertEqual(set(checksums),set(files)-{'SHA256SUMS'})
+        for name,digest in checksums.items():
+            self.assertEqual(hashlib.sha256(files[name]).hexdigest(),digest)
+        self.assertIn(b'bitmap-console/README.txt',files['README.txt'])
+
+    def test_changed_bitmap_media_prevents_distribution(self):
+        bitmap,_=self.bitmap()
+        (bitmap/'system.atr').write_bytes(b'wrong disk')
+        with patch.object(package_demo,'ROOT',self.root):
+            with self.assertRaisesRegex(ValueError,'Changed bitmap artifact'):
+                package_demo.package(self.bundle,self.archive,bitmap=bitmap)
+        self.assertFalse(self.archive.exists())
+
+    def test_diagnostic_bitmap_prevents_distribution(self):
+        bitmap,_=self.bitmap()
+        path=bitmap/'bitmap.json';record=json.loads(path.read_text())
+        record['diagnostic']=True;path.write_text(json.dumps(record))
+        with patch.object(package_demo,'ROOT',self.root):
+            with self.assertRaisesRegex(ValueError,'diagnostic bitmap'):
+                package_demo.package(self.bundle,self.archive,bitmap=bitmap)
+        self.assertFalse(self.archive.exists())
+
     def test_missing_licence_prevents_distribution(self):
         (self.root/'LICENSE-MIT').unlink()
         with patch.object(package_demo, 'ROOT', self.root):

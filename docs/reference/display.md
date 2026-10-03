@@ -21,10 +21,16 @@ FAULTED and retains the Task. Generations never wrap or repeat. Recursion return
 BUSY. Errors are OK, BUSY, UNSUPPORTED, NO_MEMORY, INVALID_OWNER, DEVICE_FAULT and
 BAD_ARGUMENT. Caller memory validity is a shared-address-space obligation.
 
-The console holds a TEXT lease from before its first display mutation until
+The text console holds a TEXT lease from before its first display mutation until
 input production and presentation have stopped and its snapshot is restored.
-An open while graphics owns the display returns `IOERR_UNITBUSY`, mapped by DOS
-to `ERROR_OBJECT_IN_USE`. Close all text handles, call `DOS.ReleaseContext()`,
+The optional [bitmap console](console.md) instead holds a VBXE lease through
+its shared drawing library; its existing worker owns every hardware call and
+fence. These are mutually exclusive startup selections. The 80×30 bitmap preview
+does not promise atomic scanout or the design's unachieved responsiveness targets.
+
+Starting the text console while another Task owns graphics returns
+`IOERR_UNITBUSY`, mapped by DOS to `ERROR_OBJECT_IN_USE` for an attempted open.
+Close all console handles, call `DOS.ReleaseContext()`,
 then wait for `CONSOLEDRIVER.Stop()` before acquiring graphics. Stop already
 provides a signal-based retirement acknowledgment without polling Task records;
 it refuses live endpoints. Reopen by calling `CONSOLEDRIVER.Start()` after graphics

@@ -16,8 +16,9 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False):
-    require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing)) <= 1,'Select one demo smoke scope')
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None):
+    require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
+    require(disk_failure in (None,'missing','wrong'),'Unknown disk failure')
     manifest=json.loads((out/'demo-manifest.json').read_text())
     require(all(sha256(out/name)==digest for name,digest in manifest['artifacts'].items()),'Changed demo bundle')
     p=read_build(out);pin=manifest['pin'];observations=[];saved={}
@@ -57,7 +58,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     with emulator(binary.parent,rom,out,pin=pin) as b:
         for key,value in manifest['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
         if stock_smoke:b.config('diskemu','810')
-        b.mount(system_drive-1,str(media_path));machine=verify_machine(b,rom,pin)
+        mounted=ROOT/'tests/fixtures/mydos/mydos450-128.atr' if disk_failure=='wrong' else None if disk_failure=='missing' else media_path
+        mounted_hash=sha256(mounted) if mounted else None
+        if mounted:b.mount(system_drive-1,str(mounted))
+        machine=verify_machine(b,rom,pin)
         def far(address,length):
             return b''.join((b.eval_expr(f'dw(${address+i:x})')&65535).to_bytes(2,'little') for i in range(0,length,2))[:length]
         def number(address,length=4):return int.from_bytes(far(address,length),'little')
@@ -224,6 +228,22 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 saved[name+'View']=pointer(row+console['WINDOW_VIEW'])
             dos=p['build']['memory']['dos_storage']['BASE'];saved['scope']=pointer(pointer(dos)+83)
             ready();cells('startup')
+            if disk_failure:
+                require(b'SYS: mount failed; use CD SYS: to retry' in cells('failed-mount')[:shell_cells],
+                        'Missing bounded system-volume failure message')
+                command('ECHO offline',b'offline')
+                b.mount(system_drive-1,str(media_path))
+                if disk_failure=='missing':
+                    previous=begin('CD SYS:');ready(previous);result(8)
+                    command('ECHO reset required',b'reset required')
+                    cells('bus-offline')
+                else:
+                    command('CD SYS:')
+                    command('HELLO',b'Hello from disk!')
+                    cells('mount-recovered')
+                save_screen(out/'walkthrough.png')
+                for character in 'EXIT':press(character)
+                b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
             if showcase:
                 command('TASKS',b'primes')
                 screenshot('boot-tasks.png',[b'Exec816 (',b'exec: 8 task slots',
@@ -350,11 +370,19 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             for character in 'EXIT':press(character)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all()
         if bootstrap is not None:bootstrap(b,p)
-        runtime,_=execute(b,p,preloaded=bootstrap is not None,before_run=before,timeout=240,frame_limit=12000)
+        reset_required=disk_failure=='missing'
+        runtime,_=execute(b,p,preloaded=bootstrap is not None,before_run=before,timeout=240,frame_limit=12000,
+                          expected_status=0xff93 if reset_required else 0)
         b._cmd_ok('KEY ALL up')
         require(number(at('exitStatus'))==0,'Demo EXIT failed')
-        require(b.memdump(saved['screen'],960)==saved['screenBytes'] and b.peek(752)==saved['cursor'] and b.peek(16)==saved['mask'],'Demo OS display/input restoration failed')
-        ownership(b,p,out)
+        require(b.memdump(saved['screen'],960)==saved['screenBytes'] and b.peek(752)==saved['cursor'],'Demo OS display restoration failed')
+        if reset_required:
+            descriptor=p['build']['task_storage']['BASE']+0x800
+            require(number(descriptor+45,1)==1 and pointer(descriptor+12)==pointer(descriptor+16)==0,
+                    'Offline SIO retained a caller buffer or lost its reset latch')
+        else:
+            require(b.peek(16)==saved['mask'],'Demo OS input restoration failed')
+            ownership(b,p,out)
         if aperture_pattern is not None:
             require(b.memdump(0x8000,4096)==aperture_pattern,'Shell changed the reserved VBXE aperture')
         if retire_manifest:
@@ -362,15 +390,17 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             require(b.memdump(boot['MANIFEST'],boot['MANIFEST_CAPACITY'])==bytes([0xd3])*boot['MANIFEST_CAPACITY'],
                     'OF816 shell reused retired manifest data')
         require(sha256(media_path)==manifest['artifacts'][media],'Read-only demo media changed')
+        if mounted:require(sha256(mounted)==mounted_hash,'Initially mounted media changed')
     return dict(status='pass',tier='development',bundle_manifest_sha256=sha256(out/'demo-manifest.json'),
         xex_sha256=sha256(out/'program.xex'),media_sha256=sha256(media_path),screenshot_sha256=sha256(out/'boot-smoke.png') if boot_smoke else None if stock_smoke or loading_smoke or cache_smoke else sha256(out/'walkthrough.png'),
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
-        baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=None if stock_smoke or showcase or editing else 7,
+        baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=None if stock_smoke or showcase or editing or disk_failure else 7,
+        disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Cooked 36/37-column edits, 255-byte command, BREAK recovery and physical Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked 36/37-column edits, 255-byte command, BREAK recovery and physical Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':
@@ -380,7 +410,8 @@ if __name__=='__main__':
     smoke.add_argument('--stock-smoke',action='store_true')
     smoke.add_argument('--loading-smoke',action='store_true',help='Check command loading and physical BREAK without the full walkthrough')
     smoke.add_argument('--editing',action='store_true',help='Physical long-line editing, BREAK and EOF')
+    smoke.add_argument('--disk-failure',choices=('missing','wrong'),help='Check offline console and matching-disk recovery')
     smoke.add_argument('--screenshots',action='store_true',help='Capture boot/TASKS and the documented walkthrough through OF816 autoboot')
-    args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,showcase=args.screenshots,editing=args.editing)
-    (out/('editing-results.json' if args.editing else 'screenshots-results.json' if args.screenshots else 'stock810-results.json' if args.stock_smoke else 'loading-results.json' if args.loading_smoke else 'demo-results.json')).write_text(json.dumps(record,indent=2)+'\n')
+    args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,showcase=args.screenshots,editing=args.editing,disk_failure=args.disk_failure)
+    (out/(args.disk_failure+'-disk-results.json' if args.disk_failure else 'editing-results.json' if args.editing else 'screenshots-results.json' if args.screenshots else 'stock810-results.json' if args.stock_smoke else 'loading-results.json' if args.loading_smoke else 'demo-results.json')).write_text(json.dumps(record,indent=2)+'\n')
     print('Packaged demo walkthrough passed')

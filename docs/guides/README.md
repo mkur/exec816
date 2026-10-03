@@ -5,6 +5,7 @@
 ## Running Exec816
 
 - [Demo](demo.md): build artifacts, machine setup and a walkthrough.
+- [Bitmap console preview](bitmap-console.md): optional 80×30 VBXE shell, setup and measured limits.
 - [Shell](shell.md): commands, paths, redirection and pipes.
 - [OF816 boot monitor](boot-monitor.md): interrupt autoboot and choose boot settings.
 

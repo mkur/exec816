@@ -171,6 +171,12 @@ with the disk geometry. To retain MyDOS, pass `--format mydos --output build/dem
 Both filesystem options use the filename `system.atr`; the format and geometry
 are recorded in the build manifests. Filesystem writes remain unsupported.
 
+Pass `--bitmap-console` for the optional [80×30 bitmap console preview](bitmap-console.md).
+The ZIP then also contains `bitmap-console/Exec-bitmap-console.xex`, its matching
+`system.atr` and GEM/font notices. Select that XEX explicitly with VBXE FX 1.26
+enabled. The normal OF816 boot remains the default; responsiveness acceptance
+for the bitmap preview remains open.
+
 To recapture both screenshots from an existing bundle, run:
 
 ```sh

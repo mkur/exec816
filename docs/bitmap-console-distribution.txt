@@ -1,0 +1,55 @@
+Exec816 bitmap console — development preview
+===========================================
+
+This optional XEX runs the shell and prime search in 80 x 30 text cells on
+a 640 x 240 VBXE bitmap. Full repaint and scrolling still exceed the design's
+responsiveness targets. This is a functional preview, not a release-qualified
+desktop. The standard Exec-of816.xex remains the default boot choice.
+
+Setup
+-----
+
+Follow the main README.txt for AltirraSDL, the included AltirraOS ROM, PAL,
+65C816 at 8x, shadow ROM, and 64K base RAM plus 4032K high memory (63 banks).
+In System > Configure System, enable VBXE with the FX 1.26 core at $D600.
+Keep SIO Patch and D: burst I/O disabled; use Generic + 57600 baud disk
+emulation and keep disks mounted when booting a new image.
+
+Mount this directory's system.atr as D1:, then boot Exec-bitmap-console.xex.
+Select the XEX explicitly; do not boot the ATR. Keep this matching disk
+mounted for the session. The direct bitmap XEX has no OF816 countdown or
+Forth handoff. The included ROM and licences are in the parent directory.
+
+Wait for the SYS: ready message and prompt. Try:
+
+    TASKS
+    MOUNT
+    CD SYS:
+    DIR
+    HELLO
+    TYPE README.TXT
+    MEM
+    HELLO | WC
+    CAT STORY.TXT | WC
+
+The pipes print 1 3 17 and 24 133 746 respectively. The shell occupies the
+upper 24 rows; the independent prime search uses the lower six. BREAK cancels
+input or a running command/pipeline. EXIT, or Ctrl-D on an empty input line,
+restores the OS display. Disk access is read-only. If the disk format is wrong,
+mount the matching disk and enter CD SYS: to retry. Booting without a disk can
+leave SIO offline after its timeout: mount the disk and cold-boot the XEX again.
+The console remains usable in that state, but EXIT parks for reset.
+
+The console uses a steady underline caret. Cooked editing keeps a 36-character
+visible tail, even on this wider display; command history is not implemented.
+A configured ST mouse on port 1 is allowed, but this console draws no pointer.
+Single-buffer drawing can show intermediate updates. An unquiesced hardware
+fault requires reset.
+
+Licences
+--------
+
+Exec816 licensing and source information are in the parent README.txt and
+EXEC816-LICENSING.md. Shared GEM drawing/font sources retain the included
+GEM-COPYING.txt, GEM-COPYING.LIB.txt, GEM-LICENSING.md and GEM-FONT-NOTICE.txt.
+All boot files and notices are covered by the parent's SHA256SUMS.

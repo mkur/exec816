@@ -21,7 +21,7 @@ def build(output,media_bundle,optimize=True):
         font_source='../selected/src/vdi/font8x8.c',
         artifacts={name:sha256(out/name) for name in ('program.xex','system.atr')},
         source_inputs={str(q.relative_to(ROOT)):sha256(q) for q in [ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'config/kernel.json',Path(__file__)]},
-        media_manifest_sha256=sha256(media_bundle/'demo-manifest.json'))
+        media_source_program_sha256=media['kernel']['xex_sha256'])
     (out/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
     return p
 

@@ -14,7 +14,7 @@ from library_paths import read_source
 from native_program import ROOT, build, compiler, require, sha256
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,bitmap_console=False):
     output=output.resolve();output.mkdir(parents=True,exist_ok=True)
     toolchain=compiler(compiler_dir)
     pin=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
@@ -78,9 +78,15 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False)
         graphics=output/'gem-vdi'
         record['graphics']=build_graphics(graphics)
     (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
+    bitmap=None
+    if bitmap_console:
+        from build_bitmap_artifact import build as build_bitmap
+        bitmap=output/'bitmap-console'
+        record['bitmap_console']=build_bitmap(bitmap,output)
+        (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
     # OF816 records this final manifest, including the optional artifact.
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
-    package(output/'of816',output/record['distribution'],graphics)
+    package(output/'of816',output/record['distribution'],graphics,bitmap)
     return record
 
 
@@ -91,5 +97,6 @@ if __name__=='__main__':
     parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs')
     parser.add_argument('--sector-bytes',type=int,choices=(128,256),default=128)
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
-    args=parser.parse_args();result=bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi)
+    parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
+    args=parser.parse_args();result=bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console)
     print(f'Demo distribution ready: {args.output}/{result["distribution"]}')

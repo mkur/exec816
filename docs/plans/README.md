@@ -61,9 +61,10 @@ assuming work is pending. Current behavior belongs in the
 ## Console and interaction
 
 - [Bitmap console design](gem4xe/bitmap-console-design.md) and
-  [implementation plan](gem4xe/bitmap-console-implementation-plan.md): proposed
-  B0–B9 work for an 80×30 VBXE bitmap backend, shared VDI batching, dirty text
-  spans and blitter scrolling, using the existing CON: model and console worker.
+  [implementation plan](gem4xe/bitmap-console-implementation-plan.md): functional
+  80×30 VBXE preview with shared VDI batching, dirty text and blitter scrolling,
+  using the existing CON: model and worker. Responsiveness acceptance remains
+  open; see the [preview guide](../guides/bitmap-console.md).
 - [Console interaction implementation plan](console-interaction-implementation-plan.md)
 - [Console input/output implementation plan](console-io-implementation-plan.md)
 - [Console size and drawing refactor](console-refactor-plan.md)

@@ -452,6 +452,21 @@ current contracts and fresh evidence agree. Mark B0–B9 complete only after all
 executable gates pass. Commit the artifact tooling/docs and execution record;
 publication of a GitHub release is a separate action.
 
+B9 development evidence: [extracted preview and OF816 controls](../../development/bitmap-console-b9.json).
+`tools/build_demo.py --bitmap-console` includes the separate bitmap XEX, matching
+disk and notices alongside the standard OF816 boot. The extracted images passed
+the shell/pipeline walkthrough, physical editing/EOF/BREAK, wrong-format disk
+retry, and missing-disk offline/reset behavior. Both standard OF816 routes passed
+disk commands, guards and cleanup. The [guide](../../guides/bitmap-console.md)
+uses an unmodified production screenshot. Archive membership and every checksum
+were verified; generated maps and execution records remain outside the ZIP.
+Reserved bank-zero delta is zero in all categories, including unused capacity.
+
+B0–B9 functional implementation and preview packaging are delivered. The B8
+responsiveness acceptance gate is **not complete**; this plan and design remain
+current until it is resolved. No release or physical-hardware qualification is
+implied by the focused development checks.
+
 ## Validation and memory reporting
 
 Use the [two-tier testing policy](../../contributing/testing.md). Documentation

@@ -3,8 +3,10 @@
 [Implementation plan](bitmap-console-implementation-plan.md) · [GEM work](README.md) ·
 [Console contract](../../reference/console.md) · [Roadmap](../../roadmap.md)
 
-Status: proposed, 2 October 2026. This note defines the next graphics milestone;
-it does not change the implemented console or claim achieved performance.
+Status: functional development preview implemented, 3 October 2026;
+responsiveness acceptance remains open. The baseline descriptions below record
+the starting point before B0. Use the linked console contract for current behavior
+and the implementation plan for executed slices and measurements.
 
 Build an 80×30 character-cell console on the existing 640×240 VBXE bitmap.
 Retain terminal contents in main RAM, keep expanded glyphs in VRAM, draw changed

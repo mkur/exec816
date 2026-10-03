@@ -15,9 +15,12 @@ LICENSE_FILES = {
 
 GEM_FILES = ('Exec-gem-vdi.xex', 'graphics.atr', 'README.txt', 'GEM-COPYING.txt',
              'GEM-COPYING.LIB.txt', 'GEM-LICENSING.md', 'GEM-FONT-NOTICE.txt')
+BITMAP_FILES = ('Exec-bitmap-console.xex', 'system.atr', 'README.txt',
+                'GEM-COPYING.txt', 'GEM-COPYING.LIB.txt', 'GEM-LICENSING.md',
+                'GEM-FONT-NOTICE.txt')
 
 
-def package(bundle, archive, graphics=None):
+def package(bundle, archive, graphics=None, bitmap=None):
     """Include only boot files and user documentation, checking recorded hashes."""
     record = json.loads((bundle/'of816.json').read_text())
     media = record['media']
@@ -54,6 +57,16 @@ def package(bundle, archive, graphics=None):
                 raise ValueError(f'Changed graphics artifact: {name}')
             files['gem-vdi/'+name] = content
         guide += '\nOptional graphics: see gem-vdi/README.txt. The default OF816 boot is unchanged.\n'
+    if bitmap is not None:
+        record = json.loads((bitmap/'bitmap.json').read_text())
+        if record.get('diagnostic') is not False or set(record['files']) != set(BITMAP_FILES):
+            raise ValueError('Incomplete or diagnostic bitmap artifact')
+        for name in BITMAP_FILES:
+            content = (bitmap/name).read_bytes()
+            if hashlib.sha256(content).hexdigest() != record['files'][name]:
+                raise ValueError(f'Changed bitmap artifact: {name}')
+            files['bitmap-console/'+name] = content
+        guide += '\nOptional bitmap shell preview: see bitmap-console/README.txt.\n'
     files['README.txt'] = guide.encode('utf-8')
     files['SHA256SUMS'] = ''.join(
         f'{hashlib.sha256(content).hexdigest()}  {name}\n'
@@ -74,5 +87,6 @@ if __name__ == '__main__':
     parser.add_argument('--bundle', type=Path, default=ROOT/'build/demo/of816')
     parser.add_argument('--output', type=Path, default=ROOT/'build/demo/exec816-demo.zip')
     parser.add_argument('--gem-vdi', type=Path, help='Optional graphics build directory')
+    parser.add_argument('--bitmap-console', type=Path, help='Optional bitmap shell build directory')
     args = parser.parse_args()
-    print('Demo distribution:', package(args.bundle, args.output, args.gem_vdi))
+    print('Demo distribution:', package(args.bundle, args.output, args.gem_vdi, args.bitmap_console))

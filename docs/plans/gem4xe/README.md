@@ -37,6 +37,9 @@ reservations. B0–B7 have focused development evidence, including
 [scrolling and caret integration](../../development/bitmap-console-b7.json).
 [B8 shell integration](../../development/bitmap-console-b8.json) adds functional
 SDFS/pipeline and ST coexistence checks; responsiveness acceptance remains open.
+The [optional bitmap preview](../../guides/bitmap-console.md) is packaged with
+the standard OF816 demo; [B9 evidence](../../development/bitmap-console-b9.json)
+records extracted-image execution and the current limitations.
 performance acceptance and packaging remain. Overlapping desktop windows remain
 later work.
 
