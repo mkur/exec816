@@ -58,3 +58,10 @@ class MouseTimerTraceTests(unittest.TestCase):
     def test_alarm_without_dispatch_rejected(self):
         with self.assertRaises(ValueError):
             shared_alarm_observations([(120,['cpu','0','0','8','002345'])],self.labels)
+
+    def test_window_keeps_preceding_physical_edge(self):
+        cpu = lambda pc: ['cpu','0','0','8',f'{pc:06x}']
+        events = [(100,['timer','100','0']), (110,['register','110','14','0']),
+                  (120,cpu(0x1234)), (130,cpu(0x2345))]
+        self.assertEqual(shared_alarm_observations(events,self.labels,105,140),[30])
+        self.assertEqual(shared_alarm_observations(events,self.labels,105,125),[])

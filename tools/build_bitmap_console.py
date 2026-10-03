@@ -78,7 +78,7 @@ RETURN
         checks=''
         for entry,packet in [(0xbffff,sy['ConsoleBitmapPacket']),(0xd0000,sy['ConsoleBitmapPacket']),
                              (sy['ConsoleBitmapEntry'],0xcfffe),(sy['ConsoleBitmapEntry'],0xdffce),
-                             (sy['ConsoleBitmapEntry'],sy['ConsoleBitmapPacket']+1),
+                             (sy['ConsoleBitmapEntry'],sy['ConsoleBitmapPacket']+1),(sy['ConsoleBitmapEntry'],0xdffc8),
                              (0x1000000,sy['ConsoleBitmapPacket'])]:
             checks+=f'  IF CONSOLEBITMAP.Bind(${entry:x},${packet:x})<>0 THEN\n    HEAPCORE.Abort($f733)\n  FI\n\n'
         binding=binding.replace('  BindDisplay()',checks+'  BindDisplay()',1)

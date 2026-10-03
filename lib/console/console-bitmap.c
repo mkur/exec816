@@ -7,7 +7,11 @@ void ConsoleBitmapEntry(void)
 {
     struct ConsoleBitmapPacket *p=&ConsoleBitmapPacket;
     switch (p->operation) {
-    case CON_BITMAP_OPEN: p->status=GemDrawingOpen(workout); break;
+    case CON_BITMAP_OPEN:
+        p->completionMask=0;
+        p->status=GemDrawingOpen(workout);
+        if (p->status==DISPLAY_OK) p->completionMask=GemDrawingCompletionMask();
+        break;
     case CON_BITMAP_CLOSE: p->status=GemDrawingClose(); break;
     case CON_BITMAP_TEXT:
         p->status=GemDrawingText(p->x,p->y,(const UBYTE *)p->text,p->width,

@@ -1,0 +1,639 @@
+{
+  "schema_version": 1,
+  "slice": "BI3",
+  "status": "pass",
+  "tier": "development",
+  "scope": "Worker waits on completion while preserving bounded input and READ. Exact scanout scenes, final WRITE/stop/destruction, pending presentation controls, raw input publication races, six engine fault cases and eight-Task physical SIO/ST load. Development checks only.",
+  "cases": [
+    {
+      "artifact": "build/blitter-irq/bi3-scroll/results.json",
+      "sha256": "45bc1f86706b6e9d9ee3e38a0123e39e6162da33a707c6c06ab25eb429e78bee",
+      "image_sha256": "b5e540788884a34d6e2fa7a0e966b5aba05aecdf2c5b19ccaad174aaa65f3e0b",
+      "mode": "opt",
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": [
+        93
+      ],
+      "completion_timing": {
+        "scope": "CPU observation boundaries. IRQ observation and adoption are upper bounds on hardware completion; exact BUSY edges unavailable.",
+        "scrolls": [
+          {
+            "start": 4303591519.0,
+            "worker_dp": 4352,
+            "polls": 1,
+            "waits": 1,
+            "yields": 0,
+            "irq": 4303618388.5,
+            "posted": 4303618443.5,
+            "expired": null,
+            "resumed": 4303620198.25,
+            "hardware_busy_end": null,
+            "adopt_begin": 4303623884.875,
+            "launch_to_adoption_upper_ms": 18.250258324534556,
+            "launch_to_irq_observation_upper_ms": 15.150998267498757,
+            "irq_to_post_ms": 0.031013040983733663,
+            "post_to_resumed_ms": 0.9894569757492115,
+            "post_to_adoption_ms": 3.068247016052068
+          },
+          {
+            "start": 4303911901.0,
+            "worker_dp": 4352,
+            "polls": 1,
+            "waits": 1,
+            "yields": 0,
+            "irq": 4303938680.5,
+            "posted": 4303938736.25,
+            "expired": null,
+            "resumed": 4303940458.625,
+            "hardware_busy_end": null,
+            "adopt_begin": 4303944146.375,
+            "launch_to_adoption_upper_ms": 18.18231157110656,
+            "launch_to_irq_observation_upper_ms": 15.100249654979919,
+            "irq_to_post_ms": 0.031435946088057304,
+            "post_to_resumed_ms": 0.9712015720792412,
+            "post_to_adoption_ms": 3.050625970038583
+          },
+          {
+            "start": 4304292753.125,
+            "worker_dp": 4352,
+            "polls": 1,
+            "waits": 2,
+            "yields": 0,
+            "irq": 4304318943.5,
+            "posted": 4304318999.25,
+            "expired": null,
+            "resumed": 4304320074.375,
+            "hardware_busy_end": null,
+            "adopt_begin": 4304323761.25,
+            "launch_to_adoption_upper_ms": 17.484659117340662,
+            "launch_to_irq_observation_upper_ms": 14.768057695533699,
+            "irq_to_post_ms": 0.031435946088057304,
+            "post_to_resumed_ms": 0.6062344670479392,
+            "post_to_adoption_ms": 2.6851654757189034
+          },
+          {
+            "start": 4304404521.0,
+            "worker_dp": 4352,
+            "polls": 1,
+            "waits": 2,
+            "yields": 0,
+            "irq": 4304433052.5,
+            "posted": 4304433108.125,
+            "expired": null,
+            "resumed": 4304434569.125,
+            "hardware_busy_end": null,
+            "adopt_begin": 4304438256.875,
+            "launch_to_adoption_upper_ms": 19.022764981765743,
+            "launch_to_irq_observation_upper_ms": 16.088155978679943,
+            "irq_to_post_ms": 0.03136546190400336,
+            "post_to_resumed_ms": 0.8238191432224523,
+            "post_to_adoption_ms": 2.903243541181794
+          },
+          {
+            "start": 4304510804.0,
+            "worker_dp": 4352,
+            "polls": 1,
+            "waits": 2,
+            "yields": 0,
+            "irq": 4304539314.5,
+            "posted": 4304539370.25,
+            "expired": null,
+            "resumed": 4304540556.5,
+            "hardware_busy_end": null,
+            "adopt_begin": 4304544244.375,
+            "launch_to_adoption_upper_ms": 18.856140370662228,
+            "launch_to_irq_observation_upper_ms": 16.07631463575888,
+            "irq_to_post_ms": 0.031435946088057304,
+            "post_to_resumed_ms": 0.6688949066718919,
+            "post_to_adoption_ms": 2.7483897888152877
+          },
+          {
+            "start": 4305970908.0,
+            "worker_dp": 4352,
+            "polls": 1,
+            "waits": 1,
+            "yields": 0,
+            "irq": 4305971480.5,
+            "posted": 4305971510.75,
+            "expired": null,
+            "resumed": 4305972869.25,
+            "hardware_busy_end": null,
+            "adopt_begin": 4305976556.875,
+            "launch_to_adoption_upper_ms": 3.185250761581609,
+            "launch_to_irq_observation_upper_ms": 0.32281756296704583,
+            "irq_to_post_ms": 0.017057172541053513,
+            "post_to_resumed_ms": 0.7660221122982214,
+            "post_to_adoption_ms": 2.8453760260735095
+          },
+          {
+            "start": 4306289511.0,
+            "worker_dp": 4352,
+            "polls": 1,
+            "waits": 1,
+            "yields": 0,
+            "irq": 4306289541.5,
+            "posted": 4306289571.75,
+            "expired": null,
+            "resumed": 4306291265.25,
+            "hardware_busy_end": null,
+            "adopt_begin": 4306294952.75,
+            "launch_to_adoption_upper_ms": 3.06845846860423,
+            "launch_to_irq_observation_upper_ms": 0.017198140909161393,
+            "irq_to_post_ms": 0.017057172541053513,
+            "post_to_resumed_ms": 0.954919725562781,
+            "post_to_adoption_ms": 3.034203155154015
+          }
+        ]
+      },
+      "isolated_scroll_ms": {
+        "2": [
+          32.5557988043063
+        ],
+        "3": [
+          32.564397874760886
+        ]
+      }
+    },
+    {
+      "artifact": "build/blitter-irq/bi3-scroll/results-replay.json",
+      "sha256": "d233e6881006bc45895cd7767a9a8984c72e0b317af684fff29ea3a28ec5930e",
+      "image_sha256": "b5e540788884a34d6e2fa7a0e966b5aba05aecdf2c5b19ccaad174aaa65f3e0b",
+      "mode": "opt",
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": [
+        93
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi3-control/results.json",
+      "sha256": "0268e01b14f562fd9d1df8804986cfbddea81599789e817ae88651ac638c732b",
+      "image_sha256": "933638298fc7ce173daf38f106393bd93a3d5529e29a25eb942af1d9bc3432eb",
+      "mode": "opt",
+      "status": "pass",
+      "cases": [
+        {
+          "variant": 5,
+          "checks": [
+            38
+          ],
+          "pixels_sha256": "5a29ae81a24d991bb7a079ab25c1bdcc0b20e78a2e1c518443121567e12cfceb",
+          "pendingReads": 1,
+          "busyReads": 1
+        },
+        {
+          "variant": 10,
+          "checks": [
+            38
+          ],
+          "pendingReads": 1,
+          "busyReads": 0
+        },
+        {
+          "variant": 11,
+          "checks": [
+            43
+          ],
+          "pendingReads": 1,
+          "busyReads": 0
+        },
+        {
+          "variant": 12,
+          "checks": [
+            42
+          ],
+          "pixels_sha256": "5a29ae81a24d991bb7a079ab25c1bdcc0b20e78a2e1c518443121567e12cfceb",
+          "pendingReads": 1,
+          "busyReads": 1
+        }
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi3-fault/results.json",
+      "sha256": "034ac655b7c038eb68d4d789495e199b111a1658d51f2cdb8c5ea284383f81cc",
+      "image_sha256": "68ef08942acc7516d8cc9bf7ae805847b5a27af32a0aee61c3504722c613a0c3",
+      "mode": "opt",
+      "status": "pass",
+      "cases": [
+        {
+          "fault": 1,
+          "checks": [
+            9
+          ]
+        },
+        {
+          "fault": 2,
+          "checks": [
+            2
+          ]
+        },
+        {
+          "fault": 3,
+          "checks": [
+            39
+          ]
+        },
+        {
+          "fault": 4,
+          "checks": [
+            32
+          ]
+        },
+        {
+          "fault": 5,
+          "checks": [
+            9
+          ]
+        },
+        {
+          "fault": 6,
+          "checks": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi3-wake-raw/results.json",
+      "sha256": "7ef55753d9ca123af9200e127eda5bb8ca1246837bd36e6349db0c7d308663b8",
+      "image_sha256": "122f77bf34cdba181620e7a00ad9e865ae341d055144c6d616792f5c79c0a191",
+      "mode": "raw",
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": [
+        184
+      ]
+    },
+    {
+      "artifact": "build/blitter-irq/bi3-irq/results.json",
+      "sha256": "ca8563f2830688ff565cf31410e9853ce2d27a08e010e71a796409341b4a992e",
+      "image_sha256": "42c88f800211cc9240f39be38a3a060dcdcbf0555629c892aa1c6b5fd33c2c72",
+      "mode": "opt",
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "checks": [
+        17
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 96,
+          "remaining_above_floor": 1184
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 39,
+          "remaining_above_floor": 217
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 167,
+          "remaining_above_floor": 1113
+        }
+      }
+    },
+    {
+      "artifact": "build/blitter-irq/bi3-loaded-final/results.json",
+      "sha256": "87bb22118f02bb3a1cca3bc7d47e1f5a6ff81ebfaf92d0160ccce096ba955fec",
+      "image_sha256": "02a8a818b0bbe73a7a8f9a7f76cf67b884c2b09905a0d1b81702e3654538adbb",
+      "mode": "opt",
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "alarms": {
+          "sio_alarm": {
+            "service": {
+              "count": 504,
+              "min_us": 24.880916971040868,
+              "mean_us": 25.56827761513832,
+              "max_us": 37.28613336453433,
+              "median_us": 24.951401155094807,
+              "p95_us": 26.643021572389372,
+              "p99_us": 32.28175629670458
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            },
+            "boundary": "Acknowledged physical timer-1 edge to armed SIO callback; pointer-only ticks checked separately"
+          },
+          "sio_watchdog": {
+            "service": {
+              "count": 985,
+              "min_us": 8.317133718364937,
+              "mean_us": 22.461341625440994,
+              "max_us": 80.56342237365357,
+              "median_us": 21.286223584289925,
+              "p95_us": 29.180452198331217,
+              "p99_us": 52.863138040455105
+            },
+            "cancelled_or_terminal": {
+              "count": 0,
+              "max_us": null
+            },
+            "boundary": "sio_watchdog"
+          }
+        },
+        "deadline_misses": {
+          "rx": 0,
+          "tx": 0,
+          "tx_gaps": 0
+        }
+      },
+      "mouse": {
+        "sample_gaps": {
+          "count": 58078,
+          "min_us": 57.65606255612303,
+          "mean_us": 126.37270502492457,
+          "max_us": 271.01168768739984
+        },
+        "sample_cost": {
+          "count": 58079,
+          "min_us": 6.343576564854612,
+          "mean_us": 6.712183155723452,
+          "max_us": 73.86742488852926
+        },
+        "native_irq_service": {
+          "count": 59674,
+          "min_us": 31.858851192380943,
+          "mean_us": 43.92103683993907,
+          "max_us": 172.05189327566788
+        },
+        "timer_accounting": {
+          "physical_edges": 58086,
+          "logical_dispatches": 58079,
+          "alarm_services": 504,
+          "pointer_samples": 58079,
+          "duplicate_dispatches": 0,
+          "duplicate_backend_services": 0
+        }
+      },
+      "input_upper_ms": {
+        "Z": 127.15910676803233,
+        "A": 101.92238563588717
+      }
+    }
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "upper_changes": {
+    "bitmap_packet_bytes": [
+      56,
+      60
+    ],
+    "cached_mask_bytes": 4,
+    "worker_frame_bytes_added": 4,
+    "task_reservation_delta": 0
+  },
+  "host_checks": {
+    "tests": 319,
+    "skipped": 4
+  },
+  "fixes": [
+    "All fixed worker signals reserved before display initialization.",
+    "Queued writes and display controls do not make DMA-blocked work runnable; completion-ready adoption remains runnable through PRESENTING.",
+    "Loaded trial exceeded the unchanged SIO watchdog limit at 103.4 us during emulation IRQ entry. Inactive VBXE source now chains without native context save; rerun max 80.563 us, no SIO violations.",
+    "Timer trace retains edges preceding its observation window; regression rejects unacknowledged or duplicate dispatches."
+  ],
+  "limitations": [
+    "Isolated end-to-end scroll remains 32.56 ms; fewer completion checks are not a faster hardware copy.",
+    "Loaded visible-input bounds remain above 40 ms. Full phase sweep and final CPU accounting follow in BI5.",
+    "The first scroll scene run preceded the inactive emulation fast path; final IRQ and loaded runs include it. Final raw/optimized race coverage follows in BI4."
+  ]
+}

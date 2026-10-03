@@ -4,8 +4,9 @@ PUBLIC TYPE Packet=[
   LONGCARD text
   CARD x,y,width,height,foreground,background
   DISPLAY.BitmapCopy copy
-  LONGCARD token
+  LONGCARD token,completionMask
 ]
+PUBLIC CONST PACKET_BYTES=60
 PUBLIC TYPE Binding=[ADDRESS entry BYTE POINTER packet BYTE enabled,failed]
 PUBLIC CONST OP_OPEN=1
 PUBLIC CONST OP_CLOSE=2

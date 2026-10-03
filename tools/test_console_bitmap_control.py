@@ -31,12 +31,12 @@ def run(out,mode,replay=False,cases=None):
         s=s.replace(needle,needle+'\n  IF CONSOLEBITMAP.Pending()<>0 THEN\n    BITMAPCONTROLPROBE.ReadPending()\n  FI')
         path.write_text(s)
         source=ROOT/'lib/console/console-bitmap-display.inc'
-        text=source.read_text().replace('PUBLIC PROC Poll()\n','PUBLIC PROC Poll()\n  LET pendingControl=CONSOLEWINDOWS.Registry()\n',1);needle='    CONSOLEBITMAP.Poll()'
+        text=source.read_text().replace('PUBLIC PROC Poll(BYTE notified)\n','PUBLIC PROC Poll(BYTE notified)\n  LET pendingControl=CONSOLEWINDOWS.Registry()\n  IF notified<>0 THEN\n    BITMAPCONTROLPROBE.heldNotice=1\n  FI\n  notified=BITMAPCONTROLPROBE.heldNotice\n',1);needle='    CONSOLEBITMAP.Poll()'
         require(text.count(needle)==1,'Async completion boundary changed')
         text=text.replace(needle,
             '    IF BITMAPCONTROLPROBE.hold=2 AND\n'
             '        pendingControl.control.state<>CONSOLETYPES.CTL_PENDING THEN\n'
-            '      RETURN\n    FI\n\n'+needle)
+            '      RETURN\n    FI\n\n'+needle+'\n    BITMAPCONTROLPROBE.heldNotice=0')
         target=directory/'bitmap-control.inc';target.write_text(text)
         path=directory/'consoledisplay.act'
         path.write_text(path.read_text().replace('USE A816MEMORY\n','USE A816MEMORY\nUSE BITMAPCONTROLPROBE\n',1).replace(str(source),str(target)))

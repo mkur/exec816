@@ -24,6 +24,7 @@ def analyze_events(events, marks):
     names = {}
     for name, spec in marks.items():
         names.setdefault(spec['entry'], []).append(name)
+    launch_name = 'async_launch' if 'async_launch' in marks else 'launch'
     submitted = set()
     active = None
     rows = []
@@ -34,7 +35,7 @@ def analyze_events(events, marks):
         for name in names.get(int(event[4], 16), []):
             if name == 'GemDrawingScrollStart':
                 submitted.add(dp)
-            elif name == 'launch' and dp in submitted:
+            elif name == launch_name and dp in submitted:
                 require(active is None, 'Overlapping scroll completion trace')
                 submitted.remove(dp)
                 active = dict(start=tick, worker_dp=dp, polls=0, waits=0,

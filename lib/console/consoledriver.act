@@ -294,18 +294,7 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
     RETURN(0)
   FI
 
-  IF EXEC.AllocSignal(30)<>30 THEN
-    RETURN(0)
-  FI
-
-  IF EXEC.AllocSignal(31)<>31 THEN
-    EXEC.FreeSignal(30)
-    RETURN(0)
-  FI
-
   IF CONSOLECAPTURE.Acquire()=0 THEN
-    EXEC.FreeSignal(31)
-    EXEC.FreeSignal(30)
     RETURN(0)
   FI
 
@@ -321,8 +310,6 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   EXEC.Permit()
   IF registered=0 THEN
     CONSOLECAPTURE.Release()
-    EXEC.FreeSignal(30)
-    EXEC.FreeSignal(31)
     RETURN(0)
   FI
 
@@ -370,14 +357,14 @@ RETURN
 
 ; Acknowledge input/stop once per turn, preserving Wait's already-consumed bits.
 ; Request and unrelated signals stay pending until their ordinary consumer.
-LONGCARD FUNC Collect(LONGCARD bits)
+LONGCARD FUNC Collect(LONGCARD bits,displayMask)
 
-RETURN(bits OR EXEC.SetSignal(0,STOP_MASK OR CONSOLECAPTURE.WAKE_MASK))
+RETURN(bits OR EXEC.SetSignal(0,STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR displayMask))
 
 ; One bounded turn per borrowed instance. No request or instance pointer remains
 ; borrowed across Yield/Wait, and replies publish ownership exactly once.
 PUBLIC PROC Worker()
-  LONGCARD bits
+  LONGCARD bits,displayMask
   BYTE again,writing,registered,stopping,accepted,inputPending
   CONSOLETYPES.Instance POINTER instance
   CONSOLETYPES.Window POINTER entry
@@ -394,33 +381,48 @@ PUBLIC PROC Worker()
 
   EXEC.Permit()
 
-  IF Initialize(service,defaultInstance)=0 THEN
-    FreeStorage(service,defaultInstance)
-    service.error=CARD(EXEC.IOERR_OPENFAIL)
-    EXEC.Forbid()
-    RetireWorker(service)
-    RETURN
-  FI
-
+  ; Reserve request, input and resident-stop bits before Open allocates
+  ; the display completion signal. Every failure releases the acquired prefix.
   registered=0
-  IF EXEC.AllocSignal(29)=29 THEN
-    registered=EXEC.RegisterResident($20000000)
+  IF EXEC.AllocSignal(31)=31 THEN
+    IF EXEC.AllocSignal(30)=30 THEN
+      IF EXEC.AllocSignal(29)=29 THEN
+        registered=EXEC.RegisterResident(STOP_MASK)
+        IF registered=0 THEN
+          EXEC.FreeSignal(29)
+        FI
+      FI
+
+      IF registered=0 THEN
+        EXEC.FreeSignal(30)
+      FI
+    FI
+
     IF registered=0 THEN
-      EXEC.FreeSignal(29)
+      EXEC.FreeSignal(31)
     FI
   FI
 
   IF registered=0 THEN
-    CONSOLECAPTURE.Release()
-    EXEC.FreeSignal(30)
-    EXEC.FreeSignal(31)
-    FreeStorage(service,defaultInstance)
     service.error=CARD(EXEC.IOERR_OPENFAIL)
     EXEC.Forbid()
     RetireWorker(service)
     RETURN
   FI
 
+  IF Initialize(service,defaultInstance)=0 THEN
+    FreeStorage(service,defaultInstance)
+    registered=EXEC.UnregisterResident()
+    EXEC.FreeSignal(29)
+    EXEC.FreeSignal(30)
+    EXEC.FreeSignal(31)
+    service.error=CARD(EXEC.IOERR_OPENFAIL)
+    EXEC.Forbid()
+    RetireWorker(service)
+    RETURN
+  FI
+
+  displayMask=CONSOLEBITMAP.Mask()
   EXEC.Forbid()
   IF service.stop=0 THEN
     service.state=2
@@ -436,12 +438,12 @@ PUBLIC PROC Worker()
   inputPending=1
   ; Stop may be requested after the final write reply but before DMA retires.
   WHILE service.stop=0 OR CONSOLEBITMAP.Pending()<>0 DO
-    bits=Collect(bits)
+    bits=Collect(bits,displayMask)
     IF (bits & STOP_MASK)<>0 THEN
       stopping=1
     FI
 
-    CONSOLEDISPLAY.Poll()
+    CONSOLEDISPLAY.Poll((bits & displayMask)<>0)
     IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
       EXEC.Forbid()
       accepted=RequestStop(service)
@@ -482,13 +484,17 @@ PUBLIC PROC Worker()
     FI
 
     IF CONSOLEBITMAP.Pending()<>0 THEN
-      EXEC.Yield()
+      IF Runnable(service,inputPending)<>0 THEN
+        EXEC.Yield()
+      ELSE
+        bits=EXEC.Wait($e0000000 OR displayMask)
+      FI
     ELSEIF again=0 THEN
       IF writing<>0 THEN
         EXEC.Yield()
       ELSEIF Runnable(service,inputPending)=0 THEN
         ; Never clear the request/input signals between this hint and Wait.
-        bits=EXEC.Wait($e0000000)
+        bits=EXEC.Wait($e0000000 OR displayMask)
       ELSE
         EXEC.Yield()
       FI

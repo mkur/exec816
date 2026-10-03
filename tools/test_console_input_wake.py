@@ -20,15 +20,15 @@ def run(out,mode,bitmap=False,replay=False):
         directory=original(*args,**kwargs)
         for name,replacements in {
             'consoledriver.act':[
-                ('    bits=Collect(bits)','    INPUTWAKEPROBE.Point(1)\n    bits=Collect(bits)\n    INPUTWAKEPROBE.Point(2)'),
-                ('        bits=EXEC.Wait($e0000000)','        INPUTWAKEPROBE.Point(4)\n        bits=EXEC.Wait($e0000000)'),
+                ('    bits=Collect(bits,displayMask)','    INPUTWAKEPROBE.Point(1)\n    bits=Collect(bits,displayMask)\n    INPUTWAKEPROBE.Point(2)'),
+                ('        bits=EXEC.Wait($e0000000 OR displayMask)','        INPUTWAKEPROBE.Point(4)\n        bits=EXEC.Wait($e0000000 OR displayMask)'),
                 ('          CONSOLEDISPLAY.Advance(view,instance,entry.unit)','          INPUTWAKEPROBE.Point(6)\n          CONSOLEDISPLAY.Advance(view,instance,entry.unit)')],
             'consoleinput.act': [('    IF status=INPUT.EMPTY THEN\n      EXIT','    IF status=INPUT.EMPTY THEN\n      INPUTWAKEPROBE.Point(3)\n      EXIT')],
             'input.act': [('      index==+1\n    UNTIL raw=', '      index==+1\n      IF index=RAW_SLOTS THEN\n        INPUTWAKEPROBE.Point(5)\n      FI\n    UNTIL raw=')]
         }.items():
             path=directory/name;s=path.read_text().replace('USE EXEC\n','USE EXEC\nUSE INPUTWAKEPROBE\n',1)
             for old,new in replacements:
-                require(s.count(old)==1,'Publication boundary changed: '+name+': '+old);s=s.replace(old,new)
+                require(s.count(old)==(2 if 'bits=EXEC.Wait' in old else 1),'Publication boundary changed: '+name+': '+old);s=s.replace(old,new)
             path.write_text(s)
         return directory
     generate_tasks.policy_modules=instrument

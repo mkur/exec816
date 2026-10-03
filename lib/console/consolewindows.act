@@ -97,6 +97,19 @@ PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
 
   instance=CONSOLETYPES.Instance POINTER(entry.instance)
   view=CONSOLETYPES.Presentation POINTER(entry.view)
+  IF instance.readReady<>0 THEN
+    IF instance.readReady=1 OR instance.readCancel<>0 OR instance.inputCount<>0
+        OR instance.inputLost<>0 OR CONSOLEBITMAP.Failed()<>0 THEN
+      RETURN(1)
+    FI
+  FI
+
+  ; During DMA only input/READ can advance. Writes, caret and dirty cells
+  ; retain their queues without keeping the worker runnable.
+  IF CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN(0)
+  FI
+
   IF view.scrollState<>0 THEN
     RETURN(1)
   FI
@@ -104,13 +117,6 @@ PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
   IF instance.write<>BYTE POINTER(0)
       OR EXECLISTS.IsMinListEmpty(@instance.writes)=0 THEN
     RETURN(1)
-  FI
-
-  IF instance.readReady<>0 THEN
-    IF instance.readReady=1 OR instance.readCancel<>0 OR instance.inputCount<>0
-        OR instance.inputLost<>0 OR CONSOLEBITMAP.Failed()<>0 THEN
-      RETURN(1)
-    FI
   FI
 
   IF view.visible<>0 THEN

@@ -78,7 +78,7 @@ def instrument_loaded(text,phase):
     text=replace_once(text,"    marks['sector_end']=sector_end_marker(p)",
         "    from bitmap_console_performance import markers as drawing_markers\n"
         "    details=drawing_markers(p,json.loads((p['output'].parent/'c-image.json').read_text()),p['output'].parent/'drawing')\n"
-        "    marks['rectangle_launch']=details['launch']['entry']\n"
+        "    marks['rectangle_launch']=details.get('async_launch',details['launch'])['entry']\n"
         "    marks['rectangle_complete']=routine('M_CONSOLEDISPLAY_BITMAPCOMPLETE_')\n"
         "    marks['input_service']=routine('M_CONSOLEINPUT_SERVICE_')\n"
         "    marks['sector_end']=sector_end_marker(p)")

@@ -1,5 +1,5 @@
 MODULE BITMAPCONTROLPROBE
-PUBLIC BYTE hold,pendingReads,busyReads
+PUBLIC BYTE hold,pendingReads,busyReads,heldNotice
 BYTE blitter=$d653
 
 ; Fixture only: sample the unmodified hardware status after the READ reply.

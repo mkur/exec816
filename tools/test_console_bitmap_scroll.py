@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Independent scanout oracle for scrolls, narrow/hidden tiles and caret."""
-import argparse,json
+import argparse,json,shutil
 from pathlib import Path
 import adapter_state as adapter
 from build_bitmap_console import build_bitmap
@@ -9,6 +9,7 @@ from os_boundary import emulator,run_to
 from test_mouse_observe import PIN,BRIDGE,ROM
 from test_dos_stack import execute,ownership
 from test_cooperative import data
+from stack_budget import stack_usage
 from gem_render_oracle import Raster,font_bytes
 from test_gem_interactive import pixels
 from bitmap_console_trace import observation,intervals
@@ -61,7 +62,8 @@ def run(out,mode,replay=False,observe=False,performance=False):
             require(b.memdump(0x2f0,1)==saved['cursor'] and b.memdump(0x208,2)==saved['input'],'OS input not restored')
             if observe:b.profile_stop()
             ownership(b,p,p['output'])
-            result.update(runtime=runtime,checks=data(b,p['image'],'checks',True))
+            result.update(runtime=runtime,checks=data(b,p['image'],'checks',True),
+                          stack_usage=stack_usage(b,p['build']['memory']))
         if observe:
             result['operations']=intervals(out/'emulator.log',marks,len(result['observations']))
             for sample in result['operations']:
@@ -75,6 +77,11 @@ def run(out,mode,replay=False,observe=False,performance=False):
             result['performance']=summarize(out/'emulator.log',timing,result['operations'])
             from blitter_completion_trace import analyze
             result['completion_timing']=analyze(out/'emulator.log',timing)
+            rows=result['completion_timing']['scrolls']
+            require(rows and all(row['polls']==1 and row['waits']>=1 and row['yields']==0
+                    and row['irq'] is not None and row['expired'] is None for row in rows),
+                    'Scroll worker did not wait for one completion notification')
+        if observe:shutil.copyfile(out/'emulator.log',out/'observed-emulator.log')
         result['status']='pass'
     except Exception as error:result.update(status='fail',error=str(error));raise
     finally:(out/('results-replay.json' if replay and not observe else 'results.json')).write_text(json.dumps(result,indent=2)+'\n')

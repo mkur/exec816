@@ -7,6 +7,7 @@ USE HEAPCORE
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-bitmap-types.inc"
 BYTE drawingPending
+LONGCARD completionMask
 
 PUBLIC EXTERNAL PROC Call(ADDRESS entry)
 
@@ -33,7 +34,7 @@ PUBLIC BYTE FUNC Bind(LONGCARD entry,packet)
   LET state=GetBinding()
   LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
   IF service.state<>0 OR state.enabled<>0 OR entry<$c0000 OR entry>$cffff
-      OR packet<$d0000 OR packet>$dffc8 OR (packet & 1)<>0 THEN
+      OR packet<$d0000 OR packet>LONGCARD($e0000)-PACKET_BYTES OR (packet & 1)<>0 THEN
     RETURN(0)
   FI
 
@@ -82,6 +83,7 @@ PUBLIC BYTE FUNC Run(CARD operation)
 RETURN(1)
 
 PUBLIC BYTE FUNC Open()
+  BYTE ignored
 
   LET state=GetBinding()
   state.failed=0
@@ -91,6 +93,13 @@ PUBLIC BYTE FUNC Open()
   FI
 
   drawingPending=0
+  LET packet=GetPacket()
+  completionMask=packet.completionMask
+  IF completionMask=0 THEN
+    ignored=Run(OP_CLOSE)
+    state.failed=1
+    RETURN(0)
+  FI
 
 RETURN(1)
 
@@ -99,8 +108,14 @@ PUBLIC PROC Close()
 
   ignored=Run(OP_CLOSE)
   drawingPending=0
+  completionMask=0
 
 RETURN
+
+; Cached only for the owning worker's scheduling; no drawing authority.
+PUBLIC LONGCARD FUNC Mask()
+
+RETURN(completionMask)
 
 PUBLIC BYTE FUNC Fill(CARD left,top,width,height,pen)
 

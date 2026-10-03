@@ -8,7 +8,7 @@ from sio_concurrent_trace import LIMITS,alarm_observations
 from test_signal_concurrency import masked_intervals
 from mydos_fixtures import Image
 
-def shared_alarm_observations(events, marks):
+def shared_alarm_observations(events, marks, start=None, stop=None):
     """Pair armed SIO callbacks with the physical latch their tick consumed.
 
     Timer 1 also services pointer-only ticks. Those are not SIO alarm deadlines;
@@ -33,7 +33,8 @@ def shared_alarm_observations(events, marks):
             elif pc == marks['sio_alarm']:
                 if dispatch is None:
                     raise ValueError('SIO alarm without a unique shared timer dispatch')
-                serviced.append(tick - dispatch)
+                if (start is None or tick>=start) and (stop is None or tick<=stop):
+                    serviced.append(tick - dispatch)
                 dispatch = None
     return serviced
 
@@ -102,7 +103,9 @@ def analyze(path,marks,media,size,speed,file_bytes,key_count=8,keyboard_boundary
     result['alarms']={}
     for channel,name in ((0,'sio_alarm'),(1,'sio_watchdog')):
         if shared_timer and channel==0:
-            serviced=shared_alarm_observations(active,marks)
+            # Preserve a timer edge latched before the first SIO start marker.
+            # The acknowledgement/dispatch may fall just inside that window.
+            serviced=shared_alarm_observations(events,marks,starts[0],stop)
             cancelled,unserviced=[],[]
             service='Acknowledged physical timer-1 edge to armed SIO callback; pointer-only ticks checked separately'
         else:

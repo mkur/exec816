@@ -180,9 +180,9 @@ blitter_reset_end:
 ; Return carry set if this owned source was acknowledged.
 .a8
 blitter_irq_service:
-    lda f:BV_BINDING+T_BINDING_ACTIVE
-    beq blitter_irq_none
     lda f:BV_CONTROL
+    beq blitter_irq_none
+    lda f:BV_BINDING+T_BINDING_ACTIVE
     beq blitter_irq_none
     lda f:$d654
     and #1
@@ -251,6 +251,16 @@ blitter_watchdog_done:
 .i8
 blitter_emulation_entry:
     php
+    pha
+    ; Most POKEY IRQs have no armed display source. Preserve the ROM entry
+    ; exactly, without a native context save or slow VBXE register read.
+    lda f:BV_CONTROL
+    bne blitter_emulation_active
+    pla
+    plp
+    jmp (blitter_saved_irq)
+blitter_emulation_active:
+    pla
     clc
     xce
     php

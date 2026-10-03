@@ -12,4 +12,5 @@ offsetof(struct ConsoleBitmapPacket,foreground),
 offsetof(struct ConsoleBitmapPacket,background),
 offsetof(struct ConsoleBitmapPacket,copy),
 offsetof(struct ConsoleBitmapPacket,token),
+offsetof(struct ConsoleBitmapPacket,completionMask),
 };

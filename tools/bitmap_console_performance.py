@@ -94,6 +94,8 @@ def markers(program,foreign,output):
             ret=re.search(r'\\ ([0-9a-f]{6}) 6b\s+(?:`[^`]+`: *)?rtl',line)
             if current=='idle' and ret:result['idle']['returns'].append(foreign['symbols']['idle']+int(ret[1],16))
     require(result.get('idle',{}).get('returns') and 'launch' in result,'Missing hardware fence markers')
+    if 'blitter_launched' in program['labels']:
+        result['async_launch']=dict(entry=program['labels']['blitter_launched'],returns=[])
     from blitter_completion_trace import markers as completion_markers
     result.update(completion_markers(program))
     return result
@@ -112,7 +114,7 @@ def spans(path,marks):
                 if name in ('complete_scroll','bitmap_complete') and dp in launch:
                     start=launch.pop(dp)
                     samples.append(dict(kind='launch_to_idle',dp=dp,start=start,end=tick,ms=(tick-start)/BASE_HZ*1000))
-                if name=='launch':
+                if name in ('launch','async_launch'):
                     require(dp not in launch,'Overlapping hardware launch');launch[dp]=tick
                 elif name=='repaint' or m.get('entry_only'):
                     samples.append(dict(kind=name,dp=dp,start=tick,end=tick,ms=0))

@@ -87,10 +87,10 @@ BYTE FUNC BitmapComplete()
 RETURN(1)
 
 ; This runs even when a presentation transaction prevents normal borrows.
-; Poll once per turn; retire its identity before another instance can launch.
-PUBLIC PROC Poll()
+; Query only on a notification; retained adoption stays runnable afterward.
+PUBLIC PROC Poll(BYTE notified)
 
-  IF CONSOLEBITMAP.Pending()<>0 THEN
+  IF notified<>0 AND CONSOLEBITMAP.Pending()<>0 THEN
     CONSOLEBITMAP.Poll()
     IF CONSOLEBITMAP.Pending()=0 THEN
       bitmapReady=1
@@ -104,6 +104,10 @@ PUBLIC PROC Poll()
   FI
 
 RETURN
+
+PUBLIC BYTE FUNC CompletionReady()
+
+RETURN(bitmapReady)
 
 ; One scroll submission owns copy and bottom fill. Clear retains bounded fills.
 PUBLIC PROC Advance(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
