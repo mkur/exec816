@@ -11,11 +11,11 @@ TYPES = {'u8': ('BYTE', 'UBYTE', 1), 'u16': ('CARD', 'UWORD', 2),
          'TaskLease': ('EXEC.TaskLease', 'struct TaskLease', 12)}
 PROTOTYPES = '''/* Acquire/Release validate registration lifetime. Keep the original lease
  * and signal live until successful Release; only its owner may Take/Release.
- * Take/Pending trust that contract and writable, aligned, bank-contained output
+ * Ordinary operations trust that contract and writable, aligned, bank-contained output
  * storage in production. Full per-use audits require --input-diagnostics.
  * Output buffers are borrowed only for the call; EMPTY leaves all bytes intact.
  * Shared Pending/route users must stop before owner Release. C huge-pointer
- * shape checks always precede narrowing. Route calls still audit until IR3.
+ * shape checks always precede narrowing. Dynamic route and queue checks remain.
  */
 UWORD InputAcquire(struct InputLease *lease, const struct InputConfig *config);
 UWORD InputCreateRoute(struct InputLease *lease, UWORD flags, ULONG *tag);

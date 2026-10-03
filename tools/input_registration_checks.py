@@ -16,7 +16,7 @@ def reachable(graph, start):
     return found
 
 
-def audit_paths(program, operations=('TAKE', 'PENDING')):
+def audit_paths(program, operations=('TAKE', 'PENDING', 'CREATEROUTE', 'PUBLISHROUTE', 'RETIREROUTE', 'DISCARD')):
     image = program['image']
     decoder = {'__name__': 'input_decoder'}
     path = ROOT/'build/actionc/tools/disassemble65816.py'

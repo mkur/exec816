@@ -10,7 +10,7 @@ INPUT.Config config
 INPUT.Event event,alternate
 EXEC.TaskLease peerHold
 CARD checks,pending
-LONGCARD tag
+LONGCARD tag,peerTag,previousAcquisition
 BYTE finished,peerFinished
 
 PROC Require(BYTE okay)
@@ -33,6 +33,14 @@ PROC Peer()
 
   Require(INPUT.Release(@lease)=INPUT.INVALID_OWNER)
   Require(INPUT.Pending(@lease,@pending)=INPUT.OK AND pending=0)
+  Require(INPUT.CreateRoute(@lease,0,@peerTag)=INPUT.OK)
+  Require(INPUT.Discard(@lease,peerTag)=INPUT.OK)
+  IF config.source=INPUT.SOURCE_POINTER THEN
+    Require(INPUT.RetireRoute(@lease,peerTag)=INPUT.BUSY)
+  ELSE
+    Require(INPUT.RetireRoute(@lease,peerTag)=INPUT.OK)
+  FI
+  ; Pointer Discard retains loss; consume it in the owning Task below.
   peerFinished=1
   WHILE peerHold.task<>NULL DO
     EXEC.Yield()
@@ -78,9 +86,14 @@ PROC Source(CARD source)
     Require(INPUT.Take(@lease,@event)=INPUT.INVALID_OWNER)
     Require(INPUT.Pending(@lease,@pending)=INPUT.INVALID_OWNER)
     Require(INPUT.Release(@lease)=INPUT.INVALID_OWNER)
+    Require(INPUT.CreateRoute(@lease,0,@tag)=INPUT.INVALID_OWNER)
+    Require(INPUT.PublishRoute(@lease,0)=INPUT.INVALID_OWNER)
+    Require(INPUT.Discard(@lease,1)=INPUT.INVALID_OWNER)
+    Require(INPUT.RetireRoute(@lease,1)=INPUT.INVALID_OWNER)
     lease.reserved=0
     Require(INPUT.Take(@lease,INPUT.Event POINTER($400000))=INPUT.BAD_ARGUMENT)
     Require(INPUT.Pending(@lease,CARD POINTER($400000))=INPUT.BAD_ARGUMENT)
+    Require(INPUT.CreateRoute(@lease,0,LONGCARD POINTER($400000))=INPUT.BAD_ARGUMENT)
     Empty()
   FI
 
@@ -100,11 +113,27 @@ PROC Source(CARD source)
     EXEC.Yield()
   OD
 
+  IF source=INPUT.SOURCE_POINTER THEN
+    Require(INPUT.Take(@lease,@event)=INPUT.OK AND event.kind=INPUT.EVENT_LOSS)
+    Require(event.route=peerTag)
+    Require(INPUT.RetireRoute(@lease,peerTag)=INPUT.OK)
+  FI
+
+  Require(INPUT.CreateRoute(@lease,1,@tag)=INPUT.BAD_ARGUMENT)
+  Require(INPUT.PublishRoute(@lease,$ffffffff)=INPUT.BAD_ARGUMENT)
+  Require(INPUT.RetireRoute(@lease,0)=INPUT.BAD_ARGUMENT)
+  Require(INPUT.Discard(@lease,0)=INPUT.BAD_ARGUMENT)
   Require(INPUT.CreateRoute(@lease,0,@tag)=INPUT.OK)
   Require(INPUT.RetireRoute(@lease,tag)=INPUT.OK)
+  previousAcquisition=lease.acquisition
   Require(INPUT.Release(@lease)=INPUT.OK)
   Require(INPUT.Take(@lease,@event)=INPUT.INVALID_OWNER)
   Require(INPUT.Pending(@lease,@pending)=INPUT.INVALID_OWNER)
+  Require(INPUT.Acquire(@lease,@config)=INPUT.OK)
+  Require(lease.acquisition>previousAcquisition)
+  Require(INPUT.PublishRoute(@lease,tag)=INPUT.BAD_ARGUMENT)
+  Empty()
+  Require(INPUT.Release(@lease)=INPUT.OK)
 
 RETURN
 

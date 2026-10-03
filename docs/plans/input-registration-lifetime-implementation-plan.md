@@ -3,13 +3,16 @@
 [Implementation plans](README.md) · [Design note](input-registration-lifetime-design.md) ·
 [Current input contract](../reference/input.md) · [Open roadmap](../roadmap.md)
 
-Status: IR1–IR2 complete, 3 October 2026; IR3–IR5 pending.
+Status: IR1–IR3 complete, 4 October 2026; IR4–IR5 pending.
 [IR1 development evidence](../development/input-registration-ir1.json) records
 raw/optimized C ABI, physical keyboard capture and pointer-failure execution,
 single-resolution emitted-code checks and zero reserved bank-zero change.
 [IR2 evidence](../development/input-registration-ir2.json) covers both diagnostic
 settings, C huge-pointer rejection, console pump/wake checks and emitted audit
 omission. Reserved bank-zero change remains zero.
+[IR3 evidence](../development/input-registration-ir3.json) records the completed
+route/C lifecycle migration, raw/optimized capture and pointer regressions,
+diagnostic route checks and unchanged reservations.
 
 Implement the design note's registration and lifetime contract for keyboard and
 pointer input. Acquire establishes the registration, ordinary calls trust its

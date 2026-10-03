@@ -22,7 +22,7 @@ Records use little-endian fields and two-byte alignment. Each record, including
 configuration and output scalars, must fit within one writable upper-RAM CPU-bank
 extent. The C bridge checks bank zero, odd addresses, bank crossings and values
 beyond 24 bits before narrowing full huge pointers. Acquire/Release audit memory
-membership and identity; production Take/Pending trust valid storage and a live
+membership and identity; production ordinary calls trust valid storage and a live
 registration. Absent/read-only output memory is rejected by diagnostic audits,
 not promised safe rejection in production. Heap storage and its complete lifetime
 remain the caller's obligation in Exec's shared address space.
@@ -89,7 +89,8 @@ capture state, route slots and notices. Routes use
 `(epoch << 4) | slot` with a 28-bit epoch. Both refuse exhaustion before wrap.
 Release purges the old acquisition before its storage can serve another consumer.
 
-Take/Pending require the original live lease and valid output storage. Take is
+Take, Pending and route operations require the original live lease and valid
+output storage. Take is
 restricted to the acquiring Task; Pending may be explicitly shared. The owner
 must stop shared callers and settle outstanding use before Release. Output
 storage may change on every call, is never retained, and must not overlap the
@@ -101,7 +102,9 @@ Build with `--input-diagnostics` in `tools/native_program.py` or the relevant
 input test harness to include full ordinary-use audits. It defaults off and is
 recorded as `input_diagnostics` in build provenance. Production omission happens
 before raw/optimized compilation; both settings share the same queue algorithm.
-At this migration stage, route calls retain their full checks until IR3.
+Dynamic route validity, retained references, queue bounds and deferred-event
+identities remain checked in production. Full memory and immutable identity
+audits occur once in native Acquire/Release, including calls through C.
 Acquire/Release and core Exec retention checks remain enabled in both settings.
 
 ## Capture, loss and cancellation

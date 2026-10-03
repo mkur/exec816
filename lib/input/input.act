@@ -108,8 +108,8 @@ INPUTNATIVE.State POINTER FUNC SourceState(CARD source)
 
 RETURN(INPUTNATIVE.State POINTER(ADDRESS(IN_POINTER_STATE)))
 
-; Existing leases are found by address in fixed descriptors, never by fields
-; supplied by the caller. A copied record has no resident authority.
+; Resolve the original lease by address in fixed descriptors. Callers preserve
+; its lifetime; this lookup cannot distinguish an old pointer to reused storage.
 INPUTNATIVE.State POINTER FUNC Shared(Lease POINTER lease)
   CARD source
 
@@ -302,8 +302,15 @@ PUBLIC CARD FUNC CreateRoute(Lease POINTER lease CARD flags
     LONGCARD POINTER tag)
   BYTE slot
 
+  ; INPUT_DIAGNOSTIC_BEGIN
   IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0
-      OR Extent(LONGCARD(ADDRESS(tag)),4)=0 OR flags<>0 THEN
+      OR Extent(LONGCARD(ADDRESS(tag)),4)=0 THEN
+    RETURN(BAD_ARGUMENT)
+  FI
+
+  ; INPUT_DIAGNOSTIC_END
+
+  IF flags<>0 THEN
     RETURN(BAD_ARGUMENT)
   FI
 
@@ -314,11 +321,13 @@ PUBLIC CARD FUNC CreateRoute(Lease POINTER lease CARD flags
     RETURN(INVALID_OWNER)
   FI
 
+  ; INPUT_DIAGNOSTIC_BEGIN
   LET capture=Capture(state)
   IF Valid(lease,state,capture,0)=0 THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
+  ; INPUT_DIAGNOSTIC_END
 
   IF state.epoch=$0fffffff THEN
     EXEC.Permit()
@@ -341,9 +350,12 @@ RETURN(BUSY)
 
 PUBLIC CARD FUNC PublishRoute(Lease POINTER lease LONGCARD tag)
 
+  ; INPUT_DIAGNOSTIC_BEGIN
   IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0 THEN
     RETURN(BAD_ARGUMENT)
   FI
+
+  ; INPUT_DIAGNOSTIC_END
 
   EXEC.Forbid()
   LET state=Shared(lease)
@@ -352,11 +364,13 @@ PUBLIC CARD FUNC PublishRoute(Lease POINTER lease LONGCARD tag)
     RETURN(INVALID_OWNER)
   FI
 
+  ; INPUT_DIAGNOSTIC_BEGIN
   LET capture=Capture(state)
   IF Valid(lease,state,capture,0)=0 THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
+  ; INPUT_DIAGNOSTIC_END
 
   IF tag<>0 AND RouteValid(state,tag)=0 THEN
     EXEC.Permit()
@@ -375,9 +389,12 @@ RETURN(OK)
 
 PUBLIC CARD FUNC RetireRoute(Lease POINTER lease LONGCARD tag)
 
+  ; INPUT_DIAGNOSTIC_BEGIN
   IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0 THEN
     RETURN(BAD_ARGUMENT)
   FI
+
+  ; INPUT_DIAGNOSTIC_END
 
   EXEC.Forbid()
   LET state=Shared(lease)
@@ -387,10 +404,12 @@ PUBLIC CARD FUNC RetireRoute(Lease POINTER lease LONGCARD tag)
   FI
 
   LET capture=Capture(state)
+  ; INPUT_DIAGNOSTIC_BEGIN
   IF Valid(lease,state,capture,0)=0 THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
+  ; INPUT_DIAGNOSTIC_END
 
   IF RouteValid(state,tag)=0 THEN
     EXEC.Permit()
@@ -409,9 +428,12 @@ RETURN(OK)
 
 PUBLIC CARD FUNC Discard(Lease POINTER lease LONGCARD tag)
 
+  ; INPUT_DIAGNOSTIC_BEGIN
   IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0 THEN
     RETURN(BAD_ARGUMENT)
   FI
+
+  ; INPUT_DIAGNOSTIC_END
 
   EXEC.Forbid()
   LET state=Shared(lease)
@@ -420,11 +442,13 @@ PUBLIC CARD FUNC Discard(Lease POINTER lease LONGCARD tag)
     RETURN(INVALID_OWNER)
   FI
 
+  ; INPUT_DIAGNOSTIC_BEGIN
   LET capture=Capture(state)
   IF Valid(lease,state,capture,0)=0 THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
+  ; INPUT_DIAGNOSTIC_END
 
   IF RouteValid(state,tag)=0 THEN
     EXEC.Permit()
