@@ -1,14 +1,68 @@
 MODULE BITMAPCONTROLPROBE
-PUBLIC BYTE hold,pendingReads,busyReads,heldNotice
+USE EXEC
+USE CONSOLETYPES
+USE CONSOLEINPUT
+USE A816MEMORY
+USE HEAPCORE
+PUBLIC BYTE hold,pendingReads,busyReads,heldNotice,ringChecks,inject,serviceRead
+PUBLIC EXEC.Task POINTER recipient
+CARD savedOrigin
+LONGCARD savedGeneration
+BYTE POINTER snapshot
 BYTE blitter=$d653
 
+; Fixture only: capture the committed model before launching the held list.
+PUBLIC PROC Save(CONSOLETYPES.Instance POINTER instance)
+
+  IF hold=2 THEN
+    snapshot=EXEC.AllocMem(LONGCARD(instance.count),EXEC.MEMF_PUBLIC)
+    IF snapshot=NULL THEN
+      HEAPCORE.Abort($f7f2)
+    FI
+
+    savedOrigin=instance.cellOrigin
+    savedGeneration=instance.generation
+    A816MEMORY.Move(snapshot,instance.cells,SIZE(instance.count))
+  FI
+
+RETURN
+
+; Inject immediately after real launch for a deterministic BUSY/READ overlap.
+; Other cases keep client-side delivery and ordinary scheduling races.
+PUBLIC PROC Launched(CONSOLETYPES.Instance POINTER instance)
+
+  IF inject<>0 THEN
+    inject=0
+    CONSOLEINPUT.Deliver(instance,$0001003f)
+    EXEC.Signal(recipient,$40000000)
+    serviceRead=1
+  FI
+
+RETURN
+
 ; Fixture only: sample the unmodified hardware status after the READ reply.
-PUBLIC PROC ReadPending()
+PUBLIC PROC ReadPending(CONSOLETYPES.Instance POINTER instance)
+  CARD index
 
   pendingReads==+1
   IF (blitter & 3)<>0 THEN
     busyReads==+1
   FI
+
+  IF instance.cellOrigin<>savedOrigin OR instance.generation<>savedGeneration
+      OR savedOrigin<>0 THEN
+    HEAPCORE.Abort($f7f0)
+  FI
+
+  FOR index=0 TO instance.count-1 DO
+    IF instance.cells(index)<>snapshot(index) THEN
+      HEAPCORE.Abort($f7f1)
+    FI
+  OD
+
+  EXEC.FreeMem(snapshot,LONGCARD(instance.count))
+  snapshot=NULL
+  ringChecks==+1
 
 RETURN
 

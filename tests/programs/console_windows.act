@@ -128,7 +128,7 @@ PROC PeerChecks()
 RETURN
 
 PROC DeviceChecks()
-  CARD index
+  CARD index,origin
   CONSOLETYPES.Service POINTER service
 
   service=CONSOLEDRIVER.GetService()
@@ -185,6 +185,17 @@ PROC DeviceChecks()
     EXEC.Yield()
   OD
 
+  ; Wrap repeatedly before retirement; CMD_CLEAR only clears captured input.
+  FOR index=0 TO 4 DO
+    Request(one,EXEC.CMD_WRITE,text,12)
+    Collect(one,0,12)
+  OD
+
+  origin=a.cellOrigin
+  Require(origin<>0)
+  Request(one,EXEC.CMD_CLEAR,NULL,0)
+  Collect(one,0,0)
+  Require(a.cellOrigin=origin)
   EXEC.CloseDevice(EXEC.IORequest POINTER(one))
   Require(CONSOLE.Destroy(first)<>0)
   retired=first

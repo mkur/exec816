@@ -9,6 +9,8 @@ from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 import adapter_state as adapter
+from generate_console import constants
+LAYOUT=constants()
 
 
 def run(out,mode,replay=False):
@@ -28,6 +30,13 @@ def run(out,mode,replay=False):
                     saved['display']=b.memdump(0x22f,3)
                     marker=p['labels']['native_nmi'];condition=f'dw(${at("CHECKPOINT"):x})=1'
                     b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=8000,timeout=90);b.bp_clear_all()
+                    if 3<=fault<=4:
+                        owner=int.from_bytes(b.memdump(at('OWNER'),3),'little')
+                        instance=int.from_bytes(b.memdump(owner+19,3),'little')
+                        saved['instance']=instance
+                        # Arm the copy-triggered fault after the warm-up scrolls.
+                        b.memload(sy['ConsoleCopyChunks'],b'\0\0')
+                        require(b.peek16(instance+LAYOUT['INSTANCE_CELLORIGIN'])==2320,'Missing wrapped fault setup')
                     b.memload(sy['ConsoleFaultMode'],fault.to_bytes(2,'little'));b.memload(at('GATE'),b'\1\0')
                 runtime,_=execute(b,p,before_run=before,expected_status=0 if fault&1 else 0xff93,frame_limit=8000,timeout=90)
                 require(b.peek16(sy['ConsoleStopCount'])==1,'Missing single STOP')
@@ -39,6 +48,8 @@ def run(out,mode,replay=False):
                 else:
                     read=int.from_bytes(b.memdump(at('READ'),3),'little')
                     require(b.memdump(read+6,1)==bytes([5]),'Reset-required failure replied to retained I/O')
+                    if fault==4:
+                        require(b.peek16(saved['instance']+LAYOUT['INSTANCE_CELLORIGIN'])==0,'Reset-required failure lost the committed wrap')
                 result['cases'].append(dict(fault=fault,machine=machine,runtime=runtime,checks=data(b,p['image'],'checks',True)))
         result['status']='pass'
     except Exception as e:result.update(status='fail',error=str(e));raise

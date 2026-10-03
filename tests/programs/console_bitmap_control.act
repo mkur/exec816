@@ -51,13 +51,13 @@ PROC Main()
   IF 1=1 THEN
     owner.io_Command=EXEC.CMD_WRITE
     owner.io_Data=text
-    FOR row=0 TO 29 DO
+    FOR row=0 TO 58 DO
       FOR index=0 TO 79 DO
         text(index)=65+BYTE(row MOD 26)
       OD
 
       owner.io_Length=80
-      IF row=29 THEN
+      IF row=58 THEN
         owner.io_Length=79
       FI
 
@@ -68,6 +68,8 @@ PROC Main()
   WHILE instance.dirtyRows<>0 DO
     EXEC.Yield()
   OD
+
+  Require(instance.cellOrigin=2320)
 
   read.io_Device=owner.io_Device
   read.io_Unit=owner.io_Unit
@@ -82,6 +84,12 @@ PROC Main()
   FOR index=0 TO 511 DO
     text(index)=65+BYTE(index & 15)
   OD
+
+  LET service=CONSOLEDRIVER.GetService()
+  IF variant=12 THEN
+    BITMAPCONTROLPROBE.recipient=@service.task
+    BITMAPCONTROLPROBE.inject=1
+  FI
 
   BITMAPCONTROLPROBE.hold=1
   IF variant>=5 THEN
@@ -103,18 +111,29 @@ PROC Main()
     EXEC.Yield()
   OD
 
-  Require(write.io_Actual=1 AND view.scrollRow=0)
+  Require(write.io_Actual=1 AND view.scrollRow=0
+      AND instance.cellOrigin=0)
   IF variant>=5 THEN
     Require(CONSOLEBITMAP.Pending()<>0)
   FI
   ; Read service progresses while later model writes are deferred.
-  EXEC.Forbid()
-  CONSOLEINPUT.Deliver(instance,$0001003f)
-  LET service=CONSOLEDRIVER.GetService()
-  EXEC.Signal(@service.task,$40000000)
-  EXEC.Permit()
+  IF variant<>12 THEN
+    EXEC.Forbid()
+    CONSOLEINPUT.Deliver(instance,$0001003f)
+    EXEC.Signal(@service.task,$40000000)
+    EXEC.Permit()
+  FI
   Require(EXEC.WaitIO(EXEC.IORequest POINTER(read))=0)
-  Require(read.io_Actual=1 AND input(0)=97 AND view.scrollState<>0)
+  Require(read.io_Actual=1 AND input(0)=97 AND view.scrollState<>0
+      AND instance.cellOrigin=0)
+  IF variant>=5 THEN
+    ; ReplyMsg may schedule this client before the worker finishes its probe.
+    WHILE BITMAPCONTROLPROBE.ringChecks=0 DO
+      EXEC.Yield()
+    OD
+
+    Require(BITMAPCONTROLPROBE.ringChecks=1)
+  FI
   IF variant=10 OR variant=11 THEN
     ; The byte was accepted before presentation. Closing the last binding may
     ; now race hardware completion, so retirement/Stop must drain the list.
@@ -168,12 +187,15 @@ PROC Main()
   FI
 
   BITMAPCONTROLPROBE.hold=0
+  ; Releasing a fixture-held notification must wake a worker already in Wait.
+  EXEC.Signal(@service.task,$40000000)
   Require(EXEC.WaitIO(EXEC.IORequest POINTER(write))=EXEC.IOERR_ABORTED)
   Require(write.io_Actual=1 AND instance.row=29 AND instance.column=0)
   WHILE view.scrollState<>0 OR instance.dirtyRows<>0 DO
     EXEC.Yield()
   OD
 
+  Require(instance.cellOrigin=0)
   IF variant=12 THEN
     Require(view.scrollRow=240)
   FI
