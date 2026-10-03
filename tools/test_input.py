@@ -19,7 +19,7 @@ from test_large_stacks import observe
 PIN = json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
 
 
-def build_abi(output, optimize):
+def build_abi(output, optimize, input_diagnostics=False):
     for path, content in files().items():
         require(path.read_text() == content, 'Stale input definition: '+str(path))
     foreign = emit(output,
@@ -41,11 +41,11 @@ def build_abi(output, optimize):
     source.write_text(read_source(ROOT/'tests/programs/input_abi_launcher.act', {'c-image.inc': include}))
     program = build(compiler(ROOT/'build/actionc'), source, output/'program',
                     optimize=optimize, tasks=True, task_capacity=8, console=False,
-                    foreign_image=foreign)
+                    foreign_image=foreign, input_diagnostics=input_diagnostics)
     return program, foreign
 
 
-def run(output, mode, case='abi', replay=False):
+def run(output, mode, case='abi', replay=False, input_diagnostics=False):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     report = dict(status='running', tier='development', slice='I3', mode=mode, cases=[],
@@ -57,7 +57,8 @@ def run(output, mode, case='abi', replay=False):
             for path, digest in foreign['provenance']['source_inputs'].items():
                 require(sha256(ROOT/path) == digest, 'Changed input probe source: '+path)
         else:
-            program, foreign = build_abi(output, mode == 'opt')
+            program, foreign = build_abi(output, mode == 'opt', input_diagnostics)
+        require(program['build']['input_diagnostics'] == input_diagnostics, 'Wrong input diagnostic setting')
         require(program['build']['optimize'] == (mode == 'opt'), 'Wrong compiler mode')
         memory = program['build']['memory']
         baseline = json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
@@ -130,9 +131,10 @@ if __name__ == '__main__':
     p.add_argument('--case', choices=['abi','capture'], default='abi')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--replay', action='store_true')
+    p.add_argument('--input-diagnostics', action='store_true')
     args = p.parse_args()
     if args.case == 'capture':
         from test_input_capture import run as capture
-        capture(args.output,args.mode,args.replay)
+        capture(args.output,args.mode,args.replay,args.input_diagnostics)
     else:
-        run(args.output, args.mode, args.case, args.replay)
+        run(args.output, args.mode, args.case, args.replay,args.input_diagnostics)

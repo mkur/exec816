@@ -235,7 +235,9 @@ def kernel_source(text, source_dir=None):
 
 def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, cooperative=False,
           probe_flags=0x100, forward_signature=0, preemptive=False, banked=False,
-          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False):
+          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False):
+    require(type(input_diagnostics) is bool, 'Input diagnostics option must be boolean')
+    require(not input_diagnostics or tasks, 'Input diagnostics require Tasks')
     configuration=json.loads(Path(kernel_config or ROOT/'config/kernel.json').read_text())
     stack_checks_enabled=configuration.get('stack_checks',True) if stack_checks is None else stack_checks
     require(type(stack_checks_enabled) is bool,'Stack checks option must be boolean')
@@ -332,7 +334,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             generate_platform_timer.generate(output, generate_tasks.storage(memory)['BASE'], memory)
             generate_tasks.validate_memory(memory)
             task_generate(output)
-            task_modules = generate_tasks.policy_modules(output,policy_probe,memory,manual_wake,irq_probe,io_test_device,dos_test,dos_system,console_native,sio_request_probe=sio_request_probe,sio_lifetime_probe=sio_lifetime_probe)
+            task_modules = generate_tasks.policy_modules(output,policy_probe,memory,manual_wake,irq_probe,io_test_device,dos_test,dos_system,console_native,sio_request_probe=sio_request_probe,sio_lifetime_probe=sio_lifetime_probe,input_diagnostics=input_diagnostics)
         memory['config']['stack_checks']=stack_checks_enabled
         generate_memory.reserve_image_data(memory)
         memory_hash = generate_memory.generate(output, memory)
@@ -856,11 +858,11 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                        "forward_signature": forward_signature,
                        "image_sha256": sha256(image_path), "xex_sha256": sha256(xex)})
     if tasks:
-        provenance.update(tasks=True, exec_build=exec_build, dos_test=dos_test, dos_system=dos_system, dos_mounts=list(dos_mounts), system_mount=system_mount, system_selection=system_selection, heap_probe=heap_probe, io_test_device=io_test_device, task_init=task_init, task_entries=entries, process_entries=process_entries,
+        provenance.update(tasks=True, input_diagnostics=input_diagnostics, exec_build=exec_build, dos_test=dos_test, dos_system=dos_system, dos_mounts=list(dos_mounts), system_mount=system_mount, system_selection=system_selection, heap_probe=heap_probe, io_test_device=io_test_device, task_init=task_init, task_entries=entries, process_entries=process_entries,
             task_storage=task_storage, signal_probe=policy_probe, signal_irq_probe=irq_probe,
             manual_wake=manual_wake, pump_count=pump_count if irq_probe==8 else None,
             task_inputs={name:sha256(ROOT/name) for name in (
-                'abi/input-native.json','abi/input.json','tools/generate_input_native.py','tools/generate_input.py','lib/input/inputnative.act','lib/input/input.act','lib/input/input-types.inc','lib/input/inputcapture.act','lib/input/task-input.inc','platform/altirraos/input.s','platform/altirraos/pointer.s','platform/altirraos/input-native.inc','platform/altirraos/input.inc','abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
+                'tools/input_diagnostics.py','abi/input-native.json','abi/input.json','tools/generate_input_native.py','tools/generate_input.py','lib/input/inputnative.act','lib/input/input.act','lib/input/input-types.inc','lib/input/inputcapture.act','lib/input/task-input.inc','platform/altirraos/input.s','platform/altirraos/pointer.s','platform/altirraos/input-native.inc','platform/altirraos/input.inc','abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
                 'lib/spartados/sdfs.act','lib/spartados/sdfstypes.act','lib/spartados/sdfsfile.act',
                 'lib/spartados/sdfsdir.act','lib/spartados/sdfsname.act','lib/spartados/sdfsdate.act',
                 'lib/fs/fsformats.act','lib/fs/fsbtypes.act','lib/fs/fsbackend.act',
@@ -887,7 +889,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'lib/display/display-types.inc','lib/display/displayboot.act','lib/display/blitter.act','lib/display/blitteradapter.act','abi/blitter.json','tools/generate_blitter.py','platform/altirraos/blitter.s','platform/altirraos/blitter.inc',
                 'lib/display/displayadapter.act','platform/altirraos/display.s')},
             task_generated={name:sha256(output/name) for name in (
-                'execbuild.act','exec-build.json',
+                'execbuild.act','exec-build.json','input-build.inc','task-kernel/input.act',
                 'dos.inc','dos-action.inc','dos-storage-action.inc','task-kernel/dosraw.act','task-kernel/doscore.act',
                 'io.inc','io-action.inc','io-storage-action.inc','sio-storage-action.inc','timer-storage-action.inc',
                 'ports.inc','ports-action.inc','port-packets.inc','ports-storage.inc','ports-storage-action.inc',
@@ -1099,6 +1101,7 @@ def main():
     parser.add_argument("--source", type=Path, default=ROOT / "examples/hello.act")
     parser.add_argument("--output", type=Path, default=ROOT / "build/hello")
     parser.add_argument("--no-opt", action="store_true")
+    parser.add_argument("--input-diagnostics", action="store_true", help="Compile full INPUT per-use audits (requires --tasks)")
     parser.add_argument("--tasks", action="store_true", help="Classic Exec Task API; root counts toward task capacity")
     parser.add_argument('--dos-mounts',type=Path,help='Explicit read-only MyDOS mount configuration (requires --tasks)')
     parser.add_argument("--console",action=argparse.BooleanOptionalAction,default=None,help="Start the resident native console (requires --tasks; defaults to kernel config)")
@@ -1125,7 +1128,7 @@ def main():
                          json.loads(args.compiler_pin.read_text()) if args.compiler_pin else None)
     program = build(toolchain, args.source, args.output, not args.no_opt, cooperative=args.cooperative,
                     preemptive=args.preemptive, banked=args.banked, max_banks=args.max_banks,
-                    memory_profile=args.memory_profile, kernel_config=args.kernel_config, tasks=args.tasks, kernel_bank=args.kernel_bank,task_capacity=args.task_capacity,worker_stack=args.worker_stack,idle_stack=args.idle_stack,dos_mounts=mount_config['mounts'],system_mount=mount_config['system_mount'],console=args.console,stack_checks=args.stack_checks)
+                    memory_profile=args.memory_profile, kernel_config=args.kernel_config, tasks=args.tasks, kernel_bank=args.kernel_bank,task_capacity=args.task_capacity,worker_stack=args.worker_stack,idle_stack=args.idle_stack,dos_mounts=mount_config['mounts'],system_mount=mount_config['system_mount'],console=args.console,stack_checks=args.stack_checks,input_diagnostics=args.input_diagnostics)
     print(f"Built {program['xex']}", flush=True)
     if args.bridge_dir:
         bridge_dir, rom = args.bridge_dir.resolve(), args.rom.resolve()

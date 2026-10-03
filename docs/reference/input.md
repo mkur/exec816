@@ -20,10 +20,12 @@ This is an ordinary library bridge, not a dynamically discovered input service.
 
 Records use little-endian fields and two-byte alignment. Each record, including
 configuration and output scalars, must fit within one writable upper-RAM CPU-bank
-extent. Bank zero, odd addresses, bank crossings, absent/read-only memory and
-values beyond 24 bits fail before narrowing. The C bridge validates full huge
-pointers. Heap storage and its complete lifetime remain the caller's obligation
-in Exec's shared address space.
+extent. The C bridge checks bank zero, odd addresses, bank crossings and values
+beyond 24 bits before narrowing full huge pointers. Acquire/Release audit memory
+membership and identity; production Take/Pending trust valid storage and a live
+registration. Absent/read-only output memory is rejected by diagnostic audits,
+not promised safe rejection in production. Heap storage and its complete lifetime
+remain the caller's obligation in Exec's shared address space.
 
 | Record | Bytes | Contents |
 | --- | ---: | --- |
@@ -39,7 +41,8 @@ copies configuration, retains the consumer and its signal binding, and activates
 capture only after admission succeeds. It starts with route zero, which discards
 unaddressed input. An existing consumer returns BUSY without changing ownership.
 Lease states are FREE, ACQUIRING, ACTIVE and RELEASING. Do not copy, move or alter
-a live lease; a copied record or stale acquisition fails identity validation.
+a live lease. A retained Task reference does not retain arbitrary lease storage.
+An old pointer to reused storage cannot independently prove its old acquisition.
 
 Keyboard configuration permits zero to two filters. Each active mask is nonzero, with no
 value bits outside that mask; unused pairs and reserved fields are zero. The
@@ -80,11 +83,26 @@ publication guards serialize state with Task switching, IRQ and NMI.
 Status values are OK=0, EMPTY=1, BUSY=2, BAD_ARGUMENT=3, INVALID_OWNER=4,
 EXHAUSTED=5, UNSUPPORTED=6 and NO_MEMORY=7. Failed admission unwinds its partial
 ownership. Existing leases are located by their address in fixed source
-descriptors before complete identity validation. Acquisition uses one monotonic
+descriptors once per operation. Acquisition uses one monotonic
 32-bit allocator shared by all sources; each source retains its own generation,
 capture state, route slots and notices. Routes use
 `(epoch << 4) | slot` with a 28-bit epoch. Both refuse exhaustion before wrap.
 Release purges the old acquisition before its storage can serve another consumer.
+
+Take/Pending require the original live lease and valid output storage. Take is
+restricted to the acquiring Task; Pending may be explicitly shared. The owner
+must stop shared callers and settle outstanding use before Release. Output
+storage may change on every call, is never retained, and must not overlap the
+lease or subsystem state. Misuse is not a supported production rejection probe.
+A null or unregistered lease is rejected by the fixed source lookup; this does
+not make arbitrary freed/corrupted pointers safe.
+
+Build with `--input-diagnostics` in `tools/native_program.py` or the relevant
+input test harness to include full ordinary-use audits. It defaults off and is
+recorded as `input_diagnostics` in build provenance. Production omission happens
+before raw/optimized compilation; both settings share the same queue algorithm.
+At this migration stage, route calls retain their full checks until IR3.
+Acquire/Release and core Exec retention checks remain enabled in both settings.
 
 ## Capture, loss and cancellation
 

@@ -75,7 +75,12 @@ PROC Main()
   IF variant<>0 THEN
     BEGIN
       LET lease=CONSOLECAPTURE.GetLease()
-      lease.reserved=1
+      IF variant=1 THEN
+        lease.reserved=1
+      ELSE
+        ; A retired registration is a defined missing-source rejection.
+        Require(INPUT.Release(lease)=INPUT.OK)
+      FI
       counts(0)=CONSOLEINPUT.Pump(@instance)
       HEAPCORE.Abort($f900)
     END

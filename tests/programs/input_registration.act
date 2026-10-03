@@ -1,0 +1,131 @@
+MODULE INPUTREGISTRATION
+USE EXEC
+USE INPUT
+USE INPUTNATIVE
+USE HEAPCORE
+INCLUDE "input-storage.act.inc"
+INCLUDE "input-build.inc"
+INPUT.Lease lease,unregistered
+INPUT.Config config
+INPUT.Event event,alternate
+EXEC.TaskLease peerHold
+CARD checks,pending
+LONGCARD tag
+BYTE finished,peerFinished
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Only diagnostic builds exercise wrong-consumer ordinary use. Release is
+; always checked; sharing Pending and routes never transfers consumption.
+PROC Peer()
+
+  IF IN_DIAGNOSTICS<>0 THEN
+    Require(INPUT.Take(@lease,@event)=INPUT.INVALID_OWNER)
+  FI
+
+  Require(INPUT.Release(@lease)=INPUT.INVALID_OWNER)
+  Require(INPUT.Pending(@lease,@pending)=INPUT.OK AND pending=0)
+  peerFinished=1
+  WHILE peerHold.task<>NULL DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; EMPTY preserves all bytes and output storage may vary between calls.
+PROC Empty()
+  BYTE index
+
+  LET bytes=BYTE POINTER(@event)
+  LET other=BYTE POINTER(@alternate)
+  FOR index=0 TO INPUT.EVENT_BYTES-1 DO
+    bytes(index)=index+$80
+    other(index)=index+$40
+  OD
+
+  Require(INPUT.Take(@lease,@event)=INPUT.EMPTY)
+  Require(INPUT.Take(@lease,@alternate)=INPUT.EMPTY)
+  FOR index=0 TO INPUT.EVENT_BYTES-1 DO
+    Require(bytes(index)=index+$80 AND other(index)=index+$40)
+  OD
+
+RETURN
+
+; The same legal source lifecycle runs with or without diagnostic audits.
+PROC Source(CARD source)
+
+  config.source=source
+  config.pointerProtocol=0
+  config.pointerPort=0
+  IF source=INPUT.SOURCE_POINTER THEN
+    config.pointerProtocol=INPUT.POINTER_ST
+    config.pointerPort=1
+  FI
+
+  Require(INPUT.Acquire(@lease,@config)=INPUT.OK)
+  Require(INPUT.Pending(@lease,@pending)=INPUT.OK AND pending=0)
+  Empty()
+  IF IN_DIAGNOSTICS<>0 THEN
+    lease.reserved=1
+    Require(INPUT.Take(@lease,@event)=INPUT.INVALID_OWNER)
+    Require(INPUT.Pending(@lease,@pending)=INPUT.INVALID_OWNER)
+    Require(INPUT.Release(@lease)=INPUT.INVALID_OWNER)
+    lease.reserved=0
+    Require(INPUT.Take(@lease,INPUT.Event POINTER($400000))=INPUT.BAD_ARGUMENT)
+    Require(INPUT.Pending(@lease,CARD POINTER($400000))=INPUT.BAD_ARGUMENT)
+    Empty()
+  FI
+
+  peerFinished=0
+  ; Publish the hold before the new Task can run and retire itself.
+  EXEC.Forbid()
+  LET peer=EXEC.CreateTask(c"input-contract",0,@Peer,1024)
+  Require(peer<>NULL)
+  Require(EXEC.RetainTask(peer,@peerHold)=1)
+  EXEC.Permit()
+  WHILE peerFinished=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(EXEC.ReleaseTask(@peerHold)=1)
+  WHILE peer.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Require(INPUT.CreateRoute(@lease,0,@tag)=INPUT.OK)
+  Require(INPUT.RetireRoute(@lease,tag)=INPUT.OK)
+  Require(INPUT.Release(@lease)=INPUT.OK)
+  Require(INPUT.Take(@lease,@event)=INPUT.INVALID_OWNER)
+  Require(INPUT.Pending(@lease,@pending)=INPUT.INVALID_OWNER)
+
+RETURN
+
+PROC Main()
+
+  Require(EXEC.AllocSignal(16)=16)
+  config.version=INPUT.VERSION
+  config.wakeMask=$10000
+  Require(INPUT.Take(@unregistered,@event)=INPUT.INVALID_OWNER)
+  IF IN_DIAGNOSTICS<>0 THEN
+    Require(INPUT.Take(NULL,@event)=INPUT.BAD_ARGUMENT)
+  ELSE
+    Require(INPUT.Take(NULL,@event)=INPUT.INVALID_OWNER)
+    Require(INPUT.Pending(NULL,@pending)=INPUT.INVALID_OWNER)
+  FI
+
+  Source(INPUT.SOURCE_KEYBOARD)
+  Source(INPUT.SOURCE_POINTER)
+  EXEC.FreeSignal(16)
+  finished=1
+
+RETURN
+
+ENDMODULE

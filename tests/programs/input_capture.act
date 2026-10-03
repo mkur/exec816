@@ -4,6 +4,7 @@ USE INPUT
 USE INPUTNATIVE
 USE HEAPCORE
 USE EXECTASKS
+INCLUDE "input-build.inc"
 INPUT.Lease lease,copied
 INPUT.Config config
 INPUT.Event event
@@ -28,7 +29,9 @@ RETURN
 PROC PeerEntry()
   CARD status
 
-  Require(INPUT.Take(@lease,@event)=INPUT.INVALID_OWNER)
+  IF IN_DIAGNOSTICS<>0 THEN
+    Require(INPUT.Take(@lease,@event)=INPUT.INVALID_OWNER)
+  FI
   Require(INPUT.Release(@lease)=INPUT.INVALID_OWNER)
   Require(INPUT.Pending(@lease,@pending)=INPUT.OK)
   Require(INPUT.CreateRoute(@lease,0,@other)=INPUT.OK)
@@ -92,9 +95,11 @@ PROC Admission()
   OD
 
   parent=EXEC.FindTask(NULL)
+  EXEC.Forbid()
   peer=EXEC.CreateTask(c"input-peer",0,@PeerEntry,1024)
   Require(peer<>NULL)
   Require(EXEC.RetainTask(peer,@peerLease)=1)
+  EXEC.Permit()
   WHILE finished=0 DO
     EXEC.Yield()
   OD

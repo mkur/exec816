@@ -9,7 +9,15 @@ ABI = json.loads((ROOT/'abi/input.json').read_text())
 TYPES = {'u8': ('BYTE', 'UBYTE', 1), 'u16': ('CARD', 'UWORD', 2),
          'i16': ('INT', 'WORD', 2), 'u32': ('LONGCARD', 'ULONG', 4),
          'TaskLease': ('EXEC.TaskLease', 'struct TaskLease', 12)}
-PROTOTYPES = '''UWORD InputAcquire(struct InputLease *lease, const struct InputConfig *config);
+PROTOTYPES = '''/* Acquire/Release validate registration lifetime. Keep the original lease
+ * and signal live until successful Release; only its owner may Take/Release.
+ * Take/Pending trust that contract and writable, aligned, bank-contained output
+ * storage in production. Full per-use audits require --input-diagnostics.
+ * Output buffers are borrowed only for the call; EMPTY leaves all bytes intact.
+ * Shared Pending/route users must stop before owner Release. C huge-pointer
+ * shape checks always precede narrowing. Route calls still audit until IR3.
+ */
+UWORD InputAcquire(struct InputLease *lease, const struct InputConfig *config);
 UWORD InputCreateRoute(struct InputLease *lease, UWORD flags, ULONG *tag);
 UWORD InputPublishRoute(struct InputLease *lease, ULONG tag);
 UWORD InputRetireRoute(struct InputLease *lease, ULONG tag);

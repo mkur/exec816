@@ -46,8 +46,8 @@ RETURN(INPUT.Discard(INPUT.Lease POINTER(ADDRESS(lease)),value))
 
 CARD FUNC CInputPending(LONGCARD lease,recordValue,value)
 
-  IF INPUT.Extent(lease,INPUT.LEASE_BYTES)=0
-      OR INPUT.Extent(recordValue,2)=0 THEN
+  IF INPUT.Shape(lease,INPUT.LEASE_BYTES)=0
+      OR INPUT.Shape(recordValue,2)=0 THEN
     RETURN(INPUT.BAD_ARGUMENT)
   FI
 
@@ -56,8 +56,8 @@ RETURN(INPUT.Pending(INPUT.Lease POINTER(ADDRESS(lease)),
 
 CARD FUNC CInputTake(LONGCARD lease,recordValue,value)
 
-  IF INPUT.Extent(lease,INPUT.LEASE_BYTES)=0
-      OR INPUT.Extent(recordValue,INPUT.EVENT_BYTES)=0 THEN
+  IF INPUT.Shape(lease,INPUT.LEASE_BYTES)=0
+      OR INPUT.Shape(recordValue,INPUT.EVENT_BYTES)=0 THEN
     RETURN(INPUT.BAD_ARGUMENT)
   FI
 

@@ -128,6 +128,13 @@ UWORD main(void)
         FreeMem(bank, 65536UL);
     }
     check(InputAcquire(&lease, &config) == INPUT_OK);
+    /* Reject full huge values while the native registration is live. */
+    check(InputTake(&lease, (struct InputEvent *)0x010d0000UL) == INPUT_BAD_ARGUMENT);
+    check(InputTake(&lease, (struct InputEvent *)0x1000UL) == INPUT_BAD_ARGUMENT);
+    check(InputTake(&lease, (struct InputEvent *)0xdfff0UL) == INPUT_BAD_ARGUMENT);
+    check(InputTake(&lease, (struct InputEvent *)((UBYTE *)&event+1)) == INPUT_BAD_ARGUMENT);
+    check(InputPending(&lease, (UWORD *)0x010d0000UL) == INPUT_BAD_ARGUMENT);
+    check(InputPending(&lease, (UWORD *)0xdffffUL) == INPUT_BAD_ARGUMENT);
     check(InputCreateRoute(&lease, 0, &tag) == INPUT_OK && tag != 0);
     check(InputPublishRoute(&lease, tag) == INPUT_OK);
     check(InputPending(&lease, &pending) == INPUT_OK && pending == 0);

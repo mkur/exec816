@@ -11,16 +11,20 @@ from test_heap_api import clean_ownership
 from test_mouse_observe import PIN, BRIDGE, ROM
 
 
-def run(output, mode, replay=False):
+def run(output, mode, replay=False, input_diagnostics=False):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     report=dict(status='running',tier='development',slice='I3',mode=mode,cases=[])
     try:
         require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],
                 'Wrong capture emulator')
+        (output/'program').mkdir(exist_ok=True)
+        source=output/'program/input_capture.act'
+        source.write_bytes((ROOT/'tests/programs/input_capture.act').read_bytes())
         p=read_build(output/'program') if replay else build(compiler(ROOT/'build/actionc'),
-            ROOT/'tests/programs/input_capture.act',output/'program',optimize=mode=='opt',
-            tasks=True,task_capacity=8,console=False)
+            source,output/'program',optimize=mode=='opt',
+            tasks=True,task_capacity=8,console=False,input_diagnostics=input_diagnostics)
+        require(p['build']['input_diagnostics']==input_diagnostics,'Wrong input diagnostics')
         require(not p['build'].get('console_enabled') and not p['build'].get('console_test'),
                 'Standalone capture accidentally enabled console')
         require(p['build']['optimize']==(mode=='opt'),'Wrong compiler mode')

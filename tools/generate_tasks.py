@@ -225,7 +225,7 @@ def validate_memory(memory):
     require(c['WRITABLE_POINTER']+4 == c['ENTRY_COUNT']+c['BINDINGS_BYTES'], 'Invalid binding extent')
 
 
-def policy_modules(output, policy_probe=0, memory=None, manual_wake=False, irq_probe=0, io_test_device=False, dos_test=False, dos_system=False, console=False, sio_request_probe=False,sio_lifetime_probe=False):
+def policy_modules(output, policy_probe=0, memory=None, manual_wake=False, irq_probe=0, io_test_device=False, dos_test=False, dos_system=False, console=False, sio_request_probe=False,sio_lifetime_probe=False,input_diagnostics=False):
     if memory is None:
         from generate_memory import layout
         memory=layout()
@@ -349,7 +349,10 @@ ENDMODULE
     (directory/'task-input.inc').write_text(input_policy)
     driver = read_source(ROOT/'lib/input/input.act').replace(
         '"input-storage.act.inc"', '"'+str(Path(output)/'input-storage.act.inc')+'"')
-    (directory/'input.act').write_text(driver)
+    from input_diagnostics import select as select_input_diagnostics
+    (directory/'input.act').write_text(select_input_diagnostics(driver,input_diagnostics))
+    (Path(output)/'input-build.inc').write_text(
+        f'; Generated input diagnostic fixture setting.\nCONST IN_DIAGNOSTICS={int(input_diagnostics)}\n')
 
     signals=read_source(ROOT/'lib/exec/task-signals.inc')
     require(0 <= policy_probe <= 6, 'Invalid signal NMI checkpoint')

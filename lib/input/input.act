@@ -443,10 +443,13 @@ RETURN(OK)
 PUBLIC CARD FUNC Pending(Lease POINTER lease CARD POINTER mask)
   CARD value
 
+  ; INPUT_DIAGNOSTIC_BEGIN
   IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0
       OR Extent(LONGCARD(ADDRESS(mask)),2)=0 THEN
     RETURN(BAD_ARGUMENT)
   FI
+
+  ; INPUT_DIAGNOSTIC_END
 
   EXEC.Forbid()
   LET state=Shared(lease)
@@ -456,10 +459,12 @@ PUBLIC CARD FUNC Pending(Lease POINTER lease CARD POINTER mask)
   FI
 
   LET capture=Capture(state)
+  ; INPUT_DIAGNOSTIC_BEGIN
   IF Valid(lease,state,capture,0)=0 THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
+  ; INPUT_DIAGNOSTIC_END
 
   value=0
   IF capture.head<>capture.tail THEN
@@ -619,10 +624,13 @@ PUBLIC CARD FUNC Take(Lease POINTER lease Event POINTER event)
   CARD code,index
   BYTE kind,flags
 
+  ; INPUT_DIAGNOSTIC_BEGIN
   IF Extent(LONGCARD(ADDRESS(lease)),LEASE_BYTES)=0
       OR Extent(LONGCARD(ADDRESS(event)),EVENT_BYTES)=0 THEN
     RETURN(BAD_ARGUMENT)
   FI
+
+  ; INPUT_DIAGNOSTIC_END
 
   EXEC.Forbid()
   LET state=Shared(lease)
@@ -632,10 +640,12 @@ PUBLIC CARD FUNC Take(Lease POINTER lease Event POINTER event)
   FI
 
   LET capture=Capture(state)
+  ; INPUT_DIAGNOSTIC_BEGIN
   IF Valid(lease,state,capture,1)=0 THEN
     EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
+  ; INPUT_DIAGNOSTIC_END
 
   IF SourceOf(state)=SOURCE_POINTER THEN
     code=PointerRead(lease,state,event)
