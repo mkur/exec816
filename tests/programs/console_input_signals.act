@@ -1,0 +1,57 @@
+MODULE INPUTSIGNALS
+USE EXEC
+USE HEAPCORE
+CARD checks
+LONGCARD merged
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; The same atomic acknowledgement proposed for the resident worker.
+LONGCARD FUNC Collect()
+
+RETURN(EXEC.SetSignal(0,$60000000))
+
+PROC Main()
+  LONGCARD bits,ignored
+  BYTE index
+
+  LET self=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(16)=16)
+  Require(EXEC.AllocSignal(29)=29)
+  Require(EXEC.AllocSignal(30)=30)
+  Require(EXEC.AllocSignal(31)=31)
+  EXEC.Signal(self,$e0010000)
+  Require(Collect()=$e0010000)
+  Require(EXEC.SetSignal(0,0)=$80010000)
+  Require(EXEC.Wait($80000000)=$80000000)
+  Require(EXEC.SetSignal(0,0)=$10000)
+  ignored=EXEC.SetSignal(0,$10000)
+
+  FOR index=0 TO 15 DO
+    Require(Collect()=0)
+  OD
+
+  EXEC.Signal(self,$c0000000)
+  bits=EXEC.Wait($e0000000)
+  Require(bits=$c0000000)
+  merged=bits OR Collect()
+  Require((merged & $40000000)<>0)
+  EXEC.Signal(self,$40000000)
+  Require(Collect()=$40000000)
+  Require(Collect()=0)
+  EXEC.FreeSignal(31)
+  EXEC.FreeSignal(30)
+  EXEC.FreeSignal(29)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+ENDMODULE

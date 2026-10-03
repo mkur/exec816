@@ -45,7 +45,10 @@ for accepted console bytes, hardware completion and visible scanout. Measure
 with physical disk I/O and input capture active as well as idle.
 Require exact pixels, responsive cancellation, bounded memory and clean display
 handoff. Existing request completion semantics and SIO deadlines must survive
-the performance work.
+the performance work. The next bounded step is
+[cheap idle input checking](plans/console-idle-input-implementation-plan.md):
+collect notifications atomically and retain pending work across bounded drains,
+eliminating repeated input validation during output-only turns.
 
 The other possible milestones have no delivery order:
 

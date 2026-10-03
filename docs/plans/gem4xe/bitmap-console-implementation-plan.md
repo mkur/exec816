@@ -10,6 +10,11 @@ the design's 80×30 bitmap backend for the existing console, improving the share
 VDI drawing path first. Each slice must leave an executable, reviewable result;
 commit it with its focused development evidence before starting the next slice.
 
+The [idle input implementation plan](../console-idle-input-implementation-plan.md)
+defines the next bounded B8 performance work: remove repeated input validation
+from idle console turns while preserving notification and drain semantics.
+Display validation and blitter chunking remain separate optimization work.
+
 ## Fixed decisions
 
 - Use the existing 640×240 HR mode, built-in 8×8 font, logical palette and one

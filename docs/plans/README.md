@@ -60,6 +60,9 @@ assuming work is pending. Current behavior belongs in the
 
 ## Console and interaction
 
+- [Cheap idle input checking](console-idle-input-implementation-plan.md): Q0 baseline
+  passed development checks; Q1–Q3 slices replace repeated console input validation with atomic notification
+  collection and retained pending work, preserving loss, BREAK and wakeups.
 - [Bitmap console design](gem4xe/bitmap-console-design.md) and
   [implementation plan](gem4xe/bitmap-console-implementation-plan.md): functional
   80×30 VBXE preview with shared VDI batching, dirty text and blitter scrolling,

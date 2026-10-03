@@ -9,19 +9,40 @@ from native_program import ROOT,require
 from sio_transaction_trace import BASE_HZ,read_events
 
 
-def markers(program,foreign,output):
+def native_markers(program, routines):
+    """Optional native routines, including their checked machine-code returns."""
     decoder={'__name__':'bitmap_decoder'}
     path=ROOT/'build/actionc/tools/disassemble65816.py'
     exec(compile(path.read_text(),str(path),'exec'),decoder)
     image=program['image'];result={}
-    for routine,key in [('PRESENT','present'),('ADVANCE','advance'),('BITMAPEDIT','edit'),('CELLS','cells')]:
-        r=next(r for r in image['routines'] if r['name'].startswith('M_CONSOLEDISPLAY_'+routine+'_'))
-        segments=[]
+    for routine,key in routines:
+        matches=[r for r in image['routines'] if r['name'].startswith('M_'+routine+'_')]
+        if not matches:continue
+        require(len(matches)==1,'Ambiguous performance routine '+routine)
+        r=matches[0];segments=[]
         for s in image['segments']:
             lo=max(s['address'],r['address']);hi=min(s['address']+len(s['bytes']),r['address']+r['size'])
             if lo<hi:segments.append(dict(address=lo,executable=True,bytes=s['bytes'][lo-s['address']:hi-s['address']]))
         listing=decoder['disassemble']({**image,'version':3,'segments':segments})
         result[key]=dict(entry=r['address'],returns=[int(line[:6],16) for line in listing.splitlines() if line.endswith(' RTL')])
+    return result
+
+
+def input_markers(program):
+    result=native_markers(program,[('CONSOLEINPUT_PENDING','input_pending'),
+        ('CONSOLEINPUT_PUMP','pump'),('CONSOLEINPUT_SERVICE','input_service'),
+        ('INPUT_PENDING','public_pending'),('INPUT_TAKE','input_take'),
+        ('INPUT_EXTENT','input_extent'),('TASKMEMORY_WRITABLE','writable'),
+        ('CONSOLEDRIVER_RUNNABLE','runnable')])
+    for label,key in [('tasks_find_task','find_task'),('tasks_set_signal','signal_collect')]:
+        result[key]=dict(entry=program['labels'][label],returns=[program['labels'][label+'_end']-1])
+    return result
+
+
+def markers(program,foreign,output):
+    result=native_markers(program,[('CONSOLEDISPLAY_'+routine,key) for routine,key in
+        [('PRESENT','present'),('ADVANCE','advance'),('BITMAPEDIT','edit'),('CELLS','cells')]])
+    image=program['image'];result.update(input_markers(program))
     result['call']=dict(entry=program['labels']['console_bitmap_call'],returns=[program['labels']['console_bitmap_done']])
     r=next(r for r in image['routines'] if r['name'].startswith('M_BITMAPSCROLL_REPAINTBEGIN_'))
     result['repaint']=dict(entry=r['address'],returns=[])
@@ -49,28 +70,40 @@ def markers(program,foreign,output):
     return result
 
 
-def summarize(path,marks,windows):
-    active={};samples=[];launch=None
+def spans(path,marks):
+    active={};samples=[];launch={}
     for tick,e in read_events(path):
         if e[0]!='cpu':continue
-        pc=int(e[4],16)
+        pc=int(e[4],16);dp=int(e[9],16)
         for name,m in marks.items():
+            key=(name,dp)
             if pc==m['entry']:
-                if name=='launch':launch=tick
-                elif name=='repaint':samples.append(dict(kind=name,start=tick,end=tick,ms=0))
+                if name=='launch':
+                    require(dp not in launch,'Overlapping hardware launch');launch[dp]=tick
+                elif name=='repaint':samples.append(dict(kind=name,dp=dp,start=tick,end=tick,ms=0))
                 elif m['returns']:
-                    require(name not in active,'Nested performance routine '+name);active[name]=tick
-            elif pc in m['returns'] and name in active:
-                start=active.pop(name);samples.append(dict(kind=name,start=start,end=tick,ms=(tick-start)/BASE_HZ*1000))
-                if name=='idle' and launch is not None:
-                    samples.append(dict(kind='launch_to_idle',start=launch,end=tick,ms=(tick-launch)/BASE_HZ*1000));launch=None
-    require(not active and launch is None,'Unfinished performance span')
+                    require(key not in active,'Nested performance routine '+name);active[key]=tick
+            elif pc in m['returns'] and key in active:
+                start=active.pop(key);samples.append(dict(kind=name,dp=dp,start=start,end=tick,ms=(tick-start)/BASE_HZ*1000))
+                if name=='idle' and dp in launch:
+                    start=launch.pop(dp)
+                    samples.append(dict(kind='launch_to_idle',dp=dp,start=start,end=tick,ms=(tick-start)/BASE_HZ*1000))
+    require(not active and not launch,'Unfinished performance span')
+    return samples
+
+
+def totals(rows):
+    kinds={name:[r['ms'] for r in rows if r['kind']==name] for name in {r['kind'] for r in rows}}
+    return {k:dict(calls=len(v),total_ms=sum(v),max_ms=max(v)) for k,v in kinds.items()}
+
+
+def summarize(path,marks,windows):
+    samples=spans(path,marks)
     result=[]
     for window in windows:
         if window['kind']!='work':continue
         rows=[r for r in samples if window['start']<=r['start']<=r['end']<=window['end']]
-        kinds={name:[r['ms'] for r in rows if r['kind']==name] for name in {r['kind'] for r in rows}}
-        item=dict(stage=window['stage'],routines={k:dict(calls=len(v),total_ms=sum(v),max_ms=max(v)) for k,v in kinds.items()})
+        item=dict(stage=window['stage'],routines=totals(rows))
         repaint=[r for r in rows if r['kind']=='repaint']
         calls=[r for r in rows if r['kind']=='call']
         if repaint and calls:
@@ -79,11 +112,22 @@ def summarize(path,marks,windows):
         if edits and advances:
             # Consecutive edits delimit independent continuations; the last
             # Advance return is the final copy/fill fence plus acknowledgement.
-            scroll=[]
+            scroll=[];input_checks=[]
             for i,edit in enumerate(edits):
                 limit=edits[i+1]['start'] if i+1<len(edits) else window['end']
                 ends=[r['end'] for r in advances if edit['end']<=r['start']<limit]
-                if ends:scroll.append((max(ends)-edit['start'])/BASE_HZ*1000)
+                if ends:
+                    end=max(ends);scroll.append((end-edit['start'])/BASE_HZ*1000)
+                    inside=[r for r in rows if r['dp']==edit['dp'] and edit['start']<=r['start']<=r['end']<=end]
+                    measured=totals(inside)
+                    # Disjoint new-path spans; count the entire Runnable helper
+                    # conservatively when it executes. Old Pending is inside it.
+                    components=('input_service','signal_collect','runnable') if 'input_service' in marks else ('input_pending',)
+                    input_checks.append(dict(worker_dp=edit['dp'],routines=measured,
+                        input_check_ms=sum(measured.get(k,{}).get('total_ms',0) for k in components),
+                        components=components))
             item['edit_through_final_chunk_ms']=scroll
+            item['scroll_input']=input_checks
         result.append(item)
-    return dict(scope=__doc__,stages=result,limits_ms=dict(cpu_quantum=4,list_occupancy=2,scroll=20,repaint=500,input_visible=40))
+    idle=[dict(stage=w['stage'],routines=totals([r for r in samples if w['start']<=r['start']<=r['end']<=w['end'] and r['kind'] in ('input_pending','input_service','pump','input_take','signal_collect')])) for w in windows if w['kind']=='idle']
+    return dict(scope=__doc__,stages=result,idle_input=idle,limits_ms=dict(cpu_quantum=4,list_occupancy=2,scroll=20,repaint=500,input_visible=40))
