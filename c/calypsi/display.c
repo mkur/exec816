@@ -1,9 +1,10 @@
 #include <exec/display.h>
+#include <hardware/vbxe-notify.h>
 
 /* The native launcher binds the ordinary library before admitting C Tasks. */
-void EXEC_PTR *ExecDisplayEntries[9];
+void EXEC_PTR *ExecDisplayEntries[15];
 struct DisplayArgs { ULONG lease; UWORD kind; };
-UWORD EXEC_CALL _DisplayCall(UWORD entry, const struct DisplayArgs *args);
+ULONG EXEC_CALL _DisplayCall(UWORD entry, const struct DisplayArgs *args);
 
 static UWORD call(UWORD entry, struct DisplayLease *lease, UWORD kind)
 {
@@ -19,3 +20,22 @@ UWORD DisplayFault(struct DisplayLease *p) { return call(5,p,0); }
 UWORD DisplayBaseline(void) { return call(6,NULL,0); }
 UWORD DisplayTicks(void) { return call(7,NULL,0); }
 void DisplayResetRequired(void) { call(8,NULL,0); }
+
+UWORD VbxeNotifyOpen(struct DisplayLease *p) { return call(9,p,0); }
+UWORD VbxeNotifyClose(struct DisplayLease *p) { return call(10,p,0); }
+ULONG VbxeNotifyMask(struct DisplayLease *p)
+{
+    struct DisplayArgs args = {(ULONG)p,0};
+    return _DisplayCall(11*3,&args);
+}
+UWORD VbxeNotifyArm(ULONG id)
+{
+    struct DisplayArgs args = {id,0};
+    return _DisplayCall(12*3,&args);
+}
+UWORD VbxeNotifyState(ULONG id)
+{
+    struct DisplayArgs args = {id,0};
+    return _DisplayCall(13*3,&args);
+}
+void VbxeNotifyReset(void) { call(14,NULL,0); }

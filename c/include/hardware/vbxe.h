@@ -24,7 +24,7 @@ struct VbxeDisplay {
     struct VbxeMapState map;
     UWORD savedList;
     UBYTE savedDma, mutated;
-    UBYTE video, xdl[3], blit[3], irq, palette, color;
+    UBYTE video, xdl[3], blit[3], palette, color;
     UWORD lastError;
     ULONG scrollId;
     UWORD scrollStarted;
@@ -33,6 +33,10 @@ struct VbxeDisplay {
 UWORD VbxeOpen(struct VbxeDisplay *display);
 UWORD VbxeFence(struct VbxeDisplay *display);
 UWORD VbxeClose(struct VbxeDisplay *display);
+/* Nonzero driver-owned signal until close; zero for an invalid owner.
+ * Signals coalesce: Wait announces work, ScrollPoll consumes durable status.
+ * Clients may wait on this mask, but must not free its bit. */
+ULONG VbxeCompletionMask(struct VbxeDisplay *display);
 UWORD VbxeWrite(struct VbxeDisplay *display, ULONG address, const void *source, UWORD bytes);
 UWORD VbxeRead(struct VbxeDisplay *display, ULONG address, void *destination, UWORD bytes);
 UWORD VbxeFill(struct VbxeDisplay *display, ULONG address, UWORD stride, UWORD bytes, UWORD rows, UBYTE value);

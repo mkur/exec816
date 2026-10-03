@@ -43,7 +43,7 @@ def run(out,mode,bitmap=False,replay=False):
     try:
         with emulator(BRIDGE,ROM,out,pin=PIN) as b:
             result['machine']=verify_machine(b,ROM,PIN)
-            try:runtime,_=execute(b,p,before_run=lambda b:b.poke(at('bitmap'),int(bitmap)),timer_irq=True,frame_limit=12000,timeout=180)
+            try:runtime,_=execute(b,p,before_run=lambda b:b.poke(at('bitmap'),int(bitmap)),timer_irq=not bitmap,frame_limit=12000,timeout=180)
             except Exception:
                 print('Wake phase/checks/regs',data(b,p['image'],'phase'),data(b,p['image'],'checks',True),b.regs(),flush=True);raise
             require(data(b,p['image'],'finished')==[1],'Wake fixture did not finish')

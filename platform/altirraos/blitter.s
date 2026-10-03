@@ -1,7 +1,7 @@
 ; Resident VBXE source. Mailbox and binding stay in upper Task metadata.
 ; IRQ/NMI never borrow Task or C pointers. All hardware changes preserve I.
 .include "blitter.inc"
-.segment "SIGNAL_CODE"
+.segment "BLITTER_CODE"
 .export blitter_prepare,blitter_prepare_end,blitter_claim,blitter_claim_end
 .export blitter_release,blitter_release_end,blitter_release_unchecked
 .export blitter_arm,blitter_arm_end,blitter_state,blitter_state_end
@@ -41,6 +41,9 @@ blitter_claim:
     bne blitter_claim_bad8
     lda f:BV_BINDING+T_BINDING_ACTIVE
     bne blitter_claim_bad8
+    lda #4
+    jsr timer_acquire
+    beq blitter_claim_bad8
     lda #0
     sta f:$d654
     sta f:BV_CONTROL
@@ -77,6 +80,9 @@ blitter_release_unchecked:
     sta f:$d654
     sta f:BV_CONTROL
     sta f:BV_BINDING+T_BINDING_ACTIVE
+    sta f:TM_BLITTER
+    lda #4
+    jsr timer_release
     rep #$20
     lda f:BV_OLDIRQ
     sta f:$0216
@@ -88,6 +94,8 @@ blitter_release_end:
 
 ; Existing command arena is fully uploaded/unmapped before this short section.
 ; ID and start tick publish before ARMED. Enable and START cannot lose an IRQ.
+; NMI can record ticks here, but the interrupted I=1 context cannot switch.
+; Timer and VBXE IRQs consume only immutable upper state after publication.
 blitter_arm:
     php
     sei
@@ -116,9 +124,12 @@ blitter_arm:
     sta f:$d651
     lda #^BV_COMMAND
     sta f:$d652
+    lda #1
+    sta f:TM_BLITTER
+    lda f:$0010
+    jsr timer_mask
     lda #BV_ARMED
     sta f:BV_EVENT
-    lda #1
     sta f:BV_CONTROL
     sta f:$d654
     sta f:$d653
@@ -159,6 +170,7 @@ blitter_reset:
     sta f:$d654
     sta f:BV_CONTROL
     sta f:BV_EVENT
+    jsr blitter_cancel_timer
     rep #$20
     plp
     rtl
@@ -187,6 +199,7 @@ blitter_irq_service:
 blitter_irq_complete:
     lda #BV_DONE
     sta f:BV_EVENT
+    jsr blitter_cancel_timer
     ldx #BV_BINDING-T_BASE
     jsr signal_post_binding
 blitter_irq_posted:
@@ -195,6 +208,41 @@ blitter_irq_handled:
     rts
 blitter_irq_none:
     clc
+    rts
+
+; Retire only this demand; SIO alarms and pointer sampling remain enabled.
+.a8
+blitter_cancel_timer:
+    lda #0
+    sta f:TM_BLITTER
+    lda f:$0010
+    jmp timer_mask
+
+; Independent wake, including when hardware has stopped producing interrupts.
+; A16 reads the VBI counter atomically with respect to instruction-boundary NMI.
+; IRQ completion and timeout serialize under I=1; exactly one wins ARMED.
+.export blitter_expired,blitter_watchdog,blitter_watchdog_done
+blitter_watchdog:
+    lda f:BV_EVENT
+    cmp #BV_ARMED
+    bne blitter_watchdog_done
+    rep #$20
+    lda f:E816_VBI_COUNT
+    sec
+    sbc f:BV_STARTED
+    cmp #16
+    sep #$20
+    bcc blitter_watchdog_done
+    lda #0
+    sta f:$d654
+    sta f:BV_CONTROL
+blitter_expired:
+    lda #BV_EXPIRED
+    sta f:BV_EVENT
+    jsr blitter_cancel_timer
+    ldx #BV_BINDING-T_BASE
+    jsr signal_post_binding
+blitter_watchdog_done:
     rts
 
 ; VIMIRQ runs before ROM has saved registers. Preserve both possible E modes.
@@ -219,7 +267,7 @@ blitter_emulation_handled:
     rti
 blitter_saved_irq:
     .word 0
-.segment "SIGNAL_CODE"
+.segment "BLITTER_CODE"
 blitter_emulation:
     save_full
     cld
@@ -304,6 +352,6 @@ blitter_probe_exit:
     xce
     rep #$30
     jml blitter_probe_return
-.segment "SIGNAL_CODE"
+.segment "BLITTER_CODE"
 .a16
 .i16

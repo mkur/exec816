@@ -100,7 +100,8 @@ def build_display_probe(output, optimize=True, instrument=True):
     # injected stuck-engine cases still execute the production stop/restore path.
     backend=(ROOT/'platform/altirraos/vbxe.c').read_text()
     backend='extern void ProbeScrollLaunch(void);\n'+backend.replace(
-        'REG(BUSY)=1;', 'REG(BUSY)=1; ProbeScrollLaunch();')
+        'REG(BUSY)=1;', 'REG(BUSY)=1; ProbeScrollLaunch();').replace(
+        'status=VbxeNotifyArm(d->scrollId);', 'status=VbxeNotifyArm(d->scrollId); ProbeScrollLaunch();')
     if instrument:
         backend=backend.replace('#define BUSY ', 'extern UBYTE ProbeBusy(void);\nextern UBYTE ProbeVcount(void);\nextern volatile UWORD ProbeStopped;\n#define BUSY ')
         backend=backend.replace('REG(BUSY)&3','ProbeBusy()&3').replace('REG(VCOUNT)','ProbeVcount()')

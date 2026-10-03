@@ -47,6 +47,30 @@ CARD FUNC CDisplayFault(LONGCARD value)
 
 RETURN(DISPLAY.Fault(DISPLAY.Lease POINTER(ADDRESS(value))))
 
+CARD FUNC CBlitterOpen(LONGCARD value)
+
+  IF value>$ffffff THEN
+    RETURN(DISPLAY.INVALID_OWNER)
+  FI
+
+RETURN(BLITTER.Open(DISPLAY.Lease POINTER(ADDRESS(value))))
+
+CARD FUNC CBlitterClose(LONGCARD value)
+
+  IF value>$ffffff THEN
+    RETURN(DISPLAY.INVALID_OWNER)
+  FI
+
+RETURN(BLITTER.Close(DISPLAY.Lease POINTER(ADDRESS(value))))
+
+LONGCARD FUNC CBlitterMask(LONGCARD value)
+
+  IF value>$ffffff THEN
+    RETURN(0)
+  FI
+
+RETURN(BLITTER.Mask(DISPLAY.Lease POINTER(ADDRESS(value))))
+
 ; The table is private upper data in the checked C image, never a ROM vector.
 PROC BindDisplay()
 
@@ -60,5 +84,11 @@ PROC BindDisplay()
   entries(6)=ADDRESS(@DISPLAYBOOT.Known)
   entries(7)=ADDRESS(@DISPLAYADAPTER.Ticks)
   entries(8)=ADDRESS(@DISPLAYADAPTER.ResetRequired)
+  entries(9)=ADDRESS(@CBlitterOpen)
+  entries(10)=ADDRESS(@CBlitterClose)
+  entries(11)=ADDRESS(@CBlitterMask)
+  entries(12)=ADDRESS(@BLITTERADAPTER.Arm)
+  entries(13)=ADDRESS(@BLITTERADAPTER.State)
+  entries(14)=ADDRESS(@BLITTERADAPTER.Reset)
 
 RETURN

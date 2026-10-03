@@ -19,5 +19,7 @@
     "DONE": 2,
     "EXPIRED": 3
   },
-  "command_address": 229376
+  "command_address": 229376,
+  "code_offset": 20480,
+  "code_reserved_bytes": 2048
 }

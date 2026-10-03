@@ -19,9 +19,9 @@ def drawing(out,optimize,probe=False,fault=False):
         hardware=(ROOT/'platform/altirraos/vbxe.c').read_text()
         hardware=hardware.replace('#define BUSY ', 'extern UBYTE ConsoleFaultBusy(void);\nextern void ConsoleFaultStop(void);\nextern void ConsoleFaultCopy(void);\nextern void ConsoleFaultText(UWORD count);\n#define BUSY ')
         hardware=hardware.replace('REG(BUSY)&3','ConsoleFaultBusy()&3').replace('REG(BUSY)=0;', 'REG(BUSY)=0; ConsoleFaultStop();')
-        needle='REG(BUSY)=1;'
+        needle='status=VbxeNotifyArm(d->scrollId);'
         require(hardware.count(needle)==1,'Scroll launch boundary changed')
-        hardware=hardware.replace(needle,needle+' if (d->scrollPending) ConsoleFaultCopy();')
+        hardware=hardware.replace(needle,needle+' ConsoleFaultCopy();')
         needle='start(d);\n        status=VbxeOwnerFence(d);'
         require(hardware.count(needle)==1,'Text launch boundary changed')
         hardware=hardware.replace(needle,'start(d); ConsoleFaultText(n);\n        status=VbxeOwnerFence(d);')
@@ -48,7 +48,7 @@ def prepare(source,out,foreign):
     text=read_source(source);sy=foreign['symbols']
     require(len(re.findall(r'(?m)^PROC Main\(\)',text))==1,'Expected one ordinary Main entry')
     text=text.replace('PROC Main()','PROC BitmapApplication(BYTE unused)')
-    uses=''.join('USE '+name+'\n' for name in ('EXEC','CONSOLEDRIVER','CONSOLEBITMAP','DISPLAY','DISPLAYBOOT','DISPLAYADAPTER','HEAPCORE') if not re.search(r'(?mi)^USE '+name+r'\s*$',text))
+    uses=''.join('USE '+name+'\n' for name in ('EXEC','CONSOLEDRIVER','CONSOLEBITMAP','DISPLAY','DISPLAYBOOT','DISPLAYADAPTER','BLITTER','BLITTERADAPTER','HEAPCORE') if not re.search(r'(?mi)^USE '+name+r'\s*$',text))
     text=re.sub(r'(?m)^(MODULE \w+\n)',lambda m:m[1]+uses,text,count=1)
     binding=f'CONST C_EXECDISPLAYENTRIES=${sy["ExecDisplayEntries"]:x}\n'
     binding+=read_source(ROOT/'c/calypsi/display-bridge.inc')

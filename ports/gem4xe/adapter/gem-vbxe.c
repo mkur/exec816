@@ -369,3 +369,6 @@ static UWORD fence_backend(void *context)
 const struct GemBackend GemVbxeBackend={open_backend,command_backend,fence_backend,close_backend,cursor_backend,0};
 
 #endif
+
+ULONG GemDrawingCompletionMask(void)
+{ return VbxeCompletionMask(&display); }

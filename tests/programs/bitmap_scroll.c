@@ -28,8 +28,10 @@ static void geometry(UWORD x,UWORD y,UWORD width,UWORD rows)
 }
 void ScrollCases(void)
 {
-    ULONG id=0,old,rejected=0x12345678UL;
+    ULONG id=0,old,rejected=0x12345678UL,completion;
     UWORD x,y,before,launches,status,started,good;
+    completion=VbxeCompletionMask(&display);
+    check(completion!=0);
     geometry(0,0,640,232);
     check(VbxeScrollStart(&display,NULL,0,&id)==DISPLAY_BAD_ARGUMENT);
     check(VbxeScrollStart(&display,&copy,0,NULL)==DISPLAY_BAD_ARGUMENT);
@@ -57,6 +59,7 @@ void ScrollCases(void)
     /* The completed launch owns its records; the original descriptor can die. */
     memset(&copy,0xcc,sizeof(copy));
     if (variant>=13) { fault_arm=1; ProbeStopped=0; }
+    if (variant==12) check((Wait(completion)&completion)!=0);
     do {
         before=ownerChecks;
         status=VbxeScrollPoll(&display,id);
@@ -66,8 +69,10 @@ void ScrollCases(void)
     if (variant>=13) {
         check(status==DISPLAY_DEVICE_FAULT && !display.scrollPending);
         check(display.lease.state==DISPLAY_FREE && ProbeStopped);
-        check((UWORD)(DisplayTicks()-started)>=VBXE_WAIT_TICKS);
-        if (variant==14) check(started>=0xfffe && DisplayTicks()<32);
+        /* DONE with injected BUSY is an immediate contradiction, not a
+         * missing IRQ. Independent lost-IRQ/tick-wrap coverage waits in the
+         * native blitter fixture with only the watchdog timer running. */
+        check((UWORD)(DisplayTicks()-started)<VBXE_WAIT_TICKS+2);
         fault_arm=0;
         check(VbxeOpen(&display)==DISPLAY_OK);
         check(VbxeScrollPoll(&display,id)==DISPLAY_BAD_ARGUMENT);

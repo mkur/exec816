@@ -1,6 +1,7 @@
-/* Exec-owned FX 1.26 adapter. No donor startup, IRQ hooks or unbounded waits. */
+/* Exec-owned FX 1.26 adapter with bounded native completion notification. */
 #include "vbxe-internal.h"
 #include <hardware/vbxe-upload.h>
+#include <hardware/vbxe-notify.h>
 #include <proto/exec.h>
 
 #define REG(address) (*(volatile UBYTE *)(ULONG)(address))
@@ -41,10 +42,11 @@ static UWORD retire(struct VbxeDisplay *d, UWORD result)
 {
     if (DisplayBeginRelease(&d->lease)!=DISPLAY_OK)
         DisplayResetRequired();
+    if (VbxeNotifyClose(&d->lease)!=DISPLAY_OK)
+        DisplayResetRequired();
     if (d->mutated) {
         REG(0xd640)=d->video=0;
         map(d,0,0);
-        REG(0xd654)=d->irq=0;
         REG(0xd641)=d->xdl[0]=0;
         REG(0xd642)=d->xdl[1]=0;
         REG(0xd643)=d->xdl[2]=0;
@@ -96,13 +98,14 @@ UWORD VbxeOpen(struct VbxeDisplay *d)
     /* Readable checks catch contradictions; they do not infer write-only state. */
     if ((REG(BUSY)&3) || REG(0xd65e) || REG(0xd65f) || REG(0xd654))
         return retire(d,DISPLAY_UNSUPPORTED);
+    status=VbxeNotifyOpen(&d->lease);
+    if (status!=DISPLAY_OK) return retire(d,status);
     d->savedDma=REG(0x22f);
     d->savedList=(UWORD)REG(0x230)|((UWORD)REG(0x231)<<8);
     d->mutated=1;
     REG(0x22f)=0;
     REG(0xd400)=0;
     REG(0xd640)=d->video=0;
-    REG(0xd654)=d->irq=0;
     map(d,0,0);
     d->lastError=DISPLAY_OK;
     return DisplayActivate(&d->lease);
@@ -218,13 +221,18 @@ static void start(struct VbxeDisplay *d)
     REG(BUSY)=1;
 }
 
-static void launch(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
+static void upload(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
 {
     struct VbxeUpload upload;
     upload.records=(ULONG)records; upload.count=count;
     map(d,(UBYTE)(0x80|(VBXE_BCB>>12)),0x88);
     _VbxeUpload(&upload);
     map(d,0,0);
+}
+
+static void launch(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
+{
+    upload(d,records,count);
     start(d);
 }
 
@@ -279,6 +287,7 @@ UWORD VbxeOwnerText(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
  * launch, and no other list may overwrite the arena while pending is set. */
 static UWORD complete_scroll(struct VbxeDisplay *d)
 {
+    VbxeNotifyReset();
     d->scrollPending=0;
     d->lastError=DISPLAY_OK;
     return DISPLAY_OK;
@@ -286,10 +295,15 @@ static UWORD complete_scroll(struct VbxeDisplay *d)
 
 UWORD VbxeOwnerScrollPoll(struct VbxeDisplay *d,ULONG id)
 {
+    UWORD event;
     if (!id || id!=d->scrollId) return DISPLAY_BAD_ARGUMENT;
     if (!d->scrollPending) return d->lastError;
+    event=VbxeNotifyState(id);
     if (!(REG(BUSY)&3)) return complete_scroll(d);
-    if ((UWORD)(DisplayTicks()-d->scrollStarted)>=VBXE_WAIT_TICKS)
+    /* A terminal notice followed by BUSY contradicts the completed list.
+     * Recover now: that notice has already retired its watchdog demand. */
+    if (event==VBXE_NOTIFY_DONE || event==VBXE_NOTIFY_EXPIRED ||
+        (UWORD)(DisplayTicks()-d->scrollStarted)>=VBXE_WAIT_TICKS)
         return recover(d);
     return DISPLAY_BUSY;
 }
@@ -298,7 +312,7 @@ UWORD VbxeOwnerScrollStart(struct VbxeDisplay *d,const struct VbxeCopy *c,
                            UBYTE value,ULONG *id)
 {
     ULONG source,destination,bottom;
-    UWORD bytes,i,count;
+    UWORD bytes,i,count,status;
     UBYTE records[42],*fill;
     if (d->scrollPending) return DISPLAY_BUSY;
     if (!extent(0,c,sizeof(*c)) || !extent(0,id,sizeof(*id)))
@@ -341,7 +355,9 @@ UWORD VbxeOwnerScrollStart(struct VbxeDisplay *d,const struct VbxeCopy *c,
     d->lastError=DISPLAY_BUSY;
     d->scrollPending=1;
     *id=d->scrollId;
-    launch(d,count==2 ? records : fill,count);
+    upload(d,count==2 ? records : fill,count);
+    status=VbxeNotifyArm(d->scrollId);
+    if (status!=DISPLAY_OK) return recover(d);
     return DISPLAY_OK;
 }
 
@@ -627,4 +643,9 @@ UWORD VbxeBlit(struct VbxeDisplay *display, ULONG source, UWORD sourceStride,
     UWORD status=check(display);
     if (status!=DISPLAY_OK) return status;
     return VbxeOwnerBlit(display,source,sourceStride,destination,destinationStride,bytes,rows,andMask,xorMask,mode);
+}
+
+ULONG VbxeCompletionMask(struct VbxeDisplay *display)
+{
+    return check(display)==DISPLAY_OK ? VbxeNotifyMask(&display->lease) : 0;
 }

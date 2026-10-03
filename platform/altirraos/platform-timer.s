@@ -6,7 +6,7 @@
 .i16
 .export timer_tick,timer_sample,timer_poll
 
-; A=owner bit (1 SIO, 2 pointer). A=1 success, 0 busy. Preserve incoming I.
+; A=owner bit (1 SIO, 2 pointer, 4 blitter). A=1 success, 0 busy. Preserve incoming I.
 ; First ownership establishes the platform's silent audio baseline. There is
 ; no audio owner/shadow to restore before that boundary; never read POT aliases.
 timer_acquire:
@@ -91,6 +91,7 @@ timer_mask:
     pha
     lda f:TM_ALARM
     ora f:TM_POINTER
+    ora f:TM_BLITTER
     beq :+
     pla
     ora #1
@@ -139,6 +140,10 @@ timer_tick:
     lda f:TM_ALARM
     beq :+
     jsr sio_alarm
+:
+    lda f:TM_BLITTER
+    beq :+
+    jsr blitter_watchdog
 :
     lda f:TM_POINTER
     beq timer_poll_done

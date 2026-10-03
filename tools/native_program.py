@@ -104,6 +104,13 @@ def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=Fal
         from generate_sio_adapter import ABI as sio_adapter
         binding_size = 58
         binding_base = storage(memory)['ENTRY_COUNT']
+        blitter = json.loads((ROOT/'abi/blitter.json').read_text())
+        pointer = json.loads((ROOT/'abi/input-native.json').read_text())['storage']
+        require(blitter['code_offset'] >= pointer['pointer_reserve_offset']+pointer['pointer_reserved_bytes']
+                and blitter['code_offset']+blitter['code_reserved_bytes'] <= 65536,
+                'Blitter code overlaps fixed upper Task storage')
+        blitter_base = storage(memory)['BASE']+blitter['code_offset']
+        config = config.replace('MEMORY {',f'MEMORY {{ BLITTER: start=${blitter_base:x}, size=${blitter["code_reserved_bytes"]:x}, file="%O.blitter";').replace('SEGMENTS {','SEGMENTS { BLITTER_CODE: load=BLITTER,type=ro;')
         signal_base = storage(memory)['BASE']+sio_adapter['native_offset']
         config = config.replace('MEMORY {',f'MEMORY {{ SIGNALS: start=${signal_base:x}, size=${sio_adapter["native_reserved_bytes"]:x}, file="%O.signals";').replace('SEGMENTS {','SEGMENTS { SIGNAL_CODE: load=SIGNALS,type=ro;')
         config = config.replace('MEMORY {', f'MEMORY {{ BINDINGS: start=${binding_base:x}, size=${binding_size:x}, file="%O.tasks";').replace(
@@ -650,6 +657,9 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             name='M_PROCESSSTATE_TABLE',address=process_storage['BASE'],size=process_storage['BYTES'],alignment=2))
         task_storage = generate_tasks.storage(memory)
         image['segments'].append({'address':task_storage['BASE']+0x1000,'bytes':list((output/'hosted.bin.signals').read_bytes()),'writable':False,'executable':True})
+        blitter_abi=json.loads((ROOT/'abi/blitter.json').read_text())
+        image['segments'].append({'address':task_storage['BASE']+blitter_abi['code_offset'],
+            'bytes':list((output/'hosted.bin.blitter').read_bytes()),'writable':False,'executable':True})
         require(task_storage['METADATA_BYTES']<=0x800,'Task metadata overlaps SIO descriptor')
         input_storage = memory['input_storage']
         pointer_reserve = bytearray(input_storage['POINTER_RESERVED_BYTES'])
@@ -808,6 +818,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         # Refresh upper native code as well as the task binding data.
         signal_segment=next(s for s in image['segments'] if s['address']==task_storage['BASE']+0x1000)
         signal_segment['bytes']=list((output/'hosted.bin.signals').read_bytes())
+        blitter_segment=next(s for s in image['segments'] if s['address']==task_storage['BASE']+blitter_abi['code_offset'])
+        blitter_segment['bytes']=list((output/'hosted.bin.blitter').read_bytes())
         bindings = (output/'hosted.bin.tasks').read_bytes()
         segment = next(s for s in image['segments'] if s['address'] == task_storage['BASE'])
         offset = task_storage['ENTRY_COUNT']-task_storage['BASE']

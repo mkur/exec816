@@ -56,7 +56,7 @@ def run(out,mode,replay=False,observe=False,performance=False):
                     reach(f'@frame>={b.eval_expr("@frame")+2}')
                     b.memload(address('GATE'),stage.to_bytes(2,'little'))
                 b.bp_clear_all()
-            runtime,_=execute(b,p,before_run=before,timer_irq=True,timeout=180,frame_limit=10000)
+            runtime,_=execute(b,p,before_run=before,timer_irq=False,timeout=180,frame_limit=10000)
             require(b.memdump(saved['screen'],960)==saved['bytes'] and b.memdump(0x22f,3)==saved['dma'],'OS screen not restored')
             require(b.memdump(0x2f0,1)==saved['cursor'] and b.memdump(0x208,2)==saved['input'],'OS input not restored')
             if observe:b.profile_stop()

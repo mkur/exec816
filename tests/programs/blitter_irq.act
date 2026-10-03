@@ -7,8 +7,10 @@ USE BLITTER
 USE BLITTERADAPTER
 USE HEAPCORE
 DISPLAY.Lease lease
-CARD checks
-LONGCARD completion
+CARD checks,expectedEvent=[2],elapsed
+BYTE faultMode
+VOLATILE CARD ticks=$834
+LONGCARD completion,shadowAddress
 VOLATILE BYTE control=$d65e,bank=$d65f,busy=$d653,irq=$d654
 
 PROC Require(BYTE okay)
@@ -115,10 +117,26 @@ PROC Main()
   Require(completion<>0)
   Require(EXECPRODUCER.Bind(EXECPRODUCER.VBXE_BLITTER,EXEC.FindTask(NULL),completion)=0)
   List(0)
+  IF (faultMode & 2)<>0 THEN
+    ticks=$fff8
+  FI
+
   Require(BLITTERADAPTER.Arm(1)=DISPLAY.OK)
+  IF (faultMode & 1)<>0 THEN
+    ; The long list is still busy. Suppress its IRQ and authoritative shadow;
+    ; leave the independent timer demand and durable ARMED identity intact.
+    irq=0
+    BEGIN
+      LET shadow=BYTE POINTER(ADDRESS(shadowAddress))
+      shadow^=0
+    END
+    expectedEvent=3
+  FI
+  LET started=ticks
   bits=EXEC.Wait(completion)
+  elapsed=ticks-started
   Require((bits & completion)<>0)
-  Require(BLITTERADAPTER.State(1)=2)
+  Require(BLITTERADAPTER.State(1)=expectedEvent)
   Require((busy & 3)=0 AND irq=0)
   Require(BLITTERADAPTER.State(2)=$ffff)
   Pixels(0)

@@ -11,6 +11,7 @@ UWORD GemDrawingCopy(const struct VbxeCopy *copy);
  * geometry, ID, storage lifetime and Poll contracts are in hardware/vbxe.h. */
 UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id);
 UWORD GemDrawingScrollPoll(ULONG id);
+ULONG GemDrawingCompletionMask(void);
 UWORD GemDrawingFence(void);
 UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
 UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,

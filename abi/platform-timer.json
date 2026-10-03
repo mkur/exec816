@@ -16,6 +16,7 @@
     "TM_SAMPLES": 10,
     "TM_PORT": 12,
     "TM_TRIGGER": 13,
-    "TM_CHANGES": 14
+    "TM_CHANGES": 14,
+    "TM_BLITTER": 16
   }
 }
