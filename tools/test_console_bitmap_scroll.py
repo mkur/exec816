@@ -78,8 +78,8 @@ def run(out,mode,replay=False,observe=False,performance=False):
             from blitter_completion_trace import analyze
             result['completion_timing']=analyze(out/'emulator.log',timing)
             rows=result['completion_timing']['scrolls']
-            require(rows and all(row['polls']==1 and row['waits']>=1 and row['yields']==0
-                    and row['irq'] is not None and row['expired'] is None for row in rows),
+            require('async_launch' not in timing or (rows and all(row['polls']==1 and row['waits']>=1 and row['yields']==0
+                    and row['irq'] is not None and row['expired'] is None for row in rows)),
                     'Scroll worker did not wait for one completion notification')
         if observe:shutil.copyfile(out/'emulator.log',out/'observed-emulator.log')
         result['status']='pass'

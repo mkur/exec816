@@ -54,9 +54,11 @@ rectangle copy followed by the exposed-strip fill in the same hardware list.
 A height-one tile submits only the fill. Hidden or invalidated presentation
 redraws retained damage; clear retains bounded fills.
 
-The worker is the sole drawing owner, with one list in flight. It polls once per
-pending turn, services input and READ replies, then yields; it never waits for a
-signal that only hardware completion could provide. Further model writes and all
+The worker is the sole drawing owner, with one list in flight. A retained VBXE
+completion signal wakes it; an independent sixteen-VBI-tick watchdog wakes it
+if that interrupt is lost. It queries completion on a notification, continues
+bounded input and READ service, and waits when no actionable work remains.
+Queued output or controls blocked by DMA do not keep it yielding. Further model writes and all
 hardware drawing, including caret and presentation controls, wait for completion.
 The logical scroll commits once, and cancellation preserves accepted bytes.
 The upper-RAM association holds only unit and view/model generations, never a
@@ -70,7 +72,9 @@ its storage or display ownership. Unquiesced recovery retains both.
 A steady focused underline caret restores its cell before copying and redraws
 after presentation settles. Completion makes that redraw runnable even if no
 WRITE remains. Clean cells and an unchanged caret cause no drawing submissions.
-The native/C packet is version 2, 56 bytes; rebuild both sides together.
+The native/C packet is version 3, 60 bytes, including the driver-owned completion
+mask returned at open. Rebuild both sides together. The worker reserves its
+request/input/stop bits before display initialization allocates that signal.
 Output control bytes have these effects:
 
 | Byte | Effect |
@@ -97,7 +101,7 @@ console maps captured generic route tags to retained instance/foreground state.
 Focus changes do not redirect already captured keys. Input loss is explicit;
 BREAK delivery has retained route state independent of the ordinary key FIFO.
 IRQs do not scan instance records or follow arbitrary application pointers.
-Each worker turn atomically collects input/stop notifications with `SetSignal`,
+Each worker turn atomically collects input/stop/display notifications with `SetSignal`,
 merging the previous `Wait` result. A worker-local flag retains possible input
 until a bounded drain observes EMPTY; full batches keep it runnable. Output with
 no input notification or retained work does not call `INPUT.Pending` or `Take`.
@@ -117,6 +121,9 @@ synchronous and retains the existing worker and ownership boundaries. See the
 [drawing adapter](../../ports/gem4xe/adapter/README.md) for its limits and the
 [responsiveness measurements](../history/console-responsiveness.md) for measured
 CPU and loaded input costs.
+The subsequent [blitter IRQ measurements](../history/blitter-completion-irqs.md)
+record less completion-checking CPU work, about 32.5 ms isolated scrolling and
+98–139 ms sampled loaded visible input. The broader latency targets remain open.
 
 ## Lifetime and limits
 

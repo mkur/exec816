@@ -7,7 +7,8 @@ def markers(program):
     labels = program['labels']
     result = {}
     for name in ('blitter_irq_complete', 'blitter_irq_posted', 'blitter_expired',
-                 'tasks_wait', 'exec_yield'):
+                 'tasks_wait', 'exec_yield', 'native_irq', 'native_nmi',
+                 'interrupt_schedule', 'blitter_watchdog', 'blitter_watchdog_done'):
         if name in labels:
             result['completion_' + name] = dict(entry=labels[name], returns=[], entry_only=True)
     if 'context_restore' in labels:
@@ -75,4 +76,69 @@ def analyze_events(events, marks):
 
 
 def analyze(path, marks):
-    return analyze_events(read_events(path), marks)
+    events = read_events(path)
+    result = analyze_events(events, marks)
+    cpu_cost(events, marks, result['scrolls'])
+    return result
+
+
+def cpu_cost(events, marks, rows):
+    """Exclusive worker charge plus global native interrupt cost per active list.
+
+    Do not count interrupt bodies again as worker CPU, or add nested watchdog
+    time to the IRQ total. Scheduling/RTI remains a conservative Task charge.
+    """
+    from console_turn_profile import Timeline
+    keys = ('native_irq', 'native_nmi', 'interrupt_schedule', 'selected')
+    if not all('completion_'+key in marks for key in keys):
+        return
+    require(events, 'Empty completion CPU trace')
+    points = {key: marks['completion_'+key]['entry'] for key in keys}
+    watchdog = {key: marks['completion_'+key]['entry'] for key in
+                ('blitter_watchdog', 'blitter_watchdog_done') if 'completion_'+key in marks}
+    owner = None
+    frames = []
+    previous = events[0][0]
+    previous_cpu = None
+    segments = []
+    watch_start = None
+    watch_spans = []
+    for tick, e in events:
+        if e[0] != 'cpu':
+            continue
+        pc, dp = int(e[4], 16), int(e[9], 16)
+        if tick > previous:
+            segments.append((previous, tick, owner, bool(frames)))
+        previous = tick
+        if pc in (points['native_irq'], points['native_nmi']):
+            frame = int(e[8], 16)-9
+            if not (frames and frames[-1] == frame and previous_cpu == e[4:]):
+                frames.append(frame)
+        elif pc == points['interrupt_schedule']:
+            require(frames and frames.pop() == int(e[8], 16), 'Unbalanced completion IRQ trace')
+        elif pc == points['selected']:
+            require(not frames, 'Selection inside completion IRQ trace')
+            owner = dp
+        if pc == watchdog.get('blitter_watchdog'):
+            require(watch_start is None, 'Nested watchdog check')
+            watch_start = tick
+        elif pc == watchdog.get('blitter_watchdog_done') and watch_start is not None:
+            watch_spans.append((watch_start, tick))
+            watch_start = None
+        previous_cpu = e[4:]
+    require(not frames and watch_start is None, 'Incomplete completion CPU trace')
+    if not rows:
+        return
+    worker = rows[0]['worker_dp']
+    require(all(row['worker_dp'] == worker for row in rows), 'Multiple completion owners')
+    worker_time = Timeline(segments, worker)
+    irq_time = Timeline([(a, b, worker, irq) for a, b, owner, irq in segments], worker)
+    for row in rows:
+        a, b = row['start'], row['adopt_begin']
+        charge = worker_time.measure(a, b)
+        irq = irq_time.measure(a, b)['interrupt_ms']
+        checks = [(x, y) for x, y in watch_spans if a <= x < y <= b]
+        row['cpu'] = dict(worker_charged_ms=charge['charged_cpu_ms'],
+            off_worker_ms=charge['off_cpu_ms'], native_interrupt_ms=irq,
+            worker_plus_native_interrupt_ms=charge['charged_cpu_ms']+irq,
+            watchdog_checks=len(checks), watchdog_nested_ms=sum(y-x for x, y in checks)/BASE_HZ*1000)

@@ -19,6 +19,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Blitter completion IRQs](blitter-completion-irqs.md): native/emulation delivery,
+  independent timeout wake and a sleeping console worker; CPU gains and remaining latency limits.
 - [Console responsiveness measurements](console-responsiveness.md)
 
 - [Drawing validation and asynchronous scrolling](drawing-validation-and-async-scroll.md): one owner check per call and one list in flight; about 31 ms isolated scrolling, with loaded input acceptance still open.

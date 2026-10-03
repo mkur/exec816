@@ -258,8 +258,11 @@ Task and signal lifetime until all posts and wakes retire. See
 [resident drivers](resident-drivers.md) and [device I/O](device-io.md).
 
 POKEY timer 1 configuration, its emulation vector and IRQ enable composition
-belong to the fixed platform timing component. It has independent SIO-alarm and
-pointer-sampling demands. Each acknowledged edge advances an armed alarm at
+belong to the fixed platform timing component. It has independent SIO-alarm,
+pointer-sampling and blitter-watchdog demands. A display owner retains its timer
+participation while open, but requests timer edges only while an asynchronous
+list is ARMED. Its bounded check reads the VBI deadline, not blitter BUSY.
+Each acknowledged edge advances an armed alarm at
 most once; serial RX/TX receive bounded service opportunities around sampling.
 SIO retains timer 2 and its watchdog, transfer and recovery policy. Timer 1 keeps
 the existing divisor 7 and SIO alarm units. SIO transaction setup still resets
@@ -270,11 +273,28 @@ it is never delegated to the ROM handler while the timing owner remains live.
 The first compatible owner establishes a silent baseline for its audio/timing
 registers using write shadows, never POKEY's unrelated read aliases. Existing
 timer ownership outside this protocol is incompatible. SIO release restores its
-serial resources while preserving surviving sampling demand; last timer release
+serial resources while preserving surviving sampling/watchdog demand; last timer release
 restores its vector and silent baseline. Task-side transitions use SWITCHING and
 local IRQ masking, covering asynchronous NMI entry as well as IRQ. The fixed
 ST/port 1 pointer backend uses this clock for public INPUT capture; diagnostic
 sampling counters and test entry points are excluded from production. See [mouse development](../history/gem-mouse.md).
+
+The VBXE backend participates in both native and emulation IRQ routing, including
+when SIO owns the serial route. It acknowledges only its owned source and chains
+unowned work. The emulation shim has an inactive fast path; its active path
+preserves the page-one frame and full native context. Neither it nor the timer
+watchdog switches a live OS activation. Launch publishes ID/deadline and ARMED
+under IRQ masking before enabling and starting hardware; NMI may record ticks
+but cannot consume this state or switch across the protected entry protocol.
+
+The generated [blitter layout](../../abi/blitter.json) reserves 64 bytes after
+the serial binding in upper Task metadata. Its 2 KiB code reservation starts at
+offset `$5000` in the existing upper Task bank, outside the guarded pointer code
+reservation. Packaging checks segment bounds and overlap. The bank-zero shim
+fits the existing resident adapter segment; fixed, root/kernel, per-Task and
+idle bank-zero reservation deltas are all zero, including guards and padding.
+No extra Task, DP, stack or CPU bank is allocated. See the
+[implementation record](../history/blitter-completion-irqs.md) for measured costs.
 
 Peripheral speed, RX/TX timing, recovery and coexistence are profile-dependent.
 Pinned emulator evidence does not qualify other profiles or real hardware.

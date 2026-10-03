@@ -57,7 +57,8 @@ rules.
 ## Fixed platform producers
 
 `EXECPRODUCER.Bind(source, task, bits)` returns one on success and zero on busy
-or invalid admission. Source is a CARD: SERIAL=1, KEYBOARD=2 and POINTER_INPUT=3.
+or invalid admission. Source is a CARD: SERIAL=1, KEYBOARD=2, POINTER_INPUT=3
+and VBXE_BLITTER=4.
 Pointer binding selects the fixed ST/port 1 backend, initially with route zero;
 INPUT supplies addressed routes. Empty-source Release/Drain are supported. `POINTER_INPUT` avoids
 the Action! keyword `POINTER`. The target must
@@ -83,6 +84,13 @@ same keyboard binding; its earlier private admission selectors are removed.
 Keyboard and pointer consumers normally use the [input lease API](input.md),
 which owns binding activation, route publication and release/drain. Console and graphics
 share that API rather than installing independent keyboard handlers.
+
+VBXE binding requires the display driver's prepared, retained owner; binding
+alone never grants display access. The [display driver](display.md) owns this
+binding and its completion signal. Ordinary drawing clients obtain its mask
+through `VbxeCompletionMask` (or `GemDrawingCompletionMask`) and do not free it.
+Release stops IRQ/watchdog publication but does not prove DMA quiescence or
+release graphics storage; the driver must settle the operation before teardown.
 
 Try the [signal example](../guides/tasks.md). The original design, ABI migration
 and revision-specific timing discussion remain in the

@@ -27,7 +27,8 @@ It drains at 64 records or 8,192 estimated bus accesses, before CPU staging
 reads/writes or scratch reuse, and at the command's final fence. `blit_pending`
 reports retained work; `blit_start` and `blit_run` both complete the bounded list
 synchronously. Long rectangles are split into at most sixteen-row chunks,
-further reduced by the work budget. No VBXE IRQ or second aperture is enabled.
+further reduced by the work budget. Synchronous lists leave VBXE IRQs disabled;
+the asynchronous scroll path below owns completion IRQs. No second aperture is enabled.
 The driver validates each full list and inserts chaining itself. A failed
 submission latches the command fault; a partially flushed VDI command is not
 reported complete.
@@ -63,7 +64,12 @@ the complete copy/fill and returns its ID after launch. Poll performs one
 completion check. A second start returns BUSY until completion is consumed.
 Ordinary Copy/Fill/Text/Fence and Close retain synchronous completion and finish
 pending hardware work before dependent access. The caller remains the sole
-drawing owner; this adds no renderer Task, service opcode or VBXE IRQ producer.
+drawing owner; this adds no renderer Task or service opcode.
+`GemDrawingCompletionMask` exposes the display driver's owned signal. A retained
+VBXE IRQ producer and independent sixteen-VBI-tick watchdog wake that owner;
+it then calls Poll to consume the matching durable result. The driver releases
+the binding and signal only after settling DMA. See the
+[display contract](../../../docs/reference/display.md).
 
 Fully visible nonzero-ink glyphs use one nibble-stencil command. Hardware-zero
 ink retains the inverse-mask AND path, and clipped glyphs retain the staged

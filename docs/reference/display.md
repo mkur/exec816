@@ -147,10 +147,30 @@ recovery. It never restarts the deadline on a later poll. After recovery release
 the lease, further calls must reacquire ownership; an unquiesced fault retains
 ownership and storage. Completion is not an atomic or tear-free screen update.
 
+`VbxeCompletionMask(display)` returns the owning Task's nonzero completion mask
+while the display is open, or zero for an invalid/foreign owner. The driver
+allocates, binds and frees this signal; callers may Wait on it but must not free
+it. Signals can coalesce: the matching operation ID and durable driver result
+are authoritative. A stale wake after a Fence or earlier operation is harmless.
+
+The native backend owns IRQ_CONTROL and arms the retained `VBXE_BLITTER`
+producer before starting the list. Native and emulation IRQ routes acknowledge
+completion, record DONE and signal the owner without executing C or switching
+a live OS activation. The shared timer independently records EXPIRED and posts
+the same signal after sixteen VBI ticks. It compares the wrapping tick counter,
+without polling BUSY at every timer edge. The owner checks final idle state and
+performs any STOP/recovery in Task context. This permits Wait even without disk,
+pointer or keyboard activity. Notification does not free the command arena or
+authorize another drawing operation until completion is consumed.
+
+Close first proves DMA quiescent, then disables/acknowledges the source, cancels
+its timer demand, releases and drains the binding, frees the signal and restores
+owned vectors/resources. Generic producer Release alone does not quiesce DMA.
+Failure to stop hardware retains ownership/storage in reset-required park.
+
 This combined operation permits the complete rectangle's hardware work. Public
-arbitrary-list and synchronous chunk limits remain unchanged. VBXE IRQs stay
-disabled; a caller using Poll must arrange future service while pending, rather
-than wait indefinitely for a signal that has no producer.
+arbitrary-list and synchronous chunk limits remain unchanged. Synchronous
+launches keep VBXE IRQs disabled. No additional renderer Task is created.
 
 ## Mapping transition protocol
 

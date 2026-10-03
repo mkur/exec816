@@ -36,3 +36,24 @@ class BlitterCompletionTrace(unittest.TestCase):
                        [event(1, 10), event(2, 11), event(3, 10), event(4, 11)]):
             with self.assertRaises(RuntimeError):
                 analyze_events(events, MARKS)
+
+    def test_cpu_cost_keeps_nested_watchdog_inside_irq_total(self):
+        from blitter_completion_trace import cpu_cost
+        from sio_transaction_trace import BASE_HZ
+        marks={name:dict(entry=pc) for name,pc in (
+            ('completion_selected',20),('completion_native_irq',30),
+            ('completion_native_nmi',40),('completion_interrupt_schedule',50),
+            ('completion_blitter_watchdog',60),('completion_blitter_watchdog_done',70))}
+        events=[event(0,20),event(3,30),event(4,60,dp=0),event(5,70,dp=0),
+                event(6,50,stack=0x4500-9),event(7,20,dp=0x1200),
+                event(17,20),event(20,80)]
+        rows=[dict(start=0,adopt_begin=20,worker_dp=0x1100)]
+        cpu_cost(events,marks,rows)
+        cpu=rows[0]['cpu']
+        self.assertAlmostEqual(cpu['worker_charged_ms'],7/BASE_HZ*1000)
+        self.assertAlmostEqual(cpu['native_interrupt_ms'],3/BASE_HZ*1000)
+        self.assertAlmostEqual(cpu['watchdog_nested_ms'],1/BASE_HZ*1000)
+        self.assertAlmostEqual(cpu['worker_plus_native_interrupt_ms'],10/BASE_HZ*1000)
+        self.assertEqual(cpu['watchdog_checks'],1)
+        with self.assertRaises(RuntimeError):
+            cpu_cost(events[:4],marks,rows)

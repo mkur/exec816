@@ -68,11 +68,15 @@ work between input checks. The 4 ms turn, 20 ms scroll and 40 ms visible-input
 targets remain unchanged; these development measurements do not qualify them.
 
 The [blitter completion IRQ plan](plans/blitter-irq-implementation-plan.md)
-defines BI0–BI5: measure completion boundaries, route native/emulation IRQs through
-the existing producer framework, add an independent timeout wake, and let the
-console worker wait while output is blocked by its active list. Input and READ
-service continue. This reduces completion-checking work; it does not accelerate
-the VRAM copy. Circular character rows remain a separate preparation optimization.
+is implemented through BI5: native/emulation IRQs use the existing producer
+framework, an independent watchdog preserves timeout recovery, and the console
+waits while its active list blocks output. Input and READ service continue.
+The [measurements](history/blitter-completion-irqs.md) show lower completion CPU
+cost, but isolated scrolling remains about 32.5 ms and loaded visible input
+98–139 ms. Completion-to-adoption delay can still reach 52.6 ms under load.
+The next responsiveness work should examine that scheduling delay and remaining
+worker work between input checks. Circular character rows remain a separate
+preparation optimization.
 
 The other possible milestones have no delivery order:
 

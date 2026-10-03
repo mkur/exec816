@@ -60,9 +60,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Console and interaction
 
-- [Blitter completion IRQs](blitter-irq-implementation-plan.md): BI0–BI4 complete; remaining
-  slices replace scroll polling with a retained completion signal and independent
-  timeout wake, preserving input service, one in-flight list and driver ownership.
+- [Blitter completion IRQs](blitter-irq-implementation-plan.md): BI0–BI5 complete;
+  retained completion and timeout signals let the worker sleep with one list in
+  flight. [Measurements](../history/blitter-completion-irqs.md) show reduced
+  completion CPU cost; scroll and loaded visible-input targets remain open.
 - [Drawing validation and asynchronous scrolling](drawing-validation-implementation-plan.md):
   D0–D6 implementation and measurements recorded; isolated scrolling is about
   31 ms, while 20 ms scrolling and 40 ms visible-input acceptance remain open.
