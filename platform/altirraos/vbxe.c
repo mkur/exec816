@@ -169,7 +169,10 @@ UWORD VbxeBlitExtent(ULONG address,UWORD stride,UWORD bytes,UWORD rows)
     ULONG end;
     if (!bytes || bytes>512 || !rows || rows>256 || stride>4095 ||
         address>=VBXE_VRAM_BYTES) return 0;
-    end=address+(ULONG)(rows-1)*stride+bytes;
+    /* Sixteen-row chunks fit a 16-bit row displacement even at stride 4095.
+     * Keep the widened fallback for public callers with taller rectangles. */
+    end=rows<=16 ? address+(UWORD)((rows-1)*stride)+bytes
+                 : address+(ULONG)(rows-1)*stride+bytes;
     return end<=VBXE_VRAM_BYTES &&
         !(address<VBXE_BCB+VBXE_BCB_BYTES && end>VBXE_BCB);
 }
@@ -201,7 +204,9 @@ UWORD VbxeSubmit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
         if (!VbxeBlitExtent(address(p),getword(p+3),bytes,rows) ||
             !VbxeBlitExtent(address(p+6),getword(p+9),bytes,rows))
             return DISPLAY_BAD_ARGUMENT;
-        work+=(ULONG)bytes*rows*(p[20] ? 3 : 2);
+        /* At most 512*16*3 = 24576 here; narrowing does not discard carry. */
+        work+=rows<=16 ? (UWORD)(bytes*rows*(p[20] ? 3 : 2))
+                       : (ULONG)bytes*rows*(p[20] ? 3 : 2);
         if (work>VBXE_LIST_WORK) return DISPLAY_BAD_ARGUMENT;
     }
     if (idle()!=DISPLAY_OK) return recover(d);

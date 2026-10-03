@@ -1,0 +1,88 @@
+--- a/src/vdi/dev_vbxe.c
++++ b/src/vdi/dev_vbxe.c
+@@ -154,6 +154,7 @@
+ 
+ /* A nibble-pair for every possible bit-pair, so expansion is a table lookup
+  * rather than four conditionals per byte. */
++static uint8_t glyph_ink[256];
+ static const uint8_t nib2[4] = { 0x00, 0x0F, 0xF0, 0xFF };
+ 
+ void dev_font_changed(void)
+@@ -171,6 +172,8 @@
+                 (const uint8_t FAR *)(vdi_font + (uint32_t)row * FONT_STRIDE);
+             for (ch = 0; ch < 256; ch++) {
+                 uint8_t b = sr[ch];
++                if (!row) glyph_ink[ch]=0;
++                glyph_ink[ch]|=b;
+                 *p++ = nib2[(b >> 6) & 3];
+                 *p++ = nib2[(b >> 4) & 3];
+                 *p++ = nib2[(b >> 2) & 3];
+@@ -210,32 +213,18 @@
+     }
+ }
+ 
+-/* Draw one glyph with its top-left at (cx, cy), cell fully visible, either
+- * parity of cx -- the odd strip carries the shift.
+- *
+- * Two blits, and they work for every ink colour including 0:
+- *
+- *   AND  src=mask, and=$FF, xor=$FF, mode 4
+- *        c is $00 where ink and $FF where paper.  Mode 4 is the one mode that
+- *        WRITES 0 when c == 0 instead of skipping, so this clears exactly the
+- *        ink pixels and leaves the paper ones untouched.
+- *   OR   src=mask, and=ink*$11, xor=$00, mode 3
+- *        c is the ink colour where ink and 0 where paper; a zero c is skipped,
+- *        so only ink pixels are painted.
+- *
+- * With ink == 0 the OR writes nothing -- and it does not need to, because the
+- * AND already left colour 0 there.  That is why no inverted mask is needed,
+- * and why mode 6's nibble stencil (which cannot write colour 0) is not used.
+- *
+- * A caller that has just cleared the cell (replace mode) passes `cleared`
+- * and the AND is skipped: there is nothing left for it to clear.
+- */
++/* Nonzero ink uses the hardware nibble stencil: paper nibbles preserve
++ * adjacent pixels at either X parity. Hardware-zero ink needs the inverse
++ * mask AND path because the stencil treats zero as transparent. */
++extern void blit_glyph(uint32_t,uint16_t,uint32_t,uint16_t,uint8_t);
++
+ static void draw_glyph(WORD ch, WORD cx, WORD cy, WORD hwink, WORD cleared)
+ {
+     uint32_t src, dst;
+     uint16_t sstride, bytes;
+     uint8_t  c = (uint8_t)(((hwink & 0x0F) << 4) | (hwink & 0x0F));
+ 
++    if (!glyph_ink[ch & 0xFF]) return;
+     if (cx & 1) {
+         src     = VR_FONT_ODD + (uint32_t)(ch & 0xFF) * FONT_OBYTES;
+         sstride = FONT_OSTRIDE;
+@@ -247,12 +236,11 @@
+     }
+     dst = VR_SCREEN0 + scr_row(cy) + (uint32_t)(cx >> 1);
+ 
+-    if (!cleared)
++    if (c)
++        blit_glyph(src, sstride, dst, bytes, c);
++    else if (!cleared)
+         blit_mask(src, sstride, dst, SCR_STRIDE, bytes, FONT_H,
+                   0xFF, 0xFF, BLT_MODE_AND);
+-    if (c)
+-        blit_mask(src, sstride, dst, SCR_STRIDE, bytes, FONT_H,
+-                  c, 0x00, BLT_MODE_OR);
+ }
+ 
+ /* ---------------------------------------------------------------------- */
+--- a/src/vbxe/vbxe.c
++++ b/src/vbxe/vbxe.c
+@@ -593,3 +593,11 @@
+     blit_running = 0;
+     return (uint16_t)(ticks + last);
+ }
++
++/* The hosted device's narrow glyph callback also links in the extraction-only
++ * context probe. That probe binds recording callbacks and never executes this
++ * donor hardware provider; production images supply the checked Exec queue. */
++void blit_glyph(uint32_t source,uint16_t stride,uint32_t dest,uint16_t bytes,uint8_t ink)
++{
++    blit_mask(source,stride,dest,320,bytes,8,ink,0,BLT_MODE_HR);
++}

@@ -1,11 +1,12 @@
 /* Host-directed operation corpus through the real public client transport. */
 #include "gem-vbxe.h"
+#include "gem-drawing.h"
 #include <hardware/vbxe.h>
 #include <string.h>
 volatile UWORD stage, checkpoint, gate, opcode, subopcode, pairs, words;
 volatile UWORD answer, completed, replyWords, finished, failures, checks;
 volatile UWORD snapshot, inject, stopped, commandCount, boundary;
-volatile UWORD batch, batchCalls;
+volatile UWORD batch, batchCalls, commonKind;
 UBYTE fontMasks[18432], palette[48];
 static UWORD captureFont;
 WORD points[32], ints[64], reply[57];
@@ -44,6 +45,15 @@ void ProbeAcquired(struct VbxeDisplay *display)
 void ProbePalette(const UBYTE *rgb) { memcpy(palette,rgb,48); }
 void ProbeCommand(void)
 {
+    static const UBYTE text[]={'A','B',' ','C'};
+    if (commonKind==1 && GemDrawingFill(32,180,80,200,5)!=DISPLAY_OK) ++failures;
+    if (commonKind==2 && GemDrawingText(33,184,text,4,0,5)!=DISPLAY_OK) ++failures;
+    if (commonKind==3) {
+        if (GemDrawingFill(40,180,39,190,1)!=DISPLAY_BAD_ARGUMENT) ++failures;
+        if (GemDrawingText(635,184,text,4,1,0)!=DISPLAY_BAD_ARGUMENT) ++failures;
+        if (GemDrawingText(640,184,0,0,1,0)!=DISPLAY_OK) ++failures;
+        if (GemDrawingOpen(reply)!=DISPLAY_BUSY) ++failures;
+    }
     if (batch==2 && ++batchCalls==2) inject=1;
 }
 void ProbeSnapshot(struct VbxeDisplay *display)

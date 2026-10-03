@@ -63,7 +63,8 @@ UWORD GemPrepare(struct GemClient *c, UWORD operation, UWORD commands, UWORD pay
     if (commands > GEM_LIMIT_COMMANDS || payload_bytes > GEM_LIMIT_PAYLOAD_BYTES ||
         payload_bytes < (ULONG)commands * GEM_COMMAND_BYTES)
         return result(c, GEM_BAD_PACKET);
-    memset(r, 0, GEM_LIMIT_PACKET_BYTES);
+    /* Header includes reply storage; bytes beyond this request are not sent. */
+    memset(r, 0, GEM_REQUEST_BYTES + payload_bytes);
     r->message.mn_ReplyPort = c->replies;
     r->message.mn_Length = GEM_REQUEST_BYTES + payload_bytes;
     r->version = GEM_VERSION;

@@ -74,7 +74,7 @@ def run(output, mode='opt', replay=False, observe=False):
                 if observe:b.profile_start()
                 for i in range(26):
                     reach(f'(dw(${sy["checkpoint"]:x})={i+1})&(db(${adapter.CURRENT:x})=0)')
-                    require(get('failures')==0,'Failed target operation')
+                    require(get('failures')==0,'Failed target operation: '+str({k:get(k) for k in ('failures','checks','testPhase','testCase','resultCount')}))
                     raw=b.memdump(sy['results']+i*16,16)
                     values=[int.from_bytes(raw[j:j+2],'little') for j in range(0,16,2)]
                     case=dict(zip(('phase','kind','glyphs','calls','start','end','ticks','status'),values))

@@ -92,3 +92,26 @@ def corpus():
     add('reset-text-attribute',8,[40,40],list(b'Clean reopen'))
     add('close',2)
     return result
+
+
+def text_corpus():
+    """All pens/parities and nibble cuts, plus the ordinary shared drawing API."""
+    result=[dict(name='open',op=1,points=[],ints=[])]
+    def add(name,op,p=(),v=(),**extra):
+        result.append(dict(name=name,op=op,points=list(p),ints=list(v),**extra))
+    for pen in range(16):
+        add('text-pen-'+str(pen),22,v=[pen])
+        for parity in (0,1):
+            add(f'text-{pen}-{parity}',8,[32+parity,16+pen*9],list(b'AB W 09'))
+    for cut in range(8):
+        add('clip-'+str(cut),129,[401+cut,180,415-cut,187],[1])
+        add('cut-'+str(cut),8,[400,186],list(b'WW'))
+    add('clip-off',129,[0,0,0,0],[0])
+    add('common-fill',4,common=1)
+    add('common-text',4,common=2)
+    add('common-invalid-empty-busy',4,common=3)
+    add('preserved-vdi-attributes',8,[110,190],list(b'AB C'))
+    add('empty-text',8,[0,0])
+    add('update',4,screenshot=True)
+    add('close',2)
+    return result

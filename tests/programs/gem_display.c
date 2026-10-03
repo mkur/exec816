@@ -107,6 +107,13 @@ static void lists(void)
     for (i=0;i<64;i++) check(readback[i]==i+1);
     check(VbxeRead(&display,VBXE_BCB+64*21,readback,32)==DISPLAY_OK);
     for (i=0;i<32;i++) check(readback[i]==0xa5);
+    /* Tall, narrow list takes the widened extent/work arithmetic path. */
+    memset(list,0,21);
+    list[5]=list[11]=1; list[7]=4; list[9]=1; list[14]=255;
+    list[16]=0x36;
+    check(VbxeSubmit(&display,list,1)==DISPLAY_OK);
+    check(VbxeRead(&display,1024,readback,256)==DISPLAY_OK);
+    for (i=0;i<256;i++) check(readback[i]==0x36);
 }
 
 static void pattern(void)

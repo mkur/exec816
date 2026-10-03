@@ -80,3 +80,34 @@ void GemVdiReset(void)
     vwk.handle=0;
     vdev=0;
 }
+
+/* Ordinary drawing clients use the same device/font implementation, without
+ * a VDI packet or service request. Validate the complete half-open rectangle
+ * before converting to the device's inclusive geometry. */
+uint16_t GemBitmapFill(uint16_t x,uint16_t y,uint16_t right,uint16_t bottom,
+                        uint16_t pen)
+{
+    if (!vdev || x>right || right>640 || y>bottom || bottom>240 || pen>15)
+        return 1;
+    if (x==right || y==bottom) return 0;
+    dev_fill_rect((WORD)x,(WORD)y,(WORD)(right-1),(WORD)(bottom-1),(WORD)pen);
+    return 0;
+}
+
+uint16_t GemBitmapText(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
+                        uint16_t foreground,uint16_t background)
+{
+    WORD color,mode,clip;
+    uint16_t i;
+    uint32_t address=(uint32_t)text;
+    if (!vdev || x>640 || y>232 || count>(640-x)/8 || foreground>15 || background>15 ||
+        (count && (!text || address>0xffffffUL || count>0x1000000UL-address)))
+        return 1;
+    if (!count) return 0;
+    color=vwk.text_color; mode=vwk.wrt_mode; clip=vwk.clip;
+    vwk.text_color=(WORD)foreground; vwk.wrt_mode=0; vwk.clip=0;
+    dev_fill_rect((WORD)x,(WORD)y,(WORD)(x+count*8-1),(WORD)(y+7),(WORD)background);
+    for (i=0;i<count;i++,x+=8) dev_glyph((WORD)text[i],(WORD)x,(WORD)y,1);
+    vwk.text_color=color; vwk.wrt_mode=mode; vwk.clip=clip;
+    return 0;
+}

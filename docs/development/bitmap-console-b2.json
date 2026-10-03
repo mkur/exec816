@@ -1,0 +1,1766 @@
+{
+  "slice": "B2",
+  "status": "development-pass",
+  "date": "2026-10-03",
+  "reports": {
+    "text-final-opt": {
+      "path": "build/bitmap-console/b2/text-final-opt/results.json",
+      "sha256": "db1d78f01af66995ece849d9c9cf2fe4bd472543a1334c28782c814fc5cf67c3",
+      "status": "pass",
+      "cases": 73,
+      "checks": 5,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 132,
+          "remaining_above_floor": 1148
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 484,
+          "remaining_above_floor": 1820
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 260,
+          "remaining_above_floor": 1020
+        }
+      },
+      "xex_sha256": "3b1cd4adf2ee9825270bbe9fb271f7b0e884bd6b8cfd1893f82506619f2d3cce"
+    },
+    "text-final-raw": {
+      "path": "build/bitmap-console/b2/text-final-raw/results.json",
+      "sha256": "7280a1af4cf2050604501935b2194b87c6020342c8c3f7bb417cd852e6587317",
+      "status": "pass",
+      "cases": 73,
+      "checks": 5,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 138,
+          "remaining_above_floor": 1142
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 498,
+          "remaining_above_floor": 1806
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 266,
+          "remaining_above_floor": 1014
+        }
+      },
+      "xex_sha256": "c7ead480b402c31f7a3a6737acee36ee1e2af3c8d0f2d303d2b80ea620cf877f"
+    },
+    "drawing-final-opt": {
+      "path": "build/bitmap-console/b2/drawing-final-opt/results.json",
+      "sha256": "9c2c23580e0bc5f39a7f95fa20b1e94e1df86989c513ac20d5ab7ed2e2bd11f0",
+      "status": "pass",
+      "cases": 0,
+      "checks": 22,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 310,
+          "remaining_above_floor": 970
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 158,
+          "remaining_above_floor": 1122
+        }
+      },
+      "xex_sha256": "332b1a698b8f9f1791eb6680b736374cd2217ec1b69924b2aac44b09b6c65631"
+    },
+    "drawing-final-raw": {
+      "path": "build/bitmap-console/b2/drawing-final-raw/results.json",
+      "sha256": "7e443dd5c70ab399ce3c22e4e93f6a9173b93b740a0a189fe83ebc0ebc434362",
+      "status": "pass",
+      "cases": 0,
+      "checks": 22,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 290,
+          "remaining_above_floor": 990
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 178,
+          "remaining_above_floor": 1102
+        }
+      },
+      "xex_sha256": "5b8a4ddb9bd05f6cdeb90ca3bc760a9078cf5b2addb6729bfde33af04938a84d"
+    },
+    "map-opt": {
+      "path": "build/bitmap-console/b2/map-opt/results.json",
+      "sha256": "23738d970a57044ceebd518f8b52847c076c8fc94b2f582a6021370001e85c8b",
+      "status": "pass",
+      "cases": 1,
+      "checks": null,
+      "stack_usage": null,
+      "xex_sha256": "1b0b0fa12f97ed3f8a421a3a8324631c27f9ff211d5e1db1fea018e9a6f5676f"
+    },
+    "map-raw": {
+      "path": "build/bitmap-console/b2/map-raw/results.json",
+      "sha256": "232d75e0f4028ad5346e1d243eede9a6a89905323773ae9e565e4e59194dca59",
+      "status": "pass",
+      "cases": 1,
+      "checks": null,
+      "stack_usage": null,
+      "xex_sha256": "a9d71f6dcda2aeb9d8da3e202dd53f659480e59756a955a5d761a8a6f91a2c4a"
+    },
+    "cursor-opt": {
+      "path": "build/bitmap-console/b2/cursor-opt/results.json",
+      "sha256": "4c03b7a148da4ad4a19b39b497cef2794639d4652d7d865eccb0421f0aba9dbf",
+      "status": "pass",
+      "cases": 62,
+      "checks": 5,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 126,
+          "remaining_above_floor": 1154
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 404,
+          "remaining_above_floor": 1900
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 260,
+          "remaining_above_floor": 1020
+        }
+      },
+      "xex_sha256": "802a573fc0307cdf4cc9734214c4310af0e2ab6e9fd9e6b10e24cb23dbd98bc5"
+    },
+    "service-final-opt": {
+      "path": "build/bitmap-console/b2/service-final-opt/results.json",
+      "sha256": "e967a0af9bb2e2e63b8d841f29a2556fae7c8ff16f2597a4f8a78f2b9ad4fc6d",
+      "status": "pass",
+      "cases": 14,
+      "checks": null,
+      "stack_usage": null,
+      "xex_sha256": "8d38f21684ca6f6249a08f0c94a99ea6a82ce8b12b060f7dcdbb270da7188141"
+    },
+    "service-raw": {
+      "path": "build/bitmap-console/b2/service-raw/results.json",
+      "sha256": "91a2889f1534765779a0517ee2b42027ddd8ce788a18b8d4dd3030c4916d52b9",
+      "status": "pass",
+      "cases": 14,
+      "checks": null,
+      "stack_usage": null,
+      "xex_sha256": "e20309773303d1e99cdea09c45469da93fb23644ef193e517baa9a3e2e14b33a"
+    },
+    "g1-opt": {
+      "path": "build/bitmap-console/b2/g1-opt/results.json",
+      "sha256": "9e7ccc9ebdfecd697c2b92c7f269c9a24037f6e811483190e130e4665f08ede9",
+      "status": "pass",
+      "cases": 0,
+      "checks": null,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 84,
+          "remaining_above_floor": 1196
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 144,
+          "remaining_above_floor": 2160
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 55,
+          "remaining_above_floor": 2249
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 167,
+          "remaining_above_floor": 1113
+        }
+      },
+      "xex_sha256": "9463ffd1c78236af266b59f60f34ab1280f7bfc5146a56f74cf2255a0ca8798b"
+    }
+  },
+  "benchmark": {
+    "path": "build/bitmap-console/b2/benchmark-final/observed-results.json",
+    "sha256": "24b9e09bed07de3718593e0a09bea6ba14a30e1fa8bfc56587ee226217f86e23",
+    "xex_sha256": "4d1122217c361b710406cd888fbee6d6a2825dcc1a992ba470148855afd07e87",
+    "cases": [
+      {
+        "phase": 0,
+        "kind": 0,
+        "glyphs": 8,
+        "calls": 8,
+        "start": 58,
+        "end": 63,
+        "ticks": 5,
+        "status": "pass",
+        "seconds": 0.1,
+        "glyphs_per_second": 80.0,
+        "milliseconds_per_call": 12.5,
+        "pixels_sha256": "bfd18bd784d54498745f72c651e814f88a36423abab1704bcdebe9de4edb2b12"
+      },
+      {
+        "phase": 0,
+        "kind": 1,
+        "glyphs": 64,
+        "calls": 8,
+        "start": 68,
+        "end": 76,
+        "ticks": 8,
+        "status": "pass",
+        "seconds": 0.16,
+        "glyphs_per_second": 400.0,
+        "milliseconds_per_call": 20.0,
+        "pixels_sha256": "5a33883eabe130992afbe51aa2e4fcaaa7e0371d78ee55495bebf8c44d903a0d"
+      },
+      {
+        "phase": 0,
+        "kind": 2,
+        "glyphs": 256,
+        "calls": 8,
+        "start": 81,
+        "end": 98,
+        "ticks": 17,
+        "status": "pass",
+        "seconds": 0.34,
+        "glyphs_per_second": 752.9411764705883,
+        "milliseconds_per_call": 42.5,
+        "pixels_sha256": "1717bbf2494c6e9720982ce64416cd12332192f882e441c840a2dee944dab439"
+      },
+      {
+        "phase": 0,
+        "kind": 3,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 103,
+        "end": 132,
+        "ticks": 29,
+        "status": "pass",
+        "seconds": 0.58,
+        "glyphs_per_second": 882.7586206896551,
+        "milliseconds_per_call": 72.5,
+        "pixels_sha256": "535fe28ada4834f9bd4b5203eef0f3a2ac791dbe66e03c0433f85288edcf7b86"
+      },
+      {
+        "phase": 0,
+        "kind": 4,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 137,
+        "end": 168,
+        "ticks": 31,
+        "status": "pass",
+        "seconds": 0.62,
+        "glyphs_per_second": 825.8064516129032,
+        "milliseconds_per_call": 77.5,
+        "pixels_sha256": "5e4b0c9d522a539e382879977843bde378b67cfb2a1e9ec83b202face40c802a"
+      },
+      {
+        "phase": 0,
+        "kind": 5,
+        "glyphs": 2400,
+        "calls": 60,
+        "start": 173,
+        "end": 324,
+        "ticks": 151,
+        "status": "pass",
+        "seconds": 3.02,
+        "glyphs_per_second": 794.7019867549669,
+        "milliseconds_per_call": 50.333333333333336,
+        "pixels_sha256": "eee2abbbc267fa32679d77bffe604923936f11458fa641b07a3cbcf14094a99e"
+      },
+      {
+        "phase": 0,
+        "kind": 6,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 329,
+        "end": 340,
+        "ticks": 11,
+        "status": "pass",
+        "seconds": 0.22,
+        "glyphs_per_second": 2327.2727272727275,
+        "milliseconds_per_call": 27.5,
+        "pixels_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+      },
+      {
+        "phase": 0,
+        "kind": 7,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 345,
+        "end": 374,
+        "ticks": 29,
+        "status": "pass",
+        "seconds": 0.58,
+        "glyphs_per_second": 882.7586206896551,
+        "milliseconds_per_call": 72.5,
+        "pixels_sha256": "1ba2771134ea41a54986c901992ed793db0610633dc419e7f4c1581bee278b1f"
+      },
+      {
+        "phase": 0,
+        "kind": 8,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 379,
+        "end": 399,
+        "ticks": 20,
+        "status": "pass",
+        "seconds": 0.4,
+        "glyphs_per_second": 1280.0,
+        "milliseconds_per_call": 50.0,
+        "pixels_sha256": "46680c2e2cab629278ab2528ceb93e7109e68e39c97cda1d3a16de2148336a66"
+      },
+      {
+        "phase": 0,
+        "kind": 9,
+        "glyphs": 64,
+        "calls": 8,
+        "start": 404,
+        "end": 501,
+        "ticks": 97,
+        "status": "pass",
+        "seconds": 1.94,
+        "glyphs_per_second": 32.98969072164948,
+        "milliseconds_per_call": 242.5,
+        "pixels_sha256": "9e1bb3760a0bec3f0cefdbce915c3455a42eaa70b97cc6c6c37e04d34baf0a5e"
+      },
+      {
+        "phase": 0,
+        "kind": 10,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 507,
+        "end": 544,
+        "ticks": 37,
+        "status": "pass",
+        "seconds": 0.74,
+        "glyphs_per_second": 691.8918918918919,
+        "milliseconds_per_call": 92.5,
+        "pixels_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+      },
+      {
+        "phase": 0,
+        "kind": 11,
+        "glyphs": 0,
+        "calls": 8,
+        "start": 549,
+        "end": 571,
+        "ticks": 22,
+        "status": "pass",
+        "seconds": 0.44,
+        "glyphs_per_second": 0.0,
+        "milliseconds_per_call": 55.0,
+        "pixels_sha256": "91d2d62a5700cbf9404e3c575c3b6fc19e1e31c24c6fcfc0a2cf70d41314b447"
+      },
+      {
+        "phase": 0,
+        "kind": 12,
+        "glyphs": 0,
+        "calls": 1,
+        "start": 614,
+        "end": 616,
+        "ticks": 2,
+        "status": "pass",
+        "seconds": 0.04,
+        "glyphs_per_second": 0.0,
+        "milliseconds_per_call": 40.0,
+        "pixels_sha256": "bbf533bf6189541b727e17348df8bd74c60f566149d0fbf83b28a10874511d05"
+      },
+      {
+        "phase": 1,
+        "kind": 0,
+        "glyphs": 8,
+        "calls": 8,
+        "start": 676,
+        "end": 684,
+        "ticks": 8,
+        "status": "pass",
+        "seconds": 0.16,
+        "glyphs_per_second": 50.0,
+        "milliseconds_per_call": 20.0,
+        "pixels_sha256": "bfd18bd784d54498745f72c651e814f88a36423abab1704bcdebe9de4edb2b12"
+      },
+      {
+        "phase": 1,
+        "kind": 1,
+        "glyphs": 64,
+        "calls": 8,
+        "start": 690,
+        "end": 702,
+        "ticks": 12,
+        "status": "pass",
+        "seconds": 0.24,
+        "glyphs_per_second": 266.6666666666667,
+        "milliseconds_per_call": 30.0,
+        "pixels_sha256": "5a33883eabe130992afbe51aa2e4fcaaa7e0371d78ee55495bebf8c44d903a0d"
+      },
+      {
+        "phase": 1,
+        "kind": 2,
+        "glyphs": 256,
+        "calls": 8,
+        "start": 708,
+        "end": 733,
+        "ticks": 25,
+        "status": "pass",
+        "seconds": 0.5,
+        "glyphs_per_second": 512.0,
+        "milliseconds_per_call": 62.5,
+        "pixels_sha256": "1717bbf2494c6e9720982ce64416cd12332192f882e441c840a2dee944dab439"
+      },
+      {
+        "phase": 1,
+        "kind": 3,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 739,
+        "end": 780,
+        "ticks": 41,
+        "status": "pass",
+        "seconds": 0.82,
+        "glyphs_per_second": 624.390243902439,
+        "milliseconds_per_call": 102.5,
+        "pixels_sha256": "535fe28ada4834f9bd4b5203eef0f3a2ac791dbe66e03c0433f85288edcf7b86"
+      },
+      {
+        "phase": 1,
+        "kind": 4,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 786,
+        "end": 829,
+        "ticks": 43,
+        "status": "pass",
+        "seconds": 0.86,
+        "glyphs_per_second": 595.3488372093024,
+        "milliseconds_per_call": 107.5,
+        "pixels_sha256": "5e4b0c9d522a539e382879977843bde378b67cfb2a1e9ec83b202face40c802a"
+      },
+      {
+        "phase": 1,
+        "kind": 5,
+        "glyphs": 2400,
+        "calls": 60,
+        "start": 835,
+        "end": 1046,
+        "ticks": 211,
+        "status": "pass",
+        "seconds": 4.22,
+        "glyphs_per_second": 568.7203791469194,
+        "milliseconds_per_call": 70.33333333333333,
+        "pixels_sha256": "eee2abbbc267fa32679d77bffe604923936f11458fa641b07a3cbcf14094a99e"
+      },
+      {
+        "phase": 1,
+        "kind": 6,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 1052,
+        "end": 1068,
+        "ticks": 16,
+        "status": "pass",
+        "seconds": 0.32,
+        "glyphs_per_second": 1600.0,
+        "milliseconds_per_call": 40.0,
+        "pixels_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+      },
+      {
+        "phase": 1,
+        "kind": 7,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 1074,
+        "end": 1115,
+        "ticks": 41,
+        "status": "pass",
+        "seconds": 0.82,
+        "glyphs_per_second": 624.390243902439,
+        "milliseconds_per_call": 102.5,
+        "pixels_sha256": "1ba2771134ea41a54986c901992ed793db0610633dc419e7f4c1581bee278b1f"
+      },
+      {
+        "phase": 1,
+        "kind": 8,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 1121,
+        "end": 1149,
+        "ticks": 28,
+        "status": "pass",
+        "seconds": 0.56,
+        "glyphs_per_second": 914.2857142857143,
+        "milliseconds_per_call": 70.0,
+        "pixels_sha256": "46680c2e2cab629278ab2528ceb93e7109e68e39c97cda1d3a16de2148336a66"
+      },
+      {
+        "phase": 1,
+        "kind": 9,
+        "glyphs": 64,
+        "calls": 8,
+        "start": 1155,
+        "end": 1292,
+        "ticks": 137,
+        "status": "pass",
+        "seconds": 2.74,
+        "glyphs_per_second": 23.357664233576642,
+        "milliseconds_per_call": 342.5,
+        "pixels_sha256": "9e1bb3760a0bec3f0cefdbce915c3455a42eaa70b97cc6c6c37e04d34baf0a5e"
+      },
+      {
+        "phase": 1,
+        "kind": 10,
+        "glyphs": 512,
+        "calls": 8,
+        "start": 1299,
+        "end": 1351,
+        "ticks": 52,
+        "status": "pass",
+        "seconds": 1.04,
+        "glyphs_per_second": 492.3076923076923,
+        "milliseconds_per_call": 130.0,
+        "pixels_sha256": "92fb075949fe745bbc389941ad05c54fb13b3d664b3dc99340d45266b3e24f90"
+      },
+      {
+        "phase": 1,
+        "kind": 11,
+        "glyphs": 0,
+        "calls": 8,
+        "start": 1358,
+        "end": 1387,
+        "ticks": 29,
+        "status": "pass",
+        "seconds": 0.58,
+        "glyphs_per_second": 0.0,
+        "milliseconds_per_call": 72.5,
+        "pixels_sha256": "91d2d62a5700cbf9404e3c575c3b6fc19e1e31c24c6fcfc0a2cf70d41314b447"
+      },
+      {
+        "phase": 1,
+        "kind": 12,
+        "glyphs": 0,
+        "calls": 1,
+        "start": 1446,
+        "end": 1449,
+        "ticks": 3,
+        "status": "pass",
+        "seconds": 0.06,
+        "glyphs_per_second": 0.0,
+        "milliseconds_per_call": 60.0,
+        "pixels_sha256": "bbf533bf6189541b727e17348df8bd74c60f566149d0fbf83b28a10874511d05"
+      }
+    ],
+    "observation": [
+      {
+        "start": 4298468273.625,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 14.07611446067617,
+            "max_ms": 1.8507032207043062
+          },
+          "idle": {
+            "calls": 24,
+            "total_ms": 0.8369996856405392,
+            "max_ms": 0.05948865134152548
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 110.60166709192124,
+            "max_ms": 110.60166709192124
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 8,
+          "idle": 24
+        },
+        "end": 4298664419.875
+      },
+      {
+        "start": 4298841093.75,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 16.0211960038287,
+            "max_ms": 2.002808089892709
+          },
+          "idle": {
+            "calls": 24,
+            "total_ms": 1.4989166580910909,
+            "max_ms": 0.14914453345813733
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 161.96391491713175,
+            "max_ms": 161.96391491713175
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 8,
+          "idle": 24
+        },
+        "end": 4299128328.25
+      },
+      {
+        "start": 4299303479.625,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 26.223358740532213,
+            "max_ms": 6.057763198515885
+          },
+          "idle": {
+            "calls": 24,
+            "total_ms": 3.8083309486184396,
+            "max_ms": 0.47619114746841956
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 337.24158736021224,
+            "max_ms": 337.24158736021224
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 8,
+          "idle": 24
+        },
+        "end": 4299901559.875
+      },
+      {
+        "start": 4300085978.875,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 37.568915910958744,
+            "max_ms": 7.228998884940208
+          },
+          "idle": {
+            "calls": 40,
+            "total_ms": 7.683480903720015,
+            "max_ms": 0.6842604587956509
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 582.1929462247966,
+            "max_ms": 582.1929462247966
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 16,
+          "idle": 40
+        },
+        "end": 4301118467.5
+      },
+      {
+        "start": 4301295292.375,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 39.547195504800676,
+            "max_ms": 7.228716948203992
+          },
+          "idle": {
+            "calls": 40,
+            "total_ms": 7.385685226092117,
+            "max_ms": 0.594604576679039
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 611.5110540345852,
+            "max_ms": 611.5110540345852
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 16,
+          "idle": 40
+        },
+        "end": 4302379775.125
+      },
+      {
+        "start": 4302575739.75,
+        "routines": {
+          "packet_construction": {
+            "calls": 60,
+            "total_ms": 201.92273805680745,
+            "max_ms": 7.228928400756155
+          },
+          "idle": {
+            "calls": 240,
+            "total_ms": 39.14388500364403,
+            "max_ms": 0.6848243322680824
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 3014.83353750252,
+            "max_ms": 3014.83353750252
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 60,
+          "GemSubmit": 60,
+          "VbxeSubmit": 90,
+          "idle": 240
+        },
+        "end": 4307922388.75
+      },
+      {
+        "start": 4308127478.5,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 37.56969123698333,
+            "max_ms": 7.229069369124262
+          },
+          "idle": {
+            "calls": 24,
+            "total_ms": 2.2702955683774118,
+            "max_ms": 0.23943477323123463
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 209.85199731032353,
+            "max_ms": 209.85199731032353
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 8,
+          "idle": 24
+        },
+        "end": 4308499640.0
+      },
+      {
+        "start": 4308694606.875,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 37.568915910958744,
+            "max_ms": 7.2283645272837225
+          },
+          "idle": {
+            "calls": 40,
+            "total_ms": 7.712661355918345,
+            "max_ms": 0.7135818793620899
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 581.5065007562953,
+            "max_ms": 581.5065007562953
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 16,
+          "idle": 40
+        },
+        "end": 4309725878.125
+      },
+      {
+        "start": 4309906463.125,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 40.74634292811036,
+            "max_ms": 7.229069369124262
+          },
+          "idle": {
+            "calls": 24,
+            "total_ms": 4.822950778074908,
+            "max_ms": 0.5940407032066074
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 392.74055194754845,
+            "max_ms": 392.74055194754845
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 8,
+          "idle": 24
+        },
+        "end": 4310602967.875
+      },
+      {
+        "start": 4310791953.625,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 19.198129631691945,
+            "max_ms": 5.179741717755952
+          },
+          "idle": {
+            "calls": 72,
+            "total_ms": 2.610311272253619,
+            "max_ms": 0.12038698636412974
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 1942.9863302973447,
+            "max_ms": 1942.9863302973447
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 16,
+          "idle": 72,
+          "transfer": 32
+        },
+        "end": 4314237737.875
+      },
+      {
+        "start": 4314443800.375,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 35.69453000441231,
+            "max_ms": 7.228435011467776
+          },
+          "idle": {
+            "calls": 40,
+            "total_ms": 8.184975873263799,
+            "max_ms": 0.7434671734009605
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 736.798241842513,
+            "max_ms": 736.798241842513
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 16,
+          "idle": 40
+        },
+        "end": 4315750473.375
+      },
+      {
+        "start": 4315951394.875,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 14.10691604910774,
+            "max_ms": 1.763584769213636
+          },
+          "idle": {
+            "calls": 328,
+            "total_ms": 69.31132723128258,
+            "max_ms": 0.9177040763823006
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 428.8418461781361,
+            "max_ms": 428.8418461781361
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 160,
+          "idle": 328
+        },
+        "end": 4316711923.375
+      },
+      {
+        "start": 4318240128.375,
+        "routines": {
+          "idle": {
+            "calls": 40,
+            "total_ms": 15.880086667352712,
+            "max_ms": 0.8624444760840115
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 45.668605921517276,
+            "max_ms": 45.668605921517276
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "VbxeBlit": 1,
+          "VbxeSubmit": 20,
+          "idle": 40
+        },
+        "end": 4318321119.25
+      },
+      {
+        "start": 4320461838.875,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 19.36045470756817,
+            "max_ms": 2.4260656151366193
+          },
+          "idle": {
+            "calls": 24,
+            "total_ms": 1.7210828062291104,
+            "max_ms": 0.7070268502450735
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 154.16568576177193,
+            "max_ms": 154.16568576177193
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 8,
+          "idle": 24
+        },
+        "end": 4320735243.625
+      },
+      {
+        "start": 4320964597.5,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 35.407729859496825,
+            "max_ms": 7.2008756955026865
+          },
+          "idle": {
+            "calls": 24,
+            "total_ms": 1.6572946196602945,
+            "max_ms": 0.12658959456087648
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 237.01723620236857,
+            "max_ms": 237.01723620236857
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 8,
+          "idle": 24
+        },
+        "end": 4321384935.125
+      },
+      {
+        "start": 4321605456.0,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 42.90738801120417,
+            "max_ms": 6.781706252933904
+          },
+          "idle": {
+            "calls": 24,
+            "total_ms": 4.443534415312548,
+            "max_ms": 0.4976888236048713
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 490.7653031736209,
+            "max_ms": 490.7653031736209
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 8,
+          "idle": 24
+        },
+        "end": 4322475802.5
+      },
+      {
+        "start": 4322707913.375,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 50.402817111868266,
+            "max_ms": 8.30360075502658
+          },
+          "idle": {
+            "calls": 40,
+            "total_ms": 9.017957960413263,
+            "max_ms": 0.7992906471716812
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 810.3436244940998,
+            "max_ms": 810.3436244940998
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 16,
+          "idle": 40
+        },
+        "end": 4324145015.25
+      },
+      {
+        "start": 4324379615.625,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 56.45917062670308,
+            "max_ms": 10.053582076717806
+          },
+          "idle": {
+            "calls": 40,
+            "total_ms": 7.863638478161885,
+            "max_ms": 0.6267453646076357
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 858.3127636989536,
+            "max_ms": 858.3127636989536
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 16,
+          "idle": 40
+        },
+        "end": 4325901788.25
+      },
+      {
+        "start": 4326122053.25,
+        "routines": {
+          "packet_construction": {
+            "calls": 60,
+            "total_ms": 272.7878891255591,
+            "max_ms": 8.362173111975403
+          },
+          "idle": {
+            "calls": 240,
+            "total_ms": 41.58172147751766,
+            "max_ms": 0.8963473686139567
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 4221.110154092523,
+            "max_ms": 4221.110154092523
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 60,
+          "GemSubmit": 60,
+          "VbxeSubmit": 90,
+          "idle": 240
+        },
+        "end": 4333607970.5
+      },
+      {
+        "start": 4333842192.5,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 53.132881012829536,
+            "max_ms": 8.361115849214595
+          },
+          "idle": {
+            "calls": 24,
+            "total_ms": 4.184646007282426,
+            "max_ms": 1.8504212839680905
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 307.3346546768371,
+            "max_ms": 307.3346546768371
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 8,
+          "idle": 24
+        },
+        "end": 4334387234.375
+      },
+      {
+        "start": 4334624362.375,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 50.54547710039344,
+            "max_ms": 8.40791734742641
+          },
+          "idle": {
+            "calls": 40,
+            "total_ms": 8.952266700874992,
+            "max_ms": 0.8286825519221742
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 810.768714608129,
+            "max_ms": 810.768714608129
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 16,
+          "idle": 40
+        },
+        "end": 4336062218.125
+      },
+      {
+        "start": 4336299561.625,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 60.88395624905728,
+            "max_ms": 10.063026957381034
+          },
+          "idle": {
+            "calls": 24,
+            "total_ms": 4.725259698976147,
+            "max_ms": 0.6233621237730466
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 554.412803311065,
+            "max_ms": 554.412803311065
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 8,
+          "idle": 24
+        },
+        "end": 4337282783.625
+      },
+      {
+        "start": 4337504316.625,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 25.010537385516063,
+            "max_ms": 5.54069122429618
+          },
+          "idle": {
+            "calls": 72,
+            "total_ms": 4.169844328631099,
+            "max_ms": 0.8412992208678295
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 2737.9989399178717,
+            "max_ms": 2737.9989399178717
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 16,
+          "idle": 72,
+          "transfer": 32
+        },
+        "end": 4342360014.0
+      },
+      {
+        "start": 4342623286.125,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 58.87184424686944,
+            "max_ms": 10.060771463491307
+          },
+          "idle": {
+            "calls": 40,
+            "total_ms": 8.927315299719895,
+            "max_ms": 0.7474142877079812
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 1035.6029005651421,
+            "max_ms": 1035.6029005651421
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 16,
+          "idle": 40
+        },
+        "end": 4344459873.5
+      },
+      {
+        "start": 4344724283.875,
+        "routines": {
+          "packet_construction": {
+            "calls": 8,
+            "total_ms": 28.420703178413795,
+            "max_ms": 6.883978803996172
+          },
+          "idle": {
+            "calls": 328,
+            "total_ms": 73.63940855311476,
+            "max_ms": 1.1483283266067927
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 581.4561045646967,
+            "max_ms": 581.4561045646967
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "GemPrepare": 8,
+          "GemSubmit": 8,
+          "VbxeSubmit": 160,
+          "idle": 328
+        },
+        "end": 4345755465.75
+      },
+      {
+        "start": 4347832766.875,
+        "routines": {
+          "idle": {
+            "calls": 40,
+            "total_ms": 16.665914835370092,
+            "max_ms": 0.8996601252644919
+          },
+          "measure": {
+            "calls": 1,
+            "total_ms": 58.61810118427526,
+            "max_ms": 58.61810118427526
+          }
+        },
+        "entries": {
+          "measure": 1,
+          "VbxeBlit": 1,
+          "VbxeSubmit": 20,
+          "idle": 40
+        },
+        "end": 4347936723.0
+      }
+    ],
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 15,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 1,
+        "internal_port": 0,
+        "map": "Mouse -> ST Mouse (port 1)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    },
+    "replay": {
+      "path": "build/bitmap-console/b2/benchmark-final/results.json",
+      "sha256": "7f69943f46eb233458f027e46474bf0405752d189a9759bac98a24acf4aaddc5",
+      "same_image_pixels_and_ticks": true
+    }
+  },
+  "host_checks": {
+    "tests": 294,
+    "skipped": 4,
+    "status": "pass"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "memory": {
+    "additional_upper_payload_bytes": 277,
+    "upper_bank_reservation_delta": 0,
+    "vram_reservation_delta": 0
+  },
+  "comparison": {
+    "baseline_64_char_ms": 480,
+    "bounded_lists_64_char_ms": 185,
+    "stencil_64_char_ms": 72.5,
+    "baseline_repaint_ms": 18620,
+    "bounded_lists_repaint_ms": 7540,
+    "stencil_repaint_ms": 3020
+  },
+  "notes": [
+    "All 16 pens, both X parities and nibble clipping checked in emitted raw and optimized code; common explicit-background pixels have an independent model but not the donor oracle.",
+    "Standalone common-library raw/optimized images omit GEM service/client and cursor policy; native/C argument bridge remains B6.",
+    "Font initialization and initial clear are excluded from repeated-text timing.",
+    "The intermediate mouse reacquisition failure was an unaligned benchmark InputLease; explicit two-byte fixture storage alignment satisfies the existing input ABI. No input ABI change.",
+    "Raw/optimized map-NMI checks cover the narrow-multiply path and the widened 256-row path, guards, SIO and cleanup.",
+    "These are development checks, not full hosted-system qualification; repaint and scroll targets remain unachieved."
+  ]
+}

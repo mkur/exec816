@@ -3,8 +3,8 @@
 [Design note](bitmap-console-design.md) · [Implementation plans](../README.md) ·
 [GEM work](README.md) · [Roadmap](../../roadmap.md)
 
-Status: implementation started, 3 October 2026. B0 baseline and B1 bounded lists have passed development checks;
-B2–B9 remain unimplemented. This plan implements
+Status: implementation started, 3 October 2026. B0–B2 have passed development checks;
+B3–B9 remain unimplemented. This plan implements
 the design's 80×30 bitmap backend for the existing console, improving the shared
 VDI drawing path first. Each slice must leave an executable, reviewable result;
 commit it with its focused development evidence before starting the next slice.
@@ -165,6 +165,15 @@ spaces, clipping through each nibble, empty strings and repeated mixed commands;
 packet reuse and stale-input/output regressions; service completed-prefix tests.
 Record font initialization separately from repeated text cost. Commit only with
 an explained B0 comparison; do not claim the hardware-only estimate as throughput.
+
+B2 development evidence: [text and common drawing](../../development/bitmap-console-b2.json).
+All sixteen pens, both parities, clipping, packet reuse, cursor and shared-library
+cleanup passed focused emitted checks. At the pinned PAL ×8 configuration,
+64 characters take 72.5 ms without ST capture (B0: 480 ms; B1: 185 ms), and
+80×30 repaint takes 3.02 seconds (B0: 18.62; B1: 7.54). Idle ST capture raises
+those to 102.5 ms and 4.22 seconds. Font initialization is outside those repeated
+text intervals. The 500 ms repaint target remains unmet. Bank-zero delta is zero
+in every category; 277 added upper bytes fit existing reservations; VRAM delta 0.
 
 ## B3 Add reusable bitmap copy operations
 

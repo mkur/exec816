@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 import adapter_state as adapter
 from build_gem_vdi import build_render_probe
-from gem_render_oracle import Raster,corpus,font_bytes,PENS,PALETTE
+from gem_render_oracle import Raster,corpus,text_corpus,font_bytes,PENS,PALETTE
 from gem_vdi_inputs import source_inputs
 from native_program import ROOT,execute,read_build,require,sha256,verify_machine
 from os_boundary import emulator,run_to
@@ -57,7 +57,7 @@ def read_capture(b,address,size,program):
     return bytes(output)
 
 
-def run(output,mode,replay=False,production=False):
+def run(output,mode,replay=False,production=False,text_only=False):
     output=Path(output).resolve(); output.mkdir(parents=True,exist_ok=True)
     report=dict(status='running',tier='development',slice='G4',mode=mode,cases=[],production_status_reads=production,test_harness_sha256=sha256(Path(__file__)))
     upstream=ROOT/'build/gem-vdi/upstream'
@@ -93,11 +93,12 @@ def run(output,mode,replay=False,production=False):
                 rendezvous(1)
                 require(get('failures')==0,'Startup failed')
                 n=1
-                for case in corpus():
+                for case in (text_corpus() if text_only else corpus()):
                     if production and (case.get('fault') or case['name']=='invalidated'): continue
                     if production and case['name']=='reopen':
                         # Production control closes cleanly before opening again.
                         put('opcode',2);put('snapshot',0);put('gate',n);n+=1;rendezvous(n)
+                    put('commonKind',case.get('common',0));
                     put('opcode',case['op']);put('subopcode',1 if case['op']==11 else 0)
                     put('pairs',len(case['points'])//2);put('words',len(case['ints']))
                     for key in ('points','ints'):
@@ -138,6 +139,17 @@ def run(output,mode,replay=False,production=False):
                             result['palette_rgb']=palette.hex()
                         else:
                             donor.call(case['op'],case['points'],case['ints'],sub=1 if case['op']==11 else 0)
+                        if case.get('common')==1:
+                            model.apply(25,ints=[5]);model.apply(11,[32,180,79,199]);model.fill=1
+                            donor.call(25,[],[5]);donor.call(11,[32,180,79,199],[],sub=1);donor.call(25,[],[1])
+                        if case.get('common')==2:
+                            for i,ch in enumerate(b'AB C'):
+                                for row in range(8):
+                                    for col in range(8):
+                                        pen=0 if model.font[row*256+ch]&(128>>col) else 5
+                                        model.pixel(33+i*8+col,184+row,pen)
+                            # The donor oracle has no explicit-background text API.
+                            donor.dev.s.mem[:76800]=model.packed()
                         model.apply(case['op'],case['points'],case['ints'])
                         expected=model.packed()
                         require(expected==bytes(donor.dev.s.mem[:76800]),'Independent/upstream disagreement: '+case['name'])
@@ -191,5 +203,5 @@ def run(output,mode,replay=False,production=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True)
-    p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');p.add_argument('--production-control',action='store_true')
-    a=p.parse_args();run(a.output,a.mode,a.replay,a.production_control)
+    p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');p.add_argument('--production-control',action='store_true');p.add_argument('--text-only',action='store_true')
+    a=p.parse_args();run(a.output,a.mode,a.replay,a.production_control,a.text_only)

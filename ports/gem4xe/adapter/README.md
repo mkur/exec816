@@ -32,6 +32,24 @@ The driver validates each full list and inserts chaining itself. A failed
 submission latches the command fault; a partially flushed VDI command is not
 reported complete.
 
+`gem-drawing.h` exposes the same device, font and palette through ordinary
+`DISPLAY_*` calls. `GemDrawingOpen` returns the existing 57-word workstation
+description; fill uses half-open pixel bounds, and text uses top-left 8×8 cells
+with explicit foreground/background pens. Text must fit completely on screen.
+An empty valid rectangle or string does not draw. Every successful operation
+fences before returning. Build with `GEM_DRAWING_ONLY` to omit service and cursor
+policy; the caller must own the display. There remains one drawing session per
+image, shared with the service when linked together. This is a C interface;
+calling it from Action! requires the separately tested language bridge in B6.
+
+Fully visible nonzero-ink glyphs use one nibble-stencil command. Hardware-zero
+ink retains the inverse-mask AND path, and clipped glyphs retain the staged
+pixel path. Empty glyphs skip ink after the opaque background fill. Private
+preinitialized records avoid repeated generic rectangle setup, while submission
+still validates the whole list. The maintained fourth extraction patch supplies
+these changes. The 256-byte ink cache and 21-byte template fit inside the
+existing C bank reservations; B2 adds no bank-zero or VRAM reservation.
+
 Because donor callbacks return void, the backend latches the first hardware
 error. Further callbacks cannot touch hardware, and the service fence reports
 `GEM_DEVICE_FAULT`. The service preserves only the completed prefix, invalidates
@@ -60,6 +78,7 @@ Run the development corpus with:
 ```sh
 python3 tools/test_gem_render.py --mode raw --output build/gem-vdi/g4-raw
 python3 tools/test_gem_render.py --mode opt --output build/gem-vdi/g4-opt
+python3 tools/test_gem_drawing.py --mode opt --output build/bitmap-console/drawing
 ```
 
 Use `--production-control` in a separate directory for original hardware status

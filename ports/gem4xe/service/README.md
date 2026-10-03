@@ -42,7 +42,7 @@ alter live records except the packet fields prepared below.
 | --- | --- |
 | `GemServiceStart(server, backend)` | Retain the caller, admit and retain an ordinary 2,560-byte Task, initialize its private port/scratch, then publish readiness. The caller waits on a temporary signal. Failed admission/startup unwinds before returning. A fresh zeroed server begins a new service lifetime. |
 | `GemClientInit(client, server)` | Allocate a private reply port and a 2,204-byte packet, retain the caller, then attach the one client. Reject a second attachment. |
-| `GemPrepare(client, operation, count, payload_bytes)` | Reset the owned packet and fill its header. The caller fills command descriptors and inline arrays before submission. Payload bytes include the complete descriptor table. |
+| `GemPrepare(client, operation, count, payload_bytes)` | Clear the submitted extent (header, reply state and payload) and fill its header. Unsubmitted capacity is untouched and cannot be referenced by commands. The caller fills command descriptors and inline arrays before submission. Payload bytes include the complete descriptor table. |
 | `GemSubmit(client)` | Check placement/ownership, mark one request outstanding and publish it under Forbid. The packet stays immutable until collection, even if a reply has already arrived. |
 | `GemCollect(client)` | Wait for and remove the exact reply before releasing outstanding ownership. Update local session/sequence state. An unexpected reply stays queued and storage remains retained. |
 | `GemTryCollect(client, ready)` | Collect the exact pending reply without waiting. An empty queue returns OK with ready zero and leaves pending ownership/session/sequence unchanged. |

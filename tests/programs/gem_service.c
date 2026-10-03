@@ -272,6 +272,27 @@ static void limits(void)
     check(GemCall(&client, 8, 0, 1, 2, points, (const WORD *)0xfffffeUL) == GEM_BAD_PACKET);
 }
 
+/* A shorter request clears its header/replies and submitted payload only.
+ * Stale tail bytes must neither be read as input nor returned as output. */
+static void reuse(void)
+{
+    UBYTE *bytes=(UBYTE *)client.packet;
+    UWORD i;
+    memset(bytes+GEM_REQUEST_BYTES,0xa5,GEM_LIMIT_PAYLOAD_BYTES);
+    check(GemPrepare(&client,GEM_OP_SUBMIT,1,GEM_COMMAND_BYTES)==GEM_OK);
+    for (i=0;i<GEM_LIMIT_REPLY_WORDS;i++) check(client.packet->reply[i]==0);
+    for (i=0;i<GEM_COMMAND_BYTES;i++) check(bytes[GEM_REQUEST_BYTES+i]==0);
+    check(bytes[GEM_REQUEST_BYTES+GEM_COMMAND_BYTES]==0xa5);
+    commands()[0].opcode=4;
+    check(exchange()==GEM_OK && client.packet->reply_words==0);
+    check(GemPrepare(&client,GEM_OP_SUBMIT,1,GEM_COMMAND_BYTES)==GEM_OK);
+    commands()[0].opcode=8; commands()[0].point_pairs=1;
+    commands()[0].points_offset=GEM_REQUEST_BYTES+GEM_COMMAND_BYTES;
+    check(exchange()==GEM_BAD_PACKET);
+    check(GemPrepare(&client,GEM_OP_SUBMIT,16,GEM_LIMIT_PAYLOAD_BYTES)==GEM_OK);
+    for (i=0;i<GEM_LIMIT_PAYLOAD_BYTES;i++) check(bytes[GEM_REQUEST_BYTES+i]==0);
+}
+
 static void protocol(void)
 {
     ULONG hash, generation;
@@ -307,6 +328,7 @@ static void protocol(void)
     malformed();
     raw_packets();
     limits();
+    reuse();
     before = calls;
     check(GemCall(&client, 8, 0, 1, 1, xy, &letter) == GEM_UNSUPPORTED);
     check(GemStatus(&client) == GEM_UNSUPPORTED && calls == before);
