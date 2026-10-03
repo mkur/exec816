@@ -12,6 +12,9 @@ from os_boundary import emulator,run_to
 LIMITS=dict(checkpoint_host_seconds=240,checkpoint_guest_frames=12000,completion_host_seconds=1800,completion_guest_frames=30000)
 
 
+from generate_console import constants as console_layout
+CONSOLE_LAYOUT=console_layout()
+
 def run(t,out,mode,nil=False):
     out.mkdir(parents=True,exist_ok=True)
     p=build(t,ROOT/('examples/dos-nil.act' if nil else 'tests/programs/dos_streams_example.act'),out,
@@ -51,7 +54,7 @@ def run(t,out,mode,nil=False):
         def check_screen(payload,stage):
             cs=p['build']['memory']['console_storage'];instance=cs['INSTANCE']
             expected,physical,cursor=terminal(payload)
-            rendezvous(f'(dw(${instance+14:x})>=dw(${instance+16:x}))&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
+            rendezvous(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
             cells=int.from_bytes(far(instance,3),'little')
             require(far(cells,960)==expected,'Example terminal contents differ')
             require(b.memdump(saved['at'],960)==physical,'Example physical screen differs')

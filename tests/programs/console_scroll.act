@@ -48,7 +48,7 @@ RETURN((CARD(high) LSH 8)+CARD(low))
 PROC Clean()
   CARD ignored
 
-  WHILE instance.dirtyEnd<>0 OR view.index<>instance.lineStart+instance.column DO
+  WHILE instance.dirtyRows<>0 OR view.index<>instance.lineStart+instance.column DO
     EXEC.Yield()
   OD
 
@@ -95,9 +95,9 @@ PROC Direct()
   Require(CONSOLEDISPLAY.Claim(@presentation,@local,snapshot)=1)
   started=Clock()
   FOR index=0 TO 15 DO
-    local.dirtyFirst=0
-    local.dirtyEnd=960
-    WHILE local.dirtyEnd<>0 DO
+    CONSOLECORE.Clean(@local)
+    CONSOLECORE.Dirty(@local,0,960)
+    WHILE local.dirtyRows<>0 DO
       CONSOLEDISPLAY.Quantum(@presentation,@local)
     OD
   OD

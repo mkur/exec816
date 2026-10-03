@@ -69,6 +69,9 @@ another operation; the caller can retry after yielding.
 An outer `Forbid` or a call from the console worker is rejected before admission.
 
 Show places the full retained dimensions within the existing 40×24 screen.
+Use `ScreenWidth()` and `ScreenHeight()` to query those current limits. The
+shared retained model supports 80×30, but that alone does not admit a larger
+window on the text backend.
 Rectangles cannot overlap or extend beyond it. An already visible instance can
 only be shown again at its existing position. Hide erases its rectangle and
 retains its cells and I/O; output continues while hidden. Showing it later

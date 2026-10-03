@@ -27,6 +27,9 @@ LONGINT FUNC ShellFinish()
 RETURN(result)
 '''
 
+from generate_console import constants as console_layout
+CONSOLE_LAYOUT=console_layout()
+
 def cooked_observer(out):
     """Observe real cooked transfers; never replace input, echo, or collection."""
     (out/'shelleditprobe.act').write_text('''MODULE SHELLEDITPROBE
@@ -188,7 +191,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
             print('Shell screen',stage,flush=True)
             cs=p['build']['memory']['console_storage'];instance=cs['INSTANCE']
             cells,physical,cursor=terminal(expected)
-            rendezvous(f'(dw(${instance+14:x})>=dw(${instance+16:x}))&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
+            rendezvous(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
             pointer=int.from_bytes(far(instance,3),'little')
             actual=far(pointer,960);screen=b.memdump(state['screen'],960)
             (out/(stage+'.cells.bin')).write_bytes(actual);(out/(stage+'.screen.bin')).write_bytes(screen)

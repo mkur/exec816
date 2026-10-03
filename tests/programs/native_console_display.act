@@ -1,5 +1,6 @@
 MODULE NATIVECONSOLEDISPLAY
 USE EXEC
+USE CONSOLECORE
 USE EXECTASKS
 USE HEAPCORE
 USE CONSOLEDRIVER
@@ -47,7 +48,7 @@ RETURN
 
 PROC Clean()
 
-  WHILE instance.dirtyEnd<>0 OR view.index<>instance.lineStart+instance.column DO
+  WHILE instance.dirtyRows<>0 OR view.index<>instance.lineStart+instance.column DO
     EXEC.Yield()
   OD
 
@@ -231,8 +232,8 @@ PROC Clipping()
   small.width=5
   small.height=2
   small.count=10
-  small.dirtyFirst=0
-  small.dirtyEnd=10
+  CONSOLECORE.Clean(@small)
+  CONSOLECORE.Dirty(@small,0,10)
   small.row=1
   small.column=4
   small.lineStart=5
@@ -294,8 +295,8 @@ PROC ClippedRows()
   small.width=10
   small.height=12
   small.count=120
-  small.dirtyFirst=3
-  small.dirtyEnd=113
+  CONSOLECORE.Clean(@small)
+  CONSOLECORE.Dirty(@small,3,113)
   small.row=11
   small.column=9
   small.lineStart=110
@@ -323,7 +324,7 @@ PROC ClippedRows()
 
   expected(311)=31
   steps=0
-  WHILE small.dirtyEnd<>0 DO
+  WHILE small.dirtyRows<>0 DO
     CONSOLEDISPLAY.Quantum(@clipped,@small)
     steps==+1
     Require(steps<=3)
@@ -337,12 +338,13 @@ PROC ClippedRows()
   ; More pending rows than one drawing batch must keep the redraw fallback.
   clipped.width=10
   clipped.height=12
-  small.dirtyFirst=0
-  small.dirtyEnd=120
+  CONSOLECORE.Clean(@small)
+  CONSOLECORE.Dirty(@small,0,120)
   small.operation=CONSOLETYPES.OP_SCROLL
   CONSOLEDISPLAY.Edit(@clipped,@small)
-  Require(small.dirtyFirst=0 AND small.dirtyEnd=120)
-  WHILE small.dirtyEnd<>0 DO
+  Require(small.dirtyRows=small.height AND small.damageFirst(0)=0
+      AND small.damageEnd(small.height-1)=small.width)
+  WHILE small.dirtyRows<>0 DO
     CONSOLEDISPLAY.Quantum(@clipped,@small)
   OD
 
@@ -395,8 +397,8 @@ PROC Scrolling()
   small.width=5
   small.height=3
   small.count=15
-  small.dirtyFirst=0
-  small.dirtyEnd=15
+  CONSOLECORE.Clean(@small)
+  CONSOLECORE.Dirty(@small,0,15)
   small.row=2
   small.column=2
   small.lineStart=10
@@ -417,11 +419,11 @@ PROC Scrolling()
   cells(10)=88
   cells(11)=89
   cells(12)=90
-  small.dirtyFirst=10
-  small.dirtyEnd=13
+  CONSOLECORE.Clean(@small)
+  CONSOLECORE.Dirty(@small,10,13)
   small.operation=CONSOLETYPES.OP_SCROLL
   CONSOLEDISPLAY.Edit(@clipped,@small)
-  Require(small.dirtyEnd=0 AND small.operation=CONSOLETYPES.OP_IDLE)
+  Require(small.dirtyRows=0 AND small.operation=CONSOLETYPES.OP_IDLE)
   CONSOLEDISPLAY.Quantum(@clipped,@small)
 
   FOR index=0 TO 991 DO
@@ -454,7 +456,7 @@ PROC Scrolling()
   FOR row=0 TO 2 DO
     small.operation=CONSOLETYPES.OP_SCROLL
     CONSOLEDISPLAY.Edit(@clipped,@small)
-    Require(small.dirtyEnd=0)
+    Require(small.dirtyRows=0)
     CONSOLEDISPLAY.Quantum(@clipped,@small)
   OD
 
@@ -466,10 +468,11 @@ PROC Scrolling()
   clipped.visible=0
   small.operation=CONSOLETYPES.OP_CLEAR
   CONSOLEDISPLAY.Edit(@clipped,@small)
-  Require(small.dirtyFirst=0 AND small.dirtyEnd=15)
+  Require(small.dirtyRows=small.height AND small.damageFirst(0)=0
+      AND small.damageEnd(small.height-1)=small.width)
   clipped.visible=1
   CONSOLEDISPLAY.Quantum(@clipped,@small)
-  Require(small.dirtyEnd=0)
+  Require(small.dirtyRows=0)
 
   EXEC.FreeMem(screen,992)
   EXEC.FreeMem(cells,15)

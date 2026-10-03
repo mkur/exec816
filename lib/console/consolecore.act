@@ -14,6 +14,11 @@ BYTE FUNC Extent(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
   start=LONGCARD(ADDRESS(cells))
   last=start+bytes
   recordStart=LONGCARD(ADDRESS(instance))
+  IF instance=NULL
+      OR recordStart>LONGCARD($1000000)-CONSOLETYPES.INSTANCE_SIZE THEN
+    RETURN(0)
+  FI
+
   IF bytes<LONGCARD(count) THEN
     RETURN(0)
   FI
@@ -28,6 +33,109 @@ BYTE FUNC Extent(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
 
 RETURN(1)
 
+; Reset damage bookkeeping only after the corresponding pixels are settled.
+PUBLIC PROC Clean(CONSOLETYPES.Instance POINTER instance)
+  CARD row
+
+  FOR row=0 TO CONSOLETYPES.MAX_HEIGHT-1 DO
+    instance.damageFirst(row)=instance.width
+    instance.damageEnd(row)=0
+  OD
+
+  instance.dirtyRows=0
+  instance.oldestDamage=0
+
+RETURN
+
+; Publish a change without replacing the age of already pending damage.
+PROC Changed(CONSOLETYPES.Instance POINTER instance)
+
+  IF instance.dirtyRows=0 THEN
+    instance.oldestDamage=instance.changeTick
+  FI
+
+  instance.generation==+1
+  IF instance.generation=0 THEN
+    instance.generation=1
+  FI
+
+RETURN
+
+; Merge a half-open row span. The row count is a summary of these bounds.
+PROC MarkRow(CONSOLETYPES.Instance POINTER instance CARD row,first,last)
+
+  IF instance.damageEnd(row)=0 THEN
+    instance.dirtyRows==+1
+    instance.damageFirst(row)=first
+  ELSEIF first<instance.damageFirst(row) THEN
+    instance.damageFirst(row)=first
+  FI
+
+  IF last>instance.damageEnd(row) THEN
+    instance.damageEnd(row)=last
+  FI
+
+RETURN
+
+; Accumulate damage without filling the untouched gap between distant rows.
+PUBLIC PROC Dirty(CONSOLETYPES.Instance POINTER instance CARD first,last)
+  CARD row,stop
+
+  IF first>=last OR last>instance.count THEN
+    RETURN
+  FI
+
+  Changed(instance)
+  row=0
+  WHILE first>=instance.width DO
+    first==-instance.width
+    last==-instance.width
+    row==+1
+  OD
+
+  DO
+    stop=last
+    IF stop>instance.width THEN
+      stop=instance.width
+    FI
+
+    MarkRow(instance,row,first,stop)
+    IF last<=instance.width THEN
+      EXIT
+    FI
+
+    first=0
+    last==-instance.width
+    row==+1
+  OD
+
+RETURN
+
+; Consume only a successfully presented prefix of one row.
+PUBLIC PROC Presented(CONSOLETYPES.Instance POINTER instance CARD row,last
+    LONGCARD generation)
+
+  IF generation<>instance.generation OR row>=instance.height THEN
+    RETURN
+  FI
+
+  IF instance.damageEnd(row)=0 THEN
+    RETURN
+  FI
+
+  IF last>=instance.damageEnd(row) THEN
+    instance.damageFirst(row)=instance.width
+    instance.damageEnd(row)=0
+    instance.dirtyRows==-1
+    IF instance.dirtyRows=0 THEN
+      instance.oldestDamage=0
+    FI
+  ELSEIF last>instance.damageFirst(row) THEN
+    instance.damageFirst(row)=last
+  FI
+
+RETURN
+
 ; Validate dimensions and establish an initially cleared retained terminal.
 PUBLIC BYTE FUNC Init(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
     CARD width,height LONGCARD bytes)
@@ -38,7 +146,7 @@ PUBLIC BYTE FUNC Init(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
     RETURN(0)
   FI
 
-  ; A bounded sum of at most 24 rows, checked before addition. Address/extent
+  ; A bounded sum of at most 30 rows, checked before addition. Address/extent
   ; validation below uses full-width arithmetic; cursor work uses row offsets.
   count=0
   FOR row=1 TO height DO
@@ -60,25 +168,13 @@ PUBLIC BYTE FUNC Init(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
   instance.column=0
   instance.row=0
   instance.lineStart=0
-  instance.dirtyFirst=0
-  instance.dirtyEnd=count
-  instance.reserved=0
+  instance.generation=0
+  instance.changeTick=0
+  Clean(instance)
+  Dirty(instance,0,count)
   instance.operation=CONSOLETYPES.OP_CLEAR
 
 RETURN(1)
-
-; Accumulate the cell interval that presentation must refresh.
-PUBLIC PROC Dirty(CONSOLETYPES.Instance POINTER instance CARD first,last)
-
-  IF first<instance.dirtyFirst THEN
-    instance.dirtyFirst=first
-  FI
-
-  IF last>instance.dirtyEnd THEN
-    instance.dirtyEnd=last
-  FI
-
-RETURN
 
 ; Complete one logical edit while the worker retains its request and instance.
 ; The bounded native copy stays preemptible, including when an abort arrives.
@@ -151,7 +247,7 @@ PROC Control(CONSOLETYPES.Instance POINTER instance BYTE value)
 RETURN
 
 ; Count source bytes, including ignored controls. Printable runs publish one
-; dirty interval, ending at a control, row edge or the source quantum.
+; dirty row span, ending at a control, row edge or the source quantum.
 PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
     CARD length)
   CARD used,limit,stop,first,index
@@ -195,7 +291,9 @@ PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
       OD
 
       instance.column==+index-first
-      Dirty(instance,first,index)
+      Changed(instance)
+      MarkRow(instance,instance.row,first-instance.lineStart,
+          index-instance.lineStart)
       IF instance.column=instance.width THEN
         NewLine(instance)
       FI

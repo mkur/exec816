@@ -15,6 +15,15 @@ DISPLAY.Lease lease
 
 CONST ROW_BUDGET=4, CELL_BUDGET=160
 
+; Physical text capabilities; the common model can retain larger geometry.
+PUBLIC CARD FUNC Width()
+
+RETURN(40)
+
+PUBLIC CARD FUNC Height()
+
+RETURN(24)
+
 ; Platform leaf: exact source/destination extents, ordinary task DP scratch.
 PUBLIC EXTERNAL PROC Span(BYTE POINTER destination,source CARD length)
 
@@ -145,8 +154,9 @@ PUBLIC BYTE FUNC Claim(CONSOLETYPES.Presentation POINTER view
   view.cursorOn=0
   view.visible=1
   view.focused=1
-  instance.dirtyFirst=0
-  instance.dirtyEnd=instance.count
+  view.generation==+1
+  view.presentedGeneration=0
+  CONSOLECORE.Dirty(instance,0,instance.count)
   IF DISPLAY.Activate(@lease)<>DISPLAY.OK THEN
     HEAPCORE.Abort(4)
   FI
@@ -165,6 +175,8 @@ PUBLIC PROC Release(CONSOLETYPES.Presentation POINTER view)
   FI
 
   view.visible=0
+  view.generation==+1
+  view.presentedGeneration=0
   A816MEMORY.Move(view.screen,view.snapshot,SIZE(960))
   crsinh=view.savedCursor
   view.claimed=0
@@ -209,53 +221,47 @@ RETURN
 ; tasks.
 PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
-  CARD index,row,column,stop,rowEnd,visibleEnd,rows
+  CARD row,base,first,last,stop,rows,remaining
+  LONGCARD generation
 
-  index=instance.dirtyFirst
-  IF index>=instance.dirtyEnd THEN
+  IF instance.dirtyRows=0 THEN
     RETURN
   FI
 
-  LET width=instance.width
   row=0
-  column=index
-  WHILE column>=width DO
-    column==-width
-    row==+1
-  OD
-
-  stop=index+CELL_BUDGET
-  IF stop>instance.dirtyEnd THEN
-    stop=instance.dirtyEnd
-  FI
-
+  base=0
   rows=0
-  WHILE index<stop AND rows<ROW_BUDGET DO
-    rowEnd=index+width-column
-    IF rowEnd>stop THEN
-      rowEnd=stop
-    FI
-
-    IF column<view.width AND row<view.height THEN
-      visibleEnd=index+view.width-column
-      IF visibleEnd>rowEnd THEN
-        visibleEnd=rowEnd
+  remaining=CELL_BUDGET
+  WHILE row<instance.height AND rows<ROW_BUDGET AND remaining<>0 DO
+    first=instance.damageFirst(row)
+    last=instance.damageEnd(row)
+    IF first<last THEN
+      IF last-first>remaining THEN
+        last=first+remaining
       FI
 
-      Span(view.screen+SIZE(Position(view.top+row,view.left+column)),
-          instance.cells+SIZE(index),visibleEnd-index)
+      generation=instance.generation
+      IF first<view.width AND row<view.height THEN
+        stop=last
+        IF stop>view.width THEN
+          stop=view.width
+        FI
+
+        Span(view.screen+SIZE(Position(view.top+row,view.left+first)),
+            instance.cells+SIZE(base+first),stop-first)
+      FI
+
+      CONSOLECORE.Presented(instance,row,last,generation)
+      remaining==-(last-first)
+      rows==+1
     FI
 
-    index=rowEnd
-    column=0
+    base==+instance.width
     row==+1
-    rows==+1
   OD
 
-  instance.dirtyFirst=index
-  IF index=instance.dirtyEnd THEN
-    instance.dirtyFirst=instance.count
-    instance.dirtyEnd=0
+  IF instance.dirtyRows=0 THEN
+    view.presentedGeneration=instance.generation
   FI
 
 RETURN
@@ -301,13 +307,13 @@ PUBLIC PROC Edit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     IF operation=CONSOLETYPES.OP_CLEAR THEN
       synchronized=1
     ELSE
-      IF instance.dirtyEnd>instance.dirtyFirst THEN
-        IF instance.dirtyEnd-instance.dirtyFirst<=CELL_BUDGET THEN
+      IF instance.dirtyRows<>0 THEN
+        IF instance.dirtyRows<=ROW_BUDGET THEN
           Cells(view,instance)
         FI
       FI
 
-      synchronized=instance.dirtyEnd=0
+      synchronized=instance.dirtyRows=0
     FI
   FI
 
@@ -336,8 +342,8 @@ PUBLIC PROC Edit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     END
   FI
 
-  instance.dirtyFirst=instance.count
-  instance.dirtyEnd=0
+  CONSOLECORE.Clean(instance)
+  view.presentedGeneration=instance.generation
 
 RETURN
 
@@ -352,7 +358,7 @@ PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
 
   ; A clean, settled cursor needs no screen stores. Focus changes invalidate
   ; view.index at the presentation transaction boundary.
-  IF instance.dirtyEnd=0 AND view.index=instance.lineStart+instance.column THEN
+  IF instance.dirtyRows=0 AND view.index=instance.lineStart+instance.column THEN
     IF instance.operation=CONSOLETYPES.OP_IDLE THEN
       IF (view.focused=0 AND view.cursorOn=0) OR
           (view.focused<>0 AND view.cursorOn<>0 AND

@@ -57,7 +57,7 @@ PUBLIC PROC Display(CONSOLETYPES.Instance POINTER instance)
     RETURN
   FI
 
-  IF instance.dirtyFirst<instance.dirtyEnd THEN
+  IF instance.dirtyRows<>0 THEN
     RETURN
   FI
 

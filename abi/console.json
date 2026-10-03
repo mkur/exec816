@@ -5,13 +5,13 @@
     "CONERR_INPUTOVERFLOW": 1,
     "RAW_SLOTS": 64,
     "INPUT_BYTES": 128,
-    "CELL_BYTES": 960,
+    "CELL_BYTES": 2400,
     "SOURCE_QUANTUM": 64,
     "OP_IDLE": 0,
     "OP_SCROLL": 1,
     "OP_CLEAR": 2,
-    "MAX_WIDTH": 40,
-    "MAX_HEIGHT": 24,
+    "MAX_WIDTH": 80,
+    "MAX_HEIGHT": 30,
     "EVENT_EMPTY": 4294967295,
     "EVENT_LOST": 4294967294,
     "STARTUP_FAULT": 65429,
@@ -31,17 +31,17 @@
   "storage": {
     "service_offset": 0,
     "instance_offset": 160,
-    "presentation_offset": 240,
-    "reserved_bytes": 736,
+    "presentation_offset": 368,
+    "reserved_bytes": 880,
     "capture_offset": 3072,
     "glyph_offset": 3632,
     "keymap_offset": 3760,
-    "routes_offset": 272,
-    "windows_offset": 544
+    "routes_offset": 416,
+    "windows_offset": 688
   },
   "records": {
     "Instance": {
-      "size": 74,
+      "size": 198,
       "alignment": 2,
       "fields": [
         [
@@ -75,17 +75,12 @@
           12
         ],
         [
-          "dirtyFirst",
-          "CARD",
+          "generation",
+          "LONGCARD",
           14
         ],
         [
-          "dirtyEnd",
-          "CARD",
-          16
-        ],
-        [
-          "reserved",
+          "oldestDamage",
           "CARD",
           18
         ],
@@ -188,11 +183,31 @@
           "lease",
           "EXEC.TaskLease",
           62
+        ],
+        [
+          "damageFirst",
+          "CARD[30]",
+          74
+        ],
+        [
+          "damageEnd",
+          "CARD[30]",
+          134
+        ],
+        [
+          "dirtyRows",
+          "BYTE",
+          194
+        ],
+        [
+          "changeTick",
+          "CARD",
+          196
         ]
       ]
     },
     "Presentation": {
-      "size": 30,
+      "size": 38,
       "alignment": 2,
       "fields": [
         [
@@ -274,6 +289,16 @@
           "focused",
           "BYTE",
           29
+        ],
+        [
+          "generation",
+          "LONGCARD",
+          30
+        ],
+        [
+          "presentedGeneration",
+          "LONGCARD",
+          34
         ]
       ]
     },

@@ -3,8 +3,8 @@
 [Design note](bitmap-console-design.md) · [Implementation plans](../README.md) ·
 [GEM work](README.md) · [Roadmap](../../roadmap.md)
 
-Status: implementation started, 3 October 2026. B0–B4 have passed development checks;
-B5–B9 remain unimplemented. This plan implements
+Status: implementation started, 3 October 2026. B0–B5 have passed development checks;
+B6–B9 remain unimplemented. This plan implements
 the design's 80×30 bitmap backend for the existing console, improving the shared
 VDI drawing path first. Each slice must leave an executable, reviewable result;
 commit it with its focused development evidence before starting the next slice.
@@ -269,6 +269,16 @@ fixtures for 1×1, 3-column cooked input, 40×24 and 80×30, invalid extents,
 bank-crossing cells, hidden/show, sparse changes on distant rows, control bytes,
 clear/scroll and cancellation. Text presentation remains an executable control;
 an 80×30 retained-model test does not yet claim bitmap display support.
+
+B5 development evidence: [geometry and row damage](../../development/bitmap-console-b5.json).
+Core raw/optimized tests cover 80×30 across a CPU bank, sparse distant-row
+damage, preserved age and stale-generation acknowledgements. Text display,
+focus, cancellation, narrow cooked input and allocation rollback pass. Current
+capability queries report 40×24 only while ready. The existing 36-character
+cooked tail stays bounded by the caller's available row space; its 128-byte echo
+buffer remains sufficient. Instance/presentation payload grows by 132 upper bytes
+per instance, below the 256-byte allowance. The rounded default metadata grows
+144 bytes to 880. Bank-zero reservation changes by zero in every category.
 
 ## B6 Bring up the bitmap backend
 

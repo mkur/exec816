@@ -52,8 +52,8 @@ class ConsoleLayoutTests(unittest.TestCase):
             console.reserve_metadata(m)
             self.assertEqual(m['console_storage']['BASE']>>16,bank)
             self.assertEqual(m['console_storage']['CAPTURE'],generate_tasks.storage(m)['BASE']+0xc00)
-            self.assertEqual(m['console_storage']['ROUTES'],m['console_storage']['BASE']+272)
-            self.assertEqual(m['console_storage']['BYTES'],736)
+            self.assertEqual(m['console_storage']['ROUTES'],m['console_storage']['BASE']+416)
+            self.assertEqual(m['console_storage']['BYTES'],880)
             self.assertEqual(m['console_storage']['KEYMAP']+128,generate_tasks.storage(m)['BASE']+0xf30)
             for failure in ('overlap','overflow'):
                 bad=copy.deepcopy(m)

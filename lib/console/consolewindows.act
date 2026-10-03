@@ -109,7 +109,7 @@ PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
   FI
 
   IF view.visible<>0 THEN
-    IF instance.dirtyFirst<instance.dirtyEnd
+    IF instance.dirtyRows<>0
         OR view.index<>instance.lineStart+instance.column THEN
       RETURN(1)
     FI

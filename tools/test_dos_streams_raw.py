@@ -11,6 +11,9 @@ from test_console_display import terminal
 from os_boundary import emulator,run_to
 
 
+from generate_console import constants as console_layout
+CONSOLE_LAYOUT=console_layout()
+
 def run(t,out,mode,bank=1):
     out.mkdir(parents=True,exist_ok=True)
     names=bytearray(520)
@@ -81,7 +84,7 @@ def run(t,out,mode,bank=1):
             payload[0]=12;payload[65535:65537]=b'XY';payload[-5:]=bytes([8,9,13,10,90])
             expected,screen,cursor=terminal(payload)
             require(cells()==expected,'70003-byte retained terminal oracle failed')
-            rendezvous(f'(dw(${instance+14:x})>=dw(${instance+16:x}))&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
+            rendezvous(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
             require(b.memdump(saved['at'],960)==screen,'Eventual physical screen differs')
             (out/'large.cells.bin').write_bytes(expected);(out/'large.screen.bin').write_bytes(screen)
             observations[-1].update(payload_length=70003,payload_sha256=hashlib.sha256(payload).hexdigest(),cells_sha256=sha256(out/'large.cells.bin'),screen_sha256=sha256(out/'large.screen.bin'))

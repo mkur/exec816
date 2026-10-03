@@ -25,11 +25,11 @@ def constants(abi=ABI):
                 'Invalid console size: '+name)
         widths[name]=(record['size'],alignment);result[name.upper()+'_SIZE']=record['size']
     require(result['RAW_SLOTS']==64
-            and result['INPUT_BYTES']==128 and result['CELL_BYTES']==960,'Invalid console capacity')
+            and result['INPUT_BYTES']==128 and result['CELL_BYTES']==2400,'Invalid console capacity')
     require(result['CONERR_INPUTOVERFLOW']==1,'Invalid console event/error contract')
     require(result['ROUTE_SIZE']==16 and result['ROUTES_SIZE']==264,'Invalid route retention capacity')
-    require(result['SOURCE_QUANTUM']==64 and result['MAX_WIDTH']==40
-            and result['MAX_HEIGHT']==24,'Invalid initial console geometry/quanta')
+    require(result['SOURCE_QUANTUM']==64 and result['MAX_WIDTH']==80
+            and result['MAX_HEIGHT']==30,'Invalid console geometry/quanta')
     require(result['WINDOW_SLOTS']==4 and result['WINDOW_SIZE']==38 and result['WINDOWS_SIZE']==180,'Invalid window capacity')
     require(result['CONTROL_SIZE']==8,'Invalid presentation transaction')
     s=abi['storage'];end=0

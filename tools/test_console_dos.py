@@ -9,6 +9,9 @@ from test_console_coexistence import PIN
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 
+from generate_console import constants as console_layout
+CONSOLE_LAYOUT=console_layout()
+
 def run(t,out,optimize,size,bank=1):
     out.mkdir(parents=True,exist_ok=True)
     p=build(t,ROOT/'tests/programs/native_console_dos.act',out,optimize=optimize,tasks=True,task_capacity=8,console=True,kernel_bank=bank,
@@ -46,7 +49,7 @@ def run(t,out,optimize,size,bank=1):
             stimuli.append(dict(key=name,start_frame=start,consumed_frame=end,during_read=bool(active)))
             if name!='X' or (prior+1)%8==0:print('Input',name,'consumed',prior+1,'during read',bool(active),flush=True)
         def screen(label):
-            pending();rendezvous(f'dw(${instance+14:x})>=dw(${instance+16:x})')
+            pending();rendezvous(f'db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0')
             cells=int.from_bytes(readfar(instance,3),'little');raw=readfar(cells,960);physical=b.memdump(saved['at'],960)
             (out/(label+'.cells.bin')).write_bytes(raw);(out/(label+'.screen.bin')).write_bytes(physical)
             (out/(label+'.png')).write_bytes(b.screenshot())

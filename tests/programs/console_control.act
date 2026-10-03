@@ -111,6 +111,7 @@ PROC Main()
   Require(CONSOLE.Destroy(unit)<>0)
   Require(CONTROLPROBE.stores<>0 AND CONTROLPROBE.wrongOwner=0)
   Require(CONSOLEDRIVER.Stop()<>0)
+  Require(CONSOLE.ScreenWidth()=0 AND CONSOLE.ScreenHeight()=0)
 
 RETURN
 

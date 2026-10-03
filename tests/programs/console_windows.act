@@ -285,11 +285,35 @@ PROC FailureChecks()
 
 RETURN
 
+; The smallest cooked geometry still leaves its marker and spare column.
+PROC NarrowCooked()
+  DOS.FileHandle POINTER file
+
+  LET unit=CONSOLE.Create(3,1)
+  Require(unit<>0)
+  UnitName(unit,1)
+  file=DOS.Open(name,DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  LET entry=CONSOLEWINDOWS.Find(unit)
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(instance,$0200003f)
+  CONSOLEINPUT.Deliver(instance,$0201000c)
+  EXEC.Permit()
+  Require(DOS.Read(file,inputA,4)=2 AND inputA(0)=97 AND inputA(1)=10)
+  Require(instance.row=0 AND instance.column=0 AND instance.cells(0)=32
+      AND instance.cells(1)=32 AND instance.cells(2)=32)
+  Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+  Require(CONSOLE.Destroy(unit)<>0)
+
+RETURN
+
 ; Exercise dynamic window identity, device binding and cleanup.
 PROC Main()
   BYTE index
 
   baseline=EXEC.AvailMem(0)
+  Require(CONSOLE.ScreenWidth()=40 AND CONSOLE.ScreenHeight()=24)
   Require(CONSOLE.Create(0,1)=0 AND CONSOLE.Create(41,1)=0 AND CONSOLE.Create(1,
       25)=0)
   Require(CONSOLE.Destroy(0)=0)
@@ -313,6 +337,7 @@ PROC Main()
   DosChecks()
   Require(CONSOLE.Destroy(first)<>0 AND CONSOLE.Destroy(second)<>0
       AND CONSOLE.Destroy(third)<>0)
+  NarrowCooked()
   FOR index=0 TO 15 DO
     first=CONSOLE.Create(40,24)
     Require(first<>0 AND CONSOLE.Destroy(first)<>0)

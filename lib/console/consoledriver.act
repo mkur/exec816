@@ -17,6 +17,7 @@ USE CONSOLEINPUT
 USE CONSOLEDISPLAY
 USE CONSOLECONTROL
 USE DISPLAY
+USE DISPLAYADAPTER
 INCLUDE "console-storage-action.inc"
 
 PUBLIC CONSOLETYPES.Service POINTER FUNC GetService()
@@ -26,6 +27,35 @@ RETURN(CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE)))
 PUBLIC CONSOLETYPES.Instance POINTER FUNC GetInstance()
 
 RETURN(CONSOLETYPES.Instance POINTER(ADDRESS(CS_INSTANCE)))
+
+; Publish capabilities only while the worker is ready and accepting work.
+PUBLIC CARD FUNC ScreenWidth()
+  CARD width
+
+  LET service=GetService()
+  EXEC.Forbid()
+  width=0
+  IF service.state=2 AND service.stop=0 THEN
+    width=CONSOLEDISPLAY.Width()
+  FI
+
+  EXEC.Permit()
+
+RETURN(width)
+
+PUBLIC CARD FUNC ScreenHeight()
+  CARD height
+
+  LET service=GetService()
+  EXEC.Forbid()
+  height=0
+  IF service.state=2 AND service.stop=0 THEN
+    height=CONSOLEDISPLAY.Height()
+  FI
+
+  EXEC.Permit()
+
+RETURN(height)
 
 ; Require a complete writable extent before the worker borrows caller storage.
 BYTE FUNC Mapped(BYTE POINTER buffer LONGCARD bytes)
@@ -212,7 +242,15 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   entry.instance=BYTE POINTER(instance)
   entry.view=BYTE POINTER(ADDRESS(CS_PRESENTATION))
   entry.state=CONSOLETYPES.WIN_CREATING
-  cells=EXEC.AllocMem(960,EXEC.MEMF_PUBLIC)
+  LET width=CONSOLEDISPLAY.Width()
+  LET height=CONSOLEDISPLAY.Height()
+  IF width=0 OR width>CONSOLETYPES.MAX_WIDTH
+      OR height=0 OR height>CONSOLETYPES.MAX_HEIGHT THEN
+    RETURN(0)
+  FI
+
+  instance.count=width*height
+  cells=EXEC.AllocMem(LONGCARD(instance.count),EXEC.MEMF_PUBLIC)
   fifo=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC)
   instance.cells=cells
   instance.fifo=fifo
@@ -220,7 +258,7 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
     RETURN(0)
   FI
 
-  IF CONSOLECORE.Init(instance,cells,40,24,960)=0 THEN
+  IF CONSOLECORE.Init(instance,cells,width,height,LONGCARD(instance.count))=0 THEN
     RETURN(0)
   FI
 
@@ -300,7 +338,7 @@ PROC FreeStorage(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   FI
 
   IF instance.cells<>BYTE POINTER(0) THEN
-    EXEC.FreeMem(instance.cells,960)
+    EXEC.FreeMem(instance.cells,LONGCARD(instance.count))
     instance.cells=BYTE POINTER(0)
   FI
 
@@ -404,6 +442,7 @@ PUBLIC PROC Worker()
     writing=0
     IF entry<>NULL THEN
       instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      instance.changeTick=DISPLAYADAPTER.Ticks()
       ReadQuantum(service,instance)
       WriteQuantum(instance,CONSOLETYPES.Presentation POINTER(entry.view))
       CONSOLEDISPLAY.Present(CONSOLETYPES.Presentation POINTER(entry.view),instance)

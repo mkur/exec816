@@ -21,6 +21,9 @@ PROBE=dict(expected=0,verified=4,seed=8,phase=9,go=10,finish=11,collected=12,vis
 MIX=dict(readyA=0,readyB=1,readyC=2,stopA=3,stopPeers=4,replies=5,destination=8,message=11,output=14,flood=17,floods=20,allocations=22,signals=26,messages=30)
 LIMITS=dict(checkpoint_host_seconds=180,checkpoint_guest_frames=9000,completion_host_seconds=1800,completion_guest_frames=30000)
 
+from generate_console import constants as console_layout
+CONSOLE_LAYOUT=console_layout()
+
 def marks_for(p):
     names=('native_nmi','native_irq','sio_start','sio_retire','sio_shutdown','sio_terminal','signal_post','sio_alarm','sio_watchdog','input_capture','input_notify','tasks_forbid','tasks_permit')
     marks={n:p['labels'][n] for n in names}
@@ -110,7 +113,7 @@ def execute_case(p,out,size,speed,trace,marks,schedule=None):
                     require(actual_frame==action['frame'],f'Replay input frame changed at action {index} {action}: got {actual_frame}')
                     input_action(action['key'],action['state'])
             rendezvous(f'db(${q+PROBE["phase"]:x})=3',long=True)
-            rendezvous(f'dw(${instance+14:x})>=dw(${instance+16:x})')
+            rendezvous(f'db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0')
             cells=int.from_bytes(readfar(instance,3),'little');retained=readfar(cells,960);physical=b.memdump(saved['at'],960)
             expected_screen=bytearray(glyphs()[v] for v in retained)
             cursor=b.eval_expr(f'dw(${instance+12:x})')*40+b.eval_expr(f'dw(${instance+10:x})');expected_screen[cursor]^=128

@@ -5,8 +5,15 @@
 One console worker serves the default text console and additional instances.
 It retains cells, accepts output, routes input and updates the shared 40×24
 physical screen. An instance adds upper-RAM state, not a Task, stack or DP.
+The common retained model supports up to 80×30 cells; the current text backend
+continues to admit at most 40×24. Bitmap presentation is a subsequent slice.
 
 ## Public interface
+
+`CONSOLE.ScreenWidth()` and `ScreenHeight()` return the active display capacity
+in cells when the worker is ready and accepting work, and zero while stopped,
+starting, stopping or after failed startup. The text backend reports 40 and 24.
+Instance creation and Show use these capabilities rather than the model maximum.
 
 Open `console.device` with unit zero for the default instance or an opaque
 [instance identity](console-windows.md), and flags zero. Use the standard Exec
@@ -34,6 +41,9 @@ The retained model and presentation are separate. Hidden instances still accept
 output; showing them redraws retained cells. The worker rotates runnable instances
 and bounds output/redraw work so pending input and other Tasks can progress.
 [Window presentation](console-windows.md) defines tiling and focus limits.
+Damage is retained separately for each changed row, so distant edits do not
+force the rows between them to redraw. A bounded presentation cannot discard a
+newer edit when it acknowledges completed work.
 
 Printable ASCII uses the available ROM glyphs, with `?` for unavailable glyphs.
 Output control bytes have these effects:

@@ -7,6 +7,8 @@ USE CONSOLEWINDOWS
 USE CONSOLEDRIVER
 USE CONSOLECONTROL
 USE CONSOLECAPTURE
+USE CONSOLECORE
+USE DISPLAYADAPTER
 
 ; Pause new worker borrows and wait for existing ones before changing
 ; presentation.
@@ -146,6 +148,8 @@ PUBLIC PROC HideLocked(CONSOLETYPES.Window POINTER entry)
   FI
 
   view.visible=0
+  view.generation==+1
+  view.presentedGeneration=0
   windows=CONSOLEWINDOWS.Registry()
   IF windows.focusSlot<>BYTE(entry.unit & 3) THEN
     RETURN
@@ -188,12 +192,14 @@ PUBLIC BYTE FUNC Show(LONGCARD unit CARD left,top)
   windows=CONSOLEWINDOWS.Registry()
   view=CONSOLETYPES.Presentation POINTER(entry.view)
   instance=CONSOLETYPES.Instance POINTER(entry.instance)
-  IF left>=40 OR top>=24 THEN
+  LET width=CONSOLEDRIVER.ScreenWidth()
+  LET height=CONSOLEDRIVER.ScreenHeight()
+  IF left>=width OR top>=height THEN
     Unlock()
     RETURN(0)
   FI
 
-  IF instance.width>40-left OR instance.height>24-top THEN
+  IF instance.width>width-left OR instance.height>height-top THEN
     Unlock()
     RETURN(0)
   FI
@@ -227,8 +233,10 @@ PUBLIC BYTE FUNC Show(LONGCARD unit CARD left,top)
   view.index=$ffff
   view.cursorOn=0
   view.focused=0
-  instance.dirtyFirst=0
-  instance.dirtyEnd=instance.count
+  view.generation==+1
+  view.presentedGeneration=0
+  instance.changeTick=DISPLAYADAPTER.Ticks()
+  CONSOLECORE.Dirty(instance,0,instance.count)
   IF windows.focusSlot=255 THEN
     Select(entry)
   FI

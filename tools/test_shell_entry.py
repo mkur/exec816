@@ -11,6 +11,9 @@ from test_shell_core import PIN,KEYS,draw
 from test_console_display import terminal
 from make_shell_disk import make as make_disk, SOURCE as DISK_SOURCE
 
+from generate_console import constants as console_layout
+CONSOLE_LAYOUT=console_layout()
+
 def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=None,redirection=False):
     pin=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())if paced else PIN
     bridge=ROOT/('build/shell-paced-bridge'if paced else 'build/shell-console-bridge')
@@ -52,7 +55,7 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
             require(b.eval_expr(f'dw(${pointer+36:x})')==error,'Startup result differs')
             def screen(stage):
                 cells,physical,cursor=terminal(payload);instance=cs['INSTANCE']
-                wait(f'(dw(${instance+14:x})>=dw(${instance+16:x}))&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
+                wait(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
                 require(b.memdump(state['screen'],960)==physical,stage+' screen differs')
                 return physical,cursor
             initial,_=screen('Startup');(out/'boot.screen.bin').write_bytes(initial)

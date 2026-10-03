@@ -12,6 +12,9 @@ from test_cooperative import data
 from test_console_display import terminal
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 
+from generate_console import constants as console_layout
+CONSOLE_LAYOUT=console_layout()
+
 def run(out,optimize,bank):
     out.mkdir(parents=True,exist_ok=True)
     for f in ('console_cancel.act','waitprobe.act'):(out/f).write_bytes((ROOT/'tests/programs'/f).read_bytes())
@@ -92,7 +95,7 @@ def run(out,optimize,bank):
             count=int.from_bytes(b.memdump(at('results')+5*4,4),'little',signed=True)
             expected=bytes(10 if (i+1)%40==0 else 65 for i in range(count))
             cells,screen,cursor=terminal(expected)
-            rendezvous(f'dw(${instance+14:x})>=dw(${instance+16:x})');frames(3)
+            rendezvous(f'db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0');frames(3)
             require(far(pointer(instance),960)==cells,'Canceled Write prefix differs from retained screen')
             require(b.memdump(saved['at'],960)==screen,'Canceled Write prefix differs from physical screen')
             screens.append(dict(bytes=count,cursor=cursor,screen_sha256=__import__('hashlib').sha256(screen).hexdigest()))

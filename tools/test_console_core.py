@@ -18,7 +18,8 @@ def run(t,out,optimize,bank,paced=False):
     source.write_bytes((ROOT/'tests/programs/native_console_core.act').read_bytes())
     p=build(t,source,out,optimize=optimize,tasks=True,
         task_capacity=8,kernel_bank=bank,console_test=True,
-        image_data=[(0xd0000,bytes([0xa5])*1088),(0xafff8,bytes([0xa5])*32)])
+        image_data=[(0xd0000,bytes([0xa5])*1088),(0xafff8,bytes([0xa5])*32),
+                    (0xbffe0,bytes([0xa5])*2432),(0xd0ff0,bytes([0xa5])*2432)])
     with emulator(bridge,ROOT/'build/firmware/altirraos-816.rom',out,pin=pin) as b:
         machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',pin)
         try:runtime,_=execute(b,p,timeout=120,frame_limit=6000)
@@ -32,6 +33,11 @@ def run(t,out,optimize,bank,paced=False):
         cells=bytearray(v for row in range(1,24) for v in [65+row]*40)+bytearray(b' '*40)
         cells[919]=33;expected[80:1040]=cells
         require(actual==expected,'Independent terminal cell/guard oracle failed')
+        bitmap=read(b,0xd0ff0,2432,out)
+        expected=bytearray([0xa5])*2432
+        expected[16:2416]=bytes(v for row in range(1,30) for v in [33+row]*80)+b' '*80
+        expected[16+2319]=90
+        require(bitmap==expected,'80x30 bank-crossing scroll/guard oracle failed')
         return dict(status='pass',build=p['build'],machine=machine,pin=pin,runtime=runtime,
             checks=data(b,p['image'],'checks',True)[0],quanta=data(b,p['image'],'quanta',True)[0],
             snapshots_sha256=__import__('hashlib').sha256(actual).hexdigest(),first=actual[16:40].decode(),second=actual[48:58].decode())

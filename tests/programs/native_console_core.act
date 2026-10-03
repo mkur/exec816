@@ -124,6 +124,9 @@ RETURN
 
 PROC RejectExtents()
 
+  Require(CONSOLECORE.Init(NULL,firstCells,8,3,24)=0)
+  Require(CONSOLECORE.Init(CONSOLETYPES.Instance POINTER($ffffc0),
+      firstCells,8,3,24)=0)
   Require(CONSOLECORE.Init(first,firstCells,0,3,24)=0)
   Require(CONSOLECORE.Init(first,firstCells,8,0,24)=0)
   Require(CONSOLECORE.Init(first,firstCells,$ffff,$ffff,24)=0)
@@ -332,6 +335,76 @@ PROC EdgeScroll()
 
 RETURN
 
+; Full bitmap geometry crosses a CPU bank. Sparse row damage retains its oldest
+; age, and a stale redraw cannot acknowledge newly accepted text.
+PROC BitmapModel(BYTE unused)
+  CARD row,column,index
+  LONGCARD generation
+
+  LET wide=CONSOLETYPES.Instance POINTER(Guarded(CONSOLETYPES.INSTANCE_SIZE))
+  LET cells=BYTE POINTER($bfff0)
+  LET snapshot=BYTE POINTER($d1000)
+  Require(CONSOLECORE.Init(wide,cells,80,30,2400)=1)
+  Finish(wide)
+  Require(CONSOLECORE.Init(wide,cells,81,30,2400)=0)
+  Require(CONSOLECORE.Init(wide,cells,80,31,2480)=0)
+  Require(CONSOLECORE.Init(wide,cells,80,30,2399)=0)
+  CONSOLECORE.Clean(wide)
+  wide.changeTick=17
+  CONSOLECORE.Dirty(wide,1,3)
+  generation=wide.generation
+  wide.changeTick=18
+  CONSOLECORE.Dirty(wide,2395,2400)
+  Require(wide.dirtyRows=2 AND wide.oldestDamage=17)
+  FOR row=1 TO 28 DO
+    Require(wide.damageEnd(row)=0)
+  OD
+
+  CONSOLECORE.Presented(wide,0,3,generation)
+  Require(wide.dirtyRows=2 AND wide.damageFirst(0)=1)
+  generation=wide.generation
+  CONSOLECORE.Presented(wide,0,2,generation)
+  Require(wide.damageFirst(0)=2 AND wide.damageEnd(0)=3)
+  CONSOLECORE.Dirty(wide,0,1)
+  CONSOLECORE.Presented(wide,0,3,generation)
+  Require(wide.damageFirst(0)=0 AND wide.damageEnd(0)=3
+      AND wide.oldestDamage=17)
+  CONSOLECORE.Clean(wide)
+  wide.changeTick=42
+  CONSOLECORE.Dirty(wide,80,81)
+  Require(wide.dirtyRows=1 AND wide.oldestDamage=42)
+  CONSOLECORE.Presented(wide,1,1,wide.generation)
+  Require(wide.dirtyRows=0 AND wide.oldestDamage=0)
+  index=0
+  FOR row=0 TO 29 DO
+    FOR column=0 TO 79 DO
+      cells(index)=BYTE(33+row)
+      index==+1
+    OD
+  OD
+
+  wide.row=29
+  wide.column=79
+  wide.lineStart=2320
+  input(0)=90
+  Require(CONSOLECORE.Feed(wide,input,1)=1)
+  Require(wide.operation=CONSOLETYPES.OP_SCROLL)
+  Finish(wide)
+  FOR index=0 TO 2399 DO
+    snapshot(index)=cells(index)
+  OD
+
+  Require(wide.dirtyRows=30 AND cells(2319)=90 AND cells(2320)=32)
+  Require((cells-1)^=$a5 AND cells(2400)=$a5)
+  Require(CONSOLECORE.Init(wide,cells,1,1,1)=1)
+  Finish(wide)
+  Require(CONSOLECORE.Feed(wide,input,1)=1)
+  Finish(wide)
+  Require(cells^=32 AND wide.row=0 AND wide.column=0)
+  FreeGuarded(BYTE POINTER(wide),CONSOLETYPES.INSTANCE_SIZE)
+
+RETURN
+
 ; Exercise retained terminal layout, bounds, controls and scrolling.
 PROC Main()
 
@@ -348,6 +421,7 @@ PROC Main()
   FullScroll()
   FullClear()
   EdgeScroll()
+  BitmapModel(0)
   Cleanup()
 
 RETURN

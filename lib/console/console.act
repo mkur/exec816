@@ -10,6 +10,14 @@ USE CONSOLEINPUT
 USE CONSOLEDRIVER
 USE CONSOLETILING
 
+PUBLIC CARD FUNC ScreenWidth()
+
+RETURN(CONSOLEDRIVER.ScreenWidth())
+
+PUBLIC CARD FUNC ScreenHeight()
+
+RETURN(CONSOLEDRIVER.ScreenHeight())
+
 ; Release the buffers owned by a dynamically allocated terminal.
 PROC FreeInstance(CONSOLETYPES.Window POINTER entry)
   CONSOLETYPES.Instance POINTER instance
@@ -51,6 +59,10 @@ PUBLIC LONGCARD FUNC Create(CARD width,height)
   FI
 
   IF CONSOLEDRIVER.State()<>2 THEN
+    RETURN(0)
+  FI
+
+  IF width>ScreenWidth() OR height>ScreenHeight() THEN
     RETURN(0)
   FI
 

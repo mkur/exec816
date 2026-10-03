@@ -15,6 +15,9 @@ LOADED_SOURCE_SHA256=sha256(Path(__file__))
 SCENARIOS=('basic','large','raw-text','fault-read','fault-enumeration')
 LIMITS=dict(host_seconds=900,guest_frames=45000)
 
+from generate_console import constants as console_layout
+CONSOLE_LAYOUT=console_layout()
+
 def convert(raw):return bytes(10 if x==155 else x if x in (9,10)or 32<=x<=126 else 46 for x in raw if x!=13)
 
 def prepare(size,scenario):
@@ -99,7 +102,7 @@ def run(t,out,mode,bank=1,size=128,scenario='basic'):
                 capture_address=collect_capture(b,p,out);return
             payload=draw(b'')+cases[0]['output'];cells,screen,cursor=terminal(payload)
             cs=p['build']['memory']['console_storage'];instance=cs['INSTANCE']
-            condition=f'(db(${at("stage"):x})=2)&(dw(${instance+14:x})>=dw(${instance+16:x}))&(dw(${cs["PRESENTATION"]+10:x})={cursor})'
+            condition=f'(db(${at("stage"):x})=2)&(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})={cursor})'
             b.bp_clear_all();b.bp_set(p['labels']['native_nmi'],condition=condition);run_to(b,p['labels']['native_nmi'],LIMITS['guest_frames'],LIMITS['host_seconds'],condition)
             far=lambda addr,n:bytes(b.eval_expr(f'db(${addr+i:x})')for i in range(n))
             pointer=int.from_bytes(far(instance,3),'little');actual_cells=far(pointer,960);actual_screen=b.memdump(saved['screen'],960)
