@@ -1,0 +1,1373 @@
+{
+  "status": "development-benchmark",
+  "date": "2026-10-03",
+  "revision": "24e05cd440dc5d54c8d9d44704f3b20deda808fe",
+  "production_changed": false,
+  "scope": "Whole rectangle plus exposed-strip fill, generated fixture only; current optimized control, raw/optimized pixels, unobserved replays and eight-Task full-width SDFS/ST physical-input workload.",
+  "limitations": [
+    "Elapsed routines include interrupts/preemption; launch-to-idle is an upper bound, not exact hardware occupancy.",
+    "Input presentation markers are not first-visible scanout timestamps.",
+    "Fault injection, production API adoption and release qualification are not covered."
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "runs": {
+    "current-opt": {
+      "status": "pass",
+      "xex_sha256": "c6796ebbf0400abb6120381eff86d3a5cdd8ad175c683908f9022c53fa4ec57c",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 377,
+          "untouched_above_floor": 903
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 484,
+          "untouched_above_floor": 1820
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 271,
+        "untouched_from_base": 1265,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "pixel_scenes": 13,
+      "scrolls": [
+        {
+          "stage": 2,
+          "elapsed_ms": 121.8198593417623,
+          "input_check_ms": 9.735345985714265,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.303582429138726,
+              "max_ms": 5.303582429138726
+            },
+            "advance": {
+              "calls": 16,
+              "total_ms": 95.17859987397428,
+              "max_ms": 7.231959220670474
+            },
+            "call": {
+              "calls": 16,
+              "total_ms": 81.76461383830082,
+              "max_ms": 6.413708327988283
+            },
+            "launch_to_idle": {
+              "calls": 30,
+              "total_ms": 18.652652531298504,
+              "max_ms": 1.6197970337435983
+            },
+            "find_task": {
+              "calls": 65,
+              "total_ms": 36.31401549806239,
+              "max_ms": 0.5903755256358025
+            }
+          }
+        },
+        {
+          "stage": 3,
+          "elapsed_ms": 122.21830643421923,
+          "input_check_ms": 10.01700078519381,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.347564559988385,
+              "max_ms": 5.347564559988385
+            },
+            "advance": {
+              "calls": 16,
+              "total_ms": 94.96637199578787,
+              "max_ms": 7.146320937044937
+            },
+            "call": {
+              "calls": 16,
+              "total_ms": 80.14446438363696,
+              "max_ms": 6.00024810432787
+            },
+            "launch_to_idle": {
+              "calls": 30,
+              "total_ms": 18.903294289794314,
+              "max_ms": 2.1244637915698097
+            },
+            "find_task": {
+              "calls": 65,
+              "total_ms": 38.8606795521153,
+              "max_ms": 2.1287633267971
+            }
+          }
+        },
+        {
+          "stage": 4,
+          "elapsed_ms": 126.41733121504866,
+          "input_check_ms": 9.781019736981218,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.91080367476342,
+              "max_ms": 5.91080367476342
+            },
+            "advance": {
+              "calls": 16,
+              "total_ms": 88.9141065636282,
+              "max_ms": 6.172088545051376
+            },
+            "call": {
+              "calls": 16,
+              "total_ms": 75.34357515517092,
+              "max_ms": 5.05160147114589
+            },
+            "launch_to_idle": {
+              "calls": 30,
+              "total_ms": 15.061835774670522,
+              "max_ms": 0.8670964322315715
+            },
+            "find_task": {
+              "calls": 65,
+              "total_ms": 36.75552842697627,
+              "max_ms": 0.6930709818023933
+            }
+          }
+        },
+        {
+          "stage": 4,
+          "elapsed_ms": 126.42663512734379,
+          "input_check_ms": 9.689742718631367,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.34819891764487,
+              "max_ms": 5.34819891764487
+            },
+            "advance": {
+              "calls": 16,
+              "total_ms": 99.63249546434275,
+              "max_ms": 16.94122605828478
+            },
+            "call": {
+              "calls": 16,
+              "total_ms": 86.11517961484623,
+              "max_ms": 16.166886812268196
+            },
+            "launch_to_idle": {
+              "calls": 30,
+              "total_ms": 27.4655015161148,
+              "max_ms": 11.638700891906865
+            },
+            "find_task": {
+              "calls": 65,
+              "total_ms": 36.75693811065735,
+              "max_ms": 0.6928595292502315
+            }
+          }
+        },
+        {
+          "stage": 4,
+          "elapsed_ms": 126.60051960940486,
+          "input_check_ms": 9.819997490763047,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.3478464967246,
+              "max_ms": 5.3478464967246
+            },
+            "advance": {
+              "calls": 16,
+              "total_ms": 93.61011532622194,
+              "max_ms": 10.912008954310743
+            },
+            "call": {
+              "calls": 16,
+              "total_ms": 80.25582939444219,
+              "max_ms": 10.136964866453617
+            },
+            "launch_to_idle": {
+              "calls": 30,
+              "total_ms": 21.1418014911634,
+              "max_ms": 5.6390871452354805
+            },
+            "find_task": {
+              "calls": 65,
+              "total_ms": 36.455618223826754,
+              "max_ms": 0.6883485414707793
+            }
+          }
+        },
+        {
+          "stage": 7,
+          "elapsed_ms": 17.768428442341822,
+          "input_check_ms": 1.2393234082204292,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 0.6820754490899787,
+              "max_ms": 0.6820754490899787
+            },
+            "advance": {
+              "calls": 2,
+              "total_ms": 9.82042039586737,
+              "max_ms": 5.474647543837638
+            },
+            "call": {
+              "calls": 2,
+              "total_ms": 7.472451256662518,
+              "max_ms": 3.946902854468486
+            },
+            "launch_to_idle": {
+              "calls": 2,
+              "total_ms": 0.3385355360110745,
+              "max_ms": 0.2727033081046944
+            },
+            "find_task": {
+              "calls": 9,
+              "total_ms": 5.078244492718279,
+              "max_ms": 0.5903050414517487
+            }
+          }
+        }
+      ]
+    },
+    "whole-opt": {
+      "status": "pass",
+      "xex_sha256": "12fb8233508a5396e2bc72a19f097fafcde1b5d5a9e5cd1059b830336cad72fb",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 377,
+          "untouched_above_floor": 903
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 484,
+          "untouched_above_floor": 1820
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 40,
+          "untouched_above_floor": 216
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 275,
+        "untouched_from_base": 1261,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "pixel_scenes": 13,
+      "scrolls": [
+        {
+          "stage": 2,
+          "elapsed_ms": 29.54654705030738,
+          "input_check_ms": 0.5975649124093045,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.302666134746024,
+              "max_ms": 5.302666134746024
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 18.458609572598004,
+              "max_ms": 18.458609572598004
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 16.960750177267723,
+              "max_ms": 16.960750177267723
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 13.938176912482609,
+              "max_ms": 13.938176912482609
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.222648259956948,
+              "max_ms": 0.5892477786909395
+            }
+          }
+        },
+        {
+          "stage": 3,
+          "elapsed_ms": 29.55867032996466,
+          "input_check_ms": 0.5971420073049809,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.3471416548840605,
+              "max_ms": 5.3471416548840605
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 18.42597539538103,
+              "max_ms": 18.42597539538103
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 16.883640479912714,
+              "max_ms": 16.883640479912714
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 13.902652883719423,
+              "max_ms": 13.902652883719423
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.2226482599569484,
+              "max_ms": 0.5896706837952632
+            }
+          }
+        },
+        {
+          "stage": 4,
+          "elapsed_ms": 45.15252072587432,
+          "input_check_ms": 0.5974239440411966,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.865764281152952,
+              "max_ms": 5.865764281152952
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 21.75219452507052,
+              "max_ms": 21.75219452507052
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 19.542092449875174,
+              "max_ms": 19.542092449875174
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 16.062288283132148,
+              "max_ms": 16.062288283132148
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.3259780737800244,
+              "max_ms": 0.6485249774803032
+            }
+          }
+        },
+        {
+          "stage": 4,
+          "elapsed_ms": 43.31802886750242,
+          "input_check_ms": 0.5970715231209269,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.347212139068114,
+              "max_ms": 5.347212139068114
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 29.477402065750468,
+              "max_ms": 29.477402065750468
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 27.891507924536814,
+              "max_ms": 27.891507924536814
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 24.910590812527577,
+              "max_ms": 24.910590812527577
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.2657140964139053,
+              "max_ms": 0.5890363261387777
+            }
+          }
+        },
+        {
+          "stage": 4,
+          "elapsed_ms": 44.22812065200689,
+          "input_check_ms": 1.1004695656341674,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.909887380370718,
+              "max_ms": 5.909887380370718
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 20.19555132023925,
+              "max_ms": 20.19555132023925
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 18.653568825691202,
+              "max_ms": 18.653568825691202
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 15.676034954516554,
+              "max_ms": 15.676034954516554
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.266277969886337,
+              "max_ms": 0.5889658419547238
+            }
+          }
+        },
+        {
+          "stage": 7,
+          "elapsed_ms": 11.574278347681565,
+          "input_check_ms": 0.5972124914890348,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 0.7258461273874754,
+              "max_ms": 0.7258461273874754
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 4.7755149222066064,
+              "max_ms": 4.7755149222066064
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 3.277514558508216,
+              "max_ms": 3.277514558508216
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 0.31788367008327,
+              "max_ms": 0.31788367008327
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.220815671171546,
+              "max_ms": 0.5879790633779687
+            }
+          }
+        }
+      ],
+      "unobserved_replay": "pass"
+    },
+    "whole-raw": {
+      "status": "pass",
+      "xex_sha256": "a422b1ed78eeb3fb3d7c97df2c34ec487e7c99574dfb13ff65991835d7788f39",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 416,
+          "untouched_above_floor": 864
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 468,
+          "untouched_above_floor": 1836
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 31,
+          "untouched_above_floor": 225
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 283,
+        "untouched_from_base": 1253,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "pixel_scenes": 13,
+      "scrolls": [
+        {
+          "stage": 2,
+          "elapsed_ms": 30.561660269052226,
+          "input_check_ms": 0.6910269404648292,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.418401164962594,
+              "max_ms": 5.418401164962594
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 18.73899565676458,
+              "max_ms": 18.73899565676458
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 17.006564896902784,
+              "max_ms": 17.006564896902784
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 13.926687990481817,
+              "max_ms": 13.926687990481817
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.4488320065860423,
+              "max_ms": 0.6343576564854613
+            }
+          }
+        },
+        {
+          "stage": 3,
+          "elapsed_ms": 26.214830154261684,
+          "input_check_ms": 0.7348681029463799,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.462101359076037,
+              "max_ms": 5.462101359076037
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 18.692264642736816,
+              "max_ms": 18.692264642736816
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 17.0489258915192,
+              "max_ms": 17.0489258915192
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 13.924362012408036,
+              "max_ms": 13.924362012408036
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.4054137492088152,
+              "max_ms": 0.6347805615897849
+            }
+          }
+        },
+        {
+          "stage": 4,
+          "elapsed_ms": 46.49432813770918,
+          "input_check_ms": 1.2684333762347066,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 6.039084889741591,
+              "max_ms": 6.039084889741591
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 20.730878698128926,
+              "max_ms": 20.730878698128926
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 18.998870843371456,
+              "max_ms": 18.998870843371456
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 15.918218610925894,
+              "max_ms": 15.918218610925894
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.4050613282885456,
+              "max_ms": 0.6343576564854613
+            }
+          }
+        },
+        {
+          "stage": 4,
+          "elapsed_ms": 45.02557871039317,
+          "input_check_ms": 0.7352205238666496,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.461607969787659,
+              "max_ms": 5.461607969787659
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 29.70034353991308,
+              "max_ms": 29.70034353991308
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 28.056793336143304,
+              "max_ms": 28.056793336143304
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 24.928916700381603,
+              "max_ms": 24.928916700381603
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.4061890752334083,
+              "max_ms": 0.6351329825100546
+            }
+          }
+        },
+        {
+          "stage": 4,
+          "elapsed_ms": 45.635760291748134,
+          "input_check_ms": 0.7359253657071889,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 5.994679853787608,
+              "max_ms": 5.994679853787608
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 20.298105808037736,
+              "max_ms": 20.298105808037736
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 18.65476705682012,
+              "max_ms": 18.65476705682012
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 15.529709788420575,
+              "max_ms": 15.529709788420575
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.4048498757363834,
+              "max_ms": 0.6340757197492455
+            }
+          }
+        },
+        {
+          "stage": 7,
+          "elapsed_ms": 12.517356730323282,
+          "input_check_ms": 0.7350795554985418,
+          "routines": {
+            "edit": {
+              "calls": 1,
+              "total_ms": 0.7587622413406656,
+              "max_ms": 0.7587622413406656
+            },
+            "advance": {
+              "calls": 1,
+              "total_ms": 5.061328288545333,
+              "max_ms": 5.061328288545333
+            },
+            "call": {
+              "calls": 1,
+              "total_ms": 3.4172142113031256,
+              "max_ms": 3.4172142113031256
+            },
+            "launch_to_idle": {
+              "calls": 1,
+              "total_ms": 0.3135841348559797,
+              "max_ms": 0.3135841348559797
+            },
+            "find_task": {
+              "calls": 4,
+              "total_ms": 2.4049203599204376,
+              "max_ms": 0.634639593221677
+            }
+          }
+        }
+      ],
+      "unobserved_replay": "pass"
+    },
+    "current-loaded": {
+      "status": "timing-fail",
+      "xex_sha256": "e66ede6a2ade371087aebab25d1ebab18fdfcd9c1b3e85de319c3504b3c1d957",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 279,
+          "untouched_above_floor": 1001
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 259,
+          "untouched_above_floor": 509
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 149,
+          "untouched_above_floor": 619
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 273,
+          "untouched_above_floor": 495
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 391,
+          "untouched_above_floor": 377
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 238,
+          "untouched_above_floor": 530
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 484,
+          "untouched_above_floor": 1820
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 185,
+          "untouched_above_floor": 2119
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 50,
+          "untouched_above_floor": 206
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 283,
+        "untouched_from_base": 1253,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "input_latency": {
+        "scope": "Physical capture to fixture delivery/presentation-complete markers; not first scanout.",
+        "raw_key_delivery_ms": 50.25698533506066,
+        "raw_key_presentation_ms": 110.28815344124932,
+        "cooked_return_presentation_ms": 297.82647921632866,
+        "break_durable_ms": 15.438573738438832,
+        "copies": 84,
+        "max_copy_elapsed_ms": 55.67630279441596,
+        "captures_inside_copy": 1
+      },
+      "counters": {
+        "checks": 89,
+        "floods": 30,
+        "smalls": 8,
+        "reads": 9,
+        "computes": 372
+      },
+      "pointer": {
+        "samples": 3,
+        "losses": 0,
+        "lastX": 100,
+        "lastY": 100
+      },
+      "mouse_timing": {
+        "sample_gaps": {
+          "count": 99831,
+          "min_us": 57.79703092423091,
+          "mean_us": 126.37349982832826,
+          "max_us": 274.6063810741508
+        },
+        "sample_cost": {
+          "count": 99832,
+          "min_us": 6.343576564854612,
+          "mean_us": 6.633759707731063,
+          "max_us": 74.57226672906866
+        },
+        "native_irq_service": {
+          "count": 103214,
+          "min_us": 27.911736885360295,
+          "mean_us": 39.95192272754025,
+          "max_us": 178.53643820863036
+        },
+        "timer_accounting": {
+          "physical_edges": 99849,
+          "logical_dispatches": 99832,
+          "alarm_services": 924,
+          "pointer_samples": 99832,
+          "duplicate_dispatches": 0,
+          "duplicate_backend_services": 0
+        }
+      },
+      "sio_verdict": "fail",
+      "sio_violations": [
+        "alarm deadline sio_watchdog"
+      ],
+      "sio_alarms": {
+        "sio_alarm": {
+          "service": {
+            "count": 924,
+            "min_us": 22.625423081314786,
+            "mean_us": 23.353759649872163,
+            "max_us": 41.23324767155498,
+            "median_us": 22.695907265368724,
+            "p95_us": 25.44479044347239,
+            "p99_us": 33.33901905751369
+          },
+          "cancelled_or_terminal": {
+            "count": 0,
+            "max_us": null
+          },
+          "boundary": "Acknowledged physical timer-1 edge to armed SIO callback; pointer-only ticks checked separately"
+        },
+        "sio_watchdog": {
+          "service": {
+            "count": 1727,
+            "min_us": 4.933892883775809,
+            "mean_us": 19.554973669186225,
+            "max_us": 101.21528830145803,
+            "median_us": 18.466856222132314,
+            "p95_us": 21.850097056721445,
+            "p99_us": 41.58566859182468
+          },
+          "cancelled_or_terminal": {
+            "count": 0,
+            "max_us": null
+          },
+          "boundary": "sio_watchdog"
+        }
+      },
+      "unobserved_replay": "pass"
+    },
+    "whole-loaded": {
+      "status": "pass",
+      "xex_sha256": "3fdb04bc0e38b7ada68980333a2b4d9d253a98de75d1d38a249e6d2dac0f4ca1",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 279,
+          "untouched_above_floor": 1001
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 259,
+          "untouched_above_floor": 509
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 149,
+          "untouched_above_floor": 619
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 273,
+          "untouched_above_floor": 495
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 395,
+          "untouched_above_floor": 373
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 223,
+          "untouched_above_floor": 545
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 484,
+          "untouched_above_floor": 1820
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 185,
+          "untouched_above_floor": 2119
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 50,
+          "untouched_above_floor": 206
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 283,
+        "untouched_from_base": 1253,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "input_latency": {
+        "scope": "Physical capture to fixture delivery/presentation-complete markers; not first scanout.",
+        "raw_key_delivery_ms": 92.41392823864253,
+        "raw_key_presentation_ms": 157.58600127717344,
+        "cooked_return_presentation_ms": 355.74657552591776,
+        "break_durable_ms": 8.265045906349075,
+        "copies": 8,
+        "max_copy_elapsed_ms": 46.34158891086429,
+        "captures_inside_copy": 0
+      },
+      "counters": {
+        "checks": 90,
+        "floods": 31,
+        "smalls": 8,
+        "reads": 9,
+        "computes": 355
+      },
+      "pointer": {
+        "samples": 3,
+        "losses": 0,
+        "lastX": 100,
+        "lastY": 100
+      },
+      "mouse_timing": {
+        "sample_gaps": {
+          "count": 96021,
+          "min_us": 58.07896766044667,
+          "mean_us": 126.38646246180568,
+          "max_us": 272.7033081046944
+        },
+        "sample_cost": {
+          "count": 96022,
+          "min_us": 6.343576564854612,
+          "mean_us": 6.636155442458951,
+          "max_us": 74.43129836096078
+        },
+        "native_irq_service": {
+          "count": 99379,
+          "min_us": 27.911736885360295,
+          "mean_us": 40.102785022763115,
+          "max_us": 166.55412691946054
+        },
+        "timer_accounting": {
+          "physical_edges": 96043,
+          "logical_dispatches": 96022,
+          "alarm_services": 924,
+          "pointer_samples": 96022,
+          "duplicate_dispatches": 0,
+          "duplicate_backend_services": 0
+        }
+      },
+      "sio_verdict": "pass",
+      "sio_violations": [],
+      "sio_alarms": {
+        "sio_alarm": {
+          "service": {
+            "count": 924,
+            "min_us": 22.625423081314786,
+            "mean_us": 23.400215134816808,
+            "max_us": 54.76621100991149,
+            "median_us": 22.695907265368724,
+            "p95_us": 24.880916971040868,
+            "p99_us": 32.28175629670458
+          },
+          "cancelled_or_terminal": {
+            "count": 0,
+            "max_us": null
+          },
+          "boundary": "Acknowledged physical timer-1 edge to armed SIO callback; pointer-only ticks checked separately"
+        },
+        "sio_watchdog": {
+          "service": {
+            "count": 1719,
+            "min_us": 5.497766356207331,
+            "mean_us": 19.749430554422744,
+            "max_us": 78.80131777230507,
+            "median_us": 18.466856222132314,
+            "p95_us": 25.79721136374209,
+            "p99_us": 40.45792164696164
+          },
+          "cancelled_or_terminal": {
+            "count": 2,
+            "min_us": 6.766481669178253,
+            "mean_us": 9.021975558904337,
+            "max_us": 11.277469448630422,
+            "median_us": 6.766481669178253,
+            "p95_us": 11.277469448630422,
+            "p99_us": 11.277469448630422
+          },
+          "boundary": "sio_watchdog"
+        }
+      },
+      "unobserved_replay": "pass"
+    }
+  },
+  "reports": {
+    "build/rectangle-scroll/current-opt/results.json": "4770d5ba2555583793b80d4d84b5fd40122f2a2af468b4af1c23748d16de4121",
+    "build/rectangle-scroll/current-opt/c-image.json": "d1e1f95193a6fc1462231622b6d9eb500f63b6aedd2f2a64289448edfdd727f4",
+    "build/rectangle-scroll/current-opt/program/build.json": "b1b8831d43a2217ada0f51b2165ed5cfbe6fe393a9abbe3f3b2616bb52baff1d",
+    "build/rectangle-scroll/whole-opt/results.json": "23697c55b3d6942db2195544f4bc55ee3612b26ca86559b2ac54112e3f92445c",
+    "build/rectangle-scroll/whole-opt/results-replay.json": "793632c7b48f52bb5185ff75f5e6b518f6c9dff62abcf10f10d8748011456b27",
+    "build/rectangle-scroll/whole-opt/c-image.json": "15529dd2499a9ec57383890cb4cd6afce71310ef683f77ccc87947a39daa27a0",
+    "build/rectangle-scroll/whole-opt/program/build.json": "35c41c31ef3b8f1b763dc4775c9974a18b503df56cb9d986afc8d44b6665d657",
+    "build/rectangle-scroll/whole-raw/results.json": "c5dee45ec3f302802c095ee8afe4c8acaea395bfd0ae709613125de22aa37a9e",
+    "build/rectangle-scroll/whole-raw/results-replay.json": "de70453504d4c4f003a9bd6d048011effb06c4f38eb60053397dee409b97ac57",
+    "build/rectangle-scroll/whole-raw/c-image.json": "635a4978e3a8d51a6d01c4e4414532595c3e14e24ca016fd020e1d47e91d8520",
+    "build/rectangle-scroll/whole-raw/program/build.json": "1ba90a56e5c51537ff15059d39b17fe004fbcf3e4959f7c3db2c47eae4b9a249",
+    "build/rectangle-scroll/current-loaded/results.json": "9935af6df1558fbf74200163b8b681e84148f85c7f2fb8395fb4b2598e5c0183",
+    "build/rectangle-scroll/current-loaded/replay-results.json": "e273eada478230d02d95222105be778d5ab252462ed4aba92b131f0c595eb193",
+    "build/rectangle-scroll/current-loaded/c-image.json": "987733166e3b907fd730f20f3833cc98582a9e8f810a7063428cac48ed06a4df",
+    "build/rectangle-scroll/current-loaded/program/build.json": "78604cce8795faf6511ee33bc992fb8590fc2e4dad90549f341576a595026bdb",
+    "build/rectangle-scroll/whole-loaded/results.json": "ade0c6650f7614e165fa2868ddde9563b8628d47cd9fc3f828b1b223f7591c67",
+    "build/rectangle-scroll/whole-loaded/replay-results.json": "9b0baf9c599dd83a33a4b22295da38d3b0f28f5e1ddae02951da5a451d5333df",
+    "build/rectangle-scroll/whole-loaded/c-image.json": "0effa90415d3fba1a4a5b3d6c5d63916c53daa582de8217ce7fc27ec895da05e",
+    "build/rectangle-scroll/whole-loaded/program/build.json": "1e99de4f8aa7e3009eedacc783d0867b9e86de65beb0e11536e5c2e9a97788dc"
+  },
+  "source_inputs": {
+    "tools/measure_rectangle_scroll.py": "0798e6c5bcda7c39bfc7377211a46198c503ce19ac4d768121c96b9abe29ca92",
+    "tests/programs/rectangle_scroll.inc.c": "ea8c8653a9f94e75293549f59dff1a6dc3ee2ba17da009ea67e007bf483444da",
+    "platform/altirraos/vbxe.c": "e71b8a9d26446f95a3ef8092c09f783cd01ec30d52977d95582d8f009146cb9f",
+    "platform/altirraos/vbxe-map.s": "7187f892ee127434bebd4facab5b88062d94e59b8ac8a9f539c6a363ffc7fa6b",
+    "ports/gem4xe/adapter/gem-vbxe.c": "a3d4ed7aef87175c8cd3e2f260301914e00a8c9a256e01634f1f513c9278cab3",
+    "lib/console/console-bitmap-display.inc": "f20911f935c075481f3f54224277d2de16d77603ff31f35d4f4c9dcf73b876e0",
+    "tools/test_console_bitmap_scroll.py": "be6d82d00e51e9f4b84c9205d39a4cea14b17a0f27e416e44a6507e06e3a86c9",
+    "tools/test_console_fairness.py": "c0ebf786f38d6fb62a9771817d708c48cbdfc9ffc0e075364052bee0c9935dc5",
+    "tools/bitmap_console_performance.py": "4fdc8beb328ac2a0a210b3e5c0d0ddfaaed2c10674b1e59d669989534261c957"
+  },
+  "pins": {
+    "toolchain/actionc.json": "f31077466a9ef240f8d49fd2f62cd8503b5975c164127573834b09a7d05ba3cc",
+    "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
+    "build/mouse-bridge/AltirraBridgeServer": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "build/firmware/altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+  },
+  "host_checks": {
+    "tests": 303,
+    "skipped_historical_audits": 4,
+    "status": "pass",
+    "log_sha256": "de07ee528c00e5ee66955710ddfdc18b688a8e588de18f4b62368608ddd012f1"
+  },
+  "timing_shortfalls": {
+    "current-loaded": [
+      "alarm deadline sio_watchdog"
+    ]
+  }
+}

@@ -14,8 +14,12 @@ The [idle input implementation plan](../console-idle-input-implementation-plan.m
 records completed Q0–Q3 development checks. [Measured evidence](../../development/console-idle-input-q3.json)
 shows input checking reduced from 52 ms to 9.7–10.0 ms and complete scrolls from
 164–166 ms to 121.8–122.2 ms, with exact pixels and SDFS/ST coexistence preserved.
-The 20 ms scroll target remains unmet. Display validation and blitter chunking
-remain separate optimization work.
+The 20 ms scroll target remains unmet. The next
+[drawing validation plan](../drawing-validation-implementation-plan.md) removes
+repeated owner checks within each public operation at unchanged chunk sizes in
+D0–D3. D4–D6 then add one asynchronous copy/fill submission, one drawing owner
+and one list in flight, allowing input service while the blitter runs. Its
+combined-operation work limit and measured input latency have separate gates.
 
 ## Fixed decisions
 
@@ -28,7 +32,9 @@ remain separate optimization work.
   extra rendering Task or enlargement of stacks/DPs.
 - Start with one 4 KiB VRAM command arena, at most 64 records per list and a
   synchronous fence at each bounded list boundary. Preserve GEM command reply
-  semantics and the inactive-interrupt hardware baseline.
+  semantics and the inactive-interrupt hardware baseline. The proposed D4–D6
+  follow-up retains that single arena and adds explicit asynchronous completion
+  for console copy/fill; it does not change existing synchronous API semantics.
 - Optimize nonzero-ink text while preserving hardware-zero ink, clipping and
   outside pixels. Copy rectangles initially require even X and even widths.
 - Preserve accepted-byte WRITE completion. Rendering generations and hardware

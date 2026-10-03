@@ -1,0 +1,3297 @@
+{
+  "slice": "D0",
+  "status": "development-pass",
+  "reports": {
+    "build/drawing-validation/d0/results.json": {
+      "sha256": "def1262990af28e60f5b9447d814114aa20a5c25faa8c8af38e90f7b6fce8c61",
+      "xex_sha256": "c6796ebbf0400abb6120381eff86d3a5cdd8ad175c683908f9022c53fa4ec57c",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "override": false,
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "optimize": true
+      },
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 63,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true,
+          "addons": "custom"
+        },
+        "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+          "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+          "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+        },
+        "observer": {
+          "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ],
+        "devices": [
+          {
+            "tag": "vbxe",
+            "settings": {
+              "version": 126,
+              "alt_page": false,
+              "shared_mem": false
+            },
+            "readback": [
+              {
+                "address": 54848,
+                "bytes": [
+                  16,
+                  38
+                ]
+              }
+            ],
+            "vram_bytes": 524288,
+            "register_base": 54784
+          }
+        ],
+        "startup_configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true,
+          "diskemu": "generic56k"
+        },
+        "disk_workload": {
+          "format": "SDFS",
+          "unit": 49,
+          "sectors": 720,
+          "sector_bytes": 128,
+          "exec_profile": 4,
+          "nominal_baud": 57600
+        },
+        "mouse_input": {
+          "model": "ST mouse",
+          "port": 1,
+          "internal_port": 0,
+          "map": "Mouse -> ST Mouse (port 1)",
+          "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+          "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+          "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+          "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+          "commands": [
+            "MOUSE ST",
+            "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+            "MOUSE CLEAR"
+          ],
+          "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+          "tooling": {
+            "binary": "build/mouse-bridge/AltirraBridgeServer",
+            "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+            "patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "source_sha256": {
+              "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+              "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+              "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+              "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+            }
+          },
+          "initial_acceptance": {
+            "transitions_per_second_per_axis": 1000,
+            "minimum_transition_spacing_us": 1000,
+            "minimum_button_level_us": 10000,
+            "required_max_sample_gap_us_exclusive": 1000,
+            "visible_response_pal_ticks": 12
+          },
+          "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+        }
+      },
+      "mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 56128,
+        "loading_including_os": 52592
+      },
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13424,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 14480,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 15536,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4096,
+          "dp_reserved_bytes": 256,
+          "stack_base": 16592,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4352,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17648,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4608,
+          "dp_reserved_bytes": 256,
+          "stack_base": 20240,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4864,
+          "dp_reserved_bytes": 256,
+          "stack_base": 22832,
+          "stack_bytes": 512,
+          "interrupt_reserve": 256
+        }
+      ],
+      "checks": [
+        93
+      ],
+      "cases": null,
+      "performance": {
+        "scope": "Passive cycle boundaries for console CPU work and fenced drawing.\n\nElapsed routine time includes preemption and is an upper bound on its CPU time.\nThe launch-to-idle-read interval bounds hardware occupancy; it is not a BUSY-edge\nmeasurement. Host screenshot/fixture Sleep intervals are outside these spans.\n",
+        "stages": [
+          {
+            "stage": 1,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 62,
+                "total_ms": 36.63937049165538,
+                "max_ms": 0.6798904393843066
+              },
+              "present": {
+                "calls": 61,
+                "total_ms": 2704.02760724521,
+                "max_ms": 60.396699084692386
+              },
+              "launch_to_idle": {
+                "calls": 232,
+                "total_ms": 61.09674800071612,
+                "max_ms": 8.793465834201463
+              },
+              "GemDrawingText": {
+                "calls": 140,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 32,
+                "total_ms": 1.1920285207202355,
+                "max_ms": 0.17599900758268852
+              },
+              "input_service_turn": {
+                "calls": 62,
+                "total_ms": 4.713559324423192,
+                "max_ms": 3.316844733210315
+              },
+              "display_check": {
+                "calls": 781,
+                "total_ms": 518.9770207463148,
+                "max_ms": 11.26168099140234
+              },
+              "input_collect": {
+                "calls": 62,
+                "total_ms": 36.04370865221553,
+                "max_ms": 0.6703750745370246
+              },
+              "cells": {
+                "calls": 61,
+                "total_ms": 2251.161508869025,
+                "max_ms": 60.21936087761267
+              },
+              "pump": {
+                "calls": 1,
+                "total_ms": 3.1856031825018785,
+                "max_ms": 3.1856031825018785
+              },
+              "GemDrawingFill": {
+                "calls": 42,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "input_take": {
+                "calls": 1,
+                "total_ms": 3.1559998251992236,
+                "max_ms": 3.1559998251992236
+              },
+              "call": {
+                "calls": 182,
+                "total_ms": 2462.1896757586564,
+                "max_ms": 43.35115643400778
+              },
+              "signal_collect": {
+                "calls": 62,
+                "total_ms": 35.246109625461145,
+                "max_ms": 0.6574764688551537
+              },
+              "input_service": {
+                "calls": 62,
+                "total_ms": 3.9373170054371505,
+                "max_ms": 3.30422806426466
+              },
+              "input_extent": {
+                "calls": 8,
+                "total_ms": 8.434489884814747,
+                "max_ms": 1.0798881838904169
+              },
+              "writable": {
+                "calls": 9,
+                "total_ms": 9.15709373973574,
+                "max_ms": 1.040980914292642
+              },
+              "VbxeFence": {
+                "calls": 184,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 781,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "find_task": {
+                "calls": 969,
+                "total_ms": 588.1575293319931,
+                "max_ms": 12.385480821958362
+              },
+              "GemDrawingFence": {
+                "calls": 182,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 648,
+                "total_ms": 62.18537622342922,
+                "max_ms": 8.791139856127684
+              },
+              "display_valid": {
+                "calls": 781,
+                "total_ms": 509.41999974625696,
+                "max_ms": 11.249628195929116
+              },
+              "VbxeSubmit": {
+                "calls": 232,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            }
+          },
+          {
+            "stage": 2,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 18,
+                "total_ms": 10.621966536928777,
+                "max_ms": 0.6783397873351199
+              },
+              "present": {
+                "calls": 18,
+                "total_ms": 16.625315945355023,
+                "max_ms": 11.765360970651797
+              },
+              "launch_to_idle": {
+                "calls": 33,
+                "total_ms": 18.787982164682067,
+                "max_ms": 1.6197970337435983
+              },
+              "GemDrawingText": {
+                "calls": 2,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "VbxeCopyRect": {
+                "calls": 15,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 1,
+                "total_ms": 0.17635142850295824,
+                "max_ms": 0.17635142850295824
+              },
+              "input_service_turn": {
+                "calls": 18,
+                "total_ms": 0.45589170246088484,
+                "max_ms": 0.06703045903529707
+              },
+              "GemDrawingCopy": {
+                "calls": 15,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "display_check": {
+                "calls": 61,
+                "total_ms": 40.022258905324236,
+                "max_ms": 2.1978378271699612
+              },
+              "input_collect": {
+                "calls": 18,
+                "total_ms": 10.44935077018068,
+                "max_ms": 0.6688244224878379
+              },
+              "cells": {
+                "calls": 2,
+                "total_ms": 6.33906557707516,
+                "max_ms": 6.333567810718953
+              },
+              "GemDrawingFill": {
+                "calls": 2,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "edit": {
+                "calls": 1,
+                "total_ms": 5.303582429138726,
+                "max_ms": 5.303582429138726
+              },
+              "call": {
+                "calls": 19,
+                "total_ms": 94.56087648492554,
+                "max_ms": 6.413708327988283
+              },
+              "signal_collect": {
+                "calls": 18,
+                "total_ms": 10.217387320459162,
+                "max_ms": 0.6559963009900208
+              },
+              "input_service": {
+                "calls": 18,
+                "total_ms": 0.23069473440854607,
+                "max_ms": 0.05455475845774966
+              },
+              "VbxeFence": {
+                "calls": 19,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 61,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "advance": {
+                "calls": 16,
+                "total_ms": 95.17859987397428,
+                "max_ms": 7.231959220670474
+              },
+              "find_task": {
+                "calls": 80,
+                "total_ms": 44.7442763318339,
+                "max_ms": 0.5903755256358025
+              },
+              "GemDrawingFence": {
+                "calls": 19,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 85,
+                "total_ms": 18.90829866686214,
+                "max_ms": 1.6174710556698182
+              },
+              "display_valid": {
+                "calls": 61,
+                "total_ms": 37.754007378284385,
+                "max_ms": 0.6482430407440875
+              },
+              "VbxeSubmit": {
+                "calls": 4,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            },
+            "edit_through_final_chunk_ms": [
+              121.8198593417623
+            ],
+            "scroll_input": [
+              {
+                "worker_dp": 4352,
+                "routines": {
+                  "input_collect_turn": {
+                    "calls": 16,
+                    "total_ms": 9.369180649554046,
+                    "max_ms": 0.6196969462022417
+                  },
+                  "present": {
+                    "calls": 16,
+                    "total_ms": 0.17564658666241884,
+                    "max_ms": 0.011206985264576483
+                  },
+                  "launch_to_idle": {
+                    "calls": 30,
+                    "total_ms": 18.652652531298504,
+                    "max_ms": 1.6197970337435983
+                  },
+                  "VbxeCopyRect": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "input_service_turn": {
+                    "calls": 16,
+                    "total_ms": 0.366165336160219,
+                    "max_ms": 0.023259780737800245
+                  },
+                  "GemDrawingCopy": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "display_check": {
+                    "calls": 49,
+                    "total_ms": 32.341597368966376,
+                    "max_ms": 2.1978378271699612
+                  },
+                  "input_collect": {
+                    "calls": 16,
+                    "total_ms": 9.215595612500511,
+                    "max_ms": 0.609899644618744
+                  },
+                  "GemDrawingFill": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "edit": {
+                    "calls": 1,
+                    "total_ms": 5.303582429138726,
+                    "max_ms": 5.303582429138726
+                  },
+                  "call": {
+                    "calls": 16,
+                    "total_ms": 81.76461383830082,
+                    "max_ms": 6.413708327988283
+                  },
+                  "signal_collect": {
+                    "calls": 16,
+                    "total_ms": 9.009429374142735,
+                    "max_ms": 0.5969305547528191
+                  },
+                  "input_service": {
+                    "calls": 16,
+                    "total_ms": 0.16584928507892116,
+                    "max_ms": 0.010643111792144961
+                  },
+                  "VbxeFence": {
+                    "calls": 16,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "DisplayCheck": {
+                    "calls": 49,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "advance": {
+                    "calls": 16,
+                    "total_ms": 95.17859987397428,
+                    "max_ms": 7.231959220670474
+                  },
+                  "find_task": {
+                    "calls": 65,
+                    "total_ms": 36.31401549806239,
+                    "max_ms": 0.5903755256358025
+                  },
+                  "GemDrawingFence": {
+                    "calls": 16,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "idle": {
+                    "calls": 76,
+                    "total_ms": 18.756687186962118,
+                    "max_ms": 1.6174710556698182
+                  },
+                  "display_valid": {
+                    "calls": 49,
+                    "total_ms": 30.21713357739657,
+                    "max_ms": 0.6482430407440875
+                  },
+                  "VbxeSubmit": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  }
+                },
+                "input_check_ms": 9.735345985714265,
+                "components": [
+                  "input_service_turn",
+                  "input_collect_turn",
+                  "runnable"
+                ]
+              }
+            ]
+          },
+          {
+            "stage": 3,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 18,
+                "total_ms": 10.838705402894645,
+                "max_ms": 0.6798904393843066
+              },
+              "present": {
+                "calls": 18,
+                "total_ms": 17.15852879772308,
+                "max_ms": 12.299137696492284
+              },
+              "launch_to_idle": {
+                "calls": 33,
+                "total_ms": 19.00986637608387,
+                "max_ms": 2.1244637915698097
+              },
+              "GemDrawingText": {
+                "calls": 2,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "VbxeCopyRect": {
+                "calls": 15,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 1,
+                "total_ms": 0.17635142850295824,
+                "max_ms": 0.17635142850295824
+              },
+              "input_service_turn": {
+                "calls": 18,
+                "total_ms": 0.41219150834744195,
+                "max_ms": 0.023330264921854183
+              },
+              "GemDrawingCopy": {
+                "calls": 15,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "display_check": {
+                "calls": 61,
+                "total_ms": 39.6683578171894,
+                "max_ms": 1.777681606024424
+              },
+              "input_collect": {
+                "calls": 18,
+                "total_ms": 10.666583025434923,
+                "max_ms": 0.6703750745370246
+              },
+              "cells": {
+                "calls": 2,
+                "total_ms": 6.91633104447693,
+                "max_ms": 6.910621825568561
+              },
+              "GemDrawingFill": {
+                "calls": 2,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "edit": {
+                "calls": 1,
+                "total_ms": 5.347564559988385,
+                "max_ms": 5.347564559988385
+              },
+              "call": {
+                "calls": 19,
+                "total_ms": 93.42995775178008,
+                "max_ms": 6.00024810432787
+              },
+              "signal_collect": {
+                "calls": 18,
+                "total_ms": 10.43504248081773,
+                "max_ms": 0.6574059846710997
+              },
+              "input_service": {
+                "calls": 18,
+                "total_ms": 0.18713550866321108,
+                "max_ms": 0.010643111792144961
+              },
+              "VbxeFence": {
+                "calls": 19,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 61,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "advance": {
+                "calls": 16,
+                "total_ms": 94.96637199578787,
+                "max_ms": 7.146320937044937
+              },
+              "find_task": {
+                "calls": 80,
+                "total_ms": 47.3327375070308,
+                "max_ms": 2.1287633267971
+              },
+              "GemDrawingFence": {
+                "calls": 19,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 85,
+                "total_ms": 19.133566119098536,
+                "max_ms": 2.1221378134960296
+              },
+              "display_valid": {
+                "calls": 61,
+                "total_ms": 38.89197452983525,
+                "max_ms": 1.7656288105512004
+              },
+              "VbxeSubmit": {
+                "calls": 4,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            },
+            "edit_through_final_chunk_ms": [
+              122.21830643421923
+            ],
+            "scroll_input": [
+              {
+                "worker_dp": 4352,
+                "routines": {
+                  "input_collect_turn": {
+                    "calls": 16,
+                    "total_ms": 9.650201091377106,
+                    "max_ms": 0.6798904393843066
+                  },
+                  "present": {
+                    "calls": 16,
+                    "total_ms": 0.1750827131899873,
+                    "max_ms": 0.011206985264576483
+                  },
+                  "launch_to_idle": {
+                    "calls": 30,
+                    "total_ms": 18.903294289794314,
+                    "max_ms": 2.1244637915698097
+                  },
+                  "VbxeCopyRect": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "input_service_turn": {
+                    "calls": 16,
+                    "total_ms": 0.36679969381670446,
+                    "max_ms": 0.023330264921854183
+                  },
+                  "GemDrawingCopy": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "display_check": {
+                    "calls": 49,
+                    "total_ms": 32.03252422188985,
+                    "max_ms": 1.777681606024424
+                  },
+                  "input_collect": {
+                    "calls": 16,
+                    "total_ms": 9.497179927796003,
+                    "max_ms": 0.6703750745370246
+                  },
+                  "GemDrawingFill": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "edit": {
+                    "calls": 1,
+                    "total_ms": 5.347564559988385,
+                    "max_ms": 5.347564559988385
+                  },
+                  "call": {
+                    "calls": 16,
+                    "total_ms": 80.14446438363696,
+                    "max_ms": 6.00024810432787
+                  },
+                  "signal_collect": {
+                    "calls": 16,
+                    "total_ms": 9.291366110358497,
+                    "max_ms": 0.6574059846710997
+                  },
+                  "input_service": {
+                    "calls": 16,
+                    "total_ms": 0.16655412691946056,
+                    "max_ms": 0.010643111792144961
+                  },
+                  "VbxeFence": {
+                    "calls": 16,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "DisplayCheck": {
+                    "calls": 49,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "advance": {
+                    "calls": 16,
+                    "total_ms": 94.96637199578787,
+                    "max_ms": 7.146320937044937
+                  },
+                  "find_task": {
+                    "calls": 65,
+                    "total_ms": 38.8606795521153,
+                    "max_ms": 2.1287633267971
+                  },
+                  "GemDrawingFence": {
+                    "calls": 16,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "idle": {
+                    "calls": 76,
+                    "total_ms": 19.0104302495563,
+                    "max_ms": 2.1221378134960296
+                  },
+                  "display_valid": {
+                    "calls": 49,
+                    "total_ms": 31.40035157511006,
+                    "max_ms": 1.7656288105512004
+                  },
+                  "VbxeSubmit": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  }
+                },
+                "input_check_ms": 10.01700078519381,
+                "components": [
+                  "input_service_turn",
+                  "input_collect_turn",
+                  "runnable"
+                ]
+              }
+            ]
+          },
+          {
+            "stage": 4,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 60,
+                "total_ms": 35.216788204894705,
+                "max_ms": 0.6199788829384575
+              },
+              "present": {
+                "calls": 59,
+                "total_ms": 325.7728943202435,
+                "max_ms": 56.77233185645473
+              },
+              "launch_to_idle": {
+                "calls": 118,
+                "total_ms": 68.18992386298439,
+                "max_ms": 11.638700891906865
+              },
+              "GemDrawingText": {
+                "calls": 16,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "VbxeCopyRect": {
+                "calls": 45,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 5,
+                "total_ms": 1.3500540613691694,
+                "max_ms": 0.7226743391050483
+              },
+              "input_service_turn": {
+                "calls": 60,
+                "total_ms": 1.3749349783402103,
+                "max_ms": 0.023330264921854183
+              },
+              "GemDrawingCopy": {
+                "calls": 45,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "display_check": {
+                "calls": 247,
+                "total_ms": 157.22878743238806,
+                "max_ms": 1.2225481724155918
+              },
+              "input_collect": {
+                "calls": 60,
+                "total_ms": 34.640368547701584,
+                "max_ms": 0.6103930339071215
+              },
+              "cells": {
+                "calls": 11,
+                "total_ms": 241.5762941953455,
+                "max_ms": 44.86212588757209
+              },
+              "GemDrawingFill": {
+                "calls": 11,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "edit": {
+                "calls": 3,
+                "total_ms": 16.60684908913289,
+                "max_ms": 5.91080367476342
+              },
+              "call": {
+                "calls": 72,
+                "total_ms": 535.8424763067416,
+                "max_ms": 42.98407480345485
+              },
+              "signal_collect": {
+                "calls": 60,
+                "total_ms": 33.82247007593966,
+                "max_ms": 0.5974239440411966
+              },
+              "input_service": {
+                "calls": 60,
+                "total_ms": 0.6235030921411545,
+                "max_ms": 0.010643111792144961
+              },
+              "VbxeFence": {
+                "calls": 72,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 247,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "advance": {
+                "calls": 48,
+                "total_ms": 282.1567173541929,
+                "max_ms": 16.94122605828478
+              },
+              "find_task": {
+                "calls": 319,
+                "total_ms": 179.6175246236497,
+                "max_ms": 0.6956788966123891
+              },
+              "GemDrawingFence": {
+                "calls": 72,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 308,
+                "total_ms": 57.0043657903603,
+                "max_ms": 5.6367611671617
+              },
+              "display_valid": {
+                "calls": 247,
+                "total_ms": 153.62239367108415,
+                "max_ms": 0.7535464117206739
+              },
+              "VbxeSubmit": {
+                "calls": 31,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            },
+            "edit_through_final_chunk_ms": [
+              126.41733121504866,
+              126.42663512734379,
+              126.60051960940486
+            ],
+            "scroll_input": [
+              {
+                "worker_dp": 4352,
+                "routines": {
+                  "input_collect_turn": {
+                    "calls": 16,
+                    "total_ms": 9.413444717139921,
+                    "max_ms": 0.6194150094660259
+                  },
+                  "present": {
+                    "calls": 16,
+                    "total_ms": 0.1752236815580952,
+                    "max_ms": 0.011206985264576483
+                  },
+                  "launch_to_idle": {
+                    "calls": 30,
+                    "total_ms": 15.061835774670522,
+                    "max_ms": 0.8670964322315715
+                  },
+                  "VbxeCopyRect": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "input_service_turn": {
+                    "calls": 16,
+                    "total_ms": 0.3675750198412978,
+                    "max_ms": 0.023259780737800245
+                  },
+                  "GemDrawingCopy": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "display_check": {
+                    "calls": 49,
+                    "total_ms": 31.178044458603935,
+                    "max_ms": 0.762991292383902
+                  },
+                  "input_collect": {
+                    "calls": 16,
+                    "total_ms": 9.259154838245847,
+                    "max_ms": 0.60982916043469
+                  },
+                  "GemDrawingFill": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "edit": {
+                    "calls": 1,
+                    "total_ms": 5.91080367476342,
+                    "max_ms": 5.91080367476342
+                  },
+                  "call": {
+                    "calls": 16,
+                    "total_ms": 75.34357515517092,
+                    "max_ms": 5.05160147114589
+                  },
+                  "signal_collect": {
+                    "calls": 16,
+                    "total_ms": 9.007949206277603,
+                    "max_ms": 0.5967191022006573
+                  },
+                  "input_service": {
+                    "calls": 16,
+                    "total_ms": 0.1664836427354066,
+                    "max_ms": 0.010643111792144961
+                  },
+                  "VbxeFence": {
+                    "calls": 16,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "DisplayCheck": {
+                    "calls": 49,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "advance": {
+                    "calls": 16,
+                    "total_ms": 88.9141065636282,
+                    "max_ms": 6.172088545051376
+                  },
+                  "find_task": {
+                    "calls": 65,
+                    "total_ms": 36.75552842697627,
+                    "max_ms": 0.6930709818023933
+                  },
+                  "GemDrawingFence": {
+                    "calls": 16,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "idle": {
+                    "calls": 76,
+                    "total_ms": 15.167773503303593,
+                    "max_ms": 0.8647704541577915
+                  },
+                  "display_valid": {
+                    "calls": 49,
+                    "total_ms": 30.591475078907045,
+                    "max_ms": 0.7511499494628401
+                  },
+                  "VbxeSubmit": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  }
+                },
+                "input_check_ms": 9.781019736981218,
+                "components": [
+                  "input_service_turn",
+                  "input_collect_turn",
+                  "runnable"
+                ]
+              },
+              {
+                "worker_dp": 4352,
+                "routines": {
+                  "input_collect_turn": {
+                    "calls": 16,
+                    "total_ms": 9.324070771759525,
+                    "max_ms": 0.6199788829384575
+                  },
+                  "present": {
+                    "calls": 16,
+                    "total_ms": 0.1752236815580952,
+                    "max_ms": 0.011206985264576483
+                  },
+                  "launch_to_idle": {
+                    "calls": 30,
+                    "total_ms": 27.4655015161148,
+                    "max_ms": 11.638700891906865
+                  },
+                  "VbxeCopyRect": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "input_service_turn": {
+                    "calls": 16,
+                    "total_ms": 0.36567194687184146,
+                    "max_ms": 0.023330264921854183
+                  },
+                  "GemDrawingCopy": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "display_check": {
+                    "calls": 49,
+                    "total_ms": 31.228863555306823,
+                    "max_ms": 0.7627798398317401
+                  },
+                  "input_collect": {
+                    "calls": 16,
+                    "total_ms": 9.17083815562626,
+                    "max_ms": 0.6103930339071215
+                  },
+                  "GemDrawingFill": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "edit": {
+                    "calls": 1,
+                    "total_ms": 5.34819891764487,
+                    "max_ms": 5.34819891764487
+                  },
+                  "call": {
+                    "calls": 16,
+                    "total_ms": 86.11517961484623,
+                    "max_ms": 16.166886812268196
+                  },
+                  "signal_collect": {
+                    "calls": 16,
+                    "total_ms": 8.965447243293077,
+                    "max_ms": 0.5974239440411966
+                  },
+                  "input_service": {
+                    "calls": 16,
+                    "total_ms": 0.16606073763108298,
+                    "max_ms": 0.010643111792144961
+                  },
+                  "VbxeFence": {
+                    "calls": 16,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "DisplayCheck": {
+                    "calls": 49,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "advance": {
+                    "calls": 16,
+                    "total_ms": 99.63249546434275,
+                    "max_ms": 16.94122605828478
+                  },
+                  "find_task": {
+                    "calls": 65,
+                    "total_ms": 36.75693811065735,
+                    "max_ms": 0.6928595292502315
+                  },
+                  "GemDrawingFence": {
+                    "calls": 16,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "idle": {
+                    "calls": 76,
+                    "total_ms": 15.937390308988565,
+                    "max_ms": 1.0124348197507962
+                  },
+                  "display_valid": {
+                    "calls": 49,
+                    "total_ms": 30.59852349731244,
+                    "max_ms": 0.7507975285425704
+                  },
+                  "VbxeSubmit": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  }
+                },
+                "input_check_ms": 9.689742718631367,
+                "components": [
+                  "input_service_turn",
+                  "input_collect_turn",
+                  "runnable"
+                ]
+              },
+              {
+                "worker_dp": 4352,
+                "routines": {
+                  "input_collect_turn": {
+                    "calls": 16,
+                    "total_ms": 9.453056828578235,
+                    "max_ms": 0.6185691992573786
+                  },
+                  "present": {
+                    "calls": 16,
+                    "total_ms": 0.17501222900593336,
+                    "max_ms": 0.011206985264576483
+                  },
+                  "launch_to_idle": {
+                    "calls": 30,
+                    "total_ms": 21.1418014911634,
+                    "max_ms": 5.6390871452354805
+                  },
+                  "VbxeCopyRect": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "input_service_turn": {
+                    "calls": 16,
+                    "total_ms": 0.36694066218481236,
+                    "max_ms": 0.023330264921854183
+                  },
+                  "GemDrawingCopy": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "display_check": {
+                    "calls": 49,
+                    "total_ms": 31.523416960468243,
+                    "max_ms": 1.2225481724155918
+                  },
+                  "input_collect": {
+                    "calls": 16,
+                    "total_ms": 9.299542275708754,
+                    "max_ms": 0.6090538344100968
+                  },
+                  "GemDrawingFill": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "edit": {
+                    "calls": 1,
+                    "total_ms": 5.3478464967246,
+                    "max_ms": 5.3478464967246
+                  },
+                  "call": {
+                    "calls": 16,
+                    "total_ms": 80.25582939444219,
+                    "max_ms": 10.136964866453617
+                  },
+                  "signal_collect": {
+                    "calls": 16,
+                    "total_ms": 9.092812163878547,
+                    "max_ms": 0.5961552287282257
+                  },
+                  "input_service": {
+                    "calls": 16,
+                    "total_ms": 0.16641315855135266,
+                    "max_ms": 0.010643111792144961
+                  },
+                  "VbxeFence": {
+                    "calls": 16,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "DisplayCheck": {
+                    "calls": 49,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "advance": {
+                    "calls": 16,
+                    "total_ms": 93.61011532622194,
+                    "max_ms": 10.912008954310743
+                  },
+                  "find_task": {
+                    "calls": 65,
+                    "total_ms": 36.455618223826754,
+                    "max_ms": 0.6883485414707793
+                  },
+                  "GemDrawingFence": {
+                    "calls": 16,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "idle": {
+                    "calls": 76,
+                    "total_ms": 21.24576566264296,
+                    "max_ms": 5.6367611671617
+                  },
+                  "display_valid": {
+                    "calls": 49,
+                    "total_ms": 30.374313307836857,
+                    "max_ms": 0.7462865407631182
+                  },
+                  "VbxeSubmit": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  }
+                },
+                "input_check_ms": 9.819997490763047,
+                "components": [
+                  "input_service_turn",
+                  "input_collect_turn",
+                  "runnable"
+                ]
+              }
+            ]
+          },
+          {
+            "stage": 5,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 17,
+                "total_ms": 10.180665060567058,
+                "max_ms": 0.6783397873351199
+              },
+              "present": {
+                "calls": 17,
+                "total_ms": 9.723222706056987,
+                "max_ms": 4.873346969673475
+              },
+              "launch_to_idle": {
+                "calls": 32,
+                "total_ms": 9.886534560509967,
+                "max_ms": 1.8859453127312762
+              },
+              "GemDrawingText": {
+                "calls": 1,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 1,
+                "total_ms": 0.17635142850295824,
+                "max_ms": 0.17635142850295824
+              },
+              "input_service_turn": {
+                "calls": 17,
+                "total_ms": 0.39012995873855866,
+                "max_ms": 0.023330264921854183
+              },
+              "display_check": {
+                "calls": 83,
+                "total_ms": 53.30718839999493,
+                "max_ms": 1.7784569320490176
+              },
+              "input_collect": {
+                "calls": 17,
+                "total_ms": 10.017564658666242,
+                "max_ms": 0.6688244224878379
+              },
+              "cells": {
+                "calls": 2,
+                "total_ms": 0.01113650108052254,
+                "max_ms": 0.0056387347243152105
+              },
+              "GemDrawingFill": {
+                "calls": 16,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "edit": {
+                "calls": 1,
+                "total_ms": 4.666475889475161,
+                "max_ms": 4.666475889475161
+              },
+              "call": {
+                "calls": 17,
+                "total_ms": 103.25418429358636,
+                "max_ms": 8.117099604019854
+              },
+              "signal_collect": {
+                "calls": 17,
+                "total_ms": 9.754447199592883,
+                "max_ms": 0.6559963009900208
+              },
+              "input_service": {
+                "calls": 17,
+                "total_ms": 0.17691530197538977,
+                "max_ms": 0.010643111792144961
+              },
+              "VbxeFence": {
+                "calls": 17,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 83,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "advance": {
+                "calls": 15,
+                "total_ms": 109.21785110639024,
+                "max_ms": 8.879667991299431
+              },
+              "find_task": {
+                "calls": 100,
+                "total_ms": 58.12280882292822,
+                "max_ms": 1.812007403658693
+              },
+              "GemDrawingFence": {
+                "calls": 17,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 81,
+                "total_ms": 9.998322476419517,
+                "max_ms": 1.883619334657496
+              },
+              "display_valid": {
+                "calls": 83,
+                "total_ms": 52.26782862193553,
+                "max_ms": 1.7666155891279556
+              },
+              "VbxeSubmit": {
+                "calls": 32,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            },
+            "edit_through_final_chunk_ms": [
+              133.64576622651646
+            ],
+            "scroll_input": [
+              {
+                "worker_dp": 4352,
+                "routines": {
+                  "input_collect_turn": {
+                    "calls": 15,
+                    "total_ms": 8.987367824533852,
+                    "max_ms": 0.6783397873351199
+                  },
+                  "present": {
+                    "calls": 15,
+                    "total_ms": 0.16443960139784236,
+                    "max_ms": 0.011206985264576483
+                  },
+                  "launch_to_idle": {
+                    "calls": 30,
+                    "total_ms": 9.844596470997873,
+                    "max_ms": 1.8859453127312762
+                  },
+                  "input_service_turn": {
+                    "calls": 15,
+                    "total_ms": 0.34473814420782123,
+                    "max_ms": 0.023330264921854183
+                  },
+                  "display_check": {
+                    "calls": 75,
+                    "total_ms": 48.21794837456423,
+                    "max_ms": 1.7784569320490176
+                  },
+                  "input_collect": {
+                    "calls": 15,
+                    "total_ms": 8.843368636511654,
+                    "max_ms": 0.6688244224878379
+                  },
+                  "GemDrawingFill": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "edit": {
+                    "calls": 1,
+                    "total_ms": 4.666475889475161,
+                    "max_ms": 4.666475889475161
+                  },
+                  "call": {
+                    "calls": 15,
+                    "total_ms": 95.53095031005992,
+                    "max_ms": 8.117099604019854
+                  },
+                  "signal_collect": {
+                    "calls": 15,
+                    "total_ms": 8.606118872986091,
+                    "max_ms": 0.6559963009900208
+                  },
+                  "input_service": {
+                    "calls": 15,
+                    "total_ms": 0.15633392023163922,
+                    "max_ms": 0.010643111792144961
+                  },
+                  "VbxeFence": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "DisplayCheck": {
+                    "calls": 75,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "advance": {
+                    "calls": 15,
+                    "total_ms": 109.21785110639024,
+                    "max_ms": 8.879667991299431
+                  },
+                  "find_task": {
+                    "calls": 90,
+                    "total_ms": 52.458488339801434,
+                    "max_ms": 1.812007403658693
+                  },
+                  "GemDrawingFence": {
+                    "calls": 15,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "idle": {
+                    "calls": 75,
+                    "total_ms": 9.946657569507979,
+                    "max_ms": 1.883619334657496
+                  },
+                  "display_valid": {
+                    "calls": 75,
+                    "total_ms": 47.2745880551863,
+                    "max_ms": 1.7666155891279556
+                  },
+                  "VbxeSubmit": {
+                    "calls": 30,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  }
+                },
+                "input_check_ms": 9.332105968741672,
+                "components": [
+                  "input_service_turn",
+                  "input_collect_turn",
+                  "runnable"
+                ]
+              }
+            ]
+          },
+          {
+            "stage": 6,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 9,
+                "total_ms": 5.300551609224406,
+                "max_ms": 0.6184987150733247
+              },
+              "present": {
+                "calls": 5,
+                "total_ms": 117.60398884094397,
+                "max_ms": 35.76755161909219
+              },
+              "launch_to_idle": {
+                "calls": 45,
+                "total_ms": 14.553151418353236,
+                "max_ms": 3.7642078494006728
+              },
+              "GemDrawingText": {
+                "calls": 11,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 9,
+                "total_ms": 1.5857531728455452,
+                "max_ms": 0.37723135305668765
+              },
+              "input_service_turn": {
+                "calls": 9,
+                "total_ms": 0.20694156438236824,
+                "max_ms": 0.023330264921854183
+              },
+              "display_check": {
+                "calls": 180,
+                "total_ms": 117.18439649327088,
+                "max_ms": 1.5674272849915207
+              },
+              "input_collect": {
+                "calls": 9,
+                "total_ms": 5.214067515390222,
+                "max_ms": 0.608771897673881
+              },
+              "cells": {
+                "calls": 5,
+                "total_ms": 82.07685877365978,
+                "max_ms": 25.86015374010226
+              },
+              "GemDrawingFill": {
+                "calls": 34,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "call": {
+                "calls": 45,
+                "total_ms": 243.29491005513273,
+                "max_ms": 24.322541264965555
+              },
+              "signal_collect": {
+                "calls": 9,
+                "total_ms": 5.097698127517166,
+                "max_ms": 0.5958732919920099
+              },
+              "input_service": {
+                "calls": 9,
+                "total_ms": 0.09402590152795615,
+                "max_ms": 0.010643111792144961
+              },
+              "input_extent": {
+                "calls": 8,
+                "total_ms": 8.43921232514636,
+                "max_ms": 1.078267047657176
+              },
+              "writable": {
+                "calls": 16,
+                "total_ms": 13.881366660135132,
+                "max_ms": 1.039782683163725
+              },
+              "VbxeFence": {
+                "calls": 45,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 180,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "find_task": {
+                "calls": 243,
+                "total_ms": 139.14296870925133,
+                "max_ms": 1.4980003636983898
+              },
+              "GemDrawingFence": {
+                "calls": 45,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 135,
+                "total_ms": 14.788357140541233,
+                "max_ms": 3.7613179978544613
+              },
+              "display_valid": {
+                "calls": 180,
+                "total_ms": 114.99367756869037,
+                "max_ms": 1.5555859420704587
+              },
+              "VbxeSubmit": {
+                "calls": 45,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            }
+          },
+          {
+            "stage": 7,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 4,
+                "total_ms": 2.341625562639999,
+                "max_ms": 0.6184987150733247
+              },
+              "present": {
+                "calls": 4,
+                "total_ms": 16.775940646678293,
+                "max_ms": 10.811498507849825
+              },
+              "launch_to_idle": {
+                "calls": 5,
+                "total_ms": 0.4737946852105856,
+                "max_ms": 0.2727033081046944
+              },
+              "GemDrawingText": {
+                "calls": 2,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "VbxeCopyRect": {
+                "calls": 1,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 1,
+                "total_ms": 0.3329672854708132,
+                "max_ms": 0.3329672854708132
+              },
+              "input_service_turn": {
+                "calls": 4,
+                "total_ms": 0.09233428111066158,
+                "max_ms": 0.023330264921854183
+              },
+              "GemDrawingCopy": {
+                "calls": 1,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "display_check": {
+                "calls": 19,
+                "total_ms": 13.284577073750421,
+                "max_ms": 1.811936919474639
+              },
+              "input_collect": {
+                "calls": 4,
+                "total_ms": 2.303070713962494,
+                "max_ms": 0.608701413489827
+              },
+              "cells": {
+                "calls": 2,
+                "total_ms": 5.437713831393374,
+                "max_ms": 5.432075096669059
+              },
+              "GemDrawingFill": {
+                "calls": 2,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "edit": {
+                "calls": 1,
+                "total_ms": 0.6820754490899787,
+                "max_ms": 0.6820754490899787
+              },
+              "call": {
+                "calls": 5,
+                "total_ms": 21.48456607821771,
+                "max_ms": 5.096358928020141
+              },
+              "signal_collect": {
+                "calls": 4,
+                "total_ms": 2.2512648386828475,
+                "max_ms": 0.5958028078079559
+              },
+              "input_service": {
+                "calls": 4,
+                "total_ms": 0.04200857369614833,
+                "max_ms": 0.010643111792144961
+              },
+              "VbxeFence": {
+                "calls": 5,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 19,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "advance": {
+                "calls": 2,
+                "total_ms": 9.82042039586737,
+                "max_ms": 5.474647543837638
+              },
+              "find_task": {
+                "calls": 24,
+                "total_ms": 14.724287017236202,
+                "max_ms": 1.7420870930771843
+              },
+              "GemDrawingFence": {
+                "calls": 5,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 15,
+                "total_ms": 0.5008606118872986,
+                "max_ms": 0.27037733003091435
+              },
+              "display_valid": {
+                "calls": 19,
+                "total_ms": 13.057477032728627,
+                "max_ms": 1.7998841240014154
+              },
+              "VbxeSubmit": {
+                "calls": 4,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            },
+            "edit_through_final_chunk_ms": [
+              17.768428442341822
+            ],
+            "scroll_input": [
+              {
+                "worker_dp": 4352,
+                "routines": {
+                  "input_collect_turn": {
+                    "calls": 2,
+                    "total_ms": 1.1928743309288827,
+                    "max_ms": 0.6184987150733247
+                  },
+                  "present": {
+                    "calls": 2,
+                    "total_ms": 0.021709128688613563,
+                    "max_ms": 0.010854564344306782
+                  },
+                  "launch_to_idle": {
+                    "calls": 2,
+                    "total_ms": 0.3385355360110745,
+                    "max_ms": 0.2727033081046944
+                  },
+                  "VbxeCopyRect": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "input_service_turn": {
+                    "calls": 2,
+                    "total_ms": 0.04644907729154654,
+                    "max_ms": 0.023330264921854183
+                  },
+                  "GemDrawingCopy": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "display_check": {
+                    "calls": 7,
+                    "total_ms": 4.432045493311756,
+                    "max_ms": 0.6590271209043403
+                  },
+                  "input_collect": {
+                    "calls": 2,
+                    "total_ms": 1.1733502119459414,
+                    "max_ms": 0.608701413489827
+                  },
+                  "GemDrawingFill": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "edit": {
+                    "calls": 1,
+                    "total_ms": 0.6820754490899787,
+                    "max_ms": 0.6820754490899787
+                  },
+                  "call": {
+                    "calls": 2,
+                    "total_ms": 7.472451256662518,
+                    "max_ms": 3.946902854468486
+                  },
+                  "signal_collect": {
+                    "calls": 2,
+                    "total_ms": 1.1474825163981452,
+                    "max_ms": 0.5958028078079559
+                  },
+                  "input_service": {
+                    "calls": 2,
+                    "total_ms": 0.0210747710321281,
+                    "max_ms": 0.010643111792144961
+                  },
+                  "VbxeFence": {
+                    "calls": 2,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "DisplayCheck": {
+                    "calls": 7,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "advance": {
+                    "calls": 2,
+                    "total_ms": 9.82042039586737,
+                    "max_ms": 5.474647543837638
+                  },
+                  "find_task": {
+                    "calls": 9,
+                    "total_ms": 5.078244492718279,
+                    "max_ms": 0.5903050414517487
+                  },
+                  "GemDrawingFence": {
+                    "calls": 2,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "idle": {
+                    "calls": 6,
+                    "total_ms": 0.34854429014673394,
+                    "max_ms": 0.27037733003091435
+                  },
+                  "display_valid": {
+                    "calls": 7,
+                    "total_ms": 4.3485922193918904,
+                    "max_ms": 0.6471857779832784
+                  },
+                  "VbxeSubmit": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  }
+                },
+                "input_check_ms": 1.2393234082204292,
+                "components": [
+                  "input_service_turn",
+                  "input_collect_turn",
+                  "runnable"
+                ]
+              }
+            ]
+          },
+          {
+            "stage": 8,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 7,
+                "total_ms": 4.152716671905991,
+                "max_ms": 0.6189216201776483
+              },
+              "present": {
+                "calls": 5,
+                "total_ms": 27.013838864697153,
+                "max_ms": 10.90214116854319
+              },
+              "launch_to_idle": {
+                "calls": 6,
+                "total_ms": 0.18318839435619041,
+                "max_ms": 0.0646339967774631
+              },
+              "GemDrawingText": {
+                "calls": 3,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 5,
+                "total_ms": 1.084399171669869,
+                "max_ms": 0.3333197063910829
+              },
+              "input_service_turn": {
+                "calls": 7,
+                "total_ms": 0.16133829729946897,
+                "max_ms": 0.023259780737800245
+              },
+              "display_check": {
+                "calls": 24,
+                "total_ms": 16.34803116528682,
+                "max_ms": 1.812923698051394
+              },
+              "input_collect": {
+                "calls": 7,
+                "total_ms": 4.085545244502586,
+                "max_ms": 0.6094062553303664
+              },
+              "cells": {
+                "calls": 4,
+                "total_ms": 5.501854438882458,
+                "max_ms": 5.485220171445729
+              },
+              "GemDrawingFill": {
+                "calls": 3,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "edit": {
+                "calls": 1,
+                "total_ms": 0.5659175137690853,
+                "max_ms": 0.5659175137690853
+              },
+              "call": {
+                "calls": 6,
+                "total_ms": 25.534375841404948,
+                "max_ms": 5.052658733906699
+              },
+              "signal_collect": {
+                "calls": 7,
+                "total_ms": 3.9508499687755063,
+                "max_ms": 0.5963666812803874
+              },
+              "input_service": {
+                "calls": 7,
+                "total_ms": 0.07316258304798987,
+                "max_ms": 0.010572627608091021
+              },
+              "input_extent": {
+                "calls": 1,
+                "total_ms": 1.078408016025284,
+                "max_ms": 1.078408016025284
+              },
+              "writable": {
+                "calls": 3,
+                "total_ms": 2.4117573257736695,
+                "max_ms": 1.039500746427509
+              },
+              "VbxeFence": {
+                "calls": 6,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 24,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "advance": {
+                "calls": 1,
+                "total_ms": 5.36250720700782,
+                "max_ms": 5.36250720700782
+              },
+              "find_task": {
+                "calls": 35,
+                "total_ms": 20.947124174806415,
+                "max_ms": 1.7430738716539396
+              },
+              "GemDrawingFence": {
+                "calls": 6,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 18,
+                "total_ms": 0.21603402412532652,
+                "max_ms": 0.06230801870368308
+              },
+              "display_valid": {
+                "calls": 24,
+                "total_ms": 16.062006346395933,
+                "max_ms": 1.8009413867622244
+              },
+              "VbxeSubmit": {
+                "calls": 6,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            },
+            "edit_through_final_chunk_ms": [
+              12.000989597944118
+            ],
+            "scroll_input": [
+              {
+                "worker_dp": 4352,
+                "routines": {
+                  "input_collect_turn": {
+                    "calls": 1,
+                    "total_ms": 0.574446100039612,
+                    "max_ms": 0.574446100039612
+                  },
+                  "present": {
+                    "calls": 1,
+                    "total_ms": 0.011136501080522542,
+                    "max_ms": 0.011136501080522542
+                  },
+                  "launch_to_idle": {
+                    "calls": 1,
+                    "total_ms": 0.03531257621102401,
+                    "max_ms": 0.03531257621102401
+                  },
+                  "input_service_turn": {
+                    "calls": 1,
+                    "total_ms": 0.023048328185638425,
+                    "max_ms": 0.023048328185638425
+                  },
+                  "display_check": {
+                    "calls": 4,
+                    "total_ms": 2.456373814279814,
+                    "max_ms": 0.6144106323981963
+                  },
+                  "input_collect": {
+                    "calls": 1,
+                    "total_ms": 0.5649307351923303,
+                    "max_ms": 0.5649307351923303
+                  },
+                  "GemDrawingFill": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "edit": {
+                    "calls": 1,
+                    "total_ms": 0.5659175137690853,
+                    "max_ms": 0.5659175137690853
+                  },
+                  "call": {
+                    "calls": 1,
+                    "total_ms": 3.8788151326723797,
+                    "max_ms": 3.8788151326723797
+                  },
+                  "signal_collect": {
+                    "calls": 1,
+                    "total_ms": 0.5519616453264051,
+                    "max_ms": 0.5519616453264051
+                  },
+                  "input_service": {
+                    "calls": 1,
+                    "total_ms": 0.01050214342403708,
+                    "max_ms": 0.01050214342403708
+                  },
+                  "VbxeFence": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "DisplayCheck": {
+                    "calls": 4,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "advance": {
+                    "calls": 1,
+                    "total_ms": 5.36250720700782,
+                    "max_ms": 5.36250720700782
+                  },
+                  "find_task": {
+                    "calls": 5,
+                    "total_ms": 2.722028703979114,
+                    "max_ms": 0.5446312901847954
+                  },
+                  "GemDrawingFence": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "idle": {
+                    "calls": 3,
+                    "total_ms": 0.04137421603966286,
+                    "max_ms": 0.032986598137243986
+                  },
+                  "display_valid": {
+                    "calls": 4,
+                    "total_ms": 2.4089379584115123,
+                    "max_ms": 0.6025692894771343
+                  },
+                  "VbxeSubmit": {
+                    "calls": 1,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  }
+                },
+                "input_check_ms": 0.5974944282252505,
+                "components": [
+                  "input_service_turn",
+                  "input_collect_turn",
+                  "runnable"
+                ]
+              }
+            ]
+          },
+          {
+            "stage": 9,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 13,
+                "total_ms": 7.6000981139842025,
+                "max_ms": 0.6189921043617023
+              },
+              "present": {
+                "calls": 9,
+                "total_ms": 0.07577049785798565,
+                "max_ms": 0.008669554638634636
+              },
+              "launch_to_idle": {
+                "calls": 3,
+                "total_ms": 0.22498551550017692,
+                "max_ms": 0.09508316428876525
+              },
+              "runnable": {
+                "calls": 9,
+                "total_ms": 2.0815389234809603,
+                "max_ms": 0.3223241736786683
+              },
+              "input_service_turn": {
+                "calls": 13,
+                "total_ms": 0.2983595511003286,
+                "max_ms": 0.023259780737800245
+              },
+              "display_check": {
+                "calls": 12,
+                "total_ms": 8.516251538317317,
+                "max_ms": 1.5669338957031431
+              },
+              "input_collect": {
+                "calls": 13,
+                "total_ms": 7.475411592392784,
+                "max_ms": 0.6091948027782046
+              },
+              "GemDrawingFill": {
+                "calls": 3,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "edit": {
+                "calls": 4,
+                "total_ms": 2.1487808350684188,
+                "max_ms": 1.0151132187448457
+              },
+              "call": {
+                "calls": 3,
+                "total_ms": 12.923134177921817,
+                "max_ms": 5.001769153019754
+              },
+              "signal_collect": {
+                "calls": 13,
+                "total_ms": 7.308011655264675,
+                "max_ms": 0.5962257129122795
+              },
+              "input_service": {
+                "calls": 13,
+                "total_ms": 0.13532963338356507,
+                "max_ms": 0.010643111792144961
+              },
+              "writable": {
+                "calls": 2,
+                "total_ms": 1.3270762173675847,
+                "max_ms": 0.6635381086837924
+              },
+              "VbxeFence": {
+                "calls": 3,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 12,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "find_task": {
+                "calls": 19,
+                "total_ms": 11.534948172979465,
+                "max_ms": 1.4968021325694727
+              },
+              "GemDrawingFence": {
+                "calls": 3,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 9,
+                "total_ms": 0.24098542528042133,
+                "max_ms": 0.09275718621498523
+              },
+              "display_valid": {
+                "calls": 12,
+                "total_ms": 8.37246380284728,
+                "max_ms": 1.5548811002299194
+              },
+              "VbxeSubmit": {
+                "calls": 3,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            }
+          },
+          {
+            "stage": 10,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 4,
+                "total_ms": 2.3421189519283767,
+                "max_ms": 0.6187806518095404
+              },
+              "present": {
+                "calls": 3,
+                "total_ms": 53.45957520591954,
+                "max_ms": 48.2487499629958
+              },
+              "launch_to_idle": {
+                "calls": 5,
+                "total_ms": 0.6541637122046184,
+                "max_ms": 0.2433818875382553
+              },
+              "GemDrawingText": {
+                "calls": 4,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 4,
+                "total_ms": 0.7362073024434047,
+                "max_ms": 0.33303776965486714
+              },
+              "input_service_turn": {
+                "calls": 4,
+                "total_ms": 0.09169992345417612,
+                "max_ms": 0.023259780737800245
+              },
+              "display_check": {
+                "calls": 20,
+                "total_ms": 12.97846426240416,
+                "max_ms": 0.9385673948622668
+              },
+              "input_collect": {
+                "calls": 4,
+                "total_ms": 2.3040574925392496,
+                "max_ms": 0.6092652869622586
+              },
+              "cells": {
+                "calls": 3,
+                "total_ms": 48.16557862581215,
+                "max_ms": 48.15458309309974
+              },
+              "GemDrawingFill": {
+                "calls": 1,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "call": {
+                "calls": 5,
+                "total_ms": 53.71860458231777,
+                "max_ms": 17.408254261826187
+              },
+              "signal_collect": {
+                "calls": 4,
+                "total_ms": 2.2525335539958187,
+                "max_ms": 0.5964371654644414
+              },
+              "input_service": {
+                "calls": 4,
+                "total_ms": 0.04165615277587863,
+                "max_ms": 0.010572627608091021
+              },
+              "input_extent": {
+                "calls": 1,
+                "total_ms": 1.0334391065988704,
+                "max_ms": 1.0334391065988704
+              },
+              "writable": {
+                "calls": 5,
+                "total_ms": 3.650093955417344,
+                "max_ms": 0.9950957104735269
+              },
+              "VbxeFence": {
+                "calls": 5,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 20,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "find_task": {
+                "calls": 32,
+                "total_ms": 18.339279848994686,
+                "max_ms": 0.8689995052010279
+              },
+              "GemDrawingFence": {
+                "calls": 5,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 15,
+                "total_ms": 0.6806657654088999,
+                "max_ms": 0.24105590946447528
+              },
+              "display_valid": {
+                "calls": 20,
+                "total_ms": 12.739240941725086,
+                "max_ms": 0.9265145993890431
+              },
+              "VbxeSubmit": {
+                "calls": 5,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            }
+          },
+          {
+            "stage": 11,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 1,
+                "total_ms": 0.574446100039612,
+                "max_ms": 0.574446100039612
+              },
+              "present": {
+                "calls": 1,
+                "total_ms": 18.43718238064561,
+                "max_ms": 18.43718238064561
+              },
+              "launch_to_idle": {
+                "calls": 3,
+                "total_ms": 0.07668679225068688,
+                "max_ms": 0.03594693386750947
+              },
+              "GemDrawingText": {
+                "calls": 2,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 1,
+                "total_ms": 0.3329672854708132,
+                "max_ms": 0.3329672854708132
+              },
+              "input_service_turn": {
+                "calls": 1,
+                "total_ms": 0.022907359817530545,
+                "max_ms": 0.022907359817530545
+              },
+              "display_check": {
+                "calls": 12,
+                "total_ms": 11.12254521207986,
+                "max_ms": 4.215236143161835
+              },
+              "input_collect": {
+                "calls": 1,
+                "total_ms": 0.5649307351923303,
+                "max_ms": 0.5649307351923303
+              },
+              "cells": {
+                "calls": 1,
+                "total_ms": 5.405925464385047,
+                "max_ms": 5.405925464385047
+              },
+              "GemDrawingFill": {
+                "calls": 1,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "call": {
+                "calls": 3,
+                "total_ms": 15.816087028231735,
+                "max_ms": 7.456239894330111
+              },
+              "signal_collect": {
+                "calls": 1,
+                "total_ms": 0.5521026136945131,
+                "max_ms": 0.5521026136945131
+              },
+              "input_service": {
+                "calls": 1,
+                "total_ms": 0.010290690871875261,
+                "max_ms": 0.010290690871875261
+              },
+              "VbxeFence": {
+                "calls": 3,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 12,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "find_task": {
+                "calls": 15,
+                "total_ms": 11.87348370899054,
+                "max_ms": 4.146020674420867
+              },
+              "GemDrawingFence": {
+                "calls": 3,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 9,
+                "total_ms": 0.0928981545830931,
+                "max_ms": 0.033620955793729444
+              },
+              "display_valid": {
+                "calls": 12,
+                "total_ms": 10.932660820238546,
+                "max_ms": 4.2033948002407735
+              },
+              "VbxeSubmit": {
+                "calls": 3,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            }
+          },
+          {
+            "stage": 12,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 4,
+                "total_ms": 2.431140476388503,
+                "max_ms": 0.6194150094660259
+              },
+              "present": {
+                "calls": 4,
+                "total_ms": 10.06725600842427,
+                "max_ms": 5.406277885305316
+              },
+              "launch_to_idle": {
+                "calls": 4,
+                "total_ms": 0.33529326354459327,
+                "max_ms": 0.15548811002299195
+              },
+              "GemDrawingText": {
+                "calls": 1,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 1,
+                "total_ms": 0.3329672854708132,
+                "max_ms": 0.3329672854708132
+              },
+              "input_service_turn": {
+                "calls": 4,
+                "total_ms": 0.09162943927012218,
+                "max_ms": 0.023259780737800245
+              },
+              "display_check": {
+                "calls": 16,
+                "total_ms": 10.046674626680518,
+                "max_ms": 0.6590271209043403
+              },
+              "input_collect": {
+                "calls": 4,
+                "total_ms": 2.3925856277109983,
+                "max_ms": 0.6096881920665822
+              },
+              "cells": {
+                "calls": 2,
+                "total_ms": 0.01134795363268436,
+                "max_ms": 0.005709218908369151
+              },
+              "GemDrawingFill": {
+                "calls": 3,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "edit": {
+                "calls": 1,
+                "total_ms": 0.6161727369995447,
+                "max_ms": 0.6161727369995447
+              },
+              "call": {
+                "calls": 4,
+                "total_ms": 16.25358235865454,
+                "max_ms": 4.42781644226852
+              },
+              "signal_collect": {
+                "calls": 4,
+                "total_ms": 2.3412026575356757,
+                "max_ms": 0.5967895863847111
+              },
+              "input_service": {
+                "calls": 4,
+                "total_ms": 0.041515184407770744,
+                "max_ms": 0.010572627608091021
+              },
+              "VbxeFence": {
+                "calls": 4,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 16,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "advance": {
+                "calls": 2,
+                "total_ms": 10.316840504159273,
+                "max_ms": 5.495017473029227
+              },
+              "find_task": {
+                "calls": 20,
+                "total_ms": 11.15419261072008,
+                "max_ms": 0.5896001996112092
+              },
+              "GemDrawingFence": {
+                "calls": 4,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 12,
+                "total_ms": 0.3558746452883438,
+                "max_ms": 0.15316213194921194
+              },
+              "display_valid": {
+                "calls": 16,
+                "total_ms": 9.85509861442191,
+                "max_ms": 0.6471857779832784
+              },
+              "VbxeSubmit": {
+                "calls": 4,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            },
+            "edit_through_final_chunk_ms": [
+              17.40324988475836
+            ],
+            "scroll_input": [
+              {
+                "worker_dp": 4352,
+                "routines": {
+                  "input_collect_turn": {
+                    "calls": 2,
+                    "total_ms": 1.2372793668828652,
+                    "max_ms": 0.6186396834414326
+                  },
+                  "present": {
+                    "calls": 2,
+                    "total_ms": 0.02199106542482932,
+                    "max_ms": 0.011136501080522542
+                  },
+                  "launch_to_idle": {
+                    "calls": 2,
+                    "total_ms": 0.2500074008393257,
+                    "max_ms": 0.15548811002299195
+                  },
+                  "input_service_turn": {
+                    "calls": 2,
+                    "total_ms": 0.045955688003168974,
+                    "max_ms": 0.023259780737800245
+                  },
+                  "display_check": {
+                    "calls": 8,
+                    "total_ms": 5.090367772375557,
+                    "max_ms": 0.6590271209043403
+                  },
+                  "input_collect": {
+                    "calls": 2,
+                    "total_ms": 1.2179667004520855,
+                    "max_ms": 0.6091243185941507
+                  },
+                  "GemDrawingFill": {
+                    "calls": 2,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "edit": {
+                    "calls": 1,
+                    "total_ms": 0.6161727369995447,
+                    "max_ms": 0.6161727369995447
+                  },
+                  "call": {
+                    "calls": 2,
+                    "total_ms": 8.033152940811611,
+                    "max_ms": 4.05932512803452
+                  },
+                  "signal_collect": {
+                    "calls": 2,
+                    "total_ms": 1.1923104574564514,
+                    "max_ms": 0.5962257129122795
+                  },
+                  "input_service": {
+                    "calls": 2,
+                    "total_ms": 0.02086331847996628,
+                    "max_ms": 0.010572627608091021
+                  },
+                  "VbxeFence": {
+                    "calls": 2,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "DisplayCheck": {
+                    "calls": 8,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "advance": {
+                    "calls": 2,
+                    "total_ms": 10.316840504159273,
+                    "max_ms": 5.495017473029227
+                  },
+                  "find_task": {
+                    "calls": 10,
+                    "total_ms": 5.62153658340605,
+                    "max_ms": 0.5893182628749934
+                  },
+                  "GemDrawingFence": {
+                    "calls": 2,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  },
+                  "idle": {
+                    "calls": 6,
+                    "total_ms": 0.26015712334309304,
+                    "max_ms": 0.15316213194921194
+                  },
+                  "display_valid": {
+                    "calls": 8,
+                    "total_ms": 4.994368313694091,
+                    "max_ms": 0.6471857779832784
+                  },
+                  "VbxeSubmit": {
+                    "calls": 2,
+                    "total_ms": 0,
+                    "max_ms": 0
+                  }
+                },
+                "input_check_ms": 1.2832350548860343,
+                "components": [
+                  "input_service_turn",
+                  "input_collect_turn",
+                  "runnable"
+                ]
+              }
+            ]
+          },
+          {
+            "stage": 13,
+            "routines": {
+              "input_collect_turn": {
+                "calls": 89,
+                "total_ms": 54.10866405687228,
+                "max_ms": 1.6938054270002354
+              },
+              "present": {
+                "calls": 76,
+                "total_ms": 1702.7795437981672,
+                "max_ms": 118.0006033446155
+              },
+              "launch_to_idle": {
+                "calls": 68,
+                "total_ms": 34.577426171341415,
+                "max_ms": 2.0364995298704924
+              },
+              "GemDrawingText": {
+                "calls": 32,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "runnable": {
+                "calls": 59,
+                "total_ms": 7.194109213833508,
+                "max_ms": 0.37835910000155065
+              },
+              "input_service_turn": {
+                "calls": 89,
+                "total_ms": 2.035794688029953,
+                "max_ms": 0.023330264921854183
+              },
+              "display_check": {
+                "calls": 182,
+                "total_ms": 115.8369503467117,
+                "max_ms": 1.8829849770010108
+              },
+              "repaint": {
+                "calls": 1,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "input_collect": {
+                "calls": 89,
+                "total_ms": 53.254043325218255,
+                "max_ms": 1.6842900621529535
+              },
+              "cells": {
+                "calls": 16,
+                "total_ms": 1691.1265346168973,
+                "max_ms": 113.73525294659132
+              },
+              "GemDrawingFill": {
+                "calls": 6,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "call": {
+                "calls": 38,
+                "total_ms": 1687.765425816101,
+                "max_ms": 57.14596851612467
+              },
+              "signal_collect": {
+                "calls": 89,
+                "total_ms": 52.06025269989667,
+                "max_ms": 1.6715324248391903
+              },
+              "input_service": {
+                "calls": 89,
+                "total_ms": 0.9228494218182383,
+                "max_ms": 0.010643111792144961
+              },
+              "input_extent": {
+                "calls": 6,
+                "total_ms": 6.916753949581254,
+                "max_ms": 1.6170481505654946
+              },
+              "writable": {
+                "calls": 16,
+                "total_ms": 13.891727835191062,
+                "max_ms": 1.5780703967836658
+              },
+              "VbxeFence": {
+                "calls": 38,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "DisplayCheck": {
+                "calls": 182,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "find_task": {
+                "calls": 244,
+                "total_ms": 138.4762588122851,
+                "max_ms": 1.812923698051394
+              },
+              "GemDrawingFence": {
+                "calls": 38,
+                "total_ms": 0,
+                "max_ms": 0
+              },
+              "idle": {
+                "calls": 174,
+                "total_ms": 34.816226586916166,
+                "max_ms": 2.033609678324281
+              },
+              "display_valid": {
+                "calls": 182,
+                "total_ms": 113.6142316025707,
+                "max_ms": 1.870932181527787
+              },
+              "VbxeSubmit": {
+                "calls": 68,
+                "total_ms": 0,
+                "max_ms": 0
+              }
+            },
+            "repaint_request_to_final_fence_ms": 1763.9774366030006
+          }
+        ],
+        "idle_input": [
+          {
+            "stage": 1,
+            "routines": {}
+          },
+          {
+            "stage": 2,
+            "routines": {}
+          },
+          {
+            "stage": 3,
+            "routines": {}
+          },
+          {
+            "stage": 4,
+            "routines": {}
+          },
+          {
+            "stage": 5,
+            "routines": {}
+          },
+          {
+            "stage": 6,
+            "routines": {}
+          },
+          {
+            "stage": 7,
+            "routines": {}
+          },
+          {
+            "stage": 8,
+            "routines": {}
+          },
+          {
+            "stage": 9,
+            "routines": {}
+          },
+          {
+            "stage": 10,
+            "routines": {}
+          },
+          {
+            "stage": 11,
+            "routines": {}
+          },
+          {
+            "stage": 12,
+            "routines": {}
+          },
+          {
+            "stage": 13,
+            "routines": {}
+          }
+        ],
+        "limits_ms": {
+          "cpu_quantum": 4,
+          "list_occupancy": 2,
+          "scroll": 20,
+          "repaint": 500,
+          "input_visible": 40
+        }
+      },
+      "timing": null
+    },
+    "build/drawing-validation/d0/results-replay.json": {
+      "sha256": "f72ddcf1edd07f720de2220cec19bdd5a7dde857102b63f19612bdff71bfa32f",
+      "xex_sha256": "c6796ebbf0400abb6120381eff86d3a5cdd8ad175c683908f9022c53fa4ec57c",
+      "compiler": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "override": false,
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "optimize": true
+      },
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 63,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true,
+          "addons": "custom"
+        },
+        "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+          "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+          "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+        },
+        "observer": {
+          "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ],
+        "devices": [
+          {
+            "tag": "vbxe",
+            "settings": {
+              "version": 126,
+              "alt_page": false,
+              "shared_mem": false
+            },
+            "readback": [
+              {
+                "address": 54848,
+                "bytes": [
+                  16,
+                  38
+                ]
+              }
+            ],
+            "vram_bytes": 524288,
+            "register_base": 54784
+          }
+        ],
+        "startup_configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true,
+          "diskemu": "generic56k"
+        },
+        "disk_workload": {
+          "format": "SDFS",
+          "unit": 49,
+          "sectors": 720,
+          "sector_bytes": 128,
+          "exec_profile": 4,
+          "nominal_baud": 57600
+        },
+        "mouse_input": {
+          "model": "ST mouse",
+          "port": 1,
+          "internal_port": 0,
+          "map": "Mouse -> ST Mouse (port 1)",
+          "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+          "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+          "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+          "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+          "commands": [
+            "MOUSE ST",
+            "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+            "MOUSE CLEAR"
+          ],
+          "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+          "tooling": {
+            "binary": "build/mouse-bridge/AltirraBridgeServer",
+            "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+            "patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "source_sha256": {
+              "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+              "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+              "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+              "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+            }
+          },
+          "initial_acceptance": {
+            "transitions_per_second_per_axis": 1000,
+            "minimum_transition_spacing_us": 1000,
+            "minimum_button_level_us": 10000,
+            "required_max_sample_gap_us_exclusive": 1000,
+            "visible_response_pal_ticks": 12
+          },
+          "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+        }
+      },
+      "mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 56128,
+        "loading_including_os": 52592
+      },
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13424,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 14480,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 15536,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4096,
+          "dp_reserved_bytes": 256,
+          "stack_base": 16592,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4352,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17648,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4608,
+          "dp_reserved_bytes": 256,
+          "stack_base": 20240,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4864,
+          "dp_reserved_bytes": 256,
+          "stack_base": 22832,
+          "stack_bytes": 512,
+          "interrupt_reserve": 256
+        }
+      ],
+      "checks": [
+        93
+      ],
+      "cases": null,
+      "performance": null,
+      "timing": null
+    }
+  },
+  "source_inputs": {
+    "platform/altirraos/vbxe.c": "e71b8a9d26446f95a3ef8092c09f783cd01ec30d52977d95582d8f009146cb9f",
+    "c/include/hardware/vbxe.h": "eac1b0fb9126d005add49dc49f6455c33da548dc67a6b9a582732caf90d1de5d",
+    "ports/gem4xe/adapter/gem-vbxe.c": "a3d4ed7aef87175c8cd3e2f260301914e00a8c9a256e01634f1f513c9278cab3",
+    "tools/bitmap_console_performance.py": "ba6ea6179dda134ca0245db2ab4835b5df8453981154d72e3049e00f602eca72",
+    "lib/console/console-bitmap-display.inc": "f20911f935c075481f3f54224277d2de16d77603ff31f35d4f4c9dcf73b876e0",
+    "lib/console/consoledriver.act": "a1467f14ae3462ec1436111eb3900079e47691e17ba432befa1f469a2bc6572a",
+    "toolchain/actionc.json": "f31077466a9ef240f8d49fd2f62cd8503b5975c164127573834b09a7d05ba3cc",
+    "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "measurement_limits": [
+    "Routine elapsed includes preemption; it is not isolated Task CPU time.",
+    "Launch to idle is an upper bound, not an exact hardware BUSY edge.",
+    "Settled pixels and fixture completion do not prove first-visible latency."
+  ]
+}

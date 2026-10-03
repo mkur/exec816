@@ -87,6 +87,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Console and interaction
 
+- [Whole rectangle scroll benchmark](whole-rectangle-scroll-benchmark.md): test-only
+  copy/fill batching reduces full-screen scrolling from about 122 ms to 29.6 ms.
 - [Console interaction implementation record](console-interaction-implementation.md)
 - [Console input/output](console-io-design.md)
 - [Native console implementation](console-io-implementation.md)

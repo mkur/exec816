@@ -43,6 +43,15 @@ def markers(program,foreign,output):
     result=native_markers(program,[('CONSOLEDISPLAY_'+routine,key) for routine,key in
         [('PRESENT','present'),('ADVANCE','advance'),('BITMAPEDIT','edit'),('CELLS','cells')]])
     image=program['image'];result.update(input_markers(program))
+    result.update(native_markers(program,[('DISPLAY_CHECK','display_check'),
+        ('DISPLAY_VALID','display_valid')]))
+    # Count public C entries without guessing their shared/tail-call epilogues.
+    # The ordinary-call boundary supplies complete drawing-call elapsed time;
+    # native DISPLAY.Check spans isolate its validation work by owning Task DP.
+    for name in ('DisplayCheck','GemDrawingCopy','GemDrawingFill','GemDrawingText',
+                 'GemDrawingFence','VbxeCopyRect','VbxeFill','VbxeSubmit','VbxeFence'):
+        if name in foreign['symbols']:
+            result[name]=dict(entry=foreign['symbols'][name],returns=[],entry_only=True)
     if 'input_collect' in result:
         from dos_concurrent_trace import call_marker
         # Observe caller-side stores, flag arguments and branch decisions too.
@@ -91,7 +100,8 @@ def spans(path,marks):
             if pc==m['entry']:
                 if name=='launch':
                     require(dp not in launch,'Overlapping hardware launch');launch[dp]=tick
-                elif name=='repaint':samples.append(dict(kind=name,dp=dp,start=tick,end=tick,ms=0))
+                elif name=='repaint' or m.get('entry_only'):
+                    samples.append(dict(kind=name,dp=dp,start=tick,end=tick,ms=0))
                 elif m['returns']:
                     require(key not in active,'Nested performance routine '+name);active[key]=tick
             elif pc in m['returns'] and key in active:

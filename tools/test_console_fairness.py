@@ -111,9 +111,12 @@ def run(out,mode,from_build=None,bitmap=False,pointer=False,observe=True,pointer
             finally:b.regs=original
         def frames(n):rendezvous(f'@frame>={b.eval_expr("@frame")+n}')
         def press(key):
-            old=b.eval_expr(f'dw(${cs["CAPTURE"]+10:x})')
+            # Physical input can interrupt either native code or an OS service
+            # in emulation mode. Both counters acknowledge a captured key.
+            captured=f'(dw(${cs["CAPTURE"]+10:x})+dw(${cs["CAPTURE"]+12:x}))'
+            old=b.eval_expr(captured)
             require(b._cmd_ok(f'KEY {key} down')['raw_scan'],'Physical key input required')
-            rendezvous(f'dw(${cs["CAPTURE"]+10:x})>{old}')
+            rendezvous(f'{captured}>{old}')
             b._cmd_ok(f'KEY {key} up');frames(2)
         def before(b):
             saved.update(at=b.peek16(88),cursor=b.peek(752),mask=b.peek(16));saved['screen']=b.memdump(saved['at'],960)

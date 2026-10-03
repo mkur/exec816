@@ -48,8 +48,14 @@ handoff. Existing request completion semantics and SIO deadlines must survive
 the performance work. [Cheap idle input checking](plans/console-idle-input-implementation-plan.md)
 is implemented: atomic notifications and retained work eliminate repeated input
 validation during output-only turns. Development measurements reduce complete
-scrolls from about 165 ms to 122 ms. The next performance investigation is display
-validation and blitter chunk sizing; the 20 ms goal remains open.
+scrolls from about 165 ms to 122 ms. The next bounded step is
+[drawing validation and asynchronous scrolling](plans/drawing-validation-implementation-plan.md):
+one owner check per public call, first measured with the same fences and chunk
+limits. Later slices use one copy-and-fill submission, one drawing owner and
+one list in flight, with input service between completion checks. A
+[synchronous whole-rectangle experiment](history/whole-rectangle-scroll-benchmark.md)
+reduces isolated scrolling to 29.6 ms and repeated scrolling to 43–45 ms;
+asynchronous input latency still needs validation. The 20 ms goal remains open.
 
 The other possible milestones have no delivery order:
 

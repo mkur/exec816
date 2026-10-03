@@ -177,8 +177,14 @@ end the list, observe completion and reconsider input/control work between chunk
 Keep hardware execution synchronous at a bounded list boundary initially. Use
 the existing wrap-safe timeout, STOP/quiescence and reset-required protocol.
 VBXE IRQs stay off. Two executing/preparing arenas, IRQ-driven completion and
-multiple outstanding client requests are deferred until measurements justify
-their extra lifetime and interrupt machinery.
+multiple hardware lists in flight are deferred until measurements justify
+their extra lifetime and interrupt machinery. The proposed
+[drawing plan](../drawing-validation-implementation-plan.md#one-drawing-owner-and-one-operation-in-flight)
+adds one asynchronous copy/fill list using the same arena and console worker.
+The worker checks completion between bounded input/control turns and remains
+runnable while hardware is pending; existing client request queues serialize
+drawing without a semaphore. Retain active storage until completion or proven
+quiescence, and defer further hardware drawing while that list is in flight.
 
 Batch within each VDI command first. Preserve the existing service's ordered
 outputs, completed-prefix reporting and fence before command success. Flushing
@@ -223,12 +229,19 @@ geometry before mutation; callers redraw it. Do not round a requested rectangle
 outward or silently repack parity. Console cells and tile positions satisfy this
 alignment naturally. General masked/parity-changing copies are later work.
 
-Split large copies into ordered chunks, initially no more than sixteen full-width
-pixel rows, with smaller chunks if measured occupancy requires them. Commit the
-retained scroll exactly once. While a physical scroll continuation is pending,
-defer further model writes to that instance, but continue input capture, read
-delivery and other instances. Store the unit and presentation generation for
-continuations; resolve them again on the next borrow. Do not retain unprotected
+The initial implementation splits large copies into ordered chunks of at most
+sixteen full-width pixel rows per console call. The proposed
+[drawing validation plan](../drawing-validation-implementation-plan.md) first
+measures validation savings at that size, then submits the entire retained copy
+and exposed-strip fill as one asynchronous operation. One launch executes two
+commands. Measure complete worker turns, repeated scrolling and loaded input
+response before accepting that operation's larger hardware-work bound.
+Commit the retained scroll exactly once. While a physical scroll continuation is
+pending, defer further model writes to that instance, but continue input capture, read
+delivery and other instances' bounded model/request work. The proposed asynchronous
+path defers all hardware drawing until its active list completes. Store the unit
+and presentation generation for continuations; resolve them again on the next
+borrow. Do not retain unprotected
 instance pointers across Yield/Wait. Hide, retirement or a generation change
 drains an active list, cancels the continuation and invalidates the view.
 
@@ -275,6 +288,12 @@ Wait from losing a wake.
 The initial ordinary-list target is at most 2 ms of blitter occupancy, with a
 4 ms target for CPU work in one presentation quantum, excluding time preempted
 by other Tasks. Both are measured goals, not substitutes for hardware timeouts.
+The proposed asynchronous copy/fill operation may exceed the ordinary 2 ms list
+target because the worker returns to input service during execution. It must
+retain a bounded hardware deadline and meet the same CPU and visible-input
+targets; measure the extra delay before dependent echo can draw. This exception
+does not relax the public arbitrary-list budget or establish acceptance from
+the synchronous benchmark alone.
 The current round-robin scheduler and the shared ST/SIO interrupt cost remain
 part of the end-to-end result. If those prevent acceptance after renderer work,
 record the shortfall and propose a separate general scheduling change. Do not
