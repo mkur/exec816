@@ -32,17 +32,16 @@ def run(out,mode,bank,quota=False):
         directory=original(*args,**kwargs)
         path=directory/'consoledriver.act'
         text=path.read_text().replace('USE EXEC\n','USE EXEC\nUSE FOCUSPROBE\n',1)
-        text=text.replace('IF CONSOLEINPUT.Pending()<>0 THEN','IF FOCUSPROBE.hold=0 AND CONSOLEINPUT.Pending()<>0 THEN')
-        if not quota:
-            path.write_text(text)
-            return directory
-        text=text.replace('PUBLIC CONSOLETYPES.Service POINTER FUNC GetService()',
-            'BYTE quotaCount\nPUBLIC CONSOLETYPES.Service POINTER FUNC GetService()')
-        needle='      pumped=CONSOLEINPUT.Pump(defaultInstance)'
-        require(text.count(needle)==1,'Missing worker quota boundary')
-        text=text.replace(needle,needle+'\n      IF CONSOLEINPUT.Pending()<>0 THEN\n'
-            '        quotaCount==+1\n        bits=EXEC.SetSignal(0,$c0000000)\n      FI')
-        path.write_text(text)
+        needle='    inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)'
+        require(text.count(needle)==1,'Missing worker input boundary')
+        replacement='    IF FOCUSPROBE.hold=0 THEN\n  '+needle+'\n'
+        if quota:
+            text=text.replace('PUBLIC CONSOLETYPES.Service POINTER FUNC GetService()',
+                'BYTE quotaCount\nPUBLIC CONSOLETYPES.Service POINTER FUNC GetService()')
+            replacement+=('      IF inputPending<>0 THEN\n        quotaCount==+1\n'
+                '        bits=EXEC.SetSignal(0,$c0000000)\n      FI\n')
+        replacement+='    ELSE\n      inputPending=1\n    FI'
+        path.write_text(text.replace(needle,replacement))
         return directory
     generate_tasks.policy_modules=instrument
     try:

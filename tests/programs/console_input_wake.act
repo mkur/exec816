@@ -1,0 +1,165 @@
+MODULE INPUTWAKE
+USE EXEC
+USE CONSOLEDRIVER
+USE CONSOLEWINDOWS
+USE CONSOLEINPUT
+USE CONSOLECAPTURE
+USE CONSOLETYPES
+USE INPUTNATIVE
+USE INPUTWAKEPROBE
+USE HEAPCORE
+CARD checks
+BYTE phase,bitmap,finished
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER request
+CONSOLETYPES.Instance POINTER instance
+CONSOLETYPES.Service POINTER service
+BYTE ARRAY name=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY bytes(128),text(32)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ed00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Waiting establishes that full batches and stale wakes have settled, without
+; another request or input wake rescuing the worker. The host bounds completion.
+PROC Settled(CARD count)
+
+  WHILE INPUTWAKEPROBE.arm<>0 OR service.task.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+
+  Require(instance.inputCount=count)
+
+RETURN
+
+PROC Read(CARD count BYTE first)
+  CARD index
+
+  request.io_Command=EXEC.CMD_READ
+  request.io_Data=bytes
+  request.io_Length=128
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+  Require(request.io_Actual=LONGCARD(count) AND bytes(0)=first)
+  IF count>1 THEN
+    FOR index=1 TO count-1 DO
+      Require(bytes(index)=97)
+    OD
+  FI
+
+  Settled(IF phase=7 AND count=64 THEN 1 ELSE 0 FI)
+
+RETURN
+
+PROC Open()
+
+  Require(EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(request),0)=0)
+  instance=CONSOLETYPES.Instance POINTER(request.io_Unit)
+  service=CONSOLEDRIVER.GetService()
+  LET entry=CONSOLEWINDOWS.Find(0)
+  INPUTWAKEPROBE.route=entry.route
+  INPUTWAKEPROBE.worker=@service.task
+  Settled(0)
+
+RETURN
+
+PROC Boundary(BYTE point LONGCARD wake)
+
+  phase=point
+  EXEC.Forbid()
+  INPUTWAKEPROBE.arm=point
+  EXEC.Signal(@service.task,wake)
+  EXEC.Permit()
+  Settled(1)
+  Read(1,97)
+
+RETURN
+
+PROC Main()
+  BYTE index
+  CARD generation
+
+  port=EXEC.CreateMsgPort()
+  request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(port<>NULL AND request<>NULL)
+  Open()
+  ; Before collection; after collection; after EMPTY; immediately before Wait.
+  Boundary(1,$80000000)
+  Boundary(2,$80000000)
+  Boundary(3,$40000000)
+  Boundary(4,$80000000)
+
+  phase=5
+  EXEC.Forbid()
+  INPUTWAKEPROBE.arm=5
+  INPUTWAKEPROBE.Emit(64,1,0,0)
+  EXEC.Permit()
+  Settled(1)
+  Read(1,97)
+
+  phase=7
+  INPUTWAKEPROBE.Emit(64,0,1,0)
+  Settled(65)
+  Read(64,3)
+  ; A raw Read returns at most 64 bytes, leaving the final key queued.
+  Read(1,97)
+
+  phase=8
+  INPUTWAKEPROBE.Emit(64,0,0,0)
+  Settled(64)
+  Read(64,97)
+  ; A stale wake must finish its empty drain and return to Wait.
+  INPUTWAKEPROBE.Emit(0,0,0,0)
+  Settled(0)
+
+  phase=9
+  INPUTWAKEPROBE.Emit(0,0,1,0)
+  Settled(1)
+  Read(1,3)
+  INPUTWAKEPROBE.Emit(0,0,0,1)
+  Settled(0)
+  Require(instance.inputLost=1)
+  request.io_Command=EXEC.CMD_READ
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))<>0)
+  Require(instance.inputLost=0 AND request.io_Actual=0)
+  Settled(0)
+
+  IF bitmap<>0 THEN
+    phase=6
+    FOR index=0 TO 31 DO
+      text(index)=10
+    OD
+
+    INPUTWAKEPROBE.arm=6
+    request.io_Command=EXEC.CMD_WRITE
+    request.io_Data=text
+    request.io_Length=32
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    Settled(1)
+    Read(1,97)
+  FI
+
+  Require(INPUTWAKEPROBE.hits=IF bitmap<>0 THEN 6 ELSE 5 FI)
+  phase=10
+  generation=service.generation
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  Require(CONSOLEDRIVER.Stop()=1 AND service.state=0)
+  Require(CONSOLEDRIVER.Start()=1 AND service.generation<>generation)
+  Open()
+  INPUTWAKEPROBE.Emit(1,0,0,0)
+  Settled(1)
+  Read(1,97)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  finished=1
+
+RETURN
+
+ENDMODULE

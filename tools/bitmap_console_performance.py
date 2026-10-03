@@ -30,7 +30,7 @@ def native_markers(program, routines):
 
 def input_markers(program):
     result=native_markers(program,[('CONSOLEINPUT_PENDING','input_pending'),
-        ('CONSOLEINPUT_PUMP','pump'),('CONSOLEINPUT_SERVICE','input_service'),
+        ('CONSOLEINPUT_PUMP','pump'),('CONSOLEDRIVER_COLLECT','input_collect'),('CONSOLEINPUT_SERVICE','input_service'),
         ('INPUT_PENDING','public_pending'),('INPUT_TAKE','input_take'),
         ('INPUT_EXTENT','input_extent'),('TASKMEMORY_WRITABLE','writable'),
         ('CONSOLEDRIVER_RUNNABLE','runnable')])
@@ -122,7 +122,7 @@ def summarize(path,marks,windows):
                     measured=totals(inside)
                     # Disjoint new-path spans; count the entire Runnable helper
                     # conservatively when it executes. Old Pending is inside it.
-                    components=('input_service','signal_collect','runnable') if 'input_service' in marks else ('input_pending',)
+                    components=('input_service','input_collect','runnable') if 'input_service' in marks else ('input_pending',)
                     input_checks.append(dict(worker_dp=edit['dp'],routines=measured,
                         input_check_ms=sum(measured.get(k,{}).get('total_ms',0) for k in components),
                         components=components))

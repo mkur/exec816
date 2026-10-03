@@ -8,20 +8,7 @@ USE CONSOLEFOREGROUND
 USE CONSOLEWINDOWS
 USE HEAPCORE
 INCLUDE "console-storage-action.inc"
-CARD pendingMask
 INPUT.Event capturedEvent
-
-; An empty observation only skips this turn's drain. IRQ publication retains
-; its signal, so an event arriving after these reads still wakes the worker.
-; Take and the caller's Forbid continue to protect actual ring consumption.
-PUBLIC BYTE FUNC Pending()
-
-  ; Output records must be upper-RAM; the resident worker owns this mailbox.
-  IF INPUT.Pending(CONSOLECAPTURE.GetLease(),@pendingMask)<>INPUT.OK THEN
-    RETURN(0)
-  FI
-
-RETURN(pendingMask<>0)
 
 ; Attach private input storage and reset this terminal's keyboard state.
 PUBLIC PROC Init(CONSOLETYPES.Instance POINTER instance BYTE POINTER fifo)
@@ -202,6 +189,26 @@ PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
   OD
 
 RETURN(consumed)
+
+; Keep possible work across turns until a bounded drain actually observes EMPTY.
+; New arrivals after collection keep their signal even if this drain clears the
+; local flag. Only the worker calls this helper; the flag belongs to its frame.
+PUBLIC BYTE FUNC Service(CONSOLETYPES.Instance POINTER instance LONGCARD bits
+    BYTE pending)
+  CARD pumped
+
+  IF (bits & CONSOLECAPTURE.WAKE_MASK)<>0 THEN
+    pending=1
+  FI
+
+  IF pending<>0 THEN
+    EXEC.Forbid()
+    pumped=Pump(instance)
+    EXEC.Permit()
+    pending=pumped=CONSOLETYPES.RAW_SLOTS
+  FI
+
+RETURN(pending)
 
 ; $FFFF is a single input-loss report, with no bytes copied. Ordinary results
 ; are short prefixes of at most 64 bytes. The worker maps loss to io_Error=1.

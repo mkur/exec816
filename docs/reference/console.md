@@ -83,8 +83,14 @@ console maps captured generic route tags to retained instance/foreground state.
 Focus changes do not redirect already captured keys. Input loss is explicit;
 BREAK delivery has retained route state independent of the ordinary key FIFO.
 IRQs do not scan instance records or follow arbitrary application pointers.
-The worker keeps running when a bounded drain leaves input pending. Stopping the
-console releases input ownership before its signal/storage and display retire;
+Each worker turn atomically collects input/stop notifications with `SetSignal`,
+merging the previous `Wait` result. A worker-local flag retains possible input
+until a bounded drain observes EMPTY; full batches keep it runnable. Output with
+no input notification or retained work does not call `INPUT.Pending` or `Take`.
+The worker never clears notifications after a drain or before sleeping, so an
+arrival after EMPTY still wakes it. Unexpected resident-lease errors terminate
+through the invariant-failure path. Public input validation remains unchanged.
+Stopping the console releases input ownership before its signal/storage and display retire;
 hiding a window does not release either ownership domain.
 
 ## Lifetime and limits

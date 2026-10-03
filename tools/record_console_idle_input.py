@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Collect the reproducible Q0 console input baseline and control replays."""
+"""Collect console idle-input development evidence and timing comparisons."""
 import argparse,json,re
 from pathlib import Path
 from native_program import ROOT,require,sha256
@@ -74,6 +74,46 @@ def pump(out,host_log):
                 'No notification-loop or release qualification claim.'])
 
 
+def runtime_summary(runtime):
+    return {k:v for k,v in runtime.items() if k not in ('task_records','ready_queue')}
+
+
+def worker(out,host_log):
+    paths=[out/f'wake-{backend}-{mode}/results.json' for backend in ('text','bitmap') for mode in ('raw','opt')]
+    paths += [out/'focus-opt/results.json',out/'scroll-opt/results.json']
+    runs=[json.loads(p.read_text()) for p in paths]
+    require(all(r['status']=='pass' for r in runs),'Incomplete worker checks')
+    focus,scroll=runs[-2:]
+    require(focus['quota_drains']>0 and len(focus['observations'])==8,'Missing physical route/quota checks')
+    require(len(scroll['observations'])==13,'Missing scroll scenes')
+    require(all(not v['routines'] for v in scroll['performance']['idle_input']),'Settled worker polls input')
+    for stage in scroll['performance']['stages']:
+        if stage['stage'] not in (2,3):continue
+        timing=stage['scroll_input'][0]['routines']
+        require(not any(n in timing for n in ('input_pending','public_pending','pump','input_take','input_extent')),'Quiet scroll still validates input')
+        require(timing['input_collect']['calls']==timing['signal_collect']['calls']==timing['input_service']['calls']==16,'Wrong per-turn collection count')
+    base=json.loads((ROOT/'build/console-idle-input/q0/scroll-opt/program/build.json').read_text())['memory']
+    for run in runs:
+        for name in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
+            require(run['build']['memory'][name]==base[name],'Changed reserved memory '+name)
+    host=host_log.read_text();count=re.search(r'Ran (\d+) tests',host)
+    require(count and 'OK (skipped=4)' in host and 'FAILED' not in host,'Incomplete host checks')
+    names=['lib/console/consoledriver.act','lib/console/console-requests.inc','lib/console/consoleinput.act','lib/console/consolecapture.act',
+        'tests/programs/console_input_wake.act','tests/programs/inputwakeprobe.act','tools/test_console_input_wake.py',
+        'tools/test_console_focus.py','tools/bitmap_console_performance.py']
+    return dict(slice='Q2',status='development-pass',scope='Raw/optimized text and bitmap workers; controlled publication through public Signal at six boundaries, coalesced/full/exact batches, durable notices, restart, and physical focus/BREAK/route retirement. No direct Task signal writes.',
+        reports={str(p.relative_to(ROOT)):sha256(p) for p in paths},source_inputs={p:sha256(ROOT/p) for p in names},
+        cases=[dict(name=str(p.parent.relative_to(out)),xex_sha256=r['build']['xex_sha256'],
+            compiler={k:r['build'][k] for k in ('revision','binary_sha256','abi_sha256','override')},
+            checks=r['checks'],runtime=runtime_summary(r['runtime'])) for p,r in zip(paths,runs)],
+        pin=scroll['pin'],machine=scroll['machine'],physical_focus=dict(pin=focus['pin'],machine=focus['machine'],quota_drains=focus['quota_drains'],events=focus['events']),
+        scrolls=[s for s in scroll['performance']['stages'] if s['stage'] in (2,3)],idle_intervals=scroll['performance']['idle_input'],
+        host_checks=dict(tests=int(count[1]),skipped_historical=4,status='pass',log_sha256=sha256(host_log)),
+        bank_zero_delta=dict(fixed=0,root_kernel=0,per_task=[0]*8,private_idle=0),
+        limits=['Synthetic publication interleavings establish correctness, not input-to-visible latency.',
+                'Loaded SIO/pointer timing and the unobserved scroll replay follow in Q3. No release qualification.'])
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--slice',choices=('q0','q1'),default='q0');p.add_argument('--input',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--host-log',type=Path,required=True)
-    a=p.parse_args();a.output.write_text(json.dumps((baseline if a.slice=='q0' else pump)(a.input.resolve(),a.host_log),indent=2)+'\n')
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--slice',choices=('q0','q1','q2'),default='q0');p.add_argument('--input',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--host-log',type=Path,required=True)
+    a=p.parse_args();a.output.write_text(json.dumps(dict(q0=baseline,q1=pump,q2=worker)[a.slice](a.input.resolve(),a.host_log),indent=2)+'\n')

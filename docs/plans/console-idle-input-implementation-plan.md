@@ -3,7 +3,7 @@
 [Implementation plans](README.md) · [Bitmap console plan](gem4xe/bitmap-console-implementation-plan.md) ·
 [Input contract](../reference/input.md) · [Signals](../reference/signals.md)
 
-Status: implementation started, 3 October 2026. Q0–Q1 passed development checks. Remove repeated input validation from console
+Status: implementation started, 3 October 2026. Q0–Q2 passed development checks. Remove repeated input validation from console
 turns that have no captured input. Collect notifications through the existing
 signal API, and retain a worker-local flag until a bounded drain observes EMPTY.
 Preserve keyboard routing, loss, BREAK, ownership and shutdown. Implement and
@@ -226,6 +226,15 @@ validations. It performs at most one input/stop signal collection. A stale wake
 may cause one empty drain. Normal shutdown retires capture, lease and signals;
 invariant-failure tests enforce the existing bounded terminal fault/reset outcome
 and retain ownership where that protocol requires it.
+
+Q2 evidence: [notification worker and publication races](../development/console-idle-input-q2.json).
+Raw/optimized text and bitmap cases passed (179/184 checks per image), including
+coalesced batches, after-EMPTY and before-Wait arrivals, tombstone scans,
+continuation input, stale wakes and stop/restart. Physical focus, BREAK, loss,
+retirement and forced quota continuation passed. Thirteen exact-pixel scroll
+scenes passed; quiet scrolls make sixteen signal collections and no input
+Pending/Take/extent calls. Settled workers perform no input calls. Host checks
+passed (303 tests, four historical skips). All reserved bank-zero deltas are zero.
 
 ### Q3 Validate integration and record the gain
 

@@ -1,0 +1,59 @@
+; Fixture-only publication at worker/Take boundaries. No Task signal fields
+; are written: retained records precede the ordinary public Signal operation.
+MODULE INPUTWAKEPROBE
+USE EXEC
+USE INPUTNATIVE
+INCLUDE "input-storage.act.inc"
+PUBLIC BYTE arm,hits
+PUBLIC CARD tick
+PUBLIC LONGCARD route
+PUBLIC EXEC.Task POINTER worker
+
+PUBLIC PROC Emit(BYTE count BYTE tombstones BYTE cancel BYTE loss)
+  BYTE index,slot
+  CARD bit
+
+  LET capture=INPUTNATIVE.Capture POINTER(ADDRESS(IN_CAPTURE))
+  LET state=INPUTNATIVE.State POINTER(ADDRESS(IN_STATE))
+  EXEC.Forbid()
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      slot=BYTE(capture.head & 63)
+      tick==+1
+      capture.events(slot).key=63
+      capture.events(slot).kind=IF tombstones<>0 THEN 255 ELSE 0 FI
+      capture.events(slot).tick=tick
+      capture.events(slot).route=route
+      capture.head==+1
+    OD
+  FI
+
+  bit=CARD(1) LSH BYTE(route & 15)
+  IF cancel<>0 THEN
+    state.cancelCode(BYTE(route & 15))=1
+    capture.breakMask=capture.breakMask OR bit
+    capture.breakPending=1
+  FI
+
+  IF loss<>0 THEN
+    state.lossCode(BYTE(route & 15))=1
+    capture.lostMask=capture.lostMask OR bit
+    capture.lost=1
+  FI
+
+  EXEC.Signal(worker,$40000000)
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC Point(BYTE point)
+
+  IF arm=point THEN
+    arm=0
+    hits==+1
+    Emit(1,0,0,0)
+  FI
+
+RETURN
+
+ENDMODULE

@@ -366,10 +366,10 @@ PROC Arrival(CONSOLETYPES.Service POINTER service)
 RETURN
 
 ; Keep the worker awake while any admitted terminal still has useful work.
-BYTE FUNC Runnable(CONSOLETYPES.Service POINTER service)
+BYTE FUNC Runnable(CONSOLETYPES.Service POINTER service BYTE inputPending)
   BYTE index
 
-  IF CONSOLEINPUT.Pending()<>0 OR service.stop<>0
+  IF inputPending<>0 OR service.stop<>0
       OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0 THEN
     RETURN(1)
   FI

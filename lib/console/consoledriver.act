@@ -368,12 +368,17 @@ PROC FreeStorage(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
 
 RETURN
 
+; Acknowledge input/stop once per turn, preserving Wait's already-consumed bits.
+; Request and unrelated signals stay pending until their ordinary consumer.
+LONGCARD FUNC Collect(LONGCARD bits)
+
+RETURN(bits OR EXEC.SetSignal(0,STOP_MASK OR CONSOLECAPTURE.WAKE_MASK))
+
 ; One bounded turn per borrowed instance. No request or instance pointer remains
 ; borrowed across Yield/Wait, and replies publish ownership exactly once.
 PUBLIC PROC Worker()
   LONGCARD bits
-  CARD pumped
-  BYTE again,writing,registered,stopping,accepted
+  BYTE again,writing,registered,stopping,accepted,inputPending
   CONSOLETYPES.Instance POINTER instance
   CONSOLETYPES.Window POINTER entry
 
@@ -428,13 +433,13 @@ PUBLIC PROC Worker()
 
   bits=0
   stopping=0
+  inputPending=1
   WHILE service.stop=0 DO
-    IF ((self.tc_SigRecvd OR bits) & $20000000)<>0 THEN
-      bits=EXEC.SetSignal(0,$20000000)
+    bits=Collect(bits)
+    IF (bits & STOP_MASK)<>0 THEN
       stopping=1
     FI
 
-    bits=0
     IF stopping<>0 THEN
       EXEC.Forbid()
       accepted=RequestStop(service)
@@ -445,11 +450,8 @@ PUBLIC PROC Worker()
     FI
 
     CONSOLECONTROL.Process()
-    IF CONSOLEINPUT.Pending()<>0 THEN
-      EXEC.Forbid()
-      pumped=CONSOLEINPUT.Pump(defaultInstance)
-      EXEC.Permit()
-    FI
+    inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)
+    bits=0
 
     Arrival(service)
     entry=CONSOLEWINDOWS.Take()
@@ -477,7 +479,7 @@ PUBLIC PROC Worker()
     IF again=0 THEN
       IF writing<>0 THEN
         EXEC.Yield()
-      ELSEIF Runnable(service)=0 THEN
+      ELSEIF Runnable(service,inputPending)=0 THEN
         ; Never clear the request/input signals between this hint and Wait.
         bits=EXEC.Wait($e0000000)
       ELSE

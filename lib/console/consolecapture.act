@@ -5,6 +5,7 @@ USE INPUT
 USE CONSOLETYPES
 USE HEAPCORE
 INCLUDE "console-storage-action.inc"
+PUBLIC CONST WAKE_MASK=$40000000
 INPUT.Lease lease
 INPUT.Config config
 
@@ -16,7 +17,7 @@ PUBLIC BYTE FUNC Acquire()
 
   config.version=INPUT.VERSION
   config.source=INPUT.SOURCE_KEYBOARD
-  config.wakeMask=$40000000
+  config.wakeMask=WAKE_MASK
   config.filter0Value=$92
   config.filter0Mask=$bf
   config.filterCount=1
