@@ -94,6 +94,8 @@ def markers(program,foreign,output):
             ret=re.search(r'\\ ([0-9a-f]{6}) 6b\s+(?:`[^`]+`: *)?rtl',line)
             if current=='idle' and ret:result['idle']['returns'].append(foreign['symbols']['idle']+int(ret[1],16))
     require(result.get('idle',{}).get('returns') and 'launch' in result,'Missing hardware fence markers')
+    from blitter_completion_trace import markers as completion_markers
+    result.update(completion_markers(program))
     return result
 
 

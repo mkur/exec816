@@ -71,7 +71,10 @@ def run(out,mode,replay=False,observe=False,performance=False):
                     glyphs=sum(sample['calls'].get(name,0) for name in ('blit_glyph','_text_record'))
                     require(glyphs<=4,'Eligible scroll redrew unchanged glyphs')
                 elif sample['stage']==8:require(sample['calls'].get('GemDrawingCopy',0)==0,'Height-one copy is not empty')
-        if performance and observe:result['performance']=summarize(out/'emulator.log',timing,result['operations'])
+        if performance and observe:
+            result['performance']=summarize(out/'emulator.log',timing,result['operations'])
+            from blitter_completion_trace import analyze
+            result['completion_timing']=analyze(out/'emulator.log',timing)
         result['status']='pass'
     except Exception as error:result.update(status='fail',error=str(error));raise
     finally:(out/('results-replay.json' if replay and not observe else 'results.json')).write_text(json.dumps(result,indent=2)+'\n')

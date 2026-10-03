@@ -47,6 +47,9 @@ def markers(program, foreign, output):
     points['selected'] = address+4
     for name in ('native_irq', 'native_nmi', 'interrupt_schedule'):
         points[name] = program['labels'][name]
+    for name in ('blitter_irq_complete', 'blitter_irq_posted', 'blitter_expired'):
+        if name in program['labels']:
+            points[name] = program['labels'][name]
     points['worker_retire'] = next(r['address'] for r in program['image']['routines']
                                   if r['name'].startswith('M_CONSOLEDRIVER_RETIREWORKER_'))
     return dict(spans=spans, points=points,
