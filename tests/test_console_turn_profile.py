@@ -47,6 +47,19 @@ class ConsoleTurnProfile(unittest.TestCase):
             analyze_events([event(0, 20), event(1, 10), event(2, 10),
                             event(3, 30)], DEFINITION)
 
+    def test_global_interrupt_time_includes_peer_irqs_and_clips_to_turns(self):
+        events = [event(0, 20), event(1, 10), event(2, 70),
+                  event(3, 20, dp=0x1200), event(4, 30, dp=0x1200),
+                  event(8, 50, dp=0, stack=0x4500-9), event(9, 20),
+                  event(10, 80), event(11, 10), event(12, 30),
+                  event(14, 50, stack=0x4500-9), event(15, 60)]
+        events[7][1][5:7] = ['fffe', 'ffff']
+        result = analyze_events(events, DEFINITION)
+        self.assertAlmostEqual(result['global_interrupt_ms'], 4/BASE_HZ*1000)
+        self.assertEqual(result['turns'][0]['interrupt_ms'], 0)
+        self.assertEqual(result['routine_spans'][0]['return_a'], 65534)
+        self.assertEqual(result['routine_spans'][0]['return_x'], 65535)
+
     def test_breakpoint_resume_does_not_create_an_extra_interrupt(self):
         events = [event(0, 20), event(1, 10), event(2, 30), event(3, 30),
                   event(4, 50, stack=0x4500-9), event(5, 10), event(6, 60)]

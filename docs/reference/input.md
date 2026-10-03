@@ -219,3 +219,7 @@ bytes. All are inside the existing 64 KiB upper Task arena. No additional input
 Task or reserved bank-zero memory is
 introduced: fixed, each public Task and private-idle deltas are zero, counting
 guards, alignment and unused reserved capacity.
+
+The [registration/lifetime implementation record](../history/input-registration-lifetime.md)
+describes development checks and measured costs of the current ordinary-call
+contract. It does not establish a general latency guarantee.

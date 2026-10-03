@@ -4,9 +4,11 @@
 [Current input contract](../reference/input.md) ·
 [Console contract](../reference/console.md) · [Open roadmap](../roadmap.md)
 
-Status: proposed, 3 October 2026. The [refactor plan](input-registration-lifetime-implementation-plan.md)
-defines executable slices; the current reference contracts still describe the
-implemented checks.
+Status: implemented through IR5, 4 October 2026. This note preserves the design
+and its original baseline. The [refactor plan](input-registration-lifetime-implementation-plan.md)
+and [implementation record](../history/input-registration-lifetime.md) describe
+execution and remaining performance limits; the input reference defines the
+current caller obligations.
 
 Adopt classic Amiga's registration and lifetime discipline for native input:
 establish the consumer, storage and producer relationship at acquisition, trust
@@ -22,8 +24,8 @@ drawing or filesystem behavior.
 
 ## Reason for the change
 
-The console's quiet-input optimization already avoids entering INPUT when no
-work is indicated. Active input still pays for full validation on each
+Before this refactor, the console's quiet-input optimization already avoided
+entering INPUT when no work was indicated. Active input still paid full validation on each
 [INPUT.Take](../../lib/input/input.act), including the final call returning
 EMPTY. Each call validates both the lease and event-buffer extent, audits the
 lease and invokes `FindTask(NULL)` to check the consumer.
@@ -46,7 +48,7 @@ excluded. Both resident buffers match writable-range record 22, so four scans
 visit 88 range records per key. This is a shared image-range table, not memory
 protection or per-Task allocation ownership.
 
-The [C bridge](../../c/calypsi/input-bridge.inc) adds another full `INPUT.Extent`
+The pre-refactor [C bridge](../../c/calypsi/input-bridge.inc) added another full `INPUT.Extent`
 check before calling the native operation. That duplication is a source finding;
 the timing table measures the Action! console path and does not quantify C cost.
 

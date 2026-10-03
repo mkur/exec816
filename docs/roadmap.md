@@ -84,15 +84,17 @@ CPU per call and about 30.5 ms isolated scrolling. Loaded raw typing improves,
 but cooked typing regresses in two sampled phases. The 4/20/40 ms targets remain
 open; scheduling delay and the remaining per-turn work still need attention.
 
-The proposed [input registration and lifetime design](plans/input-registration-lifetime-design.md)
-addresses measured active-key validation cost. Keep IRQ capture and bounded
-queues, establish authority at acquisition, trust valid storage and the owning
-consumer during use, and retire producers before releasing storage. Full
-per-event memory and lease audits move to diagnostic builds; queue, route,
-loss/cancellation and teardown coordination remain. Action! and C consumers
-must migrate together. The [refactor plan](plans/input-registration-lifetime-implementation-plan.md)
-defines five executable slices, reuses saved profiling evidence and adds no
-Task or bank-zero reservation. Sampling frequency, scheduling and other
+The [input registration and lifetime refactor](plans/input-registration-lifetime-implementation-plan.md)
+is implemented through IR5 for Action! and C. Acquire/Release retain full checks;
+ordinary reads/routes trust the live registration, with optional diagnostic
+audits. Queue, route, loss/cancellation and teardown coordination remain.
+[Measurements](history/input-registration-lifetime.md) reduce phase-zero letter
+service from 8.74–8.89 ms to about 0.95 ms. A Return outlier still costs 2.53 ms,
+including kernel scheduling work; loaded visible input remains 74–97 ms and
+maximum worker CPU 23.5 ms. The 2/4/20/40 ms goals remain open. Investigate
+scheduling delay and bounded work between input checks next; the 64-event pump
+budget is unchanged and can be measured separately from queue capacity. This
+refactor adds no Task or bank-zero reservation. Sampling frequency and other
 subsystem contracts remain separate work.
 
 The other possible milestones have no delivery order:

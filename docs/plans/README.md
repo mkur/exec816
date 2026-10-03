@@ -61,12 +61,11 @@ assuming work is pending. Current behavior belongs in the
 ## Console and interaction
 
 - [Input registration and lifetime design](input-registration-lifetime-design.md):
-  proposed; retain IRQ queues and signals while moving stable memory/owner
-  audits to lifecycle boundaries and diagnostic builds. Defines caller
-  obligations, safe release, C bridge migration and active-input measurements.
-  The [refactor plan](input-registration-lifetime-implementation-plan.md) schedules
-  IR1–IR5: resolved helpers, cheaper reads, route/lifecycle migration, consumer
-  race coverage and measurement against the saved baseline, with no new Task.
+  the [refactor plan](input-registration-lifetime-implementation-plan.md) is
+  implemented through IR5. Ordinary reads/routes trust registration lifetime;
+  lifecycle checks, diagnostics, IRQ queues and signals remain.
+  [Measurements](../history/input-registration-lifetime.md) show about 0.95 ms
+  letter service, with the 2 ms Return and broader console goals still open.
 - [Circular character buffer](console-circular-buffer-implementation-plan.md):
   CB1–CB4 complete; retained row copies are replaced by a circular origin with
   logical damage/cursor coordinates. [Measurements](../history/console-circular-buffer.md)

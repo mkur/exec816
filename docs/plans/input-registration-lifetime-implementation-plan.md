@@ -3,7 +3,10 @@
 [Implementation plans](README.md) · [Design note](input-registration-lifetime-design.md) ·
 [Current input contract](../reference/input.md) · [Open roadmap](../roadmap.md)
 
-Status: IR1–IR4 complete, 4 October 2026; IR5 pending.
+Status: IR1–IR5 implemented and measured, 4 October 2026. Performance acceptance
+remains open: one Return drain takes 2.53 ms against the 2 ms target, and the
+4/20/40 ms console goals are not met. See the
+[implementation and measurements](../history/input-registration-lifetime.md).
 [IR1 development evidence](../development/input-registration-ir1.json) records
 raw/optimized C ABI, physical keyboard capture and pointer-failure execution,
 single-resolution emitted-code checks and zero reserved bank-zero change.
@@ -17,6 +20,11 @@ diagnostic route checks and unchanged reservations.
 focus/signals, bitmap wake races, GEM queue and physical mouse input, partial
 admission rollback, close during SIO/rendering, and lease-address reuse. Two
 stale diagnostic/oracle hooks were repaired; production INPUT is unchanged.
+[IR5 evidence](../development/input-registration-ir5.json) records the matched
+saved-baseline comparison, three phases of one final image, separate C/native
+operation costs and an unobserved replay. Phase-zero letter service falls to
+about 0.95 ms; all ordinary production audit paths are absent. Reserved bank-zero
+change is zero in every slice.
 
 Implement the design note's registration and lifetime contract for keyboard and
 pointer input. Acquire establishes the registration, ordinary calls trust its

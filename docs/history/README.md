@@ -19,6 +19,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Input registration and lifetime](input-registration-lifetime.md): checked
+  admission/retirement, cheaper ordinary reads/routes, consumer race coverage
+  and measured active-key CPU reductions; console latency targets remain open.
 - [Circular console buffer](console-circular-buffer.md): recycled retained rows,
   wrap/lifetime checks and reduced scroll preparation cost; loaded latency remains open.
 

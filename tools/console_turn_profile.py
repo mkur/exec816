@@ -144,7 +144,8 @@ def analyze_events(events, definition, window=None):
                 require(name not in active, 'Nested worker span '+name)
                 active[name] = tick
             elif name in active:
-                spans.append(dict(kind=name, start=active.pop(name), end=tick))
+                spans.append(dict(kind=name, start=active.pop(name), end=tick,
+                                  return_a=int(e[5], 16), return_x=int(e[6], 16)))
     require(not active and not interrupts, 'Incomplete worker/interrupt trace')
     timeline = Timeline(segments, worker)
     rows = [dict(start=a, end=b, **timeline.measure(a, b)) for a, b in zip(turns, turns[1:])]
@@ -168,7 +169,9 @@ def analyze_events(events, definition, window=None):
         row['routines'] = [s for s in spans if row['start'] <= s['start'] <= s['end'] <= row['end']]
     return dict(scope=__doc__, worker_dp=worker, complete_turns=len(rows), window=window,
                 repeated_breakpoint_entries=repeated_entries,
-                turns=rows, routines=totals, slowest_turns=slow,
+                turns=rows, routines=totals, routine_spans=spans, slowest_turns=slow,
+                global_interrupt_ms=sum(max(0, min(b, end)-max(a, start))
+                    for a, b, _, irq in segments if irq)/BASE_HZ*1000,
                 max_charged_cpu_ms=max(r['charged_cpu_ms'] for r in rows),
                 max_elapsed_ms=max(r['elapsed_ms'] for r in rows),
                 max_off_cpu_ms=max(r['off_cpu_ms'] for r in rows))
