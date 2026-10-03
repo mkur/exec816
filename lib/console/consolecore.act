@@ -189,7 +189,7 @@ PUBLIC BYTE FUNC Init(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
 RETURN(1)
 
 ; Complete one logical edit while the worker retains its request and instance.
-; The bounded native copy stays preemptible, including when an abort arrives.
+; Recycle one physical row; the bounded edit stays preemptible.
 PUBLIC PROC EditQuantum(CONSOLETYPES.Instance POINTER instance)
 
   IF instance.operation=CONSOLETYPES.OP_IDLE THEN
@@ -198,12 +198,16 @@ PUBLIC PROC EditQuantum(CONSOLETYPES.Instance POINTER instance)
 
   LET cells=instance.cells
   LET count=instance.count
-  LET copied=count-instance.width
   IF instance.operation=CONSOLETYPES.OP_SCROLL THEN
-    A816MEMORY.Move(cells,cells+SIZE(instance.width),SIZE(copied))
-    A816MEMORY.Fill(cells+SIZE(copied),ASCII.SPACE,SIZE(instance.width))
+    A816MEMORY.Fill(cells+SIZE(instance.cellOrigin),ASCII.SPACE,
+        SIZE(instance.width))
+    instance.cellOrigin==+instance.width
+    IF instance.cellOrigin>=count THEN
+      instance.cellOrigin=0
+    FI
   ELSE
     A816MEMORY.Fill(cells,ASCII.SPACE,SIZE(count))
+    instance.cellOrigin=0
   FI
 
   Dirty(instance,0,count)

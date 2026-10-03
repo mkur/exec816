@@ -1,11 +1,13 @@
 MODULE NATIVECONSOLECORE
 USE EXEC
 USE HEAPCORE
+USE A816MEMORY
 USE CONSOLECORE
 USE INPUTNATIVE
 USE CONSOLETYPES
 INCLUDE "console-storage-action.inc"
 CARD checks,quanta,used,firstOrigin,secondOrigin,fullOrigin,wideOrigin
+CARD ringCases,ringScrolls
 CONSOLETYPES.Instance POINTER first,second,full
 BYTE POINTER firstCells,secondCells,fullCells,output
 BYTE ARRAY input(130)
@@ -444,6 +446,82 @@ PROC MappedAccess(BYTE unused)
 
 RETURN
 
+; Compare a ring against an independent linear buffer through three complete
+; revolutions. Every edit must leave all non-recycled physical bytes untouched.
+PROC RingCase(CARD width,height)
+  CONSOLETYPES.Instance ring
+  CARD count,index,turn,origin,physical,expectedOrigin
+  BYTE okay
+
+  count=width*height
+  LET cells=Guarded(count)
+  LET linear=Guarded(count)
+  LET before=Guarded(count)
+  Require(CONSOLECORE.Init(@ring,cells,width,height,LONGCARD(count))=1)
+  Finish(@ring)
+  FOR index=0 TO count-1 DO
+    cells(index)=BYTE(33+(index MOD 90))
+    linear(index)=cells(index)
+  OD
+
+  FOR turn=1 TO height*3+1 DO
+    ring.row=height-1
+    ring.lineStart=count-width
+    ring.column=0
+    input(0)=BYTE(33+(turn MOD 90))
+    Require(CONSOLECORE.Feed(@ring,input,1)=1)
+    linear(count-width)=input(0)
+    A816MEMORY.Move(before,cells,SIZE(count))
+    origin=ring.cellOrigin
+    A816MEMORY.Move(linear,linear+SIZE(width),SIZE(count-width))
+    A816MEMORY.Fill(linear+SIZE(count-width),32,SIZE(width))
+    ring.operation=CONSOLETYPES.OP_SCROLL
+    Finish(@ring)
+    expectedOrigin=(turn MOD height)*width
+    Require(ring.cellOrigin=expectedOrigin AND ring.cells=cells)
+    okay=1
+    physical=expectedOrigin
+    FOR index=0 TO count-1 DO
+      IF cells(physical)<>linear(index) THEN
+        okay=0
+      FI
+
+      physical==+1
+      IF physical=count THEN
+        physical=0
+      FI
+
+      IF index>=origin AND index<origin+width THEN
+        IF cells(index)<>32 THEN
+          okay=0
+        FI
+      ELSEIF cells(index)<>before(index) THEN
+        okay=0
+      FI
+    OD
+
+    Require(okay=1 AND ring.dirtyRows=height)
+    ringScrolls==+1
+  OD
+
+  ; Parsing FF retains the old mapping until cursor removal and edit commit.
+  origin=ring.cellOrigin
+  input(0)=12
+  Require(CONSOLECORE.Feed(@ring,input,1)=1)
+  Require(ring.cellOrigin=origin AND ring.operation=CONSOLETYPES.OP_CLEAR)
+  Finish(@ring)
+  Require(ring.cellOrigin=0)
+  FOR index=0 TO count-1 DO
+    Require(cells(index)=32)
+  OD
+
+  FreeGuarded(before,count)
+  FreeGuarded(linear,count)
+  FreeGuarded(cells,count)
+  ringCases==+1
+
+RETURN
+
 ; Exercise retained terminal layout, bounds, controls and scrolling.
 PROC Main()
 
@@ -462,6 +540,12 @@ PROC Main()
   EdgeScroll()
   BitmapModel(0)
   MappedAccess(0)
+  RingCase(1,1)
+  RingCase(80,1)
+  RingCase(1,3)
+  RingCase(5,3)
+  RingCase(40,24)
+  RingCase(80,30)
   Cleanup()
 
 RETURN

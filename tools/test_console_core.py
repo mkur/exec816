@@ -50,6 +50,8 @@ def run(t,out,optimize,bank,paced=False):
         expected[16+2319]=90
         require(bitmap==expected,'80x30 bank-crossing scroll/guard oracle failed')
         return dict(status='pass',build=p['build'],machine=machine,pin=pin,runtime=runtime,
+            ring_cases=data(b,p['image'],'ringCases',True)[0],
+            ring_scrolls=data(b,p['image'],'ringScrolls',True)[0],
             checks=data(b,p['image'],'checks',True)[0],quanta=data(b,p['image'],'quanta',True)[0],
             snapshots_sha256=__import__('hashlib').sha256(actual).hexdigest(),first=actual[16:40].decode(),second=actual[48:58].decode())
 

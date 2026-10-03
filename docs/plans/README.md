@@ -61,7 +61,7 @@ assuming work is pending. Current behavior belongs in the
 ## Console and interaction
 
 - [Circular character buffer](console-circular-buffer-implementation-plan.md):
-  CB1 complete; remaining slices reuse the BI5 baseline, replace retained row copies
+  CB1–CB2 complete; remaining slices reuse the BI5 baseline, replace retained row copies
   with a circular origin and preserve logical damage/cursor coordinates.
 - [Blitter completion IRQs](blitter-irq-implementation-plan.md): BI0–BI5 complete;
   retained completion and timeout signals let the worker sleep with one list in

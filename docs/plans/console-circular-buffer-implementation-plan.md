@@ -4,8 +4,9 @@
 [Instances and windows](../reference/console-windows.md) ·
 [Blitter IRQ measurements](../history/blitter-completion-irqs.md)
 
-Status: CB1 complete, 3 October 2026; CB2–CB4 pending.
-[CB1 development evidence](../development/console-circular-buffer-cb1.json). Replace the retained console's character-row
+Status: CB1–CB2 complete, 3 October 2026; CB3–CB4 pending.
+[CB1 evidence](../development/console-circular-buffer-cb1.json) ·
+[CB2 evidence](../development/console-circular-buffer-cb2.json). Replace the retained console's character-row
 copy with a circular row origin. Keep one existing allocation per instance and
 clear only the recycled bottom row when scrolling. Implement in executable
 slices, committing each slice after its focused development checks pass.
