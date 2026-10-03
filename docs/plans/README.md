@@ -61,8 +61,9 @@ assuming work is pending. Current behavior belongs in the
 ## Console and interaction
 
 - [Circular character buffer](console-circular-buffer-implementation-plan.md):
-  CB1–CB3 complete; final measurements reuse the BI5 baseline, replace retained row copies
-  with a circular origin and preserve logical damage/cursor coordinates.
+  CB1–CB4 complete; retained row copies are replaced by a circular origin with
+  logical damage/cursor coordinates. [Measurements](../history/console-circular-buffer.md)
+  show 52–56% less retained-edit CPU per call; loaded latency remains open.
 - [Blitter completion IRQs](blitter-irq-implementation-plan.md): BI0–BI5 complete;
   retained completion and timeout signals let the worker sleep with one list in
   flight. [Measurements](../history/blitter-completion-irqs.md) show reduced

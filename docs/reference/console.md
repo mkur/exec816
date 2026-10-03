@@ -90,11 +90,19 @@ Output control bytes have these effects:
 Printable output wraps at the instance bounds. `$9B` is not a newline; an ATASCII
 viewer must translate it. The cursor overlay does not change retained cells.
 
-Scrolling uses native row copy/fill helpers for retained cells, with a physical
-screen fast path when presentation state permits. General redraw handles dirty,
-hidden or clipped state. The [console refactor record](../history/console-refactor-implementation.md)
-contains the changes and measured development results; an old benchmark is not
-a promise of current timing.
+Retained characters use a circular row origin within their original allocation.
+Scrolling clears the recycled physical row and advances the origin; it does not
+copy the other character rows. Cursor positions, damage and presentation indexes
+remain logical. Readers map a row or printable run once, preserving far-address
+carry across CPU banks. Full redraw visits the current logical row order.
+
+FF resets the origin when the clear edit commits, after cursor removal; parsing
+FF alone does not change it. CMD_CLEAR only clears captured input. Every scroll
+still dirties all logical rows for hidden, clipped or invalidated views. The
+physical text-screen move and VBXE rectangle copy/fill remain necessary. Pending
+DMA gates later model edits, and completion never rotates the origin again.
+This is a current-screen buffer, with no scrollback. See the
+[circular-buffer record](../history/console-circular-buffer.md) for measurements.
 
 Keyboard capture uses the shared [input lease and route API](input.md). The
 console maps captured generic route tags to retained instance/foreground state.
@@ -123,7 +131,11 @@ synchronous and retains the existing worker and ownership boundaries. See the
 CPU and loaded input costs.
 The subsequent [blitter IRQ measurements](../history/blitter-completion-irqs.md)
 record less completion-checking CPU work, about 32.5 ms isolated scrolling and
-98–139 ms sampled loaded visible input. The broader latency targets remain open.
+98–139 ms sampled loaded visible input on that image. Subsequent
+[circular-buffer measurements](../history/console-circular-buffer.md) reduce
+retained-edit CPU by 52–56% per call and isolated scrolling to about 30.5 ms.
+Loaded visible input remains 101–148 ms with mixed changes across phases; the
+broader latency targets remain open.
 
 ## Lifetime and limits
 

@@ -77,8 +77,12 @@ cost, but isolated scrolling remains about 32.5 ms and loaded visible input
 The next responsiveness work should examine that scheduling delay and remaining
 worker work between input checks. The
 [circular character buffer plan](plans/console-circular-buffer-implementation-plan.md)
-defines a separate preparation optimization: replace retained row copies with
-an origin update and one-row clear, preserving physical blits and logical damage.
+is implemented through CB4: retained rows now use an origin update and one-row
+clear, preserving physical blits and logical damage. The
+[measurements](history/console-circular-buffer.md) show 52–56% less retained-edit
+CPU per call and about 30.5 ms isolated scrolling. Loaded raw typing improves,
+but cooked typing regresses in two sampled phases. The 4/20/40 ms targets remain
+open; scheduling delay and the remaining per-turn work still need attention.
 
 The other possible milestones have no delivery order:
 

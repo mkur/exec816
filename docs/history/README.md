@@ -19,6 +19,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Circular console buffer](console-circular-buffer.md): recycled retained rows,
+  wrap/lifetime checks and reduced scroll preparation cost; loaded latency remains open.
+
 - [Blitter completion IRQs](blitter-completion-irqs.md): native/emulation delivery,
   independent timeout wake and a sleeping console worker; CPU gains and remaining latency limits.
 - [Console responsiveness measurements](console-responsiveness.md)

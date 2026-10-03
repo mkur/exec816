@@ -4,11 +4,15 @@
 [Instances and windows](../reference/console-windows.md) ·
 [Blitter IRQ measurements](../history/blitter-completion-irqs.md)
 
-Status: CB1–CB3 complete, 3 October 2026; CB4 measurements complete,
-final documentation pending.
-[CB1 evidence](../development/console-circular-buffer-cb1.json) ·
-[CB2 evidence](../development/console-circular-buffer-cb2.json) ·
-[CB3 evidence](../development/console-circular-buffer-cb3.json). Replace the retained console's character-row
+Status: CB1–CB4 complete, 3 October 2026. See the
+[implementation and measurements](../history/console-circular-buffer.md), with
+[CB1](../development/console-circular-buffer-cb1.json),
+[CB2](../development/console-circular-buffer-cb2.json),
+[CB3](../development/console-circular-buffer-cb3.json) and
+[CB4](../development/console-circular-buffer-cb4.json) development evidence.
+The slices below preserve the implemented plan.
+
+Replace the retained console's character-row
 copy with a circular row origin. Keep one existing allocation per instance and
 clear only the recycled bottom row when scrolling. Implement in executable
 slices, committing each slice after its focused development checks pass.
@@ -24,13 +28,13 @@ of the character copy alone.
 
 ## Current path and scope
 
-[`CONSOLECORE.EditQuantum`](../../lib/console/consolecore.act) currently moves
+[`CONSOLECORE.EditQuantum`](../../lib/console/consolecore.act) originally moved
 `count-width` bytes toward the start of `instance.cells`, fills `width` spaces
 at the end, marks the model dirty and completes OP_SCROLL. An 80×30 scroll moves
 2,320 bytes and clears 80; a 40×24 scroll moves 920 and clears 40. OP_CLEAR fills
 the whole allocation. Both operations remain preemptible.
 
-The producers and consumers assume that logical cell zero is allocation byte
+The original producers and consumers assumed that logical cell zero was allocation byte
 zero. These assumptions occur in printable Feed runs, presentation row spans,
 text cursor reads, bitmap caret restoration and several direct fixtures/host
 snapshots. They must migrate together. Allocation, extent checks and FreeMem
