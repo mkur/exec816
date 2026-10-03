@@ -14,7 +14,7 @@ from bitmap_console_oracle import Terminal
 from test_gem_interactive import pixels
 
 
-def run(out,mode,replay=False):
+def run(out,mode,replay=False,cases=None):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     (out/'bitmapcontrolprobe.act').write_bytes((ROOT/'tests/programs/bitmapcontrolprobe.act').read_bytes())
     original=generate_tasks.policy_modules
@@ -28,16 +28,15 @@ def run(out,mode,replay=False):
         s=s.replace(needle,needle+'\n        IF BITMAPCONTROLPROBE.hold<>0 AND view.scrollState<>0 THEN\n          again=0\n        FI')
         needle='  FinishRead(instance,request)'
         require(s.count(needle)==1,'Read completion boundary changed')
-        s=s.replace(needle,'  IF CONSOLEBITMAP.Pending()<>0 THEN\n    BITMAPCONTROLPROBE.ReadPending()\n  FI\n\n'+needle)
+        s=s.replace(needle,needle+'\n  IF CONSOLEBITMAP.Pending()<>0 THEN\n    BITMAPCONTROLPROBE.ReadPending()\n  FI')
         path.write_text(s)
         source=ROOT/'lib/console/console-bitmap-display.inc'
-        text=source.read_text();needle='  CONSOLEBITMAP.Poll()'
+        text=source.read_text().replace('PUBLIC PROC Poll()\n','PUBLIC PROC Poll()\n  LET pendingControl=CONSOLEWINDOWS.Registry()\n',1);needle='    CONSOLEBITMAP.Poll()'
         require(text.count(needle)==1,'Async completion boundary changed')
         text=text.replace(needle,
-            '  LET pendingControl=CONSOLEWINDOWS.Registry()\n'
-            '  IF BITMAPCONTROLPROBE.hold=2 AND\n'
-            '      pendingControl.control.state<>CONSOLETYPES.CTL_PENDING THEN\n'
-            '    RETURN\n  FI\n\n'+needle)
+            '    IF BITMAPCONTROLPROBE.hold=2 AND\n'
+            '        pendingControl.control.state<>CONSOLETYPES.CTL_PENDING THEN\n'
+            '      RETURN\n    FI\n\n'+needle)
         target=directory/'bitmap-control.inc';target.write_text(text)
         path=directory/'consoledisplay.act'
         path.write_text(path.read_text().replace('USE A816MEMORY\n','USE A816MEMORY\nUSE BITMAPCONTROLPROBE\n',1).replace(str(source),str(target)))
@@ -51,7 +50,7 @@ def run(out,mode,replay=False):
     model.feed(b'A');raster=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'));model.paint(raster,0,0,True)
     result=dict(status='running',tier='development',mode=mode,build=p['build'],cases=[])
     try:
-        for variant in range(12):
+        for variant in cases or range(13):
             folder=out/f'case-{variant}';folder.mkdir(exist_ok=True)
             with emulator(BRIDGE,ROM,folder,pin=PIN) as b:
                 machine=verify_machine(b,ROM,PIN);saved={};observed={}
@@ -60,7 +59,7 @@ def run(out,mode,replay=False):
                     marker=p['labels']['native_nmi'];condition=f'dw(${at("CHECKPOINT"):x})=1'
                     b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=15000,timeout=90);b.bp_clear_all()
                     condition=f'@frame>={b.eval_expr("@frame")+2}';b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=30,timeout=5);b.bp_clear_all()
-                    if variant<10:observed['pixels_sha256']=pixels(b,folder,raster.packed())
+                    if variant not in (10,11):observed['pixels_sha256']=pixels(b,folder,raster.packed())
                     b.memload(at('GATE'),b'\1\0')
                 runtime,_=execute(b,p,before_run=before,frame_limit=8000,timeout=90)
                 ownership(b,p,p['output'])
@@ -69,11 +68,12 @@ def run(out,mode,replay=False):
                 observed.update({name:b.memdump(addr,1)[0] for name,addr in probes.items()})
                 if variant>=5:require(observed['pendingReads']>0,'No input read while a scroll was pending')
                 result['cases'].append(dict(variant=variant,machine=machine,runtime=runtime,checks=data(b,p['image'],'checks',True),**observed))
-        require(any(c['busyReads'] for c in result['cases']),'No read completed during real hardware BUSY')
+        if any(c['variant']>=5 for c in result['cases']):
+            require(any(c['busyReads'] for c in result['cases']),'No read completed during real hardware BUSY')
         result['status']='pass'
     except Exception as e:result.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('Bitmap continuation controls passed',mode,flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');a=p.parse_args();run(a.output,a.mode,a.replay)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');p.add_argument('--case',type=int,action='append',choices=range(13));a=p.parse_args();run(a.output,a.mode,a.replay,a.case)

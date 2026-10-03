@@ -26,6 +26,8 @@ def whole_rectangle(enabled):
     if not enabled:
         yield
         return
+    require('rows=limit-view.scrollRow' in (ROOT/'lib/console/console-bitmap-display.inc').read_text(),
+        'Historical synchronous experiment: reproduce from bb09a72 or replay its recorded image; current scrolling is asynchronous.')
     original_emit=build_bitmap_console.emit
     original_policy=generate_tasks.policy_modules
     original_drawing=build_bitmap_console.drawing
@@ -87,7 +89,7 @@ def whole_rectangle(enabled):
         yield overrides
 
 
-def loaded_run(out,mode,replay,reuse=False):
+def loaded_run(out,mode,replay,reuse=False,phase=None):
     """Reuse the eight-Task workload with an 80x24 producer and two 40x3 tiles.
 
     Physical keys arrive during sustained full-width output and real disk I/O.
@@ -121,7 +123,7 @@ def loaded_run(out,mode,replay,reuse=False):
         ('top==12','left==40'),
         ('    def routine(prefix):',
          "    foreign=json.loads((p['output'].parent/'c-image.json').read_text())['symbols']\n"
-         "    p['labels']['rectangle_copy']=foreign['GemDrawingCopy']\n"
+         "    p['labels']['rectangle_copy']=foreign.get('GemDrawingScrollStart',foreign.get('GemDrawingCopy'))\n"
          '    def routine(prefix):'),
         ("    marks['sector_end']=sector_end_marker(p)",
          "    marks['rectangle_copy']=p['labels']['rectangle_copy']\n"
@@ -131,6 +133,9 @@ def loaded_run(out,mode,replay,reuse=False):
          "        # A benchmark records failed timing gates as well as successful measurements.\n"
          "        saved['benchmark_sio_verdict']=measured['verdict']")):
         harness=replace_once(harness,old,new)
+    if phase is not None:
+        from measure_async_scroll import instrument_loaded
+        harness=instrument_loaded(harness,phase)
     generated=out/'wide-fairness.py'
     generated.write_text(harness)
     namespace={'__name__':'rectangle_fairness','__file__':str(generated)}

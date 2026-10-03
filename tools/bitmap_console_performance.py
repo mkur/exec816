@@ -69,8 +69,8 @@ def markers(program,foreign,output):
         result['input_collect_turn']=dict(entry=calls['collect'],returns=[calls.get('poll',calls['control'])])
         result['input_service_turn']=dict(entry=calls['control']+4,returns=[calls['arrival']])
     result['call']=dict(entry=program['labels']['console_bitmap_call'],returns=[program['labels']['console_bitmap_done']])
-    r=next(r for r in image['routines'] if r['name'].startswith('M_BITMAPSCROLL_REPAINTBEGIN_'))
-    result['repaint']=dict(entry=r['address'],returns=[])
+    repaint=[r for r in image['routines'] if r['name'].startswith('M_BITMAPSCROLL_REPAINTBEGIN_')]
+    if repaint:result['repaint']=dict(entry=repaint[0]['address'],returns=[])
     # The ordinary call has one return irrespective of C tail-call epilogues.
     # Only idle has a standalone return; other optimized C exits may be shared.
     if 'complete_scroll' in foreign['symbols']:

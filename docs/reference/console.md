@@ -61,7 +61,9 @@ hardware drawing, including caret and presentation controls, wait for completion
 The logical scroll commits once, and cancellation preserves accepted bytes.
 The upper-RAM association holds only unit and view/model generations, never a
 borrowed instance pointer across a turn. Completion borrows only a matching live
-entry; presenting or retired entries cannot adopt it. Invalidated views redraw
+entry. A presenting entry defers adoption until publication; a retired entry
+cannot adopt it. The durable completion flag prevents an unrelated focus change
+from forcing an unchanged output tile to redraw. Invalidated views redraw
 from their retained cells. Hide, destruction and Stop settle DMA before releasing
 its storage or display ownership. Unquiesced recovery retains both.
 

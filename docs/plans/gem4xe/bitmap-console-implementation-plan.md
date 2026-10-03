@@ -17,10 +17,13 @@ shows input checking reduced from 52 ms to 9.7–10.0 ms and complete scrolls fr
 The 20 ms scroll target remains unmet. The next
 [drawing validation plan](../drawing-validation-implementation-plan.md) records
 the implemented removal of repeated owner checks: 49 → 16 per scroll, with
-isolated scrolling around 97 ms at unchanged chunk sizes. D4–D6 then add one
+isolated scrolling around 97 ms at unchanged chunk sizes. D4–D6 implement one
 asynchronous copy/fill submission, one drawing owner
 and one list in flight, allowing input service while the blitter runs. Its
 combined-operation work limit and measured input latency have separate gates.
+The [measurement record](../../history/drawing-validation-and-async-scroll.md)
+reports about 31 ms isolated scrolling and 177–216 ms sampled visible input
+under load; responsiveness acceptance remains open.
 
 ## Fixed decisions
 

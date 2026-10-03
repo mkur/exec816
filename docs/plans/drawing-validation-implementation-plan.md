@@ -3,7 +3,8 @@
 [Implementation plans](README.md) · [Bitmap console plan](gem4xe/bitmap-console-implementation-plan.md) ·
 [Display ownership](../reference/display.md) · [Platform protocol](../reference/platform.md)
 
-Status: implementation started, 3 October 2026. This is performance step 2 after
+Status: D0–D6 implementation and development experiments recorded, 3 October 2026.
+Responsiveness acceptance remains open. This is performance step 2 after
 [cheap idle input checking](console-idle-input-implementation-plan.md).
 Validate display ownership once at each public drawing entry, then reuse that
 validation through its synchronous internal work. Next, submit a complete scroll
@@ -88,6 +89,22 @@ measure responsiveness separately from scroll throughput.
   bank reservation. Reserved bank-zero delta remains **0 bytes** for fixed,
   root/kernel, every public Task and idle, including guards and unused capacity.
   Performance acceptance is recorded separately in D6.
+
+- D6: [development evidence](../development/drawing-validation-d6.json) and the
+  [measurement record](../history/drawing-validation-and-async-scroll.md) compare
+  one-launch scrolling with D0/D3 and the synchronous experiment. Isolated scrolls
+  take 31.21 ms; repeated scrolls take 32.69–38.19 ms. The shell/prime tile geometries
+  pass exact pixels and replay. Raw/optimized thirteen-case lifetime tests pass.
+  A focus-transaction regression now retains completed identity until publication,
+  costing one additional upper-RAM byte and 159 native code bytes in both modes.
+  Loaded SDFS/ST/keyboard/BREAK runs at three injection phases pass existing
+  coexistence gates and functional replays. Sampled visible typing takes
+  177–216 ms, so the 40 ms target fails. A fixture-only 64-row candidate improves
+  phase-zero typing to 106–125 ms but slows scrolling to 48–53 ms; it is not
+  selected. Production retains the complete rectangle without a responsiveness
+  guarantee. Exact Task CPU and BUSY edges remain unqualified; the 4 ms CPU and
+  20 ms scroll targets remain open. Host checks: 306 tests, four historical skips.
+  Reserved bank-zero delta is **0 bytes** in every category, including capacity.
 
 ## Baseline and intended gain
 

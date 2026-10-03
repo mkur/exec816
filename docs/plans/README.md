@@ -61,9 +61,9 @@ assuming work is pending. Current behavior belongs in the
 ## Console and interaction
 
 - [Drawing validation and asynchronous scrolling](drawing-validation-implementation-plan.md):
-  D0–D3 passed development checks; integration measures 49 → 16 ownership checks and about
-  122 → 97 ms scrolling at unchanged chunk sizes. D4–D6 add one copy/fill
-  submission with one drawing owner and one list in flight while input is serviced.
+  D0–D6 implementation and measurements recorded; isolated scrolling is about
+  31 ms, while 20 ms scrolling and 40 ms visible-input acceptance remain open.
+  See the [measurement record](../history/drawing-validation-and-async-scroll.md).
 - [Cheap idle input checking](console-idle-input-implementation-plan.md): Q0–Q3 passed
   development checks; notification-driven workers preserve loss, BREAK and wakeups.
   Input checking fell from 52 ms to 9.7–10.0 ms; complete scrolling remains above target.

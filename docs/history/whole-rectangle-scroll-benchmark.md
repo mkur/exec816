@@ -128,6 +128,11 @@ python3 tools/measure_rectangle_scroll.py --variant current --workload fairness 
 python3 tools/measure_rectangle_scroll.py --variant whole --workload fairness --replay --output build/rectangle-scroll/whole-loaded
 ```
 
+Rebuilding the historical `whole` experiment requires revision `bb09a72`, before
+the production asynchronous migration. Existing recorded images can still be
+replayed. Current asynchronous measurements use
+[`measure_async_scroll.py`](../../tools/measure_async_scroll.py).
+
 The [benchmark tool](../../tools/measure_rectangle_scroll.py) records original
 and generated source hashes. The [fixture helper](../../tests/programs/rectangle_scroll.inc.c)
 is appended only to the generated driver. Build directories contain XEX files,

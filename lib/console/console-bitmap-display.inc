@@ -47,13 +47,18 @@ PROC BitmapEdit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
 RETURN
 
 ; Resolve the permanent registry only after the DMA no longer owns its pixels.
-; Presenting/retiring entries are not borrowed. Advance invalidates any skipped
-; completion after publication. No instance pointer crosses a worker turn.
-PROC BitmapComplete()
+; Presenting entries defer adoption until publication; retired entries cannot
+; adopt it. No instance pointer crosses a worker turn.
+BYTE FUNC BitmapComplete()
 
   LET windows=CONSOLEWINDOWS.Registry()
   LET entry=@windows.items(BYTE(bitmapUnit & 3))
   entry.busy=1
+  IF entry.state=CONSOLETYPES.WIN_PRESENTING AND entry.unit=bitmapUnit THEN
+    entry.busy=0
+    RETURN(0)
+  FI
+
   IF entry.state=CONSOLETYPES.WIN_LIVE AND entry.unit=bitmapUnit THEN
     BEGIN
       LET view=CONSOLETYPES.Presentation POINTER(entry.view)
@@ -79,19 +84,23 @@ PROC BitmapComplete()
 
   entry.busy=0
 
-RETURN
+RETURN(1)
 
 ; This runs even when a presentation transaction prevents normal borrows.
 ; Poll once per turn; retire its identity before another instance can launch.
 PUBLIC PROC Poll()
 
-  IF CONSOLEBITMAP.Pending()=0 THEN
-    RETURN
+  IF CONSOLEBITMAP.Pending()<>0 THEN
+    CONSOLEBITMAP.Poll()
+    IF CONSOLEBITMAP.Pending()=0 THEN
+      bitmapReady=1
+    FI
   FI
 
-  CONSOLEBITMAP.Poll()
-  IF CONSOLEBITMAP.Pending()=0 THEN
-    BitmapComplete()
+  IF bitmapReady<>0 THEN
+    IF BitmapComplete()<>0 THEN
+      bitmapReady=0
+    FI
   FI
 
 RETURN

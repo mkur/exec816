@@ -7,6 +7,7 @@ USE CONSOLEWINDOWS
 USE CONSOLETILING
 USE CONSOLEINPUT
 USE CONSOLEBITMAP
+USE CONSOLECONTROL
 USE BITMAPCONTROLPROBE
 USE CONSOLETYPES
 USE HEAPCORE
@@ -92,7 +93,7 @@ PROC Main()
   write.io_Command=EXEC.CMD_WRITE
   write.io_Data=text
   write.io_Length=512
-  IF variant>=10 THEN
+  IF variant=10 OR variant=11 THEN
     write.io_Length=1
   FI
   EXEC.SendIO(EXEC.IORequest POINTER(write))
@@ -114,7 +115,7 @@ PROC Main()
   EXEC.Permit()
   Require(EXEC.WaitIO(EXEC.IORequest POINTER(read))=0)
   Require(read.io_Actual=1 AND input(0)=97 AND view.scrollState<>0)
-  IF variant>=10 THEN
+  IF variant=10 OR variant=11 THEN
     ; The byte was accepted before presentation. Closing the last binding may
     ; now race hardware completion, so retirement/Stop must drain the list.
     Require(EXEC.WaitIO(EXEC.IORequest POINTER(write))=0)
@@ -145,7 +146,12 @@ PROC Main()
   FI
 
   EXEC.AbortIO(EXEC.IORequest POINTER(write))
-  IF scenario=1 THEN
+  IF variant=12 THEN
+    Require(CONSOLETILING.Lock()<>0)
+    Require(CONSOLECONTROL.Submit(CONSOLETYPES.CTL_CURSOR,view)<>0)
+    Require(CONSOLEBITMAP.Pending()=0 AND view.scrollState=3)
+    CONSOLETILING.Unlock()
+  ELSEIF scenario=1 THEN
     Require(CONSOLE.Hide(0)<>0 AND view.scrollState=0)
     Require(CONSOLE.Show(0,0,0)<>0)
   ELSEIF scenario>=2 THEN
@@ -167,6 +173,10 @@ PROC Main()
   WHILE view.scrollState<>0 OR instance.dirtyRows<>0 DO
     EXEC.Yield()
   OD
+
+  IF variant=12 THEN
+    Require(view.scrollRow=240)
+  FI
 
   checkpoint=1
   WHILE gate=0 DO
