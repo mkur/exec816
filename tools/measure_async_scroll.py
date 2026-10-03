@@ -158,12 +158,16 @@ def bounded_candidate(out,enabled):
     with patch.object(generate_tasks,'policy_modules',policy):yield
 
 
-def run(out,phase,reuse=False,replay=False,bounded=False):
+def run(out,phase,reuse=False,replay=False,bounded=False,profile_turns=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     with bounded_candidate(out,bounded and not (reuse or replay)):
-        result=loaded_run(out,'opt',replay,reuse,phase)
+        result=loaded_run(out,'opt',replay,reuse,phase,profile_turns)
+    (out/('replay-workload.json' if replay else 'workload.json')).write_text(json.dumps(result,indent=2)+'\n')
     result['candidate']=json.loads((out/'async-candidate.json').read_text()) if (out/'async-candidate.json').exists() else None
     if not replay:
+        if profile_turns:
+            from console_turn_profile import analyze
+            result['turn_profile']=analyze(out/'trace.log',result['turn_definition'],result['marks'])
         captures=[tick for tick,event in read_events(out/'trace.log')
             if event[0]=='cpu' and int(event[4],16)==result['marks']['input_capture']]
         require(len(captures)==4,'Missing physical captures')
@@ -210,6 +214,7 @@ if __name__=='__main__':
     p.add_argument('--replay',action='store_true')
     p.add_argument('--bounded',action='store_true',help='Fixture-only 64-row copy candidate')
     p.add_argument('--tiles',action='store_true',help='80x24 shell and 80x6 prime pixel/scroll scenes')
+    p.add_argument('--profile-turns',action='store_true',help='Separate worker CPU, interrupt and off-CPU time')
     a=p.parse_args()
     if a.tiles:measure_tiles(a.output,a.replay)
-    else:run(a.output,a.phase,a.reuse,a.replay,a.bounded)
+    else:run(a.output,a.phase,a.reuse,a.replay,a.bounded,a.profile_turns)

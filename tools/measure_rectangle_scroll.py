@@ -89,7 +89,7 @@ def whole_rectangle(enabled):
         yield overrides
 
 
-def loaded_run(out,mode,replay,reuse=False,phase=None):
+def loaded_run(out,mode,replay,reuse=False,phase=None,profile_turns=False):
     """Reuse the eight-Task workload with an 80x24 producer and two 40x3 tiles.
 
     Physical keys arrive during sustained full-width output and real disk I/O.
@@ -136,6 +136,14 @@ def loaded_run(out,mode,replay,reuse=False,phase=None):
     if phase is not None:
         from measure_async_scroll import instrument_loaded
         harness=instrument_loaded(harness,phase)
+    if profile_turns:
+        harness=replace_once(harness,"    marks['sector_end']=sector_end_marker(p)",
+            "    from console_turn_profile import markers as turn_markers,flat_markers\n"
+            "    turn_definition=turn_markers(p,json.loads((p['output'].parent/'c-image.json').read_text()),p['output'].parent/'drawing')\n"
+            "    marks.update(flat_markers(turn_definition))\n"
+            "    marks['sector_end']=sector_end_marker(p)")
+        harness=replace_once(harness,"source_inputs={str(source.relative_to(ROOT))",
+            "turn_definition=turn_definition,source_inputs={str(source.relative_to(ROOT))")
     generated=out/'wide-fairness.py'
     generated.write_text(harness)
     namespace={'__name__':'rectangle_fairness','__file__':str(generated)}

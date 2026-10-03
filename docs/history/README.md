@@ -19,6 +19,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Console responsiveness measurements](console-responsiveness.md)
+
 - [Drawing validation and asynchronous scrolling](drawing-validation-and-async-scroll.md): one owner check per call and one list in flight; about 31 ms isolated scrolling, with loaded input acceptance still open.
 - [Minimal GEM/VDI hosting](gem-vdi.md): G0–G6 evidence, memory costs and optional artifact.
 - [Hosted GEM input and events](gem-input.md): I0–I7 reusable input, interactive controls, cursor semantics, measured concurrency and the packaged demo.
