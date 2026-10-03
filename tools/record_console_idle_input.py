@@ -46,6 +46,34 @@ def baseline(out,host_log):
                 'No release or physical-hardware qualification.'])
 
 
+def pump(out,host_log):
+    cases=[];paths=[]
+    for mode in ('raw','opt'):
+        path=out/f'pump-{mode}/results.json';paths.append(path)
+        r=json.loads(path.read_text())
+        require(r['status']=='pass' and len(r['cases'])==2,'Incomplete pump checks')
+        normal,fault=r['cases']
+        require(normal['counts']==[0,7,63,64,0,64,2,0,8,8],'Missing pump boundaries')
+        require(normal['runtime']['status']==0 and fault['runtime']['status']==4,'Wrong terminal status')
+        base=json.loads((ROOT/'build/console-idle-input/q0/signals-opt/program/build.json').read_text())['memory']
+        for name in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
+            require(r['build']['memory'][name]==base[name],'Changed reserved memory '+name)
+        cases.append(dict(mode=mode,xex_sha256=r['build']['xex_sha256'],
+            compiler={k:r['build'][k] for k in ('revision','binary_sha256','abi_sha256','override')},
+            cases=[dict(variant=c['variant'],checks=c['checks'],counts=c['counts'],
+                runtime={k:v for k,v in c['runtime'].items() if k not in ('task_records','ready_queue')}) for c in r['cases']]))
+    names=['lib/console/consoleinput.act','tests/programs/console_input_pump.act','tools/test_console_input_pump.py']
+    host=host_log.read_text();count=re.search(r'Ran (\d+) tests',host)
+    require(count and 'OK (skipped=4)' in host and 'FAILED' not in host,'Incomplete host checks')
+    return dict(slice='Q1',status='development-pass',scope='Raw/optimized emitted bounded drains, route filtering, loss recovery, cancellation mailbox and invalid retained-lease terminal failure; synthetic records with route zero, not a physical input-latency measurement.',
+        reports={str(p.relative_to(ROOT)):sha256(p) for p in paths},pin=r['pin'],machine=normal['machine'],
+        source_inputs={p:sha256(ROOT/p) for p in names},cases=cases,
+        host_checks=dict(tests=int(count[1]),skipped_historical=4,status='pass',log_sha256=sha256(host_log)),
+        bank_zero_delta=dict(fixed=0,root_kernel=0,per_task=[0]*8,private_idle=0),
+        limits=['Ownership cleanup checked on normal completion; fault case checks terminal status and context/stack guards.',
+                'No notification-loop or release qualification claim.'])
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--input',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--host-log',type=Path,required=True)
-    a=p.parse_args();a.output.write_text(json.dumps(baseline(a.input.resolve(),a.host_log),indent=2)+'\n')
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--slice',choices=('q0','q1'),default='q0');p.add_argument('--input',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--host-log',type=Path,required=True)
+    a=p.parse_args();a.output.write_text(json.dumps((baseline if a.slice=='q0' else pump)(a.input.resolve(),a.host_log),indent=2)+'\n')

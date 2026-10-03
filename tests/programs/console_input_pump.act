@@ -1,0 +1,147 @@
+MODULE INPUTPUMP
+USE EXEC
+USE INPUT
+USE INPUTNATIVE
+USE CONSOLEINPUT
+USE CONSOLECAPTURE
+USE CONSOLEWINDOWS
+USE CONSOLEFOREGROUND
+USE CONSOLETYPES
+USE HEAPCORE
+INCLUDE "input-storage.act.inc"
+CONSOLETYPES.Instance instance
+BYTE ARRAY fifo(128),output(128)
+CARD checks
+BYTE variant,finished
+CARD ARRAY counts(10)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Route zero excludes addressed hardware arrivals while this fixture seeds
+; synthetic retained records. Production publication is covered separately.
+PROC Seed(BYTE count CARD tick)
+  BYTE index
+
+  LET capture=INPUTNATIVE.Capture POINTER(ADDRESS(IN_CAPTURE))
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET window=@windows.items(0)
+  CONSOLEINPUT.Init(@instance,fifo)
+  instance.open=1
+  capture.tail=0
+  capture.head=0
+  capture.breakMask=0
+  capture.lostMask=0
+  capture.breakPending=0
+  capture.lost=0
+  FOR index=0 TO count-1 DO
+    capture.events(index).key=IF (index & 1)=0 THEN 63 ELSE 21 FI
+    capture.events(index).kind=0
+    capture.events(index).tick=tick+CARD(index)
+    capture.events(index).route=window.route
+  OD
+
+  capture.head=count
+
+RETURN
+
+PROC Main()
+  BYTE index
+  CARD bit
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET window=@windows.items(0)
+  LET capture=INPUTNATIVE.Capture POINTER(ADDRESS(IN_CAPTURE))
+  LET state=INPUTNATIVE.State POINTER(ADDRESS(IN_STATE))
+  Require(EXEC.AllocSignal(30)=30)
+  Require(CONSOLECAPTURE.Acquire()=1)
+  EXEC.Forbid()
+  window.instance=BYTE POINTER(@instance)
+  window.state=CONSOLETYPES.WIN_CREATING
+  Require(CONSOLEFOREGROUND.Register(window)=1)
+  window.state=CONSOLETYPES.WIN_LIVE
+  windows.liveCount=1
+  CONSOLEINPUT.Init(@instance,fifo)
+  instance.open=1
+  counts(0)=CONSOLEINPUT.Pump(@instance)
+  Require(counts(0)=0)
+  IF variant<>0 THEN
+    BEGIN
+      LET lease=CONSOLECAPTURE.GetLease()
+      lease.reserved=1
+      counts(0)=CONSOLEINPUT.Pump(@instance)
+      HEAPCORE.Abort($f900)
+    END
+  FI
+
+  Seed(7,100)
+  counts(1)=CONSOLEINPUT.Pump(@instance)
+  Require(counts(1)=7 AND instance.inputCount=7)
+  Require(CONSOLEINPUT.Read(@instance,output,128)=7)
+  FOR index=0 TO 6 DO
+    Require(output(index)=IF (index & 1)=0 THEN 97 ELSE 98 FI)
+  OD
+
+  Seed(63,200)
+  counts(2)=CONSOLEINPUT.Pump(@instance)
+  Require(counts(2)=63 AND instance.inputCount=63)
+  Seed(64,300)
+  counts(3)=CONSOLEINPUT.Pump(@instance)
+  counts(4)=CONSOLEINPUT.Pump(@instance)
+  Require(counts(3)=64 AND counts(4)=0 AND instance.inputCount=64)
+  FOR index=0 TO 63 DO
+    Require(fifo(index)=IF (index & 1)=0 THEN 97 ELSE 98 FI)
+  OD
+
+  Seed(64,400)
+  bit=CARD(1) LSH BYTE(window.route & 15)
+  capture.breakMask=bit
+  capture.lostMask=bit
+  capture.breakPending=1
+  capture.lost=1
+  state.cancelCode(BYTE(window.route & 15))=INPUT.CANCEL_BREAK
+  state.lossCode(BYTE(window.route & 15))=INPUT.LOSS_RAW
+  counts(5)=CONSOLEINPUT.Pump(@instance)
+  Require(counts(5)=64 AND capture.tail=62)
+  Require(instance.inputLost=1 AND instance.inputCount=0)
+  counts(6)=CONSOLEINPUT.Pump(@instance)
+  Require(counts(6)=2 AND capture.tail=64)
+  Require(CONSOLEINPUT.Read(@instance,output,128)=$ffff)
+  Require(instance.inputCount=0 AND instance.inputLost=0)
+
+  Seed(64,500)
+  Require(INPUT.Discard(CONSOLECAPTURE.GetLease(),window.route)=INPUT.OK)
+  counts(7)=CONSOLEINPUT.Pump(@instance)
+  Require(counts(7)=0 AND capture.tail=64 AND instance.inputCount=0)
+  Seed(8,600)
+  FOR index=0 TO 7 DO
+    capture.events(index).key=60
+  OD
+
+  counts(8)=CONSOLEINPUT.Pump(@instance)
+  Require(counts(8)=8 AND instance.inputCount=0)
+  Seed(8,700)
+  FOR index=0 TO 7 DO
+    capture.events(index).route=window.route+$100
+  OD
+
+  counts(9)=CONSOLEINPUT.Pump(@instance)
+  Require(counts(9)=8 AND instance.inputCount=0)
+  CONSOLEFOREGROUND.Unregister(window)
+  CONSOLEWINDOWS.Retired(window)
+  windows.liveCount=0
+  EXEC.Permit()
+  CONSOLECAPTURE.Release()
+  EXEC.FreeSignal(30)
+  finished=1
+
+RETURN
+
+ENDMODULE

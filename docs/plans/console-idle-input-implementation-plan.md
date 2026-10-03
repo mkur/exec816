@@ -3,7 +3,7 @@
 [Implementation plans](README.md) · [Bitmap console plan](gem4xe/bitmap-console-implementation-plan.md) ·
 [Input contract](../reference/input.md) · [Signals](../reference/signals.md)
 
-Status: implementation started, 3 October 2026. Q0 passed development checks. Remove repeated input validation from console
+Status: implementation started, 3 October 2026. Q0–Q1 passed development checks. Remove repeated input validation from console
 turns that have no captured input. Collect notifications through the existing
 signal API, and retain a worker-local flag until a bounded drain observes EMPTY.
 Preserve keyboard routing, loss, BREAK, ownership and shutdown. Implement and
@@ -194,6 +194,13 @@ path. Assert event counts, routes, byte order and guard state, not just calls.
 **Gate:** raw and optimized emitted checks establish the count contract and
 preserve keyboard/loss/BREAK behavior. Existing callers remain buildable; no
 worker notification change is required yet.
+
+Q1 evidence: [bounded pump and invariant failure](../development/console-idle-input-q1.json).
+Raw and optimized emitted cases passed with counts for empty, partial, exact and
+extended batches, cancellation/loss precedence, tombstones, untranslated keys
+and stale routes. A corrupt resident lease terminates with status 4. Host checks
+passed (303 tests, four historical skips). Reserved bank-zero change is zero,
+including fixed storage and every Task pool.
 
 ### Q2 Use notifications in the worker
 

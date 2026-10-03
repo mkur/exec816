@@ -6,6 +6,7 @@ USE CONSOLETYPES
 USE CONSOLECAPTURE
 USE CONSOLEFOREGROUND
 USE CONSOLEWINDOWS
+USE HEAPCORE
 INCLUDE "console-storage-action.inc"
 CARD pendingMask
 INPUT.Event capturedEvent
@@ -158,18 +159,24 @@ PUBLIC PROC Deliver(CONSOLETYPES.Instance POINTER instance LONGCARD event)
 
 RETURN
 
-; Route a bounded batch of captured input to its original terminal or break
-; scope.
+; Route at most RAW_SLOTS events. A full count may leave work; a shorter count
+; means Take observed EMPTY. Invalid resident authority is an invariant failure,
+; never an empty observation that would let the worker discard its wake.
 PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
-  CARD consumed
+  CARD consumed,status
   BYTE bound
   LONGCARD raw
   CONSOLETYPES.Window POINTER entry
 
   consumed=0
   WHILE consumed<CONSOLETYPES.RAW_SLOTS DO
-    IF INPUT.Take(CONSOLECAPTURE.GetLease(),@capturedEvent)<>INPUT.OK THEN
+    status=INPUT.Take(CONSOLECAPTURE.GetLease(),@capturedEvent)
+    IF status=INPUT.EMPTY THEN
       EXIT
+    FI
+
+    IF status<>INPUT.OK THEN
+      HEAPCORE.Abort(4)
     FI
 
     entry=CONSOLEFOREGROUND.Resolve(capturedEvent.route)
