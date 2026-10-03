@@ -31,6 +31,14 @@ measure responsiveness separately from scroll throughput.
   Exact BUSY edges, isolated Task CPU and first-visible input timing remain
   unmeasured; the observer records elapsed bounds explicitly. Later acceptance
   must not substitute those bounds for the missing measurements.
+- D1: [development evidence](../development/drawing-validation-d1.json) covers
+  one admission per direct operation, including multi-chunk fill/copy, Present,
+  transfers and empty Submit. Raw and optimized pattern, copy, copy-fault,
+  map-NMI, busy/VCOUNT/wrap timeout, unquiesced and retained-owner cases pass;
+  an optimized bitmap-copy control uses original hardware reads. Whole-list
+  rejection, pixels, context, stack guards and restoration pass. Host checks:
+  304 tests, four historical-source skips. Reserved bank-zero delta is **0 bytes**
+  for fixed/root/kernel, each public Task and idle, including guards and capacity.
 
 ## Baseline and intended gain
 

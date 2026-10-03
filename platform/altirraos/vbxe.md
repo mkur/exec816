@@ -24,6 +24,12 @@ workstation palette or VDI capability claim. `VbxePalette` installs 16 RGB
 entries in overlay palette 1; `VbxeShow` enables the fixed XDL while preserving
 that palette. G4 uses these two operations for GEM colours.
 
+Each public drawing operation admits its owner once. Private composition through
+`vbxe-internal.h` reuses that admission only within the same synchronous call;
+it retains argument checks, full-list rejection, dependency fences and recovery.
+There is no cached authorization across calls. Acquisition, retirement and fault
+transitions retain their separate mandatory ownership checks.
+
 `VbxeFill` builds one 21-byte constant-source BCB on the caller's stack and fences
 before upload and after start. VRAM transfers validate full extents, fence, map
 one page at a time and unmap on return. They accept valid caller-stack or upper

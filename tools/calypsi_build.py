@@ -24,7 +24,7 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
     runtime = Path(tools['cc65816']['path']).parent.parent/'lib/clib-lc-hd.a'
     require(runtime.is_file(), 'Missing Calypsi large-code/huge-data runtime')
     flags = ['--code-model=large', '--data-model=huge', '-O2' if optimize else '-O0']
-    include_args = [part for path in (ROOT/'c/include', output, *includes) for part in ('-I', path)]
+    include_args = [part for path in (ROOT/'c/include', ROOT/'platform/altirraos', output, *includes) for part in ('-I', path)]
     if ROOT/'platform/altirraos/vbxe-map.s' in assembly:
         probes=(*probes,(ROOT/'c/calypsi/vbxe-upload-layout.c',[
             ('VbxeUpload size',6),('VbxeUpload records',0),('VbxeUpload count',4)]))
@@ -51,6 +51,8 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
              *root_args, '--no-data-init-table-section', '--no-automatic-placement-rules',
              '--list-file', output/'link.lst', '-o', elf, *objects, ROOT/'c/calypsi/layout.scm'])
     foreign = read_image(elf, task_entries)
+    foreign['provenance']['platform_internal_inputs'] = {
+        'platform/altirraos/vbxe-internal.h': sha256(ROOT/'platform/altirraos/vbxe-internal.h')}
     foreign['provenance'].update(tools=tools, runtime=dict(path=str(runtime), sha256=sha256(runtime)),
                                  compiler_flags=flags, checked_layout=checked)
     if ROOT/'platform/altirraos/vbxe-map.s' in assembly:

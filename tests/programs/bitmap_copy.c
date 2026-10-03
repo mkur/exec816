@@ -3,6 +3,7 @@
 #include "bitmap-copy-cases.h"
 extern struct VbxeDisplay display;
 extern volatile UWORD fault_arm,ProbeStopped,variant;
+extern volatile UWORD ownerChecks;
 volatile UWORD copyCase,copyChecks,copyFailures,copyFirstFailure,copyChunks,copyFaultAfter;
 static UBYTE buffer[8192];
 static struct VbxeCopy request;
@@ -19,7 +20,7 @@ static void check(UWORD good)
 }
 void CopyCases(void)
 {
-    UWORD i,status;
+    UWORD i,status,before;
     ULONG hash;
     const struct CopyCase *c;
     check(VbxeCopyRect(&display,NULL)==DISPLAY_BAD_ARGUMENT);
@@ -32,7 +33,9 @@ void CopyCases(void)
         check(VbxeWrite(&display,c->base,buffer,sizeof(buffer))==DISPLAY_OK);
         memcpy(&request,c->packet,sizeof(request));
         copyChunks=0; copyFaultAfter=c->fault; ProbeStopped=0;
+        before=ownerChecks;
         status=VbxeCopyRect(&display,&request);
+        check((UWORD)(ownerChecks-before)==1);
         check(status==c->status);
         if (c->fault) {
             check(copyChunks==1 && display.lease.state==DISPLAY_FREE);

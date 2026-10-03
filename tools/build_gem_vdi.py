@@ -141,7 +141,11 @@ map_done_{index}:
 '''
         mapping=mapping.replace(label+':',label+':'+delay)
     (output/'vbxe-map-probe.s').write_text(mapping)
-    sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',output/'vbxe-probe.c',
+    admission=(ROOT/'c/calypsi/display.c').read_text().replace(
+        'UWORD DisplayCheck(struct DisplayLease *p) {',
+        'extern volatile UWORD ownerChecks;\nUWORD DisplayCheck(struct DisplayLease *p) { ++ownerChecks;')
+    (output/'display-probe.c').write_text(admission)
+    sources=[ROOT/'c/calypsi/exec.c',output/'display-probe.c',output/'vbxe-probe.c',
              ROOT/'tests/programs/gem_display.c',ROOT/'tests/programs/bitmap_copy.c']
     foreign=emit(output,sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
         ROOT/'c/calypsi/image-info.s',output/'vbxe-map-probe.s'],

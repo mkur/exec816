@@ -7,6 +7,7 @@ volatile UWORD stage,variant,checks,failures,first_failure,job,answer,finished;
 volatile UWORD progress[2], fault_arm, ProbeStopped, mapPoint, mapGate;
 volatile ULONG checksum[2], pixelHash, tickAddress;
 volatile UWORD waitStart,waitEnd,vcountReads;
+volatile UWORD ownerChecks;
 struct VbxeDisplay display,other;
 static struct Task *parent,*renderer,*peer;
 static struct TaskLease peerLease,rendererLease;
@@ -68,10 +69,12 @@ void Peer(void)
  * maximum list paints independently known bytes and guards the unused arena. */
 static void lists(void)
 {
-    UWORD i;
+    UWORD i,before;
     UBYTE *r;
     memset(list,0,sizeof(list));
+    before=ownerChecks;
     check(VbxeSubmit(&display,NULL,0)==DISPLAY_OK);
+    check((UWORD)(ownerChecks-before)==1);
     check(VbxeSubmit(&display,NULL,1)==DISPLAY_BAD_ARGUMENT);
     check(VbxeSubmit(&display,(UBYTE *)0x8000UL,1)==DISPLAY_BAD_ARGUMENT);
     check(VbxeSubmit(&display,(UBYTE *)0xffffffUL,1)==DISPLAY_BAD_ARGUMENT);
@@ -135,7 +138,7 @@ static void lists(void)
 
 static void pattern(void)
 {
-    UWORD i,row,good;
+    UWORD i,row,good,before;
     ULONG hash=2166136261UL;
     for (i=0;i<32;i++) crossing[i]=(UBYTE)(i*7+3);
     check(VbxeWrite(&display,0x7fff0UL,crossing,32)==DISPLAY_BAD_ARGUMENT);
@@ -151,12 +154,19 @@ static void pattern(void)
     check(VbxeWrite(&display,VBXE_BCB+21,readback,231)==DISPLAY_OK);
     check(VbxeFill(&display,0,320,0,240,0)==DISPLAY_BAD_ARGUMENT);
     check(VbxeFill(&display,0xffffffffUL,320,320,240,0)==DISPLAY_BAD_ARGUMENT);
-    for (i=0;i<16;i++)
+    for (i=0;i<16;i++) {
+        before=ownerChecks;
         check(VbxeFill(&display,(ULONG)i*20,320,20,240,(UBYTE)(i*17))==DISPLAY_OK);
+        check((UWORD)(ownerChecks-before)==1);
+    }
+    before=ownerChecks;
     check(VbxePresent(&display)==DISPLAY_OK);
+    check((UWORD)(ownerChecks-before)==1);
     compute(1);
     for (row=0;row<240;row++) {
+        before=ownerChecks;
         check(VbxeRead(&display,(ULONG)row*320,readback,320)==DISPLAY_OK);
+        check((UWORD)(ownerChecks-before)==1);
         good=1;
         for (i=0;i<320;i++) {
             if (readback[i]!=(UBYTE)((i/20)*17)) good=0;

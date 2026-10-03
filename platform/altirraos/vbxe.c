@@ -1,5 +1,5 @@
 /* Exec-owned FX 1.26 adapter. No donor startup, IRQ hooks or unbounded waits. */
-#include <hardware/vbxe.h>
+#include "vbxe-internal.h"
 #include <hardware/vbxe-upload.h>
 #include <proto/exec.h>
 
@@ -103,17 +103,14 @@ UWORD VbxeOpen(struct VbxeDisplay *d)
     return DisplayActivate(&d->lease);
 }
 
-UWORD VbxeFence(struct VbxeDisplay *d)
+UWORD VbxeOwnerFence(struct VbxeDisplay *d)
 {
-    UWORD status=check(d);
-    if (status!=DISPLAY_OK)
-        return status;
     return idle()==DISPLAY_OK ? DISPLAY_OK : recover(d);
 }
 
-UWORD VbxeClose(struct VbxeDisplay *d)
+UWORD VbxeOwnerClose(struct VbxeDisplay *d)
 {
-    UWORD status=VbxeFence(d);
+    UWORD status=VbxeOwnerFence(d);
     if (status!=DISPLAY_OK)
         return status;
     return retire(d,DISPLAY_OK);
@@ -132,13 +129,11 @@ static UWORD extent(ULONG address, const void *buffer, UWORD bytes)
 static UWORD transfer(struct VbxeDisplay *d, ULONG address, UBYTE *buffer,
                        UWORD bytes, UWORD reading)
 {
-    UWORD i,n,offset,status=check(d);
+    UWORD i,n,offset,status;
     volatile UBYTE *window=(volatile UBYTE *)0x8000UL;
-    if (status!=DISPLAY_OK)
-        return status;
     if (!extent(address,buffer,bytes))
         return DISPLAY_BAD_ARGUMENT;
-    status=VbxeFence(d);
+    status=VbxeOwnerFence(d);
     if (status!=DISPLAY_OK)
         return status;
     while (bytes) {
@@ -158,9 +153,9 @@ static UWORD transfer(struct VbxeDisplay *d, ULONG address, UBYTE *buffer,
     return DISPLAY_OK;
 }
 
-UWORD VbxeWrite(struct VbxeDisplay *d, ULONG address, const void *source, UWORD bytes)
+UWORD VbxeOwnerWrite(struct VbxeDisplay *d, ULONG address, const void *source, UWORD bytes)
 { return transfer(d,address,(UBYTE *)source,bytes,0); }
-UWORD VbxeRead(struct VbxeDisplay *d, ULONG address, void *destination, UWORD bytes)
+UWORD VbxeOwnerRead(struct VbxeDisplay *d, ULONG address, void *destination, UWORD bytes)
 { return transfer(d,address,destination,bytes,1); }
 
 static void word(UBYTE *p,UWORD value)
@@ -222,12 +217,11 @@ static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
 /* Validate every record before mapping or starting DMA. Upload directly into
  * the private arena so no second 4 KiB CPU buffer or mutable client chain is
  * needed. Only the owner may enter; the caller retains the CPU records. */
-UWORD VbxeSubmit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
+UWORD VbxeOwnerSubmit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
 {
     const UBYTE *p;
     ULONG work=0;
-    UWORD i,n,bytes,rows,status=check(d);
-    if (status!=DISPLAY_OK) return status;
+    UWORD i,n,bytes,rows;
     if (!count) return DISPLAY_OK;
     if (count>VBXE_LIST_RECORDS || !extent(0,records,count*21))
         return DISPLAY_BAD_ARGUMENT;
@@ -248,15 +242,13 @@ UWORD VbxeSubmit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
     return submit(d,records,count);
 }
 
-UWORD VbxeFill(struct VbxeDisplay *d, ULONG address, UWORD stride,
+UWORD VbxeOwnerFill(struct VbxeDisplay *d, ULONG address, UWORD stride,
                UWORD bytes, UWORD rows, UBYTE value)
 {
-    UWORD status=check(d);
-    if (status!=DISPLAY_OK) return status;
     if (!bytes || !rows || stride<bytes || !VbxeBlitExtent(address,stride,bytes,rows) ||
         address+(ULONG)(rows-1)*stride+bytes>VBXE_SCREEN_BYTES)
         return DISPLAY_BAD_ARGUMENT;
-    return VbxeBlit(d,0,0,address,stride,bytes,rows,0,value,0);
+    return VbxeOwnerBlit(d,0,0,address,stride,bytes,rows,0,value,0);
 }
 
 static UWORD surface(const struct VbxeSurface *s)
@@ -269,13 +261,12 @@ static UWORD surface(const struct VbxeSurface *s)
         !(s->offset<VBXE_BCB+VBXE_BCB_BYTES && end>VBXE_BCB);
 }
 
-UWORD VbxeCopyRect(struct VbxeDisplay *d,const struct VbxeCopy *c)
+UWORD VbxeOwnerCopyRect(struct VbxeDisplay *d,const struct VbxeCopy *c)
 {
     ULONG src,dst,srcEnd,dstEnd;
-    UWORD bytes,rows,n,limit,backwards,i,status=check(d);
+    UWORD bytes,rows,n,limit,backwards,i,status;
     WORD ss,ds;
     UBYTE bcb[21];
-    if (status!=DISPLAY_OK) return status;
     if (!extent(0,c,sizeof(*c)) || !surface(&c->source) || !surface(&c->destination))
         return DISPLAY_BAD_ARGUMENT;
     if ((c->sourceX|c->destinationX|c->width)&1 || c->width>1024 ||
@@ -318,10 +309,10 @@ UWORD VbxeCopyRect(struct VbxeDisplay *d,const struct VbxeCopy *c)
     return DISPLAY_OK;
 }
 
-UWORD VbxeWaitFrame(struct VbxeDisplay *d)
+UWORD VbxeOwnerWaitFrame(struct VbxeDisplay *d)
 {
     UBYTE previous,current;
-    UWORD start,status=VbxeFence(d);
+    UWORD start,status=VbxeOwnerFence(d);
     if (status!=DISPLAY_OK) return status;
     start=DisplayTicks();
     previous=REG(VCOUNT);
@@ -335,13 +326,13 @@ UWORD VbxeWaitFrame(struct VbxeDisplay *d)
     return DISPLAY_OK;
 }
 
-UWORD VbxeShow(struct VbxeDisplay *d)
+UWORD VbxeOwnerShow(struct VbxeDisplay *d)
 {
     /* HR, 240 rows, 320 bytes/row, palette 1, normal width, priority over ANTIC. */
     static const UBYTE xdl[12]={0x62,0x18,239,0,0,0,0x40,1,0x11,0xff,4,0x80};
-    UWORD status=VbxeWrite(d,VBXE_XDL,xdl,sizeof(xdl));
+    UWORD status=VbxeOwnerWrite(d,VBXE_XDL,xdl,sizeof(xdl));
     if (status!=DISPLAY_OK) return status;
-    status=VbxeWaitFrame(d);
+    status=VbxeOwnerWaitFrame(d);
     if (status!=DISPLAY_OK) return status;
     REG(0xd641)=d->xdl[0]=(UBYTE)VBXE_XDL;
     REG(0xd642)=d->xdl[1]=(UBYTE)(VBXE_XDL>>8);
@@ -350,12 +341,11 @@ UWORD VbxeShow(struct VbxeDisplay *d)
     return DISPLAY_OK;
 }
 
-UWORD VbxePalette(struct VbxeDisplay *d, const UBYTE *rgb)
+UWORD VbxeOwnerPalette(struct VbxeDisplay *d, const UBYTE *rgb)
 {
-    UWORD i,status=check(d);
-    if (status!=DISPLAY_OK) return status;
+    UWORD i,status;
     if (!extent(0,rgb,48)) return DISPLAY_BAD_ARGUMENT;
-    status=VbxeFence(d);
+    status=VbxeOwnerFence(d);
     if (status!=DISPLAY_OK) return status;
     REG(0xd645)=d->palette=1;
     REG(0xd644)=d->color=0;
@@ -368,22 +358,21 @@ UWORD VbxePalette(struct VbxeDisplay *d, const UBYTE *rgb)
     return DISPLAY_OK;
 }
 
-UWORD VbxePresent(struct VbxeDisplay *d)
+UWORD VbxeOwnerPresent(struct VbxeDisplay *d)
 {
     UBYTE rgb[48];
     UWORD i,status;
     for (i=0;i<48;i++) rgb[i]=(UBYTE)((i/3)*17);
-    status=VbxePalette(d,rgb);
-    return status==DISPLAY_OK ? VbxeShow(d) : status;
+    status=VbxeOwnerPalette(d,rgb);
+    return status==DISPLAY_OK ? VbxeOwnerShow(d) : status;
 }
 
-UWORD VbxeBlit(struct VbxeDisplay *d, ULONG source, UWORD sourceStride,
+UWORD VbxeOwnerBlit(struct VbxeDisplay *d, ULONG source, UWORD sourceStride,
                ULONG destination, UWORD destinationStride, UWORD bytes, UWORD rows,
                UBYTE andMask, UBYTE xorMask, UBYTE mode)
 {
     UBYTE bcb[21];
-    UWORD i,n,limit,status=check(d);
-    if (status!=DISPLAY_OK) return status;
+    UWORD i,n,limit,status;
     if (mode>6 || !VbxeBlitExtent(source,sourceStride,bytes,rows) ||
         !VbxeBlitExtent(destination,destinationStride,bytes,rows))
         return DISPLAY_BAD_ARGUMENT;
@@ -399,11 +388,97 @@ UWORD VbxeBlit(struct VbxeDisplay *d, ULONG source, UWORD sourceStride,
         word(bcb,(UWORD)source); bcb[2]=(UBYTE)(source>>16);
         word(bcb+6,(UWORD)destination); bcb[8]=(UBYTE)(destination>>16);
         bcb[14]=(UBYTE)(n-1);
-        status=VbxeSubmit(d,bcb,1);
+        status=submit(d,bcb,1);
         if (status!=DISPLAY_OK) return status;
         source+=(ULONG)n*sourceStride;
         destination+=(ULONG)n*destinationStride;
         rows-=n;
     }
     return DISPLAY_OK;
+}
+
+UWORD VbxeFence(struct VbxeDisplay *display)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerFence(display);
+}
+
+UWORD VbxeClose(struct VbxeDisplay *display)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerClose(display);
+}
+
+UWORD VbxeWrite(struct VbxeDisplay *display, ULONG address, const void *source, UWORD bytes)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerWrite(display,address,source,bytes);
+}
+
+UWORD VbxeRead(struct VbxeDisplay *display, ULONG address, void *destination, UWORD bytes)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerRead(display,address,destination,bytes);
+}
+
+UWORD VbxeSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD count)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerSubmit(display,records,count);
+}
+
+UWORD VbxeFill(struct VbxeDisplay *display, ULONG address, UWORD stride, UWORD bytes, UWORD rows, UBYTE value)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerFill(display,address,stride,bytes,rows,value);
+}
+
+UWORD VbxeCopyRect(struct VbxeDisplay *display, const struct VbxeCopy *copy)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerCopyRect(display,copy);
+}
+
+UWORD VbxeWaitFrame(struct VbxeDisplay *display)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerWaitFrame(display);
+}
+
+UWORD VbxeShow(struct VbxeDisplay *display)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerShow(display);
+}
+
+UWORD VbxePalette(struct VbxeDisplay *display, const UBYTE *rgb)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerPalette(display,rgb);
+}
+
+UWORD VbxePresent(struct VbxeDisplay *display)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerPresent(display);
+}
+
+UWORD VbxeBlit(struct VbxeDisplay *display, ULONG source, UWORD sourceStride,
+               ULONG destination, UWORD destinationStride, UWORD bytes, UWORD rows,
+               UBYTE andMask, UBYTE xorMask, UBYTE mode)
+{
+    UWORD status=check(display);
+    if (status!=DISPLAY_OK) return status;
+    return VbxeOwnerBlit(display,source,sourceStride,destination,destinationStride,bytes,rows,andMask,xorMask,mode);
 }
