@@ -15,9 +15,10 @@ from test_dos_stack import execute, ownership
 from test_mouse_observe import BRIDGE, ROM, PIN
 from gem_mouse_observe import timing
 from sio_transaction_trace import BASE_HZ
+from mouse_timer_trace import require_normal_cadence
 
 
-def run(out, program, unobserved=False):
+def run(out, program, unobserved=False, phase_offset=0):
     out.mkdir(parents=True, exist_ok=True)
     p = read_build(program)
     factor=scale(p)
@@ -30,7 +31,8 @@ def run(out, program, unobserved=False):
     if not unobserved:
         os.environ.update(EXEC816_MOUSE_TRACE='1', EXEC816_LATENCY_TRACE='1', EXEC816_MASK_TRACE='1', EXEC816_LATENCY_PCS=','.join(
             f'{v:x}' for k, v in p['labels'].items() if k.startswith(('pointer_', 'native_', 'signal_route', 'sio_', 'timer_'))))
-    report = dict(status='running', observed=not unobserved, build=p['build'], pin=PIN, commands=[])
+    report = dict(status='running', observed=not unobserved, build=p['build'], pin=PIN,
+                  phase_offset_cycles=phase_offset, commands=[])
     try:
         with emulator(BRIDGE, ROM, out, pin=PIN) as b:
             b._cmd_ok('MOUSE ST')
@@ -42,7 +44,7 @@ def run(out, program, unobserved=False):
             def frames(n):
                 reach(f'@frame>={b.eval_expr("@frame")+n}')
             def command(delay, dx=0, dy=0, left=-1):
-                text = f'MOUSE AT {delay} {dx} {dy} {left}'
+                text = f'MOUSE AT {delay+phase_offset} {dx} {dy} {left}'
                 report['commands'].append(dict(command=text, **b._cmd_ok(text)))
             def point():
                 return [int.from_bytes(b.memdump(at('DESKINPUT', name), 2), 'little') for name in ('cursorX', 'cursorY', 'buttons')]
@@ -126,6 +128,7 @@ def run(out, program, unobserved=False):
             report['burst_ideal_position'] = expected
             report['burst_alias_observed'] = report['burst_position'] != expected
             report['timing'], _ = timing(out/'emulator.log', p['labels'], serial=False)
+            require_normal_cadence(report['timing']['timer_accounting'])
         report['status'] = 'pass'
     except Exception as error:
         report.update(status='fail', error=str(error))
@@ -140,5 +143,7 @@ if __name__ == '__main__':
     parser.add_argument('--program', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--unobserved', action='store_true')
+    parser.add_argument('--phase-offset', type=int, choices=range(448), default=0,
+                        help='Shift electrical stimuli across one normal timer period (base cycles)')
     args = parser.parse_args()
-    run(args.output.resolve(), args.program, args.unobserved)
+    run(args.output.resolve(), args.program, args.unobserved, args.phase_offset)

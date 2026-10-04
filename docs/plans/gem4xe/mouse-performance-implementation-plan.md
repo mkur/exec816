@@ -3,7 +3,9 @@
 [GEM plans](README.md) · [Desktop plan](desktop-implementation-plan.md) ·
 [Input contract](../../reference/input.md) · [Display contract](../../reference/display.md)
 
-Status: planned, 2026-10-04. Reduce normal ST mouse sampling from about 8 kHz to
+Status: MP1 implemented at the development tier, 2026-10-05;
+[evidence and limits](../../history/mouse-performance.md). MP2–MP4 remain planned.
+The remaining text preserves the implementation plan. Reduce normal ST mouse sampling from about 8 kHz to
 4 kHz and submit a complete pointer move as one bounded VBXE blitter list.
 Keep the desktop's current two pixels per decoded step. Implement MP1–MP4 in
 order, committing each executable slice with its focused development evidence.

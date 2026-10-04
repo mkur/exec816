@@ -19,6 +19,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Mouse sampling and pointer batching](mouse-performance.md): MP1 reduces normal
+  capture to about 4 kHz while preserving fine SIO timing; pointer batching and
+  the combined desktop checkpoint follow.
 - [Desktop development](desktop.md): frozen shell/mouse inputs and Task/memory
   budgets, client lifetime, framed presentation and the ST input checkpoint.
   DT0–DT7 are implemented, including the local OF816 preview. Pointer, outline,

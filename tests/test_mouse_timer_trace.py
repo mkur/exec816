@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
-from mouse_timer_trace import accounting
+from mouse_timer_trace import accounting, cadence, require_normal_cadence
 from console_concurrent_trace import shared_alarm_observations
 
 
@@ -65,3 +65,34 @@ class MouseTimerTraceTests(unittest.TestCase):
                   (120,cpu(0x1234)), (130,cpu(0x2345))]
         self.assertEqual(shared_alarm_observations(events,self.labels,105,140),[30])
         self.assertEqual(shared_alarm_observations(events,self.labels,105,125),[])
+
+    def test_physical_rate_and_capture_division_are_distinct(self):
+        events = []
+        def register(t, divisor):
+            events.append((t, ['register', str(t), '0', str(divisor)]))
+        def edge(t, sample=True):
+            events.append((t, ['timer', str(t), '0']))
+            if sample:
+                events.append((t+20, ['cpu', str(t+20), '0', '8', '003456']))
+        register(0, 15)
+        for t in (400, 848, 1296, 1744):
+            edge(t)
+        register(1800, 7)
+        # First interval straddles the reload change. Steady fine periods are
+        # 224 cycles, but actual captures remain 448 cycles apart.
+        for i, t in enumerate((2100, 2324, 2548, 2772, 2996)):
+            edge(t, i % 2 == 0)
+        result = cadence(events, self.labels)['au_df1']
+        self.assertEqual(result['15']['median_physical_period_cycles'], 448)
+        self.assertEqual(result['7']['median_physical_period_cycles'], 224)
+        self.assertEqual(result['15']['pointer_samples'], 4)
+        self.assertEqual(result['7']['physical_edges'], 5)
+        self.assertEqual(result['7']['pointer_samples'], 3)
+        self.assertAlmostEqual(result['7']['sample_period']['mean_us'],
+                               result['15']['sample_period']['mean_us'])
+
+    def test_decimation_alone_does_not_satisfy_normal_rate(self):
+        observation = dict(cadence=dict(au_df1={'15': dict(physical_edges=200,
+                                                   median_physical_period_cycles=224)}))
+        with self.assertRaisesRegex(RuntimeError, 'physically run'):
+            require_normal_cadence(observation)

@@ -28,7 +28,7 @@ def timing(path,labels,divisor=8,serial=True):
     if serial:require(sio['verdict']=='pass','Mouse/SIO timing: '+str(sio['violations']))
     return dict(sample_gaps=stats(gaps),sample_cost=stats(costs),sample_count=len(reads),
                 native_irq_service=stats(irq_costs),irq_cost_scope='Native IRQ entry through fixed source routing return; scheduler/RTI excluded',
-                serial=sio,timer_accounting=accounting(path,labels)),reads
+                serial=sio,timer_accounting=accounting(path,labels,events)),reads
 
 def visible(b,p,foreign,output,folder,reach,get,command,expected,observe):
     sy=foreign['symbols'];capture=p['build']['memory']['input_storage']['POINTER_CAPTURE']

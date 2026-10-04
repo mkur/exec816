@@ -14,7 +14,8 @@ from sio_transaction_trace import read_events, BASE_HZ, stats
 from stack_budget import stack_usage
 from test_cooperative import data
 from test_mouse_observe import PIN, BRIDGE, ROM
-from mouse_timer_trace import accounting
+from mouse_timer_trace import accounting, require_normal_cadence
+from generate_platform_timer import ABI as TIMER_ABI
 
 
 def fixture(out, capture=False):
@@ -95,6 +96,12 @@ VOLATILE BYTE pokmsk=$10''')
   FI
 
   okay=SIOADAPTER.Start()''')
+    if capture:
+        # Public admission/retirement can outlast the fine alarm, particularly
+        # in raw code. Require the joined owner and the exact transfer/timing
+        # oracles below, not that a running alarm stopped advancing meanwhile.
+        text = text.replace('sharedUsers=1 AND sharedAlarm=1', 'sharedUsers=1')
+        text = text.replace('sharedUsers=3 AND sharedAlarm=1', 'sharedUsers=3')
     for name, pointer in [('sharedUsers','timerUsers'), ('sharedAlarm','timerAlarm'), ('sharedSamples','timerSamples')]:
         text = re.sub(r'\b'+name+r'\b', pointer+'^', text)
     text = text.replace('PROC Main()\n', 'PROC Main()\n\n'
@@ -106,7 +113,7 @@ VOLATILE BYTE pokmsk=$10''')
     return path
 
 
-def run(out, mode, order, emulation=False, unobserved=False, capture=False):
+def run(out, mode, order, emulation=False, unobserved=False, capture=False, replay=False):
     out.mkdir(parents=True, exist_ok=True)
     pin = json.loads(json.dumps(PIN))
     pin['startup_configuration']['diskemu'] = 'fastest'
@@ -115,7 +122,7 @@ def run(out, mode, order, emulation=False, unobserved=False, capture=False):
     try:
         require(sha256(BRIDGE/'AltirraBridgeServer') == PIN['mouse_input']['tooling']['sha256'],
                 'Unpinned timer observer')
-        p = build(compiler(ROOT/'build/actionc'), fixture(out,capture), out/'program',
+        p = read_build(out/'program') if replay else build(compiler(ROOT/'build/actionc'), fixture(out,capture), out/'program',
                   optimize=mode == 'opt', tasks=True, task_capacity=8, io_test_device=True, irq_probe=11,
                   image_data=[(a, bytes([0xa5])*256) for a in (0x8ffa0, 0xcffa0)])
         capture_boundaries = [r['address'] for r in p['image']['routines']
@@ -160,6 +167,11 @@ def run(out, mode, order, emulation=False, unobserved=False, capture=False):
                 raise
             if not unobserved:
                 b.profile_stop()
+            final_timer = b.memdump(p['build']['memory']['timer_storage']['BASE'], 32)
+            require(all(final_timer[TIMER_ABI['fields'][name]] == 0
+                        for name in ('TM_FINE', 'TM_SAMPLE_PHASE')),
+                    'Fine timer/divider state survived release')
+            report['final_timer'] = final_timer.hex()
             for address, value in saved.items():
                 require(b.memdump(address, len(value)) == value, 'Timer hardware restoration '+hex(address))
             if capture:
@@ -183,8 +195,10 @@ def run(out, mode, order, emulation=False, unobserved=False, capture=False):
         gaps = [b-a for a, b in zip(sharedSamples, sharedSamples[1:]) if not any(a < t <= b for t in boundaries)]
         require(len(gaps) > 100, 'Sampler not exercised')
         require(max(gaps)/BASE_HZ < .001, 'Sample gap exceeds 1 ms: '+str(stats(gaps)))
+        timer_accounting = accounting(out/'emulator.log', p['labels'], events)
+        require_normal_cadence(timer_accounting, fine=True)
         report.update(status='pass', timing=timing, sample_gaps=stats(gaps), sample_count=len(sharedSamples),
-                      timer_accounting=accounting(out/'emulator.log', p['labels']),
+                      timer_accounting=timer_accounting,
                       build=p['build'], xex_sha256=sha256(p['xex']),
                       bank_zero_delta=dict(fixed=0, per_task=[0]*8, private_idle=0))
     except Exception as error:
@@ -250,10 +264,10 @@ if __name__ == '__main__':
     p.add_argument('--unobserved', action='store_true')
     p.add_argument('--capture', action='store_true')
     p.add_argument('--recovery', action='store_true')
-    p.add_argument('--replay',action='store_true',help='Reuse a built recovery fixture')
+    p.add_argument('--replay',action='store_true',help='Reuse the built fixture')
     p.add_argument('--output', type=Path, required=True)
     args = p.parse_args()
     if args.recovery:
         recovery_run(args.output.resolve(), args.mode,args.capture,args.replay)
     else:
-        run(args.output.resolve(), args.mode, args.order, args.emulation, args.unobserved, args.capture)
+        run(args.output.resolve(), args.mode, args.order, args.emulation, args.unobserved, args.capture, args.replay)

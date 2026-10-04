@@ -31,7 +31,7 @@ def distribution(values):
                 p95_ms=ordered[math.ceil(len(values)*.95)-1], max_ms=max(values))
 
 
-def trace_report(path, marks, windows, samples, native):
+def trace_report(path, marks, windows, samples, native, cost_definition=None):
     events = read_events(path)
     times = lambda pc: [t for t, e in events if e[0] == 'cpu' and int(e[4], 16) == pc]
     reads = times(marks['pointer_port_read'])
@@ -64,6 +64,10 @@ def trace_report(path, marks, windows, samples, native):
     require(phase_gaps and min(phase_gaps)/BASE_HZ >= .001, 'Stimulus exceeds the supported phase envelope')
     phase_times = [v[0] for v in decoded]
     result = {}
+    cursor_profile = None
+    if cost_definition:
+        from console_turn_profile import analyze_events
+        cursor_profile = analyze_events(events, cost_definition)['routine_spans']
     for name, (begin, end) in windows.items():
         # The debugger exposes the same wrapping base clock as the trace. Align
         # read-only observations to the independently extended event timeline.
@@ -117,10 +121,28 @@ def trace_report(path, marks, windows, samples, native):
         limit = (40, 60) if name == 'idle' else (60, 100)
         result[name]['visible_target_pass'] = bool(motion) and distribution(motion)['p95_ms'] <= limit[0] and max(motion) <= limit[1]
         result[name]['button_target_pass'] = bool(button) and max(button) <= (40 if name == 'idle' else 100)
+        if cursor_profile is not None:
+            launches, uploads = times(marks['vbxe_start']), times(marks['vbxe_upload'])
+            rows = []
+            for span in cursor_profile:
+                if not begin <= span['start'] < span['end'] <= end:
+                    continue
+                starts = [t for t in launches if span['start'] <= t < span['end']]
+                transferred = [t for t in uploads if span['start'] <= t < span['end']]
+                rows.append(dict(**span, launches=len(starts), uploads=len(transferred),
+                    preparation_elapsed_ms=(starts[0]-span['start'])/BASE_HZ*1000 if starts else None))
+            drawn = [r for r in rows if r['launches']]
+            result[name]['cursor_cost'] = dict(
+                scope='Native cursor entry to RTL. Charged CPU excludes native interrupt bodies and off-Task time; includes fences, gateway tails and bus stalls. Preparation to first START is elapsed, not exclusive CPU.',
+                calls=len(rows), drawing_calls=len(drawn),
+                charged_cpu=distribution([r['charged_cpu_ms'] for r in drawn]),
+                preparation_elapsed=distribution([r['preparation_elapsed_ms'] for r in drawn]),
+                launches=sum(r['launches'] for r in drawn), uploads=sum(r['uploads'] for r in drawn),
+                rows=rows)
     return result
 
 
-def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'disk')):
+def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'disk'), costs=False):
     out.mkdir(parents=True, exist_ok=True)
     p = read_build(program)
     pin = json.loads(json.dumps(PIN))
@@ -133,6 +155,20 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                               ('CONSOLEBITMAP_CURSOR', 'cursor')])
     marks = {k: v for k, v in p['labels'].items() if k.startswith(('sio_', 'timer_', 'native_', 'signal_route', 'pointer_'))}
     marks.update({k: v['entry'] for k, v in native.items()})
+    cost_definition = None
+    if costs:
+        from console_turn_profile import flat_markers
+        foreign = json.loads((p['output'].parent/'c-image.json').read_text())['symbols']
+        restore = p['labels']['context_restore']
+        code = (p['output']/'hosted.bin').read_bytes()
+        require(code[restore-0x1400:restore-0x1400+8] == bytes.fromhex('c230ab2b7afa6840'),
+                'Unknown context restore for pointer CPU accounting')
+        points = {name: p['labels'][name] for name in ('native_irq', 'native_nmi', 'interrupt_schedule')}
+        points.update(turn=native['cursor']['entry'], selected=restore+4, worker_retire=p['labels']['done'])
+        cost_definition = dict(points=points, spans=dict(cursor=native['cursor']),
+                               task_dps=[pool['dp'] for pool in p['build']['memory']['task_pools']])
+        marks.update(flat_markers(cost_definition))
+        marks.update(vbxe_start=foreign['start'], vbxe_upload=foreign['_VbxeUpload'])
     pcs = set(marks.values()) | {pc for v in native.values() for pc in v['returns']}
     for name in ('EXEC816_MOUSE_TRACE', 'EXEC816_LATENCY_TRACE', 'EXEC816_LATENCY_PCS', 'EXEC816_MASK_TRACE'):
         os.environ.pop(name, None)
@@ -286,7 +322,7 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
             require(b.memdump(at('DESKINPUT', 'lease'), 32) == bytes(32), 'Pointer lease retained')
         report['controller_trace'] = [list(map(int, m)) for m in re.findall(r'MOUSE_PHASE (\d+) (\d+) (\d+) (\d+)', (out/'emulator.log').read_text())]
         if not unobserved:
-            report['timing'] = trace_report(out/'emulator.log', marks, report['windows'], report['samples'], native)
+            report['timing'] = trace_report(out/'emulator.log', marks, report['windows'], report['samples'], native, cost_definition)
             if 'disk' in loads:
                 from gem_mouse_observe import timing
                 report['shared_timer'], _ = timing(out/'emulator.log', p['labels'], divisor=0 if fastest else 8)
@@ -306,6 +342,7 @@ if __name__ == '__main__':
     parser.add_argument('--program', type=Path, required=True)
     parser.add_argument('--count', type=int, default=100)
     parser.add_argument('--unobserved', action='store_true')
+    parser.add_argument('--costs', action='store_true', help='Separate pointer CPU, interruptions and submissions')
     parser.add_argument('--loads', nargs='+', choices=('idle', 'scroll', 'disk'), default=['idle', 'scroll', 'disk'])
     args = parser.parse_args()
-    run(args.output.resolve(), args.program, args.count, args.unobserved, args.loads)
+    run(args.output.resolve(), args.program, args.count, args.unobserved, args.loads, args.costs)

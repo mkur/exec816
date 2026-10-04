@@ -216,6 +216,12 @@ sio_start:
     jmp sio_leave
 :
     .a8
+    ; Preserve the fine clock across the complete COMMAND sequence. Only this
+    ; transaction-start boundary may reset all POKEY timers; later rate changes
+    ; update AUDF1 alone, with serial clocks and the Timer 2 deadline untouched.
+    jsr timer_fine_start
+    lda f:TM_AUDF1
+    sta f:SD_SHADOW
     lda #1
     sta f:$0042
     sta f:SD_PHASE
@@ -232,7 +238,7 @@ sio_start:
     and #($ff-SIO_OWNED_MASK)
     ora #2
     jsr sio_mask
-    lda #8
+    lda #SIO_SETUP_FINE_TICKS
     jsr sio_arm
     lda f:SD_CANCEL
     beq :+
@@ -332,6 +338,7 @@ sio_shutdown_unchecked:
     lda #0
     sta f:TM_ALARM
     sta f:SD_ALARM
+    jsr timer_fine_end
     lda f:$0010
     and #($ff-SIO_OWNED_MASK)
     jsr sio_mask
@@ -678,6 +685,9 @@ sio_console_return:
 sio_mask:
     jmp timer_mask
 sio_arm:
+    pha
+    jsr timer_fine_start
+    pla
     jmp timer_arm
 
 ; At most one RX and one TX refill on each side of a pointer sample. Hardware
@@ -778,8 +788,9 @@ sio_command_end:
     lda f:$d303
     ora #$38
     sta f:$d303
-    rts
+    jmp timer_fine_end
 sio_write_begin:
+    jsr timer_fine_end
     jsr sio_payload_cursor
     lda #$23
     sta f:$0232
@@ -923,7 +934,7 @@ sio_complete:
     bne :+
     lda #4
     sta f:SD_PHASE
-    lda #6
+    lda #SIO_HOLD_FINE_TICKS
     jmp sio_arm
 :
     cmp #8
@@ -1000,7 +1011,7 @@ sio_ack:
     bne sio_to_result
     lda #6
     sta f:SD_PHASE
-    lda #10
+    lda #SIO_WRITE_FINE_TICKS
     jmp sio_arm
 sio_to_result:
     lda #10
@@ -1096,6 +1107,7 @@ sio_terminal:
     lda f:$d303
     ora #$38
     sta f:$d303
+    jsr timer_fine_end
     lda #0
     sta f:SD_CURSOR+2
     sta f:SD_DATA+2
