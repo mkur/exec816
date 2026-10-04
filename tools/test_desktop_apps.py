@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Independent Task client, two-window pixels and reverse retirement."""
 import argparse
+from desktop_mouse import schedule
 import hashlib
 import json
 import os
@@ -68,13 +69,7 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                 terminal.feed(b'Shell alive')
                 def move(x, y):
                     nonlocal position
-                    dx, dy, index = x-position[0], y-position[1], 0
-                    while dx or dy:
-                        sx, sy = max(-8, min(8, dx)), max(-8, min(8, dy))
-                        b._cmd_ok(f'MOUSE AT {2000+index*85000} {sx*16} {sy*16} -1')
-                        dx -= sx
-                        dy -= sy
-                        index += 1
+                    x,y=schedule(b,p,position,(x,y))
                     reach(f'(dw(${at("DESKINPUT", "cursorX"):x})={x})&(dw(${at("DESKINPUT", "cursorY"):x})={y})')
                     position = [x, y]
                 def click(x, y):

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Physical nonmodal drags, independent recomposition and cancellation checks."""
 import argparse
+from desktop_mouse import schedule
 from bisect import bisect_left
 import hashlib
 import json
@@ -141,19 +142,8 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                 raise RuntimeError('No exact drag scene; bounds='+str(bounds())+' expected='+str(shell)+' phase='+str(read('DESKDRAG','phase',1)))
             def move(x, y):
                 nonlocal position
-                dx, dy = x-position[0], y-position[1]
-                if not dx and not dy:
-                    return clock(), clock()
                 start = clock()
-                # At most eight phases per scheduled packet: controller phases
-                # remain >=2 ms apart, including diagonal motion and reversal.
-                index = 0
-                while dx or dy:
-                    sx, sy = max(-8, min(8, dx)), max(-8, min(8, dy))
-                    b._cmd_ok(f'MOUSE AT {2000+index*85000} {sx*16} {sy*16} -1')
-                    dx -= sx
-                    dy -= sy
-                    index += 1
+                x,y=schedule(b,p,position,(x,y))
                 reach(f'(dw(${at("DESKINPUT", "cursorX"):x})={x})&(dw(${at("DESKINPUT", "cursorY"):x})={y})', 'native_irq')
                 position = [x, y]
                 return start, clock()

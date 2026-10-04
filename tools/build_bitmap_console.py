@@ -96,8 +96,13 @@ def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     foreign=drawing(out,optimize,probe,fault)
     launcher=prepare(Path(source),out,foreign,desktop)
-    return build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,
+    program=build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,
                  task_capacity=8,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
+    if desktop:
+        from generate_desktop import ABI
+        program['build']['desktop_pointer_pixels_per_step']=ABI['constants']['POINTER_PIXELS_PER_STEP']
+        (program['output']/'build.json').write_text(json.dumps(program['build'],indent=2)+'\n')
+    return program
 
 
 if __name__=='__main__':

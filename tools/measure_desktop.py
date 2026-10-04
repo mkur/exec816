@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Passive physical ST capture/consumption and actual scanout observations."""
 import argparse
+from desktop_mouse import schedule, scale
 from bisect import bisect_left
 import hashlib
 import json
@@ -210,8 +211,7 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                 if second_app:
                     # Select the independently scheduled application's exposed
                     # client area. Graphical keys now drive real compute/repaint.
-                    for i in range(264):
-                        b._cmd_ok(f'MOUSE AT {2000+i*4000} 16 {16 if i<32 else 0} -1')
+                    schedule(b,p,position,(584,152))
                     reach(f'(dw(${at("DESKINPUT", "cursorX"):x})=584)&(dw(${at("DESKINPUT", "cursorY"):x})=152)')
                     b._cmd_ok('MOUSE AT 3000 0 0 1')
                     reach(f'dw(${at("DESKAPP", "updates"):x})>=1')
@@ -219,11 +219,9 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                     b._cmd_ok('MOUSE AT 3000 0 0 0')
                     reach(f'dw(${at("DESKINPUT", "buttons"):x})=0')
                     position = [584, 152]
-                # Paced one-phase changes move to a blank desktop margin; no
-                # burst injection or sensitivity adjustment is used.
-                dx, dy = 590-position[0], 24-position[1]
-                for i in range(max(abs(dx), abs(dy))):
-                    b._cmd_ok(f'MOUSE AT {2000+i*4000} {16 if i<dx else 0} {-16 if i<abs(dy) else 0} -1')
+                # Paced physical phases move to a blank desktop margin. Expected
+                # pixels follow the image's fixed desktop sensitivity.
+                schedule(b,p,position,(590,24))
                 reach(f'(dw(${at("DESKINPUT", "cursorX"):x})=590)&(dw(${at("DESKINPUT", "cursorY"):x})=24)')
                 frames(3)
                 position = [590, 24]
@@ -237,7 +235,7 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                         # Change one diagonal phase and reverse every ten steps.
                         dx = 1 if (i//10) % 2 == 0 else -1
                         old = list(position)
-                        position = [position[0]+dx, position[1]+dx]
+                        position = [position[0]+dx*scale(p), position[1]+dx*scale(p)]
                         head = b.peek(capture+1)[0]
                         submitted = clock()
                         b._cmd_ok(f'MOUSE AT {2000+(i*379)%7000} {dx*16} {dx*16} -1')

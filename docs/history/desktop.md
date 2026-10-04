@@ -295,3 +295,43 @@ The guide carries the open timing limits: pointer/outline response, disk-load
 button delay and move repair. Capture and lifecycle correctness do not close
 those targets. The next focused performance work is presentation scheduling,
 activation damage and move repair, before adding menus, resizing or a file browser.
+
+## Desktop pointer sensitivity
+
+Interactive feedback identified too little travel for hand movement. The desktop
+now maps one decoded ST step to two screen pixels, without acceleration. This is
+presenter policy: the sampler, input ABI and native capture remain unchanged.
+The input acquisition bounds controller coordinates to 320×120 inclusive; the
+presenter scales and clips once before pointer drawing, hit testing, event
+delivery and dragging. Overshoot is discarded before scaling, so reversal at
+either screen edge responds immediately. The inclusive right/bottom endpoints
+639/239 remain reachable; the first reverse step there is one pixel, then two.
+
+[Sensitivity evidence](../development/desktop-pointer-scale.json) records seven
+physical motion sequences in each raw/optimized image, including positive and
+negative motion, both-axis overshoot and immediate reversal. Native cumulative
+counts are checked independently of clamped screen positions. The optimized
+fastest-supported input case captures all 97 steps per axis, including vertical
+overshoot. Complete-scene drag checks cover idle raw execution and optimized
+idle/scroll/disk execution, both screen edges, Escape, event-queue loss, declined
+close, hiding and retirement while held. These are development checks, not a
+new latency or hardware qualification result. Historical DT3/DT6 measurements
+remain tied to their original one-pixel images.
+
+The focused regression uses `tools/build_desktop_input.py --mode raw` or `opt`,
+then `tools/test_desktop_pointer_scale.py --program DIR/program --output RESULTS`.
+Desktop builds record their scale in `build.json`; physical test tools convert
+screen targets into controller steps using that image's metadata. Older frozen
+images without the field retain their recorded one-pixel interpretation.
+
+No globals, Task pool, VRAM or memory reservations are added. Reserved bank-zero
+growth is **0 fixed, 0 root/kernel, 0 per existing public Task and 0 idle bytes**,
+including guards, alignment and unused capacity. Host checks pass: 338 tests,
+four historical audit skips; generated desktop definitions are current.
+
+The refreshed `build/desktop/preview-pointer-2x/exec816-demo.zip` includes OF816,
+the matching system disk, pinned ROM, guide and notices. Cold boot of those exact
+files passes seventeen independently recomposed desktop scenes, application
+keys/dragging/focus, disk commands, a seven-Task pipeline and clean shutdown.
+Native guards, ownership, DP and OS restoration pass. This local refresh changes
+travel sensitivity; it does not close the existing presentation timing targets.

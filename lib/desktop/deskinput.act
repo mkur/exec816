@@ -40,10 +40,14 @@ PUBLIC BYTE FUNC Start()
   config.wakeMask=wakeMask
   config.pointerProtocol=INPUT.POINTER_ST
   config.pointerPort=1
-  config.initialX=320
-  config.initialY=120
-  config.maxX=639
-  config.maxY=239
+  ; Input owns bounded controller coordinates; screen scaling is desktop
+  ; policy. Reduced bounds discard overshoot before reversal at an edge.
+  config.initialX=320/DESKTYPES.POINTER_PIXELS_PER_STEP
+  config.initialY=120/DESKTYPES.POINTER_PIXELS_PER_STEP
+  config.maxX=(639+DESKTYPES.POINTER_PIXELS_PER_STEP-1)
+      /DESKTYPES.POINTER_PIXELS_PER_STEP
+  config.maxY=(239+DESKTYPES.POINTER_PIXELS_PER_STEP-1)
+      /DESKTYPES.POINTER_PIXELS_PER_STEP
   status=INPUT.Acquire(@lease,@config)
   IF status=INPUT.OK THEN
     status=INPUT.CreateRoute(@lease,0,@route)
@@ -145,11 +149,20 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
 
 RETURN(0)
 
+INT FUNC ScreenCoordinate(INT value,maximum)
+
+  value=value*DESKTYPES.POINTER_PIXELS_PER_STEP
+
+RETURN(IF value>maximum THEN maximum ELSE value FI)
+
 PROC Consume()
   BYTE slot
   LONGCARD layerId
 
   LET service=DESKSTATE.Get()
+  ; Transform once, before pointer drawing, hit testing, events and dragging.
+  sample.x=ScreenCoordinate(sample.x,639)
+  sample.y=ScreenCoordinate(sample.y,239)
   Copy(@sample)
   IF sample.kind=INPUT.EVENT_LOSS THEN
     released=0

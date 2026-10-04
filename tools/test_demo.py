@@ -3,6 +3,7 @@
 import adapter_state as adapter
 from stack_budget import bank_zero_delta
 import argparse
+from desktop_mouse import schedule
 import json
 import re
 from pathlib import Path
@@ -187,12 +188,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             def symbol(module,name):
                 return next(d['address'] for d in p['image']['data'] if '_'+module+'_'+name.upper()+'_' in d['name'])
             def move(x,y):
-                dx,dy=x-saved['pointer'][0],y-saved['pointer'][1]
-                index=0
-                while dx or dy:
-                    sx,sy=max(-8,min(8,dx)),max(-8,min(8,dy))
-                    b._cmd_ok(f'MOUSE AT {2000+index*85000} {sx*16} {sy*16} -1')
-                    dx-=sx;dy-=sy;index+=1
+                x,y=schedule(b,p,saved['pointer'],(x,y))
                 rendezvous(f'(dw(${symbol("DESKINPUT","cursorX"):x})={x})&(dw(${symbol("DESKINPUT","cursorY"):x})={y})')
                 saved['pointer']=(x,y)
             def button(value):

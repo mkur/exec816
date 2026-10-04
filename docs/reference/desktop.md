@@ -124,8 +124,15 @@ reset-required hardware faults cannot return to free referenced storage.
 The presenter acquires the ST mouse source on joystick port 1 with the existing
 Timer 1 sampler and left button. A separate owned signal and route wake bounded
 input draining; idle turns do not call Take just to discover an empty queue.
-Coordinates are absolute and clipped to 640×240, with no acceleration. Hardware
-capture remains independent of window geometry and rendering.
+Desktop movement uses a fixed **two screen pixels per decoded ST step**, with
+no acceleration. The presenter acquires bounded controller coordinates, then
+scales them once before pointer drawing, hit testing, events and dragging.
+Coordinates are absolute and clipped to 640×240. Interior coordinates move in
+two-pixel increments; the inclusive right/bottom edges remain reachable at
+639/239. Overshoot is discarded in controller coordinates, so reversing at an
+edge moves immediately. `POINTER_PIXELS_PER_STEP` in `abi/desktop.json` records
+this desktop policy. Hardware capture and the general input API remain
+independent of screen geometry and sensitivity.
 
 Each graphical window has a keyboard route. Focus commits that route together
 with the console foreground selection. Captured keys and BREAK keep their route

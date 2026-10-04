@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Desktop ST fastest supported controller spacing and aliasing negative control."""
 import argparse
+from desktop_mouse import scale
+from generate_input_native import definitions
 import json
 import os
 from pathlib import Path
@@ -18,6 +20,10 @@ from sio_transaction_trace import BASE_HZ
 def run(out, program, unobserved=False):
     out.mkdir(parents=True, exist_ok=True)
     p = read_build(program)
+    factor=scale(p)
+    supported=[min(639,320+97*factor),min(239,120+97*factor),0]
+    offsets, _ = definitions()
+    capture = p['build']['memory']['input_storage']['POINTER_CAPTURE']
     at = lambda module, name: next(d['address'] for d in p['image']['data'] if '_'+module+'_'+name.upper()+'_' in d['name'])
     for key in ('EXEC816_MOUSE_TRACE', 'EXEC816_LATENCY_TRACE', 'EXEC816_LATENCY_PCS', 'EXEC816_MASK_TRACE'):
         os.environ.pop(key, None)
@@ -50,9 +56,14 @@ def run(out, program, unobserved=False):
                     command(2000+(16+16*i)*114, 16, 16)
                 command(25000, left=1)
                 command(65000, left=0)
-                reach(f'(dw(${at("DESKINPUT", "cursorX"):x})=417)&(dw(${at("DESKINPUT", "cursorY"):x})=217)&(dw(${at("DESKINPUT", "buttons"):x})=0)')
+                reach(f'(dw(${at("DESKINPUT", "cursorX"):x})={supported[0]})&(dw(${at("DESKINPUT", "cursorY"):x})={supported[1]})&(dw(${at("DESKINPUT", "buttons"):x})=0)')
                 frames(20)
                 report['supported_position'] = point()
+                report['supported_capture_counts'] = [int.from_bytes(b.memdump(
+                    capture+offsets['POINTERCAPTURE_'+axis+'COUNT'], 4), 'little', signed=True)
+                    for axis in ('X', 'Y')]
+                require(report['supported_capture_counts'] == [97, 97], 'Decoder lost supported phases')
+                require(report['supported_position'] == supported, 'Scaled supported position differs')
                 report['supported_end'] = b.eval_expr('@clk') & 0xffffffff
                 # Three/four unseen transitions may alias without a LOSS. This
                 # is explicitly outside the advertised per-axis envelope.
@@ -90,7 +101,7 @@ def run(out, program, unobserved=False):
                 prior = bits
             require(count == [97, 97] and edges == 2, 'Independent phase/button count mismatch')
             require(min(gap)/BASE_HZ >= .001, 'Supported rate fixture exceeded its envelope')
-            require(report['supported_position'] == [x+count[0], y+count[1], 0], 'Decoder lost supported motion')
+            require(report['supported_position'] == supported, 'Decoder lost supported motion')
             report['minimum_supported_phase_ms'] = min(gap)/BASE_HZ*1000
             # The negative controller command contains 256 transitions on each
             # axis. Count the electrical trace, rather than trust absence of loss.
@@ -109,7 +120,7 @@ def run(out, program, unobserved=False):
                         last[axis] = t
                 prior = bits
             require(burst_count == [-256, -256], 'Incomplete negative-control electrical trace')
-            expected = [max(0, 417+burst_count[0]), max(0, 217+burst_count[1]), 0]
+            expected = [max(0, supported[0]+factor*burst_count[0]), max(0, supported[1]+factor*burst_count[1]), 0]
             report['burst_axis_counts'] = burst_count
             report['burst_minimum_phase_us'] = min(burst_gaps)/BASE_HZ*1e6
             report['burst_ideal_position'] = expected

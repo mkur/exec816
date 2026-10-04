@@ -42,6 +42,8 @@ Use the desktop
 Click a window to give it keyboard focus. Drag a title with the left button;
 release commits the move and repairs exposed content. Escape cancels a drag.
 Windows remain onscreen on an eight-pixel grid. Only the left button is supported.
+The pointer moves two screen pixels per ST mouse step, with fixed sensitivity
+and no acceleration. This doubles its travel compared with the first preview.
 
 Click the application and press a key: its Task performs finite computation,
 then replaces the retained panel content. Its X gadget requests cooperative
