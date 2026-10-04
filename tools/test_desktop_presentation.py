@@ -33,11 +33,14 @@ def text(raster, x, y, value, fg=1, bg=0):
                              fg if raster.font[row*256+char] & (128 >> col) else bg)
 
 
-def frame(raster, bounds, title, focused, background=0):
+def frame(raster, bounds, title, focused, background=0, close=False):
     x, y, right, bottom = bounds
     rectangle(raster, bounds, 8)
     rectangle(raster, (x+2, y+2, right-2, y+14), 2 if focused else 7)
     text(raster, x+8, y+4, title, bg=2 if focused else 7)
+    if close:
+        rectangle(raster, (right-14, y+2, right-2, y+14), 8)
+        text(raster, right-12, y+4, b'X', bg=8)
     rectangle(raster, (x+8, y+16, right-8, bottom-8), background)
 
 
@@ -56,7 +59,7 @@ def scenes(font):
         frame(raster, (left, top, left+528, top+184), b'Exec816 Shell', True)
         terminal.paint(raster, (left+8)//8, (top+16)//8, True)
         if stage in (4, 5):
-            frame(raster, (113, 93, 273, 173), b'Clip', False, 3)
+            frame(raster, (113, 93, 273, 173), b'Clip', False, 3, close=True)
             text(raster, 124, 112, b'XYZ', bg=3)
         yield overlay(raster, (320, 120))
 

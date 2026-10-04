@@ -7,7 +7,7 @@ USE LAYERS
 USE REGIONS
 
 DESKTYPES.Service POINTER service
-LONGCARD selectedLayer,scrollToken
+LONGCARD selectedLayer,scrollToken,lossGeneration
 EXEC.Task POINTER launcher
 
 PUBLIC DESKTYPES.Service POINTER FUNC Get()
@@ -73,5 +73,15 @@ RETURN
 PUBLIC LONGCARD FUNC PendingToken()
 
 RETURN(scrollToken)
+
+PUBLIC PROC Lost()
+
+  lossGeneration==+1
+
+RETURN
+
+PUBLIC LONGCARD FUNC LossEpoch()
+
+RETURN(lossGeneration)
 
 ENDMODULE

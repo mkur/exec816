@@ -6,6 +6,7 @@ USE A816MEMORY
 USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
+USE DESKDRAG
 USE DESKEVENTS
 USE LAYERS
 USE CONSOLEBITMAP
@@ -54,6 +55,7 @@ PUBLIC BYTE FUNC Start()
       status=INPUT.Release(@lease)
     ELSE
       acquired=1
+      DESKDRAG.Reset()
       cursorX=320
       cursorY=120
       buttons=0
@@ -75,6 +77,8 @@ PUBLIC PROC Stop()
   BYTE drawn
 
   IF acquired<>0 THEN
+    DESKDRAG.Cancel()
+    DESKDRAG.Present()
     drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),0)
     status=INPUT.Release(@lease)
     IF status<>INPUT.OK THEN
@@ -116,6 +120,10 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
     RETURN(0)
   FI
 
+  IF DESKDRAG.Escape(captured)<>0 THEN
+    RETURN(1)
+  FI
+
   FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
       LET window=@service.windows(slot)
@@ -146,6 +154,7 @@ PROC Consume()
   IF sample.kind=INPUT.EVENT_LOSS THEN
     released=0
     focusWanted=0
+    DESKDRAG.Cancel()
     event.kind=DESKTYPES.EVENT_LOSS
     FOR slot=0 TO DESKTYPES.CLIENTS-1 DO
       IF service.clients(slot).id<>0 THEN
@@ -162,6 +171,11 @@ PROC Consume()
   dirty=1
   IF buttons=0 THEN
     released=1
+  FI
+
+  IF DESKDRAG.Capture(@sample,released)<>0 THEN
+    focusWanted=0
+    RETURN
   FI
 
   layerId=LAYERS.Hit(@service.scene,cursorX,cursorY)
@@ -217,6 +231,7 @@ PUBLIC PROC Service(LONGCARD bits)
     OD
   FI
 
+  DESKDRAG.Advance()
   LET service=DESKSTATE.Get()
   IF focusWanted<>0 AND service.scene.busy=0 THEN
     BEGIN
@@ -241,6 +256,7 @@ PUBLIC PROC Present()
   BYTE drawn
 
   IF acquired<>0 AND CONSOLEBITMAP.Pending()=0 THEN
+    DESKDRAG.Present()
     IF dirty<>0 OR CONSOLEBITMAP.Changed()<>0 THEN
       drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),1)
       dirty=0
@@ -257,7 +273,7 @@ PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
 
-RETURN(pending<>0 OR (focusWanted<>0 AND service.scene.busy=0)
+RETURN(pending<>0 OR DESKDRAG.Runnable()<>0 OR (focusWanted<>0 AND service.scene.busy=0)
     OR (dirty<>0 AND CONSOLEBITMAP.Pending()=0))
 
 ENDMODULE

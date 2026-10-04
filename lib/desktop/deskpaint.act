@@ -94,7 +94,7 @@ RETURN(CONSOLEBITMAP.RawFill(CARD(area.left),CARD(area.top),
 ; Frame, client and glyph coordinates are independently clipped in pixels.
 BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER layer)
   LAYERTYPES.Rect client,area,bounds
-  CARD row,last,first,count,index,titleLength
+  CARD row,last,first,count,index,titleLength,titleLimit
   BYTE okay
 
   LET service=DESKSTATE.Get()
@@ -118,13 +118,29 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       titleLength==+1
     OD
 
-    IF titleLength>CARD((layer.bounds.right-layer.bounds.left-16) RSH 3) THEN
-      titleLength=CARD((layer.bounds.right-layer.bounds.left-16) RSH 3)
+    titleLimit=CARD((layer.bounds.right-layer.bounds.left-16) RSH 3)
+    IF window.kind=DESKTYPES.CONTENT_COMMANDS THEN
+      titleLimit=CARD((layer.bounds.right-layer.bounds.left-32) RSH 3)
+    FI
+
+    IF titleLength>titleLimit THEN
+      titleLength=titleLimit
     FI
 
     IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
       okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.left+8),CARD(layer.bounds.top+4),
           @window.title(0),titleLength,1,IF window.id=service.focus THEN 2 ELSE 7 FI,@area)
+    FI
+
+    IF okay<>0 AND window.kind=DESKTYPES.CONTENT_COMMANDS THEN
+      REGIONS.Assign(@bounds,layer.bounds.right-14,layer.bounds.top+2,
+          layer.bounds.right-2,layer.bounds.top+14)
+      okay=Fill(@bounds,@strip,8)
+      REGIONS.Intersect(@bounds,@strip,@area)
+      IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
+        okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.right-12),
+            CARD(layer.bounds.top+4),BYTE POINTER(c"X"),1,1,8,@area)
+      FI
     FI
 
     IF okay<>0 THEN

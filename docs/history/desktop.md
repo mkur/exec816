@@ -151,3 +151,39 @@ and both AND/OR mask pairs. This consumes former slack and 256 additional
 reserved bytes; no extra aperture is introduced. No Task is added.
 Reserved bank-zero growth against DT0 remains **0 fixed, 0 root/kernel,
 0 per existing public Task and 0 idle bytes**, including guards and slack.
+
+## DT4 Captured, nonblocking window movement
+
+The presenter now captures title-bar drags, displays an XOR outline and commits
+clamped/grid-aligned geometry after active work retires. Escape, input/event-queue
+loss, hiding or closing cancel the gesture; observing release rearms it. A
+close gadget sends a durable cooperative request, while the shell uses EXIT.
+The four outline edge records reuse the existing command arena and are ordered
+below the pointer. Neither input capture nor request intake waits for release.
+
+[DT4 development evidence](../development/desktop-dt4.json) passes raw/optimized
+exact scene checks, repeated repair, reversal, both screen edges, queue overflow
+while held, Escape, hide, close refusal and retirement while held. The optimized
+run measures thirty drags and 120 outline positions per load. Loaded outline
+checks exclude changing console client pixels; release compares the full scene.
+
+| Load | Outline median / p95 / max | Release-to-visible repair median / p95 / max |
+| --- | ---: | ---: |
+| Idle | 70.92 / 70.92 / 712.56 ms | 660.65 / 660.65 / 660.65 ms |
+| Console output | 339.83 / 580.44 / 580.57 ms | 760.94 / 901.39 / 901.39 ms |
+| Physical disk reads | 74.50 / 108.74 / 111.06 ms | 700.69 / 740.83 / 1422.80 ms |
+
+**Outline and 250 ms repair targets remain open.** These are complete scanout
+upper bounds. The first raise can invalidate the shell; repaint continuations
+and loaded model/paint ordering dominate the long tail. The release observer
+also stops/drains the producer before its full-scene comparison, so a disk read
+can extend that bound. Functional dragging does not establish a snappy desktop.
+A focused follow-up should separate frame-only activation damage, outline
+priority and move repair/copy cost before adding richer window chrome.
+
+Development checks: 337 host tests (four unavailable historical audits skipped),
+generated definitions, raw/optimized scene tests and physical gesture fixtures.
+Added storage is 36 bytes of Action globals and 12 bytes of C globals in upper
+RAM, plus compiler alignment within existing image reservations. VRAM growth is
+zero. Reserved bank-zero growth remains **0 fixed, 0 root/kernel, 0 per existing
+public Task and 0 idle bytes**, including guards and unused capacity.

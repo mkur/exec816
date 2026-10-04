@@ -299,6 +299,18 @@ PUBLIC BYTE FUNC Changed()
 
 RETURN(drawingChanged)
 
+PUBLIC BYTE FUNC Outline(CARD x,y,width,height BYTE visible)
+
+  LET packet=GetPacket()
+  packet.x=x
+  packet.y=y
+  packet.width=width
+  packet.height=height
+  packet.foreground=CARD(visible)
+  drawingChanged=1
+
+RETURN(Run(OP_OUTLINE))
+
 PUBLIC BYTE FUNC Cursor(CARD x,y BYTE visible)
   BYTE result
 

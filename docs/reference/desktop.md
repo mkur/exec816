@@ -3,7 +3,7 @@
 [Reference](README.md) · [Layers](layers.md) · [Implementation plan](../plans/gem4xe/desktop-implementation-plan.md)
 
 The native service implements window identities, retained command content,
-asynchronous events and a worker-hosted bitmap presenter. DT3 connects one
+asynchronous events and a worker-hosted bitmap presenter. DT4 connects one
 64×20 shell console and retained graphical windows to Layers. It is an ordinary library and message service above Exec; it
 adds no kernel gateway or resident Task by itself.
 
@@ -144,9 +144,21 @@ A source loss disarms interaction until a released-button observation. Closing a
 graphical window discards and retires its route; shutdown releases the source,
 signal and software pointer before the display and keyboard retire.
 
-The current frame is a title band and fixed border. Dragging and close gadgets
-are DT4 work. Pointer response targets have not all passed; the execution record
-separates exact capture/pixel correctness from measured responsiveness.
+Dragging a title captures subsequent motion and release outside the original
+window. An XOR outline follows the latest position without a nested input loop.
+Release commits onscreen, eight-pixel-aligned geometry after active painting or
+DMA retires. Layers then repairs old and new exposed pixels from retained content.
+Escape, source/event-queue loss, hiding, retirement or an external move cancels
+the gesture. A released-button observation is required before another gesture.
+
+The outline is below the pointer and removed before intersecting drawing. Four
+blitter records toggle its disjoint edges; it adds no VRAM backing bitmap.
+Graphical close gadgets publish durable CLOSE events. They do not force a Task
+to retire, and an application may decline. The shell has no active close gadget;
+its normal EXIT path controls retirement.
+
+Pointer and move-repair response targets have not all passed. The execution
+record separates exact capture/pixel correctness from measured responsiveness.
 
 ## Storage and validation
 

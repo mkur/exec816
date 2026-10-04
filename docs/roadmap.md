@@ -23,9 +23,10 @@ overlapping window from an independent application Task to prove focus, clipping
 and exposure repair. The [DT0–DT7 implementation plan](plans/gem4xe/desktop-implementation-plan.md)
 is ready: client/event lifetime, Layers integration, an ST capture and visible
 pointer checkpoint before dragging, independent clients, loaded shutdown and
-the optional preview. DT0–DT3 implement the native client/event service, framed
-shell and ST input. Capture/routing checks pass; pointer p95 limits remain open.
-Nonblocking dragging is next;
+the optional preview. DT0–DT4 implement the native client/event service, framed
+shell, ST input and nonblocking dragging. Capture/routing and exact repair
+checks pass; pointer, outline and move-repair timing limits remain open.
+The independent application and loaded lifecycle checks are next;
 see the [execution record](history/desktop.md). File browsing, menus and
 broader AES compatibility follow this milestone.
 

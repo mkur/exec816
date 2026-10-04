@@ -31,6 +31,8 @@ static UWORD commandCount;
 static ULONG commandWork;
 static void pointer_reset(void);
 static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom);
+static void outline_hide(void);
+static UWORD outlineLeft,outlineTop,outlineRight,outlineBottom,outlineVisible,outlineDrawn;
 
 
 
@@ -428,11 +430,17 @@ static void pointer_reset(void)
     cursorX=cursorY=cursorVisible=cursorDrawn=cursorBytes=cursorRows=0;
     cursorAddress=0;
     cursorMasksReady=0;
+    outlineVisible=outlineDrawn=0;
 }
 
 /* The save includes adjacent edge nibbles. Restore before either is changed. */
 static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom)
 {
+    if (outlineDrawn && left<outlineRight && right>outlineLeft &&
+        top<outlineBottom && bottom>outlineTop) {
+        cursor_hide();
+        outline_hide();
+    }
     if (cursorDrawn && left<(cursorX&~1U)+cursorBytes*2 && right>(cursorX&~1U) &&
         top<cursorY+cursorRows && bottom>cursorY) cursor_hide();
 }
@@ -455,4 +463,55 @@ UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible)
 void GemDrawingPrepare(UWORD left,UWORD top,UWORD right,UWORD bottom)
 {
     pointer_erase(left,top,right,bottom);
+}
+
+/* One XOR border with disjoint corners. Only the presenter updates it, between
+ * DMA lists; background writes remove it before modifying the saved pixels. */
+static void outline_record(UWORD index,ULONG address,UWORD bytes,UWORD rows,UBYTE mask)
+{
+    UBYTE *r=commands+index*21;
+    memset(r,0,21);
+    r[5]=1;
+    r[6]=(UBYTE)address; r[7]=(UBYTE)(address>>8); r[8]=(UBYTE)(address>>16);
+    r[9]=64; r[10]=1; r[11]=1;
+    r[12]=(UBYTE)(bytes-1); r[13]=(UBYTE)((bytes-1)>>8);
+    r[14]=(UBYTE)(rows-1); r[16]=mask; r[20]=5;
+}
+static void outline_toggle(void)
+{
+    ULONG address=(ULONG)outlineTop*320+outlineLeft/2;
+    UWORD bytes=(outlineRight-outlineLeft)/2;
+    UWORD rows=outlineBottom-outlineTop;
+    flush();
+    if (fault) return;
+    outline_record(0,address,bytes,1,255);
+    outline_record(1,address+(ULONG)(rows-1)*320,bytes,1,255);
+    outline_record(2,address+320,1,rows-2,240);
+    outline_record(3,address+320+bytes-1,1,rows-2,15);
+    latch(VbxeOwnerSubmit(&display,commands,4));
+}
+static void outline_hide(void)
+{
+    if (outlineDrawn && !fault) outline_toggle();
+    outlineDrawn=0;
+}
+UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible)
+{
+    UWORD status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (visible>1 || (visible && ((left|right)&1 || left>=right || top>=bottom ||
+        right>640 || bottom>240 || right-left<32 || bottom-top<32))) return DISPLAY_BAD_ARGUMENT;
+    if (display.scrollPending) return DISPLAY_BUSY;
+    if (!visible || left!=outlineLeft || top!=outlineTop || right!=outlineRight || bottom!=outlineBottom) {
+        if (outlineDrawn) { cursor_hide(); outline_hide(); }
+        outlineLeft=left; outlineTop=top; outlineRight=right; outlineBottom=bottom;
+    }
+    outlineVisible=visible;
+    if (outlineVisible && !outlineDrawn) {
+        cursor_hide();
+        outline_toggle();
+        if (!fault) outlineDrawn=1;
+    }
+    return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
 }

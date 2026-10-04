@@ -29,6 +29,7 @@ UWORD GemDrawingTextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom);
 
 /* Same owner; caller waits for its asynchronous drawing to retire first. */
+UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible);
 UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible);
 
 #endif

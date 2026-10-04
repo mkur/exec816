@@ -3,6 +3,7 @@ MODULE DESKEVENTS
 USE EXEC
 USE A816MEMORY
 USE DESKTYPES
+USE DESKSTATE
 
 PUBLIC DESKTYPES.ClientRecord POINTER FUNC Find(
     DESKTYPES.Service POINTER service LONGCARD id)
@@ -104,6 +105,7 @@ PUBLIC PROC Post(DESKTYPES.Service POINTER service LONGCARD id
     client.head=0
     client.count=0
     client.loss=1
+    DESKSTATE.Lost()
     Wake(service,client)
     RETURN
   FI
@@ -126,6 +128,7 @@ PUBLIC PROC Post(DESKTYPES.Service POINTER service LONGCARD id
     client.head=0
     client.count=0
     client.loss=1
+    DESKSTATE.Lost()
     Wake(service,client)
     RETURN
   FI

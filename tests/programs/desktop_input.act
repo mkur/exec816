@@ -15,7 +15,8 @@ USE DESKSTATE
 USE DESKPAINT
 USE REGIONS
 
-CARD mode,ready,checks,eventCount,keyCount,cancelCount,lossCount,buttonCount
+BYTE holdEvents
+CARD mode,runningMode,ready,checks,eventCount,keyCount,cancelCount,lossCount,buttonCount
 CARD lastCode,lastKind,lastButtons,writes,reads
 LONGCARD lastWindow,panel
 DESKTYPES.Request control,eventRequest,cancelRequest
@@ -141,6 +142,7 @@ PROC Main()
       FI
 
       previousMode=mode
+      runningMode=mode
     FI
 
     IF waiting=0 THEN
@@ -149,11 +151,13 @@ PROC Main()
       waiting=1
     FI
 
-    reply=DESKTOP.Collect(client)
-    IF reply<>NULL THEN
-      Require(reply=@eventRequest AND reply.status=DESKTYPES.OK)
-      Observe()
-      waiting=0
+    IF holdEvents=0 THEN
+      reply=DESKTOP.Collect(client)
+      IF reply<>NULL THEN
+        Require(reply=@eventRequest AND reply.status=DESKTYPES.OK)
+        Observe()
+        waiting=0
+      FI
     FI
 
     IF mode=2 THEN

@@ -377,7 +377,7 @@ ENDMODULE
 
 
 def application_entry(routine):
-    if routine['name'].startswith(('M_DESKTOP_', 'M_DESKCORE_', 'M_DESKEVENTS_', 'M_DESKSTATE_', 'M_DESKPAINT_', 'M_DESKINPUT_', 'M_DESKHOST_', 'M_DESKBOOT_')):
+    if routine['name'].startswith(('M_DESKTOP_', 'M_DESKCORE_', 'M_DESKEVENTS_', 'M_DESKSTATE_', 'M_DESKPAINT_', 'M_DESKINPUT_', 'M_DESKDRAG_', 'M_DESKHOST_', 'M_DESKBOOT_')):
         return False
     # These shared resident shell helpers run on the shell's Task. They are
     # included into several application/fixture modules, not Task entries.
