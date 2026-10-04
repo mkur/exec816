@@ -612,6 +612,11 @@
           "busy",
           "BYTE",
           400
+        ],
+        [
+          "appendEcho",
+          "BYTE",
+          401
         ]
       ]
     }

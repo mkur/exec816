@@ -13,6 +13,7 @@ from gem_render_oracle import Raster,font_bytes
 from test_gem_interactive import pixels
 from bitmap_console_oracle import Terminal
 from bitmap_console_trace import observation,intervals
+from generate_console import constants
 
 
 def run(out,mode,replay=False,observe=False):
@@ -46,8 +47,17 @@ def run(out,mode,replay=False,observe=False):
                 saved.update(screen=b.peek16(88),dma=b.memdump(0x22f,3),cursor=b.memdump(0x2f0,1),input=b.memdump(0x208,2))
                 saved['bytes']=b.memdump(saved['screen'],960)
                 terminal=Terminal(80,30)
-                edits={5:b'AB',6:b'\x08',7:b'\rZ',8:b'C'}
-                for stage in range(1,9):
+                edits={5:b'AB',6:b'\x08',7:b'\rZ',8:b'C',9:b' abd\n'}
+                for stage in range(1,10):
+                    if stage==9:
+                        instance=p['build']['memory']['console_storage']['INSTANCE']
+                        ready=instance+constants()['INSTANCE_READREADY']
+                        reach(f'db(${ready:x})=2')
+                        for key in ('A','B','C','BACKSPACE','D','RETURN'):
+                            require(b._cmd_ok(f'KEY {key} down')['raw_scan'],'Physical key required')
+                            reach(f'@frame>={b.eval_expr("@frame")+4}')
+                            b._cmd_ok(f'KEY {key} up')
+                            reach(f'@frame>={b.eval_expr("@frame")+2}')
                     reach(f'dw(${address("CHECKPOINT"):x})={stage}')
                     if stage==1 and 'ConsoleProbeResults' in sy:
                         raw=b.memdump(sy['ConsoleProbeResults'],80)
@@ -87,7 +97,7 @@ def run(out,mode,replay=False,observe=False):
             if observe:b.profile_stop()
             result.update(status='pass',runtime=runtime,checks=data(b,p['image'],'checks',True))
         if observe:
-            result['operations']=intervals(out/'emulator.log',marks,8)
+            result['operations']=intervals(out/'emulator.log',marks,9)
             for sample in result['operations']:
                 if sample['kind']=='idle':
                     require(not sample['calls'],'Settled caret submitted work: '+str(sample))

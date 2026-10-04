@@ -113,7 +113,7 @@ PROC Run()
   commands=BYTE POINTER(ADDRESS($e0000))
   output=BYTE POINTER(ADDRESS($d0010))
   operations=CARD(commands(0))+(CARD(commands(1)) LSH 8)
-  Require(operations>0 AND operations<=200)
+  Require(operations>0 AND operations<=240)
   command=commands+2
   sample=Observation POINTER(output)
   FOR number=0 TO operations-1 DO
@@ -140,7 +140,7 @@ PROC Run()
       COOKEDLINE.Lose(session,303)
     ELSEIF kind=2 THEN
       sample.result=COOKEDLINE.Drain(session,sample.payload,limit)
-    ELSEIF kind=3 THEN
+    ELSEIF kind=3 OR kind=7 THEN
       count=COOKEDLINE.Render(session)
       Require(count<=128)
       sample.result=LONGINT(count)
@@ -153,6 +153,8 @@ PROC Run()
       session.error=0
     ELSEIF kind=5 THEN
       COOKEDLINE.Init(session)
+    ELSEIF kind=6 THEN
+      session.width=value
     ELSE
       Require(0)
     FI

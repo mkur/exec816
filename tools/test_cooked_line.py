@@ -33,13 +33,31 @@ def vectors():
         op(0,66);op(0,10);op(2,count=256)
     op(5);op(5,session=1);op(0,65,session=0);op(0,66,session=1)
     op(0,13,session=1);op(2,count=256,session=1);op(0,13);op(2,count=256)
-    require(len(ops)<=200,'Vector storage exceeded')
+    # Incremental echo, including Tab and several appends before one Render.
+    # Kind 7 additionally requires the exact new suffix, with no backspaces.
+    op(5);op(0,97);op(3)
+    op(0,8);op(3);op(0,120);op(7,120)
+    op(0,98);op(7,98)
+    op(0,9);op(7,32);op(0,99,3);op(7,99,3)
+    # A delete/retype batch must not qualify merely because length grew.
+    op(0,8,2);op(0,100,3);op(3)
+    op(0,8);op(3);op(0,101);op(7,101)
+    # Enter and leave the hidden tail; the width-boundary append stays cheap.
+    op(5);op(0,97,35);op(3);op(0,98);op(7,98)
+    op(0,99);op(3);op(0,8);op(3);op(0,8);op(3);op(0,100);op(7,100)
+    # Width changes must not mistake a previously shifted tail for a prefix.
+    op(5);op(6,1);op(0,65);op(3);op(0,66);op(3)
+    op(6,3);op(0,67);op(3)
+    # Loss erases the visible prefix even when incremental echo was possible.
+    op(5);op(0,65);op(3);op(1);op(3)
+    require(len(ops)<=240,'Vector storage exceeded')
     return ops
 
 class Model:
     def __init__(self):
         self.line=bytearray();self.position=0;self.error=0
         self.ready=self.eof=self.discard=self.drawn=0
+        self.width=36
         self.screen=bytearray(b'> '+b' '*38);self.cursor=2
     def feed(self,key):
         if self.ready or self.eof:return 0
@@ -78,7 +96,7 @@ class Model:
             else:
                 require(self.cursor<39,'Cooked echo wrapped or touched the final column')
                 self.screen[self.cursor]=byte;self.cursor+=1
-        tail=self.line[-36:];marker=b'<' if len(self.line)>36 else b' '
+        tail=self.line[-self.width:];marker=b'<' if len(self.line)>self.width else b' '
         expected=b'> '+marker+tail+b' '*(37-len(tail))
         require(self.screen==expected and self.cursor==3+len(tail),'Tail/prompt/cursor mismatch')
         self.drawn=1+len(tail)
@@ -94,10 +112,14 @@ def check(ops,raw):
             for _ in range(limit):result=m.feed(value)
         elif kind==1:m.lose(303)
         elif kind==2:result,payload=m.drain(limit)
-        elif kind==3:
+        elif kind in (3,7):
             require(0<actual<=128,'Unbounded echo');payload=record[16:16+actual];m.render(payload);result=actual
+            if kind==7:
+                require(payload==bytes([value])*limit,
+                        f'Append redrew existing text at operation {i}: {payload!r}')
         elif kind==4:m.error=0
         elif kind==5:models[which]=m=Model()
+        elif kind==6:m.width=value
         observed=(actual,length,position,error,ready,eof,discard,drawn)
         expected=(result,len(m.line),m.position,m.error,m.ready,m.eof,m.discard,m.drawn)
         require(observed==expected,f'Cooked state mismatch at operation {i}: {ops[i]}: {observed} != {expected}')

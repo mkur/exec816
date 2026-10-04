@@ -116,6 +116,8 @@ def collect_capture(b,p,out):
 def draw(line,old=None):
     if not line and old is None:return b'> '
     if old is None:old=line[:-1]
+    if old and len(line)<=36 and len(line)>len(old) and line.startswith(old):
+        return bytes(line[len(old):])
     drawn=1+min(36,len(old)) if old else 0
     tail=line[-36:];shown=(b'<' if len(line)>36 else b' ')+tail
     extra=max(0,drawn-len(shown))

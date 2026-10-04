@@ -18,4 +18,5 @@ PUBLIC TYPE Session=[
   BYTE ARRAY line(256)
   BYTE ARRAY echo(128)
   BYTE busy
+  BYTE appendEcho
 ]

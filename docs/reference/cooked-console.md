@@ -30,8 +30,11 @@ before acquiring a fresh line. Output/transport errors do not become EOF.
 
 ## Editing and ownership
 
-Tail redraw preserves the prompt already written by the caller. It displays at
-most 36 characters with a leading space or `<` when earlier text is hidden.
+Echo preserves the prompt already written by the caller. It displays at most
+36 characters with a leading space or `<` when earlier text is hidden.
+The first echo draws that prefix and the current text; subsequent appends emit
+only the new characters while the whole line fits. Deletion, loss and changes
+to the hidden tail use a bounded redraw.
 The adapter reduces that width to fit the current row, retaining one unused
 final column; if no space remains it starts a new row. Echo uses the edited
 console even when command Output is redirected. One input lease spans line

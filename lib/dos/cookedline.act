@@ -20,6 +20,7 @@ PUBLIC PROC Init(Session POINTER state)
   state.discard=0
   state.drawn=0
   state.key=0
+  state.appendEcho=0
 
 RETURN
 
@@ -110,6 +111,7 @@ RETURN
 ; Discard a damaged input line so partial keystrokes cannot form a command.
 PUBLIC PROC Lose(Session POINTER state LONGINT error)
 
+  state.appendEcho=0
   state.length=0
   state.position=0
   state.ready=0
@@ -137,6 +139,7 @@ PUBLIC BYTE FUNC Feed(Session POINTER state BYTE value)
   FI
 
   IF value=3 THEN
+    state.appendEcho=0
     state.length=0
     state.position=0
     state.error=ERROR_BREAK
@@ -145,12 +148,14 @@ PUBLIC BYTE FUNC Feed(Session POINTER state BYTE value)
   FI
 
   IF value=4 THEN
+    state.appendEcho=0
     state.eof=1
     state.ready=1
     RETURN(2)
   FI
 
   IF value=10 OR value=13 THEN
+    state.appendEcho=0
     state.line(state.length)=10
     state.length==+1
     state.ready=1
@@ -159,6 +164,7 @@ PUBLIC BYTE FUNC Feed(Session POINTER state BYTE value)
 
   IF value=8 THEN
     IF state.length<>0 THEN
+      state.appendEcho=0
       state.length==-1
       RETURN(1)
     FI
@@ -226,8 +232,8 @@ PUBLIC LONGINT FUNC Drain(Session POINTER state BYTE POINTER target CARD limit)
 
 RETURN(0)
 
-; Redraw only the tail owned by this Read, preserving its caller's prompt.
-; width is bounded by the adapter using the physical space left on this row.
+; Append only the new suffix while the whole rendered line still fits.
+; Other edits redraw this Read's bounded tail, preserving its caller's prompt.
 PUBLIC CARD FUNC Render(Session POINTER state)
   CARD count,offset,index,used,paint
   BYTE POINTER output
@@ -236,6 +242,17 @@ PUBLIC CARD FUNC Render(Session POINTER state)
   count=state.length
   offset=0
   used=0
+  IF state.appendEcho<>0 AND state.drawn<>0
+      AND count<=CARD(state.width) AND count>=CARD(state.drawn) THEN
+    FOR index=CARD(state.drawn)-1 TO count-1 DO
+      output(used)=state.line(index)
+      used==+1
+    OD
+
+    state.drawn=BYTE(count+1)
+    RETURN(used)
+  FI
+
   IF count>CARD(state.width) THEN
     offset=count-CARD(state.width)
     count=CARD(state.width)
@@ -275,6 +292,9 @@ PUBLIC CARD FUNC Render(Session POINTER state)
   OD
 
   state.drawn=BYTE(count+1)
+  ; A shifted tail cannot serve as a prefix if the width later grows.
+  state.appendEcho=offset=0 AND state.ready=0 AND state.eof=0
+      AND state.discard=0
 
 RETURN(used)
 
