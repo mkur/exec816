@@ -106,6 +106,25 @@ CARD FUNC Find(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volume
 
 RETURN(ABSENT)
 
+; Retire every representation of a sector before a write reaches the device.
+PUBLIC PROC Forget(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volume
+    CARD sector)
+  BYTE part
+  CARD index
+
+  IF cache.blocks=0 THEN
+    RETURN
+  FI
+
+  FOR part=SHORT_SECTOR TO SECOND_HALF DO
+    index=Find(cache,volume,sector,part,SetIndex(cache,volume,sector,part))
+    IF index<>ABSENT THEN
+      cache.tags(index).volume=NULL
+    FI
+  OD
+
+RETURN
+
 ; Both addresses are aligned heap storage; far indexing propagates bank carry.
 PROC Copy(BYTE POINTER source,destination)
   CARD index
@@ -159,7 +178,7 @@ PUBLIC BYTE FUNC Read(BLOCKTYPES.Cache POINTER cache
 RETURN(1)
 
 ; Choose a cache way and publish its tag only after the payload is complete.
-PROC Store(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volume
+PROC StorePart(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volume
     CARD sector BYTE part BYTE POINTER buffer)
   CARD index,candidate
 
@@ -191,7 +210,7 @@ PROC Store(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volume
 RETURN
 
 ; Call only after a successful, exact-length physical-sector transfer.
-PUBLIC PROC Write(BLOCKTYPES.Cache POINTER cache
+PUBLIC PROC Store(BLOCKTYPES.Cache POINTER cache
     BLOCKTYPES.Volume POINTER volume CARD sector,bytes BYTE POINTER buffer)
 
   IF cache.blocks=0 THEN
@@ -199,10 +218,10 @@ PUBLIC PROC Write(BLOCKTYPES.Cache POINTER cache
   FI
 
   IF bytes=BLOCK_BYTES THEN
-    Store(cache,volume,sector,SHORT_SECTOR,buffer)
+    StorePart(cache,volume,sector,SHORT_SECTOR,buffer)
   ELSE
-    Store(cache,volume,sector,FIRST_HALF,buffer)
-    Store(cache,volume,sector,SECOND_HALF,buffer+SIZE(BLOCK_BYTES))
+    StorePart(cache,volume,sector,FIRST_HALF,buffer)
+    StorePart(cache,volume,sector,SECOND_HALF,buffer+SIZE(BLOCK_BYTES))
   FI
 
 RETURN

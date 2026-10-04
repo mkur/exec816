@@ -1,6 +1,6 @@
 # MyDOS and SpartaDOS write support implementation plan
 
-Status: proposed; implementation has not started. Both filesystems remain
+Status: implementation in progress. Both public filesystems remain
 read-only under their current [DOS](../reference/dos.md),
 [MyDOS](../reference/mydos.md) and [SpartaDOS](../reference/spartados.md)
 contracts. This plan adds a shared write path, delivers SpartaDOS first because
@@ -8,6 +8,18 @@ it is the standard demo filesystem, then brings MyDOS to the same API subset.
 
 Use small executable slices and the [development testing tier](../contributing/testing.md).
 Release qualification and physical-device support remain separate gates.
+The [W0 mutation protocol](filesystem-write-protocol.md) records format choices,
+write ordering, cancellation boundaries and the bounded scratch budget.
+
+Development progress: W0 reference media and the host allocation audit are in
+place. The W1/W2 foundation supports verified physical sector writes and
+write-through cache replacement. Raw/optimized 256-byte FASTEST125 block writes,
+128-byte STOCK810 and 256-byte GENERIC57600 SIO writes persisted to disposable
+ATR files and passed whole-image comparison. Read-cache and active wire BREAK
+regressions pass; the host suite passes 337 tests. These are development checks,
+not the complete W1 failure matrix or release qualification. Mutation lifecycle,
+public filesystem writes and W3–W9 remain under implementation. This foundation
+adds zero fixed or per-Task reserved bank-zero bytes, including padding/guards.
 
 ## Outcome and scope
 

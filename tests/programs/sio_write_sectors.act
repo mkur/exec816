@@ -1,0 +1,102 @@
+MODULE SIOWRITESECTORS
+USE EXEC
+USE HEAPCORE
+
+EXEC.MsgPort POINTER port
+EXEC.IOSIOReq POINTER request
+BYTE POINTER buffer
+CARD checks,profile,sectorBytes
+CARD ARRAY sectors=[1 2 3 4 720 1024 32768 65535]
+INCLUDE "io-names.inc"
+
+; Retain the first failing assertion in the launch status.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Write through the real peripheral, discard caller bytes, then read it back.
+PROC Sector(CARD sector)
+  CARD length,index
+  INT error
+
+  length=IF sector<4 THEN CARD(128) ELSE sectorBytes FI
+  FOR index=0 TO 255 DO
+    buffer(index)=BYTE(index) XOR BYTE(sector) XOR $6d
+  OD
+
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(length)
+  request.sio_Command=$57
+  request.sio_Aux1=BYTE(sector)
+  request.sio_Aux2=BYTE(sector RSH 8)
+  request.sio_Direction=EXEC.SIODIR_WRITE
+  request.sio_Profile=profile
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=LONGCARD(length))
+  FOR index=0 TO 255 DO
+    Require(buffer(index)=(BYTE(index) XOR BYTE(sector) XOR $6d))
+    buffer(index)=$a5
+  OD
+
+  request.sio_Command=$52
+  request.sio_Direction=EXEC.SIODIR_READ
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=LONGCARD(length))
+  FOR index=0 TO length-1 DO
+    Require(buffer(index)=(BYTE(index) XOR BYTE(sector) XOR $6d))
+  OD
+
+  IF length=128 THEN
+    FOR index=128 TO 255 DO
+      Require(buffer(index)=$a5)
+    OD
+  FI
+
+RETURN
+
+; Unsupported commands and profiles must still be rejected before wire entry.
+PROC Reject(CARD command,direction,length,speed)
+
+  request.sio_Command=command
+  request.sio_Direction=direction
+  request.io_Length=LONGCARD(length)
+  request.sio_Profile=speed
+  LET error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=EXEC.IOERR_BADLENGTH AND request.io_Actual=0)
+
+RETURN
+
+PROC Main()
+  BYTE index
+
+  LET before=EXEC.AvailMem(0)
+  buffer=BYTE POINTER($0afff0)
+  port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSIOREQ_SIZE))
+  Require(request<>NULL)
+  Require(EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(request),0)=0)
+  FOR index=0 TO 7 DO
+    Sector(sectors(index))
+  OD
+
+  Reject($50,EXEC.SIODIR_WRITE,256,EXEC.SIO_PROFILE_FASTEST125)
+  Reject($57,EXEC.SIODIR_READ,256,EXEC.SIO_PROFILE_FASTEST125)
+  Reject($57,EXEC.SIODIR_WRITE,256,EXEC.SIO_PROFILE_STOCK810)
+  Reject($57,EXEC.SIODIR_WRITE,129,EXEC.SIO_PROFILE_FASTEST125)
+  Reject($57,EXEC.SIODIR_WRITE,257,EXEC.SIO_PROFILE_FASTEST125)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+ENDMODULE

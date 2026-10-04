@@ -49,8 +49,9 @@ assuming work is pending. Current behavior belongs in the
 ## Filesystems and DOS
 
 - [MyDOS and SpartaDOS write support](filesystem-write-implementation-plan.md):
-  proposed W0–W9; shared write-through transport and mutation lifecycle,
+  W0–W9 in progress; shared write-through transport and mutation lifecycle,
   SpartaDOS first, then MyDOS parity and namespace operations.
+  [Mutation protocol](filesystem-write-protocol.md).
 - [Block I/O and MyDOS implementation plan](block-io-dos-implementation-plan.md)
 - [DOS console streams implementation plan](dos-console-streams-implementation-plan.md)
 - [DOS simplification](dos-simplification-plan.md)

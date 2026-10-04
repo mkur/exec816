@@ -1,0 +1,94 @@
+MODULE BLOCKWRITETEST
+USE EXEC
+USE BLOCKIO
+USE BLOCKWIRE
+USE BLOCKTYPES
+USE BLOCKCACHE
+USE HEAPCORE
+INCLUDE "../fixtures/block/driver.inc"
+
+BLOCKTYPES.Adapter POINTER adapter
+BLOCKTYPES.Volume POINTER volume
+CARD checks,profile,sectorBytes
+BYTE POINTER buffer
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Change a warm cached sector using that same scratch buffer as write source.
+PROC Change(CARD sector BYTE seed)
+  CARD index
+
+  LET length=BLOCKIO.SectorBytes(volume,LONGCARD(sector))
+  Require(BlockFetch(adapter,volume,LONGCARD(sector))=0)
+  FOR index=0 TO length-1 DO
+    adapter.buffer(index)=BYTE(index) XOR seed
+  OD
+
+  Require(BLOCKIO.BeginStore(adapter,volume,LONGCARD(sector),adapter.buffer)=2)
+  Require(adapter.valid=0 AND adapter.busy=1 AND volume.busy=1)
+  Require(BLOCKCACHE.Read(@adapter.cache,volume,sector,length,buffer)=0)
+  Require(BLOCKIO.BeginStore(adapter,volume,LONGCARD(sector),buffer)=0)
+  Require(adapter.error=ERROR_OBJECT_IN_USE)
+  LET error=BLOCKWIRE.TransferCommitted(adapter.request,NULL,NULL)
+  Require(BLOCKIO.FinishStore(adapter,volume,LONGCARD(sector),LONGINT(error))=0)
+  Require(adapter.busy=0 AND volume.busy=0 AND adapter.request.io_Data=NULL)
+  Require(adapter.request.io_Device=NULL AND adapter.request.io_Unit=NULL)
+  Require(BlockFetch(adapter,volume,LONGCARD(sector)+1)=0)
+  Require(BlockFetch(adapter,volume,LONGCARD(sector))=0)
+  FOR index=0 TO length-1 DO
+    Require(adapter.buffer(index)=(BYTE(index) XOR seed))
+  OD
+
+  BLOCKIO.Invalidate(adapter)
+  Require(BlockFetch(adapter,volume,LONGCARD(sector))=0)
+  FOR index=0 TO length-1 DO
+    Require(adapter.buffer(index)=(BYTE(index) XOR seed))
+  OD
+
+RETURN
+
+; A failed terminal result must not leave scratch or either cached half valid.
+PROC FailedCompletion()
+
+  Require(BLOCKIO.BeginStore(adapter,volume,4,adapter.buffer)=2)
+  Require(BLOCKIO.FinishStore(adapter,volume,4,LONGINT(EXEC.SIOERR_TIMEOUT))=
+      LONGINT(EXEC.SIOERR_TIMEOUT))
+  Require(adapter.valid=0 AND adapter.busy=0 AND volume.busy=0)
+  Require(BLOCKCACHE.Read(@adapter.cache,volume,4,sectorBytes,buffer)=0)
+  Require(BLOCKIO.BeginStore(adapter,volume,0,buffer)=0)
+  Require(adapter.error=EXEC.IOERR_BADLENGTH)
+  Require(BLOCKIO.BeginStore(adapter,volume,4,NULL)=0)
+  Require(adapter.error=EXEC.IOERR_BADADDRESS)
+  Require(BLOCKIO.BeginStore(adapter,volume,4,BYTE POINTER($fffff0))=0)
+  Require(adapter.error=EXEC.IOERR_BADADDRESS)
+
+RETURN
+
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  buffer=BYTE POINTER($0afff0)
+  adapter=BLOCKIO.Create()
+  Require(adapter<>NULL)
+  volume=BlockAttach(adapter,49,profile,LONGCARD($ffff),sectorBytes,1,1)
+  Require(volume<>NULL)
+  Change(1,$6c)
+  Change(4,$69)
+  FailedCompletion()
+  BLOCKCACHE.Destroy(@adapter.cache)
+  Change(65534,$93)
+  Require(BLOCKIO.Detach(adapter,volume)<>0)
+  Require(BLOCKIO.Destroy(adapter)<>0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+ENDMODULE
