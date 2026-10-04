@@ -17,7 +17,7 @@ from generate_layers import layout as layer_layout
 from gem_render_oracle import Raster, font_bytes, PENS, PALETTE
 from bitmap_console_oracle import Terminal
 from test_gem_cursor import overlay
-from test_desktop_presentation import frame, rectangle
+from test_desktop_presentation import frame, rectangle, text as paint_text
 from sio_transaction_trace import BASE_HZ
 from measure_desktop import distribution
 from make_data_disk import make
@@ -48,6 +48,7 @@ def publication_times(path, pc):
 def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
     out.mkdir(parents=True, exist_ok=True)
     p = read_build(program)
+    second_app = any('_DESKAPP_WINDOWID_' in d['name'] for d in p['image']['data'])
     source = p['output'].parent
     font = font_bytes(source/'selected/src/vdi/font8x8.c')
     at = lambda module, name: next(d['address'] for d in p['image']['data'] if '_'+module+'_'+name.upper()+'_' in d['name'])
@@ -57,7 +58,8 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
     files.mkdir(parents=True, exist_ok=True)
     (files/'DATA.BIN').write_bytes(bytes(i & 255 for i in range(32768)))
     make(out/'disk.atr', out/'media', binary_names={'TOOLS/SUB/DATA.BIN'}, filesystem='sdfs')
-    report = dict(status='running', tier='development', qualification=False, build=p['build'], samples=[], scenes=[], cancellations=[])
+    report = dict(status='running', tier='development', qualification=False, build=p['build'],
+                  second_app=second_app, samples=[], scenes=[], cancellations=[])
     try:
         with emulator(BRIDGE, ROM, out, pin=PIN) as b:
             b.mount(0, str(out/'disk.atr'))
@@ -89,6 +91,8 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
             shell = [32, 24, 560, 208]
             panel = [440, 80, 624, 224]
             graphical = False
+            app_behind_shell = False
+            app_live = second_app
             def bounds(slot=0):
                 address = scene+layer_layout()['Scene']['fields']['items']+slot*layer_layout()['Layer']['size']+4
                 return [int.from_bytes(b.memdump(address+i*2, 2), 'little', signed=True) for i in range(4)]
@@ -96,12 +100,21 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                 model = Raster(font)
                 rectangle(model, (0, 0, 640, 240), 8)
                 focused = int.from_bytes(b.memdump(service+desktop_layout()['Service']['fields']['focus'], 4), 'little')
+                def application():
+                    frame(model, (432,80,624,224), b'Exec816 App', focused == 3, 15, close=True)
+                    for y, value in ((104,b'Independent Task'), (120,b'Key/click: compute'), (136,b'Close: retire')):
+                        paint_text(model,448,y,value,bg=15)
+                    rectangle(model,(448,160,608,184),2+(read('DESKAPP','updates') & 3))
+                if app_live and app_behind_shell:
+                    application()
                 frame(model, shell, b'Exec816 Shell', focused == 1)
                 terminal = Terminal(64, 20)
                 text = bytes(10 if i & 63 == 63 else 65+i % 26 for i in range(512))
                 for _ in range(1+read('DESKTEST', 'writes')):
                     terminal.feed(text)
                 terminal.paint(model, (shell[0]+8)//8, (shell[1]+16)//8, caret=focused == 1)
+                if app_live and not app_behind_shell:
+                    application()
                 if graphical:
                     frame(model, panel, b'Input', focused == 2, close=True)
                 if outline is not None:
@@ -148,6 +161,12 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                 position = [x, y]
                 return start, clock()
             def button(down):
+                nonlocal app_behind_shell
+                # The fixture presses the shell title to raise it, and later
+                # raises its separate Input panel. Track that expected stacking
+                # independently instead of reading the target's layer order.
+                if down and shell[0] <= position[0] < shell[2] and shell[1] <= position[1] < shell[1]+16:
+                    app_behind_shell = True
                 start = clock()
                 b._cmd_ok(f'MOUSE AT 2000 0 0 {1 if down else 0}')
                 reach(f'dw(${at("DESKINPUT", "buttons"):x})={1 if down else 0}', 'native_irq')
@@ -158,7 +177,7 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                 y = min((240-height) & ~7, (max(0, origin[1]+point[1]-press[1])+4) & ~7)
                 return [x, y, x+width, y+height]
             def before(bridge):
-                nonlocal service, scene, shell, panel, graphical
+                nonlocal service, scene, shell, panel, graphical, app_live
                 b.profile_start()
                 reach(f'dw(${at("DESKTEST", "ready"):x})=1')
                 service = read('DESKSTATE', 'service', 3)
@@ -227,6 +246,17 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                 button(False)
                 require(bounds() == shell, 'Escape committed a move')
                 report['cancellations'].append(dict(kind='escape', scene=visible()))
+                if app_live:
+                    # The independent app completely covers the fixture's
+                    # smaller Input panel. Retire it through its real close
+                    # gadget before exercising that panel's slow consumer.
+                    move(616,87)
+                    button(True)
+                    frames(2)
+                    button(False)
+                    reach(f'db(${at("DESKAPP", "finished"):x})=1')
+                    app_live=False
+                    report['cancellations'].append(dict(kind='independent_app_close',scene=visible()))
                 # A slow graphical event consumer fills the real native queue.
                 write('DESKTEST', 'mode', 4)
                 reach(f'dw(${at("DESKTEST", "runningMode"):x})=4')

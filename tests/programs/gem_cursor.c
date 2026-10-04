@@ -3,7 +3,9 @@
 #include <hardware/vbxe.h>
 volatile UWORD stage, checkpoint, gate, opcode, pairs, words, answer, bad;
 volatile UWORD completed, replyWords, finished, failures, checks;
-volatile UWORD faultPoint, faultSeen, permanent, inject, stopped, phases, activePhase, starts;
+volatile UWORD faultPoint, faultSeen, permanent, inject, stopped, phases, activePhase, starts, uploads;
+volatile UWORD lastRecords;
+UBYTE lastBatch[84];
 WORD points[32], ints[64];
 struct GemServer server;
 struct GemClient client;
@@ -13,11 +15,16 @@ UBYTE ProbeBusy(void)
     if (inject && (permanent || !stopped)) return 2;
     return *(volatile UBYTE *)0xd653UL;
 }
-void ProbeCursorPhase(UWORD point)
+void ProbeCursorBatch(const UBYTE *records,UWORD count)
 {
+    UWORD i;
     ++phases;
-    activePhase=point;
+    check(count>0 && count<=4);
+    lastRecords=count;
+    for (i=0;i<count*21 && i<sizeof(lastBatch);i++) lastBatch[i]=records[i];
+    activePhase=count;
 }
+void ProbeUpload(void) { ++uploads; }
 void ProbeStarted(void)
 {
     ++starts;

@@ -26,6 +26,29 @@ def overlay(model,cursor):
                     raw[(y+row)*640+x+col]=15 if char=='X' else 0
     return bytes((a<<4)|b for a,b in zip(raw[::2],raw[1::2]))
 
+
+def cursor_records(old, new):
+    """Independent packed-byte geometry and ordering oracle, before link bits."""
+    records=[]
+    def geometry(point):
+        x,y=point
+        return y*320+x//2, (x%2+min(16,640-x)+1)//2, min(16,240-y)
+    def record(source, ss, destination, ds, width, rows, mode):
+        return (source.to_bytes(3,'little')+ss.to_bytes(2,'little')+b'\x01'+
+                destination.to_bytes(3,'little')+ds.to_bytes(2,'little')+b'\x01'+
+                (width-1).to_bytes(2,'little')+bytes([rows-1,255,0,0,0,0,mode]))
+    if old == new:
+        return b''
+    if old is not None:
+        address,width,rows=geometry(old)
+        records.append(record(0x37000,16,address,320,width,rows,0))
+    if new is not None:
+        address,width,rows=geometry(new)
+        records.append(record(address,320,0x37000,16,width,rows,0))
+        for source,mode in ((0x37100,4),(0x37200,3)):
+            records.append(record(source+(new[0]%2)*512,16,address,320,width,rows,mode))
+    return b''.join(records)
+
 def run(output,mode,replay=False,unquiesced=False):
     output=Path(output).resolve();output.mkdir(parents=True,exist_ok=True)
     report=dict(status='running',tier='development',slice='I5',mode=mode,cases=[])
@@ -53,7 +76,7 @@ def run(output,mode,replay=False,unquiesced=False):
                 item=dict(name=name,status='running',opcode=op,points=points,ints=values,bad=bad,fault=fault)
                 report['cases'].append(item)
                 sequence=int.from_bytes(b.memdump(sy['server']+72,4),'little')
-                phases=get('phases');starts=get('starts')
+                phases=get('phases');starts=get('starts');uploads=get('uploads')
                 cursor_before={k:get(k) for k in ('cursorX','cursorY','cursorVisible','cursorDrawn')}
                 put('opcode',op);put('pairs',len(points)//2);put('words',len(values));put('bad',bad)
                 put('faultPoint',fault);put('faultSeen',0);put('inject',0);put('stopped',0)
@@ -66,7 +89,8 @@ def run(output,mode,replay=False,unquiesced=False):
                 item.update(result=get('answer'),completed=get('completed'),reply_words=get('replyWords'),
                             sequence_before=sequence,sequence_after=int.from_bytes(b.memdump(sy['server']+72,4),'little'),
                             cursor_before=cursor_before,cursor_after={k:get(k) for k in cursor_before},
-                            phase_calls=get('phases')-phases,blits_started=get('starts')-starts)
+                            phase_calls=get('phases')-phases,blits_started=get('starts')-starts,
+                            command_uploads=get('uploads')-uploads)
                 require(item['result']==status,f'{name}: status {item["result"]} != {status}')
                 if bad:
                     require(item['sequence_before']==item['sequence_after'] and item['cursor_before']==item['cursor_after'] and
@@ -77,7 +101,18 @@ def run(output,mode,replay=False,unquiesced=False):
                     cursor=None
                 elif not status:
                     if op==0xff00:
-                        cursor=(points[0],points[1]) if values[0] else None
+                        new=(points[0],points[1]) if values[0] else None
+                        expected=cursor_records(cursor,new)
+                        count=len(expected)//21
+                        require(item['blits_started']==item['command_uploads']==int(bool(count)),
+                                'Pointer did not use one upload/launch, or unchanged pointer launched')
+                        require(item['phase_calls']==int(bool(count)), 'Pointer batch count differs')
+                        if count:
+                            actual=b.memdump(sy['lastBatch'],count*21)
+                            require(get('lastRecords')==count and actual==expected,
+                                    'Pointer record geometry/order differs')
+                            item.update(records=count,command_bytes=actual.hex())
+                        cursor=new
                         require(item['completed']==0 and item['reply_words']==0,'Cursor returned VDI output')
                         require(item['sequence_after']==sequence+1,'Cursor sequence did not advance')
                     elif op==2:cursor=None
@@ -102,7 +137,9 @@ def run(output,mode,replay=False,unquiesced=False):
                 operation('panel',11,[16,16,160,120])
                 for i,xy in enumerate([(0,0),(1,0),(21,41),(22,41),(639,0),(0,239),(639,239),(625,225),(626,226),(320,120)]):
                     operation('move-'+str(i),0xff00,xy,[1])
+                operation('unchanged-visible',0xff00,[320,120],[1])
                 operation('hide',0xff00,[320,120],[0])
+                operation('unchanged-hidden',0xff00,[320,120],[0])
                 operation('stationary',0xff00,[20,40],[1])
                 operation('under-color',25,values=[3]);operation('under-bar',11,[0,0,60,80])
                 operation('under-text',8,[17,46],list(b'Changed'))
@@ -121,8 +158,10 @@ def run(output,mode,replay=False,unquiesced=False):
                 if unquiesced:
                     operation('unquiesced-draw',0xff00,[80,60],[1],fault=4,terminal=True)
                     return
-                for fault in range(1,5):
-                    operation('fault-'+str(fault),0xff00,[80,60],[1],fault=fault,status=6)
+                for fault in (1,3,4):
+                    if fault==3:
+                        operation('hide-before-show-fault',0xff00,[41,41],[0])
+                    operation('fault-'+str(fault),0xff00,[80,60],[0 if fault==1 else 1],fault=fault,status=6)
                     operation('reopen-'+str(fault),1)
                     operation('show-'+str(fault),0xff00,[41,41],[1])
                 put('opcode',0xffff);put('gate',n);b.bp_clear_all()

@@ -13,22 +13,16 @@ def build_cursor(output,optimize=True):
     extraction=extract(output/'selected');src=output/'selected/src'
     service=PORT/'service';adapter=PORT/'adapter'
     hardware=(ROOT/'platform/altirraos/vbxe.c').read_text()
-    hardware=hardware.replace('#define BUSY ','extern UBYTE ProbeBusy(void);\nextern void ProbeStarted(void);\nextern volatile UWORD stopped;\n#define BUSY ')
+    hardware=hardware.replace('#define BUSY ','extern UBYTE ProbeBusy(void);\nextern void ProbeStarted(void);\nextern void ProbeUpload(void);\nextern volatile UWORD stopped;\n#define BUSY ')
     hardware=hardware.replace('REG(BUSY)&3','ProbeBusy()&3').replace('REG(BUSY)=0;', 'REG(BUSY)=0; stopped=1;')
     hardware=hardware.replace('REG(BUSY)=1;', 'REG(BUSY)=1; ProbeStarted();')
+    hardware=hardware.replace('    struct VbxeUpload upload;','    struct VbxeUpload upload;\n    ProbeUpload();')
     (output/'vbxe-cursor.c').write_text(hardware)
     backend=(adapter/'gem-vbxe.c').read_text().replace('static struct VbxeDisplay display;',
-        'extern void ProbeCursorPhase(UWORD);\nstatic struct VbxeDisplay display;')
-    backend=backend.replace('if (cursorDrawn && !fault)\n        latch(',
-        'if (cursorDrawn && !fault) {\n        ProbeCursorPhase(1);\n        latch(')
-    backend=backend.replace('cursorBytes,cursorRows,255,0,0));\n    cursorDrawn=0;',
-        'cursorBytes,cursorRows,255,0,0));\n    }\n    cursorDrawn=0;')
-    backend=backend.replace('    latch(VbxeOwnerBlit(&display,cursorAddress',
-        '    ProbeCursorPhase(2);\n    latch(VbxeOwnerBlit(&display,cursorAddress')
-    backend=backend.replace('    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_AND',
-        '    if (!fault) ProbeCursorPhase(3);\n    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_AND')
-    backend=backend.replace('    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_OR',
-        '    if (!fault) ProbeCursorPhase(4);\n    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_OR')
+        'extern void ProbeCursorBatch(const UBYTE *,UWORD);\nstatic struct VbxeDisplay display;')
+    marker='static void cursor_submit(UWORD count)\n{\n'
+    if backend.count(marker)!=1:raise RuntimeError('Missing cursor batch probe boundary')
+    backend=backend.replace(marker,marker+'    ProbeCursorBatch(commands,count);\n')
     (output/'gem-cursor-backend.c').write_text(backend)
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',output/'vbxe-cursor.c',
         service/'gem-validation.c',service/'gem-service.c',service/'gem-client.c',

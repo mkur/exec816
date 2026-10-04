@@ -286,56 +286,78 @@ static UWORD cursorMasksReady;
 #include "gem-cursor-masks.h"
 
 
-/* Cursor transfers use the same fenced driver as drawing. The existing CPU
- * page stages masks only after donor writes have been flushed. Glyph scratch
- * remains untouched. Save/restore includes both edge nibbles; the masks retain
- * the neighboring pixels when an odd coordinate uses nine packed bytes. */
-static void cursor_hide(void)
+/* Only the admitted cursor operation calls this producer. Submit validates
+ * the entire list before DMA; no record flushes a partially prepared move. */
+static void cursor_record(UWORD index,ULONG source,UWORD sourceStride,
+    ULONG destination,UWORD destinationStride,UWORD bytes,UWORD rows,UBYTE mode)
 {
-    flush();
-    if (cursorDrawn && !fault)
-        latch(VbxeOwnerBlit(&display,CURSOR_SAVE,16,cursorAddress,320,cursorBytes,cursorRows,255,0,0));
-    cursorDrawn=0;
+    UBYTE *r=commands+index*21;
+    r[0]=(UBYTE)source; r[1]=(UBYTE)(source>>8); r[2]=(UBYTE)(source>>16);
+    r[3]=(UBYTE)sourceStride; r[4]=(UBYTE)(sourceStride>>8); r[5]=1;
+    r[6]=(UBYTE)destination; r[7]=(UBYTE)(destination>>8); r[8]=(UBYTE)(destination>>16);
+    r[9]=(UBYTE)destinationStride; r[10]=(UBYTE)(destinationStride>>8); r[11]=1;
+    r[12]=(UBYTE)(bytes-1); r[13]=0; r[14]=(UBYTE)(rows-1);
+    r[15]=255; r[16]=r[17]=r[18]=r[19]=0; r[20]=mode;
 }
-static void cursor_show(void)
+static void cursor_submit(UWORD count)
 {
-    UWORD width;
-    if (!cursorVisible || cursorDrawn || fault) return;
-    flush();
+    latch(VbxeOwnerSubmit(&display,commands,count));
+}
+
+/* One synchronous list restores the old save before replacing it with the
+ * new background. At most four records / 84 bytes / 1440 work units, inside
+ * the existing staging and VRAM arenas. Both edge nibbles remain preserved.
+ * Logical visibility is separate: drawing may temporarily erase the pointer. */
+static void cursor_render(UWORD x,UWORD y,UWORD draw)
+{
+    UWORD width=0,bytes=0,rows=0,count=0;
+    ULONG address=0,parity;
     if (fault) return;
-    width=640-cursorX;
-    if (width>16) width=16;
-    cursorRows=240-cursorY;
-    if (cursorRows>16) cursorRows=16;
-    cursorBytes=((cursorX&1)+width+1)/2;
-    cursorAddress=(ULONG)cursorY*320+cursorX/2;
-    latch(VbxeOwnerBlit(&display,cursorAddress,320,CURSOR_SAVE,16,cursorBytes,cursorRows,255,0,0));
-    if (fault) return;
-    /* Prepacked masks keep redraw/cursor work bounded in raw C builds too.
-     * Clipping changes the blit extent; unused edge nibbles remain preserved. */
-    if (!cursorMasksReady) {
-        memcpy(page,cursorMasks,1024);
-        latch(VbxeOwnerWrite(&display,CURSOR_AND,page,1024));
-        if (!fault) cursorMasksReady=1;
+    if ((!draw && !cursorDrawn) || (draw && cursorDrawn && x==cursorX && y==cursorY)) {
+        cursorX=x; cursorY=y;
+        return;
     }
-    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_AND+(cursorX&1)*CURSOR_PARITY_BYTES,
-        16,cursorAddress,320,cursorBytes,cursorRows,255,0,4));
-    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_OR+(cursorX&1)*CURSOR_PARITY_BYTES,
-        16,cursorAddress,320,cursorBytes,cursorRows,255,0,3));
-    if (!fault) cursorDrawn=1;
+    flush();
+    if (fault) return;
+    if (draw) {
+        width=640-x;
+        if (width>16) width=16;
+        rows=240-y;
+        if (rows>16) rows=16;
+        bytes=((x&1)+width+1)/2;
+        address=(ULONG)y*320+x/2;
+        if (!cursorMasksReady) {
+            memcpy(page,cursorMasks,1024);
+            latch(VbxeOwnerWrite(&display,CURSOR_AND,page,1024));
+            if (fault) return;
+            cursorMasksReady=1;
+        }
+    }
+    if (cursorDrawn)
+        cursor_record(count++,CURSOR_SAVE,16,cursorAddress,320,cursorBytes,cursorRows,0);
+    if (draw) {
+        parity=(x&1)*CURSOR_PARITY_BYTES;
+        cursor_record(count++,address,320,CURSOR_SAVE,16,bytes,rows,0);
+        cursor_record(count++,CURSOR_AND+parity,16,address,320,bytes,rows,4);
+        cursor_record(count++,CURSOR_OR+parity,16,address,320,bytes,rows,3);
+    }
+    cursor_submit(count);
+    if (fault) return;
+    cursorX=x; cursorY=y; cursorDrawn=draw;
+    cursorAddress=address; cursorBytes=bytes; cursorRows=rows;
 }
+static void cursor_hide(void)
+{ cursor_render(cursorX,cursorY,0); }
+static void cursor_show(void)
+{ if (cursorVisible) cursor_render(cursorX,cursorY,1); }
 #ifndef GEM_DRAWING_ONLY
 static UWORD cursor_backend(void *context,const struct GemCursor *cursor)
 {
     UWORD status=DisplayCheck(&display.lease);
     (void)context;
     if (status!=DISPLAY_OK || fault) return GEM_DEVICE_FAULT;
-    cursor_hide();
-    if (fault) return GEM_DEVICE_FAULT;
-    cursorX=cursor->x;
-    cursorY=cursor->y;
-    cursorVisible=cursor->visible;
-    cursor_show();
+    cursor_render(cursor->x,cursor->y,cursor->visible);
+    if (!fault) cursorVisible=cursor->visible;
     return fault ? GEM_DEVICE_FAULT : GEM_OK;
 }
 static UWORD close_backend(void *context)
@@ -452,9 +474,8 @@ UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible)
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (x>=640 || y>=240 || visible>1) return DISPLAY_BAD_ARGUMENT;
     if (display.scrollPending) return DISPLAY_BUSY;
-    if (x!=cursorX || y!=cursorY || !visible) cursor_hide();
-    cursorX=x; cursorY=y; cursorVisible=visible;
-    cursor_show();
+    cursor_render(x,y,visible);
+    if (!fault) cursorVisible=visible;
     return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
 }
 
