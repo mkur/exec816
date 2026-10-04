@@ -95,6 +95,9 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [Command usability](command-usability-implementation-plan.md): planned;
+  bounded shell PATH, shared fault messages and command template help, with
+  six executable slices and development acceptance checks.
 - [First command toolbox](command-toolbox-implementation-plan.md): C1–C6 complete;
   shared arguments/streams, seven loadable commands, directory/console imports
   and the integrated OF816 demo. [Development record](../history/command-toolbox.md).
