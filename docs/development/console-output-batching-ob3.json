@@ -39,8 +39,7 @@
       "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
       "compiler_override": false,
       "upper_globals_reserved_bytes": 2048,
-      "upper_globals_used_bytes": 4078336,
-      "native_executable_bytes": 448524,
+      "upper_globals_used_bytes": 909,
       "batch_launches": {
         "batchLaunches": 41,
         "multiLaunches": 30,
@@ -141,7 +140,8 @@
             "interrupt_reserve_bytes_touched": 0
           }
         }
-      ]
+      ],
+      "image_segment_payload_bytes": 448524
     },
     {
       "path": "build/output-batching/ob3-batch-raw/results.json",
@@ -151,8 +151,7 @@
       "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
       "compiler_override": false,
       "upper_globals_reserved_bytes": 2048,
-      "upper_globals_used_bytes": 4078336,
-      "native_executable_bytes": 498329,
+      "upper_globals_used_bytes": 909,
       "batch_launches": {
         "batchLaunches": 49,
         "multiLaunches": 23,
@@ -253,7 +252,8 @@
             "interrupt_reserve_bytes_touched": 0
           }
         }
-      ]
+      ],
+      "image_segment_payload_bytes": 498329
     },
     {
       "path": "build/output-batching/ob3-scroll-opt/results.json",
@@ -263,8 +263,7 @@
       "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
       "compiler_override": false,
       "upper_globals_reserved_bytes": 2048,
-      "upper_globals_used_bytes": 4078336,
-      "native_executable_bytes": 450162,
+      "upper_globals_used_bytes": 448,
       "observations": [
         {
           "stage": 1,
@@ -387,7 +386,8 @@
             "interrupt_reserve_bytes_touched": 0
           }
         }
-      ]
+      ],
+      "image_segment_payload_bytes": 450162
     },
     {
       "path": "build/output-batching/ob3-scroll-raw/results.json",
@@ -397,8 +397,7 @@
       "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
       "compiler_override": false,
       "upper_globals_reserved_bytes": 2048,
-      "upper_globals_used_bytes": 4078336,
-      "native_executable_bytes": 500078,
+      "upper_globals_used_bytes": 448,
       "observations": [
         {
           "stage": 1,
@@ -521,7 +520,8 @@
             "interrupt_reserve_bytes_touched": 0
           }
         }
-      ]
+      ],
+      "image_segment_payload_bytes": 500078
     },
     {
       "path": "build/output-batching/ob3-reply-opt/results.json",
@@ -531,8 +531,7 @@
       "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
       "compiler_override": false,
       "upper_globals_reserved_bytes": 2048,
-      "upper_globals_used_bytes": 4078336,
-      "native_executable_bytes": 264431,
+      "upper_globals_used_bytes": 416,
       "runtimes": [
         {
           "status": 0,
@@ -601,7 +600,8 @@
             "interrupt_reserve_bytes_touched": 0
           }
         }
-      ]
+      ],
+      "image_segment_payload_bytes": 264431
     },
     {
       "path": "build/output-batching/ob3-reply-raw/results.json",
@@ -611,8 +611,7 @@
       "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
       "compiler_override": false,
       "upper_globals_reserved_bytes": 2048,
-      "upper_globals_used_bytes": 4078336,
-      "native_executable_bytes": 293376,
+      "upper_globals_used_bytes": 416,
       "runtimes": [
         {
           "status": 0,
@@ -681,7 +680,8 @@
             "interrupt_reserve_bytes_touched": 0
           }
         }
-      ]
+      ],
+      "image_segment_payload_bytes": 293376
     },
     {
       "path": "build/output-batching/ob3-text-opt/results.json",
@@ -691,8 +691,7 @@
       "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
       "compiler_override": false,
       "upper_globals_reserved_bytes": 2048,
-      "upper_globals_used_bytes": 4078336,
-      "native_executable_bytes": 228817,
+      "upper_globals_used_bytes": 406,
       "runtimes": [
         {
           "status": 0,
@@ -761,7 +760,8 @@
             "interrupt_reserve_bytes_touched": 0
           }
         }
-      ]
+      ],
+      "image_segment_payload_bytes": 228817
     },
     {
       "path": "build/output-batching/ob3-control-opt/results.json",
@@ -771,8 +771,7 @@
       "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
       "compiler_override": false,
       "upper_globals_reserved_bytes": 2048,
-      "upper_globals_used_bytes": 4078336,
-      "native_executable_bytes": 269488,
+      "upper_globals_used_bytes": 893,
       "runtimes": [
         {
           "status": 0,
@@ -1042,7 +1041,8 @@
             "interrupt_reserve_bytes_touched": 0
           }
         }
-      ]
+      ],
+      "image_segment_payload_bytes": 269488
     },
     {
       "path": "build/output-batching/ob3-fair-opt/results.json",
@@ -1052,8 +1052,7 @@
       "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
       "compiler_override": false,
       "upper_globals_reserved_bytes": 2048,
-      "upper_globals_used_bytes": 4078336,
-      "native_executable_bytes": 456328,
+      "upper_globals_used_bytes": 883,
       "observations": [
         {
           "stage": 1,
@@ -1204,7 +1203,8 @@
             "interrupt_reserve_bytes_touched": 0
           }
         }
-      ]
+      ],
+      "image_segment_payload_bytes": 456328
     },
     {
       "path": "build/output-batching/ob3-fair-raw/results.json",
@@ -1214,8 +1214,7 @@
       "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
       "compiler_override": false,
       "upper_globals_reserved_bytes": 2048,
-      "upper_globals_used_bytes": 4078336,
-      "native_executable_bytes": 506858,
+      "upper_globals_used_bytes": 883,
       "observations": [
         {
           "stage": 1,
@@ -1366,7 +1365,9 @@
             "interrupt_reserve_bytes_touched": 0
           }
         }
-      ]
+      ],
+      "image_segment_payload_bytes": 506858
     }
-  ]
+  ],
+  "accounting_note": "Globals usage includes allocations inside the arena only; external-address symbols do not reserve arena bytes. Image payload includes linked C code/data."
 }

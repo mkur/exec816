@@ -1,5 +1,9 @@
 ; Fixture-only counters at the accepted hardware launch boundary.
 MODULE BATCHPROBE
+USE CONSOLETYPES
+USE CONSOLEBATCH
+USE CONSOLEWINDOWS
+PUBLIC BYTE target,hit,notice
 PUBLIC CARD batchLaunches,multiLaunches,maxRows
 
 PUBLIC PROC Launched(CARD rows)
@@ -14,5 +18,18 @@ PUBLIC PROC Launched(CARD rows)
   FI
 
 RETURN
+
+; Hold one new phase while the client exercises public cancellation/control.
+; A pending control may drain DMA before applying its mutation.
+PUBLIC BYTE FUNC Blocked()
+
+  LET batch=CONSOLEBATCH.Get()
+  LET windows=CONSOLEWINDOWS.Registry()
+  IF target<>0 AND batch.phase=target THEN
+    hit=target
+    RETURN(windows.control.state<>CONSOLETYPES.CTL_PENDING)
+  FI
+
+RETURN(0)
 
 ENDMODULE

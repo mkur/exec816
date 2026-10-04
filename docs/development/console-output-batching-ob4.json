@@ -1,0 +1,1021 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "slice": "OB4",
+  "scope": "24 batch phase/control cases in each NIR mode, 13 ordinary continuation interleavings, and 8 recovery faults in each NIR mode. Includes hide/show, focus, stale generation, cancel, Stop and destroy/reuse; accepted prefixes, poisoned post-reply sources, pixels, guards, OS restoration and reset-required retention.",
+  "host_tests": {
+    "total": 331,
+    "passed": 327,
+    "skipped": 4
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "batch_context_bytes": 44,
+  "upper_globals_arena_reserved_bytes": 2048,
+  "upper_reservation_delta_bytes": 0,
+  "reports": [
+    {
+      "path": "build/output-batching/ob4-lifetime-opt-final/results.json",
+      "sha256": "10b763ff02cae73cf704f499fdd38c196135e46050191adae21b2b29526522e3",
+      "status": "pass",
+      "xex_sha256": "14e485be85615d8ccb3bd4e86ec50b3051a600244332f5b4cbe3349ad80851fa",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 936,
+      "image_segment_payload_bytes": 451833,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 360,
+          "untouched_above_floor": 920
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 551,
+          "untouched_above_floor": 1753
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ],
+      "cases": [
+        {
+          "phase": 1,
+          "action": 0,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 24,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 1,
+          "action": 1,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 1,
+          "action": 2,
+          "batch_launches": {
+            "batchLaunches": 42,
+            "multiLaunches": 24,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 1,
+          "action": 3,
+          "batch_launches": {
+            "batchLaunches": 42,
+            "multiLaunches": 28,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 1,
+          "action": 4,
+          "batch_launches": {
+            "batchLaunches": 35,
+            "multiLaunches": 21,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 1,
+          "action": 5,
+          "batch_launches": {
+            "batchLaunches": 38,
+            "multiLaunches": 21,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 0,
+          "batch_launches": {
+            "batchLaunches": 44,
+            "multiLaunches": 26,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 1,
+          "batch_launches": {
+            "batchLaunches": 42,
+            "multiLaunches": 24,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 2,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 3,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 4,
+          "batch_launches": {
+            "batchLaunches": 35,
+            "multiLaunches": 22,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 5,
+          "batch_launches": {
+            "batchLaunches": 38,
+            "multiLaunches": 22,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 0,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 1,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 29,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 2,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 29,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 3,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 29,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 4,
+          "batch_launches": {
+            "batchLaunches": 35,
+            "multiLaunches": 22,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 5,
+          "batch_launches": {
+            "batchLaunches": 38,
+            "multiLaunches": 22,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 0,
+          "batch_launches": {
+            "batchLaunches": 44,
+            "multiLaunches": 26,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 1,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 29,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 2,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 29,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 3,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 29,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 4,
+          "batch_launches": {
+            "batchLaunches": 35,
+            "multiLaunches": 22,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 5,
+          "batch_launches": {
+            "batchLaunches": 38,
+            "multiLaunches": 22,
+            "maxRows": 4
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob4-lifetime-raw-final/results.json",
+      "sha256": "c949c67e3d7c104564095043ede9d247e12dfa3df85e68bd011b9e035b0900db",
+      "status": "pass",
+      "xex_sha256": "a9d6d3a0c00b29965367d5a6cb7dea4f2fcae547ab13612c89f4e2ef1a6827c5",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 936,
+      "image_segment_payload_bytes": 501939,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 390,
+          "untouched_above_floor": 890
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 548,
+          "untouched_above_floor": 1756
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ],
+      "cases": [
+        {
+          "phase": 1,
+          "action": 0,
+          "batch_launches": {
+            "batchLaunches": 52,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 1,
+          "action": 1,
+          "batch_launches": {
+            "batchLaunches": 51,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 1,
+          "action": 2,
+          "batch_launches": {
+            "batchLaunches": 51,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 1,
+          "action": 3,
+          "batch_launches": {
+            "batchLaunches": 51,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 1,
+          "action": 4,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 20,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 1,
+          "action": 5,
+          "batch_launches": {
+            "batchLaunches": 47,
+            "multiLaunches": 21,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 0,
+          "batch_launches": {
+            "batchLaunches": 52,
+            "multiLaunches": 26,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 1,
+          "batch_launches": {
+            "batchLaunches": 52,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 2,
+          "batch_launches": {
+            "batchLaunches": 51,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 3,
+          "batch_launches": {
+            "batchLaunches": 51,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 4,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 21,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 2,
+          "action": 5,
+          "batch_launches": {
+            "batchLaunches": 47,
+            "multiLaunches": 22,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 0,
+          "batch_launches": {
+            "batchLaunches": 52,
+            "multiLaunches": 26,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 1,
+          "batch_launches": {
+            "batchLaunches": 51,
+            "multiLaunches": 25,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 2,
+          "batch_launches": {
+            "batchLaunches": 52,
+            "multiLaunches": 26,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 3,
+          "batch_launches": {
+            "batchLaunches": 53,
+            "multiLaunches": 26,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 4,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 21,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 3,
+          "action": 5,
+          "batch_launches": {
+            "batchLaunches": 47,
+            "multiLaunches": 22,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 0,
+          "batch_launches": {
+            "batchLaunches": 52,
+            "multiLaunches": 26,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 1,
+          "batch_launches": {
+            "batchLaunches": 52,
+            "multiLaunches": 26,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 2,
+          "batch_launches": {
+            "batchLaunches": 53,
+            "multiLaunches": 26,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 3,
+          "batch_launches": {
+            "batchLaunches": 53,
+            "multiLaunches": 26,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 4,
+          "batch_launches": {
+            "batchLaunches": 43,
+            "multiLaunches": 21,
+            "maxRows": 4
+          }
+        },
+        {
+          "phase": 4,
+          "action": 5,
+          "batch_launches": {
+            "batchLaunches": 47,
+            "multiLaunches": 22,
+            "maxRows": 4
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob4-control-raw/results.json",
+      "sha256": "7aaf7a7b4ea9860caa6654cd938b6bf882befe88b907a6d0cc24330ca24db111",
+      "status": "pass",
+      "xex_sha256": "63d6f9b28beb9cef818c0812aac6ce62079ca647fd0a9cccd485704bae95c591",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 893,
+      "image_segment_payload_bytes": 298672,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 267,
+          "untouched_above_floor": 1013
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 548,
+          "untouched_above_floor": 1756
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ],
+      "cases": [
+        {
+          "variant": 0,
+          "checks": [
+            68
+          ],
+          "pendingReads": 0,
+          "busyReads": 0,
+          "ringChecks": 0
+        },
+        {
+          "variant": 1,
+          "checks": [
+            70
+          ],
+          "pendingReads": 0,
+          "busyReads": 0,
+          "ringChecks": 0
+        },
+        {
+          "variant": 2,
+          "checks": [
+            69
+          ],
+          "pendingReads": 0,
+          "busyReads": 0,
+          "ringChecks": 0
+        },
+        {
+          "variant": 3,
+          "checks": [
+            69
+          ],
+          "pendingReads": 0,
+          "busyReads": 0,
+          "ringChecks": 0
+        },
+        {
+          "variant": 4,
+          "checks": [
+            69
+          ],
+          "pendingReads": 0,
+          "busyReads": 0,
+          "ringChecks": 0
+        },
+        {
+          "variant": 5,
+          "checks": [
+            70
+          ],
+          "pendingReads": 1,
+          "busyReads": 1,
+          "ringChecks": 1
+        },
+        {
+          "variant": 6,
+          "checks": [
+            72
+          ],
+          "pendingReads": 1,
+          "busyReads": 1,
+          "ringChecks": 1
+        },
+        {
+          "variant": 7,
+          "checks": [
+            71
+          ],
+          "pendingReads": 1,
+          "busyReads": 1,
+          "ringChecks": 1
+        },
+        {
+          "variant": 8,
+          "checks": [
+            71
+          ],
+          "pendingReads": 1,
+          "busyReads": 1,
+          "ringChecks": 1
+        },
+        {
+          "variant": 9,
+          "checks": [
+            71
+          ],
+          "pendingReads": 1,
+          "busyReads": 1,
+          "ringChecks": 1
+        },
+        {
+          "variant": 10,
+          "checks": [
+            69
+          ],
+          "pendingReads": 1,
+          "busyReads": 1,
+          "ringChecks": 1
+        },
+        {
+          "variant": 11,
+          "checks": [
+            74
+          ],
+          "pendingReads": 1,
+          "busyReads": 1,
+          "ringChecks": 1
+        },
+        {
+          "variant": 12,
+          "checks": [
+            74
+          ],
+          "pendingReads": 1,
+          "busyReads": 1,
+          "ringChecks": 1
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob4-fault-opt/results.json",
+      "sha256": "91df264e2d73b7cf1df7797b24429b6d4c08e4586c5f752a14d8a7e06ce17de4",
+      "status": "pass",
+      "xex_sha256": "1ab495e654628decca0a5313881bfe57a6bab44a62bd23ffe51a896b4627bd84",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 865,
+      "image_segment_payload_bytes": 264196,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 226,
+          "untouched_above_floor": 1054
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 584,
+          "untouched_above_floor": 1720
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 52,
+          "untouched_above_floor": 204
+        }
+      ],
+      "cases": [
+        {
+          "fault": 1,
+          "checks": [
+            9
+          ]
+        },
+        {
+          "fault": 2,
+          "checks": [
+            2
+          ]
+        },
+        {
+          "fault": 3,
+          "checks": [
+            69
+          ]
+        },
+        {
+          "fault": 4,
+          "checks": [
+            61
+          ]
+        },
+        {
+          "fault": 5,
+          "checks": [
+            9
+          ]
+        },
+        {
+          "fault": 6,
+          "checks": [
+            2
+          ]
+        },
+        {
+          "fault": 7,
+          "checks": [
+            9
+          ]
+        },
+        {
+          "fault": 8,
+          "checks": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob4-fault-raw/results.json",
+      "sha256": "1730bbf1d4729693e9a49d7b5a03aa912ca981f312f1366ecf19a6fb98ddd0bb",
+      "status": "pass",
+      "xex_sha256": "86edb0e4a55b104f25cc6a4311458f5fc6cf6231bdc5dad076ab98ced4dd9950",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 865,
+      "image_segment_payload_bytes": 293021,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 240,
+          "untouched_above_floor": 1040
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 590,
+          "untouched_above_floor": 1714
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ],
+      "cases": [
+        {
+          "fault": 1,
+          "checks": [
+            9
+          ]
+        },
+        {
+          "fault": 2,
+          "checks": [
+            2
+          ]
+        },
+        {
+          "fault": 3,
+          "checks": [
+            69
+          ]
+        },
+        {
+          "fault": 4,
+          "checks": [
+            61
+          ]
+        },
+        {
+          "fault": 5,
+          "checks": [
+            9
+          ]
+        },
+        {
+          "fault": 6,
+          "checks": [
+            2
+          ]
+        },
+        {
+          "fault": 7,
+          "checks": [
+            9
+          ]
+        },
+        {
+          "fault": 8,
+          "checks": [
+            2
+          ]
+        }
+      ]
+    }
+  ]
+}

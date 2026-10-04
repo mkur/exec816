@@ -4,10 +4,11 @@
 [Console contract](../reference/console.md) ·
 [Asynchronous scrolling](../reference/display.md#asynchronous-screen-scrolling)
 
-Status: OB1–OB3 implemented and passed development checks; OB4–OB5 pending.
+Status: OB1–OB4 implemented and passed development checks; OB5 measurements in progress.
 See the [OB1 evidence](../development/console-output-batching-ob1.json) and
 [OB2 evidence](../development/console-output-batching-ob2.json), and
-[OB3 evidence](../development/console-output-batching-ob3.json). Production
+[OB3 evidence](../development/console-output-batching-ob3.json) and
+[OB4 evidence](../development/console-output-batching-ob4.json). Production
 batching uses the shared 44-byte upper-RAM context.
 Preserve the current interactive
 echo path. This work targets bulk output such as `CAT LONG.TXT` in the bitmap

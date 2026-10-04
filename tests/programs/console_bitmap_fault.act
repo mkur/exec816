@@ -86,7 +86,9 @@ PROC Main()
   Require(EXEC.WaitIO(EXEC.IORequest POINTER(write))=EXEC.IOERR_SELFTEST)
   Require(read.io_Actual=0)
   IF variant>=3 AND variant<=4 THEN
-    Require(write.io_Actual=1 AND instance.cellOrigin=0)
+    Require(write.io_Actual>0 AND write.io_Actual<=256)
+    Require(instance.cellOrigin=(2320+((79+CARD(write.io_Actual))/80)*80)
+        MOD 2400)
   ELSEIF variant>=7 THEN
     Require(write.io_Actual=1)
   ELSE

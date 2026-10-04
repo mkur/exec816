@@ -16,7 +16,7 @@ from test_gem_interactive import pixels
 from bitmap_console_trace import observation,intervals
 
 
-def run(out,mode,replay=False,observe=False,performance=False,batch=False):
+def run(out,mode,replay=False,observe=False,performance=False,batch=False,phase=0,action=0):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     original=generate_tasks.policy_modules
     def instrument(*args,**kwargs):
@@ -28,6 +28,20 @@ def run(out,mode,replay=False,observe=False,performance=False,batch=False):
         target.write_text(text.replace(needle,needle+'\n      BATCHPROBE.Launched(rows)'))
         path=directory/'consoledisplay.act'
         path.write_text(path.read_text().replace('USE A816MEMORY\n','USE A816MEMORY\nUSE BATCHPROBE\n',1).replace(str(source),str(target)))
+        text=target.read_text().replace('PUBLIC PROC Poll(BYTE notified)\n',
+            'PUBLIC PROC Poll(BYTE notified)\n'
+            '  IF notified<>0 THEN\n    BATCHPROBE.notice=1\n  FI\n'
+            '  notified=BATCHPROBE.notice\n').replace('    CONSOLEBITMAP.Poll()',
+            '    IF BATCHPROBE.Blocked()<>0 THEN\n      RETURN\n    FI\n'
+            '    CONSOLEBITMAP.Poll()\n    BATCHPROBE.notice=0')
+        target.write_text(text)
+        path=directory/'consoledriver.act';text=path.read_text().replace('USE EXEC\n','USE EXEC\nUSE BATCHPROBE\n',1)
+        text=text.replace('IF CONSOLEBITMAP.Pending()=0 AND', 'IF CONSOLEBITMAP.Pending()=0 AND BATCHPROBE.Blocked()=0 AND')
+        text=text.replace('          CONSOLEDISPLAY.Present(view,instance)',
+            '          IF BATCHPROBE.Blocked()=0 THEN\n            CONSOLEDISPLAY.Present(view,instance)\n          FI')
+        text=text.replace('IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN\n          again=0',
+            'IF batch.phase=CONSOLETYPES.BATCH_GATHER OR BATCHPROBE.Blocked()<>0 THEN\n          again=0')
+        path.write_text(text)
         return directory
     if batch:
         (out/'batchprobe.act').write_bytes((ROOT/'tests/programs/batchprobe.act').read_bytes())
@@ -38,7 +52,7 @@ def run(out,mode,replay=False,observe=False,performance=False,batch=False):
     finally:generate_tasks.policy_modules=original
     foreign=json.loads((out/'c-image.json').read_text());sy=foreign['symbols']
     require(p['build']['optimize']==(mode=='opt') and sha256(p['xex'])==p['build']['xex_sha256'],'Changed replay image')
-    result=dict(observed=observe,batch=batch,status='running',tier='development',mode=mode,build=p['build'],pin=PIN,
+    result=dict(observed=observe,batch=batch,phase=phase,action=action,status='running',tier='development',mode=mode,build=p['build'],pin=PIN,
         bank_zero_delta=dict(fixed=0,root_kernel=0,per_task=[0]*8,private_idle=0),observations=[])
     address=lambda name:next(d['address'] for d in p['image']['data'] if '_BITMAPSCROLL_'+name+'_' in d['name'])
     from bitmap_console_performance import markers,summarize
@@ -62,6 +76,9 @@ def run(out,mode,replay=False,observe=False,performance=False,batch=False):
                     print('Status/checks/regs',b.peek16(adapter.STATE),data(b,p['image'],'checks',True),b.regs(),flush=True);raise
                 finally:b.regs=original
             def before(b):
+                if batch:
+                    b.memload(address('TARGETPHASE'),bytes([phase]))
+                    b.memload(address('ACTION'),bytes([action]))
                 if observe:b.profile_start()
                 saved.update(screen=b.peek16(88),dma=b.memdump(0x22f,3),cursor=b.memdump(0x2f0,1),input=b.memdump(0x208,2))
                 saved['bytes']=b.memdump(saved['screen'],960)
@@ -79,7 +96,8 @@ def run(out,mode,replay=False,observe=False,performance=False,batch=False):
                     accepted=data(b,p['image'],'cutBytes',True)[0]
                     expected=batch_scenes(font_bytes(out/'selected/src/vdi/font8x8.c'),accepted)[-1]
                     folder=out/'stage-6';folder.mkdir(exist_ok=True)
-                    result['observations'].append(dict(stage=6,accepted=accepted,pixels=pixels(b,folder,expected)))
+                    result['observations'].append(dict(stage=6,accepted=accepted,
+                        pixels=pixels(b,folder,expected) if action<4 else 'stopped'))
                     b.memload(address('GATE'),b'\6\0')
                 b.bp_clear_all()
             runtime,_=execute(b,p,before_run=before,timer_irq=False,timeout=180,frame_limit=10000)

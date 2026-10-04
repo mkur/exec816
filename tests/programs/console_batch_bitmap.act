@@ -7,9 +7,13 @@ USE CONSOLE
 USE CONSOLEWINDOWS
 USE CONSOLETYPES
 USE CONSOLEBATCH
+USE BATCHPROBE
 USE A816MEMORY
 
 CARD checks,checkpoint,gate,continued,cutBytes
+BYTE targetPhase,action
+LONGCARD unit,replacement
+BYTE ARRAY unitName(13)
 BYTE ARRAY text(512)
 DOS.FileHandle POINTER file
 BYTE ARRAY device=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
@@ -40,8 +44,8 @@ PROC Pause(CARD value)
   CARD ignored
 
   LET windows=CONSOLEWINDOWS.Registry()
-  LET instance=CONSOLETYPES.Instance POINTER(windows.items(0).instance)
-  LET view=CONSOLETYPES.Presentation POINTER(windows.items(0).view)
+  LET instance=CONSOLETYPES.Instance POINTER(windows.items(BYTE(unit & 3)).instance)
+  LET view=CONSOLETYPES.Presentation POINTER(windows.items(BYTE(unit & 3)).view)
   LET batch=CONSOLEBATCH.Get()
   WHILE instance.dirtyRows<>0 OR view.scrollState<>0
       OR batch.phase<>CONSOLETYPES.BATCH_IDLE
@@ -84,7 +88,22 @@ PROC Main()
   EXEC.MsgPort POINTER port
   EXEC.IOStdReq POINTER request
 
-  file=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  IF action=5 THEN
+    Require(CONSOLE.Hide(0)<>0)
+    unit=CONSOLE.Create(80,30)
+    Require(unit<>0 AND CONSOLE.Show(unit,0,0)<>0 AND CONSOLE.Focus(unit)<>0)
+  FI
+
+  A816MEMORY.Move(unitName,BYTE POINTER(c"RAW:"),4)
+  FOR index=0 TO 7 DO
+    row=CARD((unit RSH ((7-index) LSH 2)) & 15)
+    unitName(index+4)=BYTE(row+48)
+    IF row>9 THEN
+      unitName(index+4)=BYTE(row+87)
+    FI
+  OD
+
+  file=DOS.Open(unitName,DOS.MODE_READWRITE)
   Require(file<>NULL)
   FOR row=0 TO 28 DO
     FOR index=0 TO 79 DO
@@ -114,37 +133,79 @@ PROC Main()
   text(90)=10
   Write(100)
   Pause(4)
-  Require(CONSOLE.Hide(0)<>0)
+  Require(CONSOLE.Hide(unit)<>0)
   Bulk()
-  Require(CONSOLE.Show(0,0,0)<>0)
+  Require(CONSOLE.Show(unit,0,0)<>0)
   Pause(5)
   Require(DOS.Close(file)<>0)
   port=EXEC.CreateMsgPort()
   request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
   Require(port<>NULL AND request<>NULL)
-  Require(EXEC.OpenDevice(device,0,EXEC.IORequest POINTER(request),0)=0)
+  Require(EXEC.OpenDevice(device,unit,EXEC.IORequest POINTER(request),0)=0)
   request.io_Command=EXEC.CMD_WRITE
   request.io_Data=text
   request.io_Length=512
+  BATCHPROBE.target=targetPhase
   EXEC.SendIO(EXEC.IORequest POINTER(request))
   LET batch=CONSOLEBATCH.Get()
-  WHILE batch.phase<>CONSOLETYPES.BATCH_GATHER DO
-    EXEC.Yield()
-  OD
+  IF targetPhase=0 THEN
+    WHILE batch.phase<>CONSOLETYPES.BATCH_GATHER DO
+      EXEC.Yield()
+    OD
+  ELSE
+    WHILE BATCHPROBE.hit<>targetPhase DO
+      EXEC.Yield()
+    OD
+  FI
 
   EXEC.Forbid()
   cutBytes=CARD(request.io_Actual)
   Require(cutBytes<>0 AND cutBytes<512)
   EXEC.AbortIO(EXEC.IORequest POINTER(request))
+  IF action=2 THEN
+    BEGIN
+      LET entry=CONSOLEWINDOWS.Find(unit)
+      LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+      view.generation==+1
+    END
+  FI
+
   EXEC.Permit()
+  IF action=1 THEN
+    Require(CONSOLE.Hide(unit)<>0 AND CONSOLE.Show(unit,0,0)<>0)
+  ELSEIF action=3 THEN
+    Require(CONSOLE.Focus(unit)<>0)
+  FI
+
+  BATCHPROBE.target=0
+  LET service=CONSOLEDRIVER.GetService()
+  EXEC.Signal(@service.task,$40000000)
   Require(EXEC.WaitIO(EXEC.IORequest POINTER(request))=EXEC.IOERR_ABORTED)
   Require(request.io_Actual=LONGCARD(cutBytes))
   ; No source may be borrowed after the accepted prefix is replied.
   A816MEMORY.Fill(text,90,512)
-  Pause(6)
+  IF action<4 THEN
+    Pause(6)
+  FI
   EXEC.CloseDevice(EXEC.IORequest POINTER(request))
   EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
   EXEC.DeleteMsgPort(port)
+  IF action>=4 THEN
+    IF action=5 THEN
+      Require(CONSOLE.Destroy(unit)<>0 AND CONSOLEWINDOWS.Find(unit)=NULL)
+      replacement=CONSOLE.Create(80,30)
+      Require(replacement<>0 AND replacement<>unit)
+      Require(CONSOLE.Destroy(replacement)<>0)
+    FI
+
+    Require(DOS.ReleaseContext()<>0 AND CONSOLEDRIVER.Stop()<>0)
+    Ready(6)
+    WHILE gate<6 DO
+      EXEC.Yield()
+    OD
+
+    RETURN
+  FI
   file=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
   Require(file<>NULL)
   ; Return immediately after the final accepted prefix. Stop must settle any

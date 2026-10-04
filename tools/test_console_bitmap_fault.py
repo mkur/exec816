@@ -54,7 +54,12 @@ def run(out,mode,replay=False):
                         require(b.memdump(write+6,1)==bytes([5]),'Reset-required failure replied to short write')
                         require(b.peek16(write+26)==1,'Reset-required failure lost accepted byte')
                     if fault==4:
-                        require(b.peek16(saved['instance']+LAYOUT['INSTANCE_CELLORIGIN'])==0,'Reset-required failure lost the committed wrap')
+                        write=int.from_bytes(b.memdump(at('WRITE'),3),'little')
+                        accepted=int.from_bytes(b.memdump(write+26,4),'little')
+                        require(0<accepted<=256,'Unbounded faulted batch prefix')
+                        require(b.peek16(saved['instance']+LAYOUT['INSTANCE_CELLORIGIN'])==
+                                (2320+((79+accepted)//80)*80)%2400,
+                                'Reset-required failure lost the committed batch wrap')
                 result['cases'].append(dict(fault=fault,machine=machine,runtime=runtime,checks=data(b,p['image'],'checks',True)))
         result['status']='pass'
     except Exception as e:result.update(status='fail',error=str(e));raise

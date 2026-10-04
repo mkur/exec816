@@ -61,7 +61,7 @@ assuming work is pending. Current behavior belongs in the
 ## Console and interaction
 
 - [Bulk console output batching](console-output-batching-implementation-plan.md):
-  OB1–OB3 complete, OB4–OB5 pending; combine several retained line scrolls into
+  OB1–OB4 complete, OB5 measurements in progress; combine several retained line scrolls into
   one asynchronous
   copy/fill and bounded text presentation, preserving immediate short writes.
   Reuses the completed [CAT baseline](../development/console-output-batching-baseline.json).
