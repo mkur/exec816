@@ -94,16 +94,37 @@ uint16_t GemBitmapFill(uint16_t x,uint16_t y,uint16_t right,uint16_t bottom,
     return 0;
 }
 
+static uint16_t bitmap_text_valid(uint16_t x,uint16_t y,const uint8_t *text,
+    uint16_t count,uint16_t foreground,uint16_t background)
+{
+    uint32_t address=(uint32_t)text;
+    if (!vdev || x>640 || y>232 || count>(640-x)/8 || foreground>15 || background>15 ||
+        (count && (!text || address>0xffffffUL || count>0x1000000UL-address ||
+                   (address<0x9000UL && address+count>0x8000UL))))
+        return 0;
+    return 1;
+}
+
+/* Fill geometry was admitted by the shared drawing entry. Both operations
+ * reach the device only after the entire source and text extent are valid. */
+uint16_t GemBitmapTextFill(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
+    uint16_t foreground,uint16_t background,uint16_t fillX,uint16_t fillY,
+    uint16_t width,uint16_t height,uint16_t pen)
+{
+    extern void vbxe_text_run_fill(uint16_t,uint16_t,const uint8_t *,uint16_t,
+        uint16_t,uint16_t,uint16_t,uint16_t,uint16_t,uint16_t,uint16_t);
+    if (!count || (x&1) || !bitmap_text_valid(x,y,text,count,foreground,background))
+        return 1;
+    vbxe_text_run_fill(x,y,text,count,foreground,background,fillX,fillY,width,height,pen);
+    return 0;
+}
+
 uint16_t GemBitmapText(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
                         uint16_t foreground,uint16_t background)
 {
     WORD color,mode,clip;
     uint16_t i;
-    uint32_t address=(uint32_t)text;
-    if (!vdev || x>640 || y>232 || count>(640-x)/8 || foreground>15 || background>15 ||
-        (count && (!text || address>0xffffffUL || count>0x1000000UL-address ||
-                   (address<0x9000UL && address+count>0x8000UL))))
-        return 1;
+    if (!bitmap_text_valid(x,y,text,count,foreground,background)) return 1;
     if (!count) return 0;
     if (!(x&1)) {
         extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);

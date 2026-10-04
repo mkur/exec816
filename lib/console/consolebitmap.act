@@ -140,6 +140,24 @@ PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
 
 RETURN(Run(OP_TEXT))
 
+; The final text span and underline share one admitted drawing operation.
+PUBLIC BYTE FUNC TextCaret(CARD x,y BYTE POINTER text CARD count,caretX,caretY)
+
+  LET packet=GetPacket()
+  packet.x=x
+  packet.y=y
+  packet.text=LONGCARD(ADDRESS(text))
+  packet.width=count
+  packet.foreground=1
+  packet.background=0
+  packet.fillX=caretX
+  packet.fillY=caretY
+  packet.fillWidth=8
+  packet.fillHeight=1
+  packet.fillPen=1
+
+RETURN(Run(OP_TEXT_FILL))
+
 ; One complete upward copy and exposed-strip fill, retained by the C driver.
 PUBLIC BYTE FUNC Scroll(CARD left,top,width,height)
 

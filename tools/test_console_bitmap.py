@@ -16,7 +16,7 @@ from bitmap_console_trace import observation,intervals
 from generate_console import constants
 
 
-def run(out,mode,replay=False,observe=False):
+def run(out,mode,replay=False,observe=False,performance=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(out/'program') if replay else build_bitmap(ROOT/'tests/programs/console_bitmap.act',out,mode=='opt',probe=True)
     foreign=json.loads((out/'c-image.json').read_text());sy=foreign['symbols']
@@ -24,8 +24,14 @@ def run(out,mode,replay=False,observe=False):
     result=dict(status='running',tier='development',mode=mode,build=p['build'],pin=PIN,
         bank_zero_delta=dict(fixed=0,root_kernel=0,per_task=[0]*8,private_idle=0),observations=[])
     address=lambda name:next(d['address'] for d in p['image']['data'] if '_BITMAPTEST_'+name+'_' in d['name'])
+    from bitmap_console_performance import markers,summarize
+    timing=markers(p,foreign,out/'drawing') if performance else None
+    # The fixture deliberately nests ordinary-call bridge probes at startup.
+    # Measure presentation and driver boundaries without treating those probes
+    # as non-nested drawing calls.
+    if timing:timing.pop('call')
     try:
-        with observation(foreign,p,observe,module='BITMAPTEST') as marks, emulator(BRIDGE,ROM,out,pin=PIN) as b:
+        with observation(foreign,p,observe,timing,module='BITMAPTEST') as marks, emulator(BRIDGE,ROM,out,pin=PIN) as b:
             require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
             result['machine']=verify_machine(b,ROM,PIN);saved={}
             def reach(condition):
@@ -102,14 +108,22 @@ def run(out,mode,replay=False,observe=False):
                 if sample['kind']=='idle':
                     require(not sample['calls'],'Settled caret submitted work: '+str(sample))
                 elif sample['stage'] in (5,6,7,8):
-                    expected=2 if sample['stage']==7 else 1
+                    combined=sample['stage'] in (5,8)
+                    expected=0 if combined else 2 if sample['stage']==7 else 1
                     require(sample['calls'].get('GemDrawingText',0)==expected,
                             'Unexpected caret/text redraws: '+str(sample))
-                    require(sample['calls'].get('GemDrawingFill',0)==1,
+                    require(sample['calls'].get('GemDrawingTextFill',0)==int(combined),
+                            'Missing combined text/caret drawing: '+str(sample))
+                    require(sample['calls'].get('GemDrawingFill',0)==int(not combined),
                             'Missing new caret: '+str(sample))
+                    require(sample['calls'].get('DisplayCheck',0)==expected+1 and
+                            sample['calls'].get('start',0)==expected+1,
+                            'Unexpected owner checks or list launches: '+str(sample))
+        if observe and performance:
+            result['performance']=summarize(out/'emulator.log',timing,result['operations'])
     except Exception as error:result.update(status='fail',error=str(error));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('Bitmap console passed',mode,flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');p.add_argument('--observe',action='store_true');a=p.parse_args();run(a.output,a.mode,a.replay,a.observe)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');p.add_argument('--observe',action='store_true');p.add_argument('--performance',action='store_true');a=p.parse_args();run(a.output,a.mode,a.replay,a.observe or a.performance,a.performance)

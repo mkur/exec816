@@ -289,17 +289,19 @@ RETURN
 
 ; Refresh a bounded dirty span so screen work leaves time for input and other
 ; tasks.
-PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
+; Return whether the final bitmap span also drew the new caret.
+BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
   CARD row,base,first,last,stop,rows,remaining
-  BYTE okay
+  BYTE okay,caret
   BYTE POINTER source
   LONGCARD generation
 
   IF instance.dirtyRows=0 THEN
-    RETURN
+    RETURN(0)
   FI
 
+  caret=0
   row=0
   base=0
   rows=0
@@ -321,12 +323,27 @@ PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
 
         source=instance.cells+SIZE(CONSOLECORE.CellOffset(instance,base+first))
         IF CONSOLEBITMAP.Enabled()<>0 THEN
-          okay=CONSOLEBITMAP.Text((view.left+first) LSH 3,
-              (view.top+row) LSH 3,source,stop-first)
+          ; Only a complete last span can share the settled caret. The old
+          ; caret must already be absent or erased by this opaque text.
+          caret=instance.dirtyRows=1 AND last=instance.damageEnd(row)
+              AND view.focused<>0 AND instance.operation=CONSOLETYPES.OP_IDLE
+              AND instance.row<view.height AND instance.column<view.width
+              AND (view.cursorOn=0 OR (view.previousCursor>=base+first
+              AND view.previousCursor<base+stop))
+          IF caret<>0 THEN
+            okay=CONSOLEBITMAP.TextCaret((view.left+first) LSH 3,
+                (view.top+row) LSH 3,source,stop-first,
+                (view.left+instance.column) LSH 3,
+                ((view.top+instance.row) LSH 3)+7)
+          ELSE
+            okay=CONSOLEBITMAP.Text((view.left+first) LSH 3,
+                (view.top+row) LSH 3,source,stop-first)
+          FI
+
           IF okay=0 THEN
             CONSOLECORE.Clean(instance)
             view.index=instance.lineStart+instance.column
-            RETURN
+            RETURN(0)
           FI
 
           ; Only the span actually drawn can erase the old bitmap caret.
@@ -354,7 +371,13 @@ PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     view.presentedGeneration=instance.generation
   FI
 
-RETURN
+  IF caret<>0 THEN
+    view.index=instance.lineStart+instance.column
+    view.previousCursor=view.index
+    view.cursorOn=1
+  FI
+
+RETURN(caret)
 
 ; Restore the underlying glyph before moving or hiding the cursor.
 PUBLIC PROC RemoveCursor(CONSOLETYPES.Presentation POINTER view)
@@ -426,7 +449,7 @@ INCLUDE "console-bitmap-display.inc"
 ; Only a complete, synchronized view can reuse its translated screen bytes.
 PUBLIC PROC Edit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
-  BYTE synchronized
+  BYTE synchronized,ignored
   CARD row
 
   IF CONSOLEBITMAP.Enabled()<>0 THEN
@@ -444,7 +467,7 @@ PUBLIC PROC Edit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     ELSE
       IF instance.dirtyRows<>0 THEN
         IF instance.dirtyRows<=ROW_BUDGET THEN
-          Cells(view,instance)
+          ignored=Cells(view,instance)
         FI
       FI
 
@@ -486,6 +509,7 @@ RETURN
 ; the checked Quantum entry below for clipped or independently built views.
 PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
+  BYTE ignored
 
   IF CONSOLEBITMAP.Pending()<>0 OR view.claimed=0 OR view.visible=0
       OR view.scrollState<>0 THEN
@@ -515,11 +539,14 @@ PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   IF CONSOLEBITMAP.Enabled()<>0 THEN
     ; Opaque text may already erase the old caret. Restore it only if it
     ; survived this batch, before drawing the new caret.
-    Cells(view,instance)
+    IF Cells(view,instance)<>0 THEN
+      RETURN
+    FI
+
     RemoveCursor(view)
   ELSE
     RemoveCursor(view)
-    Cells(view,instance)
+    ignored=Cells(view,instance)
   FI
 
   Cursor(view,instance)

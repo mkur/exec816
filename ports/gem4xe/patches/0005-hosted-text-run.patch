@@ -1,6 +1,6 @@
 --- a/src/vdi/dev_vbxe.c
 +++ b/src/vdi/dev_vbxe.c
-@@ -217,6 +217,16 @@
+@@ -217,6 +217,27 @@
   * mask AND path because the stencil treats zero as transparent. */
  extern void blit_glyph(uint32_t,uint16_t,uint32_t,uint16_t,uint8_t);
  
@@ -12,6 +12,17 @@
 +{
 +    blit_text(VR_FONT,x,y,text,count,
 +              (uint8_t)(HW(foreground)*17),(uint8_t)(HW(background)*17));
++}
++
++extern void blit_text_fill(uint32_t,uint16_t,uint16_t,const uint8_t *,uint16_t,
++    uint8_t,uint8_t,uint16_t,uint16_t,uint16_t,uint16_t,uint8_t);
++void vbxe_text_run_fill(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
++    uint16_t foreground,uint16_t background,uint16_t fillX,uint16_t fillY,
++    uint16_t width,uint16_t height,uint16_t pen)
++{
++    blit_text_fill(VR_FONT,x,y,text,count,
++        (uint8_t)(HW(foreground)*17),(uint8_t)(HW(background)*17),
++        fillX,fillY,width,height,(uint8_t)(HW(pen)*17));
 +}
 +
  static void draw_glyph(WORD ch, WORD cx, WORD cy, WORD hwink, WORD cleared)

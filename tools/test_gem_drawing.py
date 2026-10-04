@@ -89,6 +89,26 @@ def run(out,mode):
                 text_run(632,232,b'A',0,1)
                 report['text_run_pixels_sha256']=pixels(b,out,model.packed())
                 b.memload(sy['gate'],b'\2\0')
+                condition=f'dw(${sy["checkpoint"]:x})=3'
+                b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=4000,timeout=60)
+                b.bp_clear_all();require(b.peek16(sy['failures'])==0,'Combined text/fill failure')
+                condition=f'@frame>{b.eval_expr("@frame")+1}'
+                b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=10,timeout=5);b.bp_clear_all()
+                model=Raster(font_bytes(src/'vdi/font8x8.c'));model.apply(25,ints=[5]);model.apply(11,[0,0,639,239])
+                for x,y,text,ink,paper,fx,fy,w,h,pen in (
+                    (8,8,b'A',1,5,16,15,8,1,1),
+                    (0,24,range(32),0,3,256,31,8,1,0),
+                    (0,40,range(32,65),1,5,264,47,8,1,1),
+                    (0,64,range(128,208),2,5,0,80,640,4,3),
+                    (0,104,range(64,128),0,5,0,120,384,8,0),
+                    (0,144,b'AB W 09',1,5,0,147,56,2,7),
+                    (624,232,b'A',1,5,632,239,8,1,1),
+                    (0,200,[i*7&255 for i in range(33)],1,5,264,207,8,1,1)):
+                    text_run(x,y,text,ink,paper)
+                    for row in range(fy,fy+h):
+                        for col in range(fx,fx+w):model.pixel(col,row,pen)
+                report['text_fill_pixels_sha256']=pixels(b,out,model.packed())
+                b.memload(sy['gate'],b'\3\0')
             runtime,_=execute(b,p,before_run=before,frame_limit=4000,timeout=120)
             require(b.peek16(sy['finished'])==1 and b.peek16(sy['failures'])==0,'Incomplete fixture')
             clean_ownership(b,p,p['output'])

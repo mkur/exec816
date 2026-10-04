@@ -30,6 +30,7 @@ void DrawingPeer(void)
     Wait(1);
     check(GemDrawingFill(0,0,0,0,0)==DISPLAY_INVALID_OWNER);
     check(GemDrawingText(0,0,NULL,0,1,0)==DISPLAY_INVALID_OWNER);
+    check(GemDrawingTextFill(0,0,NULL,0,1,0,0,0,8,1,1)==DISPLAY_INVALID_OWNER);
     check(GemDrawingCopy(NULL)==DISPLAY_INVALID_OWNER);
     check(GemDrawingScrollStart(NULL,0,NULL)==DISPLAY_INVALID_OWNER);
     check(GemDrawingScrollPoll(1)==DISPLAY_INVALID_OWNER);
@@ -76,7 +77,7 @@ UWORD main(void)
     for (pen=0;pen<16;pen++) {
         before=ownerChecks;
         check(GemDrawingText(32+(pen&1),8+pen*9,text,7,pen,5)==DISPLAY_OK);
-        check((UWORD)(ownerChecks-before)==(pen ? 1 : 8));
+        check((UWORD)(ownerChecks-before)==(pen ? 1 : 9));
     }
     check(peerDone);
     before=ownerChecks;
@@ -118,6 +119,45 @@ UWORD main(void)
     check(GemDrawingText(0,0,(UBYTE *)0x8000UL,1,1,0)==DISPLAY_BAD_ARGUMENT);
     checkpoint=2;
     while (gate<2) { }
+    /* One admission and a final fill in the same list as the last glyphs.
+     * Cover list boundaries, overlapping output, packed edges and full work. */
+    check(GemDrawingFill(0,0,640,240,5)==DISPLAY_OK);
+    before=ownerChecks;
+    check(GemDrawingTextFill(8,8,text,1,1,5,16,15,8,1,1)==DISPLAY_OK);
+    check((UWORD)(ownerChecks-before)==1);
+    check(GemDrawingTextFill(0,24,glyphs,32,0,3,256,31,8,1,0)==DISPLAY_OK);
+    check(GemDrawingTextFill(0,40,glyphs+32,33,1,5,264,47,8,1,1)==DISPLAY_OK);
+    check(GemDrawingTextFill(0,64,glyphs+128,80,2,5,0,80,640,4,3)==DISPLAY_OK);
+    check(GemDrawingTextFill(0,104,glyphs+64,64,0,5,0,120,384,8,0)==DISPLAY_OK);
+    check(GemDrawingTextFill(0,144,text,7,1,5,0,147,56,2,7)==DISPLAY_OK);
+    check(GemDrawingTextFill(624,232,text,1,1,5,632,239,8,1,1)==DISPLAY_OK);
+    allocation=AllocMem(131072UL,MEMF_UPPER|MEMF_LINEAR);
+    check(allocation!=NULL);
+    if (allocation) {
+        cross=(UBYTE *)((((ULONG)allocation+65551UL)&0xffff0000UL)-16UL);
+        for (i=0;i<33;i++) cross[i]=(UBYTE)(i*7);
+        check(GemDrawingTextFill(0,200,cross,33,1,5,264,207,8,1,1)==DISPLAY_OK);
+        FreeMem(allocation,131072UL);
+    }
+    /* Every invalid suffix must reject the text prefix before touching VRAM. */
+    check(GemDrawingTextFill(8,8,text,1,0,0,1,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(8,8,text,1,0,0,0,0,7,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(8,8,text,1,0,0,0,0,0,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(8,8,text,1,0,0,0,0,8,0,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(8,8,text,1,0,0,640,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(8,8,text,1,0,0,632,239,8,2,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(8,8,text,1,0,0,0,0,640,5,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(8,8,text,1,0,0,0,0,8,1,16)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(1,0,text,1,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(0,233,text,1,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(638,0,text,1,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(0,0,text,0,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(0,0,text,1,16,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(0,0,NULL,1,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(0,0,(UBYTE *)0xffffffUL,2,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(0,0,(UBYTE *)0x8000UL,1,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    checkpoint=3;
+    while (gate<3) { }
     check(InputRelease(&mouse)==INPUT_OK);
     FreeSignal(bit);
     check(GemDrawingClose()==DISPLAY_OK);

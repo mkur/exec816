@@ -16,4 +16,10 @@ UWORD GemDrawingFence(void);
 UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
 UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,
                      UWORD foreground,UWORD background);
+/* Nonempty even-X text followed by a nonempty even-X/even-width screen fill.
+ * Fill area is at most VBXE_TEXT_FILL_WORK pixels. Validate both before any
+ * drawing; append the fill to the final bounded text list and fence it once. */
+UWORD GemDrawingTextFill(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD foreground,UWORD background,UWORD fillX,UWORD fillY,
+    UWORD fillWidth,UWORD fillHeight,UWORD fillPen);
 #endif

@@ -89,12 +89,23 @@ within the existing limits. Every field, including chain termination, is written
 anew; hardware-zero ink uses inverse-mask AND and other ink uses the stencil.
 The operation fences every batch before reusing the arena or returning.
 
+`GemDrawingTextFill` draws a nonempty even-X text run followed by a small fill
+rectangle, with one owner admission. The rectangle requires even X and width,
+nonzero dimensions, screen bounds and at most 3,072 pixels. All arguments are
+checked before drawing; the fill is appended only to the final text batch.
+That list uses at most 34 records, 714 arena bytes and 8,192 bus accesses within
+the existing work budget. The console uses this synchronous operation for its
+last dirty span and new underline caret, avoiding a second call and launch.
+
 The fifth extraction patch connects the ordinary text entry to this path. Odd-X
 text and VDI opcode 8 retain their existing device glyph path. Public raw-list
 submission still validates every supplied record. No cached admission, new Task,
 bank-zero reservation, extra arena or completion API is introduced. The uploader
-uses call-clobbered Task DP scratch `$80–$99`; its 16-byte packet layout is checked
+uses call-clobbered Task DP scratch `$80–$99`; its 25-byte packet layout is checked
 through emitted C, and its source reads carry across CPU bank boundaries.
+The uploader packet grows by nine bytes on the existing Task stack. Reserved
+bank-zero storage, per-Task stacks, DP, guards and alignment remain unchanged
+(0 bytes).
 
 Because donor callbacks return void, the backend latches the first hardware
 error. Further callbacks cannot touch hardware, and the service fence reports

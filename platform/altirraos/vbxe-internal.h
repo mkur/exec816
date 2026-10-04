@@ -14,6 +14,10 @@ UWORD VbxeOwnerSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD c
  * the whole run before generating bounded lists in the private command arena. */
 UWORD VbxeOwnerText(struct VbxeDisplay *display, ULONG font, UWORD x, UWORD y,
                     const UBYTE *text, UWORD count, UBYTE ink, UBYTE paper);
+struct VbxeTextFill { UWORD x,y,width,height; UBYTE value; };
+UWORD VbxeOwnerTextFill(struct VbxeDisplay *display, ULONG font,UWORD x,UWORD y,
+    const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper,
+    const struct VbxeTextFill *fill);
 UWORD VbxeOwnerFill(struct VbxeDisplay *display, ULONG address, UWORD stride, UWORD bytes, UWORD rows, UBYTE value);
 UWORD VbxeOwnerCopyRect(struct VbxeDisplay *display, const struct VbxeCopy *copy);
 UWORD VbxeOwnerScrollStart(struct VbxeDisplay *display, const struct VbxeCopy *copy,

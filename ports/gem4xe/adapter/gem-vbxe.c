@@ -18,6 +18,8 @@ extern uint16_t GemVdiCommand(uint16_t op, uint16_t sub, uint16_t pairs,
 extern void GemVdiReset(void);
 extern UWORD GemBitmapFill(UWORD,UWORD,UWORD,UWORD,UWORD);
 extern UWORD GemBitmapText(UWORD,UWORD,const UBYTE *,UWORD,UWORD,UWORD);
+extern UWORD GemBitmapTextFill(UWORD,UWORD,const UBYTE *,UWORD,UWORD,UWORD,
+                              UWORD,UWORD,UWORD,UWORD,UWORD);
 extern const UBYTE map_col[16];
 
 static struct VbxeDisplay display;
@@ -231,6 +233,21 @@ UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWOR
     if (GemBitmapText(x,y,text,count,fg,bg)) return DISPLAY_BAD_ARGUMENT;
     return fence_owner();
 }
+UWORD GemDrawingTextFill(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD fillX,UWORD fillY,UWORD fillWidth,UWORD fillHeight,
+    UWORD fillPen)
+{
+    UWORD status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if ((fillX&1) || (fillWidth&1) || !fillWidth || !fillHeight ||
+        fillX>=640 || fillY>=240 || fillWidth>640-fillX || fillHeight>240-fillY ||
+        (ULONG)fillWidth*fillHeight>VBXE_TEXT_FILL_WORK || fillPen>15)
+        return DISPLAY_BAD_ARGUMENT;
+    if (GemBitmapTextFill(x,y,text,count,fg,bg,fillX,fillY,fillWidth,fillHeight,fillPen))
+        return DISPLAY_BAD_ARGUMENT;
+    return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
+}
 
 /* Called only by the admitted ordinary drawing operation. No caller pointers
  * or validation state survives this synchronous invocation. */
@@ -239,6 +256,15 @@ void blit_text(uint32_t font,uint16_t x,uint16_t y,const uint8_t *text,
 {
     flush();
     if (!fault) latch(VbxeOwnerText(&display,font,x,y,text,count,ink,paper));
+}
+void blit_text_fill(uint32_t font,uint16_t x,uint16_t y,const uint8_t *text,
+    uint16_t count,uint8_t ink,uint8_t paper,uint16_t fillX,uint16_t fillY,
+    uint16_t width,uint16_t height,uint8_t value)
+{
+    struct VbxeTextFill fill;
+    fill.x=fillX; fill.y=fillY; fill.width=width; fill.height=height; fill.value=value;
+    flush();
+    if (!fault) latch(VbxeOwnerTextFill(&display,font,x,y,text,count,ink,paper,&fill));
 }
 
 #ifndef GEM_DRAWING_ONLY

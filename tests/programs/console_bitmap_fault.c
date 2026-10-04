@@ -1,5 +1,5 @@
 #include <exec/types.h>
-volatile UWORD ConsoleFaultMode,ConsoleStopCount,ConsoleCopyChunks,ConsoleTextChunks;
+volatile UWORD ConsoleFaultMode,ConsoleStopCount,ConsoleCopyChunks,ConsoleTextChunks,ConsoleTextFillRows;
 UBYTE ConsoleFaultBusy(void)
 {
     if (ConsoleFaultMode>=5) {
@@ -14,9 +14,12 @@ void ConsoleFaultStop(void)
 }
 
 void ConsoleFaultCopy(void) { ++ConsoleCopyChunks; }
-/* Ignore initialization and one-cell caret restoration. Fail the first full
- * text batch so the test can reject a following batch after terminal failure. */
-void ConsoleFaultText(UWORD count)
+/* Fail the first full text batch, or the one-cell combined text/caret list. */
+void ConsoleFaultText(UWORD count,UWORD fillRows)
 {
-    if (ConsoleFaultMode>=5 && count==32) ++ConsoleTextChunks;
+    if ((ConsoleFaultMode>=5 && ConsoleFaultMode<=6 && count==32) ||
+        (ConsoleFaultMode>=7 && count==1)) {
+        ++ConsoleTextChunks;
+        ConsoleTextFillRows=fillRows;
+    }
 }

@@ -29,6 +29,7 @@ def markers(program, foreign, output):
                 ('CONSOLEDISPLAY_POLL', 'poll'),
                 ('CONSOLEDISPLAY_ADVANCE', 'advance'),
                 ('CONSOLEBITMAP_TEXT', 'text'),
+                ('CONSOLEBITMAP_TEXTCARET', 'text_fill'),
                 ('CONSOLEBITMAP_FILL', 'fill'),
                 ('CONSOLEBITMAP_SCROLL', 'scroll'),
                 ('CONSOLEDRIVER_RUNNABLE', 'runnable')]

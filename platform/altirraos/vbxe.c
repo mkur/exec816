@@ -248,9 +248,11 @@ static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
  * every destination stays on screen. Unlike Submit, no caller-supplied raw
  * records are trusted. Each generated list has a fill and at most 32 glyphs:
  * 33 records / 693 bytes, at most 5120 bus accesses, within existing limits.
+ * The optional final fill adds one record and at most 3072 bus accesses.
  * All glyphs (including blank masks) follow the same checked geometry. */
-UWORD VbxeOwnerText(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
-                    const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper)
+static UWORD text_run(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
+    const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper,
+    const struct VbxeTextFill *fill)
 {
     struct VbxeTextUpload upload;
     UWORD status,n;
@@ -259,6 +261,11 @@ UWORD VbxeOwnerText(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
         (font<VBXE_BCB+VBXE_BCB_BYTES && font+8192>VBXE_BCB) ||
         (ink&15)!=(ink>>4) || (paper&15)!=(paper>>4) ||
         (count && !extent(0,text,count))) return DISPLAY_BAD_ARGUMENT;
+    if (fill && (!count || (fill->x&1) || (fill->width&1) ||
+        !fill->width || !fill->height || fill->x>=640 || fill->y>=240 ||
+        fill->width>640-fill->x || fill->height>240-fill->y ||
+        (ULONG)fill->width*fill->height>VBXE_TEXT_FILL_WORK ||
+        (fill->value&15)!=(fill->value>>4))) return DISPLAY_BAD_ARGUMENT;
     if (!count) return DISPLAY_OK;
     status=VbxeOwnerFence(d);
     if (status!=DISPLAY_OK) return status;
@@ -267,9 +274,15 @@ UWORD VbxeOwnerText(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
     upload.destination=(ULONG)y*320+x/2;
     upload.ink=ink;
     upload.paper=paper;
+    if (fill) {
+        upload.fillDestination=(ULONG)fill->y*320+fill->x/2;
+        upload.fillBytes=fill->width/2;
+        upload.fillValue=fill->value;
+    }
     while (count) {
         n=count>32 ? 32 : count;
         upload.count=n;
+        upload.fillRows=fill && count==n ? fill->height : 0;
         map(d,(UBYTE)(0x80|(VBXE_BCB>>12)),0x88);
         _VbxeTextUpload(&upload);
         map(d,0,0);
@@ -281,6 +294,19 @@ UWORD VbxeOwnerText(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
         count-=n;
     }
     return DISPLAY_OK;
+}
+
+UWORD VbxeOwnerText(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
+    const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper)
+{
+    return text_run(d,font,x,y,text,count,ink,paper,0);
+}
+
+UWORD VbxeOwnerTextFill(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
+    const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper,const struct VbxeTextFill *fill)
+{
+    if (!fill) return DISPLAY_BAD_ARGUMENT;
+    return text_run(d,font,x,y,text,count,ink,paper,fill);
 }
 
 /* A completion record outlives each poll. No borrowed descriptor survives

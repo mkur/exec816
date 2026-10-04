@@ -49,7 +49,7 @@ def markers(program,foreign,output):
     # Count public C entries without guessing their shared/tail-call epilogues.
     # The ordinary-call boundary supplies complete drawing-call elapsed time;
     # native DISPLAY.Check spans isolate its validation work by owning Task DP.
-    for name in ('DisplayCheck','GemDrawingCopy','GemDrawingFill','GemDrawingText',
+    for name in ('DisplayCheck','GemDrawingCopy','GemDrawingFill','GemDrawingText','GemDrawingTextFill',
                  'GemDrawingFence','GemDrawingScrollStart','GemDrawingScrollPoll',
                  'VbxeCopyRect','VbxeFill','VbxeSubmit','VbxeFence'):
         if name in foreign['symbols']:

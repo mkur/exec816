@@ -76,9 +76,15 @@ An opaque bitmap text span also erases an old caret inside the cells it actually
 draws, avoiding a separate glyph restore. A caret outside that span still needs
 restoring, including cursor-only moves and cells deferred by clipping or the
 presentation budget.
-The native/C packet is version 3, 60 bytes, including the driver-owned completion
-mask returned at open. Rebuild both sides together. The worker reserves its
-request/input/stop bits before display initialization allocates that signal.
+When the last dirty span completes the presentation, the bitmap renderer can
+append the new caret to that text operation. This requires a focused, settled
+view and an old caret already absent or covered by the span. Text and caret
+then share one owner check and the final blitter list and fence. Cursor-only
+moves and incomplete presentations retain separate operations.
+The native/C packet is version 4, 70 bytes, including the trailing fill geometry
+and driver-owned completion mask returned at open. Rebuild both sides together.
+The worker reserves its request/input/stop bits before display initialization
+allocates that signal.
 Output control bytes have these effects:
 
 | Byte | Effect |

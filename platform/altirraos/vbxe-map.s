@@ -90,7 +90,8 @@ _upload_mode:
 
 ; Checked opaque even-X 8x8 text. The C driver validates the complete atlas,
 ; source string and destination before mapping. Generate one fill followed by
-; 1..32 glyphs directly in the arena. All fixed fields are written every time;
+; 1..32 glyphs and an optional final fill directly in the arena.
+; All fixed fields are written every time;
 ; arbitrary glyph bytes cannot change stride, mode, chaining or raster bounds.
 ; No shared scratch: $80-$99 are the caller's ABI call-clobbered DP workspace.
 ; Native interrupts preserve D and never access this mapping or command arena.
@@ -230,8 +231,57 @@ _text_record:
               iny
               brl _text_record
 _text_last:
+              ldy ##22
+              lda [0x80],y
+              bne _text_fill
               sep #0x20
               lda dp:0x98
+              sta long:0x8014,x
+              plp
+              rtl
+; The C driver validates the complete trailing fill before drawing any text.
+; Append it to this list, replacing the last glyph's chain terminator.
+_text_fill:
+              dec a
+              sta dp:0x90
+              sep #0x20
+              lda dp:0x98
+              ora #8
+              sta long:0x8014,x
+              rep #0x20
+              txa
+              clc
+              adc ##21
+              tax
+              lda ##0
+              sta long:0x8000,x
+              sta long:0x8002,x
+              sta long:0x8012,x
+              lda ##0x0100
+              sta long:0x8004,x
+              ldy ##16
+              lda [0x80],y
+              sta long:0x8006,x
+              iny
+              iny
+              lda [0x80],y
+              ora ##0x4000
+              sta long:0x8008,x
+              lda ##0x0101
+              sta long:0x800a,x
+              ldy ##20
+              lda [0x80],y
+              dec a
+              sta long:0x800c,x
+              lda dp:0x90
+              sta long:0x800e,x
+              lda ##0
+              sta long:0x8010,x
+              sep #0x20
+              ldy ##24
+              lda [0x80],y
+              sta long:0x8010,x
+              lda #0
               sta long:0x8014,x
               plp
               rtl

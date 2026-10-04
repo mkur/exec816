@@ -20,7 +20,7 @@ def run(out,mode,replay=False):
     at=lambda name:next(d['address'] for d in p['image']['data'] if '_BITMAPFAULT_'+name+'_' in d['name'])
     result=dict(status='running',tier='development',mode=mode,build=p['build'],cases=[])
     try:
-        for fault in (1,2,3,4,5,6):
+        for fault in (1,2,3,4,5,6,7,8):
             folder=out/f'fault-{fault}';folder.mkdir(exist_ok=True)
             with emulator(BRIDGE,ROM,folder,pin=PIN) as b:
                 machine=verify_machine(b,ROM,PIN);saved={}
@@ -42,6 +42,7 @@ def run(out,mode,replay=False):
                 require(b.peek16(sy['ConsoleStopCount'])==1,'Missing single STOP')
                 if 3<=fault<=4:require(b.peek16(sy['ConsoleCopyChunks'])==1,'Fault was not after the scroll launch')
                 if fault>=5:require(b.peek16(sy['ConsoleTextChunks'])==1,'Missing first text batch fault or later batch launched')
+                if fault>=7:require(b.peek16(sy['ConsoleTextFillRows'])==1,'Fault missed the combined text/caret list')
                 if fault&1:
                     ownership(b,p,p['output'])
                     require(b.memdump(saved['at'],960)==saved['screen'] and b.memdump(0x22f,3)==saved['display'],'Quiesced fault did not restore OS')

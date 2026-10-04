@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "packet_bytes": 60,
+  "version": 4,
+  "packet_bytes": 70,
   "fields": {
     "operation": 0,
     "status": 2,
@@ -13,7 +13,12 @@
     "background": 18,
     "copy": 20,
     "token": 52,
-    "completionMask": 56
+    "completionMask": 56,
+    "fillX": 60,
+    "fillY": 62,
+    "fillWidth": 64,
+    "fillHeight": 66,
+    "fillPen": 68
   },
   "operations": {
     "OPEN": 1,
@@ -23,6 +28,7 @@
     "COPY": 5,
     "FENCE": 6,
     "SCROLL": 7,
-    "POLL": 8
+    "POLL": 8,
+    "TEXT_FILL": 9
   }
 }

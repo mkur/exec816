@@ -17,14 +17,14 @@ def drawing(out,optimize,probe=False,fault=False):
              ad/'gem-vbxe.c',ROOT/'lib/console/console-bitmap.c']
     if fault:
         hardware=(ROOT/'platform/altirraos/vbxe.c').read_text()
-        hardware=hardware.replace('#define BUSY ', 'extern UBYTE ConsoleFaultBusy(void);\nextern void ConsoleFaultStop(void);\nextern void ConsoleFaultCopy(void);\nextern void ConsoleFaultText(UWORD count);\n#define BUSY ')
+        hardware=hardware.replace('#define BUSY ', 'extern UBYTE ConsoleFaultBusy(void);\nextern void ConsoleFaultStop(void);\nextern void ConsoleFaultCopy(void);\nextern void ConsoleFaultText(UWORD count,UWORD fillRows);\n#define BUSY ')
         hardware=hardware.replace('REG(BUSY)&3','ConsoleFaultBusy()&3').replace('REG(BUSY)=0;', 'REG(BUSY)=0; ConsoleFaultStop();')
         needle='status=VbxeNotifyArm(d->scrollId);'
         require(hardware.count(needle)==1,'Scroll launch boundary changed')
         hardware=hardware.replace(needle,needle+' ConsoleFaultCopy();')
         needle='start(d);\n        status=VbxeOwnerFence(d);'
         require(hardware.count(needle)==1,'Text launch boundary changed')
-        hardware=hardware.replace(needle,'start(d); ConsoleFaultText(n);\n        status=VbxeOwnerFence(d);')
+        hardware=hardware.replace(needle,'start(d); ConsoleFaultText(n,upload.fillRows);\n        status=VbxeOwnerFence(d);')
         target=out/'vbxe-fault.c';target.write_text(hardware)
         sources[sources.index(ROOT/'platform/altirraos/vbxe.c')]=target
         sources.append(ROOT/'tests/programs/console_bitmap_fault.c')
