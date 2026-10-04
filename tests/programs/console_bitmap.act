@@ -1,5 +1,6 @@
 MODULE BITMAPTEST
 USE EXEC
+USE EXECTASKS
 USE HEAPCORE
 USE DOS
 USE CONSOLE
@@ -30,13 +31,28 @@ PROC Settled(BYTE unused)
 
 RETURN
 
+; Passive trace boundaries separate drawing from settled idle frames.
+PROC Ready(CARD value)
+
+  checkpoint=value
+
+RETURN
+
+PROC Continuing()
+
+RETURN
+
 PROC Pause(CARD value)
+  CARD ignored
 
   Settled(0)
-  checkpoint=value
+  ignored=EXECTASKS.Sleep(2)
+  Ready(value)
   WHILE gate<value DO
     EXEC.Yield()
   OD
+
+  Continuing()
 
 RETURN
 
@@ -68,6 +84,29 @@ PROC Main()
   text(0)=12
   Require(DOS.Write(file,text,1)=1)
   Pause(4)
+
+  ; Opaque text erases the old caret without a separate restore.
+  text(0)='A
+  text(1)='B
+  Require(DOS.Write(file,text,2)=2)
+  Pause(5)
+
+  ; Cursor-only movement still restores the old cell.
+  text(0)=8
+  Require(DOS.Write(file,text,1)=1)
+  Pause(6)
+
+  ; Dirty text outside the old caret does not erase it.
+  text(0)=13
+  text(1)='Z
+  Require(DOS.Write(file,text,2)=2)
+  Pause(7)
+
+  ; Overwrite a nonblank cell under the old caret.
+  text(0)='C
+  Require(DOS.Write(file,text,1)=1)
+  Pause(8)
+
   LET instance=CONSOLEDRIVER.GetInstance()
   EXEC.Forbid()
   CONSOLEINPUT.Deliver(instance,$0001003f)

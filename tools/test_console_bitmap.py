@@ -11,9 +11,11 @@ from test_dos_stack import execute,ownership
 from test_cooperative import data
 from gem_render_oracle import Raster,font_bytes
 from test_gem_interactive import pixels
+from bitmap_console_oracle import Terminal
+from bitmap_console_trace import observation,intervals
 
 
-def run(out,mode,replay=False):
+def run(out,mode,replay=False,observe=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(out/'program') if replay else build_bitmap(ROOT/'tests/programs/console_bitmap.act',out,mode=='opt',probe=True)
     foreign=json.loads((out/'c-image.json').read_text());sy=foreign['symbols']
@@ -22,7 +24,7 @@ def run(out,mode,replay=False):
         bank_zero_delta=dict(fixed=0,root_kernel=0,per_task=[0]*8,private_idle=0),observations=[])
     address=lambda name:next(d['address'] for d in p['image']['data'] if '_BITMAPTEST_'+name+'_' in d['name'])
     try:
-        with emulator(BRIDGE,ROM,out,pin=PIN) as b:
+        with observation(foreign,p,observe,module='BITMAPTEST') as marks, emulator(BRIDGE,ROM,out,pin=PIN) as b:
             require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
             result['machine']=verify_machine(b,ROM,PIN);saved={}
             def reach(condition):
@@ -40,9 +42,12 @@ def run(out,mode,replay=False):
                     print('Status/checks/regs',b.peek16(adapter.STATE),data(b,p['image'],'checks',True),b.regs(),flush=True);raise
                 finally:b.regs=original
             def before(b):
+                if observe:b.profile_start()
                 saved.update(screen=b.peek16(88),dma=b.memdump(0x22f,3),cursor=b.memdump(0x2f0,1),input=b.memdump(0x208,2))
                 saved['bytes']=b.memdump(saved['screen'],960)
-                for stage in range(1,5):
+                terminal=Terminal(80,30)
+                edits={5:b'AB',6:b'\x08',7:b'\rZ',8:b'C'}
+                for stage in range(1,9):
                     reach(f'dw(${address("CHECKPOINT"):x})={stage}')
                     if stage==1 and 'ConsoleProbeResults' in sy:
                         raw=b.memdump(sy['ConsoleProbeResults'],80)
@@ -68,6 +73,9 @@ def run(out,mode,replay=False):
                     if stage in (1,3,4):
                         x,y=(632,239) if stage in (1,3) else (0,7)
                         for column in range(8):model.pixel(x+column,y,1)
+                    if stage in edits:
+                        terminal.feed(edits[stage])
+                        terminal.paint(model,0,0,True)
                     folder=out/f'stage-{stage}';folder.mkdir(exist_ok=True)
                     result['observations'].append(dict(stage=stage,pixels=pixels(b,folder,model.packed())))
                     b.memload(address('GATE'),stage.to_bytes(2,'little'))
@@ -76,10 +84,22 @@ def run(out,mode,replay=False):
             require(b.memdump(saved['screen'],960)==saved['bytes'] and b.memdump(0x22f,3)==saved['dma'],'OS screen not restored')
             require(b.memdump(0x2f0,1)==saved['cursor'] and b.memdump(0x208,2)==saved['input'],'OS input not restored')
             ownership(b,p,p['output'])
+            if observe:b.profile_stop()
             result.update(status='pass',runtime=runtime,checks=data(b,p['image'],'checks',True))
+        if observe:
+            result['operations']=intervals(out/'emulator.log',marks,8)
+            for sample in result['operations']:
+                if sample['kind']=='idle':
+                    require(not sample['calls'],'Settled caret submitted work: '+str(sample))
+                elif sample['stage'] in (5,6,7,8):
+                    expected=2 if sample['stage']==7 else 1
+                    require(sample['calls'].get('GemDrawingText',0)==expected,
+                            'Unexpected caret/text redraws: '+str(sample))
+                    require(sample['calls'].get('GemDrawingFill',0)==1,
+                            'Missing new caret: '+str(sample))
     except Exception as error:result.update(status='fail',error=str(error));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('Bitmap console passed',mode,flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');a=p.parse_args();run(a.output,a.mode,a.replay)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');p.add_argument('--observe',action='store_true');a=p.parse_args();run(a.output,a.mode,a.replay,a.observe)

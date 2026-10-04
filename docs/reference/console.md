@@ -72,6 +72,10 @@ its storage or display ownership. Unquiesced recovery retains both.
 A steady focused underline caret restores its cell before copying and redraws
 after presentation settles. Completion makes that redraw runnable even if no
 WRITE remains. Clean cells and an unchanged caret cause no drawing submissions.
+An opaque bitmap text span also erases an old caret inside the cells it actually
+draws, avoiding a separate glyph restore. A caret outside that span still needs
+restoring, including cursor-only moves and cells deferred by clipping or the
+presentation budget.
 The native/C packet is version 3, 60 bytes, including the driver-owned completion
 mask returned at open. Rebuild both sides together. The worker reserves its
 request/input/stop bits before display initialization allocates that signal.

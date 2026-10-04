@@ -328,6 +328,13 @@ PROC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
             view.index=instance.lineStart+instance.column
             RETURN
           FI
+
+          ; Only the span actually drawn can erase the old bitmap caret.
+          ; Budgets and clipping may leave other dirty cells for later turns.
+          IF view.cursorOn<>0 AND view.previousCursor>=base+first
+              AND view.previousCursor<base+stop THEN
+            view.cursorOn=0
+          FI
         ELSE
           Span(view.screen+SIZE(Position(view.top+row,view.left+first)),
               source,stop-first)
@@ -505,8 +512,16 @@ PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     FI
   FI
 
-  RemoveCursor(view)
-  Cells(view,instance)
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    ; Opaque text may already erase the old caret. Restore it only if it
+    ; survived this batch, before drawing the new caret.
+    Cells(view,instance)
+    RemoveCursor(view)
+  ELSE
+    RemoveCursor(view)
+    Cells(view,instance)
+  FI
+
   Cursor(view,instance)
 
 RETURN

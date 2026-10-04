@@ -5,11 +5,11 @@ from collections import Counter
 from sio_transaction_trace import read_events
 
 @contextmanager
-def observation(foreign,program,enabled,performance=None):
+def observation(foreign,program,enabled,performance=None,module='BITMAPSCROLL'):
     marks={k:foreign['symbols'][k] for k in ('GemDrawingText','GemDrawingCopy','GemDrawingScrollStart',
         'GemDrawingScrollPoll','GemDrawingFill','blit_glyph','_text_record','VbxeSubmit','submit') if k in foreign['symbols']}
     for routine,key in [('READY','ready'),('CONTINUING','continuing')]:
-        rows=[r for r in program['image']['routines'] if r['name'].startswith('M_BITMAPSCROLL_'+routine+'_')]
+        rows=[r for r in program['image']['routines'] if r['name'].startswith('M_'+module+'_'+routine+'_')]
         if len(rows)!=1:raise RuntimeError('Missing trace marker '+routine)
         marks[key]=rows[0]['address']
     keys=('EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS','EXEC816_MASK_TRACE')
