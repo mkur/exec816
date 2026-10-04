@@ -13,6 +13,8 @@ from package_demo import package,GEM_NOTICES
 from library_paths import read_source
 from native_program import ROOT, build, compiler, require, sha256
 
+DEMO_IMAGE_DATA_BYTES = 4096
+
 
 def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False):
     require(not (bitmap_shell_only and (gem_vdi or bitmap_console)),
@@ -61,8 +63,16 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
         copy_notices(output/'bitmap-console/selected',output)
         pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
     else:
+        # The shell/prime globals and shared fault strings exceed the default
+        # 2 KiB arena. Reserve 4 KiB in upper RAM for this composed application;
+        # fixed bank-zero and per-Task reservations remain unchanged.
+        profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+        profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES
+        memory_profile=output/'demo-memory.json'
+        memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
         program=build(toolchain,source,output,optimize=True,tasks=True,
-                      task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,system_mount=mount_config.get('system_mount'))
+                      task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
+                      system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
     guide=(ROOT/'docs/guides/demo.md').read_text().replace('../demo.png','demo.png').replace('../images/','images/').replace('read-only SDFS data disk',f'read-only {filesystem.upper()} data disk')
     if bitmap_shell_only:
         guide=(ROOT/'docs/bitmap-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')

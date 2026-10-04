@@ -24,8 +24,9 @@ the shell reuses its existing 512-byte transfer area after command completion.
 Formatting uses no heap allocation or mutable global buffer.
 
 Reserved bank-zero change for every slice is **0 fixed bytes and 0 bytes per
-Task**, including guards, alignment and unused capacity. Production upper-RAM
-reservation sizes also stay unchanged. Larger data arenas in controlled tests
+Task**, including guards, alignment and unused capacity. The shell/prime demo's
+upper-RAM data arena grows from 2 to 4 KiB for its globals and fault strings;
+the standalone default stays 2 KiB. Larger data arenas in controlled tests
 hold observers and expected strings only. Code and constant strings grow in
 the ordinary resident image; existing Task stacks, direct pages and interrupt
 protocols are unchanged.
