@@ -25,7 +25,7 @@ PUBLIC BYTE FUNC Init(DESKTYPES.Client POINTER client
     DESKTYPES.Service POINTER service)
 
   IF Storage(BYTE POINTER(client),DESKTYPES.CLIENT_SIZE)=0
-      OR service=NULL OR service.live=0 THEN
+      OR service=NULL OR service.live<>1 THEN
     RETURN(0)
   FI
 

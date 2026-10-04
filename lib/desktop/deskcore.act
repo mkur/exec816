@@ -306,6 +306,12 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
     RETURN(DESKTYPES.BAD_ARGUMENT)
   FI
 
+  ; Requests already queued before admission closed must also be rejected.
+  IF service.live<>1 AND (request.operation=DESKTYPES.REGISTER
+      OR request.operation=DESKTYPES.OPEN) THEN
+    RETURN(DESKTYPES.CANCELLED)
+  FI
+
   IF request.operation=DESKTYPES.REGISTER THEN
     RETURN(Register(service,request))
   FI

@@ -85,7 +85,8 @@ RETURN
     if desktop:
         text=text.replace('USE EXEC\n','USE EXEC\nUSE DESKBOOT\n',1)
         binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN', '  IF DESKBOOT.Enable()=0 THEN\n    HEAPCORE.Abort($fae6)\n  FI\n\n  IF CONSOLEDRIVER.Start()=0 THEN')
-        binding=binding.replace('  BitmapApplication(0)', '  IF DESKBOOT.Attach()=0 THEN\n    HEAPCORE.Abort($fae7)\n  FI\n\n  BitmapApplication(0)\n  DESKBOOT.Detach()')
+        binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN\n    HEAPCORE.Abort($f731)', '  IF CONSOLEDRIVER.Start()=0 THEN\n    DESKBOOT.Disable()\n    HEAPCORE.Abort($f731)')
+        binding=binding.replace('  BitmapApplication(0)', '  IF DESKBOOT.Attach()=0 THEN\n    IF CONSOLEDRIVER.Stop()=0 THEN\n      HEAPCORE.Abort($f732)\n    FI\n\n    DESKBOOT.Disable()\n    HEAPCORE.Abort($fae7)\n  FI\n\n  BitmapApplication(0)\n  IF DESKBOOT.StopAdmission()=0 THEN\n    HEAPCORE.Abort($faea)\n  FI\n\n  DESKBOOT.Detach()')
         binding=binding.removesuffix('RETURN\n')+'  DESKBOOT.Disable()\n\nRETURN\n'
     text=text.replace('ENDMODULE',binding+'\nENDMODULE')
     path=out/'launcher.act';path.write_text(text);return path

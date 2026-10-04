@@ -127,6 +127,7 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
     if fastest:
         pin['startup_configuration']['diskemu'] = 'fastest'
     at = lambda module, name: next(d['address'] for d in p['image']['data'] if '_'+module+'_'+name.upper()+'_' in d['name'])
+    second_app = any('_DESKAPP_WINDOWID_' in d['name'] for d in p['image']['data'])
     native = native_markers(p, [('DESKINPUT_CONSUME', 'consume'), ('DESKINPUT_SERVICE', 'input_service'),
                               ('CONSOLEBITMAP_CURSOR', 'cursor')])
     marks = {k: v for k, v in p['labels'].items() if k.startswith(('sio_', 'timer_', 'native_', 'signal_route', 'pointer_'))}
@@ -205,10 +206,24 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                 frames(30)
                 require(read('DESKTEST', 'keyCount') == 1, 'Duplicate graphical key')
                 report['graphical_keyboard'] = dict(keys=1, breaks=1, destination=panel)
+                position = [320, 120]
+                if second_app:
+                    # Select the independently scheduled application's exposed
+                    # client area. Graphical keys now drive real compute/repaint.
+                    for i in range(264):
+                        b._cmd_ok(f'MOUSE AT {2000+i*4000} 16 {16 if i<32 else 0} -1')
+                    reach(f'(dw(${at("DESKINPUT", "cursorX"):x})=584)&(dw(${at("DESKINPUT", "cursorY"):x})=152)')
+                    b._cmd_ok('MOUSE AT 3000 0 0 1')
+                    reach(f'dw(${at("DESKAPP", "updates"):x})>=1')
+                    frames(2)
+                    b._cmd_ok('MOUSE AT 3000 0 0 0')
+                    reach(f'dw(${at("DESKINPUT", "buttons"):x})=0')
+                    position = [584, 152]
                 # Paced one-phase changes move to a blank desktop margin; no
                 # burst injection or sensitivity adjustment is used.
-                for i in range(270):
-                    b._cmd_ok(f'MOUSE AT {2000+i*4000} 16 {-16 if i<96 else 0} -1')
+                dx, dy = 590-position[0], 24-position[1]
+                for i in range(max(abs(dx), abs(dy))):
+                    b._cmd_ok(f'MOUSE AT {2000+i*4000} {16 if i<dx else 0} {-16 if i<abs(dy) else 0} -1')
                 reach(f'(dw(${at("DESKINPUT", "cursorX"):x})=590)&(dw(${at("DESKINPUT", "cursorY"):x})=24)')
                 frames(3)
                 position = [590, 24]
@@ -217,6 +232,8 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                     b.memload(at('DESKTEST', 'mode'), mode.to_bytes(2, 'little'))
                     begin = clock()
                     for i in range(count):
+                        if second_app and i % 10 == 0:
+                            b._cmd_ok('KEY SPACE down')
                         # Change one diagonal phase and reverse every ten steps.
                         dx = 1 if (i//10) % 2 == 0 else -1
                         old = list(position)
@@ -251,10 +268,15 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                             report['samples'].append(item)
                             reach(f'dw(${at("DESKINPUT", "buttons"):x})={pressed}')
                             frames(1)
+                        if second_app and i % 10 == 0:
+                            b._cmd_ok('KEY SPACE up')
                         if i % 20 == 0:
                             print(load, i, flush=True)
                     report['windows'][load] = [begin, clock()]
                     report.setdefault('progress', {})[load] = dict(writes=read('DESKTEST', 'writes'), reads=read('DESKTEST', 'reads'))
+                if second_app:
+                    report['independent_app_updates'] = read('DESKAPP', 'updates')
+                    require(report['independent_app_updates'] > 1, 'Second app did not repaint')
                 b.memload(at('DESKTEST', 'mode'), (9).to_bytes(2, 'little'))
                 b.bp_clear_all()
             report['runtime'], _ = execute(b, p, before_run=before, timeout=120, frame_limit=12000)

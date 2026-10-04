@@ -1,5 +1,6 @@
 MODULE SHELLAPP
 USE DESKAPP
+USE DESKBOOT
 
 INCLUDE "shell/shell-session.inc"
 INCLUDE "shell/shell-boot.inc"
@@ -18,6 +19,10 @@ PROC Main()
     WHILE shell.done=0 DO
       ShellReadStep()
     OD
+  FI
+
+  IF DESKBOOT.StopAdmission()=0 THEN
+    HEAPCORE.Abort($faea)
   FI
 
   DESKAPP.Stop()

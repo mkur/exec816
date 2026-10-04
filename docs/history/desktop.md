@@ -221,3 +221,46 @@ Task pool: 1,024-byte stack, 256-byte DP, 1,312 reserved bytes including guards.
 VRAM growth is zero. Reserved bank-zero growth is **0 fixed, 0 root/kernel,
 0 per existing public Task and 0 idle bytes**, including alignment and unused
 capacity. Host checks: 338 tests, four historical audit skips; development tier.
+
+## DT6 Shutdown, failures and two-client load
+
+The controller now closes admission before draining clients. Bindings cannot
+initialize after that boundary; queued Register/Open requests are rejected while
+existing clients can collect events, cancel, close and unregister. Partial shell
+admission unwinds the window, registration and port. Startup adapter failure
+releases the stopped service before reporting failure.
+
+[DT6 evidence](../development/desktop-dt6.json) covers raw/optimized capacity
+failure followed by successful re-admission, a queued Open crossing the shutdown
+boundary, exact cleanup and OS return. Selected raw/optimized blitter faults use
+an actual desktop scroll and pending read/write: quiesced hardware permits
+cleanup; unquiesced hardware retains the Layers token, registration and borrowed
+request under the reset-required contract. DT4/DT5 retain the independent-client
+close/cancel, held-button, route retirement and complete-pixel records.
+
+The corrected IRQ path was measured with the second Task computing and repainting
+31 times, alongside 100 paced motions and thirty clicks for each load. An
+unobserved replay uses the same image and stimuli. The focused FASTEST125 disk
+case also checks shared-timer accounting and physical SIO after the IRQ change.
+
+| Two-client load | Pointer median / p95 / max | Button consumption max | Sample gap max |
+| --- | ---: | ---: | ---: |
+| Idle | 44.39 / 81.27 / 86.83 ms | 23.13 ms | 0.167 ms |
+| Console output | 64.09 / 106.03 / 146.82 ms | 87.02 ms | 0.170 ms |
+| Physical disk | 46.28 / 105.13 / 165.75 ms | 164.52 ms | 0.271 ms |
+
+Capture counts, the strictly below 1 ms sample-gap gate and serial service pass.
+**Pointer p95/max and the loaded disk-button target remain open**, alongside
+DT4 outline/repair limits. The single-client DT3 record remains the comparison:
+adding application computation/repaint worsens the presentation tail. The
+longest observed input-service interval rises to 204.78 ms under disk load;
+call elapsed maxima are 9.05/23.34/33.36 ms for idle/scroll/disk. Native IRQ entry
+through routing accounts for 31.1/31.1/36.1% of observed elapsed time, excluding
+scheduler/RTI. Those observations distinguish capture from Task/presentation
+backlog; they are not exclusive CPU or DMA utilization measurements. This slice
+does not alter sampling frequency or claim the desktop meets its speed target.
+
+Host checks pass: 338 tests, four historical audit skips; affected generated
+layouts are current. No runtime globals, VRAM or Tasks are added by shutdown
+handling. Reserved bank-zero growth remains **0 fixed, 0 root/kernel, 0 per
+existing public Task and 0 idle bytes**, including guards, alignment and slack.

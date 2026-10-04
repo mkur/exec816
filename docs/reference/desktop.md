@@ -160,6 +160,19 @@ its normal EXIT path controls retirement.
 Pointer and move-repair response targets have not all passed. The execution
 record separates exact capture/pixel correctness from measured responsiveness.
 
+## Shutdown admission
+
+The root startup controller calls `DESKBOOT.StopAdmission()` before requesting
+application retirement. The service's live byte advances from accepting (1) to
+draining (2), then stopped (0); it does not reopen. Only that controller may
+close admission. `DESKTOP.Init` then refuses new bindings, and dispatch replies
+CANCELLED to queued/new Register or Open requests. Existing clients may still
+replace content, receive/cancel events, close and unregister while they drain.
+The controller retains the service until all clients, replies, paint tokens and
+hardware references retire. No IRQ reads this admission flag or follows clients.
+Partial shell admission unwinds its window, registration and port in reverse
+order. An unquiesced blitter fault retains referenced storage until reset.
+
 ## Demonstration client
 
 `DESKAPP` owns an ordinary 1,024-byte-stack Task and one graphical window. A key
