@@ -9,6 +9,7 @@ from os_boundary import emulator
 from test_mouse_observe import PIN, BRIDGE, ROM
 from test_dos_stack import execute, ownership
 from test_cooperative import data
+from desktop_budget import delta as desktop_delta
 from stack_budget import bank_zero_delta, stack_usage
 from generate_desktop import files, layout
 
@@ -25,7 +26,8 @@ def run(out, mode, existing=None):
         p = read_build(existing) if existing else build(compiler(ROOT / 'build/actionc'), ROOT / 'tests/programs/native_desktop.act',
                   out / 'program', optimize=mode == 'opt', tasks=True, task_capacity=8,
                   console=False)
-        report.update(build=p['build'], bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        report.update(build=p['build'], bank_zero_delta=bank_zero_delta(p['build']['memory']),
+                      reserved_bank_zero_delta=desktop_delta(p['build']['memory']))
         with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
             report['machine'] = verify_machine(bridge, ROM, PIN)
             try:

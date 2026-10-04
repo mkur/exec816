@@ -28,7 +28,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     bitmap=manifest.get('bitmap',False)
     shell_only=manifest.get('shell_only',False)
     require(not shell_only or boot_smoke,'Shell-only demo currently supports the boot smoke scope')
-    width,height=(80,30) if bitmap else (40,24)
+    desktop=manifest.get('desktop',False)
+    width,height=(64,20) if desktop else (80,30) if bitmap else (40,24)
     shell_cells=width*(height if shell_only else height-6)
     screenshots=[];commands=[]
     boot_image=None
@@ -139,7 +140,13 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 r=Raster(font_bytes(out/manifest['font_source']))
                 terminal=Terminal(width,height);terminal.cells[:]=text
                 terminal.column=cursor%width;terminal.row=cursor//width
-                terminal.paint(r,0,0,caret=True)
+                if desktop:
+                    from test_desktop_presentation import rectangle,frame
+                    rectangle(r,(0,0,640,240),8)
+                    frame(r,(32,24,560,208),b'Exec816 Shell',True)
+                    terminal.paint(r,5,5,caret=True)
+                else:
+                    terminal.paint(r,0,0,caret=True)
                 folder=out/f'pixels-{len(observations)}';folder.mkdir(exist_ok=True)
                 # Let scanout catch up after the last CPU-side fence.
                 frames(2)
@@ -151,7 +158,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 expected[cursor]^=128
                 require(physical==expected,'Physical tile mismatch: '+label)
             if shell_only:
-                require(len(text)==width*height,'Shell does not occupy the full bitmap console')
+                require(len(text)==width*height,'Shell model dimensions differ from the selected console')
                 observations.append(dict(stage=label,guest_frame=b.eval_expr('@frame')))
             else:
                 require(b'PRIME SEARCH' in text[shell_cells:],'Missing prime tile')

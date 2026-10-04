@@ -1741,7 +1741,25 @@
         "debugbrkrun": true
       },
       "build_artifact": "build/desktop/dt1-raw/results.json",
-      "compiler": null
+      "compiler": null,
+      "reserved_bank_zero_delta": {
+        "baseline": "desktop-dt0",
+        "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "runtime": 0,
+        "loading": 0
+      }
     },
     "opt": {
       "status": "pass",
@@ -3481,7 +3499,25 @@
         "debugbrkrun": true
       },
       "build_artifact": "build/desktop/dt1-opt/results.json",
-      "compiler": null
+      "compiler": null,
+      "reserved_bank_zero_delta": {
+        "baseline": "desktop-dt0",
+        "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "runtime": 0,
+        "loading": 0
+      }
     }
   },
   "storage": {

@@ -2,9 +2,9 @@
 
 [Reference](README.md) · [Layers](layers.md) · [Implementation plan](../plans/gem4xe/desktop-implementation-plan.md)
 
-The DT1 native service implements window identities, retained command content
-and asynchronous events. Hardware presentation and console attachment are not
-yet connected. It is an ordinary library and message service above Exec; it
+The native service implements window identities, retained command content,
+asynchronous events and a worker-hosted bitmap presenter. DT2 connects one
+64×20 shell console and retained graphical windows to Layers. It is an ordinary library and message service above Exec; it
 adds no kernel gateway or resident Task by itself.
 
 ## Registration and lifetime
@@ -62,8 +62,11 @@ half-open, within the outer rectangle minus 8-pixel side borders, 16-pixel title
 area and 8-pixel bottom border. Text is 8 pixels per character and 8 pixels
 high; offsets/counts must stay inside the supplied text. The entire batch is
 validated before retained content changes. No payload pointer survives reply.
-Console-kind records are reserved for the upcoming presenter integration;
-DT1 does not attach or retain a console by storing its unit number.
+Console-kind admission is limited to the root controller and permanent console
+unit 0, with a 528×184 outer rectangle and an 8-pixel placement grid. It cannot
+attach an arbitrary console unit. The presenter owns the permanent model; its
+shutdown refuses live desktop registrations. The root owns the shell streams
+and closes them before retiring its window.
 
 ## Events and shutdown
 
@@ -71,8 +74,9 @@ Each client has sixteen ordinary events. Adjacent motion coalesces only with
 matching window, route and buttons. Overflow discards the ambiguous queue and
 retains LOSS. Close-request and current-focus notices have separate durable
 per-window bits. A stalled event consumer cannot grow storage or block another
-client. The service's input producer supplies capture metadata; DT1's recording
-backend does not acquire hardware input.
+client. The service's input producer supplies capture metadata. DT2 still uses the
+console's keyboard consumer; graphical keyboard routing and physical pointer
+integration are DT3. Programmatic focus currently affects presentation.
 
 Cancel and collect NEXT_EVENT, collect other lanes, close every window, then
 UNREGISTER and collect its reply before `Dispose`. Dispose deletes the private
@@ -83,17 +87,54 @@ Task is an Exec lifetime violation and produces the existing launch fault.
 `DESKCORE.Init` uses a presenter-owned allocated signal; only that Task pumps,
 changes the scene, or posts events. `Stop` succeeds only after clients, messages
 and active painting retire. The embedding service owns signal/storage cleanup.
-The DT1 fixture uses three Tasks solely to exercise these boundaries; the
-production integration will reuse the console worker.
+The DT1 fixture uses three Tasks solely to exercise these boundaries. The
+production presenter reuses the console worker and its existing 2,560-byte
+stack; its message port adds one owned signal, not a new Task.
+
+
+## Presentation
+
+Select desktop mode before starting the console. The root launch adapter binds
+an upper-RAM service, then registers and shows the permanent console as a framed
+shell. The existing full-screen bitmap and standard text startup modes remain
+available. Desktop mode rejects the console's tiled Create/Show/Hide/Focus
+operations; use window controls for desktop placement and visual focus.
+
+The same worker owns console I/O, the display lease and every physical draw.
+Background, frame and retained content repair use Layers' visible damage. One
+update token spans a repaint continuation of at most sixteen scanlines or four
+retained commands per turn; console model writes and layout edits wait while
+input delivery and request intake continue. No application refresh callback
+runs inside the presenter. Covered damage is retained without keeping the
+worker runnable; later exposure reconstructs pixels from the current model.
+
+Ordinary console spans keep the existing short-write presentation pass. Each
+synchronous public draw holds a token through all clipped fragments. The
+native/C bridge supports half-open pixel clips, including odd nibble edges and
+partial glyphs. Fully visible text retains the font-atlas path. Repainting does
+not acknowledge edits that occur after its token: model edits are gated until
+that token retires.
+
+A scroll can reuse pixels only when the layer is clean and fully visible.
+Its existing copy/fill list holds the scene token until completion IRQ/watchdog
+processing proves completion or quiescence. Obscured scrolls update retained
+cells and redraw visible damage. No per-frame polling is added. Existing
+reset-required hardware faults cannot return to free referenced storage.
+
+The current frame is a title band and fixed border. There are no mouse gestures,
+close gadgets or graphical input routing yet. Those are later desktop slices.
 
 ## Storage and validation
 
-The generated service occupies 10,372 bytes in upper RAM, including the
+The generated service occupies 10,378 bytes in upper RAM, including the
 4,782-byte Layers scene, four 444-byte client records, four 760-byte windows
 and one 710-byte staging batch. Client records are 18 bytes and requests are
-78 bytes, excluding their ordinary Exec reply ports. No new bank-zero pool,
+78 bytes, excluding their ordinary Exec reply ports. The service heap request
+rounds to 10,384 bytes at Exec’s eight-byte alignment; unused window/queue/list
+capacity is included. DT2 runtime/controller globals have 138 payload bytes in
+upper image RAM (plus compiler alignment). No new bank-zero pool,
 stack or DP reservation is introduced.
 
 [Development evidence](../history/desktop.md) records raw/optimized execution,
-stack observations and limits. DT1 does not claim hardware presentation,
-pointer latency, desktop readiness or whole-system qualification.
+stack observations and limits. These checks do not establish pointer latency, desktop readiness or
+whole-system qualification.

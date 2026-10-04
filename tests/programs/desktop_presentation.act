@@ -1,0 +1,133 @@
+MODULE DESKTEST
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE HEAPCORE
+USE CONSOLE
+USE CONSOLEBITMAP
+USE CONSOLEDRIVER
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE DESKTOP
+USE DESKTYPES
+USE DESKBOOT
+USE DESKSTATE
+USE DESKPAINT
+USE REGIONS
+
+CARD checks,checkpoint,gate
+BYTE ARRAY text(64)
+DESKTYPES.Request request
+DESKTYPES.Content content
+LONGCARD panel
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Settled()
+
+  LET instance=CONSOLEDRIVER.GetInstance()
+  LET service=DESKSTATE.Get()
+  LET entry=CONSOLEWINDOWS.Find(0)
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  WHILE instance.dirtyRows<>0 OR service.scene.busy<>0
+      OR DESKPAINT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0
+      OR view.cursorOn=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Pause(CARD value)
+  CARD ignored
+
+  Settled()
+  ignored=EXECTASKS.Sleep(2)
+  checkpoint=value
+  WHILE gate<value DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Send(BYTE operation LONGCARD id)
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  LET client=DESKBOOT.Binding()
+  request.operation=operation
+  request.window=id
+  Require(DESKTOP.Submit(client,@request)=DESKTYPES.OK)
+  reply=DESKTOP.Collect(client)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(client)
+  OD
+
+  Require(reply=@request AND request.status=DESKTYPES.OK)
+
+RETURN
+
+PROC Main()
+  CARD row,column
+  DOS.FileHandle POINTER file
+
+  Require(CONSOLE.ScreenWidth()=64 AND CONSOLE.ScreenHeight()=20)
+  file=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,BYTE POINTER(c"ABC"),3)=3)
+  Pause(1)
+  FOR row=0 TO 24 DO
+    FOR column=0 TO 63 DO
+      text(column)=BYTE(33+(row*7+column) MOD 90)
+    OD
+
+    Require(DOS.Write(file,text,64)=64)
+  OD
+
+  Pause(2)
+  DESKTOP.Prepare(@request,DESKTYPES.MOVE)
+  request.bounds.left=80
+  request.bounds.top=48
+  Send(DESKTYPES.MOVE,DESKBOOT.WindowId())
+  Pause(3)
+  ; An odd-edged opaque panel cuts through console cells during exposure repair.
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_COMMANDS
+  request.payload=BYTE POINTER(c"Clip")
+  request.bytes=4
+  REGIONS.Assign(@request.bounds,113,93,273,173)
+  Send(DESKTYPES.OPEN,0)
+  panel=request.window
+  content.background=3
+  content.count=1
+  content.textBytes=3
+  content.text(0)='X
+  content.text(1)='Y
+  content.text(2)='Z
+  content.commands(0).kind=DESKTYPES.DRAW_TEXT
+  content.commands(0).pen=1
+  content.commands(0).count=3
+  REGIONS.Assign(@content.commands(0).bounds,3,3,27,11)
+  DESKTOP.Prepare(@request,DESKTYPES.REPLACE)
+  request.payload=BYTE POINTER(@content)
+  request.bytes=DESKTYPES.CONTENT_SIZE
+  Send(DESKTYPES.REPLACE,panel)
+  Send(DESKTYPES.SHOW,panel)
+  Pause(4)
+  Require(DOS.Write(file,BYTE POINTER(c"\fHello"),6)=6)
+  Pause(5)
+  Send(DESKTYPES.CLOSE,panel)
+  Pause(6)
+  Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

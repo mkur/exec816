@@ -1,0 +1,123 @@
+; Root shell/controller adapter. The default console is owned by the presenter;
+; the registered root remains alive until its window and all replies retire.
+MODULE DESKBOOT
+USE EXEC
+USE DESKTOP
+USE DESKTYPES
+USE DESKSTATE
+USE DESKPAINT
+USE REGIONS
+USE HEAPCORE
+
+DESKTYPES.Client client
+DESKTYPES.Request request
+LONGCARD shellWindow
+
+PUBLIC BYTE FUNC Enable()
+
+  IF DESKSTATE.Enabled()<>0 THEN
+    RETURN(0)
+  FI
+
+  LET service=DESKTYPES.Service POINTER(EXEC.AllocMem(DESKTYPES.SERVICE_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  IF service=NULL THEN
+    RETURN(0)
+  FI
+
+  DESKSTATE.SetLauncher(EXEC.FindTask(NULL))
+  DESKSTATE.Bind(service)
+
+RETURN(1)
+
+CARD FUNC Call(BYTE operation)
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  request.operation=operation
+  IF DESKTOP.Submit(@client,@request)<>DESKTYPES.OK THEN
+    RETURN(DESKTYPES.BUSY)
+  FI
+
+  reply=DESKTOP.Collect(@client)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(@client)
+  OD
+
+RETURN(reply.status)
+
+PUBLIC BYTE FUNC Attach()
+
+  IF DESKTOP.Init(@client,DESKSTATE.Get())=0 THEN
+    RETURN(0)
+  FI
+
+  DESKTOP.Prepare(@request,DESKTYPES.REGISTER)
+  IF Call(DESKTYPES.REGISTER)<>DESKTYPES.OK THEN
+    RETURN(DESKTOP.Dispose(@client) AND 0)
+  FI
+
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_CONSOLE
+  request.payload=BYTE POINTER(c"Exec816 Shell")
+  request.bytes=13
+  REGIONS.Assign(@request.bounds,32,24,560,208)
+  IF Call(DESKTYPES.OPEN)<>DESKTYPES.OK THEN
+    RETURN(0)
+  FI
+
+  shellWindow=request.window
+  IF Call(DESKTYPES.SHOW)<>DESKTYPES.OK OR Call(DESKTYPES.FOCUS)<>DESKTYPES.OK THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+PUBLIC PROC Detach()
+
+  DESKTOP.Prepare(@request,DESKTYPES.CLOSE)
+  request.window=shellWindow
+  IF Call(DESKTYPES.CLOSE)<>DESKTYPES.OK THEN
+    HEAPCORE.Abort($fae3)
+  FI
+
+  shellWindow=0
+  DESKTOP.Prepare(@request,DESKTYPES.UNREGISTER)
+  IF Call(DESKTYPES.UNREGISTER)<>DESKTYPES.OK OR DESKTOP.Dispose(@client)=0 THEN
+    HEAPCORE.Abort($fae4)
+  FI
+
+  ; Close replies commit geometry before its final background repair retires.
+  LET service=DESKSTATE.Get()
+  WHILE service.scene.busy<>0 OR DESKPAINT.Runnable()<>0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PUBLIC PROC Disable()
+
+  LET service=DESKSTATE.Get()
+  IF service<>NULL THEN
+    IF service.live<>0 THEN
+      HEAPCORE.Abort($fae5)
+    FI
+
+    DESKSTATE.Bind(NULL)
+    DESKSTATE.Select(0)
+    DESKSTATE.SetLauncher(NULL)
+    EXEC.FreeMem(BYTE POINTER(service),DESKTYPES.SERVICE_SIZE)
+  FI
+
+RETURN
+
+PUBLIC DESKTYPES.Client POINTER FUNC Binding()
+
+RETURN(@client)
+
+PUBLIC LONGCARD FUNC WindowId()
+
+RETURN(shellWindow)
+
+ENDMODULE

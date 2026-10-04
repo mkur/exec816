@@ -2,7 +2,7 @@
 PUBLIC BYTE FUNC BeginBatch(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER instance LONGCARD unit)
 
-  IF CONSOLEBITMAP.Enabled()=0 OR CONSOLEBITMAP.Pending()<>0
+  IF DESKSTATE.CopyReady()=0 OR CONSOLEBITMAP.Enabled()=0 OR CONSOLEBITMAP.Pending()<>0
       OR CONSOLEBITMAP.Failed()<>0 OR view.claimed=0 OR view.visible=0
       OR view.width<>instance.width OR view.height<>instance.height
       OR view.scrollState<>0 OR instance.height<=1

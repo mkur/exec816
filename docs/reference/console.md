@@ -107,7 +107,7 @@ append the new caret to that text operation. This requires a focused, settled
 view and an old caret already absent or covered by the span. Text and caret
 then share one owner check and the final blitter list and fence. Cursor-only
 moves and incomplete presentations retain separate operations.
-The native/C packet is version 5, 70 bytes, including the trailing fill geometry
+The native/C packet is version 6, 78 bytes, including the trailing fill and clipping geometry
 and driver-owned completion mask returned at open. Rebuild both sides together.
 The worker reserves its request/input/stop bits before display initialization
 allocates that signal.

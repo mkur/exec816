@@ -21,6 +21,8 @@ USE CONSOLEBITMAP
 USE CONSOLECONTROL
 USE DISPLAY
 USE DISPLAYADAPTER
+USE DESKHOST
+USE DESKPAINT
 INCLUDE "console-storage-action.inc"
 CONST DELETE=127
 
@@ -490,7 +492,7 @@ PUBLIC PROC Worker()
     RETURN
   FI
 
-  IF Initialize(service,defaultInstance)=0 THEN
+  IF Initialize(service,defaultInstance)=0 OR DESKHOST.Start()=0 THEN
     FreeStorage(service,defaultInstance)
     registered=EXEC.UnregisterResident()
     EXEC.FreeSignal(29)
@@ -503,6 +505,7 @@ PUBLIC PROC Worker()
   FI
 
   displayMask=CONSOLEBITMAP.Mask()
+  LET desktopMask=DESKHOST.Mask()
   EXEC.Forbid()
   IF service.stop=0 THEN
     service.state=2
@@ -535,7 +538,10 @@ PUBLIC PROC Worker()
       FI
     FI
 
-    CONSOLECONTROL.Process()
+    DESKHOST.Controls()
+    IF DESKHOST.Ready()<>0 THEN
+      CONSOLECONTROL.Process()
+    FI
     inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)
     bits=0
 
@@ -549,7 +555,7 @@ PUBLIC PROC Worker()
       ReadQuantum(service,instance)
       BEGIN
         LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-        IF CONSOLEBITMAP.Pending()=0 AND
+        IF CONSOLEBITMAP.Pending()=0 AND DESKHOST.Ready()<>0 AND
             (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
           completeWrite=0
           IF view.scrollState<>0
@@ -581,24 +587,26 @@ PUBLIC PROC Worker()
       entry.busy=0
     FI
 
+    DESKPAINT.Pump()
     IF CONSOLEBITMAP.Pending()<>0 THEN
-      IF Runnable(service,inputPending)<>0 THEN
+      IF Runnable(service,inputPending)<>0 OR DESKHOST.Runnable()<>0 THEN
         EXEC.Yield()
       ELSE
-        bits=EXEC.Wait($e0000000 OR displayMask)
+        bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)
       FI
     ELSEIF again=0 THEN
       IF writing<>0 THEN
         EXEC.Yield()
-      ELSEIF Runnable(service,inputPending)=0 THEN
+      ELSEIF Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
         ; Never clear the request/input signals between this hint and Wait.
-        bits=EXEC.Wait($e0000000 OR displayMask)
+        bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)
       ELSE
         EXEC.Yield()
       FI
     FI
   OD
 
+  DESKHOST.Stop()
   registered=EXEC.UnregisterResident()
   EXEC.FreeSignal(29)
   CONSOLECAPTURE.Release()

@@ -4,6 +4,10 @@ USE EXEC
 USE DISPLAY
 USE CONSOLETYPES
 USE HEAPCORE
+USE DESKSTATE
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-bitmap-types.inc"
 BYTE drawingPending
@@ -117,7 +121,7 @@ PUBLIC LONGCARD FUNC Mask()
 
 RETURN(completionMask)
 
-PUBLIC BYTE FUNC Fill(CARD left,top,width,height,pen)
+PUBLIC BYTE FUNC RawFill(CARD left,top,width,height,pen)
 
   LET packet=GetPacket()
   packet.x=left
@@ -128,7 +132,43 @@ PUBLIC BYTE FUNC Fill(CARD left,top,width,height,pen)
 
 RETURN(Run(OP_FILL))
 
+PUBLIC BYTE FUNC ClippedText(CARD x,y BYTE POINTER text CARD count,foreground,background
+    LAYERTYPES.Rect POINTER clip)
+
+  LET packet=GetPacket()
+  packet.x=x
+  packet.y=y
+  packet.text=LONGCARD(ADDRESS(text))
+  packet.width=count
+  packet.foreground=foreground
+  packet.background=background
+  packet.clipLeft=CARD(clip.left)
+  packet.clipTop=CARD(clip.top)
+  packet.clipRight=CARD(clip.right)
+  packet.clipBottom=CARD(clip.bottom)
+
+RETURN(Run(OP_TEXT_CLIP))
+
+INCLUDE "console-desktop-drawing.inc"
+
+PUBLIC BYTE FUNC Fill(CARD left,top,width,height,pen)
+  LAYERTYPES.Rect bounds
+
+  IF DESKSTATE.Enabled()=0 THEN
+    RETURN(RawFill(left,top,width,height,pen))
+  FI
+
+  REGIONS.Assign(@bounds,INT(left),INT(top),INT(left+width),INT(top+height))
+
+RETURN(DesktopDraw(@bounds,0,NULL,0,0,pen))
+
 PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
+  LAYERTYPES.Rect bounds
+
+  IF DESKSTATE.Enabled()<>0 THEN
+    REGIONS.Assign(@bounds,INT(x),INT(y),INT(x+(count LSH 3)),INT(y+8))
+    RETURN(DesktopDraw(@bounds,1,text,count,1,0))
+  FI
 
   LET packet=GetPacket()
   packet.x=x
@@ -141,12 +181,20 @@ PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
 RETURN(Run(OP_TEXT))
 
 ; The final text span and underline share one admitted drawing operation.
-PUBLIC BYTE FUNC TextCaret(CARD x,y BYTE POINTER text CARD count,caretX,caretY)
+PUBLIC BYTE FUNC TextCaret(CARD x,y BYTE POINTER characters CARD count,caretX,caretY)
+
+  IF DESKSTATE.Enabled()<>0 THEN
+    IF Text(x,y,characters,count)=0 THEN
+      RETURN(0)
+    FI
+
+    RETURN(Fill(caretX,caretY,8,1,1))
+  FI
 
   LET packet=GetPacket()
   packet.x=x
   packet.y=y
-  packet.text=LONGCARD(ADDRESS(text))
+  packet.text=LONGCARD(ADDRESS(characters))
   packet.width=count
   packet.foreground=1
   packet.background=0
@@ -160,6 +208,9 @@ RETURN(Run(OP_TEXT_FILL))
 
 ; One complete upward copy and exposed-strip fill, retained by the C driver.
 PUBLIC BYTE FUNC Scroll(CARD left,top,width,height,rows)
+  LAYERTYPES.Rect source,target
+  LONGCARD token
+  BYTE status
 
   IF rows=0 OR rows>height THEN
     RETURN(0)
@@ -181,7 +232,25 @@ PUBLIC BYTE FUNC Scroll(CARD left,top,width,height,rows)
   packet.copy.width=width LSH 3
   packet.copy.height=(height-rows) LSH 3
   packet.background=0
+  LET desktop=DESKSTATE.Get()
+  IF desktop<>NULL THEN
+    REGIONS.Assign(@source,INT(left LSH 3),INT(top LSH 3),
+        INT((left+width) LSH 3),INT((top+height) LSH 3))
+    REGIONS.Copy(@source,@target)
+    status=LAYERS.BeginCopy(@desktop.scene,DESKSTATE.Selected(),@source,@target,@token)
+    IF status<>LAYERTYPES.OK THEN
+      RETURN(0)
+    FI
+
+    DESKSTATE.SetScrollToken(token)
+  FI
+
   IF Run(OP_SCROLL)=0 OR packet.status<>DISPLAY.OK THEN
+    IF desktop<>NULL THEN
+      status=LAYERS.Finish(@desktop.scene,token,0)
+      DESKSTATE.SetScrollToken(0)
+    FI
+
     RETURN(0)
   FI
 
@@ -195,6 +264,7 @@ PUBLIC BYTE FUNC Pending()
 RETURN(drawingPending)
 
 PUBLIC PROC Poll()
+  BYTE status
 
   IF drawingPending=0 THEN
     RETURN
@@ -208,6 +278,14 @@ PUBLIC PROC Poll()
       IF packet.status=DISPLAY.OK THEN
         drawingPending=0
       FI
+    END
+  FI
+
+  IF drawingPending=0 AND DESKSTATE.PendingToken()<>0 THEN
+    BEGIN
+      LET desktop=DESKSTATE.Get()
+      status=LAYERS.Finish(@desktop.scene,DESKSTATE.PendingToken(),Failed()=0)
+      DESKSTATE.SetScrollToken(0)
     END
   FI
 

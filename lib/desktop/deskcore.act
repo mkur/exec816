@@ -103,7 +103,7 @@ RETURN(LAYERS.Find(@service.scene,window.layer))
 
 ; Focus notices are retained independently of ordinary input queue capacity.
 PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
-  BYTE index
+  BYTE index,status
   DESKTYPES.ClientRecord POINTER client
 
   IF service.focus=id THEN
@@ -115,6 +115,12 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
       IF service.windows(index).id=id OR service.windows(index).id=service.focus THEN
         client=DESKEVENTS.Find(service,service.windows(index).client)
         client.focusBits=client.focusBits OR BYTE(1 LSH index)
+        BEGIN
+          LET layer=Layer(service,@service.windows(index))
+          IF layer<>NULL THEN
+            status=LAYERS.Invalidate(@service.scene,layer.id,@layer.bounds)
+          FI
+        END
       FI
     FI
   OD
@@ -136,6 +142,15 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
   IF request.value<>DESKTYPES.CONTENT_COMMANDS
       AND request.value<>DESKTYPES.CONTENT_CONSOLE THEN
     RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  IF request.value=DESKTYPES.CONTENT_CONSOLE THEN
+    IF service.consoleOwner<>client.binding.owner OR service.consoleWindow<>0
+        OR request.target<>0 OR (request.bounds.left & 7)<>0
+        OR (request.bounds.top & 7)<>0 OR request.bounds.right-request.bounds.left<>528
+        OR request.bounds.bottom-request.bounds.top<>184 THEN
+      RETURN(DESKTYPES.BAD_ARGUMENT)
+    FI
   FI
 
   IF request.bytes>=DESKTYPES.TITLE_BYTES
@@ -163,6 +178,9 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
         window.client=client.id
         window.kind=BYTE(request.value)
         window.console=request.target
+        IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+          service.consoleWindow=window.id
+        FI
         A816MEMORY.Move(@window.title(0),request.payload,request.bytes)
         window.title(request.bytes)=0
         request.window=window.id
@@ -325,6 +343,11 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
       Focus(service,0)
     FI
   WHEN DESKTYPES.MOVE THEN
+    IF window.kind=DESKTYPES.CONTENT_CONSOLE AND
+        ((request.bounds.left & 7)<>0 OR (request.bounds.top & 7)<>0) THEN
+      RETURN(DESKTYPES.BAD_ARGUMENT)
+    FI
+
     status=LAYERS.Move(@service.scene,window.layer,
         request.bounds.left,request.bounds.top)
   WHEN DESKTYPES.RAISE THEN
@@ -352,6 +375,10 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
           DESKEVENTS.Retire(client,window.id,index)
         FI
       OD
+
+      IF service.consoleWindow=window.id THEN
+        service.consoleWindow=0
+      FI
 
       A816MEMORY.Clear(BYTE POINTER(window),DESKTYPES.WINDOW_SIZE)
     FI

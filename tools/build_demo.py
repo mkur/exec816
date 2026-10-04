@@ -14,7 +14,9 @@ from library_paths import read_source
 from native_program import ROOT, build, compiler, require, sha256
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False):
+    if desktop:
+        bitmap_shell_only=True
     require(not (bitmap_shell_only and (gem_vdi or bitmap_console)),
             'The shell-only bitmap demo is a standalone boot selection')
     output=output.resolve();output.mkdir(parents=True,exist_ok=True)
@@ -57,7 +59,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
         from build_bitmap_console import build_bitmap
         from build_bitmap_artifact import copy_notices
         program=build_bitmap(source,output/'bitmap-console',program_output=output,
-            compiler_dir=compiler_dir,stack_checks=True,dos_mounts=mounts,system_mount=mount_config.get('system_mount'))
+            compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,system_mount=mount_config.get('system_mount'))
         copy_notices(output/'bitmap-console/selected',output)
         pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
     else:
@@ -66,6 +68,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     guide=(ROOT/'docs/guides/demo.md').read_text().replace('../demo.png','demo.png').replace('../images/','images/').replace('read-only SDFS data disk',f'read-only {filesystem.upper()} data disk')
     if bitmap_shell_only:
         guide=(ROOT/'docs/bitmap-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
+    if desktop:
+        guide=guide.replace('80 by 30','64 by 20').replace('80×30','64×20')
+        guide='Exec816 framed desktop shell (development)\n\n'+guide
     (output/'README.md').write_text(guide)
     shutil.copyfile(ROOT/'docs/demo.png',output/'demo.png')
     (output/'images').mkdir(exist_ok=True)
@@ -91,7 +96,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
         bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=8,expected_peak_tasks=7,
         qualification='Focused development checks only; full release and general compiler qualification remain separate.')
     if bitmap_shell_only:
-        record.update(bitmap=True,shell_only=True,expected_peak_tasks=6,
+        record.update(bitmap=True,shell_only=True,desktop=desktop,expected_peak_tasks=6,
             font_source='bitmap-console/selected/src/vdi/font8x8.c')
         record['artifacts'].update({name:sha256(output/name) for name in GEM_NOTICES})
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (

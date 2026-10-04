@@ -9,6 +9,7 @@ USE CONSOLEWINDOWS
 USE CONSOLEBITMAP
 USE DISPLAY
 USE HEAPCORE
+USE DESKSTATE
 INCLUDE "console-storage-action.inc"
 BYTE dindex=$57,crsinh=$2f0,attract=$4d,drkmsk=$4e,colrsh=$4f
 BYTE sdmctl=$22f,chbas=$2f4,chact=$2f3,gprior=$26f
@@ -23,6 +24,10 @@ CONST ROW_BUDGET=4, CELL_BUDGET=160
 ; Physical text capabilities; the common model can retain larger geometry.
 PUBLIC CARD FUNC Width()
 
+  IF DESKSTATE.Enabled()<>0 THEN
+    RETURN(64)
+  FI
+
   IF CONSOLEBITMAP.Enabled()<>0 THEN
     RETURN(80)
   FI
@@ -30,6 +35,10 @@ PUBLIC CARD FUNC Width()
 RETURN(40)
 
 PUBLIC CARD FUNC Height()
+
+  IF DESKSTATE.Enabled()<>0 THEN
+    RETURN(20)
+  FI
 
   IF CONSOLEBITMAP.Enabled()<>0 THEN
     RETURN(30)
@@ -138,8 +147,8 @@ PUBLIC BYTE FUNC Claim(CONSOLETYPES.Presentation POINTER view
     view.instance=BYTE POINTER(instance)
     view.left=0
     view.top=0
-    view.width=80
-    view.height=30
+    view.width=Width()
+    view.height=Height()
     view.claimed=1
     view.scrollState=0
     view.visible=1

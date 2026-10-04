@@ -1,0 +1,336 @@
+; Retained scene painter, called only by the existing console worker.
+MODULE DESKPAINT
+USE EXEC
+USE DESKSTATE
+USE DESKTYPES
+USE DESKCORE
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLECORE
+USE CONSOLEBATCH
+USE CONSOLEBITMAP
+USE HEAPCORE
+
+LONGCARD paintToken,paintLayer
+CARD regionIndex,commandIndex
+INT nextY
+BYTE nextSlot,started
+CONST STRIP_HEIGHT=16
+LAYERTYPES.Rect strip
+
+PUBLIC DESKTYPES.Window POINTER FUNC ByLayer(LONGCARD id)
+  BYTE index
+
+  LET service=DESKSTATE.Get()
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    IF service.windows(index).id<>0 AND service.windows(index).layer=id THEN
+      RETURN(@service.windows(index))
+    FI
+  OD
+
+RETURN(NULL)
+
+; Placement changes invalidate the old caret and any gather-only scroll batch.
+PUBLIC PROC Sync()
+  CARD left,top
+  BYTE shown,focused
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.scene.busy<>0 THEN
+    RETURN
+  FI
+
+  LET entry=CONSOLEWINDOWS.Find(0)
+  IF entry=NULL THEN
+    RETURN
+  FI
+
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  LET window=DESKCORE.Find(service,service.consoleWindow)
+  IF window=NULL THEN
+    view.visible=0
+    DESKSTATE.Select(0)
+    RETURN
+  FI
+
+  LET layer=DESKCORE.Layer(service,window)
+  left=CARD(layer.bounds.left+8) RSH 3
+  top=CARD(layer.bounds.top+16) RSH 3
+  shown=layer.shown
+  focused=service.focus=window.id
+  IF view.left<>left OR view.top<>top OR view.visible<>shown OR view.focused<>focused THEN
+    CONSOLEBATCH.Reset()
+    view.scrollState=0
+    view.left=left
+    view.top=top
+    view.visible=shown
+    view.focused=focused
+    view.cursorOn=0
+    view.index=$ffff
+    view.generation==+1
+    view.presentedGeneration=0
+    CONSOLECORE.Dirty(instance,0,instance.count)
+  FI
+
+  DESKSTATE.Select(layer.id)
+
+RETURN
+
+BYTE FUNC Fill(LAYERTYPES.Rect POINTER bounds,clip CARD pen)
+  LAYERTYPES.Rect area
+
+  REGIONS.Intersect(bounds,clip,@area)
+  IF REGIONS.Empty(@area)<>0 THEN
+    RETURN(1)
+  FI
+
+RETURN(CONSOLEBITMAP.RawFill(CARD(area.left),CARD(area.top),
+    CARD(area.right-area.left),CARD(area.bottom-area.top),pen))
+
+; Frame, client and glyph coordinates are independently clipped in pixels.
+BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER layer)
+  LAYERTYPES.Rect client,area,bounds
+  CARD row,last,first,count,index,titleLength
+  BYTE okay
+
+  LET service=DESKSTATE.Get()
+  IF window=NULL THEN
+    RETURN(Fill(@strip,@strip,8))
+  FI
+
+  REGIONS.Assign(@client,layer.bounds.left+8,layer.bounds.top+16,
+      layer.bounds.right-8,layer.bounds.bottom-8)
+  IF started=0 THEN
+    okay=Fill(@strip,@strip,8)
+    REGIONS.Assign(@bounds,layer.bounds.left+2,layer.bounds.top+2,
+        layer.bounds.right-2,layer.bounds.top+14)
+    IF okay<>0 THEN
+      okay=Fill(@bounds,@strip,IF window.id=service.focus THEN 2 ELSE 7 FI)
+    FI
+
+    REGIONS.Intersect(@bounds,@strip,@area)
+    titleLength=0
+    WHILE titleLength<DESKTYPES.TITLE_BYTES AND window.title(titleLength)<>0 DO
+      titleLength==+1
+    OD
+
+    IF titleLength>CARD((layer.bounds.right-layer.bounds.left-16) RSH 3) THEN
+      titleLength=CARD((layer.bounds.right-layer.bounds.left-16) RSH 3)
+    FI
+
+    IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
+      okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.left+8),CARD(layer.bounds.top+4),
+          @window.title(0),titleLength,1,IF window.id=service.focus THEN 2 ELSE 7 FI,@area)
+    FI
+
+    IF okay<>0 THEN
+      okay=Fill(@client,@strip,window.content.background)
+    FI
+
+    IF okay=0 THEN
+      RETURN(0)
+    FI
+
+    commandIndex=0
+    started=1
+  FI
+
+  REGIONS.Intersect(@client,@strip,@area)
+  IF REGIONS.Empty(@area)<>0 THEN
+    RETURN(1)
+  FI
+
+  IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+    BEGIN
+      LET entry=CONSOLEWINDOWS.Find(window.console)
+      IF entry=NULL THEN
+        RETURN(0)
+      FI
+
+      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      row=CARD(area.top-client.top) RSH 3
+      last=(CARD(area.bottom-client.top)+7) RSH 3
+      first=CARD(area.left-client.left) RSH 3
+      count=((CARD(area.right-client.left)+7) RSH 3)-first
+      WHILE row<last DO
+        index=CONSOLECORE.CellOffset(instance,row*instance.width+first)
+        okay=CONSOLEBITMAP.ClippedText(CARD(client.left)+(first LSH 3),
+            CARD(client.top)+(row LSH 3),instance.cells+SIZE(index),count,1,0,@area)
+        IF okay=0 THEN
+          RETURN(0)
+        FI
+
+        row==+1
+      OD
+    END
+
+    RETURN(1)
+  FI
+
+  ; A busy client list gets at most four commands before input is serviced again.
+  count=0
+  WHILE commandIndex<window.content.count AND count<4 DO
+    BEGIN
+      LET command=@window.content.commands(commandIndex)
+      REGIONS.Assign(@bounds,client.left+command.bounds.left,client.top+command.bounds.top,
+          client.left+command.bounds.right,client.top+command.bounds.bottom)
+      REGIONS.Intersect(@bounds,@area,@bounds)
+      okay=1
+      IF REGIONS.Empty(@bounds)=0 THEN
+        IF command.kind=DESKTYPES.DRAW_FILL THEN
+          okay=Fill(@bounds,@bounds,CARD(command.pen))
+        ELSE
+          okay=CONSOLEBITMAP.ClippedText(CARD(client.left+command.bounds.left),
+              CARD(client.top+command.bounds.top),@window.content.text(command.offset),
+              command.count,CARD(command.pen),window.content.background,@bounds)
+        FI
+      FI
+
+      IF okay=0 THEN
+        RETURN(0)
+      FI
+    END
+
+    commandIndex==+1
+    count==+1
+  OD
+
+RETURN(IF commandIndex=window.content.count THEN 1 ELSE 2 FI)
+
+BYTE FUNC Damaged(LAYERTYPES.Layer POINTER layer)
+  CARD index
+
+  IF layer.dirty=0 THEN
+    RETURN(0)
+  FI
+
+  index=0
+  WHILE index<layer.visible.count DO
+    BEGIN
+      LET rect=@layer.visible.rects(index)
+      IF rect.left<layer.damage.right AND rect.right>layer.damage.left
+          AND rect.top<layer.damage.bottom AND rect.bottom>layer.damage.top THEN
+        RETURN(1)
+      FI
+    END
+
+    index==+1
+  OD
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Runnable()
+  BYTE slot
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0 THEN
+    RETURN(0)
+  FI
+
+  IF CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN(DESKCORE.Runnable(service))
+  FI
+
+  IF paintToken<>0 OR DESKCORE.Runnable(service)<>0 THEN
+    RETURN(1)
+  FI
+
+  FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
+    BEGIN
+      LET layer=@service.scene.items(slot)
+      IF Damaged(layer)<>0 THEN
+        RETURN(1)
+      FI
+    END
+  OD
+
+RETURN(0)
+
+; One stripe/command chunk. The update token and model gate survive worker turns.
+PUBLIC PROC Pump()
+  BYTE count,slot,status,done
+  DESKTYPES.Window POINTER window
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN
+  FI
+
+  IF paintToken=0 THEN
+    IF CONSOLEBITMAP.Failed()<>0 THEN
+      RETURN
+    FI
+
+    FOR count=0 TO LAYERTYPES.SLOT_COUNT-1 DO
+      slot=nextSlot
+      nextSlot=(nextSlot+1) MOD LAYERTYPES.SLOT_COUNT
+      BEGIN
+        LET layer=@service.scene.items(slot)
+        IF Damaged(layer)<>0 THEN
+          status=LAYERS.BeginPaint(@service.scene,layer.id,@paintToken)
+          IF status=LAYERTYPES.OK THEN
+            paintLayer=layer.id
+            regionIndex=0
+            nextY=service.scene.work.rects(0).top
+            started=0
+            EXIT
+          FI
+        FI
+      END
+    OD
+  FI
+
+  IF paintToken=0 THEN
+    RETURN
+  FI
+
+  LET region=LAYERS.PaintRegion(@service.scene,paintToken)
+  LET layer=LAYERS.Find(@service.scene,paintLayer)
+  window=ByLayer(paintLayer)
+  REGIONS.Copy(@region.rects(regionIndex),@strip)
+  strip.top=nextY
+  IF strip.bottom>nextY+STRIP_HEIGHT THEN
+    strip.bottom=nextY+STRIP_HEIGHT
+  FI
+
+  done=PaintStrip(window,layer)
+  IF done=2 THEN
+    RETURN
+  FI
+
+  IF done<>0 THEN
+    nextY=strip.bottom
+    started=0
+    IF nextY=region.rects(regionIndex).bottom THEN
+      regionIndex==+1
+      IF regionIndex<region.count THEN
+        nextY=region.rects(regionIndex).top
+      FI
+    FI
+
+    IF regionIndex<region.count THEN
+      RETURN
+    FI
+  FI
+
+  status=LAYERS.Finish(@service.scene,paintToken,done<>0)
+  paintToken=0
+  IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+    BEGIN
+      LET entry=CONSOLEWINDOWS.Find(window.console)
+      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+      CONSOLECORE.Clean(instance)
+      view.presentedGeneration=instance.generation
+      view.cursorOn=0
+      view.index=$ffff
+    END
+  FI
+
+RETURN
+
+ENDMODULE

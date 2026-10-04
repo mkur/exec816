@@ -53,3 +53,42 @@ a separate 710-byte source batch. Three public Task slots are occupied during
 the test; the production desktop has not yet been attached to the console.
 Reserved bank-zero growth is **0 fixed, 0 root/kernel, 0 per public Task and
 0 idle bytes**, including guards/alignment and unused pool capacity.
+
+## DT2 Framed console and retained painting
+
+The existing console worker now presents a 64×20 shell through Layers, with
+pixel clipping for partial glyphs and odd packed-pixel edges. It paints bounded
+sixteen-scanline stripes or four retained commands per turn and keeps one Layers
+token through a repaint continuation or asynchronous scroll. Fully covered
+damage stays retained without keeping the worker runnable. The console’s
+short-write pass and fully visible scroll path remain available.
+
+[DT2 development evidence](../development/desktop-dt2.json) contains six exact
+framebuffer/scanout comparisons and 40 assertions in each raw/optimized image:
+typing, circular-row scrolling, translated placement, an odd-edged overlapping
+panel, clear/hidden content and close/exposure. Both runs return cleanly with
+stack/domain/context and allocation ownership checks. Selected optimized
+full-screen bitmap, standard text window lifetime/isolation, and the 143-check
+native desktop service regressions passed. The host suite passed 337 tests
+with four historical skips.
+
+The packaged framed shell also passed the OF816 five-second cold boot, TASKS,
+MOUNT, disk HELLO, physical cached reads, CAT/WC pipeline and EXIT walkthrough.
+It peaks at six Tasks; the second independent graphical application is DT5.
+This is a local shell-only development artifact, not the completed DT7 preview.
+Pointer routing, gestures, loaded failure/timing checks and final preview
+packaging remain later slices.
+
+The scene/service payload is 10,378 bytes, rounded to 10,384 by AllocMem. Runtime
+and root-controller globals add 138 payload bytes in upper image RAM, with
+compiler alignment; no resident arena or bank-zero region grows. The worker
+used at most 678 stack bytes in these raw/optimized fixtures, leaving 1,626
+bytes above the reserved interrupt floor in its existing 2,560-byte pool.
+The root peak is 372 bytes; kernel peak is 266 bytes. These observations are
+workload-specific lower bounds, not a new universal stack qualification.
+
+Reserved bank-zero delta against **DT0** is **0 fixed, 0 root/kernel, 0 per
+public Task, 0 idle bytes**, including guards/alignment and unused capacity.
+Older shared harness `bank_zero_delta` fields compare against pre-large-stack
+compaction and therefore include the already-existing 3,072-byte enlargement;
+`reserved_bank_zero_delta` explicitly compares the desktop slices with DT0.

@@ -23,23 +23,25 @@ overlapping window from an independent application Task to prove focus, clipping
 and exposure repair. The [DT0–DT7 implementation plan](plans/gem4xe/desktop-implementation-plan.md)
 is ready: client/event lifetime, Layers integration, an ST capture and visible
 pointer checkpoint before dragging, independent clients, loaded shutdown and
-the optional preview. All slices remain pending. File browsing, menus and
+the optional preview. DT0–DT2 have passed development checks: the native
+client/event service and framed shell are implemented. ST integration is next;
+see the [execution record](history/desktop.md). File browsing, menus and
 broader AES compatibility follow this milestone.
 
 The [Layers library](reference/layers.md) now provides bounded regions, cached
 visibility, stacking, damage and drawing transactions. Its
 [implementation plan](plans/layers-implementation-plan.md) is complete through
-L4 development checks. The next desktop slice must connect retained console
+L4 development checks. The desktop now connects retained console
 content and the existing drawing backend to these interfaces; Layers itself
 does not draw windows or change the working console.
 
 Keep one presentation worker above Exec, evolving the existing bitmap console
 worker and reusing its retained cells, input routes and shared GEM drawing code.
 Each window is an upper-RAM object; it does not allocate a Task, stack or DP.
-The initial design targets zero additional bank-zero reservations. Hardware
-ownership, pending blits, console focus and window retirement need an explicit
-integration; the current exclusive GEM demo and non-overlapping console tiles
-cannot simply be combined into a desktop.
+The implementation adds zero bank-zero reservations against its DT0 baseline.
+The single presenter coordinates drawing tokens and window retirement; pointer
+routing and nonblocking gestures are the next integration slices. The exclusive
+GEM demo remains a separate display client.
 
 Further console optimization is paused. The shell-only bitmap demo's interactive
 response is satisfactory for current use, and it is the desktop baseline.

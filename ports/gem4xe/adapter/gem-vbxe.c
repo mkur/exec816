@@ -398,3 +398,16 @@ const struct GemBackend GemVbxeBackend={open_backend,command_backend,fence_backe
 
 ULONG GemDrawingCompletionMask(void)
 { return VbxeCompletionMask(&display); }
+
+UWORD GemDrawingTextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    extern UWORD GemBitmapTextClip(UWORD,UWORD,const UBYTE *,UWORD,UWORD,UWORD,
+                                  UWORD,UWORD,UWORD,UWORD);
+    UWORD status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (GemBitmapTextClip(x,y,text,count,fg,bg,left,top,right,bottom))
+        return DISPLAY_BAD_ARGUMENT;
+    return fence_owner();
+}

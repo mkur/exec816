@@ -1,6 +1,6 @@
 {
-  "version": 5,
-  "packet_bytes": 70,
+  "version": 6,
+  "packet_bytes": 78,
   "fields": {
     "operation": 0,
     "status": 2,
@@ -18,7 +18,11 @@
     "fillY": 62,
     "fillWidth": 64,
     "fillHeight": 66,
-    "fillPen": 68
+    "fillPen": 68,
+    "clipLeft": 70,
+    "clipTop": 72,
+    "clipRight": 74,
+    "clipBottom": 76
   },
   "operations": {
     "OPEN": 1,
@@ -29,6 +33,7 @@
     "FENCE": 6,
     "SCROLL": 7,
     "POLL": 8,
-    "TEXT_FILL": 9
+    "TEXT_FILL": 9,
+    "TEXT_CLIP": 10
   }
 }

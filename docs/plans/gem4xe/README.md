@@ -31,10 +31,12 @@ The next graphics milestone is the [first desktop](desktop-design.md): one
 presentation worker, a framed movable shell window, then overlapping windows
 and exposure repair. Its [DT0–DT7 implementation plan](desktop-implementation-plan.md)
 adds client/event lifetime, an ST sampling and visible-response checkpoint before
-dragging, and a second independent application Task. All slices remain pending.
+dragging, and a second independent application Task. DT0–DT2 have development
+evidence; [current desktop contracts](../../reference/desktop.md) describe the
+client/event service and framed shell. DT3–DT7 remain pending.
 The [Layers foundation](../../reference/layers.md) is implemented through its
-[bounded library plan](../layers-implementation-plan.md); the desktop presenter
-and console integration remain next work.
+[bounded library plan](../layers-implementation-plan.md); ST integration and
+nonblocking dragging are the next desktop work.
 Further console optimization is paused, without changing the recorded limits.
 
 The implemented foundation is the [bitmap console](bitmap-console-design.md):

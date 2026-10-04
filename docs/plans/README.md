@@ -97,12 +97,13 @@ assuming work is pending. Current behavior belongs in the
 
 - [Layers implementation](layers-implementation-plan.md): L1–L4 complete;
   bounded regions, stacking, visibility, damage and drawing transactions.
-  [Current contracts](../reference/layers.md); desktop integration remains pending.
+  [Current contracts](../reference/layers.md); the first desktop presenter now uses them.
 - [First desktop on Exec816](gem4xe/desktop-design.md): the
   [DT0–DT7 implementation plan](gem4xe/desktop-implementation-plan.md) covers one
   presentation worker, client/event lifetime, a framed shell, ST mouse timing
   before dragging, two independent clients, exposure repair and the optional
-  preview. All implementation slices remain pending.
+  preview. DT0–DT2 have development evidence; DT3–DT7 remain pending.
+  [Current desktop contract](../reference/desktop.md).
 - [Physical mouse design for hosted GEM](gem4xe/physical-mouse-design.md): implemented
   ST mouse on port 1 using Altirra's existing configuration, with shared SIO
   timing, reusable capture, lifetime, memory and acceptance rules. The

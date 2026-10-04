@@ -11,7 +11,8 @@ PROC BitmapEdit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   LET operation=instance.operation
   synchronized=0
   IF view.claimed<>0 AND view.visible<>0 AND view.width=instance.width
-      AND view.height=instance.height AND CONSOLEBITMAP.Failed()=0 THEN
+      AND view.height=instance.height AND CONSOLEBITMAP.Failed()=0
+      AND DESKSTATE.CopyReady()<>0 THEN
     RemoveCursor(view)
     IF operation=CONSOLETYPES.OP_CLEAR THEN
       synchronized=1

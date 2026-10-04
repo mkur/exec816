@@ -44,7 +44,7 @@ def drawing(out,optimize,probe=False,fault=False):
     return foreign
 
 
-def prepare(source,out,foreign):
+def prepare(source,out,foreign,desktop=False):
     text=read_source(source);sy=foreign['symbols']
     require(len(re.findall(r'(?m)^PROC Main\(\)',text))==1,'Expected one ordinary Main entry')
     text=text.replace('PROC Main()','PROC BitmapApplication(BYTE unused)')
@@ -82,14 +82,19 @@ RETURN
                              (0x1000000,sy['ConsoleBitmapPacket'])]:
             checks+=f'  IF CONSOLEBITMAP.Bind(${entry:x},${packet:x})<>0 THEN\n    HEAPCORE.Abort($f733)\n  FI\n\n'
         binding=binding.replace('  BindDisplay()',checks+'  BindDisplay()',1)
+    if desktop:
+        text=text.replace('USE EXEC\n','USE EXEC\nUSE DESKBOOT\n',1)
+        binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN', '  IF DESKBOOT.Enable()=0 THEN\n    HEAPCORE.Abort($fae6)\n  FI\n\n  IF CONSOLEDRIVER.Start()=0 THEN')
+        binding=binding.replace('  BitmapApplication(0)', '  IF DESKBOOT.Attach()=0 THEN\n    HEAPCORE.Abort($fae7)\n  FI\n\n  BitmapApplication(0)\n  DESKBOOT.Detach()')
+        binding=binding.removesuffix('RETURN\n')+'  DESKBOOT.Disable()\n\nRETURN\n'
     text=text.replace('ENDMODULE',binding+'\nENDMODULE')
     path=out/'launcher.act';path.write_text(text);return path
 
 
-def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,**kwargs):
+def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,desktop=False,**kwargs):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     foreign=drawing(out,optimize,probe,fault)
-    launcher=prepare(Path(source),out,foreign)
+    launcher=prepare(Path(source),out,foreign,desktop)
     return build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,
                  task_capacity=8,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
 

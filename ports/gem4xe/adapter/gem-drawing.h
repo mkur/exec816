@@ -24,4 +24,8 @@ UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,
 UWORD GemDrawingTextFill(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD foreground,UWORD background,UWORD fillX,UWORD fillY,
     UWORD fillWidth,UWORD fillHeight,UWORD fillPen);
+/* Half-open pixel clipping; a cut glyph preserves pixels outside the clip. */
+UWORD GemDrawingTextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom);
+
 #endif

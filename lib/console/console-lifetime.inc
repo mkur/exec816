@@ -183,6 +183,10 @@ BYTE FUNC AllIdle(CONSOLETYPES.Service POINTER service)
   BYTE index
   CONSOLETYPES.Instance POINTER instance
 
+  IF DESKHOST.Idle()=0 THEN
+    RETURN(0)
+  FI
+
   LET windows=CONSOLEWINDOWS.Registry()
   IF windows.presenting<>0 THEN
     RETURN(0)

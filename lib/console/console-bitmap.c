@@ -16,6 +16,10 @@ void ConsoleBitmapEntry(void)
     case CON_BITMAP_TEXT:
         p->status=GemDrawingText(p->x,p->y,(const UBYTE *)p->text,p->width,
                                 p->foreground,p->background); break;
+    case CON_BITMAP_TEXT_CLIP:
+        p->status=GemDrawingTextClip(p->x,p->y,(const UBYTE *)p->text,p->width,
+            p->foreground,p->background,p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
+        break;
     case CON_BITMAP_TEXT_FILL:
         p->status=GemDrawingTextFill(p->x,p->y,(const UBYTE *)p->text,p->width,
             p->foreground,p->background,p->fillX,p->fillY,p->fillWidth,

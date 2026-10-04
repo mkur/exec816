@@ -1,0 +1,95 @@
+; Lifecycle and scheduling hooks in the existing console presenter Task.
+MODULE DESKHOST
+USE EXEC
+USE DESKSTATE
+USE DESKTYPES
+USE DESKCORE
+USE DESKPAINT
+USE HEAPCORE
+
+PUBLIC BYTE FUNC Start()
+  BYTE bit
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL THEN
+    RETURN(1)
+  FI
+
+  bit=EXEC.AllocSignal(-1)
+  IF bit=$ff THEN
+    RETURN(0)
+  FI
+
+  IF DESKCORE.Init(service,bit)=0 THEN
+    EXEC.FreeSignal(bit)
+    RETURN(0)
+  FI
+
+  service.consoleOwner=DESKSTATE.Owner()
+
+RETURN(1)
+
+PUBLIC LONGCARD FUNC Mask()
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(service.mask)
+
+PUBLIC BYTE FUNC Ready()
+
+  LET service=DESKSTATE.Get()
+
+RETURN(service=NULL OR service.scene.busy=0)
+
+PUBLIC BYTE FUNC Idle()
+  BYTE index
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL THEN
+    RETURN(1)
+  FI
+
+  IF service.scene.busy<>0 OR DESKCORE.Runnable(service)<>0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO DESKTYPES.CLIENTS-1 DO
+    IF service.clients(index).id<>0 THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+PUBLIC PROC Controls()
+  BYTE count
+
+  LET service=DESKSTATE.Get()
+  IF service<>NULL AND service.live<>0 THEN
+    count=DESKCORE.Pump(service)
+    DESKPAINT.Sync()
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC Runnable()
+
+RETURN(DESKPAINT.Runnable())
+
+PUBLIC PROC Stop()
+
+  LET service=DESKSTATE.Get()
+  IF service<>NULL AND service.live<>0 THEN
+    IF DESKCORE.Stop(service)=0 THEN
+      HEAPCORE.Abort($fae2)
+    FI
+
+    EXEC.FreeSignal(service.port.mp_SigBit)
+  FI
+
+RETURN
+
+ENDMODULE

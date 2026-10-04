@@ -18,4 +18,8 @@ offsetof(struct ConsoleBitmapPacket,fillY),
 offsetof(struct ConsoleBitmapPacket,fillWidth),
 offsetof(struct ConsoleBitmapPacket,fillHeight),
 offsetof(struct ConsoleBitmapPacket,fillPen),
+offsetof(struct ConsoleBitmapPacket,clipLeft),
+offsetof(struct ConsoleBitmapPacket,clipTop),
+offsetof(struct ConsoleBitmapPacket,clipRight),
+offsetof(struct ConsoleBitmapPacket,clipBottom),
 };

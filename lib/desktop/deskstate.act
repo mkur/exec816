@@ -1,8 +1,14 @@
 ; One optional desktop service binding. All scene storage belongs to its owner.
 MODULE DESKSTATE
+USE EXEC
 USE DESKTYPES
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
 
 DESKTYPES.Service POINTER service
+LONGCARD selectedLayer,scrollToken
+EXEC.Task POINTER launcher
 
 PUBLIC DESKTYPES.Service POINTER FUNC Get()
 
@@ -14,5 +20,58 @@ PUBLIC PROC Bind(DESKTYPES.Service POINTER value)
   service=value
 
 RETURN
+
+PUBLIC BYTE FUNC Enabled()
+
+RETURN(service<>NULL)
+
+PUBLIC PROC Select(LONGCARD id)
+
+  selectedLayer=id
+
+RETURN
+
+PUBLIC LONGCARD FUNC Selected()
+
+RETURN(selectedLayer)
+
+PUBLIC PROC SetLauncher(EXEC.Task POINTER task)
+
+  launcher=task
+
+RETURN
+
+PUBLIC EXEC.Task POINTER FUNC Owner()
+
+RETURN(launcher)
+
+; Only complete, clean visible pixels can be reused for a console scroll.
+PUBLIC BYTE FUNC CopyReady()
+
+  IF service=NULL THEN
+    RETURN(1)
+  FI
+
+  IF service.scene.busy<>0 OR selectedLayer=0 THEN
+    RETURN(0)
+  FI
+
+  LET layer=LAYERS.Find(@service.scene,selectedLayer)
+  IF layer=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(layer.dirty=0 AND layer.shown<>0 AND layer.visible.count=1
+    AND REGIONS.Equal(@layer.bounds,@layer.visible.rects(0))<>0)
+
+PUBLIC PROC SetScrollToken(LONGCARD token)
+
+  scrollToken=token
+
+RETURN
+
+PUBLIC LONGCARD FUNC PendingToken()
+
+RETURN(scrollToken)
 
 ENDMODULE
