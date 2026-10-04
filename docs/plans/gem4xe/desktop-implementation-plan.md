@@ -407,8 +407,8 @@ are reserved for release/qualification work, not every slice.
 
 ## Status
 
-DT0–DT4 are implemented at the development tier; see the [execution record](../../history/desktop.md).
-DT5–DT7 remain pending. DT3 passes functional capture/routing and pixel checks;
+DT0–DT5 are implemented at the development tier; see the [execution record](../../history/desktop.md).
+DT6–DT7 remain pending. DT3 passes functional capture/routing and pixel checks;
 pointer p95 targets remain open. DT4 outline and move-repair targets also
 remain open and must stay visible in the later loaded record. Full-screen echo meets the regression target against the frozen DT0
 image. DT0 adds no runtime memory or Task.

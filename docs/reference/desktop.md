@@ -160,6 +160,14 @@ its normal EXIT path controls retirement.
 Pointer and move-repair response targets have not all passed. The execution
 record separates exact capture/pixel correctness from measured responsiveness.
 
+## Demonstration client
+
+`DESKAPP` owns an ordinary 1,024-byte-stack Task and one graphical window. A key
+or left-button press in its client area runs finite computation and installs a
+new retained batch. It initially leaves focus on the shell. A CLOSE event leads
+to cooperative retirement; shell EXIT asks it to stop and waits for reply/storage
+retirement. No application callback runs inside the presenter.
+
 ## Storage and validation
 
 The generated service occupies 10,532 bytes in upper RAM, including the

@@ -187,3 +187,37 @@ Added storage is 36 bytes of Action globals and 12 bytes of C globals in upper
 RAM, plus compiler alignment within existing image reservations. VRAM growth is
 zero. Reserved bank-zero growth remains **0 fixed, 0 root/kernel, 0 per existing
 public Task and 0 idle bytes**, including guards and unused capacity.
+
+## DT5 Independent overlapping application
+
+The optional `DESKAPP` client runs on an ordinary Task, with its own reply port,
+registration, retained fill/text batch and pending event request. Clicking it or
+sending a key performs a finite compute loop without GUI calls and replaces its
+content. Its close gadget retires that client cooperatively. Shell output behind
+the panel remains retained and is reconstructed on exposure. Either client can
+retire first; stopping the demo cancels and collects the app's event request
+before releasing its registration, port and storage.
+
+[DT5 evidence](../development/desktop-dt5.json) records thirteen complete scene
+comparisons in each of raw and optimized execution, physical keys/clicks, both
+retirement orders, guards, ownership and OS return. Earlier DT1/DT4 records cover
+invalid batches, bounded slow consumers, capacity, queue loss and captured drag
+retirement. Two-client load timing and packaged pipeline occupancy follow in
+DT6/DT7.
+
+Raw reverse retirement exposed a platform IRQ race: a keyboard edge arriving
+after its bounded capture check was classified as unowned and chained into ROM,
+which re-entered startup in this observed sequence. The final pending check now
+excludes keyboard/BREAK only while the native keyboard lease is live, as it
+already excludes owned Timer 1. It leaves a late edge latched for the next native
+entry. A frozen-image A/B reproduces the failure with the old mask and completes
+with the corrected mask. Standalone raw/optimized keyboard tests also cover the
+path without a mouse sampler. Sampling frequency and decoding are unchanged;
+loaded physical SIO checks are in DT6.
+
+Application globals add 289 upper-RAM payload bytes plus alignment; its retained
+content allocates 710 bytes, rounded to 712. It occupies one existing ordinary
+Task pool: 1,024-byte stack, 256-byte DP, 1,312 reserved bytes including guards.
+VRAM growth is zero. Reserved bank-zero growth is **0 fixed, 0 root/kernel,
+0 per existing public Task and 0 idle bytes**, including alignment and unused
+capacity. Host checks: 338 tests, four historical audit skips; development tier.

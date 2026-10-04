@@ -21,7 +21,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 - [Desktop development](desktop.md): frozen shell/mouse inputs and Task/memory
   budgets, client lifetime, framed presentation and the ST input checkpoint.
-  Pointer p95 limits remain open; DT4–DT7 follow.
+  DT0–DT5 are implemented; pointer, outline and repair timing limits remain open.
 - [Layers development](layers.md): bounded regions, cached visibility and
   damage transactions; raw/optimized emitted software raster and storage checks.
 - [Bulk console output batching](console-output-batching.md): one multi-row

@@ -26,3 +26,8 @@ class DesktopContractTests(unittest.TestCase):
     def test_library_calls_are_not_task_entries(self):
         for module in ('DESKTOP', 'DESKCORE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
+
+    def test_demo_registers_only_its_worker_entry(self):
+        self.assertTrue(application_entry({'name': 'M_DESKAPP_RUN_123ABC'}))
+        for routine in ('STOP', 'RETIRE', 'REPLACE', 'CANCELWAIT'):
+            self.assertFalse(application_entry({'name': 'M_DESKAPP_' + routine + '_123ABC'}))

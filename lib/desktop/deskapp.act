@@ -1,0 +1,309 @@
+; Optional desktop demonstration client. All application work runs on its own
+; ordinary Task; the presenter only replays the copied retained content.
+MODULE DESKAPP
+USE EXEC
+USE DESKTOP
+USE DESKTYPES
+USE DESKSTATE
+USE REGIONS
+USE A816MEMORY
+USE HEAPCORE
+
+DESKTYPES.Client client
+DESKTYPES.Request control,eventWait,cancel
+DESKTYPES.Content POINTER content
+EXEC.Task POINTER parent,worker
+LONGCARD parentMask,stopMask,windowId
+CARD updates,work
+BYTE parentBit,stopBit,started,finished,waiting,closing
+
+CARD FUNC Call(BYTE operation)
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  control.operation=operation
+  IF DESKTOP.Submit(@client,@control)<>DESKTYPES.OK THEN
+    RETURN(DESKTYPES.BUSY)
+  FI
+
+  reply=DESKTOP.Collect(@client)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(@client)
+  OD
+
+  IF reply<>@control THEN
+    HEAPCORE.Abort($faf0)
+  FI
+
+RETURN(control.status)
+
+PROC Text(BYTE index INT y CSTRING text CARD count)
+
+  LET command=@content.commands(index)
+  command.kind=DESKTYPES.DRAW_TEXT
+  REGIONS.Assign(@command.bounds,8,y,8+INT(count LSH 3),y+8)
+  command.pen=1
+  command.offset=content.textBytes
+  command.count=count
+  A816MEMORY.Move(@content.text(content.textBytes),BYTE POINTER(text),count)
+  content.textBytes==+count
+
+RETURN
+
+CARD FUNC Replace()
+
+  A816MEMORY.Clear(BYTE POINTER(content),DESKTYPES.CONTENT_SIZE)
+  content.background=15
+  content.count=4
+  Text(0,8,c"Independent Task",16)
+  Text(1,24,c"Key/click: compute",18)
+  Text(2,40,c"Close: retire",13)
+  content.commands(3).kind=DESKTYPES.DRAW_FILL
+  REGIONS.Assign(@content.commands(3).bounds,8,64,168,88)
+  content.commands(3).pen=BYTE(2+(updates & 3))
+  DESKTOP.Prepare(@control,DESKTYPES.REPLACE)
+  control.window=windowId
+  control.payload=BYTE POINTER(content)
+  control.bytes=DESKTYPES.CONTENT_SIZE
+
+RETURN(Call(DESKTYPES.REPLACE))
+
+PROC CancelWait(BYTE unused)
+  BYTE count
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  IF waiting=0 THEN
+    RETURN
+  FI
+
+  DESKTOP.Prepare(@cancel,DESKTYPES.CANCEL_EVENT)
+  cancel.target=eventWait.sequence
+  IF DESKTOP.Submit(@client,@cancel)<>DESKTYPES.OK THEN
+    HEAPCORE.Abort($faf1)
+  FI
+
+  count=0
+  WHILE count<2 DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(@client)
+    IF reply=NULL OR (reply<>@cancel AND reply<>@eventWait) THEN
+      HEAPCORE.Abort($faf2)
+    FI
+
+    count==+1
+  OD
+
+  waiting=0
+
+RETURN
+
+PROC Retire(BYTE unused)
+
+  IF client.replies<>NULL THEN
+    CancelWait(0)
+    IF windowId<>0 THEN
+      DESKTOP.Prepare(@control,DESKTYPES.CLOSE)
+      control.window=windowId
+      IF Call(DESKTYPES.CLOSE)<>DESKTYPES.OK THEN
+        HEAPCORE.Abort($faf3)
+      FI
+
+      windowId=0
+    FI
+
+    IF client.id<>0 THEN
+      DESKTOP.Prepare(@control,DESKTYPES.UNREGISTER)
+      IF Call(DESKTYPES.UNREGISTER)<>DESKTYPES.OK THEN
+        HEAPCORE.Abort($faf4)
+      FI
+    FI
+
+    IF DESKTOP.Dispose(@client)=0 THEN
+      HEAPCORE.Abort($faf5)
+    FI
+  FI
+
+  IF content<>NULL THEN
+    EXEC.FreeMem(BYTE POINTER(content),DESKTYPES.CONTENT_SIZE)
+    content=NULL
+  FI
+
+  IF stopMask<>0 THEN
+    EXEC.FreeSignal(stopBit)
+    stopMask=0
+  FI
+
+  ; The parent checks finished under Forbid before signalling a borrowed Task
+  ; pointer. No publisher can still reach the client or reply port at this point.
+  EXEC.Forbid()
+  finished=1
+  EXEC.Signal(parent,parentMask)
+
+RETURN
+
+BYTE FUNC Admit()
+
+  stopBit=EXEC.AllocSignal(-1)
+  IF stopBit=$ff THEN
+    RETURN(0)
+  FI
+
+  stopMask=LONGCARD(1) LSH stopBit
+  content=DESKTYPES.Content POINTER(EXEC.AllocMem(DESKTYPES.CONTENT_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  IF content=NULL OR DESKTOP.Init(@client,DESKSTATE.Get())=0 THEN
+    RETURN(0)
+  FI
+
+  DESKTOP.Prepare(@control,DESKTYPES.REGISTER)
+  IF Call(DESKTYPES.REGISTER)<>DESKTYPES.OK THEN
+    RETURN(0)
+  FI
+
+  DESKTOP.Prepare(@control,DESKTYPES.OPEN)
+  control.value=DESKTYPES.CONTENT_COMMANDS
+  control.payload=BYTE POINTER(c"Exec816 App")
+  control.bytes=11
+  REGIONS.Assign(@control.bounds,432,80,624,224)
+  IF Call(DESKTYPES.OPEN)<>DESKTYPES.OK THEN
+    RETURN(0)
+  FI
+
+  windowId=control.window
+  IF Replace()<>DESKTYPES.OK THEN
+    RETURN(0)
+  FI
+
+  DESKTOP.Prepare(@control,DESKTYPES.SHOW)
+  control.window=windowId
+  IF Call(DESKTYPES.SHOW)<>DESKTYPES.OK
+      OR Call(DESKTYPES.RAISE)<>DESKTYPES.OK THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+PUBLIC PROC Run()
+  LONGCARD bits
+  CARD index
+  DESKTYPES.Request POINTER reply
+
+  IF Admit()=0 THEN
+    Retire(0)
+    RETURN
+  FI
+
+  started=1
+  EXEC.Signal(parent,parentMask)
+  WHILE closing=0 DO
+    DESKTOP.Prepare(@eventWait,DESKTYPES.NEXT_EVENT)
+    IF DESKTOP.Submit(@client,@eventWait)<>DESKTYPES.OK THEN
+      HEAPCORE.Abort($faf6)
+    FI
+
+    waiting=1
+    reply=NULL
+    WHILE reply=NULL AND closing=0 DO
+      bits=EXEC.Wait((LONGCARD(1) LSH client.replies.mp_SigBit) OR stopMask)
+      IF (bits & stopMask)<>0 THEN
+        closing=1
+      ELSE
+        reply=DESKTOP.Collect(@client)
+      FI
+    OD
+
+    IF closing=0 THEN
+      IF reply<>NULL THEN
+        IF reply<>@eventWait OR reply.status<>DESKTYPES.OK THEN
+          HEAPCORE.Abort($faf7)
+        FI
+
+        waiting=0
+        IF reply.event.kind=DESKTYPES.EVENT_CLOSE THEN
+          closing=1
+        ELSEIF reply.event.kind=DESKTYPES.EVENT_KEY
+            OR (reply.event.kind=DESKTYPES.EVENT_BUTTON AND reply.event.buttons<>0) THEN
+          ; Finite CPU work without yielding or calling the GUI: ordinary VBI
+          ; preemption must leave shell input and presentation usable.
+          FOR index=0 TO 8191 DO
+            work=(work+index) XOR $5a5a
+          OD
+
+          updates==+1
+          IF Replace()<>DESKTYPES.OK THEN
+            HEAPCORE.Abort($faf8)
+          FI
+        FI
+      FI
+    FI
+  OD
+
+  Retire(0)
+
+RETURN
+
+PUBLIC BYTE FUNC Start()
+  LONGCARD bits
+
+  IF worker<>NULL THEN
+    RETURN(0)
+  FI
+
+  parent=EXEC.FindTask(NULL)
+  parentBit=EXEC.AllocSignal(-1)
+  IF parentBit=$ff THEN
+    RETURN(0)
+  FI
+
+  parentMask=LONGCARD(1) LSH parentBit
+  started=0
+  finished=0
+  closing=0
+  waiting=0
+  updates=0
+  worker=EXEC.CreateTask(c"desktop-app",0,@Run,1024)
+  IF worker=NULL THEN
+    EXEC.FreeSignal(parentBit)
+    parentMask=0
+    RETURN(0)
+  FI
+
+  WHILE started=0 AND finished=0 DO
+    bits=EXEC.Wait(parentMask)
+  OD
+
+  IF finished<>0 THEN
+    worker=NULL
+    EXEC.FreeSignal(parentBit)
+    parentMask=0
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+PUBLIC PROC Stop()
+  LONGCARD bits
+
+  IF worker=NULL THEN
+    RETURN
+  FI
+
+  EXEC.Forbid()
+  IF finished=0 THEN
+    EXEC.Signal(worker,stopMask)
+  FI
+
+  EXEC.Permit()
+  WHILE finished=0 DO
+    bits=EXEC.Wait(parentMask)
+  OD
+
+  worker=NULL
+  EXEC.FreeSignal(parentBit)
+  parentMask=0
+
+RETURN
+
+ENDMODULE

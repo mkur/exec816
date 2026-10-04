@@ -1,0 +1,28 @@
+MODULE SHELLAPP
+USE DESKAPP
+
+INCLUDE "shell/shell-session.inc"
+INCLUDE "shell/shell-boot.inc"
+
+LONGINT exitStatus
+
+; The shell and demonstration client share only the desktop message service.
+PROC Main()
+
+  IF ShellBootStart(shellCon)<>0 THEN
+    IF DESKAPP.Start()=0 THEN
+      ShellText(shell.console,c"desktop app unavailable")
+      ShellByte(shell.console,ASCII.LF)
+    FI
+
+    WHILE shell.done=0 DO
+      ShellReadStep()
+    OD
+  FI
+
+  DESKAPP.Stop()
+  exitStatus=ShellFinish()
+
+RETURN
+
+ENDMODULE

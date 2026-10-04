@@ -76,6 +76,10 @@ RETURN(1)
 
 PUBLIC PROC Detach()
 
+  IF client.replies=NULL THEN
+    RETURN
+  FI
+
   DESKTOP.Prepare(@request,DESKTYPES.CLOSE)
   request.window=shellWindow
   IF Call(DESKTYPES.CLOSE)<>DESKTYPES.OK THEN
