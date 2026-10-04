@@ -7,6 +7,7 @@ PUBLIC TYPE Packet=[
   LONGCARD token,completionMask
   CARD fillX,fillY,fillWidth,fillHeight,fillPen
 ]
+PUBLIC CONST PACKET_VERSION=5
 PUBLIC CONST PACKET_BYTES=70
 PUBLIC TYPE Binding=[ADDRESS entry BYTE POINTER packet BYTE enabled,failed]
 PUBLIC CONST OP_OPEN=1

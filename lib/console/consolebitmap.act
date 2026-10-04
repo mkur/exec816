@@ -159,7 +159,11 @@ PUBLIC BYTE FUNC TextCaret(CARD x,y BYTE POINTER text CARD count,caretX,caretY)
 RETURN(Run(OP_TEXT_FILL))
 
 ; One complete upward copy and exposed-strip fill, retained by the C driver.
-PUBLIC BYTE FUNC Scroll(CARD left,top,width,height)
+PUBLIC BYTE FUNC Scroll(CARD left,top,width,height,rows)
+
+  IF rows=0 OR rows>height THEN
+    RETURN(0)
+  FI
 
   LET packet=GetPacket()
   packet.copy.source.offset=0
@@ -172,10 +176,10 @@ PUBLIC BYTE FUNC Scroll(CARD left,top,width,height)
   packet.copy.destination.height=240
   packet.copy.sourceX=left LSH 3
   packet.copy.destinationX=left LSH 3
-  packet.copy.sourceY=(top LSH 3)+8
+  packet.copy.sourceY=(top+rows) LSH 3
   packet.copy.destinationY=top LSH 3
   packet.copy.width=width LSH 3
-  packet.copy.height=(height-1) LSH 3
+  packet.copy.height=(height-rows) LSH 3
   packet.background=0
   IF Run(OP_SCROLL)=0 OR packet.status<>DISPLAY.OK THEN
     RETURN(0)

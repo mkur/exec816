@@ -59,7 +59,9 @@ The GEM service does not advertise an additional VDI opcode for this operation.
 
 `GemDrawingScrollStart` and `GemDrawingScrollPoll` expose the driver's
 [asynchronous screen scroll](../../../docs/reference/display.md#asynchronous-screen-scrolling)
-with a logical GEM background pen. Start fences prior queued work, validates
+with a logical GEM background pen. Source Y minus destination Y selects an
+upward shift in multiples of eight pixels and the matching exposed fill height.
+Start fences prior queued work, validates
 the complete copy/fill and returns its ID after launch. Poll performs one
 completion check. A second start returns BUSY until completion is consumed.
 Ordinary Copy/Fill/Text/Fence and Close retain synchronous completion and finish

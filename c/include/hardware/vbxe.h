@@ -51,9 +51,10 @@ UWORD VbxePresent(struct VbxeDisplay *display);
 UWORD VbxeSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD count);
 UWORD VbxeBlitExtent(ULONG address, UWORD stride, UWORD bytes, UWORD rows);
 UWORD VbxeCopyRect(struct VbxeDisplay *display, const struct VbxeCopy *copy);
-/* Asynchronous upward eight-pixel screen scroll, then exposed-strip fill.
+/* Asynchronous upward screen scroll, then exposed-strip fill.
  * Both surfaces must describe the 640x240 screen at offset 0, pitch 320.
- * Even X/width, identical source/destination X, source Y = destination Y + 8.
+ * Even X/width and identical source/destination X. Source Y - destination Y
+ * is a positive multiple of eight pixels; copy and exposed fill fit the screen.
  * Copy height may be zero (fill only). value is a packed hardware colour byte.
  * OK means accepted; *id identifies this operation. Descriptors are copied
  * before return. BUSY rejects a second start without modifying *id or the list.

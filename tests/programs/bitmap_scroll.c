@@ -27,6 +27,36 @@ static void geometry(UWORD x,UWORD y,UWORD width,UWORD rows)
     copy.sourceY=y+8; copy.destinationY=y;
     copy.width=width; copy.height=rows;
 }
+/* Recreate the source independently for each delta. Read the whole screen so
+ * a correct tile cannot hide damage to neighbouring rows or columns. */
+static void multirow(UWORD left,UWORD top,UWORD width,UWORD height,UWORD delta)
+{
+    ULONG id=0;
+    UWORD x,y,good,expected,launches;
+    for (y=0;y<240;y++) {
+        memset(row,(UBYTE)y,sizeof(row));
+        check(VbxeWrite(&display,(ULONG)y*320,row,sizeof(row))==DISPLAY_OK);
+    }
+    geometry(left,top,width,height-delta);
+    copy.sourceY=top+delta;
+    launches=scrollLaunches;
+    check(VbxeScrollStart(&display,&copy,0xe5,&id)==DISPLAY_OK);
+    check(scrollLaunches==launches+1 && id!=0);
+    check(VbxeFence(&display)==DISPLAY_OK);
+    check(VbxeScrollPoll(&display,id)==DISPLAY_OK);
+    check(!(*(volatile UBYTE *)0xd65eUL));
+    for (y=0;y<240;y++) {
+        check(VbxeRead(&display,(ULONG)y*320,row,sizeof(row))==DISPLAY_OK);
+        good=1;
+        for (x=0;x<320;x++) {
+            expected=y;
+            if (x>=left/2 && x<(left+width)/2 && y>=top && y<top+height)
+                expected=y<top+height-delta ? y+delta : 0xe5;
+            if (row[x]!=expected) good=0;
+        }
+        check(good);
+    }
+}
 void ScrollCases(void)
 {
     ULONG id=0,old,rejected=0x12345678UL,completion;
@@ -41,6 +71,20 @@ void ScrollCases(void)
     check(VbxeScrollStart(&display,&copy,0,&id)==DISPLAY_BAD_ARGUMENT);
     copy.sourceX=0; copy.height=233;
     check(VbxeScrollStart(&display,&copy,0,&id)==DISPLAY_BAD_ARGUMENT);
+    geometry(0,0,640,0);
+    copy.sourceY=0;
+    check(VbxeScrollStart(&display,&copy,0,&id)==DISPLAY_BAD_ARGUMENT);
+    copy.sourceY=9;
+    check(VbxeScrollStart(&display,&copy,0,&id)==DISPLAY_BAD_ARGUMENT);
+    copy.sourceY=0xffff;
+    check(VbxeScrollStart(&display,&copy,0,&id)==DISPLAY_BAD_ARGUMENT);
+    copy.sourceY=8; copy.destinationY=16;
+    check(VbxeScrollStart(&display,&copy,0,&id)==DISPLAY_BAD_ARGUMENT);
+    copy.destinationY=0; copy.sourceY=240; copy.height=1;
+    check(VbxeScrollStart(&display,&copy,0,&id)==DISPLAY_BAD_ARGUMENT);
+    geometry(0,0,639,208); copy.sourceY=32;
+    check(VbxeScrollStart(&display,&copy,0,&id)==DISPLAY_BAD_ARGUMENT);
+    check(id==0);
     geometry(0,0,640,232);
     for (y=0;y<240;y++) {
         memset(row,(UBYTE)y,sizeof(row));
@@ -128,6 +172,10 @@ void ScrollCases(void)
         }
         check(good);
     }
+    multirow(24,16,136,112,16);
+    multirow(0,0,640,240,32);
+    multirow(0,0,640,240,232);
+    multirow(0,0,640,240,240);
     geometry(0,0,640,232); old=id;
     check(VbxeScrollStart(&display,&copy,0,&id)==DISPLAY_OK);
     check(VbxeClose(&display)==DISPLAY_OK && !display.scrollPending);

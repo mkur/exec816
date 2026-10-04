@@ -122,11 +122,13 @@ and rejects VRAM wrap and command-arena overlap before submission.
 
 ## Asynchronous screen scrolling
 
-`VbxeScrollStart(display, copy, value, id)` submits an upward eight-pixel copy
+`VbxeScrollStart(display, copy, value, id)` submits an upward screen copy
 and exposed-strip fill in one hardware launch. Both surfaces must describe the
 640×240 screen at offset zero and pitch 320; X and width are even, source and
-destination X agree, and source Y is destination Y plus eight. The copy and fill
-must both fit the screen. A zero copy height submits only the eight-row fill.
+destination X agree, and source Y minus destination Y is a positive multiple
+of eight pixels. This delta is the exposed fill height; the fill begins after
+the copied destination rows. The copy and fill must both fit the screen.
+A zero copy height submits only the exposed-strip fill.
 `value` is the packed hardware byte, including both pixel nibbles.
 
 OK means accepted, with an operation ID written to `id`; the call may return

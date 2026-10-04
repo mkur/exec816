@@ -1,0 +1,302 @@
+{
+  "format": "exec816-console-output-batching-baseline-v1",
+  "status": "pass",
+  "tier": "development",
+  "recorded_on": "2026-10-04",
+  "scope": "Compact extraction of the completed CAT trace; no new emulator execution. Performance baseline, not release qualification.",
+  "source": {
+    "report": "build/cat-long-trace/results.json",
+    "report_sha256": "a9d2054400278067c2f871e982a399d953de362e1370a1d58cab2f347e79783e",
+    "trace": "build/cat-long-trace/program/emulator.log",
+    "trace_sha256": "031be8e63bd7ec53eabdb0e4217638cec056c524c099b2037946df06acee5125",
+    "markers_sha256": "f8b33f9969ad496b0e1421e22c44831a6a0bae18956f488e2d8931c064d18a58",
+    "shell_report_sha256": "66016fa6bd25ae3b5e586bf8a439191b2d3fba9ef55e0452a5d37748df1cf4dc",
+    "git_revision": "d2112347a6e48808d1a088207d26b5cd8713c8a6",
+    "dirty_checkout": true,
+    "provenance_note": "The demo and measurement harness include uncommitted packaging/tracing work. The revision alone is not a complete source identity; retain the manifests, hashed inputs and frozen emitted images.",
+    "harness": "tools/measure_bitmap_cat.py",
+    "harness_sha256": "042bc2cc72dc3b8cc15f3a682c868043aa8cef528c6f579bfa279f247fd1a58c",
+    "harness_inputs": {
+      "tools/test_demo.py": "a602a812e540a7561fb14208147152bc4ebbc6dc8ebc360900fec3af85659e07",
+      "tools/console_turn_profile.py": "b9773467683e6e0623f7016bec67ef4d0917ff4994b9715219563f6b0c70c207",
+      "tools/bitmap_console_performance.py": "e5db3431f0417f3e5d842a870e509d60da62b21eef737990fbb6d287a464846c",
+      "tools/blitter_completion_trace.py": "e0abcb56e327fac2325035f95ad3114f7d35b1d2f59711ef0b3b1d43f5995d20",
+      "tools/measure_loading_breakdown.py": "4c8e0863709e49d404bb8c37633a67f606b92c70b4908e245ff559c539e20d53",
+      "tools/sio_transaction_trace.py": "f35e2eb3c4285740f3d1062070c4b16456ae18353193600f569933383e5b1c8b"
+    }
+  },
+  "artifacts": {
+    "demo_directory": "build/demo-bitmap-shell",
+    "source_manifest_sha256": "65e560744bf0dd2f3ae4516c35ee32d5a98cddf9c4909f795fecdf7cc925a3ee",
+    "staged_manifest_sha256": "7ca887f6df98ed8c2fef8e8d8f959c715311ab502e9f60a6a17a7c1a1e0b206d",
+    "program_xex_sha256": "5a03ac35c37f2d067045118aadf2afe405138ee9099cb25c076e6de6335d5c07",
+    "boot_xex_sha256": "4bedf5cce26525a2a3835b377dbc5ec08543a5e2e6460996a2401e8e34a631d0",
+    "system_atr_sha256": "169b922e853d5e7a0e83262bd38ecccbc7794a3c9a60c8a7c8ab6ee178087749",
+    "zip_sha256": "d28944c83f83f2c79a5d327bb2baca4bfccd46214f21017f0b9ff20c7e13856c",
+    "zip_bytes": 211597
+  },
+  "toolchain": {
+    "actionc": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "actionc_binary_sha256": "1d201da4775ab26630106f1d16e11314a58d9fd3abc02191af4ba83c6eb4fd3e",
+    "actionc_override": false,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    }
+  },
+  "configuration": {
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "observed_machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "console_columns": 80,
+    "console_rows": 30,
+    "shell_only": true,
+    "autoboot_frames": 249
+  },
+  "workload": {
+    "file": "LONG.TXT",
+    "file_bytes": 23872,
+    "lf_count": 768,
+    "cat_buffer_bytes": 512,
+    "full_writes": 46,
+    "final_write_bytes": 320,
+    "commands": [
+      "CAT LONG.TXT",
+      "CAT LONG.TXT",
+      "CAT LONG.TXT >NIL:"
+    ]
+  },
+  "boundary": "ShellDispatch entry through return: includes command loading, execution and unload; excludes typing, redirection setup and subsequent prompt rendering. Outstanding asynchronous echo presentation may overlap the boundary. Guest cycles exclude debugger pauses.",
+  "accounting": "Task CPU columns plus global native IRQ/NMI are disjoint. Routine totals include nested calls and must not be added to one another. Read/Write intervals include suspension. Scroll launch-to-IRQ is an upper bound on hardware completion, not exact BUSY time.",
+  "samples": [
+    {
+      "case": "cold",
+      "command": "CAT LONG.TXT",
+      "elapsed_ms": 54153.6289487002,
+      "bytes_per_second": 440.8199498987219,
+      "cat_read_ms": 26144.219310129,
+      "cat_write_ms": 23860.82517243956,
+      "cat_reads": 48,
+      "cat_writes": 47,
+      "cat_write_cpu_ms": {
+        "shell": 0.0,
+        "console": 12693.776598968958,
+        "siodriver": 0.9038186921236744,
+        "fsworker": 56.01392203603433,
+        "idle": 8044.607184593849,
+        "cat": 349.8083535035573,
+        "native_interrupts": 2715.715294645037
+      },
+      "wire_reads": 218,
+      "wire_ms": 26088.109741055207,
+      "cache": {
+        "command": "CAT LONG.TXT",
+        "cache_before": {
+          "hits": 0,
+          "misses": 1
+        },
+        "cache_after": {
+          "hits": 3,
+          "misses": 219
+        }
+      },
+      "scrolls": 749,
+      "scroll_launch_to_adoption_ms": 13007.963655535334,
+      "scroll_launch_to_irq_ms": 10869.394428084282,
+      "scroll_post_to_adoption_ms": 2115.18927117944,
+      "mean_scroll_launch_to_irq_ms": 14.511875070873542
+    },
+    {
+      "case": "warm",
+      "command": "CAT LONG.TXT",
+      "elapsed_ms": 26669.6113784028,
+      "bytes_per_second": 895.1011569419298,
+      "cat_read_ms": 1456.5370556500827,
+      "cat_write_ms": 24374.130471863416,
+      "cat_reads": 48,
+      "cat_writes": 47,
+      "cat_write_cpu_ms": {
+        "shell": 0.0,
+        "console": 12921.59275930074,
+        "siodriver": 0.0,
+        "fsworker": 55.31951185473491,
+        "idle": 8259.752050737336,
+        "cat": 350.9082591957191,
+        "native_interrupts": 2786.557890774886
+      },
+      "wire_reads": 0,
+      "wire_ms": 0.0,
+      "cache": {
+        "command": "CAT LONG.TXT",
+        "cache_before": {
+          "hits": 3,
+          "misses": 219
+        },
+        "cache_after": {
+          "hits": 224,
+          "misses": 219
+        }
+      },
+      "scrolls": 769,
+      "scroll_launch_to_adoption_ms": 13391.350039964533,
+      "scroll_launch_to_irq_ms": 11177.569324719227,
+      "scroll_post_to_adoption_ms": 2189.764427760055,
+      "mean_scroll_launch_to_irq_ms": 14.535200682339697
+    },
+    {
+      "case": "warm-nil",
+      "command": "CAT LONG.TXT >NIL:",
+      "elapsed_ms": 2115.8597167381613,
+      "bytes_per_second": 11282.411499757369,
+      "cat_read_ms": 1226.218001942544,
+      "cat_write_ms": 63.045988110727826,
+      "cat_reads": 48,
+      "cat_writes": 47,
+      "cat_write_cpu_ms": {
+        "shell": 0.0,
+        "console": 0.0,
+        "siodriver": 0.0,
+        "fsworker": 6.728067788868855,
+        "idle": 0.0,
+        "cat": 55.91707676714422,
+        "native_interrupts": 0.4008435547147471
+      },
+      "wire_reads": 0,
+      "wire_ms": 0.0,
+      "cache": {
+        "command": "CAT LONG.TXT >NIL:",
+        "cache_before": {
+          "hits": 224,
+          "misses": 219
+        },
+        "cache_after": {
+          "hits": 445,
+          "misses": 219
+        }
+      },
+      "scrolls": 0,
+      "scroll_launch_to_adoption_ms": 0,
+      "scroll_launch_to_irq_ms": 0,
+      "scroll_post_to_adoption_ms": 0
+    }
+  ],
+  "limitations": [
+    "One observed command sequence; no distribution or run-to-run variance claim.",
+    "Command boundaries can include outstanding echo; launch counts need not equal file newline counts.",
+    "No precise hardware BUSY-edge or scanout latency claim.",
+    "Unloaded and loaded keyboard latency comparisons are not supplied by this CAT baseline.",
+    "Detailed raw traces remain development artifacts outside the distributable ZIP."
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  }
+}

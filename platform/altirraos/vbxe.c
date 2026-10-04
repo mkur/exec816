@@ -338,7 +338,7 @@ UWORD VbxeOwnerScrollStart(struct VbxeDisplay *d,const struct VbxeCopy *c,
                            UBYTE value,ULONG *id)
 {
     ULONG source,destination,bottom;
-    UWORD bytes,i,count,status;
+    UWORD bytes,i,count,status,rows;
     UBYTE records[42],*fill;
     if (d->scrollPending) return DISPLAY_BUSY;
     if (!extent(0,c,sizeof(*c)) || !extent(0,id,sizeof(*id)))
@@ -350,16 +350,18 @@ UWORD VbxeOwnerScrollStart(struct VbxeDisplay *d,const struct VbxeCopy *c,
         c->source.height!=240 || c->destination.height!=240 ||
         c->sourceX!=c->destinationX || c->sourceX>640 ||
         (c->sourceX|c->width)&1 || !c->width || c->width>640-c->sourceX ||
-        c->destinationY>232 || c->sourceY!=c->destinationY+8 ||
-        c->height>232-c->destinationY)
+        c->sourceY>240 || c->sourceY<=c->destinationY ||
+        c->height>240-c->sourceY)
         return DISPLAY_BAD_ARGUMENT;
+    rows=c->sourceY-c->destinationY;
+    if (rows&7) return DISPLAY_BAD_ARGUMENT;
     bytes=c->width/2;
     source=(ULONG)c->sourceY*320+c->sourceX/2;
     destination=(ULONG)c->destinationY*320+c->destinationX/2;
     bottom=destination+(ULONG)c->height*320;
     if ((c->height && (!VbxeBlitExtent(source,320,bytes,c->height) ||
         !VbxeBlitExtent(destination,320,bytes,c->height))) ||
-        !VbxeBlitExtent(bottom,320,bytes,8)) return DISPLAY_BAD_ARGUMENT;
+        !VbxeBlitExtent(bottom,320,bytes,rows)) return DISPLAY_BAD_ARGUMENT;
     for (i=0;i<42;i++) records[i]=0;
     word(records,(UWORD)source); records[2]=(UBYTE)(source>>16);
     word(records+3,320); records[5]=1;
@@ -371,7 +373,7 @@ UWORD VbxeOwnerScrollStart(struct VbxeDisplay *d,const struct VbxeCopy *c,
     fill[5]=1;
     word(fill+6,(UWORD)bottom); fill[8]=(UBYTE)(bottom>>16);
     word(fill+9,320); fill[11]=1;
-    word(fill+12,bytes-1); fill[14]=7; fill[16]=value;
+    word(fill+12,bytes-1); fill[14]=(UBYTE)(rows-1); fill[16]=value;
     /* No pending operation can own an unexpected busy engine here. Recovery
      * remains bounded; normal asynchronous admission never spins on BUSY. */
     if (REG(BUSY)&3) return recover(d);

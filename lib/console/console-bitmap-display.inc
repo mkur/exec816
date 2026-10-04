@@ -129,7 +129,7 @@ PUBLIC PROC Advance(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   FI
 
   IF view.scrollState=1 THEN
-    okay=CONSOLEBITMAP.Scroll(view.left,view.top,view.width,view.height)
+    okay=CONSOLEBITMAP.Scroll(view.left,view.top,view.width,view.height,1)
     IF okay<>0 THEN
       bitmapUnit=unit
       bitmapGeneration=view.generation

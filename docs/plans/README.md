@@ -60,6 +60,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Console and interaction
 
+- [Bulk console output batching](console-output-batching-implementation-plan.md):
+  OB1 complete, OB2–OB5 pending; combine several retained line scrolls into one asynchronous
+  copy/fill and bounded text presentation, preserving immediate short writes.
+  Reuses the completed [CAT baseline](../development/console-output-batching-baseline.json).
 - [Input registration and lifetime design](input-registration-lifetime-design.md):
   the [refactor plan](input-registration-lifetime-implementation-plan.md) is
   implemented through IR5. Ordinary reads/routes trust registration lifetime;

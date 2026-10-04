@@ -97,6 +97,18 @@ budget is unchanged and can be measured separately from queue capacity. This
 refactor adds no Task or bank-zero reservation. Sampling frequency and other
 subsystem contracts remain separate work.
 
+The shell-only bitmap demo's interactive response is now satisfactory for the
+current development use. The next focused console change is
+[bulk output batching](plans/console-output-batching-implementation-plan.md),
+proposed as OB1–OB5. The completed
+[CAT trace](development/console-output-batching-baseline.json) measures cached
+`CAT LONG.TXT` at 26.670 s, including 24.374 s inside output calls; cached output
+to NIL takes 2.116 s. Accumulate a bounded number of retained line edits, then
+use one multi-row copy/fill and redraw the surviving changed text. Keep short
+writes immediate and input service between quanta. Reuse the existing baseline;
+measure throughput and latency before changing batch limits. This focused
+follow-up does not claim the broader responsiveness targets are qualified.
+
 The other possible milestones have no delivery order:
 
 - Filesystem writing, beginning with a separate SpartaDOS milestone. Current
