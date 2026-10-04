@@ -295,6 +295,20 @@ PUBLIC PROC Poll()
 
 RETURN
 
+; Another trusted renderer used this same owner and command arena.
+PUBLIC BYTE FUNC Drawn(CARD status)
+
+  drawingChanged=1
+  IF status<>DISPLAY.OK THEN
+    BEGIN
+      LET state=GetBinding()
+      state.failed=1
+    END
+    RETURN(0)
+  FI
+
+RETURN(1)
+
 PUBLIC BYTE FUNC Changed()
 
 RETURN(drawingChanged)

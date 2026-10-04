@@ -58,3 +58,8 @@ covers raw/optimized admission, stale identities, no-op updates, identity
 exhaustion, heap exhaustion/recovery, returned-buffer independence and teardown.
 Reserved bank-zero and VRAM growth remain zero. The service fixture alone uses
 an 8 KiB image-data arena to hold its deliberately separate test packets.
+
+AW3 connects bounded painting to desktop damage.
+[Presentation evidence](../../../docs/development/aes-widgets-aw3.json) records
+ten full-scene comparisons in each compiler mode, the legacy console/command
+scene regression, and pending-scroll watchdog quiescence/reset retention.

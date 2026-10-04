@@ -4,6 +4,7 @@ USE EXEC
 USE DESKSTATE
 USE DESKTYPES
 USE DESKCORE
+USE DESKWIDGETS
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
@@ -185,6 +186,10 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
     END
 
     RETURN(1)
+  FI
+
+  IF window.kind=DESKTYPES.CONTENT_WIDGETS THEN
+    RETURN(DESKWIDGETS.Paint(service,window,@client,@area,@commandIndex))
   FI
 
   ; A busy client list gets at most four commands before input is serviced again.

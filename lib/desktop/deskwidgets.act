@@ -153,6 +153,32 @@ PUBLIC CARD FUNC Request(DESKTYPES.Service POINTER service
 
 RETURN(DESKTYPES.BAD_ARGUMENT)
 
+; Four objects at most; the current Layers token freezes the retained tree.
+PUBLIC BYTE FUNC Paint(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER client,clip
+    CARD POINTER index)
+
+  IF window.widgets=NULL THEN
+    RETURN(1)
+  FI
+
+  packet.context=LONGCARD(ADDRESS(window.widgets))
+  packet.originX=client.left
+  packet.originY=client.top
+  packet.left=clip.left
+  packet.top=clip.top
+  packet.right=clip.right
+  packet.bottom=clip.bottom
+  packet.index=index^
+  packet.qualifiers=service.focus=window.id
+  Run(WIDGETTYPES.OP_DRAW)
+  index^=packet.index
+  IF CONSOLEBITMAP.Drawn(packet.status)=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(IF packet.changed<>0 THEN 2 ELSE 1 FI)
+
 PUBLIC PROC Retire(DESKTYPES.Window POINTER window)
 
   IF window.widgets<>NULL THEN

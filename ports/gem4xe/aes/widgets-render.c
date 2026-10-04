@@ -41,6 +41,7 @@ static void quantum(void)
 uint16_t WidgetPaint(struct WidgetPacket *p)
 {
     struct WidgetContext *c=(struct WidgetContext *)p->context;
+    uint16_t status;
     if (!c || p->originX<0 || p->originY<0 ||
         (int32_t)p->originX+c->width>640 || (int32_t)p->originY+c->height>240 ||
         p->left<p->originX || p->top<p->originY ||
@@ -49,5 +50,8 @@ uint16_t WidgetPaint(struct WidgetPacket *p)
         return DISPLAY_BAD_ARGUMENT;
     r_set(&gl_clip,p->left,p->top,p->right-p->left,p->bottom-p->top);
     paint=p;
-    return GemDrawingBatch(p->left,p->top,p->right,p->bottom,quantum);
+    status=GemDrawingBatch(p->left,p->top,p->right,p->bottom,quantum);
+    p->changed=p->index<c->count;
+    paint=0;
+    return status;
 }

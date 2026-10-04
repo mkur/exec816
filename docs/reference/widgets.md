@@ -7,8 +7,8 @@ The native widget interface is an ordinary desktop content lane. It ports
 selected GEM4XE object and form code, without full AES compatibility. The
 presenter retains copied trees; applications own stable request and payload
 storage until exact reply collection. No application pointer or callback is
-kept in a retained tree. AW2 supplies retention and transactions; AW3 and AW4
-connect desktop painting and interaction.
+kept in a retained tree. Retained transactions and desktop painting are implemented; event-driven
+interaction follows in AW4.
 
 Open with `CONTENT_WIDGETS`; the content kind is immutable. Set `request.window`,
 `payload` and `bytes` for these operations:
@@ -65,3 +65,10 @@ retires. There are still four window slots, eight public Task pools, one display
 owner and the existing 2,560-byte presenter stack. Reserved bank-zero growth is
 zero for fixed/root/kernel, every public Task and private idle, including guards,
 alignment and spare capacity. Widgets add no VRAM reservation.
+
+Painting reconstructs the damaged client background and intersecting objects
+in tree order. The presenter admits at most four objects and sixteen scanlines
+per turn and services input between continuations. One Layers token freezes the
+model across these turns. Occluded updates retain their new state without
+painting; later exposure reconstructs that state. Pointer overlays share the
+existing drawing owner and command arena.

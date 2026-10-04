@@ -48,7 +48,7 @@ The next functional milestone is the
 [AES widget library plan](aes-widgets-implementation-plan.md): port selected
 object/drawing/form code into the existing presenter, add retained widget trees
 with bounded updates, and demonstrate buttons, toggles and radio groups beside
-the shell. AW0–AW2 are implemented; AW3–AW6 remain planned. Task-bar policy, editable fields, resource
+the shell. AW0–AW3 are implemented; AW4–AW6 remain planned. Task-bar policy, editable fields, resource
 loading and full AES compatibility are later consumers/extensions.
 
 Further console optimization is paused, without changing the recorded limits.
