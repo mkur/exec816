@@ -23,8 +23,9 @@ unchanged binary/ATASCII data, and explicit mount geometry and transport
 profiles. A successful close must produce a file readable by Exec816 and the
 pinned independent/native DOS readers after the disk is reopened.
 
-Defer formatting, filesystem repair, write-back caching, journaling, atomic
-replacement, cross-directory moves, cross-volume rename, recursive deletion,
+Defer formatting, an on-target filesystem checker/repair utility, write-back
+caching, journaling, atomic replacement, cross-directory moves, cross-volume
+rename, recursive deletion,
 sparse-file creation, seek past EOF, SetFileSize, SetProtection, SetFileDate,
 volume-label changes and new COPY/DELETE/MAKEDIR commands. Existing sparse SDFS
 files remain readable but cannot be opened for writing in this first version.
@@ -55,8 +56,8 @@ private kernel services.
 
 Add an `access` mount setting with `readonly` as the default and `readwrite`
 as an explicit request. Reject unknown values and unsupported writable
-profile/geometry combinations. A read-write request must pass recognition and
-the allocation audit below before publication; do not silently downgrade it.
+profile/geometry combinations. A read-write request must pass the lightweight
+mount checks below before publication; do not silently downgrade it.
 Preserve startup's all-or-nothing publication of the initial mount set.
 Mount reporting must distinguish configured access, writable admission and
 subsequent unvalidated/offline state. SYS: shares the underlying mount's policy.
@@ -156,28 +157,43 @@ preservation after a later command/load failure. Document and test that behavior
 
 ## Integrity and mutation protocol
 
-### Writable admission
+### Lightweight mounting and local validation
 
-The existing readers validate accessed structures, not whole-volume allocation.
-Before granting write access, walk the entire supported namespace and compare
-reachable sectors with allocation metadata. Check fixed/reserved extents,
-directory ancestry, chains/maps, lengths/counts, duplicate sector ownership,
-free-space totals and native incomplete entries. Pin each format's legitimate
-reserved allocations in W0; do not misclassify them as lost files.
+Mounting does not perform fsck. Retain format recognition and bounded checks of
+geometry, header fields, metadata extents and declared count ranges. Do not walk
+directories, file chains or sector maps, compare all allocation bits with file
+ownership, or recompute free-space totals during mounting. Pin each format's
+fixed/reserved extents in W0 so the allocator excludes them without a scan.
+Mounting must not depend on the number or length of existing files.
 
-Use a temporary sector-ownership bitset, at most 8,192 payload bytes for the
-16-bit sector domain, plus bounded iterative traversal state. Stream the disk
-bitmap and directory records; no full-file buffer or recursive traversal.
-Reject cross-links, reachable sectors marked free, unexplained allocations,
-bad counts and unsupported structures. Do not repair metadata or reinterpret
-an unclosed file as free. Read-only mounting keeps its existing admission rules.
-An audit allocation failure or BREAK before publication leaves disk unchanged.
+Writable media is assumed to have consistent allocation metadata when mounted.
+Use the on-disk VTOC/bitmap for allocation, scanning it only as allocation needs
+require. Preserve count fields with checked arithmetic; a plausible recorded
+count is not proof that it matches every allocation bit. Validate directories,
+maps, chains, ranges, flags and counts as an operation encounters them. Keep
+bounded walks and cycle detection; preflight the target chain/map when needed
+for destructive operations. A MyDOS truncate/delete can require walking that
+file, but opening a volume must not read every file's payload sectors.
 
-Run the audit once per writable mount generation. Require unchanged media and
-exclusive external ownership while mounted; another DOS or host writer must
-not modify it. After uncertain mutation, only retirement/remount and a fresh
-audit can restore access. An audit failure may require repair with an external
-tool; this milestone provides no repair utility and must say so in diagnostics.
+Local checks reject detected corruption and native incomplete entries involved
+in a mutation. Do not reclaim an unclosed entry or unexplained allocated sector
+as free space. These checks cannot establish ownership across unrelated files:
+cross-links, a live sector incorrectly marked free, and lost allocations may
+remain undetected. Document that limit rather than adding a resident global
+ownership map. Read-only mounting keeps its existing behavior.
+
+Require unchanged media and exclusive external ownership while mounted. An
+uncertain mutation makes the current mount unvalidated and disables further
+ordinary access; do not automatically remount or resume writing. Before an
+explicit writable remount, the medium must be checked/repaired externally or
+restored from a known-good image. A lightweight remount itself does not prove
+recovery, and Exec816 provides no checker or repair code in this milestone.
+
+Keep full allocation audits in host-side development tools. Independently scan
+test images before/after mutations and injected failures, including both file
+chains and maps, without shipping the checker or its sector-ownership bitset
+in the resident system. A future on-target checker can be a separately loaded
+utility with its own memory budget and scope.
 
 ### Write-through sectors and cache coherence
 
@@ -246,10 +262,10 @@ Safe no-change failures discovered during preflight do not poison the mount.
 Neither disk format provides a journal here. Power loss, torn sectors or
 multi-sector metadata failure can leave an incomplete file, leaked allocation,
 or a volume requiring repair; in-place overwrite is not atomic. Tests must
-characterize these outcomes and prove that remount admission rejects detectable
-allocation inconsistencies. Do not claim that an allocation audit detects
-arbitrary payload corruption or that a device ACK guarantees host/physical
-power-loss durability.
+characterize these outcomes with independent host allocation checks and byte
+comparisons. Prove that runtime access stops on detected corruption or uncertain
+mutation, without claiming that mounting discovers every damaged structure.
+A device ACK does not guarantee host/physical power-loss durability.
 
 ## Format-specific work
 
@@ -311,7 +327,7 @@ Directory lookup/enumeration must recognize incomplete entries owned by a live
 writer in this mount generation: list their last committed metadata and apply
 the sharing error to conflicting opens/locks. Do not hide them as abandoned
 MyDOS files or reject the whole directory as malformed SDFS. An incomplete
-entry without that live ownership still follows the corruption/admission rules;
+entry without that live ownership still follows the local corruption rules;
 the native flag alone never grants permission to resume someone else's write.
 
 ## Executable slices
@@ -327,7 +343,7 @@ is complete. Failure/cancellation tests accompany each slice, not just W9.
 | W0 Contracts and independent fixtures | Record native MyDOS/SDFS create, append, overwrite, truncate, close, directory and delete output; pin producer versions/hashes. Specify exact empty/incomplete/timestamp encodings, reserved sectors, sector-write command and per-operation commit tables. Add independent host allocation validators and expected failure classifications. No runtime writes yet. |
 | W1 Physical sector writes | Add checked block/SIO write support, including 256-byte admission and adapter phases where required; generate changed ABI definitions. Emitted tests write/read back disposable media on each supported profile/size, including short boot-sector addressing, protection, checksum, NAK, timeout and lost-completion cases. Prove reply collection, register restoration and bounded transport completion. |
 | W2 Write-through and mutation lifecycle | Add shared staged writes, cache invalidation, operation commit state, deferred BREAK and stop/drain behavior. Exercise warm/cold/disabled cache, 256-byte paired entries, alias access, failed writes and sector reuse through emitted code. Preserve existing read cancellation and bus-offline behavior. |
-| W3 Writable admission and DOS ownership | Encode access policy; implement bounded allocation audits for both formats, writer leases and metadata/enumeration invalidation. Add packets, errors, providers and Close/Process cleanup lifecycle. Publish only fully admitted mounts. Prove zero-mutation rejection, cross-links/count corruption, allocation failure, inheritance, conflicts, last close and cleanup error precedence using controlled backend operations. |
+| W3 Mount access and DOS ownership | Encode access policy with lightweight mount checks, writer leases and metadata/enumeration invalidation. Add packets, errors, providers and Close/Process cleanup lifecycle. Prove that mounting empty and populated media of the same geometry does not walk file data, directories or maps. Cover zero-mutation rejection, locally detected corruption, allocation failure, inheritance, conflicts, last close and cleanup error precedence using controlled backend operations. |
 | W4 SDFS create and sequential write | Implement create/empty file, bitmap allocation, first map/data sectors, extending writes, Flush and final Close. Raw/optimized programs write varied binary lengths through the public API; independent/native readers reopen the resulting disk. Include disk full, incomplete close, live-writer lookup/enumeration and directory-record straddles. |
 | W5 SDFS update and truncate | Add existing-file read/write, partial overwrites, append, map-page growth, MODE_NEWFILE truncation and allocation reuse. Cover 62/126-pointer transitions, maximum size/capacity arithmetic, protected files, rejected sparse writers and injected failures at each metadata phase. |
 | W6 MyDOS create and sequential write | Implement VTOC updates, canonical new/empty files, chain extension, Flush and final Close on 128/256-byte media. Cover payload/trailer boundaries, bitmap-page transitions, live-writer lookup/enumeration and sectors above 1023 with native MyDOS read-back. |
@@ -366,14 +382,19 @@ Focused development coverage includes:
   alternating Read/Write/Seek and unchanged overwrite suffixes.
 - Full disk, full directory, protected media/file, fragmented allocation,
   cache fallback, sector reuse, two mounts, SYS aliases and inherited cursors.
-- Native incomplete entries, cross-links, map/chain loops, bitmap mismatches,
-  wrong counts, directory boundary records, admission cancellation and teardown.
+- Native incomplete entries, map/chain loops, locally detected allocation/count
+  errors, directory boundary records, mount cancellation and teardown. Verify
+  that mounting remains lightweight with many/large files in both formats.
+- Host-only whole-volume checks for cross-links, bitmap/ownership mismatches,
+  lost allocation and free-count errors; do not require runtime mount to detect
+  corruption outside the metadata it reads.
 - BREAK before submission, during each mutation phase, between commit units,
   on last Close and during stop; verify exact result/error, consumed handles,
   resource release and a usable prompt or the documented offline result.
 - Controlled failures before a write, after media mutation but before completion,
   and at every multi-sector metadata boundary. Cold-reopen each resulting image;
-  classify intact, committed-prefix, incomplete or audit-rejected outcomes.
+  classify intact, committed-prefix, incomplete or externally detected
+  inconsistent outcomes. Keep host findings separate from runtime detection.
 - Stack/domain guards, native register restoration, OS coexistence and bounded
   completion for the changed transport, worker and Process lifetime paths.
 
@@ -413,10 +434,11 @@ Measure stack high-water marks with current checked builds; do not infer spare
 stack from unchanged reservations. Follow the
 [platform budget](../reference/platform.md#bank-zero-memory-budget).
 
-Allocate audit scratch and bounded mutation state in upper RAM, shared by the
-serialized worker. Budget the at-most-8,192-byte audit bitset, iterative ancestry
-state and a fixed number of 256-byte staged sectors separately; W0's tables must
-establish the exact simultaneous buffer count before allocation is implemented.
+Allocate bounded mutation state in upper RAM, shared by the serialized worker.
+Budget iterative ancestry state and a fixed number of 256-byte staged sectors;
+W0's tables must establish the exact simultaneous buffer count before allocation
+is implemented. No resident checker code or whole-volume ownership bitset is
+required.
 Avoid per-file sector buffers and whole-file rollback copies. Add only rights,
 writer identity and retained finalization state to file backing; measure the
 per-open and per-mount growth explicitly.
@@ -426,7 +448,7 @@ and provider-manifest use, reserved spare capacity, code growth, fixed and
 per-Task bank-zero deltas, and observed stack headroom. Check generated providers
 against the current 1,664-byte reservation instead of silently enlarging it.
 The optional sector cache must remain optional; failure to allocate mandatory
-write/audit workspace rejects writable admission before disk mutation.
+write workspace rejects writable admission before disk mutation.
 
 Completion requires both formats passing the selected development coverage,
 native interoperability, defined failure outcomes, cleanup and the packaged
