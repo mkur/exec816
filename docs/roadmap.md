@@ -16,7 +16,7 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
 
 ## Follow-on capabilities
 
-The next graphics milestone is the **first desktop on Exec816**. The
+The **first desktop on Exec816** has development evidence. The
 [design note](plans/gem4xe/desktop-design.md) proposes a desktop background,
 ST mouse pointer and one framed, movable shell window, followed by a second
 overlapping window from an independent application Task to prove focus, clipping
@@ -30,6 +30,13 @@ Loaded shutdown/fault checks and the local OF816 preview pass;
 see the [execution record](history/desktop.md). File browsing, menus and
 broader AES compatibility follow this milestone.
 
+The next focused graphics work is the
+[mouse sampling and pointer batching plan](plans/gem4xe/mouse-performance-implementation-plan.md):
+reduce normal sampling to about 4 kHz while preserving fine SIO phase timing,
+submit pointer moves as one blitter list, measure the combined desktop and
+refresh its OF816 preview. MP1–MP4 remain planned. Keep 2× pointer travel and
+the existing memory reservations; reuse recorded baselines where comparable.
+
 The [Layers library](reference/layers.md) now provides bounded regions, cached
 visibility, stacking, damage and drawing transactions. Its
 [implementation plan](plans/layers-implementation-plan.md) is complete through
@@ -41,8 +48,8 @@ Keep one presentation worker above Exec, evolving the existing bitmap console
 worker and reusing its retained cells, input routes and shared GEM drawing code.
 Each window is an upper-RAM object; it does not allocate a Task, stack or DP.
 The implementation adds zero bank-zero reservations against its DT0 baseline.
-The single presenter coordinates drawing tokens and window retirement; pointer
-routing and nonblocking gestures are the next integration slices. The exclusive
+The single presenter coordinates drawing tokens, window retirement, pointer
+routing and nonblocking gestures. The exclusive
 GEM demo remains a separate display client.
 
 Further console optimization is paused. The shell-only bitmap demo's interactive

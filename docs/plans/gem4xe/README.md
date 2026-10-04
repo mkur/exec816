@@ -27,16 +27,20 @@ through M0–M6 development checks, including the optional production artifact.
 See its [execution record](../../history/gem-mouse.md); physical hardware and
 broader hosted qualification remain separate work.
 
-The next graphics milestone is the [first desktop](desktop-design.md): one
+The [first desktop](desktop-design.md) implements one
 presentation worker, a framed movable shell window, then overlapping windows
 and exposure repair. Its [DT0–DT7 implementation plan](desktop-implementation-plan.md)
 adds client/event lifetime, an ST sampling and visible-response checkpoint before
-dragging, and a second independent application Task. DT0–DT2 have development
-evidence; [current desktop contracts](../../reference/desktop.md) describe the
-client/event service and framed shell. DT3–DT7 remain pending.
+dragging, and a second independent application Task. DT0–DT7 have development
+evidence and a local OF816 preview; pointer, outline, disk-load button and repair
+timing limits remain open. See the [current desktop contracts](../../reference/desktop.md)
+and [execution record](../../history/desktop.md).
 The [Layers foundation](../../reference/layers.md) is implemented through its
-[bounded library plan](../layers-implementation-plan.md); ST integration and
-nonblocking dragging are the next desktop work.
+[bounded library plan](../layers-implementation-plan.md).
+The next [mouse performance plan](mouse-performance-implementation-plan.md)
+defines MP1–MP4: about 4 kHz capture with preserved fine SIO timing, one blitter
+list per pointer move, combined measurements and a refreshed desktop preview.
+The current 2× pointer travel remains unchanged.
 Further console optimization is paused, without changing the recorded limits.
 
 The implemented foundation is the [bitmap console](bitmap-console-design.md):
