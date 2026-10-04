@@ -67,15 +67,16 @@ through the presenter.
 
 ## Rendering and movement
 
-Implement the [Layers plan](../layers-implementation-plan.md) first. Layers owns
-geometry, stacking, cached visible rectangles and exposure damage through ordinary
-calls inside the presenter. Window controls and input remain above it; drawing
-and hardware submission remain below. Its update token keeps geometry stable
-until the presenter has fenced the corresponding hardware work.
+The [Layers plan](../layers-implementation-plan.md) supplies the implemented
+[geometry and damage library](../../reference/layers.md). The desktop must now
+integrate it through ordinary calls inside the presenter. Window controls and
+input remain above it; drawing and hardware submission remain below. Its update
+token keeps geometry stable until the presenter has fenced the corresponding
+hardware work. The console worker has not yet been migrated to this boundary.
 
 Retained console cells remain the source of truth. A window records its client
 rectangle, frame, console identity, stacking position and accumulated damage.
-Start with a fixed capacity of four window records, plus the desktop background;
+Layers supports four ordinary layer records, plus the desktop background;
 the first executable scene uses one. Hidden or covered consoles still accept
 output into their retained model.
 
@@ -156,8 +157,8 @@ VBXE VRAM are separate budgets. See the
 The implementation plan should produce these executable slices in order:
 
 1. Separate console content from desktop placement while preserving the existing
-   full-screen and tiled backends. Define window registration, presentation
-   requests and upper-RAM limits without changing console stream semantics.
+   full-screen and tiled backends. Integrate Layers, window registration and
+   presentation requests without changing console stream semantics.
 2. Show a desktop background and one framed shell window. Integrate pointer and
    keyboard focus into the same presentation worker; demonstrate shell input,
    scrolling, disk reads and clean shutdown.

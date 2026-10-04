@@ -109,7 +109,8 @@ BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
           FI
 
           A816MEMORY.Move(BYTE POINTER(@layer.visible),
-              BYTE POINTER(@scene.work),SIZE(2+scene.work.count*8))
+              BYTE POINTER(@scene.work),SIZE(LAYERTYPES.REGION_RECTS
+                  +scene.work.count*LAYERTYPES.RECT_SIZE))
         FI
 
         rank==+1

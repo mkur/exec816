@@ -23,6 +23,13 @@ overlapping window to prove focus, clipping and exposure repair. Prepare the
 executable implementation plan around those boundaries before adding a file
 browser, menus or broader AES compatibility.
 
+The [Layers library](reference/layers.md) now provides bounded regions, cached
+visibility, stacking, damage and drawing transactions. Its
+[implementation plan](plans/layers-implementation-plan.md) is complete through
+L4 development checks. The next desktop slice must connect retained console
+content and the existing drawing backend to these interfaces; Layers itself
+does not draw windows or change the working console.
+
 Keep one presentation worker above Exec, evolving the existing bitmap console
 worker and reusing its retained cells, input routes and shared GEM drawing code.
 Each window is an upper-RAM object; it does not allocate a Task, stack or DP.

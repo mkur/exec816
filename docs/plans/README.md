@@ -95,8 +95,9 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
-- [Layers implementation](layers-implementation-plan.md): bounded regions,
-  stacking, visibility, damage and drawing transactions for the first desktop.
+- [Layers implementation](layers-implementation-plan.md): L1–L4 complete;
+  bounded regions, stacking, visibility, damage and drawing transactions.
+  [Current contracts](../reference/layers.md); desktop integration remains pending.
 - [First desktop on Exec816](gem4xe/desktop-design.md): proposed next graphics
   milestone after the bitmap console; one presentation worker, a movable shell
   window, then overlapping windows and exposure repair. Implementation pending.

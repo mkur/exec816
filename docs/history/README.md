@@ -19,6 +19,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Layers development](layers.md): bounded regions, cached visibility and
+  damage transactions; raw/optimized emitted software raster and storage checks.
 - [Bulk console output batching](console-output-batching.md): one multi-row
   copy/fill for bounded retained edits; cached CAT improves from 26.67 to 16.08 s,
   with unchanged bank-zero reservations and open loaded-latency goals.

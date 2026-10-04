@@ -30,6 +30,9 @@ broader hosted qualification remain separate work.
 The next graphics milestone is the [first desktop](desktop-design.md): one
 presentation worker, a framed movable shell window, then overlapping windows
 and exposure repair. This is a proposed design; implementation remains pending.
+The [Layers foundation](../../reference/layers.md) is implemented through its
+[bounded library plan](../layers-implementation-plan.md); the desktop presenter
+and console integration remain next work.
 Further console optimization is paused, without changing the recorded limits.
 
 The implemented foundation is the [bitmap console](bitmap-console-design.md):

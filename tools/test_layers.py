@@ -11,6 +11,15 @@ from os_boundary import emulator
 from test_mouse_observe import PIN, BRIDGE, ROM
 from test_dos_stack import execute, ownership
 from test_cooperative import data
+from generate_layers import layout
+
+INPUT_FILES = ('abi/layers.json', 'lib/display/layertypes.act',
+               'lib/display/regions.act', 'lib/display/layers.act',
+               'lib/display/layers-update.inc', 'tools/generate_layers.py',
+               'tools/test_layers.py', 'tests/programs/native_layers.act',
+               'tests/programs/layers-paint.inc',
+               'tests/programs/layers-update-checks.inc',
+               'tests/programs/layers-bank-checks.inc')
 
 
 def geometry_cases():
@@ -134,6 +143,38 @@ def check_region(raw, base, cut, clip=None):
             require(actual == int(expected), f'Coverage/overlap at {(x, y)}: {rects}')
 
 
+def check_bank_scene(raw):
+    records = layout()
+    require(raw[:16] == raw[-16:] == bytes([0xa5])*16, 'Bank-crossing scene guards changed')
+    scene = raw[16:-16]
+    pixels = bytearray([255])*(640*240)
+    expected = bytearray(640*240)
+    bounds = [(64, 40, 192, 80), (256, 96, 384, 136),
+              (448, 152, 576, 192), (160, 168, 288, 216)]
+    for ident, (l, t, r, b) in enumerate(bounds, 1):
+        for y in range(t, b):
+            expected[y*640+l:y*640+r] = bytes([ident])*(r-l)
+    counts = []
+    for slot in range(5):
+        at = records['Scene']['fields']['items'] + slot*records['Layer']['size']
+        ident, = struct.unpack_from('<I', scene, at)
+        require(ident == (slot+1 if slot < 4 else 0), 'Cross-bank identity changed')
+        at += records['Layer']['fields']['visible']
+        count, = struct.unpack_from('<H', scene, at)
+        require(0 < count <= 81, 'Cross-bank region count')
+        counts.append(count)
+        for index in range(count):
+            l, t, r, b = struct.unpack_from('<4h', scene, at+2+index*8)
+            require(0 <= l < r <= 640 and 0 <= t < b <= 240, 'Cross-bank geometry')
+            for y in range(t, b):
+                row = slice(y*640+l, y*640+r)
+                require(pixels[row] == bytes([255])*(r-l), 'Cross-bank visibility overlap')
+                pixels[row] = bytes([ident])*(r-l)
+    require(pixels == expected, 'Cross-bank full-screen oracle failed')
+    return dict(address=0x11fff0, bytes=len(scene), region_counts=counts,
+                pixels_checked=len(pixels))
+
+
 def run(out, mode):
     out.mkdir(parents=True, exist_ok=True)
     rows = geometry_cases()
@@ -145,6 +186,7 @@ def run(out, mode):
         struct.pack('<BB4hH', *cmd) for cmd in commands)
     scene_size = len(commands)*1540
     report = dict(status='running', tier='development', mode=mode,
+                  inputs={p: sha256(ROOT/p) for p in INPUT_FILES},
                   bank_zero_delta=dict(fixed=0, root_kernel=0, per_task=[0]*8, idle=0))
     try:
         require(sha256(BRIDGE/'AltirraBridgeServer') == PIN['mouse_input']['tooling']['sha256'],
@@ -155,8 +197,18 @@ def run(out, mode):
                         console=False, image_data=[(0xd0000, inputs),
                             (0xd2000, scene_input),
                             (0xe0000, bytes([0xa5]) * (output_size + 32)),
-                            (0xf0000, bytes([0xa5]) * (scene_size + 32))])
-        report.update(build=program['build'], emulator_sha256=sha256(BRIDGE/'AltirraBridgeServer'))
+                            (0xf0000, bytes([0xa5]) * (scene_size + 32)),
+                            (0x11ffe0, bytes([0xa5]) * (layout()['Scene']['size'] + 32))])
+        routines = [r for r in program['image']['routines']
+                    if r['name'].startswith(('M_LAYERS_', 'M_REGIONS_'))]
+        globals_ = [d for d in program['image']['data']
+                    if d['name'].startswith(('M_LAYERS_', 'M_REGIONS_'))]
+        require(not globals_, 'Layers introduced mutable global storage')
+        report.update(build=program['build'], emulator_sha256=sha256(BRIDGE/'AltirraBridgeServer'),
+                      rom_sha256=sha256(ROM), library=dict(code_bytes=sum(r['size'] for r in routines),
+                      max_local_stack_peak=max(r['local_stack_peak'] for r in routines),
+                      mutable_global_bytes=0, scene_bytes=layout()['Scene']['size']),
+                      bank_zero_budget=program['build']['memory']['bank_zero_budget'])
         with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
             report['machine'] = verify_machine(bridge, ROM, PIN)
             try:
@@ -192,6 +244,9 @@ def run(out, mode):
                 report[name] = data(bridge, program['image'], name, True)[0]
                 require(report[name] > 0, 'Missing drawing path: '+name)
             (out/'scenes.bin').write_bytes(scenes)
+            bank_scene = bridge.memdump(0x11ffe0, layout()['Scene']['size']+32)
+            report['bank_crossing'] = check_bank_scene(bank_scene)
+            (out/'bank-scene.bin').write_bytes(bank_scene)
         report['status'] = 'pass'
     except Exception as error:
         report.update(status='fail', error=str(error))

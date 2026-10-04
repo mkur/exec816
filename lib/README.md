@@ -22,6 +22,7 @@ handwritten sources; older dense code can be cleaned up as it is touched.
 | [dos](dos/) | DOS API, client contexts, streams, cooked input and Process lifetime/inheritance and native o65 validation/loading. |
 | [fs](fs/) | Filesystem services, mounts, handlers, packets, files and directories. |
 | [console](console/) | Console device, input, display, windows and foreground routing. |
+| [display](display/) | Display ownership, VBXE coordination and ordinary-call Layers/region geometry. |
 | [mydos](mydos/) | MyDOS on-disk formats, names and file parsing. |
 | [spartados](spartados/) | SpartaDOS on-disk formats, names and file parsing. |
 | [io](io/) | Device registry, block I/O and SIO transport. |
@@ -34,7 +35,7 @@ Generated declarations stay alongside their owning sources. Generators support
 
 ## Building and instrumenting sources
 
-`tools/library_paths.py` supplies all seven compiler module search paths. Generated
+`tools/library_paths.py` supplies the compiler module search paths. Generated
 modules and test overrides precede these paths. Keep library basenames unique;
 directory names do not become Action module namespaces. The ordinary build
 entry point remains `tools/native_program.py`; callers do not need to supply

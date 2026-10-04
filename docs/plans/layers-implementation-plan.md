@@ -69,11 +69,15 @@ working desktop. No demo refresh is needed for this library-only milestone.
 
 ## Completion status
 
-L1 and L2 complete: raw/optimized emitted geometry, 28 scene transitions
-and host checks passed; [regions](../development/layers-l1.json) and
-[scene evidence](../development/layers-l2.json). L3 also passed: 32 scenes,
-incremental pixels and transaction failures in both builds;
-[drawing evidence](../development/layers-l3.json). L4 pending.
+L1–L4 complete. See [current contracts](../reference/layers.md) and the
+[implementation record](../history/layers.md). Raw/optimized emitted geometry,
+32 incremental scenes, copy/paint lifetime checks and bank-crossing storage
+passed development checks. Earlier slice records preserve
+[regions](../development/layers-l1.json),
+[stacking](../development/layers-l2.json) and
+[drawing transactions](../development/layers-l3.json); final evidence is in
+[L4](../development/layers-l4.json).
+
 Current console presentation remains unchanged. Desktop controls,
 pointer integration, clipped font rendering, optional backing bitmaps and actual
 VBXE presentation of overlapping windows follow this library milestone.

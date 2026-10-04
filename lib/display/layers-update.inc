@@ -92,6 +92,7 @@ PUBLIC BYTE FUNC BeginCopy(LAYERTYPES.Scene POINTER scene LONGCARD id
     LAYERTYPES.Rect POINTER source,target LONGCARD POINTER token)
   BYTE status
   LAYERTYPES.Layer POINTER layer
+  LAYERTYPES.Rect savedSource,savedTarget
 
   status=Admit(scene)
   IF status<>LAYERTYPES.OK THEN
@@ -129,10 +130,14 @@ PUBLIC BYTE FUNC BeginCopy(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.REDRAW)
   FI
 
+  ; Inputs may refer to the preceding copy's saved descriptors, including a
+  ; swapped pair. Snapshot both before publishing either replacement.
+  REGIONS.Copy(source,@savedSource)
+  REGIONS.Copy(target,@savedTarget)
   status=Claim(scene,id,LAYERTYPES.UPDATE_COPY,token)
   IF status=LAYERTYPES.OK THEN
-    REGIONS.Copy(source,@scene.copySource)
-    REGIONS.Copy(target,@scene.copyTarget)
+    REGIONS.Copy(@savedSource,@scene.copySource)
+    REGIONS.Copy(@savedTarget,@scene.copyTarget)
   FI
 
 RETURN(status)

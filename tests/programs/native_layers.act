@@ -122,10 +122,10 @@ PROC RegionFailures()
 
 RETURN
 
-; Paint the cached partition into an observer buffer, checking that every
-; screen pixel has exactly one owner and that queries leave the cache alone.
 INCLUDE "layers-paint.inc"
 
+; Paint the cached partition into an observer buffer, checking that every
+; screen pixel has exactly one owner and that queries leave the cache alone.
 PROC Snapshot(BYTE POINTER output)
   BYTE slot
   CARD index,x,y,offset
@@ -288,6 +288,7 @@ PROC SceneFailures()
 RETURN
 
 INCLUDE "layers-update-checks.inc"
+INCLUDE "layers-bank-checks.inc"
 
 PROC Main()
 
@@ -301,6 +302,7 @@ PROC Main()
   Scenes()
   SceneFailures()
   UpdateTransactions()
+  BankCrossing()
   scenePhase=50
   FreeGuarded(canvas,768)
   FreeGuarded(model,3072)
