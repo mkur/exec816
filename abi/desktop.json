@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 4,
@@ -45,7 +45,14 @@
     "LANE_CANCEL": 8,
     "EVENT_CANCEL": 7,
     "TICK_VALID": 1,
-    "POINTER_PIXELS_PER_STEP": 2
+    "POINTER_PIXELS_PER_STEP": 2,
+    "CONTENT_WIDGETS": 3,
+    "SET_TREE": 13,
+    "UPDATE_WIDGETS": 14,
+    "READ_WIDGET_STATE": 15,
+    "EVENT_WIDGET_ACTION": 8,
+    "EVENT_WIDGET_CANCEL": 9,
+    "STALE": 10
   },
   "records": {
     "Event": [
@@ -91,6 +98,22 @@
       ],
       [
         "flags",
+        "CARD"
+      ],
+      [
+        "epoch",
+        "LONGCARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "object",
+        "INT"
+      ],
+      [
+        "state",
         "CARD"
       ]
     ],
@@ -296,6 +319,14 @@
       [
         "content",
         "Content"
+      ],
+      [
+        "widgets",
+        "BYTE POINTER"
+      ],
+      [
+        "widgetEpoch",
+        "LONGCARD"
       ]
     ],
     "Service": [

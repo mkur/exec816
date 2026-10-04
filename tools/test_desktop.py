@@ -12,6 +12,7 @@ from test_cooperative import data
 from desktop_budget import delta as desktop_delta
 from stack_budget import bank_zero_delta, stack_usage
 from generate_desktop import files, layout
+from build_bitmap_console import drawing
 
 
 def run(out, mode, existing=None):
@@ -23,9 +24,20 @@ def run(out, mode, existing=None):
     report = dict(status='running', tier='development', slice='DT1', mode=mode,
                   layouts=layout(), qualification=False)
     try:
-        p = read_build(existing) if existing else build(compiler(ROOT / 'build/actionc'), ROOT / 'tests/programs/native_desktop.act',
-                  out / 'program', optimize=mode == 'opt', tasks=True, task_capacity=8,
-                  console=False)
+        if existing:p=read_build(existing)
+        else:
+            foreign=drawing(out,mode=='opt',widgets=True)
+            source=out/'native-widget-probe.act'
+            text=(ROOT/'tests/programs/native_desktop.act').read_text()
+            text=text.replace('  root=EXEC.FindTask(NULL)',
+                '  Require(DESKWIDGETS.Bind($%x,$%x)<>0)\n  root=EXEC.FindTask(NULL)' %
+                (foreign['symbols']['WidgetEntry'],foreign['symbols']['WidgetPacket']))
+            source.write_text(text)
+            from generate_memory import PROFILE
+            profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
+            memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
+            p=build(compiler(ROOT/'build/actionc'),source,out/'program',optimize=mode=='opt',memory_profile=memory,
+                tasks=True,task_capacity=8,console=False,console_deferred=True,foreign_image=foreign)
         report.update(build=p['build'], bank_zero_delta=bank_zero_delta(p['build']['memory']),
                       reserved_bank_zero_delta=desktop_delta(p['build']['memory']))
         with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:

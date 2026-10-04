@@ -4,6 +4,8 @@ USE A816MEMORY
 USE HEAPCORE
 USE DESKTOP
 USE DESKTYPES
+USE WIDGETTYPES
+USE DESKWIDGETS
 USE DESKCORE
 USE DESKEVENTS
 USE LAYERTYPES
@@ -17,8 +19,14 @@ DESKTYPES.Content POINTER content
 EXEC.Task POINTER root,worker,other
 LONGCARD window,peerWindow,token
 BYTE variant,finished,peerStage,stop,hold,held,inject,injectKind,injectCount
-LONGCARD injectClient,injectWindow
+LONGCARD injectClient,injectWindow,injectEpoch
 CARD checks,injections
+WIDGETTYPES.Tree tree
+WIDGETTYPES.Update patch
+WIDGETTYPES.Snapshot snapshot
+TYPE Allocation=[BYTE POINTER memory LONGCARD bytes]
+Allocation ARRAY allocations(80)
+BYTE allocationCount
 
 PROC Require(BYTE okay)
 
@@ -72,6 +80,7 @@ PROC Presenter()
       A816MEMORY.Clear(BYTE POINTER(@input),DESKTYPES.EVENT_SIZE)
       input.kind=CARD(injectKind)
       input.window=injectWindow
+      input.epoch=injectEpoch
       index=0
       WHILE index<injectCount DO
         input.code=CARD(index)
@@ -151,6 +160,141 @@ PROC PeerRun()
 
 RETURN
 
+; Retained content copies caller buffers and rejects stale or foreign writes.
+PROC WidgetCases()
+  LONGCARD id,epoch,revision,freeBefore
+  CARD index
+
+  OpenRequest(@request,64,64)
+  request.value=DESKTYPES.CONTENT_WIDGETS
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  id=request.window
+  LET owned=DESKCORE.Find(service,id)
+  freeBefore=EXEC.AvailMem(EXEC.MEMF_UPPER)
+
+  DESKTOP.Prepare(@request,DESKTYPES.SET_TREE)
+  request.window=id
+  request.payload=BYTE POINTER(@tree)
+  request.bytes=WIDGETTYPES.TREE_SIZE
+  Require(Call(@first,@request)=DESKTYPES.BAD_ARGUMENT)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=freeBefore)
+  Require(owned.widgets=NULL)
+
+  tree.version=WIDGETTYPES.VERSION
+  tree.count=3
+  tree.textBytes=4
+  tree.objects(0).next=-1
+  tree.objects(0).head=1
+  tree.objects(0).tail=2
+  tree.objects(0).kind=WIDGETTYPES.G_BOX
+  tree.objects(0).width=112
+  tree.objects(0).height=56
+  tree.objects(0).spec=$70
+  FOR index=1 TO 2 DO
+    tree.objects(index).next=IF index=1 THEN 2 ELSE 0 FI
+    tree.objects(index).head=-1
+    tree.objects(index).tail=-1
+    tree.objects(index).kind=WIDGETTYPES.G_BUTTON
+    tree.objects(index).flags=WIDGETTYPES.FLAG_SELECTABLE
+    tree.objects(index).x=IF index=1 THEN 8 ELSE 64 FI
+    tree.objects(index).y=16
+    tree.objects(index).width=40
+    tree.objects(index).height=16
+  OD
+
+  A816MEMORY.Move(@tree.text(0),BYTE POINTER(c"One"),4)
+  allocationCount=0
+  WHILE EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)>=WIDGETTYPES.CONTEXT_BYTES DO
+    Require(allocationCount<80)
+    allocations(allocationCount).bytes=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    allocations(allocationCount).memory=EXEC.AllocMem(allocations(allocationCount).bytes,
+        EXEC.MEMF_PUBLIC OR EXEC.MEMF_UPPER)
+    Require(allocations(allocationCount).memory<>NULL)
+    allocationCount==+1
+  OD
+
+  Require(Call(@first,@request)=DESKTYPES.NO_MEMORY)
+  Require(owned.widgets=NULL)
+  WHILE allocationCount<>0 DO
+    allocationCount==-1
+    EXEC.FreeMem(allocations(allocationCount).memory,allocations(allocationCount).bytes)
+  OD
+
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=freeBefore)
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=freeBefore-WIDGETTYPES.CONTEXT_BYTES)
+  tree.objects(1).state=WIDGETTYPES.STATE_SELECTED
+  tree.text(0)='Z
+  DESKTOP.Prepare(@request,DESKTYPES.READ_WIDGET_STATE)
+  request.window=id
+  request.payload=BYTE POINTER(@snapshot)
+  request.bytes=WIDGETTYPES.SNAPSHOT_SIZE
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  Require(snapshot.count=3 AND snapshot.objects(1).state=0)
+  Require(snapshot.focus=1 AND snapshot.epoch<>0 AND snapshot.revision=1)
+  epoch=snapshot.epoch
+
+  patch.epoch=epoch
+  patch.revision=1
+  patch.count=1
+  patch.changes(0).object=1
+  patch.changes(0).mask=WIDGETTYPES.PATCH_STATE
+  patch.changes(0).state=WIDGETTYPES.STATE_SELECTED
+  DESKTOP.Prepare(@request,DESKTYPES.UPDATE_WIDGETS)
+  request.window=id
+  request.payload=BYTE POINTER(@patch)
+  request.bytes=WIDGETTYPES.UPDATE_SIZE
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  Require(request.lane=DESKTYPES.LANE_CONTENT)
+  Require(Call(@first,@request)=DESKTYPES.STALE)
+  patch.revision=2
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  request.window=peerWindow
+  Require(Call(@first,@request)=DESKTYPES.BAD_ID)
+  request.window=window
+  Require(Call(@first,@request)=DESKTYPES.BAD_ARGUMENT)
+  request.window=id
+  request.payload=BYTE POINTER(ADDRESS($1fff0))
+  Require(Call(@first,@request)=DESKTYPES.BAD_ARGUMENT)
+  request.payload=BYTE POINTER(@patch)
+  patch.count=2
+  patch.changes(0).state=0
+  patch.changes(1).object=33
+  patch.changes(1).mask=WIDGETTYPES.PATCH_STATE
+  Require(Call(@first,@request)=DESKTYPES.BAD_ARGUMENT)
+
+  DESKTOP.Prepare(@request,DESKTYPES.READ_WIDGET_STATE)
+  request.window=id
+  request.payload=BYTE POINTER(@snapshot)
+  request.bytes=WIDGETTYPES.SNAPSHOT_SIZE
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  Require(snapshot.revision=2 AND snapshot.objects(1).state=WIDGETTYPES.STATE_SELECTED)
+  DESKTOP.Prepare(@request,DESKTYPES.SET_TREE)
+  request.window=id
+  request.payload=BYTE POINTER(@tree)
+  request.bytes=WIDGETTYPES.TREE_SIZE
+  tree.objects(1).next=1
+  Require(Call(@first,@request)=DESKTYPES.BAD_ARGUMENT)
+  Require(owned.widgetEpoch=epoch)
+  tree.objects(1).next=2
+  injectEpoch=epoch
+  SendInput(first.id,id,DESKTYPES.EVENT_WIDGET_ACTION,1)
+  injectEpoch=0
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  Require(owned.widgetEpoch<>epoch)
+  SendInput(first.id,id,DESKTYPES.EVENT_KEY,1)
+  DESKTOP.Prepare(@eventWait,DESKTYPES.NEXT_EVENT)
+  Require(Call(@first,@eventWait)=DESKTYPES.OK)
+  Require(eventWait.event.kind=DESKTYPES.EVENT_KEY)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=freeBefore-WIDGETTYPES.CONTEXT_BYTES)
+  DESKTOP.Prepare(@request,DESKTYPES.CLOSE)
+  request.window=id
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  Require(EXEC.AvailMem(EXEC.MEMF_UPPER)=freeBefore)
+  Require(Call(@first,@request)=DESKTYPES.BAD_ID)
+
+RETURN
+
 PROC Main()
   LONGCARD bits,oldId
   BYTE index
@@ -171,7 +315,7 @@ PROC Main()
   content=DESKTYPES.Content POINTER(EXEC.AllocMem(DESKTYPES.CONTENT_SIZE,
       EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
   Require(content<>NULL)
-  worker=EXEC.CreateTask(c"presenter",0,@Presenter,1024)
+  worker=EXEC.CreateTask(c"presenter",0,@Presenter,2560)
   Require(worker<>NULL)
   WHILE service.live=0 DO
     bits=EXEC.Wait($10000)
@@ -212,6 +356,8 @@ PROC Main()
   Require(Call(@first,@request)=DESKTYPES.OK)
   content.commands(0).pen=16
   Require(Call(@first,@request)=DESKTYPES.BAD_ARGUMENT)
+
+  WidgetCases()
 
   ; One client cannot mutate the independently owned peer window.
   DESKTOP.Prepare(@request,DESKTYPES.CLOSE)

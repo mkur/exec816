@@ -51,3 +51,10 @@ glyphs and packed neighboring pixels; selected controls invert their rebuilt
 base, disabled stipple stays anchored to screen coordinates. Keyboard focus
 is a one-pixel inset underline. No new public VDI opcode or VRAM extent is added.
 See the [native pixel record](../../../docs/development/aes-widgets-aw1.json).
+
+AW2 adds copied desktop widget contexts and atomic state/label updates.
+[Native service and model evidence](../../../docs/development/aes-widgets-aw2.json)
+covers raw/optimized admission, stale identities, no-op updates, identity
+exhaustion, heap exhaustion/recovery, returned-buffer independence and teardown.
+Reserved bank-zero and VRAM growth remain zero. The service fixture alone uses
+an 8 KiB image-data arena to hold its deliberately separate test packets.

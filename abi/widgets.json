@@ -22,7 +22,19 @@
     "OP_CANCEL": 7,
     "PATCH_STATE": 1,
     "PATCH_LABEL": 2,
-    "PATCH_HIDDEN": 4
+    "PATCH_HIDDEN": 4,
+    "G_BOX": 20,
+    "G_IBOX": 25,
+    "G_BUTTON": 26,
+    "G_STRING": 28,
+    "FLAG_SELECTABLE": 1,
+    "FLAG_DEFAULT": 2,
+    "FLAG_EXIT": 4,
+    "FLAG_RADIO": 16,
+    "FLAG_LAST": 32,
+    "FLAG_HIDDEN": 128,
+    "STATE_SELECTED": 1,
+    "STATE_DISABLED": 8
   },
   "records": {
     "Object": [

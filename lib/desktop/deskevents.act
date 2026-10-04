@@ -31,7 +31,7 @@ RETURN
 ; Durable controls survive ordinary queue pressure and precede queued motion.
 PUBLIC BYTE FUNC Take(DESKTYPES.Service POINTER service
     DESKTYPES.ClientRecord POINTER client DESKTYPES.Event POINTER event)
-  BYTE slot,bit
+  BYTE slot,bit,valid
 
   A816MEMORY.Clear(BYTE POINTER(event),DESKTYPES.EVENT_SIZE)
   IF client.loss<>0 THEN
@@ -58,16 +58,27 @@ PUBLIC BYTE FUNC Take(DESKTYPES.Service POINTER service
     FI
   OD
 
-  IF client.count=0 THEN
-    RETURN(0)
-  FI
+  WHILE client.count<>0 DO
+    A816MEMORY.Move(BYTE POINTER(event),BYTE POINTER(@client.queue(client.head)),
+        DESKTYPES.EVENT_SIZE)
+    client.head=(client.head+1) & (DESKTYPES.EVENTS-1)
+    client.count==-1
+    valid=event.epoch=0
+    IF valid=0 THEN
+      FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+        IF service.windows(slot).id=event.window
+            AND service.windows(slot).widgetEpoch=event.epoch THEN
+          valid=1
+        FI
+      OD
+    FI
 
-  A816MEMORY.Move(BYTE POINTER(event),BYTE POINTER(@client.queue(client.head)),
-      DESKTYPES.EVENT_SIZE)
-  client.head=(client.head+1) & (DESKTYPES.EVENTS-1)
-  client.count==-1
+    IF valid<>0 THEN
+      RETURN(1)
+    FI
+  OD
 
-RETURN(1)
+RETURN(0)
 
 ; Detach the pending request before publishing its reply to a runnable client.
 PUBLIC PROC Wake(DESKTYPES.Service POINTER service

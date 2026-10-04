@@ -24,6 +24,9 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
                     *(out/'aes-selected'/n for n in ('aes-objects.c','aes-graf.c','aes-form.c'))]
         extra_includes=[aes,out/'aes-selected']
         extra_probes=[(aes/'widget-layout.c',aes_layout())]
+        if widgets:
+            sources += [aes/'widgets-state.c',aes/'widgets-entry.c']
+            extra_roots=['WidgetEntry']
         if widget_probe:
             sources.append(ROOT/'tests/programs/widgets_pixels.c')
             extra_roots=['WidgetPixelProbe']
@@ -104,7 +107,8 @@ RETURN
             checks+=f'  IF CONSOLEBITMAP.Bind(${entry:x},${packet:x})<>0 THEN\n    HEAPCORE.Abort($f733)\n  FI\n\n'
         binding=binding.replace('  BindDisplay()',checks+'  BindDisplay()',1)
     if desktop:
-        text=text.replace('USE EXEC\n','USE EXEC\nUSE DESKBOOT\n',1)
+        text=text.replace('USE EXEC\n','USE EXEC\nUSE DESKBOOT\nUSE DESKWIDGETS\n',1)
+        binding=binding.replace('  BindDisplay()', '  BindDisplay()\n  IF DESKWIDGETS.Bind($%x,$%x)=0 THEN\n    HEAPCORE.Abort($fab1)\n  FI' % (sy['WidgetEntry'],sy['WidgetPacket']))
         binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN', '  IF DESKBOOT.Enable()=0 THEN\n    HEAPCORE.Abort($fae6)\n  FI\n\n  IF CONSOLEDRIVER.Start()=0 THEN')
         binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN\n    HEAPCORE.Abort($f731)', '  IF CONSOLEDRIVER.Start()=0 THEN\n    DESKBOOT.Disable()\n    HEAPCORE.Abort($f731)')
         binding=binding.replace('  BitmapApplication(0)', '  IF DESKBOOT.Attach()=0 THEN\n    IF CONSOLEDRIVER.Stop()=0 THEN\n      HEAPCORE.Abort($f732)\n    FI\n\n    DESKBOOT.Disable()\n    HEAPCORE.Abort($fae7)\n  FI\n\n  BitmapApplication(0)\n  IF DESKBOOT.StopAdmission()=0 THEN\n    HEAPCORE.Abort($faea)\n  FI\n\n  DESKBOOT.Detach()')
@@ -115,7 +119,7 @@ RETURN
 
 def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,desktop=False,**kwargs):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
-    foreign=drawing(out,optimize,probe,fault)
+    foreign=drawing(out,optimize,probe,fault,widgets=desktop)
     launcher=prepare(Path(source),out,foreign,desktop)
     program=build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,
                  task_capacity=8,console=False,console_deferred=True,foreign_image=foreign,**kwargs)

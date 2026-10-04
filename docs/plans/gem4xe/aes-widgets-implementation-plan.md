@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Desktop contract](../../reference/desktop.md) ·
 [Layers](../../reference/layers.md) · [Roadmap](../../roadmap.md)
 
-Status: AW0–AW1 implemented; AW2–AW6 pending, 2026-10-05. Port a bounded selection of GEM4XE AES object
+Status: AW0–AW2 implemented; AW3–AW6 pending, 2026-10-05. Port a bounded selection of GEM4XE AES object
 and form code into a widget library hosted by the existing Exec816 desktop
 presenter. Deliver a control-panel application beside the shell, with labels,
 buttons, toggles, radio groups and keyboard navigation. Preserve the source

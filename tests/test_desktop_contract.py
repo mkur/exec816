@@ -16,15 +16,15 @@ class DesktopContractTests(unittest.TestCase):
                          if line.startswith('PUBLIC CONST ')]
             self.assertEqual(len(constants), len(set(constants)))
         sizes = {name: value['size'] for name, value in generate_desktop.layout().items()}
-        self.assertEqual(sizes['Request'], 80)
-        self.assertEqual(sizes['Service'], 10532)
+        self.assertEqual(sizes['Request'], 92)
+        self.assertEqual(sizes['Service'], 11332)
         self.assertEqual(generate_desktop.layout()['Request']['fields']['message'], 0)
         constants = generate_desktop.ABI['constants']
         self.assertEqual(constants['EVENTS'] & (constants['EVENTS'] - 1), 0)
         self.assertLessEqual(constants['WINDOWS'], 8)  # durable notice bits
 
     def test_library_calls_are_not_task_entries(self):
-        for module in ('DESKTOP', 'DESKCORE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT'):
+        for module in ('DESKTOP', 'DESKCORE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT', 'DESKWIDGETS', 'DESKWIDGETINPUT'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
 
     def test_demo_registers_only_its_worker_entry(self):

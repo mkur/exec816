@@ -46,6 +46,7 @@ Exact layouts, operation numbers and statuses come from
 | RAISE | Move a window to the front. |
 | FOCUS | Focus a shown window and retain focus-change notices. |
 | REPLACE | Validate and copy one complete retained command batch, then invalidate its layer. |
+| SET_TREE / UPDATE_WIDGETS / READ_WIDGET_STATE | Retain, patch or read [AES widget content](widgets.md) through the content lane. |
 | NEXT_EVENT | Reply with one available event, or retain the request without blocking other clients. |
 | CANCEL_EVENT | Match `target` against the waiting request sequence; reply to it with CANCELLED before acknowledging cancellation. ALREADY_DONE means completion already won. |
 | CLOSE | Remove the window and its queued events after active painting retires. |
@@ -201,11 +202,11 @@ retirement. No application callback runs inside the presenter.
 
 ## Storage and validation
 
-The generated service occupies 10,532 bytes in upper RAM, including the
-4,782-byte Layers scene, four 476-byte client records, four 764-byte windows
+The generated service occupies 11,332 bytes in upper RAM, including the
+4,782-byte Layers scene, four 668-byte client records, four 772-byte windows
 and one 710-byte staging batch. Client records are 18 bytes and requests are
-80 bytes, excluding their ordinary Exec reply ports. The service heap request
-rounds to 10,536 bytes at Exec’s eight-byte alignment; unused window/queue/list
+92 bytes, excluding their ordinary Exec reply ports. The service heap request
+rounds to 11,336 bytes at Exec’s eight-byte alignment; unused window/queue/list
 capacity is included. DT3 runtime/controller globals have 280 payload bytes in
 upper image RAM (plus compiler alignment). Pointer save/masks reserve 1,280 VRAM bytes at `$37000–$374FF`, an increase of
 256 reserved bytes (the former slack is now used). The command arena starts at

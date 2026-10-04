@@ -7,6 +7,7 @@ USE A816MEMORY
 USE HEAPCORE
 USE DESKTYPES
 USE DESKEVENTS
+USE DESKWIDGETS
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
@@ -171,7 +172,8 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
   CARD inputStatus
 
   IF request.value<>DESKTYPES.CONTENT_COMMANDS
-      AND request.value<>DESKTYPES.CONTENT_CONSOLE THEN
+      AND request.value<>DESKTYPES.CONTENT_CONSOLE
+      AND request.value<>DESKTYPES.CONTENT_WIDGETS THEN
     RETURN(DESKTYPES.BAD_ARGUMENT)
   FI
 
@@ -199,7 +201,7 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
     IF service.windows(slot).id=0 THEN
       BEGIN
         LET window=@service.windows(slot)
-        IF request.value=DESKTYPES.CONTENT_COMMANDS AND service.keyboard<>NULL THEN
+        IF request.value<>DESKTYPES.CONTENT_CONSOLE AND service.keyboard<>NULL THEN
           inputStatus=INPUT.CreateRoute(INPUT.Lease POINTER(service.keyboard),0,@window.keyRoute)
           IF inputStatus<>INPUT.OK THEN
             RETURN(DESKTYPES.FULL)
@@ -413,6 +415,8 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
     Focus(service,window.id)
   WHEN DESKTYPES.REPLACE THEN
     RETURN(Content(service,window,request))
+  WHEN DESKTYPES.SET_TREE,DESKTYPES.UPDATE_WIDGETS,DESKTYPES.READ_WIDGET_STATE THEN
+    RETURN(DESKWIDGETS.Request(service,window,request))
   WHEN DESKTYPES.CLOSE THEN
     status=LAYERS.Delete(@service.scene,window.layer)
     IF status=LAYERTYPES.OK THEN
@@ -438,6 +442,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
         service.consoleWindow=0
       FI
 
+      DESKWIDGETS.Retire(window)
       A816MEMORY.Clear(BYTE POINTER(window),DESKTYPES.WINDOW_SIZE)
     FI
   ELSE

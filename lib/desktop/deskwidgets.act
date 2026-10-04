@@ -1,0 +1,166 @@
+; Retained AES contexts and ordinary-call binding, owned by the presenter.
+MODULE DESKWIDGETS
+USE EXEC
+USE TASKMEMORY
+USE DESKTYPES
+USE WIDGETTYPES
+USE CONSOLEBITMAP
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+USE HEAPCORE
+
+ADDRESS entry
+WIDGETTYPES.Packet POINTER packet
+
+PUBLIC BYTE FUNC Bind(LONGCARD code,data)
+
+  IF code<$c0000 OR code>$cffff OR data<$d0000
+      OR data>LONGCARD($e0000)-WIDGETTYPES.PACKET_SIZE OR (data & 1)<>0 THEN
+    RETURN(0)
+  FI
+
+  entry=ADDRESS(code)
+  packet=WIDGETTYPES.Packet POINTER(ADDRESS(data))
+
+RETURN(1)
+
+PUBLIC WIDGETTYPES.Packet POINTER FUNC GetPacket()
+
+RETURN(packet)
+
+PUBLIC PROC Run(CARD operation)
+
+  packet.operation=operation
+  packet.status=WIDGETTYPES.BAD_ARGUMENT
+  packet.changed=0
+  CONSOLEBITMAP.Call(entry)
+
+RETURN
+
+; Reject null, bank-wrapping and unsupported placement before following a
+; payload. Registered callers own stable readable/writable storage until reply.
+BYTE FUNC Placement(BYTE POINTER buffer CARD bytes)
+  LONGCARD value
+
+  value=LONGCARD(ADDRESS(buffer))
+  IF value<$10000 OR value>LONGCARD($1000000)-LONGCARD(bytes)
+      OR (value & $ffff)+LONGCARD(bytes)>$10000 THEN
+    RETURN(0)
+  FI
+
+RETURN(TASKMEMORY.Writable(ADDRESS(buffer),SIZE(bytes))<>0
+    OR ((EXEC.TypeOfMem(buffer) & EXEC.MEMF_PUBLIC)<>0
+    AND (EXEC.TypeOfMem(buffer+SIZE(bytes-1)) & EXEC.MEMF_PUBLIC)<>0))
+
+PUBLIC PROC Damage(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+  LAYERTYPES.Rect bounds
+
+  IF packet.changed=0 THEN
+    RETURN
+  FI
+
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  REGIONS.Assign(@bounds,layer.bounds.left+8+packet.left,
+      layer.bounds.top+16+packet.top,layer.bounds.left+8+packet.right,
+      layer.bounds.top+16+packet.bottom)
+  IF LAYERS.Invalidate(@service.scene,window.layer,@bounds)<>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($fab0)
+  FI
+
+RETURN
+
+; Admission prepares in shared C staging; only success mutates the live copy.
+PUBLIC CARD FUNC Request(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window DESKTYPES.Request POINTER request)
+  CARD operation,size,status
+  BYTE allocated
+
+  IF window.kind<>DESKTYPES.CONTENT_WIDGETS OR packet=NULL THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  CASE request.operation OF
+  WHEN DESKTYPES.SET_TREE THEN
+    operation=WIDGETTYPES.OP_SET
+    size=WIDGETTYPES.TREE_SIZE
+  WHEN DESKTYPES.UPDATE_WIDGETS THEN
+    operation=WIDGETTYPES.OP_UPDATE
+    size=WIDGETTYPES.UPDATE_SIZE
+  WHEN DESKTYPES.READ_WIDGET_STATE THEN
+    operation=WIDGETTYPES.OP_READ
+    size=WIDGETTYPES.SNAPSHOT_SIZE
+  ELSE
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  ESAC
+
+  IF request.bytes<>size OR Placement(request.payload,size)=0 THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  allocated=0
+  IF window.widgets=NULL THEN
+    IF operation<>WIDGETTYPES.OP_SET THEN
+      RETURN(DESKTYPES.BAD_ARGUMENT)
+    FI
+
+    window.widgets=EXEC.AllocMem(WIDGETTYPES.CONTEXT_BYTES,
+        EXEC.MEMF_PUBLIC OR EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+    IF window.widgets=NULL THEN
+      RETURN(DESKTYPES.NO_MEMORY)
+    FI
+
+    allocated=1
+  FI
+
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  packet.context=LONGCARD(ADDRESS(window.widgets))
+  packet.payload=LONGCARD(ADDRESS(request.payload))
+  packet.bytes=size
+  packet.width=CARD(layer.bounds.right-layer.bounds.left)-16
+  packet.height=CARD(layer.bounds.bottom-layer.bounds.top)-24
+  Run(operation)
+  status=packet.status
+  IF status=WIDGETTYPES.OK THEN
+    IF operation<>WIDGETTYPES.OP_READ THEN
+      window.widgetEpoch=packet.epoch
+      IF operation=WIDGETTYPES.OP_SET THEN
+        BEGIN
+          LET tree=WIDGETTYPES.Tree POINTER(request.payload)
+          window.content.background=tree.background
+        END
+      FI
+
+      Damage(service,window)
+    FI
+    RETURN(DESKTYPES.OK)
+  FI
+
+  IF allocated<>0 THEN
+    EXEC.FreeMem(window.widgets,WIDGETTYPES.CONTEXT_BYTES)
+    window.widgets=NULL
+  FI
+
+  CASE status OF
+  WHEN WIDGETTYPES.STALE THEN
+    RETURN(DESKTYPES.STALE)
+  WHEN WIDGETTYPES.EXHAUSTED THEN
+    RETURN(DESKTYPES.EXHAUSTED)
+  ELSE
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  ESAC
+
+RETURN(DESKTYPES.BAD_ARGUMENT)
+
+PUBLIC PROC Retire(DESKTYPES.Window POINTER window)
+
+  IF window.widgets<>NULL THEN
+    EXEC.FreeMem(window.widgets,WIDGETTYPES.CONTEXT_BYTES)
+    window.widgets=NULL
+    window.widgetEpoch=0
+  FI
+
+RETURN
+
+ENDMODULE

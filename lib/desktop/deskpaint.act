@@ -119,7 +119,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
     OD
 
     titleLimit=CARD((layer.bounds.right-layer.bounds.left-16) RSH 3)
-    IF window.kind=DESKTYPES.CONTENT_COMMANDS THEN
+    IF window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
       titleLimit=CARD((layer.bounds.right-layer.bounds.left-32) RSH 3)
     FI
 
@@ -132,7 +132,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
           @window.title(0),titleLength,1,IF window.id=service.focus THEN 2 ELSE 7 FI,@area)
     FI
 
-    IF okay<>0 AND window.kind=DESKTYPES.CONTENT_COMMANDS THEN
+    IF okay<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
       REGIONS.Assign(@bounds,layer.bounds.right-14,layer.bounds.top+2,
           layer.bounds.right-2,layer.bounds.top+14)
       okay=Fill(@bounds,@strip,8)

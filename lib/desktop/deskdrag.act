@@ -58,7 +58,7 @@ RETURN(0)
 BYTE FUNC CloseHit(DESKTYPES.Window POINTER window
     LAYERTYPES.Layer POINTER layer INT x,y)
 
-RETURN(window.kind=DESKTYPES.CONTENT_COMMANDS
+RETURN(window.kind<>DESKTYPES.CONTENT_CONSOLE
     AND x>=layer.bounds.right-14 AND x<layer.bounds.right-2
     AND y>=layer.bounds.top+2 AND y<layer.bounds.top+14)
 

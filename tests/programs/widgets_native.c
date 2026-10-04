@@ -1,6 +1,9 @@
 #include <proto/exec.h>
 #include <clib/alib_protos.h>
 extern UWORD WidgetModelProbe(void);
+#ifdef WIDGET_STATE_PROBE
+extern UWORD WidgetStateProbe(void);
+#endif
 static struct Task *supervisor;
 volatile UWORD finished,failures,progress;
 void WidgetWorker(void)
@@ -8,6 +11,9 @@ void WidgetWorker(void)
     UWORD i;
     for (i=0;i<32;i++) {
         failures+=WidgetModelProbe();
+#ifdef WIDGET_STATE_PROBE
+        failures+=WidgetStateProbe();
+#endif
         progress=i+1;
     }
     Forbid();
