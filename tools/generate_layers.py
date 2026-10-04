@@ -9,19 +9,25 @@ ABI = json.loads((ROOT / 'abi/layers.json').read_text())
 
 
 def layout():
-    sizes = {'BYTE': 1, 'CARD': 2, 'INT': 2, 'LONGCARD': 4}
+    # Native-v2 words and long integers align to two bytes, including in
+    # nested records. Record tails retain their largest field alignment.
+    sizes = {'BYTE': (1, 1), 'CARD': (2, 2), 'INT': (2, 2), 'LONGCARD': (4, 2)}
     records = {}
     for name, fields in ABI['records'].items():
-        offset = 0
+        offset, alignment = 0, 1
         offsets = {}
         for field in fields:
             count = field.get('count', 1)
             if isinstance(count, str):
                 count = ABI['constants'][count]
+            size, align = sizes[field['type']]
+            offset = (offset + align - 1) // align * align
             offsets[field['name']] = offset
-            offset += sizes[field['type']] * count
-        sizes[name] = offset
-        records[name] = dict(size=offset, fields=offsets)
+            offset += size * count
+            alignment = max(alignment, align)
+        offset = (offset + alignment - 1) // alignment * alignment
+        sizes[name] = offset, alignment
+        records[name] = dict(size=offset, alignment=alignment, fields=offsets)
     return records
 
 

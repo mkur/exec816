@@ -4,9 +4,13 @@ USE HEAPCORE
 USE A816MEMORY
 USE LAYERTYPES
 USE REGIONS
+USE LAYERS
 
 CARD checks,geometryCases
 LAYERTYPES.Region POINTER first,second
+LAYERTYPES.Scene POINTER scene
+LONGCARD ARRAY handles(8)
+CARD sceneCases,sceneSize,scenePhase
 
 PROC Require(BYTE okay)
 
@@ -115,12 +119,164 @@ PROC RegionFailures()
 
 RETURN
 
+; Paint the cached partition into an observer buffer, checking that every
+; screen pixel has exactly one owner and that queries leave the cache alone.
+PROC Snapshot(BYTE POINTER output)
+  BYTE slot
+  CARD index,x,y,offset
+  LAYERTYPES.Layer POINTER layer
+  LAYERTYPES.Rect POINTER rect
+  LONGCARD rebuilds
+
+  rebuilds=scene.rebuilds
+  LET header=LONGCARD POINTER(output)
+  header^=rebuilds
+  output==+4
+  A816MEMORY.Fill(output,255,768)
+  FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
+    layer=@scene.items(slot)
+    Require(layer.visible.count<=81)
+    index=0
+    WHILE index<layer.visible.count DO
+      rect=@layer.visible.rects(index)
+      Require(REGIONS.Contains(@scene.screen,rect)<>0)
+      FOR y=CARD(rect.top) TO CARD(rect.bottom)-1 DO
+        offset=y*32+CARD(rect.left)
+        FOR x=CARD(rect.left) TO CARD(rect.right)-1 DO
+          Require(output(offset)=255)
+          output(offset)=BYTE(layer.id)
+          offset==+1
+        OD
+      OD
+
+      index==+1
+    OD
+  OD
+
+  FOR index=0 TO 767 DO
+    Require(output(index)<>255)
+  OD
+
+  y=0
+  WHILE y<24 DO
+    x=0
+    WHILE x<32 DO
+      Require(LAYERS.Hit(scene,INT(x),INT(y))=LONGCARD(output(y*32+x)))
+      x==+4
+    OD
+
+    y==+4
+  OD
+
+  Require(LAYERS.Hit(scene,-1,0)=0 AND LAYERS.Hit(scene,32,0)=0)
+  Require(scene.rebuilds=rebuilds)
+
+RETURN
+
+; The host supplies operations and independently recomposes each full scene.
+PROC Scenes()
+  BYTE POINTER input,output
+  BYTE op,which,status
+  CARD index,count,expected
+  INT a,b
+  LAYERTYPES.Rect POINTER bounds
+
+  scenePhase=1
+  sceneSize=SIZEOF(LAYERTYPES.Scene)
+  Require(sceneSize=LAYERTYPES.SCENE_SIZE)
+  Require(LONGCARD(ADDRESS(@scene.busy))-LONGCARD(ADDRESS(scene))
+      =LAYERTYPES.SCENE_BUSY)
+  Require(LONGCARD(ADDRESS(@scene.items(0)))-LONGCARD(ADDRESS(scene))
+      =LAYERTYPES.SCENE_ITEMS)
+  Require(LONGCARD(ADDRESS(@scene.work))-LONGCARD(ADDRESS(scene))
+      =LAYERTYPES.SCENE_WORK)
+  scenePhase=2
+  Require(LAYERS.Init(scene,32,24)=LAYERTYPES.OK)
+  scenePhase=3
+  count=CARD POINTER($d2000)^
+  Require(count<=64)
+  input=BYTE POINTER($d2002)
+  output=BYTE POINTER($f0010)
+  index=0
+  WHILE index<count DO
+    scenePhase=4
+    op=input(0)
+    which=input(1)
+    bounds=LAYERTYPES.Rect POINTER(input+2)
+    a=INT POINTER(input+2)^
+    b=INT POINTER(input+4)^
+    expected=CARD POINTER(input+10)^
+    status=LAYERTYPES.OK
+    CASE op OF
+    WHEN 1 THEN
+      status=LAYERS.Create(scene,bounds,@handles(which))
+
+    WHEN 2 THEN
+      status=LAYERS.Show(scene,handles(which),BYTE(a))
+
+    WHEN 3 THEN
+      status=LAYERS.Order(scene,handles(which),BYTE(a))
+
+    WHEN 4 THEN
+      status=LAYERS.Delete(scene,handles(which))
+
+    WHEN 5 THEN
+      status=LAYERS.Move(scene,handles(which),a,b)
+    ESAC
+
+    scenePhase=5
+    Require(status=expected)
+    scenePhase=6
+    Snapshot(output)
+    sceneCases==+1
+    input==+12
+    output==+772
+    index==+1
+  OD
+
+RETURN
+
+PROC SceneFailures()
+  LAYERTYPES.Rect bounds
+  LONGCARD id
+
+  ; All published fixture IDs retire before beginning a new scene lifetime.
+  Require(LAYERS.Delete(scene,handles(1))=LAYERTYPES.OK)
+  Require(LAYERS.Delete(scene,handles(3))=LAYERTYPES.OK)
+  Require(LAYERS.Delete(scene,handles(4))=LAYERTYPES.OK)
+  Require(LAYERS.Delete(scene,handles(5))=LAYERTYPES.OK)
+  Require(scene.count=0)
+  REGIONS.Assign(@bounds,0,0,8,8)
+  Require(LAYERS.Create(scene,@bounds,NULL)=LAYERTYPES.BAD_ARGUMENT)
+  Require(LAYERS.Create(scene,NULL,@id)=LAYERTYPES.BAD_ARGUMENT)
+  Require(LAYERS.Show(scene,0,1)=LAYERTYPES.BAD_ID)
+  Require(LAYERS.Move(scene,0,0,0)=LAYERTYPES.BAD_ID)
+  Require(LAYERS.Order(scene,0,1)=LAYERTYPES.BAD_ID)
+  Require(LAYERS.Delete(scene,0)=LAYERTYPES.BAD_ID)
+  Require(LAYERS.Show(scene,12345,1)=LAYERTYPES.BAD_ID)
+  Require(LAYERS.Find(scene,handles(2))=NULL)
+  scene.nextId=$ffffffff
+  Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.OK)
+  Require(id=$ffffffff AND scene.nextId=0)
+  Require(LAYERS.Delete(scene,id)=LAYERTYPES.OK)
+  id=12345
+  Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.EXHAUSTED)
+  Require(id=12345 AND scene.count=0)
+  Require(LAYERS.Init(NULL,32,24)=LAYERTYPES.BAD_ARGUMENT)
+  Require(LAYERS.Init(scene,0,24)=LAYERTYPES.BAD_ARGUMENT)
+
+RETURN
+
 PROC Main()
 
   first=LAYERTYPES.Region POINTER(Guarded(LAYERTYPES.REGION_SIZE))
   second=LAYERTYPES.Region POINTER(Guarded(LAYERTYPES.REGION_SIZE))
+  scene=LAYERTYPES.Scene POINTER(Guarded(LAYERTYPES.SCENE_SIZE))
   Geometry()
   RegionFailures()
+  Scenes()
+  SceneFailures()
+  FreeGuarded(BYTE POINTER(scene),LAYERTYPES.SCENE_SIZE)
   FreeGuarded(BYTE POINTER(second),LAYERTYPES.REGION_SIZE)
   FreeGuarded(BYTE POINTER(first),LAYERTYPES.REGION_SIZE)
 

@@ -1,0 +1,369 @@
+; Single-owner opaque layers. No hardware, kernel calls or global state.
+MODULE LAYERS
+USE LAYERTYPES
+USE REGIONS
+USE A816MEMORY
+USE SYS
+
+; A transaction retains geometry until its caller has finished drawing.
+BYTE FUNC Admit(LAYERTYPES.Scene POINTER scene)
+
+  IF scene=NULL THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF scene.busy<>0 THEN
+    RETURN(LAYERTYPES.BUSY)
+  FI
+
+RETURN(LAYERTYPES.OK)
+
+PUBLIC LAYERTYPES.Layer POINTER FUNC Find(LAYERTYPES.Scene POINTER scene
+    LONGCARD id)
+  BYTE index
+
+  IF id=0 THEN
+    RETURN(@scene.items(LAYERTYPES.BACKGROUND_SLOT))
+  FI
+
+  FOR index=0 TO LAYERTYPES.MAX_LAYERS-1 DO
+    IF scene.items(index).id=id THEN
+      RETURN(@scene.items(index))
+    FI
+  OD
+
+RETURN(NULL)
+
+; Damage is conservative, but it can never grant permission to draw outside
+; cached visibility. Hidden content remains dirty until it is exposed.
+PROC Mark(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER rect)
+  LAYERTYPES.Rect clipped
+
+  REGIONS.Intersect(@layer.bounds,rect,@clipped)
+  IF REGIONS.Empty(@clipped)<>0 THEN
+    RETURN
+  FI
+
+  IF layer.dirty=0 THEN
+    REGIONS.Copy(@clipped,@layer.damage)
+    layer.dirty=1
+    RETURN
+  FI
+
+  IF clipped.left<layer.damage.left THEN
+    layer.damage.left=clipped.left
+  FI
+
+  IF clipped.top<layer.damage.top THEN
+    layer.damage.top=clipped.top
+  FI
+
+  IF clipped.right>layer.damage.right THEN
+    layer.damage.right=clipped.right
+  FI
+
+  IF clipped.bottom>layer.damage.bottom THEN
+    layer.damage.bottom=clipped.bottom
+  FI
+
+RETURN
+
+PROC DamageAll(LAYERTYPES.Scene POINTER scene LAYERTYPES.Rect POINTER rect)
+  BYTE index
+
+  FOR index=0 TO LAYERTYPES.SLOT_COUNT-1 DO
+    IF scene.items(index).id<>0 OR index=LAYERTYPES.BACKGROUND_SLOT THEN
+      Mark(@scene.items(index),rect)
+    FI
+  OD
+
+RETURN
+
+; Four occluders partition at most a 9 by 9 endpoint grid, below MAX_RECTS.
+; Rebuild only for actual layout changes, never for drawing or hit testing.
+BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
+  LAYERTYPES.Layer POINTER layer,above
+  BYTE index,rank,status,clear
+
+  FOR index=0 TO LAYERTYPES.SLOT_COUNT-1 DO
+    layer=@scene.items(index)
+    layer.visible.count=0
+    IF layer.shown<>0 THEN
+      status=REGIONS.FromRect(@layer.visible,@layer.bounds)
+      rank=0
+      WHILE rank<scene.count DO
+        IF scene.order(rank)=index THEN
+          EXIT
+        FI
+
+        above=@scene.items(scene.order(rank))
+        IF above.shown<>0 THEN
+          status=REGIONS.Subtract(@layer.visible,@above.bounds,@scene.work)
+          IF status<>LAYERTYPES.OK THEN
+            ; Impossible for a valid scene. Fail closed if storage was damaged;
+            ; an incomplete visibility list must not authorize drawing.
+            FOR clear=0 TO LAYERTYPES.SLOT_COUNT-1 DO
+              scene.items(clear).visible.count=0
+            OD
+
+            RETURN(status)
+          FI
+
+          A816MEMORY.Move(BYTE POINTER(@layer.visible),
+              BYTE POINTER(@scene.work),SIZE(2+scene.work.count*8))
+        FI
+
+        rank==+1
+      OD
+    FI
+  OD
+
+  scene.rebuilds==+1
+
+RETURN(LAYERTYPES.OK)
+
+; Initialize unpublished caller-owned storage once per scene lifetime.
+PUBLIC BYTE FUNC Init(LAYERTYPES.Scene POINTER scene INT width,height)
+
+  IF scene=NULL OR width<=0 OR height<=0 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  A816MEMORY.Clear(BYTE POINTER(scene),LAYERTYPES.SCENE_SIZE)
+  REGIONS.Assign(@scene.screen,0,0,width,height)
+  scene.nextId=1
+  LET background=@scene.items(LAYERTYPES.BACKGROUND_SLOT)
+  REGIONS.Copy(@scene.screen,@background.bounds)
+  background.shown=1
+  Mark(background,@scene.screen)
+
+RETURN(Rebuild(scene))
+
+; Create a hidden layer at the front of the order without altering visibility.
+PUBLIC BYTE FUNC Create(LAYERTYPES.Scene POINTER scene
+    LAYERTYPES.Rect POINTER bounds LONGCARD POINTER id)
+  BYTE slot,rank,status
+  LAYERTYPES.Layer POINTER layer
+
+  status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+
+  IF id=NULL OR REGIONS.Valid(bounds)=0 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF REGIONS.Empty(bounds)<>0 OR REGIONS.Contains(@scene.screen,bounds)=0 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF scene.count=LAYERTYPES.MAX_LAYERS THEN
+    RETURN(LAYERTYPES.FULL)
+  FI
+
+  IF scene.nextId=0 THEN
+    RETURN(LAYERTYPES.EXHAUSTED)
+  FI
+
+  slot=0
+  WHILE scene.items(slot).id<>0 DO
+    slot==+1
+  OD
+
+  layer=@scene.items(slot)
+  A816MEMORY.Clear(BYTE POINTER(layer),LAYERTYPES.LAYER_SIZE)
+  layer.id=scene.nextId
+  scene.nextId==+1
+  REGIONS.Copy(bounds,@layer.bounds)
+  Mark(layer,bounds)
+  rank=scene.count
+  WHILE rank>0 DO
+    scene.order(rank)=scene.order(rank-1)
+    rank==-1
+  OD
+
+  scene.order(0)=slot
+  scene.count==+1
+  id^=layer.id
+
+RETURN(LAYERTYPES.OK)
+
+PUBLIC BYTE FUNC Show(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE shown)
+  BYTE status
+  LAYERTYPES.Layer POINTER layer
+
+  status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+
+  layer=Find(scene,id)
+  IF layer=NULL OR id=0 THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+
+  IF shown>1 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF shown=layer.shown THEN
+    RETURN(LAYERTYPES.OK)
+  FI
+
+  layer.shown=shown
+  DamageAll(scene,@layer.bounds)
+
+RETURN(Rebuild(scene))
+
+; Preserve dimensions. Subtraction-based bounds checks avoid signed overflow.
+PUBLIC BYTE FUNC Move(LAYERTYPES.Scene POINTER scene LONGCARD id INT left,top)
+  BYTE status
+  INT width,height
+  LAYERTYPES.Layer POINTER layer
+
+  status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+
+  layer=Find(scene,id)
+  IF layer=NULL OR id=0 THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+
+  width=layer.bounds.right-layer.bounds.left
+  height=layer.bounds.bottom-layer.bounds.top
+  IF left<0 OR top<0 OR left>scene.screen.right-width
+      OR top>scene.screen.bottom-height THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF left=layer.bounds.left AND top=layer.bounds.top THEN
+    RETURN(LAYERTYPES.OK)
+  FI
+
+  IF layer.shown<>0 THEN
+    DamageAll(scene,@layer.bounds)
+  FI
+
+  REGIONS.Assign(@layer.bounds,left,top,left+width,top+height)
+  REGIONS.Copy(@layer.bounds,@layer.damage)
+  layer.dirty=1
+  IF layer.shown=0 THEN
+    RETURN(LAYERTYPES.OK)
+  FI
+
+  DamageAll(scene,@layer.bounds)
+
+RETURN(Rebuild(scene))
+
+; Move one layer to the front (1) or back (0); hidden entries keep their order.
+PUBLIC BYTE FUNC Order(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE front)
+  BYTE status,rank,slot
+  LAYERTYPES.Layer POINTER layer
+
+  status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+
+  layer=Find(scene,id)
+  IF layer=NULL OR id=0 THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+
+  IF front>1 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  rank=0
+  WHILE scene.items(scene.order(rank)).id<>id DO
+    rank==+1
+  OD
+
+  slot=scene.order(rank)
+  IF (front<>0 AND rank=0) OR (front=0 AND rank=scene.count-1) THEN
+    RETURN(LAYERTYPES.OK)
+  FI
+
+  IF front<>0 THEN
+    WHILE rank>0 DO
+      scene.order(rank)=scene.order(rank-1)
+      rank==-1
+    OD
+  ELSE
+    WHILE rank<scene.count-1 DO
+      scene.order(rank)=scene.order(rank+1)
+      rank==+1
+    OD
+  FI
+
+  scene.order(rank)=slot
+  IF layer.shown=0 THEN
+    RETURN(LAYERTYPES.OK)
+  FI
+
+  DamageAll(scene,@layer.bounds)
+
+RETURN(Rebuild(scene))
+
+PUBLIC BYTE FUNC Delete(LAYERTYPES.Scene POINTER scene LONGCARD id)
+  BYTE status,rank,shown
+  LAYERTYPES.Layer POINTER layer
+
+  status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+
+  layer=Find(scene,id)
+  IF layer=NULL OR id=0 THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+
+  rank=0
+  WHILE scene.items(scene.order(rank)).id<>id DO
+    rank==+1
+  OD
+
+  WHILE rank<scene.count-1 DO
+    scene.order(rank)=scene.order(rank+1)
+    rank==+1
+  OD
+
+  scene.count==-1
+  shown=layer.shown
+  IF shown<>0 THEN
+    DamageAll(scene,@layer.bounds)
+  FI
+
+  layer.id=0
+  layer.shown=0
+  layer.dirty=0
+  layer.visible.count=0
+  IF shown=0 THEN
+    RETURN(LAYERTYPES.OK)
+  FI
+
+RETURN(Rebuild(scene))
+
+; Background and offscreen points return zero. Hit testing does no rebuilding.
+PUBLIC LONGCARD FUNC Hit(LAYERTYPES.Scene POINTER scene INT x,y)
+  BYTE rank
+  LAYERTYPES.Layer POINTER layer
+
+  rank=0
+  WHILE rank<scene.count DO
+    layer=@scene.items(scene.order(rank))
+    IF layer.shown<>0 AND x>=layer.bounds.left AND x<layer.bounds.right
+        AND y>=layer.bounds.top AND y<layer.bounds.bottom THEN
+      RETURN(layer.id)
+    FI
+
+    rank==+1
+  OD
+
+RETURN(0)
+
+ENDMODULE

@@ -11,18 +11,101 @@
     "REDRAW": 5,
     "EXHAUSTED": 6,
     "BAD_ID": 7,
-    "BAD_TOKEN": 8
+    "BAD_TOKEN": 8,
+    "BACKGROUND_SLOT": 4,
+    "SLOT_COUNT": 5
   },
   "records": {
     "Rect": [
-      {"name": "left", "type": "INT"},
-      {"name": "top", "type": "INT"},
-      {"name": "right", "type": "INT"},
-      {"name": "bottom", "type": "INT"}
+      {
+        "name": "left",
+        "type": "INT"
+      },
+      {
+        "name": "top",
+        "type": "INT"
+      },
+      {
+        "name": "right",
+        "type": "INT"
+      },
+      {
+        "name": "bottom",
+        "type": "INT"
+      }
     ],
     "Region": [
-      {"name": "count", "type": "CARD"},
-      {"name": "rects", "type": "Rect", "count": "MAX_RECTS"}
+      {
+        "name": "count",
+        "type": "CARD"
+      },
+      {
+        "name": "rects",
+        "type": "Rect",
+        "count": "MAX_RECTS"
+      }
+    ],
+    "Layer": [
+      {
+        "name": "id",
+        "type": "LONGCARD"
+      },
+      {
+        "name": "bounds",
+        "type": "Rect"
+      },
+      {
+        "name": "visible",
+        "type": "Region"
+      },
+      {
+        "name": "damage",
+        "type": "Rect"
+      },
+      {
+        "name": "dirty",
+        "type": "BYTE"
+      },
+      {
+        "name": "shown",
+        "type": "BYTE"
+      }
+    ],
+    "Scene": [
+      {
+        "name": "screen",
+        "type": "Rect"
+      },
+      {
+        "name": "nextId",
+        "type": "LONGCARD"
+      },
+      {
+        "name": "rebuilds",
+        "type": "LONGCARD"
+      },
+      {
+        "name": "count",
+        "type": "BYTE"
+      },
+      {
+        "name": "order",
+        "type": "BYTE",
+        "count": "MAX_LAYERS"
+      },
+      {
+        "name": "busy",
+        "type": "LONGCARD"
+      },
+      {
+        "name": "items",
+        "type": "Layer",
+        "count": "SLOT_COUNT"
+      },
+      {
+        "name": "work",
+        "type": "Region"
+      }
     ]
   }
 }
