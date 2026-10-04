@@ -85,6 +85,18 @@ DEVICE_FAULT. If idle cannot be established, keep FAULTED ownership and storage
 and enter the platform's interrupt-disabled reset-required park (`$FF93`). This
 does not acknowledge normal completion or return hardware/storage to the OS.
 
+## Software pointer
+
+The shared GEM/desktop software pointer uses the existing synchronous list
+submission path. A warmed visible move has four ordered records: restore the
+old saved background, save the new one, AND the mask and OR the image. Show
+needs three records, hide one, and an unchanged valid pointer needs none.
+The maximum list is 84 bytes and 1,440 work units, using the existing command
+arena, saved background and parity masks. The complete list is validated before
+launch; new save geometry is adopted after completion. Faults use the same
+quiescent/reset-required policy as other drawing. This does not add a hardware
+queue or asynchronous cursor lifetime; pending scroll work retains the arena.
+
 ## Bitmap rectangle copies
 
 `VbxeCopyRect(display, copy)` is an ordinary synchronous C driver operation.

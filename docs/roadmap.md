@@ -30,12 +30,14 @@ Loaded shutdown/fault checks and the local OF816 preview pass;
 see the [execution record](history/desktop.md). File browsing, menus and
 broader AES compatibility follow this milestone.
 
-The next focused graphics work is the
-[mouse sampling and pointer batching plan](plans/gem4xe/mouse-performance-implementation-plan.md):
-reduce normal sampling to about 4 kHz while preserving fine SIO phase timing,
-submit pointer moves as one blitter list, measure the combined desktop and
-refresh its OF816 preview. MP1–MP4 remain planned. Keep 2× pointer travel and
-the existing memory reservations; reuse recorded baselines where comparable.
+The [mouse sampling and pointer batching plan](plans/gem4xe/mouse-performance-implementation-plan.md)
+is implemented through MP4 at the development tier. Normal capture runs at
+about 4 kHz with fine SIO timing preserved; each pointer move uses one blitter
+list. [Matched measurements](history/mouse-performance.md) show lower IRQ
+overhead and pointer setup cost. The OF816 preview is refreshed, with 2× travel
+and memory reservations unchanged. Pointer, outline and move-repair timing
+targets remain open; presentation scheduling and exposure repair are the next
+focused performance work.
 
 The [Layers library](reference/layers.md) now provides bounded regions, cached
 visibility, stacking, damage and drawing transactions. Its

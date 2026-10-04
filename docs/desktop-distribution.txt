@@ -43,7 +43,7 @@ Click a window to give it keyboard focus. Drag a title with the left button;
 release commits the move and repairs exposed content. Escape cancels a drag.
 Windows remain onscreen on an eight-pixel grid. Only the left button is supported.
 The pointer moves two screen pixels per ST mouse step, with fixed sensitivity
-and no acceleration. This doubles its travel compared with the first preview.
+and no acceleration.
 
 Click the application and press a key: its Task performs finite computation,
 then replaces the retained panel content. Its X gadget requests cooperative
@@ -67,10 +67,10 @@ HELP lists built-in commands. BREAK cancels a foreground command.
 EXIT or Ctrl-D closes the shell and restores the OS display.
 
 This is a development preview, not hardware or whole-system qualification.
-Disk access is read-only. Pointer, drag outline and move repair timing targets
-remain open: two-client pointer response reached 166 ms and a disk-load button
-164 ms. Move repair is commonly 0.7-0.9 seconds and can exceed a second under I/O. Captured movement is correct within the tested ST envelope,
-but this first desktop does not yet meet the snappy-window-interaction goal.
+Disk access is read-only. Some pointer, drag outline and move repair timing
+targets remain open. Redrawing exposed windows after a drag can still take
+over a second during disk activity. Captured movement is correct within the
+tested ST envelope; this desktop does not yet meet every interaction target.
 No resizing, menus, file browser, right button or general AES compatibility. The cooked editor
 retains its 36-character editing tail, even on the wider bitmap screen.
 

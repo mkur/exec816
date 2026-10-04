@@ -37,10 +37,12 @@ timing limits remain open. See the [current desktop contracts](../../reference/d
 and [execution record](../../history/desktop.md).
 The [Layers foundation](../../reference/layers.md) is implemented through its
 [bounded library plan](../layers-implementation-plan.md).
-The next [mouse performance plan](mouse-performance-implementation-plan.md)
-defines MP1–MP4: about 4 kHz capture with preserved fine SIO timing, one blitter
-list per pointer move, combined measurements and a refreshed desktop preview.
-The current 2× pointer travel remains unchanged.
+The [mouse performance plan](mouse-performance-implementation-plan.md) is
+implemented through MP4: about 4 kHz capture with preserved fine SIO timing,
+one blitter list per pointer move, combined measurements and a refreshed OF816
+preview. The [execution record](../../history/mouse-performance.md) separates
+the measured savings from open pointer, outline and move-repair timing targets.
+The current 2× pointer travel and memory reservations remain unchanged.
 Further console optimization is paused, without changing the recorded limits.
 
 The implemented foundation is the [bitmap console](bitmap-console-design.md):

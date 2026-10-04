@@ -143,6 +143,13 @@ The console maps generic tags to its focus/foreground records in Task context.
 ## ST mouse capture
 
 Timer 1 samples PORTA's low nibble and TRIG0 through the shared platform timer.
+Normal capture is about 3,958.6 Hz on the pinned PAL machine (AUDF1 = 15).
+Short SIO COMMAND and write-turnaround phases use AUDF1 = 7 for their fine
+alarms, with pointer capture on alternate edges. Ordinary disk data transfer
+returns to the normal rate. Rate changes and the existing SIO transaction-start
+reset can perturb individual gaps; the supported envelope still requires every
+measured gap below 1 ms. See the [timing protocol](platform.md#native-sio-ownership)
+and [current measurements](../history/mouse-performance.md).
 It does not program PIA direction, POTGO, trigger latching or SKCTL. Native and
 ROM emulation interrupt paths use the same decoder; keyboard and SIO ownership
 remain independent. Route zero continues tracking electrical phase and counters

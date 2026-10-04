@@ -76,8 +76,8 @@ measurement; exact hardware BUSY edges are not measured.
 The code adds no production buffer or VRAM reservation. Reserved bank-zero
 growth remains **0 fixed, 0 root/kernel, 0 per public Task and 0 idle bytes**.
 The instrumented renderer's large Task stack peaks at 350 bytes raw and
-374 bytes optimized, inside its existing guarded pool. Host checks remain
-340 passing tests with four historical skips. Combined latency acceptance is
+374 bytes optimized, inside its existing guarded pool. The host suite passes:
+340 tests with four historical skips. Combined latency acceptance is
 recorded separately in MP3.
 
 ## MP3 — Combined desktop checkpoint
@@ -113,3 +113,37 @@ Reserved bank-zero deltas remain zero in every category. This checkpoint reuses
 the passing MP1/MP2 host, raw/optimized, wire-time and fault checks; it adds
 combined observed execution and an identical-image unobserved replay, without
 claiming release qualification.
+
+## MP4 — Refreshed OF816 desktop preview
+
+The local package is
+`build/desktop/preview-mouse-performance/exec816-demo.zip`, built from runtime
+revision `378f620` with this slice's guide update. Its SHA-256 is
+`c43b735407dd62053159587b45ba4db7a25745a97e46be59e8ee143bf1ca38e1`
+(236,907 bytes). [MP4 evidence](../development/mouse-performance-mp4.json)
+records the archive members, source hashes, actual emulator/ROM/compiler pins,
+and packaged boot results. The builder includes pre-existing optional cartridge
+packaging work; that branch is unused by this desktop build and its local
+override is recorded.
+
+The ZIP contains fourteen files: the OF816 boot XEX, matching read-only system
+disk, pinned ROM, short guide, notices and checksums. CRC, extracted member and
+checksum checks pass. The extracted XEX, disk and ROM are byte-identical to the
+boot-smoke inputs; development manifests and intermediates remain outside the
+archive. This refresh retains the shell plus independent application, 2× mouse
+travel and the five-second autoboot. The standard shell/prime build selection
+is unchanged.
+
+`tools/test_demo.py --boot-smoke` passes seventeen independent complete-scene
+checks, application keys, pointer movement, title dragging, focus return, disk
+commands, a seven-Task pipeline and clean EXIT. The autoboot observation is
+249 PAL frames, inside the existing 249–251-frame gate. Stack/DP guards, native
+return, ownership and OS restoration pass. Documentation content and local
+links are checked as part of this development slice.
+
+The final generated bank-zero budget, regions and Task pools match the retained
+pre-change build. Reserved growth is **0 fixed, 0 root/kernel, 0 per public Task
+and 0 idle bytes**, including guards, alignment and unused capacity. The current
+input/display/desktop contracts and packaged guide state the new behavior and
+the still-open pointer, outline and move-repair timing limits. This is a local
+development preview, not a GitHub publication or whole-system qualification.

@@ -146,7 +146,12 @@ Pointer hit testing and click-to-focus run in the presenter. Focus changes wait
 for a live drawing token to retire. The pointer restores its saved background
 before intersecting drawing and is shown after each quiescent quantum, including
 an early pass after input intake. Motion accumulates during DMA; input delivery
-continues. Both odd/even mask variants stay in VRAM, avoiding per-move uploads.
+continues. Both odd/even mask variants stay in VRAM, avoiding per-move mask
+uploads. A visible move submits restore/save/AND/OR as one synchronous list;
+show uses three records, hide one, and an unchanged valid pointer launches none.
+The command arena remains exclusive to a pending asynchronous scroll. Cursor
+batching adds no asynchronous request or completion signal. Capture runs at
+about 4 kHz, with the [shared timer's SIO exceptions](input.md#st-mouse-capture).
 A source loss disarms interaction until a released-button observation. Closing a
 graphical window discards and retires its route; shutdown releases the source,
 signal and software pointer before the display and keyboard retire.
@@ -166,6 +171,8 @@ its normal EXIT path controls retirement.
 
 Pointer and move-repair response targets have not all passed. The execution
 record separates exact capture/pixel correctness from measured responsiveness.
+The [mouse performance record](../history/mouse-performance.md) compares the
+4 kHz sampler and batched pointer with the earlier desktop.
 
 ## Shutdown admission
 

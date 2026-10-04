@@ -105,9 +105,11 @@ assuming work is pending. Current behavior belongs in the
   preview. DT0–DT7 have development evidence and a local OF816 preview; pointer, outline, disk-load button and repair timing limits remain open.
   [Current desktop contract](../reference/desktop.md).
 - [Mouse sampling and pointer batching](gem4xe/mouse-performance-implementation-plan.md):
-  MP1–MP4 planned; about 4 kHz capture with short fine-timing SIO exceptions,
-  one blitter list per pointer move, matched desktop measurements and an OF816
-  preview refresh. Keep the current 2× pointer travel and reuse existing arenas.
+  MP1–MP4 implemented at the development tier: about 4 kHz capture with short
+  fine-timing SIO exceptions, one list per pointer move, matched measurements
+  and a refreshed OF816 preview. IRQ overhead and pointer setup cost fall;
+  pointer, outline and move-repair timing targets remain open. The 2× travel
+  and memory reservations are unchanged.
 - [Physical mouse design for hosted GEM](gem4xe/physical-mouse-design.md): implemented
   ST mouse on port 1 using Altirra's existing configuration, with shared SIO
   timing, reusable capture, lifetime, memory and acceptance rules. The
