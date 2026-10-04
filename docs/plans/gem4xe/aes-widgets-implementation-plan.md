@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Desktop contract](../../reference/desktop.md) ·
 [Layers](../../reference/layers.md) · [Roadmap](../../roadmap.md)
 
-Status: planned, 2026-10-05. Port a bounded selection of GEM4XE AES object
+Status: AW0 implemented; AW1–AW6 pending, 2026-10-05. Port a bounded selection of GEM4XE AES object
 and form code into a widget library hosted by the existing Exec816 desktop
 presenter. Deliver a control-panel application beside the shell, with labels,
 buttons, toggles, radio groups and keyboard navigation. Preserve the source
@@ -459,3 +459,8 @@ independent desktop windows, bounded incremental updates and event processing,
 measured memory/latency, documented limitations and a tested local preview.
 It does not mean a complete AES, a task bar, or a completed system preferences
 application. Those can build on this library without changing Exec's Task model.
+
+AW0 evidence: [raw/optimized model checks](../../development/aes-widgets-aw0.json).
+Both modes pass 1,504 checks; the host suite passes 342 tests (four historical
+skips). Fixed, root/kernel, per-public-Task and idle reserved bank-zero growth
+is zero. Drawing and desktop integration are subsequent slices.

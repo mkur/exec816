@@ -78,7 +78,8 @@ emulators or patches to upstream projects.
 - Emulator patches under `toolchain/patches/` remain subject to the licences
   of the upstream files they modify. They are not covered by the MIT interface
   grant.
-- GEM4XE source selected by `ports/gem4xe/selection.json` and patches to it retain
+- GEM4XE source selected by `ports/gem4xe/selection.json` and
+  `ports/gem4xe/aes/selection.json`, and patches to it, retain
   the donor notices. Reproducible extraction copies `COPYING`, `COPYING.LIB`, the
   upstream licence note and font provenance beside the selected sources. The
   Exec MIT interface grant does not relicense this material.

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+  "files": {
+    "src/aes/objc.c": "edd9fee2c19b6d88e02c3ef2bfc40dfa23fd55bdc92874debec47cc5f0f965ba",
+    "src/aes/graf.c": "c5033b54ab2932a8df161ad51782446c835b0a1c02a47b453e5b85757c333d02",
+    "src/aes/form.c": "8a291ea34452450c1cd61b05a782a8d079f5c1c1cdf2261db829874f0614fa00",
+    "src/aes/aes.h": "5d555f5ac71b4d8f0f2a31c1b72f187671bd0019113e58fbcc44b71bc317cd87",
+    "tools/aesref.py": "17159134e05640b514708cd780004e1a59698927e3cb17ac3628ed57eb1f6266",
+    "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+    "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+    "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+    "tools/vdiref.py": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+    "tools/fontref.py": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+    "tools/devref.py": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89"
+  }
+}

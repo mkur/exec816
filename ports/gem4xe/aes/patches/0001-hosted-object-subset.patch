@@ -1,0 +1,282 @@
+--- a/aes-objects.c
++++ b/aes-objects.c
+@@ -3,8 +3,6 @@
+ static uint32_t ob_getspec(const OBJECT FAR *tree, WORD obj)
+ {
+     uint32_t spec = tree[obj].ob_spec;
+-    if (tree[obj].ob_flags & INDIRECT)
+-        spec = *(const uint32_t FAR *)SPEC_PTR(spec);
+     return spec;
+ }
+ 
+@@ -136,12 +134,6 @@
+     case G_TITLE:
+         th = 1;
+         break;
+-    case G_TEXT:
+-    case G_BOXTEXT:
+-    case G_FTEXT:
+-    case G_FBOXTEXT:
+-        th = ((const TEDINFO FAR *)SPEC_PTR(spec))->te_thickness;
+-        break;
+     case G_BOX:
+     case G_BOXCHAR:
+     case G_IBOX: {
+@@ -170,7 +162,7 @@
+     return ch;
+ }
+ 
+-static void just_draw(OBJECT FAR *tree, WORD obj, WORD sx, WORD sy)
++void just_draw(OBJECT FAR *tree, WORD obj, WORD sx, WORD sy)
+ {
+     WORD bcol, tcol, ipat, icol, tmode, th, tmpth;
+     WORD state, type, flags, len;
+@@ -178,7 +170,6 @@
+     uint32_t spec;
+     char ch;
+     GRECT t, c;
+-    TEDINFO ted;
+ 
+     ch = ob_sst(tree, obj, &spec, &state, &type, &flags, &t, &th);
+ 
+@@ -207,19 +198,6 @@
+ 
+     if (type != G_STRING) {
+         tmpth = (WORD)((th < 0) ? 0 : th);
+-
+-        /* the text types: fetch the TEDINFO and crack its colour word */
+-        switch (type) {
+-        case G_TEXT:
+-        case G_BOXTEXT:
+-        case G_FTEXT:
+-        case G_FBOXTEXT:
+-            far_get((uint8_t *)&ted, spec, sizeof ted);   /* not a struct copy: B11 */
+-            gr_crack((UWORD)ted.te_color, &bcol, &tcol, &ipat, &icol, &tmode);
+-            break;
+-        default:
+-            break;
+-        }
+ 
+         /* the box types: crack the colour if not a ted, then draw the
+          * border and the filled box */
+@@ -236,8 +214,6 @@
+                 icol = WHITE;
+             }
+             /* fall through */
+-        case G_BOXTEXT:
+-        case G_FBOXTEXT:
+             if (th != 0) {
+                 gsx_attr(0, MD_REPLACE, bcol);
+                 gr_box(t.g_x, t.g_y, t.g_w, t.g_h, th);
+@@ -254,95 +230,7 @@
+ 
+         gsx_attr(1, tmode, tcol);
+ 
+-        /* what is in the box */
+-        switch (type) {
+-        case G_FTEXT:
+-        case G_FBOXTEXT:
+-            far_strget(g_rawstr, ted.te_ptext, sizeof g_rawstr);
+-            far_strget(g_tmpstr, ted.te_ptmplt, sizeof g_tmpstr);
+-            ob_format(ted.te_just, g_rawstr, g_tmpstr, g_fmtstr);
+-            /* fall through */
+-        case G_BOXCHAR:
+-            ted.te_ptext = (uint16_t)g_fmtstr;
+-            if (type == G_BOXCHAR) {
+-                g_fmtstr[0] = ch;
+-                g_fmtstr[1] = 0;
+-                ted.te_just = TE_CNTR;
+-                ted.te_font = IBM;
+-            }
+-            /* fall through */
+-        case G_TEXT:
+-        case G_BOXTEXT:
+-            c = t;
+-            gr_inside(&c, tmpth);
+-            gr_gtext(ted.te_just, ted.te_font,
+-                     (const char FAR *)SPEC_PTR(ted.te_ptext), &c);
+-            break;
+-        case G_IMAGE: {
+-            const BITBLK FAR *bi = (const BITBLK FAR *)SPEC_PTR(spec);
+-            gsx_blt(bi->bi_pdata, bi->bi_x, bi->bi_y, t.g_x, t.g_y,
+-                    (WORD)(bi->bi_wb * 8), bi->bi_hl, MD_TRANS,
+-                    bi->bi_color, WHITE);
+-            break;
+-        }
+-        case G_ICON:
+-        case G_CICON: {
+-            /* The donor's gr_gicon (gemgraf.c): the mask under the image,
+-             * both transparent, then the character and the label.  Every
+-             * rectangle in the ICONBLK is relative to the object.
+-             *
+-             * A COLOUR ICON DRAWS ITS MONO FORM.  A CICONBLK begins with a
+-             * plain ICONBLK -- the donor relies on that too (gemoblib.c
+-             * falls G_CICON through to gr_gicon) -- and rsrc_load leaves a
+-             * G_CICON's ob_spec pointing at a near copy of that ICONBLK
+-             * whose bits are in far memory (src/aes/rsrc.c, rs_cicons).
+-             * The colour planes are kept far beside it for the day this
+-             * case selects them: on a 16-colour surface that is the
+-             * natural thing to draw, and it is not drawn yet. */
+-            ICONBLK ib;
+-            far_get((uint8_t *)&ib, spec, sizeof ib);   /* not a struct copy: B11 */
+-            GRECT pi, pl;
+-            WORD fg = (ib.ib_char >> 12) & 0x0F;
+-            WORD bg = (ib.ib_char >> 8) & 0x0F;
+-            WORD ch = ib.ib_char & 0xFF;
+-            const char FAR *label = (const char FAR *)SPEC_PTR(ib.ib_ptext);
+-
+-            if (state & SELECTED) {     /* selected: the colours change places */
+-                WORD tmp = fg;
+-                fg = bg;
+-                bg = tmp;
+-            }
+-            r_set(&pi, (WORD)(ib.ib_xicon + t.g_x), (WORD)(ib.ib_yicon + t.g_y),
+-                  ib.ib_wicon, ib.ib_hicon);
+-            r_set(&pl, (WORD)(ib.ib_xtext + t.g_x), (WORD)(ib.ib_ytext + t.g_y),
+-                  ib.ib_wtext, ib.ib_htext);
+-
+-            /* WHITEBAK over a white background leaves what is there */
+-            if (!((state & WHITEBAK) && bg == WHITE)) {
+-                gsx_blt(ib.ib_pmask, 0, 0, pi.g_x, pi.g_y, pi.g_w, pi.g_h,
+-                        MD_TRANS, bg, fg);
+-                if (label && *label)
+-                    gr_rect(bg, IP_SOLID, &pl);
+-            }
+-            gsx_blt(ib.ib_pdata, 0, 0, pi.g_x, pi.g_y, pi.g_w, pi.g_h,
+-                    MD_TRANS, fg, bg);
+-
+-            gsx_attr(TRUE, MD_TRANS, fg);
+-            if (ch) {
+-                intin[0] = ch;
+-                gsx_tblt(SMALL, (WORD)(pi.g_x + ib.ib_xchar),
+-                         (WORD)(pi.g_y + ib.ib_ychar), 1);
+-            }
+-            if (label)
+-                gr_gtext(TE_CNTR, SMALL, label, &pl);
+-            /* the state is spent: ob_draw must not invert it again */
+-            state &= ~SELECTED;
+-            break;
+-        }
+-        /* G_USERDEF is not drawn yet. */
+-        default:
+-            break;
+-        }
++
+     }
+ 
+     /* the text of a string, title or button: centred vertically, and
+@@ -360,42 +248,9 @@
+         }
+     }
+ 
+-    if (state & OUTLINED) {
+-        gsx_attr(0, MD_REPLACE, BLACK);
+-        gr_box((WORD)(t.g_x - 3), (WORD)(t.g_y - 3),
+-               (WORD)(t.g_w + 6), (WORD)(t.g_h + 6), 1);
+-        gsx_attr(0, MD_REPLACE, WHITE);
+-        gr_box((WORD)(t.g_x - 2), (WORD)(t.g_y - 2),
+-               (WORD)(t.g_w + 4), (WORD)(t.g_h + 4), 2);
+-    }
+-
+-    /* the remaining effects apply inside an inward border and, for an
+-     * outward one, use its thickness for the shadow */
++    /* Only the admitted selected/disabled states are hosted. */
+     if (th > 0)
+         gr_inside(&t, th);
+-    else
+-        th = (WORD)-th;
+-
+-    if ((state & SHADOWED) && th) {
+-        gsx_fcolor(bcol);
+-        bb_fill(MD_REPLACE, FIS_SOLID, 0, t.g_x, (WORD)(t.g_y + t.g_h + th),
+-                (WORD)(t.g_w + th), (WORD)(2 * th));
+-        bb_fill(MD_REPLACE, FIS_SOLID, 0, (WORD)(t.g_x + t.g_w + th), t.g_y,
+-                (WORD)(2 * th), (WORD)(t.g_h + 3 * th));
+-    }
+-
+-    if (state & CHECKED) {
+-        gsx_attr(1, MD_TRANS, BLACK);
+-        intin[0] = 0x08;                        /* the check mark glyph */
+-        gsx_tblt(IBM, (WORD)(t.g_x + 2), t.g_y, 1);
+-    }
+-
+-    if (state & CROSSED) {
+-        gsx_attr(0, MD_TRANS, WHITE);
+-        gsx_cline(t.g_x, t.g_y, (WORD)(t.g_x + t.g_w - 1), (WORD)(t.g_y + t.g_h - 1));
+-        gsx_cline(t.g_x, (WORD)(t.g_y + t.g_h - 1), (WORD)(t.g_x + t.g_w - 1), t.g_y);
+-    }
+-
+     if (state & DISABLED) {
+         gsx_fcolor(WHITE);
+         bb_fill(MD_TRANS, FIS_PATTERN, IP_4PATT, t.g_x, t.g_y, t.g_w, t.g_h);
+@@ -457,23 +312,6 @@
+     if ((UWORD)curr_state == new_state || spec == 0xFFFFFFFFUL)
+         return;
+     tree[obj].ob_state = new_state;
+-    if (!redraw)
+-        return;
+-
+-    ob_offset(tree, obj, &t.g_x, &t.g_y);
+-    gsx_moff();
+-    if (th < 0)
+-        th = 0;
+-    /* A change of SELECTED alone is an XOR of the inside -- cheap, and it
+-     * is what makes a button flash.  Anything else redraws the object.
+-     * (Icons never XOR: they would redraw here once they are drawn.) */
+-    if (type != G_ICON && type != G_CICON && type != G_USERDEF &&
+-        ((new_state ^ (UWORD)curr_state) & SELECTED)) {
+-        bb_fill(MD_XOR, FIS_SOLID, IP_SOLID, (WORD)(t.g_x + th), (WORD)(t.g_y + th),
+-                (WORD)(t.g_w - 2 * th), (WORD)(t.g_h - 2 * th));
+-        redraw = 0;
+-    }
+-    if (redraw)
+-        just_draw(tree, obj, t.g_x, t.g_y);
+-    gsx_mon();
+-}
++    /* The desktop invalidates retained pixels instead of toggling the screen. */
++    (void)redraw;
++}
+--- a/aes-form.c
++++ b/aes-form.c
+@@ -12,17 +12,12 @@
+ WORD fm_button(OBJECT FAR *tree, WORD new_obj, WORD clks, WORD *pnew_obj)
+ {
+     WORD tobj, orword, parent, state, flags, cont, tstate, tflags;
+-    WORD rets[6];
+ 
++    (void)clks;
+     cont = TRUE;
+     orword = 0;
+     state = ob_fs(tree, new_obj, &flags);
+ 
+-    if (flags & TOUCHEXIT) {
+-        if (clks == 2)
+-            orword = (WORD)0x8000;
+-        cont = FALSE;
+-    }
+ 
+     if ((flags & SELECTABLE) && !(state & DISABLED)) {
+         if (flags & RBUTTON) {
+@@ -44,15 +39,17 @@
+                 tobj = tree[tobj].ob_next;
+             }
+         } else {
+-            if (gr_watchbox(tree, new_obj, (WORD)(state ^ SELECTED), state))
++            /* Caller already established an inside release or keyboard action. */
++            if (flags & EXIT)
++                state &= ~SELECTED;
++            else
+                 state ^= SELECTED;
++            ob_change(tree, new_obj, (UWORD)state, FALSE);
+         }
+-        /* not a touchexit: wait for the button to come up */
+-        if (cont && (flags & (SELECTABLE | EDITABLE)))
+-            ev_button(1, 0x0001, 0x0000, rets);
++
+     }
+ 
+-    if ((state & SELECTED) && (flags & EXIT))
++    if (flags & EXIT)
+         cont = FALSE;
+ 
+     /* a click elsewhere than an editable field does not move the cursor */

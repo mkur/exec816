@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "outputs": {
+    "aes-objects.c": {
+      "source": "src/aes/objc.c",
+      "functions": [
+        "ob_getspec",
+        "ob_get_par",
+        "get_prev",
+        "ob_offset",
+        "ob_actxywh",
+        "ob_relxywh",
+        "everyobj",
+        "ob_sst",
+        "just_draw",
+        "ob_find",
+        "ob_change"
+      ]
+    },
+    "aes-graf.c": {
+      "source": "src/aes/graf.c",
+      "functions": [
+        "r_set",
+        "inside",
+        "gr_inside",
+        "gr_box",
+        "gr_rect",
+        "expand_string",
+        "gr_crack"
+      ]
+    },
+    "aes-form.c": {
+      "source": "src/aes/form.c",
+      "functions": [
+        "ob_fs",
+        "fm_button"
+      ]
+    }
+  }
+}
