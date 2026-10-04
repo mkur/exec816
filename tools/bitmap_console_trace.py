@@ -2,13 +2,38 @@
 import os
 from contextlib import contextmanager
 from collections import Counter
-from sio_transaction_trace import read_events
+from sio_transaction_trace import BASE_HZ,read_events
+
+
+def echo_order(log,marks,windows):
+    """Measure model-update entry through drawing return and write retirement."""
+    names={marks[k]:k for k in ('echo_feed','write_reply','drawing_done')}
+    events=[(tick,names[int(e[4],16)]) for tick,e in read_events(log)
+            if e[0]=='cpu' and int(e[4],16) in names]
+    result=[]
+    for w in windows:
+        rows=[(t,n) for t,n in events if w['start']<=t<=w['end']]
+        feeds=[t for t,n in rows if n=='echo_feed']
+        replies=[t for t,n in rows if n=='write_reply']
+        drawings=[t for t,n in rows if n=='drawing_done']
+        if len(feeds)!=1 or len(replies)!=1 or not drawings:
+            raise RuntimeError('Incomplete short-write trace: '+str(w))
+        result.append(dict(stage=w['stage'],drawing_before_reply=drawings[-1]<replies[0],
+            feed_to_drawing_done_ms=(drawings[-1]-feeds[0])/BASE_HZ*1000,
+            feed_to_reply_ms=(replies[0]-feeds[0])/BASE_HZ*1000))
+    return result
 
 @contextmanager
 def observation(foreign,program,enabled,performance=None,module='BITMAPSCROLL'):
     marks={k:foreign['symbols'][k] for k in ('GemDrawingText','GemDrawingTextFill','GemDrawingCopy','GemDrawingScrollStart',
         'GemDrawingScrollPoll','GemDrawingFill','blit_glyph','_text_record','VbxeSubmit','submit',
         'DisplayCheck','start') if k in foreign['symbols']}
+    if module=='BITMAPTEST':
+        for routine,key in [('CONSOLECORE_FEED','echo_feed'),('CONSOLEDRIVER_FINISHWRITE','write_reply')]:
+            rows=[r for r in program['image']['routines'] if r['name'].startswith('M_'+routine+'_')]
+            if len(rows)!=1:raise RuntimeError('Missing echo marker '+routine)
+            marks[key]=rows[0]['address']
+        marks['drawing_done']=program['labels']['console_bitmap_done']
     for routine,key in [('READY','ready'),('CONTINUING','continuing')]:
         rows=[r for r in program['image']['routines'] if r['name'].startswith('M_'+module+'_'+routine+'_')]
         if len(rows)!=1:raise RuntimeError('Missing trace marker '+routine)

@@ -8,6 +8,7 @@ USE CONSOLECORE
 USE CONSOLEDRIVER
 USE CONSOLETYPES
 USE CONSOLEINPUT
+USE CONSOLEWINDOWS
 CARD checks,checkpoint,gate
 BYTE ARRAY rawName=[82 65 87 58 0]
 BYTE ARRAY cookedName=[67 79 78 58 0]
@@ -57,6 +58,18 @@ PROC Pause(CARD value)
 
 RETURN
 
+; Short echo completion follows one presentation pass on this settled view.
+PROC Echo(DOS.FileHandle POINTER file CARD count)
+
+  Require(DOS.Write(file,text,count)=LONGINT(count))
+  LET instance=CONSOLEDRIVER.GetInstance()
+  LET entry=CONSOLEWINDOWS.Find(0)
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  Require(instance.dirtyRows=0 AND view.cursorOn<>0
+      AND view.previousCursor=instance.lineStart+instance.column)
+
+RETURN
+
 PROC Main()
   DOS.FileHandle POINTER file
   CARD row,column
@@ -89,23 +102,23 @@ PROC Main()
   ; Opaque text erases the old caret without a separate restore.
   text(0)='A
   text(1)='B
-  Require(DOS.Write(file,text,2)=2)
+  Echo(file,2)
   Pause(5)
 
   ; Cursor-only movement still restores the old cell.
   text(0)=8
-  Require(DOS.Write(file,text,1)=1)
+  Echo(file,1)
   Pause(6)
 
   ; Dirty text outside the old caret does not erase it.
   text(0)=13
   text(1)='Z
-  Require(DOS.Write(file,text,2)=2)
+  Echo(file,2)
   Pause(7)
 
   ; Overwrite a nonblank cell under the old caret.
   text(0)='C
-  Require(DOS.Write(file,text,1)=1)
+  Echo(file,1)
   Pause(8)
 
   LET instance=CONSOLEDRIVER.GetInstance()

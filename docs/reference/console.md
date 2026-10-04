@@ -31,6 +31,13 @@ be enabled during system startup.
 READ waits for translated keyboard input, then returns an available prefix.
 WRITE consumes counted source bytes in bounded work quanta. Completion means
 source bytes were accepted into retained state; physical redraw may follow.
+A nonempty write of at most 64 bytes that finishes directly in the text-feed
+step gets one bounded presentation pass before its reply wakes the caller.
+It does not wait for all damage to clear or for a pending asynchronous scroll.
+Hidden views still complete. Normal preemption remains enabled, and cancellation
+during the pass is honored. A quiesced drawing failure before reply reports
+`IOERR_SELFTEST` with the accepted-byte count; unquiesced DMA retains the request
+for reset.
 CLEAR discards buffered input and its loss latch; it neither clears the screen
 nor cancels a pending Read. It ignores Data/Length and returns zero actual bytes.
 Cooked editing, EOF and foreground cancellation belong to the

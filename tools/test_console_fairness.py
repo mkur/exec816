@@ -81,6 +81,9 @@ def run(out,mode,from_build=None,bitmap=False,pointer=False,observe=True,pointer
     marks['forbid_retire_console']=call_marker(p,'M_CONSOLEDRIVER_RETIREWORKER_','tasks_rem_task')
     marks['break_durable']=call_marker(p,'M_CONSOLEFOREGROUND_NOTIFYONE_','tasks_signal')
     for name in ('EXEC816_LATENCY_TRACE','EXEC816_MASK_TRACE','EXEC816_LATENCY_PCS','EXEC816_SIO_FAULT_FILE'):os.environ.pop(name,None)
+    if bitmap:
+        # Blitter watchdogs share Timer 1 even without a pointer consumer.
+        marks['timer_tick']=p['labels']['timer_tick']
     if pointer:
         for n in ('pointer_port_read','pointer_sample','pointer_sample_return','signal_route_return','timer_tick','timer_sample'):
             marks[n]=p['labels'][n]
@@ -185,7 +188,7 @@ def run(out,mode,from_build=None,bitmap=False,pointer=False,observe=True,pointer
     measured=timing(out/'trace.log',marks,media) if observe and not bitmap else None
     if observe and bitmap:
         from console_concurrent_trace import analyze
-        measured=analyze(out/'trace.log',marks,media,128,0,None,key_count=None,divisor=8,shared_timer=pointer,active_forbid_only=True)
+        measured=analyze(out/'trace.log',marks,media,128,0,None,key_count=None,divisor=8,shared_timer=True,active_forbid_only=True)
         require(measured['verdict']=='pass','Bitmap SIO timing: '+str(measured['violations']))
         if pointer:
             from gem_mouse_observe import timing as mouse_timing

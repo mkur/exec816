@@ -126,8 +126,9 @@ RETURN(0)
 INCLUDE "console-requests.inc"
 INCLUDE "console-lifetime.inc"
 
-; Advance one write by a bounded amount while retaining request ownership.
-PROC WriteQuantum(CONSOLETYPES.Instance POINTER instance
+; Advance one write by a bounded amount. Return 1 to complete a short write
+; after this turn's presentation, before yielding or taking another instance.
+BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
     CONSOLETYPES.Presentation POINTER view)
   EXEC.IOStdReq POINTER request
   LONGCARD remaining
@@ -135,17 +136,17 @@ PROC WriteQuantum(CONSOLETYPES.Instance POINTER instance
   BYTE error
 
   request=EXEC.IOStdReq POINTER(instance.write)
-  IF request=EXEC.IOStdReq POINTER(0) THEN
+  IF request=NULL THEN
     request=ClaimWrite(instance)
-    IF request=EXEC.IOStdReq POINTER(0) THEN
-      RETURN
+    IF request=NULL THEN
+      RETURN(0)
     FI
 
     error=Validate(request)
     IF error<>0 THEN
       request.io_Error=error
       FinishWrite(instance,request)
-      RETURN
+      RETURN(0)
     FI
   FI
 
@@ -156,7 +157,7 @@ PROC WriteQuantum(CONSOLETYPES.Instance POINTER instance
 
     request.io_Error=BYTE(EXEC.IOERR_SELFTEST)
     FinishWrite(instance,request)
-    RETURN
+    RETURN(0)
   FI
 
   IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
@@ -167,12 +168,12 @@ PROC WriteQuantum(CONSOLETYPES.Instance POINTER instance
       FI
     FI
 
-    RETURN
+    RETURN(0)
   FI
 
   IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
     FinishWrite(instance,request)
-    RETURN
+    RETURN(0)
   FI
 
   remaining=request.io_Length-request.io_Actual
@@ -184,14 +185,18 @@ PROC WriteQuantum(CONSOLETYPES.Instance POINTER instance
   consumed=CONSOLECORE.Feed(instance,
       BYTE POINTER(ADDRESS(request.io_Data)+SIZE(request.io_Actual)),limit)
   request.io_Actual==+LONGCARD(consumed)
-  ; Cells retain the committed bytes; display no longer needs the source.
-  ; Do not keep a completed short write through another scheduler turn.
+  ; A short, settled write can present before its reply wakes the client.
+  ; Keep ownership until that one bounded pass; never await a full redraw.
   IF request.io_Actual=request.io_Length
       AND instance.operation=CONSOLETYPES.OP_IDLE THEN
+    IF request.io_Length<=LONGCARD(CONSOLETYPES.SOURCE_QUANTUM) THEN
+      RETURN(1)
+    FI
+
     FinishWrite(instance,request)
   FI
 
-RETURN
+RETURN(0)
 
 ; Complete available input or cancellation without blocking the console
 ; worker.
@@ -365,7 +370,7 @@ RETURN(bits OR EXEC.SetSignal(0,STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR display
 ; borrowed across Yield/Wait, and replies publish ownership exactly once.
 PUBLIC PROC Worker()
   LONGCARD bits,displayMask
-  BYTE again,writing,registered,stopping,accepted,inputPending
+  BYTE again,writing,registered,stopping,accepted,inputPending,completeWrite
   CONSOLETYPES.Instance POINTER instance
   CONSOLETYPES.Window POINTER entry
 
@@ -468,13 +473,24 @@ PUBLIC PROC Worker()
       BEGIN
         LET view=CONSOLETYPES.Presentation POINTER(entry.view)
         IF CONSOLEBITMAP.Pending()=0 THEN
+          completeWrite=0
           IF view.scrollState<>0 THEN
             CONSOLEDISPLAY.Advance(view,instance,entry.unit)
           ELSE
-            WriteQuantum(instance,view)
+            completeWrite=WriteQuantum(instance,view)
           FI
 
           CONSOLEDISPLAY.Present(view,instance)
+          IF completeWrite<>0 THEN
+            BEGIN
+              LET request=EXEC.IOStdReq POINTER(instance.write)
+              IF CONSOLEBITMAP.Failed()<>0 THEN
+                request.io_Error=BYTE(EXEC.IOERR_SELFTEST)
+              FI
+
+              FinishWrite(instance,request)
+            END
+          FI
         FI
 
         writing=instance.write<>NULL

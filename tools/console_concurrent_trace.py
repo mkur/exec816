@@ -11,8 +11,9 @@ from mydos_fixtures import Image
 def shared_alarm_observations(events, marks, start=None, stop=None):
     """Pair armed SIO callbacks with the physical latch their tick consumed.
 
-    Timer 1 also services pointer-only ticks. Those are not SIO alarm deadlines;
-    the mouse oracle checks their sampling gap and unique dispatch separately.
+    Timer 1 also services pointer and blitter-watchdog ticks without an armed
+    SIO callback. Those are not SIO alarm deadlines; their own oracles check
+    sampling and completion separately.
     """
     pending = acknowledged = dispatch = None
     consumed = set()
@@ -107,7 +108,7 @@ def analyze(path,marks,media,size,speed,file_bytes,key_count=8,keyboard_boundary
             # The acknowledgement/dispatch may fall just inside that window.
             serviced=shared_alarm_observations(events,marks,starts[0],stop)
             cancelled,unserviced=[],[]
-            service='Acknowledged physical timer-1 edge to armed SIO callback; pointer-only ticks checked separately'
+            service='Acknowledged physical timer-1 edge to armed SIO callback; non-SIO ticks checked separately'
         else:
             service=name
             serviced,cancelled,unserviced=alarm_observations(active,times(service),posts,stop,channel)

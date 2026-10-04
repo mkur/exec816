@@ -12,7 +12,7 @@ from test_cooperative import data
 from gem_render_oracle import Raster,font_bytes
 from test_gem_interactive import pixels
 from bitmap_console_oracle import Terminal
-from bitmap_console_trace import observation,intervals
+from bitmap_console_trace import observation,intervals,echo_order
 from generate_console import constants
 
 
@@ -104,6 +104,10 @@ def run(out,mode,replay=False,observe=False,performance=False):
             result.update(status='pass',runtime=runtime,checks=data(b,p['image'],'checks',True))
         if observe:
             result['operations']=intervals(out/'emulator.log',marks,9)
+            result['echo_order']=echo_order(out/'emulator.log',marks,
+                [w for w in result['operations'] if w['kind']=='work' and w['stage'] in (5,6,7,8)])
+            require(all(r['drawing_before_reply'] for r in result['echo_order']),
+                    'Short write woke its caller before drawing: '+str(result['echo_order']))
             for sample in result['operations']:
                 if sample['kind']=='idle':
                     require(not sample['calls'],'Settled caret submitted work: '+str(sample))

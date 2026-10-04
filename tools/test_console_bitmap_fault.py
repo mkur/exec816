@@ -49,6 +49,10 @@ def run(out,mode,replay=False):
                 else:
                     read=int.from_bytes(b.memdump(at('READ'),3),'little')
                     require(b.memdump(read+6,1)==bytes([5]),'Reset-required failure replied to retained I/O')
+                    if fault>=7:
+                        write=int.from_bytes(b.memdump(at('WRITE'),3),'little')
+                        require(b.memdump(write+6,1)==bytes([5]),'Reset-required failure replied to short write')
+                        require(b.peek16(write+26)==1,'Reset-required failure lost accepted byte')
                     if fault==4:
                         require(b.peek16(saved['instance']+LAYOUT['INSTANCE_CELLORIGIN'])==0,'Reset-required failure lost the committed wrap')
                 result['cases'].append(dict(fault=fault,machine=machine,runtime=runtime,checks=data(b,p['image'],'checks',True)))

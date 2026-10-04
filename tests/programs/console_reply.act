@@ -1,0 +1,129 @@
+MODULE CONSOLEREPLYTEST
+USE EXEC
+USE CONSOLE
+USE CONSOLEDRIVER
+USE CONSOLETYPES
+USE CONSOLEREPLYPROBE
+USE HEAPCORE
+CARD checks
+BYTE ARRAY name=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+BYTE ARRAY text(65)
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER request
+CONSOLETYPES.Instance POINTER instance
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f7c0+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Arm(BYTE mode)
+
+  CONSOLEREPLYPROBE.mode=mode
+  CONSOLEREPLYPROBE.held=0
+  CONSOLEREPLYPROBE.release=0
+  CONSOLEREPLYPROBE.beforeCount=0
+  CONSOLEREPLYPROBE.afterCount=0
+
+RETURN
+
+PROC Start(CARD count)
+
+  request.io_Command=EXEC.CMD_WRITE
+  request.io_Data=text
+  request.io_Length=LONGCARD(count)
+  EXEC.SendIO(EXEC.IORequest POINTER(request))
+
+RETURN
+
+PROC Collect(INT error CARD count)
+
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(request))=error)
+  Require(request.io_Actual=LONGCARD(count) AND instance.write=NULL)
+  Require(request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+      AND EXEC.GetMsg(port)=NULL)
+
+RETURN
+
+PROC Settled()
+
+  WHILE instance.dirtyRows<>0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Main()
+  CARD index
+
+  port=EXEC.CreateMsgPort()
+  request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(port<>NULL AND request<>NULL)
+  Require(EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(request),0)=0)
+  instance=CONSOLETYPES.Instance POINTER(request.io_Unit)
+  FOR index=0 TO 64 DO
+    text(index)='A
+  OD
+
+  Settled()
+  Arm(3)
+  Start(64)
+  Collect(0,64)
+  Require(CONSOLEREPLYPROBE.beforeCount=1 AND
+      CONSOLEREPLYPROBE.afterCount=1 AND CONSOLEREPLYPROBE.remaining=0)
+
+  ; Long writes retain their previous reply policy.
+  Arm(3)
+  Start(65)
+  Collect(0,65)
+  Require(CONSOLEREPLYPROBE.beforeCount=0 AND CONSOLEREPLYPROBE.afterCount=0)
+  CONSOLEREPLYPROBE.mode=0
+  Settled()
+
+  ; Pending damage must not hold a short request through multiple passes.
+  Arm(2)
+  Start(1)
+  Collect(0,1)
+  Require(CONSOLEREPLYPROBE.beforeCount=1 AND
+      CONSOLEREPLYPROBE.afterCount=1 AND CONSOLEREPLYPROBE.remaining>0)
+  Settled()
+
+  ; Invisible output still completes without waiting for Show.
+  Require(CONSOLE.Hide(0)<>0)
+  Arm(3)
+  Start(1)
+  Collect(0,1)
+  Require(CONSOLEREPLYPROBE.beforeCount=1 AND
+      CONSOLEREPLYPROBE.afterCount=1 AND CONSOLEREPLYPROBE.remaining>0)
+  Require(CONSOLE.Show(0,0,0)<>0)
+  Settled()
+
+  ; Cancellation can run after acceptance and before presentation/reply.
+  Arm(1)
+  Start(1)
+  WHILE CONSOLEREPLYPROBE.held=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(instance.write=BYTE POINTER(request) AND request.io_Actual=1
+      AND EXEC.CheckIO(EXEC.IORequest POINTER(request))=NULL)
+  EXEC.AbortIO(EXEC.IORequest POINTER(request))
+  Require(EXEC.CheckIO(EXEC.IORequest POINTER(request))=NULL)
+  CONSOLEREPLYPROBE.release=1
+  Collect(EXEC.IOERR_ABORTED,1)
+  Require(CONSOLEREPLYPROBE.beforeCount=1 AND CONSOLEREPLYPROBE.afterCount=1)
+  Start(1)
+  Collect(0,1)
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+ENDMODULE

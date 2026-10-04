@@ -1,0 +1,48 @@
+MODULE CONSOLEREPLYPROBE
+USE EXEC
+USE CONSOLETYPES
+USE CONSOLECORE
+USE HEAPCORE
+PUBLIC BYTE mode,held,release
+PUBLIC CARD beforeCount,afterCount,remaining
+
+; Fixture-only gate in the owning worker, before its ordinary presentation.
+PUBLIC PROC Before(CONSOLETYPES.Instance POINTER instance)
+
+  IF mode=0 THEN
+    RETURN
+  FI
+
+  beforeCount==+1
+  LET task=EXEC.FindTask(NULL)
+  IF task.tc_TDNestCnt<>$ff OR instance.write=NULL THEN
+    HEAPCORE.Abort($f7b0)
+  FI
+
+  IF mode=1 THEN
+    held=1
+    WHILE release=0 DO
+      EXEC.Yield()
+    OD
+  ELSEIF mode=2 THEN
+    CONSOLECORE.Dirty(instance,0,instance.count)
+  FI
+
+RETURN
+
+; Capture remaining damage before replying can dispatch the client again.
+PUBLIC PROC After(CONSOLETYPES.Instance POINTER instance)
+
+  IF mode<>0 THEN
+    IF instance.write=NULL THEN
+      HEAPCORE.Abort($f7b1)
+    FI
+
+    afterCount==+1
+    remaining=instance.dirtyRows
+    mode=0
+  FI
+
+RETURN
+
+ENDMODULE
