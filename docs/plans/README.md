@@ -110,6 +110,10 @@ assuming work is pending. Current behavior belongs in the
   and a refreshed OF816 preview. IRQ overhead and pointer setup cost fall;
   pointer, outline and move-repair timing targets remain open. The 2× travel
   and memory reservations are unchanged.
+- [AES widget library](gem4xe/aes-widgets-implementation-plan.md): AW0–AW6 planned;
+  actual GEM4XE object/drawing/form extraction, retained widget windows, bounded
+  damage, event-driven controls and a control-panel preview. Uses the existing
+  presenter and Task pools; task-bar policy and full AES compatibility follow.
 - [Physical mouse design for hosted GEM](gem4xe/physical-mouse-design.md): implemented
   ST mouse on port 1 using Altirra's existing configuration, with shared SIO
   timing, reusable capture, lifetime, memory and acceptance rules. The

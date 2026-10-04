@@ -43,6 +43,14 @@ one blitter list per pointer move, combined measurements and a refreshed OF816
 preview. The [execution record](../../history/mouse-performance.md) separates
 the measured savings from open pointer, outline and move-repair timing targets.
 The current 2× pointer travel and memory reservations remain unchanged.
+
+The next functional milestone is the
+[AES widget library plan](aes-widgets-implementation-plan.md): port selected
+object/drawing/form code into the existing presenter, add retained widget trees
+with bounded updates, and demonstrate buttons, toggles and radio groups beside
+the shell. AW0–AW6 remain planned. Task-bar policy, editable fields, resource
+loading and full AES compatibility are later consumers/extensions.
+
 Further console optimization is paused, without changing the recorded limits.
 
 The implemented foundation is the [bitmap console](bitmap-console-design.md):

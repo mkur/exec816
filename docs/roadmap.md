@@ -36,8 +36,18 @@ about 4 kHz with fine SIO timing preserved; each pointer move uses one blitter
 list. [Matched measurements](history/mouse-performance.md) show lower IRQ
 overhead and pointer setup cost. The OF816 preview is refreshed, with 2× travel
 and memory reservations unchanged. Pointer, outline and move-repair timing
-targets remain open; presentation scheduling and exposure repair are the next
-focused performance work.
+targets remain open; presentation scheduling and exposure repair remain focused
+performance follow-ups.
+
+The next functional milestone is the
+[AES widget library](plans/gem4xe/aes-widgets-implementation-plan.md), planned
+through AW0–AW6. Port selected GEM4XE object, drawing and form routines into the
+existing presenter, with retained widget trees, updates limited to changed
+controls and event-driven interaction. A control-panel client exercises buttons,
+toggles and radio groups beside the shell. Reuse existing Task/stack pools and
+window layers. The library can later support a task bar; desktop work-area,
+window-switching and launcher policy are separate work. Editable fields,
+resource-file loading, menus and full AES compatibility remain deferred.
 
 The [Layers library](reference/layers.md) now provides bounded regions, cached
 visibility, stacking, damage and drawing transactions. Its
