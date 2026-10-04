@@ -407,6 +407,8 @@ are reserved for release/qualification work, not every slice.
 
 ## Status
 
-DT0–DT2 are complete at the development tier; see the [execution record](../../history/desktop.md).
-DT3–DT7 remain pending. DT0 adds no runtime memory or Task. Visible-response
-comparison remains a DT3 requirement against the frozen unchanged image.
+DT0–DT3 are implemented at the development tier; see the [execution record](../../history/desktop.md).
+DT4–DT7 remain pending. DT3 passes functional capture/routing and pixel checks;
+pointer p95 targets remain open and must stay visible in the later loaded
+record. Full-screen echo meets the regression target against the frozen DT0
+image. DT0 adds no runtime memory or Task.

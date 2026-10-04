@@ -13,6 +13,7 @@ from test_cooperative import data
 from gem_render_oracle import Raster, font_bytes
 from bitmap_console_oracle import Terminal
 from test_gem_interactive import pixels
+from test_gem_cursor import overlay
 from desktop_budget import delta as desktop_delta
 from stack_budget import bank_zero_delta
 
@@ -57,7 +58,7 @@ def scenes(font):
         if stage in (4, 5):
             frame(raster, (113, 93, 273, 173), b'Clip', False, 3)
             text(raster, 124, 112, b'XYZ', bg=3)
-        yield raster.packed()
+        yield overlay(raster, (320, 120))
 
 
 def run(out, mode, replay=False):

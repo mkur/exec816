@@ -48,8 +48,8 @@
     {
       "name": "cursor",
       "base": 225280,
-      "reserved_bytes": 1024,
-      "capacity_bytes": 768,
+      "reserved_bytes": 1280,
+      "capacity_bytes": 1280,
       "i5_used_bytes": 768,
       "parts": {
         "saved_background": {
@@ -64,17 +64,22 @@
           "offset": 512,
           "bytes": 256
         },
-        "reserved_slack": {
+        "and_mask_odd": {
           "offset": 768,
+          "bytes": 256
+        },
+        "or_mask_odd": {
+          "offset": 1024,
           "bytes": 256
         }
       },
       "g3_used_bytes": 0,
-      "g4_used_bytes": 0
+      "g4_used_bytes": 0,
+      "dt3_used_bytes": 1280
     }
   ],
-  "reserved_bytes": 111872,
-  "unassigned_bytes": 412416,
+  "reserved_bytes": 112128,
+  "unassigned_bytes": 412160,
   "diagnostics": [
     {
       "name": "cross_page_transfer",
@@ -82,5 +87,5 @@
       "bytes": 32
     }
   ],
-  "note": "Exclusive display ownership. B1 replaces the 256-byte BCB area with one 4096-byte command arena. At most 64 records and 8192 estimated bus accesses per submission. Font, scratch, cursor and CPU aperture unchanged."
+  "note": "Exclusive display ownership. B1 uses a 4096-byte command arena with at most 64 records and 8192 estimated bus accesses per submission. DT3 retains even and odd pointer masks in VRAM; cursor reservation grows by 256 bytes, with no new CPU aperture or bank-zero storage."
 }

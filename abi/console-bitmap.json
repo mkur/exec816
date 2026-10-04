@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "packet_bytes": 78,
   "fields": {
     "operation": 0,
@@ -34,6 +34,7 @@
     "SCROLL": 7,
     "POLL": 8,
     "TEXT_FILL": 9,
-    "TEXT_CLIP": 10
+    "TEXT_CLIP": 10,
+    "POINTER": 11
   }
 }

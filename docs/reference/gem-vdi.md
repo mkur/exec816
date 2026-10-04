@@ -208,12 +208,12 @@ service/client heap allocations total 2,656 rounded bytes, including the
 the reply-port pointer. Task stacks and external guards are already in the
 platform budget.
 
-[VBXE extents](../../platform/altirraos/vbxe-vram.json) reserve 108,032 bytes of
-private VRAM, including screen slack, XDL, 252-byte BCB capacity rounded to 256,
-expanded font and strip scratch. Cursor storage at `$37000–$373FF` adds a 256-byte
-save area, two 256-byte mask planes and 256 reserved slack bytes. It reuses the
+[VBXE extents](../../platform/altirraos/vbxe-vram.json) reserve 112,128 bytes of
+private VRAM, including screen slack, XDL, the 4,096-byte command arena,
+expanded font and strip scratch. Cursor storage at `$37000–$374FF` contains a 256-byte
+save area and four 256-byte mask planes, retaining both pixel parities. It reuses the
 existing CPU staging page and does not borrow glyph scratch. VRAM leaves
-416,256 bytes unassigned. CPU and VRAM reservations are separate.
+412,160 bytes unassigned. CPU and VRAM reservations are separate.
 Fixed, per-public-Task and private-idle bank-zero increments are all zero for
 G0–G6 and I0–I7; the existing eight-Task budget includes 56,128 reserved bytes with OS
 memory and leaves 9,408 bytes free after startup.

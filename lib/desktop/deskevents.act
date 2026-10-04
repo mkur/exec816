@@ -74,8 +74,16 @@ PUBLIC PROC Wake(DESKTYPES.Service POINTER service
 
   LET request=client.waiting
   IF request<>NULL THEN
+    IF service.nextEvent=0 THEN
+      client.waiting=NULL
+      Reply(request,DESKTYPES.EXHAUSTED)
+      RETURN
+    FI
+
     IF Take(service,client,@request.event)<>0 THEN
       client.waiting=NULL
+      request.event.sequence=service.nextEvent
+      service.nextEvent==+1
       Reply(request,DESKTYPES.OK)
     FI
   FI

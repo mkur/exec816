@@ -9,7 +9,7 @@ from sio_transaction_trace import read_events,stats,BASE_HZ
 from sio_adapter_trace import analyze
 from mouse_timer_trace import accounting
 
-def timing(path,labels):
+def timing(path,labels,divisor=8,serial=True):
     events=read_events(path)
     marks=lambda label:[t for t,e in events if e[0]=='cpu' and int(e[4],16)==labels[label]]
     reads=marks('pointer_port_read');starts=marks('pointer_sample');ends=marks('pointer_sample_return')
@@ -24,8 +24,8 @@ def timing(path,labels):
     for t in entries:
         i=bisect_left(returns,t)
         if i<len(returns):irq_costs.append(returns[i]-t)
-    sio=analyze(path,labels,divisor=8,all_events=events)
-    require(sio['verdict']=='pass','Mouse/SIO timing: '+str(sio['violations']))
+    sio=analyze(path,labels,divisor=divisor,all_events=events) if serial else None
+    if serial:require(sio['verdict']=='pass','Mouse/SIO timing: '+str(sio['violations']))
     return dict(sample_gaps=stats(gaps),sample_cost=stats(costs),sample_count=len(reads),
                 native_irq_service=stats(irq_costs),irq_cost_scope='Native IRQ entry through fixed source routing return; scheduler/RTI excluded',
                 serial=sio,timer_accounting=accounting(path,labels)),reads

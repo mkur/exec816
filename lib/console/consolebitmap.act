@@ -10,7 +10,7 @@ USE LAYERS
 USE REGIONS
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-bitmap-types.inc"
-BYTE drawingPending
+BYTE drawingPending,drawingChanged
 LONGCARD completionMask
 
 PUBLIC EXTERNAL PROC Call(ADDRESS entry)
@@ -74,6 +74,10 @@ PUBLIC BYTE FUNC Run(CARD operation)
   packet.operation=operation
   packet.status=DISPLAY.BAD_ARGUMENT
   Call(state.entry)
+  IF operation=OP_FILL OR operation=OP_TEXT OR operation=OP_TEXT_FILL
+      OR operation=OP_TEXT_CLIP OR operation=OP_SCROLL THEN
+    drawingChanged=1
+  FI
   IF packet.status=DISPLAY.BUSY AND
       (operation=OP_SCROLL OR operation=OP_POLL) THEN
     RETURN(1)
@@ -290,5 +294,21 @@ PUBLIC PROC Poll()
   FI
 
 RETURN
+
+PUBLIC BYTE FUNC Changed()
+
+RETURN(drawingChanged)
+
+PUBLIC BYTE FUNC Cursor(CARD x,y BYTE visible)
+  BYTE result
+
+  LET packet=GetPacket()
+  packet.x=x
+  packet.y=y
+  packet.width=CARD(visible)
+  result=Run(OP_POINTER)
+  drawingChanged=0
+
+RETURN(result)
 
 ENDMODULE

@@ -7,6 +7,7 @@ USE CONSOLECAPTURE
 USE CONSOLEFOREGROUND
 USE CONSOLEWINDOWS
 USE HEAPCORE
+USE DESKINPUT
 INCLUDE "console-storage-action.inc"
 INPUT.Event capturedEvent
 
@@ -167,7 +168,9 @@ PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
     FI
 
     entry=CONSOLEFOREGROUND.Resolve(capturedEvent.route)
-    IF capturedEvent.kind=INPUT.EVENT_LOSS THEN
+    IF DESKINPUT.Key(@capturedEvent)<>0 THEN
+      ; The graphical endpoint owns this capture-time route.
+    ELSEIF capturedEvent.kind=INPUT.EVENT_LOSS THEN
       IF entry<>NULL THEN
         Lose(CONSOLETYPES.Instance POINTER(entry.instance))
       FI

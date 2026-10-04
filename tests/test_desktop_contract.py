@@ -16,8 +16,8 @@ class DesktopContractTests(unittest.TestCase):
                          if line.startswith('PUBLIC CONST ')]
             self.assertEqual(len(constants), len(set(constants)))
         sizes = {name: value['size'] for name, value in generate_desktop.layout().items()}
-        self.assertEqual(sizes['Request'], 78)
-        self.assertEqual(sizes['Service'], 10378)
+        self.assertEqual(sizes['Request'], 80)
+        self.assertEqual(sizes['Service'], 10532)
         self.assertEqual(generate_desktop.layout()['Request']['fields']['message'], 0)
         constants = generate_desktop.ABI['constants']
         self.assertEqual(constants['EVENTS'] & (constants['EVENTS'] - 1), 0)

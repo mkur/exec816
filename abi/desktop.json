@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 4,
@@ -42,7 +42,9 @@
     "LANE_CONTROL": 1,
     "LANE_CONTENT": 2,
     "LANE_EVENT": 4,
-    "LANE_CANCEL": 8
+    "LANE_CANCEL": 8,
+    "EVENT_CANCEL": 7,
+    "TICK_VALID": 1
   },
   "records": {
     "Event": [
@@ -84,6 +86,10 @@
       ],
       [
         "qualifiers",
+        "CARD"
+      ],
+      [
+        "flags",
         "CARD"
       ]
     ],
@@ -274,6 +280,10 @@
         "LONGCARD"
       ],
       [
+        "keyRoute",
+        "LONGCARD"
+      ],
+      [
         "kind",
         "BYTE"
       ],
@@ -331,6 +341,18 @@
       [
         "consoleWindow",
         "LONGCARD"
+      ],
+      [
+        "keyboard",
+        "BYTE POINTER"
+      ],
+      [
+        "consoleRoute",
+        "LONGCARD POINTER"
+      ],
+      [
+        "consoleFocus",
+        "BYTE POINTER"
       ],
       [
         "clients",

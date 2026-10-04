@@ -3,7 +3,7 @@
 [Reference](README.md) · [Layers](layers.md) · [Implementation plan](../plans/gem4xe/desktop-implementation-plan.md)
 
 The native service implements window identities, retained command content,
-asynchronous events and a worker-hosted bitmap presenter. DT2 connects one
+asynchronous events and a worker-hosted bitmap presenter. DT3 connects one
 64×20 shell console and retained graphical windows to Layers. It is an ordinary library and message service above Exec; it
 adds no kernel gateway or resident Task by itself.
 
@@ -121,20 +121,45 @@ processing proves completion or quiescence. Obscured scrolls update retained
 cells and redraw visible damage. No per-frame polling is added. Existing
 reset-required hardware faults cannot return to free referenced storage.
 
-The current frame is a title band and fixed border. There are no mouse gestures,
-close gadgets or graphical input routing yet. Those are later desktop slices.
+The presenter acquires the ST mouse source on joystick port 1 with the existing
+Timer 1 sampler and left button. A separate owned signal and route wake bounded
+input draining; idle turns do not call Take just to discover an empty queue.
+Coordinates are absolute and clipped to 640×240, with no acceleration. Hardware
+capture remains independent of window geometry and rendering.
+
+Each graphical window has a keyboard route. Focus commits that route together
+with the console foreground selection. Captured keys and BREAK keep their route
+through later focus changes. Graphical KEY events contain the raw Atari scan code
+and qualifiers, not translated ASCII; CANCEL represents BREAK or the configured
+cancel key. Console routes retain their existing translation and Process-group
+cancellation policy. Event flags preserve INPUT.TICK_VALID; durable notices do
+not invent capture timestamps. Delivery sequence numbers are monotonic.
+
+Pointer hit testing and click-to-focus run in the presenter. Focus changes wait
+for a live drawing token to retire. The pointer restores its saved background
+before intersecting drawing and is shown after each quiescent quantum, including
+an early pass after input intake. Motion accumulates during DMA; input delivery
+continues. Both odd/even mask variants stay in VRAM, avoiding per-move uploads.
+A source loss disarms interaction until a released-button observation. Closing a
+graphical window discards and retires its route; shutdown releases the source,
+signal and software pointer before the display and keyboard retire.
+
+The current frame is a title band and fixed border. Dragging and close gadgets
+are DT4 work. Pointer response targets have not all passed; the execution record
+separates exact capture/pixel correctness from measured responsiveness.
 
 ## Storage and validation
 
-The generated service occupies 10,378 bytes in upper RAM, including the
-4,782-byte Layers scene, four 444-byte client records, four 760-byte windows
+The generated service occupies 10,532 bytes in upper RAM, including the
+4,782-byte Layers scene, four 476-byte client records, four 764-byte windows
 and one 710-byte staging batch. Client records are 18 bytes and requests are
-78 bytes, excluding their ordinary Exec reply ports. The service heap request
-rounds to 10,384 bytes at Exec’s eight-byte alignment; unused window/queue/list
-capacity is included. DT2 runtime/controller globals have 138 payload bytes in
-upper image RAM (plus compiler alignment). No new bank-zero pool,
+80 bytes, excluding their ordinary Exec reply ports. The service heap request
+rounds to 10,536 bytes at Exec’s eight-byte alignment; unused window/queue/list
+capacity is included. DT3 runtime/controller globals have 280 payload bytes in
+upper image RAM (plus compiler alignment). Pointer save/masks reserve 1,280 VRAM bytes at `$37000–$374FF`, an increase of
+256 reserved bytes (the former slack is now used). The command arena starts at
+`$38000`; there is no overlap or additional CPU aperture. No new bank-zero pool,
 stack or DP reservation is introduced.
 
 [Development evidence](../history/desktop.md) records raw/optimized execution,
-stack observations and limits. These checks do not establish pointer latency, desktop readiness or
-whole-system qualification.
+stack observations and limits. These checks do not establish physical-device or whole-system qualification.

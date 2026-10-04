@@ -29,6 +29,9 @@ static UWORD dirty, fault;
 static UBYTE commands[VBXE_BCB_BYTES];
 static UWORD commandCount;
 static ULONG commandWork;
+static void pointer_reset(void);
+static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom);
+
 
 
 static void latch(UWORD status) { if (status && !fault) fault=status; }
@@ -140,6 +143,7 @@ UWORD GemDrawingOpen(WORD *out)
     for (i=0;i<VBXE_LIST_RECORDS;i++) memcpy(commands+i*21,template,21);
     dirty=fault=commandCount=0;
     commandWork=0;
+    pointer_reset();
     status=GemVdiOpen(out);
     flush();
     if (!status && !fault) latch(VbxeOwnerShow(&display));
@@ -187,6 +191,7 @@ UWORD GemDrawingCopy(const struct VbxeCopy *copy)
     if (fault) return DISPLAY_DEVICE_FAULT;
     status=DisplayCheck(&display.lease);
     if (status!=DISPLAY_OK) return status;
+    pointer_erase(0,0,640,240);
     status=fence_owner();
     if (status!=DISPLAY_OK) return status;
     status=VbxeOwnerCopyRect(&display,copy);
@@ -208,7 +213,9 @@ UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
     status=DisplayCheck(&display.lease);
     if (status!=DISPLAY_OK) return status;
     if (display.scrollPending) return DISPLAY_BUSY;
-    if (pen>=16) return DISPLAY_BAD_ARGUMENT;
+    if (!copy || pen>=16) return DISPLAY_BAD_ARGUMENT;
+    pointer_erase(copy->destinationX,copy->destinationY,copy->destinationX+copy->width,
+                  copy->sourceY+copy->height);
     status=fence_owner();
     if (status!=DISPLAY_OK) return status;
     status=VbxeOwnerScrollStart(&display,copy,(UBYTE)(map_col[pen]*17),id);
@@ -267,13 +274,13 @@ void blit_text_fill(uint32_t font,uint16_t x,uint16_t y,const uint8_t *text,
     if (!fault) latch(VbxeOwnerTextFill(&display,font,x,y,text,count,ink,paper,&fill));
 }
 
-#ifndef GEM_DRAWING_ONLY
 #define CURSOR_SAVE 0x37000UL
 #define CURSOR_AND  0x37100UL
 #define CURSOR_OR   0x37200UL
+#define CURSOR_PARITY_BYTES 512UL
 static UWORD cursorX, cursorY, cursorVisible, cursorDrawn, cursorBytes, cursorRows;
 static ULONG cursorAddress;
-static UWORD cursorMaskParity;
+static UWORD cursorMasksReady;
 #include "gem-cursor-masks.h"
 
 
@@ -304,15 +311,18 @@ static void cursor_show(void)
     if (fault) return;
     /* Prepacked masks keep redraw/cursor work bounded in raw C builds too.
      * Clipping changes the blit extent; unused edge nibbles remain preserved. */
-    if (cursorMaskParity!=(cursorX&1)) {
-        memcpy(page,cursorMasks[cursorX&1],512);
-        latch(VbxeOwnerWrite(&display,CURSOR_AND,page,512));
-        if (!fault) cursorMaskParity=cursorX&1;
+    if (!cursorMasksReady) {
+        memcpy(page,cursorMasks,1024);
+        latch(VbxeOwnerWrite(&display,CURSOR_AND,page,1024));
+        if (!fault) cursorMasksReady=1;
     }
-    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_AND,16,cursorAddress,320,cursorBytes,cursorRows,255,0,4));
-    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_OR,16,cursorAddress,320,cursorBytes,cursorRows,255,0,3));
+    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_AND+(cursorX&1)*CURSOR_PARITY_BYTES,
+        16,cursorAddress,320,cursorBytes,cursorRows,255,0,4));
+    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_OR+(cursorX&1)*CURSOR_PARITY_BYTES,
+        16,cursorAddress,320,cursorBytes,cursorRows,255,0,3));
     if (!fault) cursorDrawn=1;
 }
+#ifndef GEM_DRAWING_ONLY
 static UWORD cursor_backend(void *context,const struct GemCursor *cursor)
 {
     UWORD status=DisplayCheck(&display.lease);
@@ -347,7 +357,7 @@ static UWORD open_backend(void *context,WORD *out)
         return status==DISPLAY_BUSY ? GEM_BUSY : status==DISPLAY_UNSUPPORTED ? GEM_UNSUPPORTED : GEM_DEVICE_FAULT;
     cursorX=cursorY=cursorVisible=cursorDrawn=cursorBytes=cursorRows=0;
     cursorAddress=0;
-    cursorMaskParity=2;
+    cursorMasksReady=0;
     return GEM_OK;
 }
 /* The saved background includes the edge nibbles, not just visible arrow
@@ -410,4 +420,39 @@ UWORD GemDrawingTextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     if (GemBitmapTextClip(x,y,text,count,fg,bg,left,top,right,bottom))
         return DISPLAY_BAD_ARGUMENT;
     return fence_owner();
+}
+
+
+static void pointer_reset(void)
+{
+    cursorX=cursorY=cursorVisible=cursorDrawn=cursorBytes=cursorRows=0;
+    cursorAddress=0;
+    cursorMasksReady=0;
+}
+
+/* The save includes adjacent edge nibbles. Restore before either is changed. */
+static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    if (cursorDrawn && left<(cursorX&~1U)+cursorBytes*2 && right>(cursorX&~1U) &&
+        top<cursorY+cursorRows && bottom>cursorY) cursor_hide();
+}
+
+UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible)
+{
+    UWORD status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (x>=640 || y>=240 || visible>1) return DISPLAY_BAD_ARGUMENT;
+    if (display.scrollPending) return DISPLAY_BUSY;
+    if (x!=cursorX || y!=cursorY || !visible) cursor_hide();
+    cursorX=x; cursorY=y; cursorVisible=visible;
+    cursor_show();
+    return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
+}
+
+/* Called by the admitted bitmap operation after complete geometry/source
+ * validation, before its first write. Invalid requests leave overlays intact. */
+void GemDrawingPrepare(UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    pointer_erase(left,top,right,bottom);
 }

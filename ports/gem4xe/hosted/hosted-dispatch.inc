@@ -84,12 +84,15 @@ void GemVdiReset(void)
 /* Ordinary drawing clients use the same device/font implementation, without
  * a VDI packet or service request. Validate the complete half-open rectangle
  * before converting to the device's inclusive geometry. */
+extern void GemDrawingPrepare(uint16_t,uint16_t,uint16_t,uint16_t);
+
 uint16_t GemBitmapFill(uint16_t x,uint16_t y,uint16_t right,uint16_t bottom,
                         uint16_t pen)
 {
     if (!vdev || x>right || right>640 || y>bottom || bottom>240 || pen>15)
         return 1;
     if (x==right || y==bottom) return 0;
+    GemDrawingPrepare(x,y,right,bottom);
     dev_fill_rect((WORD)x,(WORD)y,(WORD)(right-1),(WORD)(bottom-1),(WORD)pen);
     return 0;
 }
@@ -115,6 +118,8 @@ uint16_t GemBitmapTextFill(uint16_t x,uint16_t y,const uint8_t *text,uint16_t co
         uint16_t,uint16_t,uint16_t,uint16_t,uint16_t,uint16_t,uint16_t);
     if (!count || (x&1) || !bitmap_text_valid(x,y,text,count,foreground,background))
         return 1;
+    GemDrawingPrepare(x,y,x+count*8,y+8);
+    GemDrawingPrepare(fillX,fillY,fillX+width,fillY+height);
     vbxe_text_run_fill(x,y,text,count,foreground,background,fillX,fillY,width,height,pen);
     return 0;
 }
@@ -126,6 +131,7 @@ uint16_t GemBitmapText(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
     uint16_t i;
     if (!bitmap_text_valid(x,y,text,count,foreground,background)) return 1;
     if (!count) return 0;
+    GemDrawingPrepare(x,y,x+count*8,y+8);
     if (!(x&1)) {
         extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);
         vbxe_text_run(x,y,text,count,foreground,background);
@@ -156,6 +162,7 @@ uint16_t GemBitmapTextClip(uint16_t x,uint16_t y,const uint8_t *text,uint16_t co
     if (a>=c || b>=d) return 0;
     if (a==x && b==y && c==x+count*8 && d==y+8)
         return GemBitmapText(x,y,text,count,foreground,background);
+    GemDrawingPrepare(a,b,c,d);
     color=vwk.text_color; mode=vwk.wrt_mode; clip=vwk.clip;
     x0=vwk.xmn_clip; y0=vwk.ymn_clip; x1=vwk.xmx_clip; y1=vwk.ymx_clip;
     dev_fill_rect(a,b,c-1,d-1,background);

@@ -3,7 +3,7 @@
 #define EXEC_CONSOLE_BITMAP_H
 #include <hardware/vbxe-copy.h>
 struct ConsoleBitmapPacket { UWORD operation,status; ULONG text; UWORD x,y,width,height,foreground,background; struct VbxeCopy copy; ULONG token,completionMask; UWORD fillX,fillY,fillWidth,fillHeight,fillPen; UWORD clipLeft,clipTop,clipRight,clipBottom; };
-#define CON_BITMAP_VERSION 6
+#define CON_BITMAP_VERSION 7
 #define CON_BITMAP_OPEN 1
 #define CON_BITMAP_CLOSE 2
 #define CON_BITMAP_TEXT 3
@@ -14,4 +14,5 @@ struct ConsoleBitmapPacket { UWORD operation,status; ULONG text; UWORD x,y,width
 #define CON_BITMAP_POLL 8
 #define CON_BITMAP_TEXT_FILL 9
 #define CON_BITMAP_TEXT_CLIP 10
+#define CON_BITMAP_POINTER 11
 #endif

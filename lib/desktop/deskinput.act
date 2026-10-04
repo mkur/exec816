@@ -1,0 +1,263 @@
+; One presenter consumes captured input. IRQ code follows no window pointers.
+MODULE DESKINPUT
+USE EXEC
+USE INPUT
+USE A816MEMORY
+USE DESKTYPES
+USE DESKSTATE
+USE DESKCORE
+USE DESKEVENTS
+USE LAYERS
+USE CONSOLEBITMAP
+USE HEAPCORE
+
+INPUT.Lease lease
+INPUT.Config config
+INPUT.Event sample
+DESKTYPES.Event event
+LONGCARD wakeMask,route,focusPending
+INT cursorX,cursorY
+CARD buttons
+BYTE pending,dirty,acquired,signalBit,released,focusWanted
+
+PUBLIC LONGCARD FUNC Mask()
+
+RETURN(wakeMask)
+
+PUBLIC BYTE FUNC Start()
+  CARD status
+
+  signalBit=EXEC.AllocSignal(-1)
+  IF signalBit=$ff THEN
+    RETURN(0)
+  FI
+
+  wakeMask=LONGCARD(1) LSH signalBit
+  A816MEMORY.Clear(BYTE POINTER(@config),INPUT.CONFIG_BYTES)
+  config.version=INPUT.VERSION
+  config.source=INPUT.SOURCE_POINTER
+  config.wakeMask=wakeMask
+  config.pointerProtocol=INPUT.POINTER_ST
+  config.pointerPort=1
+  config.initialX=320
+  config.initialY=120
+  config.maxX=639
+  config.maxY=239
+  status=INPUT.Acquire(@lease,@config)
+  IF status=INPUT.OK THEN
+    status=INPUT.CreateRoute(@lease,0,@route)
+    IF status=INPUT.OK THEN
+      status=INPUT.PublishRoute(@lease,route)
+    FI
+
+    IF status<>INPUT.OK THEN
+      status=INPUT.Release(@lease)
+    ELSE
+      acquired=1
+      cursorX=320
+      cursorY=120
+      buttons=0
+      released=0
+      pending=1
+      dirty=1
+      focusWanted=0
+      RETURN(1)
+    FI
+  FI
+
+  EXEC.FreeSignal(signalBit)
+  wakeMask=0
+
+RETURN(0)
+
+PUBLIC PROC Stop()
+  CARD status
+  BYTE drawn
+
+  IF acquired<>0 THEN
+    drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),0)
+    status=INPUT.Release(@lease)
+    IF status<>INPUT.OK THEN
+      HEAPCORE.Abort($faea)
+    FI
+
+    EXEC.FreeSignal(signalBit)
+    acquired=0
+    wakeMask=0
+    route=0
+    pending=0
+    dirty=0
+    focusWanted=0
+  FI
+
+RETURN
+
+PROC Copy(INPUT.Event POINTER captured)
+
+  A816MEMORY.Clear(BYTE POINTER(@event),DESKTYPES.EVENT_SIZE)
+  event.route=captured.route
+  event.tick=captured.tick
+  event.flags=CARD(captured.flags)
+  event.x=captured.x
+  event.y=captured.y
+  event.code=captured.code
+  event.buttons=captured.buttons
+  event.qualifiers=captured.qualifiers
+
+RETURN
+
+; Return handled for graphical routes, including events captured before focus
+; moved. Console routes continue through the existing CON translation path.
+PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
+  BYTE slot
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR acquired=0 THEN
+    RETURN(0)
+  FI
+
+  FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+    BEGIN
+      LET window=@service.windows(slot)
+      IF window.id<>0 AND window.keyRoute<>0 AND window.keyRoute=captured.route THEN
+        Copy(captured)
+        event.window=window.id
+        event.kind=DESKTYPES.EVENT_KEY
+        IF captured.kind=INPUT.EVENT_LOSS THEN
+          event.kind=DESKTYPES.EVENT_LOSS
+        ELSEIF captured.kind=INPUT.EVENT_CANCEL THEN
+          event.kind=DESKTYPES.EVENT_CANCEL
+        FI
+
+        DESKEVENTS.Post(service,window.client,@event)
+        RETURN(1)
+      FI
+    END
+  OD
+
+RETURN(0)
+
+PROC Consume()
+  BYTE slot
+  LONGCARD layerId
+
+  LET service=DESKSTATE.Get()
+  Copy(@sample)
+  IF sample.kind=INPUT.EVENT_LOSS THEN
+    released=0
+    focusWanted=0
+    event.kind=DESKTYPES.EVENT_LOSS
+    FOR slot=0 TO DESKTYPES.CLIENTS-1 DO
+      IF service.clients(slot).id<>0 THEN
+        DESKEVENTS.Post(service,service.clients(slot).id,@event)
+      FI
+    OD
+
+    RETURN
+  FI
+
+  cursorX=sample.x
+  cursorY=sample.y
+  buttons=sample.buttons
+  dirty=1
+  IF buttons=0 THEN
+    released=1
+  FI
+
+  layerId=LAYERS.Hit(@service.scene,cursorX,cursorY)
+  FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+    BEGIN
+      LET window=@service.windows(slot)
+      IF window.id<>0 AND window.layer=layerId THEN
+        event.window=window.id
+        event.kind=DESKTYPES.EVENT_MOTION
+        IF sample.kind=INPUT.EVENT_BUTTON THEN
+          event.kind=DESKTYPES.EVENT_BUTTON
+          IF (buttons & INPUT.LEFT)<>0 AND released<>0 THEN
+            focusPending=window.id
+            focusWanted=1
+          FI
+        FI
+
+        DESKEVENTS.Post(service,window.client,@event)
+        EXIT
+      FI
+    END
+  OD
+
+RETURN
+
+; Retain a hint only until an actual empty observation. Never poll while idle.
+PUBLIC PROC Service(LONGCARD bits)
+  CARD count,status
+
+  IF acquired=0 THEN
+    RETURN
+  FI
+
+  IF (bits & wakeMask)<>0 THEN
+    pending=1
+  FI
+
+  IF pending<>0 THEN
+    count=0
+    WHILE count<16 DO
+      status=INPUT.Take(@lease,@sample)
+      IF status=INPUT.EMPTY THEN
+        pending=0
+        EXIT
+      FI
+
+      IF status<>INPUT.OK THEN
+        HEAPCORE.Abort($faeb)
+      FI
+
+      Consume()
+      count==+1
+    OD
+  FI
+
+  LET service=DESKSTATE.Get()
+  IF focusWanted<>0 AND service.scene.busy=0 THEN
+    BEGIN
+      LET window=DESKCORE.Find(service,focusPending)
+      IF window<>NULL THEN
+        BEGIN
+          LET layer=DESKCORE.Layer(service,window)
+          IF layer<>NULL AND layer.shown<>0 THEN
+            DESKCORE.Focus(service,window.id)
+          FI
+        END
+      FI
+    END
+    focusWanted=0
+  FI
+
+RETURN
+
+; The C overlay restores its saved pixels before intersecting draws. Redraw it
+; last, after each quiescent rendering quantum; never touch an active DMA list.
+PUBLIC PROC Present()
+  BYTE drawn
+
+  IF acquired<>0 AND CONSOLEBITMAP.Pending()=0 THEN
+    IF dirty<>0 OR CONSOLEBITMAP.Changed()<>0 THEN
+      drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),1)
+      dirty=0
+    FI
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC Runnable()
+
+  IF acquired=0 THEN
+    RETURN(0)
+  FI
+
+  LET service=DESKSTATE.Get()
+
+RETURN(pending<>0 OR (focusWanted<>0 AND service.scene.busy=0)
+    OR (dirty<>0 AND CONSOLEBITMAP.Pending()=0))
+
+ENDMODULE

@@ -7,6 +7,8 @@ void ConsoleBitmapEntry(void)
 {
     struct ConsoleBitmapPacket *p=&ConsoleBitmapPacket;
     switch (p->operation) {
+    case CON_BITMAP_POINTER:
+        p->status=GemDrawingPointer(p->x,p->y,p->width); break;
     case CON_BITMAP_OPEN:
         p->completionMask=0;
         p->status=GemDrawingOpen(workout);

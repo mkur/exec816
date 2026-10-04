@@ -102,7 +102,7 @@ assuming work is pending. Current behavior belongs in the
   [DT0–DT7 implementation plan](gem4xe/desktop-implementation-plan.md) covers one
   presentation worker, client/event lifetime, a framed shell, ST mouse timing
   before dragging, two independent clients, exposure repair and the optional
-  preview. DT0–DT2 have development evidence; DT3–DT7 remain pending.
+  preview. DT0–DT3 have development evidence; pointer p95 limits remain open. DT4–DT7 remain pending.
   [Current desktop contract](../reference/desktop.md).
 - [Physical mouse design for hosted GEM](gem4xe/physical-mouse-design.md): implemented
   ST mouse on port 1 using Altirra's existing configuration, with shared SIO

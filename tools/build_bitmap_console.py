@@ -37,7 +37,7 @@ def drawing(out,optimize,probe=False,fault=False):
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
             'gem-vbxe.c':['-DGEM_DRAWING_ONLY']},
         probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())])
-    for name in ('GemServiceWorker','GemClientInit','GemVbxeBackend','cursor_show','cursor_hide'):
+    for name in ('GemServiceWorker','GemClientInit','GemVbxeBackend'):
         require(name not in foreign['symbols'],'Unexpected GUI policy: '+name)
     foreign['provenance'].update(extraction=extraction,fixture_bridge=probe,fixture_fault=fault,source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [*sources,*assembly,ROOT/'abi/console-bitmap.json',ROOT/'c/include/hardware/console-bitmap.h']})
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')

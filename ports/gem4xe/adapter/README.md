@@ -39,7 +39,7 @@ description; fill uses half-open pixel bounds, and text uses top-left 8×8 cells
 with explicit foreground/background pens. Text must fit completely on screen.
 The CPU string must not overlap the mapped `$8000–$8FFF` aperture.
 An empty valid rectangle or string does not draw. Every successful operation
-in this original synchronous group fences before returning. Build with `GEM_DRAWING_ONLY` to omit service and cursor
+in this original synchronous group fences before returning. Build with `GEM_DRAWING_ONLY` to omit service policy while sharing drawing and pointer
 policy; the caller must own the display. There remains one drawing session per
 image, shared with the service when linked together. This is a C interface;
 calling it from Action! requires the separately tested language bridge in B6.
@@ -128,7 +128,7 @@ G4 reserves zero additional bank-zero bytes: fixed, each public Task, and idle.
 The existing whole C code/data banks remain reserved (131,072 bytes including
 unused capacity); staging consumes 4,096 bytes within the data bank. B1 adds 4,096 construction bytes inside the existing data bank. VRAM now
 reserves 111,872 bytes including padding: screen 81,920, XDL 256, BCB 4,096,
-font masks 20,480 (18,432 used), glyph scratch 4,096 and cursor storage 1,024. These reservations are
+font masks 20,480 (18,432 used), glyph scratch 4,096 and cursor storage 1,280. These reservations are
 separate from CPU RAM. The test's 76,800-byte CPU readback allocation, font copy
 and borrowed observer scratch are diagnostics, not production renderer storage.
 
@@ -157,7 +157,7 @@ scope. Combining this renderer with a computing peer, physical SDFS traffic,
 console transitions and the broader service failure matrix is recorded by G5.
 The [input implementation](../../../docs/history/gem-input.md) adds a supervised
 keyboard application and renderer-owned cursor. The fixed arrow uses 256-byte
-save, AND and OR planes plus 256 reserved slack bytes at `$37000`. Hide/restore
+save and both even/odd AND/OR planes at `$37000–$374FF`. Hide/restore
 precedes each scene mutation; fence saves and redraws without changing VDI
 attributes. CPU staging is reused only after flushing; glyph scratch stays separate.
 I5 checks exact odd/even/edge pixels, stationary redraws, reopen and each fault phase.

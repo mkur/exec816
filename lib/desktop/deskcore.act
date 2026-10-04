@@ -1,6 +1,7 @@
 ; Single-owner window policy and IPC. Hardware presentation is a separate module.
 MODULE DESKCORE
 USE EXEC
+USE INPUT
 USE EXECLISTS
 USE A816MEMORY
 USE HEAPCORE
@@ -104,6 +105,8 @@ RETURN(LAYERS.Find(@service.scene,window.layer))
 ; Focus notices are retained independently of ordinary input queue capacity.
 PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
   BYTE index,status
+  CARD inputStatus
+  LONGCARD route
   DESKTYPES.ClientRecord POINTER client
 
   IF service.focus=id THEN
@@ -125,7 +128,34 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
     FI
   OD
 
+  EXEC.Forbid()
   service.focus=id
+  IF service.keyboard<>NULL THEN
+    route=0
+    IF service.consoleFocus<>NULL THEN
+      service.consoleFocus^=255
+    FI
+
+    IF id<>0 AND id=service.consoleWindow AND service.consoleRoute<>NULL
+        AND service.consoleFocus<>NULL THEN
+      route=service.consoleRoute^
+      service.consoleFocus^=0
+    ELSE
+      BEGIN
+        LET window=Find(service,id)
+        IF window<>NULL THEN
+          route=window.keyRoute
+        FI
+      END
+    FI
+
+    inputStatus=INPUT.PublishRoute(INPUT.Lease POINTER(service.keyboard),route)
+    IF inputStatus<>INPUT.OK THEN
+      HEAPCORE.Abort($fae8)
+    FI
+  FI
+
+  EXEC.Permit()
   FOR index=0 TO DESKTYPES.CLIENTS-1 DO
     IF service.clients(index).id<>0 THEN
       DESKEVENTS.Wake(service,@service.clients(index))
@@ -138,6 +168,7 @@ RETURN
 CARD FUNC Open(DESKTYPES.Service POINTER service
     DESKTYPES.ClientRecord POINTER client DESKTYPES.Request POINTER request)
   BYTE slot,status
+  CARD inputStatus
 
   IF request.value<>DESKTYPES.CONTENT_COMMANDS
       AND request.value<>DESKTYPES.CONTENT_CONSOLE THEN
@@ -168,8 +199,20 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
     IF service.windows(slot).id=0 THEN
       BEGIN
         LET window=@service.windows(slot)
+        IF request.value=DESKTYPES.CONTENT_COMMANDS AND service.keyboard<>NULL THEN
+          inputStatus=INPUT.CreateRoute(INPUT.Lease POINTER(service.keyboard),0,@window.keyRoute)
+          IF inputStatus<>INPUT.OK THEN
+            RETURN(DESKTYPES.FULL)
+          FI
+        FI
+
         status=LAYERS.Create(@service.scene,@request.bounds,@window.layer)
         IF status<>LAYERTYPES.OK THEN
+          IF window.keyRoute<>0 THEN
+            inputStatus=INPUT.RetireRoute(INPUT.Lease POINTER(service.keyboard),window.keyRoute)
+            window.keyRoute=0
+          FI
+
           RETURN(DESKTYPES.BAD_ARGUMENT)
         FI
 
@@ -255,6 +298,7 @@ RETURN(DESKTYPES.OK)
 CARD FUNC Dispatch(DESKTYPES.Service POINTER service
     DESKTYPES.Request POINTER request)
   BYTE index,status
+  CARD inputStatus
   DESKTYPES.Request POINTER waiting
   DESKTYPES.Window POINTER window
 
@@ -375,6 +419,14 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
           DESKEVENTS.Retire(client,window.id,index)
         FI
       OD
+
+      IF window.keyRoute<>0 THEN
+        inputStatus=INPUT.Discard(INPUT.Lease POINTER(service.keyboard),window.keyRoute)
+        inputStatus=INPUT.RetireRoute(INPUT.Lease POINTER(service.keyboard),window.keyRoute)
+        IF inputStatus<>INPUT.OK THEN
+          HEAPCORE.Abort($fae9)
+        FI
+      FI
 
       IF service.consoleWindow=window.id THEN
         service.consoleWindow=0

@@ -23,6 +23,7 @@ USE DISPLAY
 USE DISPLAYADAPTER
 USE DESKHOST
 USE DESKPAINT
+USE DESKINPUT
 INCLUDE "console-storage-action.inc"
 CONST DELETE=127
 
@@ -492,7 +493,13 @@ PUBLIC PROC Worker()
     RETURN
   FI
 
-  IF Initialize(service,defaultInstance)=0 OR DESKHOST.Start()=0 THEN
+  registered=Initialize(service,defaultInstance)
+  IF registered<>0 AND DESKHOST.Start()=0 THEN
+    CONSOLECAPTURE.Release()
+    registered=0
+  FI
+
+  IF registered=0 THEN
     FreeStorage(service,defaultInstance)
     registered=EXEC.UnregisterResident()
     EXEC.FreeSignal(29)
@@ -522,7 +529,7 @@ PUBLIC PROC Worker()
   ; Stop may be requested after the final write reply but before DMA retires.
   WHILE service.stop=0 OR CONSOLEBITMAP.Pending()<>0
       OR batch.phase<>CONSOLETYPES.BATCH_IDLE DO
-    bits=Collect(bits,displayMask)
+    bits=Collect(bits,displayMask OR desktopMask)
     IF (bits & STOP_MASK)<>0 THEN
       stopping=1
     FI
@@ -542,7 +549,11 @@ PUBLIC PROC Worker()
     IF DESKHOST.Ready()<>0 THEN
       CONSOLECONTROL.Process()
     FI
+    DESKINPUT.Service(bits)
     inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)
+    ; Present newly consumed motion before spending another quantum on output.
+    ; Intersecting draws erase it safely and the final pass restores it.
+    DESKINPUT.Present()
     bits=0
 
     Arrival(service)
@@ -588,6 +599,7 @@ PUBLIC PROC Worker()
     FI
 
     DESKPAINT.Pump()
+    DESKINPUT.Present()
     IF CONSOLEBITMAP.Pending()<>0 THEN
       IF Runnable(service,inputPending)<>0 OR DESKHOST.Runnable()<>0 THEN
         EXEC.Yield()
