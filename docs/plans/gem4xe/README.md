@@ -29,7 +29,9 @@ broader hosted qualification remain separate work.
 
 The next graphics milestone is the [first desktop](desktop-design.md): one
 presentation worker, a framed movable shell window, then overlapping windows
-and exposure repair. This is a proposed design; implementation remains pending.
+and exposure repair. Its [DT0–DT7 implementation plan](desktop-implementation-plan.md)
+adds client/event lifetime, an ST sampling and visible-response checkpoint before
+dragging, and a second independent application Task. All slices remain pending.
 The [Layers foundation](../../reference/layers.md) is implemented through its
 [bounded library plan](../layers-implementation-plan.md); the desktop presenter
 and console integration remain next work.

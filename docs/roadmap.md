@@ -19,9 +19,12 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
 The next graphics milestone is the **first desktop on Exec816**. The
 [design note](plans/gem4xe/desktop-design.md) proposes a desktop background,
 ST mouse pointer and one framed, movable shell window, followed by a second
-overlapping window to prove focus, clipping and exposure repair. Prepare the
-executable implementation plan around those boundaries before adding a file
-browser, menus or broader AES compatibility.
+overlapping window from an independent application Task to prove focus, clipping
+and exposure repair. The [DT0–DT7 implementation plan](plans/gem4xe/desktop-implementation-plan.md)
+is ready: client/event lifetime, Layers integration, an ST capture and visible
+pointer checkpoint before dragging, independent clients, loaded shutdown and
+the optional preview. All slices remain pending. File browsing, menus and
+broader AES compatibility follow this milestone.
 
 The [Layers library](reference/layers.md) now provides bounded regions, cached
 visibility, stacking, damage and drawing transactions. Its

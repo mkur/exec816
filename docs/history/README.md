@@ -19,6 +19,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Desktop development](desktop.md): frozen shell/mouse inputs and Task/memory
+  budgets; window presentation and its measurements follow in DT1–DT7.
 - [Layers development](layers.md): bounded regions, cached visibility and
   damage transactions; raw/optimized emitted software raster and storage checks.
 - [Bulk console output batching](console-output-batching.md): one multi-row

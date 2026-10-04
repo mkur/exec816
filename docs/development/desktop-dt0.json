@@ -1,0 +1,211 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "slice": "DT0",
+  "qualification": false,
+  "sources": {
+    "toolchain/actionc.json": "f31077466a9ef240f8d49fd2f62cd8503b5975c164127573834b09a7d05ba3cc",
+    "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
+    "build/mouse-bridge/AltirraBridgeServer": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "build/firmware/altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "build/output-batching/demo/program.xex": "0dd4bf92f875b338798602f7c907f515274dd1b5ec6acf31b8574a7538ac35bd",
+    "build/output-batching/demo/of816/Exec-of816.xex": "b4f210da76d2287c10e88832beef830a76401392d3319eff456cab393ee6b1b6",
+    "build/output-batching/demo/demo-manifest.json": "9b6e8f0302646ab59f2f6c603807258ab87c8f0b08032aaa6c4efdfd65c690c0",
+    "build/output-batching/demo/demo-results.json": "ce525332246a6513ba3d52a229e7d2ba88c48fb522fbd3bbbd4653cf2ee0d1a0",
+    "build/output-batching/demo/system.atr": "169b922e853d5e7a0e83262bd38ecccbc7794a3c9a60c8a7c8ab6ee178087749",
+    "build/output-batching/unloaded-input.json": "bc9a78ab6a2a7fa1a1e687accc124d09a368837bfa45dd07059a20278a41eae6",
+    "docs/development/console-output-batching-ob5.json": "01844942364423733f60ebb35b57d97f6a15da6213be969186082b63c7f63ebd",
+    "docs/development/gem-mouse-m5.json": "28f1650c2082943fb66b640c23808bd76aa80e2c93ad23964ea5f3b2737b82ec",
+    "docs/development/layers-l4.json": "8a35e995a5e3a0808bc7135e8ced20b8502edd1f78cc2fe35c9cc4bf926c1042"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+  "autoboot_frames": 249,
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "public": [
+      1824,
+      1312,
+      1312,
+      1312,
+      1312,
+      1312,
+      2848,
+      2848
+    ],
+    "idle": 800,
+    "runtime_excluding_os": 25408,
+    "loading_excluding_os": 21872,
+    "runtime_including_os": 56128,
+    "loading_including_os": 52592
+  },
+  "task_pools": [
+    {
+      "dp": 2816,
+      "dp_reserved_bytes": 256,
+      "stack_base": 9232,
+      "stack_bytes": 1536,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 3072,
+      "dp_reserved_bytes": 256,
+      "stack_base": 12368,
+      "stack_bytes": 1024,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 3328,
+      "dp_reserved_bytes": 256,
+      "stack_base": 13424,
+      "stack_bytes": 1024,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 3584,
+      "dp_reserved_bytes": 256,
+      "stack_base": 14480,
+      "stack_bytes": 1024,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 3840,
+      "dp_reserved_bytes": 256,
+      "stack_base": 15536,
+      "stack_bytes": 1024,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 4096,
+      "dp_reserved_bytes": 256,
+      "stack_base": 16592,
+      "stack_bytes": 1024,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 4352,
+      "dp_reserved_bytes": 256,
+      "stack_base": 17648,
+      "stack_bytes": 2560,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 4608,
+      "dp_reserved_bytes": 256,
+      "stack_base": 20240,
+      "stack_bytes": 2560,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 4864,
+      "dp_reserved_bytes": 256,
+      "stack_base": 22832,
+      "stack_bytes": 512,
+      "interrupt_reserve": 256
+    }
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "task_ledger": {
+    "existing_prompt": 4,
+    "existing_pipeline": 6,
+    "proposed_desktop_prompt": 5,
+    "proposed_desktop_pipeline": 7,
+    "capacity": 8,
+    "root": "shell and desktop controller",
+    "workers": [
+      "console/presenter",
+      "sio",
+      "filesystem"
+    ],
+    "new_application": "one ordinary existing pool",
+    "presenter": "existing 2560-byte pool, admitted first"
+  },
+  "storage": {
+    "scene_bytes": 4782,
+    "resident_globals_capacity": 2048,
+    "new_ui_storage": "caller-owned heap in upper RAM",
+    "aperture": [
+      32768,
+      36864
+    ],
+    "vram": {
+      "framebuffer": [
+        0,
+        76800
+      ],
+      "xdl_base": 196608,
+      "pointer_save_and_masks": [
+        225280,
+        226048
+      ],
+      "command_arena": [
+        229376,
+        233472
+      ]
+    },
+    "backing_bitmaps": false
+  },
+  "measurement_contract": {
+    "motion_samples_per_case": 100,
+    "button_samples_per_case": 30,
+    "cases": [
+      "idle",
+      "scrolling",
+      "cold-read",
+      "two-client"
+    ],
+    "frame_phase": "vary phase in the pinned PAL clock",
+    "existing_echo": "Capture IRQ to drawing return only; not visible scanout",
+    "visible_baseline": "DT3 runs the new scanout observer against this frozen image"
+  },
+  "ownership": "Root controls the shell console/window; the second Task registers itself. Close streams and retire windows before destroying instances; retire clients before stopping the presenter."
+}

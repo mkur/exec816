@@ -1,12 +1,15 @@
 # First desktop on Exec816
 
-[Implementation plans](../README.md) · [Graphics work](README.md) ·
+[Implementation plan](desktop-implementation-plan.md) · [Graphics work](README.md) ·
 [Roadmap](../../roadmap.md)
 
 Proposed direction, 2026-10-04. Console development is paused at the working
 bitmap shell. The next milestone is a desktop background, the existing ST mouse
-pointer and one movable shell window. A second overlapping window follows to
-prove exposure, focus and independent output before adding a file browser.
+pointer and one movable shell window. A second independently scheduled client
+with an overlapping window follows to prove exposure, focus and independent
+output before adding a file browser. The
+[DT0–DT7 implementation plan](desktop-implementation-plan.md) defines the
+executable slices and the ST sampling/visible-response checkpoint before dragging.
 This note defines the proposed boundary; it does not describe implemented window
 support or claim that earlier console performance targets have been met.
 
@@ -65,6 +68,14 @@ execution Task is accounted for separately. The existing exclusive GEM demo stay
 a separately selected workload until its client requests have an explicit route
 through the presenter.
 
+The presenter also supplies the initial AES-like role: window ownership, focus,
+gesture state and event delivery. A client's event wait remains a pending
+request while the presenter serves other clients; menus and dragging must not
+introduce nested blocking loops. Application logic remains in independent Exec
+Tasks. The implementation plan specifies a small native window/event contract
+and retained fill/text content for the second client. Full AES compatibility
+remains later adaptation work.
+
 ## Rendering and movement
 
 The [Layers plan](../layers-implementation-plan.md) supplies the implemented
@@ -116,6 +127,13 @@ presentation. Keep one blitter operation in flight, with its existing completion
 IRQ and watchdog. Input capture and request intake continue while drawing and
 dependent retained edits wait for that operation to retire.
 
+Keep ST capture in the existing shared timer/IRQ path during integration. Once
+one window and the pointer work, measure controller-to-capture, queue service
+and capture-to-visible response before adding dragging. The historical sampling
+envelope does not establish desktop responsiveness. Revisit the sampler earlier
+if ordinary movement or button edges are lost; otherwise use the integrated
+workload to identify whether delay belongs to capture, delivery or drawing.
+
 ## Focus and lifetime
 
 Clicking a window raises and focuses it. Title-bar press captures a drag until
@@ -154,29 +172,20 @@ VBXE VRAM are separate budgets. See the
 [platform budget](../../reference/platform.md#bank-zero-memory-budget) and
 [display contract](../../reference/display.md).
 
-The implementation plan should produce these executable slices in order:
-
-1. Separate console content from desktop placement while preserving the existing
-   full-screen and tiled backends. Integrate Layers, window registration and
-   presentation requests without changing console stream semantics.
-2. Show a desktop background and one framed shell window. Integrate pointer and
-   keyboard focus into the same presentation worker; demonstrate shell input,
-   scrolling, disk reads and clean shutdown.
-3. Add title-bar capture, bounded outline movement and move commit. Verify exact
-   pixels after repeated moves, including movement requested during a scroll.
-4. Add a second overlapping window, stacking and exposure repair. A test panel
-   can prove composition before spending a Task on a second shell. Exercise
-   output into a covered console, focus changes and either window retiring first.
-5. Package the optional desktop preview through `tools/build_demo.py`, retaining
-   OF816, matching media and ROM, notices and the standard five-second autoboot.
+The [implementation plan](desktop-implementation-plan.md#executable-slices)
+defines DT0–DT7: pin inputs and budgets; implement client/window/event lifetime;
+integrate a framed shell with Layers and clipped rendering; add the pointer and
+measure ST capture/visible response; add dragging; prove overlapping windows
+from two independent application Tasks; test loaded shutdown and failures; then
+package the optional desktop preview with OF816 and matching media.
 
 Use development checks for these slices: focused emitted-code tests, raw and
 optimized bridge coverage, exact pixels, stale requests, input routing, bounds,
 stack/domain guards and selected IRQ/SIO coexistence cases. Compare short typing
 against the existing shell demo and measure input-to-pointer, drag feedback,
 move commit and exposure repair separately. Record CPU work, waits and final
-scanout instead of treating blitter completion as visible completion. Set desktop
-timing acceptance in the implementation plan; the old console goals remain
+scanout instead of treating blitter completion as visible completion. The plan
+sets proposed desktop timing acceptance; the old console goals remain
 recorded and are not prerequisites for starting this work.
 
 After window composition works, the next useful desktop application is a
