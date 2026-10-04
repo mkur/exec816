@@ -175,6 +175,10 @@ order. An unquiesced blitter fault retains referenced storage until reset.
 
 ## Demonstration client
 
+Build the optional local preview with `tools/build_demo.py --desktop`; the
+[distribution guide](../desktop-distribution.txt) describes ST/port 1 setup,
+interaction and the outstanding timing limits.
+
 `DESKAPP` owns an ordinary 1,024-byte-stack Task and one graphical window. A key
 or left-button press in its client area runs finite computation and installs a
 new retained batch. It initially leaves focus on the shell. A CLOSE event leads

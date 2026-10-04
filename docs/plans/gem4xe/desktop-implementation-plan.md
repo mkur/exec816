@@ -3,14 +3,14 @@
 [Design note](desktop-design.md) · [Plans](../README.md) ·
 [Roadmap](../../roadmap.md)
 
-Proposed, 2026-10-04. Implement the first Exec816 desktop by evolving the bitmap
+Implemented at the development tier, 2026-10-04; timing targets remain open. Implement the first Exec816 desktop by evolving the bitmap
 console worker into one presentation service. Deliver a framed movable shell,
 the existing ST mouse, and a second independent application with an overlapping
 window. Establish the window ownership and event contract that can later host
 selected GEM AES code. Commit each completed executable slice separately.
 
-Layers is implemented; desktop presentation is not. This plan does not claim
-that its timing targets or combined stack budget have passed. Current
+Layers and desktop presentation are implemented through DT7. This plan does
+not claim that all timing targets or whole-system qualification have passed. Current
 [console](../../reference/console.md), [input](../../reference/input.md),
 [Layers](../../reference/layers.md) and [display](../../reference/display.md)
 contracts remain authoritative until the corresponding slice updates them.
@@ -407,8 +407,8 @@ are reserved for release/qualification work, not every slice.
 
 ## Status
 
-DT0–DT6 are implemented at the development tier; see the [execution record](../../history/desktop.md).
-DT7 remains pending. DT3 passes functional capture/routing and pixel checks;
-pointer p95 targets remain open. DT4 outline and move-repair targets also
+DT0–DT7 are implemented at the development tier; see the [execution record](../../history/desktop.md).
+The local OF816 desktop preview is packaged. DT3 passes functional capture/routing and pixel checks;
+pointer response targets remain open, with two-client disk button delay also open in DT6. DT4 outline and move-repair targets also
 remain open and must stay visible in the later loaded record. Full-screen echo meets the regression target against the frozen DT0
 image. DT0 adds no runtime memory or Task.

@@ -264,3 +264,34 @@ Host checks pass: 338 tests, four historical audit skips; affected generated
 layouts are current. No runtime globals, VRAM or Tasks are added by shutdown
 handling. Reserved bank-zero growth remains **0 fixed, 0 root/kernel, 0 per
 existing public Task and 0 idle bytes**, including guards, alignment and slack.
+
+## DT7 Local desktop preview
+
+`tools/build_demo.py --desktop` selects the framed 64×20 shell plus the
+independent graphical application, with no primes. The default build retains
+its standard shell/prime workload and five-second OF816 autoboot. The optional
+ZIP contains only the OF816 XEX, matching system ATR, pinned AltirraOS ROM,
+short ST/port 1 guide, upstream notices and checksums. Existing cartridge work
+is preserved separately.
+
+[DT7 evidence](../development/desktop-dt7.json) records cold boot of the exact
+packaged media, physical app keys/clicks, title dragging, focus return to the
+shell, disk commands, a two-command pipeline and clean exit. Complete scanout is
+compared with independent recomposition from retained geometry/content; it does
+not reuse target visibility/damage calculations. Prompt occupancy is five Tasks;
+the pipeline peaks at seven of eight. Guards, DP/native return, final ownership
+and checksum/member checks pass. This is a local development preview, not a
+public release or whole-system/hardware qualification.
+
+The combined shell/application exceeds the former 2 KiB upper-RAM globals arena.
+The desktop package explicitly reserves 2,560 bytes there: 2,164 payload bytes,
+12 alignment bytes and 384 unused bytes. Reservation growth is **512 upper-RAM
+bytes**; other demo selections retain their existing profile. There is no new
+VRAM or Task pool. Reserved bank-zero growth is **0 fixed, 0 root/kernel, 0 per
+existing public Task and 0 idle bytes**, including guards, alignment and unused
+capacity. The application uses the existing ordinary pool recorded in DT5.
+
+The guide carries the open timing limits: pointer/outline response, disk-load
+button delay and move repair. Capture and lifecycle correctness do not close
+those targets. The next focused performance work is presentation scheduling,
+activation damage and move repair, before adding menus, resizing or a file browser.

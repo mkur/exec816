@@ -74,6 +74,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     with emulator(binary.parent,rom,out,pin=pin) as b:
         for key,value in manifest['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
         if stock_smoke:b.config('diskemu','810')
+        if desktop:b._cmd_ok('MOUSE ST')
+        saved['pointer']=(320,120)
         mounted=ROOT/'tests/fixtures/mydos/mydos450-128.atr' if disk_failure=='wrong' else None if disk_failure=='missing' else media_path
         mounted_hash=sha256(mounted) if mounted else None
         if mounted:b.mount(system_drive-1,str(mounted))
@@ -141,10 +143,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 terminal=Terminal(width,height);terminal.cells[:]=text
                 terminal.column=cursor%width;terminal.row=cursor//width
                 if desktop:
-                    from test_desktop_presentation import rectangle,frame
-                    rectangle(r,(0,0,640,240),8)
-                    frame(r,(32,24,560,208),b'Exec816 Shell',True)
-                    terminal.paint(r,5,5,caret=True)
+                    from desktop_oracle import compose
+                    packed=compose(b,p,r.font,terminal,saved['pointer'])
                 else:
                     terminal.paint(r,0,0,caret=True)
                 folder=out/f'pixels-{len(observations)}';folder.mkdir(exist_ok=True)
@@ -152,7 +152,26 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 frames(2)
                 if generations!=[number(i+console['INSTANCE_GENERATION']) for i in instances]:
                     return cells(label)
-                pixels(b,folder,r.packed())
+                if desktop:
+                    # Retained command installation precedes its final paint.
+                    # Compare actual scanout with full independent recomposition.
+                    from gem_render_oracle import PALETTE,PENS
+                    rgb=bytes((v&254)+(v>>7) for v in PALETTE)
+                    colors={hw:rgb[pen*3:pen*3+3][::-1] for pen,hw in enumerate(PENS)}
+                    for attempt in range(200):
+                        packed=compose(b,p,r.font,terminal,saved['pointer'])
+                        frame_data=b.rawscreen(str(folder/'scanout.bgra'))
+                        raw=(folder/'scanout.bgra').read_bytes()
+                        cropped=b''.join(raw[y*frame_data.stride+64:y*frame_data.stride+2624] for y in range(240))
+                        actual=b''.join(cropped[i:i+3] for i in range(0,len(cropped),4))
+                        want=b''.join(colors[v>>4]+colors[v&15] for v in packed)
+                        if actual==want:break
+                        frames(1)
+                    require(actual==want,'Desktop scene differs: '+label)
+                    pixels(b,folder,packed)
+                    print('Desktop scene:',label,flush=True)
+                else:
+                    pixels(b,folder,r.packed())
             else:
                 physical=b.memdump(saved['screen'],960);expected=bytearray(map(glyph,text))
                 expected[cursor]^=128
@@ -164,6 +183,44 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 require(b'PRIME SEARCH' in text[shell_cells:],'Missing prime tile')
                 observations.append(dict(stage=label,prime_frames=number(at('demoFrames')),prime_count=number(at('demoCount'),2),guest_frame=b.eval_expr('@frame')))
             return text
+        def desktop_interaction():
+            def symbol(module,name):
+                return next(d['address'] for d in p['image']['data'] if '_'+module+'_'+name.upper()+'_' in d['name'])
+            def move(x,y):
+                dx,dy=x-saved['pointer'][0],y-saved['pointer'][1]
+                index=0
+                while dx or dy:
+                    sx,sy=max(-8,min(8,dx)),max(-8,min(8,dy))
+                    b._cmd_ok(f'MOUSE AT {2000+index*85000} {sx*16} {sy*16} -1')
+                    dx-=sx;dy-=sy;index+=1
+                rendezvous(f'(dw(${symbol("DESKINPUT","cursorX"):x})={x})&(dw(${symbol("DESKINPUT","cursorY"):x})={y})')
+                saved['pointer']=(x,y)
+            def button(value):
+                b._cmd_ok(f'MOUSE AT 2000 0 0 {value}')
+                rendezvous(f'dw(${symbol("DESKINPUT","buttons"):x})={value}')
+                frames(2)
+            move(584,152);button(1);button(0)
+            updates=symbol('DESKAPP','updates')
+            rendezvous(f'dw(${updates:x})>=1')
+            previous=number(updates,2)
+            press('a')
+            rendezvous(f'dw(${updates:x})>{previous}')
+            cells('independent-app-key')
+            move(500,86);button(1)
+            rendezvous(f'db(${symbol("DESKDRAG","phase"):x})=1')
+            move(508,94);button(0)
+            rendezvous(f'db(${symbol("DESKDRAG","phase"):x})=0')
+            from generate_desktop import layout as desktop_layout
+            from generate_layers import layout as layers_layout
+            service=pointer(symbol('DESKSTATE','service'))
+            scene=service+desktop_layout()['Service']['fields']['scene']
+            bounds=scene+layers_layout()['Scene']['fields']['items']+layers_layout()['Layer']['size']+4
+            require([number(bounds+i*2,2) for i in range(4)]==[440,88,632,232],'Packaged drag did not commit expected geometry')
+            cells('independent-app-drag')
+            move(100,100);button(1);button(0)
+            cells('shell-focus-restored')
+            saved['desktop_interaction']=dict(app_updates=number(updates,2),drag_bounds=[440,88,632,232],pointer=saved['pointer'])
+
         def begin(command):
             previous=number(saved['scope']+14)
             for character in command+'\n':press(character)
@@ -265,6 +322,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 rendezvous(f'db(${saved["top"]+51:x})=2')
             dos=p['build']['memory']['dos_storage']['BASE'];saved['scope']=pointer(pointer(dos)+83)
             ready();cells('startup')
+            if desktop:desktop_interaction()
             if disk_failure:
                 require(b'SYS: mount failed; use CD SYS: to retry' in cells('failed-mount')[:shell_cells],
                         'Missing bounded system-volume failure message')
@@ -348,7 +406,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 if shell_only:
                     tasks=command('TASKS',b'dos.filesystem')
                     require(b'primes' not in tasks.lower(),'Prime task started in shell-only demo')
-                    require(ledger()['live']==4,'Unexpected shell-only idle Task count')
+                    require(ledger()['live']==(5 if desktop else 4),'Unexpected shell-only idle Task count')
+                    if desktop:require(b'desktop-app' in tasks,'Missing independent app Task')
                 mounted=command('MOUNT',b'SDFS')
                 require(mounted[:shell_cells].count(f'D{system_drive}:   SDFS'.encode())==1,
                         'Mount listing duplicated or omitted the physical volume')
@@ -363,7 +422,14 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 require(first['misses']==second['misses'] and second['hits']>first['hits'],
                         'Physical and SYS reads did not share the cache')
                 saved['sys_cache']=dict(physical=first,system=second)
-                command('SYS:CAT SYS:STORY.TXT | SYS:WC',b'24 133 746')
+                if desktop:
+                    previous=begin('SYS:CAT SYS:STORY.TXT | SYS:WC')
+                    rendezvous(f'db(${p["build"]["task_storage"]["LIVE"]:x})=7')
+                    saved['desktop_peak_tasks']=7
+                    ready(previous);result()
+                    require(b'24 133 746' in cells('desktop-pipeline'),'Desktop pipeline result differs')
+                else:
+                    command('SYS:CAT SYS:STORY.TXT | SYS:WC',b'24 133 746')
                 command('CD SYS:')
                 command('CD',f'D{system_drive}:'.encode())
                 command('HELLO',b'Hello from disk!')
@@ -449,13 +515,13 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
         autoboot_frames=saved.get('autoboot_frames'),
-        measurements=saved.get('measurements'),
+        measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
-        baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=None if stock_smoke or showcase or editing or disk_failure else 6 if shell_only else 7,
+        baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=saved.get('desktop_peak_tasks') if desktop else None if stock_smoke or showcase or editing or disk_failure else 6 if shell_only else 7,
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked 36/37-column edits, 255-byte command, BREAK recovery and physical Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Desktop OF816 autoboot, independent client input/drag/focus, disk commands, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked 36/37-column edits, 255-byte command, BREAK recovery and physical Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':

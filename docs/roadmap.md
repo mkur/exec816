@@ -21,12 +21,12 @@ The next graphics milestone is the **first desktop on Exec816**. The
 ST mouse pointer and one framed, movable shell window, followed by a second
 overlapping window from an independent application Task to prove focus, clipping
 and exposure repair. The [DT0–DT7 implementation plan](plans/gem4xe/desktop-implementation-plan.md)
-is ready: client/event lifetime, Layers integration, an ST capture and visible
+is implemented at the development tier: client/event lifetime, Layers integration, an ST capture and visible
 pointer checkpoint before dragging, independent clients, loaded shutdown and
-the optional preview. DT0–DT6 implement the native client/event service, framed
+the optional preview. DT0–DT7 implement the native client/event service, framed
 shell, ST input, nonblocking dragging and an independent application. Capture/routing and exact repair
 checks pass; pointer, outline and move-repair timing limits remain open.
-Loaded shutdown/fault checks pass; the packaged preview is next;
+Loaded shutdown/fault checks and the local OF816 preview pass;
 see the [execution record](history/desktop.md). File browsing, menus and
 broader AES compatibility follow this milestone.
 

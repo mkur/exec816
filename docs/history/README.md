@@ -21,7 +21,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 - [Desktop development](desktop.md): frozen shell/mouse inputs and Task/memory
   budgets, client lifetime, framed presentation and the ST input checkpoint.
-  DT0–DT6 are implemented; pointer, outline and repair timing limits remain open.
+  DT0–DT7 are implemented, including the local OF816 preview. Pointer, outline,
+  disk-load button and repair timing limits remain open.
 - [Layers development](layers.md): bounded regions, cached visibility and
   damage transactions; raw/optimized emitted software raster and storage checks.
 - [Bulk console output batching](console-output-batching.md): one multi-row

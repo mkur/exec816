@@ -115,3 +115,20 @@ python3 tools/test_mouse_observe.py --mode opt --output build/gem-mouse/m0/opt
 python3 tools/test_mouse_observe.py --mode opt --replay --output build/gem-mouse/m0/replay
 python3 tools/test_mouse_baseline.py --mode opt --case keyboard --output build/gem-mouse/m0/keyboard
 ```
+
+### Desktop preview
+
+Build the optional framed shell and independent graphical client (no primes):
+
+```sh
+python3 tools/build_demo.py --desktop --output build/desktop/preview
+python3 tools/test_demo.py --bundle build/desktop/preview --boot-smoke
+```
+
+The standard command without `--desktop` retains the five-second OF816 boot
+into the shell/prime demo. Both selections include OF816, the matching system
+ATR, pinned AltirraOS ROM, notices and checksums. Distribute only the generated
+`exec816-demo.zip`; development manifests, images and traces stay outside it.
+The [desktop guide](../desktop-distribution.txt) specifies ST mouse/port 1 and
+records the outstanding interaction timing limits. This builds a local preview;
+it does not publish a GitHub release.

@@ -43,6 +43,7 @@ Examples of focused selection, not a mandatory suite for every change:
 
 | Changed behavior | Development coverage |
 | --- | --- |
+| Desktop windows, clients and interaction | `test_desktop.py`, `test_desktop_presentation.py`, `test_desktop_apps.py` (raw/optimized); physical `test_desktop_drag.py`, `measure_desktop.py`; selected startup/fault tests in `test_desktop_startup.py` and `test_desktop_fault.py`. `test_demo.py --boot-smoke` cold-boots the exact `build_demo.py --desktop` package. See [desktop evidence](../history/desktop.md) for actual coverage and open timing targets. |
 | Layers/region geometry and drawing lifetimes | `tools/test_layers.py --mode raw/opt --output DIR`: independent region and scene pixel oracles, incremental software painting/copy fallback, stale/busy/exhausted transactions, bank-crossing scene storage, guards and OS return. This does not exercise VBXE window presentation. |
 | Retained console cells or controls | `tools/test_console_core.py` in raw/optimized mode. |
 | Bulk bitmap output | `tools/test_console_batch_core.py`, `tools/test_console_bitmap_scroll.py --batch`, and `tools/test_console_batch_lifetime.py` in raw/optimized mode; selected bitmap fault/control and fairness cases. `tools/measure_bitmap_cat.py` and `tools/measure_console_batch_load.py` record performance separately. |

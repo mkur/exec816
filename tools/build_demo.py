@@ -42,6 +42,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
             'The full 80 by 30 screen is your shell.\nNo prime task is started.\n\n'
             'Try TASKS, DIR, MEM, HELLO | WC,\nand CAT STORY.TXT | WC.\n'
             'EXIT returns to the OS.\n',encoding='ascii')
+    if desktop:
+        (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nDrag titles; Escape cancels a drag.\nClick the app and press a key to compute and repaint.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. Disk access is read-only.\n',encoding='ascii')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==set(commands)|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
@@ -53,13 +55,23 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     mounts[0]['sector_bytes']=sector_bytes
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
-    entry=ROOT/('examples/shell/shell.act' if bitmap_shell_only else 'examples/demo.act')
+    entry=ROOT/('examples/desktop.act' if desktop else 'examples/shell/shell.act' if bitmap_shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
     if bitmap_shell_only:
         from build_bitmap_console import build_bitmap
         from build_bitmap_artifact import copy_notices
+        desktop_layout={}
+        if desktop:
+            # The combined shell/client image needs 2,176 bytes of resident
+            # data. Reserve 2.5 KiB in upper RAM, including alignment and slack.
+            from generate_memory import PROFILE
+            profile=json.loads(PROFILE.read_text())
+            profile['image_data_bytes']=2560
+            profile_path=output/'desktop-memory.json'
+            profile_path.write_text(json.dumps(profile,indent=2)+'\n')
+            desktop_layout['memory_profile']=profile_path
         program=build_bitmap(source,output/'bitmap-console',program_output=output,
-            compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,system_mount=mount_config.get('system_mount'))
+            compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,system_mount=mount_config.get('system_mount'),**desktop_layout)
         copy_notices(output/'bitmap-console/selected',output)
         pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
     else:
@@ -69,8 +81,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     if bitmap_shell_only:
         guide=(ROOT/'docs/bitmap-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
     if desktop:
-        guide=guide.replace('80 by 30','64 by 20').replace('80×30','64×20')
-        guide='Exec816 framed desktop shell (development)\n\n'+guide
+        guide=(ROOT/'docs/desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
     (output/'README.md').write_text(guide)
     shutil.copyfile(ROOT/'docs/demo.png',output/'demo.png')
     (output/'images').mkdir(exist_ok=True)
@@ -96,12 +107,15 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
         bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=8,expected_peak_tasks=7,
         qualification='Focused development checks only; full release and general compiler qualification remain separate.')
     if bitmap_shell_only:
-        record.update(bitmap=True,shell_only=True,desktop=desktop,expected_peak_tasks=6,
+        record.update(bitmap=True,shell_only=True,desktop=desktop,expected_peak_tasks=7 if desktop else 6,
             font_source='bitmap-console/selected/src/vdi/font8x8.c')
         record['artifacts'].update({name:sha256(output/name) for name in GEM_NOTICES})
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             entry,ROOT/'docs/bitmap-shell-distribution.txt',ROOT/'tools/build_bitmap_console.py',ROOT/'tools/build_bitmap_artifact.py')})
         record['drawing']=json.loads((output/'bitmap-console/c-image.json').read_text())['provenance']
+    if desktop:
+        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
+            ROOT/'docs/desktop-distribution.txt',*sorted((ROOT/'lib/desktop').glob('*.act')))})
     graphics=None
     if gem_vdi:
         from build_gem_artifact import build as build_graphics
@@ -129,6 +143,7 @@ if __name__=='__main__':
     parser.add_argument('--sector-bytes',type=int,choices=(128,256),default=128)
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
+    parser.add_argument('--desktop',action='store_true',help='Autoboot a framed shell and independent graphical application with ST mouse input')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
-    args=parser.parse_args();result=bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only)
+    args=parser.parse_args();result=bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,args.desktop)
     print(f'Demo distribution ready: {args.output}/{result["distribution"]}')
