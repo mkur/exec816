@@ -165,9 +165,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             status=int.from_bytes(far(saved['shell']+32,4),'little',signed=True)
             cause=int.from_bytes(far(saved['shell']+36,4),'little',signed=True)
             require((status,cause)==(10 if error else 0,error),f'Demo command result: {status}/{cause}')
-        def command(text,expected=None):
+        def command(text,expected=None,error=0):
             print('Demo command:',text,flush=True)
-            previous=begin(text);ready(previous);result()
+            previous=begin(text);ready(previous);result(error)
             screen=cells(text)
             if expected is not None:require(expected in screen[:shell_cells],'Missing command output: '+text)
             commands.append(text)
@@ -350,7 +350,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 command('HELLO',b'Hello from disk!')
                 command('PATH',b'SYS:')
                 command('HEAD SYS:STORY.TXT LINES 3',b'Exec816')
-                command('HEAD MISSING',b'Object not found (205)')
+                command('HEAD MISSING',b'Object not found (205)',error=205)
                 command('HEAD ?',b'Arguments: FILE,LINES/K/N')
                 # Two ordinary DOS names must share the same warmed cache.
                 command(f'TYPE D{system_drive}:STORY.TXT',b'system should also know how to stop.')
