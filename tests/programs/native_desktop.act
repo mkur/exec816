@@ -1,0 +1,311 @@
+MODULE NATIVEDESKTOP
+USE EXEC
+USE A816MEMORY
+USE HEAPCORE
+USE DESKTOP
+USE DESKTYPES
+USE DESKCORE
+USE DESKEVENTS
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+
+DESKTYPES.Service POINTER service
+DESKTYPES.Client first,peer
+DESKTYPES.Request request,eventWait,cancel,peerRequest,peerWait
+DESKTYPES.Content POINTER content
+EXEC.Task POINTER root,worker,other
+LONGCARD window,peerWindow,token
+BYTE variant,finished,peerStage,stop,hold,held,inject,injectKind,injectCount
+LONGCARD injectClient,injectWindow
+CARD checks,injections
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+DESKTYPES.Request POINTER FUNC Receive(DESKTYPES.Client POINTER client)
+  DESKTYPES.Request POINTER reply
+  EXEC.Message POINTER message
+
+  reply=DESKTOP.Collect(client)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(client)
+  OD
+
+RETURN(reply)
+
+CARD FUNC Call(DESKTYPES.Client POINTER client DESKTYPES.Request POINTER item)
+
+  Require(DESKTOP.Submit(client,item)=DESKTYPES.OK)
+  Require(Receive(client)=item)
+
+RETURN(item.status)
+
+; Only this Task touches service-owned state, including diagnostic injection.
+PROC Presenter()
+  BYTE index,count
+  LONGCARD bits
+  DESKTYPES.Event input
+
+  Require(EXEC.AllocSignal(16)=16)
+  Require(DESKCORE.Init(service,16)<>0)
+  EXEC.Signal(root,$10000)
+  WHILE stop=0 DO
+    IF hold<>0 AND held=0 THEN
+      Require(LAYERS.BeginPaint(@service.scene,0,@token)=LAYERTYPES.OK)
+      held=1
+    ELSEIF hold=0 AND held<>0 THEN
+      Require(LAYERS.Finish(@service.scene,token,1)=LAYERTYPES.OK)
+      held=0
+    FI
+
+    count=DESKCORE.Pump(service)
+    IF inject<>0 THEN
+      A816MEMORY.Clear(BYTE POINTER(@input),DESKTYPES.EVENT_SIZE)
+      input.kind=CARD(injectKind)
+      input.window=injectWindow
+      index=0
+      WHILE index<injectCount DO
+        input.code=CARD(index)
+        input.x=INT(index)
+        DESKEVENTS.Post(service,injectClient,@input)
+        index==+1
+      OD
+
+      inject=0
+      injections==+1
+    FI
+
+    IF DESKCORE.Runnable(service)=0 THEN
+      bits=EXEC.Wait(service.mask)
+    ELSE
+      EXEC.Yield()
+    FI
+  OD
+
+  Require(DESKCORE.Stop(service)<>0)
+  EXEC.FreeSignal(16)
+  EXEC.Forbid()
+  finished=1
+  EXEC.Signal(root,$10000)
+
+RETURN
+
+PROC SendInput(LONGCARD client,id BYTE kind,count)
+  CARD before
+
+  before=injections
+  injectClient=client
+  injectWindow=id
+  injectKind=kind
+  injectCount=count
+  inject=1
+  EXEC.Signal(worker,service.mask)
+  WHILE injections=before DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC OpenRequest(DESKTYPES.Request POINTER item INT left,top)
+
+  DESKTOP.Prepare(item,DESKTYPES.OPEN)
+  item.value=DESKTYPES.CONTENT_COMMANDS
+  item.payload=BYTE POINTER(c"Window")
+  item.bytes=6
+  REGIONS.Assign(@item.bounds,left,top,left+128,top+80)
+
+RETURN
+
+; Independently registered client blocks while the root continues to draw.
+PROC PeerRun()
+
+  Require(DESKTOP.Init(@peer,service)<>0)
+  DESKTOP.Prepare(@peerRequest,DESKTYPES.REGISTER)
+  Require(Call(@peer,@peerRequest)=DESKTYPES.OK)
+  OpenRequest(@peerRequest,160,32)
+  Require(Call(@peer,@peerRequest)=DESKTYPES.OK)
+  peerWindow=peerRequest.window
+  DESKTOP.Prepare(@peerWait,DESKTYPES.NEXT_EVENT)
+  Require(DESKTOP.Submit(@peer,@peerWait)=DESKTYPES.OK)
+  peerStage=1
+  Require(Receive(@peer)=@peerWait)
+  Require(peerWait.event.kind=DESKTYPES.EVENT_KEY)
+  DESKTOP.Prepare(@peerRequest,DESKTYPES.CLOSE)
+  peerRequest.window=peerWindow
+  Require(Call(@peer,@peerRequest)=DESKTYPES.OK)
+  DESKTOP.Prepare(@peerRequest,DESKTYPES.UNREGISTER)
+  Require(Call(@peer,@peerRequest)=DESKTYPES.OK)
+  Require(DESKTOP.Dispose(@peer)<>0)
+  EXEC.Forbid()
+  peerStage=2
+  EXEC.Signal(root,$10000)
+
+RETURN
+
+PROC Main()
+  LONGCARD bits,oldId
+  BYTE index
+  BYTE POINTER guard
+
+  Require(SIZEOF(DESKTYPES.Event)=DESKTYPES.EVENT_SIZE)
+  Require(SIZEOF(DESKTYPES.Client)=DESKTYPES.CLIENT_SIZE)
+  Require(SIZEOF(DESKTYPES.Request)=DESKTYPES.REQUEST_SIZE)
+  Require(SIZEOF(DESKTYPES.ClientRecord)=DESKTYPES.CLIENTRECORD_SIZE)
+  Require(SIZEOF(DESKTYPES.Window)=DESKTYPES.WINDOW_SIZE)
+  Require(SIZEOF(DESKTYPES.Service)=DESKTYPES.SERVICE_SIZE)
+  root=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(16)=16)
+  service=DESKTYPES.Service POINTER(EXEC.AllocMem(DESKTYPES.SERVICE_SIZE+32,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(service<>NULL)
+  A816MEMORY.Fill(BYTE POINTER(service)+DESKTYPES.SERVICE_SIZE,$a5,32)
+  content=DESKTYPES.Content POINTER(EXEC.AllocMem(DESKTYPES.CONTENT_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(content<>NULL)
+  worker=EXEC.CreateTask(c"presenter",0,@Presenter,1024)
+  Require(worker<>NULL)
+  WHILE service.live=0 DO
+    bits=EXEC.Wait($10000)
+  OD
+
+  Require(DESKTOP.Init(@first,service)<>0)
+  DESKTOP.Prepare(@request,DESKTYPES.REGISTER)
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  Require(DESKTOP.Dispose(@first)=0)
+  other=EXEC.CreateTask(c"peer",0,@PeerRun,1024)
+  Require(other<>NULL)
+  WHILE peerStage=0 DO
+    EXEC.Yield()
+  OD
+
+  IF variant=1 THEN
+    EXEC.RemTask(other)
+    Require(0)
+  FI
+
+  Require(EXEC.FindTask(BYTE POINTER(c"peer"))=other)
+  OpenRequest(@request,16,16)
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  window=request.window
+  DESKTOP.Prepare(@request,DESKTYPES.SHOW)
+  request.window=window
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  Require(peerStage=1)
+
+  content.count=1
+  content.commands(0).kind=DESKTYPES.DRAW_FILL
+  content.commands(0).pen=3
+  REGIONS.Assign(@content.commands(0).bounds,0,0,40,16)
+  DESKTOP.Prepare(@request,DESKTYPES.REPLACE)
+  request.window=window
+  request.payload=BYTE POINTER(content)
+  request.bytes=DESKTYPES.CONTENT_SIZE
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  content.commands(0).pen=16
+  Require(Call(@first,@request)=DESKTYPES.BAD_ARGUMENT)
+
+  ; One client cannot mutate the independently owned peer window.
+  DESKTOP.Prepare(@request,DESKTYPES.CLOSE)
+  request.window=peerWindow
+  Require(Call(@first,@request)=DESKTYPES.BAD_ID)
+
+  DESKTOP.Prepare(@eventWait,DESKTYPES.NEXT_EVENT)
+  Require(DESKTOP.Submit(@first,@eventWait)=DESKTYPES.OK)
+  Require(DESKTOP.Submit(@first,@eventWait)=DESKTYPES.BUSY)
+  hold=1
+  EXEC.Signal(worker,service.mask)
+  WHILE held=0 DO
+    EXEC.Yield()
+  OD
+
+  DESKTOP.Prepare(@request,DESKTYPES.MOVE)
+  request.window=window
+  request.bounds.left=24
+  request.bounds.top=24
+  Require(DESKTOP.Submit(@first,@request)=DESKTYPES.OK)
+  DESKTOP.Prepare(@cancel,DESKTYPES.CANCEL_EVENT)
+  cancel.target=eventWait.sequence
+  Require(DESKTOP.Submit(@first,@cancel)=DESKTYPES.OK)
+  Require(Receive(@first)=@eventWait)
+  Require(eventWait.status=DESKTYPES.CANCELLED)
+  Require(Receive(@first)=@cancel)
+  Require(cancel.status=DESKTYPES.OK AND request.status=DESKTYPES.PENDING)
+  hold=0
+  EXEC.Signal(worker,service.mask)
+  Require(Receive(@first)=@request)
+  Require(request.status=DESKTYPES.OK)
+
+  SendInput(first.id,window,DESKTYPES.EVENT_KEY,17)
+  DESKTOP.Prepare(@eventWait,DESKTYPES.NEXT_EVENT)
+  Require(Call(@first,@eventWait)=DESKTYPES.OK)
+  Require(eventWait.event.kind=DESKTYPES.EVENT_LOSS)
+  SendInput(first.id,window,DESKTYPES.EVENT_MOTION,8)
+  DESKTOP.Prepare(@eventWait,DESKTYPES.NEXT_EVENT)
+  Require(Call(@first,@eventWait)=DESKTYPES.OK)
+  Require(eventWait.event.kind=DESKTYPES.EVENT_MOTION AND eventWait.event.x=7)
+  DESKTOP.Prepare(@cancel,DESKTYPES.CANCEL_EVENT)
+  cancel.target=eventWait.sequence
+  Require(Call(@first,@cancel)=DESKTYPES.ALREADY_DONE)
+
+  ; Fill the remaining slots and prove stale identities cannot name reuse.
+  OpenRequest(@request,32,32)
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  oldId=request.window
+  OpenRequest(@request,48,48)
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  DESKTOP.Prepare(@cancel,DESKTYPES.CLOSE)
+  cancel.window=request.window
+  OpenRequest(@request,64,64)
+  Require(Call(@first,@request)=DESKTYPES.FULL)
+  Require(Call(@first,@cancel)=DESKTYPES.OK)
+  Require(Call(@first,@cancel)=DESKTYPES.BAD_ID)
+  DESKTOP.Prepare(@request,DESKTYPES.CLOSE)
+  request.window=oldId
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  OpenRequest(@request,32,32)
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  Require(request.window>oldId)
+  DESKTOP.Prepare(@cancel,DESKTYPES.CLOSE)
+  cancel.window=request.window
+  Require(Call(@first,@cancel)=DESKTYPES.OK)
+  DESKTOP.Prepare(@request,DESKTYPES.UNREGISTER)
+  Require(Call(@first,@request)=DESKTYPES.BUSY)
+  DESKTOP.Prepare(@request,DESKTYPES.CLOSE)
+  request.window=window
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  DESKTOP.Prepare(@request,DESKTYPES.UNREGISTER)
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  Require(DESKTOP.Dispose(@first)<>0)
+
+  SendInput(peer.id,peerWindow,DESKTYPES.EVENT_KEY,1)
+  WHILE peerStage<>2 DO
+    bits=EXEC.Wait($10000)
+  OD
+
+  stop=1
+  EXEC.Signal(worker,service.mask)
+  WHILE finished=0 DO
+    bits=EXEC.Wait($10000)
+  OD
+
+  guard=BYTE POINTER(service)+DESKTYPES.SERVICE_SIZE
+  FOR index=0 TO 31 DO
+    Require(guard(index)=$a5)
+  OD
+
+  EXEC.FreeMem(BYTE POINTER(content),DESKTYPES.CONTENT_SIZE)
+  EXEC.FreeMem(BYTE POINTER(service),DESKTYPES.SERVICE_SIZE+32)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+ENDMODULE

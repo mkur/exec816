@@ -407,6 +407,6 @@ are reserved for release/qualification work, not every slice.
 
 ## Status
 
-DT0 is complete at the development tier; see the [execution record](../../history/desktop.md).
-DT1–DT7 remain pending. DT0 adds no runtime memory or Task. Visible-response
+DT0 and DT1 are complete at the development tier; see the [execution record](../../history/desktop.md).
+DT2–DT7 remain pending. DT0 adds no runtime memory or Task. Visible-response
 comparison remains a DT3 requirement against the frozen unchanged image.

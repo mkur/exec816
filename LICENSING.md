@@ -29,6 +29,7 @@ repository root; directory entries include all files below them.
 | `lib/exec/execlists.act` | Public list types and application-side list helpers |
 | `lib/exec/exec-abi.inc` | Exec gateway constants and layouts |
 | `lib/exec/exec-task-types.inc`, `lib/exec/exec-memory-types.inc`, `lib/exec/exec-port-types.inc`, `lib/exec/exec-io-types.inc` | Public Exec records and constants |
+| `lib/desktop/desktop.act`, `lib/desktop/desktypes.act` | Public desktop client binding and generated records |
 | `lib/input/input-types.inc` | Generated public input records and constants |
 | `lib/dos/dos.act`, `lib/dos/dos-types.inc` | Public DOS declarations, records and constants |
 | `lib/dos/command.act`, `lib/dos/command-args.inc`, `lib/dos/command-errors.inc`, `lib/dos/command-modes.inc`, `lib/dos/command-results.inc` | Disk-command bindings and constants |

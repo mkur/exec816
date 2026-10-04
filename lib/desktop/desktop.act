@@ -1,0 +1,127 @@
+; Client-side ordinary-message binding. Caller owns records through collection.
+MODULE DESKTOP
+USE EXEC
+USE TASKMEMORY
+USE A816MEMORY
+USE DESKTYPES
+
+; Audit registration storage once; live requests use the lifetime contract.
+BYTE FUNC Storage(BYTE POINTER value CARD bytes)
+
+  LET location=ADDRESS(value)
+  IF location<$10000 OR location>ADDRESS($ffffff)-SIZE(bytes-1) THEN
+    RETURN(0)
+  FI
+
+  IF TASKMEMORY.Writable(location,SIZE(bytes))<>0 THEN
+    RETURN(1)
+  FI
+
+RETURN((EXEC.TypeOfMem(value) & EXEC.MEMF_PUBLIC)<>0
+    AND (EXEC.TypeOfMem(BYTE POINTER(location+SIZE(bytes-1))) & EXEC.MEMF_PUBLIC)<>0)
+
+; Create a private completion endpoint before publishing the client record.
+PUBLIC BYTE FUNC Init(DESKTYPES.Client POINTER client
+    DESKTYPES.Service POINTER service)
+
+  IF Storage(BYTE POINTER(client),DESKTYPES.CLIENT_SIZE)=0
+      OR service=NULL OR service.live=0 THEN
+    RETURN(0)
+  FI
+
+  A816MEMORY.Clear(BYTE POINTER(client),DESKTYPES.CLIENT_SIZE)
+  client.replies=EXEC.CreateMsgPort()
+  IF client.replies=NULL THEN
+    RETURN(0)
+  FI
+
+  client.owner=EXEC.FindTask(NULL)
+  client.service=BYTE POINTER(service)
+  client.nextSequence=1
+
+RETURN(1)
+
+; A collected request may be reused; a queued request must never be prepared.
+PUBLIC PROC Prepare(DESKTYPES.Request POINTER request BYTE operation)
+
+  A816MEMORY.Clear(BYTE POINTER(request),DESKTYPES.REQUEST_SIZE)
+  request.operation=operation
+
+RETURN
+
+BYTE FUNC RequestLane(BYTE operation)
+
+  CASE operation OF
+  WHEN DESKTYPES.REPLACE THEN
+    RETURN(DESKTYPES.LANE_CONTENT)
+  WHEN DESKTYPES.NEXT_EVENT THEN
+    RETURN(DESKTYPES.LANE_EVENT)
+  WHEN DESKTYPES.CANCEL_EVENT THEN
+    RETURN(DESKTYPES.LANE_CANCEL)
+  ELSE
+    RETURN(DESKTYPES.LANE_CONTROL)
+  ESAC
+
+RETURN(0)
+
+; Bound each lane until reply collection, including an event wait's long life.
+PUBLIC BYTE FUNC Submit(DESKTYPES.Client POINTER client
+    DESKTYPES.Request POINTER request)
+  BYTE lane
+
+  IF client=NULL OR request=NULL OR client.replies=NULL
+      OR client.owner<>EXEC.FindTask(NULL) THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  LET service=DESKTYPES.Service POINTER(client.service)
+  IF service=NULL OR service.live=0 THEN
+    RETURN(DESKTYPES.BAD_ID)
+  FI
+
+  lane=RequestLane(request.operation)
+  IF (client.lanes & lane)<>0 THEN
+    RETURN(DESKTYPES.BUSY)
+  FI
+
+  IF client.nextSequence=0 THEN
+    RETURN(DESKTYPES.EXHAUSTED)
+  FI
+
+  request.client=client
+  request.lane=lane
+  request.status=DESKTYPES.PENDING
+  request.sequence=client.nextSequence
+  client.nextSequence==+1
+  client.lanes=client.lanes OR lane
+  request.message.mn_Length=DESKTYPES.REQUEST_SIZE
+  request.message.mn_ReplyPort=client.replies
+  EXEC.PutMsg(@service.port,@request.message)
+
+RETURN(DESKTYPES.OK)
+
+; Return one completed request without waiting or interpreting its result.
+PUBLIC DESKTYPES.Request POINTER FUNC Collect(DESKTYPES.Client POINTER client)
+
+  LET request=DESKTYPES.Request POINTER(EXEC.GetMsg(client.replies))
+  IF request<>NULL THEN
+    client.lanes=client.lanes & (request.lane XOR $ff)
+  FI
+
+RETURN(request)
+
+; Dispose only after UNREGISTER and every reply have been collected.
+PUBLIC BYTE FUNC Dispose(DESKTYPES.Client POINTER client)
+
+  IF client.id<>0 OR client.lanes<>0 OR client.owner<>EXEC.FindTask(NULL) THEN
+    RETURN(0)
+  FI
+
+  EXEC.DeleteMsgPort(client.replies)
+  client.replies=NULL
+  client.service=NULL
+  client.owner=NULL
+
+RETURN(1)
+
+ENDMODULE

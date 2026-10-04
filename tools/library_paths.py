@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-SUBSYSTEMS = ('exec', 'dos', 'fs', 'console', 'display', 'input', 'mydos', 'spartados', 'io')
+SUBSYSTEMS = ('exec', 'dos', 'fs', 'console', 'display', 'desktop', 'input', 'mydos', 'spartados', 'io')
 
 
 def module_args(root=ROOT):

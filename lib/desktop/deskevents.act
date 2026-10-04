@@ -1,0 +1,162 @@
+; Bounded service-owned events. No client callback or wait runs here.
+MODULE DESKEVENTS
+USE EXEC
+USE A816MEMORY
+USE DESKTYPES
+
+PUBLIC DESKTYPES.ClientRecord POINTER FUNC Find(
+    DESKTYPES.Service POINTER service LONGCARD id)
+  BYTE index
+
+  IF id=0 THEN
+    RETURN(NULL)
+  FI
+
+  FOR index=0 TO DESKTYPES.CLIENTS-1 DO
+    IF service.clients(index).id=id THEN
+      RETURN(@service.clients(index))
+    FI
+  OD
+
+RETURN(NULL)
+
+PUBLIC PROC Reply(DESKTYPES.Request POINTER request CARD status)
+
+  request.status=status
+  EXEC.ReplyMsg(@request.message)
+
+RETURN
+
+; Durable controls survive ordinary queue pressure and precede queued motion.
+PUBLIC BYTE FUNC Take(DESKTYPES.Service POINTER service
+    DESKTYPES.ClientRecord POINTER client DESKTYPES.Event POINTER event)
+  BYTE slot,bit
+
+  A816MEMORY.Clear(BYTE POINTER(event),DESKTYPES.EVENT_SIZE)
+  IF client.loss<>0 THEN
+    client.loss=0
+    event.kind=DESKTYPES.EVENT_LOSS
+    RETURN(1)
+  FI
+
+  FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+    bit=BYTE(1 LSH slot)
+    IF (client.closeBits & bit)<>0 THEN
+      client.closeBits=client.closeBits & (bit XOR $ff)
+      event.kind=DESKTYPES.EVENT_CLOSE
+      event.window=service.windows(slot).id
+      RETURN(1)
+    FI
+
+    IF (client.focusBits & bit)<>0 THEN
+      client.focusBits=client.focusBits & (bit XOR $ff)
+      event.kind=DESKTYPES.EVENT_FOCUS
+      event.window=service.windows(slot).id
+      event.code=event.window=service.focus
+      RETURN(1)
+    FI
+  OD
+
+  IF client.count=0 THEN
+    RETURN(0)
+  FI
+
+  A816MEMORY.Move(BYTE POINTER(event),BYTE POINTER(@client.queue(client.head)),
+      DESKTYPES.EVENT_SIZE)
+  client.head=(client.head+1) & (DESKTYPES.EVENTS-1)
+  client.count==-1
+
+RETURN(1)
+
+; Detach the pending request before publishing its reply to a runnable client.
+PUBLIC PROC Wake(DESKTYPES.Service POINTER service
+    DESKTYPES.ClientRecord POINTER client)
+
+  LET request=client.waiting
+  IF request<>NULL THEN
+    IF Take(service,client,@request.event)<>0 THEN
+      client.waiting=NULL
+      Reply(request,DESKTYPES.OK)
+    FI
+  FI
+
+RETURN
+
+; Motion coalesces only without crossing a destination/button boundary.
+PUBLIC PROC Post(DESKTYPES.Service POINTER service LONGCARD id
+    DESKTYPES.Event POINTER event)
+  BYTE slot
+
+  LET client=Find(service,id)
+  IF client=NULL THEN
+    RETURN
+  FI
+
+  IF event.kind=DESKTYPES.EVENT_LOSS THEN
+    client.head=0
+    client.count=0
+    client.loss=1
+    Wake(service,client)
+    RETURN
+  FI
+
+  IF client.count<>0 AND event.kind=DESKTYPES.EVENT_MOTION THEN
+    slot=(client.head+client.count-1) & (DESKTYPES.EVENTS-1)
+    BEGIN
+      LET previous=@client.queue(slot)
+      IF previous.kind=event.kind AND previous.window=event.window
+          AND previous.route=event.route AND previous.buttons=event.buttons THEN
+        previous.x=event.x
+        previous.y=event.y
+        Wake(service,client)
+        RETURN
+      FI
+    END
+  FI
+
+  IF client.count=DESKTYPES.EVENTS THEN
+    client.head=0
+    client.count=0
+    client.loss=1
+    Wake(service,client)
+    RETURN
+  FI
+
+  slot=(client.head+client.count) & (DESKTYPES.EVENTS-1)
+  A816MEMORY.Move(BYTE POINTER(@client.queue(slot)),BYTE POINTER(event),
+      DESKTYPES.EVENT_SIZE)
+  client.count==+1
+  Wake(service,client)
+
+RETURN
+
+; Forget only the retiring window's queued events and durable controls.
+PUBLIC PROC Retire(DESKTYPES.ClientRecord POINTER client
+    LONGCARD window BYTE slot)
+  BYTE count,index,source,target,bit
+
+  bit=BYTE(1 LSH slot) XOR $ff
+  client.closeBits=client.closeBits & bit
+  client.focusBits=client.focusBits & bit
+  count=0
+  index=0
+  WHILE index<client.count DO
+    source=(client.head+index) & (DESKTYPES.EVENTS-1)
+    IF client.queue(source).window<>window THEN
+      target=(client.head+count) & (DESKTYPES.EVENTS-1)
+      IF target<>source THEN
+        A816MEMORY.Move(BYTE POINTER(@client.queue(target)),
+            BYTE POINTER(@client.queue(source)),DESKTYPES.EVENT_SIZE)
+      FI
+
+      count==+1
+    FI
+
+    index==+1
+  OD
+
+  client.count=count
+
+RETURN
+
+ENDMODULE

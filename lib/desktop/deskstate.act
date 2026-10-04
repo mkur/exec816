@@ -1,0 +1,18 @@
+; One optional desktop service binding. All scene storage belongs to its owner.
+MODULE DESKSTATE
+USE DESKTYPES
+
+DESKTYPES.Service POINTER service
+
+PUBLIC DESKTYPES.Service POINTER FUNC Get()
+
+RETURN(service)
+
+; Startup/retirement only, before publishing clients or after their final reply.
+PUBLIC PROC Bind(DESKTYPES.Service POINTER value)
+
+  service=value
+
+RETURN
+
+ENDMODULE

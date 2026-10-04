@@ -30,3 +30,26 @@ desktop; no visible-latency baseline is inferred from that older trace.
 Reserved bank-zero change is **0 bytes fixed, root/kernel, per public Task and
 idle**, including guards, alignment and unused capacity. DT0 adds no runtime
 state. This is development evidence and does not qualify the desktop.
+
+## DT1 Client and event service
+
+[Native service](../reference/desktop.md) now implements four registered
+clients/windows, retained fill/text batches, bounded event queues, durable
+loss/focus/close bookkeeping and separate control/content/event/cancel lanes.
+The service retains each owner through final reply publication. It uses ordinary
+Exec messages and a recording Layers backend; hardware integration is DT2.
+
+[Raw and optimized evidence](../development/desktop-dt1.json) each passed 143
+assertions with two independent client Tasks and a presenter. The fixture covers
+a waiting peer, cancellation while a paint defers controls, completion winning
+a late cancellation, queue overflow/motion coalescing, invalid batches, stale
+IDs, capacity exhaustion and final cleanup. A separate held-removal case reaches
+the expected Exec launch fault. Stack/domain guards, native context restoration
+and successful-run allocation ownership checks passed. The host suite passed
+337 tests with four historical skips. These are development checks.
+
+Service payload is 10,372 upper-RAM bytes. The fixture adds a 32-byte guard and
+a separate 710-byte source batch. Three public Task slots are occupied during
+the test; the production desktop has not yet been attached to the console.
+Reserved bank-zero growth is **0 fixed, 0 root/kernel, 0 per public Task and
+0 idle bytes**, including guards/alignment and unused pool capacity.
