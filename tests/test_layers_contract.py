@@ -15,7 +15,7 @@ class LayersTests(unittest.TestCase):
             self.assertEqual(path.read_text(), content)
         self.assertEqual(generate_layers.layout()['Rect']['size'], 8)
         self.assertEqual(generate_layers.layout()['Region']['size'], 770)
-        self.assertEqual(generate_layers.layout()['Scene']['size'], 4756)
+        self.assertEqual(generate_layers.layout()['Scene']['size'], 4782)
         self.assertEqual(generate_layers.layout()['Scene']['fields']['busy'], 22)
 
     def test_oracle_rejects_hole_and_duplicate(self):
@@ -32,7 +32,8 @@ class LayersTests(unittest.TestCase):
         self.assertEqual(len(geometry_cases()), 128)
 
     def test_scene_oracle_exposure_and_cache(self):
-        scenes = scene_oracle(scene_commands())
+        commands = [cmd for cmd in scene_commands() if cmd[0] not in (6, 7)]
+        scenes = scene_oracle(commands)
         self.assertEqual(scenes[0], (1, bytes(768)))
         self.assertEqual(scenes[1], scenes[0])  # hidden creation
         self.assertEqual(scenes[2][1][0], 1)

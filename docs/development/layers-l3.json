@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "slice": "L3",
+  "status": "pass",
+  "scope": "Emitted incremental software raster and drawing lifetimes; no VBXE/desktop qualification",
+  "scene_bytes": 4782,
+  "inputs": {
+    "abi/layers.json": "e0c3e6c3824bbb9c4d799d9deca549cd3eb87ec9b60c153a57fde0434edd5fec",
+    "lib/display/layertypes.act": "4aba21e7ea897677800da3b9b5620e1baef3248487409176f245224035f6cd5c",
+    "lib/display/regions.act": "1086f083a7c7d2d33d268705da8a551fe3cf5883478ee86d51e4e02ea9da95bd",
+    "lib/display/layers.act": "36300a96da0954088a500901b32c5cf43f36c3cc0931410bf675ece2bdb7d01a",
+    "lib/display/layers-update.inc": "0d4f2d73f9e70c0d8b48e7f0c687e9b94a3007e1f9b98dbcae85ce95517135b4",
+    "tools/generate_layers.py": "4cb1c63bb49d4c130778c53bd4e424c46bb9808156423fe0f82e91b1a29e3b81",
+    "tools/test_layers.py": "f88185b4567a78985eeef869a3d08022c685e515ac63bb246871f9dd7fd05f10",
+    "tests/programs/native_layers.act": "bb585ab55ebfbfe5d9d32cfcce7851b47f3253c2f13dfd0f88a9fcbef636b918",
+    "tests/programs/layers-paint.inc": "b38557366dbaebce9116da696257473184fa115c8905c3434bf81964ea5aed79",
+    "tests/programs/layers-update-checks.inc": "c60617594ce0934a77be1e0f75b40a360acecbda10f9cec6f50f6fe8830cc4c3",
+    "tests/test_layers_contract.py": "5a68cb719f15ba6557927d1b01b7d63ef96ac5618ab91bd470b05e396fcbd371"
+  },
+  "modes": {
+    "raw": {
+      "geometry_cases": 128,
+      "scene_cases": 32,
+      "checks": 53179,
+      "paints": 33,
+      "copies": 1,
+      "redraws": 1,
+      "maxRects": 5,
+      "maxPaintRects": 4,
+      "bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "build": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "1d201da4775ab26630106f1d16e11314a58d9fd3abc02191af4ba83c6eb4fd3e",
+        "source_sha256": "bb585ab55ebfbfe5d9d32cfcce7851b47f3253c2f13dfd0f88a9fcbef636b918",
+        "xex_sha256": "ae65d75a5ffde003e3a74963fb319432fce1526cb83192acad84476a04f2d23f",
+        "image_sha256": "ece584adfd29fb1e19a7265e8b1f9c906e40e36b8f237b5f66f8e753bf209516",
+        "optimize": false
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 138,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 284,
+            "untouched_above_floor": 996
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 266,
+          "untouched_from_base": 1270,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "opt": {
+      "geometry_cases": 128,
+      "scene_cases": 32,
+      "checks": 53179,
+      "paints": 33,
+      "copies": 1,
+      "redraws": 1,
+      "maxRects": 5,
+      "maxPaintRects": 4,
+      "bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "build": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "changes": [],
+        "override": false,
+        "binary_sha256": "1d201da4775ab26630106f1d16e11314a58d9fd3abc02191af4ba83c6eb4fd3e",
+        "source_sha256": "bb585ab55ebfbfe5d9d32cfcce7851b47f3253c2f13dfd0f88a9fcbef636b918",
+        "xex_sha256": "f847894c0db3f05ab84c2a7419088d9e42d2e77dbe44278f4dc641cc430000fb",
+        "image_sha256": "ed108f1ab28a2b688f1d85805968e02c7b3d49acf73932fefdf9b223d1dec1a8",
+        "optimize": true
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 130,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 288,
+            "untouched_above_floor": 992
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 260,
+          "untouched_from_base": 1276,
+          "interrupt_reserve_bytes_touched": 0
+        },
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    }
+  }
+}

@@ -40,13 +40,15 @@ def scene_commands():
     # op, client handle slot, four signed operands, expected status
     def cmd(op=0, slot=0, a=0, b=0, c=0, d=0, status=0):
         return op, slot, a, b, c, d, status
-    return [cmd(), cmd(1, 1, 0, 0, 24, 20), cmd(2, 1, 1),
-            cmd(1, 2, 8, 4, 32, 24), cmd(2, 2, 1),
+    return [cmd(), cmd(1, 1, 0, 0, 24, 20), cmd(2, 1, 1), cmd(7, 1),
+            cmd(1, 2, 8, 4, 32, 24), cmd(2, 2, 1), cmd(7, 1),
             cmd(1, 3, 4, 8, 20, 16), cmd(2, 3, 1),
             cmd(1, 4, 12, 0, 16, 24), cmd(2, 4, 1),
+            cmd(6, 1, 10, 2, 18, 14),
             cmd(1, 5, 0, 0, 8, 24, status=2),
             cmd(3, 1, 1), cmd(5, 1, 4, 2), cmd(2, 3, 0),
-            cmd(5, 3, 0, 0), cmd(2, 3, 1), cmd(3, 1, 0),
+            cmd(6, 3, 4, 8, 20, 16), cmd(5, 3, 0, 0),
+            cmd(2, 3, 1), cmd(3, 1, 0),
             cmd(4, 2), cmd(1, 5, 0, 0, 8, 24), cmd(2, 5, 1),
             cmd(5, 5, 24, 0), cmd(4, 2, status=7),
             cmd(5, 1, -1, 0, status=1), cmd(5, 1, 32767, 0, status=1),
@@ -54,7 +56,7 @@ def scene_commands():
             cmd(2, 5, 2, status=1), cmd(3, 5, 2, status=1)]
 
 
-def scene_oracle(commands):
+def scene_oracle(commands, include_raster=False):
     layers, handles, order = {}, {}, []
     next_id, rebuilds = 1, 1
     snapshots = []
@@ -64,7 +66,8 @@ def scene_oracle(commands):
                 ident = next_id
                 next_id += 1
                 handles[slot] = ident
-                layers[ident] = dict(bounds=(a, b, c, d), shown=False)
+                layers[ident] = dict(bounds=(a, b, c, d), shown=False,
+                                     model=bytearray((i+ident*17) & 127 for i in range(768)))
                 order.insert(0, ident)
             else:
                 ident = handles[slot]
@@ -87,10 +90,28 @@ def scene_oracle(commands):
                     if (l, t) != (a, b):
                         layer['bounds'] = (a, b, a+r-l, b+bottom-t)
                         rebuilds += int(layer['shown'])
+                elif op == 6:
+                    l, t, r, bottom = layer['bounds']
+                    for y in range(bottom-t):
+                        for x in range(r-l):
+                            if contains((a, b, c, d), x+l, y+t):
+                                layer['model'][y*32+x] = 80+slot
+                elif op == 7:
+                    l, t, r, bottom = layer['bounds']
+                    for y in range(bottom-t-1):
+                        layer['model'][y*32:y*32+r-l] = layer['model'][(y+1)*32:(y+1)*32+r-l]
+                    start = (bottom-t-1)*32
+                    layer['model'][start:start+r-l] = bytes([77])*(r-l)
         pixels = bytes(next((i for i in order if layers[i]['shown'] and
                              contains(layers[i]['bounds'], x, y)), 0)
                        for y in range(24) for x in range(32))
-        snapshots.append((rebuilds, pixels))
+        if include_raster:
+            raster = bytes(layers[ident]['model'][(index//32-layers[ident]['bounds'][1])*32
+                +index%32-layers[ident]['bounds'][0]] if ident else 0
+                for index, ident in enumerate(pixels))
+            snapshots.append((rebuilds, pixels, raster))
+        else:
+            snapshots.append((rebuilds, pixels))
     return snapshots
 
 
@@ -122,7 +143,7 @@ def run(out, mode):
     commands = scene_commands()
     scene_input = struct.pack('<H', len(commands)) + b''.join(
         struct.pack('<BB4hH', *cmd) for cmd in commands)
-    scene_size = len(commands)*772
+    scene_size = len(commands)*1540
     report = dict(status='running', tier='development', mode=mode,
                   bank_zero_delta=dict(fixed=0, root_kernel=0, per_task=[0]*8, idle=0))
     try:
@@ -158,13 +179,18 @@ def run(out, mode):
             (out/'regions.bin').write_bytes(raw)
             scenes = bridge.memdump(0xf0000, scene_size+32)
             require(scenes[:16] == scenes[-16:] == bytes([0xa5])*16, 'Scene guards changed')
-            for index, (rebuilds, pixels) in enumerate(scene_oracle(commands)):
-                at = 16+index*772
+            for index, (rebuilds, pixels, raster) in enumerate(scene_oracle(commands, True)):
+                at = 16+index*1540
                 require(scenes[at:at+4] == struct.pack('<I', rebuilds),
                         f'Unexpected visibility rebuild at scene {index}')
                 require(scenes[at+4:at+772] == pixels, f'Independent scene oracle failed: {index}')
+                require(scenes[at+772:at+1540] == raster,
+                        f'Incremental damage paint differs from full recomposition: {index}')
             report['scene_cases'] = data(bridge, program['image'], 'sceneCases', True)[0]
             require(report['scene_cases'] == len(commands), 'Missing scene cases')
+            for name in ('paints', 'copies', 'redraws', 'maxRects', 'maxPaintRects'):
+                report[name] = data(bridge, program['image'], name, True)[0]
+                require(report[name] > 0, 'Missing drawing path: '+name)
             (out/'scenes.bin').write_bytes(scenes)
         report['status'] = 'pass'
     except Exception as error:

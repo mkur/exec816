@@ -11,6 +11,9 @@ LAYERTYPES.Region POINTER first,second
 LAYERTYPES.Scene POINTER scene
 LONGCARD ARRAY handles(8)
 CARD sceneCases,sceneSize,scenePhase
+CARD paints,copies,redraws
+CARD maxRects,maxPaintRects
+BYTE POINTER model,canvas
 
 PROC Require(BYTE okay)
 
@@ -121,6 +124,8 @@ RETURN
 
 ; Paint the cached partition into an observer buffer, checking that every
 ; screen pixel has exactly one owner and that queries leave the cache alone.
+INCLUDE "layers-paint.inc"
+
 PROC Snapshot(BYTE POINTER output)
   BYTE slot
   CARD index,x,y,offset
@@ -136,6 +141,9 @@ PROC Snapshot(BYTE POINTER output)
   FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
     layer=@scene.items(slot)
     Require(layer.visible.count<=81)
+    IF layer.visible.count>maxRects THEN
+      maxRects=layer.visible.count
+    FI
     index=0
     WHILE index<layer.visible.count DO
       rect=@layer.visible.rects(index)
@@ -170,6 +178,8 @@ PROC Snapshot(BYTE POINTER output)
 
   Require(LAYERS.Hit(scene,-1,0)=0 AND LAYERS.Hit(scene,32,0)=0)
   Require(scene.rebuilds=rebuilds)
+  PaintScene()
+  A816MEMORY.Move(output+768,canvas,768)
 
 RETURN
 
@@ -210,6 +220,9 @@ PROC Scenes()
     CASE op OF
     WHEN 1 THEN
       status=LAYERS.Create(scene,bounds,@handles(which))
+      IF status=LAYERTYPES.OK THEN
+        CreateModel(handles(which))
+      FI
 
     WHEN 2 THEN
       status=LAYERS.Show(scene,handles(which),BYTE(a))
@@ -222,6 +235,12 @@ PROC Scenes()
 
     WHEN 5 THEN
       status=LAYERS.Move(scene,handles(which),a,b)
+
+    WHEN 6 THEN
+      ChangeModel(handles(which),bounds,80+which)
+
+    WHEN 7 THEN
+      ScrollModel(handles(which))
     ESAC
 
     scenePhase=5
@@ -230,7 +249,7 @@ PROC Scenes()
     Snapshot(output)
     sceneCases==+1
     input==+12
-    output==+772
+    output==+1540
     index==+1
   OD
 
@@ -240,6 +259,7 @@ PROC SceneFailures()
   LAYERTYPES.Rect bounds
   LONGCARD id
 
+  scenePhase=30
   ; All published fixture IDs retire before beginning a new scene lifetime.
   Require(LAYERS.Delete(scene,handles(1))=LAYERTYPES.OK)
   Require(LAYERS.Delete(scene,handles(3))=LAYERTYPES.OK)
@@ -267,15 +287,23 @@ PROC SceneFailures()
 
 RETURN
 
+INCLUDE "layers-update-checks.inc"
+
 PROC Main()
 
   first=LAYERTYPES.Region POINTER(Guarded(LAYERTYPES.REGION_SIZE))
   second=LAYERTYPES.Region POINTER(Guarded(LAYERTYPES.REGION_SIZE))
   scene=LAYERTYPES.Scene POINTER(Guarded(LAYERTYPES.SCENE_SIZE))
+  model=Guarded(3072)
+  canvas=Guarded(768)
   Geometry()
   RegionFailures()
   Scenes()
   SceneFailures()
+  UpdateTransactions()
+  scenePhase=50
+  FreeGuarded(canvas,768)
+  FreeGuarded(model,3072)
   FreeGuarded(BYTE POINTER(scene),LAYERTYPES.SCENE_SIZE)
   FreeGuarded(BYTE POINTER(second),LAYERTYPES.REGION_SIZE)
   FreeGuarded(BYTE POINTER(first),LAYERTYPES.REGION_SIZE)

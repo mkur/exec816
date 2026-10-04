@@ -3,7 +3,6 @@ MODULE LAYERS
 USE LAYERTYPES
 USE REGIONS
 USE A816MEMORY
-USE SYS
 
 ; A transaction retains geometry until its caller has finished drawing.
 BYTE FUNC Admit(LAYERTYPES.Scene POINTER scene)
@@ -132,6 +131,7 @@ PUBLIC BYTE FUNC Init(LAYERTYPES.Scene POINTER scene INT width,height)
   A816MEMORY.Clear(BYTE POINTER(scene),LAYERTYPES.SCENE_SIZE)
   REGIONS.Assign(@scene.screen,0,0,width,height)
   scene.nextId=1
+  scene.nextToken=1
   LET background=@scene.items(LAYERTYPES.BACKGROUND_SLOT)
   REGIONS.Copy(@scene.screen,@background.bounds)
   background.shown=1
@@ -365,5 +365,7 @@ PUBLIC LONGCARD FUNC Hit(LAYERTYPES.Scene POINTER scene INT x,y)
   OD
 
 RETURN(0)
+
+INCLUDE "layers-update.inc"
 
 ENDMODULE

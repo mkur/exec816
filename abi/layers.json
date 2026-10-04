@@ -13,7 +13,9 @@
     "BAD_ID": 7,
     "BAD_TOKEN": 8,
     "BACKGROUND_SLOT": 4,
-    "SLOT_COUNT": 5
+    "SLOT_COUNT": 5,
+    "UPDATE_PAINT": 1,
+    "UPDATE_COPY": 2
   },
   "records": {
     "Rect": [
@@ -105,6 +107,26 @@
       {
         "name": "work",
         "type": "Region"
+      },
+      {
+        "name": "nextToken",
+        "type": "LONGCARD"
+      },
+      {
+        "name": "activeId",
+        "type": "LONGCARD"
+      },
+      {
+        "name": "activeKind",
+        "type": "BYTE"
+      },
+      {
+        "name": "copySource",
+        "type": "Rect"
+      },
+      {
+        "name": "copyTarget",
+        "type": "Rect"
       }
     ]
   }
