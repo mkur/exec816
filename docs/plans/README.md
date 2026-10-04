@@ -61,10 +61,8 @@ assuming work is pending. Current behavior belongs in the
 ## Console and interaction
 
 - [Bulk console output batching](console-output-batching-implementation-plan.md):
-  OB1–OB4 complete, OB5 measurements in progress; combine several retained line scrolls into
-  one asynchronous
-  copy/fill and bounded text presentation, preserving immediate short writes.
-  Reuses the completed [CAT baseline](../development/console-output-batching-baseline.json).
+  OB1–OB5 complete; cached CAT takes 16.08 s versus 26.67 s, with 332 scroll
+  launches versus 769. [Implementation and remaining latency limits](../history/console-output-batching.md).
 - [Input registration and lifetime design](input-registration-lifetime-design.md):
   the [refactor plan](input-registration-lifetime-implementation-plan.md) is
   implemented through IR5. Ordinary reads/routes trust registration lifetime;

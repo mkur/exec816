@@ -1,0 +1,901 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "slice": "OB5",
+  "qualification": false,
+  "baseline": {
+    "path": "docs/development/console-output-batching-baseline.json",
+    "sha256": "8728a1fd991216df1b50ad3cd2ca88979ba3414da54dd7e0545c276186e11644"
+  },
+  "measurements": {
+    "path": "build/output-batching/cat-trace/results.json",
+    "sha256": "0f991f3305485ac92f26100509ce79e7893516d70ba28a784410acc50d99b049"
+  },
+  "trace": {
+    "path": "build/output-batching/cat-trace/program/emulator.log",
+    "sha256": "2457eb1d043694e04d40fd7cad0ed981eef724e0a80ebcdc25b5e030735ee0d5"
+  },
+  "markers": {
+    "path": "build/output-batching/cat-trace/markers.json",
+    "sha256": "a28bd5943d29615ceb84f55c0beb4fa4cdd0490c745145fb4a7b94e0ae8c34a8"
+  },
+  "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+  "compiler_override": false,
+  "pin": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "samples": [
+    {
+      "case": "cold",
+      "elapsed_ms": 43712.54731250855,
+      "cat_read_ms": 25849.02266630391,
+      "cat_write_ms": 13710.971215668917,
+      "wire_reads": 218,
+      "scrolls": 336,
+      "cat_write_cpu_ms": {
+        "shell": 0.0,
+        "console": 8521.734855415792,
+        "siodriver": 2.874133573167517,
+        "fsworker": 53.66968855858433,
+        "idle": 3556.1174633024098,
+        "cat": 355.6930780302208,
+        "native_interrupts": 1220.8819967887412
+      },
+      "task_cpu_ms": {
+        "dp_None": 0.0,
+        "shell": 394.6689992232641,
+        "console": 8936.69047152668,
+        "siodriver": 983.0348093191399,
+        "fsworker": 2566.8288037846914,
+        "idle": 27246.65637126895,
+        "cat": 701.9813104137573
+      },
+      "native_interrupt_ms": 2882.6865469662885,
+      "before": {
+        "case": "cold",
+        "elapsed_ms": 54153.6289487002,
+        "cat_read_ms": 26144.219310129,
+        "cat_write_ms": 23860.82517243956,
+        "wire_reads": 218,
+        "scrolls": 749,
+        "cat_write_cpu_ms": {
+          "shell": 0.0,
+          "console": 12693.776598968958,
+          "siodriver": 0.9038186921236744,
+          "fsworker": 56.01392203603433,
+          "idle": 8044.607184593849,
+          "cat": 349.8083535035573,
+          "native_interrupts": 2715.715294645037
+        },
+        "task_cpu_ms": {
+          "dp_None": 0.0,
+          "shell": 395.69306393338377,
+          "console": 12952.534822712189,
+          "siodriver": 950.4257244716869,
+          "fsworker": 2537.502449325384,
+          "idle": 32305.040676409324,
+          "cat": 688.732680273874
+        },
+        "native_interrupt_ms": 4323.699531561834
+      },
+      "logical_scrolls": 749,
+      "scroll_rows_distribution": {
+        "4": 42,
+        "1": 96,
+        "3": 89,
+        "2": 109
+      },
+      "copy_bytes": 23887360,
+      "fill_bytes": 1917440,
+      "batches": {
+        "count": 361,
+        "rows": {
+          "4": 42,
+          "1": 96,
+          "3": 89,
+          "2": 109,
+          "0": 25
+        },
+        "flush_reasons": {
+          "1": 42,
+          "2": 273,
+          "3": 46
+        },
+        "max_bytes": 155,
+        "max_turns": 4
+      },
+      "command_through_next_prompt_write_return_ms": 43734.146415385854,
+      "scroll_launch_to_irq_ms": 5105.988618213959,
+      "scroll_launch_to_adoption_ms": 6084.10447729634,
+      "nested_routine_cpu_ms": {
+        "retained_feed": 564.0867575724683,
+        "retained_edit": 89.19103892277612,
+        "batch_feed": 721.8282469596647,
+        "batch_paint": 2781.4062722465706
+      },
+      "speedup": 1.2388577714665439
+    },
+    {
+      "case": "warm",
+      "elapsed_ms": 16081.931590870327,
+      "cat_read_ms": 1731.504950104246,
+      "cat_write_ms": 13506.21917198,
+      "wire_reads": 0,
+      "scrolls": 332,
+      "cat_write_cpu_ms": {
+        "shell": 0.0,
+        "console": 8460.767234440264,
+        "siodriver": 0.0,
+        "fsworker": 51.06212616950882,
+        "idle": 3454.478283118051,
+        "cat": 346.92132132470795,
+        "native_interrupts": 1192.9902069274685
+      },
+      "task_cpu_ms": {
+        "dp_None": 0.0,
+        "shell": 394.2912039967349,
+        "console": 8868.634256160954,
+        "siodriver": 0.0,
+        "fsworker": 1383.203337003214,
+        "idle": 3454.4782831173625,
+        "cat": 693.7421322029543
+      },
+      "native_interrupt_ms": 1287.5823783910137,
+      "before": {
+        "case": "warm",
+        "elapsed_ms": 26669.6113784028,
+        "cat_read_ms": 1456.5370556500827,
+        "cat_write_ms": 24374.130471863416,
+        "wire_reads": 0,
+        "scrolls": 769,
+        "cat_write_cpu_ms": {
+          "shell": 0.0,
+          "console": 12921.59275930074,
+          "siodriver": 0.0,
+          "fsworker": 55.31951185473491,
+          "idle": 8259.752050737336,
+          "cat": 350.9082591957191,
+          "native_interrupts": 2786.557890774886
+        },
+        "task_cpu_ms": {
+          "dp_None": 0.0,
+          "shell": 395.62920526263093,
+          "console": 13148.431797389883,
+          "siodriver": 0.0,
+          "fsworker": 1365.7112065623721,
+          "idle": 8259.752050739664,
+          "cat": 684.824543720634
+        },
+        "native_interrupt_ms": 2815.262574731746
+      },
+      "logical_scrolls": 768,
+      "scroll_rows_distribution": {
+        "1": 98,
+        "4": 60,
+        "3": 82,
+        "2": 92
+      },
+      "copy_bytes": 23531520,
+      "fill_bytes": 1966080,
+      "batches": {
+        "count": 355,
+        "rows": {
+          "1": 98,
+          "4": 60,
+          "3": 82,
+          "2": 92,
+          "0": 23
+        },
+        "flush_reasons": {
+          "2": 248,
+          "1": 60,
+          "3": 47
+        },
+        "max_bytes": 158,
+        "max_turns": 4
+      },
+      "command_through_next_prompt_write_return_ms": 16104.517401840201,
+      "scroll_launch_to_irq_ms": 5026.899936423266,
+      "scroll_launch_to_adoption_ms": 6110.441104120647,
+      "nested_routine_cpu_ms": {
+        "retained_feed": 561.5399525500472,
+        "retained_edit": 91.35842758243477,
+        "batch_feed": 738.9904409349587,
+        "batch_paint": 2830.636937377622
+      },
+      "speedup": 1.6583587131749193
+    },
+    {
+      "case": "warm-nil",
+      "elapsed_ms": 2122.4667631830093,
+      "cat_read_ms": 1233.0259987961301,
+      "cat_write_ms": 63.03083401115624,
+      "wire_reads": 0,
+      "scrolls": 0,
+      "cat_write_cpu_ms": {
+        "shell": 0.0,
+        "console": 0.0,
+        "siodriver": 0.0,
+        "fsworker": 6.729336504181827,
+        "idle": 0.0,
+        "cat": 55.902416056861,
+        "native_interrupts": 0.3990814501134068
+      },
+      "task_cpu_ms": {
+        "dp_None": 0.0,
+        "shell": 397.01541771041974,
+        "console": 7.051308256940224,
+        "siodriver": 0.0,
+        "fsworker": 1326.7315497075747,
+        "idle": 0.0,
+        "cat": 378.5482795515517
+      },
+      "native_interrupt_ms": 13.120207956536637,
+      "before": {
+        "case": "warm-nil",
+        "elapsed_ms": 2115.8597167381613,
+        "cat_read_ms": 1226.218001942544,
+        "cat_write_ms": 63.045988110727826,
+        "wire_reads": 0,
+        "scrolls": 0,
+        "cat_write_cpu_ms": {
+          "shell": 0.0,
+          "console": 0.0,
+          "siodriver": 0.0,
+          "fsworker": 6.728067788868855,
+          "idle": 0.0,
+          "cat": 55.91707676714422,
+          "native_interrupts": 0.4008435547147471
+        },
+        "task_cpu_ms": {
+          "dp_None": 0.0,
+          "shell": 396.1718629956622,
+          "console": 6.963414479424963,
+          "siodriver": 0.0,
+          "fsworker": 1323.1872525124197,
+          "idle": 0.0,
+          "cat": 376.4888726618634
+        },
+        "native_interrupt_ms": 13.048314088801625
+      },
+      "logical_scrolls": 0,
+      "scroll_rows_distribution": {},
+      "copy_bytes": 0,
+      "fill_bytes": 0,
+      "batches": {
+        "count": 0,
+        "rows": {},
+        "flush_reasons": {},
+        "max_bytes": 0,
+        "max_turns": 0
+      },
+      "command_through_next_prompt_write_return_ms": 2147.013303184898,
+      "scroll_launch_to_irq_ms": 0,
+      "scroll_launch_to_adoption_ms": 0,
+      "nested_routine_cpu_ms": {},
+      "speedup": 0.9968870907382599
+    }
+  ],
+  "cached_2x_target": false,
+  "bounds": {
+    "rows": 4,
+    "bytes": 256,
+    "turns": 4,
+    "source_per_turn": 64,
+    "logical_row_recycles_per_turn": 1,
+    "paint_rows": 4,
+    "paint_cells": 160,
+    "tick_boundary_flush": true
+  },
+  "replay": {
+    "report": {
+      "path": "build/output-batching/cat-replay/results.json",
+      "sha256": "1f70ffcece4aff1fb06198612d694929c5243130afb7a52ab4e1bedd3bfda7c4"
+    },
+    "same_image": true,
+    "same_guest_checkpoint_frames": true,
+    "same_runtime_counters_and_stack_observations": true,
+    "same_final_screenshot": true,
+    "passive_trace_disabled": true
+  },
+  "unloaded_input": {
+    "before": {
+      "status": "pass",
+      "tier": "development",
+      "keys": [
+        {
+          "key": "'E'",
+          "capture_to_read_return_ms": 9.90126575497724,
+          "capture_to_echo_draw_ms": 16.07109880613889,
+          "feed_to_draw_ms": 3.7615294504066235
+        },
+        {
+          "key": "'C'",
+          "capture_to_read_return_ms": 9.877019195662685,
+          "capture_to_echo_draw_ms": 15.972914337751751,
+          "feed_to_draw_ms": 3.6878734780702556
+        },
+        {
+          "key": "'H'",
+          "capture_to_read_return_ms": 9.877019195662685,
+          "capture_to_echo_draw_ms": 15.972209495911212,
+          "feed_to_draw_ms": 3.6871686362297162
+        },
+        {
+          "key": "'O'",
+          "capture_to_read_return_ms": 9.877019195662685,
+          "capture_to_echo_draw_ms": 15.972914337751751,
+          "feed_to_draw_ms": 3.6878734780702556
+        },
+        {
+          "key": "' '",
+          "capture_to_read_return_ms": 9.869195451232697,
+          "capture_to_echo_draw_ms": 15.964103814745007,
+          "feed_to_draw_ms": 3.566711165681533
+        },
+        {
+          "key": "'A'",
+          "capture_to_read_return_ms": 9.877019195662685,
+          "capture_to_echo_draw_ms": 15.972209495911212,
+          "feed_to_draw_ms": 3.5672045549699103
+        },
+        {
+          "key": "'\\n'",
+          "capture_to_read_return_ms": 9.803433707510372,
+          "capture_to_echo_draw_ms": 17.07105792531214,
+          "feed_to_draw_ms": 4.8592501328626865
+        },
+        {
+          "key": "'E'",
+          "capture_to_read_return_ms": 9.90535383765237,
+          "capture_to_echo_draw_ms": 16.07497543626186,
+          "feed_to_draw_ms": 3.7611770294863534
+        },
+        {
+          "key": "'X'",
+          "capture_to_read_return_ms": 9.877019195662685,
+          "capture_to_echo_draw_ms": 15.97199804335905,
+          "feed_to_draw_ms": 3.6869571836775545
+        },
+        {
+          "key": "'I'",
+          "capture_to_read_return_ms": 9.877019195662685,
+          "capture_to_echo_draw_ms": 15.996103634305499,
+          "feed_to_draw_ms": 3.7110627746240024
+        },
+        {
+          "key": "'T'",
+          "capture_to_read_return_ms": 9.877019195662685,
+          "capture_to_echo_draw_ms": 15.996103634305499,
+          "feed_to_draw_ms": 3.7110627746240024
+        },
+        {
+          "key": "'\\n'",
+          "capture_to_read_return_ms": 9.803433707510372,
+          "capture_to_echo_draw_ms": 17.07338390338592,
+          "feed_to_draw_ms": 4.861576110936467
+        }
+      ],
+      "scope": "Physical ECHO A and EXIT. Capture IRQ to first echo presentation return: drawing completion, not scanout or key-down time.",
+      "xex_sha256": "5a03ac35c37f2d067045118aadf2afe405138ee9099cb25c076e6de6335d5c07",
+      "trace_sha256": "6ae938278a36ebb26dc53852b476ea562e9b0d86da5b94c7769e5a0631bad125"
+    },
+    "after": {
+      "status": "pass",
+      "tier": "development",
+      "keys": [
+        {
+          "key": "'E'",
+          "capture_to_read_return_ms": 9.90218204936994,
+          "capture_to_echo_draw_ms": 16.212490079351095,
+          "feed_to_draw_ms": 3.791132807709278
+        },
+        {
+          "key": "'C'",
+          "capture_to_read_return_ms": 9.877935490055386,
+          "capture_to_echo_draw_ms": 16.111909148706122,
+          "feed_to_draw_ms": 3.714798436378861
+        },
+        {
+          "key": "'H'",
+          "capture_to_read_return_ms": 9.877935490055386,
+          "capture_to_echo_draw_ms": 16.096191175662092,
+          "feed_to_draw_ms": 3.699080463334832
+        },
+        {
+          "key": "'O'",
+          "capture_to_read_return_ms": 9.877935490055386,
+          "capture_to_echo_draw_ms": 16.112332053810444,
+          "feed_to_draw_ms": 3.7152213414831845
+        },
+        {
+          "key": "' '",
+          "capture_to_read_return_ms": 9.870182229809453,
+          "capture_to_echo_draw_ms": 16.105565572141266,
+          "feed_to_draw_ms": 3.715996667507778
+        },
+        {
+          "key": "'A'",
+          "capture_to_read_return_ms": 9.877935490055386,
+          "capture_to_echo_draw_ms": 16.11261399054666,
+          "feed_to_draw_ms": 3.7155032782194004
+        },
+        {
+          "key": "'\\n'",
+          "capture_to_read_return_ms": 9.80449097027118,
+          "capture_to_echo_draw_ms": 17.233805906292687,
+          "feed_to_draw_ms": 4.909857777013416
+        },
+        {
+          "key": "'E'",
+          "capture_to_read_return_ms": 9.906340616229125,
+          "capture_to_echo_draw_ms": 16.216578162026224,
+          "feed_to_draw_ms": 3.791062323525224
+        },
+        {
+          "key": "'X'",
+          "capture_to_read_return_ms": 9.877935490055386,
+          "capture_to_echo_draw_ms": 16.095979723109934,
+          "feed_to_draw_ms": 3.6988690107826705
+        },
+        {
+          "key": "'I'",
+          "capture_to_read_return_ms": 9.877935490055386,
+          "capture_to_echo_draw_ms": 16.111697696153957,
+          "feed_to_draw_ms": 3.714586983826699
+        },
+        {
+          "key": "'T'",
+          "capture_to_read_return_ms": 9.877935490055386,
+          "capture_to_echo_draw_ms": 16.111697696153957,
+          "feed_to_draw_ms": 3.714586983826699
+        },
+        {
+          "key": "'\\n'",
+          "capture_to_read_return_ms": 9.80449097027118,
+          "capture_to_echo_draw_ms": 17.237189147127275,
+          "feed_to_draw_ms": 4.913241017848005
+        }
+      ],
+      "scope": "Physical ECHO A and EXIT. Capture IRQ to first echo presentation return: drawing completion, not scanout or key-down time.",
+      "xex_sha256": "0dd4bf92f875b338798602f7c907f515274dd1b5ec6acf31b8574a7538ac35bd",
+      "trace_sha256": "c7db4138e6506b904006f42da3c23403648dc54f40993b148a04519e5238648c"
+    }
+  },
+  "loaded_input": {
+    "tier": "development",
+    "scope": "Same eight-Task, 80-byte full-width producer, SIO and physical keys. Z/A/Return begin during BUSY; BREAK does not require BUSY. Scanout samples bound first correct frame. One phase, not a latency qualification.",
+    "cases": [
+      {
+        "name": "before",
+        "record_path": "build/output-batching/baseline-src/measurements/results.json",
+        "record_sha256": "1b0763cf32eb18300f54d8c2d6c241f3ef704e22456019456f189d28f032775b",
+        "xex_sha256": "18932d76c0e837ff67b593fd8567299abeefda86bab4bb3a82c820258c3edc53",
+        "source_inputs": {
+          "measurements/bitmap-fairness.act": "aeaf2f3bd095dc14b2a65e488371f835a01a7842d0438aa3c3c3521d2dd5a9b6",
+          "tools/test_console_fairness.py": "407248a69c9ab238bfbaa3a23e8e34179136f214244050c9c1d8038eccd39592"
+        },
+        "scanout": [
+          {
+            "key": "Z",
+            "includes_caret": false,
+            "key_down_clock": 15269197,
+            "busy_at_key_down": true,
+            "phase_base_cycles": 0,
+            "samples": [
+              {
+                "clock": 15281299,
+                "frame": 462,
+                "correct": false,
+                "capture_ms": 0.16634267436729872
+              },
+              {
+                "clock": 15333689,
+                "frame": 463,
+                "correct": false,
+                "capture_ms": 29.707673895054686
+              },
+              {
+                "clock": 15369257,
+                "frame": 464,
+                "correct": false,
+                "capture_ms": 49.76352556249903
+              },
+              {
+                "clock": 15404825,
+                "frame": 465,
+                "correct": false,
+                "capture_ms": 69.81937722994337
+              },
+              {
+                "clock": 15440394,
+                "frame": 466,
+                "correct": true,
+                "capture_ms": 89.87579277086014
+              }
+            ],
+            "first_correct_frame_upper_ms": 89.87579277086014,
+            "last_incorrect_frame_ms": 69.81937722994337,
+            "target_40ms": "fail"
+          },
+          {
+            "key": "A",
+            "includes_caret": true,
+            "key_down_clock": 15660805,
+            "busy_at_key_down": true,
+            "phase_base_cycles": 0,
+            "samples": [
+              {
+                "clock": 15672452,
+                "frame": 473,
+                "correct": false,
+                "capture_ms": 0.08732990404283182
+              },
+              {
+                "clock": 15724937,
+                "frame": 474,
+                "correct": false,
+                "capture_ms": 29.682229104611217
+              },
+              {
+                "clock": 15760505,
+                "frame": 475,
+                "correct": false,
+                "capture_ms": 49.738080772055554
+              },
+              {
+                "clock": 15796073,
+                "frame": 476,
+                "correct": false,
+                "capture_ms": 69.7939324394999
+              },
+              {
+                "clock": 15831642,
+                "frame": 477,
+                "correct": true,
+                "capture_ms": 89.85034798041667
+              }
+            ],
+            "first_correct_frame_upper_ms": 89.85034798041667,
+            "last_incorrect_frame_ms": 69.7939324394999,
+            "target_40ms": "fail"
+          }
+        ],
+        "latencies": {
+          "read_ms": 39.43089660111168,
+          "echo_ms": 279.4173495409365,
+          "break_ms": 2.389272871060463
+        },
+        "max_worker_cpu_ms": 21.224549923242723,
+        "sio_verdict": "pass",
+        "sio_violations": []
+      },
+      {
+        "name": "after",
+        "record_path": "build/output-batching/ob5-loaded/results.json",
+        "record_sha256": "f5bdc5cf966ca87fc07bc0576f5b0d2fa908d01f7a30af09aeef8961f43d9f04",
+        "xex_sha256": "43eddb52fae8f2e5d89dd7909977f65dc0ca2acc90bf47b9a33bc40aecdac381",
+        "source_inputs": {
+          "build/output-batching/ob5-loaded/bitmap-fairness.act": "aeaf2f3bd095dc14b2a65e488371f835a01a7842d0438aa3c3c3521d2dd5a9b6",
+          "tools/test_console_fairness.py": "407248a69c9ab238bfbaa3a23e8e34179136f214244050c9c1d8038eccd39592"
+        },
+        "scanout": [
+          {
+            "key": "Z",
+            "includes_caret": false,
+            "key_down_clock": 15327968,
+            "busy_at_key_down": true,
+            "phase_base_cycles": 0,
+            "samples": [
+              {
+                "clock": 15336394,
+                "frame": 463,
+                "correct": false,
+                "capture_ms": 0.11559406184846183
+              },
+              {
+                "clock": 15369258,
+                "frame": 464,
+                "correct": false,
+                "capture_ms": 18.64673185983797
+              },
+              {
+                "clock": 15404825,
+                "frame": 465,
+                "correct": false,
+                "capture_ms": 38.70201965380988
+              },
+              {
+                "clock": 15440393,
+                "frame": 466,
+                "correct": false,
+                "capture_ms": 58.75787132125422
+              },
+              {
+                "clock": 15475962,
+                "frame": 467,
+                "correct": true,
+                "capture_ms": 78.814286862171
+              }
+            ],
+            "first_correct_frame_upper_ms": 78.814286862171,
+            "last_incorrect_frame_ms": 58.75787132125422,
+            "target_40ms": "fail"
+          },
+          {
+            "key": "A",
+            "includes_caret": true,
+            "key_down_clock": 15706473,
+            "busy_at_key_down": true,
+            "phase_base_cycles": 0,
+            "samples": [
+              {
+                "clock": 15720374,
+                "frame": 474,
+                "correct": false,
+                "capture_ms": 0.12687153129709225
+              },
+              {
+                "clock": 15760506,
+                "frame": 475,
+                "correct": false,
+                "capture_ms": 22.756241726918898
+              },
+              {
+                "clock": 15796074,
+                "frame": 476,
+                "correct": false,
+                "capture_ms": 42.81209339436324
+              },
+              {
+                "clock": 15831642,
+                "frame": 477,
+                "correct": false,
+                "capture_ms": 62.86794506180758
+              },
+              {
+                "clock": 15867209,
+                "frame": 478,
+                "correct": false,
+                "capture_ms": 82.92323285577949
+              },
+              {
+                "clock": 15902778,
+                "frame": 479,
+                "correct": true,
+                "capture_ms": 102.97964839669626
+              }
+            ],
+            "first_correct_frame_upper_ms": 102.97964839669626,
+            "last_incorrect_frame_ms": 82.92323285577949,
+            "target_40ms": "fail"
+          }
+        ],
+        "latencies": {
+          "read_ms": 21.85256400316333,
+          "echo_ms": 290.6618323914297,
+          "break_ms": 45.507620045138076
+        },
+        "max_worker_cpu_ms": 21.25492860656997,
+        "sio_verdict": "pass",
+        "sio_violations": []
+      }
+    ]
+  },
+  "loaded_replay": {
+    "path": "build/output-batching/ob5-loaded/replay-results.json",
+    "sha256": "9f4f891a10f48027b966f365f3d6b6f8c83deae3d8ac71dda6b1bd5822b1a920"
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "private_idle": 0
+    },
+    "upper_reservation_delta_bytes": 0,
+    "context_bytes": 44,
+    "arena_reserved_bytes": 2048,
+    "arena_used_before": 1406,
+    "arena_used_after": 1450,
+    "emitted_routine_bytes_before": 483111,
+    "emitted_routine_bytes_after": 492310,
+    "image_segment_bytes_before": 532735,
+    "image_segment_bytes_after": 541981,
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 458,
+        "untouched_above_floor": 822
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1024,
+        "touched_bytes": 147,
+        "untouched_above_floor": 621
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1024,
+        "touched_bytes": 247,
+        "untouched_above_floor": 521
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1024,
+        "touched_bytes": 317,
+        "untouched_above_floor": 451
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 538,
+        "untouched_above_floor": 1766
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 58,
+        "untouched_above_floor": 198
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 270,
+      "untouched_from_base": 1266,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "demo": {
+    "archive": {
+      "path": "build/output-batching/demo/exec816-demo.zip",
+      "sha256": "9ff7f9478ec8b31b12da914d6d60a31829f55efc6157441429c3a14bb6f9b622"
+    },
+    "zip_bytes": 214170,
+    "manifest": {
+      "path": "build/output-batching/demo/demo-manifest.json",
+      "sha256": "9b6e8f0302646ab59f2f6c603807258ab87c8f0b08032aaa6c4efdfd65c690c0"
+    },
+    "xex_sha256": "0dd4bf92f875b338798602f7c907f515274dd1b5ec6acf31b8574a7538ac35bd",
+    "members": {
+      "ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "EXEC816-LICENSING.md": "9afeb63e2fb03c9368b6c320ddbdb5b168654623e578c232d4d589cf04476795",
+      "EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "Exec-of816.xex": "b4f210da76d2287c10e88832beef830a76401392d3319eff456cab393ee6b1b6",
+      "GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "README.txt": "268ce49181b606ba5abee2bc11055bb3e88e52205fe9dbabff03baca894c2ffd",
+      "altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "system.atr": "169b922e853d5e7a0e83262bd38ecccbc7794a3c9a60c8a7c8ab6ee178087749"
+    },
+    "autoboot_frames": 249,
+    "shell_only": true,
+    "primes": false,
+    "of816": true
+  },
+  "checks": {
+    "host_total": 331,
+    "host_passed": 327,
+    "host_skipped": 4,
+    "generated_console": true,
+    "generated_bitmap_packet": true,
+    "local_doc_targets": 255
+  },
+  "limitations": [
+    "2x cached throughput target not met; limits unchanged.",
+    "One loaded input phase, with mixed sampled latencies and overlapping scanout bounds; no worst-case or full-system qualification.",
+    "Sampled BREAK delay includes 37.4 ms off-worker time after just missing input service. Batch limits do not bound Task scheduling delay.",
+    "Loaded producer writes 80 bytes; CAT writes 512. Both exceed the 64-byte short-write threshold.",
+    "Scroll launch-to-IRQ is an upper bound, not an exact hardware BUSY interval.",
+    "Next prompt WRITE return is a separate drawing-completion boundary; it is not a scanout timestamp.",
+    "Image built before test/documentation-only OB4 changes; hashed production console inputs match the final implementation. Pre-existing cartridge work remains separate."
+  ],
+  "actual_emulator": {
+    "binary": "build/mouse-bridge/AltirraBridgeServer",
+    "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "patch": "toolchain/patches/altirra-mouse-observer.patch",
+    "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+    "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+    "source_sha256": {
+      "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+      "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+    }
+  },
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "compiler_binary_sha256": "1d201da4775ab26630106f1d16e11314a58d9fd3abc02191af4ba83c6eb4fd3e",
+  "production_console_inputs_verified": {
+    "abi/console.json": "efa738221e4b1c0b588519863b0f1aed0824c8e7a14cb69cf1658ac5550aa5e7",
+    "abi/console-bitmap.json": "2cbcb28a79191e035bbfdf6745cfd8e48da6c11bfdac8855fa03ec25115d6517",
+    "tools/generate_console.py": "2a8a739b27a2e7345bd9f91b55cd8f7ba0b4e9b35d041f2b0d00f9aa9cfc29cf",
+    "tools/generate_console_bitmap.py": "9f454da609c17605088269391f663c56f51be9f441174cd9174d8fbe8bc05a04",
+    "lib/console/consolebitmap.act": "d8e886eb8116e422bba6eda4ef4c214a6ddb0abb53f537b597203b28e7ed43b5",
+    "lib/console/consolebatch.act": "c13796c0993a010b45d92896f0f9546ce7d1060bdfe2f388f3e15089cbda3072",
+    "lib/console/console-bitmap-types.inc": "7490050fb8cc787751dcd81938ffe8e3a1939e9c024cbc22c10e4519d123672a",
+    "lib/console/console-bitmap-display.inc": "8d6d601285602261c8bee7c386abfcd2404bdb19674c01f169c7436c4b71b26d",
+    "lib/console/console-batch-display.inc": "9c4c3f59458d2ea3c32b55346facfc4c2c65c255d23284b57ce2ec1014e76b95",
+    "lib/console/console.act": "e771f3b64e4a744d2fd6bc91570c6bdc8d427b669b43e4eb721e07c43b528035",
+    "lib/console/consolewindows.act": "ca611ea9f0d27715a1a65102f1e967bb854177973bc8bde9ba911fc4c48f012c",
+    "lib/console/consoletiling.act": "600f54d1ed723b6acc57c702c0201479e3f892bcfb2a11a065a15a681173c3d0",
+    "lib/console/consoleforeground.act": "3c58db2f4b798624bedc5739f9d17761bc1c36dafc82eac5d96a3cac6ed83aed",
+    "lib/dos/dosbreaktypes.act": "afe9ccd719707e10ea0112697cf37a88b45316ebc50939141ac8d58e8eacda0b",
+    "lib/console/consoledisplay.act": "7ff6064a621d7e51fbd3c519f3bf29f1168b3f070fe705e2b1ede6b4a6ac61d9",
+    "lib/console/consoletypes.act": "37b19bda23b4ea85af4c2e38f6f4bc4e4816b45391cd7ed33b239a619ec43e96",
+    "lib/console/consolecore.act": "61e6d82a815e76a69443cb972755e56808e9a79e86c436284e3c17c99fdb27b7",
+    "lib/console/consoledriver.act": "1f1288ad079f12d0785d4b5f78f3098e0912d4558e76b60c24fa2dd215a7c640",
+    "lib/console/console-requests.inc": "95e9e8038912b64bc4412f4514a8fa5f02418e34c5aa3200ac5aa1a0dac840bc",
+    "lib/console/console-lifetime.inc": "e4da0cb7e6c12a54576db1b5796537a18c72eabddfb3cf6ff4c17f25ba45ea84",
+    "lib/console/consolecapture.act": "c0f12e78c5c3a44c21bccb7e738e41deb0fbf3fa9737f76d43a9d102378ac471",
+    "lib/console/consoleinput.act": "8dac57d714dd27ae3032ca536f0a32115c0eb5ac99751eb06720f3238fd509b5",
+    "lib/console/task-console.inc": "2f7171ac907c56771c1d3d326c217a608a6b70a5f8559c73210eb48e21d110f7",
+    "platform/altirraos/console-layout.inc": "f334b1a1b4ce6354967ddc7f7cf1d338c012e983afba1c9a2b4ecc2341f19062",
+    "platform/altirraos/console.s": "35504c1c66b15ddedf343fb332d636d28a7402bc8c87c0c9cb2d0e98bf28e50c"
+  },
+  "pin_note": "The frozen baseline compact record carries the generic pin.emulator metadata. Its frozen demo manifest and bitmap runner select pin.mouse_input.tooling instead; that actual a7defb... executable matches this run. The original baseline artifact/report remain untouched."
+}

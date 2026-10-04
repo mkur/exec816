@@ -97,17 +97,15 @@ budget is unchanged and can be measured separately from queue capacity. This
 refactor adds no Task or bank-zero reservation. Sampling frequency and other
 subsystem contracts remain separate work.
 
-The shell-only bitmap demo's interactive response is now satisfactory for the
-current development use. The next focused console change is
-[bulk output batching](plans/console-output-batching-implementation-plan.md),
-implemented through OB3, with interleaving checks and measurements pending. The completed
-[CAT trace](development/console-output-batching-baseline.json) measures cached
-`CAT LONG.TXT` at 26.670 s, including 24.374 s inside output calls; cached output
-to NIL takes 2.116 s. Accumulate a bounded number of retained line edits, then
-use one multi-row copy/fill and redraw the surviving changed text. Keep short
-writes immediate and input service between quanta. Reuse the existing baseline;
-measure throughput and latency before changing batch limits. This focused
-follow-up does not claim the broader responsiveness targets are qualified.
+The shell-only bitmap demo's interactive response is satisfactory for current
+use. [Bulk output batching](history/console-output-batching.md) is implemented
+through OB5: cached `CAT LONG.TXT` improves from 26.670 to 16.082 s, with 332
+hardware scroll lists instead of 769. The 2× throughput target remains open.
+Initial limits remain four rows/256 bytes/four turns, flushing on a changed VBI
+tick, with unchanged bank-zero reservations. Loaded input results are mixed and
+phase-sensitive; the broader worker/scroll/visible-input goals remain unqualified.
+Further optimization should use the recorded traces and preserve short-write
+response and input service between quanta.
 
 The other possible milestones have no delivery order:
 

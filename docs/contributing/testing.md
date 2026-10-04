@@ -44,6 +44,7 @@ Examples of focused selection, not a mandatory suite for every change:
 | Changed behavior | Development coverage |
 | --- | --- |
 | Retained console cells or controls | `tools/test_console_core.py` in raw/optimized mode. |
+| Bulk bitmap output | `tools/test_console_batch_core.py`, `tools/test_console_bitmap_scroll.py --batch`, and `tools/test_console_batch_lifetime.py` in raw/optimized mode; selected bitmap fault/control and fairness cases. `tools/measure_bitmap_cat.py` and `tools/measure_console_batch_load.py` record performance separately. |
 | Screen presentation or cursor | `tools/test_console_display.py`; add `tools/test_console_scroll.py` when changing scrolling or its cost. |
 | Cooked line state | `tools/test_cooked_line.py`; a physical CON: case when device integration changes. |
 | Shell input/session integration | `tools/test_shell_core.py --smoke`; the affected command, redirection or lifetime scenario for the specific change. |

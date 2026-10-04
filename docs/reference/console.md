@@ -77,6 +77,8 @@ wait until this continuation settles. Hide or other presentation changes may
 discard the optimization and redraw the accepted model after DMA is quiescent.
 An aborted WRITE reports its accepted prefix exactly once; no continuation
 retains the request or source after reply.
+See the [batching measurements](../history/console-output-batching.md): cached
+CAT improves by 1.66× on the pinned demo; broader latency targets remain open.
 
 The worker is the sole drawing owner, with one list in flight. A retained VBXE
 completion signal wakes it; an independent sixteen-VBI-tick watchdog wakes it

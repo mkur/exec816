@@ -19,7 +19,8 @@ class DemoPackageTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         (self.root/'docs').mkdir()
-        for name in ('LICENSE', 'LICENSE-MIT', 'LICENSING.md', 'docs/demo-distribution.txt'):
+        for name in ('LICENSE', 'LICENSE-MIT', 'LICENSING.md', 'docs/demo-distribution.txt',
+                     'docs/bitmap-shell-distribution.txt'):
             (self.root/name).write_bytes((ROOT/name).read_bytes())
         self.bundle = self.root/'bundle'
         self.bundle.mkdir()
@@ -153,6 +154,36 @@ class DemoPackageTests(unittest.TestCase):
             with self.assertRaises(FileNotFoundError):
                 package_demo.package(self.bundle, self.archive)
         self.assertFalse(self.archive.exists())
+
+    def test_shell_only_boot_includes_notices_without_an_optional_demo(self):
+        source=self.root/'shell';source.mkdir()
+        artifacts={'program.xex':'native-image-digest'}
+        for name in package_demo.GEM_NOTICES:
+            content=('notice '+name).encode()
+            (source/name).write_bytes(content)
+            artifacts[name]=hashlib.sha256(content).hexdigest()
+        manifest=source/'demo-manifest.json'
+        manifest.write_text(json.dumps(dict(bitmap=True,shell_only=True,artifacts=artifacts)))
+        path=self.bundle/'of816.json';record=json.loads(path.read_text())
+        record['exec_xex_sha256']=artifacts['program.xex']
+        record['media']['manifest_sha256']=hashlib.sha256(manifest.read_bytes()).hexdigest()
+        path.write_text(json.dumps(record))
+        with patch.object(package_demo,'ROOT',self.root):
+            package_demo.package(self.bundle,self.archive,bitmap_shell=source)
+        with zipfile.ZipFile(self.archive) as archive:
+            files={name.removeprefix('exec816-demo/'):archive.read(name) for name in archive.namelist()}
+        self.assertEqual(set(files),set(self.boot_files)|set(package_demo.LICENSE_FILES)|
+                         set(package_demo.GEM_NOTICES)|{'README.txt','SHA256SUMS'})
+        self.assertIn(b'No prime task is started',files['README.txt'])
+        self.assertNotIn(b'@SYSTEM_',files['README.txt'])
+        sums=dict(line.split('  ',1)[::-1] for line in files['SHA256SUMS'].decode().splitlines())
+        self.assertEqual(set(sums),set(files)-{'SHA256SUMS'})
+        for name,digest in sums.items():
+            self.assertEqual(hashlib.sha256(files[name]).hexdigest(),digest)
+        (source/'GEM-FONT-NOTICE.txt').write_text('changed')
+        with patch.object(package_demo,'ROOT',self.root):
+            with self.assertRaisesRegex(ValueError,'Changed bitmap shell notice'):
+                package_demo.package(self.bundle,self.archive,bitmap_shell=source)
 
 
 if __name__ == '__main__':

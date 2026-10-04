@@ -86,11 +86,11 @@ RETURN
     path=out/'launcher.act';path.write_text(text);return path
 
 
-def build_bitmap(source,out,optimize=True,probe=False,fault=False,**kwargs):
+def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,**kwargs):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     foreign=drawing(out,optimize,probe,fault)
     launcher=prepare(Path(source),out,foreign)
-    return build(compiler(ROOT/'build/actionc'),launcher,out/'program',optimize=optimize,tasks=True,
+    return build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,
                  task_capacity=8,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
 
 

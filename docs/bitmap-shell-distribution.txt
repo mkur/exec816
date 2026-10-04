@@ -1,0 +1,72 @@
+Exec816 bitmap shell
+===================
+
+A full-screen 80 by 30 bitmap console and shell. No prime task is started.
+Includes the current console text, caret and scrolling optimizations.
+
+Boot in AltirraSDL
+-----------------
+
+Requires AltirraSDL: https://github.com/ilmenit/AltirraSDL
+Upstream Altirra will not run this build.
+
+Extract this ZIP into one folder. In System > Configure System, select:
+
+  Atari 800XL, PAL; 65C816 at 14.28MHz (8x).
+  Shadow ROMs in fast RAM enabled.
+  Memory: 64K base plus 4032K high memory (63 banks), giving 4MB total.
+  Firmware: the included altirraos-816.rom, registered as XL/XE OS.
+  Internal BASIC disabled.
+  VBXE FX 1.26 at $D600, with private 512K VRAM.
+  SIO Patch and D: burst I/O disabled.
+  "Unload disks when booting new image" disabled.
+
+1. Mount the included @SYSTEM_DISK@ in D@SYSTEM_DRIVE@: using File > Disk Drives.
+   Select "Generic + 57600 baud" as the disk emulation level.
+2. Use File > Boot Image to start Exec-of816.xex.
+3. Leave the keyboard alone for the five-second OF816 countdown.
+   The bitmap shell opens automatically; wait for SYS: ready and the > prompt.
+
+Boot the XEX; the ATR supplies its system files. Keep this matching disk
+mounted for the whole session. A disk from another build can contain
+incompatible commands.
+
+Press a key during the countdown to enter OF816 instead. Type EXEC816
+to continue into the bitmap shell.
+
+Try it
+------
+
+    TASKS
+    DIR
+    HELLO
+    HELLO | WC
+    CAT STORY.TXT | WC
+    TYPE STORY.TXT
+    MEM
+
+The pipelines print 1 3 17 and 24 133 746 respectively (lines, words, bytes).
+TASKS lists the shell and service workers without a primes task.
+HELP lists built-in commands. BREAK cancels a foreground command.
+EXIT or Ctrl-D closes the shell and restores the OS display.
+
+This is a development preview. Disk access is read-only. The cooked editor
+retains its 36-character editing tail, even on the wider bitmap screen.
+
+Files and licences
+------------------
+
+Exec-of816.xex and @SYSTEM_DISK@ are the boot image and matching system disk.
+The pinned AltirraOS ROM, this guide, licence notices and SHA256SUMS complete
+the package. No separate graphics demo needs to be started.
+
+Exec816 OS code: GPL version 3 only (EXEC816-GPL-3.0.txt).
+Public bindings, headers and examples: MIT (EXEC816-MIT.txt).
+See EXEC816-LICENSING.md for scope and application permission.
+OF816 and AltirraOS notices: OF816-LICENSE.txt and ALTIRRAOS-LICENSE.txt.
+The GEM drawing code and font retain their upstream notices in
+GEM-COPYING.txt, GEM-COPYING.LIB.txt, GEM-LICENSING.md and GEM-FONT-NOTICE.txt.
+
+Source and build instructions: https://github.com/mkur/exec816
+The boot banner identifies the source commit. This build selects
+tools/build_demo.py --bitmap-shell-only.

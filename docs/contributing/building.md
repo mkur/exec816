@@ -48,6 +48,18 @@ See the [demo guide](../guides/demo.md) for machine setup, media alternatives an
 the walkthrough, and the [boot monitor guide](../guides/boot-monitor.md) for
 repackaging an existing image.
 
+For a full-screen bitmap shell without the prime task, use a fresh output
+directory and the shell-only boot selection:
+
+```sh
+CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 python3 tools/build_demo.py --bitmap-shell-only --output build/demo-bitmap-shell
+```
+
+This keeps OF816's five-second autoboot and packages the matching disk, ROM
+and GEM notices. See the [bitmap shell package guide](../bitmap-shell-distribution.txt)
+for VBXE configuration and commands. Reserved bank-zero memory is unchanged,
+both fixed and per Task; the prime Task is never started.
+
 ## Build an individual program
 
 For a resident Task example with console support:

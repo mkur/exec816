@@ -7,6 +7,7 @@ import json
 import re
 from pathlib import Path
 from generate_console import constants as console_constants
+from console_model import read_cells
 from native_program import ROOT, read_build, require, sha256, verify_machine
 from os_boundary import emulator, run_to
 from test_console_display import glyph
@@ -16,19 +17,22 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','wrong'),'Unknown disk failure')
+    require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
     manifest=json.loads((out/'demo-manifest.json').read_text())
     require(all(sha256(out/name)==digest for name,digest in manifest['artifacts'].items()),'Changed demo bundle')
     p=read_build(out);pin=manifest['pin'];observations=[];saved={}
     if expected_cache is None:expected_cache=p['build']['memory']['boot_config']['cache_blocks']
     bitmap=manifest.get('bitmap',False)
+    shell_only=manifest.get('shell_only',False)
+    require(not shell_only or boot_smoke,'Shell-only demo currently supports the boot smoke scope')
     width,height=(80,30) if bitmap else (40,24)
-    shell_cells=width*(height-6)
+    shell_cells=width*(height if shell_only else height-6)
     screenshots=[];commands=[]
     boot_image=None
-    if showcase:
+    if showcase or (boot_smoke and shell_only and bootstrap is None):
         require(bootstrap is None,'The screenshot walkthrough uses the packaged OF816 autoboot')
         boot_image=out/manifest['boot_image']
         boot=json.loads((out/manifest['boot_manifest']).read_text())
@@ -43,6 +47,17 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             run_to(bridge,boot['labels']['of_start'],3000,90)
             bridge.bp_clear_all()
             bridge._cmd_ok('KEY ALL up')
+            bridge.bp_set(boot['labels']['of_autoboot'])
+            run_to(bridge,boot['labels']['of_autoboot'],1000,30)
+            bridge.bp_clear_all()
+            start=bridge.eval_expr('@frame')
+            bridge.bp_set(boot['labels']['of_handoff'])
+            run_to(bridge,boot['labels']['of_handoff'],300,15)
+            saved['autoboot_frames']=bridge.eval_expr('@frame')-start
+            require(249<=saved['autoboot_frames']<=251,'Autoboot did not wait five PAL seconds')
+            from test_of816 import check_boot_guards
+            check_boot_guards(bridge,boot['layout'])
+            bridge.bp_clear_all()
             bridge.bp_set(native['labels']['start'])
             run_to(bridge,native['labels']['start'],3000,90)
             bridge.bp_clear_all()
@@ -54,7 +69,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     binary=ROOT/('build/mouse-bridge/AltirraBridgeServer' if bitmap else 'build/shell-paced-bridge/AltirraBridgeServer');rom=ROOT/'build/firmware/altirraos-816.rom'
     emulator_hash=pin['mouse_input']['tooling']['sha256'] if bitmap else pin['emulator']['sha256']
     require(sha256(binary)==emulator_hash and sha256(rom)==pin['rom']['sha256'],'Unpinned demo machine')
-    def at(name):return next(d['address'] for d in p['image']['data'] if '_DEMO_'+name.upper()+'_' in d['name'])
+    def at(name):return next(d['address'] for d in p['image']['data'] if ('_SHELLAPP_' if shell_only else '_DEMO_')+name.upper()+'_' in d['name'])
     with emulator(binary.parent,rom,out,pin=pin) as b:
         for key,value in manifest['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
         if stock_smoke:b.config('diskemu','810')
@@ -76,7 +91,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     require(b.peek16(adapter.STATE)==0xffff,'Demo ended before checkpoint')
                 return state
             b.regs=regs
-            try:run_to(b,marker,12000,240,condition)
+            try:run_to(b,marker,30000 if measurement_commands is not None else 12000,
+                       1200 if measurement_commands is not None else 240,condition)
             finally:b.regs=original
         def frames(count=3):rendezvous(f'@frame>={b.eval_expr("@frame")+count}')
         capture=p['build']['memory']['console_storage']['CAPTURE']
@@ -101,6 +117,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             rendezvous(condition)
         def cells(label):
             instances=[saved['top'],saved['bottom']];views=[saved['topView'],saved['bottomView']]
+            if shell_only:instances=instances[:1];views=views[:1]
             # A console write can span multiple source quanta. A synchronized
             # screen halfway through the prime frame's clear/title write is
             # still an intermediate frame, so wait for both writes to finish.
@@ -112,7 +129,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 for i,v in zip(instances,views))
             rendezvous(condition)
             generations=[number(i+console['INSTANCE_GENERATION']) for i in instances]
-            text=b''.join(far(pointer(i),length) for i,length in zip(instances,(shell_cells,width*6)))
+            saved['settled_clock']=b.eval_expr('@clk')
+            text=b''.join(read_cells(far,i) for i in instances)
             cursor=number(saved['top']+54,2)+number(saved['top']+10,2)
             if bitmap:
                 from bitmap_console_oracle import Terminal
@@ -132,8 +150,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 physical=b.memdump(saved['screen'],960);expected=bytearray(map(glyph,text))
                 expected[cursor]^=128
                 require(physical==expected,'Physical tile mismatch: '+label)
-            require(b'PRIME SEARCH' in text[shell_cells:],'Missing prime tile')
-            observations.append(dict(stage=label,prime_frames=number(at('demoFrames')),prime_count=number(at('demoCount'),2),guest_frame=b.eval_expr('@frame')))
+            if shell_only:
+                require(len(text)==width*height,'Shell does not occupy the full bitmap console')
+                observations.append(dict(stage=label,guest_frame=b.eval_expr('@frame')))
+            else:
+                require(b'PRIME SEARCH' in text[shell_cells:],'Missing prime tile')
+                observations.append(dict(stage=label,prime_frames=number(at('demoFrames')),prime_count=number(at('demoCount'),2),guest_frame=b.eval_expr('@frame')))
             return text
         def begin(command):
             previous=number(saved['scope']+14)
@@ -203,6 +225,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             press('\x03');ready(previous);result(304);cells('break-loading' if loading else 'break-pipeline')
             require(ledger()==saved['ledger'],'Ownership retained after BREAK')
         def before(bridge):
+            if measurement_commands is not None:b.profile_start('basicblock')
             if aperture_pattern is not None:
                 require(b.memdump(0x8000,4096)==aperture_pattern,'Boot changed the reserved VBXE aperture')
             if cache_override is not None:
@@ -219,13 +242,20 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b.memload(boot['MANIFEST'],bytes([0xd3])*boot['MANIFEST_CAPACITY'])
             saved.update(screen=b.peek16(88),cursor=b.peek(752),mask=b.peek(16))
             saved['screenBytes']=b.memdump(saved['screen'],960);b._cmd_ok('KEY ALL up')
-            rendezvous(f'(db(${at("started"):x})=1)&(dw(${at("demoFrames"):x})>0)')
+            if shell_only:
+                rendezvous(f'(dw(${at("shell"):x})!=0)|(db(${at("shell")+2:x})!=0)')
+            else:
+                rendezvous(f'(db(${at("started"):x})=1)&(dw(${at("demoFrames"):x})>0)')
             saved['shell']=pointer(at('shell'))
             windows=p['build']['memory']['console_storage']['WINDOWS']
             for name,unitName in [('top','demoShellUnit'),('bottom','demoPrimeUnit')]:
-                row=windows+console['WINDOWS_ITEMS']+console['WINDOW_SIZE']*(number(at(unitName))&3)
+                row=windows+console['WINDOWS_ITEMS']+console['WINDOW_SIZE']*(0 if shell_only else number(at(unitName))&3)
                 saved[name]=pointer(row+console['WINDOW_INSTANCE'])
                 saved[name+'View']=pointer(row+console['WINDOW_VIEW'])
+            if shell_only:
+                # ShellOpen publishes its allocation before it creates the DOS
+                # scope. Observe the first pending read after boot has finished.
+                rendezvous(f'db(${saved["top"]+51:x})=2')
             dos=p['build']['memory']['dos_storage']['BASE'];saved['scope']=pointer(pointer(dos)+83)
             ready();cells('startup')
             if disk_failure:
@@ -297,6 +327,21 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 startup=cells('system-volume')
                 require(f'SYS: -> D{system_drive}: ready, read-only'.encode() in startup[:shell_cells],
                         'Wrong system-volume startup mapping')
+                if measurement_commands is not None:
+                    saved['measurements']=[]
+                    for text in measurement_commands:
+                        before_cache=dict(hits=number(cache+16),misses=number(cache+20))
+                        command(text)
+                        after_cache=dict(hits=number(cache+16),misses=number(cache+20))
+                        saved['measurements'].append(dict(command=text,cache_before=before_cache,cache_after=after_cache,
+                            settled_clock=saved['settled_clock']))
+                    save_screen(out/'boot-smoke.png')
+                    for character in 'EXIT':press(character)
+                    b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+                if shell_only:
+                    tasks=command('TASKS',b'dos.filesystem')
+                    require(b'primes' not in tasks.lower(),'Prime task started in shell-only demo')
+                    require(ledger()['live']==4,'Unexpected shell-only idle Task count')
                 mounted=command('MOUNT',b'SDFS')
                 require(mounted[:shell_cells].count(f'D{system_drive}:   SDFS'.encode())==1,
                         'Mount listing duplicated or omitted the physical volume')
@@ -373,6 +418,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         reset_required=disk_failure=='missing'
         runtime,_=execute(b,p,preloaded=bootstrap is not None,before_run=before,timeout=240,frame_limit=12000,
                           expected_status=0xff93 if reset_required else 0)
+        if measurement_commands is not None:b.profile_stop()
         b._cmd_ok('KEY ALL up')
         require(number(at('exitStatus'))==0,'Demo EXIT failed')
         require(b.memdump(saved['screen'],960)==saved['screenBytes'] and b.peek(752)==saved['cursor'],'Demo OS display restoration failed')
@@ -395,8 +441,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         xex_sha256=sha256(out/'program.xex'),media_sha256=sha256(media_path),screenshot_sha256=sha256(out/'boot-smoke.png') if boot_smoke else None if stock_smoke or loading_smoke or cache_smoke else sha256(out/'walkthrough.png'),
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
+        autoboot_frames=saved.get('autoboot_frames'),
+        measurements=saved.get('measurements'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
-        baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=None if stock_smoke or showcase or editing or disk_failure else 7,
+        baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=None if stock_smoke or showcase or editing or disk_failure else 6 if shell_only else 7,
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
@@ -408,10 +456,11 @@ if __name__=='__main__':
     parser.add_argument('--bundle',type=Path,default=ROOT/'build/demo')
     smoke=parser.add_mutually_exclusive_group()
     smoke.add_argument('--stock-smoke',action='store_true')
+    smoke.add_argument('--boot-smoke',action='store_true',help='Check shell, disk commands and EXIT; shell-only builds use OF816 autoboot')
     smoke.add_argument('--loading-smoke',action='store_true',help='Check command loading and physical BREAK without the full walkthrough')
     smoke.add_argument('--editing',action='store_true',help='Physical long-line editing, BREAK and EOF')
     smoke.add_argument('--disk-failure',choices=('missing','wrong'),help='Check offline console and matching-disk recovery')
     smoke.add_argument('--screenshots',action='store_true',help='Capture boot/TASKS and the documented walkthrough through OF816 autoboot')
-    args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,showcase=args.screenshots,editing=args.editing,disk_failure=args.disk_failure)
+    args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,boot_smoke=args.boot_smoke,showcase=args.screenshots,editing=args.editing,disk_failure=args.disk_failure)
     (out/(args.disk_failure+'-disk-results.json' if args.disk_failure else 'editing-results.json' if args.editing else 'screenshots-results.json' if args.screenshots else 'stock810-results.json' if args.stock_smoke else 'loading-results.json' if args.loading_smoke else 'demo-results.json')).write_text(json.dumps(record,indent=2)+'\n')
     print('Packaged demo walkthrough passed')

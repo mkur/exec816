@@ -4,12 +4,11 @@
 [Console contract](../reference/console.md) ·
 [Asynchronous scrolling](../reference/display.md#asynchronous-screen-scrolling)
 
-Status: OB1–OB4 implemented and passed development checks; OB5 measurements in progress.
-See the [OB1 evidence](../development/console-output-batching-ob1.json) and
-[OB2 evidence](../development/console-output-batching-ob2.json), and
-[OB3 evidence](../development/console-output-batching-ob3.json) and
-[OB4 evidence](../development/console-output-batching-ob4.json). Production
-batching uses the shared 44-byte upper-RAM context.
+Status: OB1–OB5 implemented and development-checked in separate commits.
+See the [implementation record](../history/console-output-batching.md) and
+[final evidence](../development/console-output-batching-ob5.json). Cached CAT
+improves from 26.670 to 16.082 s (1.66×); the 2× target and broader latency
+qualification remain open. Initial batch limits are unchanged.
 Preserve the current interactive
 echo path. This work targets bulk output such as `CAT LONG.TXT` in the bitmap
 console. Implement and validate each executable slice, then commit it before

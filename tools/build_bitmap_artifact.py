@@ -7,6 +7,14 @@ from native_program import ROOT,sha256
 from package_demo import BITMAP_FILES
 
 
+def copy_notices(selected,output):
+    for source,name in [('COPYING','GEM-COPYING.txt'),('COPYING.LIB','GEM-COPYING.LIB.txt'),
+                        ('docs/licence.md','GEM-LICENSING.md')]:
+        shutil.copyfile(selected/source,output/name)
+    font=(selected/'src/vdi/font8x8.c').read_text().split('*/',1)[0]+'*/\n'
+    (output/'GEM-FONT-NOTICE.txt').write_text(font)
+
+
 def build(output,media_bundle):
     output=Path(output).resolve()
     program=build_demo(output,media_bundle)
@@ -14,11 +22,7 @@ def build(output,media_bundle):
     shutil.copyfile(program['xex'],output/'Exec-bitmap-console.xex')
     shutil.copyfile(program['output']/'system.atr',output/'system.atr')
     shutil.copyfile(ROOT/'docs/bitmap-console-distribution.txt',output/'README.txt')
-    for source,name in [('COPYING','GEM-COPYING.txt'),('COPYING.LIB','GEM-COPYING.LIB.txt'),
-                        ('docs/licence.md','GEM-LICENSING.md')]:
-        shutil.copyfile(output/'selected'/source,output/name)
-    font=(output/'selected/src/vdi/font8x8.c').read_text().split('*/',1)[0]+'*/\n'
-    (output/'GEM-FONT-NOTICE.txt').write_text(font)
+    copy_notices(output/'selected',output)
     record=dict(format='exec816-bitmap-artifact-v1',diagnostic=False,
         status='functional development preview; responsiveness targets remain open',
         files={name:sha256(output/name) for name in BITMAP_FILES},

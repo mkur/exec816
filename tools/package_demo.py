@@ -18,9 +18,10 @@ GEM_FILES = ('Exec-gem-vdi.xex', 'graphics.atr', 'README.txt', 'GEM-COPYING.txt'
 BITMAP_FILES = ('Exec-bitmap-console.xex', 'system.atr', 'README.txt',
                 'GEM-COPYING.txt', 'GEM-COPYING.LIB.txt', 'GEM-LICENSING.md',
                 'GEM-FONT-NOTICE.txt')
+GEM_NOTICES = BITMAP_FILES[3:]
 
 
-def package(bundle, archive, graphics=None, bitmap=None):
+def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None):
     """Include only boot files and user documentation, checking recorded hashes."""
     record = json.loads((bundle/'of816.json').read_text())
     media = record['media']
@@ -45,6 +46,21 @@ def package(bundle, archive, graphics=None, bitmap=None):
     for name, source in LICENSE_FILES.items():
         files[name] = (ROOT/source).read_bytes()
     guide = (ROOT/'docs/demo-distribution.txt').read_text()
+    if bitmap_shell is not None:
+        manifest = bitmap_shell/'demo-manifest.json'
+        if hashlib.sha256(manifest.read_bytes()).hexdigest() != media['manifest_sha256']:
+            raise ValueError('Changed bitmap shell manifest')
+        demo = json.loads(manifest.read_text())
+        if not demo.get('shell_only') or not demo.get('bitmap'):
+            raise ValueError('Expected a shell-only bitmap build')
+        if demo['artifacts']['program.xex'] != record['exec_xex_sha256']:
+            raise ValueError('OF816 does not wrap this bitmap shell')
+        for name in GEM_NOTICES:
+            content = (bitmap_shell/name).read_bytes()
+            if hashlib.sha256(content).hexdigest() != demo['artifacts'][name]:
+                raise ValueError(f'Changed bitmap shell notice: {name}')
+            files[name] = content
+        guide = (ROOT/'docs/bitmap-shell-distribution.txt').read_text()
     guide = guide.replace('@SYSTEM_DISK@', media['name'])
     guide = guide.replace('@SYSTEM_DRIVE@', str(record['boot_config']['system_drive']))
     if graphics is not None:
