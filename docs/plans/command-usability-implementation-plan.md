@@ -1,6 +1,8 @@
 # Command usability implementation plan
 
-Status: U1–U5 implemented; U6 distribution validation in progress. This follows the completed
+Status: U1–U6 complete at the development tier; see the
+[implementation record](../history/command-usability.md) and
+[development evidence](../development/command-usability.json). This follows the completed
 [first toolbox](command-toolbox-implementation-plan.md). Use the
 [development testing tier](../contributing/testing.md) and preserve the
 [platform memory budget](../reference/platform.md#bank-zero-memory-budget).
@@ -23,7 +25,7 @@ HEAD ?
 
 HEAD is found through the default PATH. The second HEAD invocation reports an
 object-not-found explanation with error number 205. The third displays its
-template and returns OK without reading Input. These interactions are implemented; the final distribution check is recorded below.
+template and returns OK without reading Input. These interactions pass on the packaged system, including SYS: selected on D2:.
 
 Multiple-file `/M` arguments, wildcard expansion, TAIL, FIND, SORT, UNIQ,
 ASSIGN/C:, scripts, environment variables, longer pipelines, background jobs
@@ -289,3 +291,32 @@ plan-only change requires content/link checks, not executable tests. During
 implementation, run the selected development cases rather than an exhaustive
 qualification matrix; full release/hardware qualification remains a separate
 gate. Leave an execution record here with completed slices and linked evidence.
+
+
+## Execution record
+
+Completed 2026-10-05. U1/U2 add per-shell PATH and common serial/pipeline lookup;
+U3 publishes generated Fault/PrintFault services; U4 migrates all ten commands
+to tri-state ReadArgsOrHelp; U5 reports the selected cause once on the shell
+console; U6 updates contracts/guides and refreshes the tested OF816 distribution.
+Implementation commits are `8c980bc`, `a0cec36` and `a049eab`.
+
+The [development record](../history/command-usability.md) lists the actual
+execution scope; [machine-readable evidence](../development/command-usability.json)
+records source/artifact hashes, compiler and machine pins, reports and observed
+stack headroom. Host tests (332), affected generators, raw/optimized native
+checks and the exact packaged autoboot/manual-D2 walkthrough passed. Release
+and physical-hardware qualification remain separate gates.
+
+Actual reservation delta is zero fixed/per-Task bank-zero bytes, including
+all guards, alignment and unused capacity. PATH adds 1,024 upper-RAM bytes per
+shell (1,288 to 2,312 requested/rounded); reporting reuses existing scratch.
+The composed shell/prime demo exceeded the default data arena, so its explicit
+profile reserves 4 KiB instead of 2 KiB. It uses 2,391 bytes, including globals
+and constants; the remaining 1,705 bytes are counted reserved capacity. The
+standalone default and the 1,664-byte provider reservation stay unchanged.
+The provider manifest occupies 1,218 bytes for 36 providers.
+
+`build/usability/demo/exec816-demo.zip` contains only the ten audited boot,
+media, guide, license and checksum files. Build intermediates and test output
+remain in `build/usability`, outside the distribution.
