@@ -1,7 +1,7 @@
 # Small command argument parser
 
-Status: implemented in program ABI version 7. See the
-[toolbox implementation plan](../plans/command-toolbox-implementation-plan.md) for validation and costs.
+Status: implemented in program ABI version 8. See the
+[command usability record](../history/command-usability.md) for validation and costs.
 
 `COMMAND.ReadArgs()` exposes one shared resident DOS parser. Commands describe their arguments
 and decide what to do with them. `Open()` continues to resolve file paths.
@@ -20,7 +20,7 @@ unsigned decimal numbers:
 | --- | --- |
 | `c"FILE"` | One optional filename, suitable for CAT. |
 | `c"FROM/A,TO/A"` | Two required strings. |
-| `c""` | No arguments, suitable for the current WC. |
+| `c""` | No arguments, as used by WC and HELLO. |
 | `c"FILE,LINES/K/N"` | Optional file and keyword-only unsigned line count. |
 | `c"PATTERN/A,FILE,NOCASE/S"` | Required pattern, optional file and Boolean switch. |
 
@@ -121,6 +121,33 @@ an empty filename with ERROR_INVALID_COMPONENT_NAME (210).
 
 ## Integration and cost
 
+### Optional command help
+
+`COMMAND.ReadArgsOrHelp(template, values, valueCapacity, storage, storageCapacity)`
+uses the same descriptors and storage contract as ReadArgs, with three distinct
+results: `ARGS_ERROR=0`, `ARGS_PARSED=1`, `ARGS_HELP=2`. Only PARSED permits command
+work. HELP returns with IoErr zero; ERROR retains the causal error. ReadArgs
+remains the ordinary Boolean parser with no console activity.
+
+A sole unquoted `?` in the raw Process tail requests help; surrounding spaces/tabs
+are allowed. Quoted or embedded question marks and `?` among other arguments are
+parsed normally. Before help, validate the template, slot count and pointer/storage
+contract and clear supplied slots. Required values are not required for help.
+
+Help opens an owned foreground console, writes `Arguments: <template>` plus LF,
+and closes it. The empty template displays `(none)`. It never consumes Input,
+opens a data file, writes selected Output or waits for more arguments. Missing
+console, failed write/close and BREAK return ERROR with their original cause.
+Ordinary parse failures may also display the template; diagnostic failures do
+not replace the parse error. The shell owns the final fault explanation.
+
+All ten supplied commands use this wrapper. The implementation in DOSCOMMAND is
+shared by the checked COMMAND provider; it adds no per-Process state or allocation
+except the temporary console handle. Source/template and storage remain caller
+owned and must be valid and non-overlapping throughout the call.
+
+### Shared parser
+
 Exec816 owns the implementation in `lib/dos`, published as one checked resident
 `ReadArgs` provider. There is no new kernel call. CAT, WC and the
 [toolbox commands](../guides/toolbox.md) use it; shell
@@ -129,7 +156,7 @@ built-ins retain their existing parser.
 Reserved bank-zero change: **0 fixed bytes / 0 bytes per Task**, including
 guards, alignment and unused capacity. Result slots occupy three bytes each;
 text buffers belong to callers. Code, ABI metadata and stack measurements are
-recorded in the [toolbox implementation plan](../plans/command-toolbox-implementation-plan.md).
+recorded in the [command usability record](../history/command-usability.md).
 
 Focused raw/optimized checks cover empty/required/extra arguments, quotes and
 escapes, exact/short buffers, unchanged source text and independent callers.

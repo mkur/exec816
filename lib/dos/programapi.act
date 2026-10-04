@@ -6,6 +6,8 @@ USE DOSBREAK
 USE PROCESS
 USE DOSARGS
 USE DOSUTILITY
+USE DOSFAULT
+USE DOSCOMMAND
 
 ; Explicit task-only providers. Opaque handles keep the external contract free
 ; of resident implementation records. Dispatch directly to their shared
@@ -124,5 +126,21 @@ RETURN(DOSCALLS.OpenConsole())
 PUBLIC LONGINT FUNC ConsoleInfo(BYTE POINTER handle,size)
 
 RETURN(DOSCALLS.ConsoleInfo(handle,size))
+
+PUBLIC LONGINT FUNC Fault(LONGINT code CSTRING header BYTE POINTER buffer
+                          CARD capacity)
+
+RETURN(DOSFAULT.Fault(code,header,buffer,capacity))
+
+PUBLIC LONGINT FUNC PrintFault(BYTE POINTER handle LONGINT code CSTRING header
+                               BYTE POINTER buffer CARD capacity)
+
+RETURN(DOSFAULT.PrintFault(handle,code,header,buffer,capacity))
+
+PUBLIC LONGINT FUNC ReadArgsOrHelp(CSTRING template ADDRESS POINTER values
+    CARD valueCapacity BYTE POINTER storage CARD storageCapacity)
+
+RETURN(DOSCOMMAND.ReadArgsOrHelp(PROCESS.GetArgStr(),template,values,
+    valueCapacity,storage,storageCapacity))
 
 ENDMODULE

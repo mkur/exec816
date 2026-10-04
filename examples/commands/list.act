@@ -60,8 +60,10 @@ LONGINT FUNC Main()
   CSTRING path
   LONGINT status,cause
 
-  IF CommandArgs(c"DIR,NAMES/S",values,2,arguments,SIZEOF(arguments))=0 THEN
-    RETURN(COMMAND.RETURN_ERROR)
+  LET parsed=COMMAND.ReadArgsOrHelp(c"DIR,NAMES/S",values,2,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
   FI
 
   path=c""

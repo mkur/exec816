@@ -115,6 +115,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [Command usability](command-usability.md): bounded shell PATH, shared fault
+  text and template help for all ten commands.
+
 - [First command toolbox](command-toolbox.md): seven loadable commands, shared
   arguments/streams and foreground-console access; raw/optimized development
   checks and the refreshed OF816 distribution.

@@ -109,3 +109,13 @@ RETURN(FileHandle POINTER(DOSCALLS.OpenConsole()))
 PUBLIC LONGINT FUNC ConsoleInfo(FileHandle POINTER file BYTE POINTER size)
 
 RETURN(DOSCALLS.ConsoleInfo(BYTE POINTER(file),size))
+
+PUBLIC LONGINT FUNC Fault(LONGINT code CSTRING header BYTE POINTER buffer
+                          CARD capacity)
+
+RETURN(DOSFAULT.Fault(code,header,buffer,capacity))
+
+PUBLIC LONGINT FUNC PrintFault(FileHandle POINTER handle LONGINT code
+    CSTRING header BYTE POINTER buffer CARD capacity)
+
+RETURN(DOSFAULT.PrintFault(BYTE POINTER(handle),code,header,buffer,capacity))

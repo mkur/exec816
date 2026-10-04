@@ -1,0 +1,9 @@
+MODULE PATHSTATE
+
+PUBLIC LONGINT error,firstError,otherError
+PUBLIC CARD attempts,locks,unlocks
+PUBLIC BYTE mutation,breakFlag,breakAfter
+PUBLIC CSTRING canonical,success
+PUBLIC BYTE ARRAY calls(1536)
+
+ENDMODULE

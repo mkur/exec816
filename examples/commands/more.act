@@ -168,8 +168,10 @@ LONGINT FUNC Main()
 
   keyboard=NULL
   quit=0
-  IF CommandArgs(c"FILE",values,1,arguments,SIZEOF(arguments))=0 THEN
-    RETURN(COMMAND.RETURN_ERROR)
+  LET parsed=COMMAND.ReadArgsOrHelp(c"FILE",values,1,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
   FI
 
   LET input=CommandInput(values(0))

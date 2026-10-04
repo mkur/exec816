@@ -35,8 +35,9 @@ CMP STORY.TXT STORY.TXT
 CAT LONG.TXT | MORE
 ```
 
-There is still no PATH search. Use qualified command paths such as `SYS:HEAD`
-after changing to a directory without the command files.
+The shell's default [PATH](shell.md#path) searches the current directory and then
+SYS:, so commands remain available after CD. Qualified paths such as `SYS:HEAD`
+bypass search.
 
 ## Bytes, text and limits
 
@@ -71,11 +72,17 @@ GREP selected no lines. ERROR (10) includes malformed arguments, I/O failures,
 excessive text lines and BREAK. The shell retains primary and secondary results;
 its [pipeline aggregation](shell.md#pipes) handles successful early consumers.
 
-On malformed arguments these commands print their argument template to the
+All ten commands accept a sole unquoted `?` for template help. For example,
+`HEAD ? <STORY.TXT >NIL:` prints help on the console and consumes no data.
+`GREP "?" STORY.TXT` searches for a literal question mark. An empty template,
+as used by WC and HELLO, is displayed as `Arguments: (none)`.
+
+On malformed arguments commands print their argument template to the
 foreground console, independently of redirected Output. Headless callers still
 receive the parser error through IoErr. `/A` marks required arguments, `/K`
 keyword-only values, `/N` unsigned decimal values, and `/S` switches. The parser
-has no dependency on the command's data Input.
+has no dependency on the command's data Input. The shell then prints one error
+explanation, such as `HEAD: Object not found (205)`, without changing the result.
 
 These are bounded Exec816 commands inspired by Unix and AmigaDOS, not claims of
 POSIX or Amiga command-line compatibility.

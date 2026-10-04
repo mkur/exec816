@@ -42,17 +42,17 @@ PUBLIC CSTRING FUNC GetArgStr()
 
 RETURN(c"")
 
-PUBLIC LONGINT FUNC ReadArgs(CSTRING template ADDRESS POINTER values
+PUBLIC LONGINT FUNC ReadArgsOrHelp(CSTRING template ADDRESS POINTER values
     CARD valueCapacity
                             BYTE POINTER storage CARD storageCapacity)
 
   error=DOSARGS.Parse(GetArgStr(),template,values,valueCapacity,storage,
       storageCapacity)
   IF error=0 THEN
-    RETURN(-1)
+    RETURN(ARGS_PARSED)
   FI
 
-RETURN(0)
+RETURN(ARGS_ERROR)
 
 PUBLIC LONGINT FUNC IoErr()
 

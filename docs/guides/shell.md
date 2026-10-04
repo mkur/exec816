@@ -22,6 +22,7 @@ Source lives in [examples/shell](../../examples/shell/).
 | `VER` | Print abbreviated Exec816 and compiler-pin revisions. |
 | `MOUNT` | List published runtime mounts, handler, access and mounted/offline state. |
 | `DEVICES` | List resident drivers and runtime state. |
+| `PATH [ADD directory / SET directory / CLEAR / RESET]` | Inspect or change the shell's command search directories. |
 | `EXIT` | Release shell resources and finish through coordinated shutdown. |
 
 Command names ignore case. MOUNT only lists; it does not mount/unmount media or
@@ -53,9 +54,10 @@ for selection through the boot monitor.
 
 ## External commands
 
-Built-ins take precedence. Any other command token names an exact file in the
-current directory or a qualified DOS path, such as `HELLO` or `SYS:HELLO`.
-There is no extension or PATH search. The file must use the supported
+Built-ins take precedence. A bare command such as `HELLO` is searched in the
+current directory, then the shell's PATH, initially `SYS:`. A token containing
+`:` or `/`, such as `SYS:HELLO` or `/TOOLS/HELLO`, names an exact DOS path.
+There is no extension guessing. The file must use the supported
 [o65 command profile](../reference/program-loading.md). The child inherits
 selected streams and the current directory. Its copied argument tail retains
 quotes/escapes and omits shell redirection syntax.
@@ -64,6 +66,48 @@ The demo includes HELLO, CAT, WC and the [command toolbox](toolbox.md). CAT acce
 copies Input to Output; WC counts Input. See [writing commands](commands.md).
 A child returns a primary status and secondary error; the shell collects both
 before showing the next prompt.
+
+### PATH
+
+Each shell stores at most four search directories. The current directory always
+comes first and does not consume an entry. `PATH` displays this order without
+accessing media. `PATH ADD directory` appends one directory; `PATH SET directory`
+replaces the explicit list. `PATH CLEAR` leaves current-directory lookup only,
+and `PATH RESET` restores `SYS:`. Subcommands ignore case.
+
+ADD/SET validate the directory and store its absolute name, so a later CD does
+not change its meaning. Duplicate names ignoring case are successful no-ops.
+Invalid directories, a fifth entry, BREAK or cleanup failure preserve the old
+list. Entries hold names, not locks; PATH does not pin media. Default/reset SYS:
+is resolved lazily and follows the selected system volume. Other validated names
+use the physical mount spelling. PATH never changes the child's directory.
+
+Only missing files/directories allow the next search attempt. A missing current
+directory skips that first attempt; invalid executables, unavailable volumes,
+resource errors and BREAK stop lookup. A broken local command therefore reports
+its own error. Joined paths are limited to 255 bytes and are never truncated.
+Serial commands and both pipeline stages use the same search rules.
+
+```text
+CD SYS:WORK
+HEAD SYS:STORY.TXT LINES 3
+PATH ADD SYS:TOOLS
+PATH RESET
+```
+
+### Help and errors
+
+All ten supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
+`WC ?`. They print `Arguments: <template>` on the foreground console and return
+OK without reading Input or writing data Output. Quoted `"?"` remains data.
+Help still works with redirection and pipes; headless help fails explicitly.
+
+The shell reports errors once on its retained console, for example
+`HEAD: Object not found (205)`. Pipeline errors name the stage supplying the
+combined result. Syntax and redirection errors use `Shell`; a failing status
+without a secondary code gets `Command returned n`. WARN with secondary zero,
+BREAK and an expected producer broken pipe remain quiet. Reporting never replaces
+the original primary/secondary result. See [fault services](../reference/dos.md#fault-text).
 
 ## Quoting and redirection
 

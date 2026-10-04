@@ -9,28 +9,6 @@ USE SYS
 ; this command instance; the native stack is in bank zero.
 BYTE ARRAY commandDigits(11)
 
-; Syntax diagnostics belong to the foreground console, not redirected data.
-; A headless caller still receives the original parser error through IoErr.
-LONGINT FUNC CommandArgs(CSTRING template ADDRESS POINTER values CARD count
-                        BYTE POINTER storage CARD capacity)
-
-  IF COMMAND.ReadArgs(template,values,count,storage,capacity)<>0 THEN
-    RETURN(-1)
-  FI
-
-  LET cause=COMMAND.IoErr()
-  LET console=COMMAND.OpenConsole()
-  IF console<>NULL THEN
-    COMMAND.WriteAll(console,BYTE POINTER(c"Arguments: "),11)
-    COMMAND.WriteAll(console,BYTE POINTER(template),STR.strlen(template))
-    COMMAND.WriteAll(console,BYTE POINTER(c"\n"),1)
-    COMMAND.Close(console)
-  FI
-
-  COMMAND.SetIoErr(cause)
-
-RETURN(0)
-
 ; A missing filename borrows Input; an explicit empty filename is an error.
 BYTE POINTER FUNC CommandInput(ADDRESS name)
 

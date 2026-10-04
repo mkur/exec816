@@ -52,8 +52,10 @@ RETURN(COMMAND.RETURN_OK)
 LONGINT FUNC Main()
   LONGINT status
 
-  IF CommandArgs(c"FROM/A,TO/A",values,2,arguments,SIZEOF(arguments))=0 THEN
-    RETURN(COMMAND.RETURN_ERROR)
+  LET parsed=COMMAND.ReadArgsOrHelp(c"FROM/A,TO/A",values,2,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
   FI
 
   LET first=CommandInput(values(0))

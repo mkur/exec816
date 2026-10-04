@@ -347,7 +347,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         'Mount listing duplicated or omitted the physical volume')
                 command('CD SYS:WORK')
                 command('CD',f'D{system_drive}:WORK'.encode())
-                command('SYS:HELLO',b'Hello from disk!')
+                command('HELLO',b'Hello from disk!')
+                command('PATH',b'SYS:')
+                command('HEAD SYS:STORY.TXT LINES 3',b'Exec816')
+                command('HEAD MISSING',b'Object not found (205)')
+                command('HEAD ?',b'Arguments: FILE,LINES/K/N')
                 # Two ordinary DOS names must share the same warmed cache.
                 command(f'TYPE D{system_drive}:STORY.TXT',b'system should also know how to stop.')
                 first=dict(hits=number(cache+16),misses=number(cache+20))
@@ -356,7 +360,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 require(first['misses']==second['misses'] and second['hits']>first['hits'],
                         'Physical and SYS reads did not share the cache')
                 saved['sys_cache']=dict(physical=first,system=second)
-                command('SYS:CAT SYS:STORY.TXT | SYS:WC',b'24 133 746')
+                command('CAT SYS:STORY.TXT | WC',b'24 133 746')
                 command('CD SYS:')
                 command('CD',f'D{system_drive}:'.encode())
                 command('HELLO',b'Hello from disk!')

@@ -17,8 +17,10 @@ LONGINT FUNC Main()
   BYTE inWord,previousCR
 
   ; WC accepts no arguments; redirected input remains available for counting.
-  IF COMMAND.ReadArgs(c"",ADDRESS POINTER(0),0,BYTE POINTER(0),0)=0 THEN
-    RETURN(COMMAND.RETURN_ERROR)
+  LET parsed=COMMAND.ReadArgsOrHelp(c"",ADDRESS POINTER(0),0,BYTE POINTER(0),0)
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
   FI
 
   lines=0

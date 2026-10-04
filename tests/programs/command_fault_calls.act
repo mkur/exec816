@@ -1,0 +1,40 @@
+MODULE DOSCALLS
+
+USE FAULTSTATE AS T
+
+PUBLIC LONGINT FUNC Read(BYTE POINTER handle,buffer LONGINT length)
+
+RETURN(-1)
+
+; Exercise the real WriteAll loop below PrintFault, including committed errors.
+PUBLIC LONGINT FUNC Write(BYTE POINTER handle,buffer LONGINT length)
+  CARD index,count
+
+  T.writes==+1
+  T.error=0
+  IF T.mode=1 THEN
+    RETURN(0)
+  FI
+
+  IF T.mode=2 THEN
+    T.error=214
+    RETURN(-1)
+  FI
+
+  count=3
+  IF length<3 THEN
+    count=CARD(length)
+  FI
+
+  FOR index=0 TO count-1 DO
+    T.output(T.used+index)=buffer(index)
+  OD
+
+  T.used==+count
+  IF T.mode=3 THEN
+    T.error=214
+  FI
+
+RETURN(LONGINT(count))
+
+ENDMODULE

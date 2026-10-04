@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 3,
+  "revision": 4,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -24,7 +24,8 @@
     "ST_ROOT": 1,
     "ST_USERDIR": 2,
     "ST_FILE": -3,
-    "PIPE_BUFFER_BYTES": 1024
+    "PIPE_BUFFER_BYTES": 1024,
+    "FAULT_BUFFER_BYTES": 384
   },
   "dos_errors": {
     "ERROR_NO_FREE_STORE": 103,
@@ -557,6 +558,63 @@
       ],
       "outgoing_bytes": 7,
       "result_bytes": 4
+    },
+    "Fault": {
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 4
+        },
+        {
+          "alignment": 1,
+          "offset": 4,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 7,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 10,
+          "size": 2
+        }
+      ],
+      "outgoing_bytes": 13,
+      "result_bytes": 4
+    },
+    "PrintFault": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 4
+        },
+        {
+          "alignment": 1,
+          "offset": 8,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 11,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 14,
+          "size": 2
+        }
+      ],
+      "outgoing_bytes": 17,
+      "result_bytes": 4
     }
   },
   "cooked": {
@@ -761,5 +819,36 @@
   "streams": {
     "slots": 4,
     "slot_bytes": 16
+  },
+  "error_messages": {
+    "ERROR_NO_FREE_STORE": "Not enough memory",
+    "ERROR_BAD_TEMPLATE": "Invalid argument template",
+    "ERROR_BAD_NUMBER": "Invalid number or buffer",
+    "ERROR_REQUIRED_ARG_MISSING": "Required argument missing",
+    "ERROR_TOO_MANY_ARGS": "Too many arguments",
+    "ERROR_UNMATCHED_QUOTES": "Unmatched quotes",
+    "ERROR_LINE_TOO_LONG": "Line too long",
+    "ERROR_NO_DEFAULT_DIR": "No current directory",
+    "ERROR_OBJECT_IN_USE": "Object in use",
+    "ERROR_DIR_NOT_FOUND": "Directory not found",
+    "ERROR_OBJECT_NOT_FOUND": "Object not found",
+    "ERROR_BAD_STREAM_NAME": "Invalid stream",
+    "ERROR_OBJECT_TOO_LARGE": "Object too large",
+    "ERROR_ACTION_NOT_KNOWN": "Unsupported operation",
+    "ERROR_INVALID_COMPONENT_NAME": "Invalid path component",
+    "ERROR_INVALID_LOCK": "Invalid lock",
+    "ERROR_OBJECT_WRONG_TYPE": "Wrong object type",
+    "ERROR_DISK_NOT_VALIDATED": "Disk not validated",
+    "ERROR_DISK_WRITE_PROTECTED": "Disk is read-only",
+    "ERROR_TOO_MANY_LEVELS": "Too many directory levels",
+    "ERROR_DEVICE_NOT_MOUNTED": "Volume not mounted",
+    "ERROR_SEEK_ERROR": "Seek failed",
+    "ERROR_NOT_A_DOS_DISK": "Unsupported disk format",
+    "ERROR_NO_DISK": "No disk or disk I/O failure",
+    "ERROR_NO_MORE_ENTRIES": "No more entries",
+    "ERROR_BUFFER_OVERFLOW": "Buffer capacity exceeded",
+    "ERROR_BREAK": "Interrupted",
+    "ERROR_BROKEN_PIPE": "Broken pipe",
+    "ERROR_BAD_ARGUMENTS": "Invalid arguments"
   }
 }

@@ -21,6 +21,19 @@ class ProgramContract(unittest.TestCase):
         self.assertEqual((ROOT/'lib/dos/command-args.inc').read_text(),generate_program.command_args())
         self.assertEqual((ROOT/'lib/dos/program-kernel.inc').read_text(),generate_program.kernel_constants())
 
+    def test_fault_messages_are_complete_and_unambiguous(self):
+        self.assertEqual((ROOT/'lib/dos/dos-fault-messages.inc').read_text(),generate_program.fault_table())
+        self.assertEqual(generate_program.fault_messages()[205], 'Object not found')
+        self.assertEqual(generate_program.fault_messages()[309], 'Executable provider mismatch')
+        for change in ('missing','conflicting','duplicate','long','control'):
+            dos=copy.deepcopy(generate_program.DOS_ABI)
+            if change=='missing':del dos['error_messages']['ERROR_BREAK']
+            elif change=='conflicting':dos['error_messages']['ERROR_NO_FREE_STORE']='Another meaning'
+            elif change=='duplicate':dos['dos_errors']['ERROR_BREAK']=dos['dos_errors']['ERROR_BAD_NUMBER']
+            elif change=='long':dos['error_messages']['ERROR_BREAK']='x'*81
+            else:dos['error_messages']['ERROR_BREAK']='bad\ntext'
+            with self.assertRaises(ValueError):generate_program.fault_messages(dos)
+
     def test_policy_caps_bound_address_arithmetic(self):
         abi = json.loads((ROOT/'abi/program.json').read_text())
         self.assertEqual(abi['profile'], 'actionc.o65.compact.v3')
@@ -82,8 +95,8 @@ class ProgramContract(unittest.TestCase):
         image=dict(routines=routines,segments=[dict(address=0x38000,bytes=[0]*1024,executable=True)])
         labels=dict(stack_overflow=0x3200,stack_overflow_end=0x3210)
         payload,providers=generate_program.provider_manifest(image,labels,True,libraries)
-        self.assertEqual(len(payload),1111)
-        self.assertEqual(len(providers),33)
+        self.assertEqual(len(payload),1218)
+        self.assertEqual(len(providers),36)
         strlen=next(p for p in providers if p['name']=='cstring_strlen_v1')
         body=next(r for r in routines if r['name'].startswith('M_CSTRING_IMPL_STRLEN_'))
         self.assertEqual(strlen['address'],body['address'])

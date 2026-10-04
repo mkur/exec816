@@ -12,13 +12,15 @@ from os_boundary import emulator
 from test_cooperative import data
 
 PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
-NAMES = ('cmp', 'cksum', 'hexdump', 'head', 'grep', 'list', 'more')
+NAMES = ('cmp', 'cksum', 'hexdump', 'head', 'grep', 'list', 'more', 'cat', 'wc', 'hello')
 STRIDE = 4372
 
 
-def vectors(name):
+def behavior_vectors(name):
     def c(label, payload=b'', args=b'', expected=b'', **kw):
         return dict(name=label, payload=payload, args=args, expected=expected, **kw)
+    if name in ('cat','wc','hello'):
+        return []
     common = [c('read-error', b'x\n', readFail=1, error=226),
               c('partial-read-error', b'x\n', prefixError=226, error=226),
               c('break', b'x\n', breakAt=0, error=304),
@@ -93,6 +95,29 @@ def vectors(name):
             c('small-console',interactive=1,width=1,error=115,opens=1)]+common
 
 
+TEMPLATES = dict(cmp='FROM/A,TO/A',cksum='FILE',hexdump='FILE,OFFSET/K/N,LENGTH/K/N',
+                 head='FILE,LINES/K/N',grep='PATTERN/A,FILE,NOCASE/S,INVERT/S,NUMBER/S',
+                 list='DIR,NAMES/S',more='FILE',cat='FILE',wc='',hello='')
+
+
+def vectors(name):
+    cases=behavior_vectors(name)
+    message=('Arguments: '+(TEMPLATES[name] or '(none)')+'\n').encode()
+    for label,args,extra in [
+        ('help',b'?',{}),('help-spaces',b' \t?\t ',{}),
+        ('help-no-console',b'?',dict(interactive=0,opens=0,error=212,consoleExpected=b'')),
+        ('help-write-error',b'?',dict(writeFail=1,error=214,consoleExpected=b'')),
+        ('help-close-error',b'?',dict(closeError=202,error=202)),
+        ('help-break',b'?',dict(breakAt=0,error=304,consoleExpected=b'')),
+    ]:
+        case=dict(name=label,payload=b'do not read\n',args=args,expected=b'',
+                  interactive=1,opens=1,consoleExpected=message,noReads=True)
+        case.update(extra);cases.append(case)
+    if name=='grep':
+        cases.append(dict(name='quoted-question',payload=b'?\nx\n',args=b'"?"',expected=b'?\n'))
+    return cases
+
+
 def fixture(out,name,cases):
     out.mkdir(parents=True,exist_ok=True)
     for source,target in [('toolbox_state.act','toolboxstate.act'),('toolbox_calls.act','doscalls.act')]:
@@ -119,9 +144,11 @@ ENDMODULE
     api=read_source(ROOT/'lib/dos/programapi.act').replace('MODULE PROGRAMAPI','MODULE COMMAND').replace('USE EXEC\n','').replace('USE PROCESS\n','USE TOOLBOXSTATE AS T\n')
     api=api.replace('PROCESS.GetArgStr()','CSTRING(@T.scenario.arguments(0))').replace('  EXEC.Yield()','')
     declarations=read_source(ROOT/'lib/dos/command.act').split('PUBLIC EXTERNAL')[0].replace('MODULE COMMAND','')
-    api=api.replace('USE DOSUTILITY','USE DOSUTILITY\n'+declarations)
+    api=api.replace('USE DOSFAULT\n','')
+    api=api[:api.index('PUBLIC LONGINT FUNC Fault(')]+api[api.index('PUBLIC LONGINT FUNC ReadArgsOrHelp('):]
+    api=api.replace('USE DOSCOMMAND','USE DOSCOMMAND\n'+declarations)
     (out/'command.act').write_text(api)
-    source=read_source(ROOT/f'examples/commands/{name}.act').replace('LONGINT FUNC Main()','LONGINT FUNC CommandMain()').replace('ENDMODULE','')
+    source=read_source(ROOT/f'examples/commands/{name}.act').replace('USE CSTRING AS STR','USE CSTRING.IMPL AS STR').replace('LONGINT FUNC Main()','LONGINT FUNC CommandMain()').replace('ENDMODULE','')
     # Relocate include paths when copying and bind the exact compiler library.
     common=read_source(ROOT/'examples/commands/command-common.inc').replace('USE CSTRING AS STR','USE CSTRING.IMPL AS STR')
     (out/'command-common.inc').write_text(common)
@@ -201,12 +228,14 @@ def run(out,mode,names=NAMES):
                 require(opens==closes==c.get('opens',0),f'{name}/{c["name"]}: ownership {(opens,closes)}')
                 if 'consoleExpected' in c:
                     require(row[4116:4116+consoleUsed]==c['consoleExpected'],name+' diagnostic console')
+                if c.get('noReads'):
+                    require(reads==0,name+' help consumed Input')
                 if c.get('prompts') is not None:
                     require(row[4116:4116+consoleUsed].count(b'--More--')==c['prompts'],name+' prompts')
         records.append(dict(command=name,cases=[c['name'] for c in cases],build=p['build'],runtime=runtime,machine=machine))
         print(name,mode,len(cases),'passed',flush=True)
     return dict(status='pass',tier='development',mode=mode,commands=records,bank_zero_delta=dict(fixed=0,per_task=0),
-                source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [ROOT/'lib/dos/dosargs.act',ROOT/'lib/dos/dosutility.act',ROOT/'lib/dos/programapi.act',ROOT/'examples/commands/command-common.inc',Path(__file__),*(ROOT/f'examples/commands/{n}.act' for n in names)]})
+                source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [ROOT/'lib/dos/dosargs.act',ROOT/'lib/dos/doscommand.act',ROOT/'lib/dos/dosutility.act',ROOT/'lib/dos/programapi.act',ROOT/'examples/commands/command-common.inc',Path(__file__),*(ROOT/f'examples/commands/{n}.act' for n in names)]})
 
 
 if __name__=='__main__':

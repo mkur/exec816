@@ -64,6 +64,37 @@ See [foreground cancellation](foreground-break.md), [console/NIL streams](stream
 and [pipes](pipes.md) for their precise behavior. Close preserves the prior error
 on success and clears any standard-stream selection referring to that handle.
 
+## Fault text
+
+DOS and COMMAND publish shared English error formatting in DOS ABI revision 4
+and program ABI version 8. Message definitions come from the DOS and program ABI
+JSON files; one generated resident table covers all defined DOS/loader errors.
+
+| Call | Contract |
+| --- | --- |
+| `Fault(code, header, buffer, capacity)` | Return the formatted payload length excluding NUL, or -1 for invalid storage/header or insufficient capacity. |
+| `PrintFault(handle, code, header, buffer, capacity)` | Completely write the formatted message plus LF to the explicit borrowed handle; return DOSTRUE or DOSFALSE. |
+
+Known errors format as `HEAD: Object not found (205)`. Null/empty header omits
+the prefix. Unknown signed codes format as `Error code n`, optionally prefixed.
+Code zero produces an empty string and PrintFault writes nothing. Fault adds no
+newline. Neither service opens, selects or closes streams, allocates memory, or
+uses mutable global scratch.
+
+Both preserve entry IoErr on success and failure. Their return value reports
+diagnostic failure; it must not replace the operation's original cause. To retain
+a write error itself, call Fault followed by ordinary WriteAll. This adapts the
+Amiga fault services to explicit stream/scratch ownership and preserved IoErr;
+the signatures and error-state behavior are not Amiga-compatible.
+
+Header text is bounded to 255 bytes and descriptions to 80. The generated
+`FAULT_BUFFER_BYTES=384` covers a maximal message, signed number, LF and NUL.
+Capacity includes the terminator; PrintFault also needs room for LF. Storage
+must be writable upper RAM satisfying the DOS transfer-range rule, and must not
+overlap the readable header. A valid nonempty destination is NUL-terminated on
+format failure; there is no truncated successful message. PrintFault can commit
+a prefix before a transport failure and makes no recursive diagnostic attempt.
+
 ## Task-local state and ownership
 
 Each Task has an error slot and lazily allocated DOS context. That context owns

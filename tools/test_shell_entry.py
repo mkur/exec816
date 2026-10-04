@@ -7,7 +7,7 @@ from native_program import ROOT,build,compiler,require,sha256,verify_machine
 from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
 from test_cooperative import data
-from test_shell_core import PIN,KEYS,draw
+from test_shell_core import PIN,KEYS,draw,diagnostic_text
 from test_console_display import terminal
 from make_shell_disk import make as make_disk, SOURCE as DISK_SOURCE
 
@@ -50,7 +50,7 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
             banner=banner.replace('console.device: ready',f'exec: stack checks {"enabled" if p["build"]["stack_checks"] else "disabled"}\nconsole.device: ready')
             if no_mount:banner+='SYS: no system volume configured\n'
             else:banner+='sio.device: D1 ready, 57.6k profile\nSYS: mounting...\n'
-            banner+='SYS: mount failed; use CD SYS: to retry\n\nError '+str(error)+'\n'if error else 'SYS: -> D1: ready, read-only\n\n'
+            banner+='SYS: mount failed; use CD SYS: to retry\n\n'+diagnostic_text(error,'Shell').decode()if error else 'SYS: -> D1: ready, read-only\n\n'
             payload.extend(banner.encode());payload.extend(draw(b''))
             require(b.eval_expr(f'dw(${pointer+36:x})')==error,'Startup result differs')
             def screen(stage):
@@ -67,12 +67,12 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
             mounts_output=b'MOUNT FILESYSTEM ACCESS    STATE\n'+(b'No mounted filesystems\n'if error else b'D1:   MyDOS      read-only mounted\n')
             devices_output=b'DEVICE          STATE\nconsole.device  ready\nsio.device      '+(b'inactive'if no_mount else b'ready')+b'\n'
             state.update(mounts_output=mounts_output.decode(),devices_output=devices_output.decode())
-            commands=[('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES EXIT\n',0),
-                ('ver',version,0),('ver >nil:',b'',0),('ver extra',b'Error 115\n',115),
-                ('tasks',None,0),('tasks >nil:',b'',0),('tasks extra',b'Error 115\n',115),
-                ('mount',mounts_output,0),('mount >nil:',b'',0),('mount D2:',b'Error 115\n',115),
-                ('devices',devices_output,0),('devices >nil:',b'',0),('devices extra',b'Error 115\n',115),
-                ('echo ok',b'ok\n',0),('cd SYS:',f'Error {error}\n'.encode()if error else b'',error)]
+            commands=[('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT\n',0),
+                ('ver',version,0),('ver >nil:',b'',0),('ver extra',diagnostic_text(115,'Shell'),115),
+                ('tasks',None,0),('tasks >nil:',b'',0),('tasks extra',diagnostic_text(115,'Shell'),115),
+                ('mount',mounts_output,0),('mount >nil:',b'',0),('mount D2:',diagnostic_text(115,'Shell'),115),
+                ('devices',devices_output,0),('devices >nil:',b'',0),('devices extra',diagnostic_text(115,'Shell'),115),
+                ('echo ok',b'ok\n',0),('cd SYS:',diagnostic_text(error,'cd')if error else b'',error)]
             if not error:
                 listing=f"DOCS/\nHELLO.TXT {len(files['HELLO.TXT'])}\nREADME.TXT {len(files['README.TXT'])}\nTOOLS/\n".encode()
                 commands.extend([('dir',listing,0),('type hello.txt',files['HELLO.TXT'],0),
@@ -84,8 +84,8 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
                 commands.extend([('cd sys:',b'',0),('type SYS:HELLO.TXT',files['HELLO.TXT'],0)])
             commands.append(('exit',b'',0))
             if redirection:
-                commands=[('type <D1:HELLO.TXT >NIL:',f'Error {error}\n'.encode() if error else b'',error),
-                    ('cd TOOLS >NIL:',f'Error {error}\n'.encode() if error else b'',error),
+                commands=[('type <D1:HELLO.TXT >NIL:',diagnostic_text(error,'Shell') if error else b'',error),
+                    ('cd TOOLS >NIL:',diagnostic_text(error,'cd') if error else b'',error),
                     ('echo "<ok>"',b'<ok>\n',0),('echo cooked >CON:',b'cooked\n',0),
                     ('type <NIL: >NIL:',b'',0),('exit >NIL:',b'',0)]
             state['commands']=[c[0]for c in commands]

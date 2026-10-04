@@ -5,6 +5,7 @@ INCLUDE "command-errors.inc"
 INCLUDE "command-modes.inc"
 INCLUDE "command-args.inc"
 INCLUDE "command-buffers.inc"
+PUBLIC CONST FAULT_BUFFER_BYTES=384
 ; Opaque identities. Only DOS creates/frees them; this token is not their storage layout.
 PUBLIC TYPE FileHandle=[BYTE opaque]
 PUBLIC TYPE FileLock=[BYTE opaque]
@@ -56,4 +57,7 @@ PUBLIC EXTERNAL LONGINT FUNC ExNext(BYTE POINTER lock BYTE POINTER info)
 PUBLIC EXTERNAL LONGINT FUNC IsInteractive(BYTE POINTER handle)
 PUBLIC EXTERNAL BYTE POINTER FUNC OpenConsole()
 PUBLIC EXTERNAL LONGINT FUNC ConsoleInfo(BYTE POINTER handle BYTE POINTER size)
+PUBLIC EXTERNAL LONGINT FUNC ReadArgsOrHelp(SYS.CSTRING template ADDRESS POINTER values CARD valueCapacity BYTE POINTER storage CARD storageCapacity)
+PUBLIC EXTERNAL LONGINT FUNC Fault(LONGINT code SYS.CSTRING header BYTE POINTER buffer CARD capacity)
+PUBLIC EXTERNAL LONGINT FUNC PrintFault(BYTE POINTER handle LONGINT code SYS.CSTRING header BYTE POINTER buffer CARD capacity)
 ENDMODULE

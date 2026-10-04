@@ -1,6 +1,6 @@
 # Command usability implementation plan
 
-Status: planned; implementation has not started. This follows the completed
+Status: U1–U5 implemented; U6 distribution validation in progress. This follows the completed
 [first toolbox](command-toolbox-implementation-plan.md). Use the
 [development testing tier](../contributing/testing.md) and preserve the
 [platform memory budget](../reference/platform.md#bank-zero-memory-budget).
@@ -23,15 +23,14 @@ HEAD ?
 
 HEAD is found through the default PATH. The second HEAD invocation reports an
 object-not-found explanation with error number 205. The third displays its
-template and returns OK without reading Input. These are planned outcomes,
-not claims about the current build.
+template and returns OK without reading Input. These interactions are implemented; the final distribution check is recorded below.
 
 Multiple-file `/M` arguments, wildcard expansion, TAIL, FIND, SORT, UNIQ,
 ASSIGN/C:, scripts, environment variables, longer pipelines, background jobs
 and writable filesystems remain separate milestones. Keep the existing command
 locations on the disk; this slice does not require a C directory or alias.
 
-## Current implementation boundaries
+## Boundaries at the start of this plan
 
 - [ShellExternal and ShellPipeline](../../examples/shell/shell-session.inc)
   call [PROGRAMFILE.Load](../../lib/dos/programfile.act) with exact filenames.
@@ -48,7 +47,7 @@ locations on the disk; this slice does not require a C directory or alias.
   ReadArgs directly and HELLO has no argument parser. Migrate all ten commands
   together when adding the shared help wrapper.
 
-## Proposed behavior
+## Selected behavior
 
 ### PATH and command lookup
 
@@ -112,7 +111,7 @@ limits. Include ordinary filesystem, argument, console and o65 errors. Unknown
 signed codes get a deterministic numeric fallback. Keep formatting and number
 conversion shared; use the compiler-owned CSTRING primitives.
 
-Proposed public contracts, to publish through DOS and checked COMMAND bindings:
+Public contracts, published through DOS and checked COMMAND bindings:
 
 | Operation | Contract |
 | --- | --- |

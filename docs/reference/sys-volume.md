@@ -53,12 +53,13 @@ unmount makes it unavailable until the same slot is remounted with a new
 generation. Service restart preserves selection, not old mount objects.
 Absent/unpublished selection reports `ERROR_DEVICE_NOT_MOUNTED`; offline media
 retains its causal error. This is one fixed alias, without general assigns,
-command search paths, C: or RAM:.
+C: or RAM:. Command search is separate per-shell policy.
 
 The standard shell starts with a real SYS root lock and reports its mapping.
-`MOUNT` lists the physical volume once. From another directory, use explicit
-paths such as `SYS:HELLO` or `SYS:CAT SYS:STORY.TXT | SYS:WC`. Bare command
-lookup is unchanged. A failed initial mount leaves a usable console; after
+`MOUNT` lists the physical volume once. The shell's default
+[PATH](../guides/shell.md#path) searches CurrentDir and then SYS:, so `HELLO` or
+`CAT SYS:STORY.TXT | WC` works from another directory. Explicit command paths
+such as `SYS:HELLO` bypass search. A failed initial mount leaves a usable console; after
 correcting media, `CD SYS:` retries filesystem startup. An offline SIO device
 after a transport timeout can still require a cold boot.
 

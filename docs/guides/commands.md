@@ -19,6 +19,12 @@ USE CSTRING AS STR
 ; Write one greeting through the command's selected output stream.
 LONGINT FUNC Main()
 
+  LET parsed=COMMAND.ReadArgsOrHelp(c"",NULL,0,NULL,0)
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
   LET greeting=c"Hello from disk!\n"
   LET length=STR.strlen(greeting)
 
@@ -42,15 +48,17 @@ python3 tools/build_command.py examples/commands/hello.act -o build/commands/HEL
 
 This produces the o65 command and companion reports, not a new disk image.
 The [demo builder](../contributing/building.md#build-the-demo) compiles and bundles
-HELLO, CAT and WC with the matching resident providers. Rebuild the resident image
+all ten supplied commands with the matching resident providers. Rebuild the resident image
 and commands together when their ABI changes.
 
 ## Arguments, input and errors
 
 `COMMAND.GetArgStr()` borrows the Process's NUL-terminated argument string.
-Use [ReadArgs](../reference/command-arguments.md) for supported positional
-arguments instead of writing a separate filename parser in every command.
-Its result slots and decoding storage belong to the caller.
+Use [ReadArgsOrHelp](../reference/command-arguments.md#optional-command-help)
+for shared template parsing and `?` help. Only ARGS_PARSED runs command work;
+ARGS_HELP returns OK and ARGS_ERROR returns ERROR. Result slots and decoding
+storage belong to the caller. ReadArgs remains available for parsing without
+console UI. Neither API reads data Input.
 
 Use Input/Output for selected streams and explicit Open/Close for owned files.
 Honor byte counts, EOF and partial-transfer errors. Report failure through
@@ -74,6 +82,9 @@ handles and result collection. For broader Exec experiments, start with the
 
 The [toolbox](toolbox.md) uses these resident COMMAND imports:
 
+- `Fault` and `PrintFault` provide bounded [fault text](../reference/dos.md#fault-text)
+  using caller scratch and preserving IoErr. Ordinary commands return errors;
+  the shell prints their final explanation on its own console.
 - `WriteAll(handle, buffer, length)` returns DOS true after the entire counted
   write, or false with IoErr. It handles short writes and BREAK, preserving a
   committed-prefix error. Zero length is a no-op; negative lengths fail.

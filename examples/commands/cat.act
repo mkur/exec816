@@ -96,8 +96,10 @@ LONGINT FUNC Main()
   ADDRESS ARRAY values(1)
 
   failure=0
-  IF COMMAND.ReadArgs(c"FILE",values,1,path,SIZEOF(path))=0 THEN
-    RETURN(COMMAND.RETURN_ERROR)
+  LET parsed=COMMAND.ReadArgsOrHelp(c"FILE",values,1,path,SIZEOF(path))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
   FI
 
   LET named=values(0)<>0

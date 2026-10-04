@@ -3,6 +3,7 @@
 import argparse
 import json
 import subprocess
+import shutil
 from pathlib import Path
 from build_command import compile_command
 from library_paths import read_source
@@ -42,11 +43,16 @@ ENDMODULE
 ''')
 
     def prepare(self,toolchain,out,mode,size):
+        # Test media is regenerated; old nested binary fixtures must not be
+        # reinterpreted as text when replaying a frozen kernel.
+        shutil.rmtree(out/'files',ignore_errors=True)
         source=out/'files';source.mkdir(exist_ok=True)
         self.commands={};self.mode=mode
         for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','GREP','LIST','MORE'):
             self.commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',source/name,mode=='opt')
             for suffix in ('.options.json','.profile.json'):(source/(name+suffix)).rename(out/(name+suffix))
+        self.commands['STATUS']=compile_command(toolchain,ROOT/'tests/programs/disk_status.act',source/'STATUS',mode=='opt')
+        for suffix in ('.options.json','.profile.json'):(source/('STATUS'+suffix)).rename(out/('STATUS'+suffix))
         (source/'A.TXT').write_bytes(b'Alpha\nbeta\nGamma\n')
         (source/'B.TXT').write_bytes(b'Alpha\nbetb\nGamma\n')
         (source/'PAGE.TXT').write_bytes(b'x\n'*60)
@@ -78,7 +84,7 @@ ENDMODULE
         c.check_screen('pager-'+key.lower())
 
     def outcomes(self,c):
-        c.command('GREP absent A.TXT|HEAD MISSING',error=205)
+        c.command('GREP absent A.TXT|HEAD MISSING',error=205,diagnostic='HEAD')
         c.command('CAT MISSING|GREP absent',error=205)
         c.command('CAT LONG.TXT|HEAD LINES -1',b'Arguments: FILE,LINES/K/N\n',error=310)
         c.check_screen('pipeline-outcomes')
@@ -92,6 +98,7 @@ ENDMODULE
             self.pager(c,self.pager_key,23 if self.pager_key=='SPACE' else 1)
             return
         c.command('CMP A.TXT A.TXT')
+        c.command('STATUS',status=20)
         c.command('CMP A.TXT B.TXT',b'Different at byte 9\n',status=5)
         c.command('CKSUM A.TXT',subprocess.check_output(['cksum'],input=self.files['A.TXT']))
         c.command('HEAD A.TXT LINES 2',b'Alpha\nbeta\n')

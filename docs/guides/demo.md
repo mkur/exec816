@@ -70,7 +70,7 @@ The second screenshot is taken after the last command above:
 Type `HELP` to list the shell's built-in commands:
 
 ```text
-HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES EXIT
+HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT
 ```
 
 `HELLO | WC` prints `1 3 17`. `CAT STORY.TXT | WC` prints `24 133 746`.
@@ -119,14 +119,17 @@ starts with a real directory lock on SYS. Physical names remain canonical in
 
 ```text
 CD SYS:WORK
-SYS:HELLO
-TYPE SYS:STORY.TXT
-SYS:CAT SYS:STORY.TXT | SYS:WC
+HELLO
+HEAD SYS:STORY.TXT LINES 3
+HEAD MISSING
+HEAD ?
+CAT SYS:STORY.TXT | WC
 CD SYS:
 ```
 
 The commands above work while the current directory is WORK. Bare command
-names retain their existing lookup rules. If the system disk failed to mount,
+names search CurrentDir and then SYS: through the default [PATH](shell.md#path).
+If the system disk failed to mount,
 the console stays usable; insert the matching disk and use `CD SYS:` to retry.
 To choose D2 before startup, see the [OF816 guide](boot-monitor.md).
 

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.program",
-  "version": 7,
+  "version": 8,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
@@ -274,6 +274,77 @@
           "size"
         ]
       ]
+    },
+    "ReadArgsOrHelp": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "SYS.CSTRING",
+          "template"
+        ],
+        [
+          "ADDRESS POINTER",
+          "values"
+        ],
+        [
+          "CARD",
+          "valueCapacity"
+        ],
+        [
+          "BYTE POINTER",
+          "storage"
+        ],
+        [
+          "CARD",
+          "storageCapacity"
+        ]
+      ]
+    },
+    "Fault": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "LONGINT",
+          "code"
+        ],
+        [
+          "SYS.CSTRING",
+          "header"
+        ],
+        [
+          "BYTE POINTER",
+          "buffer"
+        ],
+        [
+          "CARD",
+          "capacity"
+        ]
+      ]
+    },
+    "PrintFault": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ],
+        [
+          "LONGINT",
+          "code"
+        ],
+        [
+          "SYS.CSTRING",
+          "header"
+        ],
+        [
+          "BYTE POINTER",
+          "buffer"
+        ],
+        [
+          "CARD",
+          "capacity"
+        ]
+      ]
     }
   },
   "limits": {
@@ -341,5 +412,17 @@
         "height"
       ]
     ]
+  },
+  "argument_results": {
+    "ERROR": 0,
+    "PARSED": 1,
+    "HELP": 2
+  },
+  "error_messages": {
+    "NO_FREE_STORE": "Not enough memory",
+    "BAD_FORMAT": "Invalid executable format",
+    "UNSUPPORTED": "Unsupported executable",
+    "RESOURCE_LIMIT": "Executable resource limit exceeded",
+    "BAD_PROVIDER": "Executable provider mismatch"
   }
 }

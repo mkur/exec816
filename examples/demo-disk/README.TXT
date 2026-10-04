@@ -26,3 +26,16 @@ CMP STORY.TXT STORY.TXT
 LIST NAMES
 MORE LONG.TXT
 MORE: Space=page, Return=line, Q=quit.
+
+Commands after changing directory:
+CD SYS:WORK
+HEAD SYS:STORY.TXT LINES 3
+HEAD MISSING
+HEAD ?
+PATH
+CAT SYS:STORY.TXT | WC
+CD SYS:
+
+PATH searches here, then SYS: by default.
+Every supplied command supports ? help.
+Errors are explained on the console.

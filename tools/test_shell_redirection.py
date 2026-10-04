@@ -7,7 +7,7 @@ from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 from banked_test_memory import read as far_read
-from test_shell_core import instrument,draw,collect_capture,HOOK
+from test_shell_core import instrument,draw,collect_capture,HOOK,diagnostic_text
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 from test_console_display import terminal
 from mydos_fixtures import Image
@@ -27,17 +27,17 @@ def prepare(size,scenario):
     def item(command,output=b'',error=0,source=None,kind='run',done=0):return dict(command=command,output=output,status=10 if error else 0,error=error,kind=kind,source=source,done=done)
     if scenario=='large':
         payload=file('LARGE.BIN');cases=[item('TYPE <LARGE.BIN >NIL:',convert(payload),source=payload),item('EXIT >NIL:',done=1)]
-    elif scenario=='fault-read':cases=[item('TYPE <EXT.BIN >NIL:',b'Error 213\n',213),item('ECHO recovered >NIL:',b'recovered\n'),item('EXIT >NIL:',done=1)]
+    elif scenario=='fault-read':cases=[item('TYPE <EXT.BIN >NIL:',diagnostic_text(213,'TYPE'),213),item('ECHO recovered >NIL:',b'recovered\n'),item('EXIT >NIL:',done=1)]
     else:
         text=file('TEXT.TXT');cases=[item('ECHO "<inside>" >NIL:',b'<inside>\n'),item('TYPE <D1:TEXT.TXT >NIL:',convert(text),source=text),
             item('TYPE <"D1:TEXT.TXT" > "NIL:"',convert(text),source=text),item('TYPE <NIL: >NIL:'),item('DIR TOOLS >NIL:',b'SUB/\n'),
             item('CD TOOLS >NIL:'),item('CD >NIL:',b'D1:TOOLS\n'),item('CD : >NIL:'),
-            item('ECHO must-not-run <TEXT.TXT >TEXT.TXT',b'Error 214\n',214),item('ECHO must-not-run <MISSING >NIL:',b'Error 205\n',205),
-            item('ECHO must-not-run >CONSOLE:',b'Error 209\n',209),item('ECHO cooked >CON:',b'cooked\n'),item('TYPE <RAW: >NIL:',b'Error 212\n',212),item('ECHO raw >RAW:',b'raw\n')]
+            item('ECHO must-not-run <TEXT.TXT >TEXT.TXT',diagnostic_text(214,'Shell'),214),item('ECHO must-not-run <MISSING >NIL:',diagnostic_text(205,'Shell'),205),
+            item('ECHO must-not-run >CONSOLE:',diagnostic_text(209,'Shell'),209),item('ECHO cooked >CON:',b'cooked\n'),item('TYPE <RAW: >NIL:',diagnostic_text(212,'TYPE'),212),item('ECHO raw >RAW:',b'raw\n')]
         for command in ('ECHO bad>NIL:','ECHO bad >','ECHO bad >>NIL:','ECHO bad >NIL: >RAW:','ECHO bad <NIL: <RAW:',
                         '<NIL:','EXIT extra >NIL:','CD TOOLS extra >NIL:','ECHO "bad*e" >NIL:','ECHO "x">NIL:','ECHO >NIL: <'):
-            cases.append(item(command,b'Error 115\n',115))
-        cases += [item('UNKNOWN >RAW:',b'Error 209\n',209),item('ECHO bad',b'badError 206\n',206,kind='missing')]
+            cases.append(item(command,diagnostic_text(115,'Shell'),115))
+        cases += [item('UNKNOWN >RAW:',diagnostic_text(209,'Shell'),209),item('ECHO bad',b'bad'+diagnostic_text(206,'ECHO'),206,kind='missing')]
         cases += [item('TYPE <NIL: >NIL:')for _ in range(8)]
         cases += [item('EXIT >NIL:',done=1)]
     return disk,cases,derived,original
