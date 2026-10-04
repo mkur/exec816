@@ -5,8 +5,12 @@
 #include <stddef.h>
 #include <string.h>
 #include <exec/widget-types.h>
+#ifdef __CALYPSI_CORE_65816__
+#include <exec/types.h>
+#else
 typedef int16_t WORD;
 typedef uint16_t UWORD;
+#endif
 #define FAR
 #pragma pack(push, 2)
 #include "aes-objects.h"
@@ -24,6 +28,7 @@ typedef uint16_t UWORD;
 #define MD_XOR 3
 #define IBM 3
 #define INTIN_SIZE 64
+#define intin WidgetIntin
 #define SPEC_PTR(spec) WidgetSpec(spec)
 typedef void (*OBJ_ROUTINE)(OBJECT *, WORD, WORD, WORD);
 extern GRECT gl_clip;

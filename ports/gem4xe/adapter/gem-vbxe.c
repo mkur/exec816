@@ -536,3 +536,39 @@ UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visi
     }
     return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
 }
+
+/* Only a trusted, bounded renderer calls this synchronous closure. */
+UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void))
+{
+    UWORD status;
+    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 ||
+        bottom-top>16) return DISPLAY_BAD_ARGUMENT;
+    status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (display.scrollPending) return DISPLAY_BUSY;
+    GemDrawingPrepare(left,top,right,bottom);
+    draw();
+    return fence_owner();
+}
+
+/* The admitted disabled pattern is GEM IP_4PATT: alternating AAAA/5555,
+ * transparent WHITE (hardware zero). Group alternate scanlines in a blit,
+ * preserving partial packed bytes. Phase is anchored to screen coordinates. */
+void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    UWORD y,lo,hi,rows;
+    UBYTE mask;
+    ULONG base;
+    for (y=top;y<top+2 && y<bottom;y++) {
+        rows=(bottom-y+1)/2;lo=left/2;hi=right/2;
+        base=((ULONG)(y*20))<<4;
+        mask=(y&1) ? 0xf0 : 0x0f;
+        if (left&1) {
+            if (y&1) blit_and(base+lo,640,1,rows,0xf0);
+            lo++;
+        }
+        if ((right&1) && !(y&1)) blit_and(base+hi,640,1,rows,0x0f);
+        if (hi>lo) blit_and(base+lo,640,hi-lo,rows,mask);
+    }
+}

@@ -12,6 +12,13 @@
     "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
     "tools/vdiref.py": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
     "tools/fontref.py": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
-    "tools/devref.py": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89"
+    "tools/devref.py": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+    "tools/gemdata.py": "408f051d865d07b88cede092d8b4fbf39e0da154c1954085ae3a18d410f0eb87",
+    "tools/vbxeref.py": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+    "tools/anticref.py": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+    "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+    "src/vdi/font6x6.c": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+    "src/vdi/fillpat.c": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+    "src/vbxe/vbxe.h": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608"
   }
 }

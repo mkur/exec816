@@ -19,6 +19,7 @@ uint16_t WidgetValidate(struct WidgetContext *,const struct WidgetTree *,uint16_
 int16_t WidgetHit(struct WidgetContext *,int16_t,int16_t);
 void WidgetDrawObject(struct WidgetContext *,uint16_t,int16_t,int16_t);
 uint16_t WidgetVisible(const struct WidgetContext *,uint16_t);
+uint16_t WidgetPaint(struct WidgetPacket *);
 extern struct WidgetContext *WidgetCurrent;
 void WidgetFill(WORD mode,WORD style,WORD pattern,WORD colour,const GRECT *);
 void WidgetText(WORD x,WORD y,const WORD *glyphs,WORD count,WORD mode,WORD colour);

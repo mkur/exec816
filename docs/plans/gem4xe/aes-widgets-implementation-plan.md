@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Desktop contract](../../reference/desktop.md) ·
 [Layers](../../reference/layers.md) · [Roadmap](../../roadmap.md)
 
-Status: AW0 implemented; AW1–AW6 pending, 2026-10-05. Port a bounded selection of GEM4XE AES object
+Status: AW0–AW1 implemented; AW2–AW6 pending, 2026-10-05. Port a bounded selection of GEM4XE AES object
 and form code into a widget library hosted by the existing Exec816 desktop
 presenter. Deliver a control-panel application beside the shell, with labels,
 buttons, toggles, radio groups and keyboard navigation. Preserve the source
@@ -464,3 +464,8 @@ AW0 evidence: [raw/optimized model checks](../../development/aes-widgets-aw0.jso
 Both modes pass 1,504 checks; the host suite passes 342 tests (four historical
 skips). Fixed, root/kernel, per-public-Task and idle reserved bank-zero growth
 is zero. Drawing and desktop integration are subsequent slices.
+
+AW1 evidence: [six pixel scenes in both modes](../../development/aes-widgets-aw1.json).
+The donor oracle matches clipped and repeated rendering, every admitted type and
+state, maximum labels, overlapping objects, focus marking and pointer-background
+repair. Reserved bank-zero and VRAM growth remain zero.

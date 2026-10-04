@@ -9,12 +9,32 @@ from library_paths import read_source
 from native_program import ROOT,build,compiler,require,sha256
 
 
-def drawing(out,optimize,probe=False,fault=False):
+def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=False):
     for path,content in files().items():require(path.read_text()==content,'Stale console packet: '+str(path))
     extraction=extract(out/'selected');src=out/'selected/src';ad=PORT/'adapter'
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',ROOT/'platform/altirraos/vbxe.c',
              src/'vdi/vdi.c',src/'vdi/font.c',src/'vdi/font8x8.c',src/'vdi/dev_vbxe.c',
              ad/'gem-vbxe.c',ROOT/'lib/console/console-bitmap.c']
+    extra_roots=[];extra_includes=[];extra_probes=[]
+    if widgets or widget_probe:
+        from extract_gem_aes import extract as aes_extract,PORT as aes
+        from generate_widgets import expected_layout as aes_layout
+        aes_record=aes_extract(out/'aes-selected')
+        sources += [aes/'widgets-model.c',aes/'widgets-graf.c',aes/'widgets-render.c',
+                    *(out/'aes-selected'/n for n in ('aes-objects.c','aes-graf.c','aes-form.c'))]
+        extra_includes=[aes,out/'aes-selected']
+        extra_probes=[(aes/'widget-layout.c',aes_layout())]
+        if widget_probe:
+            sources.append(ROOT/'tests/programs/widgets_pixels.c')
+            extra_roots=['WidgetPixelProbe']
+            original=ROOT/'lib/console/console-bitmap.c'
+            instrumented=out/'console-widget-probe.c'
+            text=original.read_text().replace('struct ConsoleBitmapPacket ConsoleBitmapPacket',
+                'extern void WidgetPixelProbe(void);\nstruct ConsoleBitmapPacket ConsoleBitmapPacket')
+            text=text.replace('p->status=GemDrawingOpen(workout);',
+                'p->status=GemDrawingOpen(workout);\n        if (!p->status) WidgetPixelProbe();')
+            instrumented.write_text(text)
+            sources[sources.index(original)]=instrumented
     if fault:
         hardware=(ROOT/'platform/altirraos/vbxe.c').read_text()
         hardware=hardware.replace('#define BUSY ', 'extern UBYTE ConsoleFaultBusy(void);\nextern void ConsoleFaultStop(void);\nextern void ConsoleFaultCopy(void);\nextern void ConsoleFaultText(UWORD count,UWORD fillRows);\n#define BUSY ')
@@ -33,13 +53,14 @@ def drawing(out,optimize,probe=False,fault=False):
         ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s']
     if probe:assembly.append(ROOT/'tests/programs/console_bridge.s')
     foreign=emit(out/'drawing',sources,assembly,[],
-        optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else []),includes=[src,ad],definitions={
+        optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots,includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
             'gem-vbxe.c':['-DGEM_DRAWING_ONLY']},
-        probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())])
+        probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())]+extra_probes)
     for name in ('GemServiceWorker','GemClientInit','GemVbxeBackend'):
         require(name not in foreign['symbols'],'Unexpected GUI policy: '+name)
     foreign['provenance'].update(extraction=extraction,fixture_bridge=probe,fixture_fault=fault,source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [*sources,*assembly,ROOT/'abi/console-bitmap.json',ROOT/'c/include/hardware/console-bitmap.h']})
+    if widgets or widget_probe:foreign['provenance']['aes_extraction']=aes_record
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     return foreign
 

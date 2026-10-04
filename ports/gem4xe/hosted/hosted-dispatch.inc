@@ -174,3 +174,28 @@ uint16_t GemBitmapTextClip(uint16_t x,uint16_t y,const uint8_t *text,uint16_t co
     vwk.xmn_clip=x0; vwk.ymn_clip=y0; vwk.xmx_clip=x1; vwk.ymx_clip=y1;
     return 0;
 }
+
+/* Private AES graphics. Geometry has been intersected with the admitted outer
+ * clip before these calls. Public VDI operation validation remains unchanged. */
+void GemWidgetFill(uint16_t mode,uint16_t style,uint16_t pen,
+    uint16_t left,uint16_t top,uint16_t right,uint16_t bottom)
+{
+    extern void vbxe_xor_rect(WORD,WORD,WORD,WORD);
+    extern void GemWidgetStipple(uint16_t,uint16_t,uint16_t,uint16_t);
+    if (mode==3) vbxe_xor_rect(left,top,right-1,bottom-1);
+    else if (style==2) GemWidgetStipple(left,top,right,bottom);
+    else dev_fill_rect(left,top,right-1,bottom-1,style==0 ? 0 : pen);
+}
+void GemWidgetText(int16_t x,int16_t y,const int16_t *glyphs,uint16_t count,
+    uint16_t colour,uint16_t left,uint16_t top,uint16_t right,uint16_t bottom)
+{
+    WORD color=vwk.text_color,mode=vwk.wrt_mode,clip=vwk.clip;
+    WORD x0=vwk.xmn_clip,y0=vwk.ymn_clip,x1=vwk.xmx_clip,y1=vwk.ymx_clip;
+    uint16_t i;
+    vwk.text_color=colour;vwk.wrt_mode=1;vwk.clip=1;
+    vwk.xmn_clip=left;vwk.ymn_clip=top;vwk.xmx_clip=right-1;vwk.ymx_clip=bottom-1;
+    for (i=0;i<count;i++,x+=8)
+        if (x<right && x+8>left && y<bottom && y+8>top) dev_glyph(glyphs[i],x,y,1);
+    vwk.text_color=color;vwk.wrt_mode=mode;vwk.clip=clip;
+    vwk.xmn_clip=x0;vwk.ymn_clip=y0;vwk.xmx_clip=x1;vwk.ymx_clip=y1;
+}

@@ -32,4 +32,8 @@ UWORD GemDrawingTextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
 UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible);
 UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible);
 
+/* Internal renderer closure: callback is linked trusted code, never a client
+ * pointer. One owner check and fence cover the complete bounded paint quantum. */
+UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void));
+void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom);
 #endif

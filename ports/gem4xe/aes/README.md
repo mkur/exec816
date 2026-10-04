@@ -43,3 +43,11 @@ zero: fixed/root/kernel, each of eight public Task pools and private idle,
 including guards, alignment and unused pool capacity. The existing 20-byte
 C DP workspace and 2,560-byte large Task stack are reused. The existing complete
 C code/data banks remain reserved (131,072 bytes). AW0 reserves no VRAM.
+
+AW1 connects the selected draws to the existing VBXE font atlas and bounded
+command lists. A synchronous trusted renderer closure checks ownership once
+per four-object, sixteen-scanline quantum. Transparent text preserves partial
+glyphs and packed neighboring pixels; selected controls invert their rebuilt
+base, disabled stipple stays anchored to screen coordinates. Keyboard focus
+is a one-pixel inset underline. No new public VDI opcode or VRAM extent is added.
+See the [native pixel record](../../../docs/development/aes-widgets-aw1.json).

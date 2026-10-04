@@ -1,0 +1,1088 @@
+{
+  "slice": "AW1",
+  "tier": "development",
+  "qualification": false,
+  "runs": {
+    "raw": {
+      "status": "pass",
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "dc5e5fcddd0587fbca7f5beef6cd21366dc6469d6e0e161375fc8ebd96b8d40e"
+        },
+        {
+          "stage": 2,
+          "pixels": "c32511a84a16c714bf6f8cf19e7271275548898fa75d61e9be94f1a304907ee8"
+        },
+        {
+          "stage": 3,
+          "pixels": "dc5e5fcddd0587fbca7f5beef6cd21366dc6469d6e0e161375fc8ebd96b8d40e"
+        },
+        {
+          "stage": 4,
+          "pixels": "c8e28b5c746c1a0bd3630644068e1434d337d7297a6ba694002d3f8b103c1de2"
+        },
+        {
+          "stage": 5,
+          "pixels": "d450cb65b7def3ddf619a76547921bbee312bcb9a61ee07f171f1738a696c028"
+        },
+        {
+          "stage": 6,
+          "pixels": "d450cb65b7def3ddf619a76547921bbee312bcb9a61ee07f171f1738a696c028"
+        }
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 123,
+          "remaining_above_floor": 1157
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 677,
+          "remaining_above_floor": 1627
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 266,
+          "remaining_above_floor": 1014
+        }
+      },
+      "bank_zero_delta": {
+        "baseline": "desktop-dt0",
+        "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "runtime": 0,
+        "loading": 0
+      },
+      "build_sha256": "1f694915b60dae5c63609bb85d58d435d805a4bdb251900adc927fe3c1658d97",
+      "xex_sha256": "ec6ce41a6d55d641db2148720ea94df65388299822bac0617634b60d7ebd7ffa",
+      "native_nmi_count": 2194,
+      "provenance": {
+        "format": "calypsi65816-standalone-v1",
+        "elf_sha256": "2dc3064bfd5b9702e035af02184b22de7b45b9a0f0bd285fdba5cee5e9f02a0c",
+        "entry": 841758,
+        "task_entries": [],
+        "dp_workspace_bytes": 20,
+        "stack_checks": false,
+        "bank_zero_delta": {
+          "fixed": 0,
+          "per_task": 0
+        },
+        "platform_internal_inputs": {
+          "platform/altirraos/vbxe-internal.h": "c3336f349f15e8117bd80f3d248b2de2af5f55176b3c0550bba52c8a3cce079c"
+        },
+        "tools": {
+          "cc65816": {
+            "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+            "version": "Calypsi ISO C compiler for 65816 version 5.18",
+            "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+          },
+          "as65816": {
+            "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+            "version": "Calypsi assembler for 65816 version 5.18",
+            "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+          },
+          "ln65816": {
+            "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+            "version": "Calypsi linker for 65816 version 5.18",
+            "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+          }
+        },
+        "runtime": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/lib/clib-lc-hd.a",
+          "sha256": "321e782d2e18972ff29d32acf446a401012bd6da6959bb4b69c359c1412082db"
+        },
+        "compiler_flags": [
+          "--code-model=large",
+          "--data-model=huge",
+          "-O0"
+        ],
+        "checked_layout": {
+          "sizeof(BYTE)": 1,
+          "sizeof(WORD)": 2,
+          "sizeof(LONG)": 4,
+          "sizeof(BPTR)": 4,
+          "sizeof(APTR)": 4,
+          "sizeof(void EXEC_PTR *)": 3,
+          "sizeof(struct Node)": 11,
+          "sizeof(struct List)": 11,
+          "sizeof(struct MinNode)": 6,
+          "sizeof(struct MinList)": 9,
+          "sizeof(struct MsgPort)": 27,
+          "offsetof(struct MsgPort, mp_Node)": 0,
+          "offsetof(struct MsgPort, mp_Flags)": 11,
+          "offsetof(struct MsgPort, mp_SigBit)": 12,
+          "offsetof(struct MsgPort, mp_SigTask)": 13,
+          "offsetof(struct MsgPort, mp_MsgList)": 16,
+          "sizeof(struct Message)": 16,
+          "offsetof(struct Message, mn_Node)": 0,
+          "offsetof(struct Message, mn_ReplyPort)": 11,
+          "offsetof(struct Message, mn_Length)": 14,
+          "sizeof(struct Task)": 62,
+          "offsetof(struct Task, tc_Node)": 0,
+          "offsetof(struct Task, tc_Flags)": 11,
+          "offsetof(struct Task, tc_State)": 12,
+          "offsetof(struct Task, tc_IDNestCnt)": 13,
+          "offsetof(struct Task, tc_TDNestCnt)": 14,
+          "offsetof(struct Task, tc_SigAlloc)": 16,
+          "offsetof(struct Task, tc_SigWait)": 20,
+          "offsetof(struct Task, tc_SigRecvd)": 24,
+          "offsetof(struct Task, tc_SigExcept)": 28,
+          "offsetof(struct Task, tc_SPReg)": 32,
+          "offsetof(struct Task, tc_SPLower)": 36,
+          "offsetof(struct Task, tc_SPUpper)": 40,
+          "offsetof(struct Task, tc_MemEntry)": 43,
+          "offsetof(struct Task, tc_UserData)": 54,
+          "offsetof(struct Task, tc_ExecPrivate)": 58,
+          "sizeof(struct ExecCreateTaskPacket)": 16,
+          "offsetof(struct ExecCreateTaskPacket, name)": 0,
+          "offsetof(struct ExecCreateTaskPacket, priority)": 4,
+          "offsetof(struct ExecCreateTaskPacket, entry)": 8,
+          "offsetof(struct ExecCreateTaskPacket, stackSize)": 12,
+          "sizeof(struct ExecDosWriteArgs)": 12,
+          "offsetof(struct ExecDosWriteArgs, file)": 0,
+          "offsetof(struct ExecDosWriteArgs, buffer)": 4,
+          "offsetof(struct ExecDosWriteArgs, length)": 8,
+          "sizeof(struct TaskLease)": 12,
+          "offsetof(struct TaskLease, task)": 0,
+          "offsetof(struct TaskLease, pad)": 3,
+          "offsetof(struct TaskLease, incarnation)": 4,
+          "offsetof(struct TaskLease, identity)": 8,
+          "offsetof(struct TaskLease, pad2)": 11,
+          "sizeof(struct ExecRetainTaskPacket)": 6,
+          "offsetof(struct ExecRetainTaskPacket, lease)": 3,
+          "packet size": 78,
+          "operation": 0,
+          "status": 2,
+          "text": 4,
+          "x": 8,
+          "y": 10,
+          "width": 12,
+          "height": 14,
+          "foreground": 16,
+          "background": 18,
+          "copy": 20,
+          "token": 52,
+          "completionMask": 56,
+          "fillX": 60,
+          "fillY": 62,
+          "fillWidth": 64,
+          "fillHeight": 66,
+          "fillPen": 68,
+          "clipLeft": 70,
+          "clipTop": 72,
+          "clipRight": 74,
+          "clipBottom": 76,
+          "Object size": 24,
+          "Tree size": 1800,
+          "Change size": 12,
+          "Update size": 1132,
+          "ObjectState size": 4,
+          "Snapshot size": 140,
+          "Packet size": 58,
+          "Object.next": 0,
+          "Object.head": 2,
+          "Object.tail": 4,
+          "Object.kind": 6,
+          "Object.flags": 8,
+          "Object.state": 10,
+          "Object.spec": 12,
+          "Object.x": 16,
+          "Object.y": 18,
+          "Object.width": 20,
+          "Object.height": 22,
+          "Tree.version": 0,
+          "Tree.count": 2,
+          "Tree.textBytes": 4,
+          "Tree.background": 6,
+          "Tree.objects": 8,
+          "Tree.text": 776,
+          "Change.object": 0,
+          "Change.mask": 2,
+          "Change.state": 4,
+          "Change.hidden": 6,
+          "Change.offset": 8,
+          "Change.length": 10,
+          "Update.epoch": 0,
+          "Update.revision": 4,
+          "Update.count": 8,
+          "Update.textBytes": 10,
+          "Update.changes": 12,
+          "Update.text": 108,
+          "ObjectState.state": 0,
+          "ObjectState.flags": 2,
+          "Snapshot.epoch": 0,
+          "Snapshot.revision": 4,
+          "Snapshot.count": 8,
+          "Snapshot.focus": 10,
+          "Snapshot.objects": 12,
+          "Packet.operation": 0,
+          "Packet.status": 2,
+          "Packet.context": 4,
+          "Packet.payload": 8,
+          "Packet.bytes": 12,
+          "Packet.width": 14,
+          "Packet.height": 16,
+          "Packet.originX": 18,
+          "Packet.originY": 20,
+          "Packet.left": 22,
+          "Packet.top": 24,
+          "Packet.right": 26,
+          "Packet.bottom": 28,
+          "Packet.index": 30,
+          "Packet.x": 32,
+          "Packet.y": 34,
+          "Packet.code": 36,
+          "Packet.qualifiers": 38,
+          "Packet.buttons": 40,
+          "Packet.kind": 42,
+          "Packet.object": 44,
+          "Packet.epoch": 46,
+          "Packet.revision": 50,
+          "Packet.state": 54,
+          "Packet.changed": 56,
+          "VbxeUpload size": 6,
+          "VbxeUpload records": 0,
+          "VbxeUpload count": 4,
+          "VbxeTextUpload size": 25,
+          "VbxeTextUpload text": 0,
+          "VbxeTextUpload font": 4,
+          "VbxeTextUpload destination": 8,
+          "VbxeTextUpload count": 12,
+          "VbxeTextUpload ink": 14,
+          "VbxeTextUpload paper": 15,
+          "VbxeTextUpload fillDestination": 16,
+          "VbxeTextUpload fillBytes": 20,
+          "VbxeTextUpload fillRows": 22,
+          "VbxeTextUpload fillValue": 24
+        },
+        "upload_inputs": {
+          "c/include/hardware/vbxe-upload.h": "3cdb6cb5bf4db31e9e74fadba310bc2473519745c9cafb4953365a21b59d1a7c",
+          "c/calypsi/vbxe-upload-layout.c": "dbf0509d23fff05403cb8a0aca1d8b65d3dc610c314c8a129b58285084a6c3ad",
+          "platform/altirraos/vbxe-map.s": "b318746adc6b9c5a0624997174c86a0eace226488eeedb84d651d18ef61b3aef",
+          "tools/calypsi_build.py": "3e608beba00c63b7b0dc92172a9b218d1977764b10fe13f5276acbc0f9b277d3"
+        },
+        "extraction": {
+          "upstream": {
+            "COPYING": {
+              "sha256": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+              "role": "notice"
+            },
+            "COPYING.LIB": {
+              "sha256": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+              "role": "notice"
+            },
+            "docs/licence.md": {
+              "sha256": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+              "role": "notice"
+            },
+            "src/portab.h": {
+              "sha256": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+              "role": "adapt"
+            },
+            "src/vdi/vdi.c": {
+              "sha256": "fd2c7a95d3afb65cde3e327347b1abb4ef89d31108bc9e5c6c14e338cb1c6524",
+              "role": "extract"
+            },
+            "src/vdi/vdi.h": {
+              "sha256": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+              "role": "adapt"
+            },
+            "src/vdi/vdidev.h": {
+              "sha256": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f",
+              "role": "adapt"
+            },
+            "src/vdi/dev_vbxe.c": {
+              "sha256": "efc6fb3fbecfb70ba4ae03598dabf707c91ee60038d93cfe15914a6e43e56573",
+              "role": "extract"
+            },
+            "src/vdi/font.c": {
+              "sha256": "745b1ff06f2a4363511c9ac9232ce5521635172780892a8f574d8183ce80ca7d",
+              "role": "extract-default-font-only"
+            },
+            "src/vdi/font.h": {
+              "sha256": "ddcfb21c646a790d3ca96b8c4c6441a4a6df09dbfc94cb985bba6dc1feff8088",
+              "role": "adapt"
+            },
+            "src/vdi/font8x8.c": {
+              "sha256": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+              "role": "unchanged-font"
+            },
+            "src/vbxe/vbxe.c": {
+              "sha256": "1bf9722b712dcc5dc8c235ea168a276af321f60d925c34fb3e90fcc2bd3e3f6b",
+              "role": "adapt"
+            },
+            "src/vbxe/vbxe.h": {
+              "sha256": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+              "role": "adapt"
+            },
+            "src/sys/zwin.h": {
+              "sha256": "9530d12d510af3f10f0c7c18cf06298f5bd6fc292427cb27d711c5f2d83efa1b",
+              "role": "replace"
+            },
+            "src/sys/farmem.h": {
+              "sha256": "c15c2d2dee0281ceadf3ee1d625c999b2156ad6c19aa69f788cefbc58362157c",
+              "role": "replace"
+            },
+            "src/vdi/pointer.c": {
+              "sha256": "88668a6e435010a05676dd636fc47343a6aad870c95e66dd2e5e2d8aaeb2542d",
+              "role": "reference-only"
+            },
+            "src/vdi/pointer.h": {
+              "sha256": "781f7b81138a7d935d2336ab858b08e87a8f5f6a4597349417b9dd81d1977b78",
+              "role": "reference-only"
+            },
+            "src/vdi/print.h": {
+              "sha256": "7fc51b95d34933a3ebe5497c40349919adf4a2eb2756b23e6b8b503902c28ab6",
+              "role": "reference-only"
+            },
+            "src/sys/ctx.h": {
+              "sha256": "7991b9d8f9b7ac3bfcbdaccf698b03c5b72a68d64cd551a90bdc7e9879006aa9",
+              "role": "reference-only"
+            },
+            "src/sys/irq.h": {
+              "sha256": "48c95d1d51d143572206d4592e49c1b286b00eb75e7ce1f0636dce04295dfe71",
+              "role": "reference-only"
+            },
+            "src/vdi/fillpat.c": {
+              "sha256": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+              "role": "reference-only"
+            },
+            "src/vdi/sintbl.c": {
+              "sha256": "4d990d00f911037464b9eac35bcf2cc85bc176807a2b49dc800aaa20001b6244",
+              "role": "reference-only"
+            },
+            "tools/vdiref.py": {
+              "sha256": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+              "role": "host-oracle-only"
+            },
+            "tools/devref.py": {
+              "sha256": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+              "role": "host-oracle-only"
+            },
+            "tools/fontref.py": {
+              "sha256": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+              "role": "host-oracle-only"
+            },
+            "tools/vbxeref.py": {
+              "sha256": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+              "role": "host-oracle-only"
+            },
+            "tools/anticref.py": {
+              "sha256": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+              "role": "host-oracle-only"
+            },
+            "src/vdi/font6x6.c": {
+              "sha256": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+              "role": "host-oracle-only"
+            }
+          },
+          "selection_sha256": "5b663fedccb5ce87d97dce7da3f80e4e9d0da1ee21d6678fa7e0fc7d5b341700",
+          "patches": {
+            "0001-hosted-storage-and-subset.patch": "23ef9b1a4a3ed882bbccd016923e46b23c29a49a33fb2b53051a330ce7bf8cd7",
+            "0002-wide-raster-arithmetic.patch": "c641e159ca493e899f9b3347b7dbd50a31ff437a97817c6dd335e3da0582fe41",
+            "0003-hosted-window.patch": "abd32dbc2d637c70372d3cee79cddbf319fc4970616f35b0ac24b0944b3be963",
+            "0004-stencil-text.patch": "d3f908fdd4455583b5b47ed558e30f8c2b7fd0410df18858e5c54f83aacd1b87",
+            "0005-hosted-text-run.patch": "fdf123f0a1672aafbf575f1333ed6cac6ead7fff4b31f8f543c789b2ff982ee0"
+          },
+          "selected": {
+            "src/vdi/vdi.c": "e5a0ae0ce941265de949bd6345435ab8ee3db9b63c442d713e4ee316b0d2d180",
+            "src/vdi/dev_vbxe.c": "773535cf02d66e6a98a1e953c3b9cc1841c7a4b79359d6297b359e8574fa6035",
+            "src/vdi/font.c": "ffb0eac06eb7c869bc04dcfe79baa97e17a6af30be7b675a6590d31e7482700a",
+            "src/vdi/vdi.h": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+            "src/vdi/vdidev.h": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f",
+            "src/vdi/font.h": "ddcfb21c646a790d3ca96b8c4c6441a4a6df09dbfc94cb985bba6dc1feff8088",
+            "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+            "src/vbxe/vbxe.c": "1bf9722b712dcc5dc8c235ea168a276af321f60d925c34fb3e90fcc2bd3e3f6b",
+            "src/vbxe/vbxe.h": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+            "src/portab.h": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+            "src/sys/zwin.h": "9530d12d510af3f10f0c7c18cf06298f5bd6fc292427cb27d711c5f2d83efa1b",
+            "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+            "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+            "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9"
+          },
+          "adapted": {
+            "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+            "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+            "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+            "src/hosted-dispatch.inc": "21a20fd92a1020749946c9ba2afb99df9f9204dfd6de6e991fd276fa0eea1ba6",
+            "src/hosted-vdi.h": "ef79d9693ee8f5f301f7a086aa0f73c9edce5e310e4e61f0eb08473f075958a1",
+            "src/operation-checks.inc": "96fae66f2f6426e77fae6522990f994a1b367b49c7c03869d33bda8dff00e6dd",
+            "src/portab.h": "e0f1db2609ab0b9999f4c4265009db21dae58dd2d337eed8f61b76fe05a3f2a6",
+            "src/sys/zwin.h": "0c9c991ebbe0c1478082434563cd27bb1477c559b808b3c79abc4f01980e8a9f",
+            "src/vbxe/vbxe.c": "6cdff42d3989f63beff75fb2ee20f792b4523ae81707605fa886275e2aac4779",
+            "src/vbxe/vbxe.h": "3b75e3e273133baa91f6f3818430cc739b1526d84cb88d6ce0bae461e68a484c",
+            "src/vdi/dev_vbxe.c": "032e13123796d9bc801feac2f30d7c197ff2d917e3ca6ed6b2f6f5bdbc308702",
+            "src/vdi/font.c": "773e690778d68b02e5f3b8f295298bf061e483854653de289ba59f1a0154855b",
+            "src/vdi/font.h": "911bbf780203e8e69d7dfc8823cdee2e7b1378de8a467d7615b78b3b57dc86ae",
+            "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+            "src/vdi/vdi.c": "200efd32d94ef44580b0184dbb90cafad3f953d26deb770277d6034b5459a3b7",
+            "src/vdi/vdi.h": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+            "src/vdi/vdidev.h": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f"
+          }
+        },
+        "fixture_bridge": false,
+        "fixture_fault": false,
+        "source_inputs": {
+          "c/calypsi/exec.c": "ada5b767f7df3bd616291a4a1c57d23622d39fea50067ecfc07997e16602daf4",
+          "c/calypsi/display.c": "8cb54662e89ec757784efbc3a071cdb4c069f71efe5ebdf4561190dd02b467d2",
+          "platform/altirraos/vbxe.c": "cd9568ee170690b8cece99d8c1ec41ecbfc5b70d1a4e6014790551589d6a57d2",
+          "build/widgets/aw1-raw/selected/src/vdi/vdi.c": "200efd32d94ef44580b0184dbb90cafad3f953d26deb770277d6034b5459a3b7",
+          "build/widgets/aw1-raw/selected/src/vdi/font.c": "773e690778d68b02e5f3b8f295298bf061e483854653de289ba59f1a0154855b",
+          "build/widgets/aw1-raw/selected/src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+          "build/widgets/aw1-raw/selected/src/vdi/dev_vbxe.c": "032e13123796d9bc801feac2f30d7c197ff2d917e3ca6ed6b2f6f5bdbc308702",
+          "ports/gem4xe/adapter/gem-vbxe.c": "9cb3cc73e7725edacf2275c739eb0036bc8e7d38b67ef74596ffc85acbb39639",
+          "build/widgets/aw1-raw/console-widget-probe.c": "2b53a993f49211100431418bdc9a007a26fc63a87d5105eec8fc9974f464bf35",
+          "ports/gem4xe/aes/widgets-model.c": "5728f0da516dcde71fd6d948f009fd18ecf69d0bb75d6223ecce754090b90627",
+          "ports/gem4xe/aes/widgets-graf.c": "b64f21702e40e9c42352ed55cdd2c5faff45f51ab3d5c1d3a9ef08858f3e089f",
+          "ports/gem4xe/aes/widgets-render.c": "3de14eb51fa407dceb4a21470fce46440728d1d5cad249c5c26031408f43dced",
+          "build/widgets/aw1-raw/aes-selected/aes-objects.c": "d1fec69785c852905fcdb1a93274e0fa06ff52637e7080d5e95662b06a550900",
+          "build/widgets/aw1-raw/aes-selected/aes-graf.c": "31c05d1c959bcbf5cbf7a9bbc372b89eff22436a1ed3b2f03825a051906ec1d3",
+          "build/widgets/aw1-raw/aes-selected/aes-form.c": "51ab6497ce1435b2681eacc16fed4faac50a26137a790e9301825b28e4532171",
+          "tests/programs/widgets_pixels.c": "9d95eefe10aac4dbb8f2c657f9867603323e5866bae379fe2c839adb3098681c",
+          "c/calypsi/gateway.s": "5942de33306e8a4244ba6af012ff73885ad47d7a8b797d34fb0501c98440b3a1",
+          "c/calypsi/display.s": "40349300a774d10a61edb623e47e41df02fbe2d41d2aebdfc93a9d91ed07f099",
+          "c/calypsi/image-info.s": "ee2b75322d39901c11780cf7d6928a84243823439cdb4435053fb5b8daea13d5",
+          "platform/altirraos/vbxe-map.s": "b318746adc6b9c5a0624997174c86a0eace226488eeedb84d651d18ef61b3aef",
+          "abi/console-bitmap.json": "cba961e0b77be9c24027e760961aeded4fd068fe7601fb63a5926397f4eac243",
+          "c/include/hardware/console-bitmap.h": "ebe2ab76cf31e4f93de22799ef0b0c92f0191dab3f1ef0749f3349f32638d9bf"
+        },
+        "aes_extraction": {
+          "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+          "inputs": {
+            "src/aes/objc.c": "edd9fee2c19b6d88e02c3ef2bfc40dfa23fd55bdc92874debec47cc5f0f965ba",
+            "src/aes/graf.c": "c5033b54ab2932a8df161ad51782446c835b0a1c02a47b453e5b85757c333d02",
+            "src/aes/form.c": "8a291ea34452450c1cd61b05a782a8d079f5c1c1cdf2261db829874f0614fa00",
+            "src/aes/aes.h": "5d555f5ac71b4d8f0f2a31c1b72f187671bd0019113e58fbcc44b71bc317cd87",
+            "tools/aesref.py": "17159134e05640b514708cd780004e1a59698927e3cb17ac3628ed57eb1f6266",
+            "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+            "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+            "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+            "tools/vdiref.py": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+            "tools/fontref.py": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+            "tools/devref.py": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+            "tools/gemdata.py": "408f051d865d07b88cede092d8b4fbf39e0da154c1954085ae3a18d410f0eb87",
+            "tools/vbxeref.py": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+            "tools/anticref.py": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+            "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+            "src/vdi/font6x6.c": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+            "src/vdi/fillpat.c": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+            "src/vbxe/vbxe.h": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608"
+          },
+          "selected": {
+            "aes-objects.c": "ee76987cac75a585c32712499da9472012ea579253802bfc0b90ef59fc2a21f5",
+            "aes-graf.c": "31c05d1c959bcbf5cbf7a9bbc372b89eff22436a1ed3b2f03825a051906ec1d3",
+            "aes-form.c": "df3262546318ad1d09734086af63be5f03145188f927f0e77d7969c98584cc2b"
+          },
+          "patches": {
+            "0001-hosted-object-subset.patch": "3b036f4aa59bb11cbc98dd30ae76028685cda8e9622d0b45582509d66002cb06"
+          },
+          "adapted": {
+            "aes-objects.c": "d1fec69785c852905fcdb1a93274e0fa06ff52637e7080d5e95662b06a550900",
+            "aes-objects.h": "4e1f5f63551145955293d928a72d662c8f7fe8bea7240824c6a7e6ee843a8578",
+            "aes-graf.c": "31c05d1c959bcbf5cbf7a9bbc372b89eff22436a1ed3b2f03825a051906ec1d3",
+            "aes-form.c": "51ab6497ce1435b2681eacc16fed4faac50a26137a790e9301825b28e4532171"
+          }
+        }
+      }
+    },
+    "opt": {
+      "status": "pass",
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "dc5e5fcddd0587fbca7f5beef6cd21366dc6469d6e0e161375fc8ebd96b8d40e"
+        },
+        {
+          "stage": 2,
+          "pixels": "c32511a84a16c714bf6f8cf19e7271275548898fa75d61e9be94f1a304907ee8"
+        },
+        {
+          "stage": 3,
+          "pixels": "dc5e5fcddd0587fbca7f5beef6cd21366dc6469d6e0e161375fc8ebd96b8d40e"
+        },
+        {
+          "stage": 4,
+          "pixels": "c8e28b5c746c1a0bd3630644068e1434d337d7297a6ba694002d3f8b103c1de2"
+        },
+        {
+          "stage": 5,
+          "pixels": "d450cb65b7def3ddf619a76547921bbee312bcb9a61ee07f171f1738a696c028"
+        },
+        {
+          "stage": 6,
+          "pixels": "d450cb65b7def3ddf619a76547921bbee312bcb9a61ee07f171f1738a696c028"
+        }
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 127,
+          "remaining_above_floor": 1153
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 655,
+          "remaining_above_floor": 1649
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 260,
+          "remaining_above_floor": 1020
+        }
+      },
+      "bank_zero_delta": {
+        "baseline": "desktop-dt0",
+        "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "runtime": 0,
+        "loading": 0
+      },
+      "build_sha256": "c94c2ed69aea7d5074e73ae7a3ceb2ebc532c4c765f6af5bb4127de8ca2c584e",
+      "xex_sha256": "44321130b51cb0ec3bf097561c70323bf4e68f740dac4459decfd8600c92794f",
+      "native_nmi_count": 2384,
+      "provenance": {
+        "format": "calypsi65816-standalone-v1",
+        "elf_sha256": "97f322b23ab7ae72d9d36284d8dda60e19f76a6bc10883bd276b145d52561efb",
+        "entry": 832429,
+        "task_entries": [],
+        "dp_workspace_bytes": 20,
+        "stack_checks": false,
+        "bank_zero_delta": {
+          "fixed": 0,
+          "per_task": 0
+        },
+        "platform_internal_inputs": {
+          "platform/altirraos/vbxe-internal.h": "c3336f349f15e8117bd80f3d248b2de2af5f55176b3c0550bba52c8a3cce079c"
+        },
+        "tools": {
+          "cc65816": {
+            "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+            "version": "Calypsi ISO C compiler for 65816 version 5.18",
+            "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+          },
+          "as65816": {
+            "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+            "version": "Calypsi assembler for 65816 version 5.18",
+            "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+          },
+          "ln65816": {
+            "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+            "version": "Calypsi linker for 65816 version 5.18",
+            "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+          }
+        },
+        "runtime": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/lib/clib-lc-hd.a",
+          "sha256": "321e782d2e18972ff29d32acf446a401012bd6da6959bb4b69c359c1412082db"
+        },
+        "compiler_flags": [
+          "--code-model=large",
+          "--data-model=huge",
+          "-O2"
+        ],
+        "checked_layout": {
+          "sizeof(BYTE)": 1,
+          "sizeof(WORD)": 2,
+          "sizeof(LONG)": 4,
+          "sizeof(BPTR)": 4,
+          "sizeof(APTR)": 4,
+          "sizeof(void EXEC_PTR *)": 3,
+          "sizeof(struct Node)": 11,
+          "sizeof(struct List)": 11,
+          "sizeof(struct MinNode)": 6,
+          "sizeof(struct MinList)": 9,
+          "sizeof(struct MsgPort)": 27,
+          "offsetof(struct MsgPort, mp_Node)": 0,
+          "offsetof(struct MsgPort, mp_Flags)": 11,
+          "offsetof(struct MsgPort, mp_SigBit)": 12,
+          "offsetof(struct MsgPort, mp_SigTask)": 13,
+          "offsetof(struct MsgPort, mp_MsgList)": 16,
+          "sizeof(struct Message)": 16,
+          "offsetof(struct Message, mn_Node)": 0,
+          "offsetof(struct Message, mn_ReplyPort)": 11,
+          "offsetof(struct Message, mn_Length)": 14,
+          "sizeof(struct Task)": 62,
+          "offsetof(struct Task, tc_Node)": 0,
+          "offsetof(struct Task, tc_Flags)": 11,
+          "offsetof(struct Task, tc_State)": 12,
+          "offsetof(struct Task, tc_IDNestCnt)": 13,
+          "offsetof(struct Task, tc_TDNestCnt)": 14,
+          "offsetof(struct Task, tc_SigAlloc)": 16,
+          "offsetof(struct Task, tc_SigWait)": 20,
+          "offsetof(struct Task, tc_SigRecvd)": 24,
+          "offsetof(struct Task, tc_SigExcept)": 28,
+          "offsetof(struct Task, tc_SPReg)": 32,
+          "offsetof(struct Task, tc_SPLower)": 36,
+          "offsetof(struct Task, tc_SPUpper)": 40,
+          "offsetof(struct Task, tc_MemEntry)": 43,
+          "offsetof(struct Task, tc_UserData)": 54,
+          "offsetof(struct Task, tc_ExecPrivate)": 58,
+          "sizeof(struct ExecCreateTaskPacket)": 16,
+          "offsetof(struct ExecCreateTaskPacket, name)": 0,
+          "offsetof(struct ExecCreateTaskPacket, priority)": 4,
+          "offsetof(struct ExecCreateTaskPacket, entry)": 8,
+          "offsetof(struct ExecCreateTaskPacket, stackSize)": 12,
+          "sizeof(struct ExecDosWriteArgs)": 12,
+          "offsetof(struct ExecDosWriteArgs, file)": 0,
+          "offsetof(struct ExecDosWriteArgs, buffer)": 4,
+          "offsetof(struct ExecDosWriteArgs, length)": 8,
+          "sizeof(struct TaskLease)": 12,
+          "offsetof(struct TaskLease, task)": 0,
+          "offsetof(struct TaskLease, pad)": 3,
+          "offsetof(struct TaskLease, incarnation)": 4,
+          "offsetof(struct TaskLease, identity)": 8,
+          "offsetof(struct TaskLease, pad2)": 11,
+          "sizeof(struct ExecRetainTaskPacket)": 6,
+          "offsetof(struct ExecRetainTaskPacket, lease)": 3,
+          "packet size": 78,
+          "operation": 0,
+          "status": 2,
+          "text": 4,
+          "x": 8,
+          "y": 10,
+          "width": 12,
+          "height": 14,
+          "foreground": 16,
+          "background": 18,
+          "copy": 20,
+          "token": 52,
+          "completionMask": 56,
+          "fillX": 60,
+          "fillY": 62,
+          "fillWidth": 64,
+          "fillHeight": 66,
+          "fillPen": 68,
+          "clipLeft": 70,
+          "clipTop": 72,
+          "clipRight": 74,
+          "clipBottom": 76,
+          "Object size": 24,
+          "Tree size": 1800,
+          "Change size": 12,
+          "Update size": 1132,
+          "ObjectState size": 4,
+          "Snapshot size": 140,
+          "Packet size": 58,
+          "Object.next": 0,
+          "Object.head": 2,
+          "Object.tail": 4,
+          "Object.kind": 6,
+          "Object.flags": 8,
+          "Object.state": 10,
+          "Object.spec": 12,
+          "Object.x": 16,
+          "Object.y": 18,
+          "Object.width": 20,
+          "Object.height": 22,
+          "Tree.version": 0,
+          "Tree.count": 2,
+          "Tree.textBytes": 4,
+          "Tree.background": 6,
+          "Tree.objects": 8,
+          "Tree.text": 776,
+          "Change.object": 0,
+          "Change.mask": 2,
+          "Change.state": 4,
+          "Change.hidden": 6,
+          "Change.offset": 8,
+          "Change.length": 10,
+          "Update.epoch": 0,
+          "Update.revision": 4,
+          "Update.count": 8,
+          "Update.textBytes": 10,
+          "Update.changes": 12,
+          "Update.text": 108,
+          "ObjectState.state": 0,
+          "ObjectState.flags": 2,
+          "Snapshot.epoch": 0,
+          "Snapshot.revision": 4,
+          "Snapshot.count": 8,
+          "Snapshot.focus": 10,
+          "Snapshot.objects": 12,
+          "Packet.operation": 0,
+          "Packet.status": 2,
+          "Packet.context": 4,
+          "Packet.payload": 8,
+          "Packet.bytes": 12,
+          "Packet.width": 14,
+          "Packet.height": 16,
+          "Packet.originX": 18,
+          "Packet.originY": 20,
+          "Packet.left": 22,
+          "Packet.top": 24,
+          "Packet.right": 26,
+          "Packet.bottom": 28,
+          "Packet.index": 30,
+          "Packet.x": 32,
+          "Packet.y": 34,
+          "Packet.code": 36,
+          "Packet.qualifiers": 38,
+          "Packet.buttons": 40,
+          "Packet.kind": 42,
+          "Packet.object": 44,
+          "Packet.epoch": 46,
+          "Packet.revision": 50,
+          "Packet.state": 54,
+          "Packet.changed": 56,
+          "VbxeUpload size": 6,
+          "VbxeUpload records": 0,
+          "VbxeUpload count": 4,
+          "VbxeTextUpload size": 25,
+          "VbxeTextUpload text": 0,
+          "VbxeTextUpload font": 4,
+          "VbxeTextUpload destination": 8,
+          "VbxeTextUpload count": 12,
+          "VbxeTextUpload ink": 14,
+          "VbxeTextUpload paper": 15,
+          "VbxeTextUpload fillDestination": 16,
+          "VbxeTextUpload fillBytes": 20,
+          "VbxeTextUpload fillRows": 22,
+          "VbxeTextUpload fillValue": 24
+        },
+        "upload_inputs": {
+          "c/include/hardware/vbxe-upload.h": "3cdb6cb5bf4db31e9e74fadba310bc2473519745c9cafb4953365a21b59d1a7c",
+          "c/calypsi/vbxe-upload-layout.c": "dbf0509d23fff05403cb8a0aca1d8b65d3dc610c314c8a129b58285084a6c3ad",
+          "platform/altirraos/vbxe-map.s": "b318746adc6b9c5a0624997174c86a0eace226488eeedb84d651d18ef61b3aef",
+          "tools/calypsi_build.py": "3e608beba00c63b7b0dc92172a9b218d1977764b10fe13f5276acbc0f9b277d3"
+        },
+        "extraction": {
+          "upstream": {
+            "COPYING": {
+              "sha256": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+              "role": "notice"
+            },
+            "COPYING.LIB": {
+              "sha256": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+              "role": "notice"
+            },
+            "docs/licence.md": {
+              "sha256": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+              "role": "notice"
+            },
+            "src/portab.h": {
+              "sha256": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+              "role": "adapt"
+            },
+            "src/vdi/vdi.c": {
+              "sha256": "fd2c7a95d3afb65cde3e327347b1abb4ef89d31108bc9e5c6c14e338cb1c6524",
+              "role": "extract"
+            },
+            "src/vdi/vdi.h": {
+              "sha256": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+              "role": "adapt"
+            },
+            "src/vdi/vdidev.h": {
+              "sha256": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f",
+              "role": "adapt"
+            },
+            "src/vdi/dev_vbxe.c": {
+              "sha256": "efc6fb3fbecfb70ba4ae03598dabf707c91ee60038d93cfe15914a6e43e56573",
+              "role": "extract"
+            },
+            "src/vdi/font.c": {
+              "sha256": "745b1ff06f2a4363511c9ac9232ce5521635172780892a8f574d8183ce80ca7d",
+              "role": "extract-default-font-only"
+            },
+            "src/vdi/font.h": {
+              "sha256": "ddcfb21c646a790d3ca96b8c4c6441a4a6df09dbfc94cb985bba6dc1feff8088",
+              "role": "adapt"
+            },
+            "src/vdi/font8x8.c": {
+              "sha256": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+              "role": "unchanged-font"
+            },
+            "src/vbxe/vbxe.c": {
+              "sha256": "1bf9722b712dcc5dc8c235ea168a276af321f60d925c34fb3e90fcc2bd3e3f6b",
+              "role": "adapt"
+            },
+            "src/vbxe/vbxe.h": {
+              "sha256": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+              "role": "adapt"
+            },
+            "src/sys/zwin.h": {
+              "sha256": "9530d12d510af3f10f0c7c18cf06298f5bd6fc292427cb27d711c5f2d83efa1b",
+              "role": "replace"
+            },
+            "src/sys/farmem.h": {
+              "sha256": "c15c2d2dee0281ceadf3ee1d625c999b2156ad6c19aa69f788cefbc58362157c",
+              "role": "replace"
+            },
+            "src/vdi/pointer.c": {
+              "sha256": "88668a6e435010a05676dd636fc47343a6aad870c95e66dd2e5e2d8aaeb2542d",
+              "role": "reference-only"
+            },
+            "src/vdi/pointer.h": {
+              "sha256": "781f7b81138a7d935d2336ab858b08e87a8f5f6a4597349417b9dd81d1977b78",
+              "role": "reference-only"
+            },
+            "src/vdi/print.h": {
+              "sha256": "7fc51b95d34933a3ebe5497c40349919adf4a2eb2756b23e6b8b503902c28ab6",
+              "role": "reference-only"
+            },
+            "src/sys/ctx.h": {
+              "sha256": "7991b9d8f9b7ac3bfcbdaccf698b03c5b72a68d64cd551a90bdc7e9879006aa9",
+              "role": "reference-only"
+            },
+            "src/sys/irq.h": {
+              "sha256": "48c95d1d51d143572206d4592e49c1b286b00eb75e7ce1f0636dce04295dfe71",
+              "role": "reference-only"
+            },
+            "src/vdi/fillpat.c": {
+              "sha256": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+              "role": "reference-only"
+            },
+            "src/vdi/sintbl.c": {
+              "sha256": "4d990d00f911037464b9eac35bcf2cc85bc176807a2b49dc800aaa20001b6244",
+              "role": "reference-only"
+            },
+            "tools/vdiref.py": {
+              "sha256": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+              "role": "host-oracle-only"
+            },
+            "tools/devref.py": {
+              "sha256": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+              "role": "host-oracle-only"
+            },
+            "tools/fontref.py": {
+              "sha256": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+              "role": "host-oracle-only"
+            },
+            "tools/vbxeref.py": {
+              "sha256": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+              "role": "host-oracle-only"
+            },
+            "tools/anticref.py": {
+              "sha256": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+              "role": "host-oracle-only"
+            },
+            "src/vdi/font6x6.c": {
+              "sha256": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+              "role": "host-oracle-only"
+            }
+          },
+          "selection_sha256": "5b663fedccb5ce87d97dce7da3f80e4e9d0da1ee21d6678fa7e0fc7d5b341700",
+          "patches": {
+            "0001-hosted-storage-and-subset.patch": "23ef9b1a4a3ed882bbccd016923e46b23c29a49a33fb2b53051a330ce7bf8cd7",
+            "0002-wide-raster-arithmetic.patch": "c641e159ca493e899f9b3347b7dbd50a31ff437a97817c6dd335e3da0582fe41",
+            "0003-hosted-window.patch": "abd32dbc2d637c70372d3cee79cddbf319fc4970616f35b0ac24b0944b3be963",
+            "0004-stencil-text.patch": "d3f908fdd4455583b5b47ed558e30f8c2b7fd0410df18858e5c54f83aacd1b87",
+            "0005-hosted-text-run.patch": "fdf123f0a1672aafbf575f1333ed6cac6ead7fff4b31f8f543c789b2ff982ee0"
+          },
+          "selected": {
+            "src/vdi/vdi.c": "e5a0ae0ce941265de949bd6345435ab8ee3db9b63c442d713e4ee316b0d2d180",
+            "src/vdi/dev_vbxe.c": "773535cf02d66e6a98a1e953c3b9cc1841c7a4b79359d6297b359e8574fa6035",
+            "src/vdi/font.c": "ffb0eac06eb7c869bc04dcfe79baa97e17a6af30be7b675a6590d31e7482700a",
+            "src/vdi/vdi.h": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+            "src/vdi/vdidev.h": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f",
+            "src/vdi/font.h": "ddcfb21c646a790d3ca96b8c4c6441a4a6df09dbfc94cb985bba6dc1feff8088",
+            "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+            "src/vbxe/vbxe.c": "1bf9722b712dcc5dc8c235ea168a276af321f60d925c34fb3e90fcc2bd3e3f6b",
+            "src/vbxe/vbxe.h": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+            "src/portab.h": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+            "src/sys/zwin.h": "9530d12d510af3f10f0c7c18cf06298f5bd6fc292427cb27d711c5f2d83efa1b",
+            "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+            "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+            "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9"
+          },
+          "adapted": {
+            "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+            "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+            "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+            "src/hosted-dispatch.inc": "21a20fd92a1020749946c9ba2afb99df9f9204dfd6de6e991fd276fa0eea1ba6",
+            "src/hosted-vdi.h": "ef79d9693ee8f5f301f7a086aa0f73c9edce5e310e4e61f0eb08473f075958a1",
+            "src/operation-checks.inc": "96fae66f2f6426e77fae6522990f994a1b367b49c7c03869d33bda8dff00e6dd",
+            "src/portab.h": "e0f1db2609ab0b9999f4c4265009db21dae58dd2d337eed8f61b76fe05a3f2a6",
+            "src/sys/zwin.h": "0c9c991ebbe0c1478082434563cd27bb1477c559b808b3c79abc4f01980e8a9f",
+            "src/vbxe/vbxe.c": "6cdff42d3989f63beff75fb2ee20f792b4523ae81707605fa886275e2aac4779",
+            "src/vbxe/vbxe.h": "3b75e3e273133baa91f6f3818430cc739b1526d84cb88d6ce0bae461e68a484c",
+            "src/vdi/dev_vbxe.c": "032e13123796d9bc801feac2f30d7c197ff2d917e3ca6ed6b2f6f5bdbc308702",
+            "src/vdi/font.c": "773e690778d68b02e5f3b8f295298bf061e483854653de289ba59f1a0154855b",
+            "src/vdi/font.h": "911bbf780203e8e69d7dfc8823cdee2e7b1378de8a467d7615b78b3b57dc86ae",
+            "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+            "src/vdi/vdi.c": "200efd32d94ef44580b0184dbb90cafad3f953d26deb770277d6034b5459a3b7",
+            "src/vdi/vdi.h": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+            "src/vdi/vdidev.h": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f"
+          }
+        },
+        "fixture_bridge": false,
+        "fixture_fault": false,
+        "source_inputs": {
+          "c/calypsi/exec.c": "ada5b767f7df3bd616291a4a1c57d23622d39fea50067ecfc07997e16602daf4",
+          "c/calypsi/display.c": "8cb54662e89ec757784efbc3a071cdb4c069f71efe5ebdf4561190dd02b467d2",
+          "platform/altirraos/vbxe.c": "cd9568ee170690b8cece99d8c1ec41ecbfc5b70d1a4e6014790551589d6a57d2",
+          "build/widgets/aw1-opt/selected/src/vdi/vdi.c": "200efd32d94ef44580b0184dbb90cafad3f953d26deb770277d6034b5459a3b7",
+          "build/widgets/aw1-opt/selected/src/vdi/font.c": "773e690778d68b02e5f3b8f295298bf061e483854653de289ba59f1a0154855b",
+          "build/widgets/aw1-opt/selected/src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+          "build/widgets/aw1-opt/selected/src/vdi/dev_vbxe.c": "032e13123796d9bc801feac2f30d7c197ff2d917e3ca6ed6b2f6f5bdbc308702",
+          "ports/gem4xe/adapter/gem-vbxe.c": "9cb3cc73e7725edacf2275c739eb0036bc8e7d38b67ef74596ffc85acbb39639",
+          "build/widgets/aw1-opt/console-widget-probe.c": "2b53a993f49211100431418bdc9a007a26fc63a87d5105eec8fc9974f464bf35",
+          "ports/gem4xe/aes/widgets-model.c": "5728f0da516dcde71fd6d948f009fd18ecf69d0bb75d6223ecce754090b90627",
+          "ports/gem4xe/aes/widgets-graf.c": "b64f21702e40e9c42352ed55cdd2c5faff45f51ab3d5c1d3a9ef08858f3e089f",
+          "ports/gem4xe/aes/widgets-render.c": "3de14eb51fa407dceb4a21470fce46440728d1d5cad249c5c26031408f43dced",
+          "build/widgets/aw1-opt/aes-selected/aes-objects.c": "d1fec69785c852905fcdb1a93274e0fa06ff52637e7080d5e95662b06a550900",
+          "build/widgets/aw1-opt/aes-selected/aes-graf.c": "31c05d1c959bcbf5cbf7a9bbc372b89eff22436a1ed3b2f03825a051906ec1d3",
+          "build/widgets/aw1-opt/aes-selected/aes-form.c": "51ab6497ce1435b2681eacc16fed4faac50a26137a790e9301825b28e4532171",
+          "tests/programs/widgets_pixels.c": "9d95eefe10aac4dbb8f2c657f9867603323e5866bae379fe2c839adb3098681c",
+          "c/calypsi/gateway.s": "5942de33306e8a4244ba6af012ff73885ad47d7a8b797d34fb0501c98440b3a1",
+          "c/calypsi/display.s": "40349300a774d10a61edb623e47e41df02fbe2d41d2aebdfc93a9d91ed07f099",
+          "c/calypsi/image-info.s": "ee2b75322d39901c11780cf7d6928a84243823439cdb4435053fb5b8daea13d5",
+          "platform/altirraos/vbxe-map.s": "b318746adc6b9c5a0624997174c86a0eace226488eeedb84d651d18ef61b3aef",
+          "abi/console-bitmap.json": "cba961e0b77be9c24027e760961aeded4fd068fe7601fb63a5926397f4eac243",
+          "c/include/hardware/console-bitmap.h": "ebe2ab76cf31e4f93de22799ef0b0c92f0191dab3f1ef0749f3349f32638d9bf"
+        },
+        "aes_extraction": {
+          "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+          "inputs": {
+            "src/aes/objc.c": "edd9fee2c19b6d88e02c3ef2bfc40dfa23fd55bdc92874debec47cc5f0f965ba",
+            "src/aes/graf.c": "c5033b54ab2932a8df161ad51782446c835b0a1c02a47b453e5b85757c333d02",
+            "src/aes/form.c": "8a291ea34452450c1cd61b05a782a8d079f5c1c1cdf2261db829874f0614fa00",
+            "src/aes/aes.h": "5d555f5ac71b4d8f0f2a31c1b72f187671bd0019113e58fbcc44b71bc317cd87",
+            "tools/aesref.py": "17159134e05640b514708cd780004e1a59698927e3cb17ac3628ed57eb1f6266",
+            "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+            "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+            "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+            "tools/vdiref.py": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+            "tools/fontref.py": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+            "tools/devref.py": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+            "tools/gemdata.py": "408f051d865d07b88cede092d8b4fbf39e0da154c1954085ae3a18d410f0eb87",
+            "tools/vbxeref.py": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+            "tools/anticref.py": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+            "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+            "src/vdi/font6x6.c": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+            "src/vdi/fillpat.c": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+            "src/vbxe/vbxe.h": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608"
+          },
+          "selected": {
+            "aes-objects.c": "ee76987cac75a585c32712499da9472012ea579253802bfc0b90ef59fc2a21f5",
+            "aes-graf.c": "31c05d1c959bcbf5cbf7a9bbc372b89eff22436a1ed3b2f03825a051906ec1d3",
+            "aes-form.c": "df3262546318ad1d09734086af63be5f03145188f927f0e77d7969c98584cc2b"
+          },
+          "patches": {
+            "0001-hosted-object-subset.patch": "3b036f4aa59bb11cbc98dd30ae76028685cda8e9622d0b45582509d66002cb06"
+          },
+          "adapted": {
+            "aes-objects.c": "d1fec69785c852905fcdb1a93274e0fa06ff52637e7080d5e95662b06a550900",
+            "aes-objects.h": "4e1f5f63551145955293d928a72d662c8f7fe8bea7240824c6a7e6ee843a8578",
+            "aes-graf.c": "31c05d1c959bcbf5cbf7a9bbc372b89eff22436a1ed3b2f03825a051906ec1d3",
+            "aes-form.c": "51ab6497ce1435b2681eacc16fed4faac50a26137a790e9301825b28e4532171"
+          }
+        }
+      }
+    }
+  },
+  "additional_vram": 0
+}
