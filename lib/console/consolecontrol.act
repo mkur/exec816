@@ -11,6 +11,7 @@ INCLUDE "console-storage-action.inc"
 ; Execute a trusted physical operation in the retained worker's context.
 BYTE FUNC Apply(BYTE operation CONSOLETYPES.Presentation POINTER view)
 
+  CONSOLEDISPLAY.DiscardBatch()
   CASE operation OF
   WHEN CONSOLETYPES.CTL_CURSOR THEN
     CONSOLEDISPLAY.RemoveCursor(view)

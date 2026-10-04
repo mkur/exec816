@@ -1,0 +1,18 @@
+; Fixture-only counters at the accepted hardware launch boundary.
+MODULE BATCHPROBE
+PUBLIC CARD batchLaunches,multiLaunches,maxRows
+
+PUBLIC PROC Launched(CARD rows)
+
+  batchLaunches==+1
+  IF rows>1 THEN
+    multiLaunches==+1
+  FI
+
+  IF rows>maxRows THEN
+    maxRows=rows
+  FI
+
+RETURN
+
+ENDMODULE

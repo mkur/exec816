@@ -4,6 +4,7 @@ MODULE CONSOLEDISPLAY
 USE A816MEMORY
 USE CONSOLETYPES
 USE CONSOLECORE
+USE CONSOLEBATCH
 USE CONSOLEWINDOWS
 USE CONSOLEBITMAP
 USE DISPLAY
@@ -206,6 +207,7 @@ PUBLIC PROC Release(CONSOLETYPES.Presentation POINTER view)
 
   IF CONSOLEBITMAP.Enabled()<>0 THEN
     CONSOLEBITMAP.Close()
+    CONSOLEBATCH.Reset()
     view.claimed=0
     view.scrollState=0
     view.visible=0
@@ -443,6 +445,7 @@ PUBLIC PROC Erase(CONSOLETYPES.Presentation POINTER view)
 
 RETURN
 
+INCLUDE "console-batch-display.inc"
 INCLUDE "console-bitmap-display.inc"
 
 ; Complete retained and physical editing under the worker's existing borrow.
@@ -513,6 +516,12 @@ PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
 
   IF CONSOLEBITMAP.Pending()<>0 OR view.claimed=0 OR view.visible=0
       OR view.scrollState<>0 THEN
+    RETURN
+  FI
+
+  LET batch=CONSOLEBATCH.Get()
+  IF batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
+    PresentBatch(view,instance)
     RETURN
   FI
 

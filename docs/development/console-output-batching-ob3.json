@@ -1,0 +1,1372 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "slice": "OB3",
+  "host_tests": {
+    "total": 331,
+    "passed": 327,
+    "skipped": 4
+  },
+  "generated_checks": [
+    "generate_console.py --check",
+    "generate_console_bitmap.py --check"
+  ],
+  "batch_context_bytes": 44,
+  "upper_globals_arena_reserved_bytes": 2048,
+  "upper_reservation_delta_bytes": 0,
+  "per_instance_allocation_delta_bytes": 0,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "reports": [
+    {
+      "path": "build/output-batching/ob3-batch-opt/results.json",
+      "sha256": "010934cfd05f1363b342e565386fe1bca07fe338e7906e1395771c9c6ecaac54",
+      "status": "pass",
+      "xex_sha256": "e0210a3ff16a0a7ad1c086777cb499f27bf40ca87da052aba1d3a05aa82c9a4e",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 4078336,
+      "native_executable_bytes": 448524,
+      "batch_launches": {
+        "batchLaunches": 41,
+        "multiLaunches": 30,
+        "maxRows": 4
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "0adf4bd633403af08e3fc6015b193b67058b54ccaac1845704c640f1d6695d96"
+        },
+        {
+          "stage": 2,
+          "pixels": "6eefb9082203d551daa48592c56747a6e819ea5b214db4bd23e8d51793c45ac2"
+        },
+        {
+          "stage": 3,
+          "pixels": "67548907dc438e70e8fbe951ced03c45c373d787ccb99501e00c9ba0f1524bd7"
+        },
+        {
+          "stage": 4,
+          "pixels": "c0d3e0717ff730b0d9dac18a5e2b8bfa2492c14754007ac658ec808cb0de5d6f"
+        },
+        {
+          "stage": 5,
+          "pixels": "2fadfa6eab442bfb182bba602e46dc5f3647fdffb0131743dc9cb6e2f1d65f92"
+        },
+        {
+          "stage": 6,
+          "accepted": 31,
+          "pixels": "997793ae03d4e717f7366656c3cb6645d2dff60c26b78aee41b0e695a93f4285"
+        }
+      ],
+      "runtimes": [
+        {
+          "status": 0,
+          "native_nmi_count": 280,
+          "native_irq_count": 4925,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 358,
+              "untouched_above_floor": 922
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 538,
+              "untouched_above_floor": 1766
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 58,
+              "untouched_above_floor": 198
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob3-batch-raw/results.json",
+      "sha256": "97f89426ae5f6f6ed7efc27ca124166587da80c8c83b90eeacbae8c288e3f011",
+      "status": "pass",
+      "xex_sha256": "f148c7c3c40f33ef0be1a2eabeae8bae92a916c1996fe15d7ad4345718190115",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 4078336,
+      "native_executable_bytes": 498329,
+      "batch_launches": {
+        "batchLaunches": 49,
+        "multiLaunches": 23,
+        "maxRows": 4
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "0adf4bd633403af08e3fc6015b193b67058b54ccaac1845704c640f1d6695d96"
+        },
+        {
+          "stage": 2,
+          "pixels": "6eefb9082203d551daa48592c56747a6e819ea5b214db4bd23e8d51793c45ac2"
+        },
+        {
+          "stage": 3,
+          "pixels": "67548907dc438e70e8fbe951ced03c45c373d787ccb99501e00c9ba0f1524bd7"
+        },
+        {
+          "stage": 4,
+          "pixels": "c0d3e0717ff730b0d9dac18a5e2b8bfa2492c14754007ac658ec808cb0de5d6f"
+        },
+        {
+          "stage": 5,
+          "pixels": "2fadfa6eab442bfb182bba602e46dc5f3647fdffb0131743dc9cb6e2f1d65f92"
+        },
+        {
+          "stage": 6,
+          "accepted": 31,
+          "pixels": "997793ae03d4e717f7366656c3cb6645d2dff60c26b78aee41b0e695a93f4285"
+        }
+      ],
+      "runtimes": [
+        {
+          "status": 0,
+          "native_nmi_count": 298,
+          "native_irq_count": 5886,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 380,
+              "untouched_above_floor": 900
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 548,
+              "untouched_above_floor": 1756
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 54,
+              "untouched_above_floor": 202
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob3-scroll-opt/results.json",
+      "sha256": "80f6a64357b97f5a7f8f626432788d7f5a42feaab48a8fd9fb34445f0f1ffb1e",
+      "status": "pass",
+      "xex_sha256": "c30e18690888099f0c56f1e49c66979cf849d5e1430a47ef877a96001ba7ff18",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 4078336,
+      "native_executable_bytes": 450162,
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "b97f07666644fa6c0a71858d9fe9537d46fad61089aab5d223885e6c56c9be3d"
+        },
+        {
+          "stage": 2,
+          "pixels": "1b180323451a2192b56705012d0f19dcc5a9edf1a7f05339d02472aba906b710"
+        },
+        {
+          "stage": 3,
+          "pixels": "f1834dd3413bafef707d7931f10a2a5680c5c8b3e7f4bb811864d705cfb2fa33"
+        },
+        {
+          "stage": 4,
+          "pixels": "7c323de882ada20f004a2656a3a4f60b7c12b35a673be746bc98461e81421916"
+        },
+        {
+          "stage": 5,
+          "pixels": "1603e2a4d6f2e21a86f9db96a1b04dfca31c4953c0b28eb9cf67f4ca97bb58ab"
+        },
+        {
+          "stage": 6,
+          "pixels": "837120eea3ca81e058eae131417572dcce175500f2ed9597509aae7be1bb4b40"
+        },
+        {
+          "stage": 7,
+          "pixels": "2ba3bda31b3a5b602aab665f80b535aa7781607380fb215d1c501696b980401d"
+        },
+        {
+          "stage": 8,
+          "pixels": "8dd8ede21832b15eb6d4ac12a9d553ae8fbd8aa762f45ce911de26209bd48674"
+        },
+        {
+          "stage": 9,
+          "pixels": "780e9f86b5b03ecae98dd9bf5ce8f6c049c81b22f8d5faa588b84dc6ac3e9d8f"
+        },
+        {
+          "stage": 10,
+          "pixels": "48b663459a7e0b9fd572848258bad2d2c4b0edd9f66882f62d5d0313911bfb6b"
+        },
+        {
+          "stage": 11,
+          "pixels": "abf2efb20f3471a6ddf8c1a78d7c04fa0fcc512a9cd3bb4685b288d2442c0715"
+        },
+        {
+          "stage": 12,
+          "pixels": "165f6157c429b06fa63fec7c36eb7f0a1ac5ea810013bf69339d4a92eb135cc6"
+        },
+        {
+          "stage": 13,
+          "pixels": "b97f07666644fa6c0a71858d9fe9537d46fad61089aab5d223885e6c56c9be3d"
+        }
+      ],
+      "runtimes": [
+        {
+          "status": 0,
+          "native_nmi_count": 296,
+          "native_irq_count": 636,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 346,
+              "untouched_above_floor": 934
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 538,
+              "untouched_above_floor": 1766
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 29,
+              "untouched_above_floor": 227
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob3-scroll-raw/results.json",
+      "sha256": "bd2765667eda895c88920ed2cf532129bcc625e7d08fb4347e1ec72ddbb80804",
+      "status": "pass",
+      "xex_sha256": "dc039e1e4b6b19f0fec07ebaff5c1b53f486916f4e5198d080ef1bf020cb00f4",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 4078336,
+      "native_executable_bytes": 500078,
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "b97f07666644fa6c0a71858d9fe9537d46fad61089aab5d223885e6c56c9be3d"
+        },
+        {
+          "stage": 2,
+          "pixels": "1b180323451a2192b56705012d0f19dcc5a9edf1a7f05339d02472aba906b710"
+        },
+        {
+          "stage": 3,
+          "pixels": "f1834dd3413bafef707d7931f10a2a5680c5c8b3e7f4bb811864d705cfb2fa33"
+        },
+        {
+          "stage": 4,
+          "pixels": "7c323de882ada20f004a2656a3a4f60b7c12b35a673be746bc98461e81421916"
+        },
+        {
+          "stage": 5,
+          "pixels": "1603e2a4d6f2e21a86f9db96a1b04dfca31c4953c0b28eb9cf67f4ca97bb58ab"
+        },
+        {
+          "stage": 6,
+          "pixels": "837120eea3ca81e058eae131417572dcce175500f2ed9597509aae7be1bb4b40"
+        },
+        {
+          "stage": 7,
+          "pixels": "2ba3bda31b3a5b602aab665f80b535aa7781607380fb215d1c501696b980401d"
+        },
+        {
+          "stage": 8,
+          "pixels": "8dd8ede21832b15eb6d4ac12a9d553ae8fbd8aa762f45ce911de26209bd48674"
+        },
+        {
+          "stage": 9,
+          "pixels": "780e9f86b5b03ecae98dd9bf5ce8f6c049c81b22f8d5faa588b84dc6ac3e9d8f"
+        },
+        {
+          "stage": 10,
+          "pixels": "48b663459a7e0b9fd572848258bad2d2c4b0edd9f66882f62d5d0313911bfb6b"
+        },
+        {
+          "stage": 11,
+          "pixels": "abf2efb20f3471a6ddf8c1a78d7c04fa0fcc512a9cd3bb4685b288d2442c0715"
+        },
+        {
+          "stage": 12,
+          "pixels": "165f6157c429b06fa63fec7c36eb7f0a1ac5ea810013bf69339d4a92eb135cc6"
+        },
+        {
+          "stage": 13,
+          "pixels": "b97f07666644fa6c0a71858d9fe9537d46fad61089aab5d223885e6c56c9be3d"
+        }
+      ],
+      "runtimes": [
+        {
+          "status": 0,
+          "native_nmi_count": 304,
+          "native_irq_count": 627,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 362,
+              "untouched_above_floor": 918
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 548,
+              "untouched_above_floor": 1756
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 29,
+              "untouched_above_floor": 227
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob3-reply-opt/results.json",
+      "sha256": "d8ea7830864b8edebc7f4e96b3b9154aff16b6f31387c3adb526d7a1a5bbf686",
+      "status": "pass",
+      "xex_sha256": "47a64fc2c9f6a15133ca4fa3696ca0f24d84858cfdbe26120661a4f072b1e1c6",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 4078336,
+      "native_executable_bytes": 264431,
+      "runtimes": [
+        {
+          "status": 0,
+          "native_nmi_count": 99,
+          "native_irq_count": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 235,
+              "untouched_above_floor": 1045
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 508,
+              "untouched_above_floor": 1796
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob3-reply-raw/results.json",
+      "sha256": "e5dd8c010c3d889c13e74fd18bb42e6fd4d678946da3aa4692b294786c87a7c2",
+      "status": "pass",
+      "xex_sha256": "191c0040fa15d2f3bd331cefadf9a20eab757847ce7921a41a85fd6acccf45e5",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 4078336,
+      "native_executable_bytes": 293376,
+      "runtimes": [
+        {
+          "status": 0,
+          "native_nmi_count": 97,
+          "native_irq_count": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 236,
+              "untouched_above_floor": 1044
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 512,
+              "untouched_above_floor": 1792
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob3-text-opt/results.json",
+      "sha256": "34829697a6f79c3258958cb268b8686bdc39758fc22933e9f8f20c4b984a4f8b",
+      "status": "pass",
+      "xex_sha256": "14e6a28c7c8fb5c046ee8ac01a34f3531b806414529f24c72271ed51faf9b810",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 4078336,
+      "native_executable_bytes": 228817,
+      "runtimes": [
+        {
+          "status": 0,
+          "native_nmi_count": 14,
+          "native_irq_count": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 216,
+              "untouched_above_floor": 1064
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 226,
+              "untouched_above_floor": 542
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob3-control-opt/results.json",
+      "sha256": "62fb799c5717be7c39f67f273c59b3f6ce984e766cb688948a9a3e520877c18e",
+      "status": "pass",
+      "xex_sha256": "99a3f1d882b50a812dc944c83d5e1f666cb8610c6c67f0e36513ad8e0bc37025",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 4078336,
+      "native_executable_bytes": 269488,
+      "runtimes": [
+        {
+          "status": 0,
+          "native_nmi_count": 179,
+          "native_irq_count": 3665,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 230,
+              "untouched_above_floor": 1050
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 538,
+              "untouched_above_floor": 1766
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 48,
+              "untouched_above_floor": 208
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "status": 0,
+          "native_nmi_count": 182,
+          "native_irq_count": 3675,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 230,
+              "untouched_above_floor": 1050
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 538,
+              "untouched_above_floor": 1766
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 44,
+              "untouched_above_floor": 212
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "status": 0,
+          "native_nmi_count": 182,
+          "native_irq_count": 3674,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 230,
+              "untouched_above_floor": 1050
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 538,
+              "untouched_above_floor": 1766
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 44,
+              "untouched_above_floor": 212
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        {
+          "status": 0,
+          "native_nmi_count": 182,
+          "native_irq_count": 3675,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 230,
+              "untouched_above_floor": 1050
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 538,
+              "untouched_above_floor": 1766
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 44,
+              "untouched_above_floor": 212
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob3-fair-opt/results.json",
+      "sha256": "dae76cd70251c97872a55904cb7f8f25512b04340e2af195e3300bb12fd687a9",
+      "status": "pass",
+      "xex_sha256": "7725ed5b2eacd825ef3610b4cb57b79619864843495d346f6fb23b904ced1b6e",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 4078336,
+      "native_executable_bytes": 456328,
+      "observations": [
+        {
+          "stage": 1,
+          "live": 8,
+          "contexts": [
+            3,
+            5,
+            5,
+            4,
+            4,
+            4,
+            5,
+            4
+          ],
+          "frame": 312
+        },
+        {
+          "stage": 2,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            3,
+            5,
+            5,
+            1,
+            4
+          ],
+          "frame": 342
+        },
+        {
+          "stage": 3,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            3,
+            5,
+            5,
+            1,
+            4
+          ],
+          "frame": 349
+        },
+        {
+          "stage": 4,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            4,
+            5,
+            3,
+            4
+          ],
+          "frame": 359
+        }
+      ],
+      "counters": {
+        "checks": 67,
+        "floods": 25,
+        "smalls": 8,
+        "reads": 1,
+        "computes": 55
+      },
+      "limits": {
+        "small_collected_ms": 250,
+        "small_visible_ms": 500,
+        "flood_collected_ms": 1000,
+        "third_collected_ms": 250,
+        "third_visible_ms": 500,
+        "cooked_echo_ms": 500,
+        "break_durable_ms": 100
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": []
+      },
+      "runtimes": [
+        {
+          "status": 0,
+          "native_nmi_count": 233,
+          "native_irq_count": 2889,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 239,
+              "untouched_above_floor": 1041
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 243,
+              "untouched_above_floor": 525
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 125,
+              "untouched_above_floor": 643
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 228,
+              "untouched_above_floor": 540
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 350,
+              "untouched_above_floor": 418
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 220,
+              "untouched_above_floor": 548
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 508,
+              "untouched_above_floor": 1796
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 142,
+              "untouched_above_floor": 2162
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 50,
+              "untouched_above_floor": 206
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob3-fair-raw/results.json",
+      "sha256": "e3e633fb8397561ccb03f5fbc91cce5375517074a4d50a6a447b142805c45f69",
+      "status": "pass",
+      "xex_sha256": "72ce1adbd0fb1bd0cea92392cbb2f3014cc8a1989860fcfde540d7f7708c8dcd",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 4078336,
+      "native_executable_bytes": 506858,
+      "observations": [
+        {
+          "stage": 1,
+          "live": 8,
+          "contexts": [
+            3,
+            5,
+            5,
+            4,
+            4,
+            4,
+            5,
+            4
+          ],
+          "frame": 327
+        },
+        {
+          "stage": 2,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            5,
+            5,
+            3,
+            4
+          ],
+          "frame": 361
+        },
+        {
+          "stage": 3,
+          "live": 8,
+          "contexts": [
+            1,
+            5,
+            5,
+            5,
+            5,
+            5,
+            3,
+            4
+          ],
+          "frame": 368
+        },
+        {
+          "stage": 4,
+          "live": 8,
+          "contexts": [
+            1,
+            3,
+            5,
+            1,
+            4,
+            5,
+            1,
+            4
+          ],
+          "frame": 378
+        }
+      ],
+      "counters": {
+        "checks": 66,
+        "floods": 22,
+        "smalls": 8,
+        "reads": 2,
+        "computes": 60
+      },
+      "limits": {
+        "small_collected_ms": 250,
+        "small_visible_ms": 500,
+        "flood_collected_ms": 1000,
+        "third_collected_ms": 250,
+        "third_visible_ms": 500,
+        "cooked_echo_ms": 500,
+        "break_durable_ms": 100
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": []
+      },
+      "runtimes": [
+        {
+          "status": 0,
+          "native_nmi_count": 276,
+          "native_irq_count": 4077,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 250,
+              "untouched_above_floor": 1030
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 274,
+              "untouched_above_floor": 494
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 158,
+              "untouched_above_floor": 610
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 232,
+              "untouched_above_floor": 536
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 409,
+              "untouched_above_floor": 359
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 242,
+              "untouched_above_floor": 526
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 531,
+              "untouched_above_floor": 1773
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 161,
+              "untouched_above_floor": 2143
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 54,
+              "untouched_above_floor": 202
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_from_base": 1270,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      ]
+    }
+  ]
+}

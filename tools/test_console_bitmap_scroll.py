@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Independent scanout oracle for scrolls, narrow/hidden tiles and caret."""
 import argparse,json,shutil
+import generate_tasks
 from pathlib import Path
 import adapter_state as adapter
 from build_bitmap_console import build_bitmap
@@ -15,12 +16,29 @@ from test_gem_interactive import pixels
 from bitmap_console_trace import observation,intervals
 
 
-def run(out,mode,replay=False,observe=False,performance=False):
+def run(out,mode,replay=False,observe=False,performance=False,batch=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
-    p=read_build(out/'program') if replay else build_bitmap(ROOT/'tests/programs/console_bitmap_scroll.act',out,mode=='opt',probe=False)
+    original=generate_tasks.policy_modules
+    def instrument(*args,**kwargs):
+        directory=original(*args,**kwargs)
+        source=ROOT/'lib/console/console-bitmap-display.inc'
+        text=source.read_text();needle='      view.scrollState=3'
+        require(text.count(needle)==1,'Batch launch boundary changed')
+        target=directory/'batch-launch.inc'
+        target.write_text(text.replace(needle,needle+'\n      BATCHPROBE.Launched(rows)'))
+        path=directory/'consoledisplay.act'
+        path.write_text(path.read_text().replace('USE A816MEMORY\n','USE A816MEMORY\nUSE BATCHPROBE\n',1).replace(str(source),str(target)))
+        return directory
+    if batch:
+        (out/'batchprobe.act').write_bytes((ROOT/'tests/programs/batchprobe.act').read_bytes())
+        generate_tasks.policy_modules=instrument
+    try:
+        source=ROOT/'tests/programs'/('console_batch_bitmap.act' if batch else 'console_bitmap_scroll.act')
+        p=read_build(out/'program') if replay else build_bitmap(source,out,mode=='opt',probe=False)
+    finally:generate_tasks.policy_modules=original
     foreign=json.loads((out/'c-image.json').read_text());sy=foreign['symbols']
     require(p['build']['optimize']==(mode=='opt') and sha256(p['xex'])==p['build']['xex_sha256'],'Changed replay image')
-    result=dict(observed=observe,status='running',tier='development',mode=mode,build=p['build'],pin=PIN,
+    result=dict(observed=observe,batch=batch,status='running',tier='development',mode=mode,build=p['build'],pin=PIN,
         bank_zero_delta=dict(fixed=0,root_kernel=0,per_task=[0]*8,private_idle=0),observations=[])
     address=lambda name:next(d['address'] for d in p['image']['data'] if '_BITMAPSCROLL_'+name+'_' in d['name'])
     from bitmap_console_performance import markers,summarize
@@ -47,8 +65,8 @@ def run(out,mode,replay=False,observe=False,performance=False):
                 if observe:b.profile_start()
                 saved.update(screen=b.peek16(88),dma=b.memdump(0x22f,3),cursor=b.memdump(0x2f0,1),input=b.memdump(0x208,2))
                 saved['bytes']=b.memdump(saved['screen'],960)
-                from bitmap_console_oracle import scroll_scenes
-                scenes=scroll_scenes(font_bytes(out/'selected/src/vdi/font8x8.c'))
+                from bitmap_console_oracle import scroll_scenes,batch_scenes
+                scenes=(batch_scenes if batch else scroll_scenes)(font_bytes(out/'selected/src/vdi/font8x8.c'))
                 for stage,expected in enumerate(scenes,1):
                     reach(f'dw(${address("CHECKPOINT"):x})={stage}')
                     reach(f'@frame>={b.eval_expr("@frame")+2}')
@@ -56,6 +74,13 @@ def run(out,mode,replay=False,observe=False,performance=False):
                     result['observations'].append(dict(stage=stage,pixels=pixels(b,folder,expected)))
                     reach(f'@frame>={b.eval_expr("@frame")+2}')
                     b.memload(address('GATE'),stage.to_bytes(2,'little'))
+                if batch:
+                    reach(f'dw(${address("CHECKPOINT"):x})=6')
+                    accepted=data(b,p['image'],'cutBytes',True)[0]
+                    expected=batch_scenes(font_bytes(out/'selected/src/vdi/font8x8.c'),accepted)[-1]
+                    folder=out/'stage-6';folder.mkdir(exist_ok=True)
+                    result['observations'].append(dict(stage=6,accepted=accepted,pixels=pixels(b,folder,expected)))
+                    b.memload(address('GATE'),b'\6\0')
                 b.bp_clear_all()
             runtime,_=execute(b,p,before_run=before,timer_irq=False,timeout=180,frame_limit=10000)
             require(b.memdump(saved['screen'],960)==saved['bytes'] and b.memdump(0x22f,3)==saved['dma'],'OS screen not restored')
@@ -64,15 +89,20 @@ def run(out,mode,replay=False,observe=False,performance=False):
             ownership(b,p,p['output'])
             result.update(runtime=runtime,checks=data(b,p['image'],'checks',True),
                           stack_usage=stack_usage(b,p['build']['memory']))
+            if batch:
+                result['batch_launches']={name:data(b,p['image'],name,True)[0]
+                    for name in ('batchLaunches','multiLaunches','maxRows')}
+                require(result['batch_launches']['multiLaunches']>0 and
+                        1<result['batch_launches']['maxRows']<=4,'No bounded multi-row hardware launch')
         if observe:
             result['operations']=intervals(out/'emulator.log',marks,len(result['observations']))
             for sample in result['operations']:
                 if sample['kind']=='idle':require(not sample['calls'],'Clean console submitted work: '+str(sample))
-                elif sample['stage'] in (2,3,7):
+                elif not batch and sample['stage'] in (2,3,7):
                     require(sample['calls'].get('GemDrawingCopy',0)+sample['calls'].get('GemDrawingScrollStart',0)>0,'Eligible scroll did not copy')
                     glyphs=sum(sample['calls'].get(name,0) for name in ('blit_glyph','_text_record'))
                     require(glyphs<=4,'Eligible scroll redrew unchanged glyphs')
-                elif sample['stage']==8:require(sample['calls'].get('GemDrawingCopy',0)==0,'Height-one copy is not empty')
+                elif not batch and sample['stage']==8:require(sample['calls'].get('GemDrawingCopy',0)==0,'Height-one copy is not empty')
         if performance and observe:
             result['performance']=summarize(out/'emulator.log',timing,result['operations'])
             from blitter_completion_trace import analyze
@@ -88,4 +118,4 @@ def run(out,mode,replay=False,observe=False,performance=False):
     print('Bitmap scrolling passed',mode,flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');p.add_argument('--observe',action='store_true');p.add_argument('--performance',action='store_true');a=p.parse_args();run(a.output,a.mode,a.replay,a.observe,a.performance)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--replay',action='store_true');p.add_argument('--observe',action='store_true');p.add_argument('--performance',action='store_true');p.add_argument('--batch',action='store_true');a=p.parse_args();run(a.output,a.mode,a.replay,a.observe,a.performance,a.batch)

@@ -100,7 +100,8 @@ PROC Main()
   write.io_Unit=owner.io_Unit
   write.io_Command=EXEC.CMD_WRITE
   write.io_Data=text
-  write.io_Length=512
+  ; Keep these cases on the single-row path; bulk phases have their own probe.
+  write.io_Length=64
   IF variant=10 OR variant=11 THEN
     write.io_Length=1
   FI

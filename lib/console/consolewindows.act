@@ -2,6 +2,7 @@
 MODULE CONSOLEWINDOWS
 USE CONSOLETYPES
 USE CONSOLEBITMAP
+USE CONSOLEBATCH
 USE EXEC
 USE HEAPCORE
 USE EXECLISTS
@@ -108,6 +109,11 @@ PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
   ; retain their queues without keeping the worker runnable.
   IF CONSOLEBITMAP.Pending()<>0 THEN
     RETURN(0)
+  FI
+
+  LET batch=CONSOLEBATCH.Get()
+  IF batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
+    RETURN(entry.unit=batch.unit)
   FI
 
   IF view.scrollState<>0 THEN

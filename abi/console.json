@@ -41,7 +41,8 @@
     "BATCH_FLUSH_CONTROL": 4,
     "BATCH_FLUSH_CANCEL": 5,
     "BATCH_FLUSH_BARRIER": 6,
-    "BATCH_FLUSH_SHORT": 7
+    "BATCH_FLUSH_SHORT": 7,
+    "SCROLL_GATHER": 4
   },
   "storage": {
     "service_offset": 0,

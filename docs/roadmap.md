@@ -100,7 +100,7 @@ subsystem contracts remain separate work.
 The shell-only bitmap demo's interactive response is now satisfactory for the
 current development use. The next focused console change is
 [bulk output batching](plans/console-output-batching-implementation-plan.md),
-proposed as OB1–OB5. The completed
+implemented through OB3, with interleaving checks and measurements pending. The completed
 [CAT trace](development/console-output-batching-baseline.json) measures cached
 `CAT LONG.TXT` at 26.670 s, including 24.374 s inside output calls; cached output
 to NIL takes 2.116 s. Accumulate a bounded number of retained line edits, then

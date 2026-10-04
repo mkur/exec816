@@ -1,0 +1,158 @@
+MODULE BITMAPSCROLL
+USE EXEC
+USE EXECTASKS
+USE HEAPCORE
+USE DOS
+USE CONSOLE
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE CONSOLEBATCH
+USE A816MEMORY
+
+CARD checks,checkpoint,gate,continued,cutBytes
+BYTE ARRAY text(512)
+DOS.FileHandle POINTER file
+BYTE ARRAY device=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Ready(CARD value)
+
+  checkpoint=value
+
+RETURN
+
+PROC Continuing(CARD value)
+
+  continued=value
+
+RETURN
+
+PROC Pause(CARD value)
+  CARD ignored
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET instance=CONSOLETYPES.Instance POINTER(windows.items(0).instance)
+  LET view=CONSOLETYPES.Presentation POINTER(windows.items(0).view)
+  LET batch=CONSOLEBATCH.Get()
+  WHILE instance.dirtyRows<>0 OR view.scrollState<>0
+      OR batch.phase<>CONSOLETYPES.BATCH_IDLE
+      OR view.index<>instance.lineStart+instance.column DO
+    EXEC.Yield()
+  OD
+
+  ignored=EXECTASKS.Sleep(2)
+  Ready(value)
+  WHILE gate<value DO
+    EXEC.Yield()
+  OD
+
+  Continuing(value)
+
+RETURN
+
+PROC Write(CARD count)
+
+  Require(DOS.Write(file,text,LONGCARD(count))=LONGINT(count))
+
+RETURN
+
+PROC Bulk()
+  CARD index
+
+  FOR index=0 TO 511 DO
+    text(index)=BYTE(65+(index MOD 26))
+    IF index MOD 31=30 THEN
+      text(index)=10
+    FI
+  OD
+
+  Write(512)
+
+RETURN
+
+PROC Main()
+  CARD row,index
+  EXEC.MsgPort POINTER port
+  EXEC.IOStdReq POINTER request
+
+  file=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  FOR row=0 TO 28 DO
+    FOR index=0 TO 79 DO
+      text(index)=BYTE(33+(row*7+index) MOD 90)
+    OD
+
+    Write(80)
+  OD
+
+  Pause(1)
+  A816MEMORY.Move(text,BYTE POINTER(c"one\ntwo\nthree\nfour\n"),19)
+  A816MEMORY.Fill(@text(19),88,64)
+  Write(83)
+  Pause(2)
+  FOR index=0 TO 3 DO
+    Bulk()
+  OD
+
+  Pause(3)
+  FOR index=0 TO 99 DO
+    text(index)=BYTE(65+(index MOD 26))
+  OD
+
+  text(27)=13
+  text(55)=8
+  text(72)=9
+  text(90)=10
+  Write(100)
+  Pause(4)
+  Require(CONSOLE.Hide(0)<>0)
+  Bulk()
+  Require(CONSOLE.Show(0,0,0)<>0)
+  Pause(5)
+  Require(DOS.Close(file)<>0)
+  port=EXEC.CreateMsgPort()
+  request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(port<>NULL AND request<>NULL)
+  Require(EXEC.OpenDevice(device,0,EXEC.IORequest POINTER(request),0)=0)
+  request.io_Command=EXEC.CMD_WRITE
+  request.io_Data=text
+  request.io_Length=512
+  EXEC.SendIO(EXEC.IORequest POINTER(request))
+  LET batch=CONSOLEBATCH.Get()
+  WHILE batch.phase<>CONSOLETYPES.BATCH_GATHER DO
+    EXEC.Yield()
+  OD
+
+  EXEC.Forbid()
+  cutBytes=CARD(request.io_Actual)
+  Require(cutBytes<>0 AND cutBytes<512)
+  EXEC.AbortIO(EXEC.IORequest POINTER(request))
+  EXEC.Permit()
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(request))=EXEC.IOERR_ABORTED)
+  Require(request.io_Actual=LONGCARD(cutBytes))
+  ; No source may be borrowed after the accepted prefix is replied.
+  A816MEMORY.Fill(text,90,512)
+  Pause(6)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  file=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  ; Return immediately after the final accepted prefix. Stop must settle any
+  ; launched list, and must not retain this WRITE or its source after reply.
+  Bulk()
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

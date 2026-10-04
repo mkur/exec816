@@ -8,8 +8,10 @@ USE EXECMEMORY
 USE TASKMEMORY
 USE HEAPCORE
 USE SYS
+USE ASCII
 USE CONSOLETYPES
 USE CONSOLECORE
+USE CONSOLEBATCH
 USE CONSOLEWINDOWS
 USE CONSOLEFOREGROUND
 USE CONSOLECAPTURE
@@ -20,6 +22,7 @@ USE CONSOLECONTROL
 USE DISPLAY
 USE DISPLAYADAPTER
 INCLUDE "console-storage-action.inc"
+CONST DELETE=127
 
 PUBLIC CONSOLETYPES.Service POINTER FUNC GetService()
 
@@ -126,14 +129,64 @@ RETURN(0)
 INCLUDE "console-requests.inc"
 INCLUDE "console-lifetime.inc"
 
+; Commit one bounded prefix, then publish a pointer-free display continuation
+; before replying. Cancellation never consumes another source byte.
+PROC BatchWrite(CONSOLETYPES.Instance POINTER instance
+    CONSOLETYPES.Presentation POINTER view EXEC.IOStdReq POINTER request)
+  CARD limit,consumed
+  BYTE reason
+
+  IF instance.writeCancel=0 AND request.io_Actual<request.io_Length
+      AND CONSOLEBATCH.Due(instance.changeTick)=0 THEN
+    BEGIN
+      LET remaining=request.io_Length-request.io_Actual
+      limit=CONSOLETYPES.SOURCE_QUANTUM
+      IF remaining<LONGCARD(limit) THEN
+        limit=CARD(remaining)
+      FI
+
+      consumed=CONSOLEBATCH.Feed(instance,
+          BYTE POINTER(ADDRESS(request.io_Data)+SIZE(request.io_Actual)),limit)
+      request.io_Actual==+LONGCARD(consumed)
+    END
+  FI
+
+  IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length
+      OR CONSOLEBATCH.Due(instance.changeTick)<>0 THEN
+    reason=CONSOLETYPES.BATCH_FLUSH_END
+    IF instance.writeCancel<>0 THEN
+      reason=CONSOLETYPES.BATCH_FLUSH_CANCEL
+    FI
+
+    CONSOLEDISPLAY.FlushBatch(view,instance,reason)
+    IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
+      FinishWrite(instance,request)
+    FI
+  FI
+
+RETURN
+
 ; Advance one write by a bounded amount. Return 1 to complete a short write
 ; after this turn's presentation, before yielding or taking another instance.
 BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
-    CONSOLETYPES.Presentation POINTER view)
+    CONSOLETYPES.Presentation POINTER view LONGCARD unit)
   EXEC.IOStdReq POINTER request
   LONGCARD remaining
   CARD consumed,limit
-  BYTE error
+  BYTE error,value
+
+  LET batch=CONSOLEBATCH.Get()
+  IF batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
+    IF batch.unit<>unit OR batch.phase<>CONSOLETYPES.BATCH_GATHER THEN
+      RETURN(0)
+    FI
+
+    IF batch.viewGeneration<>view.generation
+        OR batch.modelGeneration<>instance.generation
+        OR view.visible=0 OR view.claimed=0 OR instance.write=NULL THEN
+      CONSOLEDISPLAY.DiscardBatch()
+    FI
+  FI
 
   request=EXEC.IOStdReq POINTER(instance.write)
   IF request=NULL THEN
@@ -151,12 +204,18 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
   FI
 
   IF CONSOLEBITMAP.Failed()<>0 THEN
+    CONSOLEDISPLAY.DiscardBatch()
     IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
       CONSOLECORE.EditQuantum(instance)
     FI
 
     request.io_Error=BYTE(EXEC.IOERR_SELFTEST)
     FinishWrite(instance,request)
+    RETURN(0)
+  FI
+
+  IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
+    BatchWrite(instance,view,request)
     RETURN(0)
   FI
 
@@ -180,6 +239,20 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
   limit=CONSOLETYPES.SOURCE_QUANTUM
   IF remaining<LONGCARD(limit) THEN
     limit=CARD(remaining)
+  FI
+
+  IF request.io_Length>LONGCARD(CONSOLETYPES.SOURCE_QUANTUM)
+      AND CONSOLEBITMAP.Enabled()<>0 THEN
+    BEGIN
+      LET source=BYTE POINTER(ADDRESS(request.io_Data)+SIZE(request.io_Actual))
+      value=source^
+      IF value=ASCII.LF OR (value>=ASCII.SPACE AND value<>DELETE) THEN
+        IF CONSOLEDISPLAY.BeginBatch(view,instance,unit)<>0 THEN
+          BatchWrite(instance,view,request)
+          RETURN(0)
+        FI
+      FI
+    END
   FI
 
   consumed=CONSOLECORE.Feed(instance,
@@ -256,6 +329,7 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   BYTE registered
 
   windows=CONSOLEWINDOWS.Registry()
+  CONSOLEBATCH.Reset()
   entry=@windows.items(0)
   entry.unit=0
   entry.owner=BYTE POINTER(0)
@@ -377,6 +451,7 @@ PUBLIC PROC Worker()
   EXEC.Forbid()
   LET service=GetService()
   LET defaultInstance=GetInstance()
+  LET batch=CONSOLEBATCH.Get()
   LET self=EXEC.FindTask(NULL)
   IF service.worker<>BYTE POINTER(self) OR service.state<>1
       OR service.lease.task<>self THEN
@@ -442,7 +517,8 @@ PUBLIC PROC Worker()
   stopping=0
   inputPending=1
   ; Stop may be requested after the final write reply but before DMA retires.
-  WHILE service.stop=0 OR CONSOLEBITMAP.Pending()<>0 DO
+  WHILE service.stop=0 OR CONSOLEBITMAP.Pending()<>0
+      OR batch.phase<>CONSOLETYPES.BATCH_IDLE DO
     bits=Collect(bits,displayMask)
     IF (bits & STOP_MASK)<>0 THEN
       stopping=1
@@ -454,6 +530,7 @@ PUBLIC PROC Worker()
       accepted=RequestStop(service)
       EXEC.Permit()
       IF service.stop<>0 THEN
+        CONSOLEDISPLAY.DiscardBatch()
         EXIT
       FI
     FI
@@ -472,12 +549,14 @@ PUBLIC PROC Worker()
       ReadQuantum(service,instance)
       BEGIN
         LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-        IF CONSOLEBITMAP.Pending()=0 THEN
+        IF CONSOLEBITMAP.Pending()=0 AND
+            (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
           completeWrite=0
-          IF view.scrollState<>0 THEN
+          IF view.scrollState<>0
+              AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
             CONSOLEDISPLAY.Advance(view,instance,entry.unit)
           ELSE
-            completeWrite=WriteQuantum(instance,view)
+            completeWrite=WriteQuantum(instance,view,entry.unit)
           FI
 
           CONSOLEDISPLAY.Present(view,instance)
@@ -495,6 +574,9 @@ PUBLIC PROC Worker()
 
         writing=instance.write<>NULL
         again=(writing<>0 AND instance.writeCancel<>0) OR view.scrollState<>0
+        IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
+          again=0
+        FI
       END
       entry.busy=0
     FI

@@ -72,11 +72,22 @@ BYTE FUNC BitmapComplete()
             AND view.scrollModel=bitmapModel AND view.visible<>0
             AND view.claimed<>0 AND CONSOLEBITMAP.Failed()=0 THEN
           view.scrollRow=view.height LSH 3
-          CONSOLECORE.Clean(instance)
-          view.presentedGeneration=instance.generation
+          BEGIN
+            LET batch=CONSOLEBATCH.Get()
+            IF batch.phase=CONSOLETYPES.BATCH_DMA
+                AND batch.unit=bitmapUnit
+                AND batch.viewGeneration=bitmapGeneration
+                AND batch.modelGeneration=bitmapModel THEN
+              batch.phase=CONSOLETYPES.BATCH_PAINT
+            ELSE
+              CONSOLECORE.Clean(instance)
+              view.presentedGeneration=instance.generation
+            FI
+          END
         ELSE
           view.presentedGeneration=0
           CONSOLECORE.Dirty(instance,0,instance.count)
+          CONSOLEBATCH.Reset()
         FI
       FI
     END
@@ -125,19 +136,30 @@ PUBLIC PROC Advance(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     view.scrollState=0
     view.presentedGeneration=0
     CONSOLECORE.Dirty(instance,0,instance.count)
+    DiscardBatch()
     RETURN
   FI
 
+  LET batch=CONSOLEBATCH.Get()
   IF view.scrollState=1 THEN
-    okay=CONSOLEBITMAP.Scroll(view.left,view.top,view.width,view.height,1)
+    rows=1
+    IF batch.phase=CONSOLETYPES.BATCH_READY AND batch.unit=unit THEN
+      rows=batch.rows
+    FI
+
+    okay=CONSOLEBITMAP.Scroll(view.left,view.top,view.width,view.height,rows)
     IF okay<>0 THEN
       bitmapUnit=unit
       bitmapGeneration=view.generation
       bitmapModel=instance.generation
       view.scrollState=3
+      IF batch.phase=CONSOLETYPES.BATCH_READY AND batch.unit=unit THEN
+        batch.phase=CONSOLETYPES.BATCH_DMA
+      FI
     ELSE
       view.scrollState=0
       view.presentedGeneration=0
+      DiscardBatch()
     FI
 
     RETURN

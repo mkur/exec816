@@ -337,6 +337,15 @@ PROC Arrival(CONSOLETYPES.Service POINTER service)
     WHEN EXEC.CMD_WRITE THEN
       EXECLISTS.AddTail(EXECLISTS.List POINTER(@instance.writes),
           @request.io_Message.mn_Node)
+      IF request.io_Message.mn_Length>=EXEC.IOSTDREQ_SIZE
+          AND request.io_Length<=LONGCARD(CONSOLETYPES.SOURCE_QUANTUM) THEN
+        BEGIN
+          LET batch=CONSOLEBATCH.Get()
+          IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
+            batch.reason=CONSOLETYPES.BATCH_FLUSH_SHORT
+          FI
+        END
+      FI
     ELSE
       service.arrival=BYTE POINTER(request)
       service.arrivalCancel=0

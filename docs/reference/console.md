@@ -61,6 +61,23 @@ rectangle copy followed by the exposed-strip fill in the same hardware list.
 A height-one tile submits only the fill. Hidden or invalidated presentation
 redraws retained damage; clear retains bounded fills.
 
+Long bitmap writes (more than 64 bytes) can accumulate several bottom-row
+scrolls before presentation. Admission requires a fully visible, synchronized
+view taller than one row. Each turn accepts at most 64 source bytes and recycles
+at most one character row. One shared 44-byte upper-RAM context tracks at most
+four scroll rows, 256 source bytes and four turns. A changed VBI tick, control
+byte, request end, cancellation or waiting short write also ends gathering.
+There is no extra source buffer and no wait for a subsequent WRITE.
+
+The resulting list copies the surviving rectangle and clears all exposed rows
+once. Completion preserves the accepted text's damage; bounded presentation
+then paints its final positions, including text above the exposed strip. Input
+and READ service continue between quanta and during DMA. Other model writes
+wait until this continuation settles. Hide or other presentation changes may
+discard the optimization and redraw the accepted model after DMA is quiescent.
+An aborted WRITE reports its accepted prefix exactly once; no continuation
+retains the request or source after reply.
+
 The worker is the sole drawing owner, with one list in flight. A retained VBXE
 completion signal wakes it; an independent sixteen-VBI-tick watchdog wakes it
 if that interrupt is lost. It queries completion on a notification, continues
@@ -88,7 +105,7 @@ append the new caret to that text operation. This requires a focused, settled
 view and an old caret already absent or covered by the span. Text and caret
 then share one owner check and the final blitter list and fence. Cursor-only
 moves and incomplete presentations retain separate operations.
-The native/C packet is version 4, 70 bytes, including the trailing fill geometry
+The native/C packet is version 5, 70 bytes, including the trailing fill geometry
 and driver-owned completion mask returned at open. Rebuild both sides together.
 The worker reserves its request/input/stop bits before display initialization
 allocates that signal.

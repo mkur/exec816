@@ -59,3 +59,22 @@ def scroll_scenes(font):
     a.feed(b'\x0c');snapshot(tiles)
     base.feed(pattern(80,30,0));snapshot(default)
     return scenes
+
+
+def batch_scenes(font,accepted=None):
+    terminal=Terminal(80,30);scenes=[]
+    def snapshot():
+        raster=Raster(font);terminal.paint(raster,0,0,True)
+        scenes.append(raster.packed())
+    terminal.feed(bytes(33+(row*7+col)%90 for row in range(29) for col in range(80)))
+    snapshot()
+    terminal.feed(b'one\ntwo\nthree\nfour\n'+b'X'*64);snapshot()
+    bulk=bytes(10 if i%31==30 else 65+i%26 for i in range(512))
+    terminal.feed(bulk*4);snapshot()
+    controls=bytearray(65+i%26 for i in range(100))
+    for index,value in ((27,13),(55,8),(72,9),(90,10)):controls[index]=value
+    terminal.feed(controls);snapshot()
+    terminal.feed(bulk);snapshot()
+    if accepted is not None:
+        terminal.feed(bulk[:accepted]);snapshot()
+    return scenes
