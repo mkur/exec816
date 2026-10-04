@@ -26,7 +26,22 @@
     "CTL_RUNNING": 2,
     "CTL_DONE": 3,
     "CTL_CURSOR": 1,
-    "CTL_ERASE": 2
+    "CTL_ERASE": 2,
+    "BATCH_MAX_ROWS": 4,
+    "BATCH_MAX_BYTES": 256,
+    "BATCH_MAX_TURNS": 4,
+    "BATCH_IDLE": 0,
+    "BATCH_GATHER": 1,
+    "BATCH_READY": 2,
+    "BATCH_DMA": 3,
+    "BATCH_PAINT": 4,
+    "BATCH_FLUSH_LIMIT": 1,
+    "BATCH_FLUSH_TICK": 2,
+    "BATCH_FLUSH_END": 3,
+    "BATCH_FLUSH_CONTROL": 4,
+    "BATCH_FLUSH_CANCEL": 5,
+    "BATCH_FLUSH_BARRIER": 6,
+    "BATCH_FLUSH_SHORT": 7
   },
   "storage": {
     "service_offset": 0,
@@ -616,6 +631,72 @@
           "control",
           "Control",
           172
+        ]
+      ]
+    },
+    "Batch": {
+      "size": 44,
+      "alignment": 2,
+      "fields": [
+        [
+          "phase",
+          "BYTE",
+          0
+        ],
+        [
+          "reason",
+          "BYTE",
+          1
+        ],
+        [
+          "unit",
+          "LONGCARD",
+          2
+        ],
+        [
+          "viewGeneration",
+          "LONGCARD",
+          6
+        ],
+        [
+          "modelGeneration",
+          "LONGCARD",
+          10
+        ],
+        [
+          "tick",
+          "CARD",
+          14
+        ],
+        [
+          "bytes",
+          "CARD",
+          16
+        ],
+        [
+          "turns",
+          "CARD",
+          18
+        ],
+        [
+          "rows",
+          "CARD",
+          20
+        ],
+        [
+          "limit",
+          "CARD",
+          22
+        ],
+        [
+          "first",
+          "CARD[5]",
+          24
+        ],
+        [
+          "last",
+          "CARD[5]",
+          34
         ]
       ]
     }

@@ -20,16 +20,23 @@ def constants(abi=ABI):
             size,align=widths[base];size*=int(count)
             cursor=(cursor+align-1)//align*align;alignment=max(alignment,align)
             require(field not in names and offset==cursor,'Invalid console field: '+name+'.'+field)
-            names.add(field);result[name.upper()+'_'+field.upper()]=offset;cursor+=size
+            key=name.upper()+'_'+field.upper()
+            require(key not in result,'Duplicate console constant: '+key)
+            names.add(field);result[key]=offset;cursor+=size
         require(record['alignment']==alignment and record['size']==(cursor+alignment-1)//alignment*alignment,
                 'Invalid console size: '+name)
-        widths[name]=(record['size'],alignment);result[name.upper()+'_SIZE']=record['size']
+        key=name.upper()+'_SIZE'
+        require(key not in result,'Duplicate console constant: '+key)
+        widths[name]=(record['size'],alignment);result[key]=record['size']
     require(result['RAW_SLOTS']==64
             and result['INPUT_BYTES']==128 and result['CELL_BYTES']==2400,'Invalid console capacity')
     require(result['CONERR_INPUTOVERFLOW']==1,'Invalid console event/error contract')
     require(result['ROUTE_SIZE']==16 and result['ROUTES_SIZE']==264,'Invalid route retention capacity')
     require(result['SOURCE_QUANTUM']==64 and result['MAX_WIDTH']==80
             and result['MAX_HEIGHT']==30,'Invalid console geometry/quanta')
+    require(0<result['BATCH_MAX_ROWS']<=4 and 0<result['BATCH_MAX_TURNS']<=4
+            and 0<result['BATCH_MAX_BYTES']<=256 and result['BATCH_SIZE']<=64,
+            'Invalid bounded batch capacity')
     require(result['WINDOW_SLOTS']==4 and result['WINDOW_SIZE']==38 and result['WINDOWS_SIZE']==180,'Invalid window capacity')
     require(result['CONTROL_SIZE']==8,'Invalid presentation transaction')
     s=abi['storage'];end=0

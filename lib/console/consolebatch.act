@@ -1,0 +1,107 @@
+; One worker-owned display continuation. No request or borrowed cell pointers.
+MODULE CONSOLEBATCH
+USE CONSOLETYPES
+USE CONSOLECORE
+
+CONSOLETYPES.Batch batch
+
+PUBLIC CONSOLETYPES.Batch POINTER FUNC Get()
+
+RETURN(@batch)
+
+; Only the display owner calls this after removing the old caret and proving
+; that the visible rectangle is synchronized with this retained instance.
+PUBLIC BYTE FUNC Begin(CONSOLETYPES.Instance POINTER instance LONGCARD unit,
+    viewGeneration)
+  CARD index
+
+  IF batch.phase<>CONSOLETYPES.BATCH_IDLE OR instance.height<=1
+      OR instance.row<>instance.height-1 OR instance.dirtyRows<>0
+      OR instance.operation<>CONSOLETYPES.OP_IDLE THEN
+    RETURN(0)
+  FI
+
+  batch.unit=unit
+  batch.viewGeneration=viewGeneration
+  batch.modelGeneration=instance.generation
+  batch.tick=instance.changeTick
+  batch.bytes=0
+  batch.turns=0
+  batch.rows=0
+  batch.reason=0
+  batch.limit=CONSOLETYPES.BATCH_MAX_ROWS
+  IF batch.limit>=instance.height THEN
+    batch.limit=instance.height-1
+  FI
+
+  FOR index=0 TO CONSOLETYPES.BATCH_MAX_ROWS DO
+    batch.first(index)=instance.width
+    batch.last(index)=0
+  OD
+
+  batch.phase=CONSOLETYPES.BATCH_GATHER
+
+RETURN(1)
+
+; A VBI boundary requests a flush when next serviced, without a timer or Wait.
+PUBLIC BYTE FUNC Due(CARD tick)
+
+  IF batch.reason<>0 THEN
+    RETURN(1)
+  FI
+
+  IF batch.rows>=batch.limit OR batch.bytes>=CONSOLETYPES.BATCH_MAX_BYTES
+      OR batch.turns>=CONSOLETYPES.BATCH_MAX_TURNS THEN
+    batch.reason=CONSOLETYPES.BATCH_FLUSH_LIMIT
+  ELSEIF CARD(tick-batch.tick)<>0 THEN
+    batch.reason=CONSOLETYPES.BATCH_FLUSH_TICK
+  FI
+
+RETURN(batch.reason<>0)
+
+; Accept one quantum into the canonical core, stopping before a control barrier.
+PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER source
+    CARD length)
+
+  IF batch.phase<>CONSOLETYPES.BATCH_GATHER
+      OR Due(instance.changeTick)<>0 THEN
+    RETURN(0)
+  FI
+
+  IF length>CONSOLETYPES.BATCH_MAX_BYTES-batch.bytes THEN
+    length=CONSOLETYPES.BATCH_MAX_BYTES-batch.bytes
+  FI
+
+  LET used=CONSOLECORE.FeedBatch(instance,source,length,@batch)
+  batch.bytes==+used
+  batch.turns==+1
+  batch.modelGeneration=instance.generation
+
+RETURN(used)
+
+; Publish text damage before submission or request reply. Copy/fill completion
+; must not Clean these spans; the bounded presenter consumes them afterward.
+PUBLIC PROC Publish(CONSOLETYPES.Instance POINTER instance BYTE reason)
+
+  IF batch.phase<>CONSOLETYPES.BATCH_GATHER THEN
+    RETURN
+  FI
+
+  IF batch.reason=0 THEN
+    batch.reason=reason
+  FI
+
+  CONSOLECORE.BatchDamage(instance,@batch)
+  batch.phase=CONSOLETYPES.BATCH_READY
+
+RETURN
+
+; Call only after display work has settled, or after publishing full fallback
+; damage while no DMA owns the rectangle. Accepted model edits are never undone.
+PUBLIC PROC Reset()
+
+  batch.phase=CONSOLETYPES.BATCH_IDLE
+
+RETURN
+
+ENDMODULE

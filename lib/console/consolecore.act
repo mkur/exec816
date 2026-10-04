@@ -190,7 +190,7 @@ RETURN(1)
 
 ; Complete one logical edit while the worker retains its request and instance.
 ; Recycle one physical row; the bounded edit stays preemptible.
-PUBLIC PROC EditQuantum(CONSOLETYPES.Instance POINTER instance)
+PROC EditRetained(CONSOLETYPES.Instance POINTER instance)
 
   IF instance.operation=CONSOLETYPES.OP_IDLE THEN
     RETURN
@@ -210,8 +210,19 @@ PUBLIC PROC EditQuantum(CONSOLETYPES.Instance POINTER instance)
     instance.cellOrigin=0
   FI
 
-  Dirty(instance,0,count)
   instance.operation=CONSOLETYPES.OP_IDLE
+
+RETURN
+
+; Ordinary editing invalidates the full view; a batch records its own spans.
+PUBLIC PROC EditQuantum(CONSOLETYPES.Instance POINTER instance)
+
+  IF instance.operation=CONSOLETYPES.OP_IDLE THEN
+    RETURN
+  FI
+
+  EditRetained(instance)
+  Dirty(instance,0,instance.count)
 
 RETURN
 
@@ -264,8 +275,8 @@ RETURN
 
 ; Count source bytes, including ignored controls. Printable runs publish one
 ; dirty row span, ending at a control, row edge or the source quantum.
-PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
-    CARD length)
+CARD FUNC FeedInto(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
+    CARD length CONSOLETYPES.Batch POINTER batch)
   CARD used,limit,stop,first,index,start
   BYTE value
 
@@ -282,6 +293,12 @@ PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
 
   WHILE used<limit DO
     value=bytes(used)
+    IF batch<>NULL AND value<>ASCII.LF
+        AND (value<ASCII.SPACE OR value=DELETE) THEN
+      batch.reason=CONSOLETYPES.BATCH_FLUSH_CONTROL
+      EXIT
+    FI
+
     IF value>=ASCII.SPACE AND value<>DELETE THEN
       first=instance.column
       start=used
@@ -309,7 +326,15 @@ PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
 
       instance.column==+used-start
       Changed(instance)
-      MarkRow(instance,instance.row,first,instance.column)
+      IF batch=NULL THEN
+        MarkRow(instance,instance.row,first,instance.column)
+      ELSE
+        IF first<batch.first(batch.rows) THEN
+          batch.first(batch.rows)=first
+        FI
+
+        batch.last(batch.rows)=instance.column
+      FI
       IF instance.column=instance.width THEN
         NewLine(instance)
       FI
@@ -324,5 +349,46 @@ PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
   OD
 
 RETURN(used)
+
+; The ordinary entry retains immediate logical damage and control semantics.
+PUBLIC CARD FUNC Feed(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
+    CARD length)
+
+RETURN(FeedInto(instance,bytes,length,NULL))
+
+; The caller owns an admitted bottom-row batch with room for one more scroll.
+; Feed stops at the first row boundary, so at most one row is recycled here.
+PUBLIC CARD FUNC FeedBatch(CONSOLETYPES.Instance POINTER instance
+    BYTE POINTER bytes CARD length CONSOLETYPES.Batch POINTER batch)
+
+  LET used=FeedInto(instance,bytes,length,batch)
+  IF instance.operation=CONSOLETYPES.OP_SCROLL THEN
+    EditRetained(instance)
+    Changed(instance)
+    batch.rows==+1
+  FI
+
+RETURN(used)
+
+; Translate the batch's surviving text once, after committing all row edits.
+; The physical bottom fill settles blank cells without publishing glyph work.
+PUBLIC PROC BatchDamage(CONSOLETYPES.Instance POINTER instance
+    CONSOLETYPES.Batch POINTER batch)
+  CARD index,row
+
+  row=instance.height-1-batch.rows
+  FOR index=0 TO batch.rows DO
+    IF batch.first(index)<batch.last(index) THEN
+      MarkRow(instance,row,batch.first(index),batch.last(index))
+    FI
+
+    row==+1
+  OD
+
+  IF instance.dirtyRows<>0 THEN
+    instance.oldestDamage=batch.tick
+  FI
+
+RETURN
 
 ENDMODULE

@@ -1,0 +1,363 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "slice": "OB2",
+  "scope": "Shared retained parser/edit helpers and a bounded batch context, exercised before production worker integration.",
+  "host_tests": {
+    "total": 331,
+    "passed": 327,
+    "skipped": 4
+  },
+  "generated_checks": [
+    "generate_console.py --check",
+    "generate_console_bitmap.py --check"
+  ],
+  "source_inputs": {
+    "abi/console.json": "70b0c12a263b64b4a4801f44ea4c5b6814ca23279693d05d77887934b35851f0",
+    "lib/console/consolebatch.act": "c13796c0993a010b45d92896f0f9546ce7d1060bdfe2f388f3e15089cbda3072",
+    "lib/console/consolecore.act": "61e6d82a815e76a69443cb972755e56808e9a79e86c436284e3c17c99fdb27b7",
+    "lib/console/consoletypes.act": "9b75e6b1d979289b625738275ef8c3316d0b8a799060bb448bdaaaaa3a763806",
+    "platform/altirraos/console-layout.inc": "d826638a0f45482210097a4a81773706a34ecb56d9205e09904253393a97bbc2",
+    "tools/generate_console.py": "2a8a739b27a2e7345bd9f91b55cd8f7ba0b4e9b35d041f2b0d00f9aa9cfc29cf",
+    "tools/generate_tasks.py": "92fcec52f4a3b72797a1f062015cc55d5bf13358e8cc51f5a4c39b959994db22",
+    "tools/native_program.py": "1dc53477e30272896a113f99c477519507499e557f95b13b26bc3ee817595841",
+    "tests/test_console_layout.py": "ec3445892f4e884289976c3b9a8a340060cd9b3dc3959bcf38031f7122d31492",
+    "tests/programs/console_batch_core.act": "03d4e9d94508f064b6f1ba309899225600e15f6a82a138368080ef84558042ac",
+    "tools/test_console_batch_core.py": "b2600e0844c67782aed7598fbca340a79a89e7d7d0980aca9f46fdb5755aaf35"
+  },
+  "batch_context_bytes": 44,
+  "upper_globals_arena_reserved_bytes": 2048,
+  "upper_reservation_delta_bytes": 0,
+  "per_instance_allocation_delta_bytes": 0,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "validation_notes": [
+    "Actual reservations equal the saved demo, including guards, alignment and unused capacity.",
+    "Generated field/size names now reject collisions with ABI constants.",
+    "Batch helper addresses are excluded from application Task admission.",
+    "The final host oracle was also rerun on saved emitted prefix records after strengthening corpus-completion checks."
+  ],
+  "reports": [
+    {
+      "path": "build/output-batching/ob2-core-opt/results.json",
+      "sha256": "b1b0110362ab55f2cdbced629eecbda71587b3d9ba15fa7d0cee63e3e9d54871",
+      "status": "pass",
+      "xex_sha256": "8a97f8edcaef90f26f985ca23082ab79bcc447eb2a02a9a189d2aab29233e42d",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "memory_sha256": "4efb3bd1b1a268d2c9c085984e6384dd9c6969f4f6fdf3c65c7585b03534a098",
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 427,
+      "native_executable_bytes": 225353,
+      "ring_cases": 6,
+      "ring_scrolls": 192,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 348,
+          "untouched_above_floor": 932
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob2-core-raw/results.json",
+      "sha256": "e77e5a4874079124a1bf42a1358babf03f23368996344db12605eec855cbb1eb",
+      "status": "pass",
+      "xex_sha256": "8a9cd410bbba7f65cfca4f5218b6ca73a7b81ec0cb4a3f91ec1c5849f3168423",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "memory_sha256": "4efb3bd1b1a268d2c9c085984e6384dd9c6969f4f6fdf3c65c7585b03534a098",
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 427,
+      "native_executable_bytes": 249026,
+      "ring_cases": 6,
+      "ring_scrolls": 192,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 358,
+          "untouched_above_floor": 922
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ]
+    },
+    {
+      "path": "build/output-batching/ob2-batch-opt/results.json",
+      "sha256": "5578dff3ab6b432ae83f17b2b6ae4c367c2c359b2e7da596438a0efc22b90912",
+      "status": "pass",
+      "xex_sha256": "86ad22bebba009ace5b2ee48630ed3800f8e168f2a690660a033cf219bc05637",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "memory_sha256": "4efb3bd1b1a268d2c9c085984e6384dd9c6969f4f6fdf3c65c7585b03534a098",
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 517,
+      "native_executable_bytes": 206472,
+      "coverage": {
+        "prefixes": 188,
+        "batches": 60,
+        "multirow_batches": 51,
+        "tick_flushes": 1,
+        "limit_flushes": 47,
+        "control_flushes": 4,
+        "logical_scrolls": 157
+      },
+      "prefixes_sha256": "88e88a9b5340a52be700f8466b5317af8cbaa1e4a80232e5ab273634ebabdf84",
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 152,
+          "remaining_above_floor": 1128
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 142,
+          "remaining_above_floor": 1138
+        }
+      }
+    },
+    {
+      "path": "build/output-batching/ob2-batch-raw/results.json",
+      "sha256": "baa295f34d7f619f73e3e231fd4329f366efb5b9548b62f5880c66669aa6b5c8",
+      "status": "pass",
+      "xex_sha256": "8a3159c52394ec6aa3da153e46e6d2ec3cf6881289010c66b8f1fd9ef2c9b4f1",
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "compiler_override": false,
+      "memory_sha256": "4efb3bd1b1a268d2c9c085984e6384dd9c6969f4f6fdf3c65c7585b03534a098",
+      "upper_globals_reserved_bytes": 2048,
+      "upper_globals_used_bytes": 517,
+      "native_executable_bytes": 227519,
+      "coverage": {
+        "prefixes": 188,
+        "batches": 60,
+        "multirow_batches": 51,
+        "tick_flushes": 1,
+        "limit_flushes": 47,
+        "control_flushes": 4,
+        "logical_scrolls": 157
+      },
+      "prefixes_sha256": "88e88a9b5340a52be700f8466b5317af8cbaa1e4a80232e5ab273634ebabdf84",
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 170,
+          "remaining_above_floor": 1110
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 146,
+          "remaining_above_floor": 1134
+        }
+      }
+    }
+  ]
+}

@@ -914,7 +914,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         provenance['console_test']=console_test
         provenance['console_enabled']=console_enabled
         provenance['console_start']=console_start
-        provenance['console_inputs']={name:sha256(ROOT/name) for name in ('abi/console.json','abi/console-bitmap.json','tools/generate_console.py','tools/generate_console_bitmap.py','lib/console/consolebitmap.act','lib/console/console-bitmap-types.inc','lib/console/console-bitmap-display.inc',
+        provenance['console_inputs']={name:sha256(ROOT/name) for name in ('abi/console.json','abi/console-bitmap.json','tools/generate_console.py','tools/generate_console_bitmap.py','lib/console/consolebitmap.act','lib/console/consolebatch.act','lib/console/console-bitmap-types.inc','lib/console/console-bitmap-display.inc',
             'lib/console/console.act','lib/console/consolewindows.act','lib/console/consoletiling.act','lib/console/consoleforeground.act','lib/dos/dosbreaktypes.act','lib/console/consoledisplay.act','lib/console/consoletypes.act','lib/console/consolecore.act','lib/console/consoledriver.act','lib/console/console-requests.inc','lib/console/console-lifetime.inc','lib/console/consolecapture.act','lib/console/consoleinput.act','lib/console/task-console.inc',
             'platform/altirraos/console-layout.inc','platform/altirraos/console.s')}
         provenance['task_generated'].update({name:sha256(output/name) for name in ('console-storage.inc','console-storage-action.inc','console-action.inc','console-tables.bin','task-kernel/consoleforeground.act','task-kernel/consoledriver.act','task-kernel/consoleinput.act','task-kernel/consoledisplay.act','task-kernel/consolebitmap.act')})

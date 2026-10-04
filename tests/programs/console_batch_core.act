@@ -1,0 +1,156 @@
+MODULE BATCHCORE
+USE EXEC
+USE HEAPCORE
+USE A816MEMORY
+USE CONSOLETYPES
+USE CONSOLECORE
+USE CONSOLEBATCH
+
+CONST SOURCE_BASE=$a0000, CELLS=$bfff8, RESULTS=$d0000
+CONSOLETYPES.Instance instance
+CARD checks,samples,caseIndex,position,length,used
+BYTE POINTER source
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Each prefix exports an independently checked logical hash and damage map.
+PROC Snapshot(CARD stage)
+  CARD index,offset,sum,weighted
+
+  Require(samples<800)
+  LET words=CARD POINTER(ADDRESS(RESULTS)+SIZE(LONGCARD(samples)*160))
+  LET batch=CONSOLEBATCH.Get()
+  words(0)=caseIndex
+  words(1)=stage
+  words(2)=position
+  words(3)=used
+  words(4)=instance.row
+  words(5)=instance.column
+  words(6)=instance.cellOrigin
+  words(7)=batch.phase
+  words(8)=batch.reason
+  words(9)=batch.rows
+  words(10)=batch.bytes
+  words(11)=batch.turns
+  words(12)=instance.operation
+  words(13)=instance.dirtyRows
+  words(14)=instance.oldestDamage
+  words(15)=CARD(instance.generation)
+  words(16)=CARD(instance.generation RSH 16)
+  sum=0
+  weighted=0
+  offset=instance.cellOrigin
+  FOR index=0 TO instance.count-1 DO
+    sum==+CARD(instance.cells(offset))
+    weighted==+sum
+    offset==+1
+    IF offset=instance.count THEN
+      offset=0
+    FI
+  OD
+
+  words(17)=sum
+  words(18)=weighted
+  words(19)=CONSOLETYPES.BATCH_SIZE
+  FOR index=0 TO CONSOLETYPES.MAX_HEIGHT-1 DO
+    words(20+index*2)=instance.damageFirst(index)
+    words(21+index*2)=instance.damageEnd(index)
+  OD
+
+  samples==+1
+
+RETURN
+
+; Complete ordinary controls through the same public core used by text CON:.
+PROC Ordinary()
+
+  used=CONSOLECORE.Feed(@instance,source+SIZE(position),length-position)
+  Require(used<>0)
+  position==+used
+  CONSOLECORE.EditQuantum(@instance)
+  Snapshot(3)
+  CONSOLECORE.Clean(@instance)
+
+RETURN
+
+PROC Main()
+  CARD index,cases,width,height,column,tickWrap
+  CARD POINTER descriptor
+  BYTE flush
+
+  LET header=CARD POINTER(ADDRESS(SOURCE_BASE))
+  cases=header^
+  source=BYTE POINTER(ADDRESS(SOURCE_BASE+2))
+  Require(CONSOLETYPES.BATCH_SIZE=44)
+  FOR caseIndex=0 TO cases-1 DO
+    descriptor=CARD POINTER(source)
+    width=descriptor(0)
+    height=descriptor(1)
+    column=descriptor(2)
+    length=descriptor(3)
+    tickWrap=descriptor(4)
+    source==+10
+    Require(CONSOLECORE.Init(@instance,BYTE POINTER(ADDRESS(CELLS)),
+        width,height,LONGCARD(width*height))<>0)
+    CONSOLECORE.EditQuantum(@instance)
+    CONSOLECORE.Clean(@instance)
+    FOR index=0 TO instance.count-1 DO
+      instance.cells(index)=BYTE(33+(index MOD 90))
+    OD
+
+    instance.row=height-1
+    instance.column=column
+    instance.lineStart=(height-1)*width
+    instance.changeTick=100
+    IF tickWrap<>0 THEN
+      instance.changeTick=$ffff
+    FI
+
+    CONSOLEBATCH.Reset()
+    position=0
+    WHILE position<length DO
+      BEGIN
+        LET batch=CONSOLEBATCH.Get()
+        IF batch.phase=CONSOLETYPES.BATCH_IDLE THEN
+          IF CONSOLEBATCH.Begin(@instance,LONGCARD(caseIndex),7)=0 THEN
+            Ordinary()
+          FI
+        FI
+
+        IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
+          used=CONSOLEBATCH.Feed(@instance,source+SIZE(position),
+              length-position)
+          position==+used
+          Snapshot(1)
+          IF tickWrap<>0 THEN
+            instance.changeTick=0
+          FI
+
+          flush=CONSOLEBATCH.Due(instance.changeTick)
+          IF flush<>0 OR position=length THEN
+            CONSOLEBATCH.Publish(@instance,CONSOLETYPES.BATCH_FLUSH_END)
+            Snapshot(2)
+            CONSOLECORE.Clean(@instance)
+            CONSOLEBATCH.Reset()
+            IF used=0 AND position<length THEN
+              Ordinary()
+            FI
+          FI
+        FI
+      END
+    OD
+
+    source==+SIZE(length)
+  OD
+
+RETURN
+
+ENDMODULE

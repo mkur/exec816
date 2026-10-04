@@ -4,8 +4,10 @@
 [Console contract](../reference/console.md) ·
 [Asynchronous scrolling](../reference/display.md#asynchronous-screen-scrolling)
 
-Status: OB1 implemented and passed development checks; OB2–OB5 pending.
-See the [OB1 evidence](../development/console-output-batching-ob1.json).
+Status: OB1–OB2 implemented and passed development checks; OB3–OB5 pending.
+See the [OB1 evidence](../development/console-output-batching-ob1.json) and
+[OB2 evidence](../development/console-output-batching-ob2.json). The batch
+context is 44 upper-RAM bytes; production batching is not enabled yet.
 Preserve the current interactive
 echo path. This work targets bulk output such as `CAT LONG.TXT` in the bitmap
 console. Implement and validate each executable slice, then commit it before
