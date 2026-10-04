@@ -95,6 +95,9 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [First command toolbox](command-toolbox-implementation-plan.md): planned;
+  shared arguments/streams, seven loadable commands, directory/console imports
+  and the integrated OF816 demo.
 - [Layers implementation](layers-implementation-plan.md): L1–L4 complete;
   bounded regions, stacking, visibility, damage and drawing transactions.
   [Current contracts](../reference/layers.md); desktop integration remains pending.
