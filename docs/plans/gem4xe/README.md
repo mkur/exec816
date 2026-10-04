@@ -27,7 +27,12 @@ through M0–M6 development checks, including the optional production artifact.
 See its [execution record](../../history/gem-mouse.md); physical hardware and
 broader hosted qualification remain separate work.
 
-The current graphics milestone is the [bitmap console](bitmap-console-design.md):
+The next graphics milestone is the [first desktop](desktop-design.md): one
+presentation worker, a framed movable shell window, then overlapping windows
+and exposure repair. This is a proposed design; implementation remains pending.
+Further console optimization is paused, without changing the recorded limits.
+
+The implemented foundation is the [bitmap console](bitmap-console-design.md):
 an 80×30 CON: backend on the existing 640×240 display, sharing faster glyph and
 copy operations with VDI. The [implementation plan](bitmap-console-implementation-plan.md)
 defines B0–B9, from reproducible measurements and bounded blitter lists through
@@ -39,9 +44,10 @@ reservations. B0–B7 have focused development evidence, including
 SDFS/pipeline and ST coexistence checks; responsiveness acceptance remains open.
 The [optional bitmap preview](../../guides/bitmap-console.md) is packaged with
 the standard OF816 demo; [B9 evidence](../../development/bitmap-console-b9.json)
-records extracted-image execution and the current limitations.
-performance acceptance and packaging remain. Overlapping desktop windows remain
-later work.
+records extracted-image execution and the current limitations. Subsequent
+[output batching](../../history/console-output-batching.md) completes OB1–OB5;
+the working shell is the desktop baseline, while broader performance acceptance
+remains open.
 
 **Preserved analysis:** these three documents were moved from GEM4XE's
 `docs/kernel/` into Exec816 on 2026-10-01 so the upstream checkout can
