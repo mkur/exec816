@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "constants": {
+    "MAX_LAYERS": 4,
+    "MAX_RECTS": 96,
+    "OK": 0,
+    "BAD_ARGUMENT": 1,
+    "FULL": 2,
+    "BUSY": 3,
+    "EMPTY": 4,
+    "REDRAW": 5,
+    "EXHAUSTED": 6,
+    "BAD_ID": 7,
+    "BAD_TOKEN": 8
+  },
+  "records": {
+    "Rect": [
+      {"name": "left", "type": "INT"},
+      {"name": "top", "type": "INT"},
+      {"name": "right", "type": "INT"},
+      {"name": "bottom", "type": "INT"}
+    ],
+    "Region": [
+      {"name": "count", "type": "CARD"},
+      {"name": "rects", "type": "Rect", "count": "MAX_RECTS"}
+    ]
+  }
+}

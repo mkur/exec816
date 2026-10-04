@@ -1,0 +1,192 @@
+; Exact half-open rectangle regions. All arrays belong to the caller.
+MODULE REGIONS
+USE LAYERTYPES
+
+PUBLIC BYTE FUNC Valid(LAYERTYPES.Rect POINTER rect)
+
+  IF rect=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(rect.left<=rect.right AND rect.top<=rect.bottom)
+
+PUBLIC BYTE FUNC Empty(LAYERTYPES.Rect POINTER rect)
+
+RETURN(rect.left=rect.right OR rect.top=rect.bottom)
+
+PUBLIC PROC Assign(LAYERTYPES.Rect POINTER rect INT left,top,right,bottom)
+
+  rect.left=left
+  rect.top=top
+  rect.right=right
+  rect.bottom=bottom
+
+RETURN
+
+PUBLIC PROC Copy(LAYERTYPES.Rect POINTER source,target)
+
+  Assign(target,source.left,source.top,source.right,source.bottom)
+
+RETURN
+
+; Empty intersections are canonical zero-area rectangles, including when
+; the output aliases either input. No coordinate addition can overflow.
+PUBLIC PROC Intersect(LAYERTYPES.Rect POINTER first,second,result)
+  INT left,top,right,bottom
+
+  left=IF first.left>second.left THEN first.left ELSE second.left FI
+  top=IF first.top>second.top THEN first.top ELSE second.top FI
+  right=IF first.right<second.right THEN first.right ELSE second.right FI
+  bottom=IF first.bottom<second.bottom THEN first.bottom ELSE second.bottom FI
+  IF right<left THEN
+    right=left
+  FI
+
+  IF bottom<top THEN
+    bottom=top
+  FI
+
+  Assign(result,left,top,right,bottom)
+
+RETURN
+
+PUBLIC BYTE FUNC Contains(LAYERTYPES.Rect POINTER outer,inner)
+
+RETURN(inner.left>=outer.left AND inner.top>=outer.top
+    AND inner.right<=outer.right AND inner.bottom<=outer.bottom)
+
+PUBLIC BYTE FUNC Equal(LAYERTYPES.Rect POINTER first,second)
+
+RETURN(first.left=second.left AND first.top=second.top
+    AND first.right=second.right AND first.bottom=second.bottom)
+
+PUBLIC BYTE FUNC FromRect(LAYERTYPES.Region POINTER region
+    LAYERTYPES.Rect POINTER rect)
+
+  IF region=NULL OR Valid(rect)=0 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  region.count=0
+  IF Empty(rect)=0 THEN
+    Copy(rect,@region.rects(0))
+    region.count=1
+  FI
+
+RETURN(LAYERTYPES.OK)
+
+; Region transforms require disjoint complete records. This is an alias
+; check, not an address-space ownership or writable-range search.
+BYTE FUNC Separate(LAYERTYPES.Region POINTER source,target)
+  LONGCARD first,second
+
+  IF source=NULL OR target=NULL THEN
+    RETURN(0)
+  FI
+
+  first=LONGCARD(ADDRESS(source))
+  second=LONGCARD(ADDRESS(target))
+
+RETURN(first+LAYERTYPES.REGION_SIZE<=second
+    OR second+LAYERTYPES.REGION_SIZE<=first)
+
+; Count first, then emit. Never overwrite a destination on capacity failure.
+CARD FUNC Append(LAYERTYPES.Region POINTER target BYTE emit CARD count
+    INT left,top,right,bottom)
+
+  IF left>=right OR top>=bottom THEN
+    RETURN(count)
+  FI
+
+  IF count>=LAYERTYPES.MAX_RECTS THEN
+    RETURN(LAYERTYPES.MAX_RECTS+1)
+  FI
+
+  IF emit<>0 THEN
+    Assign(@target.rects(count),left,top,right,bottom)
+  FI
+
+RETURN(count+1)
+
+; Subtract one rectangle into up to four disjoint pieces per source piece.
+; Source regions come from FromRect/Subtract/Clip and remain read-only to callers.
+PUBLIC BYTE FUNC Subtract(LAYERTYPES.Region POINTER source
+    LAYERTYPES.Rect POINTER cut LAYERTYPES.Region POINTER target)
+  LAYERTYPES.Rect clipped,saved
+  LAYERTYPES.Rect POINTER rect
+  CARD index,count
+  BYTE pass
+
+  IF Separate(source,target)=0 OR Valid(cut)=0 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF source.count>LAYERTYPES.MAX_RECTS THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  Copy(cut,@saved)
+  FOR pass=0 TO 1 DO
+    count=0
+    index=0
+    WHILE index<source.count DO
+      rect=@source.rects(index)
+      Intersect(rect,@saved,@clipped)
+      IF Empty(@clipped)<>0 THEN
+        count=Append(target,pass,count,rect.left,rect.top,
+            rect.right,rect.bottom)
+      ELSE
+        count=Append(target,pass,count,rect.left,rect.top,
+            rect.right,clipped.top)
+        count=Append(target,pass,count,rect.left,clipped.bottom,
+            rect.right,rect.bottom)
+        count=Append(target,pass,count,rect.left,clipped.top,
+            clipped.left,clipped.bottom)
+        count=Append(target,pass,count,clipped.right,clipped.top,
+            rect.right,clipped.bottom)
+      FI
+
+      IF count>LAYERTYPES.MAX_RECTS THEN
+        RETURN(LAYERTYPES.FULL)
+      FI
+
+      index==+1
+    OD
+  OD
+
+  target.count=count
+
+RETURN(LAYERTYPES.OK)
+
+; Intersect each disjoint source rectangle with a drawing/damage bound.
+PUBLIC BYTE FUNC Clip(LAYERTYPES.Region POINTER source
+    LAYERTYPES.Rect POINTER clip LAYERTYPES.Region POINTER target)
+  LAYERTYPES.Rect saved,result
+  CARD index,count
+
+  IF Separate(source,target)=0 OR Valid(clip)=0 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF source.count>LAYERTYPES.MAX_RECTS THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  Copy(clip,@saved)
+  index=0
+  count=0
+  WHILE index<source.count DO
+    Intersect(@source.rects(index),@saved,@result)
+    IF Empty(@result)=0 THEN
+      Copy(@result,@target.rects(count))
+      count==+1
+    FI
+
+    index==+1
+  OD
+
+  target.count=count
+
+RETURN(LAYERTYPES.OK)
+
+ENDMODULE

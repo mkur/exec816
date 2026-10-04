@@ -69,6 +69,8 @@ working desktop. No demo refresh is needed for this library-only milestone.
 
 ## Completion status
 
-L1–L4 pending. Current console presentation remains unchanged. Desktop controls,
+L1 complete: raw/optimized emitted geometry and host checks passed;
+[development evidence](../development/layers-l1.json). L2–L4 pending.
+Current console presentation remains unchanged. Desktop controls,
 pointer integration, clipped font rendering, optional backing bitmaps and actual
 VBXE presentation of overlapping windows follow this library milestone.

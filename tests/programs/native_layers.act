@@ -1,0 +1,129 @@
+MODULE NATIVELAYERS
+USE EXEC
+USE HEAPCORE
+USE A816MEMORY
+USE LAYERTYPES
+USE REGIONS
+
+CARD checks,geometryCases
+LAYERTYPES.Region POINTER first,second
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+BYTE POINTER FUNC Guarded(CARD bytes)
+  BYTE POINTER buffer
+
+  buffer=EXEC.AllocMem(LONGCARD(bytes)+32,EXEC.MEMF_PUBLIC)
+  Require(buffer<>NULL)
+  A816MEMORY.Fill(buffer,$a5,SIZE(bytes)+32)
+
+RETURN(buffer+16)
+
+PROC FreeGuarded(BYTE POINTER buffer CARD bytes)
+  CARD index
+  BYTE POINTER origin
+
+  origin=buffer-16
+  FOR index=0 TO 15 DO
+    Require(origin(index)=$a5 AND buffer(index+bytes)=$a5)
+  OD
+
+  EXEC.FreeMem(buffer-16,LONGCARD(bytes)+32)
+
+RETURN
+
+; Compact output preserves emitted rectangles for an independent host oracle.
+PROC SaveRegion(LAYERTYPES.Region POINTER region BYTE POINTER output)
+
+  Require(region.count<=4)
+  A816MEMORY.Fill(output,0,34)
+  A816MEMORY.Move(output,BYTE POINTER(region),SIZE(2+region.count*8))
+
+RETURN
+
+PROC Geometry()
+  CARD index,count
+  BYTE POINTER input,output
+  LAYERTYPES.Rect POINTER base,cut,clip
+
+  Require(SIZEOF(LAYERTYPES.Rect)=LAYERTYPES.RECT_SIZE)
+  Require(SIZEOF(LAYERTYPES.Region)=LAYERTYPES.REGION_SIZE)
+  count=CARD POINTER($d0000)^
+  input=BYTE POINTER($d0002)
+  output=BYTE POINTER($e0010)
+  index=0
+  WHILE index<count DO
+    base=LAYERTYPES.Rect POINTER(input)
+    cut=LAYERTYPES.Rect POINTER(input+8)
+    clip=LAYERTYPES.Rect POINTER(input+16)
+    Require(REGIONS.Valid(base)<>0 AND REGIONS.Valid(cut)<>0)
+    Require(REGIONS.FromRect(first,base)=LAYERTYPES.OK)
+    Require(REGIONS.Subtract(first,cut,second)=LAYERTYPES.OK)
+    SaveRegion(second,output)
+    Require(REGIONS.Clip(second,clip,first)=LAYERTYPES.OK)
+    SaveRegion(first,output+34)
+    geometryCases==+1
+    input==+24
+    output==+68
+    index==+1
+  OD
+
+RETURN
+
+; Overflow/alias failures must leave all destination bytes unchanged.
+PROC RegionFailures()
+  CARD index
+  LAYERTYPES.Rect cut,bad,result
+  BYTE POINTER bytes
+
+  first.count=LAYERTYPES.MAX_RECTS
+  FOR index=0 TO LAYERTYPES.MAX_RECTS-1 DO
+    REGIONS.Assign(@first.rects(index),INT(index*4),0,INT(index*4+4),4)
+  OD
+
+  REGIONS.Assign(@cut,1,1,3,3)
+  REGIONS.Assign(@bad,3,0,2,4)
+  bytes=BYTE POINTER(second)
+  A816MEMORY.Fill(bytes,$a5,LAYERTYPES.REGION_SIZE)
+  Require(REGIONS.Subtract(first,@cut,second)=LAYERTYPES.FULL)
+  Require(REGIONS.FromRect(second,@bad)=LAYERTYPES.BAD_ARGUMENT)
+  Require(REGIONS.Clip(first,@bad,second)=LAYERTYPES.BAD_ARGUMENT)
+  FOR index=0 TO LAYERTYPES.REGION_SIZE-1 DO
+    Require(bytes(index)=$a5)
+  OD
+
+  Require(REGIONS.Subtract(first,@cut,first)=LAYERTYPES.BAD_ARGUMENT)
+  Require(REGIONS.Clip(first,@cut,
+      LAYERTYPES.Region POINTER(BYTE POINTER(first)+2))=LAYERTYPES.BAD_ARGUMENT)
+  Require(first.count=LAYERTYPES.MAX_RECTS)
+  first.count=LAYERTYPES.MAX_RECTS+1
+  Require(REGIONS.Subtract(first,@cut,second)=LAYERTYPES.BAD_ARGUMENT)
+  Require(REGIONS.Clip(first,@cut,second)=LAYERTYPES.BAD_ARGUMENT)
+  Require(REGIONS.FromRect(NULL,@cut)=LAYERTYPES.BAD_ARGUMENT)
+  Require(REGIONS.FromRect(second,NULL)=LAYERTYPES.BAD_ARGUMENT)
+  REGIONS.Assign(@result,2,2,4,4)
+  REGIONS.Intersect(@cut,@result,@cut)
+  Require(cut.left=2 AND cut.top=2 AND cut.right=3 AND cut.bottom=3)
+
+RETURN
+
+PROC Main()
+
+  first=LAYERTYPES.Region POINTER(Guarded(LAYERTYPES.REGION_SIZE))
+  second=LAYERTYPES.Region POINTER(Guarded(LAYERTYPES.REGION_SIZE))
+  Geometry()
+  RegionFailures()
+  FreeGuarded(BYTE POINTER(second),LAYERTYPES.REGION_SIZE)
+  FreeGuarded(BYTE POINTER(first),LAYERTYPES.REGION_SIZE)
+
+RETURN
+
+ENDMODULE
