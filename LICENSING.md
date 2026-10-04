@@ -31,7 +31,7 @@ repository root; directory entries include all files below them.
 | `lib/exec/exec-task-types.inc`, `lib/exec/exec-memory-types.inc`, `lib/exec/exec-port-types.inc`, `lib/exec/exec-io-types.inc` | Public Exec records and constants |
 | `lib/input/input-types.inc` | Generated public input records and constants |
 | `lib/dos/dos.act`, `lib/dos/dos-types.inc` | Public DOS declarations, records and constants |
-| `lib/dos/command.act`, `lib/dos/command-args.inc`, `lib/dos/command-errors.inc`, `lib/dos/command-modes.inc`, `lib/dos/command-results.inc` | Disk-command bindings and constants |
+| `lib/dos/command.act`, `lib/dos/command-args.inc`, `lib/dos/command-buffers.inc`, `lib/dos/command-errors.inc`, `lib/dos/command-modes.inc`, `lib/dos/command-results.inc` | Disk-command bindings and constants |
 | `lib/dos/process-types.inc`, `lib/console/consoletypes.act` | Public Process and console records |
 
 Exec816-authored public API declarations, record layouts, constants and client

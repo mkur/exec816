@@ -1,0 +1,52 @@
+MODULE HEAD
+
+INCLUDE "command-common.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(2)
+COMMAND.Reader reader
+BYTE ARRAY line(COMMAND.STREAM_LINE_BYTES)
+
+; Stop at the requested line without draining an upstream producer.
+LONGINT FUNC Prefix()
+  LONGCARD remaining
+
+  remaining=CommandNumber(values(1),10)
+  WHILE remaining<>0 DO
+    BEGIN
+      LET count=COMMAND.ReadLine(BYTE POINTER(@reader),line,SIZEOF(line))
+      IF count=-2 THEN
+        EXIT
+      FI
+
+      IF count<0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      IF CommandLine(@reader,line,count)=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      remaining==-1
+    END
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+
+  IF CommandArgs(c"FILE,LINES/K/N",values,2,arguments,SIZEOF(arguments))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET input=CommandInput(values(0))
+  IF input=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  COMMAND.ReaderInit(BYTE POINTER(@reader),input)
+  LET status=CommandReadResult(@reader,Prefix())
+
+RETURN(CommandFinish(input,BYTE(values(0)<>0),status))
+
+ENDMODULE

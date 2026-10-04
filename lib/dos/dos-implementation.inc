@@ -100,3 +100,12 @@ RETURN
 PUBLIC LONGINT FUNC Pipe(PipePair POINTER pair)
 
 RETURN(DOSCALLS.Pipe(BYTE POINTER(pair)))
+
+; Console control remains attached to the foreground scope across redirection.
+PUBLIC FileHandle POINTER FUNC OpenConsole()
+
+RETURN(FileHandle POINTER(DOSCALLS.OpenConsole()))
+
+PUBLIC LONGINT FUNC ConsoleInfo(FileHandle POINTER file BYTE POINTER size)
+
+RETURN(DOSCALLS.ConsoleInfo(BYTE POINTER(file),size))

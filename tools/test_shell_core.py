@@ -8,6 +8,7 @@ from native_program import ROOT,build,compiler,require,sha256,verify_machine,rea
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 from test_console_display import terminal
+from console_model import read_cells
 from os_boundary import emulator,run_to
 from banked_test_memory import read as far_read
 PIN=json.loads((ROOT/'toolchain/altirra-shell-console.json').read_text())
@@ -195,7 +196,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
             cells,physical,cursor=terminal(expected)
             rendezvous(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
             pointer=int.from_bytes(far(instance,3),'little')
-            actual=far(pointer,960);screen=b.memdump(state['screen'],960)
+            actual=read_cells(far,instance);screen=b.memdump(state['screen'],960)
             (out/(stage+'.cells.bin')).write_bytes(actual);(out/(stage+'.screen.bin')).write_bytes(screen)
             require(actual==cells,'Retained shell text differs at '+stage)
             require(screen==physical,'Physical shell text differs at '+stage)

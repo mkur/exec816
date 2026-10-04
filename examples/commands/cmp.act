@@ -1,0 +1,76 @@
+MODULE CMP
+
+INCLUDE "command-common.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(2)
+COMMAND.Reader left,right
+
+; Compare byte streams independently, including mismatched read boundaries.
+LONGINT FUNC Compare()
+  LONGCARD offset
+  INT first,second
+
+  offset=0
+  DO
+    first=COMMAND.ReadByte(BYTE POINTER(@left))
+    IF first=-2 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    second=COMMAND.ReadByte(BYTE POINTER(@right))
+    IF second=-2 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF first<>second THEN
+      IF CommandText(c"Different at byte ")=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      IF CommandDecimal(offset)=0 OR CommandText(c"\n")=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      RETURN(COMMAND.RETURN_WARN)
+    FI
+
+    IF first=-1 THEN
+      RETURN(COMMAND.RETURN_OK)
+    FI
+
+    IF offset=SYS.MAXLONGCARD THEN
+      COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_TOO_LARGE)
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    offset==+1
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+  LONGINT status
+
+  IF CommandArgs(c"FROM/A,TO/A",values,2,arguments,SIZEOF(arguments))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET first=CommandInput(values(0))
+  IF first=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET second=CommandInput(values(1))
+  status=COMMAND.RETURN_ERROR
+  IF second<>NULL THEN
+    COMMAND.ReaderInit(BYTE POINTER(@left),first)
+    COMMAND.ReaderInit(BYTE POINTER(@right),second)
+    status=CommandReadResult(@left,Compare())
+    status=CommandReadResult(@right,status)
+    status=CommandFinish(second,1,status)
+  FI
+
+RETURN(CommandFinish(first,1,status))
+
+ENDMODULE

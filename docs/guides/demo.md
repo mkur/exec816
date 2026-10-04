@@ -74,6 +74,10 @@ HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES EXIT
 ```
 
 `HELLO | WC` prints `1 3 17`. `CAT STORY.TXT | WC` prints `24 133 746`.
+The [command toolbox](toolbox.md) also supplies CMP, CKSUM, HEXDUMP, HEAD, GREP,
+LIST and MORE. Try `HEAD STORY.TXT LINES 5`, `LIST NAMES`, or `MORE LONG.TXT`.
+In MORE, Space advances a page, Return a displayed row, and Q quits.
+
 The columns are lines, words and bytes. Now run `CAT LONG.TXT | WC` and press
 **BREAK** while LONG.TXT is being read. Both pipeline stages retire before the
 prompt returns, while the prime search continues. Then run `HELLO | WC` again.
@@ -159,7 +163,7 @@ Development artifacts remain in `build/demo`:
 - `of816/ALTIRRAOS-LICENSE.txt` and `of816/OF816-LICENSE.txt`: upstream notices.
 - `of816/of816.json`: monitor build inputs, memory layout, media and ROM hashes.
 - `program.xex`: direct native entry used by development fixtures.
-- `system.atr`: read-only SDFS data disk with HELLO, CAT, WC and sample text.
+- `system.atr`: read-only SDFS data disk with HELLO, CAT, WC, the command toolbox and sample text.
 - `system.verification.json`: independent producer/read-back hashes for every
   file in SDFS builds.
 - `demo-manifest.json`: source, toolchain, machine, media and artifact hashes.

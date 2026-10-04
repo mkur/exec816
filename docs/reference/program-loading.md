@@ -94,7 +94,8 @@ dynamic entry. No loaded-code finalizer or asynchronous callback is published.
 [build_command.py](../../tools/build_command.py) compiles a standalone o65 command
 against their generated declarations. Names are `exec816_<operation>_v1`, plus
 the profile's raw overflow adapter. Providers cover selected streams, synchronous
-file/console I/O, arguments/results, cooperative break and Yield. Commands do
+file/console I/O, arguments/results, cooperative break, Yield, buffered readers,
+complete writes, directory enumeration and foreground-console queries. Commands do
 not receive imports for creating Tasks or retaining callbacks into their image.
 
 Program API version 4 exposes `COMMAND.GetArgStr()` as a borrowed `CSTRING`.
@@ -106,7 +107,8 @@ for a length, or inspect the first byte to test for emptiness. The query preserv
 together; the removed provider names have no compatibility aliases.
 
 The [small argument parser](command-arguments.md) exposes
-`COMMAND.ReadArgs()` in program ABI version 5: positional string fields and `/A`,
+`COMMAND.ReadArgs()` in program ABI version 7: positional strings, `/A`, `/K`,
+`/S` and unsigned `/N`,
 with caller-owned result slots/storage. It reads the Process argument tail and
 sets IoErr; it never consumes standard input or allocates memory.
 

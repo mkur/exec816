@@ -1,0 +1,90 @@
+MODULE LIST
+
+INCLUDE "command-common.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(2)
+COMMAND.FileInfoBlock info
+
+; Enumerate through public DOS metadata, keeping filesystem storage opaque.
+LONGINT FUNC Enumerate(BYTE POINTER lock)
+
+  IF COMMAND.Examine(lock,BYTE POINTER(@info))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF info.fib_DirEntryType<=0 THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_WRONG_TYPE)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  DO
+    IF COMMAND.BreakPending()<>0 THEN
+      COMMAND.SetIoErr(COMMAND.ERROR_BREAK)
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF COMMAND.ExNext(lock,BYTE POINTER(@info))=0 THEN
+      IF COMMAND.IoErr()=COMMAND.ERROR_NO_MORE_ENTRIES THEN
+        COMMAND.SetIoErr(0)
+        RETURN(COMMAND.RETURN_OK)
+      FI
+
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF CommandText(CSTRING(@info.fib_FileName(0)))=0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF values(1)=0 THEN
+      IF info.fib_DirEntryType>0 THEN
+        IF CommandText(c"/")=0 THEN
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+      ELSE
+        IF CommandText(c" ")=0 OR CommandDecimal(LONGCARD(info.fib_Size))=0 THEN
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+      FI
+    FI
+
+    IF CommandText(c"\n")=0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+  CSTRING path
+  LONGINT status,cause
+
+  IF CommandArgs(c"DIR,NAMES/S",values,2,arguments,SIZEOF(arguments))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  path=c""
+  IF values(0)<>0 THEN
+    path=CSTRING(BYTE POINTER(values(0)))
+  FI
+
+  LET lock=COMMAND.Lock(BYTE POINTER(path),COMMAND.SHARED_LOCK)
+  IF lock=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  status=Enumerate(lock)
+  cause=COMMAND.IoErr()
+  COMMAND.SetIoErr(0)
+  COMMAND.UnLock(lock)
+  IF cause=0 AND COMMAND.IoErr()<>0 THEN
+    cause=COMMAND.IoErr()
+    status=COMMAND.RETURN_ERROR
+  FI
+
+  COMMAND.SetIoErr(cause)
+
+RETURN(status)
+
+ENDMODULE

@@ -1,6 +1,6 @@
 # First command toolbox
 
-Status: planned. Development-tier implementation; release qualification remains
+Status: C1–C6 implemented; development checks passed. Release qualification remains
 separate. Follow the [roadmap](../roadmap.md), [testing policy](../contributing/testing.md)
 and [platform budget](../reference/platform.md#bank-zero-memory-budget).
 
@@ -131,5 +131,14 @@ regression and record the revised toolchain input; do not special-case commands.
 
 ## Execution record
 
-Plan committed before implementation. Fill in completed slices, exact checks,
-costs and remaining limitations as evidence becomes available.
+Plan committed before implementation as `0633032`. All six slices are complete;
+the [implementation record](../history/command-toolbox.md) and
+[development evidence](../development/command-toolbox.json) identify the checked
+inputs, reports, memory costs and distribution. The existing disk geometry fits
+all ten commands. No compiler override or kernel gateway change was needed.
+
+Validation covered 331 host checks; raw/optimized parser, command, console and
+CAT/WC regressions; physical loaded-command/pipeline/pager sessions; and both
+packaged OF816 handoff routes. Fixed and per-Task reserved bank-zero deltas are
+both zero, including guards, alignment and unused capacity. The guide records
+the 1,024-byte text-line bound, literal-only GREP and forward-only MORE limits.

@@ -1,0 +1,216 @@
+MODULE DOSCALLS
+
+USE TOOLBOXSTATE AS T
+INCLUDE "../../lib/dos/command-buffers.inc"
+
+PUBLIC BYTE POINTER FUNC Selected(BYTE output)
+
+RETURN(BYTE POINTER(IF output<>0 THEN ADDRESS(4) ELSE ADDRESS(1) FI))
+
+PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
+
+  T.state.error=0
+  IF name(0)='M THEN
+    T.state.error=205
+    RETURN(NULL)
+  FI
+
+  T.state.opens==+1
+
+RETURN(BYTE POINTER(IF name(0)='B THEN ADDRESS(2) ELSE ADDRESS(1) FI))
+
+PUBLIC LONGINT FUNC Close(BYTE POINTER handle)
+
+  T.state.closes==+1
+  T.state.error=T.scenario.closeError
+
+RETURN(IF T.state.error=0 THEN LONGINT(-1) ELSE LONGINT(0) FI)
+
+PUBLIC LONGINT FUNC Read(BYTE POINTER handle,buffer LONGINT requested)
+  LONGCARD position,length
+  CARD count,index,patternBytes
+  BYTE POINTER pattern
+
+  T.state.error=0
+  IF handle=BYTE POINTER(3) THEN
+    buffer(0)=T.scenario.keys(T.state.keyAt)
+    IF buffer(0)=0 THEN
+      T.state.error=304
+      RETURN(-1)
+    FI
+
+    T.state.keyAt==+1
+    RETURN(1)
+  FI
+
+  T.state.reads==+1
+  IF T.state.reads=T.scenario.readFail THEN
+    T.state.error=226
+    RETURN(-1)
+  FI
+
+  position=T.state.first
+  length=T.scenario.length
+  pattern=@T.scenario.data(0)
+  patternBytes=T.scenario.patternBytes
+  IF handle=BYTE POINTER(2) THEN
+    position=T.state.second
+    length=T.scenario.otherLength
+    pattern=@T.scenario.other(0)
+    patternBytes=T.scenario.otherBytes
+  FI
+
+  count=T.scenario.chunk
+  IF LONGINT(count)>requested THEN
+    count=CARD(requested)
+  FI
+
+  IF LONGCARD(count)>length-position THEN
+    count=CARD(length-position)
+  FI
+
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      buffer(index)=pattern(CARD((position+LONGCARD(index)) MOD LONGCARD(patternBytes)))
+    OD
+  FI
+
+  IF handle=BYTE POINTER(2) THEN
+    T.state.second==+LONGCARD(count)
+  ELSE
+    T.state.first==+LONGCARD(count)
+  FI
+
+  IF count<>0 THEN
+    T.state.error=T.scenario.prefixError
+  FI
+
+RETURN(LONGINT(count))
+
+PUBLIC LONGINT FUNC Write(BYTE POINTER handle,buffer LONGINT requested)
+  CARD count,index
+
+  T.state.error=0
+  IF ADDRESS(buffer)<ADDRESS($10000) THEN
+    T.state.error=115
+    RETURN(-1)
+  FI
+
+  T.state.writes==+1
+  IF T.state.writes=T.scenario.writeFail THEN
+    T.state.error=214
+    RETURN(-1)
+  FI
+
+  count=T.scenario.writeChunk
+  IF LONGINT(count)>requested THEN
+    count=CARD(requested)
+  FI
+
+  IF handle=BYTE POINTER(3) THEN
+    IF count>256-T.state.consoleUsed THEN
+      T.state.error=303
+      RETURN(-1)
+    FI
+
+    FOR index=0 TO count-1 DO
+      T.state.console(T.state.consoleUsed+index)=buffer(index)
+    OD
+
+    T.state.consoleUsed==+count
+  ELSE
+    IF count>4096-T.state.used THEN
+      T.state.error=303
+      RETURN(-1)
+    FI
+
+    IF count<>0 THEN
+      FOR index=0 TO count-1 DO
+        T.state.output(T.state.used+index)=buffer(index)
+      OD
+    FI
+
+    T.state.used==+count
+  FI
+
+RETURN(LONGINT(count))
+
+PUBLIC LONGINT FUNC Seek(BYTE POINTER handle LONGINT offset,mode)
+
+RETURN(-1)
+
+PUBLIC BYTE POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
+
+RETURN(Open(name,mode))
+
+PUBLIC PROC UnLock(BYTE POINTER lock)
+
+  Close(lock)
+
+RETURN
+
+PUBLIC LONGINT FUNC Information(BYTE POINTER lock,buffer LONGINT action)
+  BYTE POINTER name
+  LONGINT POINTER kind,size
+
+  T.state.error=0
+  kind=LONGINT POINTER(buffer+4)
+  name=buffer+8
+  size=LONGINT POINTER(buffer+124)
+  IF action=23 THEN
+    kind^=2
+    RETURN(-1)
+  FI
+
+  IF T.state.entry=T.scenario.entries THEN
+    T.state.error=232
+    IF T.scenario.enumerationError<>0 THEN
+      T.state.error=T.scenario.enumerationError
+    FI
+
+    RETURN(0)
+  FI
+
+  name(0)='A+BYTE(T.state.entry)
+  name(1)=0
+  kind^=-3
+  size^=LONGINT(T.state.entry+1)
+  IF T.state.entry=1 THEN
+    kind^=2
+  FI
+
+  T.state.entry==+1
+
+RETURN(-1)
+
+PUBLIC LONGINT FUNC IsInteractive(BYTE POINTER handle)
+
+  T.state.error=0
+  IF handle=BYTE POINTER(4) THEN
+    RETURN(LONGINT(T.scenario.interactive))
+  FI
+
+RETURN(LONGINT(T.scenario.dataInteractive))
+
+PUBLIC BYTE POINTER FUNC OpenConsole()
+
+  IF T.scenario.interactive=0 THEN
+    T.state.error=212
+    RETURN(NULL)
+  FI
+
+  T.state.opens==+1
+  T.state.error=0
+
+RETURN(BYTE POINTER(3))
+
+PUBLIC LONGINT FUNC ConsoleInfo(BYTE POINTER handle,buffer)
+
+  LET size=ConsoleSize POINTER(buffer)
+  size.width=T.scenario.width
+  size.height=T.scenario.height
+  T.state.error=0
+
+RETURN(-1)
+
+ENDMODULE

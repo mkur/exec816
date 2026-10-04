@@ -1,0 +1,144 @@
+; Shared synchronous command I/O. State and buffers always belong to callers.
+MODULE DOSUTILITY
+
+USE DOSCALLS
+USE DOSCLIENT
+USE DOSBREAK
+USE ASCII
+INCLUDE "command-errors.inc"
+INCLUDE "command-buffers.inc"
+
+; Finish the requested output, preserving a partial-transfer cause immediately.
+PUBLIC LONGINT FUNC WriteAll(BYTE POINTER handle,buffer LONGINT length)
+  LONGINT used,error
+
+  IF length<0 THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+  used=0
+  WHILE used<length DO
+    BEGIN
+      IF DOSBREAK.Pending()<>0 THEN
+        DOSCLIENT.SetError(ERROR_BREAK)
+        RETURN(0)
+      FI
+
+      LET count=DOSCALLS.Write(handle,buffer+SIZE(used),length-used)
+      error=DOSCLIENT.IoErr()
+      IF count<=0 OR count>length-used OR error<>0 THEN
+        IF error=0 THEN
+          error=ERROR_BAD_STREAM_NAME
+        FI
+
+        DOSCLIENT.SetError(error)
+        RETURN(0)
+      FI
+
+      used==+count
+    END
+  OD
+
+  DOSCLIENT.SetError(0)
+
+RETURN(-1)
+
+; Initialize a reader without taking ownership of its handle.
+PUBLIC PROC ReaderInit(BYTE POINTER state,handle)
+
+  LET reader=Reader POINTER(state)
+  reader.handle=handle
+  reader.used=0
+  reader.index=0
+  reader.error=0
+  reader.skipLF=0
+  reader.terminated=0
+
+RETURN
+
+; Return one byte, -1 for EOF or -2 for error. A committed prefix precedes its
+; saved error even when a subsequent operation changes IoErr.
+PUBLIC INT FUNC ReadByte(BYTE POINTER state)
+  LONGINT count
+
+  LET reader=Reader POINTER(state)
+  IF DOSBREAK.Pending()<>0 THEN
+    DOSCLIENT.SetError(ERROR_BREAK)
+    RETURN(-2)
+  FI
+
+  IF reader.index=reader.used THEN
+    IF reader.error<>0 THEN
+      DOSCLIENT.SetError(reader.error)
+      RETURN(-2)
+    FI
+
+    count=DOSCALLS.Read(reader.handle,reader.data,STREAM_BUFFER_BYTES)
+    reader.error=DOSCLIENT.IoErr()
+    IF count<0 OR count>STREAM_BUFFER_BYTES THEN
+      IF reader.error=0 THEN
+        reader.error=ERROR_BAD_STREAM_NAME
+      FI
+
+      DOSCLIENT.SetError(reader.error)
+      RETURN(-2)
+    FI
+
+    reader.index=0
+    reader.used=CARD(count)
+    IF count=0 THEN
+      DOSCLIENT.SetError(reader.error)
+      RETURN(IF reader.error=0 THEN -1 ELSE -2 FI)
+    FI
+  FI
+
+  LET value=reader.data(reader.index)
+  reader.index==+1
+  DOSCLIENT.SetError(0)
+
+RETURN(INT(value))
+
+; Return a counted line excluding its delimiter, -2 at EOF, or -1 on error.
+; terminated tells callers whether the source line had an ending. CRLF is one
+; delimiter even across reads; a lone CR and ATASCII EOL are also delimiters.
+PUBLIC LONGINT FUNC ReadLine(BYTE POINTER state,buffer CARD capacity)
+  CARD used
+  INT value
+
+  LET reader=Reader POINTER(state)
+  used=0
+  reader.terminated=0
+  DO
+    value=ReadByte(state)
+    IF value=-2 THEN
+      RETURN(-1)
+    FI
+
+    IF value=-1 THEN
+      RETURN(IF used=0 THEN LONGINT(-2) ELSE LONGINT(used) FI)
+    FI
+
+    IF reader.skipLF<>0 AND value=ASCII.LF THEN
+      reader.skipLF=0
+    ELSE
+      reader.skipLF=0
+      IF value=ASCII.CR OR value=ASCII.LF OR value=ASCII.ATASCII_EOL THEN
+        reader.skipLF=BYTE(value=ASCII.CR)
+        reader.terminated=1
+        RETURN(LONGINT(used))
+      FI
+
+      IF used=capacity THEN
+        DOSCLIENT.SetError(ERROR_LINE_TOO_LONG)
+        RETURN(-1)
+      FI
+
+      buffer(used)=BYTE(value)
+      used==+1
+    FI
+  OD
+
+RETURN(-1)
+
+ENDMODULE

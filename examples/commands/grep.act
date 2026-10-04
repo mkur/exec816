@@ -1,0 +1,106 @@
+MODULE GREP
+
+INCLUDE "command-common.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(5)
+COMMAND.Reader reader
+BYTE ARRAY line(COMMAND.STREAM_LINE_BYTES)
+
+BYTE FUNC Fold(BYTE value)
+
+RETURN(IF values(2)<>0 AND value>='a AND value<='z THEN value-32 ELSE value FI)
+
+; Literal matching uses counted line bytes, including any embedded NUL.
+BYTE FUNC Matches(CARD length)
+  CARD start,index
+
+  LET pattern=CSTRING(BYTE POINTER(values(0)))
+  LET count=CARD(STR.strlen(pattern))
+  IF count>length THEN
+    RETURN(0)
+  FI
+
+  start=0
+  WHILE start<=length-count DO
+    index=0
+    WHILE index<count DO
+      IF Fold(line(start+index))<>Fold(pattern(index)) THEN
+        EXIT
+      FI
+
+      index==+1
+    OD
+
+    IF index=count THEN
+      RETURN(1)
+    FI
+
+    start==+1
+  OD
+
+RETURN(0)
+
+LONGINT FUNC Search()
+  LONGCARD number
+  BYTE found,selected
+
+  number=0
+  found=0
+  DO
+    BEGIN
+      LET count=COMMAND.ReadLine(BYTE POINTER(@reader),line,SIZEOF(line))
+      IF count=-2 THEN
+        EXIT
+      FI
+
+      IF count<0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      IF number=SYS.MAXLONGCARD THEN
+        COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_TOO_LARGE)
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      number==+1
+      selected=Matches(CARD(count))
+      IF values(3)<>0 THEN
+        selected=selected XOR 1
+      FI
+
+      IF selected<>0 THEN
+        found=1
+        IF values(4)<>0 THEN
+          IF CommandDecimal(number)=0 OR CommandText(c":")=0 THEN
+            RETURN(COMMAND.RETURN_ERROR)
+          FI
+        FI
+
+        IF CommandLine(@reader,line,count)=0 THEN
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+      FI
+    END
+  OD
+
+RETURN(IF found<>0 THEN COMMAND.RETURN_OK ELSE COMMAND.RETURN_WARN FI)
+
+LONGINT FUNC Main()
+
+  IF CommandArgs(c"PATTERN/A,FILE,NOCASE/S,INVERT/S,NUMBER/S",values,5,
+      arguments,SIZEOF(arguments))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET input=CommandInput(values(1))
+  IF input=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  COMMAND.ReaderInit(BYTE POINTER(@reader),input)
+  LET status=CommandReadResult(@reader,Search())
+
+RETURN(CommandFinish(input,BYTE(values(1)<>0),status))
+
+ENDMODULE

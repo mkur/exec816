@@ -90,3 +90,23 @@ for their own DOS cleanup.
 The [block adapter](block-io.md) documents sector-level rules. Earlier packet
 layouts, milestones and measurements are retained in the
 [historical storage design](../history/block-io-dos-design.md).
+
+## Foreground console access
+
+`OpenConsole()` returns a new caller-owned RAW FileHandle for the active
+foreground scope's console. It works independently of redirected Input/Output.
+It fails with ERROR_OBJECT_WRONG_TYPE without an active scope and never falls
+back to console unit zero. Ordinary busy/suspended DOS context checks apply.
+Close the returned handle; opening it adds no Task, stack, direct page or window.
+
+`ConsoleInfo(file, buffer)` writes two CARD values (width, height) to four writable
+bytes for an owned interactive handle. It returns DOS true or false with IoErr.
+The handle's retained endpoint protects the instance, and the dimensions are
+copied under the existing task-switch exclusion. A wrong/stale handle or invalid
+buffer fails; no private pointer is returned. Current console geometry is fixed
+for the lifetime of an instance.
+
+These operations and IsInteractive are also published through COMMAND for loaded
+programs. `COMMAND.ConsoleSize` names the four-byte output layout. A pager should
+query its Output geometry and open its foreground console for keys; selected
+Input remains the data stream.

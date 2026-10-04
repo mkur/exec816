@@ -78,6 +78,11 @@ Type HELP to list the shell's built-in commands:
 
     HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES EXIT
 
+The disk also includes CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST and MORE.
+Try HEAD STORY.TXT LINES 5, CKSUM STORY.TXT, or LIST NAMES.
+MORE LONG.TXT pages text: Space advances a page, Return a line, Q quits.
+GREP shell STORY.TXT NOCASE searches literal text; there is no regex.
+
 Try CAT LONG.TXT | WC, then press BREAK to cancel it. EXIT stops the demo
 and restores the OS display. Disk access is read-only; keep the same disk
 mounted until reset. Pipes support two external commands.
@@ -102,7 +107,7 @@ Included files
 --------------
 
 Exec-of816.xex       Exec816 with the OF816 boot monitor
-@SYSTEM_DISK@        System disk with HELLO, CAT, WC and sample text
+@SYSTEM_DISK@        System disk with HELLO, CAT, WC, the command toolbox and sample text
 altirraos-816.rom    AltirraOS 3.44 for 65C816
 README.txt          This guide
 EXEC816-GPL-3.0.txt  Exec816 OS licence

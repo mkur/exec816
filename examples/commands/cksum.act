@@ -1,0 +1,87 @@
+MODULE CKSUM
+
+INCLUDE "command-common.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(1)
+COMMAND.Reader reader
+LONGCARD crc
+; The POSIX polynomial, expanded for four bits per step.
+LONGCARD ARRAY table=[
+  $00000000 $04c11db7 $09823b6e $0d4326d9
+  $130476dc $17c56b6b $1a864db2 $1e475005
+  $2608edb8 $22c9f00f $2f8ad6d6 $2b4bcb61
+  $350c9b64 $31cd86d3 $3c8ea00a $384fbdbd
+]
+
+; Feed one octet, most significant bit first, without a large lookup table.
+PROC Update(BYTE value)
+  BYTE index
+
+  index=BYTE(crc RSH 28) XOR (value RSH 4)
+  crc=(crc LSH 4) XOR table(index)
+  index=BYTE(crc RSH 28) XOR (value & 15)
+  crc=(crc LSH 4) XOR table(index)
+
+RETURN
+
+; POSIX cksum includes the least-significant length octets before complementing.
+LONGINT FUNC Count()
+  LONGCARD length,remaining
+  INT value
+
+  crc=0
+  length=0
+  DO
+    value=COMMAND.ReadByte(BYTE POINTER(@reader))
+    IF value=-2 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF value=-1 THEN
+      EXIT
+    FI
+
+    IF length=SYS.MAXLONGCARD THEN
+      COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_TOO_LARGE)
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    Update(BYTE(value))
+    length==+1
+  OD
+
+  remaining=length
+  WHILE remaining<>0 DO
+    Update(BYTE(remaining))
+    remaining=remaining RSH 8
+  OD
+
+  crc=crc XOR SYS.MAXLONGCARD
+  IF CommandDecimal(crc)=0 OR CommandText(c" ")=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF CommandDecimal(length)=0 OR CommandText(c"\n")=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+
+  IF CommandArgs(c"FILE",values,1,arguments,SIZEOF(arguments))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET input=CommandInput(values(0))
+  IF input=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  COMMAND.ReaderInit(BYTE POINTER(@reader),input)
+  LET status=CommandReadResult(@reader,Count())
+
+RETURN(CommandFinish(input,BYTE(values(0)<>0),status))
+
+ENDMODULE

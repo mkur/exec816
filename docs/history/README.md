@@ -115,6 +115,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [First command toolbox](command-toolbox.md): seven loadable commands, shared
+  arguments/streams and foreground-console access; raw/optimized development
+  checks and the refreshed OF816 distribution.
 - [Resident shell — earlier guide](shell-guide.md)
 - [HELLO and CAT size analysis](command-size-analysis.md)
 - [Compact o65 metadata](compact-o65-implementation.md)

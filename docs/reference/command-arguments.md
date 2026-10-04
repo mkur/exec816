@@ -1,10 +1,9 @@
 # Small command argument parser
 
-Status: implemented in program ABI version 5. See the
-[implementation plan](../plans/command-arguments-implementation-plan.md) for validation and costs.
+Status: implemented in program ABI version 7. See the
+[toolbox implementation plan](../plans/command-toolbox-implementation-plan.md) for validation and costs.
 
-Replace command-local parsers such as CAT's `Filename()` with one resident DOS
-helper, exposed through `COMMAND.ReadArgs()`. Commands describe their arguments
+`COMMAND.ReadArgs()` exposes one shared resident DOS parser. Commands describe their arguments
 and decide what to do with them. `Open()` continues to resolve file paths.
 
 ## Amiga model, reduced scope
@@ -14,24 +13,39 @@ uses a comma-separated template and one result slot per field. `/A` marks a
 required field. Its broader interface can allocate storage released by
 [FreeArgs](https://developer.amigaos3.net/autodocs/dos.library/FreeArgs.html).
 
-Keep the template idea, but initially support only positional string fields:
+Templates support positional strings, required fields, keywords, switches and
+unsigned decimal numbers:
 
 | Template | Meaning |
 | --- | --- |
 | `c"FILE"` | One optional filename, suitable for CAT. |
 | `c"FROM/A,TO/A"` | Two required strings. |
 | `c""` | No arguments, suitable for the current WC. |
+| `c"FILE,LINES/K/N"` | Optional file and keyword-only unsigned line count. |
+| `c"PATTERN/A,FILE,NOCASE/S"` | Required pattern, optional file and Boolean switch. |
 
 Labels contain ASCII letters, digits and underscore, beginning with a letter or
-underscore. `/A` is case insensitive. Spaces inside templates are unsupported.
+underscore. Labels and modifiers ignore ASCII case; duplicate labels, duplicate
+modifiers and spaces in templates are errors. `/A`, `/K` and `/N` may combine;
+`/S` must stand alone. Positional fields fill left to right, skipping keyword and
+switch fields. Required fields must be present, including required keywords.
 
-Fields fill left to right; names label slots without keyword lookup. Omitted
-optional values are null; missing required or extra arguments are errors.
-A quoted empty string is present. CAT still rejects an empty filename.
+Only `/K` and `/S` fields recognize their labels in argument text. `LINES 20` and
+`LINES=20` set the same keyword; `LINES` or `LINES=` without a value fails. Use
+`NAME "two words"` for a quoted keyword value. A quoted keyword token is literal
+positional data. Duplicate keywords/switches fail; switches do not accept values.
+A keyword's following token is its value even if it spells another keyword.
 
-Defer keywords, aliases, switches, numbers, multiple-value/rest-of-line fields,
-interactive help and argument-file expansion. Unsupported templates fail
-explicitly. This is an Amiga-inspired subset.
+String slots contain addresses into caller storage. `/S` slots contain numeric
+0 or 1. `/N` slots contain addresses of four-byte LONGCARD values in caller
+storage; zero is distinct from an omitted number. Numbers accept decimal digits
+only, from 0 through 4,294,967,295. Empty values, signs, trailing characters and
+overflow fail with ERROR_BAD_NUMBER. Defaults belong to each command.
+
+Omitted optional slots are zero. A quoted empty string is present; a command may
+reject it as an invalid filename. Extra positional arguments are errors. Aliases,
+multiple-value/rest-of-line fields, wildcard expansion and argument files remain
+unsupported. This is a bounded Amiga-inspired subset, not full Amiga ReadArgs.
 
 ## Interface and storage
 
@@ -44,11 +58,11 @@ LONGINT FUNC ReadArgs(CSTRING template ADDRESS POINTER values CARD valueCapacity
 
 - `template` is a CSTRING. Parse `GetArgStr()`, never `Input()`:
   redirected input belongs to the command's work.
-- `values` is a caller-owned ADDRESS array: three bytes per string address.
+- `values` is a caller-owned ADDRESS array: three bytes per address or switch value.
   The pinned compiler does not support CSTRING POINTER. View a populated slot
   as `CSTRING(BYTE POINTER(values(0)))` when a CSTRING is needed. Results point
-  into caller-owned `storage`, with quotes removed, escapes decoded and NUL
-  terminators added.
+  into caller-owned `storage`. Strings have quotes removed, escapes decoded and
+  NUL terminators added; numeric storage is four bytes, not address-width data.
 - `valueCapacity` counts slots (0–8); `storageCapacity` counts bytes, including
   terminators. Nonzero capacities require valid writable pointers. Source,
   template, result slots and storage must not overlap. Source and template are
@@ -60,12 +74,14 @@ LONGINT FUNC ReadArgs(CSTRING template ADDRESS POINTER values CARD valueCapacity
 - Results last until storage is reused or released. No allocation, `FreeArgs()`,
   global scratch buffer or persistent parser object.
 
-Bound the first version to eight fields and a 255-byte template. Argument text
-already has the Process's 255-byte limit. A 256-byte storage buffer suffices for
-all decoded strings and terminators with the grammar below. Smaller buffers are
-allowed; insufficient capacity is an error, never silent truncation.
+Templates are bounded to eight fields and a 255-byte template. Argument text
+already has the Process's 255-byte limit. The generated
+`COMMAND.ARGS_STORAGE_BYTES` is 288: 256 bytes for decoded
+text/terminators plus up to eight four-byte numeric values. It suffices for every
+supported template and argument tail. Numeric values may be unaligned. Smaller
+buffers are allowed; insufficient capacity is an error, never silent truncation.
 
-CAT reuses its 256-byte path buffer and adds one result pointer. An empty template
+CAT uses the generated storage bound and one result pointer. An empty template
 permits null arrays/storage with zero capacities. ECHOARGS keeps `GetArgStr()`
 for the original text.
 
@@ -76,7 +92,7 @@ Use a bounded private scanner, following the role of Amiga's
 with spaces/tabs separating arguments and double quotes enclosing a whole
 argument. A closing quote requires a separator or end of string.
 
-For this first version retain Exec's existing quoted escapes: `**` becomes `*`
+Retain Exec's existing quoted escapes: `**` becomes `*`
 and `*"` becomes `"`. Backslash is literal. Reject other quoted escapes,
 unterminated quotes and quotes inside unquoted tokens. The broader Amiga escape
 rules are deferred. These are command-line rules, separate from Action's
@@ -91,13 +107,13 @@ Shared errors are generated from `abi/dos.json`:
 | Condition | IoErr |
 | --- | --- |
 | Malformed/unsupported template | ERROR_BAD_TEMPLATE (114) |
-| Invalid pointer/capacity pair | ERROR_BAD_NUMBER (115) |
-| Missing required positional field | ERROR_REQUIRED_ARG_MISSING (116) |
+| Invalid pointer/capacity pair or invalid numeric value | ERROR_BAD_NUMBER (115) |
+| Missing required field or keyword value | ERROR_REQUIRED_ARG_MISSING (116) |
 | Excess arguments | ERROR_TOO_MANY_ARGS (118) |
 | Unterminated quote or dangling quoted escape | ERROR_UNMATCHED_QUOTES (119) |
 | Argument text longer than 255 bytes | ERROR_LINE_TOO_LONG (120) |
 | Insufficient slots or decoding storage | ERROR_BUFFER_OVERFLOW (303) |
-| Embedded quote, quote suffix or unsupported escape | ERROR_BAD_ARGUMENTS (311) |
+| Duplicate option, switch value, embedded quote, quote suffix or unsupported escape | ERROR_BAD_ARGUMENTS (311) |
 
 Template validation precedes argument decoding; the first decoding error wins.
 A null template is a bad template; null source text is bad arguments. CAT rejects
@@ -106,13 +122,14 @@ an empty filename with ERROR_INVALID_COMPONENT_NAME (210).
 ## Integration and cost
 
 Exec816 owns the implementation in `lib/dos`, published as one checked resident
-`ReadArgs` provider. There is no new kernel call. CAT and WC use it; other
-built-ins remain outside this slice.
+`ReadArgs` provider. There is no new kernel call. CAT, WC and the
+[toolbox commands](../guides/toolbox.md) use it; shell
+built-ins retain their existing parser.
 
 Reserved bank-zero change: **0 fixed bytes / 0 bytes per Task**, including
 guards, alignment and unused capacity. Result slots occupy three bytes each;
 text buffers belong to callers. Code, ABI metadata and stack measurements are
-recorded in the [implementation plan](../plans/command-arguments-implementation-plan.md).
+recorded in the [toolbox implementation plan](../plans/command-toolbox-implementation-plan.md).
 
 Focused raw/optimized checks cover empty/required/extra arguments, quotes and
 escapes, exact/short buffers, unchanged source text and independent callers.

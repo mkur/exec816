@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 2,
+  "revision": 3,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -535,6 +535,27 @@
         }
       ],
       "outgoing_bytes": 5,
+      "result_bytes": 4
+    },
+    "OpenConsole": {
+      "arguments": [],
+      "outgoing_bytes": 1,
+      "result_bytes": 3
+    },
+    "ConsoleInfo": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
       "result_bytes": 4
     }
   },

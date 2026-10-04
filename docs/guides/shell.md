@@ -60,7 +60,7 @@ There is no extension or PATH search. The file must use the supported
 selected streams and the current directory. Its copied argument tail retains
 quotes/escapes and omits shell redirection syntax.
 
-The demo includes HELLO, CAT and WC. CAT accepts an optional file, otherwise
+The demo includes HELLO, CAT, WC and the [command toolbox](toolbox.md). CAT accepts an optional file, otherwise
 copies Input to Output; WC counts Input. See [writing commands](commands.md).
 A child returns a primary status and secondary error; the shell collects both
 before showing the next prompt.
@@ -104,8 +104,12 @@ stages, a second pipe, built-ins as stages, output redirection on the left and
 input redirection on the right are rejected before opening files or loading code.
 Line/word limits apply to the whole pipeline.
 
-The prompt returns after both children retire. Both must succeed for success;
-otherwise the first failing stage in command order supplies the result. BREAK
+The prompt returns after both children retire. The first ERROR/FAIL in command
+order supplies the result; otherwise the first nonzero status is returned (WARN
+is 5). A left-stage ERROR with ERROR_BROKEN_PIPE is ignored for the combined
+result when the right stage returns OK or WARN with no secondary error. This
+lets HEAD and MORE/Q finish early. Both individual results remain recorded;
+other producer errors and consumer failures are never hidden. BREAK
 cancels both stages and collects their outstanding I/O; unrelated Processes keep
 running. See [pipes](../reference/pipes.md) and [Process groups](../reference/process.md#two-member-foreground-groups).
 

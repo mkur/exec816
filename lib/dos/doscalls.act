@@ -16,6 +16,8 @@ USE FSREGISTRY
 USE FSNAMES
 USE FSSYSTEM
 USE FSLOCKS
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
 INCLUDE "dos-types.inc"
 
 TYPE ResultCell=[BYTE POINTER handle]
@@ -841,6 +843,67 @@ PUBLIC LONGINT FUNC IsInteractive(BYTE POINTER identity)
   FI
 
 RETURN(0)
+
+; The scope retains the actual console instance even when selected streams are
+; redirected. Return a fresh caller-owned RAW wrapper, never the private handle.
+PUBLIC BYTE POINTER FUNC OpenConsole()
+
+  LET client=DOSCLIENT.Ensure()
+  IF client=NULL THEN
+    RETURN(NULL)
+  FI
+
+  LET scope=DOSBREAK.Current()
+  IF scope=NULL THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(NULL)
+  FI
+
+  IF scope.active=0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(NULL)
+  FI
+
+RETURN(DOSRAW.Open(client,scope.unit))
+
+; Query the dimensions of an owned live console, with identity and storage
+; validation. The handle's endpoint reference prevents instance destruction.
+PUBLIC LONGINT FUNC ConsoleInfo(BYTE POINTER identity,buffer)
+  LONGINT result
+
+  IF DOSRAW.ValidExtent(buffer,4)=0 THEN
+    RETURN(0)
+  FI
+
+  IF IsInteractive(identity)=0 THEN
+    IF DOSCLIENT.IoErr()=0 THEN
+      DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    FI
+
+    RETURN(0)
+  FI
+
+  LET handle=DOSSTREAMS.Handle POINTER(identity)
+  LET endpoint=DOSRAW.RawEndpoint POINTER(handle.endpoint)
+  LET size=CARD POINTER(buffer)
+  result=0
+  EXEC.Forbid()
+  BEGIN
+    LET window=CONSOLEWINDOWS.Find(endpoint.unit)
+    IF window<>NULL THEN
+      BEGIN
+        LET instance=CONSOLETYPES.Instance POINTER(window.instance)
+        size(0)=instance.width
+        size(1)=instance.height
+        result=-1
+      END
+    FI
+  END
+
+  EXEC.Permit()
+  DOSCLIENT.SetError(IF result<>0 THEN LONGINT(0) ELSE LONGINT(ERROR_BAD_STREAM_NAME) FI)
+
+RETURN(result)
 
 PUBLIC LONGINT FUNC BeginForeground(BYTE POINTER console)
 
