@@ -79,3 +79,37 @@ The instrumented renderer's large Task stack peaks at 350 bytes raw and
 374 bytes optimized, inside its existing guarded pool. Host checks remain
 340 passing tests with four historical skips. Combined latency acceptance is
 recorded separately in MP3.
+
+## MP3 — Combined desktop checkpoint
+
+[MP3 evidence](../development/mouse-performance-mp3.json) uses the same 2×
+two-client fixture before and after the change: 100 motions and thirty clicks
+per load, with 31 application computation/repaint updates. The final image also
+passes the complete workload without tracing. Physical phase/count, serial,
+scanout, ownership and shutdown oracles pass in their selected scopes.
+
+| Load | Pointer p95 before → after | Pointer max before → after | Button max before → after | IRQ entry/routing share before → after |
+| --- | ---: | ---: | ---: | ---: |
+| Idle | 66.11 → 63.84 ms | 86.70 → 79.25 ms | 32.49 → 17.42 ms | 31.08 → 15.86% |
+| Scrolling | 104.76 → 80.75 ms | 146.82 → 124.21 ms | 64.91 → 58.24 ms | 31.04 → 15.80% |
+| Physical disk | 84.43 → 85.05 ms | 166.14 → 125.46 ms | 145.75 → 99.10 ms | 36.27 → 20.59% |
+
+Disk p95 is essentially unchanged: the 0.62 ms increase occurs within the same
+six-observation scanout tail, while its maximum and button delays improve.
+Do not claim that every percentile improved. All three button maxima meet the
+existing 40/100 ms idle/loaded gates in this cohort. **Pointer p95/max targets
+remain open**, as do outline and complete move-repair targets. MP2's small
+two-client drag cohort observes about 0.52/0.54/1.44 seconds for complete repair
+at idle/scroll/disk; it is a correctness checkpoint, not a new latency baseline.
+
+Normal physical periods are exactly 448 base cycles, with capture around
+252.6 µs. Maximum capture gaps are 0.298/0.291/0.514 ms for the three loads,
+all below 1 ms. Fine SIO timing occupies about 0.45% of the recorded configured
+timer interval, and has 224-cycle physical periods with alternate-edge capture.
+Every one of the 300 measured pointer moves uses one upload and one launch.
+The full cohort's median charged pointer CPU is 3.76–3.79 ms, depending on load.
+
+Reserved bank-zero deltas remain zero in every category. This checkpoint reuses
+the passing MP1/MP2 host, raw/optimized, wire-time and fault checks; it adds
+combined observed execution and an identical-image unobserved replay, without
+claiming release qualification.
