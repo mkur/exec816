@@ -57,6 +57,8 @@ def build(name, case, flags=0xCB, signature=0x50):
 def settings(rom, pin=PIN):
     # Match Altirra's path-based external firmware identifier. No user profile
     # or mounted images are read, changed, or shared with the GUI emulator.
+    # Pin disk retention across GUI Boot Image as well as bridge BOOT:
+    # unload cartridge/tape (mask 6), retain disks (bit 1), valid mask 7.
     firmware_id = 14695981039346656037
     for char in str(rom).lower():
         firmware_id = ((firmware_id ^ ord(char)) * 1099511628211) & ((1 << 64)-1)
@@ -90,6 +92,8 @@ def settings(rom, pin=PIN):
 "Devices: CIO burst transfers enabled" = 0
 "CPU: Stop on BRK" = 0
 "Memory: Randomize on EXE load" = 0
+"Unload on boot types" = 6
+"Unload on boot mask" = 7
 [User\AltirraSDL\Firmware\Available\{firmware_id:016X}]
 "Name" = "Exec816 pinned AltirraOS 65816"
 "Path" = "{rom}"

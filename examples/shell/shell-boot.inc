@@ -108,7 +108,7 @@ BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
     ShellCacheStatus()
 
   ELSE
-    ShellText(shell.console,c"SYS: mount failed; use CD SYS: to retry")
+    ShellText(shell.console,CSTRING(EXECBUILD.mountFailure))
   FI
 
   ShellByte(shell.console,ASCII.LF)

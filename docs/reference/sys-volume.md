@@ -61,7 +61,12 @@ The standard shell starts with a real SYS root lock and reports its mapping.
 `CAT SYS:STORY.TXT | WC` works from another directory. Explicit command paths
 such as `SYS:HELLO` bypass search. A failed initial mount leaves a usable console; after
 correcting media, `CD SYS:` retries filesystem startup. An offline SIO device
-after a transport timeout can still require a cold boot.
+after a transport timeout requires a cold boot. Initial filesystem startup
+publishes the configured mount set together: every configured volume must mount
+successfully. In demo builds this includes WORK: on D8:, even when the first
+request names SYS:. Missing WORK: therefore prevents SYS: startup as well. The
+failure message lists the other required drives instead of attributing every
+startup error to the system disk.
 
 Validation is focused development coverage; see the
 [implementation record](../plans/sys-volume-implementation-plan.md).

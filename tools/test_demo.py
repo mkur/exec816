@@ -22,7 +22,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
         retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
-    require(disk_failure in (None,'missing','wrong'),'Unknown disk failure')
+    require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
     distribution_root=Path(distribution_root) if distribution_root is not None else None
     manifest=json.loads((out/'demo-manifest.json').read_text())
@@ -31,13 +31,13 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     if expected_cache is None:expected_cache=p['build']['memory']['boot_config']['cache_blocks']
     bitmap=manifest.get('bitmap',False)
     shell_only=manifest.get('shell_only',False)
-    require(not shell_only or boot_smoke,'Shell-only demo currently supports the boot smoke scope')
+    require(not shell_only or boot_smoke or disk_failure,'Shell-only demo requires boot smoke or disk-failure scope')
     desktop=manifest.get('desktop',False)
     width,height=(64,20) if desktop else (80,30) if bitmap else (40,24)
     shell_cells=width*(height if shell_only else height-6)
     screenshots=[];commands=[]
     boot_image=None
-    if showcase or editing or (boot_smoke and (shell_only or distribution_root is not None) and bootstrap is None):
+    if showcase or editing or ((boot_smoke or disk_failure) and (shell_only or distribution_root is not None) and bootstrap is None):
         require(bootstrap is None,'This walkthrough uses the packaged OF816 autoboot')
         boot_image=distribution_root/'Exec-of816.xex' if distribution_root is not None else out/manifest['boot_image']
         boot=json.loads((out/manifest['boot_manifest']).read_text())
@@ -91,7 +91,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             source=(distribution_root or out)/item['name']
             require(sha256(source)==item['sha256'],'Changed extracted writable media')
             shutil.copyfile(source,target)
-            b.mount(item['drive']-1,str(target))
+            if disk_failure!='missing-work':b.mount(item['drive']-1,str(target))
             work_media.append((item,target))
         machine=verify_machine(b,rom,pin)
         def far(address,length):
@@ -389,11 +389,16 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             ready();cells('startup')
             if desktop:desktop_interaction()
             if disk_failure:
-                require(b'SYS: mount failed; use CD SYS: to retry' in cells('failed-mount')[:shell_cells],
+                require(b'Filesystem startup failed; check configured disks' in cells('failed-mount')[:shell_cells],
                         'Missing bounded system-volume failure message')
+                if disk_failure=='missing-work':
+                    require(b'Required: WORK: on D8:' in cells('required-work')[:shell_cells],
+                            'Missing required companion-drive diagnostic')
                 command('ECHO offline',b'offline')
                 b.mount(system_drive-1,str(media_path))
-                if disk_failure=='missing':
+                if disk_failure=='missing-work':
+                    for item,target in work_media:b.mount(item['drive']-1,str(target))
+                if disk_failure in ('missing','missing-work'):
                     previous=begin('CD SYS:');ready(previous);result(8)
                     command('ECHO reset required',b'reset required')
                     cells('bus-offline')
@@ -646,7 +651,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             for character in 'EXIT':press(character)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all()
         if bootstrap is not None:bootstrap(b,p)
-        reset_required=disk_failure=='missing'
+        reset_required=disk_failure in ('missing','missing-work')
         runtime,_=execute(b,p,preloaded=bootstrap is not None,before_run=before,timeout=240,frame_limit=12000,
                           expected_status=0xff93 if reset_required else 0)
         if measurement_commands is not None:b.profile_stop()
@@ -700,7 +705,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Missing companion disk: bounded startup failure, required-drive diagnostic, usable console, persistent offline bus and reset-required EXIT' if disk_failure=='missing-work' else 'Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':
@@ -712,7 +717,7 @@ if __name__=='__main__':
     smoke.add_argument('--boot-smoke',action='store_true',help='Check shell, disk commands and EXIT; shell-only builds use OF816 autoboot')
     smoke.add_argument('--loading-smoke',action='store_true',help='Check command loading and physical BREAK without the full walkthrough')
     smoke.add_argument('--editing',action='store_true',help='OF816 boot, physical editing/history, inherited CON, BREAK and EOF')
-    smoke.add_argument('--disk-failure',choices=('missing','wrong'),help='Check offline console and matching-disk recovery')
+    smoke.add_argument('--disk-failure',choices=('missing','missing-work','wrong'),help='Check offline console and matching-disk recovery')
     smoke.add_argument('--screenshots',action='store_true',help='Capture boot/TASKS and the documented walkthrough through OF816 autoboot')
     args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,boot_smoke=args.boot_smoke,showcase=args.screenshots,editing=args.editing,disk_failure=args.disk_failure,distribution_root=args.distribution_root)
     (out/(args.disk_failure+'-disk-results.json' if args.disk_failure else 'editing-results.json' if args.editing else 'screenshots-results.json' if args.screenshots else 'stock810-results.json' if args.stock_smoke else 'loading-results.json' if args.loading_smoke else 'demo-results.json')).write_text(json.dumps(record,indent=2)+'\n')

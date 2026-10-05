@@ -55,7 +55,7 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
             banner=banner.replace('console.device: ready',f'exec: stack checks {"enabled" if p["build"]["stack_checks"] else "disabled"}\nconsole.device: ready')
             if no_mount:banner+='SYS: no system volume configured\n'
             else:banner+='sio.device: D1 ready, 57.6k profile\nSYS: mounting...\n'
-            banner+='SYS: mount failed; use CD SYS: to retry\n\n'+diagnostic_text(error,'Shell').decode()if error else 'SYS: -> D1: ready, read-only\n\n'
+            banner+=identity['strings']['mountFailure']+'\n\n'+diagnostic_text(error,'Shell').decode()if error else 'SYS: -> D1: ready, read-only\n\n'
             payload.extend(banner.encode());payload.extend(draw(b''))
             require(b.eval_expr(f'dw(${pointer+36:x})')==error,'Startup result differs')
             def screen(stage):

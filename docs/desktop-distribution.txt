@@ -26,6 +26,7 @@ Extract this ZIP into one folder. In System > Configure System, select:
 1. Mount the included @SYSTEM_DISK@ in D@SYSTEM_DRIVE@: using File > Disk Drives.
    Select "Generic + 57600 baud" as the disk emulation level.
    Mount a disposable copy of work.atr in D8: with writes enabled.
+   Both disks are required during startup, even for read-only SYS: commands.
 2. Use File > Boot Image to start Exec-of816.xex.
 3. Leave the keyboard alone for the five-second OF816 countdown.
    The desktop opens automatically; wait for SYS: ready and the > prompt.
@@ -33,6 +34,11 @@ Extract this ZIP into one folder. In System > Configure System, select:
 Boot the XEX; the ATR supplies its system files. Keep this matching disk
 and work.atr mounted for the whole session. A disk from another build can contain
 incompatible commands.
+
+If filesystem startup fails with error 1, check WORK: in D8: as well as SYS:
+in D1:. Startup mounts both together; a missing WORK: disk also prevents SYS:
+from becoming available. After a SIO timeout, restore the disks and cold-boot
+the XEX; CD SYS: alone cannot recover the offline serial bus.
 
 Press a key during the countdown to enter OF816 instead. Type EXEC816
 to continue into the desktop.
