@@ -16,7 +16,7 @@ from native_program import ROOT, build, compiler, require, sha256
 DEMO_IMAGE_DATA_BYTES = 4096
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,system_kib=720):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,system_kib=720):
     require(not (bitmap_shell_only and (gem_vdi or bitmap_console)),
             'The shell-only bitmap demo is a standalone boot selection')
     require(system_kib in (360,720),'System disk must be 360 or 720 KiB')
@@ -61,8 +61,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     workspace.mkdir(exist_ok=True)
     (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
         'Copy this ATR before experimenting. Mount it in drive D8.\n',encoding='ascii')
-    make(output/'work.atr',workspace,filesystem=filesystem,sector_bytes=sector_bytes)
-    mounts.append(dict(alias='WORK',unit=56,sectors=720,sector_bytes=sector_bytes,
+    make(output/'work.atr',workspace,filesystem=filesystem,sector_bytes=128)
+    mounts.append(dict(alias='WORK',unit=56,sectors=720,sector_bytes=128,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
@@ -88,10 +88,15 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
     guide=(ROOT/'docs/guides/demo.md').read_text().replace('../demo.png','demo.png').replace('../images/','images/')
     system_name='SDFS 2.1' if filesystem=='sdfs' else 'MyDOS'
-    guide=guide.replace('The supplied SDFS 2.1 system disk has 5,760 sectors of 128 bytes (720 KiB\nnominal capacity). The disposable WORK: disk remains 720 sectors (90 KiB).',
+    default_geometry=('The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB\n'
+        'nominal capacity), equivalent to 80 tracks, two sides and 18 sectors per track. The\n'
+        'disposable WORK: disk remains 720 sectors of 128 bytes (90 KiB).')
+    require(default_geometry in guide,'Demo guide default geometry changed')
+    track_geometry=', equivalent to 80 tracks, two sides and 18 sectors per track' if system_kib==720 and sector_bytes==256 else ''
+    guide=guide.replace(default_geometry,
         f'The supplied {system_name} system disk has {system_sectors:,} sectors of {sector_bytes} bytes '
-        f'({system_kib} KiB nominal capacity). The disposable WORK: disk remains 720 sectors '
-        f'({720*sector_bytes//1024} KiB).')
+        f'({system_kib} KiB nominal capacity){track_geometry}. The disposable WORK: disk remains '
+        '720 sectors of 128 bytes (90 KiB).')
     guide=guide.replace('720 KiB read-only SDFS data disk',
                         f'{system_kib} KiB read-only {system_name} data disk')
     if bitmap_shell_only:
@@ -106,7 +111,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
         system_kib=system_kib,system_sectors=system_sectors,
         additional_media=[dict(name='work.atr',sha256=sha256(output/'work.atr'),
                                drive=8,alias='WORK',access='readwrite',
-                               filesystem=filesystem,sector_bytes=sector_bytes)],
+                               filesystem=filesystem,sector_bytes=128)],
         boot_image='of816/Exec-of816.xex',boot_manifest='of816/of816.json',
         distribution='exec816-demo.zip',
         artifacts={name:sha256(output/name) for name in ('program.xex',disk_name,'work.atr','README.md',*([proof_name] if filesystem=='sdfs' else []))},
@@ -156,7 +161,7 @@ if __name__=='__main__':
     parser.add_argument('--output',type=Path,default=ROOT/'build/demo')
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
     parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs')
-    parser.add_argument('--sector-bytes',type=int,choices=(128,256),default=128)
+    parser.add_argument('--sector-bytes',type=int,choices=(128,256),default=256)
     parser.add_argument('--system-kib',type=int,choices=(360,720),default=720,
                         help='Nominal system disk capacity; WORK remains 720 sectors')
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')

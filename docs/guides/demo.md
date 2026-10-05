@@ -35,8 +35,9 @@ to enter Forth and type `EXEC816` when ready. The ATR is a data disk; boot the
 XEX. A missing disk or wrong drive profile can leave the SIO driver offline
 after a timeout; correct the settings and cold-boot again.
 
-The supplied SDFS 2.1 system disk has 5,760 sectors of 128 bytes (720 KiB
-nominal capacity). The disposable WORK: disk remains 720 sectors (90 KiB).
+The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB
+nominal capacity), equivalent to 80 tracks, two sides and 18 sectors per track. The
+disposable WORK: disk remains 720 sectors of 128 bytes (90 KiB).
 SYS: is read-only; WORK: is explicitly writable. Try:
 
 ```text
@@ -206,22 +207,22 @@ Development artifacts remain in `build/demo`:
 - `of816/ALTIRRAOS-LICENSE.txt` and `of816/OF816-LICENSE.txt`: upstream notices.
 - `of816/of816.json`: monitor build inputs, memory layout, media and ROM hashes.
 - `program.xex`: direct native entry used by development fixtures.
-- `work.atr`: disposable writable disk, with the same format and sector size.
+- `work.atr`: disposable writable disk, with the same format and 128-byte sectors.
 - `system.atr`: 720 KiB read-only SDFS data disk with HELLO, CAT, WC, the command toolbox and sample text.
 - `system.verification.json`: independent producer/read-back hashes for every
   file in SDFS builds.
 - `demo-manifest.json`: source, toolchain, machine, media and artifact hashes.
 - `README.md`: this guide.
 
-The default system disk is 720 KiB in SDFS 2.1 with 128-byte sectors. Pass
-`--system-kib 360` for a 360 KiB system disk, or `--sector-bytes 256` for
-256-byte media; the sector count adjusts to preserve the selected capacity.
+The default system disk is 720 KiB in SDFS 2.1 with 256-byte sectors. Pass
+`--system-kib 360` for a 360 KiB system disk, or `--sector-bytes 128` for
+128-byte system media; the sector count adjusts to preserve the selected capacity.
 To retain MyDOS, pass `--format mydos --output build/demo-mydos`. Large MyDOS
 images use an extended VTOC and 16-bit file links. The mount descriptor always
 matches the chosen disk geometry.
 Both filesystem options use the filename `system.atr`; the format and geometry
-are recorded in the build manifests. WORK: uses the same format and sector size
-but stays at 720 sectors. Keep SYS: on D1–D7; D8 is reserved for WORK:.
+are recorded in the build manifests. WORK: uses the same format but stays at
+720 sectors of 128 bytes. Keep SYS: on D1–D7; D8 is reserved for WORK:.
 
 Pass `--bitmap-console` for the optional [80×30 bitmap console preview](bitmap-console.md).
 The ZIP then also contains `bitmap-console/Exec-bitmap-console.xex`, its matching
