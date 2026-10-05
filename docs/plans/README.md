@@ -100,6 +100,9 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [Commands for writable filesystems](write-commands-implementation-plan.md):
+  COPY, DELETE, RENAME, MAKEDIR and TEE; implementation and selected development
+  checks in progress using the existing writable DOS APIs.
 - [Command usability](command-usability-implementation-plan.md): U1–U6 complete;
   bounded shell PATH, shared fault messages and command template help.
   [Development record](../history/command-usability.md), raw/optimized checks
