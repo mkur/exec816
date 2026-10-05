@@ -53,12 +53,14 @@ loading and full AES compatibility are later consumers/extensions.
 
 Further console optimization is paused, without changing the recorded limits.
 
-The proposed [desktop rendering design](desktop-rendering-design.md) combines
+The [desktop rendering design](desktop-rendering-design.md) combines
 Amiga refresh semantics with GEM4XE pixel reuse: bounded damage, asynchronous
 top-window copies, fewer background passes and optional VRAM snapshots. Its
 [DR0–DR7 implementation plan](desktop-rendering-implementation-plan.md) keeps
-the existing presenter and IRQ completion. These slices are pending; they do
-not resume AW5–AW6 or general console optimization.
+the existing presenter and IRQ completion. DR0–DR7 are implemented at the
+development tier, including the local OF816 preview. Pointer, outline and
+move-repair timing limits remain open; AW5–AW6 remain paused. See the
+[measurements and remaining work](../../history/desktop-rendering.md#dr7-combined-measurements-and-local-preview).
 
 The implemented foundation is the [bitmap console](bitmap-console-design.md):
 an 80×30 CON: backend on the existing 640×240 display, sharing faster glyph and

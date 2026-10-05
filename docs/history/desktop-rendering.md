@@ -230,3 +230,53 @@ introduced by DR6. Fixed, root/kernel, all eight public Tasks and idle keep thei
 stack/DP bytes, guards, alignment and spare capacity. Code-bank ownership follows
 the generated image map; larger source code is reported separately from these
 reservations. Timing acceptance remains for DR7.
+
+## DR7: combined measurements and local preview
+
+The [DR7 development record](../development/desktop-rendering-dr7.json) completes
+the implementation and preview checks. All fifteen matched DR0 presentation
+scenes retain their complete pixel hashes. Eight clean moves each submit one
+copy list. The separate cache, independent-client and widget checks above pass;
+implementation correctness does not establish responsiveness acceptance.
+
+| Cohort | Pointer p95 / maximum ms | Button maximum ms |
+| --- | --- | --- |
+| Idle | 46.41 / 46.66 | 3.70 |
+| Scrolling | 61.31 / 66.37 | 25.85 |
+| Cold physical disk | 46.47 / 66.37 | 12.52 |
+| Two independent clients | 65.86 / 86.32 | 23.79 |
+
+Each cohort contains 100 qualifying motions and 60 button events. All button
+and sub-millisecond sampling-gap limits pass. Pointer p95 misses the 40 ms idle
+limit and the 60 ms scrolling/two-client limit. The separate drag diagnostic
+contains forty outline samples and ten releases per load: maximum repair is
+299.54 ms idle, 1,181.92 ms scrolling and 1,422.43 ms under disk activity, above
+250 ms. Outline p95 misses idle/loaded limits too. These smaller drag samples
+retain every observed failure; they do not support performance acceptance.
+
+Matched twelve-key echo improves p95/maximum from 172.93 to 152.87 ms and passes
+the baseline regression allowance. The widget warm-exposure sequence takes
+962.68 ms with snapshots versus 5,615.64 ms with forced misses, including cover,
+capture and two settling frames. This is one matched scene sample. The simple
+command-cache comparison above shows why eligibility alone is not a speedup.
+
+Move submission costs 2.89–3.64 ms of charged CPU in the eight observed copies.
+Launch-to-IRQ idle observation is 1.39–8.26 ms, an upper bound including interrupt
+latency, not a direct DMA BUSY measurement. Larger end-to-end delays require
+reducing synchronous clipped repair and frame submissions, then measuring worker
+scheduling/input service. Memory traffic savings do not supersede latency.
+
+The refreshed `build/desktop-rendering/dr7/preview/exec816-demo.zip` contains
+the standard five-second OF816 shell/prime boot plus a separately booted
+`desktop/` preview with its matching disks, pinned ROM, notices and guide.
+Both extracted variants pass shell/disk commands, desktop interaction where
+applicable, EXIT and ownership/guard restoration. The combined archive's 24
+checksums pass, and its executable/media bytes match those walkthroughs.
+This is a local development preview, not hosted-system or hardware qualification.
+
+Against DR0, reserved bank-zero delta is zero for fixed state, root/kernel, all
+eight public Tasks and idle, including guards, alignment and unused capacity.
+Each cache/window adds no stack or direct page. VRAM reservations increase by
+131,072 bytes for the two slots; metadata and code extents are recorded by the
+earlier slices and generated build maps. AW5–AW6 remain paused. Rendering work
+through DR7 is implemented; latency acceptance remains open with unchanged limits.

@@ -39,13 +39,15 @@ and memory reservations unchanged. Pointer, outline and move-repair timing
 targets remain open; presentation scheduling and exposure repair remain focused
 performance follow-ups.
 
-The proposed [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)
-turns that exposure work into a bounded milestone. The
-[DR0–DR7 plan](plans/gem4xe/desktop-rendering-implementation-plan.md) adds smaller
+The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)
+is implemented through the
+[DR0–DR7 plan](plans/gem4xe/desktop-rendering-implementation-plan.md), with smaller
 damage sets, IRQ-completed top-window copies, reduced background overdraw and
-two optional VRAM snapshot slots. It keeps one presenter, targets zero additional
+two optional VRAM snapshot slots. It keeps one presenter, adds zero
 bank-zero reservations and leaves partially obscured scrolling on retained
-redraw. Implementation is pending and does not resume the paused widget slices.
+redraw. [Development measurements and the refreshed preview](history/desktop-rendering.md#dr7-combined-measurements-and-local-preview)
+pass correctness checks; pointer, outline and move-repair latency acceptance
+remains open. AW5–AW6 stay paused.
 
 The next functional milestone is the
 [AES widget library](plans/gem4xe/aes-widgets-implementation-plan.md), planned

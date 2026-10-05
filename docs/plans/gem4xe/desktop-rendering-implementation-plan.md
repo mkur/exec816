@@ -3,7 +3,9 @@
 [Design note](desktop-rendering-design.md) · [GEM plans](README.md) ·
 [Roadmap](../../roadmap.md) · [Testing policy](../../contributing/testing.md)
 
-Status: DR0–DR6 implemented, 2026-10-05; DR7 remains pending.
+Status: DR0–DR7 implemented at the development tier, 2026-10-05. Pointer,
+outline and move-repair latency acceptance remains open; see the measured
+limits in the [DR7 record](../../development/desktop-rendering-dr7.json).
 See the [implementation record](../../history/desktop-rendering.md). Implement DR0–DR7 in order, keeping each slice executable and committing
 it with focused development evidence. AW5–AW6 remain paused and are not
 prerequisites; use existing graphical/widget fixtures for this work.

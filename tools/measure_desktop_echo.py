@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 from pathlib import Path
 import adapter_state as adapter
 from native_program import read_build, require, sha256, verify_machine
@@ -37,6 +38,12 @@ def run(bundle, out):
                 b.config(key, str(value).lower() if isinstance(value, bool) else value)
             media = bundle/manifest['media']
             b.mount(0, str(media))
+            for item in manifest.get('additional_media', []):
+                source=bundle/item['name']
+                require(sha256(source)==item['sha256'], 'Changed companion disk')
+                target=out/item['name']
+                shutil.copyfile(source,target)
+                b.mount(item['drive']-1,str(target))
             report['machine'] = verify_machine(b, ROM, pin)
             clock = lambda: b.eval_expr('@clk') & 0xffffffff
             def reach(condition, label='native_nmi'):

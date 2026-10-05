@@ -127,10 +127,11 @@ assuming work is pending. Current behavior belongs in the
   damage, event-driven controls and a control-panel preview. Uses the existing
   presenter and Task pools; task-bar policy and full AES compatibility follow.
 - [Desktop rendering with pixel reuse](gem4xe/desktop-rendering-design.md):
-  proposed Amiga/GEM4XE synthesis with bounded damage, asynchronous window
+  Amiga/GEM4XE synthesis with bounded damage, asynchronous window
   copies, fewer background passes and optional VRAM snapshots. The
-  [DR0–DR7 plan](gem4xe/desktop-rendering-implementation-plan.md) is pending;
-  it preserves the single presenter and leaves AW5–AW6 paused.
+  [DR0–DR7 plan](gem4xe/desktop-rendering-implementation-plan.md) is implemented
+  at the development tier. The preview and correctness checks pass; latency
+  acceptance remains open. One presenter is retained and AW5–AW6 stay paused.
 - [Physical mouse design for hosted GEM](gem4xe/physical-mouse-design.md): implemented
   ST mouse on port 1 using Altirra's existing configuration, with shared SIO
   timing, reusable capture, lifetime, memory and acceptance rules. The

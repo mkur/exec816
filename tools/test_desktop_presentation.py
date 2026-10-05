@@ -89,7 +89,18 @@ def run(out, mode, replay=False, observe_moves=False):
     address = lambda name: next(d['address'] for d in p['image']['data'] if '_DESKTEST_'+name+'_' in d['name'])
     if observe_moves:
         os.environ['EXEC816_LATENCY_TRACE']='1'
-        os.environ['EXEC816_LATENCY_PCS']=f'{p["labels"]["blitter_launched"]:x}'
+        from bitmap_console_performance import native_markers
+        from console_turn_profile import flat_markers
+        spans=native_markers(p,[('CONSOLEBITMAP_COPYSTART','copy'),('CONSOLEBITMAP_POLL','poll')])
+        points={name:p['labels'][name] for name in ('native_irq','native_nmi','interrupt_schedule')}
+        restore=p['labels']['context_restore']
+        code=(p['output']/'hosted.bin').read_bytes()
+        require(code[restore-0x1400:restore-0x1400+8]==bytes.fromhex('c230ab2b7afa6840'),'Unknown context restore')
+        points.update(turn=spans['copy']['entry'],selected=restore+4,worker_retire=p['labels']['done'])
+        definition=dict(points=points,spans=spans,task_dps=[pool['dp'] for pool in p['build']['memory']['task_pools']])
+        pcs=set(flat_markers(definition).values())
+        pcs.update(p['labels'][n] for n in ('blitter_launched','blitter_irq_complete','blitter_irq_posted'))
+        os.environ['EXEC816_LATENCY_PCS']=','.join(f'{pc:x}' for pc in pcs)
     try:
         with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
             require(sha256(BRIDGE/'AltirraBridgeServer') == PIN['mouse_input']['tooling']['sha256'], 'Unpinned emulator')
@@ -135,8 +146,12 @@ def run(out, mode, replay=False, observe_moves=False):
             report['checks'] = data(bridge,p['image'],'checks',True)[0]
             report['status'] = 'pass'
         if observe_moves:
-            from sio_transaction_trace import read_events
-            launches = [tick for tick,event in read_events(out/'emulator.log')
+            from sio_transaction_trace import read_events,BASE_HZ
+            from console_turn_profile import analyze_events
+            events=list(read_events(out/'emulator.log'))
+            profile=analyze_events(events,definition)['routine_spans']
+            completions=[tick for tick,event in events if event[0]=='cpu' and int(event[4],16)==p['labels']['blitter_irq_complete']]
+            launches = [tick for tick,event in events
                         if event[0]=='cpu' and int(event[4],16)==p['labels']['blitter_launched']]
             require(launches, 'Missing actual asynchronous launches')
             for row in report['observations']:
@@ -144,7 +159,18 @@ def run(out, mode, replay=False, observe_moves=False):
                 align = lambda t:t+round((launches[0]-t)/(1<<32))*(1<<32)
                 selected = [t for t in launches if align(row['begin_cycle'])<t<align(row['end_cycle'])]
                 require(len(selected)==1, 'Copied move must launch one list: '+str(row['stage']))
-                report['move_transactions'].append(dict(stage=row['stage'], launches=selected))
+                launch=selected[0]
+                calls=[span for span in profile if span['kind']=='copy' and span['start']<=launch<span['end']]
+                require(len(calls)==1,'Missing copy submission span')
+                call=calls[0]
+                irq=next(t for t in completions if launch<=t<align(row['end_cycle']))
+                polls=[span for span in profile if span['kind']=='poll' and irq<=span['start']<align(row['end_cycle'])]
+                require(polls,'Missing owner completion service')
+                report['move_transactions'].append(dict(stage=row['stage'],launches=selected,
+                    submission=call,setup_to_launch_elapsed_ms=(launch-call['start'])/BASE_HZ*1000,
+                    launch_to_irq_idle_observation_ms=(irq-launch)/BASE_HZ*1000,
+                    irq_to_owner_poll_ms=(polls[0]['start']-irq)/BASE_HZ*1000,completion_poll=polls[0],
+                    scope='Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement.'))
     except Exception as error:
         report.update(status='fail',error=str(error))
         raise

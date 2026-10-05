@@ -57,7 +57,8 @@ RETURN(Packet POINTER(state.packet))
 
 ; All production calls originate in the resident worker. The packet never
 ; retains source buffers after return. SCROLL/POLL explicitly separate launch
-; from completion; all other drawing operations remain synchronous.
+; from completion; COPY_START shares that completion path. Other drawing
+; operations remain synchronous.
 PUBLIC BYTE FUNC Run(CARD operation)
 
   LET state=GetBinding()

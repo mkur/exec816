@@ -90,6 +90,7 @@ def run(out,mode,replay=False,aligned=False,cache_miss=False,cache_observe=False
             b._cmd_ok('MOUSE ST');report['machine']=verify_machine(b,ROM,PIN)
             require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
             def before(b):
+                previous=b.eval_expr('@clk') & 0xffffffff
                 for stage in range(1,11):
                     marker=p['labels']['native_nmi'];condition='dw($%x)=%d'%(at('checkpoint'),stage)
                     b.bp_clear_all();b.bp_set(marker,condition=condition)
@@ -99,7 +100,8 @@ def run(out,mode,replay=False,aligned=False,cache_miss=False,cache_observe=False
                         print('Widget stage/checks/state',stage,b.peek16(at('checks')),b.peek16(adapter.STATE),b.regs(),flush=True)
                         raise
                     folder=out/f'stage-{stage}';folder.mkdir(exist_ok=True)
-                    row=dict(stage=stage,pixels=pixels(b,folder,scene(stage,font_bytes(out/'selected/src/vdi/font8x8.c'),aligned)))
+                    clock=b.eval_expr('@clk') & 0xffffffff
+                    row=dict(stage=stage,stimulus_to_settled_cycles=(clock-previous)&0xffffffff,pixels=pixels(b,folder,scene(stage,font_bytes(out/'selected/src/vdi/font8x8.c'),aligned)))
                     if cache_observe or cache_miss:
                         for name in ('captures','restores'):
                             address=next(d['address'] for d in p['image']['data'] if '_DESKCACHE_'+name.upper()+'_' in d['name'])
@@ -118,6 +120,7 @@ def run(out,mode,replay=False,aligned=False,cache_miss=False,cache_observe=False
                                 names=['window','revision','width','height','valid','pinned'] if kind=='Snapshot' else ['id','layer','visualRevision','captureAttempt']
                                 item={n:int.from_bytes(raw[base+fields[n]:base+fields[n]+(1 if n in ('valid','pinned') else 2 if n in ('width','height') else 4)],'little') for n in names}
                                 row['slots' if kind=='Snapshot' else 'windows'].append(item)
+                    previous=clock
                     report['scenes'].append(row)
                     b.memload(at('gate'),stage.to_bytes(2,'little'))
                 b.bp_clear_all()

@@ -151,6 +151,7 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
         pin['startup_configuration']['diskemu'] = 'fastest'
     at = lambda module, name: next(d['address'] for d in p['image']['data'] if '_'+module+'_'+name.upper()+'_' in d['name'])
     second_app = any('_DESKAPP_WINDOWID_' in d['name'] for d in p['image']['data'])
+    require('two_clients' not in loads or second_app, 'Two-client cohort requires the independent app')
     native = native_markers(p, [('DESKINPUT_CONSUME', 'consume'), ('DESKINPUT_SERVICE', 'input_service'),
                               ('CONSOLEBITMAP_CURSOR', 'cursor')])
     marks = {k: v for k, v in p['labels'].items() if k.startswith(('sio_', 'timer_', 'native_', 'signal_route', 'pointer_'))}
@@ -262,7 +263,7 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                 frames(3)
                 position = [590, 24]
                 for load in loads:
-                    mode = {'idle': 0, 'scroll': 2, 'disk': 3}[load]
+                    mode = {'idle': 0, 'scroll': 2, 'disk': 3, 'two_clients': 0}[load]
                     b.memload(at('DESKTEST', 'mode'), mode.to_bytes(2, 'little'))
                     begin = clock()
                     for i in range(count):
@@ -343,6 +344,6 @@ if __name__ == '__main__':
     parser.add_argument('--count', type=int, default=100)
     parser.add_argument('--unobserved', action='store_true')
     parser.add_argument('--costs', action='store_true', help='Separate pointer CPU, interruptions and submissions')
-    parser.add_argument('--loads', nargs='+', choices=('idle', 'scroll', 'disk'), default=['idle', 'scroll', 'disk'])
+    parser.add_argument('--loads', nargs='+', choices=('idle', 'scroll', 'disk', 'two_clients'), default=['idle', 'scroll', 'disk'])
     args = parser.parse_args()
     run(args.output.resolve(), args.program, args.count, args.unobserved, args.loads, args.costs)
