@@ -274,7 +274,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
                 external.exercise(SimpleNamespace(command=command,check_screen=check_screen,append=append,press=press,
                     rendezvous=rendezvous,ready=ready,far=far,at=at,p=p,state=state,expected=expected,line=line,b=b))
             elif not smoke:
-                command('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n')
+                command('help',b'HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n')
                 command('cd',b'' if no_mount else b'D1:\n',211 if no_mount else 0)
                 if not no_mount:
                     for cmd in ('cd tools/sub','cd /','cd :','cd d1:tools','cd missing'):

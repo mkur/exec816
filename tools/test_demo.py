@@ -387,6 +387,31 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 command('C:HELLO',b'Hello from disk!')
                 command('SYS:C/HELLO',b'Hello from disk!')
                 command('SYS:HELLO',b'Object not found (205)',error=205)
+                if shell_only:
+                    presets=command('ALIAS',b'MKDIR -> MAKEDIR')
+                    require(b'LS -> LIST' in presets and b'CP -> COPY' in presets,
+                            'Missing default command aliases')
+                    cleared=command('CLS')
+                    require(cleared==b'> '+b' '*(shell_cells-2),
+                            'CLS did not clear the shell and return its prompt home')
+                    command('LS *.TXT NAMES',b'STORY.TXT')
+                    if work_media:
+                        command('CD WORK:')
+                        command('mkdir SMOKEDIR')
+                        command('CD SMOKEDIR')
+                        command('DIR')
+                        command('CD ..')
+                        command('CD',b'WORK:')
+                        command('CD SMOKEDIR')
+                        command('COPY SYS:STORY.TXT .',error=210)
+                        command('cp SYS:STORY.TXT SMOKE.TXT')
+                        command('CMP SYS:STORY.TXT SMOKE.TXT')
+                        command('DIR',b'SMOKE.TXT')
+                        command('ls',b'SMOKE.TXT')
+                        command('DELETE SMOKE.TXT')
+                        command('CD ..')
+                        command('DELETE SMOKEDIR')
+                        command('CD SYS:')
                 mounted=command('MOUNT',b'SDFS')
                 require(mounted[:shell_cells].count(f'D{system_drive}:   SDFS'.encode())==1,
                         'Mount listing duplicated or omitted the physical volume')
@@ -407,6 +432,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 saved['sys_cache']=dict(physical=first,system=second)
                 command('CAT SYS:STORY.TXT | WC',b'24 133 746')
                 command('CD SYS:')
+                if shell_only:command('CD ..')
                 command('CD',f'D{system_drive}:'.encode())
                 command('HELLO',b'Hello from disk!')
                 frames(3);cells('boot-smoke')
@@ -566,6 +592,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b._cmd_ok(f'EJECT drive={item["drive"]-1}')
                 audit=Audit(target.read_bytes())
                 allocation=getattr(audit,item['filesystem'])()
+                if shell_only and boot_smoke and measurement_commands is None:
+                    require(audit.directories==1 and not any(
+                        name.startswith('SMOKEDIR/') for name in audit.files),
+                        'Bitmap shell write smoke retained its temporary directory')
                 if saved.get('filesystem_writes'):
                     require(audit.files['OUT.TXT']==b'saved\n' and audit.files['PIPE.TXT']==b'1 3 17\n'
                             and audit.files['COPY.TXT']==(ROOT/'examples/demo-disk/STORY.TXT').read_bytes(),
@@ -588,7 +618,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT' if boot_smoke and shell_only and measurement_commands is None else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':

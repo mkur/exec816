@@ -72,7 +72,7 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
             mounts_output=b'MOUNT FILESYSTEM ACCESS    STATE\n'+(b'No mounted filesystems\n'if error else b'D1:   MyDOS      read-only mounted\n')
             devices_output=b'DEVICE          STATE\nconsole.device  ready\nsio.device      '+(b'inactive'if no_mount else b'ready')+b'\n'
             state.update(mounts_output=mounts_output.decode(),devices_output=devices_output.decode())
-            commands=[('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n',0),
+            commands=[('help',b'HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n',0),
                 ('ver',version,0),('ver >nil:',b'',0),('ver extra',diagnostic_text(115,'Shell'),115),
                 ('tasks',None,0),('tasks >nil:',b'',0),('tasks extra',diagnostic_text(115,'Shell'),115),
                 ('mount',mounts_output,0),('mount >nil:',b'',0),('mount D2:',diagnostic_text(115,'Shell'),115),

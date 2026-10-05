@@ -11,11 +11,12 @@ CASES=[('',0,[]),('   ',0,[]),('help',1,['help']),('HELP',1,['HELP']),('"echo" "
        ('echo "hello world"',2,['echo','hello world']),('echo "a**b*"c"',2,['echo','a*b"c']),
        ('echo a*b',2,['echo','a*b']),('echo `literal`',2,['echo','`literal`']),
        ('echo "< > | ;"',2,['echo','< > | ;']),('echo   x   y ',2,['echo','x','y']),
-       ('cd ""',3,['cd','']),('cd /',3,['cd','/']),('exit',4,['exit']),
+       ('cd ""',3,['cd','']),('cd /',3,['cd','/']),('cd ..',3,['cd','..']),('exit',4,['exit']),
+       ('cls',16,['cls']),('CLS',16,['CLS']),
        ('tasks',8,['tasks']),('TASKS',8,['TASKS']),('ver',9,['ver']),('VER',9,['VER']),
        ('mount',10,['mount']),('MoUnT',10,['MoUnT']),('devices',11,['devices']),('DEVICES',11,['DEVICES']),
        ('echo '+' '.join(['x']*15),2,['echo']+['x']*15),('echo '+'x'*250,2,['echo','x'*250])]
-CASES += [(s,None,None) for s in ('echo '+' '.join(['x']*16),'echo "unterminated','echo "bad*"','echo "bad*x"','echo pre"word"','echo "word"post','echo one|two','echo one;two','echo>>NIL:','echo a>NIL:','help extra','exit extra','tasks extra','ver extra','mount D2:','devices extra','cd one two')]
+CASES += [(s,None,None) for s in ('echo '+' '.join(['x']*16),'echo "unterminated','echo "bad*"','echo "bad*x"','echo pre"word"','echo "word"post','echo one|two','echo one;two','echo>>NIL:','echo a>NIL:','help extra','cls extra','exit extra','tasks extra','ver extra','mount D2:','devices extra','cd one two')]
 
 CASES += [(s,12,[s]) for s in ('mounts','device','unknown','HELLO','D1:TOOLS/HELLO')]
 CASES += [('ECHOARGS \"two words\" \"\" >NIL: x',12,['ECHOARGS','two words','','x'])]
@@ -24,9 +25,11 @@ CASES += [(source,12,['CAT',decoded]) for source,decoded in CAT_ARGUMENTS.items(
 TAILS={'ECHOARGS \"two words\" \"\" >NIL: x':'\"two words\" \"\" x'}
 
 REDIRECTS={'CAT\t"A** B"\t>NIL:':(None,'NIL:'),'ECHOARGS \"two words\" \"\" >NIL: x':(None,'NIL:'),'echo >NIL:':(None,'NIL:'),'echo <NIL:':('NIL:',None),
+    'CLS >NIL:':(None,'NIL:'),
     '<"D1:TEXT.TXT" echo "x" > NIL:':('D1:TEXT.TXT','NIL:'),
     'echo '+' '.join(['x']*13)+' <NIL: >RAW:':('NIL:','RAW:')}
 CASES += [('echo >NIL:',2,['echo']),('echo <NIL:',2,['echo']),
+    ('CLS >NIL:',16,['CLS']),
     ('<"D1:TEXT.TXT" echo "x" > NIL:',2,['echo','x']),
     ('echo '+' '.join(['x']*13)+' <NIL: >RAW:',2,['echo']+['x']*13),
     ('echo '+' '.join(['x']*14)+' <NIL: >RAW:',None,None)]
@@ -48,7 +51,7 @@ CASES += [
 REDIRECTS['CAT <STORY.TXT|WC >NIL:']=('STORY.TXT','NIL:')
 CASES += [(s,None,None) for s in (
     '|WC','HELLO|','HELLO||WC','HELLO | | WC','HELLO|WC|CAT',
-    'HELP|WC','HELLO|TYPE','HELLO >NIL:|WC','CAT|WC <NIL:',
+    'HELP|WC','CLS|WC','HELLO|CLS','HELLO|TYPE','HELLO >NIL:|WC','CAT|WC <NIL:',
     '""|WC','HELLO|""','CAT <|WC','CAT|WC >',
     'LEFT '+' '.join(['x']*15)+'|RIGHT')]
 
@@ -75,7 +78,13 @@ def run(t,out,mode):
             for index,word in enumerate(words):calls.append(f'  Word({index},{text(word)})');checks+=1
     (out/'shell-parser-cases.inc').write_text('PROC Cases()\n'+'\n'.join(calls)+'\nRETURN\n')
     (out/'shell_parser.act').write_text((ROOT/'tests/programs/shell_parser.act').read_text().replace('../../examples/shell/shell-session.inc',str(ROOT/'examples/shell/shell-session.inc')))
-    p=build(t,out/'shell_parser.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=False,dos_mounts=[],image_data=[(0xe0000,bytes(blob))])
+    # The shared session brings in the shell's globals and fault strings;
+    # match the demo's 4 KiB upper-RAM arena without starting a console Task.
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=4096
+    memory=out/'memory-profile.json'
+    memory.write_text(json.dumps(profile,indent=2)+'\n')
+    p=build(t,out/'shell_parser.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=False,console_deferred=True,dos_mounts=[],memory_profile=memory,image_data=[(0xe0000,bytes(blob))])
     require(sha256(ROOT/'build/shell-paced-bridge/AltirraBridgeServer')==PIN['emulator']['sha256'],'Unpinned console bridge')
     require(sha256(ROOT/'build/firmware/altirraos-816.rom')==PIN['rom']['sha256'],'Unpinned ROM')
     with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN)as b:

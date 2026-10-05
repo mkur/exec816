@@ -45,15 +45,41 @@ Try it
     CAT STORY.TXT | WC
     TYPE STORY.TXT
     MEM
+    CLS
 
 The pipelines print 1 3 17 and 24 133 746 respectively (lines, words, bytes).
 TASKS lists the shell and service workers without a primes task.
 HELP lists built-in commands. BREAK cancels a foreground command.
 EXIT or Ctrl-D closes the shell and restores the OS display.
 
+External commands live in SYS:C. Startup assigns C: there; the default PATH
+searches the current directory and then C:. PATH RESET restores that list.
+File arguments still use the current directory. Try:
+
+    PATH
+    DIR C:
+    LIST *.TXT NAMES
+    LS *.TXT NAMES
+    ALIAS
+    ASSIGN
+
+The disk includes HELLO, CAT, WC, CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST, MORE,
+COPY, TEE, DELETE, RENAME, MAKEDIR and ASSIGN. C: uses one of four assignment
+slots. Each new shell starts with MKDIR -> MAKEDIR, LS -> LIST and CP -> COPY.
+Use ALIAS to replace them or UNALIAS to remove them; five of the eight slots
+remain available for other aliases. Definitions last for this shell session.
+
+Create a directory with MKDIR WORK:NOTES. CD .. or CD / moves to the parent
+and CD : to the volume root. CD .. is a shell shortcut; other paths do not
+support . or .. components. CLS clears the screen and returns the prompt home.
+
 SYS: is read-only; WORK: is writable. Try ECHO saved >WORK:OUT.TXT and
 CAT WORK:OUT.TXT. Redirection creates or truncates its target when opened,
 even if the command later fails. Keep SYS: on D1-D7; D8 is reserved for WORK:.
+
+Ctrl-A/E move to the start/end; Ctrl-B/F move left/right. Ctrl-U clears the
+line, Ctrl-K cuts to the end, and Ctrl-W cuts a word. Ctrl-P/N or Atari
+up/down browse the ten-command history; Atari left/right move the cursor.
 
 This is a development preview. The cooked editor
 retains its 36-character editing tail, even on the wider bitmap screen.

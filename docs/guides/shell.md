@@ -14,6 +14,7 @@ Source lives in [examples/shell](../../examples/shell/).
 | --- | --- |
 | `HELP` | List implemented commands. |
 | `ECHO [words...]` | Print words separated by spaces, then LF. |
+| `CLS` | Clear the output console and move its cursor to the top left; writes FF when redirected. |
 | `CD [directory]` | Change directory, or print its canonical path. |
 | `DIR [directory]` | List entries in disk order, with directory markers and exact file sizes. |
 | `TYPE [file]` | Print a text view of a file, or borrow noninteractive Input when no file is given. |
@@ -49,9 +50,10 @@ DOS uses bounded 8.3 names on both supported filesystems. Examples:
 | `:` | Current volume's root. |
 | `/TOOLS` | TOOLS relative to the parent directory. |
 
-There are no `.` or `..` aliases; embedded/trailing empty components are
-unsupported. Relative paths need a selected current directory. A failed CD
-preserves the previous selection. SYS starts at the configured system volume;
+`CD ..` is a shell shortcut for `CD /`, including clamping at the volume root.
+Other paths do not support `.` or `..` components; embedded/trailing empty
+components are unsupported. Relative paths need a selected current directory.
+A failed CD preserves the previous selection. SYS starts at the configured system volume;
 canonical names still use its physical mount name. See [SYS:](../reference/sys-volume.md)
 for selection through the boot monitor.
 
@@ -118,6 +120,11 @@ GREET friend
 UNALIAS GREET
 ```
 
+Each new shell starts with `MKDIR -> MAKEDIR`, `LS -> LIST` and `CP -> COPY`.
+They accept the target command's arguments, including `LS *.TXT`, and are
+ordinary aliases that can be replaced or removed. They consume three of the
+eight slots, leaving five for additional aliases.
+
 An alias replaces one command word, then the shell appends that invocation's
 arguments. It works at the start of a command or in either pipeline stage;
 the ordinary parser then applies redirection and pipeline rules. Expansion
@@ -126,9 +133,10 @@ keep precedence and cannot be assigned. Names contain 1–15 ASCII letters,
 digits, `_` or `-`, starting with a letter; comparison ignores case. Alias
 replacements are at most 127 printable bytes and may contain fixed arguments,
 but no quotes or shell operators (`|`, `<`, `>`, `;`). A resulting line over
-255 bytes fails before opening files. The table holds eight aliases, allocates
-upper RAM only on first use, and lasts for this shell session. Other shell
-sessions and loaded programs have their own command lookup rules.
+255 bytes fails before opening files. The table holds eight aliases and its
+1,152-byte payload is allocated in upper RAM at session startup. It lasts for
+this shell session. Other shell sessions and loaded programs have their own
+command lookup rules.
 
 ```text
 CD SYS:WORK

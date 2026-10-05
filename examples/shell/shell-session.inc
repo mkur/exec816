@@ -69,6 +69,7 @@ CONST CMD_EXTERNAL=12
 CONST CMD_PATH=13
 CONST CMD_ALIAS=14
 CONST CMD_UNALIAS=15
+CONST CMD_CLS=16
 
 TYPE ShellWord=[BYTE POINTER text]
 TYPE ShellAlias=[
@@ -427,6 +428,9 @@ BYTE FUNC ShellClassify(BYTE POINTER word)
   ELSEIF ShellEqual(word,c"ECHO")<>0 THEN
     RETURN(CMD_ECHO)
 
+  ELSEIF ShellEqual(word,c"CLS")<>0 THEN
+    RETURN(CMD_CLS)
+
   ELSEIF ShellEqual(word,c"CD")<>0 THEN
     RETURN(CMD_CD)
 
@@ -742,7 +746,7 @@ BYTE FUNC ShellParse()
     RETURN(1)
   FI
 
-  IF (shell.command=CMD_HELP OR shell.command=CMD_EXIT
+  IF (shell.command=CMD_HELP OR shell.command=CMD_EXIT OR shell.command=CMD_CLS
       OR (shell.command>=CMD_MEM AND shell.command<=CMD_DEVICES))
     AND shell.argc<>1 THEN
     RETURN(0)
@@ -834,52 +838,12 @@ PROC ShellAliasShow(BYTE index)
 
 RETURN
 
-PROC ShellAliasCommand()
+; Store a validated alias in the existing bounded session table.
+PROC ShellAliasSet(BYTE POINTER name,text)
   ShellAlias POINTER entry
   BYTE index,position,value
 
-  IF shell.argc=1 THEN
-    IF aliases<>NULL THEN
-      FOR index=0 TO ALIAS_CAPACITY-1 DO
-        IF aliases(index).name(0)<>ASCII.NUL THEN
-          IF ShellPoll()<>0 THEN
-            RETURN
-          FI
-
-          ShellAliasShow(index)
-          IF shell.status<>PROCESS.RETURN_OK THEN
-            RETURN
-          FI
-        FI
-      OD
-    FI
-
-    RETURN
-  FI
-
-  LET name=shell.words(1).text
-  IF ShellAliasName(name)=0 OR ShellClassify(name)<>CMD_EXTERNAL THEN
-    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
-    RETURN
-  FI
-
   index=ShellAliasIndex(name)
-  IF shell.argc=2 THEN
-    IF index=ALIAS_CAPACITY THEN
-      ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_NOT_FOUND)
-    ELSE
-      ShellAliasShow(index)
-    FI
-
-    RETURN
-  FI
-
-  LET text=shell.words(2).text
-  IF ShellAliasText(text)=0 THEN
-    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
-    RETURN
-  FI
-
   IF index=ALIAS_CAPACITY THEN
     IF aliasCount=ALIAS_CAPACITY THEN
       ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BUFFER_OVERFLOW)
@@ -919,6 +883,69 @@ PROC ShellAliasCommand()
   OD
 
   STR.strlcpy(@entry.text(0),CSTRING(text),ALIAS_TEXT_CAPACITY)
+
+RETURN
+
+; Default aliases are ordinary entries: users can replace or remove them.
+BYTE FUNC ShellAliasDefaults()
+
+  ShellAliasSet(BYTE POINTER(c"MKDIR"),BYTE POINTER(c"MAKEDIR"))
+  IF aliases=NULL THEN
+    RETURN(0)
+  FI
+
+  ShellAliasSet(BYTE POINTER(c"LS"),BYTE POINTER(c"LIST"))
+  ShellAliasSet(BYTE POINTER(c"CP"),BYTE POINTER(c"COPY"))
+
+RETURN(aliasCount=3)
+
+; List, inspect or change the session's aliases using the same validation.
+PROC ShellAliasCommand()
+  BYTE index
+
+  IF shell.argc=1 THEN
+    IF aliases<>NULL THEN
+      FOR index=0 TO ALIAS_CAPACITY-1 DO
+        IF aliases(index).name(0)<>ASCII.NUL THEN
+          IF ShellPoll()<>0 THEN
+            RETURN
+          FI
+
+          ShellAliasShow(index)
+          IF shell.status<>PROCESS.RETURN_OK THEN
+            RETURN
+          FI
+        FI
+      OD
+    FI
+
+    RETURN
+  FI
+
+  LET name=shell.words(1).text
+  IF ShellAliasName(name)=0 OR ShellClassify(name)<>CMD_EXTERNAL THEN
+    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
+    RETURN
+  FI
+
+  IF shell.argc=2 THEN
+    index=ShellAliasIndex(name)
+    IF index=ALIAS_CAPACITY THEN
+      ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_NOT_FOUND)
+    ELSE
+      ShellAliasShow(index)
+    FI
+
+    RETURN
+  FI
+
+  LET text=shell.words(2).text
+  IF ShellAliasText(text)=0 THEN
+    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
+    RETURN
+  FI
+
+  ShellAliasSet(name,text)
 
 RETURN
 
@@ -1139,7 +1166,7 @@ PROC ShellDispatch()
   CASE shell.command OF
   WHEN CMD_HELP THEN
     ShellText(DOS.Output(),
-        c"HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT")
+        c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT")
     ShellByte(DOS.Output(),ASCII.LF)
     ShellText(DOS.Output(),c"Edit: Ctrl-A/E home/end, B/F left/right\n")
     ShellText(DOS.Output(),c"Ctrl-U clear, K cut end, W cut word\n")
@@ -1159,9 +1186,16 @@ PROC ShellDispatch()
 
     ShellByte(DOS.Output(),ASCII.LF)
 
+  WHEN CMD_CLS THEN
+    ShellByte(DOS.Output(),ASCII.FF)
+
   WHEN CMD_CD THEN
     IF shell.argc=2 THEN
-      ShellChange(shell.words(1).text)
+      IF ShellEqual(shell.words(1).text,c"..")<>0 THEN
+        ShellChange(BYTE POINTER(c"/"))
+      ELSE
+        ShellChange(shell.words(1).text)
+      FI
 
     ELSEIF DOS.NameFromLock(shell.directory,ShellScratch(),LINE_CAPACITY)=0 THEN
       ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
@@ -1373,7 +1407,11 @@ BYTE FUNC ShellOpen(BYTE POINTER consoleName)
 
   shell.initialized=2
 
-RETURN(ShellScope())
+  IF ShellScope()=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(ShellAliasDefaults())
 
 ; Make the shell ready for input, reporting any recoverable startup failure.
 PROC ShellInitialPrompt()
