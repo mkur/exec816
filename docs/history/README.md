@@ -23,6 +23,8 @@ their recorded hashes and measurements are preserved here as historical evidence
   about 4 kHz capture with preserved fine SIO timing, one list per pointer move,
   matched desktop measurements and a refreshed OF816 preview; remaining timing
   limits are recorded separately from correctness.
+- [Desktop rendering](desktop-rendering.md): bounded damage, transactional copies
+  and optional snapshots; slice evidence and timing limits.
 - [Desktop development](desktop.md): frozen shell/mouse inputs and Task/memory
   budgets, client lifetime, framed presentation and the ST input checkpoint.
   DT0–DT7 are implemented, including the local OF816 preview. Pointer, outline,

@@ -73,9 +73,13 @@
   definitions when the gateway is implemented.
 - Use compiler and ABI inputs from the revision recorded in
   `toolchain/actionc.json`; document and record local overrides.
-- Test changed behavior through emitted machine code. Cover raw and optimized
-  NIR when validating compiler-facing behavior, plus stack/domain guards,
-  register restoration, OS coexistence and bounded completion where relevant.
+- Test changed behavior through emitted machine code. Use optimized builds for
+  routine functional, failure, integration and performance checks. Cover raw and
+  optimized NIR with small focused tests when validating compiler-facing behavior
+  such as ABI layouts, language bridges or code generation; also use raw builds
+  to diagnose suspected compiler/optimizer defects. Do not duplicate full system
+  scenarios in raw mode by default. Preserve stack/domain guards, register
+  restoration, OS coexistence and bounded completion where relevant.
 - Follow the [two-tier testing policy](docs/contributing/testing.md). Development checks are
   the default for ordinary changes: host checks and focused emitted-code tests
   for the affected behavior. Documentation-only edits require content and link

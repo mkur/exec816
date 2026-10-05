@@ -75,6 +75,17 @@ PROC Send(BYTE operation LONGCARD id)
 
 RETURN
 
+; Full-scene comparison after each aligned and overlapping move.
+PROC MovePanel(INT left,top CARD stage)
+
+  DESKTOP.Prepare(@request,DESKTYPES.MOVE)
+  request.bounds.left=left
+  request.bounds.top=top
+  Send(DESKTYPES.MOVE,panel)
+  Pause(stage)
+
+RETURN
+
 PROC Main()
   CARD row,column
   DOS.FileHandle POINTER file
@@ -126,6 +137,28 @@ PROC Main()
   Pause(5)
   Send(DESKTYPES.CLOSE,panel)
   Pause(6)
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_COMMANDS
+  request.payload=BYTE POINTER(c"Clip")
+  request.bytes=4
+  REGIONS.Assign(@request.bounds,0,0,160,80)
+  Send(DESKTYPES.OPEN,0)
+  panel=request.window
+  DESKTOP.Prepare(@request,DESKTYPES.REPLACE)
+  request.payload=BYTE POINTER(@content)
+  request.bytes=DESKTYPES.CONTENT_SIZE
+  Send(DESKTYPES.REPLACE,panel)
+  Send(DESKTYPES.SHOW,panel)
+  Pause(7)
+  MovePanel(32,24,8)
+  MovePanel(16,24,9)
+  MovePanel(16,8,10)
+  MovePanel(16,32,11)
+  MovePanel(480,160,12)
+  MovePanel(480,0,13)
+  MovePanel(0,160,14)
+  Send(DESKTYPES.CLOSE,panel)
+  Pause(15)
   Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
 
 RETURN

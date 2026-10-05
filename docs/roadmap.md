@@ -39,6 +39,14 @@ and memory reservations unchanged. Pointer, outline and move-repair timing
 targets remain open; presentation scheduling and exposure repair remain focused
 performance follow-ups.
 
+The proposed [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)
+turns that exposure work into a bounded milestone. The
+[DR0–DR7 plan](plans/gem4xe/desktop-rendering-implementation-plan.md) adds smaller
+damage sets, IRQ-completed top-window copies, reduced background overdraw and
+two optional VRAM snapshot slots. It keeps one presenter, targets zero additional
+bank-zero reservations and leaves partially obscured scrolling on retained
+redraw. Implementation is pending and does not resume the paused widget slices.
+
 The next functional milestone is the
 [AES widget library](plans/gem4xe/aes-widgets-implementation-plan.md), planned
 through AW0–AW6. AW0–AW4 now host selected GEM4XE object, drawing and form
