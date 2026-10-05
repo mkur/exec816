@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 4,
@@ -53,7 +53,11 @@
     "EVENT_WIDGET_ACTION": 8,
     "EVENT_WIDGET_CANCEL": 9,
     "STALE": 10,
-    "DRAW_FAILED": 11
+    "DRAW_FAILED": 11,
+    "SNAPSHOTS": 2,
+    "CACHE_MISS": 0,
+    "CACHE_PENDING": 1,
+    "CACHE_FAILED": 2
   },
   "records": {
     "Event": [
@@ -328,6 +332,40 @@
       [
         "widgetEpoch",
         "LONGCARD"
+      ],
+      [
+        "visualRevision",
+        "LONGCARD"
+      ],
+      [
+        "captureAttempt",
+        "LONGCARD"
+      ]
+    ],
+    "Snapshot": [
+      [
+        "window",
+        "LONGCARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "width",
+        "CARD"
+      ],
+      [
+        "height",
+        "CARD"
+      ],
+      [
+        "valid",
+        "BYTE"
+      ],
+      [
+        "pinned",
+        "BYTE"
       ]
     ],
     "Service": [
@@ -437,6 +475,15 @@
       [
         "widgetLoss",
         "LONGCARD"
+      ],
+      [
+        "snapshots",
+        "Snapshot",
+        "SNAPSHOTS"
+      ],
+      [
+        "cacheRecent",
+        "BYTE"
       ]
     ]
   }

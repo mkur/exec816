@@ -4,6 +4,7 @@ USE HEAPCORE
 USE LAYERS
 USE LAYERTYPES
 USE REGIONS
+USE DESKTYPES
 
 CARD checks
 
@@ -22,6 +23,7 @@ PROC Main()
   LAYERTYPES.Layer POINTER layer
   LAYERTYPES.Rect bounds
   LONGCARD token,id
+  DESKTYPES.Snapshot snapshot
   BYTE index
 
   scene=LAYERTYPES.Scene POINTER($11fff0)
@@ -70,6 +72,36 @@ PROC Main()
   Require(LAYERS.BeginMove(scene,id,0,0,@token)=LAYERTYPES.OK)
   Require(LAYERS.Finish(scene,token,0)=LAYERTYPES.OK)
   Require(layer.bounds.left=32 AND layer.bounds.top=32 AND layer.dirty<>0)
+
+  Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.REDRAW)
+  Require(LAYERS.BeginPaint(scene,id,@token)=LAYERTYPES.OK)
+  Require(LAYERS.AdvancePaint(scene,token)=LAYERTYPES.EMPTY)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.OK)
+  EXEC.Yield()
+  Require(scene.activeKind=LAYERTYPES.UPDATE_READ)
+  Require(LAYERS.Delete(scene,id)=LAYERTYPES.BUSY)
+  Require(LAYERS.Invalidate(scene,id,@layer.bounds)=LAYERTYPES.BUSY)
+  Require(LAYERS.Finish(scene,token,0)=LAYERTYPES.OK)
+  Require(layer.dirty=0 AND layer.damage.count=0)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.BAD_TOKEN)
+  Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.OK)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(layer.dirty=0 AND layer.damage.count=0)
+  Require(LAYERS.Show(scene,id,0)=LAYERTYPES.OK)
+  Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.REDRAW)
+  Require(SIZEOF(DESKTYPES.Snapshot)=DESKTYPES.SNAPSHOT_SIZE)
+  snapshot.window=$12345678
+  snapshot.revision=$87654321
+  snapshot.width=528
+  snapshot.height=184
+  snapshot.valid=1
+  snapshot.pinned=1
+  Require(snapshot.window=$12345678 AND snapshot.revision=$87654321)
+  Require(snapshot.width=528 AND snapshot.height=184
+      AND snapshot.valid=1 AND snapshot.pinned=1)
+  Require(DESKTYPES.SNAPSHOT_0_BASE=$50000
+      AND DESKTYPES.SNAPSHOT_1_BASE=$60000 AND DESKTYPES.SNAPSHOT_BYTES=65536)
 
 RETURN
 

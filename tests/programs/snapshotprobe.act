@@ -1,0 +1,156 @@
+; Fixture-only owner hook: no diagnostic branch is linked in the desktop.
+MODULE SNAPSHOTPROBE
+USE EXEC
+USE EXECLISTS
+USE DESKSTATE
+USE DESKTYPES
+USE DESKCORE
+USE DESKCACHE
+USE CONSOLEBITMAP
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+USE HEAPCORE
+
+BYTE command,phase
+LONGCARD id,token
+CARD checks
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa40+(checks & 63))
+  FI
+
+  checks==+1
+
+RETURN
+
+PUBLIC PROC Request(BYTE value LONGCARD window)
+
+  command=value
+  id=window
+  LET service=DESKSTATE.Get()
+  EXEC.Signal(service.owner,service.mask)
+
+RETURN
+
+PUBLIC BYTE FUNC Done()
+
+RETURN(command=0)
+
+PUBLIC BYTE FUNC Held()
+
+RETURN(phase=1)
+
+PUBLIC CARD FUNC Count()
+
+RETURN(checks)
+
+PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
+  LAYERTYPES.Rect client
+  BYTE status,index
+
+  IF command=0 THEN
+    RETURN
+  FI
+
+  LET window=DESKCORE.Find(service,id)
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  IF phase<>0 THEN
+    IF CONSOLEBITMAP.Pending()<>0 THEN
+      RETURN
+    FI
+
+    IF phase=1 THEN
+      IF command=5 AND EXECLISTS.IsListEmpty(@service.deferred)<>0 THEN
+        RETURN
+      FI
+
+      IF command=4 THEN
+        BEGIN
+          LET binding=CONSOLEBITMAP.GetBinding()
+          binding.failed=1
+        END
+      FI
+
+      DESKCACHE.Pump(service)
+      Require(layer.dirty=0)
+      Require(service.snapshots(0).pinned=0 AND service.snapshots(1).pinned=0)
+      IF command=1 OR command=5 THEN
+        Require(DESKCACHE.Lookup(service,window,528,184)<>255)
+      ELSE
+        Require(DESKCACHE.Lookup(service,window,528,184)=255)
+      FI
+
+      IF command=4 THEN
+        BEGIN
+          LET binding=CONSOLEBITMAP.GetBinding()
+          binding.failed=0
+          service.snapshots(0).pinned=1
+          service.snapshots(1).pinned=1
+          Require(DESKCACHE.Choose(service)=255)
+          service.snapshots(0).pinned=0
+          service.snapshots(1).pinned=0
+          service.snapshots(0).valid=1
+          service.snapshots(1).valid=1
+          service.cacheRecent=1
+          Require(DESKCACHE.Choose(service)=0)
+          service.cacheRecent=0
+          Require(DESKCACHE.Choose(service)=1)
+          service.snapshots(0).valid=0
+          service.snapshots(1).valid=0
+          window.visualRevision=$ffffffff
+          DESKCACHE.Changed(service,window)
+          Require(window.visualRevision=0)
+          Require(DESKCACHE.Capture(service,window)=0)
+        END
+      FI
+    ELSE
+      Require(DESKCACHE.Restored(service)<>0)
+      WHILE LAYERS.AdvancePaint(@service.scene,token)=LAYERTYPES.OK DO
+      OD
+      Require(LAYERS.Finish(@service.scene,token,1)=LAYERTYPES.OK)
+    FI
+
+    phase=0
+    command=0
+    RETURN
+  FI
+
+  IF service.scene.busy<>0 OR layer.dirty<>0 THEN
+    RETURN
+  FI
+
+  DESKCACHE.ClientBounds(layer,@client)
+  IF command=2 THEN
+    Require(LAYERS.Invalidate(@service.scene,layer.id,@client)=LAYERTYPES.OK)
+    Require(LAYERS.BeginPaint(@service.scene,layer.id,@token)=LAYERTYPES.OK)
+    Require(CONSOLEBITMAP.RawFill(CARD(client.left),CARD(client.top),528,184,0)<>0)
+    Require(DESKCACHE.Restore(service,window,@client,@client)=DESKTYPES.CACHE_PENDING)
+    phase=2
+  ELSE
+    IF window.visualRevision=0 THEN
+      window.visualRevision=1
+    ELSE
+      DESKCACHE.Changed(service,window)
+    FI
+
+    Require(DESKCACHE.Fits(528,184)<>0 AND DESKCACHE.Fits(640,240)=0)
+    Require(DESKCACHE.Fits(529,184)=0 AND DESKCACHE.Fits(0,1)=0)
+    Require(DESKCACHE.Capture(service,window)<>0)
+    Require(service.scene.activeKind=LAYERTYPES.UPDATE_READ)
+    Require(LAYERS.Delete(@service.scene,layer.id)=LAYERTYPES.BUSY)
+    index=IF service.snapshots(0).pinned<>0 THEN 0 ELSE 1 FI
+    Require(service.snapshots(index).valid=0)
+    Require(DESKCACHE.Choose(service)<>index)
+    IF command=3 THEN
+      DESKCACHE.Changed(service,window)
+    FI
+
+    phase=1
+  FI
+
+RETURN
+
+ENDMODULE

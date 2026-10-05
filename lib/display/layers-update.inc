@@ -175,6 +175,55 @@ PUBLIC BYTE FUNC BeginCopy(LAYERTYPES.Scene POINTER scene LONGCARD id
 
 RETURN(status)
 
+; Stabilize a clean visible source without acknowledging any paint. The caller
+; owns the destination and must retire DMA before releasing this read token.
+PUBLIC BYTE FUNC BeginRead(LAYERTYPES.Scene POINTER scene LONGCARD id
+    LAYERTYPES.Rect POINTER source LONGCARD POINTER token)
+  BYTE status
+  CARD index
+  LAYERTYPES.Layer POINTER layer
+
+  status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+
+  IF token=NULL OR REGIONS.Valid(source)=0 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  layer=Find(scene,id)
+  IF layer=NULL THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+
+  IF REGIONS.Contains(@layer.bounds,source)=0 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF REGIONS.Empty(source)<>0 THEN
+    RETURN(LAYERTYPES.EMPTY)
+  FI
+
+  IF layer.dirty<>0 OR layer.shown=0 THEN
+    RETURN(LAYERTYPES.REDRAW)
+  FI
+
+  index=0
+  WHILE index<layer.visible.count DO
+    IF REGIONS.Contains(@layer.visible.rects(index),source)<>0 THEN
+      status=Claim(scene,id,LAYERTYPES.UPDATE_READ,token)
+      IF status=LAYERTYPES.OK THEN
+        REGIONS.Copy(source,@scene.copySource)
+      FI
+      RETURN(status)
+    FI
+
+    index==+1
+  OD
+
+RETURN(LAYERTYPES.REDRAW)
+
 ; A clean top window keeps its committed bounds until matching DMA completion.
 ; Reuse the existing saved rectangle pair; copy and move cannot coexist.
 PUBLIC BYTE FUNC BeginMove(LAYERTYPES.Scene POINTER scene LONGCARD id
@@ -294,7 +343,7 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
     IF status<>LAYERTYPES.OK THEN
       RETURN(status)
     FI
-  ELSEIF completed=0 THEN
+  ELSEIF completed=0 AND scene.activeKind<>LAYERTYPES.UPDATE_READ THEN
     Mark(layer,@layer.bounds)
   FI
 

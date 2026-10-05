@@ -7,6 +7,7 @@ USE A816MEMORY
 USE HEAPCORE
 USE DESKTYPES
 USE DESKMOVE
+USE DESKCACHE
 USE DESKEVENTS
 USE DESKWIDGETS
 USE LAYERTYPES
@@ -223,6 +224,7 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
           RETURN(DESKTYPES.BAD_ARGUMENT)
         FI
 
+        window.visualRevision=1
         window.id=service.nextWindow
         service.nextWindow==+1
         window.client=client.id
@@ -450,6 +452,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
         service.consoleWindow=0
       FI
 
+      DESKCACHE.Invalidate(service,window.id)
       DESKWIDGETS.Retire(window)
       A816MEMORY.Clear(BYTE POINTER(window),DESKTYPES.WINDOW_SIZE)
     FI

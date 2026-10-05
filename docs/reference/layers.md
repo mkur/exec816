@@ -164,3 +164,13 @@ Unsupported: overlapping access to one scene by different Tasks, partially
 offscreen layers, resizing, transparency, nested layers, offscreen backing
 bitmaps, font clipping, window controls, input policy, dynamic library loading,
 C bindings and direct hardware submission. The desktop presenter supplies drawing, input and window policy separately.
+
+### Read transactions
+
+`BeginRead(scene,id,source,tokenOut)` holds a clean, shown source contained in a
+visible rectangle. Covered/dirty sources return `REDRAW`; empty sources acquire
+no token. Geometry and retained mutations remain gated until `Finish` after DMA
+retirement. `UPDATE_READ` completion never acknowledges paint and a failed read
+does not mark clean framebuffer pixels dirty merely because its destination
+failed. The saved source rectangle is owned by the scene. The existing copy,
+move and paint operations remain mutually exclusive with a read.

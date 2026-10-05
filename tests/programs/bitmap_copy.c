@@ -122,3 +122,62 @@ void CopyExhaustion(void)
     check(VbxeClose(&display)==DISPLAY_OK && VbxeOpen(&display)==DISPLAY_OK);
     check(VbxeCopyStart(&display,&request,&id)==DISPLAY_UNSUPPORTED && id==12345);
 }
+
+#include <hardware/vbxe-snapshots.h>
+/* Packed capture/restore through both reserved slots, including all slot slack. */
+void CopySnapshots(void)
+{
+    UWORD slot,large,y,x,width,height,pitch,good,n,launches;
+    ULONG base,used,offset,id;
+    for (slot=0;slot<2;slot++) for (large=0;large<2;large++) {
+        base=slot ? DESKTOP_SNAPSHOT_1_BASE : DESKTOP_SNAPSHOT_0_BASE;
+        width=large ? 630 : 528; height=large ? 208 : 184;
+        pitch=width/2; used=(ULONG)pitch*height;
+        memset(buffer,0xa5,sizeof(buffer));
+        check(VbxeWrite(&display,base-16,buffer,16)==DISPLAY_OK);
+        check(VbxeWrite(&display,base+DESKTOP_SNAPSHOT_BYTES,buffer,16)==DISPLAY_OK);
+        for (offset=0;offset<DESKTOP_SNAPSHOT_BYTES;offset+=sizeof(buffer))
+            check(VbxeWrite(&display,base+offset,buffer,sizeof(buffer))==DISPLAY_OK);
+        for (y=0;y<240;y++) {
+            for (x=0;x<320;x++) buffer[x]=(UBYTE)(x+y);
+            check(VbxeWrite(&display,(ULONG)y*320,buffer,320)==DISPLAY_OK);
+        }
+        memset(&request,0,sizeof(request));
+        request.source.pitch=320; request.source.width=640; request.source.height=240;
+        request.destination.offset=base; request.destination.pitch=pitch;
+        request.destination.width=request.width=width;
+        request.destination.height=request.height=height;
+        launches=scrollLaunches;
+        check(VbxeCopyStart(&display,&request,&id)==DISPLAY_OK && id);
+        check(scrollLaunches==launches+1 && VbxeFence(&display)==DISPLAY_OK);
+        for (y=0;y<height;y++) {
+            check(VbxeRead(&display,base+(ULONG)y*pitch,buffer,pitch)==DISPLAY_OK);
+            good=1; for (x=0;x<pitch;x++) if (buffer[x]!=(UBYTE)(x+y)) good=0;
+            check(good);
+        }
+        for (offset=used;offset<DESKTOP_SNAPSHOT_BYTES;offset+=n) {
+            n=(UWORD)((DESKTOP_SNAPSHOT_BYTES-offset)>sizeof(buffer) ? sizeof(buffer) : DESKTOP_SNAPSHOT_BYTES-offset);
+            check(VbxeRead(&display,base+offset,buffer,n)==DISPLAY_OK);
+            good=1; for (x=0;x<n;x++) if (buffer[x]!=0xa5) good=0;
+            check(good);
+        }
+        check(VbxeRead(&display,base-16,buffer,16)==DISPLAY_OK);
+        check(VbxeRead(&display,base+DESKTOP_SNAPSHOT_BYTES,buffer+16,16)==DISPLAY_OK);
+        good=1; for (x=0;x<32;x++) if (buffer[x]!=0xa5) good=0;
+        check(good);
+        check(VbxeFill(&display,0,320,320,240,0)==DISPLAY_OK);
+        request.source=request.destination;
+        request.destination.offset=0; request.destination.pitch=320;
+        request.destination.width=640; request.destination.height=240;
+        launches=scrollLaunches;
+        check(VbxeCopyStart(&display,&request,&id)==DISPLAY_OK && id);
+        check(scrollLaunches==launches+1 && VbxeFence(&display)==DISPLAY_OK);
+        for (y=0;y<240;y++) {
+            check(VbxeRead(&display,(ULONG)y*320,buffer,320)==DISPLAY_OK);
+            good=1;
+            for (x=0;x<320;x++)
+                if (buffer[x]!=(UBYTE)(x<pitch && y<height ? x+y : 0)) good=0;
+            check(good);
+        }
+    }
+}

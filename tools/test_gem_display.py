@@ -16,14 +16,14 @@ from test_large_stacks import observe
 
 CASES=['pattern','unknown-baseline','absent','unsupported','busy-timeout','vcount-timeout',
        'unquiesced','retained-owner','wrap-timeout','map-nmi','bitmap-copy','copy-fault',
-       'async-scroll','async-timeout','async-wrap','async-unquiesced','async-lost-irq','async-copy','copy-boundary','copy-exhaustion']
+       'async-scroll','async-timeout','async-wrap','async-unquiesced','async-lost-irq','async-copy','copy-boundary','copy-exhaustion','snapshot-copy']
 
 
 def run(output,mode,cases=None,replay=False,production=False):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     if production:
-        require(cases is None or cases in (['pattern'],['bitmap-copy'],['async-scroll'],['async-copy'],['copy-boundary']),'Production control needs a real-hardware case')
+        require(cases is None or cases in (['pattern'],['bitmap-copy'],['async-scroll'],['async-copy'],['copy-boundary'],['snapshot-copy']),'Production control needs a real-hardware case')
         cases=cases or ['pattern']
     report=dict(status='running',tier='development',slice='G3',mode=mode,cases=[],production_control=production)
     try:

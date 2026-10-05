@@ -19,6 +19,7 @@ static volatile UWORD retired;
 extern void CopyCases(void);
 extern void CopyMaximum(void);
 extern void CopyExhaustion(void);
+extern void CopySnapshots(void);
 extern volatile UWORD copyFailures;
 extern void ScrollCases(void);
 extern volatile UWORD scrollFailures;
@@ -220,7 +221,8 @@ void Renderer(void)
                 check(!display.mutated && display.lease.state==DISPLAY_FREE);
                 fault_arm=0;
             } else {
-                if (variant>=17) { CopyCases(); if (variant==17) CopyMaximum(); if (variant==19) CopyExhaustion(); check(!copyFailures); }
+                if (variant==20) { CopySnapshots(); check(!copyFailures); }
+                else if (variant>=17) { CopyCases(); if (variant==17) CopyMaximum(); if (variant==19) CopyExhaustion(); check(!copyFailures); }
                 else if (variant>=12) { ScrollCases(); check(!scrollFailures); }
                 else if (variant>=10) { CopyCases(); check(!copyFailures); }
                 pattern();

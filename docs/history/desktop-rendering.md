@@ -126,3 +126,35 @@ BUSY-edge claim is made by this check.
 Reserved bank-zero delta is zero for fixed state, root/kernel, each of eight
 public Tasks and idle, including guards, alignment and unused capacity. Upper
 RAM globals and VRAM reservations also have zero delta.
+
+## DR5: bounded client snapshots
+
+Two 64 KiB slots at `$50000` and `$60000` hold compact client pixels. Their
+addresses come from the shared VRAM map and generate native and C constants.
+The private facility checks even geometry and slot capacity, chooses invalid
+then least-recently-used unpinned storage, and publishes a capture only after
+matching completion and window/revision validation. Restore pins survive until
+the painter adopts completion. Close invalidates identity; revision exhaustion
+disables caching. Retained drawing remains available.
+
+A Layers read transaction freezes a clean visible source without acknowledging
+damage. Failure releases only after quiescence and does not dirty the source
+screen solely because an optional destination failed. Capture removes overlays
+through the shared bridge. General offscreen rendering is unsupported.
+
+The [DR5 development record](../development/desktop-rendering-dr5.json) includes
+71-check small probes in both compiler modes; optimized full-scene capture,
+restore, revision mismatch, failed capture, pin/LRU and queued-close checks;
+and production-driver compact copies through both slots. The latter compares
+528 by 184 and 630 by 208 images, all unused slot bytes and surrounding guards,
+including zero-valued pixels. The 640 by 240 facility request falls back.
+The owner hook injects an already-quiescent capture failure; actual transport
+recovery remains covered by DR2. This is not new hosted-system qualification.
+
+Window metadata grows by eight bytes, each snapshot occupies fourteen bytes,
+and the Service grows from 12,280 to 12,342 bytes including alignment. The
+facility has nine bytes of upper-RAM continuation payload. VRAM reservations
+grow by 131,072 bytes including slack, totaling 243,200, with 281,088 unassigned.
+Reserved bank-zero delta is zero for fixed state, root/kernel, all eight public
+Tasks and idle, including guards, alignment and spare capacity. No cache owns
+a stack or direct page. Automatic scheduling is introduced in DR6.

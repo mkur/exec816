@@ -231,3 +231,20 @@ and retains the old geometry with touched pixels invalidated. An unquiesced
 fault keeps the existing reset-required retention behavior. Console moves
 preserve circular cells, dirtiness and presentation generation, updating only
 placement and caret bookkeeping; ordinary focus changes still invalidate.
+
+### Private client snapshots
+
+The VRAM map reserves two 64 KiB compact snapshot slots at `$50000` and `$60000`.
+`DESKCACHE` stores client pixels only; frames and console content remain retained
+drawing. Even-width images must fit one slot and the 640 by 240 copy limit.
+Window identity, visual revision and dimensions determine validity; position is
+not part of the local image. Exhausted revisions disable caching. A pinned slot
+cannot be evicted or reused before DMA retirement. Invalid slots are selected
+first, then the least recently used unpinned slot. The generated Service is
+12,342 bytes, including the two fourteen-byte slot records and alignment.
+
+Capture holds a Layers read token, strips overlays, and becomes valid only after
+matching completion. Restore borrows the caller's paint token until completion.
+Quiescent failures retire the pin and follow display recovery; an unquiesced
+fault retains all referenced storage. Closing a window invalidates its snapshot
+identity before clearing the record. There is no public offscreen drawing API.
