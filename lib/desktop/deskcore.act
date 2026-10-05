@@ -6,6 +6,7 @@ USE EXECLISTS
 USE A816MEMORY
 USE HEAPCORE
 USE DESKTYPES
+USE DESKMOVE
 USE DESKEVENTS
 USE DESKWIDGETS
 USE LAYERTYPES
@@ -406,8 +407,8 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
     FI
 
     DESKWIDGETS.Cancel(service,window)
-    status=LAYERS.Move(@service.scene,window.layer,
-        request.bounds.left,request.bounds.top)
+    RETURN(DESKMOVE.Start(service,window,
+        request.bounds.left,request.bounds.top,request))
   WHEN DESKTYPES.RAISE THEN
     status=LAYERS.Order(@service.scene,window.layer,1)
   WHEN DESKTYPES.FOCUS THEN

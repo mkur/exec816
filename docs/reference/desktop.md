@@ -216,3 +216,18 @@ stack or DP reservation is introduced.
 
 [Development evidence](../history/desktop.md) records raw/optimized execution,
 stack observations and limits. These checks do not establish physical-device or whole-system qualification.
+
+## Copied moves
+
+Programmatic MOVE and drag release share one presenter continuation. A clean,
+fully visible front window with even X/width can copy its complete rectangle
+through the IRQ-completed typed driver operation. Dirty, covered and unaligned
+sources use retained redraw. The scene token gates model/layout changes and
+queued HIDE/CLOSE while the copy is active; input capture can continue.
+
+The reply acknowledges committed geometry after successful DMA, before all
+exposure repair or final scanout. A quiescent transfer fault returns DRAW_FAILED
+and retains the old geometry with touched pixels invalidated. An unquiesced
+fault keeps the existing reset-required retention behavior. Console moves
+preserve circular cells, dirtiness and presentation generation, updating only
+placement and caret bookkeeping; ordinary focus changes still invalidate.

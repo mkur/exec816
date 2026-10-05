@@ -75,3 +75,34 @@ the existing four-byte sequence counter. Upper-RAM driver-state delta is zero;
 VRAM delta is zero. Fixed, root/kernel, all public Task and idle reserved
 bank-zero deltas are zero, including guards, alignment and unused capacity.
 There is no new signal, Task, stack, DP, queue or watchdog.
+
+## DR3: transactional window moves
+
+Clean, aligned front windows now copy through one IRQ-completed operation.
+Layers retains old/new bounds in its existing rectangle pair; it publishes new
+geometry only on successful completion and damages old-minus-new exposure.
+Failure after quiescence keeps old geometry and invalidates touched pixels.
+Programmatic MOVE and drag release share one continuation. Replies acknowledge
+geometry commit, while queued mutations remain gated during DMA. Console moves
+rebase placement without replaying its circular character model.
+
+The [DR3 record](../development/desktop-rendering-dr3.json) includes far-layout
+and transaction probes in both modes, optimized service/desktop/widget scenes,
+physical idle drags, screen-edge moves and cancellation/retirement checks. A
+passive CPU trace verifies one asynchronous launch for each of eight eligible
+moves. The small emitted probe checks old hit-test geometry during the hold,
+atomic commit and failure damage. The drag oracle now waits for adoption after
+gesture release. Removing a caret explicitly schedules its restoration even
+when the copied move exposes no console pixels. No observer code is linked
+into the production executable.
+
+The Layers/Service records do not grow: transactions reuse the existing saved
+rectangle pair. Presenter globals add ten upper-RAM bytes within the existing
+arena. Reserved bank-zero and VRAM deltas are zero; fixed, root/kernel, all eight
+public Tasks and idle retain their guards, alignment and full reserved capacity.
+Desktop test helpers default to an 8 KiB globals arena for composed fixtures;
+demo builders continue supplying their explicit 4 KiB profile.
+
+The two idle drag samples reached 279.6 ms release-to-repair, exceeding the
+250 ms target. These checks establish correctness, not timing acceptance;
+DR4–DR7 retain this open target and require the larger matched sample set.

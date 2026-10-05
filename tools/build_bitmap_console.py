@@ -119,6 +119,12 @@ RETURN
 
 def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,desktop=False,**kwargs):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
+    if desktop and 'memory_profile' not in kwargs:
+        from generate_memory import PROFILE
+        profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
+        memory=out/'fixture-memory.json'
+        memory.write_text(json.dumps(profile,indent=2)+'\n')
+        kwargs['memory_profile']=memory
     foreign=drawing(out,optimize,probe,fault,widgets=desktop)
     launcher=prepare(Path(source),out,foreign,desktop)
     program=build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,

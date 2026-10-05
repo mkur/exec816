@@ -21,7 +21,7 @@ PROC Main()
   LAYERTYPES.Scene POINTER scene
   LAYERTYPES.Layer POINTER layer
   LAYERTYPES.Rect bounds
-  LONGCARD token
+  LONGCARD token,id
   BYTE index
 
   scene=LAYERTYPES.Scene POINTER($11fff0)
@@ -51,6 +51,25 @@ PROC Main()
 
   Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
   Require(scene.busy=0 AND layer.dirty=0 AND layer.damage.count=0)
+  REGIONS.Assign(@bounds,16,16,80,64)
+  Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,id,1)=LAYERTYPES.OK)
+  Require(LAYERS.BeginMove(scene,id,32,32,@token)=LAYERTYPES.REDRAW)
+  Require(LAYERS.BeginPaint(scene,id,@token)=LAYERTYPES.OK)
+  Require(LAYERS.AdvancePaint(scene,token)=LAYERTYPES.EMPTY)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  layer=LAYERS.Find(scene,id)
+  Require(LAYERS.BeginMove(scene,id,32,32,@token)=LAYERTYPES.OK)
+  EXEC.Yield()
+  Require(layer.bounds.left=16 AND scene.copyTarget.left=32)
+  Require(LAYERS.Hit(scene,16,16)=id)
+  Require(LAYERS.Show(scene,id,0)=LAYERTYPES.BUSY)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(layer.bounds.left=32 AND layer.bounds.top=32 AND layer.dirty=0)
+  Require(LAYERS.Hit(scene,16,16)=0 AND LAYERS.Hit(scene,32,32)=id)
+  Require(LAYERS.BeginMove(scene,id,0,0,@token)=LAYERTYPES.OK)
+  Require(LAYERS.Finish(scene,token,0)=LAYERTYPES.OK)
+  Require(layer.bounds.left=32 AND layer.bounds.top=32 AND layer.dirty<>0)
 
 RETURN
 

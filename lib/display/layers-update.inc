@@ -175,11 +175,97 @@ PUBLIC BYTE FUNC BeginCopy(LAYERTYPES.Scene POINTER scene LONGCARD id
 
 RETURN(status)
 
+; A clean top window keeps its committed bounds until matching DMA completion.
+; Reuse the existing saved rectangle pair; copy and move cannot coexist.
+PUBLIC BYTE FUNC BeginMove(LAYERTYPES.Scene POINTER scene LONGCARD id
+    INT left,top LONGCARD POINTER token)
+  BYTE status
+  INT width,height
+  LAYERTYPES.Layer POINTER layer
+
+  status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+
+  IF token=NULL THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  layer=Find(scene,id)
+  IF layer=NULL OR id=0 THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+
+  width=layer.bounds.right-layer.bounds.left
+  height=layer.bounds.bottom-layer.bounds.top
+  IF left<0 OR top<0 OR left>scene.screen.right-width
+      OR top>scene.screen.bottom-height THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF left=layer.bounds.left AND top=layer.bounds.top THEN
+    RETURN(LAYERTYPES.EMPTY)
+  FI
+
+  IF layer.dirty<>0 OR layer.shown=0 OR layer.visible.count<>1
+      OR scene.items(scene.order(0)).id<>id THEN
+    RETURN(LAYERTYPES.REDRAW)
+  FI
+
+  IF REGIONS.Equal(@layer.visible.rects(0),@layer.bounds)=0 THEN
+    RETURN(LAYERTYPES.REDRAW)
+  FI
+
+  status=Claim(scene,id,LAYERTYPES.UPDATE_MOVE,token)
+  IF status=LAYERTYPES.OK THEN
+    REGIONS.Copy(@layer.bounds,@scene.copySource)
+    REGIONS.Assign(@scene.copyTarget,left,top,left+width,top+height)
+  FI
+
+RETURN(status)
+
+PROC Expose(LAYERTYPES.Scene POINTER scene INT left,top,right,bottom)
+  LAYERTYPES.Rect rect
+
+  IF left<right AND top<bottom THEN
+    REGIONS.Assign(@rect,left,top,right,bottom)
+    DamageAll(scene,@rect)
+  FI
+
+RETURN
+
+; Commit metadata and expose old minus new, never replay the copied window.
+BYTE FUNC CommitMove(LAYERTYPES.Scene POINTER scene
+    LAYERTYPES.Layer POINTER layer BYTE completed)
+  LAYERTYPES.Rect overlap
+
+  IF completed=0 THEN
+    DamageAll(scene,@scene.copySource)
+    DamageAll(scene,@scene.copyTarget)
+    RETURN(LAYERTYPES.OK)
+  FI
+
+  REGIONS.Copy(@scene.copyTarget,@layer.bounds)
+  LET old=@scene.copySource
+  REGIONS.Intersect(old,@scene.copyTarget,@overlap)
+  IF REGIONS.Empty(@overlap)<>0 THEN
+    DamageAll(scene,old)
+  ELSE
+    Expose(scene,old.left,old.top,old.right,overlap.top)
+    Expose(scene,old.left,overlap.bottom,old.right,old.bottom)
+    Expose(scene,old.left,overlap.top,overlap.left,overlap.bottom)
+    Expose(scene,overlap.right,overlap.top,old.right,overlap.bottom)
+  FI
+
+RETURN(Rebuild(scene))
+
 ; Call only after completed drawing or proven DMA quiescence on failure.
 ; Covered model pixels are redrawn on later exposure, which marks damage anew.
 PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
     BYTE completed)
   LAYERTYPES.Layer POINTER layer
+  BYTE status
 
   IF scene=NULL THEN
     RETURN(LAYERTYPES.BAD_ARGUMENT)
@@ -202,6 +288,11 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
 
       layer.dirty=0
       layer.damage.count=0
+    FI
+  ELSEIF scene.activeKind=LAYERTYPES.UPDATE_MOVE THEN
+    status=CommitMove(scene,layer,completed)
+    IF status<>LAYERTYPES.OK THEN
+      RETURN(status)
     FI
   ELSEIF completed=0 THEN
     Mark(layer,@layer.bounds)

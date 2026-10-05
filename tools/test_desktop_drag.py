@@ -207,6 +207,9 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                         # oracle, draining any write already in flight.
                         write('DESKTEST', 'mode', 0)
                         reach(f'db(${at("DESKDRAG", "phase"):x})=0', 'native_irq')
+                        if any('_DESKMOVE_MOVETOKEN_' in d['name'] for d in p['image']['data']):
+                            reach(f'dw(${at("DESKMOVE", "moveToken"):x})=0', 'native_irq')
+                            require(read('DESKMOVE', 'moveToken', 4)==0, 'Move token still active')
                         committed = clock()
                         require(bounds() == outline, 'Release geometry differs from clamped/grid oracle')
                         shell = outline
@@ -231,6 +234,10 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                     target = target_at(origin, press, position)
                     button(False)
                     reach(f'db(${at("DESKDRAG", "phase"):x})=0', 'native_irq')
+                    # Gesture release submits a move; geometry commits at DMA adoption.
+                    if any('_DESKMOVE_MOVETOKEN_' in d['name'] for d in p['image']['data']):
+                        reach(f'dw(${at("DESKMOVE", "moveToken"):x})=0', 'native_irq')
+                        require(read('DESKMOVE', 'moveToken', 4)==0, 'Move token still active')
                     require(bounds() == target, 'Screen-edge clamp differs')
                     shell = target
                     report['scenes'].append(visible())

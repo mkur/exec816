@@ -24,7 +24,7 @@ class DesktopContractTests(unittest.TestCase):
         self.assertLessEqual(constants['WINDOWS'], 8)  # durable notice bits
 
     def test_library_calls_are_not_task_entries(self):
-        for module in ('DESKTOP', 'DESKCORE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT', 'DESKWIDGETS', 'DESKWIDGETINPUT'):
+        for module in ('DESKTOP', 'DESKCORE', 'DESKMOVE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT', 'DESKWIDGETS', 'DESKWIDGETINPUT'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
 
     def test_demo_registers_only_its_worker_entry(self):

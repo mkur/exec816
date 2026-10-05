@@ -6,6 +6,7 @@ USE INPUT
 USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
+USE DESKMOVE
 USE DESKEVENTS
 USE LAYERTYPES
 USE LAYERS
@@ -234,8 +235,8 @@ PUBLIC PROC Advance()
 
   IF phase=MOVE_PENDING THEN
     drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
-    status=LAYERS.Move(@service.scene,layer.id,target.left,target.top)
-    IF status<>LAYERTYPES.OK THEN
+    status=BYTE(DESKMOVE.Start(service,window,target.left,target.top,NULL))
+    IF status<>DESKTYPES.OK AND status<>DESKTYPES.PENDING THEN
       HEAPCORE.Abort($faed)
     FI
 

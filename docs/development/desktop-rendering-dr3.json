@@ -1,0 +1,492 @@
+{
+  "slice": "DR3",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "validation": {
+    "probe_raw": {
+      "path": "build/desktop-rendering/dr3/probe-raw/results.json",
+      "sha256": "8d25cfff15a365e3806ded922e391710ce47ef43a4490fadd958bbc169227c21",
+      "checks": 51,
+      "scenes": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 250,
+          "remaining_above_floor": 1030
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 146,
+          "remaining_above_floor": 1134
+        }
+      }
+    },
+    "probe_opt": {
+      "path": "build/desktop-rendering/dr3/probe-move-opt/results.json",
+      "sha256": "03f50f6a8d26220e21037b2e18bb030291aa11bd8077b6027556777bafe4522f",
+      "checks": 51,
+      "scenes": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 248,
+          "remaining_above_floor": 1032
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 142,
+          "remaining_above_floor": 1138
+        }
+      }
+    },
+    "presentation": {
+      "path": "build/desktop-rendering/dr3/presentation-final/presentation-results.json",
+      "sha256": "ee82a35a8f908fc50d272d52d2e580c82d698958dc1a645fc8c5d945d6e843df",
+      "checks": 62,
+      "scenes": 15,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 382,
+          "remaining_above_floor": 898
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 721,
+          "remaining_above_floor": 1583
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 52,
+          "remaining_above_floor": 204
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 273,
+          "remaining_above_floor": 1007
+        }
+      },
+      "move_transactions": [
+        {
+          "stage": 3,
+          "launches": [
+            4306950236.0
+          ]
+        },
+        {
+          "stage": 8,
+          "launches": [
+            4419694335.0
+          ]
+        },
+        {
+          "stage": 9,
+          "launches": [
+            4419978861.0
+          ]
+        },
+        {
+          "stage": 10,
+          "launches": [
+            4420334446.0
+          ]
+        },
+        {
+          "stage": 11,
+          "launches": [
+            4420547956.0
+          ]
+        },
+        {
+          "stage": 12,
+          "launches": [
+            4420726183.0
+          ]
+        },
+        {
+          "stage": 13,
+          "launches": [
+            4421157976.0
+          ]
+        },
+        {
+          "stage": 14,
+          "launches": [
+            4421904505.125
+          ]
+        }
+      ]
+    },
+    "widgets": {
+      "path": "build/desktop-rendering/dr3/widgets/presentation-results.json",
+      "sha256": "a2c06b6738c67c57c6d4576a0a0379ef5b45f8420ffe20538bfe38a74a581205",
+      "checks": 49,
+      "scenes": 10,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 363,
+          "remaining_above_floor": 917
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 711,
+          "remaining_above_floor": 1593
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 46,
+          "remaining_above_floor": 210
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      }
+    },
+    "service": {
+      "path": "build/desktop-rendering/dr3/service/results.json",
+      "sha256": "754644d8d0a6430f5dedbce7e4f7403009ea9f53c3641b63b518ed7ae1afaa96",
+      "checks": 321,
+      "scenes": 0,
+      "stacks": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 146,
+          "remaining_above_floor": 1134
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 102,
+          "remaining_above_floor": 666
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 400,
+          "remaining_above_floor": 1904
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 270,
+          "remaining_above_floor": 1010
+        }
+      }
+    },
+    "drag": {
+      "path": "build/desktop-rendering/dr3/drag/results.json",
+      "sha256": "000bf32f43c24bb9a27cdf9abdf9fcf60d0fe81f2169f1fd6c07607069ce7956",
+      "checks": null,
+      "scenes": 4,
+      "timing": {
+        "idle": {
+          "count": 2,
+          "median_ms": 279.5784763856838,
+          "p95_ms": 279.5784763856838,
+          "max_ms": 279.5784763856838
+        }
+      },
+      "outline_timing": {
+        "idle": {
+          "count": 8,
+          "median_ms": 44.89624023265419,
+          "p95_ms": 562.5040352195371,
+          "max_ms": 562.5040352195371
+        }
+      },
+      "repair_target_pass": false
+    }
+  },
+  "comparison": [
+    {
+      "stage": 3,
+      "before_cycles": 1031473,
+      "after_cycles": 391248
+    },
+    {
+      "stage": 8,
+      "before_cycles": 426817,
+      "after_cycles": 284544
+    },
+    {
+      "stage": 9,
+      "before_cycles": 462384,
+      "after_cycles": 355680
+    },
+    {
+      "stage": 10,
+      "before_cycles": 355679,
+      "after_cycles": 213408
+    },
+    {
+      "stage": 11,
+      "before_cycles": 320113,
+      "after_cycles": 177841
+    },
+    {
+      "stage": 12,
+      "before_cycles": 1209312,
+      "after_cycles": 426816
+    },
+    {
+      "stage": 13,
+      "before_cycles": 853632,
+      "after_cycles": 746927
+    },
+    {
+      "stage": 14,
+      "before_cycles": 1280447,
+      "after_cycles": 604657
+    }
+  ],
+  "comparison_scope": "Matching request-to-settled scenes, including two PAL settling frames; no exact DMA-time claim.",
+  "host": {
+    "tests": 352,
+    "skips": 4
+  },
+  "memory": {
+    "bank_zero": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "vram": 0,
+    "scene_delta": 0,
+    "presenter_globals_added": 10
+  },
+  "fixes": [
+    "A removed caret explicitly invalidates the presentation index, even when a command move exposes no console pixels.",
+    "Physical drag oracle waits for move adoption after gesture release."
+  ]
+}

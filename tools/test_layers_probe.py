@@ -28,7 +28,7 @@ def run(out, mode):
         checks = data(b, p['image'], 'checks', True)[0]
         stacks = stack_usage(b, p['build']['memory'])
     result = dict(status='pass', tier='development', qualification=False, mode=mode,
-                  scope='Far record layout/access, eight paint batches, early finish and call results',
+                  scope='Far record layout/access, paint batches, early finish, atomic move commit/failure and call results',
                   layout=layout(), checks=checks, machine=machine, runtime=runtime,
                   stack_usage=stacks, build=p['build'])
     (out/'results.json').write_text(json.dumps(result, indent=2)+'\n')

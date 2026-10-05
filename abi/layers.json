@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "constants": {
     "MAX_LAYERS": 4,
     "MAX_RECTS": 96,
@@ -16,7 +16,8 @@
     "SLOT_COUNT": 5,
     "UPDATE_PAINT": 1,
     "UPDATE_COPY": 2,
-    "MAX_DAMAGE": 8
+    "MAX_DAMAGE": 8,
+    "UPDATE_MOVE": 3
   },
   "records": {
     "Rect": [

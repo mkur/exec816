@@ -43,6 +43,7 @@ IDs and update tokens never repeat within that lifetime.
 | `Create(scene,bounds,idOut)` | Admit a nonempty rectangle fully within the screen. Create it hidden at the front of the stacking order and return a fresh nonzero ID. FULL at four live layers; EXHAUSTED after the last 32-bit ID. Rejection leaves `idOut` unchanged. |
 | `Show(scene,id,shown)` | Show with 1 or hide with 0. Retain content identity while hidden. |
 | `Move(scene,id,left,top)` | Preserve dimensions; reject positions outside the screen without overflow. Mark old/new areas for repair. |
+| `BeginMove(scene,id,left,top,tokenOut)` | Admit a clean, shown, fully visible front layer for a copied move; retain old/new bounds until Finish. EMPTY for unchanged placement, REDRAW for a nonclean/covered/nonfront source. |
 | `Order(scene,id,front)` | Move to front with 1 or back with 0. Background always remains below ordinary layers. |
 | `Delete(scene,id)` | Retire the layer and damage the affected area. Reusing its slot assigns a different ID. |
 | `Find(scene,id)` | Borrow a read-only layer record, or NULL for a stale ID. Zero selects the permanent background. |
@@ -104,6 +105,14 @@ VBXE driver's even-pixel and extent requirements. Layers admission alone is not
 hardware admission. A successful copy must leave the retained model and copied
 pixels consistent; exposed strips and later content edits still need drawing.
 Finish with zero invalidates the entire layer after a failed copy.
+
+A move transaction reuses the saved rectangle pair for old and new bounds.
+Hit testing and Find continue to expose the old committed bounds during DMA.
+Finish-success publishes the target geometry, rebuilds visibility and marks at
+most four old-minus-new exposure rectangles below it. The copied layer stays
+clean. Finish-failure keeps old geometry and invalidates both touched areas;
+it is permitted only after the driver proves quiescence. No extra region,
+transaction buffer or per-window storage is reserved.
 
 The token does not signal hardware completion. Keep it active until the driver
 has completed or proved DMA quiescent. A reset-required failure retains storage

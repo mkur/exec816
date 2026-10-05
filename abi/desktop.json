@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 4,
@@ -52,7 +52,8 @@
     "READ_WIDGET_STATE": 15,
     "EVENT_WIDGET_ACTION": 8,
     "EVENT_WIDGET_CANCEL": 9,
-    "STALE": 10
+    "STALE": 10,
+    "DRAW_FAILED": 11
   },
   "records": {
     "Event": [

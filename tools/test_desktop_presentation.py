@@ -2,6 +2,7 @@
 """Compare the worker-hosted desktop with an independent complete raster."""
 import argparse
 import json
+import os
 from pathlib import Path
 import adapter_state as adapter
 from build_bitmap_console import build_bitmap
@@ -16,6 +17,8 @@ from test_gem_interactive import pixels
 from test_gem_cursor import overlay
 from desktop_budget import delta as desktop_delta
 from generate_memory import PROFILE
+from generate_desktop import layout as desktop_layout
+from generate_layers import layout as layers_layout
 from stack_budget import bank_zero_delta, stack_usage
 
 
@@ -71,7 +74,7 @@ def scenes(font):
         yield overlay(raster, (320, 120))
 
 
-def run(out, mode, replay=False):
+def run(out, mode, replay=False, observe_moves=False):
     out.mkdir(parents=True, exist_ok=True)
     profile = json.loads(PROFILE.read_text())
     profile['image_data_bytes'] = 8192  # Fixture records, separate from the demo's 4 KiB.
@@ -81,14 +84,18 @@ def run(out, mode, replay=False):
         ROOT/'tests/programs/desktop_presentation.act', out, mode == 'opt', desktop=True, memory_profile=memory)
     require(p['build']['optimize'] == (mode == 'opt'), 'Wrong compiler mode')
     report = dict(status='running', tier='development', qualification=False, slice='DT2',
-                  build=p['build'], observations=[], bank_zero_delta=bank_zero_delta(p['build']['memory']),
+                  build=p['build'], observations=[], move_transactions=[], bank_zero_delta=bank_zero_delta(p['build']['memory']),
                   reserved_bank_zero_delta=desktop_delta(p['build']['memory']))
     address = lambda name: next(d['address'] for d in p['image']['data'] if '_DESKTEST_'+name+'_' in d['name'])
+    if observe_moves:
+        os.environ['EXEC816_LATENCY_TRACE']='1'
+        os.environ['EXEC816_LATENCY_PCS']=f'{p["labels"]["blitter_launched"]:x}'
     try:
         with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
             require(sha256(BRIDGE/'AltirraBridgeServer') == PIN['mouse_input']['tooling']['sha256'], 'Unpinned emulator')
             report['machine'] = verify_machine(bridge, ROM, PIN)
             def before(b):
+                if observe_moves: b.profile_start()
                 previous_clock = b.eval_expr('@clk') & 0xffffffff
                 for stage, expected in enumerate(scenes(font_bytes(out/'selected/src/vdi/font8x8.c')), 1):
                     marker = p['labels']['native_nmi']
@@ -104,7 +111,7 @@ def run(out, mode, replay=False):
                         return value
                     b.regs = registers
                     try:
-                        run_to(b, marker, frame_limit=12000, timeout=120, condition=condition)
+                        run_to(b, marker, frame_limit=12000, timeout=600 if observe_moves else 120, condition=condition)
                     except Exception:
                         print('Desktop stage/status/checks', stage, b.peek16(adapter.STATE), data(b,p['image'],'checks',True),b.regs(), flush=True)
                         raise
@@ -114,6 +121,7 @@ def run(out, mode, replay=False):
                     folder.mkdir(exist_ok=True)
                     clock = b.eval_expr('@clk') & 0xffffffff
                     report['observations'].append(dict(stage=stage,
+                        begin_cycle=previous_clock,end_cycle=clock,
                         stimulus_to_settled_cycles=(clock-previous_clock) & 0xffffffff,
                         timing_scope='Includes request, all repair, caret and two PAL settling frames; not DMA duration',
                         pixels=pixels(b,folder,expected)))
@@ -122,9 +130,21 @@ def run(out, mode, replay=False):
                 b.bp_clear_all()
             report['runtime'], _ = execute(bridge,p,before_run=before,timeout=180,frame_limit=12000)
             ownership(bridge,p,p['output'])
+            if observe_moves: bridge.profile_stop()
             report['stack_usage'] = stack_usage(bridge, p['build']['memory'])
             report['checks'] = data(bridge,p['image'],'checks',True)[0]
             report['status'] = 'pass'
+        if observe_moves:
+            from sio_transaction_trace import read_events
+            launches = [tick for tick,event in read_events(out/'emulator.log')
+                        if event[0]=='cpu' and int(event[4],16)==p['labels']['blitter_launched']]
+            require(launches, 'Missing actual asynchronous launches')
+            for row in report['observations']:
+                if row['stage'] not in (3,8,9,10,11,12,13,14): continue
+                align = lambda t:t+round((launches[0]-t)/(1<<32))*(1<<32)
+                selected = [t for t in launches if align(row['begin_cycle'])<t<align(row['end_cycle'])]
+                require(len(selected)==1, 'Copied move must launch one list: '+str(row['stage']))
+                report['move_transactions'].append(dict(stage=row['stage'], launches=selected))
     except Exception as error:
         report.update(status='fail',error=str(error))
         raise
@@ -138,5 +158,6 @@ if __name__ == '__main__':
     parser.add_argument('--mode', choices=('raw','opt'),default='opt')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--replay', action='store_true')
+    parser.add_argument('--observe-moves', action='store_true')
     args=parser.parse_args()
-    run(args.output.resolve(),args.mode,args.replay)
+    run(args.output.resolve(),args.mode,args.replay,args.observe_moves)
