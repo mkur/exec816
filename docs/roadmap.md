@@ -14,6 +14,38 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
 - Confirm the supported machine and disk profiles, document remaining limits,
   and verify the packaged OF816 boot XEX, system disk, ROM and notices together.
 
+## Commands and CLI
+
+Proposed sequence for the next command and shell slices. Keep new utilities
+loadable where practical, and record resident code, upper-RAM and reserved
+bank-zero costs for each slice before moving to the next.
+
+1. Add shell `>>` append redirection, reusing the existing writable Open and
+   seek-to-EOF behavior. Cover partial writes, final Close errors, BREAK and
+   restoration of the shell's selected streams.
+2. Add a small Amiga-style `EXECUTE file` built-in. Read one bounded command per
+   line through the existing dispatcher; accept blank and comment lines, stop
+   on ERROR/FAIL or BREAK, and continue after WARN. Keep the script source
+   separate from the command's Input so a command cannot consume the rest of
+   the script. Begin with one active script and no arguments or conditionals.
+3. Extend the shared [command argument parser](reference/command-arguments.md)
+   with bounded multiple-file results, then use exact names in CAT and DELETE.
+   Add a small shared `*`/`?` matcher at command level, starting with read-only
+   LIST. Define quoting, unmatched patterns, result capacity and error order in
+   the implementation plan. Before allowing patterns in mutating commands,
+   account for the [mount-wide enumeration epoch](reference/filesystem-writes.md)
+   that invalidates ExNext after a mutation.
+4. Design an Amiga-style `ASSIGN DATA: WORK:DATA` for stable logical paths.
+   This changes DOS path resolution and should have its own bounded design and
+   implementation slices.
+5. Add focused loadable TAIL and FIND utilities after the shared argument and
+   pattern behavior is settled.
+
+The first implementation batch is `>>` and minimal EXECUTE. Multiple-file
+arguments and simple patterns can proceed directly to an implementation plan
+with a short public-contract section; a separate design note is useful only if
+the scope expands to shell-wide expansion or broader Amiga pattern syntax.
+
 ## Follow-on capabilities
 
 The next graphics milestone is the **first desktop on Exec816**. The
@@ -73,10 +105,10 @@ The other possible milestones have no delivery order:
   the selected coverage and remaining qualification limits.
 - A RAM filesystem and broader volume assignments beyond the implemented
   [SYS: alias](reference/sys-volume.md).
-- Longer shell pipelines, scripts and background execution beyond the current
-  [two-command foreground pipeline](guides/shell.md).
-- ASSIGN, multiple-file arguments, TAIL, FIND and regular expressions beyond
-  the implemented [command toolbox](guides/toolbox.md),
+- Longer shell pipelines and background execution beyond the current
+  [two-command foreground pipeline](guides/shell.md) and the proposed
+  [command and CLI sequence](#commands-and-cli).
+- Regular expressions beyond the implemented [command toolbox](guides/toolbox.md),
   [writable commands](history/write-commands.md) (COPY, TEE, DELETE, RENAME, MAKEDIR), and
   [command usability](history/command-usability.md) services (PATH, fault text
   and template help).
