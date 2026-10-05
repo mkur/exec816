@@ -11,8 +11,14 @@ ownership semantics as references; direct XaAES or G4A binary compatibility
 is separate work. This source study does not change the current native contracts.
 The proposed [AES server design](aes-server-design.md) specifies the next layer:
 GEM bindings, client messages and waits, GUI locks and retirement in the existing
-presenter, with a [timer.device dependency](../timer-device-design.md) and a
-two-client proof. Ordinary Exec Wait remains unchanged. The implemented
+presenter, with the implemented [timer.device](../../reference/timer.md), a
+concrete shared-alarm lifecycle and AS0–AS4 two-client proof slices. AES timer
+integration and GUI latency measurements remain pending. Ordinary Exec Wait
+remains unchanged. The [implementation plan](aes-server-implementation-plan.md)
+breaks AS0–AS4 into executable commits, with code ownership, a shared intake
+budget, the two-client Task map and measured latency gates. AS0a now supplies the
+generated wire, private C contexts and baseline measurements; service admission
+and GEM calls follow in AS0b/AS0c. The implemented
 [native interrupt ReplyMsg foundation](../../reference/ports.md#native-interrupt-reply)
 supports timer.device without another worker; ordinary Action!/C message calls
 remain Task-only.

@@ -1,0 +1,83 @@
+{
+  "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+  "role": "reference-only; new bindings do not import donor runtime or copied implementation",
+  "files": {
+    "src/app/gem.h": "c51180aa14c60e115d4402a2ed223e27cc82cb5d1cb80a292b8b8add270d795c",
+    "src/app/gemlib.c": "db36789bc8fbb931a1908859206bc16adccdfc7464d9007230a6ba2fcbb0142a",
+    "src/sys/abi.c": "50cc14c42b5585eea76eb1f2929c814855364927ff65012df8b3e7ab7e64fa71"
+  },
+  "calls": {
+    "appl_init": {
+      "opcode": 10,
+      "control_counts": [
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "appl_write": {
+      "opcode": 12,
+      "control_counts": [
+        2,
+        1,
+        1,
+        0
+      ]
+    },
+    "appl_exit": {
+      "opcode": 19,
+      "control_counts": [
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "evnt_mesag": {
+      "opcode": 23,
+      "control_counts": [
+        0,
+        1,
+        1,
+        0
+      ]
+    },
+    "evnt_timer": {
+      "opcode": 24,
+      "control_counts": [
+        2,
+        1,
+        0,
+        0
+      ]
+    },
+    "evnt_multi": {
+      "opcode": 25,
+      "control_counts": [
+        16,
+        7,
+        1,
+        0
+      ]
+    },
+    "wind_update": {
+      "opcode": 107,
+      "control_counts": [
+        1,
+        1,
+        0,
+        0
+      ]
+    }
+  },
+  "words": "WORD signed16, UWORD unsigned16, LONG signed32. Timer low/high reassembled unsigned32. C huge pointers 32bits, native pointers 24bits checked before conversion.",
+  "global_policy": {
+    "0": "0: limited Exec816 AES profile; do not advertise AES 4.x completeness",
+    "1": "4: maximum simultaneous registered applications",
+    "2": "positive GEM application ID",
+    "10": "4: selected VBXE packed 4bpp display",
+    "others": "zero; resources, application-private AES storage and AES system pointers unsupported"
+  },
+  "unsupported": "All other opcodes and evnt_multi bits besides MU_MESAG/MU_TIMER fail explicitly; no VDI workstation or window profile."
+}

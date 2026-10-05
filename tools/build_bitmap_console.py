@@ -9,7 +9,9 @@ from library_paths import read_source
 from native_program import ROOT,build,compiler,require,sha256
 
 
-def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=False):
+def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=False,
+            client_sources=(),client_entries=(),client_roots=(),client_probes=(),
+            client_optimization=None):
     for path,content in files().items():require(path.read_text()==content,'Stale console packet: '+str(path))
     extraction=extract(out/'selected');src=out/'selected/src';ad=PORT/'adapter'
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',ROOT/'platform/altirraos/vbxe.c',
@@ -56,11 +58,13 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     assembly=[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
         ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s']
     if probe:assembly.append(ROOT/'tests/programs/console_bridge.s')
-    foreign=emit(out/'drawing',sources,assembly,[],
-        optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots,includes=[src,ad]+extra_includes,definitions={
+    sources += list(client_sources)
+    foreign=emit(out/'drawing',sources,assembly,client_entries,
+        optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
             'gem-vbxe.c':['-DGEM_DRAWING_ONLY']},
-        probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())]+extra_probes)
+        probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())]+extra_probes+list(client_probes),
+        source_optimization=client_optimization)
     for name in ('GemServiceWorker','GemClientInit','GemVbxeBackend'):
         require(name not in foreign['symbols'],'Unexpected GUI policy: '+name)
     foreign['provenance'].update(extraction=extraction,fixture_bridge=probe,fixture_fault=fault,source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [*sources,*assembly,ROOT/'abi/console-bitmap.json',ROOT/'c/include/hardware/console-bitmap.h']})

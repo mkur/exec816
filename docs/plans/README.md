@@ -190,7 +190,11 @@ assuming work is pending. Current behavior belongs in the
   recommends GEM source compatibility over Exec services and a two-client proof.
 - [AES server layer design](gem4xe/aes-server-design.md): proposed GEM bindings,
   bounded messages, pending events, update/mouse locks and retirement in the
-  existing presenter; timer.device dependency and AS0–AS4 proof slices.
+  existing presenter; shared-alarm integration with the implemented timer.device,
+  AS0–AS4 proof slices and pending TD4 GUI latency measurements.
+- [AES server implementation plan](gem4xe/aes-server-implementation-plan.md):
+  executable AS0–AS4 slices for C bindings, presenter admission, messages,
+  shared timer alarms, GUI locks and the two-client latency/lifecycle proof.
 - [Command arguments implementation](command-arguments-implementation-plan.md)
 - [Command Main return-value implementation plan](command-main-implementation-plan.md)
 - [CSTRING module implementation plan](cstring-implementation-plan.md)

@@ -3,11 +3,26 @@
 [GEM integration index](README.md) · [XaAES study](xaaes-study.md) ·
 [Current desktop contract](../../reference/desktop.md)
 
-Status: proposed design, 2026-10-05. No AES service or new kernel operation is
-implemented by this note. Baseline: Exec816 `7268d114604fca6ee2927b063b6603e156bcbcf2`,
+The [implementation plan](aes-server-implementation-plan.md) assigns AS0–AS4
+code changes, executable acceptance gates and the two-client Task budget.
+
+Status: proposed AES service, updated 2026-10-06 against the implemented timer
+foundation. No AES service is implemented by this note. Baseline: Exec816
+`ab6eb2dec33412fd383b4970cbd23c05e9011e20`,
 GEM4XE `e413c39d2f8e1bec8fe16596f610b923de4a0ae9`. The
 [XaAES study](xaaes-study.md) records the pinned comparative sources and their
 limitations. Keep donor analysis and adaptations in Exec816, outside GEM4XE.
+
+The [current timer.device contract](../../reference/timer.md), ordinary
+Action!/C device I/O and the
+[native interrupt ReplyMsg binding](../../reference/ports.md#native-interrupt-reply)
+are implemented. Timer TD0–TD3 have development evidence; AES AS2 now integrates
+that device into GEM event waits. The
+[execution record](../../history/interrupt-reply.md) documents the tested nominal
+57.6 kbit/s loaded envelope and the open 125 kbit/s transport timing gate,
+including misses without timer load. AES integration and timer TD4 GUI latency
+measurements remain unimplemented. Start AS0/AS1 on that pinned development
+envelope; high-speed acceptance and release qualification remain separate gates.
 
 ## Decision and scope
 
@@ -40,6 +55,9 @@ flowchart TD
     Port --> Owner[Existing presenter Task]
     Desktop --> Owner
     Input[Existing input capture and completion signals] --> Owner
+    Owner -->|Clock queries and one alarm| Timer[timer.device]
+    Timer --> TimerReplies[Presenter timer reply port]
+    TimerReplies --> Owner
     Owner --> State[AES clients, pending waits and locks]
     Owner --> Scene[One Desktop and Layers scene]
     Scene --> Draw[GEM4XE drawing and VBXE driver]
@@ -136,7 +154,7 @@ AES version/profile merely because these entry points link.
 | `appl_write` | Copy one standard 16-byte message to a live destination; return success when accepted, not when consumed. Reject other lengths, invalid destinations and a full queue with failure. |
 | `evnt_mesag` | Return the oldest queued message or retain the request until one arrives. |
 | `evnt_multi` | Initially support `MU_MESAG`, `MU_TIMER` and their combination. Return all selected conditions ready at the completion decision, with at most one message. |
-| `evnt_timer` | Retain a relative millisecond deadline and complete when it expires. Preserve GEM4XE's one-tick minimum for standalone zero delay; zero-duration `MU_TIMER` in `evnt_multi` is immediately ready. |
+| `evnt_timer` | Convert the unsigned millisecond duration once to an absolute device-clock deadline and complete when it expires. Preserve GEM4XE's one-tick minimum for standalone zero delay; zero-duration `MU_TIMER` in `evnt_multi` is immediately ready. |
 | `wind_update` | Owner-aware nested `BEG_UPDATE`/`END_UPDATE` and `BEG_MCTRL`/`END_MCTRL`, including the `0x100` check-and-set form of acquisition. |
 
 The first profile requires registration before `wind_update`; XaAES's special
@@ -165,42 +183,107 @@ The binding profile must document this bounded-capacity failure. A successful
 send guarantees queue acceptance, not survival of the destination's later exit.
 Message queues occupy 1,024 upper-RAM payload bytes in total, plus metadata.
 
-Use the proposed [timer.device](../timer-device-design.md) for asynchronous
-deadline notification and monotonic clock reads. Keep ordinary `EXEC.Wait`
-unchanged. The device owns I/O completion and cancellation; AES owns event masks,
-application deadlines and the decision to complete each application wait.
-Pointer sampling and blitter watchdog activity are not a general timer source.
+Use the implemented [timer.device](../../reference/timer.md) for asynchronous
+deadline notification and monotonic clock reads. Ordinary `EXEC.Wait` remains
+unchanged. The driver owns I/O completion and cancellation; AES owns event masks,
+per-client deadlines and exactly-once application replies. Only the driver's
+native continuation uses interrupt ReplyMsg. AES binding, device calls and
+application replies run in Task context. Pointer sampling and blitter watchdog
+activity are not a general timer source.
 
-Open one timer binding and maintain one asynchronous `TD_WAITUNTIL` request for
-the earliest client deadline, plus a separate clock-query record. Include the
-timer reply-port signal in the presenter's normal wait mask alongside requests,
-input and drawing completion. On every wake, drain work and reevaluate deadlines;
-a message and a timer can complete the same AES wait together. A timer signal
-is notification, not an application event count.
+### Presenter-owned timer resources
 
-When the earliest deadline changes, abort and collect the previous request
-before reusing it. Do not rearm on unrelated input if the earliest target is
-unchanged. Retire the request when there are no timed clients. A completed alarm
-must be collected even if another event already satisfied the application wait.
-Keep absolute client deadlines so rearming does not restart their durations or
-accumulate repeated rounding delays. Never use a blocking future timer DoIO in
-the presenter.
+Before publishing the AS2-capable AES service, the presenter creates a dedicated
+`PA_SIGNAL` timer reply port and two `TIMER.TimerClockRequest` records. It opens
+`timer.device`, `UNIT_VBLANK`, flags zero on the clock-query record. That record
+remains the original open owner until shutdown. The alarm record borrows only
+its device/unit fields and uses the same reply port; it does not acquire a
+second open. Failure unwinds these resources before AES admission, while the
+native desktop continues without the AES service.
 
-Convert the full unsigned 32-bit GEM millisecond duration once using the device's
-wide monotonic clock and conservative conversion helper. The timer design
-specifies VBI resolution, coherent reads, carry/overflow behavior and separate
-rounding/scheduling latency. Zero-duration `MU_TIMER` is satisfied in AES without
-arming a timer; standalone `evnt_timer(0)` uses a next-tick relative request.
-This preserves the donor's distinction instead of imposing a frame delay on a
-nonblocking message-queue drain.
+| Resource | Use and ownership |
+| --- | --- |
+| Clock-query record | `TD_READCLOCK` through `DoIO`; this command completes immediately with QUICK, including errors. Never submit this record as the asynchronous alarm. |
+| Alarm record | `TD_WAITUNTIL` through `SendIO` for the earliest pending client deadline. At most one submission remains uncollected; even an already-due target or immediate error produces a reply. |
+| Timer reply port/signal | Owned by the presenter and included in its normal wait mask alongside native/AES requests, input and drawing completion. Drain replies before sleeping and after waking. |
 
-The timer design depends on the proposed
-[interrupt-context ReplyMsg foundation](../interrupt-reply-design.md), including
-controlled NMI deferral and protected receiving queues. That work must pass its
-own checks before timer adoption; current replies remain Task-only. The target
-adds neither a timer Task nor a separate presentation/per-client worker.
-Incoming input and ordinary requests wake the presenter independently of timer
-ticks; native timer service does not gate GUI response.
+The record layout and command constants already come from
+[the timer ABI](../../../abi/timer-device.json); the Action! presenter uses
+`USE TIMER` and ordinary `EXEC` I/O calls. C bindings for device I/O already exist,
+but GEM applications need only their AES calls. Four client deadlines share one
+device alarm, one of the device's eight open bindings and at most one of its
+sixteen pending slots. There is no per-client timer request or signal.
+
+### Clock and GEM duration semantics
+
+On accepting a timed wait, read the coherent 64-bit clock and convert the full
+unsigned 32-bit GEM millisecond value once with `TIMER.Deadline`. Store the
+resulting high/low deadline in the client's server-owned record. Compare its
+unsigned 32-bit halves directly; do not truncate it to the legacy 16-bit VBI
+counter or recalculate durations when the earliest alarm changes.
+
+The helper uses the reported 50/60 Hz rate and computes
+`now + floor(ms/1000)*rate + ceil((ms mod 1000)*rate/1000) + 1`, with checked carry
+and overflow. VBI resolution is 20 ms on PAL or about 16.7 ms on NTSC; the extra
+tick prevents an early completion at an unknown position in the current frame.
+This quantization is separate from interrupt service, presenter scheduling and
+client-resumption delay. The clock counts VBI events, not elapsed wall time.
+
+Zero-duration `MU_TIMER` in `evnt_multi` is immediately ready in AES without a
+device submission. Standalone `evnt_timer(0)` uses `TIMER.Deadline(clock, 0)` to
+store `now + 1`, then participates in the same earliest-absolute-alarm scheme.
+It needs no separate relative request or extra rounding on rearm. Preserve this
+distinction for an application's nonblocking message-queue drain.
+
+### Alarm submission, replacement and collection
+
+Track alarm ownership explicitly; a timer signal is only a hint. Before sending,
+record the submitted absolute target and mark the record outstanding, since
+completion may precede return from `SendIO`. Never modify that record's command,
+binding or target while outstanding. Recompute the desired earliest target from
+live client deadlines, not from a pointer retained in the device request.
+
+| Alarm state | Presenter action |
+| --- | --- |
+| Reply available | Collect exactly once, check normal/aborted/error status and return the record to idle ownership before any reuse. Reevaluate all pending events. |
+| Idle/collected | If a future client deadline exists, prepare and send the earliest target. Otherwise keep the device open without an alarm. |
+| Outstanding, desired target unchanged | Leave it alone; unrelated input or redraw does not restart the delay. |
+| Outstanding, target changed or no timed clients remain | If already terminal, collect it. Otherwise issue `AbortIO` once and mark it retiring. Keep the replacement target in server state. |
+| Retiring | Continue the pump until the reply is collected, then recompute pending events and the earliest target before resubmitting. Normal completion may win the abort race; accept either that result or `IOERR_ABORTED`. |
+
+Use `GetMsg` on the dedicated port as the normal collection path and verify the
+reply is the outstanding alarm. `CheckIO` is observational and `AbortIO` is not
+collection. `WaitIO` is allowed only after `CheckIO` confirms completion, and
+must not follow a `GetMsg` collection of the same reply. Never issue a future
+timer `DoIO`, an unguarded `WaitIO` or a busy-wait in the presenter. The current
+driver normally makes cancellation terminal synchronously; collection and record
+reuse are still separate steps.
+
+Between rendering quanta, collect timer replies and evaluate pending AES events
+using a fresh coherent clock sample for timed waits and the messages already
+accepted into each FIFO. The selected ready bits at that decision determine the
+single reply; at most one message is consumed. An old alarm reply may arrive after
+a message already satisfied its client: collect it and reevaluate live state,
+without replying to that client twice or treating an abort as `MU_TIMER`.
+Deadlines that became due while replacing the shared alarm are completed by
+this same evaluation; they do not wait for a new VBI. Before sleeping, ensure
+the earliest remaining future deadline has an outstanding alarm, or that a
+retiring alarm still guarantees a collection wake. Locally runnable work keeps
+the normal fairness path active.
+
+Check every clock-query, conversion and alarm-completion result. A failed clock
+read, full device queue or arithmetic overflow must not silently leave a timed
+call pending without a wake source. Return a binding diagnostic and zero GEM
+result for an affected `evnt_timer`/`evnt_multi`; do not fabricate a timer event
+or consume its queued message. A clock failure affects all pending timed calls;
+an alarm failure affects every timed wait depending on that shared wake source.
+Retire the alarm while continuing message-only and native desktop service.
+Do not spin on clock errors or retry deadlines with new relative durations.
+
+No timer, AES or per-client worker is added. Input and ordinary requests wake
+the presenter independently of timer ticks; GUI response does not wait for the
+shared alarm. AS2 and AS4 must measure that behavior in the real presenter, since
+the existing driver probes alone do not prove AES latency or fairness.
 
 ## Update and mouse-control locks
 
@@ -286,8 +369,18 @@ Then remove ownership entries, release all of its lock nesting and make waiters
 eligible. Cleanup may continue over several presenter turns; other clients
 continue to receive service.
 
-Before publishing the final reply, detach all references to caller storage and
-finish outputs. Follow the existing short publication/retirement protocol:
+Removing a registration can change the earliest shared deadline. Run the same
+abort/collect/rearm state machine; the alarm contains no borrowed client pointer,
+so its delayed collection cannot keep freed client storage reachable. A service
+shutdown with no registrations still retires and collects its outstanding alarm.
+Only then close the original clock-query open, detach the borrowed alarm binding,
+delete both idle records and delete the empty timer reply port. Keep the pump and
+reply signal alive until collection completes; disabling notifications or merely
+clearing a signal bit cannot retire a request. Include these steps in startup
+rollback after any successful open or alarm submission.
+
+Before publishing the final client exit reply, detach all references to caller
+storage and finish outputs. Follow the existing short publication/retirement protocol:
 under `Forbid`, publish the final reply, release the server-owned Task lease and
 retire the server record, then `Permit`. Do not dereference caller storage after
 publishing the reply. Outside such a protected handoff a reply receiver may run
@@ -352,9 +445,13 @@ system workers and the two proof clients before selecting their stack classes.
 
 The AES design target is **zero additional fixed bank-zero reservation and zero
 additional per-Task DP/stack reservation**. Reuse the presenter's existing
-2,560-byte stack; do not add an AES or timer worker. The timer dependency instead
-requires independently tested interrupt reply/continuation support and measured
-interrupt stack use. Existing application Tasks still consume their selected
+2,560-byte stack; do not add an AES or timer worker. The existing timer foundation
+adds **0 fixed and 0 per-Task bank-zero bytes** and suballocates 10,240 bytes,
+including code, state, alignment and unused capacity, within the existing upper
+Task bank. Its IRQ/NMI and stack evidence is recorded independently; AES must
+measure the combined presenter/driver call chain rather than reserve it again
+or assume the earlier high-water result covers that chain.
+Existing application Tasks still consume their selected
 stack/guard class and 256-byte direct page. The two test clients must fit the
 existing pools rather than silently expanding them.
 Measure presenter and C-binding high-water usage under nested calls and
@@ -365,7 +462,9 @@ Initial fixed capacities: four AES registrations, one ordinary request per
 client, sixteen queued messages per client, at most one pending event or lock
 acquisition per client, and the existing shared four-window scene. Allocate one
 AES service-port signal and one reply-port signal per registration. The presenter
-also owns a timer reply port/signal and the device's two request records; no
+also owns a timer reply port/signal and two 38-byte clock/alarm records: **76 bytes
+of request payload**, plus port, allocator and alignment overhead. Four 64-bit
+client deadlines add **32 payload bytes**, plus flags and alarm bookkeeping; no
 per-client timer signal is needed. Record total upper-RAM bytes, signal use and
 allocation-failure rollback from emitted layouts in the first implementation
 slice; the 1,024-byte message payload subtotal is not a total RAM estimate.
@@ -376,9 +475,9 @@ slice; the 1,024-byte message payload subtotal is not a total RAM estimate.
 | --- | --- |
 | AS0: binding and registration | Generated wire layouts; real C calls through Exec to the existing presenter; init/exit/reinit, stale IDs, wrong owners, admission exhaustion and complete rollback. No drawing changes. |
 | AS1: messages and message waits | Two C clients exchange standard GEM messages through `appl_write`/`evnt_mesag`. Queue-before-wait, reply-before-submit-return, queue-full rejection and concurrent native desktop service pass. |
-| AS2: timer events | Interrupt ReplyMsg, timer.device and its coherent wide clock are independently tested, then `evnt_timer` and message/timer `evnt_multi` pass with no input traffic. Cover both zero-delay forms, alarm rearming/collection, simultaneous expiry/message, clock wrap, long durations/descheduling and retained runnable work. |
+| AS2: timer events | Consume the implemented timer and native-reply contracts in the existing presenter. Real C `evnt_timer` and message/timer `evnt_multi` pass without input traffic. Cover both zero-delay forms, earlier/later/equal target replacement, last-deadline removal, completion-before-submit-return, abort/expiry races and stale signals. Verify simultaneous message/expiry, low-word carry, overflow and clock/device failure, the full 32-bit duration range, descheduling and retained runnable work. Check open/allocation failure rollback and shutdown with an outstanding alarm. |
 | AS3: GUI locks and retirement | Recursive/contended/try acquisition, exact release, nesting overflow, implicit/explicit mouse holds and exit while owning locks pass. Another client's pending acquisition never blocks messages, timers or the owner's release. Conflicting native painting obeys ownership. |
-| AS4: integrated proof | Two rebuilt C clients preserve ordinary GEM call sequences and event loops beside the native desktop, with measured IPC cost, timer lateness, input latency, stack use and repeated leak-free lifecycle. |
+| AS4: integrated proof / timer TD4 | Two rebuilt C clients preserve ordinary GEM call sequences and event loops beside the native desktop under the pinned 57.6k loaded configuration. Measure IPC cost, quantization versus timer lateness, input latency, stack use and repeated leak-free lifecycle. Include input during alarm retirement and long redraws. Passing this slice does not close the separate 125k transport gate. |
 
 At AS4, a CPU-busy application that holds no GUI lock must not stop its peer's
 messages/timers or native input service. A lock owner must demonstrably delay
@@ -390,10 +489,20 @@ application is the next compatibility gate, not an implied AS4 result.
 Follow the [two-tier testing policy](../../contributing/testing.md). Use host
 checks and focused emitted-code development tests, raw/optimized probes for
 new wire layouts and C/Action! boundaries, and optimized concurrency/latency
-tests. The timer dependency additionally needs targeted NMI/IRQ, stack,
-register restoration, completion/cancellation races and OS coexistence cases.
-Pin the ROM, emulator, compiler and timing configuration in results. Broader
-qualification and any OF816 demo refresh remain separate, explicitly reported work.
+tests. Reuse the recorded timer/interrupt development evidence as the dependency
+baseline; do not rerun its full matrix for unchanged code. Add targeted NMI/IRQ,
+stack, cancellation/collection and OS-coexistence cases where presenter
+integration changes those paths, and rerun affected foundation cases if it
+requires a kernel or driver change. Pin the ROM, emulator, compiler and timing
+configuration in results. Broader qualification remains separate. Any demo
+refresh uses `tools/build_demo.py`, retains OF816 and its five-second standard
+autoboot, and smoke-tests the exact package.
+
+All AES slices remain pending. The next executable work is AS0: fix the wire ABI,
+admit and retire a real C client through the presenter, then add the AS1 two-client
+message exchange. AS2 supplies the missing AES timer behavior on the existing
+device; AS4 supplies its TD4 GUI measurements. No new timed-wait kernel operation
+or interrupt entry is a prerequisite.
 
 For this documentation-only change: bank-zero reservation delta is **0 bytes
 fixed and 0 bytes per Task**; no executable compatibility or performance result

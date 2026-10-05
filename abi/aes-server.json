@@ -1,0 +1,104 @@
+{
+  "abi": "exec816.aes",
+  "version": 1,
+  "constants": {
+    "CLIENTS": 4,
+    "CONTEXTS": 8,
+    "QUEUE_DEPTH": 16,
+    "MESSAGE_WORDS": 8,
+    "INTIN_WORDS": 16,
+    "INTOUT_WORDS": 7,
+    "GLOBAL_WORDS": 15,
+    "OP_INIT": 10,
+    "OP_WRITE": 12,
+    "OP_EXIT": 19,
+    "OP_MESAG": 23,
+    "OP_TIMER": 24,
+    "OP_MULTI": 25,
+    "OP_UPDATE": 107,
+    "OK": 0,
+    "MALFORMED": 1,
+    "UNSUPPORTED": 2,
+    "RESOURCE": 3,
+    "IDENTITY": 4,
+    "BUSY": 5,
+    "TIMER_ERROR": 6,
+    "OVERFLOW": 7,
+    "PENDING": 8,
+    "MU_MESAG": 16,
+    "MU_TIMER": 32,
+    "END_UPDATE": 0,
+    "BEG_UPDATE": 1,
+    "END_MCTRL": 2,
+    "BEG_MCTRL": 3,
+    "TRY": 256
+  },
+  "records": {
+    "Request": [
+      [
+        "message",
+        "EXEC.Message"
+      ],
+      [
+        "version",
+        "CARD"
+      ],
+      [
+        "bytes",
+        "CARD"
+      ],
+      [
+        "operation",
+        "CARD"
+      ],
+      [
+        "status",
+        "CARD"
+      ],
+      [
+        "client",
+        "LONGCARD"
+      ],
+      [
+        "sequence",
+        "LONGCARD"
+      ],
+      [
+        "owner",
+        "EXEC.Task POINTER"
+      ],
+      [
+        "ownerPad",
+        "BYTE"
+      ],
+      [
+        "binding",
+        "BYTE POINTER"
+      ],
+      [
+        "bindingPad",
+        "BYTE"
+      ],
+      [
+        "intin",
+        "INT",
+        "INTIN_WORDS"
+      ],
+      [
+        "intout",
+        "INT",
+        "INTOUT_WORDS"
+      ],
+      [
+        "words",
+        "INT",
+        "MESSAGE_WORDS"
+      ],
+      [
+        "global",
+        "INT",
+        "GLOBAL_WORDS"
+      ]
+    ]
+  }
+}

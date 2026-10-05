@@ -58,6 +58,10 @@ port transactions and controlled NMI continuations are implemented. The
 timer adoption without a worker. Development checks cover the standard 57.6k
 loaded envelope. Close the open 125k transport refill timing gate before
 claiming that combination is supported; AES TD4 measurements remain separate.
+The [AES implementation plan](plans/gem4xe/aes-server-implementation-plan.md)
+starts with generated wire layouts and C registration through the presenter,
+then messages, shared timer alarms and GUI locks. Its AS4 proof measures two
+C clients beside the native desktop within the existing eight-Task budget.
 
 The **first desktop on Exec816** has development evidence. The
 [design note](plans/gem4xe/desktop-design.md) proposes a desktop background,

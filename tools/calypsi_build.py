@@ -8,7 +8,7 @@ from native_program import ROOT, command, require, sha256
 
 
 def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
-         includes=(), definitions=None, probes=()):
+         includes=(), definitions=None, probes=(), source_optimization=None):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     tools = {}
@@ -42,7 +42,8 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
     for number, source in enumerate(sources):
         obj = output/f'{number}-{source.stem}.o'
         extra = (definitions or {}).get(source.name, ())
-        command([tools['cc65816']['path'], *flags, *extra, '-c', *include_args,
+        source_flags = [*flags[:-1], '-O2' if (source_optimization or {}).get(source.name, optimize) else '-O0']
+        command([tools['cc65816']['path'], *source_flags, *extra, '-c', *include_args,
                  '--list-file', obj.with_suffix('.lst'), '-o', obj, source])
         objects.append(obj)
     for number, source in enumerate(assembly):
@@ -59,7 +60,8 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
     foreign['provenance']['platform_internal_inputs'] = {
         'platform/altirraos/vbxe-internal.h': sha256(ROOT/'platform/altirraos/vbxe-internal.h')}
     foreign['provenance'].update(tools=tools, runtime=dict(path=str(runtime), sha256=sha256(runtime)),
-                                 compiler_flags=flags, checked_layout=checked)
+                                 compiler_flags=flags, source_options=definitions or {},
+                                 source_optimization=source_optimization or {}, checked_layout=checked)
     if ROOT/'platform/altirraos/vbxe-map.s' in assembly:
         foreign['provenance']['upload_inputs']={str(p.relative_to(ROOT)):sha256(p) for p in (
             ROOT/'c/include/hardware/vbxe-upload.h',ROOT/'c/calypsi/vbxe-upload-layout.c',
