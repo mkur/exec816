@@ -16,14 +16,14 @@ from test_large_stacks import observe
 
 CASES=['pattern','unknown-baseline','absent','unsupported','busy-timeout','vcount-timeout',
        'unquiesced','retained-owner','wrap-timeout','map-nmi','bitmap-copy','copy-fault',
-       'async-scroll','async-timeout','async-wrap','async-unquiesced','async-lost-irq']
+       'async-scroll','async-timeout','async-wrap','async-unquiesced','async-lost-irq','async-copy','copy-boundary','copy-exhaustion']
 
 
 def run(output,mode,cases=None,replay=False,production=False):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     if production:
-        require(cases is None or cases in (['pattern'],['bitmap-copy'],['async-scroll']),'Production control needs a real-hardware case')
+        require(cases is None or cases in (['pattern'],['bitmap-copy'],['async-scroll'],['async-copy'],['copy-boundary']),'Production control needs a real-hardware case')
         cases=cases or ['pattern']
     report=dict(status='running',tier='development',slice='G3',mode=mode,cases=[],production_control=production)
     try:
@@ -111,7 +111,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                     if variant>=10:
                         case.update(copy_checks=read('copyChecks'),copy_failures=read('copyFailures'),copy_first_failure=read('copyFirstFailure'))
                         require(not case['copy_failures'],f'Bitmap copy case {case["copy_first_failure"]} failed')
-                    if variant>=12:
+                    if 12<=variant<=16:
                         case.update(scroll_checks=read('scrollChecks'),scroll_failures=read('scrollFailures'),
                             scroll_first_failure=read('scrollFirstFailure'),scroll_busy_seen=read('scrollBusySeen'),
                             scroll_polls=read('scrollPolls'))
@@ -155,7 +155,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                         require(case['lease_state']==(4 if variant in (6,15) else 2),f'Lost retained display state: {case["lease_state"]}')
                     case['status']='pass'
                 except Exception:
-                    if variant>=12:
+                    if 12<=variant<=16:
                         print('Async checks/failures/first/busy/polls',*[int.from_bytes(b.memdump(symbols[k],2),'little') for k in
                             ('scrollChecks','scrollFailures','scrollFirstFailure','scrollBusySeen','scrollPolls')],flush=True)
                     print('C checks/failures/first/stage/answer',*[int.from_bytes(b.memdump(symbols[k],2),'little') for k in ('checks','failures','first_failure','stage','answer')],flush=True)

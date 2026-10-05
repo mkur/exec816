@@ -12,7 +12,8 @@ UWORD GemDrawingCopy(const struct VbxeCopy *copy);
 /* Copy upward by sourceY-destinationY (positive multiple of eight), then fill
  * the exposed strip. The copied descriptor and operation ID outlive the call. */
 UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id);
-UWORD GemDrawingScrollPoll(ULONG id);
+UWORD GemDrawingCopyStart(const struct VbxeCopy *copy,ULONG *id);
+UWORD GemDrawingPoll(ULONG id);
 ULONG GemDrawingCompletionMask(void);
 UWORD GemDrawingFence(void);
 UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);

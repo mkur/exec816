@@ -52,3 +52,26 @@ each grow by 292 bytes in upper RAM, including alignment and spare damage slots.
 No mutable Layers globals or new allocations are introduced. Reserved bank-zero
 delta is zero for fixed, root/kernel, every public Task and idle; guards,
 alignment and unused stack/DP capacity are unchanged. VRAM delta is zero.
+
+## DR2: typed asynchronous copies and shared completion
+
+`VbxeCopyStart` copies up to 640×240 even-aligned pixels in one launch, including
+safe overlap direction. Synchronous CopyRect shares its geometry preparation.
+Copies and copy/fill scrolling use the same operation ID, pending state, IRQ
+signal, command arena and deadline. `VbxePoll` replaces ScrollPoll throughout
+current code and tools. Empty/identical copies return OK with ID zero; BUSY and
+invalid admission preserve the output. No caller descriptor survives launch.
+The console drawing packet gains COPY_START without changing its 78-byte size.
+
+The [DR2 evidence](../development/desktop-rendering-dr2.json) records optimized
+pixel/overlap and failure cases, maximum copy, reopen/exhaustion, lost IRQ/tick
+wrap, unquiesced retention, mapping NMI, batched console output and drawing
+ownership/context cleanup. Small raw/optimized boundary probes cover descriptor
+and native-call behavior. The copy control disables substituted status reads;
+its fixture launch counters remain explicit. These are development checks.
+
+Operation state is renamed, not duplicated: seven existing payload bytes plus
+the existing four-byte sequence counter. Upper-RAM driver-state delta is zero;
+VRAM delta is zero. Fixed, root/kernel, all public Task and idle reserved
+bank-zero deltas are zero, including guards, alignment and unused capacity.
+There is no new signal, Task, stack, DP, queue or watchdog.

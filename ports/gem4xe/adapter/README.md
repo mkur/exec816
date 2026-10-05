@@ -57,7 +57,7 @@ operation. It accepts explicit VRAM surfaces and preserves opaque pixels in
 overlapping copies. The descriptor remains immutable until the call returns.
 The GEM service does not advertise an additional VDI opcode for this operation.
 
-`GemDrawingScrollStart` and `GemDrawingScrollPoll` expose the driver's
+`GemDrawingScrollStart`, `GemDrawingCopyStart` and `GemDrawingPoll` expose the driver's
 [asynchronous screen scroll](../../../docs/reference/display.md#asynchronous-screen-scrolling)
 with a logical GEM background pen. Source Y minus destination Y selects an
 upward shift in multiples of eight pixels and the matching exposed fill height.

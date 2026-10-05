@@ -79,7 +79,7 @@ def instrument_loaded(text,phase):
         "    from bitmap_console_performance import markers as drawing_markers\n"
         "    details=drawing_markers(p,json.loads((p['output'].parent/'c-image.json').read_text()),p['output'].parent/'drawing')\n"
         "    marks['rectangle_launch']=details.get('async_launch',details['launch'])['entry']\n"
-        "    completion_marks={key:value for key,value in details.items() if key.startswith('completion_') or key in ('GemDrawingScrollStart','GemDrawingScrollPoll','async_launch','launch','bitmap_complete')}\n"
+        "    completion_marks={key:value for key,value in details.items() if key.startswith('completion_') or key in ('GemDrawingScrollStart','GemDrawingPoll','async_launch','launch','bitmap_complete')}\n"
         "    marks.update({key:value['entry'] for key,value in completion_marks.items()})\n"
         "    marks['rectangle_complete']=routine('M_CONSOLEDISPLAY_BITMAPCOMPLETE_')\n"
         "    marks['input_service']=routine('M_CONSOLEINPUT_SERVICE_')\n"
@@ -189,7 +189,7 @@ def run(out,phase,reuse=False,replay=False,bounded=False,profile_turns=False):
         services=[t for t in services if lists[0]['start']<=t<=lists[-1]['end']]
         from blitter_completion_trace import analyze as completion_analyze
         completion_marks={key:dict(entry=value,returns=[]) for key,value in result['marks'].items()
-            if key.startswith('completion_') or key in ('GemDrawingScrollStart','GemDrawingScrollPoll','async_launch','launch','bitmap_complete')}
+            if key.startswith('completion_') or key in ('GemDrawingScrollStart','GemDrawingPoll','async_launch','launch','bitmap_complete')}
         result['completion_timing']=completion_analyze(out/'trace.log',completion_marks)
         if 'async_launch' in completion_marks:
             completions=result['completion_timing']['scrolls']

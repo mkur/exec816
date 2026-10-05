@@ -50,7 +50,7 @@ def markers(program,foreign,output):
     # The ordinary-call boundary supplies complete drawing-call elapsed time;
     # native DISPLAY.Check spans isolate its validation work by owning Task DP.
     for name in ('DisplayCheck','GemDrawingCopy','GemDrawingFill','GemDrawingText','GemDrawingTextFill',
-                 'GemDrawingFence','GemDrawingScrollStart','GemDrawingScrollPoll',
+                 'GemDrawingFence','GemDrawingScrollStart','GemDrawingPoll',
                  'VbxeCopyRect','VbxeFill','VbxeSubmit','VbxeFence'):
         if name in foreign['symbols']:
             result[name]=dict(entry=foreign['symbols'][name],returns=[],entry_only=True)

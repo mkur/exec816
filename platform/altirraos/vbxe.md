@@ -34,9 +34,10 @@ The [asynchronous scroll contract](../../docs/reference/display.md#asynchronous-
 adds one active operation to the same owner. Start validates and uploads a copy
 and fill together; Poll reads BUSY once and uses the original sixteen-tick
 deadline. Existing synchronous operations drain that list before dependent work.
-No interrupt producer or extra arena is introduced. The display record grows by
-seven upper-RAM bytes (ID, start tick and pending flag), with a four-byte driver
-sequence counter. These fit the existing C data-bank reservation; fixed and
+Copies and scrolls share the existing retained blitter IRQ producer, signal,
+watchdog and arena. The display retains seven bytes of operation state (ID,
+start tick and pending flag), plus its four-byte driver sequence counter. DR2
+renames that state without enlarging it. These fit the existing C data-bank reservation; fixed and
 per-Task bank-zero reservations, guards and stack capacities are unchanged.
 
 `VbxeFill` builds one 21-byte constant-source BCB on the caller's stack and fences
@@ -49,8 +50,9 @@ VCOUNT-equals-zero loop and a two-tick deadline proved unsuitable with OS VBI
 and a computing peer.
 
 Only this adapter writes MEMAC A, XDL, overlay palette 1 and blitter registers.
-MEMAC B, VBXE IRQs, collision and priority registers stay at their known inactive
-baseline. The mapping assembly publishes hardware stores in disable/bank/control
+MEMAC B, collision and priority registers stay at their known inactive baseline.
+VBXE completion IRQs are enabled only for the active asynchronous list and are
+acknowledged/disabled through the retained producer protocol. The mapping assembly publishes hardware stores in disable/bank/control
 order before committing the four-byte software map shadow. It uses only the
 owning Task's upper DP scratch and existing stack; it restores S and leaves D
 unchanged. Console, native NMI/IRQ,

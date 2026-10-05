@@ -27,15 +27,15 @@ struct VbxeDisplay {
     UBYTE savedDma, mutated;
     UBYTE video, xdl[3], blit[3], palette, color;
     UWORD lastError;
-    ULONG scrollId;
-    UWORD scrollStarted;
-    UBYTE scrollPending;
+    ULONG operationId;
+    UWORD operationStarted;
+    UBYTE operationPending;
 };
 UWORD VbxeOpen(struct VbxeDisplay *display);
 UWORD VbxeFence(struct VbxeDisplay *display);
 UWORD VbxeClose(struct VbxeDisplay *display);
 /* Nonzero driver-owned signal until close; zero for an invalid owner.
- * Signals coalesce: Wait announces work, ScrollPoll consumes durable status.
+ * Signals coalesce: Wait announces work, Poll consumes durable status.
  * Clients may wait on this mask, but must not free its bit. */
 ULONG VbxeCompletionMask(struct VbxeDisplay *display);
 UWORD VbxeWrite(struct VbxeDisplay *display, ULONG address, const void *source, UWORD bytes);
@@ -62,9 +62,13 @@ UWORD VbxeCopyRect(struct VbxeDisplay *display, const struct VbxeCopy *copy);
  * Each entry admits the owner; a stale ID is BAD_ARGUMENT. Fence and existing
  * synchronous drawing finish any pending operation before dependent access.
  * Keep raster/command storage until completion or proven quiescence. */
+/* One overlap-safe, even-pixel copy, at most 640x240. OK with *id=0 is
+ * empty/identical; otherwise use the common Poll/CompletionMask. BUSY leaves
+ * the active list and new output unchanged. Accepted descriptors are copied. */
+UWORD VbxeCopyStart(struct VbxeDisplay *display, const struct VbxeCopy *copy, ULONG *id);
 UWORD VbxeScrollStart(struct VbxeDisplay *display, const struct VbxeCopy *copy,
                       UBYTE value, ULONG *id);
-UWORD VbxeScrollPoll(struct VbxeDisplay *display, ULONG id);
+UWORD VbxePoll(struct VbxeDisplay *display, ULONG id);
 /* Positive row steps, no chaining or IRQ. Every call completes before return. */
 UWORD VbxeBlit(struct VbxeDisplay *display, ULONG source, UWORD sourceStride,
                ULONG destination, UWORD destinationStride, UWORD bytes, UWORD rows,

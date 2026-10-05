@@ -214,7 +214,7 @@ UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
     if (fault) return DISPLAY_DEVICE_FAULT;
     status=DisplayCheck(&display.lease);
     if (status!=DISPLAY_OK) return status;
-    if (display.scrollPending) return DISPLAY_BUSY;
+    if (display.operationPending) return DISPLAY_BUSY;
     if (!copy || pen>=16) return DISPLAY_BAD_ARGUMENT;
     pointer_erase(copy->destinationX,copy->destinationY,copy->destinationX+copy->width,
                   copy->sourceY+copy->height);
@@ -224,13 +224,35 @@ UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
-UWORD GemDrawingScrollPoll(ULONG id)
+UWORD GemDrawingCopyStart(const struct VbxeCopy *copy,ULONG *id)
 {
     UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     status=DisplayCheck(&display.lease);
     if (status!=DISPLAY_OK) return status;
-    status=VbxeOwnerScrollPoll(&display,id);
+    if (display.operationPending) return DISPLAY_BUSY;
+    if (!copy || !id) return DISPLAY_BAD_ARGUMENT;
+    /* Overlays are screen pixels only; offscreen captures/restores use the same
+     * operation but must never try to erase an overlay in cache coordinates. */
+    if (!copy->source.offset)
+        pointer_erase(copy->sourceX,copy->sourceY,copy->sourceX+copy->width,
+                      copy->sourceY+copy->height);
+    if (!copy->destination.offset)
+        pointer_erase(copy->destinationX,copy->destinationY,copy->destinationX+copy->width,
+                      copy->destinationY+copy->height);
+    status=fence_owner();
+    if (status!=DISPLAY_OK) return status;
+    status=VbxeOwnerCopyStart(&display,copy,id);
+    if (status==DISPLAY_DEVICE_FAULT) latch(status);
+    return status;
+}
+UWORD GemDrawingPoll(ULONG id)
+{
+    UWORD status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    status=VbxeOwnerPoll(&display,id);
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
@@ -473,7 +495,7 @@ UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible)
     if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (x>=640 || y>=240 || visible>1) return DISPLAY_BAD_ARGUMENT;
-    if (display.scrollPending) return DISPLAY_BUSY;
+    if (display.operationPending) return DISPLAY_BUSY;
     cursor_render(x,y,visible);
     if (!fault) cursorVisible=visible;
     return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
@@ -523,7 +545,7 @@ UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visi
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (visible>1 || (visible && ((left|right)&1 || left>=right || top>=bottom ||
         right>640 || bottom>240 || right-left<32 || bottom-top<32))) return DISPLAY_BAD_ARGUMENT;
-    if (display.scrollPending) return DISPLAY_BUSY;
+    if (display.operationPending) return DISPLAY_BUSY;
     if (!visible || left!=outlineLeft || top!=outlineTop || right!=outlineRight || bottom!=outlineBottom) {
         if (outlineDrawn) { cursor_hide(); outline_hide(); }
         outlineLeft=left; outlineTop=top; outlineRight=right; outlineBottom=bottom;
@@ -546,7 +568,7 @@ UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)
     status=DisplayCheck(&display.lease);
     if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    if (display.scrollPending) return DISPLAY_BUSY;
+    if (display.operationPending) return DISPLAY_BUSY;
     GemDrawingPrepare(left,top,right,bottom);
     draw();
     return fence_owner();

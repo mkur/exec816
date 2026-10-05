@@ -50,7 +50,7 @@ def analyze_events(events, marks):
                     require(active[point] is None, 'Duplicate terminal boundary '+point)
                     active[point] = tick
                 elif dp == active['worker_dp']:
-                    if name == 'GemDrawingScrollPoll':
+                    if name == 'GemDrawingPoll':
                         active['polls'] += 1
                     elif name == 'completion_tasks_wait':
                         active['waits'] += 1

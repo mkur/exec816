@@ -1,4 +1,4 @@
-/* Shared drawing library without the GEM service/client or cursor objects. */
+/* Shared drawing library without the GEM service/client Tasks. */
 #include "gem-drawing.h"
 #include <exec/input.h>
 #include <proto/exec.h>
@@ -32,8 +32,9 @@ void DrawingPeer(void)
     check(GemDrawingText(0,0,NULL,0,1,0)==DISPLAY_INVALID_OWNER);
     check(GemDrawingTextFill(0,0,NULL,0,1,0,0,0,8,1,1)==DISPLAY_INVALID_OWNER);
     check(GemDrawingCopy(NULL)==DISPLAY_INVALID_OWNER);
+    check(GemDrawingCopyStart(NULL,NULL)==DISPLAY_INVALID_OWNER);
     check(GemDrawingScrollStart(NULL,0,NULL)==DISPLAY_INVALID_OWNER);
-    check(GemDrawingScrollPoll(1)==DISPLAY_INVALID_OWNER);
+    check(GemDrawingPoll(1)==DISPLAY_INVALID_OWNER);
     check(GemDrawingFence()==DISPLAY_INVALID_OWNER);
     check(GemDrawingClose()==DISPLAY_INVALID_OWNER);
     check(GemDrawingOpen(workout)==DISPLAY_BUSY);
@@ -68,16 +69,22 @@ UWORD main(void)
     check(GemDrawingScrollStart(&copy,5,&id)==DISPLAY_OK);
     check((UWORD)(ownerChecks-before)==1);
     check(GemDrawingScrollStart(&copy,5,&id)==DISPLAY_BUSY);
-    check(GemDrawingScrollPoll(id+1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingPoll(id+1)==DISPLAY_BAD_ARGUMENT);
     check(GemDrawingFence()==DISPLAY_OK);
     before=ownerChecks;
-    check(GemDrawingScrollPoll(id)==DISPLAY_OK);
+    check(GemDrawingPoll(id)==DISPLAY_OK);
     check((UWORD)(ownerChecks-before)==1);
+    before=ownerChecks;
+    check(GemDrawingCopyStart(&copy,&id)==DISPLAY_OK && id!=0);
+    check((UWORD)(ownerChecks-before)==1);
+    check(GemDrawingCopyStart(&copy,&id)==DISPLAY_BUSY);
+    check(GemDrawingFence()==DISPLAY_OK);
+    check(GemDrawingPoll(id)==DISPLAY_OK);
     peerArm=1;
     for (pen=0;pen<16;pen++) {
         before=ownerChecks;
         check(GemDrawingText(32+(pen&1),8+pen*9,text,7,pen,5)==DISPLAY_OK);
-        check((UWORD)(ownerChecks-before)==(pen ? 1 : 9));
+        check((UWORD)(ownerChecks-before)==(pen ? 1 : 10));
     }
     check(peerDone);
     before=ownerChecks;

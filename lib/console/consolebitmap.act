@@ -75,11 +75,11 @@ PUBLIC BYTE FUNC Run(CARD operation)
   packet.status=DISPLAY.BAD_ARGUMENT
   Call(state.entry)
   IF operation=OP_FILL OR operation=OP_TEXT OR operation=OP_TEXT_FILL
-      OR operation=OP_TEXT_CLIP OR operation=OP_SCROLL THEN
+      OR operation=OP_TEXT_CLIP OR operation=OP_SCROLL OR operation=OP_COPY_START THEN
     drawingChanged=1
   FI
   IF packet.status=DISPLAY.BUSY AND
-      (operation=OP_SCROLL OR operation=OP_POLL) THEN
+      (operation=OP_SCROLL OR operation=OP_COPY_START OR operation=OP_POLL) THEN
     RETURN(1)
   FI
 
@@ -259,6 +259,27 @@ PUBLIC BYTE FUNC Scroll(CARD left,top,width,height,rows)
   FI
 
   drawingPending=1
+
+RETURN(1)
+
+; The presenter prepares the shared typed descriptor before this call. Its
+; own Layers token remains separate from the console-scroll model transaction.
+PUBLIC BYTE FUNC CopyStart()
+
+  IF drawingPending<>0 THEN
+    RETURN(0)
+  FI
+
+  IF Run(OP_COPY_START)=0 THEN
+    RETURN(0)
+  FI
+
+  LET packet=GetPacket()
+  IF packet.status<>DISPLAY.OK THEN
+    RETURN(0)
+  FI
+
+  drawingPending=(packet.token<>0)
 
 RETURN(1)
 

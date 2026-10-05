@@ -42,7 +42,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
         hardware=(ROOT/'platform/altirraos/vbxe.c').read_text()
         hardware=hardware.replace('#define BUSY ', 'extern UBYTE ConsoleFaultBusy(void);\nextern void ConsoleFaultStop(void);\nextern void ConsoleFaultCopy(void);\nextern void ConsoleFaultText(UWORD count,UWORD fillRows);\n#define BUSY ')
         hardware=hardware.replace('REG(BUSY)&3','ConsoleFaultBusy()&3').replace('REG(BUSY)=0;', 'REG(BUSY)=0; ConsoleFaultStop();')
-        needle='status=VbxeNotifyArm(d->scrollId);'
+        needle='status=VbxeNotifyArm(d->operationId);'
         require(hardware.count(needle)==1,'Scroll launch boundary changed')
         hardware=hardware.replace(needle,needle+' ConsoleFaultCopy();')
         needle='start(d);\n        status=VbxeOwnerFence(d);'
