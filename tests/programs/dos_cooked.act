@@ -208,11 +208,14 @@ RETURN
 
 PROC Lines()
 
+  LET cooked=DOSCOOKED.Handle POINTER(con)
   Fill()
   Pause(1)
+  Require(DOS.SetConsoleHistory(con,1)<>0)
   Require(DOS.Write(con,prompt,2)=2)
   Require(DOS.Read(con,@buffer(2),2)=2 AND buffer(2)=97 AND buffer(3)=99)
-  Require(peerDone=1)
+  Require(peerDone=1 AND cooked.state.history.count=1)
+  Require(DOS.SetConsoleHistory(con,0)<>0)
   Require(DOS.Read(con,BYTE POINTER(0),0)=0)
   Require(DOS.Read(con,@buffer(4),256)=3 AND buffer(4)=100 AND buffer(5)=32
       AND buffer(6)=10)
@@ -251,6 +254,29 @@ PROC Lines()
   Pause(10)
   Require(DOS.Read(con,buffer,256)=2 AND buffer(0)=122 AND buffer(1)=10)
   Idle()
+  Require(cooked.state.history.count=1)
+  Pause(11)
+  Require(DOS.SetConsoleHistory(con,1)<>0)
+  Require(DOS.Read(con,buffer,256)=5 AND buffer(0)=97 AND buffer(1)=99
+      AND buffer(2)=100 AND buffer(3)=32 AND buffer(4)=10)
+  Require(cooked.state.history.count=1)
+  Require(DOS.SetConsoleHistory(con,0)<>0)
+  Idle()
+
+RETURN
+
+; Physical cursor chords and ordinary punctuation have separate translations.
+PROC CursorAliases()
+
+  Require(CONSOLEINPUT.Decode(instance,$10000086)=2)
+  Require(CONSOLEINPUT.Decode(instance,$10010087)=6)
+  Require(CONSOLEINPUT.Decode(instance,$1002008e)=16)
+  Require(CONSOLEINPUT.Decode(instance,$1003008f)=14)
+  Require(CONSOLEINPUT.Decode(instance,$10040006)=43)
+  Require(CONSOLEINPUT.Decode(instance,$10050007)=42)
+  Require(CONSOLEINPUT.Decode(instance,$1006000e)=45)
+  Require(CONSOLEINPUT.Decode(instance,$1007000f)=61)
+  instance.lastValid=0
 
 RETURN
 
@@ -261,6 +287,7 @@ PROC Main()
 
   baseline=EXEC.AvailMem(0)
   instance=CONSOLEDRIVER.GetInstance()
+  CursorAliases()
   registry=DOSRAW.GetRegistry()
   service=CONSOLEDRIVER.GetService()
   client=DOSCLIENT.Ensure()
@@ -273,9 +300,19 @@ PROC Main()
   endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
   raw=DOS.Open(rawName,DOS.MODE_OLDFILE)
   Require(raw<>DOS.FileHandle POINTER(0) AND endpoint.references=2)
+  Require(DOS.SetConsoleHistory(raw,1)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Require(DOS.SetConsoleHistory(NULL,1)=0 AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
+  BEGIN
+    LET cooked=DOSCOOKED.Handle POINTER(con)
+    Require(COOKEDLINE.Enter(cooked.state)=1)
+    Require(DOS.SetConsoleHistory(con,1)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+    COOKEDLINE.Leave(cooked.state)
+  END
   Require(DOS.Close(raw)<>0 AND endpoint.references=1)
   available=EXEC.AvailMem(0)
   Exhaust()
+  Require(DOS.SetConsoleHistory(con,1)=0 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(DOS.SetConsoleHistory(con,0)<>0)
   Require(DOS.Read(con,buffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
   Require(client.request=EXEC.IOStdReq POINTER(0) AND client.busy=0
       AND endpoint.active=0 AND endpoint.reader=BYTE POINTER(0))
@@ -286,6 +323,7 @@ PROC Main()
   nil=DOS.Open(nilName,DOS.MODE_NEWFILE)
   previous=DOS.SelectOutput(nil)
   Require(nil<>DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
+  Require(DOS.SetConsoleHistory(nil,1)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
   BeginPeer()
   Lines()
   WHILE peer.tc_State<>EXEC.TS_REMOVED DO
@@ -295,6 +333,7 @@ PROC Main()
   previous=DOS.SelectInput(con)
   Require(DOS.IoErr()=0)
   Require(DOS.Close(con)<>0 AND DOS.Input()=DOS.FileHandle POINTER(0))
+  Require(DOS.SetConsoleHistory(con,1)=0 AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
   Require(DOS.Close(nil)<>0 AND DOS.Output()=DOS.FileHandle POINTER(0)
       AND DOS.ReleaseContext()<>0)
   Require(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
@@ -302,7 +341,7 @@ PROC Main()
   Require(con<>DOS.FileHandle POINTER(0))
   Require(DOS.Close(con)<>0 AND DOS.ReleaseContext()<>0
       AND EXEC.AvailMem(0)=baseline)
-  phase=11
+  phase=12
 
 RETURN
 

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 5,
+  "revision": 6,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -677,6 +677,22 @@
       ],
       "outgoing_bytes": 7,
       "result_bytes": 4
+    },
+    "SetConsoleHistory": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 1
+        }
+      ],
+      "outgoing_bytes": 5,
+      "result_bytes": 4
     }
   },
   "cooked": {
@@ -684,10 +700,11 @@
       "LINE_BYTES": 256,
       "ECHO_BYTES": 128,
       "TAIL_COLUMNS": 36,
-      "PENDING": -2
+      "PENDING": -2,
+      "HISTORY_SLOTS": 10
     },
     "session": {
-      "size": 402,
+      "size": 410,
       "fields": [
         [
           "references",
@@ -758,6 +775,71 @@
           "appendEcho",
           "BYTE",
           401
+        ],
+        [
+          "cursor",
+          "CARD",
+          402
+        ],
+        [
+          "viewStart",
+          "CARD",
+          404
+        ],
+        [
+          "screenCursor",
+          "BYTE",
+          406
+        ],
+        [
+          "history",
+          "History POINTER",
+          407
+        ]
+      ]
+    },
+    "history": {
+      "size": 2824,
+      "fields": [
+        [
+          "next",
+          "BYTE",
+          0
+        ],
+        [
+          "count",
+          "BYTE",
+          1
+        ],
+        [
+          "selected",
+          "BYTE",
+          2
+        ],
+        [
+          "enabled",
+          "BYTE",
+          3
+        ],
+        [
+          "draftLength",
+          "CARD",
+          4
+        ],
+        [
+          "draftCursor",
+          "CARD",
+          6
+        ],
+        [
+          "entries",
+          "BYTE[2560]",
+          8
+        ],
+        [
+          "draft",
+          "BYTE[256]",
+          2568
         ]
       ]
     }

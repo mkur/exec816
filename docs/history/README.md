@@ -118,6 +118,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [Small shell editor and history](shell-editing.md): cursor editing, ten commands,
+  prompt-only history and unchanged bank-zero reservations.
+
 - [Command usability](command-usability.md): bounded shell PATH, shared fault
   text and template help for all ten commands.
 

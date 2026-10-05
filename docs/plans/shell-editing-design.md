@@ -3,8 +3,9 @@
 [Implementation plans](README.md) · [Shell guide](../guides/shell.md) ·
 [Current cooked input](../reference/cooked-console.md)
 
-Status: accepted design; [implementation](shell-editing-implementation-plan.md)
-is in progress.
+Status: implemented; this note preserves the accepted design. See the
+[implementation plan](shell-editing-implementation-plan.md) and
+[development record](../history/shell-editing.md).
 
 Add insertion and cursor movement to the existing line editor, plus the last
 ten submitted commands. Keep the 255-character limit, one visible edit row and

@@ -85,6 +85,13 @@ Type `HELP` to list the shell's built-in commands:
 HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT
 ```
 
+The prompt supports insertion, Backspace and Ctrl-A/E for beginning/end.
+Ctrl-B/F moves left/right, Ctrl-U clears the line, Ctrl-K deletes to the end,
+and Ctrl-W deletes the preceding word. Ctrl-P/N browses the last ten commands.
+Atari cursor chords work too: Ctrl-+/Ctrl-* moves left/right and Ctrl--/Ctrl-=
+browses history. Moving past the newest command restores your draft. See the
+[shell guide](shell.md#editing-and-break) for the complete editing rules.
+
 `HELLO | WC` prints `1 3 17`. `CAT STORY.TXT | WC` prints `24 133 746`.
 The [command toolbox](toolbox.md) also supplies CMP, CKSUM, HEXDUMP, HEAD, GREP,
 LIST and MORE. Try `HEAD STORY.TXT LINES 5`, `LIST NAMES`, or `MORE LONG.TXT`.

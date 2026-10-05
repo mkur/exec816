@@ -79,6 +79,12 @@ Type HELP to list the shell's built-in commands:
 
     HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT
 
+Edit at the prompt: Ctrl-A/E beginning/end, Ctrl-B/F left/right, Ctrl-U clear,
+Ctrl-K delete to end, Ctrl-W delete previous word. Ctrl-P/N recalls the last
+10 commands; going past the newest restores your unfinished draft.
+Atari cursor chords: Ctrl-+ left, Ctrl-* right, Ctrl-- up, Ctrl-= down.
+Up/down browse history. History lasts for this shell session only.
+
 The disk also includes CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST and MORE.
 Try HEAD STORY.TXT LINES 5, CKSUM STORY.TXT, or LIST NAMES.
 MORE LONG.TXT pages text: Space advances a page, Return a line, Q quits.

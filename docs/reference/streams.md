@@ -35,6 +35,9 @@ RAW Read waits for available input and returns an available prefix; it does not
 wait for Return, fill every requested byte, edit or echo. The device's bounded
 copy quantum is not a narrower public length field. RAW has no keyboard EOF
 convention; absent a foreground cancellation route, Ctrl-C/BREAK is byte 3.
+The common keyboard decoder maps Atari Ctrl-+/Ctrl-*/Ctrl--/Ctrl-= to bytes
+2/6/16/14 (Ctrl-B/F/P/N). RAW returns these bytes without performing editing
+or history. Ordinary unmodified punctuation is unchanged.
 
 CON adds the [cooked input contract](cooked-console.md): retained edited lines,
 LF termination, Ctrl-D EOF and explicit input-loss errors. Its session owns its

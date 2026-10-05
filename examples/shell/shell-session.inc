@@ -95,7 +95,8 @@ TYPE ShellState=[
   BYTE pipeline
   BYTE pathCount
   BYTE diagnosticWord
-  BYTE ARRAY reserved(5)
+  BYTE historyAvailable
+  BYTE ARRAY reserved(4)
 ]
 
 ShellState POINTER shell
@@ -359,8 +360,34 @@ PROC ShellDiagnostic()
 
 RETURN
 
+; History is a prompt feature; keep command results independent of toggles.
+; An allocation failure disables optional history for this shell's lifetime.
+PROC ShellHistory(BYTE enabled)
+
+  IF shell.historyAvailable=0 THEN
+    RETURN
+  FI
+
+  LET saved=DOS.IoErr()
+  IF DOS.SetConsoleHistory(shell.console,enabled)=0 THEN
+    IF enabled<>0 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE THEN
+      shell.historyAvailable=0
+    ELSE
+      ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())
+    FI
+  FI
+
+  DOS.SetIoErr(saved)
+
+RETURN
+
 ; Invite another command on the shell's console, regardless of redirection.
 PROC ShellPrompt()
+
+  ShellHistory(1)
+  IF shell.done<>0 THEN
+    RETURN
+  FI
 
   LET prompt=ShellDrawBuffer()
   prompt(0)=CHAR_GREATER
@@ -830,6 +857,10 @@ PROC ShellDispatch()
     ShellText(DOS.Output(),
         c"HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT")
     ShellByte(DOS.Output(),ASCII.LF)
+    ShellText(DOS.Output(),c"Edit: Ctrl-A/E home/end, B/F left/right\n")
+    ShellText(DOS.Output(),c"Ctrl-U clear, K cut end, W cut word\n")
+    ShellText(DOS.Output(),c"History: Ctrl-P/N or Atari up/down\n")
+    ShellText(DOS.Output(),c"Atari left/right move the cursor\n")
 
   WHEN CMD_ECHO THEN
     IF shell.argc>1 THEN
@@ -958,6 +989,7 @@ PROC ShellReadStep()
     IF line(shell.length-1)=ASCII.LF THEN
       shell.length==-1
       line(shell.length)=ASCII.NUL
+      ShellHistory(0)
       ShellCommand()
       ShellClear()
       IF shell.done=0 THEN
@@ -966,6 +998,7 @@ PROC ShellReadStep()
     FI
 
   ELSEIF count=0 THEN
+    ShellHistory(0)
     ; Ctrl-D may seal an unterminated final command before its one-shot EOF.
     line(shell.length)=ASCII.NUL
     IF shell.length<>0 THEN
@@ -976,6 +1009,11 @@ PROC ShellReadStep()
 
   ELSEIF error=DOS.ERROR_BREAK OR error=DOS.ERROR_LINE_TOO_LONG
         OR error=DOS.ERROR_BUFFER_OVERFLOW THEN
+    ShellHistory(0)
+    IF shell.done<>0 THEN
+      RETURN
+    FI
+
     ShellClear()
     shell.diagnosticWord=$ff
     shell.status=PROCESS.RETURN_OK
@@ -1001,6 +1039,7 @@ PROC ShellReadStep()
     ShellPrompt()
 
   ELSE
+    ShellHistory(0)
     ShellFail(PROCESS.RETURN_FAIL,error)
   FI
 
@@ -1016,6 +1055,7 @@ BYTE FUNC ShellOpen(BYTE POINTER consoleName)
     RETURN(0)
   FI
 
+  shell.historyAvailable=1
   ShellPathReset()
   shell.diagnosticWord=$ff
   shell.console=DOS.Open(consoleName,DOS.MODE_READWRITE)

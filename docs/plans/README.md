@@ -100,10 +100,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
-- [Small shell editor and command history](shell-editing-design.md): proposed
-  control-key editing and ten recalled commands, using the existing cooked
-  editor with optional fixed-size history and no extra bank-zero reservation.
-  [Implementation plan](shell-editing-implementation-plan.md) in progress.
+- [Small shell editor and command history](shell-editing-design.md): implemented
+  control-key editing, Atari cursor aliases and ten recalled commands. Optional
+  history uses 2,824 upper-RAM bytes with no extra bank-zero reservation.
+  [Implementation plan](shell-editing-implementation-plan.md) and
+  [development record](../history/shell-editing.md).
 
 - [Commands for writable filesystems](write-commands-implementation-plan.md):
   COPY, DELETE, RENAME, MAKEDIR and TEE implemented using the existing writable

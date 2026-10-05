@@ -48,6 +48,13 @@ COPY/TEE truncate unless APPEND is used.
 RENAME stays within one directory.
 DELETE accepts files or empty directories.
 
+Prompt editing and ten-command history:
+Ctrl-A/E: start/end. Ctrl-B/F: left/right.
+Ctrl-U: clear. Ctrl-K: delete to end.
+Ctrl-W: delete word. Ctrl-P/N: history.
+Atari Ctrl-+/*: left/right, Ctrl--/=: up/down.
+Past newest history restores your draft.
+
 PATH searches here, then SYS: by default.
 Every supplied command supports ? help.
 Errors are explained on the console.

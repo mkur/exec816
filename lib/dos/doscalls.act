@@ -8,6 +8,7 @@ USE DOSSTREAMS
 USE DOSPIPE
 USE DOSRAW
 USE DOSCOOKED
+USE COOKEDLINE
 USE DOSBREAK
 USE DOSBREAKTYPES
 USE DOSCANCEL
@@ -879,6 +880,30 @@ PUBLIC BYTE POINTER FUNC OpenConsole()
   FI
 
 RETURN(DOSRAW.Open(client,scope.unit))
+
+; Configure only a live caller-owned cooked session. The cooked lease excludes
+; readers sharing an inherited session while allocation/configuration runs.
+PUBLIC LONGINT FUNC SetConsoleHistory(BYTE POINTER identity BYTE enabled)
+
+  LET owner=DOSCORE.Current()
+  IF SelectionReady(owner)=0 THEN
+    RETURN(0)
+  FI
+
+  IF LiveSelection(owner,identity)=0 THEN
+    RETURN(0)
+  FI
+
+  LET header=DOSOBJECTS.Header POINTER(identity)
+  IF header.backend<>DOSOBJECTS.BACKEND_CON THEN
+    owner.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(0)
+  FI
+
+  LET item=DOSCOOKED.Handle POINTER(header)
+  owner.error=COOKEDLINE.SetHistory(item.state,enabled)
+
+RETURN(IF owner.error=0 THEN LONGINT(-1) ELSE LONGINT(0) FI)
 
 ; Query the dimensions of an owned live console, with identity and storage
 ; validation. The handle's endpoint reference prevents instance destruction.

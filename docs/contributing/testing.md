@@ -47,7 +47,7 @@ Examples of focused selection, not a mandatory suite for every change:
 | Retained console cells or controls | `tools/test_console_core.py` in raw/optimized mode. |
 | Bulk bitmap output | `tools/test_console_batch_core.py`, `tools/test_console_bitmap_scroll.py --batch`, and `tools/test_console_batch_lifetime.py` in raw/optimized mode; selected bitmap fault/control and fairness cases. `tools/measure_bitmap_cat.py` and `tools/measure_console_batch_load.py` record performance separately. |
 | Screen presentation or cursor | `tools/test_console_display.py`; add `tools/test_console_scroll.py` when changing scrolling or its cost. |
-| Cooked line state | `tools/test_cooked_line.py`; a physical CON: case when device integration changes. |
+| Cooked line state | `tools/test_cooked_line.py --case raw/opt` for editing, viewport, history and ownership; `tools/test_dos_cooked.py` for public CON calls and physical keys; `tools/test_demo.py --editing` for prompt-only history and packaged OF816 boot; `tools/test_shell_core.py --smoke --history-unavailable --paced` for the optional-history failure path. |
 | Shell input/session integration | `tools/test_shell_core.py --smoke`; the affected command, redirection or lifetime scenario for the specific change. |
 | Console windows | `tools/test_console_windows.py` for lifetime; `tools/test_console_focus.py` for display/routing; the bounded `tools/test_console_fairness.py` case when worker scheduling changes. |
 | Foreground cancellation | The affected console/filesystem cancellation fixture or one `tools/test_shell_break.py` scenario; expand when the failure crosses those boundaries. |

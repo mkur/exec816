@@ -34,8 +34,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     shell_cells=width*(height if shell_only else height-6)
     screenshots=[];commands=[]
     boot_image=None
-    if showcase or (boot_smoke and shell_only and bootstrap is None):
-        require(bootstrap is None,'The screenshot walkthrough uses the packaged OF816 autoboot')
+    if showcase or editing or (boot_smoke and shell_only and bootstrap is None):
+        require(bootstrap is None,'This walkthrough uses the packaged OF816 autoboot')
         boot_image=out/manifest['boot_image']
         boot=json.loads((out/manifest['boot_manifest']).read_text())
         require(sha256(boot_image)==boot['xex_sha256'] and
@@ -105,8 +105,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         def frames(count=3):rendezvous(f'@frame>={b.eval_expr("@frame")+count}')
         capture=p['build']['memory']['console_storage']['CAPTURE']
         def press(character):
-            ctrl=character=='\x04'
-            name,shift=('D',False) if ctrl else ('BREAK',False) if character=='\x03' else KEYS[character]
+            arrows={'→':'ASTERISK','↑':'MINUS','↓':'EQUALS'}
+            ctrl=character in '\x01\x02\x04\x05\x06\x0b\x0e\x10\x15\x17' or character in arrows
+            name,shift=(arrows.get(character,chr(ord(character)+64) if ord(character)<32 else character),False) if ctrl else ('BREAK',False) if character=='\x03' else KEYS[character]
             if ctrl:b._cmd_ok('KEY CTRL down')
             if shift:b._cmd_ok('KEY SHIFT down')
             previous=number(capture+10,2)
@@ -400,15 +401,77 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 for character in 'EXIT':press(character)
                 b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
             if editing:
+                saved['ledger']=ledger()
+                def submit_edited(text,expected):
+                    print('Demo edited command:',text,flush=True)
+                    previous=begin('');ready(previous);result()
+                    screen=cells(text)
+                    require(expected in screen[:shell_cells],'Missing edited command output: '+text)
+                    commands.append(text)
+                def edit(text,caret=None):
+                    ready();screen=cells('edit-'+text)
+                    row=number(saved['top']+12,2);column=number(saved['top']+10,2)
+                    want=b'>  '+text.encode()
+                    require(screen[row*width:(row+1)*width]==want+b' '*(width-len(want)),
+                            'Edited prompt bytes differ: '+text)
+                    require(column==3+(len(text) if caret is None else caret),
+                            'Edited prompt caret differs: '+text)
+                # The pinned bridge omits PLUS; raw $86 decoding is checked in
+                # test_dos_cooked. Exercise its common edit path with Ctrl-B.
+                # Movement, insertion, Return away from EOF and deletion keys.
+                for char in 'ECHO ac\x02b':press(char)
+                edit('ECHO abc',7)
+                submit_edited('ECHO abc',b'abc')
+                for char in 'ECHO wrong\x01\x06\x06\x06\x06\x06\x0bright':press(char)
+                edit('ECHO right')
+                submit_edited('ECHO right',b'right')
+                for char in 'ECHO two words   \x17ok':press(char)
+                edit('ECHO two ok')
+                submit_edited('ECHO two ok',b'two ok')
+                for char in 'discard\x15ECHO clean\x01\x05\x02→':press(char)
+                edit('ECHO clean')
+                submit_edited('ECHO clean',b'clean')
+                # Ctrl and Atari aliases navigate one ring and restore the draft.
+                for char in 'ECHO draft\x02\x02↑':press(char)
+                edit('ECHO clean')
+                press('↓');edit('ECHO draft',8)
+                press('\x10');edit('ECHO clean')
+                press('\x0e');edit('ECHO draft',8)
+                submit_edited('ECHO draft',b'draft')
+                command('HELLO | WC',b'1 3 17')
+                press('↑');edit('HELLO | WC');submit_edited('HELLO | WC',b'1 3 17')
+                # A loaded CAT reads the inherited CON session with history off.
+                saved['memory']=memory()
+                previous=begin('CAT')
+                parent_client=pointer(saved["scope"]+3)
+                condition=f'(db(${saved["top"]+51:x})=2)&(db(${parent_client+86:x})=1)'
+                rendezvous(condition)
+                for char in '↑programdata\n':press(char)
+                rendezvous(condition)
+                press('\x04')
+                rendezvous(f'db(${parent_client+86:x})=0')
+                ready(previous);result();commands.append('CAT (history disabled)')
+                require(ledger()==saved['ledger'],'Inherited CON left owned resources')
+                press('↑');edit('CAT')
+                press('↓');edit('')
+                # Editing a recalled line does not modify its saved entry.
+                press('↑');press('\x15')
+                for char in 'ECHO replacement':press(char)
+                press('↓');edit('')
+                press('↑');edit('CAT')
+                press('\x15')
+                for char in 'ECHO after-program':press(char)
+                submit_edited('ECHO after-program',b'after-program')
                 command('ECHO '+('a'*80),b'a'*80)
-                # The cooked editor deliberately retains its 36-character tail
-                # on either screen width; the command buffer still admits 255.
                 command('ECHO '+('a'*35)+'b\bc',b'a'*35+b'c')
                 command('ECHO '+('a'*250),b'a'*80)
                 previous=number(saved['scope']+14)
                 for character in 'ECHO abandon':press(character)
                 press('\x03');ready(previous);result();cells('cancel-edited-line')
                 command('ECHO recovered',b'recovered')
+                require(memory()==saved['memory'],'Editing/history retained heap storage')
+                require(ledger()==saved['ledger'],'Editing/history retained owned resources')
+                saved['editing_history']=True
                 frames(3);cells('editing');save_screen(out/'walkthrough.png')
                 b._cmd_ok('KEY CTRL down');b._cmd_ok('KEY D down')
                 b.bp_clear_all();return
@@ -505,14 +568,14 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
         autoboot_frames=saved.get('autoboot_frames'),
-        filesystem_writes=saved.get('filesystem_writes',False),write_commands=saved.get('write_commands',False),work_media=saved.get('work_media'),
+        editing_history=saved.get('editing_history',False),filesystem_writes=saved.get('filesystem_writes',False),write_commands=saved.get('write_commands',False),work_media=saved.get('work_media'),
         measurements=saved.get('measurements'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
         baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=None if stock_smoke or showcase or editing or disk_failure else 6 if shell_only else 7,
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked 36/37-column edits, 255-byte command, BREAK recovery and physical Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':
@@ -522,7 +585,7 @@ if __name__=='__main__':
     smoke.add_argument('--stock-smoke',action='store_true')
     smoke.add_argument('--boot-smoke',action='store_true',help='Check shell, disk commands and EXIT; shell-only builds use OF816 autoboot')
     smoke.add_argument('--loading-smoke',action='store_true',help='Check command loading and physical BREAK without the full walkthrough')
-    smoke.add_argument('--editing',action='store_true',help='Physical long-line editing, BREAK and EOF')
+    smoke.add_argument('--editing',action='store_true',help='OF816 boot, physical editing/history, inherited CON, BREAK and EOF')
     smoke.add_argument('--disk-failure',choices=('missing','wrong'),help='Check offline console and matching-disk recovery')
     smoke.add_argument('--screenshots',action='store_true',help='Capture boot/TASKS and the documented walkthrough through OF816 autoboot')
     args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,boot_smoke=args.boot_smoke,showcase=args.screenshots,editing=args.editing,disk_failure=args.disk_failure)

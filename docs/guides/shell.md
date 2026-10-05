@@ -162,11 +162,28 @@ running. See [pipes](../reference/pipes.md) and [Process groups](../reference/pr
 
 ## Editing and BREAK
 
-The prompt is `> `. Printable ASCII appends, Backspace deletes, Tab inserts a
-space and Return submits. The cooked session shows a tail of the line with `<`
-when earlier text is hidden. There is no history, completion or cursor navigation.
-Ctrl-D exits an empty prompt; after partial input it submits that final command
-and then exits normally.
+The prompt is `> `. Typing inserts at the cursor; Backspace deletes before it,
+Tab inserts one space and Return submits the whole line. A single row follows
+the cursor, with `<` when text to the left is hidden.
+
+| Keys | Action |
+| --- | --- |
+| Ctrl-A / Ctrl-E | Beginning / end of line. |
+| Ctrl-B / Ctrl-F | One character left / right. |
+| Ctrl-U | Clear the whole line. |
+| Ctrl-K | Delete from the cursor to the end. |
+| Ctrl-W | Delete spaces and the preceding word. |
+| Ctrl-P / Ctrl-N | Older / newer command. |
+| Atari Ctrl-+ / Ctrl-* | Cursor left / right. |
+| Atari Ctrl-- / Ctrl-= | Older / newer command (up / down). |
+
+History keeps ten nonblank commands, skips consecutive exact duplicates and
+lasts for this shell session. Moving forward past the newest entry restores your
+unfinished draft and cursor. Editing a recalled command does not alter its saved
+entry; browsing away loses those edits. Program input is excluded. History needs
+about 2.8 KiB of upper RAM; if unavailable, editing still works. There is no
+completion, search or history file. Ctrl-D exits an empty prompt; after partial
+input it submits that final command and then exits normally.
 
 Ctrl-C/BREAK clears the prompt or cancels the foreground command, including with
 redirected streams. Cleanup and outstanding I/O retirement precede the next
@@ -184,10 +201,20 @@ independent presentation. See [cooked input](../reference/cooked-console.md) and
 With the [build prerequisites](../contributing/building.md) installed:
 
 ```sh
-python3 tools/native_program.py --compiler-dir build/actionc --source examples/shell/shell.act --tasks --task-capacity 8 --console --dos-mounts config/shell-sdfs.json --output build/shell
+mkdir -p build/shell
+python3 - <<'PYCONFIG'
+import json
+from pathlib import Path
+profile = json.loads(Path('platform/altirraos/memory-4m.json').read_text())
+profile['image_data_bytes'] = 4096
+Path('build/shell/memory.json').write_text(json.dumps(profile))
+PYCONFIG
+python3 tools/native_program.py --compiler-dir build/actionc --source examples/shell/shell.act --tasks --task-capacity 8 --console --dos-mounts config/shell-sdfs.json --memory-profile build/shell/memory.json --output build/shell
 python3 tools/make_data_disk.py --output build/shell/system.atr
 ```
 
+The 4 KiB upper-RAM data area accommodates shell globals and help/fault strings,
+matching the demo; it does not enlarge bank-zero reservations.
 This is a development XEX and sample data disk. Use the [demo builder](demo.md)
 for the OF816 distribution including external commands and the matching ROM.
 The [earlier shell guide](../history/shell-guide.md) and

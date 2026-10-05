@@ -8,6 +8,8 @@ USE CONSOLEFOREGROUND
 USE CONSOLEWINDOWS
 USE HEAPCORE
 INCLUDE "console-storage-action.inc"
+CONST ATARI_LEFT=$86, ATARI_RIGHT=$87, ATARI_UP=$8e, ATARI_DOWN=$8f
+CONST INPUT_LEFT=2, INPUT_RIGHT=6, INPUT_PREVIOUS=16, INPUT_NEXT=14
 INPUT.Event capturedEvent
 
 ; Attach private input storage and reset this terminal's keyboard state.
@@ -77,6 +79,17 @@ PUBLIC CARD FUNC Decode(CONSOLETYPES.Instance POINTER instance LONGCARD event)
 
   IF kind<>0 THEN
     RETURN($ffff)
+  FI
+
+  ; Atari cursor chords share the cooked editor's existing control bytes.
+  IF code=ATARI_LEFT THEN
+    RETURN(INPUT_LEFT)
+  ELSEIF code=ATARI_RIGHT THEN
+    RETURN(INPUT_RIGHT)
+  ELSEIF code=ATARI_UP THEN
+    RETURN(INPUT_PREVIOUS)
+  ELSEIF code=ATARI_DOWN THEN
+    RETURN(INPUT_NEXT)
   FI
 
   index=code & 63

@@ -3,8 +3,9 @@
 [Plans](README.md) · [Design](shell-editing-design.md) ·
 [Current cooked input](../reference/cooked-console.md)
 
-Status: implementation in progress. Follow the design's fixed ten-entry history,
-255-character line, control-key editing and Atari cursor aliases. No completion,
+Status: implemented; [development record](../history/shell-editing.md) and
+[machine-readable evidence](../development/shell-editing.json). The design's fixed ten-entry history,
+255-character line, control-key editing and Atari cursor aliases are in place. No completion,
 search, escape parser, new worker or persistent history.
 
 ## E1: line editing and cursor aliases

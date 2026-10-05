@@ -15,6 +15,8 @@ TYPE Observation=[
   CARD length,position
   LONGINT error
   BYTE ready,eof,discard,drawn
+  CARD cursor,viewStart
+  BYTE screenCursor,historyCount,selected,enabled
   BYTE ARRAY payload(256)
 ]
 
@@ -60,6 +62,10 @@ PROC Release(COOKEDLINE.Session POINTER item)
         AND allocation(index+GUARD_BYTES+COOKEDLINE.SESSION_SIZE)=$a5)
   OD
 
+  IF item.history<>NULL THEN
+    EXEC.FreeMem(BYTE POINTER(item.history),COOKEDLINE.HISTORY_SIZE)
+  FI
+
   EXEC.FreeMem(allocation,GUARDED_BYTES)
 
 RETURN
@@ -71,7 +77,18 @@ PROC Allocation()
   baseline=EXEC.AvailMem(0)
   session=COOKEDLINE.Create()
   Require(session<>COOKEDLINE.Session POINTER(0) AND session.references=1)
-  Require(COOKEDLINE.Destroy(session)=1 AND EXEC.AvailMem(0)=baseline)
+  Require(COOKEDLINE.SetHistory(session,1)=0)
+  Require(EXEC.AvailMem(0)=baseline-416-COOKEDLINE.HISTORY_SIZE)
+  Require(COOKEDLINE.Retain(session)=1 AND session.references=2)
+  Require(COOKEDLINE.Destroy(session)=0)
+  Require(COOKEDLINE.Enter(session)=1)
+  Require(COOKEDLINE.SetHistory(session,0)=202)
+  Require(COOKEDLINE.Release(session)=1 AND session.references=1)
+  Require(COOKEDLINE.Release(session)=0)
+  COOKEDLINE.Leave(session)
+  Require(COOKEDLINE.Release(session)=1 AND EXEC.AvailMem(0)=baseline)
+  session=COOKEDLINE.Create()
+  Require(session<>NULL)
   held=Chunk POINTER(0)
   DO
     size=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
@@ -87,6 +104,9 @@ PROC Allocation()
   OD
 
   size=EXEC.AvailMem(0)
+  Require(COOKEDLINE.SetHistory(session,1)=103)
+  Require(session.history=NULL AND session.busy=0 AND EXEC.AvailMem(0)=size)
+  Require(COOKEDLINE.SetHistory(session,0)=0)
   Require(COOKEDLINE.Create()=COOKEDLINE.Session POINTER(0)
       AND EXEC.AvailMem(0)=size)
   WHILE held<>Chunk POINTER(0) DO
@@ -96,7 +116,7 @@ PROC Allocation()
     held=next
   OD
 
-  Require(EXEC.AvailMem(0)=baseline)
+  Require(COOKEDLINE.Destroy(session)=1 AND EXEC.AvailMem(0)=baseline)
 
 RETURN
 
@@ -107,13 +127,14 @@ PROC Run()
   BYTE POINTER command
 
   Require(SIZEOF(COOKEDLINE.Session)=COOKEDLINE.SESSION_SIZE
-      AND SIZEOF(Observation)=272)
+      AND SIZEOF(COOKEDLINE.History)=COOKEDLINE.HISTORY_SIZE
+      AND SIZEOF(Observation)=280)
   first=Guarded()
   second=Guarded()
-  commands=BYTE POINTER(ADDRESS($e0000))
-  output=BYTE POINTER(ADDRESS($d0010))
+  commands=BYTE POINTER(ADDRESS($300000))
+  output=BYTE POINTER(ADDRESS($200010))
   operations=CARD(commands(0))+(CARD(commands(1)) LSH 8)
-  Require(operations>0 AND operations<=240)
+  Require(operations>0 AND operations<=1000)
   command=commands+2
   sample=Observation POINTER(output)
   FOR number=0 TO operations-1 DO
@@ -152,9 +173,17 @@ PROC Run()
     ELSEIF kind=4 THEN
       session.error=0
     ELSEIF kind=5 THEN
+      IF session.history<>NULL THEN
+        EXEC.FreeMem(BYTE POINTER(session.history),COOKEDLINE.HISTORY_SIZE)
+      FI
+
       COOKEDLINE.Init(session)
     ELSEIF kind=6 THEN
       session.width=value
+    ELSEIF kind=8 THEN
+      sample.result=COOKEDLINE.SetHistory(session,value)
+    ELSEIF kind=9 THEN
+      session.busy=value
     ELSE
       Require(0)
     FI
@@ -166,8 +195,19 @@ PROC Run()
     sample.eof=session.eof
     sample.discard=session.discard
     sample.drawn=session.drawn
+    sample.cursor=session.cursor
+    sample.viewStart=session.viewStart
+    sample.screenCursor=session.screenCursor
+    sample.historyCount=0
+    sample.selected=0
+    sample.enabled=0
+    IF session.history<>NULL THEN
+      sample.historyCount=session.history.count
+      sample.selected=session.history.selected
+      sample.enabled=session.history.enabled
+    FI
     command=command+6
-    sample=Observation POINTER(ADDRESS(sample)+SIZE(272))
+    sample=Observation POINTER(ADDRESS(sample)+SIZE(280))
   OD
 
   Release(first)

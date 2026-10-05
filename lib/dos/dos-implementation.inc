@@ -1,4 +1,8 @@
 ; Native source adapters preserve the public DOS record identities and ABI.
+PUBLIC LONGINT FUNC SetConsoleHistory(FileHandle POINTER file BYTE enabled)
+
+RETURN(DOSCALLS.SetConsoleHistory(BYTE POINTER(file),enabled))
+
 PUBLIC LONGINT FUNC Flush(FileHandle POINTER file)
 
 RETURN(DOSCALLS.Flush(BYTE POINTER(file)))

@@ -1,0 +1,892 @@
+{
+  "format": "exec816-shell-editing-development-v1",
+  "status": "pass",
+  "tier": "development",
+  "date": "2026-10-05",
+  "plan_commit": "9d88b5489325ca27b6cf4439147d14e328bd62db",
+  "qualification": "Focused development checks only; no full release matrix or physical-device qualification.",
+  "source_inputs": {
+    "abi/dos.json": "9a4883101c17b4e73080dc65854033dcbade2ad4280c9123a5c673ef1807a8dc",
+    "examples/demo-disk/README.TXT": "9603ee9bd9e802e0870f504b18ddb93b45406d596332b9bae1196bdeb97e15ae",
+    "examples/shell/shell-session.inc": "7272640e622e6b43827b15d29cb1ffbcbec4acdaa32d640f774865c285907736",
+    "lib/console/consoleinput.act": "c727c37a1c69a37fc9786f73ca69406c182089ddbd24e538438d0236b82c4b4a",
+    "lib/dos/cooked-history.inc": "a96dda8012b3920da2fb1566d1de0ee66720f23e228331d5a677b3076623cb12",
+    "lib/dos/cookedline.act": "e061aa8a6ae43166820d5ccb09ccc05ccf799669d4431d5bd87b6582d0a9f52e",
+    "lib/dos/dos-cooked-types.inc": "2b406ed7b861036448d8985865edddc8760b09aed37ae81765a2ddf118fc1444",
+    "lib/dos/dos-implementation.inc": "e048f8f82c1422e31c2876150519848c2931585b54eecc3f2889f077ff86038e",
+    "lib/dos/dos.act": "85e942da444bd75c798d7a9eea31b5a906b04b4712567d004aeca16c1c6f8440",
+    "lib/dos/doscalls.act": "f46e69861ef9c0ccb1fb70bf48bd089721c81f97e0e047cddc0bfa8989af69d6",
+    "lib/dos/doscooked.act": "19caee53abf1e73a586bb8ca1b4d28041d62b9ac9f88f7a7699f3fda6a5dbef1",
+    "platform/altirraos/memory-4m.json": "8b4ef235eaff9d30b46fac1dc81c63061a88f9a2c87d5eec9d098f441940f594",
+    "tests/programs/cooked_line.act": "19726473fefcb809e53e3584567f1aff8cab968df60d262b891d12e329a1fb6b",
+    "tests/programs/dos_cooked.act": "0b49198e2924a2da8995f4bcce2c087a10501b8bdd1014d3162f8266e1df1578",
+    "toolchain/actionc.json": "f31077466a9ef240f8d49fd2f62cd8503b5975c164127573834b09a7d05ba3cc",
+    "toolchain/altirra-shell-console.json": "fc4a48fcaf7e25ac33a7241296ee46b6c35b07ddf602f93f449c65deae8ae466",
+    "toolchain/altirra-shell-paced.json": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087",
+    "tools/build_demo.py": "3c48d10fc3981c764e7333800081a0d2c136be2b3fe3d008cb7c6366ce0d68c3",
+    "tools/generate_dos.py": "8234844140e30276fef4c09af5e7bf1df1e0140009cdd6f488212fb22917e58b",
+    "tools/native_program.py": "d01d54ac746d169c7676dbb02dbde34d431263fc91be36ef4983b51068c8d711",
+    "tools/test_cooked_line.py": "302317270495a4784ea26fe5f1114f04efa4f464b06d276dbe1f07f4e4349ce8",
+    "tools/test_demo.py": "89da4473e1305b337405a6d4928d3babf5b06bbd5575c6024b74a60be9e924e4",
+    "tools/test_dos_cooked.py": "ff16694bf9cf1054e2a77786527a5a0876d8d2d7cad6a8b5b2541ec116255b79",
+    "tools/test_o65_shell.py": "2002ba608bf5aefcd8cab744af0f065118095c5190c6deadbedac100493716e6",
+    "tools/test_shell_core.py": "b478f256b1b8ffa9ea0bbeb284a938f815400f93ce0c3c31e759da24620efbc7",
+    "tools/test_shell_entry.py": "f5ee5fc4923bbd126b9002713227e7ec014c78392925a0102f15ed25dd03ea23"
+  },
+  "compiler": {
+    "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "changes": [],
+    "override": false,
+    "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "host": {
+    "tests": 339,
+    "status": "pass",
+    "log_sha256": "6c5250e541782127287f9539c4fe5d296da559fca37ba92cfd35f04b79bd80c4",
+    "generated": [
+      "python3 tools/generate_dos.py --check",
+      "python3 tools/generate_program.py --check"
+    ]
+  },
+  "machines": {
+    "altirra-shell-paced": {
+      "path": "toolchain/altirra-shell-paced.json",
+      "sha256": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087",
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 63,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        },
+        "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+        },
+        "observer": {
+          "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ]
+      }
+    }
+  },
+  "core": {
+    "raw": {
+      "path": "build/shell-editing/line-raw/results.json",
+      "sha256": "f883a2ee75154ed4fe548bfa039bdaea4818ab353b6d69351cc25a80424085c1",
+      "checks": [
+        238
+      ],
+      "guards": "intact",
+      "live_tasks_at_exit": 0,
+      "operations": 639,
+      "session_bytes": 410
+    },
+    "opt": {
+      "path": "build/shell-editing/line-opt/results.json",
+      "sha256": "919158a2e9617b14bfdd63cebde30b08257499f14882b962d7fd73c6fad7c400",
+      "checks": [
+        239
+      ],
+      "guards": "intact",
+      "live_tasks_at_exit": 0,
+      "operations": 639,
+      "session_bytes": 410
+    }
+  },
+  "dos": {
+    "raw": {
+      "path": "build/shell-editing/dos-raw/results.json",
+      "sha256": "17f070a12e5cefd25cb9cbac448bb5c5825174e975bd6f33b0f6c1a21c4e3ee7",
+      "checks": [
+        308
+      ],
+      "guards": "intact",
+      "live_tasks_at_exit": 0,
+      "peer_checks": [
+        6
+      ],
+      "observer_source_sha256": "4633f1433370b563c732bcc4e95b55a0ac06775b0de3192adf53e252a2c3bb9e"
+    },
+    "opt": {
+      "path": "build/shell-editing/dos-opt/results.json",
+      "sha256": "a6720e2987b681176e62144c549d8f582d0c6dfaf7024560c1fe6e594dc27e94",
+      "checks": [
+        312
+      ],
+      "guards": "intact",
+      "live_tasks_at_exit": 0,
+      "peer_checks": [
+        6
+      ],
+      "observer_source_sha256": "4633f1433370b563c732bcc4e95b55a0ac06775b0de3192adf53e252a2c3bb9e"
+    }
+  },
+  "stacks": {
+    "line-raw": {
+      "tasks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_above_floor": 1126
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 266,
+        "untouched_from_base": 1270,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "line-opt": {
+      "tasks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 136,
+          "untouched_above_floor": 1144
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 270,
+        "untouched_from_base": 1266,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "dos-raw": {
+      "tasks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 445,
+          "untouched_above_floor": 835
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 250,
+          "untouched_above_floor": 518
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 268,
+          "untouched_above_floor": 500
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 232,
+          "untouched_above_floor": 536
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 158,
+          "untouched_above_floor": 610
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 58,
+          "untouched_above_floor": 198
+        }
+      ],
+      "kernel": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 280,
+        "untouched_from_base": 1256,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "dos-opt": {
+      "tasks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 370,
+          "untouched_above_floor": 910
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 226,
+          "untouched_above_floor": 542
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 243,
+          "untouched_above_floor": 525
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 208,
+          "untouched_above_floor": 560
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 125,
+          "untouched_above_floor": 643
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ],
+      "kernel": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 272,
+        "untouched_from_base": 1264,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "shell-no-history": {
+      "tasks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 384,
+          "untouched_above_floor": 896
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 226,
+          "untouched_above_floor": 542
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 207,
+          "untouched_above_floor": 561
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 125,
+          "untouched_above_floor": 643
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ],
+      "kernel": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 260,
+        "untouched_from_base": 1276,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "shell-entry": {
+      "tasks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 409,
+          "untouched_above_floor": 871
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 226,
+          "untouched_above_floor": 542
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 125,
+          "untouched_above_floor": 643
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 263,
+          "untouched_above_floor": 505
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ],
+      "kernel": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 260,
+        "untouched_from_base": 1276,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "demo-editing": {
+      "tasks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 502,
+          "untouched_above_floor": 778
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 227,
+          "untouched_above_floor": 541
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 132,
+          "untouched_above_floor": 636
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 223,
+          "untouched_above_floor": 545
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 302,
+          "untouched_above_floor": 466
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 439,
+          "untouched_above_floor": 329
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 331,
+          "untouched_above_floor": 1973
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ],
+      "kernel": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 268,
+        "untouched_from_base": 1268,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "demo-screenshots": {
+      "tasks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 522,
+          "untouched_above_floor": 758
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 227,
+          "untouched_above_floor": 541
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 146,
+          "untouched_above_floor": 622
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 546,
+          "untouched_above_floor": 222
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 302,
+          "untouched_above_floor": 466
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 353,
+          "untouched_above_floor": 415
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 369,
+          "untouched_above_floor": 1935
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 56,
+          "untouched_above_floor": 200
+        }
+      ],
+      "kernel": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 274,
+        "untouched_from_base": 1262,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    }
+  },
+  "shell": {
+    "shell-no-history": {
+      "path": "build/shell-editing/shell-no-history/results.json",
+      "sha256": "6d574d5082d0388825dbd3a9057f7aa4cebd72afc48d05544ce6c39c5c3ad632",
+      "guards": "intact",
+      "live_tasks_at_exit": 0,
+      "mode": "opt",
+      "history_enable_attempts": 1,
+      "kernel_reused": true,
+      "reuse_reason": "The successful 4 KiB fixture build was reused with the available pinned paced emulator; emitted source and layout were unchanged.",
+      "injection": "SetConsoleHistory allocation-error result; real allocator exhaustion is covered separately by core and DOS tests.",
+      "observer_source_sha256": "f84725db3ed239b9297f6f5cde59332d77c61006acdc9cc88caa0b08f02705ae",
+      "shell_observer_sha256": "0dc8707ff65a0e381fcd3e14c38f4b7fe0ca1eb4ed6a43e9335e4c0032989976"
+    },
+    "shell-entry": {
+      "path": "build/shell-editing/shell-entry/results.json",
+      "sha256": "d80facaa96a62586a396001140576bb9fada6139f4d93dcd85da1b6eb27a0d17",
+      "guards": "intact",
+      "live_tasks_at_exit": 0,
+      "mode": "opt"
+    }
+  },
+  "demo": {
+    "editing": {
+      "path": "build/shell-editing/demo/editing-results.json",
+      "sha256": "120e9908ea05c3f5dd28d22b0a1a7bcb26a94cae4464a8857294d11af4819900",
+      "autoboot_frames": 249,
+      "guards": "intact",
+      "live_tasks_at_exit": 0,
+      "editing_history": true,
+      "write_commands": false
+    },
+    "screenshots": {
+      "path": "build/shell-editing/demo/screenshots-results.json",
+      "sha256": "db4d27fa588993fd35756a1e470a19aa60f7e8cc85c66f9a8ec1990561ead541",
+      "autoboot_frames": 249,
+      "guards": "intact",
+      "live_tasks_at_exit": 0,
+      "editing_history": false,
+      "write_commands": true
+    },
+    "archive": {
+      "path": "build/shell-editing/demo/exec816-demo.zip",
+      "sha256": "86df5d962a1778dfc6ebdf52a556305dabd40991cf5f7e36a37338f7f8fac69e",
+      "entries": [
+        "exec816-demo/ALTIRRAOS-LICENSE.txt",
+        "exec816-demo/EXEC816-GPL-3.0.txt",
+        "exec816-demo/EXEC816-LICENSING.md",
+        "exec816-demo/EXEC816-MIT.txt",
+        "exec816-demo/Exec-of816.xex",
+        "exec816-demo/OF816-LICENSE.txt",
+        "exec816-demo/README.txt",
+        "exec816-demo/SHA256SUMS",
+        "exec816-demo/altirraos-816.rom",
+        "exec816-demo/system.atr",
+        "exec816-demo/work.atr"
+      ],
+      "checksums": "all match"
+    },
+    "manifest_sha256": "a416cb3d26f47059aae81296cf2bec7810e03d1cf0a592f5511634daffdd43ed",
+    "boot_manifest_sha256": "21bcc6ecfbbc34feb76aa118dfdb5ec41d298adebf7dcaa3b0d1b324968a7404",
+    "commands": [
+      "HELLO",
+      "CAT",
+      "WC",
+      "CMP",
+      "CKSUM",
+      "HEXDUMP",
+      "HEAD",
+      "GREP",
+      "LIST",
+      "MORE",
+      "COPY",
+      "TEE",
+      "DELETE",
+      "RENAME",
+      "MAKEDIR"
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "mounts": [
+      {
+        "alias": "D1",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "profile": 4,
+        "format": 2
+      },
+      {
+        "alias": "WORK",
+        "unit": 56,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "profile": 4,
+        "format": 2,
+        "access": "readwrite"
+      }
+    ],
+    "system_media_audit": {
+      "sectors": 720,
+      "sector_bytes": 128,
+      "allocated": 703,
+      "free": 17,
+      "files": 19,
+      "directories": 2
+    },
+    "of816_notices": {
+      "ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1"
+    }
+  },
+  "keyboard_scope": "All four Atari aliases execute through the raw scan-code decoder. Physical Ctrl-*, Ctrl--, Ctrl-= and Ctrl-B/F/P/N pass. Pinned bridge has no PLUS key name, so physical Ctrl-+ is not claimed.",
+  "bank_zero": {
+    "fixed_delta_bytes": 0,
+    "per_task_delta_bytes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle_delta_bytes": 0,
+    "loading_delta_bytes": 0,
+    "complete_memory_layout_equal": true,
+    "baseline": "build/write-commands/demo/build.json",
+    "baseline_sha256": "29ba706a105fea42f3624c621020ac41afbf8c87ec703e7d0b9a8fd4b17e8ade",
+    "budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1312,
+        1312,
+        1312,
+        1312,
+        1312,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 25408,
+      "loading_excluding_os": 21872,
+      "runtime_including_os": 56128,
+      "loading_including_os": 52592
+    },
+    "accounting": "Includes guards, alignment, unused reserved capacity, stack/DP pools, boot storage and provider capacity; no new Tasks."
+  },
+  "upper_ram": {
+    "previous_resident_executable_bytes": 612990,
+    "resident_executable_bytes": 620457,
+    "resident_executable_delta_bytes": 7467,
+    "previous_session_payload": 402,
+    "session_payload": 410,
+    "previous_session_rounded": 408,
+    "session_rounded": 416,
+    "history_payload": 2824,
+    "history_rounded": 2824,
+    "enabled_shell_heap_delta": 2832,
+    "shell_state_bytes": 128,
+    "echo_buffer_bytes": 128,
+    "max_redraw_bytes": 111,
+    "image_data_arena_bytes": 4096,
+    "image_data_arena_delta_bytes": 0,
+    "fixture_note": "Standalone shell tests and documented development build select the same 4 KiB upper data arena as the existing demo, in place of the generic 2 KiB default."
+  },
+  "documentation": {
+    "status": "pass",
+    "local_links": 277,
+    "changed_markdown_pages": 11,
+    "whitespace": "git diff --check passed"
+  }
+}

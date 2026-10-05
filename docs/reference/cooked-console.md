@@ -11,8 +11,8 @@ session owns retained input, never a caller's buffer.
 
 ## Line acquisition and reads
 
-Printable ASCII appends, Tab inserts one space, and Backspace deletes the last
-character. Return seals up to 255 edited characters followed by LF. Read returns
+Printable ASCII inserts at the cursor, Tab inserts one space, and Backspace
+deletes the character before the cursor. Return seals up to 255 edited characters followed by LF. Read returns
 bytes without NUL termination; small reads drain the retained line before new
 input is acquired. Zero-length Read consumes nothing and never waits.
 
@@ -32,9 +32,16 @@ before acquiring a fresh line. Output/transport errors do not become EOF.
 
 Echo preserves the prompt already written by the caller. It displays at most
 36 characters with a leading space or `<` when earlier text is hidden.
+The horizontal viewport follows the logical cursor, including movement back
+through a long line. Ctrl-A/E moves to the beginning/end, Ctrl-B/F moves left/right,
+Ctrl-U clears the whole line, Ctrl-K deletes through the end, and Ctrl-W deletes
+spaces and then the word immediately before the cursor. Boundary moves are no-ops.
+Atari Ctrl-+/Ctrl-* are left/right; Ctrl--/Ctrl-= are previous/next history.
 The first echo draws that prefix and the current text; subsequent appends emit
 only the new characters while the whole line fits. Deletion, loss and changes
-to the hidden tail use a bounded redraw.
+to the viewport or cursor use a bounded redraw, including clearing stale suffix
+characters and placing the physical caret. At width 36 this emits at most
+111 bytes into the existing 128-byte echo buffer.
 The adapter reduces that width to fit the current row, retaining one unused
 final column; if no space remains it starts a new row. Echo uses the edited
 console even when command Output is redirected. One input lease spans line
@@ -52,5 +59,30 @@ session through references; one input lease serializes line acquisition and echo
 Final cleanup waits for outstanding use before releasing storage. No additional
 worker, stack or DP is allocated per session.
 
-History, completion, cursor movement, key repeat and terminal escape sequences
+## Optional history
+
+History is disabled on a new session. Native `DOS.SetConsoleHistory(handle, enabled)`
+enables recording/browsing or disables both. The shell enables it only while
+reading its prompt and disables it before parsing or dispatching a command.
+Programs reading inherited CON input therefore do not browse or record shell
+history. The setting belongs to the shared cooked session, not a wrapper.
+
+Ctrl-P/N (or Atari up/down) recall older/newer entries. A fixed ring holds ten
+nonblank Return submissions, skipping consecutive exact duplicates. Original
+text is saved before shell parsing, so failed commands remain recallable. EOF,
+cancellation and discarded lines are not recorded. The first move into history
+saves the current draft and cursor; moving past the newest entry restores them.
+Recall copies into the live line. Editing that copy does not change a saved entry;
+browsing away discards those edits. Return, EOF, cancellation, loss and disabling
+history reset browsing. Toggling history preserves pending reads, drain position,
+EOF and discard state.
+
+The optional block is allocated once on first enable and freed on final session
+release. Allocation failure leaves editing usable and history disabled; the shell
+then stops trying for its lifetime. The session payload is 410 bytes (416 rounded)
+and the optional history block is 2,824 bytes in upper RAM. Compared with the old
+402-byte payload (408 rounded), one shell with history adds 2,832 bytes. Fixed
+and per-Task reserved bank-zero bytes are unchanged.
+
+Completion, history search/persistence, key repeat and terminal escape sequences
 are outside this contract.
