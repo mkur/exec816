@@ -178,5 +178,16 @@ if __name__=='__main__':
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
     parser.add_argument('--desktop',action='store_true',help='Autoboot a framed shell and independent graphical application with ST mouse input')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
-    args=parser.parse_args();result=bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib)
-    print(f'Demo distribution ready: {args.output}/{result["distribution"]}')
+    parser.add_argument('--cartridge-from',type=Path,help='Add Atarimax boot images to an existing demo ZIP without rebuilding its XEX')
+    parser.add_argument('--cartridge-source-sha256',help='Required checksum of the existing demo ZIP')
+    args=parser.parse_args()
+    if args.cartridge_from:
+        if not args.cartridge_source_sha256:
+            parser.error('--cartridge-from requires --cartridge-source-sha256')
+        from build_cartridge import augment_demo
+        augment_demo(args.cartridge_from,args.output,args.cartridge_source_sha256)
+    else:
+        if args.cartridge_source_sha256:
+            parser.error('--cartridge-source-sha256 requires --cartridge-from')
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib)
+    print(f'Demo distribution ready: {args.output}/exec816-demo.zip')

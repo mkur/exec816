@@ -60,6 +60,41 @@ and GEM notices. See the [bitmap shell package guide](../bitmap-shell-distributi
 for VBXE configuration and commands. Reserved bank-zero memory is unchanged,
 both fixed and per Task; the prime Task is never started.
 
+To add Atarimax 8 Mbit cartridge images to an existing demo, preserving its
+exact XEX, disk and firmware, use a separate output directory:
+
+```sh
+python3 tools/build_demo.py --cartridge-from path/to/exec816-demo.zip \
+  --cartridge-source-sha256 <published-ZIP-SHA256> --output build/cartridge-demo
+```
+
+This requires Python and ca65/ld65, without recompiling Exec or OF816. The new
+`exec816-demo.zip` adds old/new Atarimax CAR headers over the same 1 MiB ROM,
+a raw BIN for programming, the [cartridge guide](../cartridge-distribution.txt)
+and updated checksums. The 128 KiB cartridge is unsupported. The RAM loader
+temporarily borrows `$9000–$93FF` below the cartridge-era OS screen, with no
+additional runtime bank-zero reservation or per-Task cost. It switches the
+cartridge off around INITAD callbacks and before entering the unchanged XEX.
+CPU, ROM and memory requirements remain those of the input demo; physical
+cartridge/accelerator hardware requires separate qualification.
+
+Check an image with the matching development build and Exec source revision
+(use a checkout of the release tag for an older published demo):
+
+```sh
+python3 tools/test_cartridge.py \
+  --cartridge-build build/cartridge-demo/cartridge-build/Exec-of816 \
+  --demo-build build/demo --exec-source path/to/matching/exec816 \
+  --output build/cartridge-check-new --variant new
+```
+
+Repeat with `--variant old --manual` and a different output directory to check
+the other power-on bank, final-second countdown cancellation and Forth entry.
+The fixture checks the cartridge handoff, documented shell/disk commands and
+EXIT, using the source revision's original guard and ownership assertions.
+It reads upper RAM through the debugger because cartridge boot places the OS
+screen below the scratch area assumed by the older XEX test helper.
+
 ## Build an individual program
 
 For a resident Task example with console support:
