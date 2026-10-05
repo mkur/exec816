@@ -100,6 +100,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [Small shell editor and command history](shell-editing-design.md): proposed
+  control-key editing and ten recalled commands, using the existing cooked
+  editor with optional fixed-size history and no extra bank-zero reservation.
+  [Implementation plan](shell-editing-implementation-plan.md) in progress.
+
 - [Commands for writable filesystems](write-commands-implementation-plan.md):
   COPY, DELETE, RENAME, MAKEDIR and TEE implemented using the existing writable
   DOS APIs. [Development record](../history/write-commands.md) covers raw/optimized
