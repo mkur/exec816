@@ -18,7 +18,8 @@ PUBLIC BYTE FUNC Checkpoint(FSTYPES.Service POINTER service)
   BYTE ignored
 
   IF service.packet=FSTYPES.Packet POINTER(0)
-      OR service.client=DOSCLIENT.ClientContext POINTER(0) OR service.stage=70 THEN
+      OR service.client=DOSCLIENT.ClientContext POINTER(0) OR service.stage=70
+      OR service.committing<>0 THEN
     RETURN(0)
   FI
 
@@ -45,7 +46,12 @@ PUBLIC BYTE FUNC Checkpoint(FSTYPES.Service POINTER service)
       ignored=FSBACKEND.Cancel(service.operation)
       service.packet.sp_Pkt.dp_Res1=service.operation.result
     FI
-  ELSEIF (action=1005 OR action=8)
+  ELSEIF action=87 THEN
+    service.packet.sp_Pkt.dp_Res1=-1
+    IF service.operation.stage<>0 AND service.operation.completed<>0 THEN
+      service.packet.sp_Pkt.dp_Res1=service.operation.completed
+    FI
+  ELSEIF (action=1005 OR action=1004 OR action=1006 OR action=8 OR action=22)
       AND service.object<>FSTYPES.Object POINTER(0) THEN
     FSOBJECTS.Free(service.object)
     service.object=FSTYPES.Object POINTER(0)

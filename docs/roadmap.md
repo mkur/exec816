@@ -92,12 +92,19 @@ physical hardware.
 
 The other possible milestones have no delivery order:
 
-- Filesystem writing, beginning with a separate SpartaDOS milestone. Current
-  [disk support](reference/dos.md) is read-only.
+- Broader [filesystem write support](reference/filesystem-writes.md), including
+  cross-directory moves, sparse writing and a separately loaded checker if
+  needed. MyDOS/SpartaDOS file and namespace writes are implemented; their
+  [development record](history/filesystem-write-implementation.md) retains
+  the selected coverage and remaining qualification limits.
 - A RAM filesystem and broader volume assignments beyond the implemented
   [SYS: alias](reference/sys-volume.md).
 - Longer shell pipelines, scripts and background execution beyond the current
   [two-command foreground pipeline](guides/shell.md).
+- ASSIGN, multiple-file arguments, TAIL, FIND and regular expressions beyond
+  the implemented [command toolbox](guides/toolbox.md) and
+  [command usability](history/command-usability.md) services (PATH, fault text
+  and template help).
 - Broader C bindings and more Amiga examples beyond the
   [standalone Calypsi binding](guides/calypsi-c.md).
 - Additional pointer protocols and broader AES/application compatibility beyond the implemented

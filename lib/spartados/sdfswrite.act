@@ -1,0 +1,691 @@
+; SDFS mutation units. Payload/map staging is shared by the filesystem worker;
+; every published reference follows allocation and initialization.
+MODULE SDFSWRITE
+USE FSTYPES
+USE FSBTYPES
+USE FSWTYPES
+USE FSWRITEIO
+USE FSALLOC
+USE SDFS
+USE SDFSTYPES
+USE A816MEMORY
+INCLUDE "../dos/dos-types.inc"
+
+BYTE FUNC Bad(FSTYPES.Service POINTER service)
+
+RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+
+BYTE FUNC ValidSector(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry CARD sector BYTE mapPage)
+  BYTE index
+
+  IF SDFS.Allowed(service.work.volume,sector)=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO service.work.depth DO
+    IF sector=service.work.ancestors(index) THEN
+      IF mapPage=0 OR (entry.flags & FSBTYPES.DIR)=0 OR sector<>entry.start THEN
+        RETURN(0)
+      FI
+    FI
+  OD
+
+RETURN(1)
+
+; Locate a payload ordinal, retaining its map. One missing terminal map is
+; represented by mapOffset=sectorBytes, so allocation preflight includes that page.
+BYTE FUNC Locate(FSTYPES.Service POINTER service CARD first LONGCARD ordinal)
+  CARD page,previous,next,capacity
+  LONGCARD hops
+
+  LET state=FSWRITEIO.State(service)
+  LET sectorBytes=service.selected.spec.dataBytes
+  capacity=(sectorBytes-4) RSH 1
+  page=first
+  previous=0
+  hops=0
+  DO
+    IF SDFS.Allowed(service.work.volume,page)=0 OR page=previous THEN
+      RETURN(Bad(service))
+    FI
+
+    IF FSALLOC.Allocated(service,page)=0 OR
+        FSWRITEIO.Read(service,page,state.map)=0 THEN
+      RETURN(0)
+    FI
+
+    IF SDFS.Word(state.map,2)<>previous THEN
+      RETURN(Bad(service))
+    FI
+
+    state.mapSector=page
+    state.mapOffset=4+CARD(ordinal)*2
+    state.dataSector=0
+    IF ordinal<LONGCARD(capacity) THEN
+      state.dataSector=SDFS.Word(state.map,state.mapOffset)
+      IF state.dataSector<>0 THEN
+        IF SDFS.Allowed(service.work.volume,state.dataSector)=0 OR
+            state.dataSector=page OR state.dataSector=first THEN
+          RETURN(Bad(service))
+        FI
+
+        IF FSALLOC.Allocated(service,state.dataSector)=0 THEN
+          RETURN(0)
+        FI
+      FI
+
+      RETURN(1)
+    FI
+
+    next=SDFS.Word(state.map,0)
+    IF next=0 AND ordinal=LONGCARD(capacity) THEN
+      state.mapOffset=sectorBytes
+      RETURN(1)
+    FI
+
+    IF next=0 OR next=first THEN
+      RETURN(Bad(service))
+    FI
+
+    hops==+1
+    IF hops>service.selected.spec.sectors THEN
+      RETURN(Bad(service))
+    FI
+
+    ordinal==-LONGCARD(capacity)
+    previous=page
+    page=next
+  OD
+
+RETURN(0)
+
+; A new data sector is initialized before its pointer becomes reachable.
+BYTE FUNC Grow(FSTYPES.Service POINTER service)
+  CARD mapSector,dataSector,previous
+
+  LET state=FSWRITEIO.State(service)
+  LET sectorBytes=service.selected.spec.dataBytes
+  IF state.mapOffset=sectorBytes THEN
+    previous=state.mapSector
+    mapSector=FSALLOC.Take(service)
+    IF mapSector=0 THEN
+      RETURN(0)
+    FI
+
+    FSWRITEIO.Zero(state.scratch)
+    FSWRITEIO.Word(state.scratch,2,previous)
+    IF FSWRITEIO.Write(service,mapSector,state.scratch)=0 THEN
+      RETURN(0)
+    FI
+
+    FSWRITEIO.Word(state.map,0,mapSector)
+    IF FSWRITEIO.Write(service,previous,state.map)=0 THEN
+      RETURN(0)
+    FI
+
+    FSWRITEIO.Zero(state.map)
+    FSWRITEIO.Word(state.map,2,previous)
+    state.mapSector=mapSector
+    state.mapOffset=4
+  FI
+
+  dataSector=FSALLOC.Take(service)
+  IF dataSector=0 THEN
+    RETURN(0)
+  FI
+
+  FSWRITEIO.Zero(state.scratch)
+  IF FSWRITEIO.Write(service,dataSector,state.scratch)=0 THEN
+    RETURN(0)
+  FI
+
+  FSWRITEIO.Word(state.map,state.mapOffset,dataSector)
+  IF FSWRITEIO.Write(service,state.mapSector,state.map)=0 THEN
+    RETURN(0)
+  FI
+
+  state.dataSector=dataSector
+
+RETURN(1)
+
+; Directory records can span two data sectors, each an exact read/modify/write.
+BYTE FUNC RowIO(FSTYPES.Service POINTER service CARD directory LONGINT offset
+    BYTE write)
+  CARD copied,part,within
+
+  LET state=FSWRITEIO.State(service)
+  LET sectorBytes=service.selected.spec.dataBytes
+  copied=0
+  WHILE copied<23 DO
+    IF Locate(service,directory,LONGCARD(offset)/LONGCARD(sectorBytes))=0 THEN
+      RETURN(0)
+    FI
+
+    IF state.dataSector=0 THEN
+      IF write=0 THEN
+        RETURN(Bad(service))
+      FI
+
+      IF Grow(service)=0 THEN
+        RETURN(0)
+      FI
+    FI
+
+    IF FSWRITEIO.Read(service,state.dataSector,state.data)=0 THEN
+      RETURN(0)
+    FI
+
+    within=CARD(offset MOD LONGINT(sectorBytes))
+    part=sectorBytes-within
+    IF part>23-copied THEN
+      part=23-copied
+    FI
+
+    IF write<>0 THEN
+      A816MEMORY.Move(@state.data(within),@state.row(copied),SIZE(part))
+      IF FSWRITEIO.Write(service,state.dataSector,state.data)=0 THEN
+        RETURN(0)
+      FI
+    ELSE
+      A816MEMORY.Move(@state.row(copied),@state.data(within),SIZE(part))
+    FI
+
+    copied==+part
+    offset==+LONGINT(part)
+  OD
+
+RETURN(1)
+
+PUBLIC BYTE FUNC EntryIO(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry BYTE write)
+
+RETURN(RowIO(service,entry.parent,(LONGINT(entry.key)+1)*23,write))
+
+; Validate just the selected file's map chain and allocated payload. Sparse
+; files stay readable but cannot acquire a writer in this implementation.
+PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry)
+  CARD page,previous,next,index,sector,other
+  LONGCARD hops,dataCount,wanted
+
+  LET state=FSWRITEIO.State(service)
+  LET sectorBytes=service.selected.spec.dataBytes
+  wanted=(LONGCARD(entry.length)+LONGCARD(sectorBytes)-1)/LONGCARD(sectorBytes)
+  page=entry.start
+  previous=0
+  dataCount=0
+  hops=0
+  IF page=0 THEN
+    IF entry.length<>0 THEN
+      RETURN(Bad(service))
+    FI
+
+    entry.count=0
+    RETURN(1)
+  FI
+
+  WHILE page<>0 DO
+    IF ValidSector(service,entry,page,1)=0 OR page=previous THEN
+      RETURN(Bad(service))
+    FI
+
+    IF FSALLOC.Allocated(service,page)=0 OR
+        FSWRITEIO.Read(service,page,state.map)=0 THEN
+      RETURN(0)
+    FI
+
+    IF SDFS.Word(state.map,2)<>previous THEN
+      RETURN(Bad(service))
+    FI
+
+    hops==+1
+    IF hops>service.selected.spec.sectors THEN
+      RETURN(Bad(service))
+    FI
+
+    next=SDFS.Word(state.map,0)
+    IF next=entry.start OR next=page THEN
+      RETURN(Bad(service))
+    FI
+
+    FOR index=4 TO sectorBytes-2 STEP 2 DO
+      sector=SDFS.Word(state.map,index)
+      IF dataCount<wanted THEN
+        IF sector=0 THEN
+          RETURN(FSWRITEIO.Error(service,ERROR_ACTION_NOT_KNOWN))
+        FI
+
+        IF ValidSector(service,entry,sector,0)=0 OR sector=page
+            OR sector=next OR sector=entry.start THEN
+          RETURN(Bad(service))
+        FI
+
+        other=4
+        WHILE other<index DO
+          IF SDFS.Word(state.map,other)=sector THEN
+            RETURN(Bad(service))
+          FI
+
+          other==+2
+        OD
+
+        IF FSALLOC.Allocated(service,sector)=0 THEN
+          RETURN(0)
+        FI
+
+        dataCount==+1
+      ELSEIF sector<>0 THEN
+        RETURN(Bad(service))
+      FI
+    OD
+
+    previous=page
+    page=next
+  OD
+
+  IF dataCount<>wanted THEN
+    RETURN(Bad(service))
+  FI
+
+  entry.count=LONGINT(dataCount+hops)
+
+RETURN(1)
+
+; Find a reusable slot without altering the directory. Record zero carries
+; the authoritative length, including deleted slots.
+PUBLIC BYTE FUNC Slot(FSTYPES.Service POINTER service)
+  LONGINT offset,length
+  BYTE found
+
+  LET state=FSWRITEIO.State(service)
+  IF RowIO(service,service.work.directory,0,0)=0 THEN
+    RETURN(0)
+  FI
+
+  length=SDFS.Length(state.row,3)
+  IF length<23 OR length MOD 23<>0 THEN
+    RETURN(Bad(service))
+  FI
+
+  state.directoryLength=length
+  found=0
+  offset=23
+  WHILE offset<length DO
+    IF RowIO(service,service.work.directory,offset,0)=0 THEN
+      RETURN(0)
+    FI
+
+    IF state.row(0)=0 OR (state.row(0) & $10)<>0 THEN
+      found=1
+      EXIT
+    FI
+
+    offset==+23
+  OD
+
+  IF found=0 AND length>16777192 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_OBJECT_TOO_LARGE))
+  FI
+
+  state.ordinal=LONGCARD(offset/23-1)
+
+RETURN(1)
+
+; Include directory payload/map growth in the same reservation as creation.
+BYTE FUNC Space(FSTYPES.Service POINTER service BYTE own)
+  LONGCARD last,existing
+  BYTE needed
+
+  LET state=FSWRITEIO.State(service)
+  LET sectorBytes=service.selected.spec.dataBytes
+  needed=own
+  last=((state.ordinal+2)*23-1)/LONGCARD(sectorBytes)
+  existing=(LONGCARD(state.directoryLength)-1)/LONGCARD(sectorBytes)
+  IF last>existing THEN
+    IF Locate(service,service.work.directory,last)=0 THEN
+      RETURN(0)
+    FI
+
+    IF state.dataSector=0 THEN
+      needed==+1
+      IF state.mapOffset=sectorBytes THEN
+        needed==+1
+      FI
+    FI
+  FI
+
+RETURN(FSALLOC.Find(service,needed,0,$ffff))
+
+PUBLIC BYTE FUNC Create(FSTYPES.Service POINTER service BYTE directory)
+  CARD first,data
+  BYTE index,own
+
+  LET state=FSWRITEIO.State(service)
+  IF Slot(service)=0 THEN
+    RETURN(0)
+  FI
+
+  own=1
+  IF directory<>0 THEN
+    own=2
+  FI
+
+  IF Space(service,own)=0 THEN
+    RETURN(0)
+  FI
+
+  first=FSALLOC.Take(service)
+  IF first=0 THEN
+    RETURN(0)
+  FI
+
+  FSWRITEIO.Zero(state.map)
+  IF directory<>0 THEN
+    data=FSALLOC.Take(service)
+    IF data=0 THEN
+      RETURN(0)
+    FI
+
+    FSWRITEIO.Zero(state.data)
+    state.data(0)=$28
+    FSWRITEIO.Word(state.data,1,service.work.directory)
+    FSWRITEIO.Length(state.data,3,23)
+    FOR index=0 TO 10 DO
+      state.data(index+6)=service.work.wanted(index)
+    OD
+
+    IF FSWRITEIO.Write(service,data,state.data)=0 THEN
+      RETURN(0)
+    FI
+
+    FSWRITEIO.Word(state.map,4,data)
+  FI
+
+  IF FSWRITEIO.Write(service,first,state.map)=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO 22 DO
+    state.row(index)=0
+  OD
+
+  state.row(0)=$88
+  IF directory<>0 THEN
+    state.row(0)=$28
+    FSWRITEIO.Length(state.row,3,23)
+  FI
+
+  FSWRITEIO.Word(state.row,1,first)
+  FOR index=0 TO 10 DO
+    state.row(index+6)=service.work.wanted(index)
+  OD
+
+  LET entry=@service.work.entry
+  entry.key=state.ordinal
+  entry.parent=service.work.directory
+  entry.start=first
+  entry.length=0
+  entry.count=LONGINT(own)
+  entry.known=1
+  entry.flags=0
+  entry.days=0
+  entry.minutes=0
+  entry.ticks=0
+  IF directory<>0 THEN
+    entry.flags=FSBTYPES.DIR
+    entry.length=23
+  FI
+
+  FOR index=0 TO 10 DO
+    entry.name(index)=service.work.wanted(index)
+  OD
+
+  IF EntryIO(service,entry,1)=0 THEN
+    RETURN(0)
+  FI
+
+  LET length=(LONGINT(state.ordinal)+2)*23
+  IF length>state.directoryLength THEN
+    IF RowIO(service,entry.parent,0,0)=0 THEN
+      RETURN(0)
+    FI
+
+    FSWRITEIO.Length(state.row,3,length)
+    IF RowIO(service,entry.parent,0,1)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Mark(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry BYTE opened)
+
+  LET state=FSWRITEIO.State(service)
+  IF EntryIO(service,entry,0)=0 THEN
+    RETURN(0)
+  FI
+
+  IF opened<>0 THEN
+    state.row(0)=state.row(0) OR $80
+  ELSE
+    state.row(0)=state.row(0) & $7f
+  FI
+
+  FSWRITEIO.Word(state.row,1,entry.start)
+  FSWRITEIO.Length(state.row,3,entry.length)
+
+RETURN(EntryIO(service,entry,1))
+
+; One payload plus allocation/map/length is the Write cancellation quantum.
+PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
+    POINTER file BYTE POINTER source LONGINT length)
+  CARD within,part,sector,newMap
+  BYTE needed
+
+  LET state=FSWRITEIO.State(service)
+  LET sectorBytes=service.selected.spec.dataBytes
+  within=CARD(file.position MOD LONGINT(sectorBytes))
+  part=sectorBytes-within
+  IF LONGINT(part)>length THEN
+    part=CARD(length)
+  FI
+
+  IF Locate(service,file.entry.start,LONGCARD(file.position)/LONGCARD(sectorBytes))=0 THEN
+    RETURN(0)
+  FI
+
+  sector=state.dataSector
+  needed=0
+  newMap=0
+  IF sector=0 THEN
+    needed=1
+    IF state.mapOffset=sectorBytes THEN
+      needed=2
+      newMap=1
+    FI
+
+    IF FSALLOC.Find(service,needed,0,$ffff)=0 THEN
+      RETURN(0)
+    FI
+
+    IF Grow(service)=0 THEN
+      RETURN(0)
+    FI
+
+    sector=state.dataSector
+    FSWRITEIO.Zero(state.data)
+  ELSEIF FSWRITEIO.Read(service,sector,state.data)=0 THEN
+    RETURN(0)
+  FI
+
+  A816MEMORY.Move(@state.data(within),source,SIZE(part))
+  IF FSWRITEIO.Write(service,sector,state.data)=0 THEN
+    RETURN(0)
+  FI
+
+  LET newLength=file.position+LONGINT(part)
+  IF newLength>file.entry.length THEN
+    IF EntryIO(service,@file.entry,0)=0 THEN
+      RETURN(0)
+    FI
+
+    FSWRITEIO.Length(state.row,3,newLength)
+    IF EntryIO(service,@file.entry,1)=0 THEN
+      RETURN(0)
+    FI
+
+    file.entry.length=newLength
+  FI
+
+  file.entry.count==+LONGINT(needed)
+  file.position=newLength
+  SDFS.Restart(file)
+
+RETURN(LONGINT(part))
+
+; Caller has detached the entry or retained an empty first map. Read each
+; successor before releasing the map that contains its only reference.
+BYTE FUNC Reclaim(FSTYPES.Service POINTER service CARD first BYTE keepFirst)
+  CARD page,next,index,sector
+  LONGCARD hops
+
+  LET state=FSWRITEIO.State(service)
+  LET sectorBytes=service.selected.spec.dataBytes
+  page=first
+  hops=0
+  WHILE page<>0 DO
+    IF hops<>0 OR keepFirst=0 THEN
+      IF FSWRITEIO.Read(service,page,state.map)=0 THEN
+        RETURN(0)
+      FI
+    FI
+
+    next=SDFS.Word(state.map,0)
+    FOR index=4 TO sectorBytes-2 STEP 2 DO
+      sector=SDFS.Word(state.map,index)
+      IF sector<>0 THEN
+        IF FSALLOC.Free(service,sector)=0 THEN
+          RETURN(0)
+        FI
+      FI
+    OD
+
+    IF page<>first OR keepFirst=0 THEN
+      IF FSALLOC.Free(service,page)=0 THEN
+        RETURN(0)
+      FI
+    FI
+
+    page=next
+    hops==+1
+    IF hops>service.selected.spec.sectors THEN
+      RETURN(Bad(service))
+    FI
+  OD
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Truncate(FSTYPES.Service POINTER service FSBTYPES.Entry
+    POINTER entry)
+
+  LET state=FSWRITEIO.State(service)
+  entry.length=0
+  IF Mark(service,entry,1)=0 THEN
+    RETURN(0)
+  FI
+
+  IF FSWRITEIO.Read(service,entry.start,state.map)=0 THEN
+    RETURN(0)
+  FI
+
+  FSWRITEIO.Zero(state.data)
+  IF FSWRITEIO.Write(service,entry.start,state.data)=0 THEN
+    RETURN(0)
+  FI
+
+  IF Reclaim(service,entry.start,1)=0 THEN
+    RETURN(0)
+  FI
+
+  entry.count=1
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Empty(FSTYPES.Service POINTER service CARD directory)
+  LONGINT offset,length
+
+  LET state=FSWRITEIO.State(service)
+  IF RowIO(service,directory,0,0)=0 THEN
+    RETURN(0)
+  FI
+
+  length=SDFS.Length(state.row,3)
+  IF length<23 OR length MOD 23<>0 THEN
+    RETURN(Bad(service))
+  FI
+
+  offset=23
+  WHILE offset<length DO
+    IF RowIO(service,directory,offset,0)=0 THEN
+      RETURN(0)
+    FI
+
+    IF state.row(0)<>0 AND (state.row(0) & $10)=0 THEN
+      RETURN(FSWRITEIO.Error(service,ERROR_DIR_NOT_EMPTY))
+    FI
+
+    offset==+23
+  OD
+
+  service.work.entry.length=length
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Delete(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry)
+
+  LET state=FSWRITEIO.State(service)
+  IF EntryIO(service,entry,0)=0 THEN
+    RETURN(0)
+  FI
+
+  state.row(0)=$10
+  IF EntryIO(service,entry,1)=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(Reclaim(service,entry.start,0))
+
+PUBLIC BYTE FUNC Rename(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry BYTE POINTER name)
+  BYTE index
+
+  LET state=FSWRITEIO.State(service)
+  IF EntryIO(service,entry,0)=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO 10 DO
+    state.row(index+6)=name(index)
+  OD
+
+  IF EntryIO(service,entry,1)=0 THEN
+    RETURN(0)
+  FI
+
+  IF (entry.flags & FSBTYPES.DIR)<>0 THEN
+    IF RowIO(service,entry.start,0,0)=0 THEN
+      RETURN(0)
+    FI
+
+    FOR index=0 TO 10 DO
+      state.row(index+6)=name(index)
+    OD
+
+    RETURN(RowIO(service,entry.start,0,1))
+  FI
+
+RETURN(1)
+
+ENDMODULE

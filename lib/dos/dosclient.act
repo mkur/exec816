@@ -236,7 +236,7 @@ PUBLIC LONGINT FUNC Call(DOSCORE.DosSlot POINTER slot ClientContext POINTER clie
       EXEC.Permit()
       slot.error=error
       client.busy=0
-      IF action=82 OR action=1008 THEN
+      IF action=82 OR action=87 OR action=1008 THEN
         RETURN(-1)
       FI
 

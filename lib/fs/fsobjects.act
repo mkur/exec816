@@ -3,6 +3,7 @@ MODULE FSOBJECTS
 USE EXEC
 USE DOSOBJECTS
 USE FSTYPES
+USE FSLEASES
 USE FSFILES
 USE FSLOCKS
 USE HEAPCORE
@@ -10,6 +11,7 @@ USE HEAPCORE
 ; Select only the payload belonging to this validated or unpublished object.
 PUBLIC PROC Free(FSTYPES.Object POINTER item)
 
+  FSLEASES.Unlink(item)
   CASE item.header.kind OF
   WHEN DOSOBJECTS.KIND_FILE THEN
     FSFILES.Release(FSTYPES.FileObject POINTER(item))

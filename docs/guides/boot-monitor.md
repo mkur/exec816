@@ -42,7 +42,8 @@ metadata. System-drive selection is described below and in the
 ## Try it
 
 Download `exec816-demo.zip` from [Releases](https://github.com/mkur/exec816/releases)
-and extract it. It includes OF816, Exec816, the system disk and the matching ROM.
+and extract it. Current builds include OF816, Exec816, system and work disks,
+and the matching ROM. Older release archives have their own enclosed instructions.
 See the [installation guide](../../README.md#installation).
 
 Configure [AltirraSDL](https://github.com/ilmenit/AltirraSDL) using the
@@ -55,7 +56,8 @@ run this build.
 In **System → Configure System… → Computer → Boot**, uncheck **Unload disks
 when booting new image**. Open **File → Disk Drives…**, use the **…** button on
 the **D1:** row to select `system.atr`, and set **Emulation level** to
-**Generic + 57600 baud**. Under **Computer → Acceleration** in the settings
+**Generic + 57600 baud**. Mount a disposable copy of `work.atr` in **D8:** with
+writes enabled; both disks must remain present. Under **Computer → Acceleration** in the settings
 window, uncheck **SIO Patch** and **D: burst I/O**. Finally, choose
 **File → Boot Image…** and select `Exec-of816.xex`. The ATR is a data disk.
 
@@ -92,6 +94,7 @@ EXEC816
 Use the same Generic + 57600 baud profile. D1 can be empty. Startup reports
 `SYS: -> D2: ready, read-only`; try `SYS:HELLO` or
 `SYS:CAT SYS:STORY.TXT | SYS:WC`. The old D1 name is not retained.
+WORK: stays on D8, so select D1–D7 for SYS: in this build.
 The setter validates the full cell and rejects zero, values outside 1..8,
 missing system selection and conflicts with other mounts. Rejection leaves the
 previous request unchanged. The getter reports a request, not mount success.
@@ -129,7 +132,7 @@ Every demo build also packages OF816. The builder fetches the small upstream rep
 `build/of816-upstream` when absent. It checks the exact revision in
 [toolchain/of816.json](../../toolchain/of816.json), builds the Forth core with ca65,
 and wraps the native image built in the same run. The final `of816/` directory
-contains the boot XEX, matching system disk and pinned AltirraOS ROM, together
+contains the boot XEX, matching system/work disks and pinned AltirraOS ROM, together
 with upstream license notices. The builder verifies the ROM size and hash
 before packaging it. Custom `--output` paths use the same directory layout.
 
@@ -146,6 +149,7 @@ The resulting files are:
 - `build/demo/of816/Exec-of816.xex`: monitor plus the standard shell/prime image.
 - `build/demo/of816/system.atr`: the matching read-only disk, with HELLO, CAT, WC and
   sample text.
+- `build/demo/of816/work.atr`: disposable writable disk for D8:.
 - `build/demo/of816/altirraos-816.rom`: pinned AltirraOS 3.44 ROM for 65C816.
 - `build/demo/of816/ALTIRRAOS-LICENSE.txt` and `OF816-LICENSE.txt`: upstream notices.
 - `build/demo/of816/of816.json`: build inputs, memory layout, media and ROM hashes.

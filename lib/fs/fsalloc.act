@@ -1,0 +1,280 @@
+; Bitmap/VTOC allocation trusts initially consistent media. It scans allocation
+; bits on demand, never file ownership and never as part of mounting.
+MODULE FSALLOC
+USE FSTYPES
+USE FSWTYPES
+USE FSWRITEIO
+USE FSFORMATS
+USE MYDOS
+USE MYDOSTYPES
+USE SDFS
+USE SDFSTYPES
+INCLUDE "../dos/dos-types.inc"
+
+BYTE FUNC Allowed(FSTYPES.Service POINTER service CARD sector)
+  BYTE index
+
+  LET volume=service.work.volume
+  IF volume.format=FSFORMATS.MYDOS THEN
+    IF MYDOS.DataSector(volume,LONGCARD(sector))=0 THEN
+      RETURN(0)
+    FI
+
+    FOR index=0 TO service.work.depth DO
+      IF LONGCARD(sector)>=LONGCARD(service.work.ancestors(index)) AND
+          LONGCARD(sector)<LONGCARD(service.work.ancestors(index))+8 THEN
+        RETURN(0)
+      FI
+    OD
+  ELSE
+    IF SDFS.Allowed(volume,sector)=0 THEN
+      RETURN(0)
+    FI
+
+    FOR index=0 TO service.work.depth DO
+      IF sector=service.work.ancestors(index) THEN
+        RETURN(0)
+      FI
+    OD
+  FI
+
+RETURN(1)
+
+; The allocator alone owns scratch; callers retain payload and map separately.
+BYTE FUNC Bitmap(FSTYPES.Service POINTER service CARD sector BYTE cached)
+  LONGCARD offset
+  CARD physical
+  SDFSTYPES.Volume POINTER native
+
+  LET state=FSWRITEIO.State(service)
+  LET size=service.selected.spec.dataBytes
+  offset=LONGCARD(sector) RSH 3
+  IF service.selected.spec.format=FSFORMATS.MYDOS THEN
+    offset==+10
+    physical=360-CARD(offset/LONGCARD(size))
+  ELSE
+    native=SDFSTYPES.Volume POINTER(service.work.volume.state)
+    physical=native.bitmap+CARD(offset/LONGCARD(size))
+  FI
+
+  state.bitmapOffset=CARD(offset MOD LONGCARD(size))
+  state.bitmapMask=BYTE($80 RSH (sector & 7))
+  IF cached<>0 AND state.bitmapSector=physical THEN
+    RETURN(FSWRITEIO.Checkpoint(service))
+  FI
+
+  state.bitmapSector=physical
+
+RETURN(FSWRITEIO.Read(service,physical,state.scratch))
+
+PUBLIC BYTE FUNC Allocated(FSTYPES.Service POINTER service CARD sector)
+
+  IF Bitmap(service,sector,0)=0 THEN
+    RETURN(0)
+  FI
+
+  LET state=FSWRITEIO.State(service)
+  IF (state.scratch(state.bitmapOffset) & state.bitmapMask)<>0 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+RETURN(1)
+
+; Validate the recorded count and every requested free bit before mutation.
+PUBLIC BYTE FUNC Find(FSTYPES.Service POINTER service BYTE count,contiguous
+    CARD maximum)
+  LONGCARD sector,limit,visited
+  CARD header,offset,free
+  BYTE cached
+
+  LET state=FSWRITEIO.State(service)
+  state.reservations=0
+  state.used=0
+  IF count=0 THEN
+    RETURN(1)
+  FI
+
+  IF count>10 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_OBJECT_TOO_LARGE))
+  FI
+
+  header=1
+  offset=13
+  IF service.selected.spec.format=FSFORMATS.MYDOS THEN
+    header=360
+    offset=3
+  FI
+
+  IF FSWRITEIO.Read(service,header,state.scratch)=0 THEN
+    RETURN(0)
+  FI
+
+  free=SDFS.Word(state.scratch,offset)
+  IF LONGCARD(free)>service.selected.spec.sectors THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  IF free<CARD(count) THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_FULL))
+  FI
+
+  limit=service.selected.spec.sectors
+  IF limit>LONGCARD(maximum) THEN
+    limit=LONGCARD(maximum)
+  FI
+
+  sector=LONGCARD(service.work.volume.allocationHint)
+  IF sector<4 OR sector>limit OR contiguous<>0 THEN
+    sector=4
+  FI
+
+  visited=0
+  cached=0
+  WHILE visited<=limit-4 DO
+    IF Allowed(service,CARD(sector))<>0 THEN
+      IF Bitmap(service,CARD(sector),cached)=0 THEN
+        RETURN(0)
+      FI
+
+      cached=1
+      IF (state.scratch(state.bitmapOffset) & state.bitmapMask)<>0 THEN
+        state.reserved(state.reservations)=CARD(sector)
+        state.reservations==+1
+        IF state.reservations=count THEN
+          RETURN(1)
+        FI
+      ELSEIF contiguous<>0 THEN
+        state.reservations=0
+      FI
+    ELSEIF contiguous<>0 THEN
+      state.reservations=0
+    FI
+
+    sector==+1
+    visited==+1
+    IF sector>limit THEN
+      sector=4
+      IF contiguous<>0 THEN
+        state.reservations=0
+      FI
+    FI
+  OD
+
+RETURN(FSWRITEIO.Error(service,ERROR_DISK_FULL))
+
+; Reserve before linking; free only after reachability has been removed.
+BYTE FUNC Change(FSTYPES.Service POINTER service CARD sector BYTE release)
+  CARD header,offset,free,total
+
+  LET state=FSWRITEIO.State(service)
+  IF Bitmap(service,sector,0)=0 THEN
+    RETURN(0)
+  FI
+
+  LET available=(state.scratch(state.bitmapOffset) & state.bitmapMask)<>0
+  IF available=release THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  IF release<>0 THEN
+    state.scratch(state.bitmapOffset)=state.scratch(state.bitmapOffset)
+        OR state.bitmapMask
+  ELSE
+    state.scratch(state.bitmapOffset)=state.scratch(state.bitmapOffset)
+        & (state.bitmapMask XOR 255)
+  FI
+
+  IF FSWRITEIO.Write(service,state.bitmapSector,state.scratch)=0 THEN
+    RETURN(0)
+  FI
+
+  header=1
+  offset=13
+  IF service.selected.spec.format=FSFORMATS.MYDOS THEN
+    header=360
+    offset=3
+  FI
+
+  IF FSWRITEIO.Read(service,header,state.scratch)=0 THEN
+    RETURN(0)
+  FI
+
+  free=SDFS.Word(state.scratch,offset)
+  total=CARD(service.selected.spec.sectors)
+  IF header=360 THEN
+    total=SDFS.Word(state.scratch,1)
+  FI
+
+  IF (release<>0 AND free>=total) OR (release=0 AND free=0) THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  IF release<>0 THEN
+    free==+1
+  ELSE
+    free==-1
+  FI
+
+  FSWRITEIO.Word(state.scratch,offset,free)
+
+RETURN(FSWRITEIO.Write(service,header,state.scratch))
+
+PUBLIC CARD FUNC Take(FSTYPES.Service POINTER service)
+
+  LET state=FSWRITEIO.State(service)
+  IF state.used>=state.reservations THEN
+    FSWRITEIO.Error(service,ERROR_DISK_FULL)
+    RETURN(0)
+  FI
+
+  LET sector=state.reserved(state.used)
+  IF Change(service,sector,0)=0 THEN
+    RETURN(0)
+  FI
+
+  state.used==+1
+  service.work.volume.allocationHint=4
+  IF sector<>$ffff THEN
+    service.work.volume.allocationHint=sector+1
+  FI
+
+RETURN(sector)
+
+PUBLIC BYTE FUNC Free(FSTYPES.Service POINTER service CARD sector)
+
+  IF sector<service.work.volume.allocationHint THEN
+    service.work.volume.allocationHint=sector
+  FI
+
+RETURN(Change(service,sector,1))
+
+; Check arithmetic for a selected file's possible reclamation without scanning
+; other files or recomputing a volume-wide free count.
+PUBLIC BYTE FUNC CountRoom(FSTYPES.Service POINTER service LONGINT allocated)
+  CARD header,offset,total
+
+  LET state=FSWRITEIO.State(service)
+  header=1
+  offset=13
+  total=CARD(service.selected.spec.sectors)
+  IF service.selected.spec.format=FSFORMATS.MYDOS THEN
+    header=360
+    offset=3
+  FI
+
+  IF FSWRITEIO.Read(service,header,state.scratch)=0 THEN
+    RETURN(0)
+  FI
+
+  IF header=360 THEN
+    total=SDFS.Word(state.scratch,1)
+  FI
+
+  IF allocated<0 OR LONGCARD(SDFS.Word(state.scratch,offset))+
+      LONGCARD(allocated)>LONGCARD(total) THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+RETURN(1)
+
+ENDMODULE

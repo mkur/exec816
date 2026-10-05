@@ -1,0 +1,116 @@
+; Optional command UI above the pure argument parser; never read data Input.
+MODULE DOSCOMMAND
+
+USE DOSARGS
+USE DOSCLIENT
+USE DOSCALLS
+USE DOSUTILITY
+USE CSTRING.IMPL AS STR
+USE ASCII
+INCLUDE "command-args.inc"
+INCLUDE "command-errors.inc"
+
+; Only a bare question mark comprising the complete tail requests help.
+BYTE FUNC Help(CSTRING text)
+  CARD index
+
+  IF text=NULL THEN
+    RETURN(0)
+  FI
+
+  index=0
+  WHILE text(index)=ASCII.SPACE OR text(index)=ASCII.TAB DO
+    index==+1
+    IF index>ARGS_MAX_TEXT THEN
+      RETURN(0)
+    FI
+  OD
+
+  IF text(index)<>'? THEN
+    RETURN(0)
+  FI
+
+  index==+1
+  IF index>ARGS_MAX_TEXT THEN
+    RETURN(0)
+  FI
+
+  WHILE text(index)=ASCII.SPACE OR text(index)=ASCII.TAB DO
+    index==+1
+    IF index>ARGS_MAX_TEXT THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(text(index)=ASCII.NUL)
+
+; Return the first write/close failure without losing it to handle retirement.
+LONGINT FUNC ShowTemplate(CSTRING text)
+  LONGINT cause
+
+  LET console=DOSCALLS.OpenConsole()
+  IF console=NULL THEN
+    RETURN(DOSCLIENT.IoErr())
+  FI
+
+  cause=0
+  IF DOSUTILITY.WriteAll(console,BYTE POINTER(c"Arguments: "),11)=0 THEN
+    cause=DOSCLIENT.IoErr()
+  ELSEIF text(0)=ASCII.NUL THEN
+    IF DOSUTILITY.WriteAll(console,BYTE POINTER(c"(none)"),6)=0 THEN
+      cause=DOSCLIENT.IoErr()
+    FI
+  ELSEIF DOSUTILITY.WriteAll(console,BYTE POINTER(text),LONGINT(STR.strlen(text)))=0 THEN
+    cause=DOSCLIENT.IoErr()
+  FI
+
+  IF cause=0 THEN
+    IF DOSUTILITY.WriteAll(console,BYTE POINTER(c"\n"),1)=0 THEN
+      cause=DOSCLIENT.IoErr()
+    FI
+  FI
+
+  IF DOSCALLS.Close(console)=0 AND cause=0 THEN
+    cause=DOSCLIENT.IoErr()
+    IF cause=0 THEN
+      cause=ERROR_BAD_STREAM_NAME
+    FI
+  FI
+
+RETURN(cause)
+
+PUBLIC LONGINT FUNC ReadArgsOrHelp(CSTRING text,template ADDRESS POINTER values
+    CARD valueCapacity BYTE POINTER storage CARD storageCapacity)
+  LONGINT cause
+
+  IF Help(text)<>0 THEN
+    ; Empty input validates descriptors/storage and clears slots. A missing
+    ; required value is expected for help; every structural error survives.
+    cause=DOSARGS.Parse(c"",template,values,valueCapacity,storage,storageCapacity)
+    IF cause=ERROR_REQUIRED_ARG_MISSING THEN
+      cause=0
+    FI
+
+    IF cause=0 THEN
+      cause=ShowTemplate(template)
+    FI
+
+    DOSCLIENT.SetError(cause)
+    RETURN(IF cause=0 THEN ARGS_HELP ELSE ARGS_ERROR FI)
+  FI
+
+  cause=DOSARGS.Parse(text,template,values,valueCapacity,storage,storageCapacity)
+  IF cause<>0 THEN
+    ; Invalid templates and pointers must not be dereferenced for diagnostics.
+    IF cause<>ERROR_BAD_TEMPLATE AND template<>NULL THEN
+      IF STR.strnlen(BYTE POINTER(template),ARGS_MAX_TEMPLATE+1)<=ARGS_MAX_TEMPLATE THEN
+        ShowTemplate(template)
+      FI
+    FI
+  FI
+
+  DOSCLIENT.SetError(cause)
+
+RETURN(IF cause=0 THEN ARGS_PARSED ELSE ARGS_ERROR FI)
+
+ENDMODULE

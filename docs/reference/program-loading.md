@@ -94,7 +94,9 @@ dynamic entry. No loaded-code finalizer or asynchronous callback is published.
 [build_command.py](../../tools/build_command.py) compiles a standalone o65 command
 against their generated declarations. Names are `exec816_<operation>_v1`, plus
 the profile's raw overflow adapter. Providers cover selected streams, synchronous
-file/console I/O, arguments/results, cooperative break and Yield. Commands do
+file/console I/O, arguments/results, cooperative break, Yield, buffered readers,
+complete writes, directory enumeration, foreground-console queries, fault text
+and template help. Commands do
 not receive imports for creating Tasks or retaining callbacks into their image.
 
 Program API version 4 exposes `COMMAND.GetArgStr()` as a borrowed `CSTRING`.
@@ -106,7 +108,8 @@ for a length, or inspect the first byte to test for emptiness. The query preserv
 together; the removed provider names have no compatibility aliases.
 
 The [small argument parser](command-arguments.md) exposes
-`COMMAND.ReadArgs()` in program ABI version 5: positional string fields and `/A`,
+`COMMAND.ReadArgs()` in program ABI version 8: positional strings, `/A`, `/K`,
+`/S` and unsigned `/N`,
 with caller-owned result slots/storage. It reads the Process argument tail and
 sets IoErr; it never consumes standard input or allocates memory.
 
@@ -115,7 +118,7 @@ open-mode definitions in `abi/dos.json`. They are generated compile-time
 constants and add no command imports or runtime storage.
 
 Commands declare `LONGINT FUNC Main()` and return `COMMAND.RETURN_OK=0`,
-`COMMAND.RETURN_ERROR=10` or `COMMAND.RETURN_FAIL=20`. These are numeric constants;
+`COMMAND.RETURN_WARN=5`, `COMMAND.RETURN_ERROR=10` or `COMMAND.RETURN_FAIL=20`. These are numeric constants;
 no casts or runtime storage are needed. Arbitrary signed `LONGINT` results remain
 supported. `build_command.py` selects `Main` explicitly before optimization.
 
@@ -140,7 +143,8 @@ Ordinary providers are checked Task-only entries; the raw overflow provider is
 the resident nonreturning adapter. Unchecked kernels are rejected.
 
 The provider manifest remains within the existing 1,664-byte upper Task-arena interval
-at offsets `$4000–$467F`; its reserved capacity is unchanged. Its location and
+at offsets `$4000–$467F`; version 8 uses 1,218 bytes for 36 providers and adds
+ReadArgsOrHelp, Fault and PrintFault. Its reserved capacity is unchanged. Its location and
 capacity are generated from the program ABI. This adds no arena reservation.
 Process ABI v3 uses three previously reserved row bytes for the Image reference;
 the row remains 128 bytes. An Image record is 42 requested/48 rounded heap bytes.
@@ -148,27 +152,33 @@ the row remains 128 bytes. An Image record is 42 requested/48 rounded heap bytes
 ## Disk loading and shell dispatch
 
 `PROGRAMFILE.Load(path)` opens an exact DOS path, determines its bounded length,
-and stages it in upper memory using reads of at most 512 bytes. Seek/read use
+and stages it in upper memory using reads of at most 4,096 bytes. Seek/read use
 ordinary cancellable DOS calls. The file is closed before `PROGRAM.Load` validates
 and publishes an Image; staging is freed before return. Break is checked between
 reads and before/after validation. The first causal error survives cleanup.
 
-The shell dispatches built-ins first. Any other command token names a file in the
-current directory or an explicitly qualified path. There is no PATH, implicit
-extension, script, pipeline or background syntax. The bounded argument tail keeps
+The shell dispatches built-ins first. Bare tokens use the shell's bounded
+[PATH search](../guides/shell.md#path), initially CurrentDir then SYS:. Tokens
+containing `:` or `/` use one exact loader call. PROGRAMFILE.Load itself remains
+an exact-path service. There is no implicit extension, script or background
+syntax; one foreground pipeline of two external commands is supported. The bounded argument tail keeps
 its original quoting and escapes, removes redirections, and joins arguments with
 one space. Process admission copies it into owned storage. Selected input/output
 and directory are inherited through the existing Process protocol; diagnostics
 and prompts remain on the shell's private console. Application results, including
 primary status 20, do not terminate the shell.
 
-MyDOS remains read-only. File input and NIL redirection work; file output fails
-with the existing write-protected error. Files are ordinary serialized o65 bytes,
+File input, NIL redirection and output to explicitly writable MyDOS/SpartaDOS
+mounts work. Output redirection creates or truncates when Open commits; a later
+command failure does not restore the previous file. A failed final Close retires
+the handle and reports command failure while preserving a usable shell.
+See [filesystem writes](filesystem-writes.md). Files are ordinary serialized o65 bytes,
 without compiler sidecars. Example sources are [HELLO](../../examples/commands/hello.act)
 and [ECHOARGS](../../examples/commands/echoargs.act), plus the usable
 [WC counter](../guides/shell.md#wc); compile with
 `python3 tools/build_command.py examples/commands/hello.act -o build/HELLO`.
 
-The shell reuses its existing transfer buffer while parsing arguments. L3 adds
-no fixed or per-Task bank-zero reservation and no additional shell heap storage.
+The shell reuses its transfer buffer for arguments and final fault text. PATH
+adds 1,024 upper-RAM bytes per shell; the shell header remains 128 bytes. There
+is no fixed or per-Task bank-zero reservation increase.
 The staging allocation is the exact file length, rounded by the existing heap.

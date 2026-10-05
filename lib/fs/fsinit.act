@@ -16,6 +16,7 @@ USE BLOCKIO
 USE BLOCKTYPES
 USE FSBACKEND
 USE FSBTYPES
+USE FSWTYPES
 INCLUDE "../dos/dos-types.inc"
 
 ; Reject conflicting mount descriptors before allocating or opening devices.
@@ -37,6 +38,11 @@ BYTE FUNC Config(FSTYPES.Service POINTER service)
       LET spec=@specs(index)
       IF FSNAMES.ValidAlias(spec.alias)=0 THEN
         service.error=ERROR_BAD_STREAM_NAME
+        RETURN(0)
+      FI
+
+      IF spec.access>1 THEN
+        service.error=ERROR_BAD_NUMBER
         RETURN(0)
       FI
 
@@ -80,6 +86,7 @@ RETURN(1)
 
 ; Allocate the worker's shared parsing state; Cleanup owns partial failure.
 BYTE FUNC Workspace(FSTYPES.Service POINTER service)
+  BYTE index,writable
 
   service.work=FSBTYPES.Workspace POINTER(EXEC.AllocMem(SIZEOF(
       FSBTYPES.Workspace),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
@@ -95,6 +102,21 @@ BYTE FUNC Workspace(FSTYPES.Service POINTER service)
 
   IF FSBACKEND.CreateWork(service.work)=0 THEN
     RETURN(0)
+  FI
+
+  LET registry=DOSCORE.GetRegistry()
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  writable=0
+  FOR index=0 TO service.count-1 DO
+    writable=writable OR specs(index).access
+  OD
+
+  IF writable<>0 THEN
+    service.mutation=EXEC.AllocMem(SIZEOF(FSWTYPES.State),
+        EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+    IF service.mutation=NULL THEN
+      RETURN(0)
+    FI
   FI
 
   service.operation.work=service.work
@@ -158,6 +180,7 @@ BYTE FUNC AllocateMount(FSTYPES.Service POINTER service)
   FI
 
   mount.volume.format=mount.spec.format
+  mount.volume.owner=BYTE POINTER(mount)
 
 RETURN(FSBACKEND.CreateVolume(mount.volume))
 
@@ -276,6 +299,7 @@ BYTE FUNC MountedStep(BYTE POINTER raw)
     RETURN(Failed(service))
   FI
 
+  service.selected.writable=service.selected.spec.access
   IF service.packet<>FSTYPES.Packet POINTER(0) THEN
     EXEC.Forbid()
     service.selected.published=1
@@ -365,6 +389,10 @@ PUBLIC PROC Cleanup(FSTYPES.Service POINTER service)
 
   IF service.operation<>NULL THEN
     EXEC.FreeMem(BYTE POINTER(service.operation),SIZEOF(FSBTYPES.Operation))
+  FI
+
+  IF service.mutation<>NULL THEN
+    EXEC.FreeMem(service.mutation,SIZEOF(FSWTYPES.State))
   FI
 
   FSBACKEND.DestroyWork(service.work)

@@ -1,0 +1,20 @@
+; One upper-RAM mutation workspace shared by all writable mounts.
+MODULE FSWTYPES
+USE FSBTYPES
+
+PUBLIC TYPE State=[
+  BYTE ARRAY data(256)
+  BYTE ARRAY map(256)
+  BYTE ARRAY scratch(256)
+  BYTE ARRAY row(23)
+  CARD ARRAY reserved(10)
+  BYTE reservations,used
+  CARD bitmapSector,bitmapOffset
+  BYTE bitmapMask
+  CARD mapSector,mapOffset,dataSector,next
+  LONGINT directoryLength
+  LONGCARD ordinal
+  FSBTYPES.Entry target
+]
+
+ENDMODULE

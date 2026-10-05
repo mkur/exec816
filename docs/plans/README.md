@@ -48,6 +48,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
+- [MyDOS and SpartaDOS write support](filesystem-write-implementation-plan.md):
+  W0–W9 implemented with lightweight mounts, write-through file/namespace
+  operations, inherited writers and shell cleanup. Both sector geometries pass
+  native DOS round trips; [development record](../history/filesystem-write-implementation.md)
+  and [mutation protocol](filesystem-write-protocol.md).
 - [Block I/O and MyDOS implementation plan](block-io-dos-implementation-plan.md)
 - [DOS console streams implementation plan](dos-console-streams-implementation-plan.md)
 - [DOS simplification](dos-simplification-plan.md)
@@ -95,6 +100,13 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [Command usability](command-usability-implementation-plan.md): U1–U6 complete;
+  bounded shell PATH, shared fault messages and command template help.
+  [Development record](../history/command-usability.md), raw/optimized checks
+  and the verified OF816 distribution.
+- [First command toolbox](command-toolbox-implementation-plan.md): C1–C6 complete;
+  shared arguments/streams, seven loadable commands, directory/console imports
+  and the integrated OF816 demo. [Development record](../history/command-toolbox.md).
 - [Layers implementation](layers-implementation-plan.md): L1–L4 complete;
   bounded regions, stacking, visibility, damage and drawing transactions.
   [Current contracts](../reference/layers.md); the first desktop presenter now uses them.

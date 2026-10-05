@@ -58,7 +58,7 @@ RETURN(count)""")
         self.files = make(out/'volume.atr',source,binary_names=binary)
 
     def exercise(self, c):
-        c.command('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES EXIT\n')
+        c.command('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT\n')
         c.command('HELLO',b'Hello from disk!\n')
         c.command('ECHOARGS "two words" "" x',b'"two words" "" x\n')
         c.command('D1:HELLO',b'Hello from disk!\n')
@@ -72,7 +72,7 @@ RETURN(count)""")
         c.command('HELLO >NIL:')
         c.command('READ <TEXT.TXT',b'selected input\n')
         c.command('READ <NIL:')
-        c.command('HELLO >TEXT.TXT',error=214)
+        c.command('HELLO >TEXT.TXT',error=214,diagnostic='Shell')
         c.command('STATUS',status=20)
         # The raw resident kernel plus the 80 KiB console observer leaves too
         # little heap for two bank-aligned Images. Keep raw serial coverage;

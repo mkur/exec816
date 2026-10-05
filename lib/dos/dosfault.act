@@ -1,0 +1,135 @@
+; Bounded diagnostics preserve the operation's IoErr, including on failure.
+MODULE DOSFAULT
+
+USE CSTRING.IMPL AS STR
+USE DOSCLIENT
+USE DOSRAW
+USE DOSUTILITY
+USE FSNAMES
+USE ASCII
+INCLUDE "dos-fault-messages.inc"
+
+; Validate complete output storage and a bounded, readable header before copying.
+LONGINT FUNC Format(LONGINT code CSTRING header BYTE POINTER buffer CARD capacity)
+  CARD headerLength,numberLength,length,at
+  BYTE ARRAY digits(12)
+  LONGCARD magnitude
+
+  IF capacity=0 OR buffer=NULL THEN
+    RETURN(-1)
+  FI
+
+  IF DOSRAW.ValidExtent(buffer,LONGINT(capacity))=0 THEN
+    RETURN(-1)
+  FI
+
+  buffer(0)=ASCII.NUL
+  IF code=0 THEN
+    RETURN(0)
+  FI
+
+  headerLength=0
+  IF header<>NULL THEN
+    DO
+      IF FSNAMES.Mapped(BYTE POINTER(header)+SIZE(headerLength),1)=0 THEN
+        RETURN(-1)
+      FI
+
+      IF header(headerLength)=ASCII.NUL THEN
+        EXIT
+      FI
+
+      IF headerLength=255 THEN
+        RETURN(-1)
+      FI
+
+      headerLength==+1
+    OD
+  FI
+
+  magnitude=LONGCARD(code)
+  numberLength=0
+  IF code<0 THEN
+    digits(0)='-
+    numberLength=1
+    magnitude=LONGCARD(0)-magnitude
+  FI
+
+  numberLength==+CARD(STR.u32toa(magnitude,@digits(0)+SIZE(numberLength),
+      SIZEOF(digits)-SIZE(numberLength)))
+  LET description=Message(code)
+  length=numberLength
+  IF description=NULL THEN
+    length==+11
+  ELSE
+    length==+CARD(STR.strlen(description))+3
+  FI
+
+  IF headerLength<>0 THEN
+    length==+headerLength+2
+  FI
+
+  IF length>=capacity THEN
+    RETURN(-1)
+  FI
+
+  at=0
+  IF headerLength<>0 THEN
+    STR.strlcpy(buffer,header,capacity)
+    at=headerLength
+    buffer(at)=':
+    buffer(at+1)=ASCII.SPACE
+    at==+2
+  FI
+
+  IF description=NULL THEN
+    STR.strlcpy(buffer+SIZE(at),c"Error code ",capacity-at)
+    at==+11
+  ELSE
+    at==+CARD(STR.strlcpy(buffer+SIZE(at),description,capacity-at))
+    buffer(at)=ASCII.SPACE
+    buffer(at+1)='(
+    at==+2
+  FI
+
+  STR.strlcpy(buffer+SIZE(at),CSTRING(digits),capacity-at)
+  at==+numberLength
+  IF description<>NULL THEN
+    buffer(at)=')
+    at==+1
+  FI
+
+  buffer(at)=ASCII.NUL
+
+RETURN(LONGINT(at))
+
+PUBLIC LONGINT FUNC Fault(LONGINT code CSTRING header BYTE POINTER buffer
+                          CARD capacity)
+
+  LET saved=DOSCLIENT.IoErr()
+  LET result=Format(code,header,buffer,capacity)
+  DOSCLIENT.SetError(saved)
+
+RETURN(result)
+
+; Borrow the destination and caller scratch; add LF only to a complete message.
+PUBLIC LONGINT FUNC PrintFault(BYTE POINTER handle LONGINT code CSTRING header
+                               BYTE POINTER buffer CARD capacity)
+  LONGINT result
+
+  LET saved=DOSCLIENT.IoErr()
+  LET count=Fault(code,header,buffer,capacity)
+  result=0
+  IF count=0 THEN
+    result=-1
+  ELSEIF count>0 AND count+1<LONGINT(capacity) THEN
+    buffer(CARD(count))=ASCII.LF
+    buffer(CARD(count)+1)=ASCII.NUL
+    result=DOSUTILITY.WriteAll(handle,buffer,count+1)
+  FI
+
+  DOSCLIENT.SetError(saved)
+
+RETURN(result)
+
+ENDMODULE

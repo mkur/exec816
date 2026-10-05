@@ -66,7 +66,8 @@ BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
     RETURN(1)
   FI
 
-  ; Double-density reads only; larger writes and intermediate sizes stay out.
+  ; Admit only the supported double-density sector commands. PUT and arbitrary
+  ; transactions retain their smaller payload limit.
   IF sio.io_Length<>256 THEN
     RETURN(0)
   FI
@@ -76,11 +77,8 @@ BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
     RETURN(0)
   FI
 
-  IF sio.sio_Direction<>EXEC.SIODIR_READ OR sio.sio_Command<>$52 THEN
-    RETURN(0)
-  FI
-
-RETURN(1)
+RETURN((sio.sio_Direction=EXEC.SIODIR_READ AND sio.sio_Command=$52)
+    OR (sio.sio_Direction=EXEC.SIODIR_WRITE AND sio.sio_Command=$57))
 
 ; Reject unsupported request shapes before touching the serial hardware.
 BYTE FUNC SIOValidate(EXEC.IORequest POINTER request)

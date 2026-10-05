@@ -93,7 +93,7 @@ PROC AddressBounds()
   Reject(first,1,BYTE POINTER(0),256,LONGINT(-5))
   Reject(first,1,BYTE POINTER($008000),256,LONGINT(-5))
   Reject(second,4,BYTE POINTER($fffff0),256,LONGINT(-5))
-  Reject(second,4,BYTE POINTER($100000),256,LONGINT(-5))
+  Reject(second,4,BYTE POINTER($400000),256,LONGINT(-5))
   Require(BLOCKIO.Mapped(BYTE POINTER($ffff80),LONGCARD($1000080))=0)
 
 RETURN

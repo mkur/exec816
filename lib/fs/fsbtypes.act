@@ -11,6 +11,8 @@ PUBLIC TYPE Volume=[
   BYTE POINTER state
   CARD root
   BYTE format,mounted
+  BYTE POINTER owner
+  CARD allocationHint
 ]
 
 ; key is opaque backend identity. flags contains only DIR/PROTECTED below.

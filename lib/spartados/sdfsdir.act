@@ -1,6 +1,7 @@
 ; Directory records use the shared 23-byte scratch and FSSTATUS results.
 ; File traversal progress passes through unchanged.
 MODULE SDFSDIR
+USE FSLEASES
 USE FSSTATUS
 USE SDFS
 USE SDFSFILE
@@ -152,6 +153,15 @@ BYTE FUNC Decode(FSBTYPES.Workspace POINTER work)
 
   IF (flags & $10)<>0 THEN
     RETURN(FSSTATUS.SKIP_ENTRY)
+  FI
+
+  IF (flags & $80)<>0 THEN
+    work.entry.key=work.index
+    work.entry.parent=work.directory
+    work.entry.start=SDFS.Word(state.row,1)
+    IF FSLEASES.Live(work)<>0 THEN
+      RETURN(FSSTATUS.DONE)
+    FI
   FI
 
   IF (flags & $c8)<>8 THEN

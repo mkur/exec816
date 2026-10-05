@@ -1,4 +1,9 @@
 MODULE FSHANDLER
+USE FSNAMESPACE
+USE FSWRITE
+USE FSWRITEIO
+USE FSLEASES
+USE FSCORE
 USE FSSTATUS
 USE EXEC
 USE HEAPCORE
@@ -30,12 +35,26 @@ PUBLIC TYPE ResultCell=[BYTE POINTER handle]
 BYTE FUNC OpenResultStep(BYTE POINTER raw)
 
   LET service=FSTYPES.Service POINTER(raw)
-  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_FINDINPUT AND
+  LET action=service.packet.sp_Pkt.dp_Type
+  IF action=16 OR action=17 THEN
+    RETURN(FSNAMESPACE.Resolved(service))
+  FI
+
+  IF action=22 AND service.missing=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_OBJECT_EXISTS))
+  FI
+
+  IF action<>DOS_ACTION_LOCATE_OBJECT AND action<>DOS_ACTION_CREATE_DIR AND
       (service.work.entry.flags & FSBTYPES.DIR)<>0 THEN
     RETURN(FSPACKET.Error(service,ERROR_OBJECT_WRONG_TYPE))
   FI
 
-  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_LOCATE_OBJECT THEN
+  IF service.missing=0 AND FSLEASES.Busy(service.selected,@service.work.entry,
+      BYTE(action=MODE_NEWFILE OR action=MODE_READWRITE),0)<>0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_OBJECT_IN_USE))
+  FI
+
+  IF action=DOS_ACTION_LOCATE_OBJECT OR action=DOS_ACTION_CREATE_DIR THEN
     service.object=FSTYPES.Object POINTER(FSLOCKS.Create(service))
   ELSE
     service.object=FSTYPES.Object POINTER(FSFILES.Allocate())
@@ -54,6 +73,15 @@ BYTE FUNC OpenResultStep(BYTE POINTER raw)
       RETURN(FSPACKET.Error(service,ERROR_NO_FREE_STORE))
     FI
 
+    IF action=DOS_ACTION_CREATE_DIR THEN
+      IF FSWRITE.Create(service,1)=0 OR FSBACKEND.Descend(service.work)=0 THEN
+        FSOBJECTS.Free(service.object)
+        RETURN(FSPACKET.Error(service,service.work.error))
+      FI
+
+      service.selected.epoch==+1
+    FI
+
     FSDIRECTORY.InitLockState(service)
 
   ELSE
@@ -62,9 +90,24 @@ BYTE FUNC OpenResultStep(BYTE POINTER raw)
       RETURN(FSPACKET.Error(service,ERROR_NO_FREE_STORE))
     FI
 
+    IF action=MODE_NEWFILE OR action=MODE_READWRITE THEN
+      IF FSWRITE.Open(service)=0 THEN
+        FSOBJECTS.Free(service.object)
+        RETURN(FSPACKET.Error(service,service.work.error))
+      FI
+
+      file.backing.writable=1
+    FI
+
     IF FSBACKEND.Open(service.work,@file.backing.cursor)=0 THEN
       FSOBJECTS.Free(service.object)
       RETURN(FSPACKET.Error(service,service.work.error))
+    FI
+  FI
+
+  IF service.object.header.kind=DOSOBJECTS.KIND_FILE THEN
+    IF file.backing.writable<>0 THEN
+      FSCORE.CopyEntry(@file.backing.cursor.entry,@service.work.entry)
     FI
   FI
 
@@ -141,7 +184,7 @@ RETURN(FSSTATUS.MORE)
 
 ; Handle validation and argument setup are one bounded part of the request.
 BYTE FUNC File(FSTYPES.Service POINTER service)
-  BYTE status
+  BYTE status,index
 
   IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg1)=0 THEN
     RETURN(FSPACKET.Error(service,ERROR_BAD_STREAM_NAME))
@@ -157,11 +200,32 @@ BYTE FUNC File(FSTYPES.Service POINTER service)
     RETURN(FSPACKET.Error(service,ERROR_BAD_STREAM_NAME))
   FI
 
+  LET selectedFile=FSTYPES.FileObject POINTER(service.object)
+  LET backing=selectedFile.backing
+  service.work.depth=backing.cursor.depth
+  FOR index=0 TO backing.cursor.depth DO
+    service.work.ancestors(index)=backing.cursor.ancestors(index)
+  OD
+
   IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_END THEN
+    IF FSFILES.DropShared(selectedFile)=0 THEN
+      service.packet.sp_Pkt.dp_Res2=FSWRITE.Finalize(service,selectedFile)
+    FI
+
     RETURN(FSPACKET.Close(service))
   FI
 
   LET file=FSTYPES.FileObject POINTER(service.object)
+  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_FLUSH THEN
+    service.packet.sp_Pkt.dp_Res1=-1
+    FSPACKET.Reply(service)
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_WRITE THEN
+    RETURN(FSWRITE.Begin(service,file))
+  FI
+
   service.operation.file=@file.backing.cursor
   IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_READ THEN
     IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg2)=0 THEN
@@ -187,7 +251,7 @@ BYTE FUNC DispatchStep(BYTE POINTER raw)
   LET action=service.packet.sp_Pkt.dp_Type
   service.packet.sp_Pkt.dp_Res1=0
   service.packet.sp_Pkt.dp_Res2=0
-  IF action=DOS_ACTION_READ OR action=DOS_ACTION_SEEK THEN
+  IF action=DOS_ACTION_READ OR action=DOS_ACTION_WRITE OR action=DOS_ACTION_SEEK THEN
     service.packet.sp_Pkt.dp_Res1=-1
   FI
 
@@ -209,11 +273,22 @@ BYTE FUNC DispatchStep(BYTE POINTER raw)
   CASE action OF
   WHEN DOS_ACTION_LOCATE_OBJECT THEN
     RETURN(Lock(service))
-  WHEN DOS_ACTION_FINDINPUT THEN
+  WHEN DOS_ACTION_CREATE_DIR,DOS_ACTION_FINDINPUT,DOS_ACTION_FINDUPDATE,DOS_ACTION_FINDOUTPUT THEN
+    IF action<>DOS_ACTION_FINDINPUT AND FSWRITE.Access(service)=0 THEN
+      RETURN(FSPACKET.Error(service,service.work.error))
+    FI
+
     RETURN(Open(service))
+  WHEN DOS_ACTION_DELETE_OBJECT,DOS_ACTION_RENAME_OBJECT THEN
+    IF FSWRITE.Access(service)=0 THEN
+      RETURN(FSPACKET.Error(service,service.work.error))
+    FI
+
+    service.work.path=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg3))
+    RETURN(BeginResolve(service))
   WHEN DOS_ACTION_FREE_LOCK,DOS_ACTION_EXAMINE_OBJECT,DOS_ACTION_EXAMINE_NEXT THEN
     RETURN(FSDIRECTORY.Select(service))
-  WHEN DOS_ACTION_READ,DOS_ACTION_SEEK,DOS_ACTION_END THEN
+  WHEN DOS_ACTION_READ,DOS_ACTION_WRITE,DOS_ACTION_FLUSH,DOS_ACTION_SEEK,DOS_ACTION_END THEN
     RETURN(File(service))
   ESAC
 
@@ -264,12 +339,42 @@ BYTE FUNC ComponentStep(BYTE POINTER raw)
   LET service=FSTYPES.Service POINTER(raw)
   LET status=FSBACKEND.ResolveComponent(service.work)
   IF status=FSSTATUS.ERROR THEN
-    RETURN(FSPACKET.Error(service,service.work.error))
+    RETURN(ResolveFailure(service))
   FI
 
   service.nextStep=@ResolveStep
 
 RETURN(status)
+
+; Missing final leaves are accepted for creation in both immediate cached
+; lookup and resumed I/O lookup paths. Missing parents remain errors.
+BYTE FUNC ResolveFailure(FSTYPES.Service POINTER service)
+  BYTE index
+  LONGINT action
+
+  action=service.packet.sp_Pkt.dp_Type
+  IF service.work.error=ERROR_OBJECT_NOT_FOUND AND
+      service.work.pathOffset=service.work.pathLength AND
+      (action=MODE_NEWFILE OR action=MODE_READWRITE OR action=22 OR action=17) THEN
+    service.missing=1
+    service.work.error=0
+    service.work.entry.flags=0
+    service.work.entry.parent=service.work.directory
+    service.work.entry.start=0
+    FOR index=0 TO 10 DO
+      service.work.entry.name(index)=service.work.wanted(index)
+    OD
+
+    IF FSLOCKS.Append(service)=0 THEN
+      RETURN(FSPACKET.Error(service,service.work.error))
+    FI
+  ELSE
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  service.nextStep=@OpenResultStep
+
+RETURN(FSSTATUS.MORE)
 
 ; Resume component lookup after the required sector becomes available.
 BYTE FUNC ResolveStep(BYTE POINTER raw)
@@ -296,7 +401,7 @@ BYTE FUNC ResolveStep(BYTE POINTER raw)
   FI
 
   IF status=FSSTATUS.ERROR THEN
-    RETURN(FSPACKET.Error(service,service.work.error))
+    RETURN(ResolveFailure(service))
   FI
 
   service.nextStep=@OpenResultStep

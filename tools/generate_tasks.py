@@ -274,7 +274,7 @@ ENDMODULE
 ''')
     if dos_system:
         from generate_dos import HEADER, public_api as dos_api
-        (directory/'dos.act').write_text(HEADER+'MODULE DOS\nUSE DOSCALLS\nUSE DOSCLIENT\n'+dos_api()+'INCLUDE "'+str(ROOT/'lib/dos/dos-implementation.inc')+'"\nENDMODULE\n')
+        (directory/'dos.act').write_text(HEADER+'MODULE DOS\nUSE DOSCALLS\nUSE DOSCLIENT\nUSE DOSFAULT\n'+dos_api()+'INCLUDE "'+str(ROOT/'lib/dos/dos-implementation.inc')+'"\nENDMODULE\n')
     elif dos_test:
         from generate_dos import HEADER, public_api as dos_api, DECLARATIONS
         (directory/'dos.act').write_text(HEADER+'MODULE DOS\nUSE DOSCLIENT\n'+dos_api()+''.join('PUBLIC EXTERNAL '+v+'\n' for k,v in DECLARATIONS.items() if k not in ('IoErr','ReleaseContext'))+'PUBLIC LONGINT FUNC IoErr()\nRETURN(DOSCLIENT.IoErr())\nPUBLIC LONGINT FUNC ReleaseContext()\nRETURN(DOSCLIENT.ReleaseContext())\nENDMODULE\n')

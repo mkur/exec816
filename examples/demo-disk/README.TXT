@@ -16,3 +16,26 @@ Press BREAK during the long pipeline.
 The prime search keeps running.
 Run MEM again after commands finish.
 EXIT closes the demo and returns to OS.
+
+Command toolbox:
+HEAD STORY.TXT LINES 5
+GREP shell STORY.TXT NOCASE NUMBER
+CKSUM STORY.TXT
+HEXDUMP STORY.TXT LENGTH 32
+CMP STORY.TXT STORY.TXT
+LIST NAMES
+MORE LONG.TXT
+MORE: Space=page, Return=line, Q=quit.
+
+Commands after changing directory:
+CD SYS:WORK
+HEAD SYS:STORY.TXT LINES 3
+HEAD MISSING
+HEAD ?
+PATH
+CAT SYS:STORY.TXT | WC
+CD SYS:
+
+PATH searches here, then SYS: by default.
+Every supplied command supports ? help.
+Errors are explained on the console.

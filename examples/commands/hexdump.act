@@ -1,0 +1,107 @@
+MODULE HEXDUMP
+
+INCLUDE "command-common.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(3)
+COMMAND.Reader reader
+BYTE ARRAY row(78)
+BYTE ARRAY digits=c"0123456789ABCDEF"
+
+; Format one offset and at most sixteen counted bytes into a fixed-width row.
+LONGINT FUNC Dump()
+  LONGCARD offset,remaining,skip
+  CARD used,index,column
+  INT value
+
+  offset=CommandNumber(values(1),0)
+  remaining=CommandNumber(values(2),SYS.MAXLONGCARD)
+  skip=offset
+  WHILE skip<>0 AND remaining<>0 DO
+    value=COMMAND.ReadByte(BYTE POINTER(@reader))
+    IF value=-2 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF value=-1 THEN
+      RETURN(COMMAND.RETURN_OK)
+    FI
+
+    skip==-1
+  OD
+
+  WHILE remaining<>0 DO
+    FOR index=0 TO CARD(SIZEOF(row))-1 DO
+      row(index)=ASCII.SPACE
+    OD
+
+    FOR index=0 TO 7 DO
+      row(index)=digits(BYTE((offset RSH ((7-index)*4)) & 15))
+    OD
+
+    row(59)='|
+    row(76)=ASCII.LF
+    used=0
+    WHILE used<16 AND remaining<>0 DO
+      value=COMMAND.ReadByte(BYTE POINTER(@reader))
+      IF value=-2 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      IF value=-1 THEN
+        EXIT
+      FI
+
+      column=10+used*3
+      row(column)=digits(BYTE(value) RSH 4)
+      row(column+1)=digits(BYTE(value) & 15)
+      row(60+used)=IF value>=32 AND value<=126 THEN BYTE(value) ELSE BYTE('.) FI
+      used==+1
+      remaining==-1
+    OD
+
+    IF used=0 THEN
+      EXIT
+    FI
+
+    ; The ASCII closing bar follows the last displayed byte.
+    row(60+used)='|
+    row(61+used)=ASCII.LF
+    IF COMMAND.WriteAll(COMMAND.Output(),row,LONGINT(62+used))=0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF used<16 THEN
+      EXIT
+    FI
+
+    IF offset>SYS.MAXLONGCARD-LONGCARD(used) THEN
+      COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_TOO_LARGE)
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    offset==+LONGCARD(used)
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"FILE,OFFSET/K/N,LENGTH/K/N",values,3,
+      arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  LET input=CommandInput(values(0))
+  IF input=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  COMMAND.ReaderInit(BYTE POINTER(@reader),input)
+  LET status=CommandReadResult(@reader,Dump())
+
+RETURN(CommandFinish(input,BYTE(values(0)<>0),status))
+
+ENDMODULE

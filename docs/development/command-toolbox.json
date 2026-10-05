@@ -1,0 +1,784 @@
+{
+  "date": "2026-10-04",
+  "status": "pass",
+  "tier": "development",
+  "plan_commit": "0633032f058585de28b751c06306ebd88719960a",
+  "source_state": "Implementation atop the committed plan; source and artifact hashes identify checked inputs.",
+  "source_inputs": {
+    "abi/dos.json": "be73618c66e1b3e76fc8e0f9d690c24868b384870dbd8618cc417005dec83f58",
+    "abi/program.json": "91a75d0c81b3d9860992800e9fe7eb4f25a2b28538b129acfb406f56808f0efd",
+    "examples/commands/cksum.act": "c60402c1891420656e7ed8c886a29dbbd3b55004355399bfce7f552bf0801836",
+    "examples/commands/cmp.act": "f1acdebe4dcbfae9cbd7447c0883969633359e585ec828c56d07c87fc16bda26",
+    "examples/commands/command-common.inc": "b8dde15533ea7df70481176d9c0f05dbf53714e92a920ce71053522d2a4f5a5f",
+    "examples/commands/grep.act": "3b07d4969c6b16ef9db68ca2a3b43315fd145576c31f9a66f8da52f9720698ba",
+    "examples/commands/head.act": "6c49c5d5801e6d4a5e3102f74f794b3cd414beac8d994fd6eb2891cc7523549f",
+    "examples/commands/hexdump.act": "0ca93532df8ab0dfc587f7c0e641500bf132055a7af2711003a75516bb01d09b",
+    "examples/commands/list.act": "b4812970348dcdfd7b355c62da2ff67b91d1030ba29ea067de70984b859c2ab6",
+    "examples/commands/more.act": "c2236a9fd0ec62d2ae69fd57ffe23fefe59db95de408637672165c65bcec1513",
+    "examples/demo-disk/README.TXT": "911b14927b424d85a5707c501506d8fda10324a0c67a73b962b4b30874fa996f",
+    "lib/dos/command-args.inc": "c3c2860772f3d8491877a8be1da4cdc1d6cefe2605c82742c01c6a8aba3a2312",
+    "lib/dos/command-buffers.inc": "a403fe287f2c9652facf411d8b7119c51d17ea2489bd52bfbfe3fc4879dfe869",
+    "lib/dos/command-results.inc": "3656fe0a7f15c632ecc107b5a3e59eacbd72cb6a3d40ceacd0c8a9a7aa24eb57",
+    "lib/dos/command.act": "de8c9f387dc1ddda6a130b2591b588497751e0c3508d67138647acb2e2008c38",
+    "lib/dos/dos-implementation.inc": "dcde99d023cfb1ba5641729105aa2a87ffb5a4e55509c1e3acf9e162725b78e2",
+    "lib/dos/dos.act": "0352b7cdf57fe6616e11025c4bec5e6d74d355b88a88021a16ed4947866d87e7",
+    "lib/dos/dosargs.act": "7d66f3d2cfcdbc5e7eeb06cf51bcd85f3b119c4dd761b70040a1bc43cd50b8de",
+    "lib/dos/doscalls.act": "8488490b1ecbcd8e57cf4877f039d63293e3e0af40986d954e3152e9b1ff47f7",
+    "lib/dos/dosutility.act": "7f58d666a4921d5159877a16dab10cdd66884a14dd2f0c1d113088ba685fa92c",
+    "lib/dos/pipeline.act": "bf0dcf6254eb1f9a22746df1504656703d114649c094b74cca22372928ac8219",
+    "lib/dos/programapi.act": "2d5d10eccd4b4b48df7683a150431d963064cec0f2379a874041e30400f297d6",
+    "platform/altirraos/hosted.cfg": "bdfb99d263550d5920ee4d60765b194c725bcafd3e7f485faf30a0b6e1af7bff",
+    "platform/altirraos/layout.inc": "f4398f0acb8814f0f040d4a7041b61020c1f12353e9448a6c7f6e8446ff8139d",
+    "platform/altirraos/memory-4m.json": "8b4ef235eaff9d30b46fac1dc81c63061a88f9a2c87d5eec9d098f441940f594",
+    "tests/programs/read_args.act": "3f54c9a1f30bf4f169eefb11db675ae664a4539ff54c1e9916c3232e3e7b7765",
+    "tests/programs/toolbox_calls.act": "a1eb1c546c3aa2ebaf545e8beba70d93cb930a04a7a7e5de781a650f7ed5a5ce",
+    "tests/programs/toolbox_console.act": "f92537ebe5601c35ba1a7a7bc65f64341de2f39a4072a88267d23fc24e694afc",
+    "tests/programs/toolbox_state.act": "61ab5453ef496f9e7a9f9e87874ef7eac84c9eabcda28f9086f97f43829915a8",
+    "tests/test_program_contract.py": "26caf29af0af81c09acd7644126b949639e025a145c8a2a8ce6365bd4798a3ad",
+    "toolchain/actionc.json": "f31077466a9ef240f8d49fd2f62cd8503b5975c164127573834b09a7d05ba3cc",
+    "toolchain/altirra-shell-paced.json": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087",
+    "tools/build_demo.py": "5ba20262f9c236ab969c003aa407f4653d707c736199d7497e2aa17dd1adf133",
+    "tools/generate_dos.py": "064bdd870b04e79ea610d3bbc166242bee899579068682b44a7146374fda946e",
+    "tools/generate_program.py": "b36487675f95631e58ad75d161a7a170fb7b4e2a2124e945a24e4ae81e443697",
+    "tools/test_read_args.py": "a639447e4cade828af03a0780ff1c65915370f11fa6a1440bd754b4c5ecb5111",
+    "tools/test_shell_core.py": "283c6686780c926d8938327518d161494d39b590260cf5bf6551653f47b283e0",
+    "tools/test_toolbox.py": "d8922d15e968b37a151cf78e60f1a83a922ba49297c6b6655dfd62084dca67d0",
+    "tools/test_toolbox_console.py": "8b66e4420e8e891103d0128ce9849948a27fa7f8704a0d53181873bda99ed07d",
+    "tools/test_toolbox_shell.py": "6ad0006dc28ff135d18e14e67e695735193b9aa8f181373b8085bfa1a3b7d4e7"
+  },
+  "compiler": {
+    "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "changes": [],
+    "override": false,
+    "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "machine": {
+    "pin": "toolchain/altirra-shell-paced.json",
+    "pin_sha256": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087",
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    }
+  },
+  "validation": {
+    "host_tests": 331,
+    "generators": [
+      "generate_program.py --check",
+      "generate_dos.py --check"
+    ],
+    "emitted": {
+      "raw": {
+        "arguments": {
+          "cases": 88
+        },
+        "commands": {
+          "cases": 75,
+          "by_command": {
+            "cmp": 8,
+            "cksum": 10,
+            "hexdump": 10,
+            "head": 16,
+            "grep": 12,
+            "list": 7,
+            "more": 12
+          }
+        },
+        "console": {
+          "checks": 25,
+          "dimensions": [
+            12,
+            4
+          ]
+        },
+        "cat": {
+          "cases": 17
+        },
+        "wc": {
+          "cases": 16
+        },
+        "shell": {
+          "status": "pass",
+          "commands": 10,
+          "scope": "serial commands, pipelines and four physical pager controls"
+        },
+        "pipeline_outcomes": {
+          "status": "pass",
+          "commands": 10,
+          "scope": "3 error-precedence pipelines"
+        }
+      },
+      "opt": {
+        "arguments": {
+          "cases": 88
+        },
+        "commands": {
+          "cases": 75,
+          "by_command": {
+            "cmp": 8,
+            "cksum": 10,
+            "hexdump": 10,
+            "head": 16,
+            "grep": 12,
+            "list": 7,
+            "more": 12
+          }
+        },
+        "console": {
+          "checks": 25,
+          "dimensions": [
+            12,
+            4
+          ]
+        },
+        "cat": {
+          "cases": 17
+        },
+        "wc": {
+          "cases": 16
+        },
+        "shell": {
+          "status": "pass",
+          "commands": 10,
+          "scope": "serial commands, pipelines and four physical pager controls"
+        },
+        "pipeline_outcomes": {
+          "status": "pass",
+          "commands": 10,
+          "scope": "3 error-precedence pipelines"
+        }
+      }
+    },
+    "packaged_of816": {
+      "status": "pass",
+      "routes": [
+        "autoboot with clock wrap",
+        "final-second cancellation and Forth handoff"
+      ],
+      "autoboot_pal_frames": 250,
+      "shell": "HELLO, CAT/WC pipeline, EXIT, guards, ownership and OS restoration on both routes",
+      "exit_cases": [
+        "BYE",
+        "occupied IOCB"
+      ]
+    },
+    "documentation_relative_links": 311,
+    "python_syntax": "pass"
+  },
+  "bank_zero": {
+    "baseline_revision": "0633032f058585de28b751c06306ebd88719960a",
+    "unchanged_reservation_inputs": {
+      "platform/altirraos/layout.inc": "f4398f0acb8814f0f040d4a7041b61020c1f12353e9448a6c7f6e8446ff8139d",
+      "platform/altirraos/hosted.cfg": "bdfb99d263550d5920ee4d60765b194c725bcafd3e7f485faf30a0b6e1af7bff",
+      "platform/altirraos/memory-4m.json": "8b4ef235eaff9d30b46fac1dc81c63061a88f9a2c87d5eec9d098f441940f594"
+    },
+    "fixed_delta_bytes": 0,
+    "per_public_task_delta_bytes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle_delta_bytes": 0,
+    "loading_delta_bytes": 0,
+    "runtime_delta_bytes": 0,
+    "after": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1312,
+        1312,
+        1312,
+        1312,
+        1312,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 25408,
+      "loading_excluding_os": 21872,
+      "runtime_including_os": 56128,
+      "loading_including_os": 52592
+    },
+    "accounting": "Includes guards, alignment, DP, stack capacity and unused reserved provider storage. The older bank-zero-compaction baseline in generic reports includes the unrelated larger-stack change; this delta is against the committed toolbox plan.",
+    "provider_manifest_bytes": 1111,
+    "provider_reserved_bytes": 1664
+  },
+  "stack_observations": {
+    "console-raw": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 402,
+        "remaining_above_floor": 878
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 250,
+        "remaining_above_floor": 518
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 24,
+        "remaining_above_floor": 232
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 280,
+        "remaining_above_floor": 1000
+      }
+    },
+    "shell-raw": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 538,
+        "remaining_above_floor": 742
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 250,
+        "remaining_above_floor": 518
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 240,
+        "remaining_above_floor": 528
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 166,
+        "remaining_above_floor": 602
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 470,
+        "remaining_above_floor": 298
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 478,
+        "remaining_above_floor": 290
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 62,
+        "remaining_above_floor": 194
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 280,
+        "remaining_above_floor": 1000
+      }
+    },
+    "outcomes-raw": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 538,
+        "remaining_above_floor": 742
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 250,
+        "remaining_above_floor": 518
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 240,
+        "remaining_above_floor": 528
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 158,
+        "remaining_above_floor": 610
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 404,
+        "remaining_above_floor": 364
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 428,
+        "remaining_above_floor": 340
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 58,
+        "remaining_above_floor": 198
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 266,
+        "remaining_above_floor": 1014
+      }
+    },
+    "console-opt": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 378,
+        "remaining_above_floor": 902
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 226,
+        "remaining_above_floor": 542
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 24,
+        "remaining_above_floor": 232
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 260,
+        "remaining_above_floor": 1020
+      }
+    },
+    "shell-opt": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 500,
+        "remaining_above_floor": 780
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 226,
+        "remaining_above_floor": 542
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 222,
+        "remaining_above_floor": 546
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 138,
+        "remaining_above_floor": 630
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 433,
+        "remaining_above_floor": 335
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 435,
+        "remaining_above_floor": 333
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 62,
+        "remaining_above_floor": 194
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 274,
+        "remaining_above_floor": 1006
+      }
+    },
+    "outcomes-opt": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 500,
+        "remaining_above_floor": 780
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 226,
+        "remaining_above_floor": 542
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 222,
+        "remaining_above_floor": 546
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 132,
+        "remaining_above_floor": 636
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 369,
+        "remaining_above_floor": 399
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 387,
+        "remaining_above_floor": 381
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 58,
+        "remaining_above_floor": 198
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 272,
+        "remaining_above_floor": 1008
+      }
+    }
+  },
+  "artifacts": {
+    "commands": {
+      "HELLO": {
+        "path": "build/toolbox/demo-final/media/HELLO",
+        "sha256": "8c9edcb85c13d1c466bb9ff84c2d92f90118172d88e210560d9ea6bdb83f0e04",
+        "bytes": 642
+      },
+      "CAT": {
+        "path": "build/toolbox/demo-final/media/CAT",
+        "sha256": "08fcacc6c8b27a24814548ebc675683c0fb52d2d4b135cfdeeb4651f1fa3c796",
+        "bytes": 2846
+      },
+      "WC": {
+        "path": "build/toolbox/demo-final/media/WC",
+        "sha256": "41b5e4ae718ca930a5060d12330e9c4add9c427b633119337584cb07174e794c",
+        "bytes": 2863
+      },
+      "CMP": {
+        "path": "build/toolbox/demo-final/media/CMP",
+        "sha256": "c6ccff5024b00053b152e9e3e1bb1e5c62dfe03b47718e81502560de9e8aacb6",
+        "bytes": 5608
+      },
+      "CKSUM": {
+        "path": "build/toolbox/demo-final/media/CKSUM",
+        "sha256": "e49de107584f652891e09f8a08a80f73132e4831dad2e9b2ed53cc0dc55b29de",
+        "bytes": 5927
+      },
+      "HEXDUMP": {
+        "path": "build/toolbox/demo-final/media/HEXDUMP",
+        "sha256": "d136c03660818584fa879d40f84b1b01d0b83f1e64a77799afa23f19903afca3",
+        "bytes": 6400
+      },
+      "HEAD": {
+        "path": "build/toolbox/demo-final/media/HEAD",
+        "sha256": "69b503220728ad7d140f27d1292edf9f1606064d7d9854cbda3bd97f96b62154",
+        "bytes": 5030
+      },
+      "GREP": {
+        "path": "build/toolbox/demo-final/media/GREP",
+        "sha256": "f52182d166f361911523ff34980a474347f579cdd652757932c5869c902128d0",
+        "bytes": 6155
+      },
+      "LIST": {
+        "path": "build/toolbox/demo-final/media/LIST",
+        "sha256": "09fa8e02fc8ee40c44c141ae3578d3cf424ee6c16ae8fbdc1570c2f806a22520",
+        "bytes": 6069
+      },
+      "MORE": {
+        "path": "build/toolbox/demo-final/media/MORE",
+        "sha256": "5c6702e718532ca5972e1aef6cbc08af2d4dc1592076353449a3ae28339d60bf",
+        "bytes": 8542
+      }
+    },
+    "distribution": {
+      "path": "build/toolbox/demo-final/exec816-demo.zip",
+      "sha256": "7cc2ff31f3449ab09f2c6646d9910da9244e2c7035902775bd7abb3d598e860a",
+      "bytes": 190030
+    },
+    "zip_files": [
+      "exec816-demo/ALTIRRAOS-LICENSE.txt",
+      "exec816-demo/EXEC816-GPL-3.0.txt",
+      "exec816-demo/EXEC816-LICENSING.md",
+      "exec816-demo/EXEC816-MIT.txt",
+      "exec816-demo/Exec-of816.xex",
+      "exec816-demo/OF816-LICENSE.txt",
+      "exec816-demo/README.txt",
+      "exec816-demo/SHA256SUMS",
+      "exec816-demo/altirraos-816.rom",
+      "exec816-demo/system.atr"
+    ],
+    "zip_checksums": "pass"
+  },
+  "reports": [
+    {
+      "path": "build/toolbox/args-final-raw/results.json",
+      "sha256": "29e40d8d5f483ac0038a0a997d6bc36914e491653619ffa4b521085e36a4aa1c",
+      "bytes": 110938
+    },
+    {
+      "path": "build/toolbox/verified-raw/results.json",
+      "sha256": "2536cb5d57fbf4b88735315e2d184c8bd6b0c458fbd9fd63f9e96e8983697827",
+      "bytes": 223487
+    },
+    {
+      "path": "build/toolbox/console-raw/results.json",
+      "sha256": "76fca4ea39c7ae3e930362de2aad058bcdb37ceb4c78ba516112d9cc80be8328",
+      "bytes": 75887
+    },
+    {
+      "path": "build/toolbox/cat-raw/results.json",
+      "sha256": "ff594f4492b5f22e6082034a13d1e617d6f38bda5c09b0c2500007538032dfa5",
+      "bytes": 31502
+    },
+    {
+      "path": "build/toolbox/wc-raw/results.json",
+      "sha256": "e9e5c12a93e79f332114c987a3fa22d08ac05b855bb588139b40c805e825721a",
+      "bytes": 33364
+    },
+    {
+      "path": "build/toolbox/shell-raw/results.json",
+      "sha256": "46df0976e9c90ee221b52fa3589df3ec334a5e520ac02c8878f8d5a036053551",
+      "bytes": 200739
+    },
+    {
+      "path": "build/toolbox/outcomes-raw/results.json",
+      "sha256": "9e471c451568aaa628a4130a7960a607ad948b938c52362c6859937010c88af2",
+      "bytes": 113315
+    },
+    {
+      "path": "build/toolbox/args-final-opt/results.json",
+      "sha256": "99e09c7354ca2fc94a7328e01c7795bd04062ea68a89bd213544192daff21598",
+      "bytes": 90420
+    },
+    {
+      "path": "build/toolbox/verified-opt/results.json",
+      "sha256": "3f840c3b098965f401a4c9158cef75395e05dbd7f2c69834fd7d3c3d55fa953c",
+      "bytes": 223479
+    },
+    {
+      "path": "build/toolbox/console-opt/results.json",
+      "sha256": "001b61be5b339565104b6a48f0ec7efad2d1614c74bf50a8c611f217c92aaa86",
+      "bytes": 75880
+    },
+    {
+      "path": "build/toolbox/cat-opt/results.json",
+      "sha256": "b8642a96e8962c5d07f704d3875c02fe037435317acec8223c59cdd6fbfe2ec1",
+      "bytes": 31501
+    },
+    {
+      "path": "build/toolbox/wc-opt/results.json",
+      "sha256": "3701090d87d96d3ca9bd75fc79f3d73e5b6303aa36e2407f7c7a5c37aa5f5b60",
+      "bytes": 33363
+    },
+    {
+      "path": "build/toolbox/shell-opt/results.json",
+      "sha256": "35492df14f8c0ebbf082e5a2d691d913b9042b1f16238df3ab840def41f084d4",
+      "bytes": 200407
+    },
+    {
+      "path": "build/toolbox/outcomes-opt/results.json",
+      "sha256": "71b3f4743bf46f426db92e601aaa411046dabf11493990a1bd6b10c9dc696892",
+      "bytes": 113303
+    },
+    {
+      "path": "build/toolbox/demo-final/of816/results.json",
+      "sha256": "de28ac5f88941acfce3758076b114bfc8f353becf9c2d4e956a1f95f81eca369",
+      "bytes": 49581
+    },
+    {
+      "path": "build/toolbox/demo-final/demo-manifest.json",
+      "sha256": "f672e8ad03de4e3bbff60788427d0fb1b589fe03bbc28efd37aac08e80782255",
+      "bytes": 83839
+    },
+    {
+      "path": "build/toolbox/demo-final/build.json",
+      "sha256": "3102c42bb371e0d6c9cd78612ed2c8c90fc69358cdb6ca8d29c6df68f190df27",
+      "bytes": 60353
+    },
+    {
+      "path": "build/toolbox/shell-runner-original.py",
+      "sha256": "87d9063dc9383db65cb2357b30a3bcd93437d058bf2c8f77f9fe63302b622dbe",
+      "bytes": 6093
+    },
+    {
+      "path": "build/toolbox-host-final.log",
+      "sha256": "5b416899db2e55c6b813a82c64f0c7b2f5e6fd51ebaccd3c37505a99d47603af",
+      "bytes": 431
+    }
+  ],
+  "limits": [
+    "Development checks do not qualify a release or physical hardware.",
+    "Text payload lines are bounded at 1024 bytes; GREP is literal and MORE is forward-only.",
+    "No disk writes, PATH/ASSIGN, regex, wildcard expansion or multi-file arguments.",
+    "No performance claim; detailed native reports retain bounded execution observations."
+  ],
+  "observer_note": "Full shell sessions used the archived original runner; supplementary raw/optimized outcomes-only sessions exercised the subsequently added error-precedence scope with the same native kernel."
+}

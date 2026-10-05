@@ -12,19 +12,24 @@ instructions are below.
 
 The demo boots through [OF816](https://github.com/mgcaret/of816) into a text shell
 while a second program searches for primes. It includes disk-loaded commands,
-two-command pipes, read-only MyDOS and SpartaDOS, a shared sector cache and `SYS:`
-paths.
+two-command pipes, writable MyDOS and SpartaDOS, a shared sector cache and `SYS:`
+paths. Mounts default to read-only; the current demo provides a writable `WORK:`
+disk for saved output.
 
 ## Installation
 
 Download [exec816-demo.zip](https://github.com/mkur/exec816/releases/download/v0.1.0-preview.1/exec816-demo.zip)
 from the [Releases page](https://github.com/mkur/exec816/releases). Extract the
-ZIP; the `exec816-demo/` folder contains:
+ZIP. Published previews can predate writable disk support; follow the README
+inside their archive. The instructions below describe the current source build,
+available through the [build guide](docs/contributing/building.md).
+Its `exec816-demo/` folder contains:
 
 | File | Purpose |
 | --- | --- |
 | `Exec-of816.xex` | Exec816 and the OF816 boot monitor |
 | `system.atr` | System disk with commands and sample files |
+| `work.atr` | Disposable writable disk for D8: |
 | `altirraos-816.rom` | Matching AltirraOS 3.44 ROM for 65C816 |
 | `README.txt`, license notices and `SHA256SUMS` | Boot instructions, licenses and checksums |
 
@@ -56,7 +61,8 @@ it **Exec816 AltirraOS**, set **Type** to **XL/XE OS**, and click **OK**. Close 
 Firmware Manager, then select **Exec816 AltirraOS** in **Operating system**.
 
 1. Close the settings window. Open **File → Disk Drives…** and click the **…**
-   button on the **D1:** row to select the extracted `system.atr`.
+   button on the **D1:** row to select the extracted `system.atr`. Mount a
+   disposable copy of `work.atr` in **D8:** with writes enabled.
 2. In the same **Disk drives** window, set **Emulation level** to
    **Generic + 57600 baud**. This setting applies to all drives.
 3. Choose **File → Boot Image…** and select `Exec-of816.xex`. The ATR is the
@@ -92,8 +98,10 @@ HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES EXIT
 
 `HELLO | WC` prints `1 3 17`: lines, words and bytes. Press **BREAK** to cancel
 a running command, or enter `EXIT` to stop the demo and restore the OS screen.
-Disk access is read-only; keep the same disk mounted until reset. If the system
-disk fails to mount, check D1 and its SIO settings, then cold-boot again.
+SYS: is read-only and WORK: is writable. Try `ECHO saved >WORK:OUT.TXT` followed
+by `CAT WORK:OUT.TXT`. Redirection creates or truncates its target when opened.
+Keep both disks mounted until shutdown; if startup fails, check D1, D8 and their
+SIO settings, then cold-boot again.
 
 See the [demo guide](docs/guides/demo.md) for the full walkthrough and the
 [boot monitor guide](docs/guides/boot-monitor.md) for system-drive and cache settings.

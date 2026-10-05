@@ -1,0 +1,80 @@
+MODULE FSNAMESPACE
+USE FSTYPES
+USE FSBTYPES
+USE FSWRITE
+USE FSWRITEIO
+USE FSLEASES
+USE FSCORE
+USE FSRELATIVE
+USE FS83
+USE FSPACKET
+USE FSSTATUS
+INCLUDE "../dos/dos-types.inc"
+
+BYTE FUNC Done(FSTYPES.Service POINTER service BYTE okay)
+
+  IF okay=0 THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  service.selected.epoch==+1
+  service.packet.sp_Pkt.dp_Res1=-1
+  FSPACKET.Reply(service)
+
+RETURN(FSSTATUS.MORE)
+
+PUBLIC BYTE FUNC Resolved(FSTYPES.Service POINTER service)
+  BYTE index
+
+  LET action=service.packet.sp_Pkt.dp_Type
+  IF action=16 THEN
+    RETURN(Done(service,FSWRITE.Delete(service)))
+  FI
+
+  LET state=FSWRITEIO.State(service)
+  IF service.namespacePhase=0 THEN
+    IF service.missing<>0 THEN
+      RETURN(FSPACKET.Error(service,ERROR_OBJECT_NOT_FOUND))
+    FI
+
+    IF service.work.entry.parent=0 THEN
+      RETURN(FSPACKET.Error(service,ERROR_OBJECT_IN_USE))
+    FI
+
+    IF (service.work.entry.flags & FSBTYPES.PROTECTED)<>0 THEN
+      RETURN(FSPACKET.Error(service,ERROR_DELETE_PROTECTED))
+    FI
+
+    IF FSLEASES.Busy(service.selected,@service.work.entry,1,1)<>0 THEN
+      RETURN(FSPACKET.Error(service,ERROR_OBJECT_IN_USE))
+    FI
+
+    FSCORE.CopyEntry(@state.target,@service.work.entry)
+    service.namespacePhase=1
+    service.packet.sp_Pkt.dp_Arg2=service.packet.sp_Pkt.dp_Arg5
+    service.work.path=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg4))
+    RETURN(FSRELATIVE.Begin(service))
+  FI
+
+  IF service.work.entry.parent<>state.target.parent THEN
+    RETURN(FSPACKET.Error(service,ERROR_ACTION_NOT_KNOWN))
+  FI
+
+  IF service.missing=0 AND FSLEASES.Same(service.selected,@state.target,
+      @service.work.entry)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_OBJECT_EXISTS))
+  FI
+
+  FOR index=0 TO 10 DO
+    service.work.wanted(index)=FS83.Fold(service.work.wanted(index))
+  OD
+
+  IF FS83.Match(state.target.name,service.work.wanted)=2 THEN
+    service.packet.sp_Pkt.dp_Res1=-1
+    FSPACKET.Reply(service)
+    RETURN(FSSTATUS.MORE)
+  FI
+
+RETURN(Done(service,FSWRITE.Rename(service)))
+
+ENDMODULE

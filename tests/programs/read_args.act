@@ -5,7 +5,7 @@ USE EXECPOLICY
 TYPE Observation=[
   CARD error
   ADDRESS ARRAY slots(10)
-  BYTE ARRAY storage(260)
+  BYTE ARRAY storage(324)
 ]
 
 INCLUDE "read-args-cases.inc"
@@ -26,7 +26,7 @@ PROC Probe(CARD source,template,valueCapacity,storageCapacity BYTE flags)
     row.slots(index)=$abcdef
   OD
 
-  FOR index=0 TO 259 DO
+  FOR index=0 TO 323 DO
     row.storage(index)=$a5
   OD
 

@@ -7,7 +7,7 @@ PUBLIC TYPE Enumeration=[
   LONGCARD magic
   BYTE POINTER lock,info
   LONGCARD generation
-  LONGCARD next
+  LONGCARD next,epoch
 ]
 
 PUBLIC CONST ENUM_MAGIC=$38424946
@@ -110,6 +110,7 @@ PUBLIC PROC Save(FileInfoBlock POINTER info FSTYPES.LockObject POINTER lock
   state.info=BYTE POINTER(info)
   state.generation=lock.ticket
   state.next=next
+  state.epoch=lock.common.mount.epoch
   info.fib_DiskKey=LONGINT(next)
 
 RETURN

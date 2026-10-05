@@ -97,6 +97,7 @@ def build(output, exec_build, upstream):
     compiler_pin = json.loads((ROOT/'toolchain/actionc.json').read_text())
     require(program['build']['revision'] == compiler_pin['revision'], 'Exec compiler pin changed')
     media = None
+    additional_media = []
     manifest_path = program['output']/'demo-manifest.json'
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text())
@@ -110,6 +111,13 @@ def build(output, exec_build, upstream):
         media = dict(name=name,sha256=sha256(output/name),configuration=manifest['configuration'],
                      manifest_sha256=sha256(manifest_path),filesystem=manifest['filesystem'],
                      sector_bytes=manifest['sector_bytes'])
+        for item in manifest.get('additional_media', []):
+            name=item['name']
+            require(Path(name).name==name and name!=media['name'], 'Invalid companion disk name')
+            require(sha256(program['output']/name)==item['sha256'], 'Changed companion disk')
+            if (program['output']/name).resolve()!=(output/name).resolve():
+                shutil.copyfile(program['output']/name,output/name)
+            additional_media.append(item)
     layout = boot_layout(program)
     for name, content in boot_files(program['build']['memory']['boot_config']).items():
         (output/name).write_text(content)
@@ -171,6 +179,7 @@ SEGMENTS {{
                   boot_definitions_sha256=sha256(output/'boot-config.inc'),
                   bank_zero_delta=dict(fixed=0,per_task=0), boot_only_reused_bank_zero_bytes=borrowed_bytes,
                   task_capacity=program['build']['task_storage']['CAPACITY'],media=media,
+                  additional_media=additional_media,
                   transient_upper_banks=[layout['OF_CODE'] >> 16,layout['OF_DATA'] >> 16],
                   assembler=command(['ca65','--version'],stderr=subprocess.STDOUT).strip(),
                   linker=command(['ld65','--version'],stderr=subprocess.STDOUT).strip())

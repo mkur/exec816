@@ -118,10 +118,7 @@ RETURN(target)
 PROC ShellCloseCommandInput()
 
   IF shell.commandInput<>NULL THEN
-    IF DOS.Close(shell.commandInput)=0 THEN
-      ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())
-
-    ELSE
+    IF ShellCloseTemporary(shell.commandInput)<>0 THEN
       shell.commandInput=NULL
     FI
   FI

@@ -19,7 +19,7 @@ def instrument(out,filesystem):
     edits={
         'fsworker.act':[('    FSOPERATION.Pump(registry)','    FSOPERATION.Pump(registry)\n    FSACTIVEPROBE.Deliver(service,1)')],
         'blockwire.act':[
-            ('  IF FSOPERATION.Canceled(scope)<>0 THEN','  FSACTIVEPROBE.BeforeSend()\n  IF FSOPERATION.Canceled(scope)<>0 THEN'),
+            ('  IF cancellable<>0 AND FSOPERATION.Canceled(scope)<>0 THEN','  FSACTIVEPROBE.BeforeSend()\n  IF cancellable<>0 AND FSOPERATION.Canceled(scope)<>0 THEN'),
             ('attempted=0\n  aborted=0\n  EXEC.SendIO(EXEC.IORequest POINTER(request))','attempted=0 aborted=0 EXEC.SendIO(EXEC.IORequest POINTER(request))\n  FSACTIVEPROBE.OnWire(EXEC.IORequest POINTER(request))'),
             ('attempted=1\n      aborted=SIODRIVER.TryCancel(EXEC.IORequest POINTER(request))','attempted=1 aborted=SIODRIVER.TryCancel(EXEC.IORequest POINTER(request))\n      FSACTIVEPROBE.accepted=aborted FSACTIVEPROBE.attempts==+1'),
             ('  error=INT(CARD(state))','  error=INT(CARD(state))\n  FSACTIVEPROBE.Point(10)')],

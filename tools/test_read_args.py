@@ -62,17 +62,40 @@ def cases():
     add('eight-fields', b'1 2 3 4 5 6 7 8', b'A,B,C,D,E,F,G,H/A',
         tuple(bytes([v]) for v in range(49, 57)))
     add('eighth-required', b'1 2 3 4 5 6 7', b'A,B,C,D,E,F,G,H/A', error=116)
-    for template in (b'A/N', b'A/K', b'A/M', b'A/S', b'A/F', b'A/A/A', b'A/Ax',
+    for template in (b'A/S/N', b'A/K/S', b'A/M', b'A/S/A', b'A/F', b'A/A/A', b'A/Ax',
                      b'A=B', b'A B', b',A', b'A,', b'A,,B', b'/A', b'A/', b'1A',
                      b'A,B,C,D,E,F,G,H,I', b'A/?'):
         add('bad-template-'+template.decode(), b'x', template, error=114)
     add('underscore-label', b'x', b'_file2', (b'x',))
-    add('template-before-arguments', b'"bad', b'A/N', error=114)
+    add('template-before-arguments', b'"bad', b'A/S/N', error=114)
     add('null-template', flags=8, error=114)
     add('null-source', flags=4, error=311)
     add('null-slots', flags=1, error=115)
     add('null-storage', flags=2, error=115)
     add('invalid-slot-capacity', slots=9, error=115)
+    add('switch', b'NOCASE file', b'FILE,NOCASE/S', (b'file', True))
+    add('quoted-switch', b'"NOCASE"', b'FILE,NOCASE/S', (b'NOCASE', None))
+    add('keyword-first', b'LINES 20 file', b'FILE,LINES/K/N', (b'file', 20))
+    add('keyword-equals', b'file lines=0', b'FILE,LINES/K/N', (b'file', 0))
+    add('number-max', b'4294967295', b'COUNT/N/A', (4294967295,))
+    add('number-overflow', b'4294967296', b'COUNT/N', error=115)
+    add('number-negative', b'-1', b'COUNT/N', error=115)
+    add('number-positive-sign', b'+1', b'COUNT/N', error=115)
+    add('number-junk', b'12x', b'COUNT/N', error=115)
+    add('number-empty', b'""', b'COUNT/N', error=115)
+    add('numeric-exact', b'0', b'COUNT/N', (0,), capacity=6)
+    add('numeric-short', b'0', b'COUNT/N', error=303, capacity=5)
+    add('duplicate-switch', b'ALL ALL', b'ALL/S', error=311)
+    add('duplicate-keyword', b'N 0 N 1', b'N/K/N', error=311)
+    add('missing-keyword-value', b'N', b'N/K/N', error=116)
+    add('missing-equals-value', b'N=', b'N/K', error=116)
+    add('required-keyword', b'file', b'FILE,N/K/A', error=116)
+    add('switch-value', b'ALL=yes', b'ALL/S', error=311)
+    add('duplicate-label', template=b'FILE,file/K', error=114)
+    add('keyword-quoted-value', b'NAME "two words"', b'NAME/K', (b'two words',))
+    add('keyword-value-switch-name', b'NAME ALL', b'NAME/K,ALL/S', (b'ALL', None))
+    add('max-text-numeric', b'0'*255, b'N/N', (0,), capacity=288)
+    add('max-text-numeric-short', b'0'*255, b'N/N', error=303, capacity=259)
     return vectors
 
 
@@ -92,7 +115,7 @@ def run(out, mode, reuse=False):
     source = out/'read_args.act'
     source.write_text(read_source(ROOT/'tests/programs/read_args.act'))
     p = read_build(out) if reuse else build(compiler(ROOT/'build/actionc'), source, out, optimize=mode=='opt',
-              banked=True, console=False, image_data=[(0xe0000, bytes(blob)), (0xd0000, bytes(292*len(vectors)))])
+              banked=True, console=False, image_data=[(0xe0000, bytes(blob)), (0xd0000, bytes(356*len(vectors)))])
     require(p['build']['source_sha256'] == sha256(source), 'Stale parser fixture')
     require(any(s['address'] == 0xe0000 and bytes(s['bytes']) == bytes(blob) for s in p['image']['segments']), 'Stale parser vectors')
     with emulator(ROOT/'build/shell-paced-bridge', ROOT/'build/firmware/altirraos-816.rom', out, pin=PIN) as b:
@@ -103,28 +126,33 @@ def run(out, mode, reuse=False):
         require(data(b, p['image'], 'finished') == [1], 'Missing parser completion')
         require(data(b, p['image'], 'caseIndex', True) == [len(vectors)], 'Missing parser cases')
         stride = int.from_bytes(bytes(data(b, p['image'], 'rowBytes')), 'little')
-        require(stride == 292, 'Packed address array layout')
+        require(stride == 356, 'Packed address array layout')
         location = 0xd0000
         rows = far_read(b, location, stride*len(vectors), out)
         for i, c in enumerate(vectors):
             row = rows[i*stride:(i+1)*stride]
             require(int.from_bytes(row[:2], 'little') == c['error'], 'Parser error: '+c['name'])
             slots = [int.from_bytes(row[2+j*3:5+j*3], 'little') for j in range(10)]
-            storage = row[32:292]
+            storage = row[32:356]
             valid_slots = c['slots'] <= 8 and not c['flags'] & 1
             expected = [0xabcdef]*10
             if valid_slots:
                 expected[1:1+c['slots']] = [0]*c['slots']
-            used = 0
             if not c['error']:
                 for j, value in enumerate(c['values']):
-                    if value is not None:
-                        expected[j+1] = location+i*stride+33+used
-                        require(storage[1+used:2+used+len(value)] == value+b'\0', 'Decoded value: '+c['name'])
-                        used += len(value)+1
-                require(storage[1+used:] == b'\xa5'*(259-used), 'Unused storage: '+c['name'])
+                    if value is None:
+                        continue
+                    address = slots[j+1]
+                    if isinstance(value, bool):
+                        expected[j+1] = int(value)
+                        continue
+                    offset = address - (location+i*stride+33)
+                    payload = value.to_bytes(4, 'little') if isinstance(value, int) else value+b'\0'
+                    require(0 <= offset and offset+len(payload) <= c['capacity'], 'Value extent: '+c['name'])
+                    require(storage[1+offset:1+offset+len(payload)] == payload, 'Decoded value: '+c['name'])
+                    expected[j+1] = address
             require(slots == expected, f'Result slots/canaries: {c["name"]}: {slots} != {expected}')
-            require(storage[0] == 0xa5 and storage[1+c['capacity']:] == b'\xa5'*(259-c['capacity']),
+            require(storage[0] == 0xa5 and storage[1+c['capacity']:] == b'\xa5'*(323-c['capacity']),
                     'Storage bounds: '+c['name'])
         require(far_read(b, 0xe0000, len(blob), out) == bytes(blob), 'Source/template changed')
     routines = [r for r in p['image']['routines'] if r['name'].startswith('M_DOSARGS_')]

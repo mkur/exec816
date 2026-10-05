@@ -1,6 +1,6 @@
 {
   "abi": "exec816.program",
-  "version": 6,
+  "version": 9,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
@@ -9,6 +9,7 @@
   "provider_operation": 3,
   "result_codes": {
     "OK": 0,
+    "WARN": 5,
     "ERROR": 10,
     "FAIL": 20
   },
@@ -143,6 +144,247 @@
           "storageCapacity"
         ]
       ]
+    },
+    "WriteAll": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ],
+        [
+          "BYTE POINTER",
+          "buffer"
+        ],
+        [
+          "LONGINT",
+          "length"
+        ]
+      ]
+    },
+    "ReaderInit": {
+      "result": "PROC",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "reader"
+        ],
+        [
+          "BYTE POINTER",
+          "handle"
+        ]
+      ]
+    },
+    "ReadByte": {
+      "result": "INT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "reader"
+        ]
+      ]
+    },
+    "ReadLine": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "reader"
+        ],
+        [
+          "BYTE POINTER",
+          "buffer"
+        ],
+        [
+          "CARD",
+          "capacity"
+        ]
+      ]
+    },
+    "Lock": {
+      "result": "BYTE POINTER",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "name"
+        ],
+        [
+          "LONGINT",
+          "mode"
+        ]
+      ]
+    },
+    "UnLock": {
+      "result": "PROC",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "lock"
+        ]
+      ]
+    },
+    "Examine": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "lock"
+        ],
+        [
+          "BYTE POINTER",
+          "info"
+        ]
+      ]
+    },
+    "ExNext": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "lock"
+        ],
+        [
+          "BYTE POINTER",
+          "info"
+        ]
+      ]
+    },
+    "IsInteractive": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ]
+      ]
+    },
+    "OpenConsole": {
+      "result": "BYTE POINTER",
+      "arguments": []
+    },
+    "ConsoleInfo": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ],
+        [
+          "BYTE POINTER",
+          "size"
+        ]
+      ]
+    },
+    "ReadArgsOrHelp": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "SYS.CSTRING",
+          "template"
+        ],
+        [
+          "ADDRESS POINTER",
+          "values"
+        ],
+        [
+          "CARD",
+          "valueCapacity"
+        ],
+        [
+          "BYTE POINTER",
+          "storage"
+        ],
+        [
+          "CARD",
+          "storageCapacity"
+        ]
+      ]
+    },
+    "Fault": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "LONGINT",
+          "code"
+        ],
+        [
+          "SYS.CSTRING",
+          "header"
+        ],
+        [
+          "BYTE POINTER",
+          "buffer"
+        ],
+        [
+          "CARD",
+          "capacity"
+        ]
+      ]
+    },
+    "PrintFault": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ],
+        [
+          "LONGINT",
+          "code"
+        ],
+        [
+          "SYS.CSTRING",
+          "header"
+        ],
+        [
+          "BYTE POINTER",
+          "buffer"
+        ],
+        [
+          "CARD",
+          "capacity"
+        ]
+      ]
+    },
+    "Flush": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ]
+      ]
+    },
+    "CreateDir": {
+      "result": "BYTE POINTER",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "name"
+        ]
+      ]
+    },
+    "DeleteFile": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "name"
+        ]
+      ]
+    },
+    "Rename": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "oldName"
+        ],
+        [
+          "BYTE POINTER",
+          "newName"
+        ]
+      ]
     }
   },
   "limits": {
@@ -164,5 +406,63 @@
     "FIELDS": 8,
     "TEMPLATE": 255,
     "TEXT": 255
+  },
+  "stream_limits": {
+    "BUFFER_BYTES": 512,
+    "LINE_BYTES": 1024
+  },
+  "records": {
+    "Reader": [
+      [
+        "BYTE POINTER",
+        "handle"
+      ],
+      [
+        "CARD",
+        "used"
+      ],
+      [
+        "CARD",
+        "index"
+      ],
+      [
+        "LONGINT",
+        "error"
+      ],
+      [
+        "BYTE",
+        "skipLF"
+      ],
+      [
+        "BYTE",
+        "terminated"
+      ],
+      [
+        "BYTE[512]",
+        "data"
+      ]
+    ],
+    "ConsoleSize": [
+      [
+        "CARD",
+        "width"
+      ],
+      [
+        "CARD",
+        "height"
+      ]
+    ]
+  },
+  "argument_results": {
+    "ERROR": 0,
+    "PARSED": 1,
+    "HELP": 2
+  },
+  "error_messages": {
+    "NO_FREE_STORE": "Not enough memory",
+    "BAD_FORMAT": "Invalid executable format",
+    "UNSUPPORTED": "Unsupported executable",
+    "RESOURCE_LIMIT": "Executable resource limit exceeded",
+    "BAD_PROVIDER": "Executable provider mismatch"
   }
 }

@@ -1,12 +1,16 @@
-; Allocation-free implementation behind COMMAND.ReadArgs. No Process or I/O
-; dependency here: callers supply immutable source and private output storage.
+; Allocation-free command templates. All mutable state belongs to the caller.
 MODULE DOSARGS
 
 USE ASCII
+USE SYS
 INCLUDE "command-errors.inc"
 INCLUDE "command-args.inc"
 
-; Leave no tentative argument pointers visible after an unsuccessful parse.
+CONST REQUIRED=1,KEYWORD=2,SWITCH=4,NUMBER=8
+TYPE Field=[CARD start,length BYTE flags]
+TYPE Scanner=[CARD at,used BYTE quoted]
+
+; Clear tentative results after every failed parse.
 PROC Clear(ADDRESS POINTER values CARD capacity)
   CARD index
 
@@ -18,8 +22,6 @@ PROC Clear(ADDRESS POINTER values CARD capacity)
 
 RETURN
 
-; Detect missing termination without scanning beyond the supported argument
-; bound.
 CARD FUNC BoundedLength(CSTRING text CARD limit)
   CARD index
 
@@ -34,51 +36,96 @@ CARD FUNC BoundedLength(CSTRING text CARD limit)
 
 RETURN(index)
 
+BYTE FUNC Upper(BYTE value)
+
+RETURN(IF value>='a AND value<='z THEN value-32 ELSE value FI)
+
 BYTE FUNC Letter(BYTE value)
 
 RETURN((value>='A AND value<='Z) OR (value>='a AND value<='z) OR value='_)
 
-; Return the number of fields, or -1 for an invalid/unsupported template.
-INT FUNC CountFields(CSTRING text BYTE POINTER required)
-  CARD index,length
-  BYTE fields,bit,value
+; Compare one bounded label without changing either immutable input.
+BYTE FUNC Same(CSTRING left CARD start,length CSTRING right CARD rightStart)
+  CARD index
+
+  FOR index=0 TO length-1 DO
+    IF Upper(left(start+index))<>Upper(right(rightStart+index)) THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; Validate modifiers and duplicate labels before inspecting argument text.
+INT FUNC Describe(CSTRING text Field POINTER fields)
+  CARD index,length,start,other
+  BYTE count,flags,flag
 
   index=0
-  fields=0
-  bit=1
-  required^=0
+  count=0
   length=BoundedLength(text,ARGS_MAX_TEMPLATE)
   IF length>ARGS_MAX_TEMPLATE THEN
     RETURN(-1)
   FI
 
   WHILE index<length DO
-    IF fields=ARGS_MAX_FIELDS OR Letter(text(index))=0 THEN
+    IF count=ARGS_MAX_FIELDS OR Letter(text(index))=0 THEN
       RETURN(-1)
     FI
 
-    fields==+1
+    start=index
     index==+1
     WHILE index<length DO
-      value=text(index)
-      IF Letter(value)=0 AND (value<'0 OR value>'9) THEN
+      IF Letter(text(index))=0 AND (text(index)<'0 OR text(index)>'9) THEN
         EXIT
       FI
 
       index==+1
     OD
 
-    IF text(index)='/ THEN
+    fields(count).start=start
+    fields(count).length=index-start
+    other=0
+    WHILE other<count DO
+      IF fields(other).length=index-start THEN
+        IF Same(text,start,index-start,text,fields(other).start)<>0 THEN
+          RETURN(-1)
+        FI
+      FI
+
+      other==+1
+    OD
+
+    flags=0
+    WHILE text(index)='/ DO
       index==+1
-      IF text(index)<>'A AND text(index)<>'a THEN
+      CASE Upper(text(index)) OF
+      WHEN 'A THEN
+        flag=REQUIRED
+      WHEN 'K THEN
+        flag=KEYWORD
+      WHEN 'S THEN
+        flag=SWITCH
+      WHEN 'N THEN
+        flag=NUMBER
+      ELSE
+        RETURN(-1)
+      ESAC
+
+      IF (flags & flag)<>0 THEN
         RETURN(-1)
       FI
 
-      required^=required^ OR bit
+      flags=flags OR flag
       index==+1
+    OD
+
+    IF (flags & SWITCH)<>0 AND flags<>SWITCH THEN
+      RETURN(-1)
     FI
 
-    bit=bit LSH 1
+    fields(count).flags=flags
+    count==+1
     IF index=length THEN
       EXIT
     FI
@@ -93,153 +140,285 @@ INT FUNC CountFields(CSTRING text BYTE POINTER required)
     FI
   OD
 
-RETURN(INT(fields))
+RETURN(INT(count))
 
-; A nonzero result is a shared DOS error. Parse clears tentative slots on error.
-CARD FUNC Decode(CSTRING text ADDRESS POINTER values CARD fields
-                BYTE required BYTE POINTER storage CARD capacity)
-  CARD index,length,used,field,start
-  BYTE value,quoted,bit
+; Decode one word, retaining whether it was quoted for keyword disambiguation.
+CARD FUNC Word(CSTRING text Scanner POINTER scan BYTE POINTER storage
+               CARD capacity)
+  BYTE value
 
-  index=0
-  used=0
-  field=0
-  bit=1
-  length=BoundedLength(text,ARGS_MAX_TEXT)
-  IF length>ARGS_MAX_TEXT THEN
-    RETURN(ERROR_LINE_TOO_LONG)
+  scan.quoted=0
+  IF text(scan.at)=ASCII.DOUBLE_QUOTE THEN
+    scan.quoted=1
+    scan.at==+1
   FI
 
   DO
-    WHILE text(index)=ASCII.SPACE OR text(index)=ASCII.TAB DO
-      index==+1
-    OD
+    value=text(scan.at)
+    IF scan.quoted<>0 THEN
+      IF value=ASCII.NUL THEN
+        RETURN(ERROR_UNMATCHED_QUOTES)
+      FI
 
-    IF index=length THEN
-      EXIT
-    FI
+      IF value=ASCII.DOUBLE_QUOTE THEN
+        scan.at==+1
+        value=text(scan.at)
+        IF value<>ASCII.NUL AND value<>ASCII.SPACE AND value<>ASCII.TAB THEN
+          RETURN(ERROR_BAD_ARGUMENTS)
+        FI
 
-    IF field=fields THEN
-      RETURN(ERROR_TOO_MANY_ARGS)
-    FI
+        EXIT
+      FI
 
-    start=used
-    quoted=0
-    IF text(index)=ASCII.DOUBLE_QUOTE THEN
-      quoted=1
-      index==+1
-    FI
-
-    DO
-      value=text(index)
-      IF quoted<>0 THEN
+      IF value=ASCII.ASTERISK THEN
+        scan.at==+1
+        value=text(scan.at)
         IF value=ASCII.NUL THEN
           RETURN(ERROR_UNMATCHED_QUOTES)
         FI
 
-        IF value=ASCII.DOUBLE_QUOTE THEN
-          index==+1
-          value=text(index)
-          IF value<>ASCII.NUL AND value<>ASCII.SPACE AND value<>ASCII.TAB THEN
-            RETURN(ERROR_BAD_ARGUMENTS)
-          FI
-
-          EXIT
-        FI
-
-        IF value=ASCII.ASTERISK THEN
-          index==+1
-          value=text(index)
-          IF value=ASCII.NUL THEN
-            RETURN(ERROR_UNMATCHED_QUOTES)
-          FI
-
-          IF value<>ASCII.ASTERISK AND value<>ASCII.DOUBLE_QUOTE THEN
-            RETURN(ERROR_BAD_ARGUMENTS)
-          FI
-        FI
-      ELSE
-        IF value=ASCII.NUL OR value=ASCII.SPACE OR value=ASCII.TAB THEN
-          EXIT
-        FI
-
-        IF value=ASCII.DOUBLE_QUOTE THEN
+        IF value<>ASCII.ASTERISK AND value<>ASCII.DOUBLE_QUOTE THEN
           RETURN(ERROR_BAD_ARGUMENTS)
         FI
       FI
-
-      IF used=capacity THEN
-        RETURN(ERROR_BUFFER_OVERFLOW)
+    ELSE
+      IF value=ASCII.NUL OR value=ASCII.SPACE OR value=ASCII.TAB THEN
+        EXIT
       FI
 
-      storage(used)=value
-      used==+1
-      index==+1
-    OD
+      IF value=ASCII.DOUBLE_QUOTE THEN
+        RETURN(ERROR_BAD_ARGUMENTS)
+      FI
+    FI
 
-    IF used=capacity THEN
+    IF scan.used=capacity THEN
       RETURN(ERROR_BUFFER_OVERFLOW)
     FI
 
-    storage(used)=ASCII.NUL
-    used==+1
-    values(field)=ADDRESS(storage+SIZE(start))
-    field==+1
-    bit=bit LSH 1
+    storage(scan.used)=value
+    scan.used==+1
+    scan.at==+1
   OD
 
-  WHILE field<fields DO
-    IF (required & bit)<>0 THEN
+  IF scan.used=capacity THEN
+    RETURN(ERROR_BUFFER_OVERFLOW)
+  FI
+
+  storage(scan.used)=ASCII.NUL
+  scan.used==+1
+
+RETURN(0)
+
+; /N is unsigned decimal, represented by four bytes in the caller's storage.
+CARD FUNC Numeric(BYTE POINTER storage CARD start Scanner POINTER scan
+                  CARD capacity ADDRESS POINTER result)
+  LONGCARD number
+  CARD index
+  BYTE digit
+
+  index=start
+  number=0
+  IF storage(index)=ASCII.NUL THEN
+    RETURN(ERROR_BAD_NUMBER)
+  FI
+
+  WHILE storage(index)<>ASCII.NUL DO
+    digit=storage(index)
+    IF digit<'0 OR digit>'9 THEN
+      RETURN(ERROR_BAD_NUMBER)
+    FI
+
+    digit==- '0
+    IF number>LONGCARD(429496729) THEN
+      RETURN(ERROR_BAD_NUMBER)
+    FI
+
+    IF number=LONGCARD(429496729) AND digit>5 THEN
+      RETURN(ERROR_BAD_NUMBER)
+    FI
+
+    number=number*10+LONGCARD(digit)
+    index==+1
+  OD
+
+  IF capacity-scan.used<4 THEN
+    RETURN(ERROR_BUFFER_OVERFLOW)
+  FI
+
+  result^=ADDRESS(storage+SIZE(scan.used))
+  LET target=LONGCARD POINTER(storage+SIZE(scan.used))
+  target^=number
+  scan.used==+4
+
+RETURN(0)
+
+; Assign keywords separately from left-to-right positional fields.
+CARD FUNC Decode(CSTRING text,template Field POINTER fields CARD count
+                 ADDRESS POINTER values BYTE POINTER storage CARD capacity)
+  Scanner scan
+  CARD start,field,index,label,error,valueStart,positional
+  BYTE named
+
+  IF BoundedLength(text,ARGS_MAX_TEXT)>ARGS_MAX_TEXT THEN
+    RETURN(ERROR_LINE_TOO_LONG)
+  FI
+
+  scan.at=0
+  scan.used=0
+  positional=0
+  DO
+    WHILE text(scan.at)=ASCII.SPACE OR text(scan.at)=ASCII.TAB DO
+      scan.at==+1
+    OD
+
+    IF text(scan.at)=ASCII.NUL THEN
+      EXIT
+    FI
+
+    ; Preserve the no-fields error even when the storage capacity is zero.
+    IF count=0 THEN
+      RETURN(ERROR_TOO_MANY_ARGS)
+    FI
+
+    start=scan.used
+    error=Word(text,@scan,storage,capacity)
+    IF error<>0 THEN
+      RETURN(error)
+    FI
+
+    field=count
+    label=0
+    WHILE storage(start+label)<>ASCII.NUL AND storage(start+label)<>'= DO
+      label==+1
+    OD
+
+    IF scan.quoted=0 AND label<>0 THEN
+      index=0
+      WHILE index<count DO
+        IF (fields(index).flags & (KEYWORD OR SWITCH))<>0
+            AND fields(index).length=label THEN
+          IF Same(template,fields(index).start,label,CSTRING(storage),start)<>0 THEN
+            field=index
+            EXIT
+          FI
+        FI
+
+        index==+1
+      OD
+    FI
+
+    named=BYTE(field<count)
+    valueStart=start
+    IF named<>0 THEN
+      IF values(field)<>0 THEN
+        RETURN(ERROR_BAD_ARGUMENTS)
+      FI
+
+      IF (fields(field).flags & SWITCH)<>0 THEN
+        IF storage(start+label)<>'= THEN
+          values(field)=1
+          scan.used=start
+        ELSE
+          RETURN(ERROR_BAD_ARGUMENTS)
+        FI
+      ELSEIF storage(start+label)='= THEN
+        valueStart=start+label+1
+        IF storage(valueStart)=ASCII.NUL THEN
+          RETURN(ERROR_REQUIRED_ARG_MISSING)
+        FI
+      ELSE
+        scan.used=start
+        WHILE text(scan.at)=ASCII.SPACE OR text(scan.at)=ASCII.TAB DO
+          scan.at==+1
+        OD
+
+        IF text(scan.at)=ASCII.NUL THEN
+          RETURN(ERROR_REQUIRED_ARG_MISSING)
+        FI
+
+        error=Word(text,@scan,storage,capacity)
+        IF error<>0 THEN
+          RETURN(error)
+        FI
+      FI
+    ELSE
+      WHILE positional<count DO
+        IF (fields(positional).flags & (KEYWORD OR SWITCH))=0 THEN
+          EXIT
+        FI
+
+        positional==+1
+      OD
+
+      IF positional=count THEN
+        RETURN(ERROR_TOO_MANY_ARGS)
+      FI
+
+      field=positional
+      positional==+1
+    FI
+
+    IF (fields(field).flags & SWITCH)=0 THEN
+      IF (fields(field).flags & NUMBER)<>0 THEN
+        error=Numeric(storage,valueStart,@scan,capacity,@values(field))
+        IF error<>0 THEN
+          RETURN(error)
+        FI
+      ELSE
+        values(field)=ADDRESS(storage+SIZE(valueStart))
+      FI
+    FI
+  OD
+
+  index=0
+  WHILE index<count DO
+    IF (fields(index).flags & REQUIRED)<>0 AND values(index)=0 THEN
       RETURN(ERROR_REQUIRED_ARG_MISSING)
     FI
 
-    field==+1
-    bit=bit LSH 1
+    index==+1
   OD
 
 RETURN(0)
 
-; Validate template and caller capacities before exposing decoded argument
-; values.
+; Failure never exposes partially assigned result slots.
 PUBLIC CARD FUNC Parse(CSTRING text,template ADDRESS POINTER values
                       CARD valueCapacity BYTE POINTER storage CARD storageCapacity)
-  BYTE required
-  INT fields
+  Field ARRAY fields(ARGS_MAX_FIELDS)
+  INT count
   CARD error
 
-  ; Capacities describe valid caller storage, capped to the published limits.
-  ; Invalid pointer/capacity pairs cannot promise writable result slots.
   IF valueCapacity>ARGS_MAX_FIELDS THEN
     RETURN(ERROR_BAD_NUMBER)
   FI
 
-  IF valueCapacity<>0 AND values=ADDRESS POINTER(0) THEN
+  IF valueCapacity<>0 AND values=NULL THEN
     RETURN(ERROR_BAD_NUMBER)
   FI
 
   Clear(values,valueCapacity)
-  IF storageCapacity<>0 AND storage=BYTE POINTER(0) THEN
+  IF storageCapacity<>0 AND storage=NULL THEN
     RETURN(ERROR_BAD_NUMBER)
   FI
 
-  IF template=CSTRING(0) THEN
+  IF template=NULL THEN
     RETURN(ERROR_BAD_TEMPLATE)
   FI
 
-  fields=CountFields(template,@required)
-  IF fields<0 THEN
+  count=Describe(template,fields)
+  IF count<0 THEN
     RETURN(ERROR_BAD_TEMPLATE)
   FI
 
-  IF CARD(fields)>valueCapacity THEN
+  IF CARD(count)>valueCapacity THEN
     RETURN(ERROR_BUFFER_OVERFLOW)
   FI
 
-  IF text=CSTRING(0) THEN
+  IF text=NULL THEN
     RETURN(ERROR_BAD_ARGUMENTS)
   FI
 
-  error=Decode(text,values,CARD(fields),required,storage,storageCapacity)
+  error=Decode(text,template,fields,CARD(count),values,storage,storageCapacity)
   IF error<>0 THEN
     Clear(values,valueCapacity)
   FI

@@ -59,8 +59,8 @@ io_Offset must be zero.
 
 | Profile | Supported transaction size |
 | --- | --- |
-| FASTEST125 | Up to 128 bytes, plus exactly 256 for READ. |
-| GENERIC57600 | Up to 128 bytes, plus exactly 256 for READ. |
+| FASTEST125 | Up to 128 bytes, plus exactly 256 for READ ($52) or verified WRITE ($57). |
+| GENERIC57600 | Up to 128 bytes, plus exactly 256 for READ ($52) or verified WRITE ($57). |
 | STOCK810 | Up to 128 bytes. |
 | HAPPY1050 | Restricted no-data transactions. |
 

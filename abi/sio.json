@@ -110,5 +110,5 @@
     "HAPPY1050": 3,
     "GENERIC57600": 4
   },
-  "profile_note": "FASTEST125 and GENERIC57600 admit <=128-byte payloads plus exactly 256-byte READ ($52); larger writes remain unsupported. GENERIC57600 uses POKEY divisor 8 in command and data phases, matching Altirra Generic + 57600 baud (generic56k); this is a nominal rate, not exact 57600 baud on PAL. STOCK810 retains <=128 payload bytes; Happy1050 NONE only. Default/max active timeout 1,000,000 us except STOCK810 2,000,000 us; minimum explicit 4,041 us. Unsafe recovery requires platform reset; no retry or baud fallback."
+  "profile_note": "FASTEST125 and GENERIC57600 admit <=128-byte payloads plus exactly 256-byte READ ($52) and verified WRITE ($57); other larger payloads remain unsupported. GENERIC57600 uses POKEY divisor 8 in command and data phases, matching Altirra Generic + 57600 baud (generic56k); this is a nominal rate, not exact 57600 baud on PAL. STOCK810 retains <=128 payload bytes; Happy1050 NONE only. Default/max active timeout 1,000,000 us except STOCK810 2,000,000 us; minimum explicit 4,041 us. Unsafe recovery requires platform reset; no retry or baud fallback."
 }

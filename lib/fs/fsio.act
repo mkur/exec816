@@ -55,6 +55,7 @@ PUBLIC PROC Offline(FSTYPES.Service POINTER service)
       IF mount.offline=0 THEN
         mount.error=service.work.ioError
         mount.offline=1
+        mount.writable=0
       FI
     FI
   OD

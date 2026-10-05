@@ -1,0 +1,58 @@
+MODULE FAULTIO
+
+USE EXECPOLICY
+USE DOSFAULT
+USE FAULTSTATE AS T
+USE CSTRING.IMPL AS STR
+USE HEAPCORE
+
+BYTE ARRAY buffer(384),other(384)
+CARD checks
+BYTE finished
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ea00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE mode
+
+  FOR mode=0 TO 4 DO
+    BEGIN
+      T.mode=mode
+      T.used=0
+      T.writes=0
+      T.error=9876
+      LET result=DOSFAULT.PrintFault(BYTE POINTER($d0000),205,c"HEAD",buffer,384)
+      Require(T.error=9876)
+      Require(BYTE(result<>0)=BYTE(mode=0))
+      IF mode=0 THEN
+        T.output(T.used)=0
+        Require(STR.strcmp(CSTRING(T.output),c"HEAD: Object not found (205)\n")=0)
+        Require(T.writes=10)
+      ELSEIF mode=1 OR mode=2 THEN
+        Require(T.used=0 AND T.writes=1)
+      ELSEIF mode=3 THEN
+        Require(T.used=3 AND T.writes=1)
+      ELSE
+        Require(T.used=0 AND T.writes=0)
+      FI
+    END
+  OD
+
+  Require(DOSFAULT.Fault(205,c"ONE",buffer,384)=27)
+  Require(DOSFAULT.Fault(-1,c"TWO",other,384)=18)
+  Require(STR.strcmp(CSTRING(buffer),c"ONE: Object not found (205)")=0)
+  Require(STR.strcmp(CSTRING(other),c"TWO: Error code -1")=0)
+  Require(T.error=9876)
+  finished=1
+
+RETURN
+
+ENDMODULE

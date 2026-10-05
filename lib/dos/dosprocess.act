@@ -304,6 +304,7 @@ RETURN(1)
 
 ; Retire child DOS resources before process storage becomes collectible.
 PUBLIC BYTE FUNC Cleanup(PROCESSSTATE.Entry POINTER process)
+  LONGINT firstError
   DOSCORE.DosSlot POINTER owner
   DOSCLIENT.ClientContext POINTER client
   DOSOBJECTS.Header POINTER item
@@ -336,6 +337,7 @@ PUBLIC BYTE FUNC Cleanup(PROCESSSTATE.Entry POINTER process)
     FI
   FI
 
+  firstError=0
   client.input=BYTE POINTER(0)
   client.output=BYTE POINTER(0)
   client.directory=BYTE POINTER(0)
@@ -348,8 +350,8 @@ PUBLIC BYTE FUNC Cleanup(PROCESSSTATE.Entry POINTER process)
 
     CASE item.kind OF
     WHEN DOSOBJECTS.KIND_FILE THEN
-      IF DOSCALLS.Close(identity)=0 THEN
-        RETURN(0)
+      IF DOSCALLS.Close(identity)=0 AND firstError=0 THEN
+        firstError=DOSCLIENT.IoErr()
       FI
     WHEN DOSOBJECTS.KIND_LOCK THEN
       DOSCALLS.UnLock(identity)
@@ -365,6 +367,11 @@ PUBLIC BYTE FUNC Cleanup(PROCESSSTATE.Entry POINTER process)
       RETURN(0)
     FI
   OD
+
+  IF firstError<>0 AND process.primary<10 THEN
+    process.primary=20
+    process.secondary=firstError
+  FI
 
   IF DOSCLIENT.ReleaseContext()=0 THEN
     RETURN(0)

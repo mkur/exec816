@@ -1,0 +1,218 @@
+MODULE MORE
+
+INCLUDE "command-common.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(1)
+COMMAND.Reader reader
+COMMAND.ConsoleSize geometry
+BYTE ARRAY line(COMMAND.STREAM_LINE_BYTES)
+BYTE ARRAY row(80)
+BYTE ARRAY key(1)
+BYTE ARRAY erase(10)
+BYTE POINTER keyboard
+CARD available,column
+BYTE quit
+
+; Ask on the associated console only; never consume data Input for controls.
+LONGINT FUNC Advance()
+  CARD index,length
+
+  length=8
+  IF length>=geometry.width THEN
+    length=geometry.width-1
+  FI
+
+  IF COMMAND.WriteAll(keyboard,BYTE POINTER(c"--More--"),length)=0 THEN
+    RETURN(0)
+  FI
+
+  DO
+    BEGIN
+      LET count=COMMAND.Read(keyboard,key,1)
+      IF count<>1 OR COMMAND.IoErr()<>0 THEN
+        IF COMMAND.IoErr()=0 THEN
+          COMMAND.SetIoErr(COMMAND.ERROR_BAD_STREAM_NAME)
+        FI
+
+        RETURN(0)
+      FI
+
+      IF key(0)='q OR key(0)='Q THEN
+        quit=1
+        EXIT
+      FI
+
+      IF key(0)=ASCII.SPACE THEN
+        available=geometry.height-1
+        EXIT
+      FI
+
+      IF key(0)=ASCII.CR OR key(0)=ASCII.LF OR key(0)=ASCII.ATASCII_EOL THEN
+        available=1
+        EXIT
+      FI
+    END
+  OD
+
+  erase(0)=ASCII.CR
+  FOR index=1 TO length DO
+    erase(index)=ASCII.SPACE
+  OD
+
+  erase(length+1)=ASCII.CR
+
+RETURN(COMMAND.WriteAll(keyboard,erase,LONGINT(length+2)))
+
+; Present one row. A full row wraps naturally; shorter rows get an LF.
+LONGINT FUNC FlushRow(BYTE ending)
+
+  IF available=0 THEN
+    IF Advance()=0 THEN
+      RETURN(0)
+    FI
+
+    IF quit<>0 THEN
+      RETURN(-1)
+    FI
+  FI
+
+  IF COMMAND.WriteAll(COMMAND.Output(),row,column)=0 THEN
+    RETURN(0)
+  FI
+
+  IF column<geometry.width AND ending<>0 THEN
+    IF CommandText(c"\n")=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  available==-1
+  column=0
+
+RETURN(-1)
+
+; Expand tabs to eight-column stops and make nonprinting bytes visible as dots.
+LONGINT FUNC Display(CARD length)
+  CARD index,spaces
+  BYTE value
+
+  column=0
+  index=0
+  WHILE index<length DO
+    value=line(index)
+    spaces=1
+    IF value=ASCII.TAB THEN
+      spaces=8-(column & 7)
+      value=ASCII.SPACE
+    ELSEIF value<32 OR value>126 THEN
+      value='.
+    FI
+
+    WHILE spaces<>0 DO
+      row(column)=value
+      column==+1
+      spaces==-1
+      IF column=geometry.width THEN
+        IF FlushRow(0)=0 THEN
+          RETURN(0)
+        FI
+
+        IF quit<>0 THEN
+          RETURN(-1)
+        FI
+      FI
+    OD
+
+    index==+1
+  OD
+
+  IF column<>0 OR length=0 THEN
+    RETURN(FlushRow(reader.terminated))
+  FI
+
+RETURN(-1)
+
+LONGINT FUNC Page(BYTE interactive)
+
+  DO
+    BEGIN
+      LET count=COMMAND.ReadLine(BYTE POINTER(@reader),line,SIZEOF(line))
+      IF count=-2 THEN
+        RETURN(COMMAND.RETURN_OK)
+      FI
+
+      IF count<0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      IF interactive<>0 THEN
+        IF Display(CARD(count))=0 THEN
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+
+        IF quit<>0 THEN
+          RETURN(COMMAND.RETURN_OK)
+        FI
+      ELSEIF CommandLine(@reader,line,count)=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+    END
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+  LONGINT status
+  BYTE interactive
+
+  keyboard=NULL
+  quit=0
+  LET parsed=COMMAND.ReadArgsOrHelp(c"FILE",values,1,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  LET input=CommandInput(values(0))
+  IF input=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  status=COMMAND.RETURN_ERROR
+  interactive=BYTE(COMMAND.IsInteractive(COMMAND.Output())<>0)
+  IF COMMAND.IoErr()=0 THEN
+    BEGIN
+      LET dataInteractive=COMMAND.IsInteractive(input)
+      IF COMMAND.IoErr()=0 THEN
+        IF dataInteractive<>0 THEN
+          COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_WRONG_TYPE)
+        ELSE
+          IF interactive<>0 THEN
+            keyboard=COMMAND.OpenConsole()
+            IF keyboard<>NULL THEN
+              IF COMMAND.ConsoleInfo(COMMAND.Output(),BYTE POINTER(@geometry))<>0 THEN
+                IF geometry.width>=2 AND geometry.width<=CARD(SIZEOF(row))
+                    AND geometry.height>=2 THEN
+                  available=geometry.height-1
+                  COMMAND.ReaderInit(BYTE POINTER(@reader),input)
+                  status=CommandReadResult(@reader,Page(1))
+                ELSE
+                  COMMAND.SetIoErr(COMMAND.ERROR_BAD_NUMBER)
+                FI
+              FI
+            FI
+          ELSE
+            COMMAND.ReaderInit(BYTE POINTER(@reader),input)
+            status=CommandReadResult(@reader,Page(0))
+          FI
+        FI
+      FI
+    END
+  FI
+
+  status=CommandFinish(keyboard,BYTE(keyboard<>NULL),status)
+
+RETURN(CommandFinish(input,BYTE(values(0)<>0),status))
+
+ENDMODULE

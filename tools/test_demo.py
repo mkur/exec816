@@ -6,6 +6,8 @@ import argparse
 from desktop_mouse import schedule
 import json
 import re
+import shutil
+import time
 from pathlib import Path
 from generate_console import constants as console_constants
 from console_model import read_cells
@@ -80,6 +82,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         mounted=ROOT/'tests/fixtures/mydos/mydos450-128.atr' if disk_failure=='wrong' else None if disk_failure=='missing' else media_path
         mounted_hash=sha256(mounted) if mounted else None
         if mounted:b.mount(system_drive-1,str(mounted))
+        work_media=[]
+        for item in manifest.get('additional_media', []):
+            target=out/(Path(item['name']).stem+'-walkthrough.atr')
+            shutil.copyfile(out/item['name'],target)
+            b.mount(item['drive']-1,str(target))
+            work_media.append((item,target))
         machine=verify_machine(b,rom,pin)
         def far(address,length):
             return b''.join((b.eval_expr(f'dw(${address+i:x})')&65535).to_bytes(2,'little') for i in range(0,length,2))[:length]
@@ -225,9 +233,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             status=int.from_bytes(far(saved['shell']+32,4),'little',signed=True)
             cause=int.from_bytes(far(saved['shell']+36,4),'little',signed=True)
             require((status,cause)==(10 if error else 0,error),f'Demo command result: {status}/{cause}')
-        def command(text,expected=None):
+        def command(text,expected=None,error=0):
             print('Demo command:',text,flush=True)
-            previous=begin(text);ready(previous);result()
+            previous=begin(text);ready(previous);result(error)
             screen=cells(text)
             if expected is not None:require(expected in screen[:shell_cells],'Missing command output: '+text)
             commands.append(text)
@@ -293,7 +301,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b.memload(boot['address']+boot['abi']['fields']['cache_blocks'],cache_override.to_bytes(2,'little'))
             if stock_smoke:
                 from banked_test_memory import write as far_write
-                far_write(b,p['build']['task_storage']['BASE']+0x900+34,(2).to_bytes(2,'little'),out)
+                from generate_dos_mounts import encode
+                mounts=[{**mount,'profile':2} for mount in manifest['mounts']]
+                far_write(b,p['build']['task_storage']['BASE']+0x900,encode(mounts),out)
             if retire_manifest:
                 marker=p['labels']['startup_complete']
                 b.bp_set(marker);run_to(b,marker,3000,90);b.bp_clear_all()
@@ -343,12 +353,21 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 command('CD SYS:')
                 command('DIR',b'STORY')
                 command('HELLO',b'Hello from disk!')
-                command('TYPE README.TXT',b'prime search keeps running')
+                command('TYPE README.TXT',b'Errors are explained on the console.')
                 memory()
                 command('HELLO | WC',b'1 3 17')
                 command('CAT STORY.TXT | WC',b'24 133 746')
                 screenshot('walkthrough.png',[b'HELLO | WC',b'1 3 17',
                     b'CAT STORY.TXT | WC',b'24 133 746'])
+                if work_media:
+                    command('ECHO saved >WORK:OUT.TXT')
+                    command('CAT WORK:OUT.TXT',b'saved')
+                    command('CAT SYS:STORY.TXT >WORK:COPY.TXT')
+                    command('CMP SYS:STORY.TXT WORK:COPY.TXT')
+                    command('HELLO | WC >WORK:PIPE.TXT')
+                    command('CAT WORK:PIPE.TXT',b'1 3 17')
+                    saved['filesystem_writes']=True
+                    screenshot('writable-files.png',[b'WORK:COPY.TXT',b'WORK:PIPE.TXT',b'1 3 17'])
                 require(observations[-1]['prime_frames']>observations[0]['prime_frames'],
                         'Prime display did not advance during the walkthrough')
                 for character in 'EXIT':press(character)
@@ -409,7 +428,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         'Mount listing duplicated or omitted the physical volume')
                 command('CD SYS:WORK')
                 command('CD',f'D{system_drive}:WORK'.encode())
-                command('SYS:HELLO',b'Hello from disk!')
+                command('HELLO',b'Hello from disk!')
+                command('PATH',b'SYS:')
+                command('HEAD SYS:STORY.TXT LINES 3',b'Exec816')
+                command('HEAD MISSING',b'Object not found (205)',error=205)
+                command('HEAD ?',b'Arguments: FILE,LINES/K/N')
                 # Two ordinary DOS names must share the same warmed cache.
                 command(f'TYPE D{system_drive}:STORY.TXT',b'system should also know how to stop.')
                 first=dict(hits=number(cache+16),misses=number(cache+20))
@@ -419,16 +442,24 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         'Physical and SYS reads did not share the cache')
                 saved['sys_cache']=dict(physical=first,system=second)
                 if desktop:
-                    previous=begin('SYS:CAT SYS:STORY.TXT | SYS:WC')
+                    previous=begin('CAT SYS:STORY.TXT | WC')
                     rendezvous(f'db(${p["build"]["task_storage"]["LIVE"]:x})=7')
                     saved['desktop_peak_tasks']=7
                     ready(previous);result()
                     require(b'24 133 746' in cells('desktop-pipeline'),'Desktop pipeline result differs')
                 else:
-                    command('SYS:CAT SYS:STORY.TXT | SYS:WC',b'24 133 746')
+                    command('CAT SYS:STORY.TXT | WC',b'24 133 746')
                 command('CD SYS:')
                 command('CD',f'D{system_drive}:'.encode())
                 command('HELLO',b'Hello from disk!')
+                if desktop and work_media:
+                    command('ECHO saved >WORK:OUT.TXT')
+                    command('CAT WORK:OUT.TXT',b'saved')
+                    command('CAT SYS:STORY.TXT >WORK:COPY.TXT')
+                    command('CMP SYS:STORY.TXT WORK:COPY.TXT')
+                    command('HELLO | WC >WORK:PIPE.TXT')
+                    command('CAT WORK:PIPE.TXT',b'1 3 17')
+                    saved['filesystem_writes']=True
                 frames(3);cells('boot-smoke')
                 save_screen(out/'boot-smoke.png')
                 for character in 'EXIT':press(character)
@@ -464,10 +495,18 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             command('CD SYS:')
             command('DIR',b'STORY')
             command('HELLO',b'Hello from disk!')
-            command('TYPE README.TXT',b'prime search keeps running')
+            command('TYPE README.TXT',b'Errors are explained on the console.')
             command('TASKS',b'primes')
             command('HELLO | WC',b'1 3 17')
             command('CAT STORY.TXT | WC',b'24 133 746')
+            if work_media:
+                command('ECHO saved >WORK:OUT.TXT')
+                command('CAT WORK:OUT.TXT',b'saved')
+                command('CAT SYS:STORY.TXT >WORK:COPY.TXT')
+                command('CMP SYS:STORY.TXT WORK:COPY.TXT')
+                command('HELLO | WC >WORK:PIPE.TXT')
+                command('CAT WORK:PIPE.TXT',b'1 3 17')
+                saved['filesystem_writes']=True
             saved['memory']=memory();saved['ledger']=ledger()
             require(saved['ledger']['live']==5,'Idle demo Task count differs')
             for _ in range(2):
@@ -506,18 +545,33 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     'OF816 shell reused retired manifest data')
         require(sha256(media_path)==manifest['artifacts'][media],'Read-only demo media changed')
         if mounted:require(sha256(mounted)==mounted_hash,'Initially mounted media changed')
+        saved['work_media']=[]
+        if work_media:
+            from filesystem_audit import Audit
+            time.sleep(3)
+            b.regs()
+            for item,target in work_media:
+                b._cmd_ok(f'EJECT drive={item["drive"]-1}')
+                audit=Audit(target.read_bytes())
+                allocation=getattr(audit,item['filesystem'])()
+                if saved.get('filesystem_writes'):
+                    require(audit.files['OUT.TXT']==b'saved\n' and audit.files['PIPE.TXT']==b'1 3 17\n'
+                            and audit.files['COPY.TXT']==(ROOT/'examples/demo-disk/STORY.TXT').read_bytes(),
+                            'Packaged writable walkthrough contents differ')
+                saved['work_media'].append(dict(name=target.name,sha256=sha256(target),allocation=allocation))
     return dict(status='pass',tier='development',bundle_manifest_sha256=sha256(out/'demo-manifest.json'),
         xex_sha256=sha256(out/'program.xex'),media_sha256=sha256(media_path),screenshot_sha256=sha256(out/'boot-smoke.png') if boot_smoke else None if stock_smoke or loading_smoke or cache_smoke else sha256(out/'walkthrough.png'),
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
         autoboot_frames=saved.get('autoboot_frames'),
+        filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
         measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
         baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=saved.get('desktop_peak_tasks') if desktop else None if stock_smoke or showcase or editing or disk_failure else 6 if shell_only else 7,
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Desktop OF816 autoboot, independent client input/drag/focus, disk commands, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked 36/37-column edits, 255-byte command, BREAK recovery and physical Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Desktop OF816 autoboot, independent client input/drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked 36/37-column edits, 255-byte command, BREAK recovery and physical Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':

@@ -15,6 +15,7 @@ PUBLIC LONGINT FUNC Call(LONGINT action,index)
   DOSCORE.DosSlot POINTER slot
   DOSCORE.DosRegistry POINTER registry
   FSTYPES.Service POINTER service
+  BYTE POINTER task
   LONGINT result
 
   slot=DOSCORE.Current()
@@ -52,6 +53,11 @@ PUBLIC LONGINT FUNC Call(LONGINT action,index)
   result=DOSCLIENT.Call(slot,client,service.control,action)
   EXEC.Forbid()
   service.controls==-1
+  IF registry.stop<>0 AND service.controls=0 AND registry.worker<>NULL THEN
+    task=registry.task
+    EXEC.Signal(EXEC.Task POINTER(task),registry.mask)
+  FI
+
   EXEC.Permit()
 
 RETURN(result)

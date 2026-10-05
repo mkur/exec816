@@ -163,7 +163,20 @@ PUBLIC LONGINT FUNC Run(BYTE POINTER firstImage,secondImage,firstArgs,secondArgs
     RETURN(0)
   FI
 
-  IF outcome.first.primary<>0 THEN
+  ; A successful consumer may intentionally close early (HEAD or MORE/Q).
+  ; Retain both original results while excluding only its producer's ordinary
+  ; broken-pipe error. Consumer failures and every other producer cause survive.
+  LET early=outcome.first.primary=10
+      AND outcome.first.secondary=DOS.ERROR_BROKEN_PIPE
+      AND (outcome.second.primary=0 OR outcome.second.primary=5)
+      AND outcome.second.secondary=0
+  IF outcome.first.primary>=10 AND early=0 THEN
+    outcome.primary=outcome.first.primary
+    outcome.secondary=outcome.first.secondary
+  ELSEIF outcome.second.primary>=10 THEN
+    outcome.primary=outcome.second.primary
+    outcome.secondary=outcome.second.secondary
+  ELSEIF outcome.first.primary<>0 AND early=0 THEN
     outcome.primary=outcome.first.primary
     outcome.secondary=outcome.first.secondary
   ELSE

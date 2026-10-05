@@ -1,0 +1,25 @@
+; Controlled transport below the production DOS argument and stream helpers.
+MODULE TOOLBOXSTATE
+
+PUBLIC TYPE TestCase=[
+  LONGCARD length,otherLength,breakAt
+  CARD patternBytes,otherBytes,chunk,writeChunk
+  CARD readFail,writeFail,prefixError,closeError
+  CARD width,height,entries,enumerationError
+  BYTE interactive,dataInteractive
+  BYTE ARRAY arguments(256)
+  BYTE ARRAY keys(32)
+  BYTE ARRAY data(1100)
+  BYTE ARRAY other(1100)
+]
+PUBLIC TYPE CaptureState=[
+  LONGINT error
+  LONGCARD first,second
+  CARD reads,writes,opens,closes,used,consoleUsed,keyAt,entry
+  BYTE ARRAY output(4096)
+  BYTE ARRAY console(256)
+]
+PUBLIC TestCase POINTER scenario
+PUBLIC CaptureState POINTER state
+
+ENDMODULE

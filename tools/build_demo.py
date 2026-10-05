@@ -13,6 +13,8 @@ from package_demo import package,GEM_NOTICES
 from library_paths import read_source
 from native_program import ROOT, build, compiler, require, sha256
 
+DEMO_IMAGE_DATA_BYTES = 4096
+
 
 def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False):
     if desktop:
@@ -27,7 +29,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     require(sha256(binary)==pin['emulator']['sha256'] and sha256(rom)==pin['rom']['sha256'],'Install the pinned paced bridge and ROM before building the demo')
     media=output/'media';media.mkdir(exist_ok=True)
     commands={}
-    for name in ('HELLO','CAT','WC'):
+    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','GREP','LIST','MORE'):
         commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',media/name)
         (media/(name+'.options.json')).rename(output/(name+'.options.json'))
         (media/(name+'.profile.json')).rename(output/(name+'.profile.json'))
@@ -43,7 +45,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
             'Try TASKS, DIR, MEM, HELLO | WC,\nand CAT STORY.TXT | WC.\n'
             'EXIT returns to the OS.\n',encoding='ascii')
     if desktop:
-        (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nDrag titles; Escape cancels a drag.\nClick the app and press a key to compute and repaint.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. Disk access is read-only.\n',encoding='ascii')
+        (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nDrag titles; Escape cancels a drag.\nClick the app and press a key to compute and repaint.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==set(commands)|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
@@ -53,30 +55,38 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     mount_config=json.loads(config.read_text())
     mounts=mount_config['mounts']
     mounts[0]['sector_bytes']=sector_bytes
+    # Keep SYS read-only and provide explicitly disposable writable media.
+    # D8 avoids colliding when the boot monitor selects D1..D7 for SYS.
+    workspace=output/'workspace-source'
+    workspace.mkdir(exist_ok=True)
+    (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
+        'Copy this ATR before experimenting. Mount it in drive D8.\n',encoding='ascii')
+    make(output/'work.atr',workspace,filesystem=filesystem,sector_bytes=sector_bytes)
+    mounts.append(dict(alias='WORK',unit=56,sectors=720,sector_bytes=sector_bytes,
+                       profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
     entry=ROOT/('examples/desktop.act' if desktop else 'examples/shell/shell.act' if bitmap_shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
+    # Shared fault strings and the composed shell/client globals need 4 KiB.
+    # All demo variants use the same explicit upper-RAM arena; bank zero is unchanged.
+    from generate_memory import PROFILE
+    profile=json.loads(PROFILE.read_text())
+    profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES
+    memory_profile=output/'demo-memory.json'
+    memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     if bitmap_shell_only:
         from build_bitmap_console import build_bitmap
         from build_bitmap_artifact import copy_notices
-        desktop_layout={}
-        if desktop:
-            # The combined shell/client image needs 2,176 bytes of resident
-            # data. Reserve 2.5 KiB in upper RAM, including alignment and slack.
-            from generate_memory import PROFILE
-            profile=json.loads(PROFILE.read_text())
-            profile['image_data_bytes']=2560
-            profile_path=output/'desktop-memory.json'
-            profile_path.write_text(json.dumps(profile,indent=2)+'\n')
-            desktop_layout['memory_profile']=profile_path
         program=build_bitmap(source,output/'bitmap-console',program_output=output,
-            compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,system_mount=mount_config.get('system_mount'),**desktop_layout)
+            compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,
+            system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
         copy_notices(output/'bitmap-console/selected',output)
         pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
     else:
         program=build(toolchain,source,output,optimize=True,tasks=True,
-                      task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,system_mount=mount_config.get('system_mount'))
+                      task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
+                      system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
     guide=(ROOT/'docs/guides/demo.md').read_text().replace('../demo.png','demo.png').replace('../images/','images/').replace('read-only SDFS data disk',f'read-only {filesystem.upper()} data disk')
     if bitmap_shell_only:
         guide=(ROOT/'docs/bitmap-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
@@ -89,15 +99,19 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     record=dict(format='exec816-demo-v1',tier='development',kernel=program['build'],pin=pin,
         configuration={**pin['configuration'],'diskemu':'generic56k'},mounts=mounts,commands=commands,
         media=disk_name,filesystem=filesystem,sector_bytes=sector_bytes,
+        additional_media=[dict(name='work.atr',sha256=sha256(output/'work.atr'),
+                               drive=8,alias='WORK',access='readwrite',
+                               filesystem=filesystem,sector_bytes=sector_bytes)],
         boot_image='of816/Exec-of816.xex',boot_manifest='of816/of816.json',
         distribution='exec816-demo.zip',
-        artifacts={name:sha256(output/name) for name in ('program.xex',disk_name,'README.md',*([proof_name] if filesystem=='sdfs' else []))},
+        artifacts={name:sha256(output/name) for name in ('program.xex',disk_name,'work.atr','README.md',*([proof_name] if filesystem=='sdfs' else []))},
         files={name:dict(bytes=len(payload),sha256=hashlib.sha256(payload).hexdigest(),
                         **({} if name in commands else dict(lines=payload.count(b'\n'),words=len(payload.split()))))
                for name,payload in files.items()},
         source_inputs={str(path.relative_to(ROOT)):sha256(path) for path in
                        [ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',
-                        ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-boot.inc',
+                        ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-boot.inc',
+                        ROOT/'examples/commands/command-common.inc',
                         ROOT/'docs/guides/demo.md',ROOT/'docs/demo.png',ROOT/'docs/images/demo-boot.png',ROOT/'docs/demo-distribution.txt',
                         ROOT/'tools/package_demo.py',ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md',
                         config,ROOT/'tools/build_command.py',

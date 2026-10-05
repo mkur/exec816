@@ -1,4 +1,20 @@
 ; Native source adapters preserve the public DOS record identities and ABI.
+PUBLIC LONGINT FUNC Flush(FileHandle POINTER file)
+
+RETURN(DOSCALLS.Flush(BYTE POINTER(file)))
+
+PUBLIC FileLock POINTER FUNC CreateDir(BYTE POINTER name)
+
+RETURN(FileLock POINTER(DOSCALLS.CreateDir(name)))
+
+PUBLIC LONGINT FUNC DeleteFile(BYTE POINTER name)
+
+RETURN(DOSCALLS.DeleteFile(name))
+
+PUBLIC LONGINT FUNC Rename(BYTE POINTER oldName,newName)
+
+RETURN(DOSCALLS.Rename(oldName,newName))
+
 PUBLIC FileHandle POINTER FUNC Open(BYTE POINTER name LONGINT mode)
 
 RETURN(FileHandle POINTER(DOSCALLS.Open(name,mode)))
@@ -100,3 +116,22 @@ RETURN
 PUBLIC LONGINT FUNC Pipe(PipePair POINTER pair)
 
 RETURN(DOSCALLS.Pipe(BYTE POINTER(pair)))
+
+; Console control remains attached to the foreground scope across redirection.
+PUBLIC FileHandle POINTER FUNC OpenConsole()
+
+RETURN(FileHandle POINTER(DOSCALLS.OpenConsole()))
+
+PUBLIC LONGINT FUNC ConsoleInfo(FileHandle POINTER file BYTE POINTER size)
+
+RETURN(DOSCALLS.ConsoleInfo(BYTE POINTER(file),size))
+
+PUBLIC LONGINT FUNC Fault(LONGINT code CSTRING header BYTE POINTER buffer
+                          CARD capacity)
+
+RETURN(DOSFAULT.Fault(code,header,buffer,capacity))
+
+PUBLIC LONGINT FUNC PrintFault(FileHandle POINTER handle LONGINT code
+    CSTRING header BYTE POINTER buffer CARD capacity)
+
+RETURN(DOSFAULT.PrintFault(BYTE POINTER(handle),code,header,buffer,capacity))

@@ -85,11 +85,20 @@ the original `MEMLO <= $0800`; hosted entry checks before writing that page.
 base and ABI offsets. Exec's own DOS/file services are independent of this
 resident Atari DOS restriction.
 
-Ordinary compiled globals occupy a 2 KiB `image_data` arena in the selected
+Ordinary compiled globals default to a 2 KiB `image_data` arena in the selected
 upper kernel bank, after resident metadata and 256-byte alignment. Emitted code
 starts after the full arena. The image owns its bank even when some capacity is
 unused; packaging rejects code/metadata overlap, arena overflow and resident
 image payload in bank zero.
+
+The text, bitmap and desktop demos use a 4 KiB arena to hold their composed
+application globals and the resident fault strings. `tools/build_demo.py`
+derives `demo-memory.json` from the default profile with this explicit 2 KiB
+upper-RAM increase over the default (1.5 KiB over the earlier desktop arena).
+Optional bitmap payloads inherit the matching demo’s arena size. Task pools and
+all bank-zero reservations are unchanged. Build reports record the selected
+capacity and actual image extents; standalone fixtures keep their separately
+recorded profiles.
 
 The profile reserves **`$8000–$8FFF` (4 KiB) for the VBXE CPU aperture** during
 loading and runtime. Persistent Exec reservations are packed below it:

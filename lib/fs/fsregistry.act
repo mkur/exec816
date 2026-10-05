@@ -52,9 +52,17 @@ RETURN(error)
 
 ; Drop a retained mount reference under the registry ownership exclusion.
 PUBLIC PROC Release(FSTYPES.Mount POINTER mount)
+  DOSCORE.DosRegistry POINTER registry
+  BYTE POINTER task
 
+  registry=DOSCORE.GetRegistry()
   EXEC.Forbid()
   mount.references==-1
+  IF registry.stop<>0 AND mount.references=0 AND registry.worker<>NULL THEN
+    task=registry.task
+    EXEC.Signal(EXEC.Task POINTER(task),registry.mask)
+  FI
+
   EXEC.Permit()
 
 RETURN

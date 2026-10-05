@@ -12,7 +12,7 @@ PUBLIC TYPE Spec=[
   CARD unit,profile
   LONGCARD sectors
   CARD dataBytes
-  BYTE boot,format
+  BYTE boot,format,access
 ]
 
 PUBLIC TYPE Mount=[
@@ -22,13 +22,16 @@ PUBLIC TYPE Mount=[
   EXEC.MsgPort POINTER port
   CARD references
   LONGCARD generation
-  BYTE published,offline
+  BYTE published,offline,writable
   LONGINT error
+  BYTE POINTER objects
+  LONGCARD epoch
 ]
 
 PUBLIC TYPE MountSlot=[Mount POINTER item]
 PUBLIC TYPE FileBacking=[
   CARD references
+  BYTE writable
   FSBTYPES.Cursor cursor
 ]
 
@@ -36,6 +39,8 @@ PUBLIC TYPE Object=[
   DOSOBJECTS.Header header
   Mount POINTER mount
   LONGCARD generation
+  BYTE POINTER next
+  BYTE registered
 ]
 
 PUBLIC TYPE FileObject=[
@@ -78,6 +83,8 @@ PUBLIC TYPE Service=[
   BYTE ARRAY name(256)
   CARD parentStart
   BYTE FUNC POINTER resolveReady(BYTE POINTER raw)
+  BYTE committing,changed,missing,namespacePhase
+  BYTE POINTER mutation
 ]
 
 PUBLIC CONST STATE_STARTING=1, STATE_READY=2, STATE_STOPPING=3, STATE_STOPPED=4,

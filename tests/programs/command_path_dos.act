@@ -1,0 +1,64 @@
+MODULE DOS
+
+USE PATHSTATE AS T
+USE CSTRING.IMPL AS STR
+INCLUDE "../../lib/dos/dos-types.inc"
+
+PUBLIC LONGINT FUNC IoErr()
+
+RETURN(T.error)
+
+PUBLIC LONGINT FUNC SetIoErr(LONGINT cause)
+
+  LET old=T.error
+  T.error=cause
+
+RETURN(old)
+
+PUBLIC FileHandle POINTER FUNC Output()
+
+RETURN(FileHandle POINTER($d0000))
+
+PUBLIC FileLock POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
+
+  T.error=0
+  IF T.mutation=1 THEN
+    T.error=ERROR_OBJECT_NOT_FOUND
+    RETURN(NULL)
+  FI
+
+  T.locks==+1
+
+RETURN(FileLock POINTER($d0000))
+
+PUBLIC LONGINT FUNC Examine(FileLock POINTER lock FileInfoBlock POINTER info)
+
+  info.fib_DirEntryType=IF T.mutation=2 THEN LONGINT(-3) ELSE LONGINT(2) FI
+
+RETURN(-1)
+
+PUBLIC LONGINT FUNC NameFromLock(FileLock POINTER lock BYTE POINTER buffer
+                                LONGINT capacity)
+
+  IF T.mutation=3 THEN
+    T.error=ERROR_BUFFER_OVERFLOW
+    RETURN(0)
+  FI
+
+  STR.strlcpy(buffer,T.canonical,SIZE(capacity))
+  IF T.mutation=5 THEN
+    T.breakFlag=1
+  FI
+
+RETURN(-1)
+
+PUBLIC PROC UnLock(FileLock POINTER lock)
+
+  T.unlocks==+1
+  IF T.mutation=4 THEN
+    T.error=ERROR_OBJECT_IN_USE
+  FI
+
+RETURN
+
+ENDMODULE

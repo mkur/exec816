@@ -94,6 +94,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Filesystems and DOS
 
+- [MyDOS and SpartaDOS write implementation](filesystem-write-implementation.md):
+  lightweight mounts, file/namespace writes, bounded commit units, inherited
+  writer retirement, failure outcomes, native round trips and the OF816 demo.
 - [Block I/O and DOS with MyDOS filesystems](block-io-dos-design.md)
 - [Block I/O and MyDOS implementation](block-io-dos-implementation.md)
 - [DOS console streams](dos-console-streams-design.md)
@@ -124,6 +127,12 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [Command usability](command-usability.md): bounded shell PATH, shared fault
+  text and template help for all ten commands.
+
+- [First command toolbox](command-toolbox.md): seven loadable commands, shared
+  arguments/streams and foreground-console access; raw/optimized development
+  checks and the refreshed OF816 distribution.
 - [Resident shell — earlier guide](shell-guide.md)
 - [HELLO and CAT size analysis](command-size-analysis.md)
 - [Compact o65 metadata](compact-o65-implementation.md)

@@ -1,0 +1,110 @@
+MODULE COMMANDFAULTS
+
+USE EXEC
+USE DOS
+USE DOSCOMMAND
+USE CSTRING.IMPL AS STR
+USE HEAPCORE
+
+CARD checks
+BYTE finished
+BYTE POINTER buffer,header
+ADDRESS ARRAY values(2)
+BYTE ARRAY arguments(288)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Each formatter case also checks caller error and both destination guards.
+PROC Case(LONGINT code CSTRING expected)
+  CARD index
+
+  FOR index=0 TO DOS.FAULT_BUFFER_BYTES+1 DO
+    buffer(index)=$a5
+  OD
+
+  DOS.SetIoErr(12345)
+  LET length=DOS.Fault(code,c"TEST",buffer+1,DOS.FAULT_BUFFER_BYTES)
+  Require(length=LONGINT(STR.strlen(expected)))
+  Require(STR.strcmp(CSTRING(buffer+1),expected)=0)
+  Require(DOS.IoErr()=12345)
+  Require(buffer(0)=$a5 AND buffer(DOS.FAULT_BUFFER_BYTES+1)=$a5)
+
+RETURN
+
+INCLUDE "fault-cases.inc"
+
+PROC Main()
+  CARD index
+
+  LET baseline=EXEC.AvailMem(0)
+  buffer=EXEC.AllocMem(DOS.FAULT_BUFFER_BYTES+2,EXEC.MEMF_UPPER)
+  header=EXEC.AllocMem(257,EXEC.MEMF_UPPER)
+  Require(buffer<>NULL AND header<>NULL)
+  Cases()
+  Case(0,c"")
+  Case(-2147483648,c"TEST: Error code -2147483648")
+  Case(2147483647,c"TEST: Error code 2147483647")
+  DOS.SetIoErr(9876)
+  Require(DOS.Fault(205,NULL,buffer,27)=22)
+  Require(STR.strcmp(CSTRING(buffer),c"Object not found (205)")=0)
+  Require(DOS.Fault(205,c"",buffer,23)=22)
+  Require(DOS.Fault(205,c"",buffer,22)=-1 AND buffer(0)=0)
+  Require(DOS.Fault(205,c"",NULL,20)=-1)
+  Require(DOS.Fault(205,c"",buffer,0)=-1)
+  Require(DOS.Fault(205,c"",BYTE POINTER(1),20)=-1)
+  Require(DOS.Fault(205,CSTRING(BYTE POINTER(1)),buffer,384)=-1)
+  Require(DOS.IoErr()=9876)
+  FOR index=0 TO 255 DO
+    header(index)='x
+  OD
+
+  header(256)=0
+  Require(DOS.Fault(205,CSTRING(header),buffer,384)=-1)
+  header(255)=0
+  Require(DOS.Fault(205,CSTRING(header),buffer,384)=279)
+  Require(DOS.IoErr()=9876)
+
+  LET nil=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_READWRITE)
+  Require(nil<>NULL)
+  DOS.SetIoErr(9876)
+  Require(DOS.PrintFault(nil,205,c"HEAD",buffer,384)<>0)
+  Require(STR.strcmp(CSTRING(buffer),c"HEAD: Object not found (205)\n")=0)
+  Require(DOS.IoErr()=9876)
+  Require(DOS.PrintFault(NULL,205,c"HEAD",buffer,384)=0)
+  Require(DOS.IoErr()=9876)
+  Require(DOS.PrintFault(nil,205,c"HEAD",buffer,27)=0)
+  Require(DOS.PrintFault(NULL,0,NULL,buffer,384)<>0)
+  Require(DOS.IoErr()=9876)
+
+  ; Help validates structure before console admission and never borrows Input.
+  Require(DOSCOMMAND.ReadArgsOrHelp(c"?",c"FILE/A",values,1,arguments,288)=0)
+  Require(DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE AND values(0)=0)
+  Require(DOSCOMMAND.ReadArgsOrHelp(c"?",c"FILE/Q",values,1,arguments,288)=0)
+  Require(DOS.IoErr()=DOS.ERROR_BAD_TEMPLATE)
+  Require(DOSCOMMAND.ReadArgsOrHelp(c"?",c"FILE",values,0,arguments,288)=0)
+  Require(DOS.IoErr()=DOS.ERROR_BUFFER_OVERFLOW)
+  Require(DOSCOMMAND.ReadArgsOrHelp(c"?",c"FILE",NULL,1,arguments,288)=0)
+  Require(DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOSCOMMAND.ReadArgsOrHelp(c"?",c"FILE",values,1,NULL,288)=0)
+  Require(DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOSCOMMAND.ReadArgsOrHelp(c"\"?\"",c"FILE/A",values,1,arguments,288)=1)
+  Require(STR.strcmp(CSTRING(BYTE POINTER(values(0))),c"?")=0)
+
+  Require(DOS.Close(nil)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  EXEC.FreeMem(buffer,DOS.FAULT_BUFFER_BYTES+2)
+  EXEC.FreeMem(header,257)
+  Require(EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+
+ENDMODULE

@@ -69,6 +69,21 @@ class DemoPackageTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256(files[name]).hexdigest(), digest)
         self.assertNotIn(b'@SYSTEM_', files['README.txt'])
 
+    def test_disposable_workspace_is_checked_and_packaged(self):
+        content = b'disposable writable disk'
+        (self.bundle/'work.atr').write_bytes(content)
+        path = self.bundle/'of816.json'
+        record = json.loads(path.read_text())
+        record['additional_media'] = [dict(name='work.atr', sha256=hashlib.sha256(content).hexdigest())]
+        path.write_text(json.dumps(record))
+        with patch.object(package_demo, 'ROOT', self.root):
+            package_demo.package(self.bundle, self.archive)
+            with zipfile.ZipFile(self.archive) as archive:
+                self.assertEqual(archive.read('exec816-demo/work.atr'), content)
+            (self.bundle/'work.atr').write_bytes(b'changed')
+            with self.assertRaisesRegex(ValueError, 'Changed demo artifact'):
+                package_demo.package(self.bundle, self.archive)
+
     def graphics(self):
         folder=self.root/'graphics'
         folder.mkdir()

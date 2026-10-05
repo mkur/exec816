@@ -1,5 +1,28 @@
 ; Return to the shell's default streams after a command or failed redirection.
 ; Borrowed defaults must be restored before temporary handles can be released.
+BYTE FUNC ShellCloseTemporary(DOS.FileHandle POINTER handle)
+
+  IF DOS.Close(handle)<>0 THEN
+    RETURN(1)
+  FI
+
+  LET error=DOS.IoErr()
+  IF DOSOBJECTS.Find(DOSCORE.Current(),BYTE POINTER(handle),
+      DOSOBJECTS.KIND_FILE)<>NULL THEN
+    ShellFail(PROCESS.RETURN_FAIL,error)
+    RETURN(0)
+  FI
+
+  ; A terminal disk Close consumes its wrapper even on failure. Preserve an
+  ; earlier command failure; otherwise report finalization failure and allow
+  ; another prompt without retrying through the freed handle.
+  IF shell.status<PROCESS.RETURN_ERROR THEN
+    shell.status=PROCESS.RETURN_FAIL
+    shell.error=error
+  FI
+
+RETURN(1)
+
 PROC ShellUnredirect()
   DOS.FileHandle POINTER ignored
   BYTE failed
@@ -32,19 +55,13 @@ PROC ShellUnredirect()
   FI
 
   IF shell.tempOutput<>NULL THEN
-    IF DOS.Close(shell.tempOutput)=0 THEN
-      ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())
-
-    ELSE
+    IF ShellCloseTemporary(shell.tempOutput)<>0 THEN
       shell.tempOutput=NULL
     FI
   FI
 
   IF shell.tempInput<>NULL THEN
-    IF DOS.Close(shell.tempInput)=0 THEN
-      ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())
-
-    ELSE
+    IF ShellCloseTemporary(shell.tempInput)<>0 THEN
       shell.tempInput=NULL
     FI
   FI

@@ -5,6 +5,9 @@ USE DOSCLIENT
 USE DOSBREAK
 USE PROCESS
 USE DOSARGS
+USE DOSUTILITY
+USE DOSFAULT
+USE DOSCOMMAND
 
 ; Explicit task-only providers. Opaque handles keep the external contract free
 ; of resident implementation records. Dispatch directly to their shared
@@ -28,6 +31,22 @@ RETURN(DOSCALLS.Seek(handle,offset,mode))
 PUBLIC LONGINT FUNC Close(BYTE POINTER handle)
 
 RETURN(DOSCALLS.Close(handle))
+
+PUBLIC LONGINT FUNC Flush(BYTE POINTER handle)
+
+RETURN(DOSCALLS.Flush(handle))
+
+PUBLIC BYTE POINTER FUNC CreateDir(BYTE POINTER name)
+
+RETURN(DOSCALLS.CreateDir(name))
+
+PUBLIC LONGINT FUNC DeleteFile(BYTE POINTER name)
+
+RETURN(DOSCALLS.DeleteFile(name))
+
+PUBLIC LONGINT FUNC Rename(BYTE POINTER oldName,newName)
+
+RETURN(DOSCALLS.Rename(oldName,newName))
 
 PUBLIC BYTE POINTER FUNC Input()
 
@@ -73,5 +92,71 @@ PUBLIC PROC Yield()
   EXEC.Yield()
 
 RETURN
+
+; Shared helpers retain the same caller-owned buffers as the command API.
+PUBLIC LONGINT FUNC WriteAll(BYTE POINTER handle,buffer LONGINT length)
+
+RETURN(DOSUTILITY.WriteAll(handle,buffer,length))
+
+PUBLIC PROC ReaderInit(BYTE POINTER reader,handle)
+
+  DOSUTILITY.ReaderInit(reader,handle)
+
+RETURN
+
+PUBLIC INT FUNC ReadByte(BYTE POINTER reader)
+
+RETURN(DOSUTILITY.ReadByte(reader))
+
+PUBLIC LONGINT FUNC ReadLine(BYTE POINTER reader,buffer CARD capacity)
+
+RETURN(DOSUTILITY.ReadLine(reader,buffer,capacity))
+
+; Directory records follow the generated public DOS FileInfoBlock layout.
+PUBLIC BYTE POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
+
+RETURN(DOSCALLS.Lock(name,mode))
+
+PUBLIC PROC UnLock(BYTE POINTER lock)
+
+  DOSCALLS.UnLock(lock)
+
+RETURN
+
+PUBLIC LONGINT FUNC Examine(BYTE POINTER lock,info)
+
+RETURN(DOSCALLS.Information(lock,info,23))
+
+PUBLIC LONGINT FUNC ExNext(BYTE POINTER lock,info)
+
+RETURN(DOSCALLS.Information(lock,info,24))
+
+PUBLIC LONGINT FUNC IsInteractive(BYTE POINTER handle)
+
+RETURN(DOSCALLS.IsInteractive(handle))
+
+PUBLIC BYTE POINTER FUNC OpenConsole()
+
+RETURN(DOSCALLS.OpenConsole())
+
+PUBLIC LONGINT FUNC ConsoleInfo(BYTE POINTER handle,size)
+
+RETURN(DOSCALLS.ConsoleInfo(handle,size))
+
+PUBLIC LONGINT FUNC Fault(LONGINT code CSTRING header BYTE POINTER buffer
+                          CARD capacity)
+
+RETURN(DOSFAULT.Fault(code,header,buffer,capacity))
+
+PUBLIC LONGINT FUNC PrintFault(BYTE POINTER handle LONGINT code CSTRING header
+                               BYTE POINTER buffer CARD capacity)
+
+RETURN(DOSFAULT.PrintFault(handle,code,header,buffer,capacity))
+
+PUBLIC LONGINT FUNC ReadArgsOrHelp(CSTRING template ADDRESS POINTER values
+    CARD valueCapacity BYTE POINTER storage CARD storageCapacity)
+
+RETURN(DOSCOMMAND.ReadArgsOrHelp(PROCESS.GetArgStr(),template,values,
+    valueCapacity,storage,storageCapacity))
 
 ENDMODULE

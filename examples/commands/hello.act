@@ -6,6 +6,12 @@ USE CSTRING AS STR
 ; Write one greeting through the command's selected output stream.
 LONGINT FUNC Main()
 
+  LET parsed=COMMAND.ReadArgsOrHelp(c"",NULL,0,NULL,0)
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
   LET greeting=c"Hello from disk!\n"
   LET length=STR.strlen(greeting)
 

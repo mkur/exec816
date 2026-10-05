@@ -44,7 +44,8 @@ Computer > Boot
 Close the settings window, then:
 
 1. Open File > Disk Drives... and click the "..." button on the D@SYSTEM_DRIVE@: row
-   to select @SYSTEM_DISK@.
+   to select @SYSTEM_DISK@. Mount a disposable copy of work.atr in D8:
+   and enable writes for D8. Both disks must be present before boot.
 2. In the same Disk drives window, set Emulation level to
    "Generic + 57600 baud". This setting applies to all drives.
 3. Choose File > Boot Image... and select Exec-of816.xex. Leave the keyboard
@@ -76,11 +77,42 @@ prime search advancing independently.
 
 Type HELP to list the shell's built-in commands:
 
-    HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES EXIT
+    HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT
+
+The disk also includes CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST and MORE.
+Try HEAD STORY.TXT LINES 5, CKSUM STORY.TXT, or LIST NAMES.
+MORE LONG.TXT pages text: Space advances a page, Return a line, Q quits.
+GREP shell STORY.TXT NOCASE searches literal text; there is no regex.
+
+Commands remain available after CD through the default PATH (current directory,
+then SYS:). Try:
+
+    CD SYS:WORK
+    HEAD SYS:STORY.TXT LINES 3
+    HEAD MISSING
+    HEAD ?
+    CAT SYS:STORY.TXT | WC
+    CD SYS:
+
+HEAD MISSING explains error 205; HEAD ? prints its argument template without
+reading Input. Every supplied command supports ?. PATH lists the search order;
+PATH ADD directory, PATH SET directory, PATH CLEAR and PATH RESET change it.
 
 Try CAT LONG.TXT | WC, then press BREAK to cancel it. EXIT stops the demo
-and restores the OS display. Disk access is read-only; keep the same disk
-mounted until reset. Pipes support two external commands.
+and restores the OS display. SYS: is read-only; WORK: is writable. Keep both
+disks mounted until shutdown. Pipes support two external commands.
+
+Try saving output to the disposable WORK: disk:
+
+    ECHO saved >WORK:OUT.TXT
+    CAT WORK:OUT.TXT
+    CAT SYS:STORY.TXT >WORK:COPY.TXT
+    CMP SYS:STORY.TXT WORK:COPY.TXT
+
+CMP succeeds silently. Output redirection creates or immediately truncates its
+target, even if the command later fails. Use copies of work.atr for experiments.
+There is no filesystem checker or recovery utility in the resident system;
+restore your copy after an interrupted or failed disk mutation.
 
 Licences and source
 -------------------
@@ -102,7 +134,7 @@ Included files
 --------------
 
 Exec-of816.xex       Exec816 with the OF816 boot monitor
-@SYSTEM_DISK@        System disk with HELLO, CAT, WC and sample text
+@SYSTEM_DISK@        System disk with HELLO, CAT, WC, the command toolbox and sample text
 altirraos-816.rom    AltirraOS 3.44 for 65C816
 README.txt          This guide
 EXEC816-GPL-3.0.txt  Exec816 OS licence

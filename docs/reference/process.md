@@ -111,8 +111,11 @@ followed by `Wait`.
 
 The resident `PIPELINE.Run` coordinator accepts two loaded Images and their
 separate argument tails. The caller keeps both Image references until it returns.
-It retains both Process results; success requires both stages to succeed, otherwise
-the first failing stage in command order determines the combined result.
+It retains both Process results. The first ERROR/FAIL in command order determines
+the combined result, otherwise the first nonzero result is used. A left ERROR
+with ERROR_BROKEN_PIPE is excluded from aggregation when the right returns OK or
+WARN with zero secondary error: a successful consumer may intentionally finish
+early. Other errors remain visible. See [shell results](../guides/shell.md#pipes).
 
 `DOSGROUP.Begin` renews the parent's console route and retains an already delivered
 BREAK. `PROCESS.PrepareLoaded(image,args,length,group)` leases a Task slot, retains

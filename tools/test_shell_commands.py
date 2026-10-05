@@ -7,7 +7,7 @@ from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 from banked_test_memory import read as far_read
-from test_shell_core import instrument,draw,collect_capture
+from test_shell_core import instrument,draw,collect_capture,diagnostic_text
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 from test_console_display import terminal
 from mydos_fixtures import Image
@@ -59,7 +59,7 @@ def prepare(size,scenario):
     def item(command,output=b'',error=0,kind='run',source=None):return dict(command=command,output=output,status=10 if error else 0,error=error,kind=kind,source=source)
     if scenario=='basic':
         cases=[item('DIR',listing(rows)),item('DIR TOOLS',b'SUB/\n'),item('DIR TOOLS/SUB',b'DATA.BIN 777\n'),item('DIR EDIR'),
-               item('DIR TEXT.TXT',b'Error 212\n',212),item('TYPE MISSING',b'Error 205\n',205),item('TYPE',b'Error 212\n',212)]
+               item('DIR TEXT.TXT',diagnostic_text(212,'DIR'),212),item('TYPE MISSING',diagnostic_text(205,'TYPE'),205),item('TYPE',diagnostic_text(212,'TYPE'),212)]
         for name in ('EMPTY','TEXT.TXT','B511.BIN','B512.BIN','B513.BIN','TOOLS/SUB/DATA.BIN'):
             cases.append(item('TYPE '+name,convert(contents[name]),source=contents[name]))
         cases += [item('TYPE',kind='default'),item('MEM',kind='memory'),
@@ -68,8 +68,8 @@ def prepare(size,scenario):
         require(size==256,'Full TYPE requires 256-byte fixture');payload=contents['LARGE.BIN'];require(len(payload)==70003,'Not the full file')
         cases=[item('TYPE LARGE.BIN',convert(payload),source=payload)]
     elif scenario=='raw-text':cases=[item('TYPE B1025.BIN',convert(contents['B1025.BIN']),kind='raw',source=contents['B1025.BIN'])]
-    elif scenario=='fault-read':cases=[item('TYPE EXT.BIN',b'Error 213\n',213)]
-    else:cases=[item('DIR',b'TOOLS/\nError 210\n',210)]
+    elif scenario=='fault-read':cases=[item('TYPE EXT.BIN',diagnostic_text(213,'TYPE'),213)]
+    else:cases=[item('DIR',b'TOOLS/\n'+diagnostic_text(210,'DIR'),210)]
     return disk,cases,derived,volume['sha256']
 
 def run(t,out,mode,bank=1,size=128,scenario='basic'):

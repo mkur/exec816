@@ -1,0 +1,98 @@
+MODULE SIOWRITEFAULTS
+USE EXEC
+USE EXECTASKS
+USE SIODRIVER
+USE HEAPCORE
+INCLUDE "io-names.inc"
+CARD checks,sectorBytes
+BYTE expected,offline,cleanupReached,absent,nak
+EXEC.MsgPort POINTER port
+EXEC.IOSIOReq POINTER request,readback
+BYTE POINTER buffer
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Retire the failed transaction before poisoning its buffer or using the bus.
+PROC Main()
+  CARD index,ticks
+  INT error
+
+  buffer=EXEC.AllocMem(SIZE(sectorBytes),EXEC.MEMF_UPPER)
+  port=EXEC.CreateMsgPort()
+  Require(buffer<>NULL AND port<>NULL)
+  request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSIOREQ_SIZE))
+  readback=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSIOREQ_SIZE))
+  Require(request<>NULL AND readback<>NULL)
+  Require(EXEC.OpenDevice(sioName,56,EXEC.IORequest POINTER(request),0)=0)
+  Require(EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(readback),0)=0)
+  FOR index=0 TO sectorBytes-1 DO
+    buffer(index)=BYTE(index) XOR $69
+  OD
+
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(sectorBytes)
+  request.sio_Command=$57
+  request.sio_Aux1=4
+  IF nak<>0 THEN
+    request.sio_Aux1=$ff
+    request.sio_Aux2=$ff
+  FI
+
+  request.sio_Direction=EXEC.SIODIR_WRITE
+  request.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  IF absent<>0 THEN
+    request.sio_TimeoutUS=20205
+  FI
+
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=INT(expected) AND request.io_Actual<=LONGCARD(sectorBytes))
+  Require(EXEC.GetMsg(port)=NULL AND request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  FOR index=0 TO sectorBytes-1 DO
+    IF buffer(index)<>(BYTE(index) XOR $69) THEN
+      Require(0)
+    FI
+
+    buffer(index)=$a5
+  OD
+
+  ticks=EXECTASKS.Sleep(4)
+  FOR index=0 TO sectorBytes-1 DO
+    IF buffer(index)<>$a5 THEN
+      Require(0)
+    FI
+  OD
+
+  readback.io_Command=EXEC.SIOCMD_TRANSACTION
+  readback.io_Data=buffer
+  readback.io_Length=LONGCARD(sectorBytes)
+  readback.sio_Command=$52
+  readback.sio_Aux1=4
+  readback.sio_Direction=EXEC.SIODIR_READ
+  readback.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  error=EXEC.DoIO(EXEC.IORequest POINTER(readback))
+  IF offline<>0 THEN
+    Require(error=EXEC.SIOERR_BUSUNAVAILABLE AND SIODRIVER.Unavailable()<>0)
+  ELSE
+    Require(error=0 AND readback.io_Actual=LONGCARD(sectorBytes))
+  FI
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.CloseDevice(EXEC.IORequest POINTER(readback))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(readback))
+  EXEC.DeleteMsgPort(port)
+  EXEC.FreeMem(buffer,SIZE(sectorBytes))
+  cleanupReached=1
+
+RETURN
+
+ENDMODULE

@@ -20,7 +20,7 @@ def run(t,out,mode,size,capacity=4,concurrent=False,fault=None):
         source.write_text((ROOT/'tests/programs/dos_files_fault.act').read_text().replace('  expected=4','  expected='+('4' if fault=='checksum' else '-4')))
         mutation='request.io_Error=4 request.io_Actual=0 error=4' if fault=='checksum' else 'request.io_Actual==-1'
         (out/'blockwire.act').write_text('MODULE BLOCKWIRE\nUSE EXEC\nPUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request)\n INT error\n error=EXEC.DoIO(EXEC.IORequest POINTER(request))\n IF error=0 AND request.sio_Aux1=5 AND request.sio_Aux2=0 THEN '+mutation+' FI\n\nRETURN(error)\n\nENDMODULE\n')
-    p=build(t,source,out,optimize=mode=='opt',tasks=True,dos_mounts=mounts,task_capacity=capacity,image_data=[(0xd1000,bytes(paths)),(0xcffd0,bytes([165])*32+bytes(800)+bytes([165])*32),(0xe0000,bytes(32))])
+    p=build(t,source,out,optimize=mode=='opt',tasks=True,dos_mounts=mounts,console_deferred=True,task_capacity=capacity,image_data=[(0xd1000,bytes(paths)),(0xcffd0,bytes([165])*32+bytes(800)+bytes([165])*32),(0xe0000,bytes(32))])
     with emulator(ROOT/'build/altirra-sio-multi',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
         machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN);b.config('diskemu','fastest');b.mount(0,str(media))
         def before_run(b):

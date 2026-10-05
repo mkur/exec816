@@ -1,0 +1,90 @@
+; Test-only injection at actual verified-write boundaries.
+MODULE FSWRITEPROBE
+USE EXEC
+USE DOSCORE
+USE FSTYPES
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+INCLUDE "sio-storage-action.inc"
+PUBLIC BYTE mode,fired,wirePhase
+PUBLIC CARD action,ordinal,count
+PUBLIC DOSBREAKTYPES.Scope POINTER target
+
+BYTE FUNC Selected(FSTYPES.Service POINTER service)
+
+RETURN(mode<>0 AND fired=0 AND service.packet<>NULL AND
+    service.packet.sp_Pkt.dp_Type=LONGINT(action))
+
+PROC Deliver()
+  BYTE ignored
+
+  fired=1
+  ignored=CONSOLEFOREGROUND.Deliver(target.generation)
+
+RETURN
+
+PUBLIC PROC Before(FSTYPES.Service POINTER service)
+
+  IF Selected(service)<>0 THEN
+    count==+1
+    IF mode=1 AND count=ordinal THEN
+      Deliver()
+    FI
+  FI
+
+RETURN
+
+PUBLIC LONGINT FUNC Completion(FSTYPES.Service POINTER service LONGINT error)
+
+  IF Selected(service)<>0 AND mode=2 AND count=ordinal AND error=0 THEN
+    fired=1
+    RETURN(6)
+  FI
+
+RETURN(error)
+
+PUBLIC PROC After(FSTYPES.Service POINTER service)
+  BYTE POINTER task
+
+  IF Selected(service)<>0 AND count=ordinal THEN
+    IF mode=3 THEN
+      Deliver()
+    ELSEIF mode=5 THEN
+      BEGIN
+        LET registry=DOSCORE.GetRegistry()
+        fired=1
+        task=registry.task
+        EXEC.Signal(EXEC.Task POINTER(task),LONGCARD($20000000))
+      END
+    FI
+  FI
+
+RETURN
+
+PUBLIC PROC OnWire(EXEC.IORequest POINTER request)
+
+  IF mode<>4 OR fired<>0 OR count<>ordinal THEN
+    RETURN
+  FI
+
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  IF Selected(service)=0 OR service.committing=0 THEN
+    RETURN
+  FI
+
+  LET phase=BYTE POINTER(SD_PHASE)
+  LET started=BYTE POINTER(SD_STARTED)
+  WHILE EXEC.CheckIO(request)=NULL DO
+    IF started^<>0 AND phase^>=1 AND phase^<13 THEN
+      wirePhase=phase^
+      Deliver()
+      RETURN
+    FI
+
+    EXEC.Yield()
+  OD
+
+RETURN
+
+ENDMODULE

@@ -16,6 +16,29 @@ USE BLOCKTYPES
 USE FSBACKEND
 BYTE ARRAY workerName=[100 111 115 46 102 105 108 101 115 121 115 116 101 109 0]
 
+; Stop admission first, then keep servicing retained objects until their
+; final packets and references retire. A committed writer can still Close.
+BYTE FUNC Drained(FSTYPES.Service POINTER service)
+  BYTE index,ready
+
+  ready=1
+  EXEC.Forbid()
+  IF service.packet<>NULL OR service.controls<>0 THEN
+    ready=0
+  FI
+
+  FOR index=0 TO service.count-1 DO
+    IF service.mounts(index).item<>NULL THEN
+      IF service.mounts(index).item.references<>0 THEN
+        ready=0
+      FI
+    FI
+  OD
+
+  EXEC.Permit()
+
+RETURN(ready)
+
 ; Drive bounded filesystem steps and sleep when neither packets nor I/O are
 ; ready.
 PUBLIC PROC Worker()
@@ -62,7 +85,9 @@ PUBLIC PROC Worker()
     received=0
     FSOPERATION.Pump(registry)
     IF service.stage>=10 AND registry.stop<>0 THEN
-      EXIT
+      IF Drained(service)<>0 THEN
+        EXIT
+      FI
     FI
 
     IF FSABORT.Checkpoint(service)<>0 THEN

@@ -10,8 +10,8 @@ USE SIODRIVER
 INCLUDE "../dos/dos-types.inc"
 ; The filesystem worker supplies its retained context. Standalone block users
 ; pass NULL/NULL; no task or filesystem lookup belongs in a sector transfer.
-PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
-    POINTER registry DOSBREAKTYPES.Scope POINTER scope)
+INT FUNC Exchange(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
+    POINTER registry DOSBREAKTYPES.Scope POINTER scope BYTE cancellable)
   LONGCARD mask,control,bits,state
   INT error
   BYTE attempted,aborted
@@ -23,7 +23,7 @@ PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
     FI
   FI
 
-  IF FSOPERATION.Canceled(scope)<>0 THEN
+  IF cancellable<>0 AND FSOPERATION.Canceled(scope)<>0 THEN
     RETURN(INT(ERROR_BREAK))
   FI
 
@@ -43,7 +43,7 @@ PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
       FSOPERATION.Pump(registry)
     FI
 
-    IF attempted=0 AND FSOPERATION.Canceled(scope)<>0 THEN
+    IF cancellable<>0 AND attempted=0 AND FSOPERATION.Canceled(scope)<>0 THEN
       attempted=1
       aborted=SIODRIVER.TryCancel(EXEC.IORequest POINTER(request))
     FI
@@ -57,5 +57,19 @@ PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
   FI
 
 RETURN(error)
+
+; Ordinary reads can retire at the driver's supported cancellation points.
+PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
+    POINTER registry DOSBREAKTYPES.Scope POINTER scope)
+
+RETURN(Exchange(request,registry,scope,1))
+
+; Once metadata mutation starts, collect every sector completion while still
+; pumping control messages. The filesystem chooses its next safe checkpoint;
+; device queue, timeout and bus recovery policy remain in the SIO driver.
+PUBLIC INT FUNC TransferCommitted(EXEC.IOSIOReq POINTER request
+    DOSCORE.DosRegistry POINTER registry DOSBREAKTYPES.Scope POINTER scope)
+
+RETURN(Exchange(request,registry,scope,0))
 
 ENDMODULE

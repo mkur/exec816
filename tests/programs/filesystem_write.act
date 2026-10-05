@@ -1,0 +1,195 @@
+MODULE FSWRITETEST
+USE EXEC
+USE DOS
+USE HEAPCORE
+USE FSBOOT
+USE FSTYPES
+USE FSBTYPES
+USE FSWTYPES
+USE FSINFO
+USE DOSCORE
+CARD checks,phase
+CARD hint
+CARD ARRAY layouts(8)
+LONGINT amount
+LONGINT lastResult,lastError
+DOS.FileHandle POINTER file,second
+DOS.FileLock POINTER lock
+DOS.FileInfoBlock info
+
+PROC Require(BYTE okay)
+
+  lastError=DOS.IoErr()
+  IF okay=0 THEN
+    HEAPCORE.Abort($f500+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+BYTE POINTER FUNC Path(CARD index)
+
+RETURN(BYTE POINTER($d1000)+SIZE(index LSH 6))
+
+PROC FileWrites()
+  LONGINT index
+
+  LET buffer=BYTE POINTER($afff0)
+  FOR index=0 TO amount-1 DO
+    buffer(CARD(index))=BYTE(index) XOR $6d
+  OD
+
+  phase=1
+  file=DOS.Open(Path(0),DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,NULL,0)=0)
+  Require(DOS.Open(Path(0),DOS.MODE_OLDFILE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Lock(Path(0),DOS.SHARED_LOCK)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  lock=DOS.Lock(Path(6),DOS.SHARED_LOCK)
+  Require(lock<>NULL AND DOS.Examine(lock,@info)<>0)
+  phase=2
+  lastResult=DOS.Write(file,buffer,amount)
+  Require(lastResult=amount)
+  Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Examine(lock,@info)<>0)
+  DO
+    Require(DOS.ExNext(lock,@info)<>0)
+    IF info.fib_FileName(0)='W THEN
+      EXIT
+    FI
+  OD
+
+  Require(info.fib_Size=amount)
+  DOS.UnLock(lock)
+  Require(DOS.Flush(file)<>0)
+  Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=amount)
+  Require(DOS.Read(file,buffer,amount)=amount)
+  FOR index=0 TO amount-1 DO
+    IF buffer(CARD(index))<>(BYTE(index) XOR $6d) THEN
+      Require(0)
+    FI
+  OD
+
+  Require(DOS.Close(file)<>0)
+  phase=3
+  file=DOS.Open(Path(0),DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  Require(DOS.Seek(file,123,DOS.OFFSET_BEGINNING)=0)
+  FOR index=0 TO 16 DO
+    buffer(CARD(index))=BYTE(index)+$31
+  OD
+
+  Require(DOS.Write(file,buffer,17)=17)
+  Require(DOS.Seek(file,0,DOS.OFFSET_END)=140)
+  FOR index=0 TO 36 DO
+    buffer(CARD(index))=BYTE(index)+$93
+  OD
+
+  Require(DOS.Write(file,buffer,37)=37)
+  Require(DOS.Close(file)<>0)
+  phase=4
+  file=DOS.Open(Path(0),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,buffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_WRITE_PROTECTED)
+  Require(DOS.Open(Path(0),DOS.MODE_READWRITE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Flush(file)<>0)
+  Require(DOS.Read(file,buffer,amount+38)=amount+37)
+  FOR index=0 TO amount-1 DO
+    IF index>=123 AND index<140 THEN
+      Require(buffer(CARD(index))=BYTE(index-123)+$31)
+    ELSEIF buffer(CARD(index))<>(BYTE(index) XOR $6d) THEN
+      Require(0)
+    FI
+  OD
+
+  FOR index=0 TO 36 DO
+    Require(buffer(CARD(amount+index))=BYTE(index)+$93)
+  OD
+
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Names()
+
+  phase=5
+  Require(DOS.Rename(Path(0),Path(1))<>0)
+  Require(DOS.Open(Path(0),DOS.MODE_OLDFILE)=NULL)
+  file=DOS.Open(Path(1),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.DeleteFile(Path(1))=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Close(file)<>0)
+  lock=DOS.CreateDir(Path(2))
+  Require(lock<>NULL)
+  Require(DOS.CreateDir(Path(2))=NULL AND DOS.IoErr()=DOS.ERROR_OBJECT_EXISTS)
+  Require(DOS.DeleteFile(Path(2))=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  DOS.UnLock(lock)
+  file=DOS.Open(Path(3),DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,BYTE POINTER($afff0),17)=17)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.DeleteFile(Path(2))=0 AND DOS.IoErr()=DOS.ERROR_DIR_NOT_EMPTY)
+  Require(DOS.DeleteFile(Path(3))<>0)
+  Require(DOS.DeleteFile(Path(2))<>0)
+
+RETURN
+
+PROC Truncate()
+
+  phase=6
+  file=DOS.Open(Path(4),DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,BYTE POINTER($afff0),amount)=amount)
+  Require(DOS.Close(file)<>0)
+  file=DOS.Open(Path(4),DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Seek(file,0,DOS.OFFSET_END)=0)
+  Require(DOS.Write(file,BYTE POINTER($afff0),1)=1)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.DeleteFile(Path(4))<>0)
+  file=DOS.Open(Path(5),DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Main()
+
+  layouts(0)=CARD(SIZEOF(FSTYPES.Spec))
+  layouts(1)=CARD(SIZEOF(FSTYPES.Service))
+  layouts(2)=CARD(SIZEOF(FSTYPES.Mount))
+  layouts(3)=CARD(SIZEOF(FSTYPES.FileObject))
+  layouts(4)=CARD(SIZEOF(FSTYPES.FileBacking))
+  layouts(5)=CARD(SIZEOF(FSTYPES.LockObject))
+  layouts(6)=CARD(SIZEOF(FSWTYPES.State))
+  layouts(7)=CARD(SIZEOF(FSINFO.Enumeration))
+  Require(layouts(0)=46 AND layouts(7)<=32)
+  Require(FSBOOT.Ensure()<>0)
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  Require(service.work.operations=1)
+  service.mounts(0).item.volume.allocationHint=hint
+  FileWrites()
+  Names()
+  Truncate()
+  phase=7
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  Require(FSBOOT.Ensure()<>0)
+  LET remounted=FSTYPES.Service POINTER(registry.runtime)
+  Require(remounted.work.operations=1)
+  file=DOS.Open(Path(1),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Seek(file,0,DOS.OFFSET_END)=0)
+  Require(DOS.Seek(file,0,DOS.OFFSET_CURRENT)=amount+37)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+
+RETURN
+
+ENDMODULE

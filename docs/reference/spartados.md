@@ -1,4 +1,4 @@
-# Read-only SpartaDOS filesystem contract
+# SpartaDOS filesystem contract
 
 This is the supported SDFS subset for the implementation in
 [the six-slice plan](../plans/spartados-implementation-plan.md). Completion evidence is
@@ -64,8 +64,9 @@ Records may straddle sectors and map pages. Directory length must be at least
 23 and divisible by 23, with no sparse region in the required extent.
 
 An active entry has status bit `$08`; `$10` marks deletion, `$20` a directory,
-and `$01` write protection. Open-for-write/incomplete entries (`$80`) fail
-explicitly. Deleted entries are skipped; a zero status marks the directory end. Unknown live status combinations are
+and `$01` write protection. Open-for-write/incomplete entries (`$80`) are
+accepted only when a live writer in this mount owns them; other incomplete
+entries fail explicitly. Deleted entries are skipped; a zero status marks the directory end. Unknown live status combinations are
 not silently accepted. The parser preserves stored names and uses the existing
 exact-match-first, ASCII-folded fallback policy; ambiguous matches fail.
 
@@ -93,7 +94,8 @@ DateStamp days, minutes and 50-Hz ticks. Missing, invalid or unrepresentable
 dates yield an all-zero DateStamp. Text and binary reads preserve every byte,
 including ATASCII `$9B`.
 
-Reject mutating requests before issuing device I/O. An unrecognized mount
+Mutation requires an explicitly writable mount and follows the
+[filesystem write contract](filesystem-writes.md). An unrecognized mount
 header returns `ERROR_NOT_A_DOS_DISK`; malformed structures in an admitted
 volume return `ERROR_DISK_NOT_VALIDATED`. Preserve causal SIO errors and BREAK
 through the existing packet/retirement path. Unsupported names receive the

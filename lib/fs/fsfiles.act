@@ -3,6 +3,7 @@
 MODULE FSFILES
 USE EXEC
 USE FSTYPES
+USE FSLEASES
 USE HEAPCORE
 USE DOSOBJECTS
 
@@ -54,6 +55,28 @@ PUBLIC BYTE FUNC Retain(FSTYPES.FileObject POINTER source,target)
 RETURN(1)
 
 ; Drop this handle's reference; the last handle owns freeing the backing.
+; Close and detached rollback use this atomic non-last retirement before
+; deciding whether finalization needs I/O. A last reference stays attached.
+PUBLIC BYTE FUNC DropShared(FSTYPES.FileObject POINTER item)
+  BYTE shared
+
+  shared=0
+  EXEC.Forbid()
+  IF item.backing<>NULL THEN
+    IF item.backing.references>1 THEN
+      FSLEASES.Unlink(@item.common)
+      item.backing.references==-1
+      item.backing=NULL
+      shared=1
+    FI
+  FI
+
+  EXEC.Permit()
+
+RETURN(shared)
+
+; Storage release never performs I/O. The caller has finalized a last writer
+; or is disposing an unpublished result after a failed mutation.
 PUBLIC PROC Release(FSTYPES.FileObject POINTER item)
   FSTYPES.FileBacking POINTER state
   BYTE last

@@ -8,6 +8,12 @@ from native_program import ROOT,build,compiler,require,sha256,verify_machine,rea
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 from test_console_display import terminal
+from console_model import read_cells
+from generate_program import fault_messages
+
+def diagnostic_text(code, header):
+    message=fault_messages().get(code)
+    return (f"{header}: {message} ({code})\n" if message else f"{header}: Error code {code}\n").encode()
 from os_boundary import emulator,run_to
 from banked_test_memory import read as far_read
 PIN=json.loads((ROOT/'toolchain/altirra-shell-console.json').read_text())
@@ -76,7 +82,7 @@ ENDMODULE
 def instrument(out,source='shell_core.act'):
     cooked_observer(out)
     s=(ROOT/'examples/shell/shell-session.inc').read_text().replace('USE EXEC\n','USE EXEC\nUSE SHELLEDITPROBE\n',1).replace('PROC ShellWrite(','PROC NativeShellWrite(').replace('LONGINT FUNC ShellFinish()', 'LONGINT FUNC NativeShellFinish()')
-    for name in ('shell-commands.inc','shell-redirection.inc'):
+    for name in ('shell-commands.inc','shell-redirection.inc','shell-path.inc'):
         s=s.replace('"'+name+'"','"'+str(ROOT/'examples/shell'/name)+'"')
     s=s.replace('BYTE FUNC ShellOpen(BYTE POINTER consoleName)','BYTE FUNC ShellOpen(BYTE POINTER consoleName)\n  SHELLEDITPROBE.Bind(@captureCount,@consumed,@suspend,@stage,@gate)')
     command_step='      ShellCommand()\n      ShellClear()'
@@ -125,7 +131,7 @@ def draw(line,old=None):
 
 KEYS={c:(c.upper(),False)for c in 'abcdefghijklmnopqrstuvwxyz0123456789'}
 KEYS.update({c:(c,True)for c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'})
-KEYS.update({' ':('SPACE',False),'\n':('RETURN',False),'\t':('TAB',False),'\b':('BACKSPACE',False),':':('SEMICOLON',True),'"':('2',True),'*':('ASTERISK',False),'<':('LESS',False),'>':('GREATER',False),'/':('SLASH',False),'.':('PERIOD',False),';':('SEMICOLON',False),'|':('EQUALS',True),'-':('MINUS',False),'=':('EQUALS',False)})
+KEYS.update({' ':('SPACE',False),'\n':('RETURN',False),'\t':('TAB',False),'\b':('BACKSPACE',False),':':('SEMICOLON',True),'"':('2',True),'*':('ASTERISK',False),'<':('LESS',False),'>':('GREATER',False),'/':('SLASH',False),'.':('PERIOD',False),';':('SEMICOLON',False),'|':('EQUALS',True),'-':('MINUS',False),'=':('EQUALS',False),'?':('SLASH',True)})
 
 def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=None,reuse=False,pin=None,bridge_build=None):
     pin = pin or PIN
@@ -134,8 +140,8 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
     source=instrument(out)
     if external:external.instrument(out)
     p=read_build(out) if reuse else build(t,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,
-            system_mount=None if no_mount else 'D1',dos_mounts=[] if no_mount else [dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=1)],
-            image_data=[])
+            system_mount=None if no_mount else 'D1',dos_mounts=[] if no_mount else getattr(external,'mounts',[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=1)]),
+            image_data=[],memory_profile=getattr(external,'memory_profile',None))
     media=out/'volume.atr'
     if external:external.prepare(t,out,mode,size)
     else:shutil.copyfile(ROOT/f'tests/fixtures/mydos/mydos450-{size}.atr',media)
@@ -148,6 +154,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
         machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',pin)
         b.config('diskemu','fastest')
         if not no_mount:b.mount(0,str(media))
+        if external and hasattr(external,'mount_extra'):external.mount_extra(b,out)
         def far(addr,n):
             result=bytearray()
             for i in range(0,n,2):
@@ -195,7 +202,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
             cells,physical,cursor=terminal(expected)
             rendezvous(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
             pointer=int.from_bytes(far(instance,3),'little')
-            actual=far(pointer,960);screen=b.memdump(state['screen'],960)
+            actual=read_cells(far,instance);screen=b.memdump(state['screen'],960)
             (out/(stage+'.cells.bin')).write_bytes(actual);(out/(stage+'.screen.bin')).write_bytes(screen)
             require(actual==cells,'Retained shell text differs at '+stage)
             require(screen==physical,'Physical shell text differs at '+stage)
@@ -208,16 +215,18 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
                     if line:
                         old=bytes(line);line.pop();expected.extend(draw(line,old))
                 else:line.extend(b' ' if c=='\t' else c.encode());expected.extend(draw(line))
-        def submit(output=b'',error=0,exit=False,status=None):
+        def submit(output=b'',error=0,exit=False,status=None,diagnostic=None):
             previous=b.peek16(at('commandCount'))
             press('\n');rendezvous(f'dw(${at("commandCount"):x})={previous+1}')
             if not exit:ready()
+            name=diagnostic or (re.split(r'[\s|]',bytes(line).decode())[0] if line else 'Shell')
             expected.extend(b'\n'+output);line.clear()
-            if error and error!=304:expected.extend(f'Error {error}\n'.encode())
+            if error and error!=304:expected.extend(diagnostic_text(error,name))
+            elif not error and status not in (None,0,5):expected.extend(f'{name}: Command returned {status}\n'.encode())
             if not exit:expected.extend(draw(line))
             pointer=state['shell'];actual=int.from_bytes(far(pointer+32,4),'little',signed=True);cause=int.from_bytes(far(pointer+36,4),'little',signed=True)
             require((actual,cause)==((status if status is not None else (10 if error else 0)),error),f'Wrong command result {actual}/{cause}; wanted {error}')
-        def command(text,output=b'',error=0,exit=False,status=None):append(text);submit(output,error,exit,status)
+        def command(text,output=b'',error=0,exit=False,status=None,diagnostic=None):append(text);submit(output,error,exit,status,diagnostic)
         def ready():
             rendezvous(f'db(${p["build"]["memory"]["console_storage"]["INSTANCE"]+51:x})=2')
         def cancel(ctrl=False):
@@ -226,7 +235,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
             state.update(screen=b.peek16(88),cursor=b.peek(752),mask=b.peek(16));state['bytes']=b.memdump(state['screen'],960)
             b._cmd_ok('KEY ALL up');rendezvous(f'db(${at("stage"):x})=1');state['shell']=int.from_bytes(far(at('shell'),3),'little')
             handle=int.from_bytes(far(state['shell'],3),'little');state['cooked']=int.from_bytes(far(handle+16,3),'little')
-            expected.extend(b'Error 218\n' if no_mount else b'');expected.extend(draw(line))
+            expected.extend(diagnostic_text(218,'Shell') if no_mount else b'');expected.extend(draw(line))
             ts=p['build']['task_storage'];created=b.eval_expr(f'dw(${ts["CREATED"]:x})');live=b.eval_expr(f'db(${ts["LIVE"]:x})')
             require((created,live)==((1,2)if no_mount else(3,4)),f'Unexpected shell Task count: {created}/{live}')
             observations.append(dict(stage='startup',created=created,live=live,shell_pointer=state['shell']))
@@ -237,7 +246,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
                 external.exercise(SimpleNamespace(command=command,check_screen=check_screen,append=append,press=press,
                     rendezvous=rendezvous,ready=ready,far=far,at=at,p=p,state=state,expected=expected,line=line,b=b))
             elif not smoke:
-                command('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES EXIT\n')
+                command('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT\n')
                 command('cd',b'' if no_mount else b'D1:\n',211 if no_mount else 0)
                 if not no_mount:
                     for cmd in ('cd tools/sub','cd /','cd :','cd d1:tools','cd missing'):
@@ -245,12 +254,13 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
                     command('cd',b'D1:TOOLS\n')
                 else:command('cd D1:',error=218)
                 command('echo "a**b*"c"',b'a*b"c\n')
-                for text,error in [('unknown',211 if no_mount else 205),('echo "bad',115),('echo "bad*x"',115),('echo a|b',115),('echo a;b',115),('echo>NIL:',115),('echo >',115),('help extra',115),('echo '+' '.join(['x']*16),115)]:command(text,error=error)
+                for text,error in [('unknown',211 if no_mount else 205),('echo "bad',115),('echo "bad*x"',115),('echo a|b',115),('echo a;b',115),('echo>NIL:',115),('echo >',115),('help extra',115),('echo '+' '.join(['x']*16),115)]:
+                    command(text,error=error,diagnostic='Shell' if error==115 else None)
                 append('a');check_screen('one');cancel(ctrl=True)
                 append('a'*36);check_screen('thirty-six');append('b');check_screen('thirty-seven');append('\b');check_screen('back-to-thirty-six');cancel()
                 append('echo '+'a'*250);check_screen('max-line');submit(b'a'*250+b'\n');check_screen('max-command')
                 append('echo '+'a'*250);press('b');expected.extend(draw(b'',bytes(line)));check_screen('overflow')
-                press('\n');ready();expected.extend(b'\nError 120\n');line.clear();expected.extend(draw(line))
+                press('\n');ready();expected.extend(b'\n'+diagnostic_text(120,'Shell'));line.clear();expected.extend(draw(line))
                 append('echo\ttab');submit(b'tab\n');check_screen('tab')
                 # Pause only in the fixture, after an actual translated key.
                 # The console worker continues to accept real typeahead.
@@ -297,6 +307,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
         require(actual==expected,'Exact shell Write payload differs')
         require(b.memdump(state['screen'],960)==state['bytes'] and b.peek(752)==state['cursor'] and b.peek(16)==state['mask'],'Shell did not restore OS console')
         ownership(b,p,out);require(sha256(media)==digest,'Shell modified media')
+        if external and hasattr(external,'persisted'):external.persisted(b,p,out)
     return dict(status='pass',mode=mode,kernel_bank=bank,sector_bytes=size,no_mount=no_mount,smoke=smoke,eof=eof,build=p['build'],runtime=rt,machine=machine,pin=pin,limits=LIMITS,observations=observations,schedule=schedule,counts=counts,media_sha256=digest,writes_sha256=sha256(out/'writes.bin'),source_inputs={s:sha256(ROOT/s)for s in ('examples/shell/shell.act','examples/shell/shell-session.inc','examples/shell/shell-commands.inc','tests/programs/shell_core.act','tools/test_shell_core.py')},hook_sha256=sha256(out/'shell-observed.inc'))
 
 if __name__=='__main__':

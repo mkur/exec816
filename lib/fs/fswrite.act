@@ -1,0 +1,322 @@
+; Common write admission, bounded commit units and explicit writer finalization.
+MODULE FSWRITE
+USE EXEC
+USE FSTYPES
+USE FSBTYPES
+USE FSWTYPES
+USE FSWRITEIO
+USE FSALLOC
+USE FSFORMATS
+USE FSLEASES
+USE FSCORE
+USE FS83
+USE MYDOSWRITE
+USE SDFSWRITE
+USE SDFS
+USE DOSOBJECTS
+USE FSPACKET
+USE FSSTATUS
+USE BLOCKIO
+USE DOSWIRE
+INCLUDE "../dos/dos-types.inc"
+
+PUBLIC BYTE FUNC Access(FSTYPES.Service POINTER service)
+
+  IF service.selected.writable=0 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_WRITE_PROTECTED))
+  FI
+
+  IF service.selected.epoch=LONGCARD($ffffffff) THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_OBJECT_IN_USE))
+  FI
+
+RETURN(FSWRITEIO.Checkpoint(service))
+
+PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry
+    POINTER entry)
+  BYTE okay
+
+  IF service.selected.spec.format=FSFORMATS.SDFS THEN
+    okay=SDFSWRITE.Validate(service,entry)
+  ELSE
+    okay=MYDOSWRITE.Validate(service,entry)
+  FI
+
+  IF okay=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(FSALLOC.CountRoom(service,entry.count))
+
+PUBLIC BYTE FUNC Mark(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry BYTE opened)
+
+  IF service.selected.spec.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSWRITE.Mark(service,entry,opened))
+  FI
+
+RETURN(MYDOSWRITE.Mark(service,entry,opened))
+
+; Both accepted legacy zero-start empty encodings become native canonical
+; one-sector/map empty files when first opened for writing.
+BYTE FUNC Normalize(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry)
+  CARD maximum
+
+  IF entry.start<>0 THEN
+    RETURN(1)
+  FI
+
+  maximum=$ffff
+  IF service.selected.spec.format=FSFORMATS.MYDOS AND (entry.key & $400)=0 THEN
+    maximum=1023
+  FI
+
+  IF FSALLOC.Find(service,1,0,maximum)=0 THEN
+    RETURN(0)
+  FI
+
+  LET sector=FSALLOC.Take(service)
+  IF sector=0 THEN
+    RETURN(0)
+  FI
+
+  LET state=FSWRITEIO.State(service)
+  FSWRITEIO.Zero(state.data)
+  IF service.selected.spec.format=FSFORMATS.MYDOS AND (entry.key & $400)=0 THEN
+    state.data(service.selected.spec.dataBytes-3)=BYTE(entry.key) LSH 2
+  FI
+
+  IF FSWRITEIO.Write(service,sector,state.data)=0 THEN
+    RETURN(0)
+  FI
+
+  entry.start=sector
+  entry.count=1
+
+RETURN(1)
+
+; Missing leaves have already passed a complete folded-name lookup. The
+; handler allocates its returned object/backing before entering this routine.
+PUBLIC BYTE FUNC Create(FSTYPES.Service POINTER service BYTE directory)
+  BYTE index
+
+  IF Access(service)=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO 10 DO
+    service.work.wanted(index)=FS83.Fold(service.work.wanted(index))
+  OD
+
+  IF directory<>0 AND service.work.depth>=16 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_TOO_MANY_LEVELS))
+  FI
+
+  IF service.selected.spec.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSWRITE.Create(service,directory))
+  FI
+
+RETURN(MYDOSWRITE.Create(service,directory))
+
+PUBLIC BYTE FUNC Open(FSTYPES.Service POINTER service)
+
+  IF Access(service)=0 THEN
+    RETURN(0)
+  FI
+
+  LET entry=@service.work.entry
+  IF service.missing<>0 THEN
+    IF Create(service,0)=0 THEN
+      RETURN(0)
+    FI
+  ELSE
+    IF (entry.flags & FSBTYPES.PROTECTED)<>0 THEN
+      RETURN(FSWRITEIO.Error(service,ERROR_WRITE_PROTECTED))
+    FI
+
+    IF Validate(service,entry)=0 OR Normalize(service,entry)=0 THEN
+      RETURN(0)
+    FI
+
+    IF Mark(service,entry,1)=0 THEN
+      RETURN(0)
+    FI
+
+    IF service.packet.sp_Pkt.dp_Type=MODE_NEWFILE THEN
+      IF service.selected.spec.format=FSFORMATS.SDFS THEN
+        IF SDFSWRITE.Truncate(service,entry)=0 THEN
+          RETURN(0)
+        FI
+      ELSEIF MYDOSWRITE.Truncate(service,entry)=0 THEN
+        RETURN(0)
+      FI
+    FI
+  FI
+
+  service.selected.epoch==+1
+
+RETURN(1)
+
+; The worker revisits this callback after each committed payload. It can
+; honor BREAK between units while retaining the confirmed byte prefix.
+PUBLIC BYTE FUNC WriteStep(BYTE POINTER raw)
+  LONGINT done
+
+  LET service=FSTYPES.Service POINTER(raw)
+  LET operation=service.operation
+  LET file=operation.file
+  done=0
+  IF Access(service)<>0 THEN
+    IF service.selected.spec.format=FSFORMATS.SDFS THEN
+      done=SDFSWRITE.Write(service,file,operation.output+
+          SIZE(operation.completed),operation.remaining)
+    ELSE
+      done=MYDOSWRITE.Write(service,file,operation.output+
+          SIZE(operation.completed),operation.remaining)
+    FI
+  FI
+
+  IF done>0 THEN
+    operation.completed==+done
+    operation.remaining==-done
+    service.selected.epoch==+1
+  FI
+
+  IF done>0 AND operation.remaining<>0 THEN
+    service.committing=0
+    service.changed=0
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  service.packet.sp_Pkt.dp_Res1=operation.completed
+  IF done=0 AND operation.completed=0 THEN
+    service.packet.sp_Pkt.dp_Res1=-1
+  FI
+
+  service.packet.sp_Pkt.dp_Res2=service.work.error
+  IF service.work.ioError<>0 THEN
+    service.packet.sp_Pkt.dp_Res2=service.work.ioError
+  FI
+
+  FSPACKET.Reply(service)
+
+RETURN(FSSTATUS.MORE)
+
+PUBLIC BYTE FUNC Begin(FSTYPES.Service POINTER service FSTYPES.FileObject
+    POINTER item)
+  LONGCARD maximum
+
+  IF item.backing.writable=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_WRITE_PROTECTED))
+  FI
+
+  LET operation=service.operation
+  operation.file=@item.backing.cursor
+  operation.output=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg2))
+  operation.requested=service.packet.sp_Pkt.dp_Arg3
+  IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg2)=0 OR
+      operation.requested<0 OR BLOCKIO.Mapped(operation.output,
+      LONGCARD(operation.requested))=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+  FI
+
+  operation.remaining=operation.requested
+  operation.completed=0
+  operation.stage=1
+  maximum=service.selected.spec.sectors*
+      LONGCARD(service.selected.spec.dataBytes-3)
+  IF service.selected.spec.format=FSFORMATS.SDFS THEN
+    maximum=16777215
+  FI
+
+  IF operation.requested<0 OR LONGCARD(operation.file.position)>maximum OR
+      LONGCARD(operation.requested)>maximum-LONGCARD(operation.file.position) THEN
+    RETURN(FSPACKET.Error(service,ERROR_OBJECT_TOO_LARGE))
+  FI
+
+  service.nextStep=@WriteStep
+
+RETURN(FSSTATUS.MORE)
+
+; Call before consuming the wrapper. Last-reference Close is always drained,
+; even with a pending BREAK or an earlier unvalidated-mount failure.
+PUBLIC LONGINT FUNC Finalize(FSTYPES.Service POINTER service
+    FSTYPES.FileObject POINTER file)
+
+  IF file.backing.writable=0 OR file.backing.references<>1 THEN
+    RETURN(0)
+  FI
+
+  IF service.selected.offline<>0 THEN
+    RETURN(service.selected.error)
+  FI
+
+  service.committing=1
+  IF Mark(service,@file.backing.cursor.entry,0)=0 THEN
+    IF service.work.ioError<>0 THEN
+      RETURN(service.work.ioError)
+    FI
+
+    RETURN(service.work.error)
+  FI
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Delete(FSTYPES.Service POINTER service)
+  CARD sector
+
+  LET entry=@service.work.entry
+  IF Access(service)=0 THEN
+    RETURN(0)
+  FI
+
+  IF entry.parent=0 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_OBJECT_IN_USE))
+  FI
+
+  IF (entry.flags & FSBTYPES.PROTECTED)<>0 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DELETE_PROTECTED))
+  FI
+
+  IF FSLEASES.Busy(service.selected,entry,1,1)<>0 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_OBJECT_IN_USE))
+  FI
+
+  IF (entry.flags & FSBTYPES.DIR)<>0 THEN
+    IF service.selected.spec.format=FSFORMATS.SDFS THEN
+      IF SDFSWRITE.Empty(service,entry.start)=0 OR Validate(service,entry)=0 THEN
+        RETURN(0)
+      FI
+    ELSE
+      IF MYDOSWRITE.Empty(service,entry.start)=0 OR
+          FSALLOC.CountRoom(service,8)=0 THEN
+        RETURN(0)
+      FI
+
+      FOR sector=entry.start TO entry.start+7 DO
+        IF FSALLOC.Allocated(service,sector)=0 THEN
+          RETURN(0)
+        FI
+      OD
+    FI
+  ELSEIF Validate(service,entry)=0 THEN
+    RETURN(0)
+  FI
+
+  IF service.selected.spec.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSWRITE.Delete(service,entry))
+  FI
+
+RETURN(MYDOSWRITE.Delete(service,entry))
+
+PUBLIC BYTE FUNC Rename(FSTYPES.Service POINTER service)
+
+  LET state=FSWRITEIO.State(service)
+  LET entry=@state.target
+  IF service.selected.spec.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSWRITE.Rename(service,entry,service.work.wanted))
+  FI
+
+RETURN(MYDOSWRITE.Rename(service,entry,service.work.wanted))
+
+ENDMODULE

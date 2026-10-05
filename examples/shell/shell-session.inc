@@ -2,6 +2,8 @@
 USE EXEC
 USE FSFORMATS
 USE DOS
+USE DOSCORE
+USE DOSOBJECTS
 USE EXECBUILD
 USE TASKINSPECT
 USE DEVICEINSPECT
@@ -30,7 +32,9 @@ CONST TRANSFER_CAPACITY=512
 CONST DRAW_OFFSET=HEADER_SIZE+LINE_CAPACITY
 CONST SCRATCH_OFFSET=DRAW_OFFSET+DRAW_CAPACITY
 CONST TRANSFER_OFFSET=SCRATCH_OFFSET+SCRATCH_CAPACITY
-CONST SHELL_BYTES=TRANSFER_OFFSET+TRANSFER_CAPACITY
+CONST PATH_OFFSET=TRANSFER_OFFSET+TRANSFER_CAPACITY
+CONST PATH_CAPACITY=4
+CONST SHELL_BYTES=PATH_OFFSET+PATH_CAPACITY*LINE_CAPACITY
 
 CONST NO_REDIRECT=$ffff
 
@@ -59,6 +63,7 @@ CONST CMD_VER=9
 CONST CMD_MOUNT=10
 CONST CMD_DEVICES=11
 CONST CMD_EXTERNAL=12
+CONST CMD_PATH=13
 
 TYPE ShellWord=[BYTE POINTER text]
 
@@ -88,7 +93,9 @@ TYPE ShellState=[
 
   CARD pipelineIndex,secondArgumentOffset,secondArgumentLength
   BYTE pipeline
-  BYTE ARRAY reserved(7)
+  BYTE pathCount
+  BYTE diagnosticWord
+  BYTE ARRAY reserved(5)
 ]
 
 ShellState POINTER shell
@@ -312,13 +319,43 @@ RETURN
 ; Explain a recoverable command failure on the shell's own console.
 ; User cancellation needs no error message.
 PROC ShellDiagnostic()
+  CSTRING header
 
-  IF shell.status<>PROCESS.RETURN_OK AND shell.done=0
-    AND shell.error<>0 AND shell.error<>DOS.ERROR_BREAK THEN
-    ShellText(shell.console,c"Error ")
-    ShellNumber(shell.console,shell.error)
+  IF shell.done<>0 OR shell.status=PROCESS.RETURN_OK
+      OR shell.error=DOS.ERROR_BREAK
+      OR (shell.status=5 AND shell.error=0) THEN
+    RETURN
+  FI
+
+  LET primary=shell.status
+  LET secondary=shell.error
+  LET saved=DOS.IoErr()
+  header=c"Shell"
+  IF shell.diagnosticWord<shell.argc THEN
+    header=CSTRING(shell.words(shell.diagnosticWord).text)
+  FI
+
+  IF secondary<>0 THEN
+    BEGIN
+      LET length=DOS.Fault(secondary,header,ShellTransfer(),TRANSFER_CAPACITY)
+      IF length<0 THEN
+        shell.done=1
+      ELSE
+        ShellWrite(shell.console,ShellTransfer(),CARD(length))
+        ShellByte(shell.console,ASCII.LF)
+      FI
+    END
+  ELSE
+    ShellText(shell.console,header)
+    ShellText(shell.console,c": Command returned ")
+    ShellNumber(shell.console,primary)
     ShellByte(shell.console,ASCII.LF)
   FI
+
+  ; A failed diagnostic can retire the console, but cannot rewrite the result.
+  shell.status=primary
+  shell.error=secondary
+  DOS.SetIoErr(saved)
 
 RETURN
 
@@ -374,6 +411,9 @@ BYTE FUNC ShellClassify(BYTE POINTER word)
 
   ELSEIF ShellEqual(word,c"MOUNT")<>0 THEN
     RETURN(CMD_MOUNT)
+
+  ELSEIF ShellEqual(word,c"PATH")<>0 THEN
+    RETURN(CMD_PATH)
 
   ELSEIF ShellEqual(word,c"DEVICES")<>0 THEN
     RETURN(CMD_DEVICES)
@@ -702,12 +742,13 @@ RETURN
 
 INCLUDE "shell-commands.inc"
 INCLUDE "shell-redirection.inc"
+INCLUDE "shell-path.inc"
 
 ; Run a disk command in the foreground and keep its result for the shell.
 PROC ShellExternal()
   PROCESS.Result outcome
 
-  LET image=PROGRAMFILE.Load(shell.words(0).text)
+  LET image=ShellLoadCommand(shell.words(0).text)
   LET loadError=DOS.IoErr()
   IF image=NULL THEN
     ShellFail(PROCESS.RETURN_ERROR,loadError)
@@ -739,14 +780,15 @@ RETURN
 PROC ShellPipeline()
   PIPELINE.Outcome outcome
 
-  LET first=PROGRAMFILE.Load(shell.words(0).text)
+  LET first=ShellLoadCommand(shell.words(0).text)
   LET firstError=DOS.IoErr()
   IF first=NULL THEN
     ShellFail(PROCESS.RETURN_ERROR,firstError)
     RETURN
   FI
 
-  LET second=PROGRAMFILE.Load(shell.words(shell.pipelineIndex).text)
+  shell.diagnosticWord=BYTE(shell.pipelineIndex)
+  LET second=ShellLoadCommand(shell.words(shell.pipelineIndex).text)
   LET secondError=DOS.IoErr()
   IF second=NULL THEN
     PROGRAM.Unload(first)
@@ -762,11 +804,19 @@ PROC ShellPipeline()
   PROGRAM.Unload(first)
   PROGRAM.Unload(second)
   IF accepted=0 THEN
+    shell.diagnosticWord=$ff
     ShellFail(outcome.primary,outcome.secondary)
 
   ELSE
     shell.status=outcome.primary
     shell.error=outcome.secondary
+    shell.diagnosticWord=0
+    IF outcome.second.primary=outcome.primary
+        AND outcome.second.secondary=outcome.secondary
+        AND (outcome.first.primary<>outcome.primary
+        OR outcome.first.secondary<>outcome.secondary) THEN
+      shell.diagnosticWord=BYTE(shell.pipelineIndex)
+    FI
   FI
 
 RETURN
@@ -778,7 +828,7 @@ PROC ShellDispatch()
   CASE shell.command OF
   WHEN CMD_HELP THEN
     ShellText(DOS.Output(),
-        c"HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES EXIT")
+        c"HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT")
     ShellByte(DOS.Output(),ASCII.LF)
 
   WHEN CMD_ECHO THEN
@@ -830,6 +880,9 @@ PROC ShellDispatch()
   WHEN CMD_DEVICES THEN
     ShellDevices(DOS.Output())
 
+  WHEN CMD_PATH THEN
+    ShellPath()
+
   WHEN CMD_EXTERNAL THEN
     IF shell.pipeline<>0 THEN
       ShellPipeline()
@@ -851,6 +904,7 @@ PROC ShellCommand()
 
   shell.status=PROCESS.RETURN_OK
   shell.error=0
+  shell.diagnosticWord=$ff
   IF ShellPoll()=0 THEN
     IF ShellScope()<>0 THEN
       IF ShellParse()=0 THEN
@@ -858,6 +912,7 @@ PROC ShellCommand()
 
       ELSEIF ShellRedirect()<>0 THEN
         IF ShellPoll()=0 THEN
+          shell.diagnosticWord=0
           ShellDispatch()
         FI
       FI
@@ -922,6 +977,7 @@ PROC ShellReadStep()
   ELSEIF error=DOS.ERROR_BREAK OR error=DOS.ERROR_LINE_TOO_LONG
         OR error=DOS.ERROR_BUFFER_OVERFLOW THEN
     ShellClear()
+    shell.diagnosticWord=$ff
     shell.status=PROCESS.RETURN_OK
     shell.error=0
     IF ShellScope()=0 THEN
@@ -960,6 +1016,8 @@ BYTE FUNC ShellOpen(BYTE POINTER consoleName)
     RETURN(0)
   FI
 
+  ShellPathReset()
+  shell.diagnosticWord=$ff
   shell.console=DOS.Open(consoleName,DOS.MODE_READWRITE)
   IF shell.console=NULL THEN
     ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())

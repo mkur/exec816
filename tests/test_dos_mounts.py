@@ -9,12 +9,12 @@ class DosMountTests(unittest.TestCase):
         generate(check=True)
         self.assertEqual((MYDOS,SDFS),(1,2))
         raw=encode([dict(alias='D1',unit=49,sectors=100,sector_bytes=128,format=SDFS)])
-        self.assertEqual(raw[-1],SDFS)
+        self.assertEqual(raw[43],SDFS)
     def test_explicit_geometry_and_layout(self):
         for size,profile in ((128,1),(256,1),(128,2),(128,4),(256,4)):
             m=dict(alias='D1',unit=49,sectors=720,sector_bytes=size,profile=profile)
-            raw=encode([m]);self.assertEqual(len(raw),44)
-            self.assertEqual(struct.unpack('<32sHHIHBB',raw),(b'D1'+bytes(30),49,profile,720,size,1,1))
+            raw=encode([m]);self.assertEqual(len(raw),46)
+            self.assertEqual(struct.unpack('<32sHHIHBBBx',raw),(b'D1'+bytes(30),49,profile,720,size,1,1,0))
         self.assertEqual(load(ROOT/'config/dos-mounts.json'),dict(mounts=[],system_mount=None))
         self.assertEqual(encode([]),b'')
     def test_rejects_ambiguous_or_narrowed_geometry(self):
@@ -23,12 +23,17 @@ class DosMountTests(unittest.TestCase):
         bad += [dict(unit=v) for v in (True,48,57,65585)]
         bad += [dict(sectors=v) for v in (367,65536,-1,720.0,'720')]
         bad += [dict(sector_bytes=512),dict(sector_bytes=256,profile=2),dict(profile=3),dict(profile=5),dict(boot=0),dict(format=0),dict(extra=1)]
+        bad += [dict(access=v) for v in ('write','READWRITE',None,True,1)]
         for patch in bad:
             with self.subTest(patch=patch),self.assertRaises(ValueError):encode([{**seed,**patch}])
         for m in ({**seed,'unit':50,'alias':'d1'},{**seed,'alias':'D2'}):
             with self.assertRaises(ValueError):encode([seed,m])
         for value in (None,{},[seed]*9,[{}],[None]):
             with self.assertRaises(ValueError):validate_mounts(value)
+    def test_access_defaults_to_readonly(self):
+        seed=dict(alias='D1',unit=49,sectors=720,sector_bytes=128)
+        self.assertEqual(encode([seed])[44],0)
+        self.assertEqual(encode([{**seed,'access':'readwrite'}])[44],1)
     def test_system_selection(self):
         mounts=validate_mounts([dict(alias='DATA',unit=51,sectors=720,sector_bytes=128),
                                 dict(alias='D2',unit=50,sectors=720,sector_bytes=128)])

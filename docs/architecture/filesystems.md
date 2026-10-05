@@ -31,7 +31,8 @@ and file cursors retain the information needed between operations.
 
 Independent opens have independent positions. Process inheritance creates a new
 owned handle wrapper sharing the parent's backing and position. Closing either
-wrapper releases one reference; the last close frees the backing. Locks instead
+wrapper releases one reference; the last writer close finalizes its native entry
+before freeing the backing. Locks instead
 carry their own metadata and name. See [file and lock storage](../history/filesystem-objects.md).
 
 ## Following a disk Read
@@ -97,7 +98,7 @@ not hold the filesystem worker, and a pipe has no filesystem mount or worker.
 ## Mounting, stopping and media identity
 
 Mount descriptors are supplied with the image: names, SIO units, geometry,
-profiles and filesystem formats. The first disk operation starts the shared
+profiles, filesystem formats and access policy. The first disk operation starts the shared
 service if necessary. An empty mount configuration creates no filesystem Task.
 
 Startup validates the complete descriptor set, allocates shared and per-mount
@@ -117,7 +118,7 @@ mount's port, generation, cache and references. It is not another mount or Task,
 and does not mean the drive from which the kernel XEX was loaded. See
 [system-volume selection](../reference/sys-volume.md).
 
-Both filesystems are currently read-only. Keep media unchanged while mounted;
+Both filesystems support opt-in write access. Keep media unchanged externally while mounted;
 there is no automatic disk-change detection. Unmount/remount establishes a new
 volume identity. An uncertain transport failure can mark the bus and affected
 mounts offline rather than continuing to return cached bytes.
@@ -138,6 +139,28 @@ A warm cache avoids serial reads, but the loader still validates and relocates
 commands, and the filesystem still performs ordinary CPU work. Cached sectors
 are not a cache of running Processes or loaded executable images. See the
 [cache contract and measurements](sector-cache.md).
+
+## Mutations
+
+A writable service allocates one shared upper-RAM workspace: three 256-byte
+sector buffers, one 23-byte record, ten sector reservations and bounded scalar
+state. Mounts without write access need no mutation workspace. Each mount keeps
+a list of live and detached inherited wrappers for writer exclusion. No per-file
+sector buffer, additional Task, direct page or bank-zero reservation is added.
+
+Writes run in payload-sized commit units. Their iterative helper frames remain
+live while BLOCKWIRE waits for SIO; the measured worker stack budget includes
+that depth. This keeps the mutation ordering explicit without an additional
+continuation state for every dependent metadata write. Reads retain their
+existing resumable callbacks. Every transport wait pumps control messages; no
+Forbid or interrupt mask spans I/O. Stop drains retained handles and packets.
+
+The block layer invalidates a target before submitting verified WRITE and caches
+replacement bytes only after confirmed completion. An uncertain mutation makes
+the mount unvalidated; retirement remains available. Mounting performs bounded
+header checks, with no ownership scan or resident fsck. The full
+[write contract](../reference/filesystem-writes.md) documents consistency
+assumptions, cancellation, native incomplete entries and recovery limits.
 
 ## Source map
 

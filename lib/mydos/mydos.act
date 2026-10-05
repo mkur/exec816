@@ -6,6 +6,7 @@ USE EXEC
 USE ASCII
 USE BLOCKTYPES
 USE FSBTYPES
+USE FSLEASES
 USE FSCORE
 USE MYDOSTYPES
 USE FS83
@@ -202,11 +203,23 @@ PUBLIC BYTE FUNC BufferedEntry(FSBTYPES.Workspace POINTER work)
     RETURN(FSSTATUS.END_DIR)
   FI
 
-  IF (bytes^ & $81)<>0 THEN
+  IF (bytes^ & $80)<>0 THEN
     RETURN(FSSTATUS.SKIP_ENTRY)
   FI
 
   Decode(@work.entry,bytes,work.directory,BYTE(work.index))
+  IF (bytes^ & 1)<>0 THEN
+    IF FSLEASES.Live(work)<>0 THEN
+      RETURN(FSSTATUS.DONE)
+    FI
+
+    IF FSLEASES.Writable(work)<>0 THEN
+      work.error=ERROR_DISK_NOT_VALIDATED
+      RETURN(FSSTATUS.ERROR)
+    FI
+
+    RETURN(FSSTATUS.SKIP_ENTRY)
+  FI
 
 RETURN(Live(work))
 
