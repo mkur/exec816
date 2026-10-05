@@ -20,6 +20,7 @@ int16_t WidgetHit(struct WidgetContext *,int16_t,int16_t);
 void WidgetDrawObject(struct WidgetContext *,uint16_t,int16_t,int16_t);
 uint16_t WidgetVisible(const struct WidgetContext *,uint16_t);
 uint16_t WidgetPaint(struct WidgetPacket *);
+uint16_t WidgetInput(struct WidgetContext *,struct WidgetPacket *);
 uint16_t WidgetSet(struct WidgetContext *,const struct WidgetTree *,struct WidgetPacket *);
 uint16_t WidgetUpdate(struct WidgetContext *,const struct WidgetUpdate *,struct WidgetPacket *);
 uint16_t WidgetRead(const struct WidgetContext *,struct WidgetSnapshot *,uint16_t);

@@ -63,3 +63,13 @@ AW3 connects bounded painting to desktop damage.
 [Presentation evidence](../../../docs/development/aes-widgets-aw3.json) records
 ten full-scene comparisons in each compiler mode, the legacy console/command
 scene regression, and pending-scroll watchdog quiescence/reset retention.
+
+AW4 advances the extracted `fm_button` selection helper from captured desktop
+input. Press tracking, keyboard focus, default/cancel actions and bounded
+paint-gated intake remain presenter-owned; no donor input loop or new Task is
+introduced. [Interaction evidence](../../../docs/development/aes-widgets-aw4.json)
+records the focused model and physical ST/key checks in both compiler modes.
+Run them with `tools/test_widgets.py --input` and
+`tools/test_widget_interaction.py`, each with `--mode raw` or `--mode opt` and
+`--output DIR`. The interaction fixture uses an 8 KiB test-data arena and a
+paint-token hold hook; production memory reservations and scheduling are unchanged.

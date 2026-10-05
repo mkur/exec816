@@ -117,6 +117,10 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     IF service.windows(index).id<>0 THEN
       IF service.windows(index).id=id OR service.windows(index).id=service.focus THEN
+        IF service.windows(index).id=service.focus THEN
+          DESKWIDGETS.Cancel(service,@service.windows(index))
+        FI
+
         client=DESKEVENTS.Find(service,service.windows(index).client)
         client.focusBits=client.focusBits OR BYTE(1 LSH index)
         BEGIN
@@ -390,6 +394,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
   WHEN DESKTYPES.SHOW THEN
     status=LAYERS.Show(@service.scene,window.layer,1)
   WHEN DESKTYPES.HIDE THEN
+    DESKWIDGETS.Cancel(service,window)
     status=LAYERS.Show(@service.scene,window.layer,0)
     IF service.focus=window.id THEN
       Focus(service,0)
@@ -400,6 +405,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
       RETURN(DESKTYPES.BAD_ARGUMENT)
     FI
 
+    DESKWIDGETS.Cancel(service,window)
     status=LAYERS.Move(@service.scene,window.layer,
         request.bounds.left,request.bounds.top)
   WHEN DESKTYPES.RAISE THEN
@@ -418,6 +424,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
   WHEN DESKTYPES.SET_TREE,DESKTYPES.UPDATE_WIDGETS,DESKTYPES.READ_WIDGET_STATE THEN
     RETURN(DESKWIDGETS.Request(service,window,request))
   WHEN DESKTYPES.CLOSE THEN
+    DESKWIDGETS.Cancel(service,window)
     status=LAYERS.Delete(@service.scene,window.layer)
     IF status=LAYERTYPES.OK THEN
       IF service.focus=window.id THEN

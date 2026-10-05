@@ -4,6 +4,9 @@ extern UWORD WidgetModelProbe(void);
 #ifdef WIDGET_STATE_PROBE
 extern UWORD WidgetStateProbe(void);
 #endif
+#ifdef WIDGET_INPUT_PROBE
+extern UWORD WidgetInputProbe(void);
+#endif
 static struct Task *supervisor;
 volatile UWORD finished,failures,progress;
 void WidgetWorker(void)
@@ -13,6 +16,9 @@ void WidgetWorker(void)
         failures+=WidgetModelProbe();
 #ifdef WIDGET_STATE_PROBE
         failures+=WidgetStateProbe();
+#endif
+#ifdef WIDGET_INPUT_PROBE
+        failures+=WidgetInputProbe();
 #endif
         progress=i+1;
     }

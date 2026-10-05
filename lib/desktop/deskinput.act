@@ -7,6 +7,7 @@ USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
 USE DESKDRAG
+USE DESKWIDGETINPUT
 USE DESKEVENTS
 USE LAYERS
 USE CONSOLEBITMAP
@@ -81,6 +82,8 @@ PUBLIC PROC Stop()
   BYTE drawn
 
   IF acquired<>0 THEN
+    DESKWIDGETINPUT.Lost()
+    DESKWIDGETINPUT.Advance()
     DESKDRAG.Cancel()
     DESKDRAG.Present()
     drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),0)
@@ -141,7 +144,9 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
           event.kind=DESKTYPES.EVENT_CANCEL
         FI
 
-        DESKEVENTS.Post(service,window.client,@event)
+        IF DESKWIDGETINPUT.Key(window,@event)=0 THEN
+          DESKEVENTS.Post(service,window.client,@event)
+        FI
         RETURN(1)
       FI
     END
@@ -166,6 +171,7 @@ PROC Consume()
   Copy(@sample)
   IF sample.kind=INPUT.EVENT_LOSS THEN
     released=0
+    DESKWIDGETINPUT.Lost()
     focusWanted=0
     DESKDRAG.Cancel()
     event.kind=DESKTYPES.EVENT_LOSS
@@ -184,6 +190,15 @@ PROC Consume()
   dirty=1
   IF buttons=0 THEN
     released=1
+  FI
+
+  event.kind=DESKTYPES.EVENT_MOTION
+  IF sample.kind=INPUT.EVENT_BUTTON THEN
+    event.kind=DESKTYPES.EVENT_BUTTON
+  FI
+
+  IF DESKWIDGETINPUT.Captured(@event)<>0 THEN
+    RETURN
   FI
 
   IF DESKDRAG.Capture(@sample,released)<>0 THEN
@@ -206,7 +221,11 @@ PROC Consume()
           FI
         FI
 
-        DESKEVENTS.Post(service,window.client,@event)
+        IF DESKWIDGETINPUT.Mouse(window,@event)<>0 THEN
+          focusWanted=0
+        ELSE
+          DESKEVENTS.Post(service,window.client,@event)
+        FI
         EXIT
       FI
     END
@@ -244,6 +263,7 @@ PUBLIC PROC Service(LONGCARD bits)
     OD
   FI
 
+  DESKWIDGETINPUT.Advance()
   DESKDRAG.Advance()
   LET service=DESKSTATE.Get()
   IF focusWanted<>0 AND service.scene.busy=0 THEN
@@ -286,7 +306,7 @@ PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
 
-RETURN(pending<>0 OR DESKDRAG.Runnable()<>0 OR (focusWanted<>0 AND service.scene.busy=0)
+RETURN(pending<>0 OR DESKWIDGETINPUT.Runnable()<>0 OR DESKDRAG.Runnable()<>0 OR (focusWanted<>0 AND service.scene.busy=0)
     OR (dirty<>0 AND CONSOLEBITMAP.Pending()=0))
 
 ENDMODULE

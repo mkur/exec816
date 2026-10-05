@@ -41,3 +41,14 @@ class Widgets(unittest.TestCase):
                 str(ROOT/'tests/programs/widgets_state.c'),'-o',str(out/'test')]
             subprocess.run(command,check=True,capture_output=True)
             subprocess.run([out/'test'],check=True,capture_output=True)
+
+    def test_form_transitions(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            out=Path(temporary);extract(out/"selected")
+            command=["cc","-std=c99","-DWIDGET_INPUT_HOST_TEST","-I"+str(ROOT/"c/include"),
+                "-I"+str(PORT),"-I"+str(out/"selected"),
+                *(str(PORT/n) for n in ("widgets-model.c","widgets-state.c","widgets-input.c","widgets-graf.c")),
+                *(str(out/"selected"/n) for n in ("aes-objects.c","aes-graf.c","aes-form.c")),
+                str(ROOT/"tests/programs/widgets_input.c"),"-o",str(out/"test")]
+            subprocess.run(command,check=True,capture_output=True)
+            subprocess.run([out/"test"],check=True,capture_output=True)

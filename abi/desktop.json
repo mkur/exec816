@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 4,
@@ -403,6 +403,39 @@
       [
         "scene",
         "LAYERTYPES.Scene"
+      ],
+      [
+        "widgetQueue",
+        "Event",
+        "EVENTS"
+      ],
+      [
+        "widgetHead",
+        "BYTE"
+      ],
+      [
+        "widgetCount",
+        "BYTE"
+      ],
+      [
+        "widgetCancel",
+        "BYTE"
+      ],
+      [
+        "widgetReleased",
+        "BYTE"
+      ],
+      [
+        "widgetCapture",
+        "LONGCARD"
+      ],
+      [
+        "widgetCaptureEpoch",
+        "LONGCARD"
+      ],
+      [
+        "widgetLoss",
+        "LONGCARD"
       ]
     ]
   }

@@ -17,6 +17,10 @@ void WidgetEntry(void)
         p->status=WidgetUpdate(c,(const struct WidgetUpdate *)p->payload,p);break;
     case WIDGET_OP_READ:
         p->status=WidgetRead(c,(struct WidgetSnapshot *)p->payload,p->bytes);break;
+    case WIDGET_OP_POINTER:
+    case WIDGET_OP_KEY:
+    case WIDGET_OP_CANCEL:
+        p->status=WidgetInput(c,p);break;
     case WIDGET_OP_DRAW:
         p->status=WidgetPaint(p);break;
     }

@@ -25,7 +25,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
         extra_includes=[aes,out/'aes-selected']
         extra_probes=[(aes/'widget-layout.c',aes_layout())]
         if widgets:
-            sources += [aes/'widgets-state.c',aes/'widgets-entry.c']
+            sources += [aes/'widgets-state.c',aes/'widgets-input.c',aes/'widgets-entry.c']
             extra_roots=['WidgetEntry']
         if widget_probe:
             sources.append(ROOT/'tests/programs/widgets_pixels.c')

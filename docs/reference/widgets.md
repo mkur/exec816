@@ -7,8 +7,8 @@ The native widget interface is an ordinary desktop content lane. It ports
 selected GEM4XE object and form code, without full AES compatibility. The
 presenter retains copied trees; applications own stable request and payload
 storage until exact reply collection. No application pointer or callback is
-kept in a retained tree. Retained transactions and desktop painting are implemented; event-driven
-interaction follows in AW4.
+kept in a retained tree. Retained transactions, desktop painting and event-driven
+form interaction run in the existing presenter.
 
 Open with `CONTENT_WIDGETS`; the content kind is immutable. Set `request.window`,
 `payload` and `bytes` for these operations:
@@ -54,8 +54,9 @@ STALE rejects an outdated epoch or revision; read current state before retrying.
 Epoch and revision never wrap to reusable identities. EXHAUSTED preserves the
 old model and permits close/retirement. Old-epoch queued widget events are
 discarded; applications must also reject old notifications already collected.
-Semantic event records reserve epoch, revision, object and resulting state;
-physical event production is connected in AW4.
+WIDGET_ACTION and WIDGET_CANCEL events carry epoch, revision, object and
+resulting state. Route, capture tick and the tick-valid flag retain their input
+meaning; BREAK cancellation can arrive without a valid capture tick.
 
 Each admitted widget window reserves 4,096 upper-RAM bytes, including unused
 capacity. The current C context occupies 2,200 bytes. One shared 2,200-byte
@@ -72,3 +73,31 @@ per turn and services input between continuations. One Layers token freezes the
 model across these turns. Occluded updates retain their new state without
 painting; later exposure reconstructs that state. Pointer overlays share the
 existing drawing owner and command arena.
+
+Mouse input arms an enabled visible button on a fresh press. Moving outside
+removes its pressed appearance; moving back restores it. Release inside commits
+one action. Release outside, focus loss, hiding, replacement and close cancel the
+gesture. Press appearance is separate from committed selection. Momentary EXIT
+buttons report an action without retaining selection. A selected radio can
+report an action without incrementing the model revision.
+
+Tab and Shift-Tab traverse eligible controls in tree order. Space activates the
+focused button; Return activates the enabled visible default. Escape and BREAK
+emit WIDGET_CANCEL without closing the window. Control-modified keys outside
+these cancellation semantics remain raw input. Consumed widget input is not
+also delivered as an actionable raw key or click. Title/close gestures keep
+priority; an existing widget capture retains movement and release outside its
+window until retirement.
+
+Sixteen presenter-owned records defer input while a Layers paint or scroll
+owns the scene. Adjacent motion coalesces only for the same window, epoch, route
+and button state. A safe turn processes at most four records. Queue overflow,
+stale destinations and client event loss disarm routing immediately, then repair
+pressed pixels after the immutable paint snapshot retires. A fresh released
+button observation is required after ambiguous input. Applications read current
+state after LOSS; they must never synthesize commands from selected bits.
+
+The desktop service now occupies 11,988 bytes (11,992 rounded), including its
+sixteen deferred records and the enlarged client event queues. Its growth over
+the pre-widget service is 1,456 bytes. No new Task, kernel primitive, bank-zero
+reservation or VRAM extent is introduced.

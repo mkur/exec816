@@ -1,6 +1,8 @@
 ; Retained AES contexts and ordinary-call binding, owned by the presenter.
 MODULE DESKWIDGETS
 USE EXEC
+USE A816MEMORY
+USE DESKEVENTS
 USE TASKMEMORY
 USE DESKTYPES
 USE WIDGETTYPES
@@ -71,6 +73,80 @@ PUBLIC PROC Damage(DESKTYPES.Service POINTER service
 
 RETURN
 
+; Remove this window's queued input before retirement or a new model boundary.
+PUBLIC PROC Cancel(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+  BYTE count,index,source,target
+
+  IF window.widgets=NULL THEN
+    RETURN
+  FI
+
+  IF service.widgetCapture=window.id THEN
+    service.widgetCapture=0
+    service.widgetCaptureEpoch=0
+    service.widgetReleased=0
+  FI
+
+  count=0
+  index=0
+  WHILE index<service.widgetCount DO
+    source=(service.widgetHead+index) & 15
+    IF service.widgetQueue(source).window<>window.id THEN
+      target=(service.widgetHead+count) & 15
+      IF target<>source THEN
+        A816MEMORY.Move(BYTE POINTER(@service.widgetQueue(target)),
+            BYTE POINTER(@service.widgetQueue(source)),DESKTYPES.EVENT_SIZE)
+      FI
+
+      count==+1
+    FI
+
+    index==+1
+  OD
+
+  service.widgetCount=count
+  packet.context=LONGCARD(ADDRESS(window.widgets))
+  Run(WIDGETTYPES.OP_CANCEL)
+  Damage(service,window)
+
+RETURN
+
+PUBLIC PROC Input(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window DESKTYPES.Event POINTER event)
+  CARD operation
+
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  packet.context=LONGCARD(ADDRESS(window.widgets))
+  packet.x=event.x-layer.bounds.left-8
+  packet.y=event.y-layer.bounds.top-16
+  packet.code=event.code
+  packet.buttons=event.buttons
+  packet.qualifiers=event.qualifiers
+  packet.kind=event.kind
+  operation=WIDGETTYPES.OP_POINTER
+  IF event.kind=DESKTYPES.EVENT_KEY OR event.kind=DESKTYPES.EVENT_CANCEL THEN
+    operation=WIDGETTYPES.OP_KEY
+  FI
+
+  Run(operation)
+  Damage(service,window)
+  IF packet.status<>WIDGETTYPES.OK THEN
+    event.kind=DESKTYPES.EVENT_LOSS
+    DESKEVENTS.Post(service,window.client,event)
+  ELSEIF packet.kind<>0 THEN
+    event.kind=packet.kind
+    event.epoch=packet.epoch
+    event.revision=packet.revision
+    event.object=packet.object
+    event.state=packet.state
+    DESKEVENTS.Post(service,window.client,event)
+  ELSEIF packet.index=0 THEN
+    DESKEVENTS.Post(service,window.client,event)
+  FI
+
+RETURN
+
 ; Admission prepares in shared C staging; only success mutates the live copy.
 PUBLIC CARD FUNC Request(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window DESKTYPES.Request POINTER request)
@@ -133,6 +209,9 @@ PUBLIC CARD FUNC Request(DESKTYPES.Service POINTER service
       FI
 
       Damage(service,window)
+      IF operation=WIDGETTYPES.OP_SET OR packet.changed<>0 THEN
+        Cancel(service,window)
+      FI
     FI
     RETURN(DESKTYPES.OK)
   FI
