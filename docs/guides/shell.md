@@ -23,6 +23,8 @@ Source lives in [examples/shell](../../examples/shell/).
 | `MOUNT` | List published runtime mounts, handler, access and mounted/offline state. |
 | `DEVICES` | List resident drivers and runtime state. |
 | `PATH [ADD directory / SET directory / CLEAR / RESET]` | Inspect or change the shell's command search directories. |
+| `ALIAS [name ["command arguments"]]` | List, inspect, set or replace a session-local command alias. |
+| `UNALIAS name` | Remove a command alias. |
 | `EXIT` | Release shell resources and finish through coordinated shutdown. |
 
 Command names ignore case. MOUNT only lists; it does not mount/unmount media or
@@ -42,6 +44,7 @@ DOS uses bounded 8.3 names on both supported filesystems. Examples:
 | --- | --- |
 | `D1:TOOLS/SUB` | Absolute path on the physical volume. |
 | `SYS:WORK` | Path on the selected system volume. |
+| `DATA:NOTES.TXT` | Path through a validated [ASSIGN](../reference/assigns.md). |
 | `/` | Parent of the current directory, clamped at root. |
 | `:` | Current volume's root. |
 | `/TOOLS` | TOOLS relative to the parent directory. |
@@ -62,8 +65,9 @@ There is no extension guessing. The file must use the supported
 selected streams and the current directory. Its copied argument tail retains
 quotes/escapes and omits shell redirection syntax.
 
-The demo includes HELLO, CAT, WC and the [command toolbox](toolbox.md). CAT accepts an optional file, otherwise
-copies Input to Output; WC counts Input. See [writing commands](commands.md).
+The demo includes HELLO, CAT, WC and the [command toolbox](toolbox.md). CAT
+concatenates up to eight exact files, or copies Input to Output when none is
+named; WC counts Input. See [writing commands](commands.md).
 A child returns a primary status and secondary error; the shell collects both
 before showing the next prompt.
 
@@ -79,14 +83,42 @@ ADD/SET validate the directory and store its absolute name, so a later CD does
 not change its meaning. Duplicate names ignoring case are successful no-ops.
 Invalid directories, a fifth entry, BREAK or cleanup failure preserve the old
 list. Entries hold names, not locks; PATH does not pin media. Default/reset SYS:
-is resolved lazily and follows the selected system volume. Other validated names
-use the physical mount spelling. PATH never changes the child's directory.
+is resolved lazily and follows the selected system volume. Physical names use
+the canonical mount spelling; assigned prefixes retain their logical spelling,
+so replacing an assignment redirects later command search. PATH never changes
+the child's directory.
 
 Only missing files/directories allow the next search attempt. A missing current
 directory skips that first attempt; invalid executables, unavailable volumes,
 resource errors and BREAK stop lookup. A broken local command therefore reports
 its own error. Joined paths are limited to 255 bytes and are never truncated.
 Serial commands and both pipeline stages use the same search rules.
+
+### Command aliases
+
+`ALIAS` lists the shell's aliases in slot order. `ALIAS name` shows one entry;
+`ALIAS name "command arguments"` sets or replaces it, and `UNALIAS name`
+removes it. Quote a replacement containing spaces. For example:
+
+```text
+ALIAS LS "DIR SYS:"
+LS
+ALIAS GREET "ECHO hello"
+GREET friend
+UNALIAS GREET
+```
+
+An alias replaces one command word, then the shell appends that invocation's
+arguments. It works at the start of a command or in either pipeline stage;
+the ordinary parser then applies redirection and pipeline rules. Expansion
+happens once per stage, so aliases do not chain or recurse. Built-in names
+keep precedence and cannot be assigned. Names contain 1–15 ASCII letters,
+digits, `_` or `-`, starting with a letter; comparison ignores case. Alias
+replacements are at most 127 printable bytes and may contain fixed arguments,
+but no quotes or shell operators (`|`, `<`, `>`, `;`). A resulting line over
+255 bytes fails before opening files. The table holds eight aliases, allocates
+upper RAM only on first use, and lasts for this shell session. Other shell
+sessions and loaded programs have their own command lookup rules.
 
 ```text
 CD SYS:WORK
@@ -97,7 +129,7 @@ PATH RESET
 
 ### Help and errors
 
-All ten supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
+All sixteen supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
 `WC ?`. They print `Arguments: <template>` on the foreground console and return
 OK without reading Input or writing data Output. Quoted `"?"` remains data.
 Help still works with redirection and pipes; headless help fails explicitly.
@@ -115,7 +147,9 @@ A line holds at most 255 bytes and sixteen words including command names and
 redirection targets. Double quotes surround a whole word and permit spaces or
 an empty word. Inside quotes, `**` means `*` and `*"` means `"`; other escapes
 and attached quoted fragments are errors. Outside quotes, asterisk is literal.
-There is no expansion, script syntax or command list.
+There is no variable or wildcard shell expansion, script syntax or command list. LIST interprets
+`*` and `?` in the final component of its own path argument; other commands
+receive the characters literally.
 
 Use at most one `<source` and one `>destination`, at word boundaries. Space after
 the operator is optional and the target may be quoted:
@@ -162,11 +196,28 @@ running. See [pipes](../reference/pipes.md) and [Process groups](../reference/pr
 
 ## Editing and BREAK
 
-The prompt is `> `. Printable ASCII appends, Backspace deletes, Tab inserts a
-space and Return submits. The cooked session shows a tail of the line with `<`
-when earlier text is hidden. There is no history, completion or cursor navigation.
-Ctrl-D exits an empty prompt; after partial input it submits that final command
-and then exits normally.
+The prompt is `> `. Typing inserts at the cursor; Backspace deletes before it,
+Tab inserts one space and Return submits the whole line. A single row follows
+the cursor, with `<` when text to the left is hidden.
+
+| Keys | Action |
+| --- | --- |
+| Ctrl-A / Ctrl-E | Beginning / end of line. |
+| Ctrl-B / Ctrl-F | One character left / right. |
+| Ctrl-U | Clear the whole line. |
+| Ctrl-K | Delete from the cursor to the end. |
+| Ctrl-W | Delete spaces and the preceding word. |
+| Ctrl-P / Ctrl-N | Older / newer command. |
+| Atari Ctrl-+ / Ctrl-* | Cursor left / right. |
+| Atari Ctrl-- / Ctrl-= | Older / newer command (up / down). |
+
+History keeps ten nonblank commands, skips consecutive exact duplicates and
+lasts for this shell session. Moving forward past the newest entry restores your
+unfinished draft and cursor. Editing a recalled command does not alter its saved
+entry; browsing away loses those edits. Program input is excluded. History needs
+about 2.8 KiB of upper RAM; if unavailable, editing still works. There is no
+completion, search or history file. Ctrl-D exits an empty prompt; after partial
+input it submits that final command and then exits normally.
 
 Ctrl-C/BREAK clears the prompt or cancels the foreground command, including with
 redirected streams. Cleanup and outstanding I/O retirement precede the next
@@ -184,10 +235,20 @@ independent presentation. See [cooked input](../reference/cooked-console.md) and
 With the [build prerequisites](../contributing/building.md) installed:
 
 ```sh
-python3 tools/native_program.py --compiler-dir build/actionc --source examples/shell/shell.act --tasks --task-capacity 8 --console --dos-mounts config/shell-sdfs.json --output build/shell
+mkdir -p build/shell
+python3 - <<'PYCONFIG'
+import json
+from pathlib import Path
+profile = json.loads(Path('platform/altirraos/memory-4m.json').read_text())
+profile['image_data_bytes'] = 4096
+Path('build/shell/memory.json').write_text(json.dumps(profile))
+PYCONFIG
+python3 tools/native_program.py --compiler-dir build/actionc --source examples/shell/shell.act --tasks --task-capacity 8 --console --dos-mounts config/shell-sdfs.json --memory-profile build/shell/memory.json --output build/shell
 python3 tools/make_data_disk.py --output build/shell/system.atr
 ```
 
+The 4 KiB upper-RAM data area accommodates shell globals and help/fault strings,
+matching the demo; it does not enlarge bank-zero reservations.
 This is a development XEX and sample data disk. Use the [demo builder](demo.md)
 for the OF816 distribution including external commands and the matching ROM.
 The [earlier shell guide](../history/shell-guide.md) and

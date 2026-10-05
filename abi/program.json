@@ -1,6 +1,6 @@
 {
   "abi": "exec816.program",
-  "version": 9,
+  "version": 11,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
@@ -385,6 +385,32 @@
           "newName"
         ]
       ]
+    },
+    "AssignPath": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "name"
+        ],
+        [
+          "BYTE POINTER",
+          "target"
+        ]
+      ]
+    },
+    "GetAssign": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "CARD",
+          "index"
+        ],
+        [
+          "BYTE POINTER",
+          "info"
+        ]
+      ]
     }
   },
   "limits": {
@@ -405,7 +431,8 @@
   "argument_limits": {
     "FIELDS": 8,
     "TEMPLATE": 255,
-    "TEXT": 255
+    "TEXT": 255,
+    "MULTI": 8
   },
   "stream_limits": {
     "BUFFER_BYTES": 512,

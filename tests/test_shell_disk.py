@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'tools'))
 from make_shell_disk import make
+from filesystem_audit import Audit
 from mydos_fixtures import Image
 
 
@@ -51,6 +52,23 @@ class ShellDiskTests(unittest.TestCase):
             free = {s for s in range(721) if vtoc[10+s//8] & (0x80 >> (s & 7))}
             self.assertEqual(free, set(range(721))-used)
             self.assertEqual(struct.unpack('<HH', vtoc[1:5]), (707, len(free)))
+
+    def test_large_mydos_disk_uses_full_sector_links(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)/'files'
+            source.mkdir()
+            payload = bytes(range(256))*600
+            (source/'LARGE.BIN').write_bytes(payload)
+            path = Path(directory)/'system.atr'
+            make(path, source, binary_names={'LARGE.BIN'}, sectors=5760)
+            image = Image(path.read_bytes())
+            entries = [entry for entry in image.walk() if entry['path'] == 'LARGE.BIN']
+            self.assertEqual(len(entries), 1)
+            actual, chain = image.file(entries[0])
+            self.assertEqual(actual, payload)
+            self.assertEqual(entries[0]['flags'], 0x46)
+            self.assertGreater(max(chain), 1023)
+            self.assertEqual(Audit(path.read_bytes()).mydos()['sectors'], 5760)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,16 @@
 ; Native source adapters preserve the public DOS record identities and ABI.
+PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
+
+RETURN(DOSCALLS.AssignPath(name,target))
+
+PUBLIC LONGINT FUNC GetAssign(CARD index AssignInfo POINTER info)
+
+RETURN(DOSCALLS.GetAssign(index,DOSCALLS.AssignInfo POINTER(info)))
+
+PUBLIC LONGINT FUNC SetConsoleHistory(FileHandle POINTER file BYTE enabled)
+
+RETURN(DOSCALLS.SetConsoleHistory(BYTE POINTER(file),enabled))
+
 PUBLIC LONGINT FUNC Flush(FileHandle POINTER file)
 
 RETURN(DOSCALLS.Flush(BYTE POINTER(file)))

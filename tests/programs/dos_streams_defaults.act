@@ -54,7 +54,7 @@ PROC OpenStreams()
   second=DOS.Open(BYTE POINTER($d1000),DOS.MODE_NEWFILE)
   Require(first<>DOS.FileHandle POINTER(0) AND second<>DOS.FileHandle POINTER(0))
   client=DOSCLIENT.ClientContext POINTER(owner.context)
-  Require(SIZEOF(DOSCLIENT.ClientContext)=88 AND DOSCLIENT.CLIENT_SIZE=88)
+  Require(SIZEOF(DOSCLIENT.ClientContext)=94 AND DOSCLIENT.CLIENT_SIZE=94)
   Require(ADDRESS(@client.packet)-ADDRESS(client)=6
       AND ADDRESS(@client.input)-ADDRESS(client)=71)
   Require(ADDRESS(@client.output)-ADDRESS(client)=74

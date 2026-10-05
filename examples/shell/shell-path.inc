@@ -41,15 +41,55 @@ BYTE FUNC ShellPathEqual(BYTE POINTER left,right)
 
 RETURN(0)
 
+; Keep a validated logical PATH prefix so a later ASSIGN replacement follows it.
+BYTE FUNC ShellPathAssigned(BYTE POINTER path)
+  DOS.AssignInfo POINTER info
+  CARD colon,slot,index
+  BYTE equal,value
+
+  colon=0
+  WHILE colon<32 AND path(colon)<>0 AND path(colon)<>': DO
+    colon==+1
+  OD
+
+  IF colon=0 OR colon=32 OR path(colon)<>': THEN
+    RETURN(0)
+  FI
+
+  info=DOS.AssignInfo POINTER(ShellScratch())
+  FOR slot=0 TO 3 DO
+    IF DOS.GetAssign(slot,info)<>0 THEN
+      equal=BYTE(info.name(colon)=0)
+      FOR index=0 TO colon-1 DO
+        value=path(index)
+        IF value>='a AND value<='z THEN
+          value==-32
+        FI
+
+        IF value<>info.name(index) THEN
+          equal=0
+          EXIT
+        FI
+      OD
+
+      IF equal<>0 THEN
+        RETURN(1)
+      FI
+    FI
+  OD
+
+RETURN(0)
+
 ; Canonicalize one candidate, release its temporary lock, then publish it.
 PROC ShellPathUpdate(BYTE POINTER name BYTE append)
-  BYTE index
+  BYTE index,symbolic
   LONGINT cause
 
   IF ShellPoll()<>0 THEN
     RETURN
   FI
 
+  symbolic=ShellPathAssigned(name)
   shell.retiredDirectory=DOS.Lock(name,DOS.SHARED_LOCK)
   IF shell.retiredDirectory=NULL THEN
     ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
@@ -64,8 +104,8 @@ PROC ShellPathUpdate(BYTE POINTER name BYTE append)
     cause=DOS.ERROR_OBJECT_WRONG_TYPE
   ELSEIF DOS.NameFromLock(shell.retiredDirectory,ShellScratch(),LINE_CAPACITY)=0 THEN
     cause=DOS.IoErr()
-  ELSEIF ShellEqual(name,c"SYS:")<>0 THEN
-    STR.strlcpy(ShellScratch(),c"SYS:",LINE_CAPACITY)
+  ELSEIF ShellEqual(name,c"SYS:")<>0 OR symbolic<>0 THEN
+    STR.strlcpy(ShellScratch(),CSTRING(name),LINE_CAPACITY)
   FI
 
   DOS.SetIoErr(0)

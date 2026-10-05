@@ -1,0 +1,132 @@
+MODULE DOSASSIGNTEST
+USE EXEC
+USE DOS
+USE FSBOOT
+USE HEAPCORE
+
+CARD checks
+BYTE finished
+DOS.AssignInfo info
+BYTE ARRAY canonical(256)
+BYTE ARRAY payload(8)
+BYTE ARRAY longName(256)
+DOS.FileLock POINTER root,sub
+DOS.FileHandle POINTER file
+LONGCARD before
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e900+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC CheckName(DOS.FileLock POINTER item BYTE POINTER expected)
+  CARD index
+
+  Require(DOS.NameFromLock(item,canonical,256)<>0)
+  index=0
+  DO
+    Require(canonical(index)=expected(index))
+    IF expected(index)=0 THEN
+      EXIT
+    FI
+
+    index==+1
+  OD
+
+RETURN
+
+PROC Main()
+  CARD index
+
+  before=EXEC.AvailMem(0)
+  Require(DOS.GetAssign(0,@info)=0 AND DOS.IoErr()=0 AND info.name(0)=0)
+  Require(DOS.AssignPath(BYTE POINTER(c"DATA"),BYTE POINTER(c"D1:TOOLS"))<>0)
+  Require(DOS.GetAssign(0,@info)<>0 AND info.name(0)='D
+      AND info.name(4)=0 AND info.target(0)='D)
+  root=DOS.Lock(BYTE POINTER(c"DATA:"),DOS.SHARED_LOCK)
+  sub=DOS.Lock(BYTE POINTER(c"DATA:SUB"),DOS.SHARED_LOCK)
+  Require(root<>NULL AND sub<>NULL)
+  Require(FSBOOT.Stop()=0)
+  CheckName(root,BYTE POINTER(c"D1:TOOLS"))
+  CheckName(sub,BYTE POINTER(c"D1:TOOLS/SUB"))
+  file=DOS.Open(BYTE POINTER(c"DATA:SUB/DATA.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,payload,8)>0)
+  Require(DOS.Close(file)<>0)
+  longName(0)='D
+  longName(1)='A
+  longName(2)='T
+  longName(3)='A
+  longName(4)=':
+  FOR index=5 TO 251 DO
+    longName(index)='A
+  OD
+
+  longName(252)=0
+  Require(DOS.Lock(longName,DOS.SHARED_LOCK)=NULL
+      AND DOS.IoErr()=DOS.ERROR_LINE_TOO_LONG)
+  longName(251)=0
+  Require(DOS.Lock(longName,DOS.SHARED_LOCK)=NULL
+      AND DOS.IoErr()<>DOS.ERROR_LINE_TOO_LONG)
+  Require(DOS.GetAssign(0,DOS.AssignInfo POINTER(0))=0
+      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+
+  Require(DOS.AssignPath(BYTE POINTER(c"DATA"),BYTE POINTER(c"D1:CASE.TXT"))=0
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  CheckName(root,BYTE POINTER(c"D1:TOOLS"))
+  Require(DOS.AssignPath(BYTE POINTER(c"D1"),BYTE POINTER(c"D1:"))=0
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_EXISTS)
+  Require(DOS.AssignPath(BYTE POINTER(c"SYS"),BYTE POINTER(c"D1:"))=0
+      AND DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  Require(DOS.AssignPath(BYTE POINTER(c"A"),BYTE POINTER(c"D1:"))<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"B"),BYTE POINTER(c"D1:"))<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"C"),BYTE POINTER(c"D1:"))<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"D"),BYTE POINTER(c"D1:"))=0
+      AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(DOS.AssignPath(BYTE POINTER(c"A"),BYTE POINTER(c"D1:TOOLS"))<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"C"),NULL)<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"CHAIN"),BYTE POINTER(c"DATA:SUB"))<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"DATA"),BYTE POINTER(c"D1:"))<>0)
+  CheckName(root,BYTE POINTER(c"D1:TOOLS"))
+  DOS.UnLock(root)
+  Require(DOS.IoErr()=0)
+  file=DOS.Open(BYTE POINTER(c"CHAIN:DATA.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Close(file)<>0)
+  root=DOS.Lock(BYTE POINTER(c"DATA:TOOLS"),DOS.SHARED_LOCK)
+  Require(root<>NULL)
+  CheckName(root,BYTE POINTER(c"D1:TOOLS"))
+  DOS.UnLock(root)
+  Require(DOS.IoErr()=0)
+  DOS.UnLock(sub)
+  Require(DOS.IoErr()=0)
+
+  Require(FSBOOT.Stop()<>0)
+  Require(DOS.GetAssign(3,@info)<>0 AND info.name(0)='C)
+  root=DOS.Lock(BYTE POINTER(c"CHAIN:"),DOS.SHARED_LOCK)
+  Require(root<>NULL)
+  CheckName(root,BYTE POINTER(c"D1:TOOLS/SUB"))
+  DOS.UnLock(root)
+  Require(DOS.IoErr()=0)
+
+  Require(DOS.AssignPath(BYTE POINTER(c"DATA"),NULL)<>0)
+  Require(DOS.Lock(BYTE POINTER(c"DATA:TOOLS"),DOS.SHARED_LOCK)=NULL
+      AND DOS.IoErr()=DOS.ERROR_DEVICE_NOT_MOUNTED)
+  Require(DOS.AssignPath(BYTE POINTER(c"DATA"),NULL)<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"A"),NULL)<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"B"),NULL)<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"CHAIN"),NULL)<>0)
+  Require(DOS.GetAssign(0,@info)=0 AND DOS.IoErr()=0 AND info.name(0)=0)
+  Require(DOS.GetAssign(4,@info)=0 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

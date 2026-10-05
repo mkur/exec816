@@ -1,0 +1,47 @@
+MODULE DELETE
+
+INCLUDE "command-write.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(1)
+
+; Validate all exact names before the first mutation, then delete in order.
+LONGINT FUNC Main()
+  ADDRESS POINTER files
+  CARD index
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"FILE/M/A",
+      values,1,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  files=ADDRESS POINTER(values(0))
+  index=0
+  WHILE files(index)<>0 DO
+    IF CommandName(files(index))=0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    index==+1
+  OD
+
+  index=0
+  WHILE files(index)<>0 DO
+    IF CommandReady()=0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF COMMAND.DeleteFile(BYTE POINTER(files(index)))=0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    index==+1
+  OD
+
+  COMMAND.SetIoErr(0)
+
+RETURN(COMMAND.RETURN_OK)
+
+ENDMODULE

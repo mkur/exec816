@@ -17,9 +17,10 @@ PUBLIC TYPE ClientContext=[
   EXEC.IOStdReq POINTER request
   BYTE POINTER directory,foreground
   BYTE suspended,foregroundLoan
+  BYTE POINTER assignPath,assignOther
 ]
 
-PUBLIC CONST CLIENT_SIZE=88
+PUBLIC CONST CLIENT_SIZE=94
 
 ; Read this Task's detailed DOS error without allocating a client context.
 PUBLIC LONGINT FUNC IoErr()
@@ -165,6 +166,14 @@ PUBLIC LONGINT FUNC ReleaseContext()
   slot.active=1
   IF client.request<>EXEC.IOStdReq POINTER(0) THEN
     EXEC.DeleteIORequest(EXEC.IORequest POINTER(client.request))
+  FI
+
+  IF client.assignPath<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(client.assignPath,256)
+  FI
+
+  IF client.assignOther<>BYTE POINTER(0) THEN
+    EXEC.FreeMem(client.assignOther,256)
   FI
 
   EXEC.DeleteMsgPort(client.port)

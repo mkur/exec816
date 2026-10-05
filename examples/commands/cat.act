@@ -89,24 +89,32 @@ PROC Copy(BYTE POINTER input)
 
 RETURN
 
-; Choose a named file or borrowed standard input and release only owned
-; handles.
+; Concatenate exact named files, or borrow standard input when none is named.
 LONGINT FUNC Main()
-  BYTE POINTER input
+  BYTE POINTER input,name
+  ADDRESS POINTER files
   ADDRESS ARRAY values(1)
+  CARD index
 
   failure=0
-  LET parsed=COMMAND.ReadArgsOrHelp(c"FILE",values,1,path,SIZEOF(path))
+  LET parsed=COMMAND.ReadArgsOrHelp(c"FILE/M",values,1,path,SIZEOF(path))
   IF parsed<>COMMAND.ARGS_PARSED THEN
     RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
         ELSE COMMAND.RETURN_ERROR FI)
   FI
 
-  LET named=values(0)<>0
-  ; A quoted empty argument is present, but is not a filename.
-  IF named AND path(0)=ASCII.NUL THEN
-    COMMAND.SetIoErr(COMMAND.ERROR_INVALID_COMPONENT_NAME)
-    RETURN(COMMAND.RETURN_ERROR)
+  files=ADDRESS POINTER(values(0))
+  IF values(0)<>0 THEN
+    index=0
+    WHILE files(index)<>0 DO
+      name=BYTE POINTER(files(index))
+      IF name(0)=ASCII.NUL THEN
+        COMMAND.SetIoErr(COMMAND.ERROR_INVALID_COMPONENT_NAME)
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      index==+1
+    OD
   FI
 
   IF COMMAND.BreakPending()<>0 THEN
@@ -114,24 +122,33 @@ LONGINT FUNC Main()
     RETURN(COMMAND.RETURN_ERROR)
   FI
 
-  IF named<>0 THEN
-    input=COMMAND.Open(path,COMMAND.MODE_OLDFILE)
-    IF input=BYTE POINTER(0) THEN
-      RETURN(COMMAND.RETURN_ERROR)
-    FI
+  IF values(0)=0 THEN
+    Copy(COMMAND.Input())
   ELSE
-    input=COMMAND.Input()
-  FI
+    index=0
+    WHILE files(index)<>0 AND failure=0 DO
+      BEGIN
+        IF COMMAND.BreakPending()<>0 THEN
+          failure=COMMAND.ERROR_BREAK
+          EXIT
+        FI
 
-  Copy(input)
-  IF named<>0 THEN
-    BEGIN
-      LET closed=COMMAND.Close(input)
-      LET error=COMMAND.IoErr()
-      IF closed=0 AND failure=0 THEN
-        failure=error
-      FI
-    END
+        input=COMMAND.Open(BYTE POINTER(files(index)),COMMAND.MODE_OLDFILE)
+        IF input=BYTE POINTER(0) THEN
+          failure=COMMAND.IoErr()
+          EXIT
+        FI
+
+        Copy(input)
+        LET closed=COMMAND.Close(input)
+        LET error=COMMAND.IoErr()
+        IF closed=0 AND failure=0 THEN
+          failure=error
+        FI
+
+        index==+1
+      END
+    OD
   FI
 
   IF failure<>0 THEN

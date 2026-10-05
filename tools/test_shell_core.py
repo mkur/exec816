@@ -133,15 +133,36 @@ KEYS={c:(c.upper(),False)for c in 'abcdefghijklmnopqrstuvwxyz0123456789'}
 KEYS.update({c:(c,True)for c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'})
 KEYS.update({' ':('SPACE',False),'\n':('RETURN',False),'\t':('TAB',False),'\b':('BACKSPACE',False),':':('SEMICOLON',True),'"':('2',True),'*':('ASTERISK',False),'<':('LESS',False),'>':('GREATER',False),'/':('SLASH',False),'.':('PERIOD',False),';':('SEMICOLON',False),'|':('EQUALS',True),'-':('MINUS',False),'=':('EQUALS',False),'?':('SLASH',True)})
 
-def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=None,reuse=False,pin=None,bridge_build=None):
+def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=None,reuse=False,pin=None,bridge_build=None,history_unavailable=False):
     pin = pin or PIN
     bridge_build = bridge_build or ROOT/'build/shell-console-bridge'
     out.mkdir(parents=True,exist_ok=True)
     source=instrument(out)
+    if history_unavailable:
+        # Real allocator exhaustion is covered by test_dos_cooked. Inject its
+        # result here to check that the shell gives up once, preserving editing.
+        cooked=read_source(ROOT/'lib/dos/cookedline.act')
+        signature='PUBLIC LONGINT FUNC SetHistory(Session POINTER state BYTE enabled)'
+        require(cooked.count(signature)==1,'Missing history fault checkpoint')
+        cooked=cooked.replace(signature, 'PUBLIC CARD enableAttempts\n'+signature+'''
+
+  IF enabled<>0 THEN
+    enableAttempts==+1
+    RETURN(ERROR_NO_FREE_STORE)
+  FI
+''')
+        (out/'cookedline.act').write_text(cooked)
     if external:external.instrument(out)
+    memory_profile=getattr(external,'memory_profile',None)
+    if memory_profile is None:
+        # Match the demo's 4 KiB upper-RAM arena for shell/help and observers.
+        profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+        profile['image_data_bytes']=4096
+        memory_profile=out/'shell-memory.json'
+        memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     p=read_build(out) if reuse else build(t,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,
             system_mount=None if no_mount else 'D1',dos_mounts=[] if no_mount else getattr(external,'mounts',[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=1)]),
-            image_data=[],memory_profile=getattr(external,'memory_profile',None))
+            image_data=[],memory_profile=memory_profile)
     media=out/'volume.atr'
     if external:external.prepare(t,out,mode,size)
     else:shutil.copyfile(ROOT/f'tests/fixtures/mydos/mydos450-{size}.atr',media)
@@ -241,12 +262,19 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
             observations.append(dict(stage='startup',created=created,live=live,shell_pointer=state['shell']))
             check_screen('initial');b.poke(at('gate'),1)
             command('echo "hello world"',b'hello world\n');check_screen('quoted-echo')
+            if history_unavailable:
+                command('echo editX\bed',b'edited\n');check_screen('history-unavailable')
+                attempts=next(d['address'] for d in p['image']['data'] if '_COOKEDLINE_ENABLEATTEMPTS_' in d['name'])
+                require(b.peek16(attempts)==1,'Shell retried unavailable history')
+                require(int.from_bytes(far(state['cooked']+407,3),'little')==0,
+                        'History allocated after injected failure')
+                counts['history_enable_attempts']=1
             if external:
                 from types import SimpleNamespace
                 external.exercise(SimpleNamespace(command=command,check_screen=check_screen,append=append,press=press,
                     rendezvous=rendezvous,ready=ready,far=far,at=at,p=p,state=state,expected=expected,line=line,b=b))
             elif not smoke:
-                command('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT\n')
+                command('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n')
                 command('cd',b'' if no_mount else b'D1:\n',211 if no_mount else 0)
                 if not no_mount:
                     for cmd in ('cd tools/sub','cd /','cd :','cd d1:tools','cd missing'):
@@ -308,12 +336,14 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
         require(b.memdump(state['screen'],960)==state['bytes'] and b.peek(752)==state['cursor'] and b.peek(16)==state['mask'],'Shell did not restore OS console')
         ownership(b,p,out);require(sha256(media)==digest,'Shell modified media')
         if external and hasattr(external,'persisted'):external.persisted(b,p,out)
-    return dict(status='pass',mode=mode,kernel_bank=bank,sector_bytes=size,no_mount=no_mount,smoke=smoke,eof=eof,build=p['build'],runtime=rt,machine=machine,pin=pin,limits=LIMITS,observations=observations,schedule=schedule,counts=counts,media_sha256=digest,writes_sha256=sha256(out/'writes.bin'),source_inputs={s:sha256(ROOT/s)for s in ('examples/shell/shell.act','examples/shell/shell-session.inc','examples/shell/shell-commands.inc','tests/programs/shell_core.act','tools/test_shell_core.py')},hook_sha256=sha256(out/'shell-observed.inc'))
+    return dict(status='pass',mode=mode,kernel_bank=bank,sector_bytes=size,no_mount=no_mount,smoke=smoke,eof=eof,history_unavailable=history_unavailable,build=p['build'],runtime=rt,machine=machine,pin=pin,limits=LIMITS,observations=observations,schedule=schedule,counts=counts,media_sha256=digest,writes_sha256=sha256(out/'writes.bin'),source_inputs={s:sha256(ROOT/s)for s in ('examples/shell/shell.act','examples/shell/shell-session.inc','examples/shell/shell-commands.inc','tests/programs/shell_core.act','tools/test_shell_core.py')},hook_sha256=sha256(out/'shell-observed.inc'))
 
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--bank',type=int,default=1);a.add_argument('--sector-size',type=int,default=128);a.add_argument('--no-mount',action='store_true');a.add_argument('--smoke',action='store_true');a.add_argument('--eof',choices=('empty','partial'));a.add_argument('--output',type=Path,required=True);args=a.parse_args()
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--bank',type=int,default=1);a.add_argument('--sector-size',type=int,default=128);a.add_argument('--no-mount',action='store_true');a.add_argument('--smoke',action='store_true');a.add_argument('--history-unavailable',action='store_true');a.add_argument('--paced',action='store_true');a.add_argument('--eof',choices=('empty','partial'));a.add_argument('--output',type=Path,required=True);args=a.parse_args()
     out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
-    try:r=run(compiler(args.compiler_dir),out,args.case,args.bank,args.sector_size,args.no_mount,args.smoke,args.eof)
+    pin=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text()) if args.paced else None
+    bridge=ROOT/'build/shell-paced-bridge' if args.paced else None
+    try:r=run(compiler(args.compiler_dir),out,args.case,args.bank,args.sector_size,args.no_mount,args.smoke,args.eof,history_unavailable=args.history_unavailable,pin=pin,bridge_build=bridge)
     except Exception as e:r.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     print('Shell core passed',args.case,flush=True)

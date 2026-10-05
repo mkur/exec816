@@ -53,8 +53,8 @@ def run(out,optimize,bank,trace=False):
             schedule.append(dict(key=name,state=state,frame=b.eval_expr('@frame')))
         def press(char):
             count=b.peek16(at('keyCount','DOSCOOKED'))
-            ctrl=char in ('\x03','\x04')
-            name={'\n':'RETURN','\b':'BACKSPACE','\t':'TAB','\x03':'C','\x04':'D','!':'BREAK'}.get(char,char.upper())
+            ctrl=char in ('\x02','\x03','\x04','→','↑','↓')
+            name={'\n':'RETURN','\b':'BACKSPACE','\t':'TAB','\x02':'B','\x03':'C','\x04':'D','!':'BREAK','→':'ASTERISK','↑':'MINUS','↓':'EQUALS'}.get(char,char.upper())
             if ctrl:key('CTRL','down')
             key(name,'down');rendezvous(f'dw(${at("keyCount","DOSCOOKED"):x})={count+1}')
             key(name,'up')
@@ -69,7 +69,7 @@ def run(out,optimize,bank,trace=False):
             b._cmd_ok('KEY ALL up')
             for number,text in ((1,'ab\bcd\t\n'),(2,'xy\x04'),(3,'\x04'),(4,'bad!'),
                                 (5,'x'*255+'z\x04\x03z\n'),(6,'\x04\x03suffix\n'),(7,'ok\n'),
-                                (8,'q'),(9,'discard\n'),(10,'z\n')):
+                                (8,'q'),(9,'discard\n'),(10,'z\n'),(11,'↑\x02→↓↑\n')):
                 phase(number)
                 if number==2:
                     cells=far(int.from_bytes(far(instance,3),'little'),960)
@@ -94,7 +94,7 @@ def run(out,optimize,bank,trace=False):
             (out/'failure-hardware.bin').write_bytes(hardware)
             print('CON failure',data(b,p['image'],'checks',True),data(b,p['image'],'peerChecks',True),data(b,p['image'],'phase'),b.peek16(adapter.STATE),data(b,p['image'],'peerResult'),data(b,p['image'],'peerError'),flush=True);raise
         if trace:b.profile_stop()
-        require(data(b,p['image'],'phase')==[11],'CON completion missing')
+        require(data(b,p['image'],'phase')==[12],'CON completion missing')
         require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'Console not restored')
         ownership(b,p,out);require(sha256(media)==digest,'Media changed')
         return dict(status='pass',build=p['build'],runtime=runtime,machine=machine,

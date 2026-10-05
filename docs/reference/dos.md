@@ -6,6 +6,7 @@
 These are native pointers, not Amiga BPTRs. Names are NUL-terminated byte strings;
 I/O remains counted binary data. Exact signatures and constants come from
 [dos.act](../../lib/dos/dos.act) and [dos.json](../../abi/dos.json).
+The current native DOS ABI is revision 7; the loaded COMMAND ABI is version 11.
 
 ## Files and directories
 
@@ -40,7 +41,8 @@ do not wait or consume input.
 
 ## Paths and mounts
 
-Paths support physical mount names such as `D1:`, the selected `SYS:` alias and
+Paths support physical mount names such as `D1:`, the selected `SYS:` alias,
+bounded [ASSIGN logical directories](assigns.md), and
 current-directory resolution. Components use `/`, not host separators. The
 [shell guide](../guides/shell.md) describes relative paths and parent/root forms;
 [SYS:](sys-volume.md) describes stable system paths. Paths are bounded and are
@@ -72,7 +74,7 @@ on success and clears any standard-stream selection referring to that handle.
 
 ## Fault text
 
-DOS and COMMAND publish shared English error formatting in DOS ABI revision 5
+DOS and COMMAND publish shared English error formatting since DOS ABI revision 5
 and program ABI version 9. Message definitions come from the DOS and program ABI
 JSON files; one generated resident table covers all defined DOS/loader errors.
 
@@ -100,6 +102,23 @@ must be writable upper RAM satisfying the DOS transfer-range rule, and must not
 overlap the readable header. A valid nonempty destination is NUL-terminated on
 format failure; there is no truncated successful message. PrintFault can commit
 a prefix before a transport failure and makes no recursive diagnostic attempt.
+
+## Console history
+
+Native DOS ABI revision 6 added `SetConsoleHistory(file, enabled)`; the loaded
+COMMAND ABI introduced it in version 10. This returns DOSTRUE and clears IoErr on success,
+or DOSFALSE with IoErr on failure. Zero disables history; any nonzero BYTE enables
+it. Only a live CON handle owned by the calling Task is accepted. Invalid handles
+report ERROR_BAD_STREAM_NAME (206), other backends ERROR_OBJECT_WRONG_TYPE (212),
+and active/suspended clients or a busy session ERROR_OBJECT_IN_USE (202).
+Allocation failure reports ERROR_NO_FREE_STORE (103), releases the session lease
+and leaves history disabled.
+
+The setting applies to the shared cooked session. Disabling retains stored history
+and pending input state, but resets browsing. Final session release frees storage.
+The [cooked console contract](cooked-console.md#optional-history) defines recording,
+browsing and ownership; the shell enables history only at its prompt. This small
+Exec816 extension requires no kernel operation or additional Task.
 
 ## Task-local state and ownership
 

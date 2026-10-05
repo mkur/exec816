@@ -132,6 +132,8 @@ BYTE FUNC Begin(DOSCLIENT.ClientContext POINTER client COOKEDLINE.Session
   FI
 
   state.drawn=0
+  state.screenCursor=0
+  state.appendEcho=0
   state.width=COOKEDLINE.TAIL_COLUMNS
   IF available<3 THEN
     state.echo(0)=10

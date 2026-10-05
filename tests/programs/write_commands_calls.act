@@ -1,0 +1,283 @@
+MODULE DOSCALLS
+
+USE WRITECOMMANDSTATE AS T
+
+PUBLIC BYTE POINTER FUNC Selected(BYTE output)
+
+RETURN(BYTE POINTER(IF output<>0 THEN ADDRESS(3) ELSE ADDRESS(1) FI))
+
+; Read admission precedes destructive output admission; a live source blocks
+; the simulated same-object output just as the real filesystem lease does.
+PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
+
+  T.state.error=0
+  IF name(0)='M THEN
+    T.state.error=205
+    RETURN(NULL)
+  FI
+
+  IF mode=1005 THEN
+    T.state.inputLive=1
+    T.state.opens==+1
+    RETURN(BYTE POINTER(1))
+  FI
+
+  IF T.scenario.openError<>0 OR T.scenario.same<>0 THEN
+    T.state.error=IF T.scenario.same<>0 THEN LONGINT(202) ELSE T.scenario.openError FI
+    RETURN(NULL)
+  FI
+
+  T.state.opens==+1
+  T.state.fileLive=1
+  T.state.mode=LONGCARD(mode)
+  T.state.fileCursor=0
+  IF mode=1006 THEN
+    T.state.fileLength=0
+    T.state.fileHash=0
+  FI
+
+RETURN(BYTE POINTER(2))
+
+; Failed Close still consumes the wrapper. Count accidental borrowed/double
+; closes independently from the returned error so cleanup cannot hide them.
+PUBLIC LONGINT FUNC Close(BYTE POINTER handle)
+  LONGCARD owned
+
+  owned=0
+  IF handle=BYTE POINTER(1) THEN
+    owned=T.state.inputLive
+    T.state.inputLive=0
+  ELSEIF handle=BYTE POINTER(2) THEN
+    owned=T.state.fileLive
+    T.state.fileLive=0
+  ELSEIF handle=BYTE POINTER(4) THEN
+    owned=T.state.consoleLive
+    T.state.consoleLive=0
+  FI
+
+  IF owned=0 THEN
+    T.state.badOwner=1
+  FI
+
+  T.state.closes==+1
+  T.state.error=T.scenario.closeError
+
+RETURN(IF T.state.error=0 THEN LONGINT(-1) ELSE LONGINT(0) FI)
+
+PUBLIC LONGINT FUNC Seek(BYTE POINTER handle LONGINT offset,mode)
+
+  T.state.seeks==+1
+  T.state.error=T.scenario.seekError
+  IF handle<>BYTE POINTER(2) OR offset<>0 OR mode<>1 THEN
+    T.state.badOwner=1
+  FI
+
+  IF T.state.error<>0 THEN
+    RETURN(-1)
+  FI
+
+  T.state.fileCursor=T.state.fileLength
+
+RETURN(0)
+
+; Supply independent short chunks and errors attached to a committed prefix.
+PUBLIC LONGINT FUNC Read(BYTE POINTER handle,buffer LONGINT requested)
+  CARD index,count
+
+  T.state.reads==+1
+  T.state.error=0
+  IF handle<>BYTE POINTER(1) THEN
+    T.state.badOwner=1
+  FI
+
+  IF T.state.reads=LONGCARD(T.scenario.readFail) THEN
+    T.state.error=226
+    RETURN(-1)
+  FI
+
+  IF T.scenario.oversizedRead<>0 THEN
+    RETURN(requested+1)
+  FI
+
+  count=CARD(T.scenario.readChunk)
+  IF LONGINT(count)>requested THEN
+    count=CARD(requested)
+  FI
+
+  IF LONGCARD(count)>T.scenario.length-T.state.position THEN
+    count=CARD(T.scenario.length-T.state.position)
+  FI
+
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      buffer(index)=T.scenario.data(CARD((T.state.position+LONGCARD(index))
+          MOD LONGCARD(T.scenario.patternBytes)))
+    OD
+
+    T.state.error=T.scenario.prefixError
+  FI
+
+  T.state.position==+LONGCARD(count)
+
+RETURN(LONGINT(count))
+
+; Capture prefixes and full-length rolling hashes independently for the file
+; and Output. This tests transfers past 64 KiB without a whole-file buffer.
+PUBLIC LONGINT FUNC Write(BYTE POINTER handle,buffer LONGINT requested)
+  CARD count,index
+  LONGCARD ordinal
+  BYTE value
+
+  T.state.error=0
+  count=CARD(T.scenario.writeChunk)
+  IF LONGINT(count)>requested THEN
+    count=CARD(requested)
+  FI
+
+  IF handle=BYTE POINTER(2) THEN
+    T.state.fileWrites==+1
+    ordinal=T.state.fileWrites
+  ELSE
+    T.state.outputWrites==+1
+    ordinal=T.state.outputWrites
+  FI
+
+  IF ADDRESS(buffer)<ADDRESS($10000) THEN
+    T.state.badOwner=1
+  FI
+
+  IF LONGINT(ADDRESS(handle))=T.scenario.failTarget AND ordinal=LONGCARD(T.scenario.failAt) THEN
+    T.state.error=T.scenario.writeError
+    RETURN(-1)
+  FI
+
+  IF LONGINT(ADDRESS(handle))=T.scenario.zeroTarget THEN
+    RETURN(0)
+  FI
+
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      value=buffer(index)
+      IF handle=BYTE POINTER(2) THEN
+        IF T.state.fileCursor<1024 THEN
+          T.state.file(CARD(T.state.fileCursor))=value
+        FI
+
+        T.state.fileCursor==+1
+        T.state.fileLength=T.state.fileCursor
+        T.state.fileHash=T.state.fileHash*33+LONGCARD(value)
+      ELSEIF handle=BYTE POINTER(3) THEN
+        IF T.state.outputLength<1024 THEN
+          T.state.output(CARD(T.state.outputLength))=value
+        FI
+
+        T.state.outputLength==+1
+        T.state.outputHash=T.state.outputHash*33+LONGCARD(value)
+      ELSEIF handle=BYTE POINTER(4) THEN
+        T.state.console(CARD(T.state.consoleUsed))=value
+        T.state.consoleUsed==+1
+      ELSE
+        T.state.badOwner=1
+      FI
+    OD
+  FI
+
+  IF LONGINT(ADDRESS(handle))=T.scenario.failTarget THEN
+    T.state.error=T.scenario.writePrefixError
+  FI
+
+RETURN(LONGINT(count))
+
+PUBLIC BYTE POINTER FUNC OpenConsole()
+
+  IF T.scenario.interactive=0 THEN
+    T.state.error=212
+    RETURN(NULL)
+  FI
+
+  T.state.opens==+1
+  T.state.consoleLive=1
+  T.state.error=0
+
+RETURN(BYTE POINTER(4))
+
+PUBLIC LONGINT FUNC DeleteFile(BYTE POINTER name)
+
+  T.state.operation==+1
+  T.state.position==+1
+  T.state.mode=T.state.mode*33+LONGCARD(name(0))
+  T.state.error=0
+  IF name(0)='M THEN
+    T.state.error=205
+  ELSEIF T.scenario.mutationError<>0 THEN
+    IF T.scenario.failAt=0 OR T.state.operation=T.scenario.failAt THEN
+      T.state.error=T.scenario.mutationError
+    FI
+  FI
+
+RETURN(IF T.state.error=0 THEN LONGINT(-1) ELSE LONGINT(0) FI)
+
+PUBLIC LONGINT FUNC Rename(BYTE POINTER oldName,newName)
+
+  T.state.operation=2
+  T.state.error=T.scenario.mutationError
+
+RETURN(IF T.state.error=0 THEN LONGINT(-1) ELSE LONGINT(0) FI)
+
+PUBLIC BYTE POINTER FUNC CreateDir(BYTE POINTER name)
+
+  T.state.operation=3
+  T.state.error=T.scenario.mutationError
+  IF T.state.error<>0 THEN
+    RETURN(NULL)
+  FI
+
+  T.state.opens==+1
+  T.state.lockLive=1
+
+RETURN(BYTE POINTER(5))
+
+PUBLIC PROC UnLock(BYTE POINTER lock)
+
+  IF lock<>BYTE POINTER(5) OR T.state.lockLive=0 THEN
+    T.state.badOwner=1
+  FI
+
+  T.state.lockLive=0
+  T.state.closes==+1
+  T.state.error=T.scenario.unlockError
+
+RETURN
+
+; These imports are present in PROGRAMAPI but outside this command batch.
+; Treat any accidental call as an observer failure, not a successful stub.
+PUBLIC LONGINT FUNC Unsupported()
+
+  T.state.badOwner=1
+  T.state.error=209
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC Flush(BYTE POINTER handle)
+
+RETURN(Unsupported())
+
+PUBLIC BYTE POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
+
+  Unsupported()
+
+RETURN(NULL)
+
+PUBLIC LONGINT FUNC Information(BYTE POINTER lock,buffer LONGINT action)
+
+RETURN(Unsupported())
+
+PUBLIC LONGINT FUNC IsInteractive(BYTE POINTER handle)
+
+RETURN(Unsupported())
+
+PUBLIC LONGINT FUNC ConsoleInfo(BYTE POINTER handle,buffer)
+
+RETURN(Unsupported())
+
+ENDMODULE

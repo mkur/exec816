@@ -8,6 +8,7 @@ USE DOSSTREAMS
 USE DOSPIPE
 USE DOSRAW
 USE DOSCOOKED
+USE COOKEDLINE
 USE DOSBREAK
 USE DOSBREAKTYPES
 USE DOSCANCEL
@@ -15,6 +16,7 @@ USE FSBOOT
 USE FSREGISTRY
 USE FSNAMES
 USE FSSYSTEM
+USE FS83
 USE FSLOCKS
 USE CONSOLEWINDOWS
 USE CONSOLETYPES
@@ -25,6 +27,132 @@ TYPE DestinationInfo=[
   LONGCARD unit
   FSTYPES.Object POINTER base
 ]
+
+PUBLIC CONST ASSIGN_SLOTS=4
+
+; The caller holds Forbid while comparing or copying an immutable entry.
+BYTE FUNC AssignIndex(DOSCORE.DosRegistry POINTER registry BYTE POINTER name
+    CARD length)
+  BYTE slot,index,same
+  AssignInfo POINTER item
+
+  FOR slot=0 TO ASSIGN_SLOTS-1 DO
+    item=AssignInfo POINTER(registry.assigns(slot))
+    IF item<>NULL THEN
+      same=1
+      FOR index=0 TO length-1 DO
+        IF FS83.Fold(name(index))<>item.name(index) THEN
+          same=0
+          EXIT
+        FI
+      OD
+
+      IF same<>0 AND item.name(length)=0 THEN
+        RETURN(slot)
+      FI
+    FI
+  OD
+
+RETURN(ASSIGN_SLOTS)
+
+; Expand only registered explicit prefixes. A caller-owned upper buffer lives
+; until the synchronous packet completes; no registry pointer escapes Forbid.
+BYTE POINTER FUNC Expand(DOSCORE.DosSlot POINTER slot BYTE POINTER name
+    CARD colon BYTE second)
+  DOSCORE.DosRegistry POINTER registry
+  DOSCLIENT.ClientContext POINTER client
+  AssignInfo POINTER item
+  BYTE POINTER result,suffix
+  CARD used,part,offset
+  BYTE index,found,separator
+
+  IF colon=FSNAMES.INVALID OR colon=FSNAMES.RELATIVE OR colon=0 THEN
+    RETURN(name)
+  FI
+
+  registry=DOSCORE.GetRegistry()
+  EXEC.Forbid()
+  found=BYTE(AssignIndex(registry,name,colon)<>ASSIGN_SLOTS)
+  EXEC.Permit()
+  IF found=0 THEN
+    RETURN(name)
+  FI
+
+  client=DOSCLIENT.EnsureSlot(slot)
+  IF client=NULL THEN
+    RETURN(NULL)
+  FI
+
+  IF second=0 THEN
+    result=client.assignPath
+  ELSE
+    result=client.assignOther
+  FI
+  IF result=NULL THEN
+    slot.active=1
+    result=EXEC.AllocMem(256,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+    IF result<>NULL THEN
+      IF second=0 THEN
+        client.assignPath=result
+      ELSE
+        client.assignOther=result
+      FI
+    FI
+
+    slot.active=0
+    IF result=NULL THEN
+      slot.error=ERROR_NO_FREE_STORE
+      RETURN(NULL)
+    FI
+  FI
+
+  found=0
+  EXEC.Forbid()
+  index=AssignIndex(registry,name,colon)
+  IF index<>ASSIGN_SLOTS THEN
+    item=AssignInfo POINTER(registry.assigns(index))
+    used=0
+    WHILE item.target(used)<>0 DO
+      result(used)=item.target(used)
+      used==+1
+    OD
+
+    found=1
+  FI
+
+  EXEC.Permit()
+  IF found=0 THEN
+    RETURN(name)
+  FI
+
+  suffix=BYTE POINTER(ADDRESS(name)+SIZE(colon+1))
+  IF suffix^=0 THEN
+    result(used)=0
+    RETURN(result)
+  FI
+
+  separator=BYTE(result(used-1)<>': AND result(used-1)<>'/
+      AND suffix^<>'/)
+  part=0
+  WHILE suffix(part)<>0 DO
+    part==+1
+  OD
+
+  IF used+CARD(separator)+part>255 THEN
+    slot.error=ERROR_LINE_TOO_LONG
+    RETURN(NULL)
+  FI
+
+  IF separator<>0 THEN
+    result(used)='/
+    used==+1
+  FI
+
+  FOR offset=0 TO part DO
+    result(used+offset)=suffix(offset)
+  OD
+
+RETURN(result)
 
 ; Validate the caller's name and classify its volume or stream prefix.
 PROC Arguments(DOSCLIENT.ClientContext POINTER client DOSCORE.DosSlot POINTER slot)
@@ -192,6 +320,12 @@ PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
 
   slot=DOSCORE.Current()
   colon=FSNAMES.Path(name)
+  name=Expand(slot,name,colon,0)
+  IF name=NULL THEN
+    RETURN(NULL)
+  FI
+
+  colon=FSNAMES.Path(name)
   backend=Destination(slot,name,colon,@resolved)
   IF backend=0 THEN
     RETURN(BYTE POINTER(0))
@@ -239,6 +373,12 @@ PUBLIC BYTE POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
   BYTE backend
 
   slot=DOSCORE.Current()
+  colon=FSNAMES.Path(name)
+  name=Expand(slot,name,colon,0)
+  IF name=NULL THEN
+    RETURN(NULL)
+  FI
+
   colon=FSNAMES.Path(name)
   backend=Destination(slot,name,colon,@resolved)
   IF backend=0 THEN
@@ -880,6 +1020,30 @@ PUBLIC BYTE POINTER FUNC OpenConsole()
 
 RETURN(DOSRAW.Open(client,scope.unit))
 
+; Configure only a live caller-owned cooked session. The cooked lease excludes
+; readers sharing an inherited session while allocation/configuration runs.
+PUBLIC LONGINT FUNC SetConsoleHistory(BYTE POINTER identity BYTE enabled)
+
+  LET owner=DOSCORE.Current()
+  IF SelectionReady(owner)=0 THEN
+    RETURN(0)
+  FI
+
+  IF LiveSelection(owner,identity)=0 THEN
+    RETURN(0)
+  FI
+
+  LET header=DOSOBJECTS.Header POINTER(identity)
+  IF header.backend<>DOSOBJECTS.BACKEND_CON THEN
+    owner.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(0)
+  FI
+
+  LET item=DOSCOOKED.Handle POINTER(header)
+  owner.error=COOKEDLINE.SetHistory(item.state,enabled)
+
+RETURN(IF owner.error=0 THEN LONGINT(-1) ELSE LONGINT(0) FI)
+
 ; Query the dimensions of an owned live console, with identity and storage
 ; validation. The handle's endpoint reference prevents instance destruction.
 PUBLIC LONGINT FUNC ConsoleInfo(BYTE POINTER identity,buffer)
@@ -979,10 +1143,18 @@ RETURN(result)
 
 PUBLIC BYTE POINTER FUNC CreateDir(BYTE POINTER name)
   DestinationInfo resolved
+  CARD colon
+  BYTE backend
 
   LET slot=DOSCORE.Current()
-  LET colon=FSNAMES.Path(name)
-  LET backend=Destination(slot,name,colon,@resolved)
+  colon=FSNAMES.Path(name)
+  name=Expand(slot,name,colon,0)
+  IF name=NULL THEN
+    RETURN(NULL)
+  FI
+
+  colon=FSNAMES.Path(name)
+  backend=Destination(slot,name,colon,@resolved)
   IF backend=0 THEN
     RETURN(NULL)
   FI
@@ -1038,6 +1210,12 @@ LONGINT FUNC Namespace(BYTE POINTER name,newName LONGINT action)
   FI
 
   colon=FSNAMES.Path(name)
+  name=Expand(slot,name,colon,0)
+  IF name=NULL THEN
+    RETURN(0)
+  FI
+
+  colon=FSNAMES.Path(name)
   IF Destination(slot,name,colon,@oldTarget)<>DOSOBJECTS.BACKEND_FILE THEN
     IF slot.error=0 THEN
       slot.error=ERROR_OBJECT_WRONG_TYPE
@@ -1060,6 +1238,13 @@ LONGINT FUNC Namespace(BYTE POINTER name,newName LONGINT action)
   client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(oldTarget.base))
   client.packet.sp_Pkt.dp_Arg3=LONGINT(ADDRESS(name))
   IF action=17 THEN
+    newColon=FSNAMES.Path(newName)
+    newName=Expand(slot,newName,newColon,1)
+    IF newName=NULL THEN
+      FSREGISTRY.Release(mount)
+      RETURN(0)
+    FI
+
     newColon=FSNAMES.Path(newName)
     IF Destination(slot,newName,newColon,@newTarget)<>DOSOBJECTS.BACKEND_FILE THEN
       IF slot.error=0 THEN
@@ -1107,5 +1292,179 @@ RETURN(Namespace(name,NULL,16))
 PUBLIC LONGINT FUNC Rename(BYTE POINTER oldName,newName)
 
 RETURN(Namespace(oldName,newName,17))
+
+; A bounded, system-wide directory assign stores only a canonical physical
+; path. Publication swaps immutable upper-RAM records under Task exclusion.
+PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
+  DOSCORE.DosRegistry POINTER registry
+  DOSCORE.DosSlot POINTER owner
+  FSTYPES.Spec POINTER specs
+  AssignInfo POINTER item,old
+  FileInfoBlock POINTER info
+  BYTE POINTER targetLock
+  CARD length,index
+  BYTE chosen,slot
+  LONGINT cause
+
+  owner=DOSCORE.Current()
+  IF name=NULL OR FSNAMES.Path(name)<>FSNAMES.RELATIVE
+      OR FSNAMES.ValidAlias(name)=0 THEN
+    owner.error=ERROR_INVALID_COMPONENT_NAME
+    RETURN(0)
+  FI
+
+  length=0
+  WHILE name(length)<>0 DO
+    length==+1
+  OD
+
+  registry=DOSCORE.GetRegistry()
+  specs=FSTYPES.Spec POINTER(registry.config)
+  FOR slot=0 TO registry.count-1 DO
+    IF FSSYSTEM.Matches(@specs(slot),slot,name,length)<>0 THEN
+      owner.error=ERROR_OBJECT_EXISTS
+      RETURN(0)
+    FI
+  OD
+
+  IF target=NULL THEN
+    old=NULL
+    EXEC.Forbid()
+    chosen=AssignIndex(registry,name,length)
+    IF chosen<>ASSIGN_SLOTS THEN
+      old=AssignInfo POINTER(registry.assigns(chosen))
+      registry.assigns(chosen)=ADDRESS(0)
+    FI
+
+    EXEC.Permit()
+    IF old<>NULL THEN
+      EXEC.FreeMem(BYTE POINTER(old),ASSIGNINFO_SIZE)
+    FI
+
+    owner.error=0
+    RETURN(-1)
+  FI
+
+  item=AssignInfo POINTER(EXEC.AllocMem(ASSIGNINFO_SIZE,
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF item=NULL THEN
+    owner.error=ERROR_NO_FREE_STORE
+    RETURN(0)
+  FI
+
+  targetLock=Lock(target,SHARED_LOCK)
+  cause=owner.error
+  IF targetLock<>NULL THEN
+    info=FileInfoBlock POINTER(item)
+    IF Information(targetLock,BYTE POINTER(info),23)=0 THEN
+      cause=owner.error
+    ELSEIF info.fib_DirEntryType<=0 THEN
+      cause=ERROR_OBJECT_WRONG_TYPE
+    ELSEIF NameFromLock(targetLock,@item.target(0),256)=0 THEN
+      cause=owner.error
+    ELSE
+      cause=0
+    FI
+
+    owner.error=0
+    UnLock(targetLock)
+    IF cause=0 THEN
+      cause=owner.error
+    FI
+  FI
+
+  IF cause<>0 THEN
+    EXEC.FreeMem(BYTE POINTER(item),ASSIGNINFO_SIZE)
+    owner.error=cause
+    RETURN(0)
+  FI
+
+  IF FSNAMES.Path(@item.target(0))=FSNAMES.INVALID THEN
+    EXEC.FreeMem(BYTE POINTER(item),ASSIGNINFO_SIZE)
+    owner.error=ERROR_INVALID_COMPONENT_NAME
+    RETURN(0)
+  FI
+
+  FOR index=0 TO length-1 DO
+    item.name(index)=FS83.Fold(name(index))
+  OD
+
+  item.name(length)=0
+  old=NULL
+  chosen=ASSIGN_SLOTS
+  EXEC.Forbid()
+  chosen=AssignIndex(registry,name,length)
+  IF chosen=ASSIGN_SLOTS THEN
+    FOR slot=0 TO ASSIGN_SLOTS-1 DO
+      IF registry.assigns(slot)=ADDRESS(0) THEN
+        chosen=slot
+        EXIT
+      FI
+    OD
+  FI
+
+  IF chosen<>ASSIGN_SLOTS THEN
+    old=AssignInfo POINTER(registry.assigns(chosen))
+    registry.assigns(chosen)=ADDRESS(item)
+  FI
+
+  EXEC.Permit()
+  IF old<>NULL THEN
+    EXEC.FreeMem(BYTE POINTER(old),ASSIGNINFO_SIZE)
+  FI
+
+  IF chosen=ASSIGN_SLOTS THEN
+    EXEC.FreeMem(BYTE POINTER(item),ASSIGNINFO_SIZE)
+    owner.error=ERROR_NO_FREE_STORE
+    RETURN(0)
+  FI
+
+  owner.error=0
+
+RETURN(-1)
+
+; Copy a whole record while its immutable source remains published.
+PUBLIC LONGINT FUNC GetAssign(CARD index AssignInfo POINTER info)
+  DOSCORE.DosRegistry POINTER registry
+  DOSCORE.DosSlot POINTER owner
+  AssignInfo POINTER item
+  BYTE POINTER source,destination
+  CARD offset
+  BYTE occupied
+
+  owner=DOSCORE.Current()
+  IF index>=ASSIGN_SLOTS OR FSNAMES.Mapped(BYTE POINTER(info),
+      ASSIGNINFO_SIZE)=0 THEN
+    owner.error=ERROR_BAD_NUMBER
+    RETURN(0)
+  FI
+
+  registry=DOSCORE.GetRegistry()
+  destination=BYTE POINTER(info)
+  occupied=0
+  EXEC.Forbid()
+  item=AssignInfo POINTER(registry.assigns(index))
+  IF item<>NULL THEN
+    occupied=1
+    source=BYTE POINTER(item)
+    FOR offset=0 TO ASSIGNINFO_SIZE-1 DO
+      destination(offset)=source(offset)
+    OD
+  FI
+
+  EXEC.Permit()
+  IF occupied=0 THEN
+    FOR offset=0 TO ASSIGNINFO_SIZE-1 DO
+      destination(offset)=0
+    OD
+  FI
+
+  owner.error=0
+
+  IF occupied<>0 THEN
+    RETURN(-1)
+  FI
+
+RETURN(0)
 
 ENDMODULE

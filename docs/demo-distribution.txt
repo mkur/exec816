@@ -77,7 +77,13 @@ prime search advancing independently.
 
 Type HELP to list the shell's built-in commands:
 
-    HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT
+    HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT
+
+Edit at the prompt: Ctrl-A/E beginning/end, Ctrl-B/F left/right, Ctrl-U clear,
+Ctrl-K delete to end, Ctrl-W delete previous word. Ctrl-P/N recalls the last
+10 commands; going past the newest restores your unfinished draft.
+Atari cursor chords: Ctrl-+ left, Ctrl-* right, Ctrl-- up, Ctrl-= down.
+Up/down browse history. History lasts for this shell session only.
 
 The disk also includes CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST and MORE.
 Try HEAD STORY.TXT LINES 5, CKSUM STORY.TXT, or LIST NAMES.
@@ -97,6 +103,8 @@ then SYS:). Try:
 HEAD MISSING explains error 205; HEAD ? prints its argument template without
 reading Input. Every supplied command supports ?. PATH lists the search order;
 PATH ADD directory, PATH SET directory, PATH CLEAR and PATH RESET change it.
+ALIAS LS "DIR SYS:" defines a session-local command shortcut; LS runs it and
+UNALIAS LS removes it. ALIAS alone lists up to eight definitions.
 
 Try CAT LONG.TXT | WC, then press BREAK to cancel it. EXIT stops the demo
 and restores the OS display. SYS: is read-only; WORK: is writable. Keep both
@@ -106,10 +114,36 @@ Try saving output to the disposable WORK: disk:
 
     ECHO saved >WORK:OUT.TXT
     CAT WORK:OUT.TXT
-    CAT SYS:STORY.TXT >WORK:COPY.TXT
+    COPY SYS:STORY.TXT WORK:COPY.TXT
     CMP SYS:STORY.TXT WORK:COPY.TXT
 
-CMP succeeds silently. Output redirection creates or immediately truncates its
+CMP succeeds silently. The writable toolbox also includes:
+
+    MAKEDIR WORK:NOTES
+    COPY SYS:STORY.TXT WORK:NOTES/ONE.TXT
+    RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT
+    HELLO | TEE WORK:LOG.TXT
+    HELLO | TEE WORK:LOG.TXT APPEND
+    DELETE WORK:NOTES/TWO.TXT
+    DELETE WORK:NOTES
+
+COPY and TEE create or truncate unless APPEND is supplied. COPY takes an exact
+filename; DELETE accepts files or empty directories; RENAME stays in one directory.
+Each accepts ? for help. Partial output can remain after failure or BREAK.
+
+ASSIGN gives a short logical name to an existing directory for this boot:
+
+    ASSIGN DATA: WORK:
+    COPY SYS:STORY.TXT DATA:STORY.TXT
+    CAT DATA:STORY.TXT | WC
+    ASSIGN
+    ASSIGN DATA:
+
+Up to four assignments may exist. ASSIGN C: SYS: followed by PATH ADD C:
+also puts that logical directory in the shell's command search path; PATH RESET
+restores the default search path after removing C:.
+
+Output redirection creates or immediately truncates its
 target, even if the command later fails. Use copies of work.atr for experiments.
 There is no filesystem checker or recovery utility in the resident system;
 restore your copy after an interrupted or failed disk mutation.
@@ -134,7 +168,8 @@ Included files
 --------------
 
 Exec-of816.xex       Exec816 with the OF816 boot monitor
-@SYSTEM_DISK@        System disk with HELLO, CAT, WC, the command toolbox and sample text
+@SYSTEM_DISK@        System disk with sixteen commands and sample text
+work.atr            Disposable writable WORK: disk for drive D8
 altirraos-816.rom    AltirraOS 3.44 for 65C816
 README.txt          This guide
 EXEC816-GPL-3.0.txt  Exec816 OS licence

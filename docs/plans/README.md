@@ -100,6 +100,23 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [ASSIGN logical directories](assign-implementation-plan.md): implemented
+  four-slot, system-wide directory assignments with bounded DOS resolution,
+  a loadable command and explicit shell PATH interaction.
+  [Development record](../history/assign.md).
+- [Multiple-file arguments and LIST patterns](multiple-file-patterns-implementation-plan.md):
+  implemented bounded `/M` results for CAT and DELETE, plus command-level
+  `*`/`?` matching in read-only LIST. [Development record](../history/multiple-file-patterns.md).
+- [Small shell editor and command history](shell-editing-design.md): implemented
+  control-key editing, Atari cursor aliases and ten recalled commands. Optional
+  history uses 2,824 upper-RAM bytes with no extra bank-zero reservation.
+  [Implementation plan](shell-editing-implementation-plan.md) and
+  [development record](../history/shell-editing.md).
+
+- [Commands for writable filesystems](write-commands-implementation-plan.md):
+  COPY, DELETE, RENAME, MAKEDIR and TEE implemented using the existing writable
+  DOS APIs. [Development record](../history/write-commands.md) covers raw/optimized
+  command bodies, both filesystems and the packaged OF816 demo.
 - [Command usability](command-usability-implementation-plan.md): U1–U6 complete;
   bounded shell PATH, shared fault messages and command template help.
   [Development record](../history/command-usability.md), raw/optimized checks

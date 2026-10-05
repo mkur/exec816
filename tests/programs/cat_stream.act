@@ -8,7 +8,7 @@ INCLUDE "../../lib/dos/command-modes.inc"
 PUBLIC TYPE Scenario=[
   LONGCARD length,breakAt
   CARD chunk,writeChunk,argumentLength,readFail,writeFail,openError,closeError,
-      zeroWrite
+      zeroWrite,openFailAt
   BYTE ARRAY argument(32)
 ]
 
@@ -82,7 +82,10 @@ PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
   CARD index
 
   opens==+1
-  error=LONGINT(current.openError)
+  error=0
+  IF current.openError<>0 AND (current.openFailAt=0 OR opens=current.openFailAt) THEN
+    error=LONGINT(current.openError)
+  FI
   IF mode<>1005 THEN
     mismatch==+1
   FI
@@ -96,6 +99,8 @@ PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
   IF error<>0 THEN
     RETURN(BYTE POINTER(0))
   FI
+
+  position=0
 
 RETURN(@token)
 
@@ -159,7 +164,7 @@ PUBLIC LONGINT FUNC Write(BYTE POINTER handle,buffer LONGINT length)
 
   IF count<>0 THEN
     FOR index=0 TO count-1 DO
-      IF buffer(index)<>BYTE(written+LONGCARD(index)) THEN
+      IF buffer(index)<>BYTE((written+LONGCARD(index)) MOD current.length) THEN
         mismatch==+1
       FI
     OD

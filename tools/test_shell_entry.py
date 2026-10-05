@@ -20,8 +20,13 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
     out.mkdir(parents=True,exist_ok=True)
     mounts=[]if no_mount else json.loads((ROOT/'config/shell-mydos.json').read_text())['mounts']
     diskemu={1:'fastest',4:'generic56k'}[mounts[0]['profile']]if mounts else 'generic56k'
+    # Shared fault strings and shell HELP use the demo's 4 KiB upper arena.
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=4096
+    memory_profile=out/'shell-memory.json'
+    memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     p=build(t,ROOT/'examples/shell/shell.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,
-            dos_mounts=mounts,system_mount=None if no_mount else 'D1',stack_checks=stack_checks)
+            dos_mounts=mounts,system_mount=None if no_mount else 'D1',stack_checks=stack_checks,memory_profile=memory_profile)
     media=out/'volume.atr';files=make_disk(media)
     if invalid_disk:
         raw=bytearray(media.read_bytes());raw[16+359*128]=0;media.write_bytes(raw)
@@ -67,7 +72,7 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
             mounts_output=b'MOUNT FILESYSTEM ACCESS    STATE\n'+(b'No mounted filesystems\n'if error else b'D1:   MyDOS      read-only mounted\n')
             devices_output=b'DEVICE          STATE\nconsole.device  ready\nsio.device      '+(b'inactive'if no_mount else b'ready')+b'\n'
             state.update(mounts_output=mounts_output.decode(),devices_output=devices_output.decode())
-            commands=[('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT\n',0),
+            commands=[('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n',0),
                 ('ver',version,0),('ver >nil:',b'',0),('ver extra',diagnostic_text(115,'Shell'),115),
                 ('tasks',None,0),('tasks >nil:',b'',0),('tasks extra',diagnostic_text(115,'Shell'),115),
                 ('mount',mounts_output,0),('mount >nil:',b'',0),('mount D2:',diagnostic_text(115,'Shell'),115),

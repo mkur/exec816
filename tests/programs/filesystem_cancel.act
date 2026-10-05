@@ -238,7 +238,7 @@ PROC Main()
   CARD ticks
 
   baseline=EXEC.AvailMem(0)
-  Require(SIZEOF(DOSCORE.DosRegistry)<=96
+  Require(SIZEOF(DOSCORE.DosRegistry)<=108
       AND SIZEOF(DOSBREAKTYPES.Scope)=DOSBREAKTYPES.SCOPE_SIZE)
   con=DOS.Open(conName,DOS.MODE_READWRITE)
   file=DOS.Open(path,DOS.MODE_OLDFILE)

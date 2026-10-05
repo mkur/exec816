@@ -235,7 +235,7 @@ def run(out,mode,names=NAMES):
         records.append(dict(command=name,cases=[c['name'] for c in cases],build=p['build'],runtime=runtime,machine=machine))
         print(name,mode,len(cases),'passed',flush=True)
     return dict(status='pass',tier='development',mode=mode,commands=records,bank_zero_delta=dict(fixed=0,per_task=0),
-                source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [ROOT/'lib/dos/dosargs.act',ROOT/'lib/dos/doscommand.act',ROOT/'lib/dos/dosutility.act',ROOT/'lib/dos/programapi.act',ROOT/'examples/commands/command-common.inc',Path(__file__),*(ROOT/f'examples/commands/{n}.act' for n in names)]})
+                source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [ROOT/'lib/dos/dosargs.act',ROOT/'lib/dos/doscommand.act',ROOT/'lib/dos/dosutility.act',ROOT/'lib/dos/programapi.act',ROOT/'examples/commands/command-common.inc',ROOT/'examples/commands/command-files.inc',Path(__file__),*(ROOT/f'examples/commands/{n}.act' for n in names)]})
 
 
 if __name__=='__main__':

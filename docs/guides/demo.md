@@ -13,7 +13,7 @@ boot messages out of view.
 
 Download `exec816-demo.zip` from [Releases](https://github.com/mkur/exec816/releases)
 and extract it. The `exec816-demo/` folder
-contains `Exec-of816.xex`, `system.atr`, `altirraos-816.rom`, `README.txt`, license
+contains `Exec-of816.xex`, `system.atr`, `work.atr`, `altirraos-816.rom`, `README.txt`, license
 notices and `SHA256SUMS`. Keep these files together and follow the included boot
 instructions. Building from source is an [optional alternative](#build-from-source-optional).
 
@@ -35,13 +35,15 @@ to enter Forth and type `EXEC816` when ready. The ATR is a data disk; boot the
 XEX. A missing disk or wrong drive profile can leave the SIO driver offline
 after a timeout; correct the settings and cold-boot again.
 
-The supplied disks use SDFS 2.1 with 128-byte sectors. SYS: remains read-only;
-WORK: is explicitly writable. Try:
+The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB
+nominal capacity), equivalent to 80 tracks, two sides and 18 sectors per track. The
+disposable WORK: disk remains 720 sectors of 128 bytes (90 KiB).
+SYS: is read-only; WORK: is explicitly writable. Try:
 
 ```text
 ECHO saved >WORK:OUT.TXT
 CAT WORK:OUT.TXT
-CAT SYS:STORY.TXT >WORK:COPY.TXT
+COPY SYS:STORY.TXT WORK:COPY.TXT
 CMP SYS:STORY.TXT WORK:COPY.TXT
 ```
 
@@ -82,13 +84,23 @@ The second screenshot is taken after the last command above:
 Type `HELP` to list the shell's built-in commands:
 
 ```text
-HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT
+HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT
 ```
+
+The prompt supports insertion, Backspace and Ctrl-A/E for beginning/end.
+Ctrl-B/F moves left/right, Ctrl-U clears the line, Ctrl-K deletes to the end,
+and Ctrl-W deletes the preceding word. Ctrl-P/N browses the last ten commands.
+Atari cursor chords work too: Ctrl-+/Ctrl-* moves left/right and Ctrl--/Ctrl-=
+browses history. Moving past the newest command restores your draft. See the
+[shell guide](shell.md#editing-and-break) for the complete editing rules.
 
 `HELLO | WC` prints `1 3 17`. `CAT STORY.TXT | WC` prints `24 133 746`.
 The [command toolbox](toolbox.md) also supplies CMP, CKSUM, HEXDUMP, HEAD, GREP,
 LIST and MORE. Try `HEAD STORY.TXT LINES 5`, `LIST NAMES`, or `MORE LONG.TXT`.
 In MORE, Space advances a page, Return a displayed row, and Q quits.
+
+The shell can keep eight command aliases for its session. Try `ALIAS LS "DIR
+SYS:"`, then `LS`; `ALIAS` lists the definition and `UNALIAS LS` removes it.
 
 The columns are lines, words and bytes. Now run `CAT LONG.TXT | WC` and press
 **BREAK** while LONG.TXT is being read. Both pipeline stages retire before the
@@ -123,6 +135,47 @@ an optimized integration walkthrough. General compiler qualification and the
 full release matrices remain separate. The [console refactor record](../history/console-refactor-implementation.md)
 describes the implemented scrolling work and its focused checks.
 
+## Commands for the work disk
+
+The [toolbox](toolbox.md) includes COPY, TEE, DELETE, RENAME and MAKEDIR:
+
+```text
+MAKEDIR WORK:NOTES
+COPY SYS:STORY.TXT WORK:NOTES/ONE.TXT
+RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT
+CMP SYS:STORY.TXT WORK:NOTES/TWO.TXT
+CAT SYS:STORY.TXT SYS:STORY.TXT | WC
+COPY SYS:STORY.TXT WORK:NOTES/THREE.TXT
+LIST WORK:NOTES/*.TXT NAMES
+HELLO | TEE WORK:LOG.TXT
+HELLO | TEE WORK:LOG.TXT APPEND
+DELETE WORK:NOTES/TWO.TXT WORK:NOTES/THREE.TXT
+DELETE WORK:NOTES
+```
+
+COPY and TEE create or truncate their destination; APPEND preserves it and adds
+bytes at EOF. COPY needs an exact filename; CAT concatenates up to eight exact
+files. LIST matches `*` and `?` only in its final path component. DELETE accepts
+one to eight exact files or empty directories, and RENAME stays within one
+directory. Each accepts a sole unquoted `?` for help.
+
+You can give the writable directory a short logical name:
+
+```text
+MAKEDIR WORK:DATA
+ASSIGN DATA: WORK:DATA
+COPY SYS:STORY.TXT DATA:STORY.TXT
+CAT DATA:STORY.TXT
+ASSIGN
+DELETE DATA:STORY.TXT
+ASSIGN DATA:
+DELETE WORK:DATA
+```
+
+`ASSIGN` lists up to four system-wide directory mappings. It stores a validated
+physical path without keeping a lock on the disk; see the
+[ASSIGN contract](../reference/assigns.md).
+
 ## Stable system paths
 
 SYS names the system volume even when OF816 selects another drive. The shell
@@ -156,8 +209,8 @@ python3 tools/build_demo.py
 ```
 
 The file to share is `build/demo/exec816-demo.zip`. It contains one
-`exec816-demo/` folder with the boot XEX, system disk, ROM, a short boot guide,
-two license notices and `SHA256SUMS`. Build intermediates and test output stay
+`exec816-demo/` folder with the boot XEX, system and work disks, ROM, a short boot guide,
+license notices and `SHA256SUMS`. Build intermediates and test output stay
 in the development directory. The [distribution guide](../demo-distribution.txt)
 has self-contained boot instructions; its disk and drive names are filled in
 when packaging.
@@ -179,19 +232,22 @@ Development artifacts remain in `build/demo`:
 - `of816/ALTIRRAOS-LICENSE.txt` and `of816/OF816-LICENSE.txt`: upstream notices.
 - `of816/of816.json`: monitor build inputs, memory layout, media and ROM hashes.
 - `program.xex`: direct native entry used by development fixtures.
-- `work.atr`: disposable writable disk, with the same format and geometry.
-- `system.atr`: read-only SDFS data disk with HELLO, CAT, WC, the command toolbox and sample text.
+- `work.atr`: disposable writable disk, with the same format and 128-byte sectors.
+- `system.atr`: 720 KiB read-only SDFS data disk with HELLO, CAT, WC, the command toolbox and sample text.
 - `system.verification.json`: independent producer/read-back hashes for every
   file in SDFS builds.
 - `demo-manifest.json`: source, toolchain, machine, media and artifact hashes.
 - `README.md`: this guide.
 
-The default uses SDFS 2.1 with 128-byte sectors. To build 256-byte media for
-a capable peripheral, pass `--sector-bytes 256`; the mount descriptor changes
-with the disk geometry. To retain MyDOS, pass `--format mydos --output build/demo-mydos`.
+The default system disk is 720 KiB in SDFS 2.1 with 256-byte sectors. Pass
+`--system-kib 360` for a 360 KiB system disk, or `--sector-bytes 128` for
+128-byte system media; the sector count adjusts to preserve the selected capacity.
+To retain MyDOS, pass `--format mydos --output build/demo-mydos`. Large MyDOS
+images use an extended VTOC and 16-bit file links. The mount descriptor always
+matches the chosen disk geometry.
 Both filesystem options use the filename `system.atr`; the format and geometry
-are recorded in the build manifests. The packaged WORK: disk uses the same
-format and geometry. Keep SYS: on D1–D7; D8 is reserved for WORK:.
+are recorded in the build manifests. WORK: uses the same format but stays at
+720 sectors of 128 bytes. Keep SYS: on D1–D7; D8 is reserved for WORK:.
 
 Pass `--bitmap-console` for the optional [80×30 bitmap console preview](bitmap-console.md).
 The ZIP then also contains `bitmap-console/Exec-bitmap-console.xex`, its matching

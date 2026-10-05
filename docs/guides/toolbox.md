@@ -2,7 +2,7 @@
 
 [Guides](README.md) · [Shell](shell.md) · [Writing commands](commands.md)
 
-The demo supplies seven loadable commands alongside CAT, WC and HELLO. Command
+The demo supplies sixteen loadable commands, including CAT, WC and HELLO. Command
 names and keyword names ignore case. Keywords may precede or follow positional
 arguments. Quote a word that should be data rather than a keyword. Numeric
 options are unsigned decimal; negative numbers and overflow are errors.
@@ -14,13 +14,23 @@ options are unsigned decimal; negative numbers and overflow are errors.
 | HEXDUMP | `[FILE] [OFFSET n] [LENGTH n]` | Eight hexadecimal offset digits, up to sixteen hex bytes and printable ASCII per row. Defaults: offset zero, length up to 4,294,967,295 bytes. Offsets are skipped by reading, so pipes work. |
 | HEAD | `[FILE] [LINES n]` | First ten lines by default. Zero prints nothing. Finishes without draining the rest of a pipe. |
 | GREP | `PATTERN [FILE] [NOCASE] [INVERT] [NUMBER]` | Select literal matching lines; optionally fold ASCII case, invert selection, or prefix one-based line numbers. Empty pattern matches every line. |
-| LIST | `[DIR] [NAMES]` | Enumerate a directory in disk order. Default output has directory markers and exact file sizes. NAMES emits bare names, one per line. |
+| LIST | `[DIR or PATTERN] [NAMES]` | Enumerate a directory in disk order or match `*`/`?` in the final path component. Default output has directory markers and exact file sizes. NAMES emits bare names. |
 | MORE | `[FILE]` | Forward-only pager. Space advances a page, Return one displayed row, Q finishes, and BREAK cancels. |
+| COPY | `FROM TO [APPEND]` | Copy one named input to an exact destination filename. Create/truncate by default; APPEND opens or creates, then seeks to EOF. |
+| TEE | `FILE [APPEND]` | Copy Input to the named file and Output. Create/truncate by default; APPEND preserves existing content. |
+| DELETE | `FILE ...` | Remove one to eight exact files or empty directories in order. |
+| RENAME | `FROM TO` | Rename one entry within its current directory; an existing destination is an error. |
+| MAKEDIR | `NAME` | Create one directory under an existing parent. |
+| ASSIGN | `[NAME:] [TARGET]` | List, set/replace or remove a system-wide logical directory name. The target must be an existing directory. |
 
-Commands with an optional FILE borrow Input when it is absent. LIST defaults to
-the current directory. Files opened by the command are closed on every exit;
-inherited streams remain owned by the Process. There is no wildcard expansion,
-regex, multiple-file processing, recursive traversal or directory sorting.
+Commands with an optional FILE borrow Input when it is absent; CAT also accepts
+up to eight exact files and concatenates them in order. LIST defaults to the
+current directory. Files opened by the command are closed on every exit;
+inherited streams remain owned by the Process. LIST matches ASCII letters
+without case: `*` matches zero or more bytes and `?` one byte. Its parent path
+must be exact. An unmatched pattern reports Object not found; an exact empty
+directory succeeds. The shell does not expand patterns, and CAT and DELETE use
+exact names. There is no regex, recursive traversal or directory sorting.
 
 Examples, using the current two-stage pipeline:
 
@@ -33,11 +43,18 @@ HEXDUMP STORY.TXT OFFSET=16 LENGTH=32
 CKSUM <STORY.TXT
 CMP STORY.TXT STORY.TXT
 CAT LONG.TXT | MORE
+CAT SYS:STORY.TXT SYS:STORY.TXT | WC
+LIST SYS:*.TXT NAMES
 ```
 
 The shell's default [PATH](shell.md#path) searches the current directory and then
 SYS:, so commands remain available after CD. Qualified paths such as `SYS:HEAD`
 bypass search.
+
+`ASSIGN DATA: WORK:DATA` lets commands use `DATA:FILE` independently of the
+physical volume name. `ASSIGN DATA:` removes it, and `ASSIGN` lists current
+mappings. `C:` is an ordinary assign; use `PATH SET C:` to search it for bare
+commands. See the [ASSIGN contract](../reference/assigns.md) for limits.
 
 ## Bytes, text and limits
 
@@ -65,6 +82,43 @@ another display row exists. The initial implementation supports widths up to
 With noninteractive Output, MORE emits normalized text without prompts, key reads
 or sanitizing payload bytes.
 
+## Writable files
+
+Mount a writable volume such as the demo's disposable WORK: disk. SYS: remains
+read-only. For example:
+
+```text
+MAKEDIR WORK:NOTES
+COPY SYS:STORY.TXT WORK:NOTES/ONE.TXT
+RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT
+CMP SYS:STORY.TXT WORK:NOTES/TWO.TXT
+HELLO | TEE WORK:LOG.TXT
+HELLO | TEE WORK:LOG.TXT APPEND
+DELETE WORK:NOTES/TWO.TXT WORK:LOG.TXT
+DELETE WORK:NOTES
+```
+
+COPY and TEE preserve exact bytes, including NUL and ATASCII, with a 512-byte
+transfer buffer per running command. COPY opens its source before its output;
+a missing source or a destination alias of the same open file cannot truncate
+that file. Directory targets are errors: supply the complete destination name.
+APPEND is an update open followed by an EOF seek; it also creates a missing file.
+
+TEE writes each chunk to its file before forwarding it to Output. If either
+write fails, it stops; the two destinations can contain different prefixes.
+Both transfer commands honor BREAK and retain the first read, write or cleanup
+error. Failed Close consumes its owned handle. Partial files can remain after
+failure, and an earlier truncation is not undone.
+
+DELETE validates every filename before its first deletion, then stops at the
+first error or BREAK; earlier deletions remain. A quoted empty filename is an
+error, and `*`/`?` are not expanded for mutations. MAKEDIR does not create
+missing parents. DELETE does not recurse. RENAME does
+not move entries between directories or volumes, or replace a destination.
+These commands do not preserve copied metadata or provide atomic replacement.
+See the [filesystem write contract](../reference/filesystem-writes.md) for disk
+formats, sharing and recovery limits. No filesystem scan is added to mounting.
+
 ## Results and diagnostics
 
 OK (0) means success. WARN (5), with IoErr zero, means CMP found a difference or
@@ -72,7 +126,7 @@ GREP selected no lines. ERROR (10) includes malformed arguments, I/O failures,
 excessive text lines and BREAK. The shell retains primary and secondary results;
 its [pipeline aggregation](shell.md#pipes) handles successful early consumers.
 
-All ten commands accept a sole unquoted `?` for template help. For example,
+All sixteen commands accept a sole unquoted `?` for template help. For example,
 `HEAD ? <STORY.TXT >NIL:` prints help on the console and consumes no data.
 `GREP "?" STORY.TXT` searches for a literal question mark. An empty template,
 as used by WC and HELLO, is displayed as `Arguments: (none)`.
@@ -80,7 +134,8 @@ as used by WC and HELLO, is displayed as `Arguments: (none)`.
 On malformed arguments commands print their argument template to the
 foreground console, independently of redirected Output. Headless callers still
 receive the parser error through IoErr. `/A` marks required arguments, `/K`
-keyword-only values, `/N` unsigned decimal values, and `/S` switches. The parser
+keyword-only values, `/N` unsigned decimal values, `/S` switches, and `/M`
+collects up to eight positional strings. The parser
 has no dependency on the command's data Input. The shell then prints one error
 explanation, such as `HEAD: Object not found (205)`, without changing the result.
 

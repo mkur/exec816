@@ -100,6 +100,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Filesystems and DOS
 
+- [Larger demo system disk](system-disk-capacity.md): 720 KiB default, 360 KiB
+  option, matching mount descriptors and MyDOS extended VTOC images.
 - [MyDOS and SpartaDOS write implementation](filesystem-write-implementation.md):
   lightweight mounts, file/namespace writes, bounded commit units, inherited
   writer retirement, failure outcomes, native round trips and the OF816 demo.
@@ -133,9 +135,22 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [Bounded shell command aliases](shell-aliases.md): eight session-local
+  definitions, one-pass expansion and normal pipeline/redirection parsing.
+- [ASSIGN logical directories](assign.md): four boot-lifetime logical directory
+  names, DOS-wide resolution, a loadable command and symbolic shell PATH.
+- [Multiple-file arguments and LIST patterns](multiple-file-patterns.md):
+  bounded `/M` results, ordered exact CAT/DELETE operands and final-component
+  LIST matching on both packaged filesystem variants.
+- [Small shell editor and history](shell-editing.md): cursor editing, ten commands,
+  prompt-only history and unchanged bank-zero reservations.
+
 - [Command usability](command-usability.md): bounded shell PATH, shared fault
   text and template help for all ten commands.
 
+- [Commands for writable filesystems](write-commands.md): COPY, TEE, DELETE,
+  RENAME and MAKEDIR; bounded binary transfers, cleanup, disk persistence and
+  the OF816 demo, with no additional bank-zero reservations.
 - [First command toolbox](command-toolbox.md): seven loadable commands, shared
   arguments/streams and foreground-console access; raw/optimized development
   checks and the refreshed OF816 distribution.

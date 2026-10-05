@@ -3,8 +3,15 @@
 MODULE COOKEDLINE
 USE EXEC
 USE A816MEMORY
+USE ASCII
 INCLUDE "dos-types.inc"
 INCLUDE "dos-cooked-types.inc"
+
+CONST KEY_HOME=1, KEY_LEFT=2, KEY_BREAK=3, KEY_EOF=4, KEY_END=5
+CONST KEY_RIGHT=6, KEY_BACKSPACE=8, KEY_TAB=9, KEY_KILL=11
+CONST KEY_NEXT=14, KEY_PREVIOUS=16, KEY_CLEAR=21, KEY_WORD=23
+
+INCLUDE "cooked-history.inc"
 
 ; Initialize an empty editable line and its session ownership state.
 PUBLIC PROC Init(Session POINTER state)
@@ -21,6 +28,10 @@ PUBLIC PROC Init(Session POINTER state)
   state.drawn=0
   state.key=0
   state.appendEcho=0
+  state.cursor=0
+  state.viewStart=0
+  state.screenCursor=0
+  state.history=NULL
 
 RETURN
 
@@ -48,6 +59,7 @@ PUBLIC BYTE FUNC Destroy(Session POINTER state)
   FI
 
   state.references=0
+  FreeHistory(state)
   EXEC.FreeMem(BYTE POINTER(state),SESSION_SIZE)
 
 RETURN(1)
@@ -80,6 +92,7 @@ PUBLIC BYTE FUNC Release(Session POINTER state)
   last=state.references=0
   EXEC.Permit()
   IF last<>0 THEN
+    FreeHistory(state)
     EXEC.FreeMem(BYTE POINTER(state),SESSION_SIZE)
   FI
 
@@ -108,12 +121,66 @@ PUBLIC PROC Leave(Session POINTER state)
 
 RETURN
 
+; Configure optional history under the same lease as readers. Return a DOS
+; error code, leaving pending line/drain/EOF/discard state unchanged.
+PUBLIC LONGINT FUNC SetHistory(Session POINTER state BYTE enabled)
+
+  IF Enter(state)=0 THEN
+    RETURN(ERROR_OBJECT_IN_USE)
+  FI
+
+  IF enabled<>0 AND state.history=NULL THEN
+    state.history=History POINTER(EXEC.AllocMem(HISTORY_SIZE,
+        EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+    IF state.history=NULL THEN
+      Leave(state)
+      RETURN(ERROR_NO_FREE_STORE)
+    FI
+  FI
+
+  IF state.history<>NULL THEN
+    state.history.enabled=enabled<>0
+    IF enabled=0 THEN
+      ResetHistory(state)
+    FI
+  FI
+
+  Leave(state)
+
+RETURN(0)
+
+; Clear the logical edit after it has drained or been invalidated. Screen
+; tracking survives until a redraw or the adapter begins a new prompt.
+PROC Empty(Session POINTER state)
+
+  state.length=0
+  state.position=0
+  state.cursor=0
+  state.viewStart=0
+  state.appendEcho=0
+
+RETURN
+
+; Delete a bounded interval and close the gap; callers choose the new cursor.
+PROC Erase(Session POINTER state CARD first,last)
+  CARD index
+
+  index=last
+  WHILE index<state.length DO
+    state.line(first+index-last)=state.line(index)
+    index==+1
+  OD
+
+  state.length==-(last-first)
+  state.appendEcho=0
+
+RETURN
+
 ; Discard a damaged input line so partial keystrokes cannot form a command.
 PUBLIC PROC Lose(Session POINTER state LONGINT error)
 
-  state.appendEcho=0
-  state.length=0
-  state.position=0
+  Empty(state)
+  ResetHistory(state)
   state.ready=0
   state.eof=0
   state.error=error
@@ -123,13 +190,14 @@ RETURN
 
 ; Return 1 when editing changed, 2 when acquisition ends, otherwise 0.
 PUBLIC BYTE FUNC Feed(Session POINTER state BYTE value)
+  CARD index,target
 
   IF state.ready<>0 OR state.eof<>0 THEN
     RETURN(0)
   FI
 
   IF state.discard<>0 THEN
-    IF value=10 OR value=13 THEN
+    IF value=ASCII.LF OR value=13 THEN
       state.discard=0
       state.ready=1
       RETURN(2)
@@ -138,45 +206,111 @@ PUBLIC BYTE FUNC Feed(Session POINTER state BYTE value)
     RETURN(0)
   FI
 
-  IF value=3 THEN
-    state.appendEcho=0
-    state.length=0
-    state.position=0
+  IF value=KEY_BREAK THEN
+    Empty(state)
+    ResetHistory(state)
     state.error=ERROR_BREAK
     state.ready=1
     RETURN(2)
   FI
 
-  IF value=4 THEN
+  IF value=KEY_EOF THEN
+    ResetHistory(state)
     state.appendEcho=0
     state.eof=1
     state.ready=1
     RETURN(2)
   FI
 
-  IF value=10 OR value=13 THEN
+  IF value=ASCII.LF OR value=13 THEN
+    Remember(state)
+    ResetHistory(state)
     state.appendEcho=0
-    state.line(state.length)=10
+    state.line(state.length)=ASCII.LF
     state.length==+1
     state.ready=1
     RETURN(2)
   FI
 
-  IF value=8 THEN
-    IF state.length<>0 THEN
-      state.appendEcho=0
-      state.length==-1
-      RETURN(1)
+  IF value=KEY_PREVIOUS OR value=KEY_NEXT THEN
+    RETURN(Recall(state,BYTE(value=KEY_PREVIOUS)))
+  FI
+
+  target=state.cursor
+  IF value=KEY_HOME THEN
+    target=0
+  ELSEIF value=KEY_END THEN
+    target=state.length
+  ELSEIF value=KEY_LEFT THEN
+    IF target<>0 THEN
+      target==-1
+    FI
+  ELSEIF value=KEY_RIGHT THEN
+    IF target<state.length THEN
+      target==+1
+    FI
+  FI
+
+  IF target<>state.cursor THEN
+    state.cursor=target
+    state.appendEcho=0
+    RETURN(1)
+  FI
+
+  IF value=KEY_BACKSPACE OR value=KEY_WORD THEN
+    IF state.cursor=0 THEN
+      RETURN(0)
     FI
 
-    RETURN(0)
+    target=state.cursor-1
+    IF value=KEY_WORD THEN
+      target=state.cursor
+      WHILE target<>0 DO
+        IF state.line(target-1)<>ASCII.SPACE THEN
+          EXIT
+        FI
+
+        target==-1
+      OD
+
+      WHILE target<>0 DO
+        IF state.line(target-1)=ASCII.SPACE THEN
+          EXIT
+        FI
+
+        target==-1
+      OD
+    FI
+
+    Erase(state,target,state.cursor)
+    state.cursor=target
+    RETURN(1)
   FI
 
-  IF value=9 THEN
-    value=32
+  IF value=KEY_CLEAR THEN
+    IF state.length=0 THEN
+      RETURN(0)
+    FI
+
+    Empty(state)
+    RETURN(1)
   FI
 
-  IF value<32 OR value>126 THEN
+  IF value=KEY_KILL THEN
+    IF state.cursor=state.length THEN
+      RETURN(0)
+    FI
+
+    state.length=state.cursor
+    state.appendEcho=0
+    RETURN(1)
+  FI
+
+  IF value=KEY_TAB THEN
+    value=ASCII.SPACE
+  FI
+
+  IF value<ASCII.SPACE OR value>126 THEN
     RETURN(0)
   FI
 
@@ -185,7 +319,18 @@ PUBLIC BYTE FUNC Feed(Session POINTER state BYTE value)
     RETURN(1)
   FI
 
-  state.line(state.length)=value
+  index=state.length
+  IF state.cursor<>index THEN
+    state.appendEcho=0
+  FI
+
+  WHILE index>state.cursor DO
+    state.line(index)=state.line(index-1)
+    index==-1
+  OD
+
+  state.line(state.cursor)=value
+  state.cursor==+1
   state.length==+1
 
 RETURN(1)
@@ -217,8 +362,7 @@ PUBLIC LONGINT FUNC Drain(Session POINTER state BYTE POINTER target CARD limit)
     A816MEMORY.Move(target,@state.line(state.position),SIZE(count))
     state.position==+count
     IF state.position=state.length THEN
-      state.length=0
-      state.position=0
+      Empty(state)
       state.ready=0
     FI
 
@@ -227,22 +371,21 @@ PUBLIC LONGINT FUNC Drain(Session POINTER state BYTE POINTER target CARD limit)
 
   state.ready=0
   state.eof=0
-  state.length=0
-  state.position=0
+  Empty(state)
 
 RETURN(0)
 
-; Append only the new suffix while the whole rendered line still fits.
-; Other edits redraw this Read's bounded tail, preserving its caller's prompt.
+; The cursor follows a bounded viewport. Render uses only Backspace and text,
+; preserving the prompt and leaving the last physical column unused.
 PUBLIC CARD FUNC Render(Session POINTER state)
-  CARD count,offset,index,used,paint
+  CARD count,index,used,paint,target,maximum
   BYTE POINTER output
 
   output=state.echo
   count=state.length
-  offset=0
   used=0
-  IF state.appendEcho<>0 AND state.drawn<>0
+  IF state.appendEcho<>0 AND state.drawn<>0 AND state.viewStart=0
+      AND state.cursor=count AND state.screenCursor=state.drawn
       AND count<=CARD(state.width) AND count>=CARD(state.drawn) THEN
     FOR index=CARD(state.drawn)-1 TO count-1 DO
       output(used)=state.line(index)
@@ -250,51 +393,68 @@ PUBLIC CARD FUNC Render(Session POINTER state)
     OD
 
     state.drawn=BYTE(count+1)
+    state.screenCursor=state.drawn
     RETURN(used)
   FI
 
+  maximum=0
   IF count>CARD(state.width) THEN
-    offset=count-CARD(state.width)
+    maximum=count-CARD(state.width)
+  FI
+
+  IF state.viewStart>maximum THEN
+    state.viewStart=maximum
+  FI
+
+  IF state.cursor<state.viewStart THEN
+    state.viewStart=state.cursor
+  ELSEIF state.cursor>state.viewStart+CARD(state.width) THEN
+    state.viewStart=state.cursor-CARD(state.width)
+  FI
+
+  IF state.cursor<count AND state.cursor=state.viewStart+CARD(state.width) THEN
+    state.viewStart==+1
+  FI
+
+  count==-state.viewStart
+  IF count>CARD(state.width) THEN
     count=CARD(state.width)
   FI
 
-  IF state.drawn<>0 THEN
-    FOR index=0 TO CARD(state.drawn)-1 DO
-      output(used)=8
-      used==+1
-    OD
-  FI
+  index=state.screenCursor
+  WHILE index<>0 DO
+    output(used)=KEY_BACKSPACE
+    used==+1
+    index==-1
+  OD
 
-  output(used)=32
-  IF offset<>0 THEN
-    output(used)=60
-  FI
-
+  output(used)=IF state.viewStart<>0 THEN 60 ELSE ASCII.SPACE FI
   used==+1
   IF count<>0 THEN
     FOR index=0 TO count-1 DO
-      output(used)=state.line(offset+index)
+      output(used)=state.line(state.viewStart+index)
       used==+1
     OD
   FI
 
   paint=count+1
   WHILE paint<CARD(state.drawn) DO
-    output(used)=32
+    output(used)=ASCII.SPACE
     used==+1
     paint==+1
   OD
 
-  WHILE paint>count+1 DO
-    output(used)=8
+  target=1+state.cursor-state.viewStart
+  WHILE paint>target DO
+    output(used)=KEY_BACKSPACE
     used==+1
     paint==-1
   OD
 
   state.drawn=BYTE(count+1)
-  ; A shifted tail cannot serve as a prefix if the width later grows.
-  state.appendEcho=offset=0 AND state.ready=0 AND state.eof=0
-      AND state.discard=0
+  state.screenCursor=BYTE(target)
+  state.appendEcho=state.viewStart=0 AND state.cursor=state.length
+      AND state.ready=0 AND state.eof=0 AND state.discard=0
 
 RETURN(used)
 

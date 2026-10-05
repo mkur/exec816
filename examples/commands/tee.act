@@ -1,0 +1,32 @@
+MODULE TEE
+
+INCLUDE "command-transfer.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(2)
+
+; Save Input before mirroring each chunk to Output. Standard streams remain
+; borrowed; only the explicitly opened file belongs to this command.
+LONGINT FUNC Main()
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"FILE/A,APPEND/S",
+      values,2,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  IF CommandName(values(0))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET output=CommandOutput(values(0),BYTE(values(1)<>0))
+  IF output=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET status=CommandTransfer(COMMAND.Input(),output,COMMAND.Output())
+
+RETURN(CommandFinish(output,1,status))
+
+ENDMODULE

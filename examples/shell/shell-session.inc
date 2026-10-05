@@ -26,7 +26,7 @@ CONST READ_CHUNK_SIZE=64
 
 CONST HEADER_SIZE=128
 CONST DRAW_CAPACITY=128
-CONST SCRATCH_CAPACITY=264
+CONST SCRATCH_CAPACITY=288
 CONST TRANSFER_CAPACITY=512
 
 CONST DRAW_OFFSET=HEADER_SIZE+LINE_CAPACITY
@@ -35,6 +35,9 @@ CONST TRANSFER_OFFSET=SCRATCH_OFFSET+SCRATCH_CAPACITY
 CONST PATH_OFFSET=TRANSFER_OFFSET+TRANSFER_CAPACITY
 CONST PATH_CAPACITY=4
 CONST SHELL_BYTES=PATH_OFFSET+PATH_CAPACITY*LINE_CAPACITY
+CONST ALIAS_CAPACITY=8
+CONST ALIAS_NAME_CAPACITY=16
+CONST ALIAS_TEXT_CAPACITY=128
 
 CONST NO_REDIRECT=$ffff
 
@@ -64,8 +67,14 @@ CONST CMD_MOUNT=10
 CONST CMD_DEVICES=11
 CONST CMD_EXTERNAL=12
 CONST CMD_PATH=13
+CONST CMD_ALIAS=14
+CONST CMD_UNALIAS=15
 
 TYPE ShellWord=[BYTE POINTER text]
+TYPE ShellAlias=[
+  BYTE ARRAY name(ALIAS_NAME_CAPACITY)
+  BYTE ARRAY text(ALIAS_TEXT_CAPACITY)
+]
 
 TYPE ShellState=[
   DOS.FileHandle POINTER console
@@ -95,10 +104,14 @@ TYPE ShellState=[
   BYTE pipeline
   BYTE pathCount
   BYTE diagnosticWord
-  BYTE ARRAY reserved(5)
+  BYTE historyAvailable
+  BYTE firstCommandStart,firstCommandEnd
+  BYTE secondCommandStart,secondCommandEnd
 ]
 
 ShellState POINTER shell
+ShellAlias POINTER aliases
+BYTE aliasCount
 BYTE ARRAY shellCon=c"CON:"
 BYTE ARRAY shellRoot=c"SYS:"
 
@@ -359,8 +372,34 @@ PROC ShellDiagnostic()
 
 RETURN
 
+; History is a prompt feature; keep command results independent of toggles.
+; An allocation failure disables optional history for this shell's lifetime.
+PROC ShellHistory(BYTE enabled)
+
+  IF shell.historyAvailable=0 THEN
+    RETURN
+  FI
+
+  LET saved=DOS.IoErr()
+  IF DOS.SetConsoleHistory(shell.console,enabled)=0 THEN
+    IF enabled<>0 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE THEN
+      shell.historyAvailable=0
+    ELSE
+      ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())
+    FI
+  FI
+
+  DOS.SetIoErr(saved)
+
+RETURN
+
 ; Invite another command on the shell's console, regardless of redirection.
 PROC ShellPrompt()
+
+  ShellHistory(1)
+  IF shell.done<>0 THEN
+    RETURN
+  FI
 
   LET prompt=ShellDrawBuffer()
   prompt(0)=CHAR_GREATER
@@ -417,6 +456,12 @@ BYTE FUNC ShellClassify(BYTE POINTER word)
 
   ELSEIF ShellEqual(word,c"DEVICES")<>0 THEN
     RETURN(CMD_DEVICES)
+
+  ELSEIF ShellEqual(word,c"ALIAS")<>0 THEN
+    RETURN(CMD_ALIAS)
+
+  ELSEIF ShellEqual(word,c"UNALIAS")<>0 THEN
+    RETURN(CMD_UNALIAS)
   FI
 
 RETURN(CMD_EXTERNAL)
@@ -505,6 +550,10 @@ BYTE FUNC ShellParse()
   shell.pipelineIndex=0
   shell.secondArgumentOffset=0
   shell.secondArgumentLength=0
+  shell.firstCommandStart=0
+  shell.firstCommandEnd=0
+  shell.secondCommandStart=0
+  shell.secondCommandEnd=0
 
   LET original=ShellTransfer()
   LET arguments=original+SIZE(LINE_CAPACITY)
@@ -647,6 +696,16 @@ BYTE FUNC ShellParse()
         RETURN(0)
       FI
 
+      IF shell.argc=0 THEN
+        shell.firstCommandStart=BYTE(rawStart)
+        shell.firstCommandEnd=BYTE(rawEnd)
+
+      ELSEIF shell.pipeline<>0
+          AND CARD(shell.argc)=shell.pipelineIndex THEN
+        shell.secondCommandStart=BYTE(rawStart)
+        shell.secondCommandEnd=BYTE(rawEnd)
+      FI
+
       shell.words(shell.argc).text=line+SIZE(start)
       shell.argc==+1
     FI
@@ -694,7 +753,259 @@ BYTE FUNC ShellParse()
     RETURN(0)
   FI
 
+  IF (shell.command=CMD_ALIAS AND shell.argc>3)
+      OR (shell.command=CMD_UNALIAS AND shell.argc<>2) THEN
+    RETURN(0)
+  FI
+
 RETURN(1)
+
+; Alias names are simple command words, with no path or shell syntax.
+BYTE FUNC ShellAliasName(BYTE POINTER name)
+  CARD index
+  BYTE value,letter,digit
+
+  FOR index=0 TO ALIAS_NAME_CAPACITY-1 DO
+    value=name(index)
+    IF value=ASCII.NUL THEN
+      RETURN(index<>0)
+    FI
+
+    letter=BYTE((value>='A AND value<='Z)
+        OR (value>='a AND value<='z))
+    digit=BYTE(value>='0 AND value<='9)
+    IF (index=0 AND letter=0)
+        OR (letter=0 AND digit=0 AND value<>'_ AND value<>'-) THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(0)
+
+; Expansions add a command and fixed arguments, never shell operators.
+BYTE FUNC ShellAliasText(BYTE POINTER value)
+  CARD index
+  BYTE current,nonblank
+
+  nonblank=0
+  FOR index=0 TO ALIAS_TEXT_CAPACITY-1 DO
+    current=value(index)
+    IF current=ASCII.NUL THEN
+      RETURN(nonblank)
+    FI
+
+    IF current<ASCII.SPACE OR current>CHAR_LAST_PRINTABLE
+        OR current=CHAR_PIPE OR current=CHAR_LESS
+        OR current=CHAR_GREATER OR current=CHAR_SEMICOLON
+        OR current=ASCII.DOUBLE_QUOTE THEN
+      RETURN(0)
+    FI
+
+    IF current<>ASCII.SPACE THEN
+      nonblank=1
+    FI
+  OD
+
+RETURN(0)
+
+BYTE FUNC ShellAliasIndex(BYTE POINTER name)
+  BYTE index
+
+  IF aliases=NULL THEN
+    RETURN(ALIAS_CAPACITY)
+  FI
+
+  FOR index=0 TO ALIAS_CAPACITY-1 DO
+    IF aliases(index).name(0)<>ASCII.NUL
+        AND ShellEqual(name,CSTRING(@aliases(index).name(0)))<>0 THEN
+      RETURN(index)
+    FI
+  OD
+
+RETURN(ALIAS_CAPACITY)
+
+PROC ShellAliasShow(BYTE index)
+
+  LET output=DOS.Output()
+  ShellText(output,CSTRING(@aliases(index).name(0)))
+  ShellText(output,c" -> ")
+  ShellText(output,CSTRING(@aliases(index).text(0)))
+  ShellByte(output,ASCII.LF)
+
+RETURN
+
+PROC ShellAliasCommand()
+  ShellAlias POINTER entry
+  BYTE index,position,value
+
+  IF shell.argc=1 THEN
+    IF aliases<>NULL THEN
+      FOR index=0 TO ALIAS_CAPACITY-1 DO
+        IF aliases(index).name(0)<>ASCII.NUL THEN
+          IF ShellPoll()<>0 THEN
+            RETURN
+          FI
+
+          ShellAliasShow(index)
+          IF shell.status<>PROCESS.RETURN_OK THEN
+            RETURN
+          FI
+        FI
+      OD
+    FI
+
+    RETURN
+  FI
+
+  LET name=shell.words(1).text
+  IF ShellAliasName(name)=0 OR ShellClassify(name)<>CMD_EXTERNAL THEN
+    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
+    RETURN
+  FI
+
+  index=ShellAliasIndex(name)
+  IF shell.argc=2 THEN
+    IF index=ALIAS_CAPACITY THEN
+      ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_NOT_FOUND)
+    ELSE
+      ShellAliasShow(index)
+    FI
+
+    RETURN
+  FI
+
+  LET text=shell.words(2).text
+  IF ShellAliasText(text)=0 THEN
+    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
+    RETURN
+  FI
+
+  IF index=ALIAS_CAPACITY THEN
+    IF aliasCount=ALIAS_CAPACITY THEN
+      ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BUFFER_OVERFLOW)
+      RETURN
+    FI
+
+    IF aliases=NULL THEN
+      aliases=ShellAlias POINTER(EXEC.AllocMem(
+          ALIAS_CAPACITY*SIZEOF(ShellAlias),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+      IF aliases=NULL THEN
+        ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_NO_FREE_STORE)
+        RETURN
+      FI
+    FI
+
+    FOR position=0 TO ALIAS_CAPACITY-1 DO
+      IF aliases(position).name(0)=ASCII.NUL THEN
+        index=position
+        EXIT
+      FI
+    OD
+
+    aliasCount==+1
+  FI
+
+  entry=@aliases(index)
+  FOR position=0 TO ALIAS_NAME_CAPACITY-1 DO
+    value=name(position)
+    IF value>='a AND value<='z THEN
+      value==-CASE_DELTA
+    FI
+
+    entry.name(position)=value
+    IF value=ASCII.NUL THEN
+      EXIT
+    FI
+  OD
+
+  STR.strlcpy(@entry.text(0),CSTRING(text),ALIAS_TEXT_CAPACITY)
+
+RETURN
+
+PROC ShellUnaliasCommand()
+
+  LET name=shell.words(1).text
+  LET index=ShellAliasIndex(name)
+  IF index=ALIAS_CAPACITY THEN
+    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_NOT_FOUND)
+    RETURN
+  FI
+
+  aliases(index).name(0)=ASCII.NUL
+  aliases(index).text(0)=ASCII.NUL
+  aliasCount==-1
+
+RETURN
+
+; Rewrite one already-parsed command word, then parse the bounded result.
+; The right pipeline stage is rewritten first so its original span is valid.
+BYTE FUNC ShellAliasReplace(BYTE stage)
+  BYTE index,start,finish
+  CARD sourceLength,textLength,total,offset
+  BYTE POINTER source,target,line
+
+  IF stage=0 THEN
+    index=ShellAliasIndex(shell.words(0).text)
+    start=shell.firstCommandStart
+    finish=shell.firstCommandEnd
+  ELSE
+    index=ShellAliasIndex(shell.words(shell.pipelineIndex).text)
+    start=shell.secondCommandStart
+    finish=shell.secondCommandEnd
+  FI
+
+  IF index=ALIAS_CAPACITY THEN
+    RETURN(1)
+  FI
+
+  source=ShellTransfer()
+  target=ShellScratch()
+  line=ShellLine()
+  LET expansion=@aliases(index).text(0)
+  sourceLength=ShellLength(source)
+  textLength=ShellLength(expansion)
+  total=sourceLength-CARD(finish-start)+textLength
+  IF total>LINE_LIMIT THEN
+    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_LINE_TOO_LONG)
+    RETURN(0)
+  FI
+
+  IF start<>0 THEN
+    FOR offset=0 TO CARD(start)-1 DO
+      target(offset)=source(offset)
+    OD
+  FI
+
+  FOR offset=0 TO textLength-1 DO
+    target(CARD(start)+offset)=expansion(offset)
+  OD
+
+  FOR offset=finish TO sourceLength DO
+    target(CARD(start)+textLength+offset-CARD(finish))=source(offset)
+  OD
+
+  FOR offset=0 TO total DO
+    line(offset)=target(offset)
+  OD
+
+  IF ShellParse()=0 THEN
+    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+BYTE FUNC ShellAliasExpand()
+
+  IF aliasCount=0 THEN
+    RETURN(1)
+  FI
+
+  IF shell.pipeline<>0 AND ShellAliasReplace(1)=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(ShellAliasReplace(0))
 
 ; Select a new working directory, retaining the old one if selection fails.
 PROC ShellChange(BYTE POINTER path)
@@ -828,8 +1139,12 @@ PROC ShellDispatch()
   CASE shell.command OF
   WHEN CMD_HELP THEN
     ShellText(DOS.Output(),
-        c"HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT")
+        c"HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT")
     ShellByte(DOS.Output(),ASCII.LF)
+    ShellText(DOS.Output(),c"Edit: Ctrl-A/E home/end, B/F left/right\n")
+    ShellText(DOS.Output(),c"Ctrl-U clear, K cut end, W cut word\n")
+    ShellText(DOS.Output(),c"History: Ctrl-P/N or Atari up/down\n")
+    ShellText(DOS.Output(),c"Atari left/right move the cursor\n")
 
   WHEN CMD_ECHO THEN
     IF shell.argc>1 THEN
@@ -883,6 +1198,12 @@ PROC ShellDispatch()
   WHEN CMD_PATH THEN
     ShellPath()
 
+  WHEN CMD_ALIAS THEN
+    ShellAliasCommand()
+
+  WHEN CMD_UNALIAS THEN
+    ShellUnaliasCommand()
+
   WHEN CMD_EXTERNAL THEN
     IF shell.pipeline<>0 THEN
       ShellPipeline()
@@ -910,10 +1231,12 @@ PROC ShellCommand()
       IF ShellParse()=0 THEN
         ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_NUMBER)
 
-      ELSEIF ShellRedirect()<>0 THEN
-        IF ShellPoll()=0 THEN
-          shell.diagnosticWord=0
-          ShellDispatch()
+      ELSEIF ShellAliasExpand()<>0 THEN
+        IF ShellRedirect()<>0 THEN
+          IF ShellPoll()=0 THEN
+            shell.diagnosticWord=0
+            ShellDispatch()
+          FI
         FI
       FI
     FI
@@ -958,6 +1281,7 @@ PROC ShellReadStep()
     IF line(shell.length-1)=ASCII.LF THEN
       shell.length==-1
       line(shell.length)=ASCII.NUL
+      ShellHistory(0)
       ShellCommand()
       ShellClear()
       IF shell.done=0 THEN
@@ -966,6 +1290,7 @@ PROC ShellReadStep()
     FI
 
   ELSEIF count=0 THEN
+    ShellHistory(0)
     ; Ctrl-D may seal an unterminated final command before its one-shot EOF.
     line(shell.length)=ASCII.NUL
     IF shell.length<>0 THEN
@@ -976,6 +1301,11 @@ PROC ShellReadStep()
 
   ELSEIF error=DOS.ERROR_BREAK OR error=DOS.ERROR_LINE_TOO_LONG
         OR error=DOS.ERROR_BUFFER_OVERFLOW THEN
+    ShellHistory(0)
+    IF shell.done<>0 THEN
+      RETURN
+    FI
+
     ShellClear()
     shell.diagnosticWord=$ff
     shell.status=PROCESS.RETURN_OK
@@ -1001,6 +1331,7 @@ PROC ShellReadStep()
     ShellPrompt()
 
   ELSE
+    ShellHistory(0)
     ShellFail(PROCESS.RETURN_FAIL,error)
   FI
 
@@ -1016,6 +1347,9 @@ BYTE FUNC ShellOpen(BYTE POINTER consoleName)
     RETURN(0)
   FI
 
+  aliases=NULL
+  aliasCount=0
+  shell.historyAvailable=1
   ShellPathReset()
   shell.diagnosticWord=$ff
   shell.console=DOS.Open(consoleName,DOS.MODE_READWRITE)
@@ -1142,6 +1476,12 @@ LONGINT FUNC ShellFinish()
   FI
 
   LET result=shell.status
+  IF aliases<>NULL THEN
+    EXEC.FreeMem(BYTE POINTER(aliases),ALIAS_CAPACITY*SIZEOF(ShellAlias))
+    aliases=NULL
+    aliasCount=0
+  FI
+
   EXEC.FreeMem(BYTE POINTER(shell),SHELL_BYTES)
   shell=NULL
 
