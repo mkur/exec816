@@ -28,24 +28,17 @@ bank-zero costs for each slice before moving to the next.
    on ERROR/FAIL or BREAK, and continue after WARN. Keep the script source
    separate from the command's Input so a command cannot consume the rest of
    the script. Begin with one active script and no arguments or conditionals.
-3. Extend the shared [command argument parser](reference/command-arguments.md)
-   with bounded multiple-file results, then use exact names in CAT and DELETE.
-   Add a small shared `*`/`?` matcher at command level, starting with read-only
-   LIST. The [implementation plan](plans/multiple-file-patterns-implementation-plan.md)
-   defines quoting, unmatched patterns, result capacity and error order. Before
-   allowing patterns in mutating commands,
-   account for the [mount-wide enumeration epoch](reference/filesystem-writes.md)
-   that invalidates ExNext after a mutation.
-4. Design an Amiga-style `ASSIGN DATA: WORK:DATA` for stable logical paths.
+3. Design an Amiga-style `ASSIGN DATA: WORK:DATA` for stable logical paths.
    This changes DOS path resolution and should have its own bounded design and
    implementation slices.
-5. Add focused loadable TAIL and FIND utilities after the shared argument and
+4. Add focused loadable TAIL and FIND utilities after the shared argument and
    pattern behavior is settled.
 
-The first implementation batch is `>>` and minimal EXECUTE. Multiple-file
-arguments and simple patterns can proceed directly to an implementation plan
-with a short public-contract section; a separate design note is useful only if
-the scope expands to shell-wide expansion or broader Amiga pattern syntax.
+The [multiple-file and LIST pattern slice](history/multiple-file-patterns.md)
+is implemented with exact CAT/DELETE names and read-only LIST filtering.
+Before allowing patterns in mutating commands, account for the
+[mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
+ExNext after a mutation. The next batch is `>>` and minimal EXECUTE.
 
 ## Follow-on capabilities
 

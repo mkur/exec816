@@ -72,7 +72,7 @@ def command_args():
             + ''.join(f'PUBLIC CONST ARGS_MAX_{name}={value}\n'
                       for name, value in ABI['argument_limits'].items())
             + ''.join(f'PUBLIC CONST ARGS_{name}={value}\n' for name,value in ABI['argument_results'].items())
-            + f'PUBLIC CONST ARGS_STORAGE_BYTES={ABI["argument_limits"]["TEXT"]+1+4*ABI["argument_limits"]["FIELDS"]}\n')
+            + f'PUBLIC CONST ARGS_STORAGE_BYTES={ABI["argument_limits"]["TEXT"]+1+4*ABI["argument_limits"]["FIELDS"]+3*(ABI["argument_limits"]["MULTI"]+1)}\n')
 
 
 def command_buffers():

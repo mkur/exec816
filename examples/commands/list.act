@@ -1,13 +1,18 @@
 MODULE LIST
 
 INCLUDE "command-common.inc"
+INCLUDE "command-pattern.inc"
 
 BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+BYTE ARRAY directory(256)
 ADDRESS ARRAY values(2)
 COMMAND.FileInfoBlock info
 
 ; Enumerate through public DOS metadata, keeping filesystem storage opaque.
-LONGINT FUNC Enumerate(BYTE POINTER lock)
+LONGINT FUNC Enumerate(BYTE POINTER lock CSTRING pattern)
+  CARD matched
+
+  matched=0
 
   IF COMMAND.Examine(lock,BYTE POINTER(@info))=0 THEN
     RETURN(COMMAND.RETURN_ERROR)
@@ -26,6 +31,11 @@ LONGINT FUNC Enumerate(BYTE POINTER lock)
 
     IF COMMAND.ExNext(lock,BYTE POINTER(@info))=0 THEN
       IF COMMAND.IoErr()=COMMAND.ERROR_NO_MORE_ENTRIES THEN
+        IF pattern<>NULL AND matched=0 THEN
+          COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_NOT_FOUND)
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+
         COMMAND.SetIoErr(0)
         RETURN(COMMAND.RETURN_OK)
       FI
@@ -33,32 +43,36 @@ LONGINT FUNC Enumerate(BYTE POINTER lock)
       RETURN(COMMAND.RETURN_ERROR)
     FI
 
-    IF CommandText(CSTRING(@info.fib_FileName(0)))=0 THEN
-      RETURN(COMMAND.RETURN_ERROR)
-    FI
+    IF pattern=NULL OR PatternMatch(pattern,CSTRING(@info.fib_FileName(0)))<>0 THEN
+      matched==+1
+      IF CommandText(CSTRING(@info.fib_FileName(0)))=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
 
-    IF values(1)=0 THEN
-      IF info.fib_DirEntryType>0 THEN
-        IF CommandText(c"/")=0 THEN
-          RETURN(COMMAND.RETURN_ERROR)
-        FI
-      ELSE
-        IF CommandText(c" ")=0 OR CommandDecimal(LONGCARD(info.fib_Size))=0 THEN
-          RETURN(COMMAND.RETURN_ERROR)
+      IF values(1)=0 THEN
+        IF info.fib_DirEntryType>0 THEN
+          IF CommandText(c"/")=0 THEN
+            RETURN(COMMAND.RETURN_ERROR)
+          FI
+        ELSE
+          IF CommandText(c" ")=0 OR CommandDecimal(LONGCARD(info.fib_Size))=0 THEN
+            RETURN(COMMAND.RETURN_ERROR)
+          FI
         FI
       FI
-    FI
 
-    IF CommandText(c"\n")=0 THEN
-      RETURN(COMMAND.RETURN_ERROR)
+      IF CommandText(c"\n")=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
     FI
   OD
 
 RETURN(COMMAND.RETURN_OK)
 
 LONGINT FUNC Main()
-  CSTRING path
+  CSTRING path,pattern
   LONGINT status,cause
+  CARD index,last,first,length
 
   LET parsed=COMMAND.ReadArgsOrHelp(c"DIR,NAMES/S",values,2,arguments,SIZEOF(arguments))
   IF parsed<>COMMAND.ARGS_PARSED THEN
@@ -71,12 +85,53 @@ LONGINT FUNC Main()
     path=CSTRING(BYTE POINTER(values(0)))
   FI
 
+  pattern=NULL
+  first=$ffff
+  last=$ffff
+  index=0
+  WHILE path(index)<>ASCII.NUL DO
+    IF path(index)=': OR path(index)='/ THEN
+      last=index
+    ELSEIF (path(index)='* OR path(index)='?) AND first=$ffff THEN
+      first=index
+    FI
+
+    index==+1
+  OD
+
+  IF first<>$ffff THEN
+    IF last<>$ffff AND first<last THEN
+      COMMAND.SetIoErr(COMMAND.ERROR_BAD_ARGUMENTS)
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF last=$ffff THEN
+      pattern=path
+      path=c""
+    ELSE
+      length=last
+      IF path(last)=': OR last=0 THEN
+        length==+1
+      FI
+
+      index=0
+      WHILE index<length DO
+        directory(index)=path(index)
+        index==+1
+      OD
+
+      directory(length)=ASCII.NUL
+      pattern=CSTRING(path+SIZE(last+1))
+      path=CSTRING(@directory(0))
+    FI
+  FI
+
   LET lock=COMMAND.Lock(BYTE POINTER(path),COMMAND.SHARED_LOCK)
   IF lock=NULL THEN
     RETURN(COMMAND.RETURN_ERROR)
   FI
 
-  status=Enumerate(lock)
+  status=Enumerate(lock,pattern)
   cause=COMMAND.IoErr()
   COMMAND.SetIoErr(0)
   COMMAND.UnLock(lock)

@@ -203,8 +203,17 @@ RETURN(BYTE POINTER(4))
 
 PUBLIC LONGINT FUNC DeleteFile(BYTE POINTER name)
 
-  T.state.operation=1
-  T.state.error=T.scenario.mutationError
+  T.state.operation==+1
+  T.state.position==+1
+  T.state.mode=T.state.mode*33+LONGCARD(name(0))
+  T.state.error=0
+  IF name(0)='M THEN
+    T.state.error=205
+  ELSEIF T.scenario.mutationError<>0 THEN
+    IF T.scenario.failAt=0 OR T.state.operation=T.scenario.failAt THEN
+      T.state.error=T.scenario.mutationError
+    FI
+  FI
 
 RETURN(IF T.state.error=0 THEN LONGINT(-1) ELSE LONGINT(0) FI)
 

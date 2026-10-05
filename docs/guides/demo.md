@@ -141,15 +141,20 @@ MAKEDIR WORK:NOTES
 COPY SYS:STORY.TXT WORK:NOTES/ONE.TXT
 RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT
 CMP SYS:STORY.TXT WORK:NOTES/TWO.TXT
+CAT SYS:STORY.TXT SYS:STORY.TXT | WC
+COPY SYS:STORY.TXT WORK:NOTES/THREE.TXT
+LIST WORK:NOTES/*.TXT NAMES
 HELLO | TEE WORK:LOG.TXT
 HELLO | TEE WORK:LOG.TXT APPEND
-DELETE WORK:NOTES/TWO.TXT
+DELETE WORK:NOTES/TWO.TXT WORK:NOTES/THREE.TXT
 DELETE WORK:NOTES
 ```
 
 COPY and TEE create or truncate their destination; APPEND preserves it and adds
-bytes at EOF. COPY needs an exact filename, DELETE accepts only a file or empty
-directory, and RENAME stays within one directory. Each accepts `?` for help.
+bytes at EOF. COPY needs an exact filename; CAT concatenates up to eight exact
+files. LIST matches `*` and `?` only in its final path component. DELETE accepts
+one to eight exact files or empty directories, and RENAME stays within one
+directory. Each accepts a sole unquoted `?` for help.
 
 ## Stable system paths
 

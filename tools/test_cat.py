@@ -20,9 +20,15 @@ def cases():
         dict(name='short-reads-writes', length=1031, chunk=19, writeChunk=7),
         dict(name='quoted-path', length=513, argument=b'"A B"', path=b'A B'),
         dict(name='escaped-path', length=7, argument=b'"A**B"', path=b'A*B'),
-        dict(name='too-many-args', length=0, argument=b'one two', cause=118, copied=0),
+        dict(name='two-files', length=7, argument=b'A B', path=b'B', copied=14, opens=2, closes=2),
+        dict(name='second-open-error', length=7, argument=b'A B', path=b'B',
+             openError=205, openFailAt=2, cause=205, copied=7, opens=2, closes=1),
+        dict(name='second-read-error', length=7, argument=b'A B', path=b'B',
+             readFail=3, cause=226, copied=7, opens=2, closes=2),
+        dict(name='too-many-args', length=0, argument=b'1 2 3 4 5 6 7 8 9', cause=118, copied=0),
         dict(name='unterminated', length=0, argument=b'"bad', cause=119, copied=0),
         dict(name='empty-filename', length=0, argument=b'""', cause=210),
+        dict(name='empty-second', length=7, argument=b'A ""', cause=210, copied=0),
         dict(name='tab-path', length=5, argument=b'\t"A B"\t', path=b'A B'),
         dict(name='open-error', length=0, argument=b'FILE', path=b'FILE', openError=205, cause=205),
         dict(name='close-error', length=20, argument=b'FILE', path=b'FILE', closeError=202, cause=202),
@@ -72,9 +78,9 @@ ENDMODULE
     source=source.replace('CASE_COUNT',str(len(vectors)))
     fixture = out/'cat_probe.act'
     fixture.write_text(source)
-    blob = b''.join(struct.pack('<II8H32s', c['length'], c.get('breakAt', 0xffffffff),
+    blob = b''.join(struct.pack('<II9H32s', c['length'], c.get('breakAt', 0xffffffff),
         c.get('chunk',512), c.get('writeChunk',512), len(c.get('argument',b'')),
-        *(c.get(k,0) for k in ('readFail','writeFail','openError','closeError','zeroWrite')),
+        *(c.get(k,0) for k in ('readFail','writeFail','openError','closeError','zeroWrite','openFailAt')),
         c.get('argument',b'')) for c in vectors)
     p = read_build(out) if reuse else build(compiler(ROOT/'build/actionc'),fixture,out,
         optimize=mode=='opt',banked=True,console=False,image_data=[(0xe0000,blob)])
@@ -89,7 +95,7 @@ ENDMODULE
         machine=verify_machine(b,rom,PIN)
         runtime,_=execute(b,p,timeout=90,frame_limit=4500)
         require(data(b,p['image'],'finished')==[1], 'Missing CAT completion')
-        require(data(b,p['image'],'scenarioBytes',True)==[56], 'Scenario layout')
+        require(data(b,p['image'],'scenarioBytes',True)==[58], 'Scenario layout')
         stride=int.from_bytes(bytes(data(b,p['image'],'rowBytes')),'little')
         rows=bytes(data(b,p['image'],'observations'))
         for i,c in enumerate(vectors):
@@ -99,7 +105,9 @@ ENDMODULE
             require((primary,cause)==(10 if expected else 0,expected), 'CAT result: '+c['name'])
             require(written==c.get('copied',c['length']) and mismatch==0, 'CAT bytes: '+c['name'])
             named=bool(c.get('path'))
-            require(opens==int(named) and closes==int(named and not c.get('openError')), 'CAT ownership: '+c['name'])
+            require(opens==c.get('opens',int(named)) and
+                    closes==c.get('closes',int(named and not c.get('openError'))),
+                    'CAT ownership: '+c['name'])
             require(row[18:50].split(b'\0',1)[0]==c.get('path',b''), 'CAT filename: '+c['name'])
     return dict(status='pass',tier='development',mode=mode,cases=[c['name'] for c in vectors],build=p['build'],
                 runtime=runtime,machine=machine,pin=PIN,bank_zero_delta=dict(fixed=0,per_task=0),

@@ -190,9 +190,17 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             command('COPY SYS:STORY.TXT WORK:NOTES/ONE.TXT')
             command('RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT')
             command('CMP SYS:STORY.TXT WORK:NOTES/TWO.TXT')
+            command('CAT SYS:STORY.TXT SYS:STORY.TXT | WC',b'48 266 1492')
+            command('COPY SYS:STORY.TXT WORK:NOTES/THREE.TXT')
+            command('LIST WORK:NOTES/*.TXT NAMES',b'TWO.TXT')
+            command('LIST NAMES WORK:NOTES/*.TXT',b'TWO.TXT')
+            command('LIST WORK:NOTES/*.TXT NAMES | WC',b'2 2 18')
+            command('LIST WORK:NOTES/?WO.TXT NAMES | WC',b'1 1 8')
+            command('LIST WORK:NOTES/NO*.TXT',error=205)
+            command('LIST WORK:N*TES/*.TXT',error=311)
             command('HELLO | TEE WORK:LOG.TXT',b'Hello from disk!')
             command('HELLO | TEE WORK:LOG.TXT APPEND',b'Hello from disk!')
-            command('DELETE WORK:NOTES/TWO.TXT')
+            command('DELETE WORK:NOTES/TWO.TXT WORK:NOTES/THREE.TXT')
             command('DELETE WORK:NOTES')
             saved['write_commands']=True
 

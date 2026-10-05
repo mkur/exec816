@@ -6,7 +6,7 @@ USE SYS
 INCLUDE "command-errors.inc"
 INCLUDE "command-args.inc"
 
-CONST REQUIRED=1,KEYWORD=2,SWITCH=4,NUMBER=8
+CONST REQUIRED=1,KEYWORD=2,SWITCH=4,NUMBER=8,MULTI=16
 TYPE Field=[CARD start,length BYTE flags]
 TYPE Scanner=[CARD at,used BYTE quoted]
 
@@ -59,10 +59,11 @@ RETURN(1)
 ; Validate modifiers and duplicate labels before inspecting argument text.
 INT FUNC Describe(CSTRING text Field POINTER fields)
   CARD index,length,start,other
-  BYTE count,flags,flag
+  BYTE count,flags,flag,multiSeen
 
   index=0
   count=0
+  multiSeen=0
   length=BoundedLength(text,ARGS_MAX_TEMPLATE)
   IF length>ARGS_MAX_TEMPLATE THEN
     RETURN(-1)
@@ -108,6 +109,8 @@ INT FUNC Describe(CSTRING text Field POINTER fields)
         flag=SWITCH
       WHEN 'N THEN
         flag=NUMBER
+      WHEN 'M THEN
+        flag=MULTI
       ELSE
         RETURN(-1)
       ESAC
@@ -121,6 +124,20 @@ INT FUNC Describe(CSTRING text Field POINTER fields)
     OD
 
     IF (flags & SWITCH)<>0 AND flags<>SWITCH THEN
+      RETURN(-1)
+    FI
+
+    IF (flags & MULTI)<>0 THEN
+      IF flags<>MULTI AND flags<>(MULTI OR REQUIRED) THEN
+        RETURN(-1)
+      FI
+
+      IF multiSeen<>0 THEN
+        RETURN(-1)
+      FI
+
+      multiSeen=1
+    ELSEIF multiSeen<>0 AND (flags & (KEYWORD OR SWITCH))=0 THEN
       RETURN(-1)
     FI
 
@@ -256,8 +273,9 @@ RETURN(0)
 CARD FUNC Decode(CSTRING text,template Field POINTER fields CARD count
                  ADDRESS POINTER values BYTE POINTER storage CARD capacity)
   Scanner scan
-  CARD start,field,index,label,error,valueStart,positional
+  CARD start,field,index,label,error,valueStart,positional,multiCount,tableStart
   BYTE named
+  ADDRESS POINTER items
 
   IF BoundedLength(text,ARGS_MAX_TEXT)>ARGS_MAX_TEXT THEN
     RETURN(ERROR_LINE_TOO_LONG)
@@ -266,6 +284,9 @@ CARD FUNC Decode(CSTRING text,template Field POINTER fields CARD count
   scan.at=0
   scan.used=0
   positional=0
+  multiCount=0
+  items=NULL
+
   DO
     WHILE text(scan.at)=ASCII.SPACE OR text(scan.at)=ASCII.TAB DO
       scan.at==+1
@@ -355,11 +376,33 @@ CARD FUNC Decode(CSTRING text,template Field POINTER fields CARD count
       FI
 
       field=positional
-      positional==+1
+      IF (fields(field).flags & MULTI)=0 THEN
+        positional==+1
+      FI
     FI
 
     IF (fields(field).flags & SWITCH)=0 THEN
-      IF (fields(field).flags & NUMBER)<>0 THEN
+      IF (fields(field).flags & MULTI)<>0 THEN
+        IF multiCount=ARGS_MAX_MULTI THEN
+          RETURN(ERROR_TOO_MANY_ARGS)
+        FI
+
+        IF multiCount=0 THEN
+          IF capacity-scan.used<3*(ARGS_MAX_MULTI+1) THEN
+            RETURN(ERROR_BUFFER_OVERFLOW)
+          FI
+
+          tableStart=scan.used
+          items=ADDRESS POINTER(storage+SIZE(tableStart))
+          items(0)=0
+          scan.used==+3*(ARGS_MAX_MULTI+1)
+          values(field)=ADDRESS(storage+SIZE(tableStart))
+        FI
+
+        items(multiCount)=ADDRESS(storage+SIZE(valueStart))
+        multiCount==+1
+        items(multiCount)=0
+      ELSEIF (fields(field).flags & NUMBER)<>0 THEN
         error=Numeric(storage,valueStart,@scan,capacity,@values(field))
         IF error<>0 THEN
           RETURN(error)

@@ -62,8 +62,9 @@ There is no extension guessing. The file must use the supported
 selected streams and the current directory. Its copied argument tail retains
 quotes/escapes and omits shell redirection syntax.
 
-The demo includes HELLO, CAT, WC and the [command toolbox](toolbox.md). CAT accepts an optional file, otherwise
-copies Input to Output; WC counts Input. See [writing commands](commands.md).
+The demo includes HELLO, CAT, WC and the [command toolbox](toolbox.md). CAT
+concatenates up to eight exact files, or copies Input to Output when none is
+named; WC counts Input. See [writing commands](commands.md).
 A child returns a primary status and secondary error; the shell collects both
 before showing the next prompt.
 
@@ -97,7 +98,7 @@ PATH RESET
 
 ### Help and errors
 
-All ten supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
+All fifteen supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
 `WC ?`. They print `Arguments: <template>` on the foreground console and return
 OK without reading Input or writing data Output. Quoted `"?"` remains data.
 Help still works with redirection and pipes; headless help fails explicitly.
@@ -115,7 +116,9 @@ A line holds at most 255 bytes and sixteen words including command names and
 redirection targets. Double quotes surround a whole word and permit spaces or
 an empty word. Inside quotes, `**` means `*` and `*"` means `"`; other escapes
 and attached quoted fragments are errors. Outside quotes, asterisk is literal.
-There is no expansion, script syntax or command list.
+There is no shell expansion, script syntax or command list. LIST interprets
+`*` and `?` in the final component of its own path argument; other commands
+receive the characters literally.
 
 Use at most one `<source` and one `>destination`, at word boundaries. Space after
 the operator is optional and the target may be quoted:

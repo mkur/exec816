@@ -120,6 +120,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [Multiple-file arguments and LIST patterns](multiple-file-patterns.md):
+  bounded `/M` results, ordered exact CAT/DELETE operands and final-component
+  LIST matching on both packaged filesystem variants.
 - [Small shell editor and history](shell-editing.md): cursor editing, ten commands,
   prompt-only history and unchanged bank-zero reservations.
 

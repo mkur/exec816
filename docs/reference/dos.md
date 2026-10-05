@@ -104,7 +104,7 @@ a prefix before a transport failure and makes no recursive diagnostic attempt.
 ## Console history
 
 Native DOS ABI revision 6 adds `SetConsoleHistory(file, enabled)`; the loaded
-COMMAND ABI remains version 9. This returns DOSTRUE and clears IoErr on success,
+COMMAND ABI is now version 10. This returns DOSTRUE and clears IoErr on success,
 or DOSFALSE with IoErr on failure. Zero disables history; any nonzero BYTE enables
 it. Only a live CON handle owned by the calling Task is accepted. Invalid handles
 report ERROR_BAD_STREAM_NAME (206), other backends ERROR_OBJECT_WRONG_TYPE (212),

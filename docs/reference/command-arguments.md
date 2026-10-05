@@ -1,7 +1,8 @@
 # Small command argument parser
 
-Status: implemented in program ABI version 9. See the
-[command usability record](../history/command-usability.md) for validation and costs.
+Status: implemented in program ABI version 10. See the
+[command usability record](../history/command-usability.md) and
+[multiple-file implementation record](../history/multiple-file-patterns.md).
 
 `COMMAND.ReadArgs()` exposes one shared resident DOS parser. Commands describe their arguments
 and decide what to do with them. `Open()` continues to resolve file paths.
@@ -23,11 +24,14 @@ unsigned decimal numbers:
 | `c""` | No arguments, as used by WC and HELLO. |
 | `c"FILE,LINES/K/N"` | Optional file and keyword-only unsigned line count. |
 | `c"PATTERN/A,FILE,NOCASE/S"` | Required pattern, optional file and Boolean switch. |
+| `c"FILE/M/A"` | One to eight positional strings, used by DELETE. |
 
 Labels contain ASCII letters, digits and underscore, beginning with a letter or
 underscore. Labels and modifiers ignore ASCII case; duplicate labels, duplicate
 modifiers and spaces in templates are errors. `/A`, `/K` and `/N` may combine;
-`/S` must stand alone. Positional fields fill left to right, skipping keyword and
+`/S` must stand alone. `/M` may combine only with `/A`; at most one `/M` field
+is allowed and it must be the last positional field. Keyword and switch fields
+may follow it. Positional fields fill left to right, skipping keyword and
 switch fields. Required fields must be present, including required keywords.
 
 Only `/K` and `/S` fields recognize their labels in argument text. `LINES 20` and
@@ -42,10 +46,18 @@ storage; zero is distinct from an omitted number. Numbers accept decimal digits
 only, from 0 through 4,294,967,295. Empty values, signs, trailing characters and
 overflow fail with ERROR_BAD_NUMBER. Defaults belong to each command.
 
+A populated `/M` slot points to a NUL-terminated array of three-byte ADDRESS
+values in caller storage. Each nonzero entry points to a decoded NUL-terminated
+string in that storage. Cast the slot to `ADDRESS POINTER` and iterate until a
+zero entry. At most eight entries are accepted; `/A/M` requires at least one.
+Quoted empty strings count as entries. No allocations or extra result slots are
+needed. The table is reserved only when the first item is parsed, so an omitted
+optional `/M` field succeeds even with zero storage capacity.
+
 Omitted optional slots are zero. A quoted empty string is present; a command may
 reject it as an invalid filename. Extra positional arguments are errors. Aliases,
-multiple-value/rest-of-line fields, wildcard expansion and argument files remain
-unsupported. This is a bounded Amiga-inspired subset, not full Amiga ReadArgs.
+rest-of-line fields, wildcard expansion and argument files remain unsupported.
+This is a bounded Amiga-inspired subset, not full Amiga ReadArgs.
 
 ## Interface and storage
 
@@ -76,12 +88,13 @@ LONGINT FUNC ReadArgs(CSTRING template ADDRESS POINTER values CARD valueCapacity
 
 Templates are bounded to eight fields and a 255-byte template. Argument text
 already has the Process's 255-byte limit. The generated
-`COMMAND.ARGS_STORAGE_BYTES` is 288: 256 bytes for decoded
-text/terminators plus up to eight four-byte numeric values. It suffices for every
+`COMMAND.ARGS_STORAGE_BYTES` is 315: 256 bytes for decoded
+text/terminators, up to eight four-byte numeric values and a nine-entry
+three-byte `/M` table. It suffices for every
 supported template and argument tail. Numeric values may be unaligned. Smaller
 buffers are allowed; insufficient capacity is an error, never silent truncation.
 
-CAT uses the generated storage bound and one result pointer. An empty template
+CAT and DELETE use the generated storage bound and one result pointer. An empty template
 permits null arrays/storage with zero capacities. ECHOARGS keeps `GetArgStr()`
 for the original text.
 
@@ -109,15 +122,16 @@ Shared errors are generated from `abi/dos.json`:
 | Malformed/unsupported template | ERROR_BAD_TEMPLATE (114) |
 | Invalid pointer/capacity pair or invalid numeric value | ERROR_BAD_NUMBER (115) |
 | Missing required field or keyword value | ERROR_REQUIRED_ARG_MISSING (116) |
-| Excess arguments | ERROR_TOO_MANY_ARGS (118) |
+| Excess arguments, including a ninth `/M` item | ERROR_TOO_MANY_ARGS (118) |
 | Unterminated quote or dangling quoted escape | ERROR_UNMATCHED_QUOTES (119) |
 | Argument text longer than 255 bytes | ERROR_LINE_TOO_LONG (120) |
 | Insufficient slots or decoding storage | ERROR_BUFFER_OVERFLOW (303) |
 | Duplicate option, switch value, embedded quote, quote suffix or unsupported escape | ERROR_BAD_ARGUMENTS (311) |
 
 Template validation precedes argument decoding; the first decoding error wins.
-A null template is a bad template; null source text is bad arguments. CAT rejects
-an empty filename with ERROR_INVALID_COMPONENT_NAME (210).
+A null template is a bad template; null source text is bad arguments. CAT and
+DELETE reject an empty filename with ERROR_INVALID_COMPONENT_NAME (210) before
+opening or deleting any files.
 
 ## Integration and cost
 

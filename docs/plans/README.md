@@ -101,8 +101,8 @@ assuming work is pending. Current behavior belongs in the
 ## Programs and shell
 
 - [Multiple-file arguments and LIST patterns](multiple-file-patterns-implementation-plan.md):
-  planned bounded `/M` results for CAT and DELETE, plus command-level `*`/`?`
-  matching in read-only LIST.
+  implemented bounded `/M` results for CAT and DELETE, plus command-level
+  `*`/`?` matching in read-only LIST. [Development record](../history/multiple-file-patterns.md).
 - [Small shell editor and command history](shell-editing-design.md): implemented
   control-key editing, Atari cursor aliases and ten recalled commands. Optional
   history uses 2,824 upper-RAM bytes with no extra bank-zero reservation.

@@ -1,10 +1,11 @@
 # Multiple-file arguments and simple LIST patterns
 
-Status: planned. This is the third [command and CLI roadmap](../roadmap.md#commands-and-cli)
+Status: implemented. This is the third [command and CLI roadmap](../roadmap.md#commands-and-cli)
 slice. The current [argument contract](../reference/command-arguments.md) and
 [filesystem mutation contract](../reference/filesystem-writes.md) are the starting
-points. Keep matching in loadable commands; the shell passes argument spelling
-through as it does today.
+points. The [development record](../history/multiple-file-patterns.md) gives
+the emitted-code, packaged-demo and memory results. Matching stays in loadable
+commands; the shell passes argument spelling through as it did before.
 
 ## Public behavior
 

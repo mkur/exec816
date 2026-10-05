@@ -11,7 +11,7 @@ from test_cooperative import data
 
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 TEMPLATES={'copy':'FROM/A,TO/A,APPEND/S','tee':'FILE/A,APPEND/S',
-           'delete':'FILE/A','rename':'FROM/A,TO/A','makedir':'NAME/A'}
+           'delete':'FILE/M/A','rename':'FROM/A,TO/A','makedir':'NAME/A'}
 PARAMS='length breakAt readChunk writeChunk readFail prefixError closeError openError seekError mutationError unlockError failTarget failAt writeError writePrefixError zeroTarget oversizedRead same interactive patternBytes'.split()
 FIELDS='error position fileCursor fileLength fileHash outputLength outputHash inputLive fileLive consoleLive lockLive opens closes reads fileWrites outputWrites seeks operation mode badOwner consoleUsed'.split()
 STATE_BYTES=4*len(FIELDS)+2304
@@ -62,6 +62,13 @@ def vectors(command):
     else:
         result=[c('success'),c('mutation-error',mutationError=214,error=214,opens=0)]
         if command=='makedir':result.append(c('unlock-error',unlockError=202,error=202))
+        if command=='delete':
+            result.extend([c('two-names',args=b'A B',operation=2,mode=65*33+66),
+                           c('empty-second',args=b'A ""',error=210,operation=0),
+                           c('missing-second',args=b'A MISSING',error=205,operation=2,mode=65*33+77),
+                           c('second-error',args=b'A B',failAt=2,mutationError=214,error=214,
+                             operation=2,mode=65*33+66),
+                           c('break-between',args=b'A B',breakAt=1,error=304,operation=1,mode=65)])
     message=('Arguments: '+TEMPLATES[command]+'\n').encode()
     common.extend([c('help',args=b'?',interactive=1,opens=1,operation=0,file=b'old',console=message,noReads=True),
                    c('help-no-console',args=b'?',interactive=0,error=212,opens=0,operation=0,file=b'old',noReads=True)])

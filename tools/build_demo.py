@@ -121,7 +121,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         source_inputs={str(path.relative_to(ROOT)):sha256(path) for path in
                        [ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',
                         ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-boot.inc',
-                        *(ROOT/'examples/commands'/name for name in ('command-common.inc','command-files.inc','command-write.inc','command-transfer.inc')),
+                        *(ROOT/'examples/commands'/name for name in ('command-common.inc','command-files.inc','command-write.inc','command-transfer.inc','command-pattern.inc')),
                         ROOT/'docs/guides/demo.md',ROOT/'docs/demo.png',ROOT/'docs/images/demo-boot.png',ROOT/'docs/demo-distribution.txt',
                         ROOT/'tools/package_demo.py',ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md',
                         config,ROOT/'tools/build_command.py',

@@ -62,7 +62,8 @@ def cases():
     add('eight-fields', b'1 2 3 4 5 6 7 8', b'A,B,C,D,E,F,G,H/A',
         tuple(bytes([v]) for v in range(49, 57)))
     add('eighth-required', b'1 2 3 4 5 6 7', b'A,B,C,D,E,F,G,H/A', error=116)
-    for template in (b'A/S/N', b'A/K/S', b'A/M', b'A/S/A', b'A/F', b'A/A/A', b'A/Ax',
+    for template in (b'A/S/N', b'A/K/S', b'A/M/N', b'A/M/K', b'A/M/S',
+                     b'A/M,B/M', b'A/M,B', b'A/S/A', b'A/F', b'A/A/A', b'A/Ax',
                      b'A=B', b'A B', b',A', b'A,', b'A,,B', b'/A', b'A/', b'1A',
                      b'A,B,C,D,E,F,G,H,I', b'A/?'):
         add('bad-template-'+template.decode(), b'x', template, error=114)
@@ -96,6 +97,21 @@ def cases():
     add('keyword-value-switch-name', b'NAME ALL', b'NAME/K,ALL/S', (b'ALL', None))
     add('max-text-numeric', b'0'*255, b'N/N', (0,), capacity=288)
     add('max-text-numeric-short', b'0'*255, b'N/N', error=303, capacity=259)
+    add('multi-absent', template=b'FILE/M', capacity=27)
+    add('multi-absent-zero-storage', template=b'FILE/M', capacity=0, flags=2)
+    add('multi-required', template=b'FILE/M/A', error=116, capacity=27)
+    add('multi-required-zero-storage', template=b'FILE/M/A', error=116, capacity=0, flags=2)
+    add('multi-one', b'one', b'FILE/M', ([b'one'],), capacity=31)
+    add('multi-two', b'one two', b'FILE/M/A', ([b'one', b'two'],), capacity=35)
+    add('multi-quoted', b'"a b" c', b'FILE/M', ([b'a b', b'c'],), capacity=33)
+    add('multi-empty', b'""', b'FILE/M/A', ([b''],), capacity=28)
+    add('multi-switch', b'a b NAMES', b'FILE/M,NAMES/S', ([b'a', b'b'], True), capacity=40)
+    add('multi-eight', b'1 2 3 4 5 6 7 8', b'FILE/M',
+        ([bytes([v]) for v in range(49, 57)],), capacity=43)
+    add('multi-ninth', b'1 2 3 4 5 6 7 8 9', b'FILE/M', error=118, capacity=315)
+    add('multi-short-table', b'a', template=b'FILE/M', error=303, capacity=26)
+    add('multi-short-text', b'a', b'FILE/M', error=303, capacity=28)
+    add('multi-unmatched-quote', b'a "bad', b'FILE/M', error=119, capacity=315)
     return vectors
 
 
@@ -147,9 +163,22 @@ def run(out, mode, reuse=False):
                         expected[j+1] = int(value)
                         continue
                     offset = address - (location+i*stride+33)
-                    payload = value.to_bytes(4, 'little') if isinstance(value, int) else value+b'\0'
-                    require(0 <= offset and offset+len(payload) <= c['capacity'], 'Value extent: '+c['name'])
-                    require(storage[1+offset:1+offset+len(payload)] == payload, 'Decoded value: '+c['name'])
+                    if isinstance(value, list):
+                        require(0 <= offset and offset+3*(len(value)+1) <= c['capacity'],
+                                'Multi table extent: '+c['name'])
+                        for k,item in enumerate(value):
+                            pointer=int.from_bytes(storage[1+offset+3*k:4+offset+3*k],'little')
+                            item_offset=pointer-(location+i*stride+33)
+                            require(0 <= item_offset and item_offset+len(item)+1 <= c['capacity'],
+                                    'Multi item extent: '+c['name'])
+                            require(storage[1+item_offset:2+item_offset+len(item)] == item+b'\0',
+                                    'Multi item: '+c['name'])
+                        require(storage[1+offset+3*len(value):4+offset+3*len(value)] == b'\0'*3,
+                                'Multi terminator: '+c['name'])
+                    else:
+                        payload = value.to_bytes(4, 'little') if isinstance(value, int) else value+b'\0'
+                        require(0 <= offset and offset+len(payload) <= c['capacity'], 'Value extent: '+c['name'])
+                        require(storage[1+offset:1+offset+len(payload)] == payload, 'Decoded value: '+c['name'])
                     expected[j+1] = address
             require(slots == expected, f'Result slots/canaries: {c["name"]}: {slots} != {expected}')
             require(storage[0] == 0xa5 and storage[1+c['capacity']:] == b'\xa5'*(323-c['capacity']),
