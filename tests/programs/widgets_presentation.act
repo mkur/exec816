@@ -1,0 +1,278 @@
+MODULE WIDGETSCENE
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE A816MEMORY
+USE HEAPCORE
+USE CONSOLE
+USE CONSOLEDRIVER
+USE CONSOLEBITMAP
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE DESKTOP
+USE DESKTYPES
+USE DESKBOOT
+USE DESKSTATE
+USE DESKPAINT
+USE REGIONS
+USE WIDGETTYPES
+
+CARD checks,checkpoint,gate
+LONGCARD panel,cover
+DESKTYPES.Request request
+DESKTYPES.Content content
+WIDGETTYPES.Tree tree
+WIDGETTYPES.Update patch
+WIDGETTYPES.Snapshot snapshot
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fba0+(checks & 127))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Settled()
+
+  LET instance=CONSOLEDRIVER.GetInstance()
+  LET service=DESKSTATE.Get()
+  LET entry=CONSOLEWINDOWS.Find(0)
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  WHILE instance.dirtyRows<>0 OR service.scene.busy<>0
+      OR DESKPAINT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0
+      OR (view.focused<>0 AND view.cursorOn=0) DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Pause(CARD value)
+  CARD ignored
+
+  Settled()
+  ignored=EXECTASKS.Sleep(2)
+  checkpoint=value
+  WHILE gate<value DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Send(BYTE operation LONGCARD id)
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  LET client=DESKBOOT.Binding()
+  request.operation=operation
+  request.window=id
+  Require(DESKTOP.Submit(client,@request)=DESKTYPES.OK)
+  reply=DESKTOP.Collect(client)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(client)
+  OD
+
+  Require(reply=@request AND request.status=DESKTYPES.OK)
+
+RETURN
+
+PROC Label(CARD index CSTRING value CARD bytes)
+
+  LET object=@tree.objects(index)
+  object.spec=LONGCARD(tree.textBytes)
+  A816MEMORY.Move(@tree.text(tree.textBytes),BYTE POINTER(value),SIZE(bytes+1))
+  tree.textBytes==+bytes+1
+
+RETURN
+
+PROC BuildTree()
+  CARD index
+
+  A816MEMORY.Clear(BYTE POINTER(@tree),WIDGETTYPES.TREE_SIZE)
+  tree.version=WIDGETTYPES.VERSION
+  tree.count=9
+  tree.background=8
+  FOR index=0 TO 8 DO
+    tree.objects(index).head=-1
+    tree.objects(index).tail=-1
+    tree.objects(index).next=INT(index+1)
+    tree.objects(index).kind=WIDGETTYPES.G_BUTTON
+    tree.objects(index).flags=WIDGETTYPES.FLAG_SELECTABLE
+    tree.objects(index).x=16+INT(index-1)*72
+    tree.objects(index).y=24
+    tree.objects(index).width=56
+    tree.objects(index).height=16
+  OD
+
+  tree.objects(0).next=-1
+  tree.objects(0).head=1
+  tree.objects(0).tail=8
+  tree.objects(0).kind=WIDGETTYPES.G_BOX
+  tree.objects(0).flags=0
+  tree.objects(0).x=0
+  tree.objects(0).y=0
+  tree.objects(0).width=320
+  tree.objects(0).height=120
+  tree.objects(0).spec=$78
+  tree.objects(2).flags=WIDGETTYPES.FLAG_SELECTABLE OR WIDGETTYPES.FLAG_RADIO
+  tree.objects(2).state=WIDGETTYPES.STATE_SELECTED
+  tree.objects(3).flags=WIDGETTYPES.FLAG_SELECTABLE OR WIDGETTYPES.FLAG_RADIO
+  tree.objects(4).kind=WIDGETTYPES.G_STRING
+  tree.objects(4).flags=0
+  tree.objects(4).x=16
+  tree.objects(4).y=8
+  tree.objects(4).width=160
+  tree.objects(4).height=8
+  tree.objects(5).kind=WIDGETTYPES.G_IBOX
+  tree.objects(5).flags=0
+  tree.objects(5).head=6
+  tree.objects(5).tail=7
+  tree.objects(5).next=8
+  tree.objects(5).x=16
+  tree.objects(5).y=64
+  tree.objects(5).width=200
+  tree.objects(5).height=40
+  tree.objects(5).spec=$11170
+  tree.objects(6).kind=WIDGETTYPES.G_STRING
+  tree.objects(6).flags=0
+  tree.objects(6).x=8
+  tree.objects(6).y=8
+  tree.objects(6).width=160
+  tree.objects(6).height=8
+  tree.objects(7).next=5
+  tree.objects(7).flags=WIDGETTYPES.FLAG_SELECTABLE
+      OR WIDGETTYPES.FLAG_DEFAULT OR WIDGETTYPES.FLAG_EXIT
+  tree.objects(7).x=8
+  tree.objects(7).y=20
+  tree.objects(8).next=0
+  tree.objects(8).kind=WIDGETTYPES.G_STRING
+  tree.objects(8).flags=WIDGETTYPES.FLAG_LAST
+  tree.objects(8).x=24
+  tree.objects(8).y=24
+  tree.objects(8).width=8
+  tree.objects(8).height=8
+  Label(1,c"Toggle",6)
+  Label(2,c"Small",5)
+  Label(3,c"Large",5)
+  Label(4,c"Ready for input",15)
+  Label(6,c"Subtree",7)
+  Label(7,c"Apply",5)
+  Label(8,c"x",1)
+
+RETURN
+
+PROC Apply()
+
+  DESKTOP.Prepare(@request,DESKTYPES.READ_WIDGET_STATE)
+  request.payload=BYTE POINTER(@snapshot)
+  request.bytes=WIDGETTYPES.SNAPSHOT_SIZE
+  Send(DESKTYPES.READ_WIDGET_STATE,panel)
+  patch.epoch=snapshot.epoch
+  patch.revision=snapshot.revision
+  DESKTOP.Prepare(@request,DESKTYPES.UPDATE_WIDGETS)
+  request.payload=BYTE POINTER(@patch)
+  request.bytes=WIDGETTYPES.UPDATE_SIZE
+  Send(DESKTYPES.UPDATE_WIDGETS,panel)
+  A816MEMORY.Clear(BYTE POINTER(@patch),WIDGETTYPES.UPDATE_SIZE)
+
+RETURN
+
+PROC Main()
+  DOS.FileHandle POINTER file
+
+  file=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Require(file<>NULL AND DOS.Write(file,BYTE POINTER(c"ABC"),3)=3)
+  BuildTree()
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_WIDGETS
+  request.payload=BYTE POINTER(c"Widgets")
+  request.bytes=7
+  REGIONS.Assign(@request.bounds,113,85,449,229)
+  Send(DESKTYPES.OPEN,0)
+  panel=request.window
+  DESKTOP.Prepare(@request,DESKTYPES.SET_TREE)
+  request.payload=BYTE POINTER(@tree)
+  request.bytes=WIDGETTYPES.TREE_SIZE
+  Send(DESKTYPES.SET_TREE,panel)
+  Send(DESKTYPES.SHOW,panel)
+  Pause(1)
+
+  patch.count=1
+  patch.changes(0).object=1
+  patch.changes(0).mask=WIDGETTYPES.PATCH_STATE
+  patch.changes(0).state=WIDGETTYPES.STATE_SELECTED
+  Apply()
+  Pause(2)
+
+  patch.count=1
+  patch.changes(0).object=4
+  patch.changes(0).mask=WIDGETTYPES.PATCH_LABEL
+  patch.changes(0).length=2
+  patch.textBytes=3
+  A816MEMORY.Move(@patch.text(0),BYTE POINTER(c"OK"),3)
+  Apply()
+  Pause(3)
+
+  patch.count=1
+  patch.changes(0).object=5
+  patch.changes(0).mask=WIDGETTYPES.PATCH_HIDDEN
+  patch.changes(0).hidden=1
+  Apply()
+  Pause(4)
+
+  patch.count=2
+  patch.changes(0).object=2
+  patch.changes(0).mask=WIDGETTYPES.PATCH_STATE
+  patch.changes(0).state=WIDGETTYPES.STATE_DISABLED
+  patch.changes(1).object=3
+  patch.changes(1).mask=WIDGETTYPES.PATCH_STATE
+  patch.changes(1).state=WIDGETTYPES.STATE_SELECTED
+  Apply()
+  Pause(5)
+
+  DESKTOP.Prepare(@request,DESKTYPES.MOVE)
+  request.bounds.left=273
+  request.bounds.top=53
+  Send(DESKTYPES.MOVE,panel)
+  Pause(6)
+
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_COMMANDS
+  request.payload=BYTE POINTER(c"Cover")
+  request.bytes=5
+  REGIONS.Assign(@request.bounds,273,53,609,197)
+  Send(DESKTYPES.OPEN,0)
+  cover=request.window
+  content.background=15
+  DESKTOP.Prepare(@request,DESKTYPES.REPLACE)
+  request.payload=BYTE POINTER(@content)
+  request.bytes=DESKTYPES.CONTENT_SIZE
+  Send(DESKTYPES.REPLACE,cover)
+  Send(DESKTYPES.SHOW,cover)
+  Settled()
+  patch.count=1
+  patch.changes(0).object=1
+  patch.changes(0).mask=WIDGETTYPES.PATCH_STATE
+  Apply()
+  Require(DESKPAINT.Runnable()=0)
+  Pause(7)
+
+  Send(DESKTYPES.CLOSE,cover)
+  Pause(8)
+  patch.count=1
+  patch.changes(0).object=5
+  patch.changes(0).mask=WIDGETTYPES.PATCH_HIDDEN
+  Apply()
+  Send(DESKTYPES.FOCUS,panel)
+  Pause(9)
+  Send(DESKTYPES.CLOSE,panel)
+  Send(DESKTYPES.FOCUS,DESKBOOT.WindowId())
+  Pause(10)
+  Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

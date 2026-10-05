@@ -64,8 +64,13 @@ The standard shell starts with a real SYS root lock and reports its mapping.
 such as `C:HELLO` or `SYS:C/HELLO` bypass search. File arguments still resolve
 against CurrentDir; the shell starts at SYS root. A failed initial mount leaves
 a usable console; after correcting media, `CD SYS:` retries filesystem startup,
-then `SYS:C/ASSIGN C: SYS:C` establishes the command assignment. An offline SIO device
-after a transport timeout can still require a cold boot.
+then `SYS:C/ASSIGN C: SYS:C` establishes the command assignment. An offline SIO
+device after a transport timeout requires a cold boot. Initial filesystem
+startup publishes the configured mount set together: every configured volume
+must mount successfully. In demo builds this includes WORK: on D8:, even when
+the first request names SYS:. Missing WORK: therefore prevents SYS: startup as
+well. The failure message lists the other required drives instead of
+attributing every startup error to the system disk.
 
 Validation is focused development coverage; see the
 [implementation record](../plans/sys-volume-implementation-plan.md).

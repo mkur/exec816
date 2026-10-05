@@ -26,7 +26,7 @@ def echo_order(log,marks,windows):
 @contextmanager
 def observation(foreign,program,enabled,performance=None,module='BITMAPSCROLL'):
     marks={k:foreign['symbols'][k] for k in ('GemDrawingText','GemDrawingTextFill','GemDrawingCopy','GemDrawingScrollStart',
-        'GemDrawingScrollPoll','GemDrawingFill','blit_glyph','_text_record','VbxeSubmit','submit',
+        'GemDrawingPoll','GemDrawingFill','blit_glyph','_text_record','VbxeSubmit','submit',
         'DisplayCheck','start') if k in foreign['symbols']}
     if module=='BITMAPTEST':
         for routine,key in [('CONSOLECORE_FEED','echo_feed'),('CONSOLEDRIVER_FINISHWRITE','write_reply')]:

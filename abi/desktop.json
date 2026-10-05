@@ -1,0 +1,490 @@
+{
+  "version": 6,
+  "constants": {
+    "CLIENTS": 4,
+    "WINDOWS": 4,
+    "EVENTS": 16,
+    "COMMANDS": 32,
+    "TEXT_BYTES": 256,
+    "TITLE_BYTES": 32,
+    "OK": 0,
+    "BAD_ARGUMENT": 1,
+    "FULL": 2,
+    "BUSY": 3,
+    "BAD_ID": 4,
+    "CANCELLED": 5,
+    "EXHAUSTED": 6,
+    "NO_MEMORY": 7,
+    "ALREADY_DONE": 8,
+    "PENDING": 9,
+    "REGISTER": 1,
+    "OPEN": 2,
+    "SHOW": 3,
+    "HIDE": 4,
+    "MOVE": 5,
+    "RAISE": 6,
+    "FOCUS": 7,
+    "REPLACE": 8,
+    "NEXT_EVENT": 9,
+    "CANCEL_EVENT": 10,
+    "CLOSE": 11,
+    "UNREGISTER": 12,
+    "CONTENT_CONSOLE": 1,
+    "CONTENT_COMMANDS": 2,
+    "DRAW_FILL": 1,
+    "DRAW_TEXT": 2,
+    "EVENT_KEY": 1,
+    "EVENT_MOTION": 2,
+    "EVENT_BUTTON": 3,
+    "EVENT_LOSS": 4,
+    "EVENT_CLOSE": 5,
+    "EVENT_FOCUS": 6,
+    "LANE_CONTROL": 1,
+    "LANE_CONTENT": 2,
+    "LANE_EVENT": 4,
+    "LANE_CANCEL": 8,
+    "EVENT_CANCEL": 7,
+    "TICK_VALID": 1,
+    "POINTER_PIXELS_PER_STEP": 2,
+    "CONTENT_WIDGETS": 3,
+    "SET_TREE": 13,
+    "UPDATE_WIDGETS": 14,
+    "READ_WIDGET_STATE": 15,
+    "EVENT_WIDGET_ACTION": 8,
+    "EVENT_WIDGET_CANCEL": 9,
+    "STALE": 10,
+    "DRAW_FAILED": 11,
+    "SNAPSHOTS": 2,
+    "CACHE_MISS": 0,
+    "CACHE_PENDING": 1,
+    "CACHE_FAILED": 2
+  },
+  "records": {
+    "Event": [
+      [
+        "kind",
+        "CARD"
+      ],
+      [
+        "window",
+        "LONGCARD"
+      ],
+      [
+        "sequence",
+        "LONGCARD"
+      ],
+      [
+        "route",
+        "LONGCARD"
+      ],
+      [
+        "tick",
+        "CARD"
+      ],
+      [
+        "x",
+        "INT"
+      ],
+      [
+        "y",
+        "INT"
+      ],
+      [
+        "code",
+        "CARD"
+      ],
+      [
+        "buttons",
+        "CARD"
+      ],
+      [
+        "qualifiers",
+        "CARD"
+      ],
+      [
+        "flags",
+        "CARD"
+      ],
+      [
+        "epoch",
+        "LONGCARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "object",
+        "INT"
+      ],
+      [
+        "state",
+        "CARD"
+      ]
+    ],
+    "Command": [
+      [
+        "kind",
+        "BYTE"
+      ],
+      [
+        "pen",
+        "BYTE"
+      ],
+      [
+        "bounds",
+        "LAYERTYPES.Rect"
+      ],
+      [
+        "offset",
+        "CARD"
+      ],
+      [
+        "count",
+        "CARD"
+      ]
+    ],
+    "Content": [
+      [
+        "count",
+        "CARD"
+      ],
+      [
+        "textBytes",
+        "CARD"
+      ],
+      [
+        "background",
+        "CARD"
+      ],
+      [
+        "commands",
+        "Command",
+        "COMMANDS"
+      ],
+      [
+        "text",
+        "BYTE",
+        "TEXT_BYTES"
+      ]
+    ],
+    "Client": [
+      [
+        "id",
+        "LONGCARD"
+      ],
+      [
+        "nextSequence",
+        "LONGCARD"
+      ],
+      [
+        "owner",
+        "EXEC.Task POINTER"
+      ],
+      [
+        "replies",
+        "EXEC.MsgPort POINTER"
+      ],
+      [
+        "service",
+        "BYTE POINTER"
+      ],
+      [
+        "lanes",
+        "BYTE"
+      ]
+    ],
+    "Request": [
+      [
+        "message",
+        "EXEC.Message"
+      ],
+      [
+        "client",
+        "Client POINTER"
+      ],
+      [
+        "operation",
+        "BYTE"
+      ],
+      [
+        "lane",
+        "BYTE"
+      ],
+      [
+        "status",
+        "CARD"
+      ],
+      [
+        "sequence",
+        "LONGCARD"
+      ],
+      [
+        "window",
+        "LONGCARD"
+      ],
+      [
+        "target",
+        "LONGCARD"
+      ],
+      [
+        "bounds",
+        "LAYERTYPES.Rect"
+      ],
+      [
+        "payload",
+        "BYTE POINTER"
+      ],
+      [
+        "bytes",
+        "CARD"
+      ],
+      [
+        "value",
+        "CARD"
+      ],
+      [
+        "event",
+        "Event"
+      ]
+    ],
+    "ClientRecord": [
+      [
+        "binding",
+        "Client POINTER"
+      ],
+      [
+        "lease",
+        "EXEC.TaskLease"
+      ],
+      [
+        "id",
+        "LONGCARD"
+      ],
+      [
+        "waiting",
+        "Request POINTER"
+      ],
+      [
+        "head",
+        "BYTE"
+      ],
+      [
+        "count",
+        "BYTE"
+      ],
+      [
+        "loss",
+        "BYTE"
+      ],
+      [
+        "closeBits",
+        "BYTE"
+      ],
+      [
+        "focusBits",
+        "BYTE"
+      ],
+      [
+        "queue",
+        "Event",
+        "EVENTS"
+      ]
+    ],
+    "Window": [
+      [
+        "id",
+        "LONGCARD"
+      ],
+      [
+        "client",
+        "LONGCARD"
+      ],
+      [
+        "layer",
+        "LONGCARD"
+      ],
+      [
+        "console",
+        "LONGCARD"
+      ],
+      [
+        "keyRoute",
+        "LONGCARD"
+      ],
+      [
+        "kind",
+        "BYTE"
+      ],
+      [
+        "title",
+        "BYTE",
+        "TITLE_BYTES"
+      ],
+      [
+        "content",
+        "Content"
+      ],
+      [
+        "widgets",
+        "BYTE POINTER"
+      ],
+      [
+        "widgetEpoch",
+        "LONGCARD"
+      ],
+      [
+        "visualRevision",
+        "LONGCARD"
+      ],
+      [
+        "captureAttempt",
+        "LONGCARD"
+      ]
+    ],
+    "Snapshot": [
+      [
+        "window",
+        "LONGCARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "width",
+        "CARD"
+      ],
+      [
+        "height",
+        "CARD"
+      ],
+      [
+        "valid",
+        "BYTE"
+      ],
+      [
+        "pinned",
+        "BYTE"
+      ]
+    ],
+    "Service": [
+      [
+        "port",
+        "EXEC.MsgPort"
+      ],
+      [
+        "deferred",
+        "EXECLISTS.List"
+      ],
+      [
+        "owner",
+        "EXEC.Task POINTER"
+      ],
+      [
+        "mask",
+        "LONGCARD"
+      ],
+      [
+        "nextClient",
+        "LONGCARD"
+      ],
+      [
+        "nextWindow",
+        "LONGCARD"
+      ],
+      [
+        "nextEvent",
+        "LONGCARD"
+      ],
+      [
+        "focus",
+        "LONGCARD"
+      ],
+      [
+        "live",
+        "BYTE"
+      ],
+      [
+        "consoleOwner",
+        "EXEC.Task POINTER"
+      ],
+      [
+        "consoleWindow",
+        "LONGCARD"
+      ],
+      [
+        "keyboard",
+        "BYTE POINTER"
+      ],
+      [
+        "consoleRoute",
+        "LONGCARD POINTER"
+      ],
+      [
+        "consoleFocus",
+        "BYTE POINTER"
+      ],
+      [
+        "clients",
+        "ClientRecord",
+        "CLIENTS"
+      ],
+      [
+        "windows",
+        "Window",
+        "WINDOWS"
+      ],
+      [
+        "staging",
+        "Content"
+      ],
+      [
+        "scene",
+        "LAYERTYPES.Scene"
+      ],
+      [
+        "widgetQueue",
+        "Event",
+        "EVENTS"
+      ],
+      [
+        "widgetHead",
+        "BYTE"
+      ],
+      [
+        "widgetCount",
+        "BYTE"
+      ],
+      [
+        "widgetCancel",
+        "BYTE"
+      ],
+      [
+        "widgetReleased",
+        "BYTE"
+      ],
+      [
+        "widgetCapture",
+        "LONGCARD"
+      ],
+      [
+        "widgetCaptureEpoch",
+        "LONGCARD"
+      ],
+      [
+        "widgetLoss",
+        "LONGCARD"
+      ],
+      [
+        "snapshots",
+        "Snapshot",
+        "SNAPSHOTS"
+      ],
+      [
+        "cacheRecent",
+        "BYTE"
+      ]
+    ]
+  }
+}

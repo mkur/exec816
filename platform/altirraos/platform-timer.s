@@ -5,6 +5,7 @@
 .a8
 .i16
 .export timer_tick,timer_sample,timer_poll
+.export timer_fine_start,timer_fine_end
 
 ; A=owner bit (1 SIO, 2 pointer, 4 blitter). A=1 success, 0 busy. Preserve incoming I.
 ; First ownership establishes the platform's silent audio baseline. There is
@@ -34,6 +35,8 @@ timer_acquire:
     sta f:TM_AUDF1
     sta f:$d200
     lda #0
+    sta f:TM_FINE
+    sta f:TM_SAMPLE_PHASE
     sta f:$d201
     lda #TIMER_AUDCTL
     sta f:TM_AUDCTL
@@ -73,6 +76,8 @@ timer_release:
     sta f:$0210
     sep #$20
     lda #0
+    sta f:TM_FINE
+    sta f:TM_SAMPLE_PHASE
     sta f:TM_AUDF1
     sta f:TM_AUDCTL
     sta f:$d200
@@ -83,6 +88,32 @@ timer_release_mask:
     lda f:$0010
     jsr timer_mask
     plp
+    rts
+
+; SIO holds fine timing across COMMAND setup/transmission/hold and separately
+; during write turnaround. Call M8/X16/I=1 under SWITCHING or IRQ_DEPTH, so NMI
+; may record a tick but cannot switch through half-published cadence state.
+; AUDF1 changes reload only: never reset STIMER here (it also clocks serial).
+; A partial old period may survive the write. Reset the capture divider, skip
+; the first fine edge, then sample every second edge. Normal edges all sample.
+; No synthetic/catch-up samples are taken. Joining timer owners changes no rate.
+timer_fine_start:
+    lda #1
+    sta f:TM_FINE
+    lda #TIMER_FINE_DIVISOR
+    bra timer_rate
+timer_fine_end:
+    lda #0
+    sta f:TM_FINE
+    lda #TIMER_DIVISOR
+timer_rate:
+    cmp f:TM_AUDF1
+    beq timer_rate_done
+    sta f:TM_AUDF1
+    sta f:$d200
+    lda #0
+    sta f:TM_SAMPLE_PHASE
+timer_rate_done:
     rts
 
 ; Compose the timer bit from demand, preserving all caller-selected other bits.
@@ -148,10 +179,23 @@ timer_tick:
     lda f:TM_POINTER
     beq timer_poll_done
     jsr sio_pointer_service
+    lda f:TM_FINE
+    beq timer_capture
+    lda f:TM_SAMPLE_PHASE
+    inc a
+    cmp #TIMER_POINTER_DIVIDER
+    bcc timer_skip_capture
+    lda #0
+    sta f:TM_SAMPLE_PHASE
+timer_capture:
     jsr timer_sample
     jsr sio_pointer_service
 timer_poll_done:
     rts
+timer_skip_capture:
+    sta f:TM_SAMPLE_PHASE
+    ; Serial service remains bounded even on a fine tick with no capture.
+    jmp sio_pointer_service
 
 timer_sample:
 .if INPUT_NATIVE

@@ -1,0 +1,274 @@
+{
+  "slice": "AW3",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "modes": {
+    "raw": {
+      "status": "pass",
+      "checks": 49,
+      "scenes": [
+        {
+          "stage": 1,
+          "pixels": "a042d5fcd81b729ca1ca6e97856970159c410d37c6144dd8bbc01eb0b580170f"
+        },
+        {
+          "stage": 2,
+          "pixels": "fd8413939997b5e6ad64ed8d1796c3f5ca82db307ed2271bdf03a08fc874852f"
+        },
+        {
+          "stage": 3,
+          "pixels": "acd4f39f88e11a225acc28bd990d23c40274c23aaa31cd846fd4d717e6d5f1c1"
+        },
+        {
+          "stage": 4,
+          "pixels": "7466f658588076652a844d2de27ff5b337542b86f344a587747205fe06342234"
+        },
+        {
+          "stage": 5,
+          "pixels": "e93d373dc8f513773e309ce1cd19e9d969ec548f874daf629ade8920c4adc30c"
+        },
+        {
+          "stage": 6,
+          "pixels": "31c72bde1659b83a8d71a5342efe15f9b9e242c8ce936992e24d7666a4aaf8bb"
+        },
+        {
+          "stage": 7,
+          "pixels": "6af022213b7fbb08fd80c53e42a3e4140d82edcf7d6bdd40e5197ec4ced9c5c7"
+        },
+        {
+          "stage": 8,
+          "pixels": "1e66e6eda9e93064bb65b70b26180e61363a434b465a4d0c28883ed529afaa2b"
+        },
+        {
+          "stage": 9,
+          "pixels": "c59b682bde66236cc1c1ba600add6bcfe475caf0bb8105ea6f406c5a4c2452aa"
+        },
+        {
+          "stage": 10,
+          "pixels": "63c325447aceedd61c07ecf24892f9ad0eccdd4e3e934cbeebbf29a6d0a0384c"
+        }
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 392,
+          "remaining_above_floor": 888
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 734,
+          "remaining_above_floor": 1570
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 50,
+          "remaining_above_floor": 206
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "xex_sha256": "ca9fca969a24d7798248487b6e6bed7cd9dc92cb311682ad92fcd84c6ce7671e",
+      "build_sha256": "9158239a32b1acabdd1179d7db4fb98308585d0d5e2203465aedcc9b78f86af1",
+      "results_sha256": "c6e1192c27eef8ae52efcf671cae53480e789bd7fbddb08ca826aa2b0aa86b3c"
+    },
+    "opt": {
+      "status": "pass",
+      "checks": 49,
+      "scenes": [
+        {
+          "stage": 1,
+          "pixels": "a042d5fcd81b729ca1ca6e97856970159c410d37c6144dd8bbc01eb0b580170f"
+        },
+        {
+          "stage": 2,
+          "pixels": "fd8413939997b5e6ad64ed8d1796c3f5ca82db307ed2271bdf03a08fc874852f"
+        },
+        {
+          "stage": 3,
+          "pixels": "acd4f39f88e11a225acc28bd990d23c40274c23aaa31cd846fd4d717e6d5f1c1"
+        },
+        {
+          "stage": 4,
+          "pixels": "7466f658588076652a844d2de27ff5b337542b86f344a587747205fe06342234"
+        },
+        {
+          "stage": 5,
+          "pixels": "e93d373dc8f513773e309ce1cd19e9d969ec548f874daf629ade8920c4adc30c"
+        },
+        {
+          "stage": 6,
+          "pixels": "31c72bde1659b83a8d71a5342efe15f9b9e242c8ce936992e24d7666a4aaf8bb"
+        },
+        {
+          "stage": 7,
+          "pixels": "6af022213b7fbb08fd80c53e42a3e4140d82edcf7d6bdd40e5197ec4ced9c5c7"
+        },
+        {
+          "stage": 8,
+          "pixels": "1e66e6eda9e93064bb65b70b26180e61363a434b465a4d0c28883ed529afaa2b"
+        },
+        {
+          "stage": 9,
+          "pixels": "c59b682bde66236cc1c1ba600add6bcfe475caf0bb8105ea6f406c5a4c2452aa"
+        },
+        {
+          "stage": 10,
+          "pixels": "63c325447aceedd61c07ecf24892f9ad0eccdd4e3e934cbeebbf29a6d0a0384c"
+        }
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 346,
+          "remaining_above_floor": 934
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 709,
+          "remaining_above_floor": 1595
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 46,
+          "remaining_above_floor": 210
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      },
+      "xex_sha256": "1b650d2171515abc60b88a2dc35e400a517e6b1e3ede0f2f1d96190ae1160c51",
+      "build_sha256": "2cd4d103b9e982e6158495c2c2a2fb4d6c86602a63494e8f8be8fce9f9b766a4",
+      "results_sha256": "8e7f0645159e8f1e8f8d20d5e4efa09376ff44664eec65dae51d4a87dd9c24f9"
+    }
+  },
+  "legacy": {
+    "status": "pass",
+    "results_sha256": "ddd3ae29a7b8222e8ecb40847a61021406e1ddb75be9c0524c88ec42b853b0e3",
+    "checks": 40,
+    "scenes": 6
+  },
+  "fault": {
+    "status": "pass",
+    "results_sha256": "fa95d32d90fa77935f4634bafa7a7503f2749027b711f9de6f667b81dd6d8689",
+    "cases": [
+      {
+        "variant": 3,
+        "runtime_status": 0,
+        "guards": "intact"
+      },
+      {
+        "variant": 4,
+        "runtime_status": 65427,
+        "guards": "intact"
+      }
+    ]
+  },
+  "bank_zero_delta": {
+    "fixed_root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "loading": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "additional_vram": 0,
+  "host_checks": {
+    "tests": 344,
+    "skipped": 4,
+    "status": "pass"
+  }
+}

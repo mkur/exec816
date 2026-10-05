@@ -2,7 +2,9 @@
   "schema_version": 1,
   "state_offset": 3888,
   "state_bytes": 32,
-  "divisor": 7,
+  "divisor": 15,
+  "fine_divisor": 7,
+  "pointer_divider": 2,
   "audctl": 40,
   "fields": {
     "TM_USERS": 0,
@@ -17,6 +19,8 @@
     "TM_PORT": 12,
     "TM_TRIGGER": 13,
     "TM_CHANGES": 14,
-    "TM_BLITTER": 16
+    "TM_BLITTER": 16,
+    "TM_FINE": 17,
+    "TM_SAMPLE_PHASE": 18
   }
 }

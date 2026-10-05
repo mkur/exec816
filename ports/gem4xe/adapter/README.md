@@ -39,7 +39,7 @@ description; fill uses half-open pixel bounds, and text uses top-left 8×8 cells
 with explicit foreground/background pens. Text must fit completely on screen.
 The CPU string must not overlap the mapped `$8000–$8FFF` aperture.
 An empty valid rectangle or string does not draw. Every successful operation
-in this original synchronous group fences before returning. Build with `GEM_DRAWING_ONLY` to omit service and cursor
+in this original synchronous group fences before returning. Build with `GEM_DRAWING_ONLY` to omit service policy while sharing drawing and pointer
 policy; the caller must own the display. There remains one drawing session per
 image, shared with the service when linked together. This is a C interface;
 calling it from Action! requires the separately tested language bridge in B6.
@@ -57,7 +57,7 @@ operation. It accepts explicit VRAM surfaces and preserves opaque pixels in
 overlapping copies. The descriptor remains immutable until the call returns.
 The GEM service does not advertise an additional VDI opcode for this operation.
 
-`GemDrawingScrollStart` and `GemDrawingScrollPoll` expose the driver's
+`GemDrawingScrollStart`, `GemDrawingCopyStart` and `GemDrawingPoll` expose the driver's
 [asynchronous screen scroll](../../../docs/reference/display.md#asynchronous-screen-scrolling)
 with a logical GEM background pen. Source Y minus destination Y selects an
 upward shift in multiples of eight pixels and the matching exposed fill height.
@@ -74,12 +74,25 @@ the binding and signal only after settling DMA. See the
 [display contract](../../../docs/reference/display.md).
 
 Fully visible nonzero-ink glyphs use one nibble-stencil command. Hardware-zero
-ink retains the inverse-mask AND path, and clipped glyphs retain the staged
-pixel path. Empty glyphs skip ink after the opaque background fill. Private
+ink retains the inverse-mask AND path. Clipped replace/transparent glyphs use
+the same font atlas through bounded mask commands, with partial-nibble masks
+preserving pixels outside the clip. XOR/erase retain the staged pixel path.
+Empty glyphs skip ink after the opaque background fill. Private
 preinitialized records avoid repeated generic rectangle setup, while submission
 still validates the whole list. The maintained fourth extraction patch supplies
 these changes. The 256-byte ink cache and 21-byte template fit inside the
-existing C bank reservations; B2 adds no bank-zero or VRAM reservation.
+existing C bank reservations; B2 adds no bank-zero or VRAM reservation. The sixth
+extraction patch adds clipped glyphs without new storage or reservations.
+
+The private `GemDrawingWidgetBatch` closure redirects widget drawing into a
+640 × 16 strip at VRAM `$12C00`. The strip uses the screen's former 5,120-byte
+padding, so the total VRAM reservation is unchanged. Partial object continuations
+stay offscreen; only the completed clip is copied to the screen. Odd edge nibbles
+are preserved, and pointer/outline removal happens at publication in screen
+coordinates. Every call checks its owner and fences before returning. A new first
+chunk replaces abandoned contents; a continuation with different bounds is rejected.
+No callback pointer survives the call. Six words and one longword of state use
+16 bytes inside the existing upper C data reservation; bank-zero growth is zero.
 
 Even-X `GemDrawingText` runs use a driver-generated list instead of repeating
 the generic device and list-validation path for every glyph. The driver checks
@@ -126,16 +139,17 @@ bounded correctness, not a frame-rate guarantee.
 
 G4 reserves zero additional bank-zero bytes: fixed, each public Task, and idle.
 The existing whole C code/data banks remain reserved (131,072 bytes including
-unused capacity); staging consumes 4,096 bytes within the data bank. B1 adds 4,096 construction bytes inside the existing data bank. VRAM now
-reserves 111,872 bytes including padding: screen 81,920, XDL 256, BCB 4,096,
-font masks 20,480 (18,432 used), glyph scratch 4,096 and cursor storage 1,024. These reservations are
+unused capacity); staging consumes 4,096 bytes within the data bank. B1 adds 4,096 construction bytes inside the existing data bank. The current
+[VRAM map](../../../platform/altirraos/vbxe-vram.json) reserves 243,200 bytes
+including padding: screen 81,920, XDL 256, BCB 4,096, font masks 20,480
+(18,432 used), glyph scratch 4,096, cursor storage 1,280 and two 65,536-byte
+desktop snapshot slots. There are 281,088 unassigned bytes. These reservations are
 separate from CPU RAM. The test's 76,800-byte CPU readback allocation, font copy
 and borrowed observer scratch are diagnostics, not production renderer storage.
 
 Run the development corpus with:
 
 ```sh
-python3 tools/test_gem_render.py --mode raw --output build/gem-vdi/g4-raw
 python3 tools/test_gem_render.py --mode opt --output build/gem-vdi/g4-opt
 python3 tools/test_gem_drawing.py --mode opt --output build/bitmap-console/drawing
 ```
@@ -157,7 +171,7 @@ scope. Combining this renderer with a computing peer, physical SDFS traffic,
 console transitions and the broader service failure matrix is recorded by G5.
 The [input implementation](../../../docs/history/gem-input.md) adds a supervised
 keyboard application and renderer-owned cursor. The fixed arrow uses 256-byte
-save, AND and OR planes plus 256 reserved slack bytes at `$37000`. Hide/restore
+save and both even/odd AND/OR planes at `$37000–$374FF`. Hide/restore
 precedes each scene mutation; fence saves and redraws without changing VDI
 attributes. CPU staging is reused only after flushing; glyph scratch stays separate.
 I5 checks exact odd/even/edge pixels, stationary redraws, reopen and each fault phase.

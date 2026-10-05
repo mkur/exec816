@@ -114,13 +114,23 @@ signal_route_other:
     .if INPUT_NATIVE
         jsl input_route
     .endif
+    ; Sources can assert after their bounded service check. Classify pending
+    ; ownership at this final decision, including a live keyboard lease.
+    .if INPUT_NATIVE
+        lda f:IN_CAPTURE+IN_CAPTURE_ACTIVE
+        beq signal_timer_pending
+        lda f:$d20e
+        eor #$ff
+        and f:$0010
+        and #$3e                 ; owned Timer 1, keyboard and BREAK
+        bra signal_pending_done
+signal_timer_pending:
+    .endif
     lda f:$d20e
     eor #$ff
     and f:$0010
-    ; A new timer edge may arrive during keyboard capture. Timer 1 is still
-    ; ours: leave it latched for the next native entry, never chain the ROM
-    ; while the fixed sampling owner retains its emulation vector.
-    and #$fe
+    and #$fe                     ; owned Timer 1, no keyboard lease
+signal_pending_done:
     bne signal_unowned
     sec
     rtl

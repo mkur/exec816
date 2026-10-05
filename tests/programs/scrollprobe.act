@@ -1,0 +1,37 @@
+; Fixture-only observation at the ordinary writer's model-consumption boundary.
+MODULE SCROLLPROBE
+USE CONSOLETYPES
+
+PUBLIC BYTE enabled
+PUBLIC CARD feeds,overtakes
+PUBLIC CARD batches,multirow,maxRows
+
+PUBLIC PROC Batch(CARD rows)
+
+  IF enabled<>0 AND rows<>0 THEN
+    batches==+1
+    IF rows>1 THEN
+      multirow==+1
+    FI
+
+    IF rows>maxRows THEN
+      maxRows=rows
+    FI
+  FI
+
+RETURN
+
+PUBLIC PROC Feed(CONSOLETYPES.Instance POINTER instance)
+
+  IF enabled<>0 THEN
+    feeds==+1
+    ; A short bottom-row write can leave one fresh span. Multiple dirty rows
+    ; here mean a new write is overtaking an unfinished scroll repaint.
+    IF instance.dirtyRows>1 THEN
+      overtakes==+1
+    FI
+  FI
+
+RETURN
+
+ENDMODULE

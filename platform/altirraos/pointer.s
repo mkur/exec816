@@ -76,6 +76,8 @@ pointer_claim:
     and #1
     eor #1
     sta f:PI+63
+    lda #0
+    sta f:TM_SAMPLE_PHASE
     lda #1
     sta f:PI
     sta f:PI_BINDING+IN_BINDING_ACTIVE
@@ -101,6 +103,7 @@ pointer_release_unchecked:
     sep #$20
     lda #0
     sta f:TM_POINTER
+    sta f:TM_SAMPLE_PHASE
     sta f:PI
     sta f:PI_BINDING+IN_BINDING_ACTIVE
     sta f:PI+86

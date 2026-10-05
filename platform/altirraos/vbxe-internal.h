@@ -20,9 +20,13 @@ UWORD VbxeOwnerTextFill(struct VbxeDisplay *display, ULONG font,UWORD x,UWORD y,
     const struct VbxeTextFill *fill);
 UWORD VbxeOwnerFill(struct VbxeDisplay *display, ULONG address, UWORD stride, UWORD bytes, UWORD rows, UBYTE value);
 UWORD VbxeOwnerCopyRect(struct VbxeDisplay *display, const struct VbxeCopy *copy);
+/* One overlap-safe, even-pixel copy, at most 640x240. OK with *id=0 is
+ * empty/identical; otherwise use the common Poll/CompletionMask. BUSY leaves
+ * the active list and new output unchanged. Accepted descriptors are copied. */
+UWORD VbxeOwnerCopyStart(struct VbxeDisplay *display, const struct VbxeCopy *copy, ULONG *id);
 UWORD VbxeOwnerScrollStart(struct VbxeDisplay *display, const struct VbxeCopy *copy,
                            UBYTE value, ULONG *id);
-UWORD VbxeOwnerScrollPoll(struct VbxeDisplay *display, ULONG id);
+UWORD VbxeOwnerPoll(struct VbxeDisplay *display, ULONG id);
 UWORD VbxeOwnerWaitFrame(struct VbxeDisplay *display);
 UWORD VbxeOwnerShow(struct VbxeDisplay *display);
 UWORD VbxeOwnerPalette(struct VbxeDisplay *display, const UBYTE *rgb);

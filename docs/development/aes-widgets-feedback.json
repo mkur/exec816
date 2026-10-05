@@ -1,0 +1,3040 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-05",
+  "problem": "Visible button erasure and slow pressed feedback from separate background fills and object continuations charged for rejected objects.",
+  "change": "Count only visible intersecting objects toward four-object drawing turns; share background initialization with the first chunk; reconstruct each widget strip offscreen and publish only completed clips through ordered bounded VBXE lists.",
+  "source_inputs": {
+    "lib/desktop/deskpaint.act": "94c62b20daea05a61e5a14f9aed30f300b5d5e048f391d6612441618595495a9",
+    "ports/gem4xe/aes/widgets-render.c": "18b89a36af87b306cf6e7f598eaf6644cc423e3b90f5f40bd88d43d003b0baa0",
+    "ports/gem4xe/adapter/gem-vbxe.c": "c02d701def9a6abb026e39e8056f948626c126610500dbc1afee2571e746161a",
+    "ports/gem4xe/adapter/gem-drawing.h": "e2e888982861beedcb9c4e54497f92849b13e7ccea665b4e985c899d4a5e2d17",
+    "platform/altirraos/vbxe-vram.json": "d218fcc4c92228405c1d5ff718f65b2dcf6a2b032ad28a6352a3bfdd92d2cd3a",
+    "tests/programs/widgets_pixels.c": "3c6ebb7c80fc763bcc8dc254885f212ffa0024a2f8676c632ebf85d23eb0d4e9",
+    "tools/test_widget_pixels.py": "8b39f17bf5f86c942c9ee7c8d17d7686ac8fdad736c96beb19cd5cf78380155a",
+    "tools/test_widget_panel.py": "190b8f3d6e63380dc558eadbb7fecd6cf476253f498ec08f33b7235bfc1e72c8",
+    "tools/test_demo.py": "1293638c7d284b4a3a637104a0231d7db601cd3484ba06896e282e4ec5d8b1fa"
+  },
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 1,
+      "internal_port": 0,
+      "map": "Mouse -> ST Mouse (port 1)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "build_modes": {
+    "mode": "optimized",
+    "reason": "Renderer geometry and presentation changes; no language bridge, compiler ABI, scheduler or public widget ABI change."
+  },
+  "comparison": {
+    "baseline": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "latency": {
+        "idle": {
+          "capture_to_commit_ms": {
+            "count": 10,
+            "median_ms": 8.18448248397542,
+            "p95_ms": 83.65915822148669,
+            "max_ms": 83.65915822148669
+          },
+          "capture_to_application_ms": {
+            "count": 5,
+            "median_ms": 12.310415165940913,
+            "p95_ms": 87.08701554458196,
+            "max_ms": 87.08701554458196
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 10,
+            "median_ms": 4.228416685579922,
+            "p95_ms": 6.501038232031115,
+            "max_ms": 6.501038232031115
+          },
+          "capture_to_visible_ms": {
+            "count": 10,
+            "median_ms": 339.7009919944064,
+            "p95_ms": 419.7616506832032,
+            "max_ms": 419.7616506832032
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 10,
+            "median_ms": 179.29111236729588,
+            "p95_ms": 379.86739105612094,
+            "max_ms": 379.86739105612094
+          },
+          "press_feedback": {
+            "count": 5,
+            "median_ms": 379.8667566984644,
+            "p95_ms": 379.86739105612094,
+            "max_ms": 379.86739105612094
+          },
+          "application_label": {
+            "count": 5,
+            "median_ms": 339.44887006804544,
+            "p95_ms": 419.7616506832032,
+            "max_ms": 419.7616506832032
+          }
+        }
+      },
+      "feedback": {
+        "idle": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 10,
+          "edges_with_invalid_pixels": 7,
+          "invalid_frames": 48,
+          "max_invalid_pixels": 1158
+        }
+      },
+      "samples": [
+        {
+          "load": "idle",
+          "object": 2,
+          "edge": "press",
+          "submitted": 22205676,
+          "consumed": 22218668,
+          "committed": 22226285,
+          "button_feedback": {
+            "clock": 22454764,
+            "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+            "scans": 8,
+            "invalid_frames": 3,
+            "max_invalid_pixels": 1058
+          },
+          "visible": 22454764,
+          "capture": 4317175330.625,
+          "capture_to_commit_ms": 10.235713208313186,
+          "capture_to_button_consumed_ms": 5.995878084916526,
+          "capture_to_visible_ms": 139.12414943210894,
+          "capture_to_button_pixels_ms": 139.12414943210894
+        },
+        {
+          "load": "idle",
+          "object": 2,
+          "edge": "release",
+          "submitted": 22525998,
+          "consumed": 22535852,
+          "committed": 22541676,
+          "application": 22550188,
+          "button_feedback": {
+            "clock": 22550188,
+            "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+            "scans": 1,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 23059564,
+          "capture": 4317495652.125,
+          "capture_to_commit_ms": 8.838716680364094,
+          "capture_to_button_consumed_ms": 4.226725065162628,
+          "capture_to_visible_ms": 299.5340290592194,
+          "capture_to_application_ms": 12.310415165940913,
+          "capture_to_button_pixels_ms": 12.310415165940913
+        },
+        {
+          "load": "idle",
+          "object": 5,
+          "edge": "press",
+          "submitted": 23628524,
+          "consumed": 23638382,
+          "committed": 23645100,
+          "button_feedback": {
+            "clock": 24304556,
+            "sha256": "95aa7b6121f65a9ed026d17d31960e45102919a275e65c61dd720868df883179",
+            "scans": 20,
+            "invalid_frames": 6,
+            "max_invalid_pixels": 1058
+          },
+          "visible": 24304556,
+          "capture": 4318598178.125,
+          "capture_to_commit_ms": 7.965981513408207,
+          "capture_to_button_consumed_ms": 4.228980559052354,
+          "capture_to_visible_ms": 379.8668271826485,
+          "capture_to_button_pixels_ms": 379.8668271826485
+        },
+        {
+          "load": "idle",
+          "object": 5,
+          "edge": "release",
+          "submitted": 24375341,
+          "consumed": 24385197,
+          "committed": 24390125,
+          "application": 24400428,
+          "button_feedback": {
+            "clock": 24400428,
+            "sha256": "95aa7b6121f65a9ed026d17d31960e45102919a275e65c61dd720868df883179",
+            "scans": 1,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 24980140,
+          "capture": 4319344994.125,
+          "capture_to_commit_ms": 9.270925696982854,
+          "capture_to_button_consumed_ms": 4.228416685579922,
+          "capture_to_visible_ms": 339.7009919944064,
+          "capture_to_application_ms": 12.81677354418442,
+          "capture_to_button_pixels_ms": 12.81677354418442
+        },
+        {
+          "load": "idle",
+          "object": 6,
+          "edge": "press",
+          "submitted": 25549100,
+          "consumed": 25558957,
+          "committed": 25565230,
+          "button_feedback": {
+            "clock": 26225132,
+            "sha256": "93d315191305265ad744716e8f0cb2885ac6a81c02bd01f1867ebe4b52863693",
+            "scans": 20,
+            "invalid_frames": 12,
+            "max_invalid_pixels": 1122
+          },
+          "visible": 26225132,
+          "capture": 4320518754.25,
+          "capture_to_commit_ms": 7.70970102018808,
+          "capture_to_button_consumed_ms": 4.228346201395869,
+          "capture_to_visible_ms": 379.8667566984644,
+          "capture_to_button_pixels_ms": 379.8667566984644
+        },
+        {
+          "load": "idle",
+          "object": 6,
+          "edge": "release",
+          "submitted": 26296364,
+          "consumed": 26306222,
+          "committed": 26310701,
+          "application": 26318765,
+          "button_feedback": {
+            "clock": 26651630,
+            "sha256": "547156480029af155c1c19c3cc771ad5a5ac99e5c839fc88019f8f543964edbb",
+            "scans": 11,
+            "invalid_frames": 7,
+            "max_invalid_pixels": 1158
+          },
+          "visible": 26900717,
+          "capture": 4321266018.25,
+          "capture_to_commit_ms": 7.824660724380057,
+          "capture_to_button_consumed_ms": 4.228910074868301,
+          "capture_to_visible_ms": 339.44887006804544,
+          "capture_to_application_ms": 11.30157503957687,
+          "capture_to_button_pixels_ms": 198.99531844049514
+        },
+        {
+          "load": "idle",
+          "object": 4,
+          "edge": "press",
+          "submitted": 27185196,
+          "consumed": 27195052,
+          "committed": 27201773,
+          "button_feedback": {
+            "clock": 27505518,
+            "sha256": "59407c0ec0491d3fbf3ff6ea1b843eb478de89b4f5e2fe23124891a5f8a738cd",
+            "scans": 10,
+            "invalid_frames": 5,
+            "max_invalid_pixels": 1058
+          },
+          "visible": 27505518,
+          "capture": 4322154850.625,
+          "capture_to_commit_ms": 8.18448248397542,
+          "capture_to_button_consumed_ms": 4.227570875371275,
+          "capture_to_visible_ms": 179.29111236729588,
+          "capture_to_button_pixels_ms": 179.29111236729588
+        },
+        {
+          "load": "idle",
+          "object": 4,
+          "edge": "release",
+          "submitted": 27576751,
+          "consumed": 27590636,
+          "committed": 27723694,
+          "application": 27733551,
+          "button_feedback": {
+            "clock": 27733551,
+            "sha256": "59407c0ec0491d3fbf3ff6ea1b843eb478de89b4f5e2fe23124891a5f8a738cd",
+            "scans": 1,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 28323532,
+          "capture": 4322546402.75,
+          "capture_to_commit_ms": 83.65915822148669,
+          "capture_to_button_consumed_ms": 6.501038232031115,
+          "capture_to_visible_ms": 419.7616506832032,
+          "capture_to_application_ms": 87.08701554458196,
+          "capture_to_button_pixels_ms": 87.08701554458196
+        },
+        {
+          "load": "idle",
+          "object": 7,
+          "edge": "press",
+          "submitted": 28892525,
+          "consumed": 28902380,
+          "committed": 28908204,
+          "button_feedback": {
+            "clock": 29568557,
+            "sha256": "58b60a2fb76e0d6e98505b576698419468a020d287b8ca90d38e73ef38000a73",
+            "scans": 20,
+            "invalid_frames": 10,
+            "max_invalid_pixels": 1090
+          },
+          "visible": 29568557,
+          "capture": 4323862178.125,
+          "capture_to_commit_ms": 7.455041663201194,
+          "capture_to_button_consumed_ms": 4.227852812107491,
+          "capture_to_visible_ms": 379.86739105612094,
+          "capture_to_button_pixels_ms": 379.86739105612094
+        },
+        {
+          "load": "idle",
+          "object": 7,
+          "edge": "release",
+          "submitted": 29639342,
+          "consumed": 29649196,
+          "committed": 29653229,
+          "application": 29661741,
+          "button_feedback": {
+            "clock": 29924268,
+            "sha256": "1c0ce1d07eba127e80fbba9bf53617baf8d9363a7b39d43fa9560b2f53cb9a52",
+            "scans": 9,
+            "invalid_frames": 5,
+            "max_invalid_pixels": 1108
+          },
+          "visible": 30172909,
+          "capture": 4324608993.125,
+          "capture_to_commit_ms": 7.657895144908434,
+          "capture_to_button_consumed_ms": 4.228416685579922,
+          "capture_to_visible_ms": 299.53628455310917,
+          "capture_to_application_ms": 11.302209397233355,
+          "capture_to_button_pixels_ms": 159.3342204942633
+        }
+      ],
+      "functional": [
+        {
+          "name": "second context toggled",
+          "contexts": [
+            153304,
+            146104
+          ]
+        },
+        {
+          "name": "toggle",
+          "result": {
+            "samples": [
+              {
+                "load": null,
+                "object": 2,
+                "edge": "press",
+                "submitted": 15732524,
+                "consumed": 15742380,
+                "committed": 15767469,
+                "button_feedback": {
+                  "clock": 16266092,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 16,
+                  "invalid_frames": 7,
+                  "max_invalid_pixels": 666
+                },
+                "visible": 16266092,
+                "capture": 4310702179.625,
+                "capture_to_commit_ms": 18.436759475541283,
+                "capture_to_button_consumed_ms": 4.227007001898843,
+                "capture_to_visible_ms": 299.5343109959556,
+                "capture_to_button_pixels_ms": 299.5343109959556
+              },
+              {
+                "load": null,
+                "object": 2,
+                "edge": "release",
+                "submitted": 16337325,
+                "consumed": 16406316,
+                "committed": 17046060,
+                "application": 17054572,
+                "button_feedback": {
+                  "clock": 17054572,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 1,
+                  "invalid_frames": 0,
+                  "max_invalid_pixels": 0
+                },
+                "visible": 18080045,
+                "capture": 4311306977.25,
+                "capture_to_commit_ms": 399.4942054952289,
+                "capture_to_button_consumed_ms": 37.5735678671063,
+                "capture_to_visible_ms": 981.3449510064437,
+                "capture_to_application_ms": 403.1079296116744,
+                "capture_to_button_pixels_ms": 403.1079296116744
+              }
+            ],
+            "scene": {
+              "clock": 18097964,
+              "sha256": "6e5d8507035cc6cba625fd37a2e82bc7c8dbcb4bac75ac79c62e90f9e1ec723c",
+              "scans": 1,
+              "invalid_frames": 0,
+              "max_invalid_pixels": 0
+            },
+            "epoch": 2,
+            "state": {
+              "toggle": 1,
+              "radio": 4,
+              "focus": 2,
+              "status": "Toggle on [2]"
+            }
+          }
+        },
+        {
+          "name": "disabled and raw key ignored"
+        },
+        {
+          "name": "Tab, Shift-Tab, Space, Return, Escape and BREAK"
+        }
+      ],
+      "comparison": [
+        {
+          "full_redraw": false,
+          "begin": 32326002,
+          "end": 33232301,
+          "result": {
+            "samples": [
+              {
+                "load": null,
+                "object": 2,
+                "edge": "press",
+                "submitted": 32378412,
+                "consumed": 32388268,
+                "committed": 32395438,
+                "button_feedback": {
+                  "clock": 32627053,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 8,
+                  "invalid_frames": 3,
+                  "max_invalid_pixels": 1058
+                },
+                "visible": 32627053,
+                "capture": 4327348066.25,
+                "capture_to_commit_ms": 8.35138903181515,
+                "capture_to_button_consumed_ms": 4.227782327923437,
+                "capture_to_visible_ms": 138.87230944248418,
+                "capture_to_button_pixels_ms": 138.87230944248418
+              },
+              {
+                "load": null,
+                "object": 2,
+                "edge": "release",
+                "submitted": 32698284,
+                "consumed": 32708140,
+                "committed": 32713965,
+                "application": 32722477,
+                "button_feedback": {
+                  "clock": 32722477,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 1,
+                  "invalid_frames": 0,
+                  "max_invalid_pixels": 0
+                },
+                "visible": 33231852,
+                "capture": 4327667938.25,
+                "capture_to_commit_ms": 8.833500850744102,
+                "capture_to_button_consumed_ms": 4.227782327923437,
+                "capture_to_visible_ms": 299.5350863219802,
+                "capture_to_application_ms": 12.312036302174155,
+                "capture_to_button_pixels_ms": 12.312036302174155
+              }
+            ],
+            "scene": {
+              "clock": 33232301,
+              "sha256": "6e5d8507035cc6cba625fd37a2e82bc7c8dbcb4bac75ac79c62e90f9e1ec723c",
+              "scans": 1,
+              "invalid_frames": 0,
+              "max_invalid_pixels": 0
+            },
+            "epoch": 2,
+            "state": {
+              "toggle": 1,
+              "radio": 4,
+              "focus": 2,
+              "status": "Toggle on [2]"
+            }
+          },
+          "status_damage_pixels": 1280,
+          "work": {
+            "GemWidgetFill": 35,
+            "GemWidgetText": 5,
+            "start": 29,
+            "VbxeOwnerSubmit": 29,
+            "vram_win": 0
+          },
+          "paint_cpu_ms": 129.03603010520467,
+          "paint_quanta": 10
+        },
+        {
+          "full_redraw": true,
+          "begin": 34228210,
+          "end": 36182829,
+          "result": {
+            "samples": [
+              {
+                "load": null,
+                "object": 2,
+                "edge": "press",
+                "submitted": 34298990,
+                "consumed": 34308845,
+                "committed": 34316013,
+                "button_feedback": {
+                  "clock": 34548077,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 8,
+                  "invalid_frames": 3,
+                  "max_invalid_pixels": 1058
+                },
+                "visible": 34548077,
+                "capture": 4329268643.625,
+                "capture_to_commit_ms": 8.351952905287582,
+                "capture_to_button_consumed_ms": 4.227570875371275,
+                "capture_to_visible_ms": 139.12414943210894,
+                "capture_to_button_pixels_ms": 139.12414943210894
+              },
+              {
+                "load": null,
+                "object": 2,
+                "edge": "release",
+                "submitted": 34618862,
+                "consumed": 34628716,
+                "committed": 34634988,
+                "application": 34643502,
+                "button_feedback": {
+                  "clock": 34643502,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 1,
+                  "invalid_frames": 0,
+                  "max_invalid_pixels": 0
+                },
+                "visible": 35152429,
+                "capture": 4329588513.125,
+                "capture_to_commit_ms": 8.918645745081262,
+                "capture_to_button_consumed_ms": 4.228416685579922,
+                "capture_to_visible_ms": 299.53628455310917,
+                "capture_to_application_ms": 12.565849848952393,
+                "capture_to_button_pixels_ms": 12.565849848952393
+              }
+            ],
+            "scene": {
+              "clock": 36182829,
+              "sha256": "6e5d8507035cc6cba625fd37a2e82bc7c8dbcb4bac75ac79c62e90f9e1ec723c",
+              "scans": 1,
+              "invalid_frames": 0,
+              "max_invalid_pixels": 0
+            },
+            "epoch": 3,
+            "state": {
+              "toggle": 1,
+              "radio": 4,
+              "focus": 2,
+              "status": "Toggle on [2]"
+            }
+          },
+          "status_damage_pixels": 21120,
+          "work": {
+            "GemWidgetFill": 151,
+            "GemWidgetText": 19,
+            "start": 51,
+            "VbxeOwnerSubmit": 51,
+            "vram_win": 0
+          },
+          "paint_cpu_ms": 481.37709179437223,
+          "paint_quanta": 24
+        }
+      ],
+      "work": {
+        "idle": {
+          "paint_quanta": 66,
+          "paint_cpu_ms": 1202.72308596674,
+          "max_quantum_cpu_ms": 53.16678390535948,
+          "primitive_entries": {
+            "GemWidgetFill": 401,
+            "GemWidgetText": 56,
+            "start": 250,
+            "VbxeOwnerSubmit": 250,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47129,
+          "damage_scope": "Independent union of previous/new focus, press/release, changed radio siblings and 160x8 status; does not count Layers exposure or physical overdraw."
+        }
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 374,
+          "remaining_above_floor": 906
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 156,
+          "remaining_above_floor": 612
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 691,
+          "remaining_above_floor": 1613
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 50,
+          "remaining_above_floor": 206
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "ownership": "restored",
+      "reserved_bank_zero_delta": {
+        "baseline": "desktop-dt0",
+        "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "runtime": 0,
+        "loading": 0
+      },
+      "trace_sha256": "b092350db12348d54fe0e207ecdaf7f2fe7f110a7c06ea7efd87aa6ca7da31ef",
+      "evidence": {
+        "path": "build/widget-feedback/baseline/results.json",
+        "sha256": "86701f171ea61ec013bbadf6089ac08afa9215afb97e583dc2d5334cfc8fad13"
+      },
+      "build": {
+        "path": "build/widget-feedback/before/program/build.json",
+        "sha256": "18edfb85d37b8ad2c4b4dd4e06b59af059d048ccf5dc8ec7e2e836c3a3e0930b"
+      },
+      "xex_sha256": "e7adcfc63853de464a9d9934f2becf944476f763fd1f568131400446cf0319a9",
+      "exec_build": {
+        "revision": "83a0b2e2bae3ef095a09eb83015c942f0dd8ece6",
+        "dirty": true,
+        "display": "83a0b2e-dirty",
+        "actionc_pin": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "task_capacity": 8,
+        "stack_checks": true,
+        "mount": null,
+        "strings": {
+          "banner": "Exec816 (83a0b2e-dirty)\n\n",
+          "slots": "exec: 8 task slots\n",
+          "stackChecks": "exec: stack checks enabled\n",
+          "version": "Exec816 (83a0b2e-dirty)\nactionc pin: f1ff4ce\n",
+          "sioReady": "",
+          "mountStart": "SYS: no system volume configured\n",
+          "mountFailure": "Filesystem startup failed; check configured disks\nRequired: D1: on D1:\nUse CD SYS: to retry; cold-boot after SIO timeout"
+        }
+      },
+      "c_image": {
+        "manifest": {
+          "path": "build/widget-feedback/before/c-image.json",
+          "sha256": "ec674fd523df3f419b04ffe9515f97b8a1b488d52a0a1465418908997e87692f"
+        },
+        "elf_sha256": "e0049a43d792351a0020a0d378eee5a9b079d18889339e985378aeb46fc12587",
+        "source_inputs": {
+          "c/calypsi/exec.c": "ada5b767f7df3bd616291a4a1c57d23622d39fea50067ecfc07997e16602daf4",
+          "c/calypsi/display.c": "8cb54662e89ec757784efbc3a071cdb4c069f71efe5ebdf4561190dd02b467d2",
+          "platform/altirraos/vbxe.c": "c590f4b2c382e036fb2ae1820b3e7311713201784c40ef6ab1c3d2cf9733a4ee",
+          "build/widget-feedback/before/selected/src/vdi/vdi.c": "200efd32d94ef44580b0184dbb90cafad3f953d26deb770277d6034b5459a3b7",
+          "build/widget-feedback/before/selected/src/vdi/font.c": "773e690778d68b02e5f3b8f295298bf061e483854653de289ba59f1a0154855b",
+          "build/widget-feedback/before/selected/src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+          "build/widget-feedback/before/selected/src/vdi/dev_vbxe.c": "fcda57e8dc5e34ad600b31379e49ca399e6cce96fa6f6a874560628f7af9e9c0",
+          "ports/gem4xe/adapter/gem-vbxe.c": "eea61a89562ed3f325faa330b98650c315281d88eee295187642a980c9266a76",
+          "lib/console/console-bitmap.c": "ed4e4644864899b857e4fb87fa680b12e91e76fd4932e145017d5611e919e43c",
+          "ports/gem4xe/aes/widgets-model.c": "5728f0da516dcde71fd6d948f009fd18ecf69d0bb75d6223ecce754090b90627",
+          "ports/gem4xe/aes/widgets-graf.c": "b64f21702e40e9c42352ed55cdd2c5faff45f51ab3d5c1d3a9ef08858f3e089f",
+          "ports/gem4xe/aes/widgets-render.c": "2789011dee325a87b1195dc75ca5a4c2a6fb3902b0b002841184036464814073",
+          "build/widget-feedback/before/aes-selected/aes-objects.c": "d1fec69785c852905fcdb1a93274e0fa06ff52637e7080d5e95662b06a550900",
+          "build/widget-feedback/before/aes-selected/aes-graf.c": "31c05d1c959bcbf5cbf7a9bbc372b89eff22436a1ed3b2f03825a051906ec1d3",
+          "build/widget-feedback/before/aes-selected/aes-form.c": "51ab6497ce1435b2681eacc16fed4faac50a26137a790e9301825b28e4532171",
+          "ports/gem4xe/aes/widgets-state.c": "c593c0acfce03916b4322c86316d772e8ef26450c9ac4d330e401b2754bba3b9",
+          "ports/gem4xe/aes/widgets-input.c": "12fbd15434ae96d2a1287b052a2d9d0bce17003285e759aef3656a6aba3d3375",
+          "ports/gem4xe/aes/widgets-entry.c": "e703182c0e4cedb59efb8139cc38ba135a79e6044df5e45d3a49c531e8324d38",
+          "c/calypsi/gateway.s": "5942de33306e8a4244ba6af012ff73885ad47d7a8b797d34fb0501c98440b3a1",
+          "c/calypsi/display.s": "40349300a774d10a61edb623e47e41df02fbe2d41d2aebdfc93a9d91ed07f099",
+          "c/calypsi/image-info.s": "ee2b75322d39901c11780cf7d6928a84243823439cdb4435053fb5b8daea13d5",
+          "platform/altirraos/vbxe-map.s": "b318746adc6b9c5a0624997174c86a0eace226488eeedb84d651d18ef61b3aef",
+          "abi/console-bitmap.json": "ce722ee58ee065cb8311c895962d18db046ab1f67001b528b1258337e525bfc5",
+          "c/include/hardware/console-bitmap.h": "2422a139655a68e45ac79e03e04fff67441d1c4bf636c9e9dff72f50bcaa0774"
+        },
+        "segments": [
+          {
+            "address": 786432,
+            "bytes": 56495
+          },
+          {
+            "address": 851968,
+            "bytes": 3351
+          }
+        ],
+        "zero_fill": [
+          {
+            "address": 855320,
+            "size": 12145,
+            "writable": true
+          }
+        ]
+      }
+    },
+    "current": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "latency": {
+        "idle": {
+          "capture_to_commit_ms": {
+            "count": 10,
+            "median_ms": 8.184975873263799,
+            "p95_ms": 65.69147099082437,
+            "max_ms": 65.69147099082437
+          },
+          "capture_to_application_ms": {
+            "count": 5,
+            "median_ms": 12.312600175646587,
+            "p95_ms": 69.15048232327148,
+            "max_ms": 69.15048232327148
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 10,
+            "median_ms": 4.227782327923437,
+            "p95_ms": 5.491986653114908,
+            "max_ms": 5.491986653114908
+          },
+          "capture_to_visible_ms": {
+            "count": 10,
+            "median_ms": 319.4927535210374,
+            "p95_ms": 359.65865919346356,
+            "max_ms": 359.65865919346356
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 10,
+            "median_ms": 159.08090033677345,
+            "p95_ms": 339.7012034469585,
+            "max_ms": 339.7012034469585
+          },
+          "press_feedback": {
+            "count": 5,
+            "median_ms": 319.49282400522145,
+            "p95_ms": 339.7012034469585,
+            "max_ms": 339.7012034469585
+          },
+          "application_label": {
+            "count": 5,
+            "median_ms": 319.49226013174905,
+            "p95_ms": 359.65865919346356,
+            "max_ms": 359.65865919346356
+          }
+        }
+      },
+      "feedback": {
+        "idle": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 10,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        }
+      },
+      "samples": [
+        {
+          "load": "idle",
+          "object": 2,
+          "edge": "press",
+          "submitted": 21992408,
+          "consumed": 22004505,
+          "committed": 22011672,
+          "button_feedback": {
+            "clock": 22276889,
+            "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+            "scans": 9,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 22276889,
+          "capture": 4316962061.25,
+          "capture_to_commit_ms": 9.676280239477064,
+          "capture_to_button_consumed_ms": 5.491986653114908,
+          "capture_to_visible_ms": 159.08209856790234,
+          "capture_to_button_pixels_ms": 159.08209856790234
+        },
+        {
+          "load": "idle",
+          "object": 2,
+          "edge": "release",
+          "submitted": 22348120,
+          "consumed": 22357976,
+          "committed": 22363801,
+          "application": 22372314,
+          "button_feedback": {
+            "clock": 22372314,
+            "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+            "scans": 1,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 22845848,
+          "capture": 4317317774.25,
+          "capture_to_commit_ms": 8.83223213543113,
+          "capture_to_button_consumed_ms": 4.227782327923437,
+          "capture_to_visible_ms": 279.3258610700345,
+          "capture_to_button_pixels_ms": 12.312600175646587,
+          "capture_to_application_ms": 12.312600175646587
+        },
+        {
+          "load": "idle",
+          "object": 5,
+          "edge": "press",
+          "submitted": 23450648,
+          "consumed": 23460504,
+          "committed": 23467224,
+          "button_feedback": {
+            "clock": 24019610,
+            "sha256": "95aa7b6121f65a9ed026d17d31960e45102919a275e65c61dd720868df883179",
+            "scans": 17,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 24019610,
+          "capture": 4318420302.25,
+          "capture_to_commit_ms": 7.965276671567667,
+          "capture_to_button_consumed_ms": 4.227782327923437,
+          "capture_to_visible_ms": 319.49282400522145,
+          "capture_to_button_pixels_ms": 319.49282400522145
+        },
+        {
+          "load": "idle",
+          "object": 5,
+          "edge": "release",
+          "submitted": 24090840,
+          "consumed": 24100696,
+          "committed": 24105625,
+          "application": 24115929,
+          "button_feedback": {
+            "clock": 24115929,
+            "sha256": "95aa7b6121f65a9ed026d17d31960e45102919a275e65c61dd720868df883179",
+            "scans": 1,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 24659801,
+          "capture": 4319060494.25,
+          "capture_to_commit_ms": 9.1778160898476,
+          "capture_to_button_consumed_ms": 4.227782327923437,
+          "capture_to_visible_ms": 319.49226013174905,
+          "capture_to_button_pixels_ms": 12.817266933472798,
+          "capture_to_application_ms": 12.817266933472798
+        },
+        {
+          "load": "idle",
+          "object": 6,
+          "edge": "press",
+          "submitted": 25264601,
+          "consumed": 25274456,
+          "committed": 25280728,
+          "button_feedback": {
+            "clock": 25869401,
+            "sha256": "93d315191305265ad744716e8f0cb2885ac6a81c02bd01f1867ebe4b52863693",
+            "scans": 18,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 25869401,
+          "capture": 4320234254.75,
+          "capture_to_commit_ms": 7.714282492151586,
+          "capture_to_button_consumed_ms": 4.227500391187222,
+          "capture_to_visible_ms": 339.7012034469585,
+          "capture_to_button_pixels_ms": 339.7012034469585
+        },
+        {
+          "load": "idle",
+          "object": 6,
+          "edge": "release",
+          "submitted": 25940633,
+          "consumed": 25950488,
+          "committed": 25954969,
+          "application": 25963032,
+          "button_feedback": {
+            "clock": 26225112,
+            "sha256": "547156480029af155c1c19c3cc771ad5a5ac99e5c839fc88019f8f543964edbb",
+            "scans": 9,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 26509594,
+          "capture": 4320910286.375,
+          "capture_to_commit_ms": 7.826845734085729,
+          "capture_to_button_consumed_ms": 4.2277118437393835,
+          "capture_to_visible_ms": 319.4927535210374,
+          "capture_to_button_pixels_ms": 159.08090033677345,
+          "capture_to_application_ms": 11.300940681920384
+        },
+        {
+          "load": "idle",
+          "object": 4,
+          "edge": "press",
+          "submitted": 26758681,
+          "consumed": 26768537,
+          "committed": 26775256,
+          "button_feedback": {
+            "clock": 27007322,
+            "sha256": "59407c0ec0491d3fbf3ff6ea1b843eb478de89b4f5e2fe23124891a5f8a738cd",
+            "scans": 8,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 27007322,
+          "capture": 4321728334.875,
+          "capture_to_commit_ms": 8.184975873263799,
+          "capture_to_button_consumed_ms": 4.227993780475599,
+          "capture_to_visible_ms": 138.87252089503636,
+          "capture_to_button_pixels_ms": 138.87252089503636
+        },
+        {
+          "load": "idle",
+          "object": 4,
+          "edge": "release",
+          "submitted": 27078553,
+          "consumed": 27084824,
+          "committed": 27193241,
+          "application": 27203544,
+          "button_feedback": {
+            "clock": 27203544,
+            "sha256": "59407c0ec0491d3fbf3ff6ea1b843eb478de89b4f5e2fe23124891a5f8a738cd",
+            "scans": 1,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 27718745,
+          "capture": 4322048205.25,
+          "capture_to_commit_ms": 65.69147099082437,
+          "capture_to_button_consumed_ms": 2.207423676201297,
+          "capture_to_visible_ms": 359.65865919346356,
+          "capture_to_button_pixels_ms": 69.15048232327148,
+          "capture_to_application_ms": 69.15048232327148
+        },
+        {
+          "load": "idle",
+          "object": 7,
+          "edge": "press",
+          "submitted": 28288152,
+          "consumed": 28298009,
+          "committed": 28303833,
+          "button_feedback": {
+            "clock": 28892504,
+            "sha256": "58b60a2fb76e0d6e98505b576698419468a020d287b8ca90d38e73ef38000a73",
+            "scans": 18,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 28892504,
+          "capture": 4323257805.875,
+          "capture_to_commit_ms": 7.455182631569302,
+          "capture_to_button_consumed_ms": 4.22855765394803,
+          "capture_to_visible_ms": 339.44851764712513,
+          "capture_to_button_pixels_ms": 339.44851764712513
+        },
+        {
+          "load": "idle",
+          "object": 7,
+          "edge": "release",
+          "submitted": 28963736,
+          "consumed": 28973594,
+          "committed": 28977624,
+          "application": 28985690,
+          "button_feedback": {
+            "clock": 29212825,
+            "sha256": "1c0ce1d07eba127e80fbba9bf53617baf8d9363a7b39d43fa9560b2f53cb9a52",
+            "scans": 8,
+            "invalid_frames": 0,
+            "max_invalid_pixels": 0
+          },
+          "visible": 29461912,
+          "capture": 4323933390.25,
+          "capture_to_commit_ms": 7.566970547478851,
+          "capture_to_button_consumed_ms": 4.228910074868301,
+          "capture_to_visible_ms": 279.5784763856838,
+          "capture_to_button_pixels_ms": 139.12492475813352,
+          "capture_to_application_ms": 11.049523597399979
+        }
+      ],
+      "functional": [
+        {
+          "name": "second context toggled",
+          "contexts": [
+            153304,
+            146104
+          ]
+        },
+        {
+          "name": "toggle",
+          "result": {
+            "samples": [
+              {
+                "load": null,
+                "object": 2,
+                "edge": "press",
+                "submitted": 16016984,
+                "consumed": 16026841,
+                "committed": 16051930,
+                "button_feedback": {
+                  "clock": 16479321,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 14,
+                  "invalid_frames": 0,
+                  "max_invalid_pixels": 0
+                },
+                "visible": 16479321,
+                "capture": 4310986638.25,
+                "capture_to_commit_ms": 18.435561244412366,
+                "capture_to_button_consumed_ms": 4.228346201395869,
+                "capture_to_visible_ms": 259.3698150072105,
+                "capture_to_button_pixels_ms": 259.3698150072105
+              },
+              {
+                "load": null,
+                "object": 2,
+                "edge": "release",
+                "submitted": 16550553,
+                "consumed": 16594457,
+                "committed": 17137433,
+                "application": 17145497,
+                "button_feedback": {
+                  "clock": 17145497,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 1,
+                  "invalid_frames": 0,
+                  "max_invalid_pixels": 0
+                },
+                "visible": 18115417,
+                "capture": 4311520207.75,
+                "capture_to_commit_ms": 330.70446122594547,
+                "capture_to_button_consumed_ms": 23.42626438053565,
+                "capture_to_visible_ms": 881.055261009982,
+                "capture_to_button_pixels_ms": 334.14310262920105,
+                "capture_to_application_ms": 334.14310262920105
+              }
+            ],
+            "scene": {
+              "clock": 18151256,
+              "sha256": "6e5d8507035cc6cba625fd37a2e82bc7c8dbcb4bac75ac79c62e90f9e1ec723c",
+              "scans": 2,
+              "invalid_frames": 0,
+              "max_invalid_pixels": 0
+            },
+            "epoch": 2,
+            "state": {
+              "toggle": 1,
+              "radio": 4,
+              "focus": 2,
+              "status": "Toggle on [2]"
+            }
+          }
+        },
+        {
+          "name": "disabled and raw key ignored"
+        },
+        {
+          "name": "Tab, Shift-Tab, Space, Return, Escape and BREAK"
+        }
+      ],
+      "comparison": [
+        {
+          "full_redraw": false,
+          "begin": 31453725,
+          "end": 32413785,
+          "result": {
+            "samples": [
+              {
+                "load": null,
+                "object": 2,
+                "edge": "press",
+                "submitted": 31524504,
+                "consumed": 31534361,
+                "committed": 31541529,
+                "button_feedback": {
+                  "clock": 31808985,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 9,
+                  "invalid_frames": 0,
+                  "max_invalid_pixels": 0
+                },
+                "visible": 31808985,
+                "capture": 4326494159.125,
+                "capture_to_commit_ms": 8.35117757926299,
+                "capture_to_button_consumed_ms": 4.227852812107491,
+                "capture_to_visible_ms": 159.08104130514153,
+                "capture_to_button_pixels_ms": 159.08104130514153
+              },
+              {
+                "load": null,
+                "object": 2,
+                "edge": "release",
+                "submitted": 31880216,
+                "consumed": 31890072,
+                "committed": 31895896,
+                "application": 31904409,
+                "button_feedback": {
+                  "clock": 31904409,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 1,
+                  "invalid_frames": 0,
+                  "max_invalid_pixels": 0
+                },
+                "visible": 32378393,
+                "capture": 4326849870.25,
+                "capture_to_commit_ms": 8.83385327166437,
+                "capture_to_button_consumed_ms": 4.227782327923437,
+                "capture_to_visible_ms": 279.5790402591563,
+                "capture_to_button_pixels_ms": 12.312036302174155,
+                "capture_to_application_ms": 12.312036302174155
+              }
+            ],
+            "scene": {
+              "clock": 32413785,
+              "sha256": "6e5d8507035cc6cba625fd37a2e82bc7c8dbcb4bac75ac79c62e90f9e1ec723c",
+              "scans": 2,
+              "invalid_frames": 0,
+              "max_invalid_pixels": 0
+            },
+            "epoch": 2,
+            "state": {
+              "toggle": 1,
+              "radio": 4,
+              "focus": 2,
+              "status": "Toggle on [2]"
+            }
+          },
+          "status_damage_pixels": 1280,
+          "work": {
+            "GemWidgetFill": 35,
+            "GemWidgetText": 5,
+            "start": 21,
+            "VbxeOwnerSubmit": 21,
+            "vram_win": 0
+          },
+          "paint_cpu_ms": 132.47664506561372,
+          "paint_quanta": 5
+        },
+        {
+          "full_redraw": true,
+          "begin": 33303069,
+          "end": 35051610,
+          "result": {
+            "samples": [
+              {
+                "load": null,
+                "object": 2,
+                "edge": "press",
+                "submitted": 33374296,
+                "consumed": 33384152,
+                "committed": 33391322,
+                "button_feedback": {
+                  "clock": 33658777,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 9,
+                  "invalid_frames": 0,
+                  "max_invalid_pixels": 0
+                },
+                "visible": 33658777,
+                "capture": 4328343950.25,
+                "capture_to_commit_ms": 8.350261284870289,
+                "capture_to_button_consumed_ms": 4.227782327923437,
+                "capture_to_visible_ms": 159.08153469442993,
+                "capture_to_button_pixels_ms": 159.08153469442993
+              },
+              {
+                "load": null,
+                "object": 2,
+                "edge": "release",
+                "submitted": 33730009,
+                "consumed": 33739865,
+                "committed": 33745688,
+                "application": 33754201,
+                "button_feedback": {
+                  "clock": 33754201,
+                  "sha256": "4e0cee253efce680a21765b628771acce9dce25e516d9c641a8f88f2ed6216f9",
+                  "scans": 1,
+                  "invalid_frames": 0,
+                  "max_invalid_pixels": 0
+                },
+                "visible": 34227737,
+                "capture": 4328699662.875,
+                "capture_to_commit_ms": 8.834276176768695,
+                "capture_to_button_consumed_ms": 4.227993780475599,
+                "capture_to_visible_ms": 279.3260725225867,
+                "capture_to_button_pixels_ms": 12.311683881253886,
+                "capture_to_application_ms": 12.311683881253886
+              }
+            ],
+            "scene": {
+              "clock": 35051610,
+              "sha256": "6e5d8507035cc6cba625fd37a2e82bc7c8dbcb4bac75ac79c62e90f9e1ec723c",
+              "scans": 1,
+              "invalid_frames": 0,
+              "max_invalid_pixels": 0
+            },
+            "epoch": 3,
+            "state": {
+              "toggle": 1,
+              "radio": 4,
+              "focus": 2,
+              "status": "Toggle on [2]"
+            }
+          },
+          "status_damage_pixels": 21120,
+          "work": {
+            "GemWidgetFill": 151,
+            "GemWidgetText": 17,
+            "start": 34,
+            "VbxeOwnerSubmit": 34,
+            "vram_win": 0
+          },
+          "paint_cpu_ms": 471.2413956432316,
+          "paint_quanta": 12
+        }
+      ],
+      "work": {
+        "idle": {
+          "paint_quanta": 35,
+          "paint_cpu_ms": 1233.705325362042,
+          "max_quantum_cpu_ms": 63.88665297393918,
+          "primitive_entries": {
+            "GemWidgetFill": 401,
+            "GemWidgetText": 54,
+            "start": 189,
+            "VbxeOwnerSubmit": 189,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47129,
+          "damage_scope": "Independent union of previous/new focus, press/release, changed radio siblings and 160x8 status; does not count Layers exposure or physical overdraw."
+        }
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 374,
+          "remaining_above_floor": 906
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 156,
+          "remaining_above_floor": 612
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 705,
+          "remaining_above_floor": 1599
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 63,
+          "remaining_above_floor": 193
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "ownership": "restored",
+      "reserved_bank_zero_delta": {
+        "baseline": "desktop-dt0",
+        "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "runtime": 0,
+        "loading": 0
+      },
+      "trace_sha256": "be4b925b5901c4ac77469303d1e31f8bb9c712c180e476508c5821d30d8b4b04",
+      "label_observation_scope": "With feedback enabled, the label check follows the button check and may overestimate first label visibility; compare button_feedback clocks for button latency.",
+      "evidence": {
+        "path": "build/widget-feedback/final-results/results.json",
+        "sha256": "acd85c822645e69112e197bb2ec2e50d0ecdfcfd81804f2d9526ad8b31af7e73"
+      },
+      "build": {
+        "path": "build/widget-feedback/final/program/build.json",
+        "sha256": "220b86d5df6e2bda6007159a5f808616a5b7789f67f5c162b196661094ec460f"
+      },
+      "xex_sha256": "075140b7b5a3c4ab234a881e6fa96267637469e1666ed61cd4f51ae67c3513d1",
+      "exec_build": {
+        "revision": "83a0b2e2bae3ef095a09eb83015c942f0dd8ece6",
+        "dirty": true,
+        "display": "83a0b2e-dirty",
+        "actionc_pin": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "task_capacity": 8,
+        "stack_checks": true,
+        "mount": null,
+        "strings": {
+          "banner": "Exec816 (83a0b2e-dirty)\n\n",
+          "slots": "exec: 8 task slots\n",
+          "stackChecks": "exec: stack checks enabled\n",
+          "version": "Exec816 (83a0b2e-dirty)\nactionc pin: f1ff4ce\n",
+          "sioReady": "",
+          "mountStart": "SYS: no system volume configured\n",
+          "mountFailure": "Filesystem startup failed; check configured disks\nRequired: D1: on D1:\nUse CD SYS: to retry; cold-boot after SIO timeout"
+        }
+      },
+      "c_image": {
+        "manifest": {
+          "path": "build/widget-feedback/final/c-image.json",
+          "sha256": "4106afe63b64e25704b53063602d43856e9352b56fcaf16a2037c691ea124ace"
+        },
+        "elf_sha256": "e3aae7c9c95b348af3bfc2e8176ddf37dfc03572954000d7686d04f056fce2b2",
+        "source_inputs": {
+          "c/calypsi/exec.c": "ada5b767f7df3bd616291a4a1c57d23622d39fea50067ecfc07997e16602daf4",
+          "c/calypsi/display.c": "8cb54662e89ec757784efbc3a071cdb4c069f71efe5ebdf4561190dd02b467d2",
+          "platform/altirraos/vbxe.c": "c590f4b2c382e036fb2ae1820b3e7311713201784c40ef6ab1c3d2cf9733a4ee",
+          "build/widget-feedback/final/selected/src/vdi/vdi.c": "200efd32d94ef44580b0184dbb90cafad3f953d26deb770277d6034b5459a3b7",
+          "build/widget-feedback/final/selected/src/vdi/font.c": "773e690778d68b02e5f3b8f295298bf061e483854653de289ba59f1a0154855b",
+          "build/widget-feedback/final/selected/src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+          "build/widget-feedback/final/selected/src/vdi/dev_vbxe.c": "fcda57e8dc5e34ad600b31379e49ca399e6cce96fa6f6a874560628f7af9e9c0",
+          "ports/gem4xe/adapter/gem-vbxe.c": "c02d701def9a6abb026e39e8056f948626c126610500dbc1afee2571e746161a",
+          "lib/console/console-bitmap.c": "ed4e4644864899b857e4fb87fa680b12e91e76fd4932e145017d5611e919e43c",
+          "ports/gem4xe/aes/widgets-model.c": "5728f0da516dcde71fd6d948f009fd18ecf69d0bb75d6223ecce754090b90627",
+          "ports/gem4xe/aes/widgets-graf.c": "b64f21702e40e9c42352ed55cdd2c5faff45f51ab3d5c1d3a9ef08858f3e089f",
+          "ports/gem4xe/aes/widgets-render.c": "18b89a36af87b306cf6e7f598eaf6644cc423e3b90f5f40bd88d43d003b0baa0",
+          "build/widget-feedback/final/aes-selected/aes-objects.c": "d1fec69785c852905fcdb1a93274e0fa06ff52637e7080d5e95662b06a550900",
+          "build/widget-feedback/final/aes-selected/aes-graf.c": "31c05d1c959bcbf5cbf7a9bbc372b89eff22436a1ed3b2f03825a051906ec1d3",
+          "build/widget-feedback/final/aes-selected/aes-form.c": "51ab6497ce1435b2681eacc16fed4faac50a26137a790e9301825b28e4532171",
+          "ports/gem4xe/aes/widgets-state.c": "c593c0acfce03916b4322c86316d772e8ef26450c9ac4d330e401b2754bba3b9",
+          "ports/gem4xe/aes/widgets-input.c": "12fbd15434ae96d2a1287b052a2d9d0bce17003285e759aef3656a6aba3d3375",
+          "ports/gem4xe/aes/widgets-entry.c": "e703182c0e4cedb59efb8139cc38ba135a79e6044df5e45d3a49c531e8324d38",
+          "c/calypsi/gateway.s": "5942de33306e8a4244ba6af012ff73885ad47d7a8b797d34fb0501c98440b3a1",
+          "c/calypsi/display.s": "40349300a774d10a61edb623e47e41df02fbe2d41d2aebdfc93a9d91ed07f099",
+          "c/calypsi/image-info.s": "ee2b75322d39901c11780cf7d6928a84243823439cdb4435053fb5b8daea13d5",
+          "platform/altirraos/vbxe-map.s": "b318746adc6b9c5a0624997174c86a0eace226488eeedb84d651d18ef61b3aef",
+          "abi/console-bitmap.json": "ce722ee58ee065cb8311c895962d18db046ab1f67001b528b1258337e525bfc5",
+          "c/include/hardware/console-bitmap.h": "2422a139655a68e45ac79e03e04fff67441d1c4bf636c9e9dff72f50bcaa0774"
+        },
+        "segments": [
+          {
+            "address": 786432,
+            "bytes": 57832
+          },
+          {
+            "address": 851968,
+            "bytes": 3351
+          }
+        ],
+        "zero_fill": [
+          {
+            "address": 855320,
+            "size": 12161,
+            "writable": true
+          }
+        ]
+      }
+    }
+  },
+  "comparison_scope": "Five paced idle actions (Toggle, Large, Apply, Small, Cancel), ten physical ST edges per image, same final button hashes. Completed scanouts, one-frame observation quantization. Release label checks follow button checks and can overestimate first label visibility. Not the 100-action loaded AW5 matrix.",
+  "pixel_checks": {
+    "evidence": {
+      "path": "build/widget-feedback/final-pixels/pixel-results.json",
+      "sha256": "a2f8cab05d44c2734629dbab6ee8daeed6530c716308bf09492804b85228e544"
+    },
+    "status": "pass",
+    "mode": "opt",
+    "observations": [
+      {
+        "stage": 1,
+        "pixels": "dc5e5fcddd0587fbca7f5beef6cd21366dc6469d6e0e161375fc8ebd96b8d40e"
+      },
+      {
+        "stage": 2,
+        "pixels": "c32511a84a16c714bf6f8cf19e7271275548898fa75d61e9be94f1a304907ee8"
+      },
+      {
+        "stage": 3,
+        "pixels": "dc5e5fcddd0587fbca7f5beef6cd21366dc6469d6e0e161375fc8ebd96b8d40e"
+      },
+      {
+        "stage": 4,
+        "pixels": "c8e28b5c746c1a0bd3630644068e1434d337d7297a6ba694002d3f8b103c1de2"
+      },
+      {
+        "stage": 5,
+        "pixels": "d450cb65b7def3ddf619a76547921bbee312bcb9a61ee07f171f1738a696c028"
+      },
+      {
+        "stage": 6,
+        "pixels": "d450cb65b7def3ddf619a76547921bbee312bcb9a61ee07f171f1738a696c028"
+      },
+      {
+        "stage": 7,
+        "pixels": "797f68a75fc07ea9f9acacfdca7e82296eca76ffbfb6c0796fce4ed60463af27"
+      },
+      {
+        "stage": 8,
+        "pixels": "d450cb65b7def3ddf619a76547921bbee312bcb9a61ee07f171f1738a696c028"
+      },
+      {
+        "stage": 9,
+        "pixels": "cc820bd472fa565ee2e3f243ecb4fc37376464cadb80c78babb1347b9342c224"
+      },
+      {
+        "stage": 10,
+        "pixels": "09d5cce2e0486bc3d792f7d0862a55469fc39a57078f01d1477c14cb70725be5"
+      },
+      {
+        "stage": 11,
+        "pixels": "1f67a747a5eb6e7c6dad3a5af780bfb946b8a609cc886c16ba39248d53fdc9cc"
+      },
+      {
+        "stage": 12,
+        "pixels": "c2a1cb4742f5c5c16e6eba2264ad9d8b8f886c3a5b57ea2e277d9be65a2ede4c"
+      }
+    ],
+    "stack_usage": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 127,
+        "remaining_above_floor": 1153
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 680,
+        "remaining_above_floor": 1624
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 24,
+        "remaining_above_floor": 232
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 260,
+        "remaining_above_floor": 1020
+      }
+    },
+    "bank_zero_delta": {
+      "baseline": "desktop-dt0",
+      "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "runtime": 0,
+      "loading": 0
+    },
+    "build_sha256": "a337a6661aaaf43a3c510f06e454ede31debac547d39c2e9077616892c30ce45",
+    "xex_sha256": "a18df4aca164e5285c66fa0c72c013192b4e48db3616b45df9a34f0ec462f28c"
+  },
+  "presentation_checks": {
+    "evidence": {
+      "path": "build/widget-feedback/strip-presentation/presentation-results.json",
+      "sha256": "0436b94590e326d2d2f4c12e8f61b9b1f4c21eb4b0dd647327480baf28c50302"
+    },
+    "status": "pass",
+    "scenes": 10,
+    "checks": 57,
+    "scope": "Aligned cache capture/restore, hidden updates, overlap, focus and close on the buffered renderer before removal of the redundant pre-publication flush; final emitted pixels and packaged walkthrough exercise the final ordered-list publication."
+  },
+  "packaged_demo": {
+    "evidence": {
+      "path": "build/widget-feedback/final-demo/demo-results.json",
+      "sha256": "d01aa4f410143fba44120556a9e874c556dff0294f6d312b2be4ead05cefb23e"
+    },
+    "status": "pass",
+    "tier": "development",
+    "bundle_manifest_sha256": "9a2c7973bca37bb4de1162a84cb22811e37ddadc6bb25c36698cda89a84c9e09",
+    "xex_sha256": "cef82236a09e75cd353d4b4bd8852934099c196d519e5ba328e5dc284ef3a16d",
+    "media_sha256": "b6a88f69b76e7e06af39ce8f772ebff29b1bc5bd3656e28e1e86404cfa0fd4da",
+    "screenshot_sha256": "d66ad030e75c0327ad2d84ac70fcf316b39faa87dcbbbc9e7ba14f59ac49303b",
+    "runner_sha256": "1293638c7d284b4a3a637104a0231d7db601cd3484ba06896e282e4ec5d8b1fa",
+    "runtime": {
+      "status": 0,
+      "native_nmi_count": 6398,
+      "native_irq_count": 65492,
+      "os_busy": 0,
+      "return_s": 14446,
+      "return_d": 3328,
+      "return_p": 0,
+      "fault_required": 0,
+      "fault_s": 0,
+      "clock_start": 222,
+      "clock_end": 220,
+      "return_dbr": 0,
+      "return_e": 0,
+      "current": 8,
+      "switching": 0,
+      "switches": 6065,
+      "gateway_calls": 11698,
+      "os_calls": 0,
+      "forwarded_cops": 0,
+      "os_owner": 255,
+      "tick_pending": 0,
+      "vbi_count": 6398,
+      "vbi_dispatches": 1399,
+      "irq_depth": 0,
+      "tasks": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "task_records": [
+        [
+          0,
+          0,
+          0,
+          0,
+          14,
+          42,
+          1,
+          42,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          11,
+          16,
+          37,
+          14,
+          42,
+          163,
+          250,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          78,
+          52,
+          21,
+          52,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          12,
+          80,
+          49,
+          78,
+          52,
+          82,
+          124,
+          15,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          110,
+          56,
+          97,
+          56,
+          0,
+          2,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          13,
+          112,
+          53,
+          110,
+          56,
+          30,
+          118,
+          22,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          142,
+          60,
+          129,
+          60,
+          0,
+          3,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          14,
+          144,
+          57,
+          142,
+          60,
+          250,
+          248,
+          18,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          174,
+          64,
+          143,
+          64,
+          0,
+          4,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          15,
+          176,
+          61,
+          174,
+          64,
+          150,
+          180,
+          23,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          12,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          206,
+          68,
+          175,
+          68,
+          0,
+          5,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          16,
+          208,
+          65,
+          206,
+          68,
+          150,
+          180,
+          23,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          238,
+          78,
+          151,
+          78,
+          0,
+          6,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          17,
+          240,
+          69,
+          238,
+          78,
+          122,
+          141,
+          18,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          14,
+          89,
+          253,
+          88,
+          0,
+          7,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          18,
+          16,
+          80,
+          14,
+          89,
+          163,
+          250,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          46,
+          91,
+          29,
+          91,
+          3,
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          19,
+          48,
+          90,
+          46,
+          91,
+          163,
+          250,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "ready_queue": [
+        67,
+        2,
+        63,
+        0,
+        0,
+        0,
+        64,
+        2,
+        63
+      ],
+      "live_tasks": 0,
+      "idle_runs": 21256,
+      "created": 18,
+      "signal_nmi_checkpoints": 0,
+      "wake_queue": [
+        76,
+        2,
+        63,
+        0,
+        0,
+        0,
+        73,
+        2,
+        63
+      ],
+      "root_task": [
+        67,
+        2,
+        63,
+        64,
+        2,
+        63,
+        1,
+        0,
+        235,
+        24,
+        1,
+        0,
+        6,
+        255,
+        255,
+        0,
+        255,
+        255,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        42,
+        0,
+        0,
+        16,
+        36,
+        0,
+        0,
+        16,
+        42,
+        0,
+        10,
+        3,
+        63,
+        0,
+        0,
+        0,
+        7,
+        3,
+        63,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 544,
+          "untouched_above_floor": 736
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 153,
+          "untouched_above_floor": 615
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 555,
+          "untouched_above_floor": 213
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 152,
+          "untouched_above_floor": 616
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 452,
+          "untouched_above_floor": 316
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 351,
+          "untouched_above_floor": 417
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 721,
+          "untouched_above_floor": 1583
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 63,
+          "untouched_above_floor": 193
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_from_base": 1249,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$81ec47c6698757bd",
+      "actual_kernel_id": "$81ec47c6698757bd",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "observations": [
+      {
+        "stage": "startup",
+        "guest_frame": 719
+      },
+      {
+        "stage": "Toggle on [2]",
+        "guest_frame": 806
+      },
+      {
+        "stage": "Large [5]",
+        "guest_frame": 852
+      },
+      {
+        "stage": "Applied [6]",
+        "guest_frame": 898
+      },
+      {
+        "stage": "Cancelled [7]",
+        "guest_frame": 937
+      },
+      {
+        "stage": "panel-default-key",
+        "guest_frame": 967
+      },
+      {
+        "stage": "independent-app-drag",
+        "guest_frame": 994
+      },
+      {
+        "stage": "shell-focus-restored",
+        "guest_frame": 1099
+      },
+      {
+        "stage": "system-volume",
+        "guest_frame": 1101
+      },
+      {
+        "stage": "TASKS",
+        "guest_frame": 1199
+      },
+      {
+        "stage": "MOUNT",
+        "guest_frame": 1269
+      },
+      {
+        "stage": "CD SYS:WORK",
+        "guest_frame": 1398
+      },
+      {
+        "stage": "CD",
+        "guest_frame": 1451
+      },
+      {
+        "stage": "HELLO",
+        "guest_frame": 1579
+      },
+      {
+        "stage": "PATH",
+        "guest_frame": 1654
+      },
+      {
+        "stage": "HEAD SYS:STORY.TXT LINES 3",
+        "guest_frame": 2136
+      },
+      {
+        "stage": "HEAD MISSING",
+        "guest_frame": 2274
+      },
+      {
+        "stage": "HEAD ?",
+        "guest_frame": 2394
+      },
+      {
+        "stage": "TYPE D1:STORY.TXT",
+        "guest_frame": 2823
+      },
+      {
+        "stage": "TYPE SYS:STORY.TXT",
+        "guest_frame": 3360
+      },
+      {
+        "stage": "desktop-pipeline",
+        "guest_frame": 3884
+      },
+      {
+        "stage": "desktop-scroll-break",
+        "guest_frame": 4091
+      },
+      {
+        "stage": "CD SYS:",
+        "guest_frame": 4140
+      },
+      {
+        "stage": "CD",
+        "guest_frame": 4194
+      },
+      {
+        "stage": "HELLO",
+        "guest_frame": 4282
+      },
+      {
+        "stage": "ECHO saved >WORK:OUT.TXT",
+        "guest_frame": 4675
+      },
+      {
+        "stage": "CAT WORK:OUT.TXT",
+        "guest_frame": 4815
+      },
+      {
+        "stage": "CAT SYS:STORY.TXT >WORK:COPY.TXT",
+        "guest_frame": 5767
+      },
+      {
+        "stage": "CMP SYS:STORY.TXT WORK:COPY.TXT",
+        "guest_frame": 6286
+      },
+      {
+        "stage": "HELLO | WC >WORK:PIPE.TXT",
+        "guest_frame": 6694
+      },
+      {
+        "stage": "CAT WORK:PIPE.TXT",
+        "guest_frame": 6838
+      },
+      {
+        "stage": "boot-smoke",
+        "guest_frame": 6843
+      }
+    ],
+    "screenshots": [],
+    "boot_xex_sha256": "3ec0130612f98d3137e17ba7af55ddab1e85b326c7eac9aef7cf32300421996d",
+    "autoboot_frames": 249,
+    "distribution_root": "build/widget-feedback/extracted/exec816-demo/desktop",
+    "filesystem_writes": true,
+    "work_media": [
+      {
+        "name": "work-walkthrough.atr",
+        "sha256": "8f6b9f5ff66c7549458769b512e7a10dc2aed7b9638ae3bfae0c6ac3d45077af",
+        "allocation": {
+          "sectors": 720,
+          "sector_bytes": 128,
+          "allocated": 19,
+          "free": 701,
+          "files": 4,
+          "directories": 1
+        }
+      }
+    ],
+    "measurements": null,
+    "desktop_interaction": {
+      "app_updates": 5,
+      "drag_bounds": [
+        440,
+        88,
+        632,
+        232
+      ],
+      "pointer": [
+        100,
+        100
+      ]
+    },
+    "desktop_scroll_break_cycles": 1018750,
+    "desktop_scroll_break_checkpoint": {
+      "parent_scope": 148784,
+      "foreground_scope": 231280,
+      "write": 231456,
+      "dirty_rows": 3
+    },
+    "cache": {
+      "requested": 512,
+      "blocks": 512,
+      "captured": 512
+    },
+    "cache_commands": null,
+    "startup_memory": null,
+    "baseline_memory": null,
+    "baseline_ownership": null,
+    "peak_tasks": 7,
+    "disk_failure": null,
+    "initial_media_sha256": "b6a88f69b76e7e06af39ce8f772ebff29b1bc5bd3656e28e1e86404cfa0fd4da",
+    "reset_required": false,
+    "system_drive": 1,
+    "sys_cache": {
+      "physical": {
+        "hits": 103,
+        "misses": 57
+      },
+      "system": {
+        "hits": 114,
+        "misses": 57
+      }
+    },
+    "retired_manifest_intact": false,
+    "aperture_intact": false,
+    "scope": "Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT",
+    "bank_zero_delta": {
+      "baseline": "bank-zero-compaction",
+      "baseline_sha256": "a223abfb037c96e7760f38b6c2a8b60365f1cd4e032fda5ce756b609ed1adfa7",
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1536,
+        1536
+      ],
+      "idle": 0,
+      "runtime": 3072,
+      "loading": 0
+    }
+  },
+  "walkthrough_retry": {
+    "initial_failure": {
+      "path": "build/widget-feedback-final-demo-test.log",
+      "sha256": "b6f1c55b78965510c7be7645efced5602b41533ece636e0d40749f269c419f45"
+    },
+    "observation": "BREAK followed a dirty-row-count-only checkpoint and the prompt wait timed out. That checkpoint could also select command echo before CAT started.",
+    "correction": "Require the child foreground scope and an active console write together with multiple dirty rows before sending physical BREAK; record that checkpoint. Target image and media are unchanged."
+  },
+  "host_tests": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "run": 361,
+    "passed": 357,
+    "skipped": 4,
+    "evidence": {
+      "path": "build/widget-feedback-final-host.log",
+      "sha256": "bfc5d2d14a00f041f38f8d9d36da62bda21c15a6f3183ff68d432d864aee4bf1"
+    }
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "baseline": "desktop-dt0",
+      "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "runtime": 0,
+      "loading": 0
+    },
+    "accounting": "Fixed/root/kernel, each public Task, private idle, guards, alignment and unused reserved capacity included.",
+    "upper_c_data_used_delta": 16,
+    "upper_reservation_delta": 0,
+    "vram_reservation_delta": 0,
+    "widget_strip": {
+      "base": 76800,
+      "bytes": 5120,
+      "source": "Former screen reservation padding"
+    },
+    "vram": {
+      "bytes": 524288,
+      "cpu_aperture": {
+        "base": 32768,
+        "bytes": 4096
+      },
+      "regions": [
+        {
+          "name": "screen",
+          "base": 0,
+          "reserved_bytes": 76800,
+          "capacity_bytes": 76800,
+          "g3_used_bytes": 76800,
+          "g4_used_bytes": 76800
+        },
+        {
+          "name": "widget_strip",
+          "base": 76800,
+          "reserved_bytes": 5120,
+          "capacity_bytes": 5120,
+          "g3_used_bytes": 0,
+          "g4_used_bytes": 0,
+          "widget_used_bytes": 5120
+        },
+        {
+          "name": "xdl",
+          "base": 196608,
+          "reserved_bytes": 256,
+          "capacity_bytes": 12,
+          "g3_used_bytes": 12,
+          "g4_used_bytes": 12
+        },
+        {
+          "name": "bcb",
+          "base": 229376,
+          "reserved_bytes": 4096,
+          "capacity_bytes": 4095,
+          "g3_used_bytes": 21,
+          "g4_used_bytes": 1344
+        },
+        {
+          "name": "font_masks",
+          "base": 200704,
+          "reserved_bytes": 20480,
+          "capacity_bytes": 18432,
+          "g3_used_bytes": 0,
+          "g4_used_bytes": 18432
+        },
+        {
+          "name": "glyph_scratch",
+          "base": 221184,
+          "reserved_bytes": 4096,
+          "capacity_bytes": 4096,
+          "g3_used_bytes": 0,
+          "g4_used_bytes": 4096
+        },
+        {
+          "name": "cursor",
+          "base": 225280,
+          "reserved_bytes": 1280,
+          "capacity_bytes": 1280,
+          "i5_used_bytes": 768,
+          "parts": {
+            "saved_background": {
+              "offset": 0,
+              "bytes": 256
+            },
+            "and_mask": {
+              "offset": 256,
+              "bytes": 256
+            },
+            "or_mask": {
+              "offset": 512,
+              "bytes": 256
+            },
+            "and_mask_odd": {
+              "offset": 768,
+              "bytes": 256
+            },
+            "or_mask_odd": {
+              "offset": 1024,
+              "bytes": 256
+            }
+          },
+          "g3_used_bytes": 0,
+          "g4_used_bytes": 0,
+          "dt3_used_bytes": 1280
+        },
+        {
+          "name": "snapshot_0",
+          "base": 327680,
+          "reserved_bytes": 65536,
+          "capacity_bytes": 65536,
+          "g3_used_bytes": 0,
+          "g4_used_bytes": 0
+        },
+        {
+          "name": "snapshot_1",
+          "base": 393216,
+          "reserved_bytes": 65536,
+          "capacity_bytes": 65536,
+          "g3_used_bytes": 0,
+          "g4_used_bytes": 0
+        }
+      ],
+      "reserved_bytes": 243200,
+      "unassigned_bytes": 281088,
+      "diagnostics": [
+        {
+          "name": "cross_page_transfer",
+          "base": 262128,
+          "bytes": 32
+        }
+      ],
+      "note": "Exclusive display ownership. B1 uses a 4096-byte command arena with at most 64 records and 8192 estimated bus accesses per submission. DT3 retains even and odd pointer masks in VRAM; cursor reservation grows by 256 bytes, with no new CPU aperture or bank-zero storage. DR5 reserves two compact client snapshot slots, including unused slot capacity; snapshots add no bank-zero storage. Widget repaint uses the former 5120-byte screen padding for a 640 by 16 offscreen strip; total reservation is unchanged."
+    }
+  },
+  "distribution": {
+    "archive": "build/widget-feedback/preview/exec816-demo.zip",
+    "sha256": "7024a53cda56b96ff5bd3e5f7adfe3fd33c39aa805314004dfc52e23abd4bca1",
+    "bytes": 527260,
+    "members": {
+      "ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "EXEC816-LICENSING.md": "7bfcc44c90a9a28d28e311b480694b74984d35b71291ad66c45eb140c17b4cbe",
+      "EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "Exec-of816.xex": "a7a3e8bf4e3fdac7ec1a124f7e042519eb4e3fe15de9056a77cd7a1511448dde",
+      "OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "README.txt": "ab97b5ded7bee6aebd3695b20abb378203312d8acda69ec0ac892b6011345244",
+      "altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "desktop/ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "desktop/EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "desktop/EXEC816-LICENSING.md": "7bfcc44c90a9a28d28e311b480694b74984d35b71291ad66c45eb140c17b4cbe",
+      "desktop/EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "desktop/Exec-of816.xex": "3ec0130612f98d3137e17ba7af55ddab1e85b326c7eac9aef7cf32300421996d",
+      "desktop/GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "desktop/GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "desktop/GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "desktop/GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "desktop/OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "desktop/README.txt": "7615b194b19385489f2718ca7c021f098e24f2422711059da061c2ed7fdc617e",
+      "desktop/altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "desktop/system.atr": "b6a88f69b76e7e06af39ce8f772ebff29b1bc5bd3656e28e1e86404cfa0fd4da",
+      "desktop/work.atr": "663ad1368b7917a6657714006e5876e5e26b7f56448f1d72b18b5d9a28f8f5a3",
+      "system.atr": "835bc2878e8099d40abb3cf2fa119e6581484e4d247616372a6951cda79b011d",
+      "work.atr": "663ad1368b7917a6657714006e5876e5e26b7f56448f1d72b18b5d9a28f8f5a3"
+    },
+    "default": "standard shell/prime, five-second OF816 autoboot",
+    "optional": "desktop/Exec-of816.xex with matching desktop media"
+  },
+  "limitations": [
+    "Remaining focus damage is one union rectangle and repaints the area between old and new controls.",
+    "Responsiveness targets remain open; this small idle sample is not loaded timing qualification.",
+    "Flicker observer begins after model/application observation and stops at the first exact button match, excluding the pointer footprint. It is not continuous scanout or whole-gesture proof.",
+    "Strip publication is bounded drawing, not a whole-window or whole-frame atomic swap. Physical hardware is not qualified."
+  ]
+}

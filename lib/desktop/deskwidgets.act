@@ -1,0 +1,288 @@
+; Retained AES contexts and ordinary-call binding, owned by the presenter.
+MODULE DESKWIDGETS
+USE EXEC
+USE A816MEMORY
+USE DESKEVENTS
+USE TASKMEMORY
+USE DESKTYPES
+USE DESKCACHE
+USE WIDGETTYPES
+USE CONSOLEBITMAP
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+USE HEAPCORE
+
+ADDRESS entry
+WIDGETTYPES.Packet POINTER packet
+
+PUBLIC BYTE FUNC Bind(LONGCARD code,data)
+
+  IF code<$c0000 OR code>$cffff OR data<$d0000
+      OR data>LONGCARD($e0000)-WIDGETTYPES.PACKET_SIZE OR (data & 1)<>0 THEN
+    RETURN(0)
+  FI
+
+  entry=ADDRESS(code)
+  packet=WIDGETTYPES.Packet POINTER(ADDRESS(data))
+
+RETURN(1)
+
+PUBLIC WIDGETTYPES.Packet POINTER FUNC GetPacket()
+
+RETURN(packet)
+
+PUBLIC PROC Run(CARD operation)
+
+  packet.operation=operation
+  packet.status=WIDGETTYPES.BAD_ARGUMENT
+  packet.changed=0
+  packet.damageCount=0
+  CONSOLEBITMAP.Call(entry)
+
+RETURN
+
+; Reject null, bank-wrapping and unsupported placement before following a
+; payload. Registered callers own stable readable/writable storage until reply.
+BYTE FUNC Placement(BYTE POINTER buffer CARD bytes)
+  LONGCARD value
+
+  value=LONGCARD(ADDRESS(buffer))
+  IF value<$10000 OR value>LONGCARD($1000000)-LONGCARD(bytes)
+      OR (value & $ffff)+LONGCARD(bytes)>$10000 THEN
+    RETURN(0)
+  FI
+
+RETURN(TASKMEMORY.Writable(ADDRESS(buffer),SIZE(bytes))<>0
+    OR ((EXEC.TypeOfMem(buffer) & EXEC.MEMF_PUBLIC)<>0
+    AND (EXEC.TypeOfMem(buffer+SIZE(bytes-1)) & EXEC.MEMF_PUBLIC)<>0))
+
+PUBLIC PROC Damage(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+  LAYERTYPES.Rect bounds
+  CARD index
+
+  IF packet.damageCount=0 THEN
+    RETURN
+  FI
+
+  IF packet.damageCount>WIDGETTYPES.DAMAGE_RECTS THEN
+    HEAPCORE.Abort($fab0)
+  FI
+
+  DESKCACHE.Changed(service,window)
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  FOR index=0 TO packet.damageCount-1 DO
+    BEGIN
+      LET rect=@packet.damage(index)
+      REGIONS.Assign(@bounds,layer.bounds.left+8+rect.left,
+          layer.bounds.top+16+rect.top,layer.bounds.left+8+rect.right,
+          layer.bounds.top+16+rect.bottom)
+      IF LAYERS.Invalidate(@service.scene,window.layer,@bounds)<>LAYERTYPES.OK THEN
+        HEAPCORE.Abort($fab0)
+      FI
+    END
+  OD
+
+RETURN
+
+; Remove this window's queued input before retirement or a new model boundary.
+PUBLIC PROC Cancel(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+  BYTE count,index,source,target
+
+  IF window.widgets=NULL THEN
+    RETURN
+  FI
+
+  IF service.widgetCapture=window.id THEN
+    service.widgetCapture=0
+    service.widgetCaptureEpoch=0
+    service.widgetReleased=0
+  FI
+
+  count=0
+  index=0
+  WHILE index<service.widgetCount DO
+    source=(service.widgetHead+index) & 15
+    IF service.widgetQueue(source).window<>window.id THEN
+      target=(service.widgetHead+count) & 15
+      IF target<>source THEN
+        A816MEMORY.Move(BYTE POINTER(@service.widgetQueue(target)),
+            BYTE POINTER(@service.widgetQueue(source)),DESKTYPES.EVENT_SIZE)
+      FI
+
+      count==+1
+    FI
+
+    index==+1
+  OD
+
+  service.widgetCount=count
+  packet.context=LONGCARD(ADDRESS(window.widgets))
+  Run(WIDGETTYPES.OP_CANCEL)
+  Damage(service,window)
+
+RETURN
+
+PUBLIC PROC Input(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window DESKTYPES.Event POINTER event)
+  CARD operation
+
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  packet.context=LONGCARD(ADDRESS(window.widgets))
+  packet.x=event.x-layer.bounds.left-8
+  packet.y=event.y-layer.bounds.top-16
+  packet.code=event.code
+  packet.buttons=event.buttons
+  packet.qualifiers=event.qualifiers
+  packet.kind=event.kind
+  operation=WIDGETTYPES.OP_POINTER
+  IF event.kind=DESKTYPES.EVENT_KEY OR event.kind=DESKTYPES.EVENT_CANCEL THEN
+    operation=WIDGETTYPES.OP_KEY
+  FI
+
+  Run(operation)
+  Damage(service,window)
+  IF packet.status<>WIDGETTYPES.OK THEN
+    event.kind=DESKTYPES.EVENT_LOSS
+    DESKEVENTS.Post(service,window.client,event)
+  ELSEIF packet.kind<>0 THEN
+    event.kind=packet.kind
+    event.epoch=packet.epoch
+    event.revision=packet.revision
+    event.object=packet.object
+    event.state=packet.state
+    DESKEVENTS.Post(service,window.client,event)
+  ELSEIF packet.index=0 THEN
+    DESKEVENTS.Post(service,window.client,event)
+  FI
+
+RETURN
+
+; Admission prepares in shared C staging; only success mutates the live copy.
+PUBLIC CARD FUNC Request(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window DESKTYPES.Request POINTER request)
+  CARD operation,size,status
+  BYTE allocated
+
+  IF window.kind<>DESKTYPES.CONTENT_WIDGETS OR packet=NULL THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  CASE request.operation OF
+  WHEN DESKTYPES.SET_TREE THEN
+    operation=WIDGETTYPES.OP_SET
+    size=WIDGETTYPES.TREE_SIZE
+  WHEN DESKTYPES.UPDATE_WIDGETS THEN
+    operation=WIDGETTYPES.OP_UPDATE
+    size=WIDGETTYPES.UPDATE_SIZE
+  WHEN DESKTYPES.READ_WIDGET_STATE THEN
+    operation=WIDGETTYPES.OP_READ
+    size=WIDGETTYPES.SNAPSHOT_SIZE
+  ELSE
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  ESAC
+
+  IF request.bytes<>size OR Placement(request.payload,size)=0 THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  allocated=0
+  IF window.widgets=NULL THEN
+    IF operation<>WIDGETTYPES.OP_SET THEN
+      RETURN(DESKTYPES.BAD_ARGUMENT)
+    FI
+
+    window.widgets=EXEC.AllocMem(WIDGETTYPES.CONTEXT_BYTES,
+        EXEC.MEMF_PUBLIC OR EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+    IF window.widgets=NULL THEN
+      RETURN(DESKTYPES.NO_MEMORY)
+    FI
+
+    allocated=1
+  FI
+
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  packet.context=LONGCARD(ADDRESS(window.widgets))
+  packet.payload=LONGCARD(ADDRESS(request.payload))
+  packet.bytes=size
+  packet.width=CARD(layer.bounds.right-layer.bounds.left)-16
+  packet.height=CARD(layer.bounds.bottom-layer.bounds.top)-24
+  Run(operation)
+  status=packet.status
+  IF status=WIDGETTYPES.OK THEN
+    IF operation<>WIDGETTYPES.OP_READ THEN
+      ; Hidden accepted updates can change retained pixels without damage now.
+      IF packet.changed=0 THEN
+        DESKCACHE.Changed(service,window)
+      FI
+      window.widgetEpoch=packet.epoch
+      IF operation=WIDGETTYPES.OP_SET THEN
+        BEGIN
+          LET tree=WIDGETTYPES.Tree POINTER(request.payload)
+          window.content.background=tree.background
+        END
+      FI
+
+      Damage(service,window)
+      IF operation=WIDGETTYPES.OP_SET OR packet.changed<>0 THEN
+        Cancel(service,window)
+      FI
+    FI
+    RETURN(DESKTYPES.OK)
+  FI
+
+  IF allocated<>0 THEN
+    EXEC.FreeMem(window.widgets,WIDGETTYPES.CONTEXT_BYTES)
+    window.widgets=NULL
+  FI
+
+  CASE status OF
+  WHEN WIDGETTYPES.STALE THEN
+    RETURN(DESKTYPES.STALE)
+  WHEN WIDGETTYPES.EXHAUSTED THEN
+    RETURN(DESKTYPES.EXHAUSTED)
+  ELSE
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  ESAC
+
+RETURN(DESKTYPES.BAD_ARGUMENT)
+
+; Four objects at most; the current Layers token freezes the retained tree.
+PUBLIC BYTE FUNC Paint(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER client,clip
+    CARD POINTER index)
+
+  IF window.widgets=NULL THEN
+    RETURN(1)
+  FI
+
+  packet.context=LONGCARD(ADDRESS(window.widgets))
+  packet.originX=client.left
+  packet.originY=client.top
+  packet.left=clip.left
+  packet.top=clip.top
+  packet.right=clip.right
+  packet.bottom=clip.bottom
+  packet.index=index^
+  packet.qualifiers=service.focus=window.id
+  Run(WIDGETTYPES.OP_DRAW)
+  index^=packet.index
+  IF CONSOLEBITMAP.Drawn(packet.status)=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(IF packet.changed<>0 THEN 2 ELSE 1 FI)
+
+PUBLIC PROC Retire(DESKTYPES.Window POINTER window)
+
+  IF window.widgets<>NULL THEN
+    EXEC.FreeMem(window.widgets,WIDGETTYPES.CONTEXT_BYTES)
+    window.widgets=NULL
+    window.widgetEpoch=0
+  FI
+
+RETURN
+
+ENDMODULE

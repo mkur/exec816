@@ -1,0 +1,188 @@
+; Exercise retained repair through the real presenter, including overlapping
+; damage and frame/client clips that start in the middle of a glyph or byte.
+MODULE BACKGROUNDTEST
+USE EXEC
+USE EXECTASKS
+USE A816MEMORY
+USE HEAPCORE
+USE CONSOLEDRIVER
+USE CONSOLEBITMAP
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE DESKTOP
+USE DESKTYPES
+USE DESKBOOT
+USE DESKSTATE
+USE DESKCORE
+USE DESKPAINT
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+
+CARD checks,checkpoint,gate
+LONGCARD panel
+DESKTYPES.Request request
+DESKTYPES.Content content
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb80+(checks & 127))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Settled()
+
+  LET service=DESKSTATE.Get()
+  WHILE service.scene.busy<>0 OR DESKPAINT.Runnable()<>0
+      OR CONSOLEBITMAP.Pending()<>0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Pause(CARD value)
+  CARD ignored
+
+  Settled()
+  ignored=EXECTASKS.Sleep(2)
+  checkpoint=value
+  WHILE gate<value DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Send(BYTE operation LONGCARD id)
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  LET client=DESKBOOT.Binding()
+  request.operation=operation
+  request.window=id
+  Require(DESKTOP.Submit(client,@request)=DESKTYPES.OK)
+  reply=DESKTOP.Collect(client)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(client)
+  OD
+
+  Require(reply=@request AND request.status=DESKTYPES.OK)
+
+RETURN
+
+PROC Replace()
+
+  DESKTOP.Prepare(@request,DESKTYPES.REPLACE)
+  request.payload=BYTE POINTER(@content)
+  request.bytes=DESKTYPES.CONTENT_SIZE
+  Send(DESKTYPES.REPLACE,panel)
+
+RETURN
+
+; Two overlapping client rectangles remain separate nonrectangular damage;
+; the other clips cross partial title glyphs and the bottom/side frame edges.
+PROC Damage(BYTE full)
+  LAYERTYPES.Rect area
+
+  Settled()
+  LET service=DESKSTATE.Get()
+  LET window=DESKCORE.Find(service,panel)
+  LET layer=DESKCORE.Layer(service,window)
+  EXEC.Forbid()
+  Require(service.scene.busy=0)
+  IF full<>0 THEN
+    Require(LAYERS.Invalidate(@service.scene,layer.id,
+        @layer.bounds)=LAYERTYPES.OK)
+  ELSE
+    REGIONS.Assign(@area,40,46,70,56)
+    Require(LAYERS.Invalidate(@service.scene,layer.id,@area)=LAYERTYPES.OK)
+    REGIONS.Assign(@area,56,52,82,64)
+    Require(LAYERS.Invalidate(@service.scene,layer.id,@area)=LAYERTYPES.OK)
+    REGIONS.Assign(@area,32,99,44,108)
+    Require(LAYERS.Invalidate(@service.scene,layer.id,@area)=LAYERTYPES.OK)
+    REGIONS.Assign(@area,38,32,98,40)
+    Require(LAYERS.Invalidate(@service.scene,layer.id,@area)=LAYERTYPES.OK)
+    REGIONS.Assign(@area,176,97,190,107)
+    Require(LAYERS.Invalidate(@service.scene,layer.id,@area)=LAYERTYPES.OK)
+    Require(layer.damage.count=5)
+  FI
+
+  EXEC.Permit()
+  EXEC.Signal(service.owner,service.mask)
+
+RETURN
+
+PROC Main()
+
+  ; Hiding the console leaves the empty desktop as an independent starting scene.
+  Send(DESKTYPES.HIDE,DESKBOOT.WindowId())
+  Pause(1)
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_COMMANDS
+  request.payload=BYTE POINTER(c"Background")
+  request.bytes=10
+  REGIONS.Assign(@request.bounds,31,29,191,109)
+  Send(DESKTYPES.OPEN,0)
+  panel=request.window
+  content.background=3
+  Replace()
+  Send(DESKTYPES.SHOW,panel)
+  Pause(2)
+
+  ; Five commands require a continuation within each affected strip.
+  content.count=5
+  content.textBytes=10
+  A816MEMORY.Move(@content.text(0),BYTE POINTER(c"Long label"),10)
+  content.commands(0).kind=DESKTYPES.DRAW_FILL
+  content.commands(0).pen=5
+  REGIONS.Assign(@content.commands(0).bounds,3,3,45,15)
+  content.commands(1).kind=DESKTYPES.DRAW_TEXT
+  content.commands(1).pen=1
+  content.commands(1).count=10
+  REGIONS.Assign(@content.commands(1).bounds,3,19,83,27)
+  content.commands(2).kind=DESKTYPES.DRAW_FILL
+  content.commands(2).pen=6
+  REGIONS.Assign(@content.commands(2).bounds,90,3,134,7)
+  content.commands(3).kind=DESKTYPES.DRAW_FILL
+  content.commands(3).pen=7
+  REGIONS.Assign(@content.commands(3).bounds,101,11,133,17)
+  content.commands(4).kind=DESKTYPES.DRAW_FILL
+  content.commands(4).pen=9
+  REGIONS.Assign(@content.commands(4).bounds,110,31,139,49)
+  Replace()
+  Pause(3)
+
+  content.textBytes=2
+  A816MEMORY.Move(@content.text(0),BYTE POINTER(c"OK"),2)
+  content.commands(1).count=2
+  content.commands(1).bounds.right=19
+  Replace()
+  Pause(4)
+  Send(DESKTYPES.FOCUS,panel)
+  Pause(5)
+  Damage(0)
+  Pause(6)
+  Damage(1)
+  Pause(7)
+
+  ; A new short title and empty black client must erase the previous pixels.
+  Send(DESKTYPES.CLOSE,panel)
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_COMMANDS
+  request.payload=BYTE POINTER(c"X")
+  request.bytes=1
+  REGIONS.Assign(@request.bounds,31,29,191,109)
+  Send(DESKTYPES.OPEN,0)
+  panel=request.window
+  Send(DESKTYPES.SHOW,panel)
+  Pause(8)
+  Send(DESKTYPES.CLOSE,panel)
+  Pause(9)
+
+RETURN
+
+ENDMODULE

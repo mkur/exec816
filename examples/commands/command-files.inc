@@ -41,4 +41,3 @@ LONGINT FUNC CommandFinish(BYTE POINTER input BYTE owned LONGINT status)
   COMMAND.SetIoErr(cause)
 
 RETURN(status)
-

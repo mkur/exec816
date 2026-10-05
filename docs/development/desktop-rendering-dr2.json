@@ -1,0 +1,1193 @@
+{
+  "slice": "DR2",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "validation": {
+    "driver": {
+      "path": "build/desktop-rendering/dr2/driver/results.json",
+      "sha256": "9a3473a6ea93f35f56eadddef8e9850a44d5f7561e68130cac05018bb0781d30",
+      "checks": null,
+      "cases": [
+        {
+          "name": "async-copy",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 11987,
+          "copy_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 214,
+              "remaining_above_floor": 2090
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 272,
+              "remaining_above_floor": 1008
+            }
+          }
+        },
+        {
+          "name": "bitmap-copy",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 143,
+          "copy_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 214,
+              "remaining_above_floor": 2090
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 272,
+              "remaining_above_floor": 1008
+            }
+          }
+        },
+        {
+          "name": "copy-fault",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 157,
+          "copy_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 278,
+              "remaining_above_floor": 2026
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          }
+        },
+        {
+          "name": "async-scroll",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 0,
+          "copy_failures": 0,
+          "scroll_checks": 4138,
+          "scroll_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 270,
+              "remaining_above_floor": 2034
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 29,
+              "remaining_above_floor": 227
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 272,
+              "remaining_above_floor": 1008
+            }
+          }
+        },
+        {
+          "name": "async-timeout",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 0,
+          "copy_failures": 0,
+          "scroll_checks": 279,
+          "scroll_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 310,
+              "remaining_above_floor": 1994
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          }
+        },
+        {
+          "name": "async-lost-irq",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 0,
+          "copy_failures": 0,
+          "scroll_checks": 4140,
+          "scroll_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 270,
+              "remaining_above_floor": 2034
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 45,
+              "remaining_above_floor": 211
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 272,
+              "remaining_above_floor": 1008
+            }
+          }
+        }
+      ]
+    },
+    "lifetime": {
+      "path": "build/desktop-rendering/dr2/lifetime/results.json",
+      "sha256": "597f8d90f26e7b2b38ab8e21d57bc08ab5dca4fb12d7ae578d3d7141baa35fb0",
+      "checks": null,
+      "cases": [
+        {
+          "name": "copy-exhaustion",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 238,
+          "copy_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 214,
+              "remaining_above_floor": 2090
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          }
+        },
+        {
+          "name": "map-nmi",
+          "status": "pass",
+          "checks": 1723,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 216,
+              "remaining_above_floor": 2088
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          }
+        },
+        {
+          "name": "async-wrap",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 0,
+          "copy_failures": 0,
+          "scroll_checks": 279,
+          "scroll_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 310,
+              "remaining_above_floor": 1994
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          }
+        },
+        {
+          "name": "async-unquiesced",
+          "status": "pass",
+          "checks": 19,
+          "copy_checks": 0,
+          "copy_failures": 0,
+          "scroll_checks": 269,
+          "scroll_failures": 0
+        }
+      ]
+    },
+    "raw_boundary": {
+      "path": "build/desktop-rendering/dr2/probe-raw/results.json",
+      "sha256": "329b8f57aeb6307e5c3a9d0836db4051dbb1cb8886a85e74d1abec39b893fe1f",
+      "checks": null,
+      "cases": [
+        {
+          "name": "copy-boundary",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 17,
+          "copy_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 374,
+              "remaining_above_floor": 906
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 280,
+              "remaining_above_floor": 488
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 158,
+              "remaining_above_floor": 610
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 260,
+              "remaining_above_floor": 508
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 229,
+              "remaining_above_floor": 2075
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 280,
+              "remaining_above_floor": 1000
+            }
+          }
+        }
+      ]
+    },
+    "opt_boundary": {
+      "path": "build/desktop-rendering/dr2/probe-opt/boundary-results.json",
+      "sha256": "c70e85d364bcdafb1e45e62f04a87903bf27278714e40feabe948f525bae780c",
+      "checks": null,
+      "cases": [
+        {
+          "name": "copy-boundary",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 17,
+          "copy_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 214,
+              "remaining_above_floor": 2090
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          }
+        }
+      ]
+    },
+    "copy_control": {
+      "path": "build/desktop-rendering/dr2/probe-opt/results.json",
+      "sha256": "619182fdb9bed986804b4b14b752988bb67c4bfcda53f28aa433219f5d43ae98",
+      "checks": null,
+      "cases": [
+        {
+          "name": "async-copy",
+          "status": "pass",
+          "checks": 1724,
+          "copy_checks": 11987,
+          "copy_failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 350,
+              "remaining_above_floor": 930
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 230,
+              "remaining_above_floor": 538
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 116,
+              "remaining_above_floor": 2188
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 214,
+              "remaining_above_floor": 2090
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          }
+        }
+      ]
+    },
+    "console": {
+      "path": "build/desktop-rendering/dr2/console/results.json",
+      "sha256": "c91e35134cda1b23a5f5ecd7f4c43a6689fb650fc553baf428170c74124a70fb",
+      "checks": [
+        49
+      ],
+      "cases": [],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 364,
+          "remaining_above_floor": 916
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 546,
+          "remaining_above_floor": 1758
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 44,
+          "remaining_above_floor": 212
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 260,
+          "remaining_above_floor": 1020
+        }
+      }
+    },
+    "before_wait": {
+      "path": "build/desktop-rendering/dr2/irq/results-before-wait.json",
+      "sha256": "80ad36b8e9958c9cb7d6ba93ffcc5b6abda13d130a99f822b784dafda4e159b7",
+      "checks": [
+        19
+      ],
+      "cases": [],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 94,
+          "remaining_above_floor": 1186
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 158,
+          "remaining_above_floor": 1122
+        }
+      }
+    },
+    "lost_wrap": {
+      "path": "build/desktop-rendering/dr2/irq/results-lost-wrap.json",
+      "sha256": "0c05dc2c1cc319e4462e7f409716d276425de90da9cd53404e6cb7fd6b829dd9",
+      "checks": [
+        17
+      ],
+      "cases": [],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 94,
+          "remaining_above_floor": 1186
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 29,
+          "remaining_above_floor": 227
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 158,
+          "remaining_above_floor": 1122
+        }
+      }
+    },
+    "drawing": {
+      "path": "build/desktop-rendering/dr2/drawing/results.json",
+      "sha256": "d8f56aa34ccfd25aa34eea07584655151cab0cd3aacecc0bfb6f9b3337632757",
+      "checks": 111,
+      "cases": [],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 375,
+          "remaining_above_floor": 905
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 124,
+          "remaining_above_floor": 2180
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      }
+    }
+  },
+  "host": {
+    "tests": 352,
+    "skips": 4
+  },
+  "memory": {
+    "bank_zero": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "vram": 0,
+    "upper_ram_driver_state_delta": 0,
+    "operation_state_payload": 7,
+    "sequence_bytes": 4,
+    "console_packet_bytes": 78
+  },
+  "scope": "One typed asynchronous copy and common completion for copy/scroll. Optimized geometry/fault/console/drawing cases; small raw/optimized descriptor/native-call probe.",
+  "timing": "Exact DMA BUSY edges remain unavailable in the pinned observer. Console performance records distinguish setup and IRQ/adoption upper bounds; no exact DMA-time claim.",
+  "control": "Copy control disables substituted BUSY/VCOUNT reads. Fixture launch counters remain; final packaged preview supplies the uninstrumented integrated control."
+}

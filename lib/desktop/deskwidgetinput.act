@@ -1,0 +1,208 @@
+; Bounded presenter intake. Records own their capture metadata until a safe turn.
+MODULE DESKWIDGETINPUT
+USE EXEC
+USE INPUT
+USE A816MEMORY
+USE DESKTYPES
+USE WIDGETTYPES
+USE DESKSTATE
+USE DESKCORE
+USE DESKEVENTS
+USE DESKWIDGETS
+USE LAYERS
+
+; Immediately disarm routing. Repair retained press pixels only after painting.
+PUBLIC PROC Lost()
+
+  LET service=DESKSTATE.Get()
+  service.widgetHead=0
+  service.widgetCount=0
+  service.widgetCapture=0
+  service.widgetCaptureEpoch=0
+  service.widgetReleased=0
+  service.widgetCancel=15
+  service.widgetLoss=DESKSTATE.LossEpoch()
+
+RETURN
+
+PUBLIC PROC Observe()
+
+  LET service=DESKSTATE.Get()
+  IF service.widgetLoss<>DESKSTATE.LossEpoch() THEN
+    Lost()
+  FI
+
+RETURN
+
+PROC Overflow(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window DESKTYPES.Event POINTER event)
+
+  event.kind=DESKTYPES.EVENT_LOSS
+  DESKEVENTS.Post(service,window.client,event)
+  Lost()
+
+RETURN
+
+PUBLIC PROC Queue(DESKTYPES.Window POINTER window DESKTYPES.Event POINTER event)
+  BYTE slot
+
+  LET service=DESKSTATE.Get()
+  Observe()
+  event.window=window.id
+  event.epoch=window.widgetEpoch
+  IF service.widgetCount<>0 AND event.kind=DESKTYPES.EVENT_MOTION THEN
+    slot=(service.widgetHead+service.widgetCount-1) & 15
+    BEGIN
+      LET previous=@service.widgetQueue(slot)
+      IF previous.kind=event.kind AND previous.window=event.window
+          AND previous.epoch=event.epoch AND previous.route=event.route
+          AND previous.buttons=event.buttons THEN
+        A816MEMORY.Move(BYTE POINTER(previous),BYTE POINTER(event),DESKTYPES.EVENT_SIZE)
+        RETURN
+      FI
+    END
+  FI
+
+  IF service.widgetCount=16 THEN
+    Overflow(service,window,event)
+    RETURN
+  FI
+
+  slot=(service.widgetHead+service.widgetCount) & 15
+  A816MEMORY.Move(BYTE POINTER(@service.widgetQueue(slot)),BYTE POINTER(event),
+      DESKTYPES.EVENT_SIZE)
+  service.widgetCount==+1
+
+RETURN
+
+; Called before desktop title hit testing, only for an existing client capture.
+PUBLIC BYTE FUNC Captured(DESKTYPES.Event POINTER event)
+
+  LET service=DESKSTATE.Get()
+  Observe()
+  IF event.buttons=0 THEN
+    service.widgetReleased=1
+  FI
+
+  IF service.widgetCapture=0 THEN
+    RETURN(0)
+  FI
+
+  LET window=DESKCORE.Find(service,service.widgetCapture)
+  IF window=NULL THEN
+    Lost()
+    RETURN(1)
+  FI
+
+  IF window.widgetEpoch<>service.widgetCaptureEpoch THEN
+    Lost()
+    RETURN(1)
+  FI
+
+  event.code=0
+  Queue(window,event)
+  IF (event.buttons & INPUT.LEFT)=0 THEN
+    service.widgetCapture=0
+    service.widgetCaptureEpoch=0
+  FI
+
+RETURN(1)
+
+; Desktop chrome already had the first opportunity to capture this press.
+PUBLIC BYTE FUNC Mouse(DESKTYPES.Window POINTER window
+    DESKTYPES.Event POINTER event)
+
+  IF window.kind<>DESKTYPES.CONTENT_WIDGETS OR window.widgets=NULL THEN
+    RETURN(0)
+  FI
+
+  LET service=DESKSTATE.Get()
+  event.code=0
+  IF event.kind=DESKTYPES.EVENT_BUTTON AND (event.buttons & INPUT.LEFT)<>0
+      AND service.widgetReleased<>0 THEN
+    service.widgetCapture=window.id
+    service.widgetCaptureEpoch=window.widgetEpoch
+    service.widgetReleased=0
+    event.code=1
+  FI
+
+  Queue(window,event)
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Key(DESKTYPES.Window POINTER window
+    DESKTYPES.Event POINTER event)
+
+  IF window.kind<>DESKTYPES.CONTENT_WIDGETS OR window.widgets=NULL THEN
+    RETURN(0)
+  FI
+
+  LET service=DESKSTATE.Get()
+  IF event.kind=DESKTYPES.EVENT_LOSS THEN
+    Overflow(service,window,event)
+  ELSE
+    Queue(window,event)
+  FI
+
+RETURN(1)
+
+PUBLIC PROC Advance()
+  BYTE slot,count
+  DESKTYPES.Event event
+
+  LET service=DESKSTATE.Get()
+  Observe()
+  IF service.scene.busy<>0 THEN
+    RETURN
+  FI
+
+  IF service.widgetCancel<>0 THEN
+    service.widgetCancel=0
+    FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+      IF service.windows(slot).id<>0 THEN
+        DESKWIDGETS.Cancel(service,@service.windows(slot))
+      FI
+    OD
+  FI
+
+  count=0
+  WHILE service.widgetCount<>0 AND count<4 DO
+    A816MEMORY.Move(BYTE POINTER(@event),
+        BYTE POINTER(@service.widgetQueue(service.widgetHead)),DESKTYPES.EVENT_SIZE)
+    service.widgetHead=(service.widgetHead+1) & 15
+    service.widgetCount==-1
+    count==+1
+    BEGIN
+      LET window=DESKCORE.Find(service,event.window)
+      IF window=NULL THEN
+        Lost()
+      ELSEIF window.widgets=NULL OR window.widgetEpoch<>event.epoch THEN
+        Overflow(service,window,@event)
+      ELSE
+        BEGIN
+          LET layer=DESKCORE.Layer(service,window)
+          IF layer.shown=0 THEN
+            Overflow(service,window,@event)
+          ELSE
+            IF event.kind=DESKTYPES.EVENT_BUTTON AND event.code<>0 THEN
+              DESKCORE.Focus(service,window.id)
+            FI
+
+            DESKWIDGETS.Input(service,window,@event)
+            Observe()
+          FI
+        END
+      FI
+    END
+  OD
+
+RETURN
+
+PUBLIC BYTE FUNC Runnable()
+
+  LET service=DESKSTATE.Get()
+
+RETURN(service.scene.busy=0 AND (service.widgetCount<>0
+    OR service.widgetCancel<>0 OR service.widgetLoss<>DESKSTATE.LossEpoch()))
+
+ENDMODULE

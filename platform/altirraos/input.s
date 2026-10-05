@@ -418,6 +418,9 @@ input_route:
     lda f:$d20e
     eor #$ff
     and f:$0010
+    ; A keyboard/BREAK edge arriving after its capture check is still owned.
+    ; Leave it latched for the next native entry rather than forwarding it.
+    and #$3f
     bne input_unowned
     sec
     rtl

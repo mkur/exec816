@@ -1,0 +1,290 @@
+; Presenter-owned gesture state. No nested input loop and no borrowed client
+; pointer survives a turn; identities resolve against the current scene.
+MODULE DESKDRAG
+USE EXEC
+USE INPUT
+USE DESKTYPES
+USE DESKSTATE
+USE DESKCORE
+USE DESKMOVE
+USE DESKEVENTS
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+USE CONSOLEBITMAP
+USE HEAPCORE
+
+LONGCARD windowId,lossEpoch
+LAYERTYPES.Rect origin,target
+INT pressX,pressY
+BYTE phase,blocked,dirty,focusWanted
+CONST DRAGGING=1
+CONST MOVE_PENDING=2
+CONST CLOSING=3
+CONST CLOSE_PENDING=4
+CONST ESC_SCAN=28
+
+PUBLIC PROC Reset()
+
+  windowId=0
+  phase=0
+  blocked=0
+  dirty=0
+  focusWanted=0
+  lossEpoch=DESKSTATE.LossEpoch()
+
+RETURN
+
+PUBLIC PROC Cancel()
+
+  windowId=0
+  phase=0
+  blocked=1
+  dirty=1
+  focusWanted=0
+  lossEpoch=DESKSTATE.LossEpoch()
+
+RETURN
+
+PUBLIC BYTE FUNC Escape(INPUT.Event POINTER sample)
+
+  IF phase<>0 AND sample.kind=INPUT.EVENT_KEY
+      AND (sample.code & 63)=ESC_SCAN THEN
+    Cancel()
+    RETURN(1)
+  FI
+
+RETURN(0)
+
+BYTE FUNC CloseHit(DESKTYPES.Window POINTER window
+    LAYERTYPES.Layer POINTER layer INT x,y)
+
+RETURN(window.kind<>DESKTYPES.CONTENT_CONSOLE
+    AND x>=layer.bounds.right-14 AND x<layer.bounds.right-2
+    AND y>=layer.bounds.top+2 AND y<layer.bounds.top+14)
+
+PROC Position(INT x,y)
+  INT left,top,width,height,limit
+
+  width=origin.right-origin.left
+  height=origin.bottom-origin.top
+  left=origin.left+x-pressX
+  top=origin.top+y-pressY
+  IF left<0 THEN
+    left=0
+  FI
+
+  IF top<0 THEN
+    top=0
+  FI
+
+  left=(left+4) & $fff8
+  top=(top+4) & $fff8
+  limit=(640-width) & $fff8
+  IF left>limit THEN
+    left=limit
+  FI
+
+  limit=(240-height) & $fff8
+  IF top>limit THEN
+    top=limit
+  FI
+
+  IF target.left<>left OR target.top<>top THEN
+    dirty=1
+  FI
+
+  REGIONS.Assign(@target,left,top,left+width,top+height)
+
+RETURN
+
+; A title/close press captures subsequent edges and motion even outside the
+; original window. A release remains pending until geometry can safely commit.
+PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
+  BYTE slot
+  LONGCARD layerId
+
+  LET service=DESKSTATE.Get()
+  IF lossEpoch<>DESKSTATE.LossEpoch() THEN
+    Cancel()
+  FI
+
+  IF blocked<>0 THEN
+    IF sample.buttons=0 THEN
+      blocked=0
+    FI
+
+    RETURN(1)
+  FI
+
+  IF phase=DRAGGING THEN
+    Position(sample.x,sample.y)
+    IF (sample.buttons & INPUT.LEFT)=0 THEN
+      phase=MOVE_PENDING
+    FI
+
+    RETURN(1)
+  FI
+
+  IF phase=CLOSING THEN
+    IF (sample.buttons & INPUT.LEFT)=0 THEN
+      BEGIN
+        LET window=DESKCORE.Find(service,windowId)
+        IF window<>NULL THEN
+          BEGIN
+            LET layer=DESKCORE.Layer(service,window)
+            IF layer<>NULL AND CloseHit(window,layer,sample.x,sample.y)<>0 THEN
+              phase=CLOSE_PENDING
+              RETURN(1)
+            FI
+          END
+        FI
+      END
+      phase=0
+      windowId=0
+    FI
+
+    RETURN(1)
+  FI
+
+  IF phase<>0 THEN
+    RETURN(1)
+  FI
+
+  IF sample.kind<>INPUT.EVENT_BUTTON OR (sample.buttons & INPUT.LEFT)=0
+      OR released=0 THEN
+    RETURN(0)
+  FI
+
+  layerId=LAYERS.Hit(@service.scene,sample.x,sample.y)
+  FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+    BEGIN
+      LET window=@service.windows(slot)
+      IF window.id<>0 AND window.layer=layerId THEN
+        BEGIN
+          LET layer=DESKCORE.Layer(service,window)
+          IF sample.y<layer.bounds.top+2 OR sample.y>=layer.bounds.top+14 THEN
+            RETURN(0)
+          FI
+
+          windowId=window.id
+          focusWanted=1
+          IF CloseHit(window,layer,sample.x,sample.y)<>0 THEN
+            phase=CLOSING
+            RETURN(1)
+          FI
+
+          REGIONS.Copy(@layer.bounds,@origin)
+          REGIONS.Copy(@origin,@target)
+          pressX=sample.x
+          pressY=sample.y
+          phase=DRAGGING
+          dirty=1
+          Position(sample.x,sample.y)
+          RETURN(1)
+        END
+      FI
+    END
+  OD
+
+RETURN(0)
+
+PUBLIC PROC Advance()
+  BYTE status,slot,drawn
+
+  LET service=DESKSTATE.Get()
+  IF lossEpoch<>DESKSTATE.LossEpoch() THEN
+    Cancel()
+  FI
+
+  IF phase=0 THEN
+    RETURN
+  FI
+
+  LET window=DESKCORE.Find(service,windowId)
+  IF window=NULL THEN
+    Cancel()
+    RETURN
+  FI
+
+  LET layer=DESKCORE.Layer(service,window)
+  IF layer=NULL OR layer.shown=0 THEN
+    Cancel()
+    RETURN
+  FI
+
+  IF (phase=DRAGGING OR phase=MOVE_PENDING)
+      AND REGIONS.Equal(@layer.bounds,@origin)=0 THEN
+    Cancel()
+    RETURN
+  FI
+
+  IF service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN
+  FI
+
+  IF focusWanted<>0 THEN
+    status=LAYERS.Order(@service.scene,layer.id,1)
+    IF status<>LAYERTYPES.OK THEN
+      HEAPCORE.Abort($faec)
+    FI
+
+    DESKCORE.Focus(service,window.id)
+    focusWanted=0
+  FI
+
+  IF phase=MOVE_PENDING THEN
+    drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
+    status=BYTE(DESKMOVE.Start(service,window,target.left,target.top,NULL))
+    IF status<>DESKTYPES.OK AND status<>DESKTYPES.PENDING THEN
+      HEAPCORE.Abort($faed)
+    FI
+
+    phase=0
+    windowId=0
+    dirty=0
+  ELSEIF phase=CLOSE_PENDING THEN
+    FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+      IF @service.windows(slot)=window THEN
+        BEGIN
+          LET client=DESKEVENTS.Find(service,window.client)
+          client.closeBits=client.closeBits OR BYTE(1 LSH slot)
+          DESKEVENTS.Wake(service,client)
+        END
+      FI
+    OD
+
+    phase=0
+    windowId=0
+  FI
+
+RETURN
+
+PUBLIC PROC Present()
+  BYTE drawn
+
+  IF lossEpoch<>DESKSTATE.LossEpoch() THEN
+    Cancel()
+  FI
+
+  IF dirty<>0 OR ((phase=DRAGGING OR phase=MOVE_PENDING)
+      AND CONSOLEBITMAP.Changed()<>0) THEN
+    IF CONSOLEBITMAP.Pending()=0 THEN
+      drawn=CONSOLEBITMAP.Outline(CARD(target.left),CARD(target.top),
+          CARD(target.right-target.left),CARD(target.bottom-target.top),
+          phase=DRAGGING OR phase=MOVE_PENDING)
+      dirty=0
+    FI
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC Runnable()
+
+  LET service=DESKSTATE.Get()
+
+RETURN((dirty<>0 AND CONSOLEBITMAP.Pending()=0)
+    OR (phase<>0 AND phase<>DRAGGING AND phase<>CLOSING
+    AND service.scene.busy=0 AND CONSOLEBITMAP.Pending()=0))
+
+ENDMODULE

@@ -1,0 +1,5376 @@
+{
+  "slice": "DR7",
+  "status": "implemented",
+  "tier": "development",
+  "qualification": false,
+  "correctness": "pass",
+  "timing_accepted": false,
+  "source_revision": "64d94c8dbde7feed51b2493099aa7bd8340f4c9e",
+  "scope": "Optimized final rendering, matched DR0 raster and echo, four physical-input cohorts, drag, passive copy/IRQ costs, and extracted OF816 previews. Existing raw/optimized compiler-boundary and deeper fault evidence is reused from DR1-DR6.",
+  "measurement_limits": [
+    "Scanout observations are upper bounds, at most one PAL frame late.",
+    "Copy submission CPU includes setup, upload, launch and return; upload is not separately timed.",
+    "Launch to IRQ idle observation includes DMA plus IRQ latency; exact hardware BUSY-edge timing is unavailable.",
+    "Settled scene timings include all request/repair/caret work and two PAL settling frames, not only DMA.",
+    "Cache comparisons include capture and retained fallback; no universal caching speedup is claimed."
+  ],
+  "pins": {
+    "actionc_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "actionc_binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+    "local_compiler_override": false,
+    "calypsi": {
+      "cc65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    },
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "binary": "build/mouse-bridge/AltirraBridgeServer",
+      "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "patch": "toolchain/patches/altirra-mouse-observer.patch",
+      "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "source_sha256": {
+        "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+        "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "input": "ST mouse port 1, nominal 4 kHz capture, two desktop pixels per electrical step, varied frame phase",
+    "memory": "64 KiB base plus 63 high banks (4 MiB)",
+    "disk": "generic56k physical SIO, no SIO patch or burst I/O"
+  },
+  "input": {
+    "idle": {
+      "report": {
+        "path": "build/desktop-rendering/dr7/input-final-measurements/results.json",
+        "sha256": "afcb025b92de21492eea3f94a2398c8523d872dfcfed7e33f80dc48c84416e91"
+      },
+      "trace": {
+        "path": "build/desktop-rendering/dr7/input-final-measurements/emulator.log",
+        "sha256": "2f099aba8638d1407de42aaf766d3b66ea7ed774084f6967bdb3b8a5dc4c189e"
+      },
+      "timing": {
+        "sample_count": 33361,
+        "sample_gap": {
+          "count": 33360,
+          "median_ms": 0.25261531564932144,
+          "p95_ms": 0.25317918912175297,
+          "max_ms": 0.29074725922250305
+        },
+        "sample_gap_pass": true,
+        "irq_entry_through_routing_share": 0.15871478237737063,
+        "irq_scope": "Elapsed native IRQ entry through signal routing; excludes final dispatch/RTI",
+        "active_and_idle_input_service_gap": {
+          "count": 159,
+          "median_ms": 54.89040414221453,
+          "p95_ms": 60.623305736425806,
+          "max_ms": 62.489092572517656
+        },
+        "visible": {
+          "count": 100,
+          "median_ms": 43.62907557173246,
+          "p95_ms": 46.408407917347425,
+          "max_ms": 46.66144613810108
+        },
+        "button_consumption": {
+          "count": 60,
+          "median_ms": 3.6116800751079468,
+          "p95_ms": 3.6977412638378078,
+          "max_ms": 3.6999262735434795
+        },
+        "cursor_call_elapsed": {
+          "count": 160,
+          "median_ms": 4.48166635888573,
+          "p95_ms": 4.542635178092388,
+          "max_ms": 4.5450316403502224
+        },
+        "minimum_electrical_phase_ms": 2.314136730858962,
+        "independent_button_edges": 180,
+        "visible_target_pass": false,
+        "button_target_pass": true,
+        "cursor_cost": {
+          "scope": "Native cursor entry to RTL. Charged CPU excludes native interrupt bodies and off-Task time; includes fences, gateway tails and bus stalls. Preparation to first START is elapsed, not exclusive CPU.",
+          "calls": 160,
+          "drawing_calls": 100,
+          "charged_cpu": {
+            "count": 100,
+            "median_ms": 3.764278333584727,
+            "p95_ms": 3.7943750801757594,
+            "max_ms": 3.7964191215133236
+          },
+          "preparation_elapsed": {
+            "count": 100,
+            "median_ms": 4.2659142714966185,
+            "p95_ms": 4.270777680196341,
+            "max_ms": 4.2721873638774195
+          },
+          "launches": 100,
+          "uploads": 100
+        }
+      },
+      "raw_samples": [
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.784636985306866,
+          "capture_to_visible_ms": 46.66144613810108
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6977412638378078
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.872812699558346,
+          "capture_to_visible_ms": 46.408407917347425
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.612173464396324
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.726839954382636,
+          "capture_to_visible_ms": 46.15529921240972
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6130192746049716
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.8905042297558845,
+          "capture_to_visible_ms": 45.90317728604879
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6110457174514607
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.8891650302588605,
+          "capture_to_visible_ms": 45.904023096257426
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6943580230032182
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.786892479196593,
+          "capture_to_visible_ms": 45.65126681224
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6954152857640277
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.886768568001026,
+          "capture_to_visible_ms": 45.39921537006311
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.606957634776333
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.391828627574259,
+          "capture_to_visible_ms": 45.14547230746892
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.607521508248764
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.887402925657511,
+          "capture_to_visible_ms": 44.89398473876447
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.606957634776333
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.887120988921295,
+          "capture_to_visible_ms": 44.894548612236896
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6082968342733572
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.393308795439392,
+          "capture_to_visible_ms": 44.64094651801082
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6080853817211955
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.947707783850382,
+          "capture_to_visible_ms": 44.38783781307312
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.607310055696602
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.826827408197874,
+          "capture_to_visible_ms": 44.13479959231948
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.609917970506598
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.667815088972185,
+          "capture_to_visible_ms": 43.88232524503827
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6116800751079468
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.412168953408545,
+          "capture_to_visible_ms": 43.629216540100565
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6116800751079468
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.411252659015844,
+          "capture_to_visible_ms": 43.62907557173246
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6111866858195687
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.156170396924635,
+          "capture_to_visible_ms": 43.377447034659895
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6999262735434795
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.892207127642628,
+          "capture_to_visible_ms": 43.124690750642465
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6973183587334835
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6515741232824768,
+          "capture_to_visible_ms": 42.87207543499314
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.609424581218221
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.67771247809704,
+          "capture_to_visible_ms": 46.66130516973296
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6082968342733572
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.856883273962155,
+          "capture_to_visible_ms": 46.4096766326604
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6079444133530876
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.874292867423479,
+          "capture_to_visible_ms": 45.905009874834185
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6951333490278118
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.874645288343749,
+          "capture_to_visible_ms": 45.90458696972986
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.694498991371326
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.878099013362392,
+          "capture_to_visible_ms": 45.65267649592108
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.694498991371326
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.879790633779686,
+          "capture_to_visible_ms": 45.39963827516743
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6952038332118655
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.384709724984811,
+          "capture_to_visible_ms": 45.14652957022974
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.696613516892944
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.473872217813045,
+          "capture_to_visible_ms": 44.89384377039636
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6103408756109214
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.383300041303732,
+          "capture_to_visible_ms": 44.893561833660144
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6126668536847015
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.4692907458495394,
+          "capture_to_visible_ms": 44.641369423115144
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6977412638378078
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.143935752256551,
+          "capture_to_visible_ms": 44.38875410746582
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.612173464396324
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.864113541562409,
+          "capture_to_visible_ms": 44.13515201323975
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6130192746049716
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.599727367176079,
+          "capture_to_visible_ms": 43.883100571062855
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6110457174514607
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.660343765462468,
+          "capture_to_visible_ms": 43.883100571062855
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6943580230032182
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.41245089014476,
+          "capture_to_visible_ms": 43.6299213819411
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6082968342733572
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.412239437592598,
+          "capture_to_visible_ms": 43.37794042394827
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.606957634776333
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8965771470539727,
+          "capture_to_visible_ms": 43.12328106696139
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.607521508248764
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.653477196251933,
+          "capture_to_visible_ms": 42.870806719680175
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.606957634776333
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.798451885381439,
+          "capture_to_visible_ms": 46.66102323299675
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6082968342733572
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.885147431767786,
+          "capture_to_visible_ms": 46.40939469592418
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6080853817211955
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.793517992497664,
+          "capture_to_visible_ms": 46.156074538434325
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.607310055696602
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.885781789424271,
+          "capture_to_visible_ms": 46.15706131701108
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.609917970506598
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.885852273608325,
+          "capture_to_visible_ms": 45.905009874834185
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6116800751079468
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.736778224334242,
+          "capture_to_visible_ms": 45.65126681224
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6116800751079468
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.400850603133163,
+          "capture_to_visible_ms": 45.39921537006311
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6111866858195687
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.318384107790052,
+          "capture_to_visible_ms": 45.14660005441379
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6999262735434795
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.318031686869784,
+          "capture_to_visible_ms": 45.145683760021086
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6973183587334835
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.405009169992345,
+          "capture_to_visible_ms": 44.89320941273987
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.609424581218221
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.319159433814646,
+          "capture_to_visible_ms": 44.640171191986234
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6082968342733572
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.128358747580631,
+          "capture_to_visible_ms": 44.36732691551343
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6079444133530876
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.686704850298641,
+          "capture_to_visible_ms": 43.88218427667016
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6951333490278118
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.42175480243988,
+          "capture_to_visible_ms": 43.62893460336435
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.694498991371326
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.664784269057866,
+          "capture_to_visible_ms": 43.6299213819411
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.694498991371326
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.160681384704087,
+          "capture_to_visible_ms": 43.37730606629178
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6952038332118655
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.893687295507761,
+          "capture_to_visible_ms": 43.125254624114895
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.696613516892944
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6444552206930285,
+          "capture_to_visible_ms": 42.87263930846558
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6103408756109214
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.900806198097209,
+          "capture_to_visible_ms": 42.87207543499314
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6126668536847015
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.734029341156138,
+          "capture_to_visible_ms": 46.40770307550689
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6977412638378078
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.871825920981591,
+          "capture_to_visible_ms": 46.40742113877067
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.612173464396324
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.721835577314806,
+          "capture_to_visible_ms": 46.15424194964892
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6130192746049716
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.889728903731291,
+          "capture_to_visible_ms": 45.90212002328797
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6110457174514607
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.787385868484971,
+          "capture_to_visible_ms": 45.65098487550379
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6054069827271458,
+          "capture_to_visible_ms": 41.103274836159514
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.60279906791715,
+          "capture_to_visible_ms": 40.852139688375324
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.69189107656133,
+          "capture_to_visible_ms": 41.105318877497076
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6872391204137704,
+          "capture_to_visible_ms": 40.59811468904492
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.601671320972287,
+          "capture_to_visible_ms": 40.34620421523614
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.604913593438768,
+          "capture_to_visible_ms": 40.0931659944825
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6884373515426874,
+          "capture_to_visible_ms": 39.84224229925047
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.691256718904845,
+          "capture_to_visible_ms": 40.09394132050709
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6925254342178158,
+          "capture_to_visible_ms": 39.587301005527365
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6837853953951276,
+          "capture_to_visible_ms": 39.33609537355913
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.689424130119442,
+          "capture_to_visible_ms": 39.082845700253316
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6870981520456625,
+          "capture_to_visible_ms": 38.83079425807643
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6009664791317473,
+          "capture_to_visible_ms": 38.57796748987494
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.397408155583969,
+          "capture_to_visible_ms": 42.61946011934382
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.4479453155506437,
+          "capture_to_visible_ms": 42.114229488045176
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.5976537224812124,
+          "capture_to_visible_ms": 41.86105029892342
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.602587615364988,
+          "capture_to_visible_ms": 41.60871692001032
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.602940036285258,
+          "capture_to_visible_ms": 41.608012078169786
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6844197530516127,
+          "capture_to_visible_ms": 41.356947414569646
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6061823087517393,
+          "capture_to_visible_ms": 41.35737031967397
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.600191153107154,
+          "capture_to_visible_ms": 40.85115290979857
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.60315148883742,
+          "capture_to_visible_ms": 40.59945388854195
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.690974782168629,
+          "capture_to_visible_ms": 40.34585179431587
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6042792357822826,
+          "capture_to_visible_ms": 40.094857614899794
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.605266014359038,
+          "capture_to_visible_ms": 40.34697954126074
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.603010520469312,
+          "capture_to_visible_ms": 39.83984583699264
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.686745731125393,
+          "capture_to_visible_ms": 39.589345046864935
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.604913593438768,
+          "capture_to_visible_ms": 39.33588392100697
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6033629413895816,
+          "capture_to_visible_ms": 39.083268605357645
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6859704051007993,
+          "capture_to_visible_ms": 39.08263424770116
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6871686362297162,
+          "capture_to_visible_ms": 39.08192940586062
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6837149112110734,
+          "capture_to_visible_ms": 38.57705119548224
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6778647239345963,
+          "capture_to_visible_ms": 42.3668448036945
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.602587615364988,
+          "capture_to_visible_ms": 42.11338367783653
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6872391204137704,
+          "capture_to_visible_ms": 41.86020448871478
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.5989929219782373,
+          "capture_to_visible_ms": 41.86105029892342
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6034334255736353,
+          "capture_to_visible_ms": 41.355819667624786
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.598358564321752,
+          "capture_to_visible_ms": 41.104332098920324
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.601671320972287,
+          "capture_to_visible_ms": 40.850448067958034
+        }
+      ],
+      "sample_order": "Original stimulus order; full electrical records, positions, cycle timestamps and scanout hashes remain in report."
+    },
+    "scroll": {
+      "report": {
+        "path": "build/desktop-rendering/dr7/input-final-measurements/results.json",
+        "sha256": "afcb025b92de21492eea3f94a2398c8523d872dfcfed7e33f80dc48c84416e91"
+      },
+      "trace": {
+        "path": "build/desktop-rendering/dr7/input-final-measurements/emulator.log",
+        "sha256": "2f099aba8638d1407de42aaf766d3b66ea7ed774084f6967bdb3b8a5dc4c189e"
+      },
+      "timing": {
+        "sample_count": 36203,
+        "sample_gap": {
+          "count": 36202,
+          "median_ms": 0.25261531564932144,
+          "p95_ms": 0.25324967330580694,
+          "max_ms": 0.2976547092597892
+        },
+        "sample_gap_pass": true,
+        "irq_entry_through_routing_share": 0.16130856564098092,
+        "irq_scope": "Elapsed native IRQ entry through signal routing; excludes final dispatch/RTI",
+        "active_and_idle_input_service_gap": {
+          "count": 592,
+          "median_ms": 16.88004578652596,
+          "p95_ms": 28.76142372413054,
+          "max_ms": 35.05671862290821
+        },
+        "visible": {
+          "count": 100,
+          "median_ms": 43.88422831800772,
+          "p95_ms": 61.31405074015442,
+          "max_ms": 66.36508833782788
+        },
+        "button_consumption": {
+          "count": 60,
+          "median_ms": 13.017230563633827,
+          "p95_ms": 24.84983344587308,
+          "max_ms": 25.850567891070924
+        },
+        "cursor_call_elapsed": {
+          "count": 547,
+          "median_ms": 1.722703942462351,
+          "p95_ms": 4.53911096888969,
+          "max_ms": 5.214349452126437
+        },
+        "minimum_electrical_phase_ms": 2.314136730858962,
+        "independent_button_edges": 180,
+        "visible_target_pass": false,
+        "button_target_pass": true,
+        "cursor_cost": {
+          "scope": "Native cursor entry to RTL. Charged CPU excludes native interrupt bodies and off-Task time; includes fences, gateway tails and bus stalls. Preparation to first START is elapsed, not exclusive CPU.",
+          "calls": 547,
+          "drawing_calls": 100,
+          "charged_cpu": {
+            "count": 100,
+            "median_ms": 3.762657197351486,
+            "p95_ms": 4.236169945825856,
+            "max_ms": 4.240751417789363
+          },
+          "preparation_elapsed": {
+            "count": 100,
+            "median_ms": 4.268874607226884,
+            "p95_ms": 4.926139623529877,
+            "max_ms": 4.971742890612775
+          },
+          "launches": 100,
+          "uploads": 100
+        }
+      },
+      "raw_samples": [
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.9440834871063286,
+          "capture_to_visible_ms": 42.36444834143666
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 8.661026052364111
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.657453913916257,
+          "capture_to_visible_ms": 46.408407917347425
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 6.302484285551165
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 33.703492773256606,
+          "capture_to_visible_ms": 66.36508833782788
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 16.808010950422837
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.9783980072711485,
+          "capture_to_visible_ms": 46.153043718519996
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 7.968800880770364
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.469138500011982,
+          "capture_to_visible_ms": 45.90028743450257
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 15.337428934321428
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 8.665466555959508,
+          "capture_to_visible_ms": 45.65183068571243
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 23.642439373029084
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.775169549704742,
+          "capture_to_visible_ms": 45.39801713893419
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 24.15140566608259
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 10.58531476122073,
+          "capture_to_visible_ms": 45.14660005441379
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 24.830661747810407
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 10.40106910410373,
+          "capture_to_visible_ms": 44.89384377039636
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 24.84983344587308
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 17.976850174589323,
+          "capture_to_visible_ms": 44.89398473876447
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 9.437056918797992
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 8.215002135670778,
+          "capture_to_visible_ms": 44.64207426495569
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 10.868238276013246
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.295417541257917,
+          "capture_to_visible_ms": 44.35111555318102
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 15.971575138254725
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 19.807183466102043,
+          "capture_to_visible_ms": 44.13402426629488
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.5696306205850465
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 12.028196492988938,
+          "capture_to_visible_ms": 43.88253669759043
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 16.82154391376119
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 14.746982924501571,
+          "capture_to_visible_ms": 43.63020331867732
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 6.951925557424169
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 15.402203899466999,
+          "capture_to_visible_ms": 43.37716509792368
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 18.19612647118113
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.4082218391015235,
+          "capture_to_visible_ms": 43.38350867448853
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 22.136333328164493
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.11150175012229,
+          "capture_to_visible_ms": 43.12285816185706
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 23.858473397154413
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.556115983134545,
+          "capture_to_visible_ms": 42.61946011934382
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 24.582345967388378
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 11.903439487213465,
+          "capture_to_visible_ms": 46.65989548605189
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.090438256559611
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.5466936574102137,
+          "capture_to_visible_ms": 46.4087603382677
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 11.119161971245273
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.2880054244628045,
+          "capture_to_visible_ms": 46.1565679277227
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9436605820020048
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 10.657842986612234,
+          "capture_to_visible_ms": 45.90331825441689
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 12.054064188536735
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.01753505530894,
+          "capture_to_visible_ms": 45.904446001361755
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 8.8325845563514
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 16.459537144460157,
+          "capture_to_visible_ms": 45.39921537006311
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 7.444891940697427
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.591921948633947,
+          "capture_to_visible_ms": 45.14660005441379
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 8.846188003873811
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 13.001160169669529,
+          "capture_to_visible_ms": 44.89511248570933
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.62477885587253
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.9471326329085015,
+          "capture_to_visible_ms": 44.89468958060501
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 8.606894199010684
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 15.316142710737138,
+          "capture_to_visible_ms": 44.641087486378936
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 6.644050641476559
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.163841895517065,
+          "capture_to_visible_ms": 44.388049265625284
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 7.1600653529354545
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 11.145452571897392,
+          "capture_to_visible_ms": 44.13162780403705
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 25.850567891070924
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 18.8136384076777,
+          "capture_to_visible_ms": 44.135715886712184
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.5317510103907788
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 10.863092930577308,
+          "capture_to_visible_ms": 43.883100571062855
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 16.275361971527207
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 14.792868128320686,
+          "capture_to_visible_ms": 43.62900508754841
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 7.116717579742282
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 15.664334579963603,
+          "capture_to_visible_ms": 43.377447034659895
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 18.29952676918826
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.218407931444263,
+          "capture_to_visible_ms": 43.12412687717003
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 22.06260687164407
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.486588974300057,
+          "capture_to_visible_ms": 43.12412687717003
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 23.64645697152016
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 11.595564571265854,
+          "capture_to_visible_ms": 46.66095274881269
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 24.646416090693407
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 11.660621473147641,
+          "capture_to_visible_ms": 46.40868985408364
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.080711439160167
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.657424310558954,
+          "capture_to_visible_ms": 46.156074538434325
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 11.283601572643114
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.015272513000808,
+          "capture_to_visible_ms": 45.89880726663744
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 15.50384209287278
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 16.304260486989325,
+          "capture_to_visible_ms": 45.90268389676041
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 6.637354643991435
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.577654540097748,
+          "capture_to_visible_ms": 45.65049148621541
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 13.522179258196253
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.115348776887954,
+          "capture_to_visible_ms": 45.393083246050416
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.907420433928831
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 13.247995782226425,
+          "capture_to_visible_ms": 45.14610666512541
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 17.3118318980404
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 23.57181422060704,
+          "capture_to_visible_ms": 64.85010128577248
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 20.711354579145986
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.961581890639559,
+          "capture_to_visible_ms": 44.894548612236896
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 22.557899232991108
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 8.844143962536245,
+          "capture_to_visible_ms": 44.3883312023615
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 24.232039572640296
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.135384611047128,
+          "capture_to_visible_ms": 44.13395378211083
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 24.593834889389168
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 16.795887670765556,
+          "capture_to_visible_ms": 44.13564540252813
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 9.006610006780578
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.247113320242071,
+          "capture_to_visible_ms": 43.88422831800772
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 10.633455458929571
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.956829846950643,
+          "capture_to_visible_ms": 43.624846520689225
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 13.017230563633827
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 33.628215664687005,
+          "capture_to_visible_ms": 63.587095191709935
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 6.369655712954571
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.5517981220194,
+          "capture_to_visible_ms": 43.12285816185706
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 6.4655142032679285
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.630676972394165,
+          "capture_to_visible_ms": 43.12433832972219
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 25.668013854371218
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.253798040257747,
+          "capture_to_visible_ms": 42.8354236592851
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 25.364720410387115
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 20.066706231788647,
+          "capture_to_visible_ms": 46.66081178044459
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 2.3057491129565437
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 12.67742631230978,
+          "capture_to_visible_ms": 46.40868985408364
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 15.55480215794378
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 16.679447798708445,
+          "capture_to_visible_ms": 46.15572211751405
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 6.42851000663961
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 17.27905675245532,
+          "capture_to_visible_ms": 45.903811643705275
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 17.078881669742128
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 17.439901660466408,
+          "capture_to_visible_ms": 45.65239455918486
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 30.173221930730964,
+          "capture_to_visible_ms": 61.314544129442794
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 11.369944698109192,
+          "capture_to_visible_ms": 41.10447306728843
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 1.8889761326455956,
+          "capture_to_visible_ms": 40.84593708017858
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 15.008338278973582,
+          "capture_to_visible_ms": 40.60008824619844
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.441137953054714,
+          "capture_to_visible_ms": 40.59917195180574
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.5927790363120415,
+          "capture_to_visible_ms": 40.09253163682601
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.4879986579811355,
+          "capture_to_visible_ms": 39.84238326761858
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.860648539074317,
+          "capture_to_visible_ms": 39.58962698360115
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.074779490230187,
+          "capture_to_visible_ms": 39.58962698360115
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.195377929146479,
+          "capture_to_visible_ms": 39.33532004753453
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.419517634438009,
+          "capture_to_visible_ms": 39.335038110798315
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 17.73255199265837,
+          "capture_to_visible_ms": 58.786840320900396
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 14.012960631763839,
+          "capture_to_visible_ms": 38.578037974059
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.993581710200049,
+          "capture_to_visible_ms": 42.61946011934382
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 8.072694568065872,
+          "capture_to_visible_ms": 42.114229488045176
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 8.865077765200267,
+          "capture_to_visible_ms": 41.86281240352478
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.129182002850381,
+          "capture_to_visible_ms": 41.608857888378424
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.405409520157772,
+          "capture_to_visible_ms": 41.60899885674654
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.66782213739059,
+          "capture_to_visible_ms": 41.35638354109721
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 20.191110816643857,
+          "capture_to_visible_ms": 61.31405074015442
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.247558780285292,
+          "capture_to_visible_ms": 40.841426092399125
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.096288443836087,
+          "capture_to_visible_ms": 40.60008824619844
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.4210386831298925,
+          "capture_to_visible_ms": 40.59917195180574
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.207783145539972,
+          "capture_to_visible_ms": 40.34564034176371
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.630476797311451,
+          "capture_to_visible_ms": 40.094857614899794
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.618846906942551,
+          "capture_to_visible_ms": 39.84224229925047
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.913470796288021,
+          "capture_to_visible_ms": 39.58962698360115
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 18.32680414841714,
+          "capture_to_visible_ms": 59.54560256224106
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 14.31047437265552,
+          "capture_to_visible_ms": 39.083832478830075
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.773723214247955,
+          "capture_to_visible_ms": 39.08150650075629
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.915003122449354,
+          "capture_to_visible_ms": 38.830512321340215
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.68631154855162,
+          "capture_to_visible_ms": 38.82910263765914
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.898023482510759,
+          "capture_to_visible_ms": 42.3668448036945
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 10.188136384076778,
+          "capture_to_visible_ms": 42.11394755130896
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 10.46760617385065,
+          "capture_to_visible_ms": 41.861402719843696
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 21.45735918317289,
+          "capture_to_visible_ms": 61.81766023521982
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.541577915331579,
+          "capture_to_visible_ms": 41.35624257272911
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.230026544343715,
+          "capture_to_visible_ms": 41.10341580452762
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.100365249041767,
+          "capture_to_visible_ms": 40.850025162853704
+        }
+      ],
+      "sample_order": "Original stimulus order; full electrical records, positions, cycle timestamps and scanout hashes remain in report."
+    },
+    "disk": {
+      "report": {
+        "path": "build/desktop-rendering/dr7/input-final-measurements/results.json",
+        "sha256": "afcb025b92de21492eea3f94a2398c8523d872dfcfed7e33f80dc48c84416e91"
+      },
+      "trace": {
+        "path": "build/desktop-rendering/dr7/input-final-measurements/emulator.log",
+        "sha256": "2f099aba8638d1407de42aaf766d3b66ea7ed774084f6967bdb3b8a5dc4c189e"
+      },
+      "timing": {
+        "sample_count": 33601,
+        "sample_gap": {
+          "count": 33600,
+          "median_ms": 0.25261531564932144,
+          "p95_ms": 0.2650205320428149,
+          "max_ms": 0.5135477650170078
+        },
+        "sample_gap_pass": true,
+        "irq_entry_through_routing_share": 0.21560316899164092,
+        "irq_scope": "Elapsed native IRQ entry through signal routing; excludes final dispatch/RTI",
+        "active_and_idle_input_service_gap": {
+          "count": 172,
+          "median_ms": 52.4300832136277,
+          "p95_ms": 63.31467382034145,
+          "max_ms": 71.87420264766789
+        },
+        "visible": {
+          "count": 100,
+          "median_ms": 43.56451205913905,
+          "p95_ms": 46.46683930592814,
+          "max_ms": 66.36685044242923
+        },
+        "button_consumption": {
+          "count": 60,
+          "median_ms": 3.844277882485949,
+          "p95_ms": 8.896866132208595,
+          "max_ms": 12.515735594090042
+        },
+        "cursor_call_elapsed": {
+          "count": 172,
+          "median_ms": 4.546441324031301,
+          "p95_ms": 6.498359833037065,
+          "max_ms": 23.400185232435692
+        },
+        "minimum_electrical_phase_ms": 2.314136730858962,
+        "independent_button_edges": 180,
+        "visible_target_pass": true,
+        "button_target_pass": true,
+        "cursor_cost": {
+          "scope": "Native cursor entry to RTL. Charged CPU excludes native interrupt bodies and off-Task time; includes fences, gateway tails and bus stalls. Preparation to first START is elapsed, not exclusive CPU.",
+          "calls": 172,
+          "drawing_calls": 100,
+          "charged_cpu": {
+            "count": 100,
+            "median_ms": 3.78471874696037,
+            "p95_ms": 4.410618301359358,
+            "max_ms": 4.8280961235108455
+          },
+          "preparation_elapsed": {
+            "count": 100,
+            "median_ms": 4.375305725148334,
+            "p95_ms": 8.169539836955986,
+            "max_ms": 16.334498201948463
+          },
+          "launches": 100,
+          "uploads": 100
+        }
+      },
+      "raw_samples": [
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.508527881428686,
+          "capture_to_visible_ms": 42.366492382774226
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.795391462109817
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8336347706938043,
+          "capture_to_visible_ms": 46.403474024463655
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.720960163748856
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 25.505406841758777,
+          "capture_to_visible_ms": 66.36685044242923
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 11.523177314242458
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 26.62370890595859,
+          "capture_to_visible_ms": 66.06510765049431
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.839837378890551
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.84497144685704,
+          "capture_to_visible_ms": 45.89464869977826
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.830815403331646
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.684901864870541,
+          "capture_to_visible_ms": 45.641610479024614
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.843079651357032
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.438841578338237,
+          "capture_to_visible_ms": 45.388995163375284
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6976002954697
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.347353107436223,
+          "capture_to_visible_ms": 45.13623887935786
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.695838190868351
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.4360926951601325,
+          "capture_to_visible_ms": 44.88348259534043
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.698093684758077
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.33924742627002,
+          "capture_to_visible_ms": 44.630726311323
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6856884683645834
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.428621371650415,
+          "capture_to_visible_ms": 44.63079679550706
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8700046096656373
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.7568774942590633,
+          "capture_to_visible_ms": 44.11146932739762
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.694639959739434
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.5681208493626118,
+          "capture_to_visible_ms": 44.124438417263555
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.184746094823782
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.757088946811225,
+          "capture_to_visible_ms": 44.125566164208415
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.1854509366643216
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8340576757981277,
+          "capture_to_visible_ms": 43.62068795383004
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6968249694451063
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 12.757425861211003,
+          "capture_to_visible_ms": 43.56155172340878
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6950628648437576
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 15.038998899037045,
+          "capture_to_visible_ms": 43.34636350949211
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8352559069270447
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.877646504900765,
+          "capture_to_visible_ms": 43.20976516079557
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.841599483491899
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.937417092978507,
+          "capture_to_visible_ms": 42.84070997308914
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.09741619078095
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8776873857275165,
+          "capture_to_visible_ms": 46.65171932070162
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.874868018365359
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.7856350413530704,
+          "capture_to_visible_ms": 46.399526910156624
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 6.627275405671721
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8829736995315622,
+          "capture_to_visible_ms": 45.895846930907176
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.21977673429859
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.883396604635886,
+          "capture_to_visible_ms": 45.840587330608884
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.099460232118514
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.3156761054387,
+          "capture_to_visible_ms": 45.641680963208664
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.7001377260956416
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.211348235569421,
+          "capture_to_visible_ms": 45.387374027142044
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.457742617134141
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.177304374671367,
+          "capture_to_visible_ms": 45.382087713338
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.827996035969489
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.446101449295792,
+          "capture_to_visible_ms": 45.11044166799412
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8387096319456875
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.444762249798767,
+          "capture_to_visible_ms": 44.85733296305642
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8387801161297417
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8040314133911495,
+          "capture_to_visible_ms": 44.618814484217886
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6963315801567287
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.8843425023858895,
+          "capture_to_visible_ms": 44.37860438496206
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 8.896866132208595
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.68148902067865,
+          "capture_to_visible_ms": 44.12500229073598
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 7.33063707834599
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.541477827790222,
+          "capture_to_visible_ms": 44.01053597583238
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 12.515735594090042
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.510958176094866,
+          "capture_to_visible_ms": 43.683066456717775
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.024224004375658
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.689424130119442,
+          "capture_to_visible_ms": 43.56451205913905
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.059777636496146
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6862523418370152,
+          "capture_to_visible_ms": 43.332266672681314
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.301115482696837
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.685406531628368,
+          "capture_to_visible_ms": 43.115104901611126
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.844277882485949
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.112176988605527,
+          "capture_to_visible_ms": 42.99330823156592
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8406831890991984
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.144840769179804,
+          "capture_to_visible_ms": 46.46676882174409
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8394144737862272
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.190948703020529,
+          "capture_to_visible_ms": 46.461693960492205
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6974593271015914
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.1258213169546885,
+          "capture_to_visible_ms": 46.20964251831531
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6978822322059157
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8774759331753548,
+          "capture_to_visible_ms": 46.146559173587036
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 10.652909093728457
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8811411107461593,
+          "capture_to_visible_ms": 45.89408482630582
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.969064491618726
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.320398545770315,
+          "capture_to_visible_ms": 45.64175144739272
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 7.640697003999272
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.7752033821130877,
+          "capture_to_visible_ms": 45.28256404545384
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 7.7049785798564665
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.0913954317790635,
+          "capture_to_visible_ms": 45.13849437324759
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.879267641134006
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8108683792443814,
+          "capture_to_visible_ms": 44.88376453207665
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.842686349610011
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.9036960496434205,
+          "capture_to_visible_ms": 44.63136066897948
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.69922143170294
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.610236559018523,
+          "capture_to_visible_ms": 44.33532709595294
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6968249694451063
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 9.72040333869483,
+          "capture_to_visible_ms": 44.224948863724464
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6928073709540317
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.762939134087702,
+          "capture_to_visible_ms": 44.127257784625705
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6952743173959197
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.080147565687735,
+          "capture_to_visible_ms": 43.83524181009024
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.176892747036493
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.882932818704811,
+          "capture_to_visible_ms": 43.58882910263766
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.919443626044751
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8333528339575884,
+          "capture_to_visible_ms": 43.367861185628556
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.139918153765477
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.837370432448663,
+          "capture_to_visible_ms": 43.115668775083556
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.139777185397368
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8264453839203023,
+          "capture_to_visible_ms": 42.97357266003082
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.928747538339872
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8311678242519163,
+          "capture_to_visible_ms": 42.72603220563337
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 4.909857777013416
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.880859174009944,
+          "capture_to_visible_ms": 46.65178980488569
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.6968249694451063
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.459804984359559,
+          "capture_to_visible_ms": 46.46683930592814
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.698164168942131
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.319723307287078,
+          "capture_to_visible_ms": 46.00855114120942
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.839837378890551
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.212164442420765,
+          "capture_to_visible_ms": 46.05126455674611
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.841599483491899
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.135195713433863,
+          "capture_to_visible_ms": 45.856516756205075
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8341281599821815,
+          "capture_to_visible_ms": 40.98338123908376
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.6099362963944515,
+          "capture_to_visible_ms": 41.05231477108852
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8321546028286715,
+          "capture_to_visible_ms": 40.773620307339236
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.641735940872228,
+          "capture_to_visible_ms": 40.688757349738296
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.4480157997346974,
+          "capture_to_visible_ms": 40.27071565411437
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.7707924818749925,
+          "capture_to_visible_ms": 40.18423156028019
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.171495068221642,
+          "capture_to_visible_ms": 39.831387734906166
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.68956509848755,
+          "capture_to_visible_ms": 39.579195324361166
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.167759406466783,
+          "capture_to_visible_ms": 39.57891338762495
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6845607214197207,
+          "capture_to_visible_ms": 39.17172625634534
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.795521153008476,
+          "capture_to_visible_ms": 39.27061556657302
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.828489425257866,
+          "capture_to_visible_ms": 39.07248452519739
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.1781093040532635,
+          "capture_to_visible_ms": 38.56845212502766
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.830462982411377,
+          "capture_to_visible_ms": 42.34957617860129
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.710164806119155,
+          "capture_to_visible_ms": 42.172308455705625
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6882258989905257,
+          "capture_to_visible_ms": 41.851464449892084
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.829194267098406,
+          "capture_to_visible_ms": 41.85181687081236
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.828137004337597,
+          "capture_to_visible_ms": 41.85231026010074
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8672557264875334,
+          "capture_to_visible_ms": 41.239168343015514
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.188552240762696,
+          "capture_to_visible_ms": 41.105459845865184
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.692454950033762,
+          "capture_to_visible_ms": 41.094605281520884
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.28130942697768,
+          "capture_to_visible_ms": 40.57013246797551
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.693300760242409,
+          "capture_to_visible_ms": 40.2908741307538
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.133081187912244,
+          "capture_to_visible_ms": 40.52988599888071
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.68026118619243,
+          "capture_to_visible_ms": 39.93528142220167
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.130755209838465,
+          "capture_to_visible_ms": 40.04128963501879
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6903404245121436,
+          "capture_to_visible_ms": 39.578138061600356
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.949540372635784,
+          "capture_to_visible_ms": 39.33687069958372
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8344805809024516,
+          "capture_to_visible_ms": 39.32629807197563
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.642793203633037,
+          "capture_to_visible_ms": 38.818389041682934
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.936994187874183,
+          "capture_to_visible_ms": 38.80534946763296
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.6862523418370152,
+          "capture_to_visible_ms": 38.56866357757983
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.167195532994351,
+          "capture_to_visible_ms": 42.356695081190736
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.829194267098406,
+          "capture_to_visible_ms": 42.00667062317886
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 12.37561303619081,
+          "capture_to_visible_ms": 61.90830289591319
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.819326481330854,
+          "capture_to_visible_ms": 41.58644391784927
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 8.828144052756002,
+          "capture_to_visible_ms": 41.55599475033797
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.383229557119678,
+          "capture_to_visible_ms": 41.07240276354389
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.689212677567281,
+          "capture_to_visible_ms": 41.09453479733682
+        }
+      ],
+      "sample_order": "Original stimulus order; full electrical records, positions, cycle timestamps and scanout hashes remain in report."
+    },
+    "two_clients": {
+      "report": {
+        "path": "build/desktop-rendering/dr7/two-clients/results.json",
+        "sha256": "9c9859f48e3e3b20d48b142bc37452803948d36cc1f7fda46acf5e31943ec88b"
+      },
+      "trace": {
+        "path": "build/desktop-rendering/dr7/two-clients/emulator.log",
+        "sha256": "08970f8a835f85ae5ad4cb6a1c6ec5e6c2649aa50979dfbf0fab6e3bc278cf0a"
+      },
+      "timing": {
+        "sample_count": 35584,
+        "sample_gap": {
+          "count": 35583,
+          "median_ms": 0.25261531564932144,
+          "p95_ms": 0.25317918912175297,
+          "max_ms": 0.2887737020689927
+        },
+        "sample_gap_pass": true,
+        "irq_entry_through_routing_share": 0.15862809051717,
+        "irq_scope": "Elapsed native IRQ entry through signal routing; excludes final dispatch/RTI",
+        "active_and_idle_input_service_gap": {
+          "count": 232,
+          "median_ms": 39.461980126279464,
+          "p95_ms": 60.45562386256148,
+          "max_ms": 66.08329256998022
+        },
+        "visible": {
+          "count": 100,
+          "median_ms": 44.641369423115144,
+          "p95_ms": 65.86063303255382,
+          "max_ms": 86.32346037872561
+        },
+        "button_consumption": {
+          "count": 60,
+          "median_ms": 3.913986740515296,
+          "p95_ms": 13.891868803559168,
+          "max_ms": 23.79045615954236
+        },
+        "cursor_call_elapsed": {
+          "count": 256,
+          "median_ms": 1.72608718329694,
+          "p95_ms": 4.542987599012657,
+          "max_ms": 6.705935755075918
+        },
+        "minimum_electrical_phase_ms": 2.314136730858962,
+        "independent_button_edges": 62,
+        "visible_target_pass": false,
+        "button_target_pass": true,
+        "cursor_cost": {
+          "scope": "Native cursor entry to RTL. Charged CPU excludes native interrupt bodies and off-Task time; includes fences, gateway tails and bus stalls. Preparation to first START is elapsed, not exclusive CPU.",
+          "calls": 256,
+          "drawing_calls": 100,
+          "charged_cpu": {
+            "count": 100,
+            "median_ms": 3.7648422070571583,
+            "p95_ms": 4.739215567418827,
+            "max_ms": 4.771849744635801
+          },
+          "preparation_elapsed": {
+            "count": 100,
+            "median_ms": 4.268169765386345,
+            "p95_ms": 6.344915764351637,
+            "max_ms": 6.463117741010095
+          },
+          "launches": 100,
+          "uploads": 100
+        }
+      },
+      "raw_samples": [
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.2211455371529185,
+          "capture_to_visible_ms": 46.66172807483729
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.913986740515296
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 11.929730087865584,
+          "capture_to_visible_ms": 46.4096766326604
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 17.07719004932483
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 18.96616618197043,
+          "capture_to_visible_ms": 46.15635647517054
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 23.79045615954236
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 33.164923122900454,
+          "capture_to_visible_ms": 66.1142351267799
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9330879543939137
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.120987511612269,
+          "capture_to_visible_ms": 45.90324777023284
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8475906391364845
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.972195399074401,
+          "capture_to_visible_ms": 45.649998096927035
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8447007875902726
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.119577827931191,
+          "capture_to_visible_ms": 45.397805686382036
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.84357304064541
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.628796454363605,
+          "capture_to_visible_ms": 45.145613275837036
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8414585151237914
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.11993024885146,
+          "capture_to_visible_ms": 44.892856991819606
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.839837378890551
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.555069997843184,
+          "capture_to_visible_ms": 44.640241676170284
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.839555442154335
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 10.969805985234972,
+          "capture_to_visible_ms": 44.64094651801082
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9105330154966524
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 43.20884886640287,
+          "capture_to_visible_ms": 84.55360251713118
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 10.345457082885172
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.473731249444937,
+          "capture_to_visible_ms": 44.135715886712184
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 13.638619130253364
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 17.214634208230017,
+          "capture_to_visible_ms": 64.09176194953614
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.839837378890551
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.64554208681114,
+          "capture_to_visible_ms": 43.628018308971654
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.839555442154335
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.390107403799661,
+          "capture_to_visible_ms": 43.375825898426655
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8410356100194676
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.388133846646151,
+          "capture_to_visible_ms": 43.37730606629178
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8412470625716297
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.129174954431974,
+          "capture_to_visible_ms": 43.12412687717003
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.842233841148385
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.129386406984137,
+          "capture_to_visible_ms": 42.87151156152071
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.841740451860007
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.9810059220811445,
+          "capture_to_visible_ms": 46.660741296260525
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.843714009013518
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 12.69173460167273,
+          "capture_to_visible_ms": 46.4096766326604
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.914409645619619
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 41.27722980240464,
+          "capture_to_visible_ms": 86.32346037872561
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 8.87142134176512
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.156300087823293,
+          "capture_to_visible_ms": 45.904446001361755
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 12.639364852920652
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 17.331567469575504,
+          "capture_to_visible_ms": 65.86063303255382
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.841740451860007
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.122820100397672,
+          "capture_to_visible_ms": 45.39872198077474
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.843714009013518
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.119295891194975,
+          "capture_to_visible_ms": 45.39921537006311
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.844207398301895
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.624285466584153,
+          "capture_to_visible_ms": 45.14603618094136
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8460399870872974
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.638382303394941,
+          "capture_to_visible_ms": 44.89398473876447
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8457580503510815
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.552109662112919,
+          "capture_to_visible_ms": 44.641369423115144
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.845335145246758
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.550488525879677,
+          "capture_to_visible_ms": 44.641369423115144
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.845335145246758
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 10.613367466474198,
+          "capture_to_visible_ms": 44.35619041443291
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9136343195950256
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 43.80324199052975,
+          "capture_to_visible_ms": 84.04759655980794
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 11.398772729387254
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.865693796968898,
+          "capture_to_visible_ms": 43.62949847683678
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 17.242616429299428
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 15.169958513009266,
+          "capture_to_visible_ms": 43.63048525541354
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9323126283693206
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.386583194596965,
+          "capture_to_visible_ms": 43.37786993976422
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.845335145246758
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.127130913094411,
+          "capture_to_visible_ms": 43.124690750642465
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8429386829889243
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 4.129033986063868,
+          "capture_to_visible_ms": 43.124690750642465
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.841599483491899
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.97233636744251,
+          "capture_to_visible_ms": 46.91349758027796
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.839625926338389
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.105692443672564,
+          "capture_to_visible_ms": 46.40897179081986
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.929352292639055
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.091102217573399,
+          "capture_to_visible_ms": 46.15593357006621
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9279426089579763
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 12.390767135762408,
+          "capture_to_visible_ms": 45.9043755171777
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9141277088834032
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 44.33920372607591,
+          "capture_to_visible_ms": 85.81752490558644
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 10.138445034318748
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.094726514317452,
+          "capture_to_visible_ms": 45.65056197039946
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 13.891868803559168
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 15.987927468955242,
+          "capture_to_visible_ms": 45.39977924353554
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.929352292639055
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.641131186573045,
+          "capture_to_visible_ms": 45.147163927886226
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9279426089579763
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.7057651833505085,
+          "capture_to_visible_ms": 44.89511248570933
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9305505237679714
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.615263491025249,
+          "capture_to_visible_ms": 44.64207426495569
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9275901880377058
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.380833094861844,
+          "capture_to_visible_ms": 44.38847217072961
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8423043253324383
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.139565732845207,
+          "capture_to_visible_ms": 44.13543394997597
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8436435248294636
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.127794874108199,
+          "capture_to_visible_ms": 44.1359978234484
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.931537302344727
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 10.376399639684852,
+          "capture_to_visible_ms": 43.889514631811764
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9167356236933992
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 15.165518009413868,
+          "capture_to_visible_ms": 43.634502853904614
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 5.216675430200217
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 26.61200853140564,
+          "capture_to_visible_ms": 63.586531318237505
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 11.931562676650987
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.37553550358835,
+          "capture_to_visible_ms": 43.39436323883284
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 6.29811426613982
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.9059515435331464,
+          "capture_to_visible_ms": 42.87130010896855
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.929352292639055
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8888238868080394,
+          "capture_to_visible_ms": 42.61819140403085
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9279426089579763
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.107806969194183,
+          "capture_to_visible_ms": 46.409465180108235
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9305505237679714
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.975296703172775,
+          "capture_to_visible_ms": 46.156708896090805
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.9275901880377058
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.106397285513104,
+          "capture_to_visible_ms": 45.90289534931257
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8423043253324383
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 6.105480991120403,
+          "capture_to_visible_ms": 45.903459222785
+        },
+        {
+          "kind": "button",
+          "capture_to_consume_ms": 3.8436435248294636
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 12.050610463518092,
+          "capture_to_visible_ms": 45.65239455918486
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.905810575165039,
+          "capture_to_visible_ms": 41.104755004024646
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 22.080368886025667,
+          "capture_to_visible_ms": 61.31362783505009
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 20.560377456902444,
+          "capture_to_visible_ms": 61.06192881379347
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 14.631459346837163,
+          "capture_to_visible_ms": 40.5976917839406
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 14.667194828152512,
+          "capture_to_visible_ms": 60.302955119900645
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.837299948264609,
+          "capture_to_visible_ms": 40.3462746994202
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.836877043160285,
+          "capture_to_visible_ms": 39.84026874209696
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.9201188645279883,
+          "capture_to_visible_ms": 39.58962698360115
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8401897998108203,
+          "capture_to_visible_ms": 39.58849923665628
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.828901052892742,
+          "capture_to_visible_ms": 39.341452171547225
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.9015110399377484,
+          "capture_to_visible_ms": 39.08256376351711
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 20.84597937068901,
+          "capture_to_visible_ms": 59.03889176307729
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 19.56013640099298,
+          "capture_to_visible_ms": 58.78557160558742
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 17.684411294949527,
+          "capture_to_visible_ms": 62.32401861346332
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 14.975069744100121,
+          "capture_to_visible_ms": 42.113665614572746
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.832295571196779,
+          "capture_to_visible_ms": 41.85935867850613
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.674481483100007,
+          "capture_to_visible_ms": 42.11401803549301
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.9196959594236644,
+          "capture_to_visible_ms": 41.60709578377708
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.830674434963538,
+          "capture_to_visible_ms": 41.355819667624786
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 7.589455002192058,
+          "capture_to_visible_ms": 41.105318877497076
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.905599122612877,
+          "capture_to_visible_ms": 40.85270356184776
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 24.419738954775937,
+          "capture_to_visible_ms": 60.80811526701523
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 23.115781549778045,
+          "capture_to_visible_ms": 60.312540968931984
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 19.543290681004088,
+          "capture_to_visible_ms": 60.302391246428215
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 14.38469421846432,
+          "capture_to_visible_ms": 40.09309551029845
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.920471285448258,
+          "capture_to_visible_ms": 39.8418898783302
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.837370432448663,
+          "capture_to_visible_ms": 39.841114552305605
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.8341281599821815,
+          "capture_to_visible_ms": 39.33588392100697
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.923572589546631,
+          "capture_to_visible_ms": 39.08340957372575
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 5.32028718075951,
+          "capture_to_visible_ms": 38.828961669291026
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.9004537771769394,
+          "capture_to_visible_ms": 38.82966651113156
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 21.729921522909475,
+          "capture_to_visible_ms": 58.787968067845256
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 24.154154549260692,
+          "capture_to_visible_ms": 62.058434207948075
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 21.259932983637803,
+          "capture_to_visible_ms": 62.322749898150356
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 15.906306783820778,
+          "capture_to_visible_ms": 41.86161417239585
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.832507023748941,
+          "capture_to_visible_ms": 41.608646435826266
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.9182157915585325,
+          "capture_to_visible_ms": 41.608294014905994
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.9210351589206898,
+          "capture_to_visible_ms": 41.102781446871134
+        },
+        {
+          "kind": "motion",
+          "capture_to_consume_ms": 3.830815403331646,
+          "capture_to_visible_ms": 40.850589036326134
+        }
+      ],
+      "sample_order": "Original stimulus order; full electrical records, positions, cycle timestamps and scanout hashes remain in report."
+    }
+  },
+  "drag": {
+    "report": {
+      "path": "build/desktop-rendering/dr7/drag-final/results.json",
+      "sha256": "a2d7cf9cc4680927de29d148073bc55250d46a38d27454e7f4cbea1ab621156a"
+    },
+    "trace": {
+      "path": "build/desktop-rendering/dr7/drag-final/emulator.log",
+      "sha256": "d51eabb97b782db6fe3d40b8c05f4d5ade3ab198e3cbc1d459921feceee95273"
+    },
+    "timing": {
+      "idle": {
+        "count": 10,
+        "median_ms": 299.5343109959556,
+        "p95_ms": 299.53565019545266,
+        "max_ms": 299.53565019545266
+      },
+      "scroll": {
+        "count": 10,
+        "median_ms": 1001.5462820297754,
+        "p95_ms": 1181.9220755054773,
+        "max_ms": 1181.9220755054773
+      },
+      "disk": {
+        "count": 10,
+        "median_ms": 299.53057533420076,
+        "p95_ms": 1422.4338470690561,
+        "max_ms": 1422.4338470690561
+      }
+    },
+    "outline_timing": {
+      "idle": {
+        "count": 40,
+        "median_ms": 44.6449641165019,
+        "p95_ms": 196.2130257591499,
+        "max_ms": 544.5683478084352
+      },
+      "scroll": {
+        "count": 40,
+        "median_ms": 348.0358877271529,
+        "p95_ms": 943.7022381547805,
+        "max_ms": 1043.990518467561
+      },
+      "disk": {
+        "count": 40,
+        "median_ms": 44.88679535199096,
+        "p95_ms": 64.9907172329601,
+        "max_ms": 84.86859633566823
+      }
+    },
+    "repair_target_pass": false,
+    "cancellations": [
+      {
+        "kind": "escape",
+        "scene": {
+          "clock": 95226725,
+          "sha256": "982cae809ee1039db0c151c14ddceae815351491857228aaf5597e0334c6746f",
+          "observations": 3
+        }
+      },
+      {
+        "kind": "independent_app_close",
+        "scene": {
+          "clock": 99921764,
+          "sha256": "ebf4370bd106be51f24fc5b25d34e8ba6f3d3be69b2fb37ea8a4119773a2c552",
+          "observations": 16
+        }
+      },
+      {
+        "kind": "event_queue_loss",
+        "scene": {
+          "clock": 106181668,
+          "sha256": "8a3ca232d2c17f6628d11ff6cfa35ec058776bd143f75ebc86f2b3ff8b9ac023",
+          "observations": 1
+        }
+      },
+      {
+        "kind": "cooperative_close_refused",
+        "scene": {
+          "clock": 106494473,
+          "sha256": "ffc5ca5033616a4a69ce7779c24a600e66c37f062ca0e973c0af90f2eb2aeadd",
+          "observations": 1
+        }
+      },
+      {
+        "kind": "hide",
+        "scene": {
+          "clock": 107782373,
+          "sha256": "db4e6cf4130fe87e899927680bd30d624cae5c3f145b7bb7298139ed3f96eba3",
+          "observations": 24
+        }
+      },
+      {
+        "kind": "retirement_while_held"
+      }
+    ],
+    "raw_samples": [
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 544.5683478084352
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.89631071683825
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.89461909642095
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.6449641165019
+      },
+      {
+        "load": "idle",
+        "kind": "release",
+        "capture_to_visible_ms": 118.91513563271538
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 154.02683191918564
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.89581732754987
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.89511248570933
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.644470727213516
+      },
+      {
+        "load": "idle",
+        "kind": "release",
+        "capture_to_visible_ms": 299.5350863219802
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.58064588886899
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.64482314813379
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.89588781173393
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.64369540118893
+      },
+      {
+        "load": "idle",
+        "kind": "release",
+        "capture_to_visible_ms": 98.9580323071306
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 196.2130257591499
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.894548612236896
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.644400243029466
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.643836369557036
+      },
+      {
+        "load": "idle",
+        "kind": "release",
+        "capture_to_visible_ms": 299.5350863219802
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.328171541587785
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.89687459031068
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.64320201190055
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.897156527046896
+      },
+      {
+        "load": "idle",
+        "kind": "release",
+        "capture_to_visible_ms": 98.95739794947411
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 196.2116865596529
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.642779106796226
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.644329758845416
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.643483948636764
+      },
+      {
+        "load": "idle",
+        "kind": "release",
+        "capture_to_visible_ms": 299.53565019545266
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.581562183261696
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.64362491700487
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.896663137758516
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.39227831666852
+      },
+      {
+        "load": "idle",
+        "kind": "release",
+        "capture_to_visible_ms": 98.95965344336383
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 196.2116865596529
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.64376588537298
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.64454121139757
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.89581732754987
+      },
+      {
+        "load": "idle",
+        "kind": "release",
+        "capture_to_visible_ms": 299.53438148013964
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.32838299413994
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.89708604286284
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.39178492738015
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.89588781173393
+      },
+      {
+        "load": "idle",
+        "kind": "release",
+        "capture_to_visible_ms": 98.95852569641899
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 196.2130257591499
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.64341346445271
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.89631071683825
+      },
+      {
+        "load": "idle",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.6449641165019
+      },
+      {
+        "load": "idle",
+        "kind": "release",
+        "capture_to_visible_ms": 299.5343109959556
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 142.15496934642835
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 402.3474757499165
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 261.6391237970112
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 205.3087982587587
+      },
+      {
+        "load": "scroll",
+        "kind": "release",
+        "capture_to_visible_ms": 1001.5462820297754
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 347.2751519286587
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 101.22959659082098
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 776.723514510579
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 261.8935717014459
+      },
+      {
+        "load": "scroll",
+        "kind": "release",
+        "capture_to_visible_ms": 1181.9220755054773
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 348.0353943378645
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 562.5052334506661
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 281.84919485916555
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 763.3354666546373
+      },
+      {
+        "load": "scroll",
+        "kind": "release",
+        "capture_to_visible_ms": 800.7188681931661
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 707.7596038224982
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 205.05392744921966
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 181.56140793567332
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 496.0662776879496
+      },
+      {
+        "load": "scroll",
+        "kind": "release",
+        "capture_to_visible_ms": 1141.7480641518848
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 348.0358877271529
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 181.56232423006603
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 390.22038994669987
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 943.7022381547805
+      },
+      {
+        "load": "scroll",
+        "kind": "release",
+        "capture_to_visible_ms": 881.0497632436258
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 347.27698451744413
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 482.42610790564703
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 181.56126696730522
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 295.4919725562781
+      },
+      {
+        "load": "scroll",
+        "kind": "release",
+        "capture_to_visible_ms": 820.9263313405105
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 348.0358877271529
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 943.7027315440688
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 382.1378275928665
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 1043.990518467561
+      },
+      {
+        "load": "scroll",
+        "kind": "release",
+        "capture_to_visible_ms": 800.7183043196937
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 347.276773064892
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 362.1817815300425
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 205.054350354324
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 382.1378980770505
+      },
+      {
+        "load": "scroll",
+        "kind": "release",
+        "capture_to_visible_ms": 820.9271066665351
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 347.78327241150356
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 81.27404391728541
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 482.4263898423833
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 663.0471863418568
+      },
+      {
+        "load": "scroll",
+        "kind": "release",
+        "capture_to_visible_ms": 1061.4178739432657
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 708.263706706852
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 205.0551256803486
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 181.56239471425008
+      },
+      {
+        "load": "scroll",
+        "kind": "outline",
+        "capture_to_visible_ms": 496.0679693083669
+      },
+      {
+        "load": "scroll",
+        "kind": "release",
+        "capture_to_visible_ms": 1141.7506015825109
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 52.97217707318655
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.63467342563003
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.88587905759826
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.88721825709529
+      },
+      {
+        "load": "disk",
+        "kind": "release",
+        "capture_to_visible_ms": 1422.4338470690561
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.31943150276509
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.71622362658043
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 61.13819270093983
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 64.95371303633178
+      },
+      {
+        "load": "disk",
+        "kind": "release",
+        "capture_to_visible_ms": 319.4835905771104
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.824591649879686
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.63509633073435
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.81243453781406
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 64.93031228722587
+      },
+      {
+        "load": "disk",
+        "kind": "release",
+        "capture_to_visible_ms": 159.07103255100589
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.571482944941984
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.88728874127934
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.635307783286514
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.886865836175026
+      },
+      {
+        "load": "disk",
+        "kind": "release",
+        "capture_to_visible_ms": 299.53057533420076
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.31999537623752
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.88679535199096
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.63453245726191
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 61.29607727322066
+      },
+      {
+        "load": "disk",
+        "kind": "release",
+        "capture_to_visible_ms": 159.07110303518994
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.571482944941984
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 64.81676226671497
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 81.39027233679035
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 84.86859633566823
+      },
+      {
+        "load": "disk",
+        "kind": "release",
+        "capture_to_visible_ms": 319.4821104092453
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.824591649879686
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 64.90648863301564
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.63467342563003
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 64.9907172329601
+      },
+      {
+        "load": "disk",
+        "kind": "release",
+        "capture_to_visible_ms": 199.22650656419205
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.319783923685364
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 64.900426993187
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.88637244688665
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.554744360912856
+      },
+      {
+        "load": "disk",
+        "kind": "release",
+        "capture_to_visible_ms": 319.4868328495769
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.318515208372396
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 64.79596943241906
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 64.82761683105929
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.8884164882242
+      },
+      {
+        "load": "disk",
+        "kind": "release",
+        "capture_to_visible_ms": 159.0590502397167
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 38.824168744775356
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 64.69905367934489
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.88679535199096
+      },
+      {
+        "load": "disk",
+        "kind": "outline",
+        "capture_to_visible_ms": 44.62240917760463
+      },
+      {
+        "load": "disk",
+        "kind": "release",
+        "capture_to_visible_ms": 299.5260643464213
+      }
+    ]
+  },
+  "scenes": {
+    "final_report": {
+      "path": "build/desktop-rendering/dr7/presentation-release/presentation-results.json",
+      "sha256": "eaa1c7892eb5ee864ccc7d470870ef9384791dc54055fd6091b911b42e6e3f4d"
+    },
+    "baseline": {
+      "path": "docs/development/desktop-rendering-dr0.json",
+      "sha256": "1200beb4c63925812a95b844da8c7a9e69a99491945d95cc761b3f56517628f4"
+    },
+    "checks": 62,
+    "scope": "One sample per matched scene, not percentile evidence; same full-raster oracle.",
+    "comparisons": [
+      {
+        "stage": 1,
+        "before_ms": 1963.2416522056615,
+        "after_ms": 1971.386804514935,
+        "pixels": "63c325447aceedd61c07ecf24892f9ad0eccdd4e3e934cbeebbf29a6d0a0384c"
+      },
+      {
+        "stage": 2,
+        "before_ms": 1423.9654683885483,
+        "after_ms": 1484.1335872643538,
+        "pixels": "609b064d15041232c804bcd13b842af0c72f3aa204632dba00e2f05c106ed149"
+      },
+      {
+        "stage": 3,
+        "before_ms": 581.6202622293583,
+        "after_ms": 220.61380446841534,
+        "pixels": "52b3695e1a3be36027cc26e2935898754a43f6a217f5d88a2548f149518f3bf2"
+      },
+      {
+        "stage": 4,
+        "before_ms": 240.66965613585967,
+        "after_ms": 280.7819233442208,
+        "pixels": "92c5d1e04d2e8ab2dda4977e89db1bcadc8755cc15b3e952211dc80e4aa85d0f"
+      },
+      {
+        "stage": 5,
+        "before_ms": 54231.02347264298,
+        "after_ms": 32289.921748458866,
+        "pixels": "caf66e4cd967b15d486337df9e23435d8ce278da895f4187cd325f1fc93c5395"
+      },
+      {
+        "stage": 6,
+        "before_ms": 30665.39663564893,
+        "after_ms": 30585.173792852624,
+        "pixels": "619606104a9c45137b7c7a28b32e2a44fe4671b2cf781f080a492e37d202e4cf"
+      },
+      {
+        "stage": 7,
+        "before_ms": 280.7819233442208,
+        "after_ms": 220.61380446841534,
+        "pixels": "17846aa6f71f49ee0879c02915f1f600e9ad753ef7a4fe0fe26e3edfaef5a8a4"
+      },
+      {
+        "stage": 8,
+        "before_ms": 240.67078388280456,
+        "after_ms": 160.44681333955475,
+        "pixels": "b87ae31001bf9b438754ef6ae6aa3233c87720c53395ef9450257a05454389aa"
+      },
+      {
+        "stage": 9,
+        "before_ms": 260.7260716767765,
+        "after_ms": 180.5032288804715,
+        "pixels": "b5c44aa463b5ef0f025baf118c4a10570499a48b561aa761ed678cfddb94545d"
+      },
+      {
+        "stage": 10,
+        "before_ms": 200.557952800971,
+        "after_ms": 120.33454613119362,
+        "pixels": "00eb01acca8d16a79a5ba14521a8c4c15b6de7b8d6bd6b40077cee2f6f1230a0"
+      },
+      {
+        "stage": 11,
+        "before_ms": 180.5032288804715,
+        "after_ms": 120.33511000466605,
+        "pixels": "6e395d06d0b20278902c0872bdd9eb875add47db44fbd0f5b7b3b2e3bfe7fd87"
+      },
+      {
+        "stage": 12,
+        "before_ms": 681.8989566931076,
+        "after_ms": 240.6702200093321,
+        "pixels": "2a2525803232f8eea417eb18e32b3f69aad06ad76da7e94ea1fb9cfea9e2d719"
+      },
+      {
+        "stage": 13,
+        "before_ms": 481.3404400186642,
+        "after_ms": 401.1170333488868,
+        "pixels": "5601b2b2d4a14a39cd492e3175a21ec7520dbfe9610010920dc72a0dd644e58a"
+      },
+      {
+        "stage": 14,
+        "before_ms": 722.0100961545239,
+        "after_ms": 340.9500422200262,
+        "pixels": "56b283765a9cd1a973cbab247659825d0a2661b6950514c5fbce03d0694e04a6"
+      },
+      {
+        "stage": 15,
+        "before_ms": 220.61436834188777,
+        "after_ms": 220.61380446841534,
+        "pixels": "619606104a9c45137b7c7a28b32e2a44fe4671b2cf781f080a492e37d202e4cf"
+      }
+    ]
+  },
+  "copies": {
+    "report": {
+      "path": "build/desktop-rendering/dr7/copy-costs/presentation-results.json",
+      "sha256": "5c4e3837fb7122749a8ccc76b315c4173ed49e91e50204994bdf353c35d8afb2"
+    },
+    "trace": {
+      "path": "build/desktop-rendering/dr7/copy-costs/emulator.log",
+      "sha256": "ec63d946851f8deb15d49a4abca9df76897c7792391c36223c78af04aab06715"
+    },
+    "production_control": {
+      "path": "build/desktop-rendering/dr7/presentation-release/presentation-results.json",
+      "sha256": "eaa1c7892eb5ee864ccc7d470870ef9384791dc54055fd6091b911b42e6e3f4d"
+    },
+    "raw_samples": [
+      {
+        "stage": 3,
+        "launches": [
+          4307128363.0
+        ],
+        "submission": {
+          "kind": "copy",
+          "start": 4307120897.25,
+          "end": 4307128616.875,
+          "return_a": 1,
+          "return_x": 13,
+          "elapsed_ms": 4.352891754619181,
+          "charged_cpu_ms": 3.6436094104843813,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.7092823441347996
+        },
+        "setup_to_launch_elapsed_ms": 4.209738376805628,
+        "launch_to_irq_idle_observation_ms": 8.262156054802864,
+        "irq_to_owner_poll_ms": 1.734263348647197,
+        "completion_poll": {
+          "kind": "poll",
+          "start": 4307146091.125,
+          "end": 4307149259.875,
+          "return_a": 20138,
+          "return_x": 0,
+          "elapsed_ms": 1.7867740657673825,
+          "charged_cpu_ms": 1.4970135851216344,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2897604806457479
+        },
+        "scope": "Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement."
+      },
+      {
+        "stage": 8,
+        "launches": [
+          4419908255.125
+        ],
+        "submission": {
+          "kind": "copy",
+          "start": 4419902328.625,
+          "end": 4419908509.125,
+          "return_a": 1,
+          "return_x": 13,
+          "elapsed_ms": 3.4850199963630164,
+          "charged_cpu_ms": 2.9007061105558525,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5843138858071638
+        },
+        "setup_to_launch_elapsed_ms": 3.3417961343654095,
+        "launch_to_irq_idle_observation_ms": 1.3907234355682927,
+        "irq_to_owner_poll_ms": 2.1596353994127258,
+        "completion_poll": {
+          "kind": "poll",
+          "start": 4419914551.5,
+          "end": 4419917726.125,
+          "return_a": 20138,
+          "return_x": 0,
+          "elapsed_ms": 1.7900868224179176,
+          "charged_cpu_ms": 1.4967316483854187,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.29335517403249883
+        },
+        "scope": "Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement."
+      },
+      {
+        "stage": 9,
+        "launches": [
+          4420192957.0
+        ],
+        "submission": {
+          "kind": "copy",
+          "start": 4420186946.625,
+          "end": 4420193117.75,
+          "return_a": 1,
+          "return_x": 13,
+          "elapsed_ms": 3.4797336825589706,
+          "charged_cpu_ms": 2.8971114171691013,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5826222653898692
+        },
+        "setup_to_launch_elapsed_ms": 3.389091021865603,
+        "launch_to_irq_idle_observation_ms": 1.4133488586496077,
+        "irq_to_owner_poll_ms": 2.126366864539266,
+        "completion_poll": {
+          "kind": "poll",
+          "start": 4420199234.5,
+          "end": 4420202405.375,
+          "return_a": 20138,
+          "return_x": 0,
+          "elapsed_ms": 1.7879722968962994,
+          "charged_cpu_ms": 1.4989871422751448,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.28898515462115454
+        },
+        "scope": "Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement."
+      },
+      {
+        "stage": 10,
+        "launches": [
+          4420511723.0
+        ],
+        "submission": {
+          "kind": "copy",
+          "start": 4420505795.875,
+          "end": 4420511976.125,
+          "return_a": 1,
+          "return_x": 13,
+          "elapsed_ms": 3.484879027994908,
+          "charged_cpu_ms": 2.8948559232793754,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5900231047155329
+        },
+        "setup_to_launch_elapsed_ms": 3.3421485552856796,
+        "launch_to_irq_idle_observation_ms": 1.4133488586496077,
+        "irq_to_owner_poll_ms": 2.1350364191779008,
+        "completion_poll": {
+          "kind": "poll",
+          "start": 4420518015.875,
+          "end": 4420521182.5,
+          "return_a": 20138,
+          "return_x": 0,
+          "elapsed_ms": 1.7855758346384656,
+          "charged_cpu_ms": 1.5001148892200078,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.28546094541845757
+        },
+        "scope": "Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement."
+      },
+      {
+        "stage": 11,
+        "launches": [
+          4420726219.0
+        ],
+        "submission": {
+          "kind": "copy",
+          "start": 4420720286.375,
+          "end": 4420726379.875,
+          "return_a": 1,
+          "return_x": 13,
+          "elapsed_ms": 3.435963004261474,
+          "charged_cpu_ms": 2.896406575328562,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5395564289329117
+        },
+        "setup_to_launch_elapsed_ms": 3.3452498593840527,
+        "launch_to_irq_idle_observation_ms": 1.425754075043101,
+        "irq_to_owner_poll_ms": 2.1217149083917057,
+        "completion_poll": {
+          "kind": "poll",
+          "start": 4420732510.25,
+          "end": 4420735683.375,
+          "return_a": 20138,
+          "return_x": 0,
+          "elapsed_ms": 1.7892410122092703,
+          "charged_cpu_ms": 1.497718426962174,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2915225852470964
+        },
+        "scope": "Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement."
+      },
+      {
+        "stage": 12,
+        "launches": [
+          4420939171.0
+        ],
+        "submission": {
+          "kind": "copy",
+          "start": 4420933261.25,
+          "end": 4420939424.75,
+          "return_a": 1,
+          "return_x": 13,
+          "elapsed_ms": 3.47543414733168,
+          "charged_cpu_ms": 2.8904154196839773,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5850187276477031
+        },
+        "setup_to_launch_elapsed_ms": 3.332351253702182,
+        "launch_to_irq_idle_observation_ms": 1.3907939197523467,
+        "irq_to_owner_poll_ms": 2.2084104547780523,
+        "completion_poll": {
+          "kind": "poll",
+          "start": 4420945554.0,
+          "end": 4420948718.0,
+          "return_a": 20138,
+          "return_x": 0,
+          "elapsed_ms": 1.7840956667733328,
+          "charged_cpu_ms": 1.4989871422751448,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.28510852449818785
+        },
+        "scope": "Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement."
+      },
+      {
+        "stage": 13,
+        "launches": [
+          4421371489.0
+        ],
+        "submission": {
+          "kind": "copy",
+          "start": 4421365581.625,
+          "end": 4421371742.625,
+          "return_a": 1,
+          "return_x": 13,
+          "elapsed_ms": 3.4740244636506015,
+          "charged_cpu_ms": 2.88956960947533,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5844548541752717
+        },
+        "setup_to_launch_elapsed_ms": 3.3310120542051567,
+        "launch_to_irq_idle_observation_ms": 1.4133488586496077,
+        "irq_to_owner_poll_ms": 2.1857850316967378,
+        "completion_poll": {
+          "kind": "poll",
+          "start": 4421377871.875,
+          "end": 4421385584.25,
+          "return_a": 20138,
+          "return_x": 0,
+          "elapsed_ms": 4.348803671944053,
+          "charged_cpu_ms": 2.1295386528216933,
+          "off_cpu_ms": 1.7045895071604884,
+          "interrupt_ms": 0.5146755119618709
+        },
+        "scope": "Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement."
+      },
+      {
+        "stage": 14,
+        "launches": [
+          4422082319.0
+        ],
+        "submission": {
+          "kind": "copy",
+          "start": 4422076398.125,
+          "end": 4422082480.875,
+          "return_a": 1,
+          "return_x": 13,
+          "elapsed_ms": 3.429901364432835,
+          "charged_cpu_ms": 2.887737020689927,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5421643437429076
+        },
+        "setup_to_launch_elapsed_ms": 3.338624346082982,
+        "launch_to_irq_idle_observation_ms": 1.4234985811533751,
+        "irq_to_owner_poll_ms": 2.1250981492262953,
+        "completion_poll": {
+          "kind": "poll",
+          "start": 4422088612.25,
+          "end": 4422096322.125,
+          "return_a": 20138,
+          "return_x": 0,
+          "elapsed_ms": 4.347393988262974,
+          "charged_cpu_ms": 2.1291862319014236,
+          "off_cpu_ms": 1.7034617602156252,
+          "interrupt_ms": 0.5147459961459248
+        },
+        "scope": "Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement."
+      }
+    ],
+    "submission_charged_cpu": {
+      "count": 8,
+      "median_ms": 2.896406575328562,
+      "p95_ms": 3.6436094104843813,
+      "max_ms": 3.6436094104843813
+    },
+    "submission_elapsed": {
+      "count": 8,
+      "median_ms": 3.4797336825589706,
+      "p95_ms": 4.352891754619181,
+      "max_ms": 4.352891754619181
+    },
+    "setup_to_launch_elapsed": {
+      "count": 8,
+      "median_ms": 3.3421485552856796,
+      "p95_ms": 4.209738376805628,
+      "max_ms": 4.209738376805628
+    },
+    "launch_to_irq_idle_upper_bound": {
+      "count": 8,
+      "median_ms": 1.4133488586496077,
+      "p95_ms": 8.262156054802864,
+      "max_ms": 8.262156054802864
+    },
+    "irq_to_owner_poll": {
+      "count": 8,
+      "median_ms": 2.1350364191779008,
+      "p95_ms": 2.2084104547780523,
+      "max_ms": 2.2084104547780523
+    },
+    "completion_poll_charged_cpu": {
+      "count": 8,
+      "median_ms": 1.4989871422751448,
+      "p95_ms": 2.1295386528216933,
+      "max_ms": 2.1295386528216933
+    }
+  },
+  "echo": {
+    "baseline": {
+      "report": {
+        "path": "build/desktop-rendering/dr7/echo-baseline-final/results.json",
+        "sha256": "5192bfa72bbb7c9c531fbb46a8f91e917973a1e9bac721901063f23379aac0ea"
+      },
+      "timing": {
+        "count": 12,
+        "median_ms": 35.10958176094866,
+        "p95_ms": 172.9292803987713,
+        "max_ms": 172.9292803987713
+      },
+      "raw_ms": [
+        51.950790762060905,
+        172.9292803987713,
+        35.295096133378635,
+        34.27617676869487,
+        33.7596686679476,
+        34.91673703337708,
+        52.07991778724772,
+        34.34891644663854,
+        35.10958176094866,
+        33.31026151041968,
+        35.623270494333774,
+        33.88879569313442
+      ]
+    },
+    "final": {
+      "report": {
+        "path": "build/desktop-rendering/dr7/echo-final/results.json",
+        "sha256": "303158bc574c57bb5aa7c211eb9f4ec033e3558a2423b36ff1dab1d29326636d"
+      },
+      "timing": {
+        "count": 12,
+        "median_ms": 35.816679095377786,
+        "p95_ms": 152.8739926047994,
+        "max_ms": 152.8739926047994
+      },
+      "raw_ms": [
+        51.950790762060905,
+        152.8739926047994,
+        35.816679095377786,
+        34.78761000819026,
+        54.317931599328425,
+        34.91730090684951,
+        52.07991778724772,
+        34.33876672413477,
+        35.110145634421094,
+        53.365549304391585,
+        35.10958176094866,
+        33.37341533933201
+      ]
+    },
+    "baseline_source_check": {
+      "path": "build/desktop-rendering/dr7/echo-baseline-source-check.json",
+      "sha256": "4e9e0218b45c2584b6de3a56d900aadea00bbe41d197d9520c346118a83eab97"
+    },
+    "matching_source_inputs": 241,
+    "regression_gate_pass": true,
+    "scope": "12 physical keys per matched image, including cold first samples. Companion writable WORK media mounted in both runs."
+  },
+  "cache": {
+    "warm": {
+      "report": {
+        "path": "build/desktop-rendering/dr7/cache-warm/presentation-results.json",
+        "sha256": "dd30b2a4bfc4b8cd0dfff2f4158c0b797d5efde86e8695290241ed4ead189729"
+      },
+      "checks": 57,
+      "scenes": [
+        {
+          "stage": 1,
+          "ms": 7165.352230612973,
+          "captures": 1,
+          "restores": 0,
+          "pixels": "e9b295e70ab1f12101ce4ce853c1f89942f497b07761ac12d2a42af03ba3ce30"
+        },
+        {
+          "stage": 2,
+          "ms": 320.89306280563704,
+          "captures": 2,
+          "restores": 0,
+          "pixels": "85ea516ef4333cbfc97f016e613078039cc8ac72cf174107746c27c12ef43c40"
+        },
+        {
+          "stage": 3,
+          "ms": 220.6149322153602,
+          "captures": 3,
+          "restores": 0,
+          "pixels": "f58cd0e436f27c53dbdf7dd079822a52b68be155ccdf8693c9ca2b6e9dfede4a"
+        },
+        {
+          "stage": 4,
+          "ms": 280.7813594707483,
+          "captures": 4,
+          "restores": 0,
+          "pixels": "efe8e743c9f12576ad87a01784f677ffdcf281bd513c1b5303ac88fffa1e0bc9"
+        },
+        {
+          "stage": 5,
+          "ms": 340.9494783465538,
+          "captures": 5,
+          "restores": 0,
+          "pixels": "8003d06ebeea89bbea03d9ae050f257adb2ba2eddde8ad8ae54bed6932045f3c"
+        },
+        {
+          "stage": 6,
+          "ms": 44684.43751506599,
+          "captures": 5,
+          "restores": 0,
+          "pixels": "327ce01d3393b76060f88553a2f9f2a5997e2c557a3c96c525e6a445dcc8651c"
+        },
+        {
+          "stage": 7,
+          "ms": 962.6808800373284,
+          "captures": 7,
+          "restores": 8,
+          "pixels": "d70882ac1a5e08322cf7ba299ceecc928f78727ae2bc61e82121a990ef0f9f3f"
+        },
+        {
+          "stage": 8,
+          "ms": 5013.962916861086,
+          "captures": 8,
+          "restores": 8,
+          "pixels": "2eef8c00fa8910681bba0a067ac441ee31cbfd1664e47447630788f3d63c93ee"
+        },
+        {
+          "stage": 9,
+          "ms": 107900.48197085057,
+          "captures": 9,
+          "restores": 8,
+          "pixels": "f2832529903d85d7143ebb5d4bc9bfdd1cf4b05ea180c035262d7aa73b54facd"
+        },
+        {
+          "stage": 10,
+          "ms": 501.396855559581,
+          "captures": 9,
+          "restores": 8,
+          "pixels": "63c325447aceedd61c07ecf24892f9ad0eccdd4e3e934cbeebbf29a6d0a0384c"
+        }
+      ]
+    },
+    "forced_miss": {
+      "report": {
+        "path": "build/desktop-rendering/dr7/cache-miss/presentation-results.json",
+        "sha256": "d38b2fc2dd9fe842745b6ecaa0a403b38285d3b7d9cdfeb26a92ae4576bbf915"
+      },
+      "checks": 57,
+      "scenes": [
+        {
+          "stage": 1,
+          "ms": 7168.151298530123,
+          "captures": 1,
+          "restores": 0,
+          "pixels": "e9b295e70ab1f12101ce4ce853c1f89942f497b07761ac12d2a42af03ba3ce30"
+        },
+        {
+          "stage": 2,
+          "ms": 320.8936266791095,
+          "captures": 2,
+          "restores": 0,
+          "pixels": "85ea516ef4333cbfc97f016e613078039cc8ac72cf174107746c27c12ef43c40"
+        },
+        {
+          "stage": 3,
+          "ms": 220.61436834188777,
+          "captures": 3,
+          "restores": 0,
+          "pixels": "f58cd0e436f27c53dbdf7dd079822a52b68be155ccdf8693c9ca2b6e9dfede4a"
+        },
+        {
+          "stage": 4,
+          "ms": 300.83777501166514,
+          "captures": 4,
+          "restores": 0,
+          "pixels": "efe8e743c9f12576ad87a01784f677ffdcf281bd513c1b5303ac88fffa1e0bc9"
+        },
+        {
+          "stage": 5,
+          "ms": 361.00476614052576,
+          "captures": 5,
+          "restores": 0,
+          "pixels": "8003d06ebeea89bbea03d9ae050f257adb2ba2eddde8ad8ae54bed6932045f3c"
+        },
+        {
+          "stage": 6,
+          "ms": 44684.43807893946,
+          "captures": 5,
+          "restores": 0,
+          "pixels": "327ce01d3393b76060f88553a2f9f2a5997e2c557a3c96c525e6a445dcc8651c"
+        },
+        {
+          "stage": 7,
+          "ms": 5615.638466884416,
+          "captures": 7,
+          "restores": 0,
+          "pixels": "d70882ac1a5e08322cf7ba299ceecc928f78727ae2bc61e82121a990ef0f9f3f"
+        },
+        {
+          "stage": 8,
+          "ms": 5013.962916861086,
+          "captures": 8,
+          "restores": 0,
+          "pixels": "2eef8c00fa8910681bba0a067ac441ee31cbfd1664e47447630788f3d63c93ee"
+        },
+        {
+          "stage": 9,
+          "ms": 107880.42611918312,
+          "captures": 9,
+          "restores": 0,
+          "pixels": "f2832529903d85d7143ebb5d4bc9bfdd1cf4b05ea180c035262d7aa73b54facd"
+        },
+        {
+          "stage": 10,
+          "ms": 501.39629168610855,
+          "captures": 9,
+          "restores": 0,
+          "pixels": "63c325447aceedd61c07ecf24892f9ad0eccdd4e3e934cbeebbf29a6d0a0384c"
+        }
+      ]
+    },
+    "scope": "Diagnostic-counter DR6 fixtures replayed with passive clocks. Stage 7 includes warm cover/uncover, second cover and hidden update, not an isolated restore. Observer-disabled production control is preserved in the DR6 record.",
+    "command_policy_evidence": {
+      "path": "docs/development/desktop-rendering-cache-policy.json",
+      "sha256": "d487b86cd3da3e2a33409f18314bb1fd9f3b087b075acc8336e650172108d12c"
+    }
+  },
+  "preview": {
+    "archive": "build/desktop-rendering/dr7/preview/exec816-demo.zip",
+    "sha256": "959c7e989ee98f2177c6b71ecc4cc4bb6c8942bc7df83c2a323f268f056dec53",
+    "bytes": 524821,
+    "members": {
+      "ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "EXEC816-LICENSING.md": "7bfcc44c90a9a28d28e311b480694b74984d35b71291ad66c45eb140c17b4cbe",
+      "EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "Exec-of816.xex": "64d6ed518bc7bd07241530d1e01854154bf90d4e511c223d03930f563318eba7",
+      "OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "README.txt": "ab97b5ded7bee6aebd3695b20abb378203312d8acda69ec0ac892b6011345244",
+      "altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "desktop/ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "desktop/EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "desktop/EXEC816-LICENSING.md": "7bfcc44c90a9a28d28e311b480694b74984d35b71291ad66c45eb140c17b4cbe",
+      "desktop/EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "desktop/Exec-of816.xex": "e5fd9f416b688cdccc71df39ec871f57de4bce89acf0f98c28c7d3e37eb2e80b",
+      "desktop/GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "desktop/GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "desktop/GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "desktop/GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "desktop/OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "desktop/README.txt": "bacdf835ca141a350bc6acb518037e41f9e413c3c861dc91b9bef391fd958b10",
+      "desktop/altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "desktop/system.atr": "255abecaca1aeeca51aaa0adc342df98c4760957f5159d4cfe96880d4af01945",
+      "desktop/work.atr": "663ad1368b7917a6657714006e5876e5e26b7f56448f1d72b18b5d9a28f8f5a3",
+      "system.atr": "835bc2878e8099d40abb3cf2fa119e6581484e4d247616372a6951cda79b011d",
+      "work.atr": "663ad1368b7917a6657714006e5876e5e26b7f56448f1d72b18b5d9a28f8f5a3"
+    },
+    "default": "standard shell/prime, five-second OF816 autoboot",
+    "optional": "desktop/Exec-of816.xex with matching desktop media",
+    "walkthroughs": {
+      "standard": {
+        "report": {
+          "path": "build/desktop-rendering/dr7/preview/demo-results.json",
+          "sha256": "222055830b8db9977f697efb8ddc5b50f5ce165ee0d5eec760b7e735baf7e274"
+        },
+        "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+        "autoboot_frames": 249,
+        "boot_xex_sha256": "64d6ed518bc7bd07241530d1e01854154bf90d4e511c223d03930f563318eba7",
+        "media_sha256": "835bc2878e8099d40abb3cf2fa119e6581484e4d247616372a6951cda79b011d",
+        "distribution_root": "build/desktop-rendering/dr7/extracted/exec816-demo",
+        "runtime_guards": "intact",
+        "task_stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 522,
+            "untouched_above_floor": 758
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 231,
+            "untouched_above_floor": 537
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 138,
+            "untouched_above_floor": 630
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 243,
+            "untouched_above_floor": 525
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 302,
+            "untouched_above_floor": 466
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 429,
+            "untouched_above_floor": 339
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 331,
+            "untouched_above_floor": 1973
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 272,
+          "untouched_from_base": 1264,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "desktop": {
+        "report": {
+          "path": "build/desktop-rendering/dr7/preview/desktop/demo-results.json",
+          "sha256": "8ce00f3547eccfe15c441a7bdd8d0b39174f461a2173dc6d2e3fd32452ab16c2"
+        },
+        "scope": "Desktop OF816 autoboot, independent client input/drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT",
+        "autoboot_frames": 249,
+        "boot_xex_sha256": "e5fd9f416b688cdccc71df39ec871f57de4bce89acf0f98c28c7d3e37eb2e80b",
+        "media_sha256": "255abecaca1aeeca51aaa0adc342df98c4760957f5159d4cfe96880d4af01945",
+        "distribution_root": "build/desktop-rendering/dr7/extracted-desktop/exec816-demo",
+        "runtime_guards": "intact",
+        "task_stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 537,
+            "untouched_above_floor": 743
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 153,
+            "untouched_above_floor": 615
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 546,
+            "untouched_above_floor": 222
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 148,
+            "untouched_above_floor": 620
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 449,
+            "untouched_above_floor": 319
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 351,
+            "untouched_above_floor": 417
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 688,
+            "untouched_above_floor": 1616
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 63,
+            "untouched_above_floor": 193
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 287,
+          "untouched_from_base": 1249,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "desktop_bytes_match_tested_extraction": true,
+    "published": false
+  },
+  "builds": {
+    "presentation-release/program": {
+      "manifest": {
+        "path": "build/desktop-rendering/dr7/presentation-release/program/build.json",
+        "sha256": "80e27f3e7ac4137b971cfaf664a5e1aef9dbbc4bd7f5afc2520c0897ba5db2c4"
+      },
+      "exec_build": {
+        "revision": "4c2ef43dc41f4adcfdc86f51e11c111a4a092908",
+        "dirty": true,
+        "display": "4c2ef43-dirty",
+        "actionc_pin": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "task_capacity": 8,
+        "stack_checks": true,
+        "mount": null,
+        "strings": {
+          "banner": "Exec816 (4c2ef43-dirty)\n\n",
+          "slots": "exec: 8 task slots\n",
+          "stackChecks": "exec: stack checks enabled\n",
+          "version": "Exec816 (4c2ef43-dirty)\nactionc pin: f1ff4ce\n",
+          "sioReady": "",
+          "mountStart": "SYS: no system volume configured\n"
+        }
+      },
+      "xex_sha256": "645921a3cc085b7d48d86f6dfab5687d4674df4a062383bd526967577e283488",
+      "optimize": true,
+      "stack_checks": true,
+      "code_placement": {
+        "previous_origin": 78592,
+        "code_origin": 917504,
+        "foreign_end": 867465,
+        "policy": "Native code follows complete fixed foreign banks; data remains in its existing arena"
+      },
+      "source_check_against_DR6": {
+        "matching": 248,
+        "comment_only": [],
+        "different": []
+      }
+    },
+    "input-single/program": {
+      "manifest": {
+        "path": "build/desktop-rendering/dr7/input-single/program/build.json",
+        "sha256": "71fbb65bde92d61f222a2b4eca12b44446ce2d1b927c61c09a6571d251e888f6"
+      },
+      "exec_build": {
+        "revision": "4c2ef43dc41f4adcfdc86f51e11c111a4a092908",
+        "dirty": true,
+        "display": "4c2ef43-dirty",
+        "actionc_pin": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "task_capacity": 8,
+        "stack_checks": true,
+        "mount": null,
+        "strings": {
+          "banner": "Exec816 (4c2ef43-dirty)\n\n",
+          "slots": "exec: 8 task slots\n",
+          "stackChecks": "exec: stack checks enabled\n",
+          "version": "Exec816 (4c2ef43-dirty)\nactionc pin: f1ff4ce\n",
+          "sioReady": "",
+          "mountStart": "SYS: no system volume configured\n"
+        }
+      },
+      "xex_sha256": "cc3ba8146ef3b620bff14f3a3010a2e945d01a547b1bcbaf951c9ef6df8f0e77",
+      "optimize": true,
+      "stack_checks": true,
+      "code_placement": {
+        "previous_origin": 78592,
+        "code_origin": 917504,
+        "foreign_end": 867465,
+        "policy": "Native code follows complete fixed foreign banks; data remains in its existing arena"
+      },
+      "source_check_against_DR6": {
+        "matching": 247,
+        "comment_only": [
+          "lib/console/consolebitmap.act"
+        ],
+        "different": []
+      }
+    },
+    "input-release/program": {
+      "manifest": {
+        "path": "build/desktop-rendering/dr7/input-release/program/build.json",
+        "sha256": "be57fedd8489ea71bf7d6bee720a65bb72bcd24f02bc6ddb24728af0ca90e941"
+      },
+      "exec_build": {
+        "revision": "4c2ef43dc41f4adcfdc86f51e11c111a4a092908",
+        "dirty": true,
+        "display": "4c2ef43-dirty",
+        "actionc_pin": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "task_capacity": 8,
+        "stack_checks": true,
+        "mount": null,
+        "strings": {
+          "banner": "Exec816 (4c2ef43-dirty)\n\n",
+          "slots": "exec: 8 task slots\n",
+          "stackChecks": "exec: stack checks enabled\n",
+          "version": "Exec816 (4c2ef43-dirty)\nactionc pin: f1ff4ce\n",
+          "sioReady": "",
+          "mountStart": "SYS: no system volume configured\n"
+        }
+      },
+      "xex_sha256": "daa2bbf7e1a5588d60a5f7057c00176c4a7546c8facb1b888f8d437d3d796411",
+      "optimize": true,
+      "stack_checks": true,
+      "code_placement": {
+        "previous_origin": 78592,
+        "code_origin": 917504,
+        "foreign_end": 867465,
+        "policy": "Native code follows complete fixed foreign banks; data remains in its existing arena"
+      },
+      "source_check_against_DR6": {
+        "matching": 248,
+        "comment_only": [],
+        "different": []
+      }
+    },
+    "preview": {
+      "manifest": {
+        "path": "build/desktop-rendering/dr7/preview/build.json",
+        "sha256": "7a2efaacecbf08b1fa738dc51a0cca862b697e5d482424562cf5fc3cb372aa1a"
+      },
+      "exec_build": {
+        "revision": "4c2ef43dc41f4adcfdc86f51e11c111a4a092908",
+        "dirty": true,
+        "display": "4c2ef43-dirty",
+        "actionc_pin": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "task_capacity": 8,
+        "stack_checks": true,
+        "mount": {
+          "profile": 4,
+          "boot": 1,
+          "format": 2,
+          "access": "readonly",
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 720,
+          "sector_bytes": 128
+        },
+        "strings": {
+          "banner": "Exec816 (4c2ef43-dirty)\n\n",
+          "slots": "exec: 8 task slots\n",
+          "stackChecks": "exec: stack checks enabled\n",
+          "version": "Exec816 (4c2ef43-dirty)\nactionc pin: f1ff4ce\n",
+          "sioReady": " ready, 57.6k profile\n",
+          "mountStart": "SYS: mounting...\n"
+        }
+      },
+      "xex_sha256": "a574538de80e96ba639e79f2a0f1b7115e912f8c4a09c11c2c43b1981bc78307",
+      "optimize": true,
+      "stack_checks": true,
+      "code_placement": null,
+      "source_check_against_DR6": {
+        "matching": 227,
+        "comment_only": [
+          "lib/console/consolebitmap.act"
+        ],
+        "different": []
+      }
+    },
+    "preview/desktop": {
+      "manifest": {
+        "path": "build/desktop-rendering/dr7/preview/desktop/build.json",
+        "sha256": "fe8d613803f348176e66f8fa8365c0c73e9d9fac942acab760cd22b0e382eda7"
+      },
+      "exec_build": {
+        "revision": "4c2ef43dc41f4adcfdc86f51e11c111a4a092908",
+        "dirty": true,
+        "display": "4c2ef43-dirty",
+        "actionc_pin": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "task_capacity": 8,
+        "stack_checks": true,
+        "mount": {
+          "profile": 4,
+          "boot": 1,
+          "format": 2,
+          "access": "readonly",
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 720,
+          "sector_bytes": 128
+        },
+        "strings": {
+          "banner": "Exec816 (4c2ef43-dirty)\n\n",
+          "slots": "exec: 8 task slots\n",
+          "stackChecks": "exec: stack checks enabled\n",
+          "version": "Exec816 (4c2ef43-dirty)\nactionc pin: f1ff4ce\n",
+          "sioReady": " ready, 57.6k profile\n",
+          "mountStart": "SYS: mounting...\n"
+        }
+      },
+      "xex_sha256": "921542c7e6c698cf9594cf895d331a2bba93cb3751adec996ed7a949bc38a8b9",
+      "optimize": true,
+      "stack_checks": true,
+      "code_placement": {
+        "previous_origin": 74496,
+        "code_origin": 917504,
+        "foreign_end": 867465,
+        "policy": "Native code follows complete fixed foreign banks; data remains in its existing arena"
+      },
+      "source_check_against_DR6": {
+        "matching": 248,
+        "comment_only": [],
+        "different": []
+      }
+    }
+  },
+  "memory": {
+    "baseline": "DR0; no comparison to the older compact-stack layout",
+    "bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "loading": 0,
+      "runtime": 0
+    },
+    "reservation_scope": "Includes guards, alignment, spare stack capacity and all DP reservations; no new Task or cache stack.",
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1312,
+        1312,
+        1312,
+        1312,
+        1312,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 25408,
+      "loading_excluding_os": 21872,
+      "runtime_including_os": 56128,
+      "loading_including_os": 52592
+    },
+    "upper_ram": {
+      "service_before": 11988,
+      "service_after": 12342,
+      "service_delta": 354,
+      "rounded_heap_before": 11992,
+      "rounded_heap_after": 12344,
+      "rounded_heap_delta": 352,
+      "move_continuation_payload": 10,
+      "cache_continuation_payload": 9,
+      "driver_state_delta": 0,
+      "demo_image_data_reservation": 4096,
+      "fixture_image_data_reservation": 8192
+    },
+    "vram": {
+      "delta": 131072,
+      "reserved": 243200,
+      "unassigned": 281088,
+      "slots": [
+        {
+          "base": 327680,
+          "bytes": 65536
+        },
+        {
+          "base": 393216,
+          "bytes": 65536
+        }
+      ]
+    },
+    "presentation_stack_usage": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 369,
+        "remaining_above_floor": 911
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 740,
+        "remaining_above_floor": 1564
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 46,
+        "remaining_above_floor": 210
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 273,
+        "remaining_above_floor": 1007
+      }
+    }
+  },
+  "host": {
+    "command": "python3 -m unittest discover -s tests",
+    "run": 361,
+    "skipped": 4,
+    "pass_count": 357,
+    "report": {
+      "path": "build/desktop-rendering/dr7/host-tests.log",
+      "sha256": "10eedfa7217291d4bfe6dca31e98cb99b57a074eea616429a2232fab00a0bf01"
+    },
+    "scope": "Full host discovery in shared workspace, including separate cartridge work; focused DR7 package checks are tests/test_desktop_package.py."
+  },
+  "open_targets": [
+    "Pointer p95: idle 46.41 ms >40, scrolling 61.31 ms >60, two-client 65.86 ms >60. All pointer maxima, button maxima and sub-ms sampler-gap gates pass.",
+    "Drag release repair: idle maximum 299.54 ms; scrolling 1181.92 ms; disk 1422.43 ms, all above 250 ms.",
+    "Outline p95 exceeds 40/60 ms in all three drag cohorts; idle/scroll maxima also exceed 60/100 ms.",
+    "Some retained widget/odd-clip scenes remain multi-second despite warm snapshot reuse. Timing acceptance is not achieved."
+  ],
+  "follow_up": [
+    "Instrument release-to-copy admission, geometry commit, exposure repair and first scanout in the same physical drag run. Current copy stage costs are small relative to end-to-end delay; do not attribute loaded repair solely to DMA.",
+    "Bound retained preparation and improve presenter scheduling/input service at existing quiescent boundaries before reducing protection or increasing list size.",
+    "Reduce setup and glyph replay for odd clipped/fragmented fallback and complex widget focus rebuilds. Preserve exact visibility and the fixed latency targets.",
+    "Retest the same four input and three drag cohorts only after a focused performance change."
+  ]
+}

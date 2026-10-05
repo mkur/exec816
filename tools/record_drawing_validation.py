@@ -79,7 +79,7 @@ def record(slice_name, paths):
                 'Production scroll did not have one start and launch')
             result['comparison'].append(dict(stage=stage,scroll_ms=b['edit_through_final_chunk_ms'][0],
                 elapsed_reduction_from_d3=1-b['edit_through_final_chunk_ms'][0]/a['edit_through_final_chunk_ms'][0],
-                starts=1,launches=1,polls=calls['GemDrawingScrollPoll']['calls'],
+                starts=1,launches=1,polls=calls['GemDrawingPoll']['calls'],
                 admissions=calls['DisplayCheck']['calls']))
         visible=[s.get('target_40ms') for r in reports.values() for s in r.get('scanout') or []
                  if s.get('target_40ms')]

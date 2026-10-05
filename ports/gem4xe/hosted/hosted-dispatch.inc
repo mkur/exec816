@@ -84,12 +84,15 @@ void GemVdiReset(void)
 /* Ordinary drawing clients use the same device/font implementation, without
  * a VDI packet or service request. Validate the complete half-open rectangle
  * before converting to the device's inclusive geometry. */
+extern void GemDrawingPrepare(uint16_t,uint16_t,uint16_t,uint16_t);
+
 uint16_t GemBitmapFill(uint16_t x,uint16_t y,uint16_t right,uint16_t bottom,
                         uint16_t pen)
 {
     if (!vdev || x>right || right>640 || y>bottom || bottom>240 || pen>15)
         return 1;
     if (x==right || y==bottom) return 0;
+    GemDrawingPrepare(x,y,right,bottom);
     dev_fill_rect((WORD)x,(WORD)y,(WORD)(right-1),(WORD)(bottom-1),(WORD)pen);
     return 0;
 }
@@ -115,6 +118,8 @@ uint16_t GemBitmapTextFill(uint16_t x,uint16_t y,const uint8_t *text,uint16_t co
         uint16_t,uint16_t,uint16_t,uint16_t,uint16_t,uint16_t,uint16_t);
     if (!count || (x&1) || !bitmap_text_valid(x,y,text,count,foreground,background))
         return 1;
+    GemDrawingPrepare(x,y,x+count*8,y+8);
+    GemDrawingPrepare(fillX,fillY,fillX+width,fillY+height);
     vbxe_text_run_fill(x,y,text,count,foreground,background,fillX,fillY,width,height,pen);
     return 0;
 }
@@ -126,6 +131,7 @@ uint16_t GemBitmapText(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
     uint16_t i;
     if (!bitmap_text_valid(x,y,text,count,foreground,background)) return 1;
     if (!count) return 0;
+    GemDrawingPrepare(x,y,x+count*8,y+8);
     if (!(x&1)) {
         extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);
         vbxe_text_run(x,y,text,count,foreground,background);
@@ -137,4 +143,59 @@ uint16_t GemBitmapText(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
     for (i=0;i<count;i++,x+=8) dev_glyph((WORD)text[i],(WORD)x,(WORD)y,1);
     vwk.text_color=color; vwk.wrt_mode=mode; vwk.clip=clip;
     return 0;
+}
+
+/* Pixel-exact half-open clipping, including an odd edge or a cut glyph.
+ * Full cells retain the batched atlas path. The donor raster fallback writes
+ * only the clipped ink; the explicit background fill also respects the clip. */
+uint16_t GemBitmapTextClip(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
+    uint16_t foreground,uint16_t background,uint16_t left,uint16_t top,
+    uint16_t right,uint16_t bottom)
+{
+    WORD color,mode,clip,x0,y0,x1,y1;
+    uint16_t a,b,c,d,i;
+    if (!bitmap_text_valid(x,y,text,count,foreground,background) ||
+        left>right || right>640 || top>bottom || bottom>240) return 1;
+    if (!count || left==right || top==bottom) return 0;
+    a=x>left ? x:left; b=y>top ? y:top;
+    c=x+count*8<right ? x+count*8:right; d=y+8<bottom ? y+8:bottom;
+    if (a>=c || b>=d) return 0;
+    if (a==x && b==y && c==x+count*8 && d==y+8)
+        return GemBitmapText(x,y,text,count,foreground,background);
+    GemDrawingPrepare(a,b,c,d);
+    color=vwk.text_color; mode=vwk.wrt_mode; clip=vwk.clip;
+    x0=vwk.xmn_clip; y0=vwk.ymn_clip; x1=vwk.xmx_clip; y1=vwk.ymx_clip;
+    dev_fill_rect(a,b,c-1,d-1,background);
+    vwk.text_color=foreground; vwk.wrt_mode=1; vwk.clip=1;
+    vwk.xmn_clip=a; vwk.ymn_clip=b; vwk.xmx_clip=c-1; vwk.ymx_clip=d-1;
+    for (i=0;i<count;i++,x+=8)
+        if (x<c && x+8>a) dev_glyph(text[i],x,y,1);
+    vwk.text_color=color; vwk.wrt_mode=mode; vwk.clip=clip;
+    vwk.xmn_clip=x0; vwk.ymn_clip=y0; vwk.xmx_clip=x1; vwk.ymx_clip=y1;
+    return 0;
+}
+
+/* Private AES graphics. Geometry has been intersected with the admitted outer
+ * clip before these calls. Public VDI operation validation remains unchanged. */
+void GemWidgetFill(uint16_t mode,uint16_t style,uint16_t pen,
+    uint16_t left,uint16_t top,uint16_t right,uint16_t bottom)
+{
+    extern void vbxe_xor_rect(WORD,WORD,WORD,WORD);
+    extern void GemWidgetStipple(uint16_t,uint16_t,uint16_t,uint16_t);
+    if (mode==3) vbxe_xor_rect(left,top,right-1,bottom-1);
+    else if (style==2) GemWidgetStipple(left,top,right,bottom);
+    else dev_fill_rect(left,top,right-1,bottom-1,style==0 ? 0 : pen);
+}
+void GemWidgetText(int16_t x,int16_t y,const int16_t *glyphs,uint16_t count,
+    uint16_t colour,uint16_t left,uint16_t top,uint16_t right,uint16_t bottom)
+{
+    WORD color=vwk.text_color,mode=vwk.wrt_mode,clip=vwk.clip;
+    WORD x0=vwk.xmn_clip,y0=vwk.ymn_clip,x1=vwk.xmx_clip,y1=vwk.ymx_clip;
+    uint16_t i;
+    vwk.text_color=colour;vwk.wrt_mode=1;vwk.clip=1;
+    vwk.xmn_clip=left;vwk.ymn_clip=top;vwk.xmx_clip=right-1;vwk.ymx_clip=bottom-1;
+    for (i=0;i<count;i++,x+=8)
+        if (x<right && x+8>left && y<bottom && y+8>top) dev_glyph(glyphs[i],x,y,1);
+    vwk.text_color=color;vwk.wrt_mode=mode;vwk.clip=clip;
+    vwk.xmn_clip=x0;vwk.ymn_clip=y0;vwk.xmx_clip=x1;vwk.ymx_clip=y1;
 }

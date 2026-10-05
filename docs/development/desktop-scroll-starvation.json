@@ -1,0 +1,1300 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-05",
+  "problem": "Continuous output restarted the obscured console repaint at the upper rows before lower rows could finish.",
+  "change": "Drain prior damage before ordinary obscured writes; use existing bounded gathering for long writes followed by one full-model repaint.",
+  "source_inputs": {
+    "lib/console/consoledriver.act": "0a155dcde19c452b9908971f9096375d6c0d7fcabb9802425b63b7861723130e",
+    "lib/console/consoledisplay.act": "66fb61fbc3ac1d2a8f5276d29fe2c9b91100578d5c63320428cbbd93e1327985",
+    "lib/console/console-batch-display.inc": "fd22dcd2155f063209cbe1fa5f088bd0586292c4b163eae043037af21c4284a8",
+    "tests/programs/desktop_presentation.act": "0482b93fee977df204707d616b35a303bffc811c8273d5af9191e26914336a7c",
+    "tests/programs/scrollprobe.act": "70a7fe7713f850c54ea2fbe08859cbe46eeed2e8df1b1fd2703af9eb7ab4ccd7",
+    "tools/test_desktop_presentation.py": "589be2efdad689798908bec46890b3ca47343827b1bd2d2a268b367f1672a17c",
+    "tools/test_demo.py": "0660f98da480aeb8516f42e1057f8a8753403cdc7e5769b8101d7e1aac405f1b",
+    "ports/gem4xe/patches/0006-clipped-glyphs.patch": "646a822683b834b1336636990ffdf44ea8f2dc0907cdcdef0dd61ef07b306b48"
+  },
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 1,
+      "internal_port": 0,
+      "map": "Mouse -> ST Mouse (port 1)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "build_modes": {
+    "executed": [
+      "optimized"
+    ],
+    "raw": "Not required: driver/presentation policy changed; no compiler ABI or layout change."
+  },
+  "comparison": {
+    "before": {
+      "status": "fail",
+      "error": "New console output overtook unfinished scroll repaint",
+      "report": "build/occluded-scroll/before/presentation-results.json",
+      "report_sha256": "55cb69b7150f9521386b6b5a229df9ccdf6e396e51482f3113c5aae61b3a7d2b",
+      "build": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "override": false,
+        "optimize": true,
+        "stack_checks": true,
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "image_sha256": "479c367586dfe174a70d48aac9a04a14a105b55eb1116109d6de57758a1f1b20",
+        "xex_sha256": "6e6fffd69444a6f11f89718650d4cde129f19208cdf01e876262bc036d2fff7e",
+        "memory_sha256": "3ed188b7328c996dfdacd8730859990ea7674cabf45749870443ba298e6a27aa"
+      },
+      "continuous_scroll": {
+        "feeds": 48,
+        "overtakes": 27
+      },
+      "checks": 96,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "native_nmi_count": 819,
+        "native_irq_count": 60311,
+        "switches": 989
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 356,
+          "remaining_above_floor": 924
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 721,
+          "remaining_above_floor": 1583
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 50,
+          "remaining_above_floor": 206
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 281,
+          "remaining_above_floor": 999
+        }
+      },
+      "generated_sources": {
+        "consoledisplay.act": "bf614c1cfde62cfae6d4dbccbfc9c71d83a4e3dbc6e5e9105ffd74ee51d27627",
+        "consoledriver.act": "2008002070797120ea1e18e3fc8c038b651d186bc60cd49f4ffbee74d4431330"
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "begin_cycle": 6002796,
+          "end_cycle": 9500537,
+          "stimulus_to_settled_cycles": 3497741,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "63c325447aceedd61c07ecf24892f9ad0eccdd4e3e934cbeebbf29a6d0a0384c",
+          "elapsed_ms": 1972.283363336101
+        },
+        {
+          "stage": 2,
+          "begin_cycle": 9500537,
+          "end_cycle": 12168138,
+          "stimulus_to_settled_cycles": 2667601,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "609b064d15041232c804bcd13b842af0c72f3aa204632dba00e2f05c106ed149",
+          "elapsed_ms": 1504.1894389317981
+        },
+        {
+          "stage": 3,
+          "begin_cycle": 12168138,
+          "end_cycle": 12559385,
+          "stimulus_to_settled_cycles": 391247,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "52b3695e1a3be36027cc26e2935898754a43f6a217f5d88a2548f149518f3bf2",
+          "elapsed_ms": 220.61380446841534
+        },
+        {
+          "stage": 4,
+          "begin_cycle": 12559385,
+          "end_cycle": 13057337,
+          "stimulus_to_settled_cycles": 497952,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "92c5d1e04d2e8ab2dda4977e89db1bcadc8755cc15b3e952211dc80e4aa85d0f",
+          "elapsed_ms": 280.7819233442208
+        },
+        {
+          "stage": 5,
+          "begin_cycle": 13057337,
+          "end_cycle": 13982105,
+          "stimulus_to_settled_cycles": 924768,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "caf66e4cd967b15d486337df9e23435d8ce278da895f4187cd325f1fc93c5395",
+          "elapsed_ms": 521.452143353553
+        },
+        {
+          "stage": 6,
+          "begin_cycle": 13982105,
+          "end_cycle": 14480057,
+          "stimulus_to_settled_cycles": 497952,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "619606104a9c45137b7c7a28b32e2a44fe4671b2cf781f080a492e37d202e4cf",
+          "elapsed_ms": 280.7819233442208
+        },
+        {
+          "stage": 7,
+          "begin_cycle": 14480057,
+          "end_cycle": 14871305,
+          "stimulus_to_settled_cycles": 391248,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "17846aa6f71f49ee0879c02915f1f600e9ad753ef7a4fe0fe26e3edfaef5a8a4",
+          "elapsed_ms": 220.61436834188777
+        },
+        {
+          "stage": 8,
+          "begin_cycle": 14871305,
+          "end_cycle": 15155850,
+          "stimulus_to_settled_cycles": 284545,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "b87ae31001bf9b438754ef6ae6aa3233c87720c53395ef9450257a05454389aa",
+          "elapsed_ms": 160.44737721302718
+        },
+        {
+          "stage": 9,
+          "begin_cycle": 15155850,
+          "end_cycle": 15475961,
+          "stimulus_to_settled_cycles": 320111,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "b5c44aa463b5ef0f025baf118c4a10570499a48b561aa761ed678cfddb94545d",
+          "elapsed_ms": 180.50210113352665
+        },
+        {
+          "stage": 10,
+          "begin_cycle": 15475961,
+          "end_cycle": 15689370,
+          "stimulus_to_settled_cycles": 213409,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "00eb01acca8d16a79a5ba14521a8c4c15b6de7b8d6bd6b40077cee2f6f1230a0",
+          "elapsed_ms": 120.33567387813848
+        },
+        {
+          "stage": 11,
+          "begin_cycle": 15689370,
+          "end_cycle": 15902777,
+          "stimulus_to_settled_cycles": 213407,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "6e395d06d0b20278902c0872bdd9eb875add47db44fbd0f5b7b3b2e3bfe7fd87",
+          "elapsed_ms": 120.33454613119362
+        },
+        {
+          "stage": 12,
+          "begin_cycle": 15902777,
+          "end_cycle": 16329593,
+          "stimulus_to_settled_cycles": 426816,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "2a2525803232f8eea417eb18e32b3f69aad06ad76da7e94ea1fb9cfea9e2d719",
+          "elapsed_ms": 240.6702200093321
+        },
+        {
+          "stage": 13,
+          "begin_cycle": 16329593,
+          "end_cycle": 16791978,
+          "stimulus_to_settled_cycles": 462385,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "5601b2b2d4a14a39cd492e3175a21ec7520dbfe9610010920dc72a0dd644e58a",
+          "elapsed_ms": 260.7266355502489
+        },
+        {
+          "stage": 14,
+          "begin_cycle": 16791978,
+          "end_cycle": 17147657,
+          "stimulus_to_settled_cycles": 355679,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "56b283765a9cd1a973cbab247659825d0a2661b6950514c5fbce03d0694e04a6",
+          "elapsed_ms": 200.557952800971
+        },
+        {
+          "stage": 15,
+          "begin_cycle": 17147657,
+          "end_cycle": 17538905,
+          "stimulus_to_settled_cycles": 391248,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "619606104a9c45137b7c7a28b32e2a44fe4671b2cf781f080a492e37d202e4cf",
+          "elapsed_ms": 220.61436834188777
+        },
+        {
+          "stage": 16,
+          "begin_cycle": 17538905,
+          "end_cycle": 26430905,
+          "stimulus_to_settled_cycles": 8892000,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "a536b8ea56763ed286d15fe171c24a1bc0f599aee7b40dbfda896884d19a51ed",
+          "elapsed_ms": 5013.962916861086
+        },
+        {
+          "stage": 17,
+          "begin_cycle": 26430905,
+          "end_cycle": 34469273,
+          "stimulus_to_settled_cycles": 8038368,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "99466ebea5424875e7ac3e3d70486ec77402a354fe0e7d60f1af211ff4c54c94",
+          "elapsed_ms": 4532.622476842422
+        },
+        {
+          "stage": 18,
+          "begin_cycle": 34469273,
+          "end_cycle": 35145065,
+          "stimulus_to_settled_cycles": 675792,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "f28c297f79d0585a6a63a4e107f7f9776fd80f6726f75aeefeab7a5e74ae62bb",
+          "elapsed_ms": 381.06118168144246
+        }
+      ]
+    },
+    "after": {
+      "status": "pass",
+      "error": null,
+      "report": "build/occluded-scroll/after/presentation-results.json",
+      "report_sha256": "57ca2b74b07ecaef436227da10934fefef90329d9e37c36a7b32182c22603552",
+      "build": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "override": false,
+        "optimize": true,
+        "stack_checks": true,
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "image_sha256": "5b3703b6ab681b746a5a6469fca2d9937672de49cdef38e2059e8bb409cc4466",
+        "xex_sha256": "6d920afdf6bb392f2655215fbb4f5b11fb9c54e7581d407d1e11935df558f29f",
+        "memory_sha256": "3ed188b7328c996dfdacd8730859990ea7674cabf45749870443ba298e6a27aa"
+      },
+      "continuous_scroll": {
+        "feeds": 48,
+        "overtakes": 0
+      },
+      "checks": 96,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "native_nmi_count": 1381,
+        "native_irq_count": 39095,
+        "switches": 787
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 382,
+          "remaining_above_floor": 898
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 721,
+          "remaining_above_floor": 1583
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 46,
+          "remaining_above_floor": 210
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "generated_sources": {
+        "consoledisplay.act": "0d21f07c52a3759b8592b38f82a53de726f80419cf32b593cc2157ff2b6ae24e",
+        "consoledriver.act": "7d2d72c3b06b54da4a125cd85937c9c140177fabc49f4647df6a2d6f7a4faa8d"
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "begin_cycle": 6004826,
+          "end_cycle": 9500537,
+          "stimulus_to_settled_cycles": 3495711,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "63c325447aceedd61c07ecf24892f9ad0eccdd4e3e934cbeebbf29a6d0a0384c",
+          "elapsed_ms": 1971.138700187065
+        },
+        {
+          "stage": 2,
+          "begin_cycle": 9500537,
+          "end_cycle": 12168137,
+          "stimulus_to_settled_cycles": 2667600,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "609b064d15041232c804bcd13b842af0c72f3aa204632dba00e2f05c106ed149",
+          "elapsed_ms": 1504.1888750583257
+        },
+        {
+          "stage": 3,
+          "begin_cycle": 12168137,
+          "end_cycle": 12559385,
+          "stimulus_to_settled_cycles": 391248,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "52b3695e1a3be36027cc26e2935898754a43f6a217f5d88a2548f149518f3bf2",
+          "elapsed_ms": 220.61436834188777
+        },
+        {
+          "stage": 4,
+          "begin_cycle": 12559385,
+          "end_cycle": 13057337,
+          "stimulus_to_settled_cycles": 497952,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "92c5d1e04d2e8ab2dda4977e89db1bcadc8755cc15b3e952211dc80e4aa85d0f",
+          "elapsed_ms": 280.7819233442208
+        },
+        {
+          "stage": 5,
+          "begin_cycle": 13057337,
+          "end_cycle": 13910969,
+          "stimulus_to_settled_cycles": 853632,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "caf66e4cd967b15d486337df9e23435d8ce278da895f4187cd325f1fc93c5395",
+          "elapsed_ms": 481.3404400186642
+        },
+        {
+          "stage": 6,
+          "begin_cycle": 13910969,
+          "end_cycle": 14373353,
+          "stimulus_to_settled_cycles": 462384,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "619606104a9c45137b7c7a28b32e2a44fe4671b2cf781f080a492e37d202e4cf",
+          "elapsed_ms": 260.7260716767765
+        },
+        {
+          "stage": 7,
+          "begin_cycle": 14373353,
+          "end_cycle": 14764602,
+          "stimulus_to_settled_cycles": 391249,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "17846aa6f71f49ee0879c02915f1f600e9ad753ef7a4fe0fe26e3edfaef5a8a4",
+          "elapsed_ms": 220.6149322153602
+        },
+        {
+          "stage": 8,
+          "begin_cycle": 14764602,
+          "end_cycle": 15049145,
+          "stimulus_to_settled_cycles": 284543,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "b87ae31001bf9b438754ef6ae6aa3233c87720c53395ef9450257a05454389aa",
+          "elapsed_ms": 160.4462494660823
+        },
+        {
+          "stage": 9,
+          "begin_cycle": 15049145,
+          "end_cycle": 15369257,
+          "stimulus_to_settled_cycles": 320112,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "b5c44aa463b5ef0f025baf118c4a10570499a48b561aa761ed678cfddb94545d",
+          "elapsed_ms": 180.50266500699908
+        },
+        {
+          "stage": 10,
+          "begin_cycle": 15369257,
+          "end_cycle": 15582665,
+          "stimulus_to_settled_cycles": 213408,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "00eb01acca8d16a79a5ba14521a8c4c15b6de7b8d6bd6b40077cee2f6f1230a0",
+          "elapsed_ms": 120.33511000466605
+        },
+        {
+          "stage": 11,
+          "begin_cycle": 15582665,
+          "end_cycle": 15796074,
+          "stimulus_to_settled_cycles": 213409,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "6e395d06d0b20278902c0872bdd9eb875add47db44fbd0f5b7b3b2e3bfe7fd87",
+          "elapsed_ms": 120.33567387813848
+        },
+        {
+          "stage": 12,
+          "begin_cycle": 15796074,
+          "end_cycle": 16222890,
+          "stimulus_to_settled_cycles": 426816,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "2a2525803232f8eea417eb18e32b3f69aad06ad76da7e94ea1fb9cfea9e2d719",
+          "elapsed_ms": 240.6702200093321
+        },
+        {
+          "stage": 13,
+          "begin_cycle": 16222890,
+          "end_cycle": 16685273,
+          "stimulus_to_settled_cycles": 462383,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "5601b2b2d4a14a39cd492e3175a21ec7520dbfe9610010920dc72a0dd644e58a",
+          "elapsed_ms": 260.725507803304
+        },
+        {
+          "stage": 14,
+          "begin_cycle": 16685273,
+          "end_cycle": 17040953,
+          "stimulus_to_settled_cycles": 355680,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "56b283765a9cd1a973cbab247659825d0a2661b6950514c5fbce03d0694e04a6",
+          "elapsed_ms": 200.5585166744434
+        },
+        {
+          "stage": 15,
+          "begin_cycle": 17040953,
+          "end_cycle": 17432202,
+          "stimulus_to_settled_cycles": 391249,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "619606104a9c45137b7c7a28b32e2a44fe4671b2cf781f080a492e37d202e4cf",
+          "elapsed_ms": 220.6149322153602
+        },
+        {
+          "stage": 16,
+          "begin_cycle": 17432202,
+          "end_cycle": 31161450,
+          "stimulus_to_settled_cycles": 13729248,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "a536b8ea56763ed286d15fe171c24a1bc0f599aee7b40dbfda896884d19a51ed",
+          "elapsed_ms": 7741.558743633516
+        },
+        {
+          "stage": 17,
+          "begin_cycle": 31161450,
+          "end_cycle": 54387353,
+          "stimulus_to_settled_cycles": 23225903,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "99466ebea5424875e7ac3e3d70486ec77402a354fe0e7d60f1af211ff4c54c94",
+          "elapsed_ms": 13096.470574967683
+        },
+        {
+          "stage": 18,
+          "begin_cycle": 54387353,
+          "end_cycle": 55098714,
+          "stimulus_to_settled_cycles": 711361,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "f28c297f79d0585a6a63a4e107f7f9776fd80f6726f75aeefeab7a5e74ae62bb",
+          "elapsed_ms": 401.1175972223593
+        }
+      ]
+    },
+    "batched": {
+      "status": "pass",
+      "error": null,
+      "report": "build/occluded-scroll/batched/presentation-results.json",
+      "report_sha256": "f78f0d585fb9aeff92743069a9d8dd991f77bed40382dcbbc4562b94f439bbb8",
+      "build": {
+        "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "override": false,
+        "optimize": true,
+        "stack_checks": true,
+        "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+        "image_sha256": "c944caa198166e6aedcb88df6d699235d407d503c398629da33a532c0b59ddcd",
+        "xex_sha256": "28ebbd1ae9a668b8507fd23bc65d5e5e5bf591871af302af8621ec6c9ba70493",
+        "memory_sha256": "3ed188b7328c996dfdacd8730859990ea7674cabf45749870443ba298e6a27aa"
+      },
+      "continuous_scroll": {
+        "feeds": 31,
+        "overtakes": 0,
+        "batches": 9,
+        "multirow": 5,
+        "maxRows": 3
+      },
+      "checks": 96,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "native_nmi_count": 1099,
+        "native_irq_count": 16894,
+        "switches": 790
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 368,
+          "remaining_above_floor": 912
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 724,
+          "remaining_above_floor": 1580
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 50,
+          "remaining_above_floor": 206
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      },
+      "generated_sources": {
+        "consoledisplay.act": "2d186ce2680413c07324dcaef68b5b2738170757549540af35b3b0dfa5627ede",
+        "consoledriver.act": "9b92df6120a6645374cdf3e70f5693d5dc233c4fba674955dafd1c1b0f0dc011"
+      },
+      "observations": [
+        {
+          "stage": 1,
+          "begin_cycle": 6008332,
+          "end_cycle": 9500537,
+          "stimulus_to_settled_cycles": 3492205,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "63c325447aceedd61c07ecf24892f9ad0eccdd4e3e934cbeebbf29a6d0a0384c",
+          "elapsed_ms": 1969.16175979272
+        },
+        {
+          "stage": 2,
+          "begin_cycle": 9500537,
+          "end_cycle": 12168137,
+          "stimulus_to_settled_cycles": 2667600,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "609b064d15041232c804bcd13b842af0c72f3aa204632dba00e2f05c106ed149",
+          "elapsed_ms": 1504.1888750583257
+        },
+        {
+          "stage": 3,
+          "begin_cycle": 12168137,
+          "end_cycle": 12559385,
+          "stimulus_to_settled_cycles": 391248,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "52b3695e1a3be36027cc26e2935898754a43f6a217f5d88a2548f149518f3bf2",
+          "elapsed_ms": 220.61436834188777
+        },
+        {
+          "stage": 4,
+          "begin_cycle": 12559385,
+          "end_cycle": 13057337,
+          "stimulus_to_settled_cycles": 497952,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "92c5d1e04d2e8ab2dda4977e89db1bcadc8755cc15b3e952211dc80e4aa85d0f",
+          "elapsed_ms": 280.7819233442208
+        },
+        {
+          "stage": 5,
+          "begin_cycle": 13057337,
+          "end_cycle": 13910969,
+          "stimulus_to_settled_cycles": 853632,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "caf66e4cd967b15d486337df9e23435d8ce278da895f4187cd325f1fc93c5395",
+          "elapsed_ms": 481.3404400186642
+        },
+        {
+          "stage": 6,
+          "begin_cycle": 13910969,
+          "end_cycle": 14408922,
+          "stimulus_to_settled_cycles": 497953,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "619606104a9c45137b7c7a28b32e2a44fe4671b2cf781f080a492e37d202e4cf",
+          "elapsed_ms": 280.78248721769324
+        },
+        {
+          "stage": 7,
+          "begin_cycle": 14408922,
+          "end_cycle": 14800170,
+          "stimulus_to_settled_cycles": 391248,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "17846aa6f71f49ee0879c02915f1f600e9ad753ef7a4fe0fe26e3edfaef5a8a4",
+          "elapsed_ms": 220.61436834188777
+        },
+        {
+          "stage": 8,
+          "begin_cycle": 14800170,
+          "end_cycle": 15084713,
+          "stimulus_to_settled_cycles": 284543,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "b87ae31001bf9b438754ef6ae6aa3233c87720c53395ef9450257a05454389aa",
+          "elapsed_ms": 160.4462494660823
+        },
+        {
+          "stage": 9,
+          "begin_cycle": 15084713,
+          "end_cycle": 15404826,
+          "stimulus_to_settled_cycles": 320113,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "b5c44aa463b5ef0f025baf118c4a10570499a48b561aa761ed678cfddb94545d",
+          "elapsed_ms": 180.5032288804715
+        },
+        {
+          "stage": 10,
+          "begin_cycle": 15404826,
+          "end_cycle": 15618234,
+          "stimulus_to_settled_cycles": 213408,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "00eb01acca8d16a79a5ba14521a8c4c15b6de7b8d6bd6b40077cee2f6f1230a0",
+          "elapsed_ms": 120.33511000466605
+        },
+        {
+          "stage": 11,
+          "begin_cycle": 15618234,
+          "end_cycle": 15831641,
+          "stimulus_to_settled_cycles": 213407,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "6e395d06d0b20278902c0872bdd9eb875add47db44fbd0f5b7b3b2e3bfe7fd87",
+          "elapsed_ms": 120.33454613119362
+        },
+        {
+          "stage": 12,
+          "begin_cycle": 15831641,
+          "end_cycle": 16258458,
+          "stimulus_to_settled_cycles": 426817,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "2a2525803232f8eea417eb18e32b3f69aad06ad76da7e94ea1fb9cfea9e2d719",
+          "elapsed_ms": 240.67078388280456
+        },
+        {
+          "stage": 13,
+          "begin_cycle": 16258458,
+          "end_cycle": 16720841,
+          "stimulus_to_settled_cycles": 462383,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "5601b2b2d4a14a39cd492e3175a21ec7520dbfe9610010920dc72a0dd644e58a",
+          "elapsed_ms": 260.725507803304
+        },
+        {
+          "stage": 14,
+          "begin_cycle": 16720841,
+          "end_cycle": 17076521,
+          "stimulus_to_settled_cycles": 355680,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "56b283765a9cd1a973cbab247659825d0a2661b6950514c5fbce03d0694e04a6",
+          "elapsed_ms": 200.5585166744434
+        },
+        {
+          "stage": 15,
+          "begin_cycle": 17076521,
+          "end_cycle": 17467769,
+          "stimulus_to_settled_cycles": 391248,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "619606104a9c45137b7c7a28b32e2a44fe4671b2cf781f080a492e37d202e4cf",
+          "elapsed_ms": 220.61436834188777
+        },
+        {
+          "stage": 16,
+          "begin_cycle": 17467769,
+          "end_cycle": 31197018,
+          "stimulus_to_settled_cycles": 13729249,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "a536b8ea56763ed286d15fe171c24a1bc0f599aee7b40dbfda896884d19a51ed",
+          "elapsed_ms": 7741.559307506988
+        },
+        {
+          "stage": 17,
+          "begin_cycle": 31197018,
+          "end_cycle": 44392745,
+          "stimulus_to_settled_cycles": 13195727,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "99466ebea5424875e7ac3e3d70486ec77402a354fe0e7d60f1af211ff4c54c94",
+          "elapsed_ms": 7440.720404748378
+        },
+        {
+          "stage": 18,
+          "begin_cycle": 44392745,
+          "end_cycle": 45104106,
+          "stimulus_to_settled_cycles": 711361,
+          "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration",
+          "pixels": "f28c297f79d0585a6a63a4e107f7f9776fd80f6726f75aeefeab7a5e74ae62bb",
+          "elapsed_ms": 401.1175972223593
+        }
+      ]
+    }
+  },
+  "comparison_scope": "Single matched scenes, not a latency distribution. Stage 16 includes panel opening and 25 short writes; stage 17 is a 512-byte write; both include two PAL settling frames.",
+  "baseline_provenance": "The before build captured its generated driver before the admission fix. Its live console_inputs were hashed after compilation while the working source had advanced, so use the retained generated-driver hashes and emitted-image identities above for this baseline, not that live-source field. Before and after executions completed before the batching change.",
+  "hardware_scroll": {
+    "report": "build/occluded-scroll/bitmap-batch/results.json",
+    "report_sha256": "88720e102ff0fc8cf0270182a9977b7a9895e415bfdd628bee4bef86d49a306b",
+    "build": {
+      "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "override": false,
+      "optimize": true,
+      "stack_checks": true,
+      "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+      "image_sha256": "d92c719dc24f306f2412577ece3c24c0a926c08f55fc9186cbb42c8cf870a944",
+      "xex_sha256": "9ae246028ceb69ecdf194d4edef4e0900c09fec52d7de0edf779a4927317af8d",
+      "memory_sha256": "896894c064df85766f069eadaa7a276499643b206a16ecd80abec1d6239de6c1"
+    },
+    "observations": [
+      {
+        "stage": 1,
+        "pixels": "0adf4bd633403af08e3fc6015b193b67058b54ccaac1845704c640f1d6695d96"
+      },
+      {
+        "stage": 2,
+        "pixels": "6eefb9082203d551daa48592c56747a6e819ea5b214db4bd23e8d51793c45ac2"
+      },
+      {
+        "stage": 3,
+        "pixels": "67548907dc438e70e8fbe951ced03c45c373d787ccb99501e00c9ba0f1524bd7"
+      },
+      {
+        "stage": 4,
+        "pixels": "c0d3e0717ff730b0d9dac18a5e2b8bfa2492c14754007ac658ec808cb0de5d6f"
+      },
+      {
+        "stage": 5,
+        "pixels": "2fadfa6eab442bfb182bba602e46dc5f3647fdffb0131743dc9cb6e2f1d65f92"
+      },
+      {
+        "stage": 6,
+        "accepted": 31,
+        "pixels": "997793ae03d4e717f7366656c3cb6645d2dff60c26b78aee41b0e695a93f4285"
+      }
+    ],
+    "batch_launches": {
+      "batchLaunches": 44,
+      "multiLaunches": 26,
+      "maxRows": 4
+    },
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "live_tasks": 0,
+      "native_nmi_count": 290,
+      "native_irq_count": 2625,
+      "switches": 377
+    },
+    "scope": "Six full raster scenes, bounded multirow hardware scroll, hidden/show repaint, cancellation, source reuse, final stop, OS restoration and ownership checks."
+  },
+  "packaged_demo": {
+    "report": "build/occluded-scroll/batched-demo/demo-results.json",
+    "report_sha256": "f0b5081886f72bdb07a9260e58206f412f57469b7d49f64c4c100f065f3a6730",
+    "build": {
+      "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "override": false,
+      "optimize": true,
+      "stack_checks": true,
+      "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+      "image_sha256": "61766facf654122298c1dc8fa9d742d1b5adee05c0a29b88e1682e0b40261d9c",
+      "xex_sha256": "4a150c4c918fa710b8cfbe94740862f206394a1d9c2e0e3731575c8c52042bb6",
+      "memory_sha256": "6cb7bf3ff4dde64810517ce7fa0d9c9847cfdd9da7adcd477146cabf9798612f"
+    },
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "live_tasks": 0,
+      "native_nmi_count": 6351,
+      "native_irq_count": 61323,
+      "switches": 5854
+    },
+    "observations": [
+      {
+        "stage": "startup",
+        "guest_frame": 724
+      },
+      {
+        "stage": "Toggle on [2]",
+        "guest_frame": 816
+      },
+      {
+        "stage": "Large [5]",
+        "guest_frame": 865
+      },
+      {
+        "stage": "Applied [6]",
+        "guest_frame": 914
+      },
+      {
+        "stage": "Cancelled [7]",
+        "guest_frame": 955
+      },
+      {
+        "stage": "panel-default-key",
+        "guest_frame": 984
+      },
+      {
+        "stage": "independent-app-drag",
+        "guest_frame": 1011
+      },
+      {
+        "stage": "shell-focus-restored",
+        "guest_frame": 1120
+      },
+      {
+        "stage": "system-volume",
+        "guest_frame": 1122
+      },
+      {
+        "stage": "TASKS",
+        "guest_frame": 1220
+      },
+      {
+        "stage": "MOUNT",
+        "guest_frame": 1291
+      },
+      {
+        "stage": "CD SYS:WORK",
+        "guest_frame": 1419
+      },
+      {
+        "stage": "CD",
+        "guest_frame": 1472
+      },
+      {
+        "stage": "HELLO",
+        "guest_frame": 1601
+      },
+      {
+        "stage": "PATH",
+        "guest_frame": 1677
+      },
+      {
+        "stage": "HEAD SYS:STORY.TXT LINES 3",
+        "guest_frame": 2156
+      },
+      {
+        "stage": "HEAD MISSING",
+        "guest_frame": 2293
+      },
+      {
+        "stage": "HEAD ?",
+        "guest_frame": 2413
+      },
+      {
+        "stage": "TYPE D1:STORY.TXT",
+        "guest_frame": 2875
+      },
+      {
+        "stage": "TYPE SYS:STORY.TXT",
+        "guest_frame": 3433
+      },
+      {
+        "stage": "desktop-pipeline",
+        "guest_frame": 3959
+      },
+      {
+        "stage": "desktop-scroll-break",
+        "guest_frame": 4037
+      },
+      {
+        "stage": "CD SYS:",
+        "guest_frame": 4086
+      },
+      {
+        "stage": "CD",
+        "guest_frame": 4141
+      },
+      {
+        "stage": "HELLO",
+        "guest_frame": 4229
+      },
+      {
+        "stage": "ECHO saved >WORK:OUT.TXT",
+        "guest_frame": 4623
+      },
+      {
+        "stage": "CAT WORK:OUT.TXT",
+        "guest_frame": 4764
+      },
+      {
+        "stage": "CAT SYS:STORY.TXT >WORK:COPY.TXT",
+        "guest_frame": 5716
+      },
+      {
+        "stage": "CMP SYS:STORY.TXT WORK:COPY.TXT",
+        "guest_frame": 6246
+      },
+      {
+        "stage": "HELLO | WC >WORK:PIPE.TXT",
+        "guest_frame": 6655
+      },
+      {
+        "stage": "CAT WORK:PIPE.TXT",
+        "guest_frame": 6800
+      },
+      {
+        "stage": "boot-smoke",
+        "guest_frame": 6805
+      }
+    ],
+    "autoboot_frames": 250,
+    "filesystem_writes": true,
+    "desktop_interaction": {
+      "app_updates": 5,
+      "drag_bounds": [
+        440,
+        88,
+        632,
+        232
+      ],
+      "pointer": [
+        100,
+        100
+      ]
+    },
+    "break_to_settled_ms": 541.3557491834407,
+    "break_scope": "Physical BREAK while dirtyRows > 1 during CAT SYS:LONG.TXT behind the Control Panel. Includes key protocol, command cancellation/reply, repaint and scanout; not isolated input latency.",
+    "scope": "Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT; physical BREAK during obscured scroll, exact error 304 and unchanged ownership ledger"
+  },
+  "host_tests": {
+    "total": 361,
+    "passed": 357,
+    "skipped": 4,
+    "log": "build/occluded-scroll-host-final.log",
+    "log_sha256": "126a842c3981b79e8a8c2283a136834c247869b8462df8eb297f8ec16f400b9c"
+  },
+  "memory": {
+    "baseline": "clipped-glyphs desktop preview",
+    "layout_unchanged": true,
+    "occupied_image_banks": [
+      1,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      63
+    ],
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "guards_alignment_and_unused_capacity_included": true
+    },
+    "upper_memory_reserved_delta": 0,
+    "vram_reserved_delta": 0,
+    "worker_scalar_bytes_added": 1,
+    "foreign_image_unchanged": true
+  },
+  "distribution": {
+    "path": "build/occluded-scroll/preview/exec816-demo.zip",
+    "sha256": "fcd0446a16b77e7c4c72d79cbcd0faa4302bc4051359a1433a9f0e10b46e0834",
+    "members": 25,
+    "verified_checksums": 24,
+    "unchanged_standard_files": 9,
+    "desktop_boot": "desktop/Exec-of816.xex",
+    "desktop_system_drive": "D1",
+    "desktop_work_drive": "D8",
+    "standard_boot": "unchanged five-second OF816 shell/prime autoboot"
+  },
+  "limitations": [
+    "Obscured scrolling still redraws visible glyphs; partial screen-copy reuse is unsupported.",
+    "Completing repair costs more than the original defective path. Batching reduces the cost relative to the initial drain-only fix, not below the original broken throughput.",
+    "Existing desktop input and repaint latency targets remain open; no full loaded matrix or physical hardware qualification."
+  ]
+}

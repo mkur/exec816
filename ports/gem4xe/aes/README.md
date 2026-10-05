@@ -1,0 +1,96 @@
+# Hosted AES objects
+
+[Implementation plan](../../../docs/plans/gem4xe/aes-widgets-implementation-plan.md)
+
+AW0 extracts actual GEM4XE object, graphics and form routines at the revision
+and hashes in [inputs.json](inputs.json). [selection.json](selection.json)
+lists the functions; the ordered [patch](patches/0001-hosted-object-subset.patch)
+makes the supported branches independent of donor device and event ownership.
+Extraction normalizes source newlines and copies the donor GPL/LGPL notices.
+The upstream copyright and licence notices remain applicable; the Exec public
+interface grant does not relicense these routines.
+
+Object traversal, coordinates, hit testing, box geometry, text placement and
+radio selection run selected donor code. The host validates the complete tree
+before donor walks, resolves string offsets into its own retained text, and
+replaces blocking form waits with release-time selection. Unsupported drawing
+branches and direct screen mutation in ob_change are removed. No form_do,
+GEMDOS, resource loader, application callback or donor input/startup is linked.
+
+The generated native packet uses the donor's 24-byte object layout, with
+offset specifications for strings. A tree is 1,800 bytes, below the 2,048-byte
+packet ceiling. It admits at most 32 objects and eight levels, G_BOX/G_IBOX,
+G_STRING/G_BUTTON, SELECTED/DISABLED, and selection/default/exit/radio/hidden/
+last flags. Box interiors are hollow or solid, with inward borders 0–3;
+buttons have the donor's outward 1–3 pixel border. Children, labels and outward
+borders must fit their parent and client. Indirect specs and other types, flags
+and decorations are rejected. The fixture covers malformed cycles, terminators,
+depth, capacity, pointers, extents and radio groups.
+
+Run the focused source/model and native development checks:
+
+```sh
+python3 -m unittest discover -s tests -p 'test_widgets_contract.py'
+python3 tools/test_widgets.py --mode raw --output build/widgets/aw0-raw
+python3 tools/test_widgets.py --mode opt --output build/widgets/aw0-opt
+```
+
+The native checks exercise the C bridge on an ordinary Task through VBI,
+emitted C/Action layouts, donor operations, stack floors and ownership teardown.
+They use the pinned AltirraOS ROM and mouse-capable emulator. They do not
+qualify desktop graphics or physical hardware. Reserved bank-zero growth is
+zero: fixed/root/kernel, each of eight public Task pools and private idle,
+including guards, alignment and unused pool capacity. The existing 20-byte
+C DP workspace and 2,560-byte large Task stack are reused. The existing complete
+C code/data banks remain reserved (131,072 bytes). AW0 reserves no VRAM.
+
+AW1 connects the selected draws to the existing VBXE font atlas and bounded
+command lists. A synchronous trusted renderer closure checks ownership once
+per four-object, sixteen-scanline quantum. Transparent text preserves partial
+glyphs and packed neighboring pixels; selected controls invert their rebuilt
+base, disabled stipple stays anchored to screen coordinates. Keyboard focus
+is a one-pixel inset underline. No new public VDI opcode or VRAM extent is added.
+See the [native pixel record](../../../docs/development/aes-widgets-aw1.json).
+
+AW2 adds copied desktop widget contexts and atomic state/label updates.
+[Native service and model evidence](../../../docs/development/aes-widgets-aw2.json)
+covers raw/optimized admission, stale identities, no-op updates, identity
+exhaustion, heap exhaustion/recovery, returned-buffer independence and teardown.
+Reserved bank-zero and VRAM growth remain zero. The service fixture alone uses
+an 8 KiB image-data arena to hold its deliberately separate test packets.
+
+AW3 connects bounded painting to desktop damage.
+[Presentation evidence](../../../docs/development/aes-widgets-aw3.json) records
+ten full-scene comparisons in each compiler mode, the legacy console/command
+scene regression, and pending-scroll watchdog quiescence/reset retention.
+
+AW4 advances the extracted `fm_button` selection helper from captured desktop
+input. Press tracking, keyboard focus, default/cancel actions and bounded
+paint-gated intake remain presenter-owned; no donor input loop or new Task is
+introduced. [Interaction evidence](../../../docs/development/aes-widgets-aw4.json)
+records the focused model and physical ST/key checks in both compiler modes.
+Run them with `tools/test_widgets.py --input` and
+`tools/test_widget_interaction.py`, each with `--mode raw` or `--mode opt` and
+`--output DIR`. The interaction fixture uses an 8 KiB test-data arena and a
+paint-token hold hook; production memory reservations and scheduling are unchanged.
+
+AW5–AW6 connect the hosted subset to the optional Action! Control Panel.
+`lib/desktop/deskapp.act` owns application semantics; this directory still owns
+only the source-port/model/render/input boundary. No donor event loop or Task
+is added. The [widget contract](../../../docs/reference/widgets.md) describes
+the admitted types and limits; the [execution record](../../../docs/history/aes-widgets.md)
+records matched patch/full-redraw work, loaded input, package checks and latency
+misses. Run the focused optimized application check with:
+
+```sh
+python3 tools/build_widget_panel.py --output build/aes-widgets/aw5/panel
+python3 tools/test_widget_panel.py --program build/aes-widgets/aw5/panel/program --output build/aes-widgets/aw5/measured
+```
+
+The fixture adds a second form owned by the shell/controller and a test-only
+matched SetTree control; neither adds a production Task or a public API mode.
+Use a separate output directory with `--unobserved` for the same 100-action
+cohorts without passive traces. `--comparison-only` runs the functional checks
+and matched patch/full-redraw pair without those cohorts; `--analyze-only`
+recomputes metrics from an already completed run.
+The donor repository remains untouched.

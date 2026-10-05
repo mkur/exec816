@@ -45,27 +45,64 @@ ExNext after a mutation. The next batch is `>>` and minimal EXECUTE.
 
 ## Follow-on capabilities
 
-The next graphics milestone is the **first desktop on Exec816**. The
+The **first desktop on Exec816** has development evidence. The
 [design note](plans/gem4xe/desktop-design.md) proposes a desktop background,
 ST mouse pointer and one framed, movable shell window, followed by a second
-overlapping window to prove focus, clipping and exposure repair. Prepare the
-executable implementation plan around those boundaries before adding a file
-browser, menus or broader AES compatibility.
+overlapping window from an independent application Task to prove focus, clipping
+and exposure repair. The [DT0–DT7 implementation plan](plans/gem4xe/desktop-implementation-plan.md)
+is implemented at the development tier: client/event lifetime, Layers integration, an ST capture and visible
+pointer checkpoint before dragging, independent clients, loaded shutdown and
+the optional preview. DT0–DT7 implement the native client/event service, framed
+shell, ST input, nonblocking dragging and an independent application. Capture/routing and exact repair
+checks pass; pointer, outline and move-repair timing limits remain open.
+Loaded shutdown/fault checks and the local OF816 preview pass;
+see the [execution record](history/desktop.md). File browsing, menus and
+broader AES compatibility follow this milestone.
+
+The [mouse sampling and pointer batching plan](plans/gem4xe/mouse-performance-implementation-plan.md)
+is implemented through MP4 at the development tier. Normal capture runs at
+about 4 kHz with fine SIO timing preserved; each pointer move uses one blitter
+list. [Matched measurements](history/mouse-performance.md) show lower IRQ
+overhead and pointer setup cost. The OF816 preview is refreshed, with 2× travel
+and memory reservations unchanged. Pointer, outline and move-repair timing
+targets remain open; presentation scheduling and exposure repair remain focused
+performance follow-ups.
+
+The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)
+is implemented through the
+[DR0–DR7 plan](plans/gem4xe/desktop-rendering-implementation-plan.md), with smaller
+damage sets, IRQ-completed top-window copies, reduced background overdraw and
+two optional VRAM snapshot slots. It keeps one presenter, adds zero
+bank-zero reservations and leaves partially obscured scrolling on retained
+redraw. [Development measurements and the refreshed preview](history/desktop-rendering.md#dr7-combined-measurements-and-local-preview)
+pass correctness checks; pointer, outline and move-repair latency acceptance
+remains open.
+
+[AES widgets](plans/gem4xe/aes-widgets-implementation-plan.md) are implemented
+through AW6 at the development tier. Selected GEM4XE object, drawing and form
+routines run in the existing presenter, with retained trees, bounded patches
+and event-driven interaction. The optional desktop now includes an independent
+Control Panel; [interaction measurements and the packaged walkthrough](history/aes-widgets.md)
+pass correctness checks while widget-feedback latency remains open. Long
+clipped drawing calls and scene-token waits need focused follow-up. Existing
+Task/stack pools and window layers are reused. The library can later support a task bar; desktop work-area,
+window-switching and launcher policy are separate work. Editable fields,
+resource-file loading, menus and full AES compatibility remain deferred.
 
 The [Layers library](reference/layers.md) now provides bounded regions, cached
 visibility, stacking, damage and drawing transactions. Its
 [implementation plan](plans/layers-implementation-plan.md) is complete through
-L4 development checks. The next desktop slice must connect retained console
+L4 development checks. The desktop now connects retained console
 content and the existing drawing backend to these interfaces; Layers itself
 does not draw windows or change the working console.
 
 Keep one presentation worker above Exec, evolving the existing bitmap console
 worker and reusing its retained cells, input routes and shared GEM drawing code.
 Each window is an upper-RAM object; it does not allocate a Task, stack or DP.
-The initial design targets zero additional bank-zero reservations. Hardware
-ownership, pending blits, console focus and window retirement need an explicit
-integration; the current exclusive GEM demo and non-overlapping console tiles
-cannot simply be combined into a desktop.
+The implementation adds zero bank-zero reservations against its DT0 baseline.
+The single presenter coordinates drawing tokens, window retirement, pointer
+routing and nonblocking gestures. The exclusive
+GEM demo remains a separate display client.
 
 Further console optimization is paused. The shell-only bitmap demo's interactive
 response is satisfactory for current use, and it is the desktop baseline.

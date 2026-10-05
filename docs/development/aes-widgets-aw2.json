@@ -1,0 +1,357 @@
+{
+  "slice": "AW2",
+  "tier": "development",
+  "qualification": false,
+  "status": "pass",
+  "modes": {
+    "raw": {
+      "model": {
+        "status": "pass",
+        "checks": 1504,
+        "state_checks": 768,
+        "state_failures": 0,
+        "stack_usage": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 90,
+            "remaining_above_floor": 1190
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "2": {
+            "base": 13424,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "3": {
+            "base": 14480,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "4": {
+            "base": 15536,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "5": {
+            "base": 16592,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "6": {
+            "base": 17648,
+            "bytes": 2560,
+            "peak": 221,
+            "remaining_above_floor": 2083
+          },
+          "7": {
+            "base": 20240,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 22832,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 183,
+            "remaining_above_floor": 1097
+          }
+        },
+        "xex_sha256": "901c6980dad58b75e412ac04daf7ad88ee780e46084cdeee47f7748ca9529ecc",
+        "build_sha256": "a21182c798939475176dc96898913d226c4f510a12006820665af9f333787a33",
+        "compiler": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "result_sha256": "34ae2454100760770ff682da5192ac4ace9b1c0c57088e1a231379c23bdb0adc",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "switches": 5,
+          "native_nmi_count": 2846,
+          "live_tasks": 0
+        }
+      },
+      "service": {
+        "status": "pass",
+        "checks": 320,
+        "stacks": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 168,
+            "remaining_above_floor": 1112
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1024,
+            "peak": 108,
+            "remaining_above_floor": 660
+          },
+          "2": {
+            "base": 13424,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "3": {
+            "base": 14480,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "4": {
+            "base": 15536,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "5": {
+            "base": 16592,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "6": {
+            "base": 17648,
+            "bytes": 2560,
+            "peak": 407,
+            "remaining_above_floor": 1897
+          },
+          "7": {
+            "base": 20240,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 22832,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 266,
+            "remaining_above_floor": 1014
+          }
+        },
+        "result_sha256": "3b92b08f31943f9d5efc10864552a6e36d6b12f79e4ef0c5b017136431ac0906",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "switches": 146,
+          "native_nmi_count": 58,
+          "live_tasks": 0
+        },
+        "held_removal": {
+          "status": 4,
+          "guards": "intact"
+        }
+      }
+    },
+    "opt": {
+      "model": {
+        "status": "pass",
+        "checks": 1504,
+        "state_checks": 768,
+        "state_failures": 0,
+        "stack_usage": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 86,
+            "remaining_above_floor": 1194
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "2": {
+            "base": 13424,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "3": {
+            "base": 14480,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "4": {
+            "base": 15536,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "5": {
+            "base": 16592,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "6": {
+            "base": 17648,
+            "bytes": 2560,
+            "peak": 214,
+            "remaining_above_floor": 2090
+          },
+          "7": {
+            "base": 20240,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 22832,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 167,
+            "remaining_above_floor": 1113
+          }
+        },
+        "xex_sha256": "cace2b31a7a5d8b5c378cba8fcf75a9a9367b6c927d2359a7779e24605dbc58d",
+        "build_sha256": "f06252c10b5c554b167f2112315a674f4f0a4bf04149a22d8c005851660e9bb9",
+        "compiler": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+        "result_sha256": "555458ea90f04ac4bc1b82abe96347a47c62b9755dee6787ba472834a7a04992",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "switches": 5,
+          "native_nmi_count": 2648,
+          "live_tasks": 0
+        }
+      },
+      "service": {
+        "status": "pass",
+        "checks": 322,
+        "stacks": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 146,
+            "remaining_above_floor": 1134
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1024,
+            "peak": 102,
+            "remaining_above_floor": 666
+          },
+          "2": {
+            "base": 13424,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "3": {
+            "base": 14480,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "4": {
+            "base": 15536,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "5": {
+            "base": 16592,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "6": {
+            "base": 17648,
+            "bytes": 2560,
+            "peak": 400,
+            "remaining_above_floor": 1904
+          },
+          "7": {
+            "base": 20240,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 22832,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "result_sha256": "2ddc2eea66b8ff4bb9c5489c6e1786271e19a61c457bd9437ab026006297dec7",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "switches": 151,
+          "native_nmi_count": 54,
+          "live_tasks": 0
+        },
+        "held_removal": {
+          "status": 4,
+          "guards": "intact"
+        }
+      }
+    }
+  },
+  "bank_zero_delta": {
+    "fixed_root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "loading": 0,
+    "includes": "guards, alignment and reserved spare capacity"
+  },
+  "upper_ram": {
+    "per_widget_allocation": 4096,
+    "context_used": 2200,
+    "shared_staging": 2200,
+    "desktop_service_before": 10536,
+    "desktop_service_after": 11336,
+    "fixture_only_image_arena": 8192,
+    "fixture_only_arena_increase": 6144
+  },
+  "additional_vram": 0,
+  "host_checks": {
+    "tests": 343,
+    "skipped": 4,
+    "status": "pass"
+  }
+}

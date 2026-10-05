@@ -6,7 +6,7 @@
 `LAYERS` is an ordinary Action! library for up to four opaque rectangular layers
 and a permanent background. It maintains stacking, cached visibility, damage and
 one drawing transaction per scene. It does not draw pixels, acquire the display,
-route input or create Tasks. The current console has not yet been migrated to it.
+route input or create Tasks. The desktop and its bitmap console consume these transactions.
 
 The generated records and status constants are in `LAYERTYPES`, from
 [layers.json](../../abi/layers.json). Implementation lives in
@@ -43,11 +43,12 @@ IDs and update tokens never repeat within that lifetime.
 | `Create(scene,bounds,idOut)` | Admit a nonempty rectangle fully within the screen. Create it hidden at the front of the stacking order and return a fresh nonzero ID. FULL at four live layers; EXHAUSTED after the last 32-bit ID. Rejection leaves `idOut` unchanged. |
 | `Show(scene,id,shown)` | Show with 1 or hide with 0. Retain content identity while hidden. |
 | `Move(scene,id,left,top)` | Preserve dimensions; reject positions outside the screen without overflow. Mark old/new areas for repair. |
+| `BeginMove(scene,id,left,top,tokenOut)` | Admit a clean, shown, fully visible front layer for a copied move; retain old/new bounds until Finish. EMPTY for unchanged placement, REDRAW for a nonclean/covered/nonfront source. |
 | `Order(scene,id,front)` | Move to front with 1 or back with 0. Background always remains below ordinary layers. |
 | `Delete(scene,id)` | Retire the layer and damage the affected area. Reusing its slot assigns a different ID. |
 | `Find(scene,id)` | Borrow a read-only layer record, or NULL for a stale ID. Zero selects the permanent background. |
 | `Hit(scene,x,y)` | Return the frontmost shown layer's ID; zero for background or outside the screen. Uses existing geometry without rebuilding visibility. |
-| `Invalidate(scene,id,rect)` | Accumulate damage clipped to that layer's bounds. May overestimate damage by merging it into a bounding rectangle. Does not rebuild visibility. |
+| `Invalidate(scene,id,rect)` | Accumulate damage clipped to that layer's bounds. Retains eight rectangles, merging containment and exact rectangular unions. Overflow collapses all damage to one bound. Does not rebuild visibility. |
 
 All status-returning calls use `LAYERTYPES.OK` on success. Geometry errors return
 BAD_ARGUMENT and unknown/retired identities return BAD_ID. Show, Move, Order and
@@ -68,14 +69,22 @@ harmless no-ops. Find, Hit and PaintRegion may inspect stable state during it.
 `BeginPaint(scene,id,tokenOut)` intersects current damage with cached visibility.
 It returns EMPTY without acquiring anything when there is no visible work. OK
 publishes a fresh nonzero token and holds the scene stable. Obtain the read-only
-rectangle list through `PaintRegion(scene,token)`, render every rectangle, and
-call `Finish(scene,token,1)` after drawing completes. A mismatched or retired token
+rectangle list through `PaintRegion(scene,token)` and render every rectangle.
+Call `AdvancePaint(scene,token)` after each batch. OK exposes another nonempty
+batch; EMPTY means traversal is exhausted. Only then call
+`Finish(scene,token,1)` after drawing completes. An early successful Finish
+returns BUSY and leaves the token and damage intact. PaintRegion stays stable
+until AdvancePaint or Finish; an exhausted region has zero entries. A mismatched or retired token
 returns NULL from PaintRegion and BAD_TOKEN from Finish.
 
 The renderer may process a bounded part of the list per turn and yield or wait
 between parts. It must retain the scene and transaction throughout. Input
 capture and unrelated computation can continue; dependent model edits, layout
-changes and another drawing operation wait. Finish with zero after a failed
+changes and another drawing operation wait. The gate freezes the retained
+eight-entry damage list for the whole transaction. Each damage rectangle is
+clipped independently into the existing 96-entry work region; the potentially
+larger product is never stored in that buffer. Partial overlaps may be painted
+more than once. Empty clipped batches are skipped. Finish with zero after a failed
 paint preserves damage for retry. Invalid completion flags leave the transaction
 active. Successful paint acknowledges the visible work; any covered pixels are
 reconstructed from retained content when later exposure marks them dirty again.
@@ -96,6 +105,14 @@ VBXE driver's even-pixel and extent requirements. Layers admission alone is not
 hardware admission. A successful copy must leave the retained model and copied
 pixels consistent; exposed strips and later content edits still need drawing.
 Finish with zero invalidates the entire layer after a failed copy.
+
+A move transaction reuses the saved rectangle pair for old and new bounds.
+Hit testing and Find continue to expose the old committed bounds during DMA.
+Finish-success publishes the target geometry, rebuilds visibility and marks at
+most four old-minus-new exposure rectangles below it. The copied layer stays
+clean. Finish-failure keeps old geometry and invalidates both touched areas;
+it is permitted only after the driver proves quiescence. No extra region,
+transaction buffer or per-window storage is reserved.
 
 The token does not signal hardware completion. Keep it active until the driver
 has completed or proved DMA quiescent. A reset-required failure retains storage
@@ -133,8 +150,9 @@ capacity. Generic repeated subtraction remains subject to FULL.
 | --- | ---: |
 | Rect | 8 |
 | Region with 96 rectangle slots | 770 |
-| Layer including visibility and damage | 792 |
-| Scene with four layers, background, scratch region and transaction state | 4,782 |
+| Eight-entry Damage record | 66 |
+| Layer including visibility and damage | 850 |
+| Scene with four layers, background, scratch region and transaction state | 5,074 |
 
 All large arrays belong in upper RAM. Local rectangle temporaries use the
 caller's existing native stack. The library adds zero reserved bank-zero bytes:
@@ -145,5 +163,14 @@ VRAM. Generated layouts require rebuilt callers when changed.
 Unsupported: overlapping access to one scene by different Tasks, partially
 offscreen layers, resizing, transparency, nested layers, offscreen backing
 bitmaps, font clipping, window controls, input policy, dynamic library loading,
-C bindings and direct hardware submission. The desktop presenter will consume
-these interfaces in a separate milestone.
+C bindings and direct hardware submission. The desktop presenter supplies drawing, input and window policy separately.
+
+### Read transactions
+
+`BeginRead(scene,id,source,tokenOut)` holds a clean, shown source contained in a
+visible rectangle. Covered/dirty sources return `REDRAW`; empty sources acquire
+no token. Geometry and retained mutations remain gated until `Finish` after DMA
+retirement. `UPDATE_READ` completion never acknowledges paint and a failed read
+does not mark clean framebuffer pixels dirty merely because its destination
+failed. The saved source rectangle is owned by the scene. The existing copy,
+move and paint operations remain mutually exclusive with a read.

@@ -19,6 +19,22 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Hosted AES widget application](aes-widgets.md): Control Panel, loaded semantic
+  input, matched updates, independent contexts, the AW6 local preview and its
+  clipped-text/startup, button-feedback and separate-focus-damage follow-ups.
+
+- [Mouse sampling and pointer batching](mouse-performance.md): MP1–MP4 implement
+  about 4 kHz capture with preserved fine SIO timing, one list per pointer move,
+  matched desktop measurements and a refreshed OF816 preview; remaining timing
+  limits are recorded separately from correctness.
+- [Desktop rendering](desktop-rendering.md): bounded damage, transactional copies
+  and optional snapshots through DR7; cache eviction/fallback checks, refreshed
+  OF816 preview, the obscured-scroll starvation fix and open latency limits.
+- [Desktop development](desktop.md): frozen shell/mouse inputs and Task/memory
+  budgets, client lifetime, framed presentation and the ST input checkpoint.
+  DT0–DT7 are implemented, including the local OF816 preview. Pointer, outline,
+  disk-load button and repair timing limits remain open. The sensitivity follow-up
+  doubles desktop pointer travel without changing ST sampling.
 - [Layers development](layers.md): bounded regions, cached visibility and
   damage transactions; raw/optimized emitted software raster and storage checks.
 - [Bulk console output batching](console-output-batching.md): one multi-row

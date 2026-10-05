@@ -1,0 +1,164 @@
+; Lifecycle and scheduling hooks in the existing console presenter Task.
+MODULE DESKHOST
+USE EXEC
+USE DESKSTATE
+USE DESKTYPES
+USE DESKCORE
+USE DESKMOVE
+USE DESKCACHE
+USE CONSOLEBITMAP
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+USE DESKPAINT
+USE HEAPCORE
+USE DESKINPUT
+USE CONSOLECAPTURE
+USE CONSOLEWINDOWS
+
+PUBLIC BYTE FUNC Start()
+  BYTE bit,stopped
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL THEN
+    RETURN(1)
+  FI
+
+  bit=EXEC.AllocSignal(-1)
+  IF bit=$ff THEN
+    RETURN(0)
+  FI
+
+  IF DESKCORE.Init(service,bit)=0 THEN
+    EXEC.FreeSignal(bit)
+    RETURN(0)
+  FI
+
+  service.consoleOwner=DESKSTATE.Owner()
+  LET windows=CONSOLEWINDOWS.Registry()
+  service.keyboard=BYTE POINTER(CONSOLECAPTURE.GetLease())
+  service.consoleRoute=@windows.items(0).route
+  service.consoleFocus=@windows.focusSlot
+  IF DESKINPUT.Start()=0 THEN
+    stopped=DESKCORE.Stop(service)
+    EXEC.FreeSignal(bit)
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+PUBLIC LONGCARD FUNC Mask()
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(service.mask OR DESKINPUT.Mask())
+
+PUBLIC BYTE FUNC Ready()
+
+  LET service=DESKSTATE.Get()
+
+RETURN(service=NULL OR service.scene.busy=0)
+
+PUBLIC BYTE FUNC Idle()
+  BYTE index
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL THEN
+    RETURN(1)
+  FI
+
+  IF service.scene.busy<>0 OR DESKCORE.Runnable(service)<>0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO DESKTYPES.CLIENTS-1 DO
+    IF service.clients(index).id<>0 THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+PUBLIC PROC Controls()
+  BYTE count
+
+  LET service=DESKSTATE.Get()
+  IF service<>NULL AND service.live<>0 THEN
+    DESKCACHE.Pump(service)
+    DESKMOVE.Pump()
+    count=DESKCORE.Pump(service)
+    DESKPAINT.Sync()
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC Runnable()
+
+RETURN(DESKPAINT.Runnable() OR DESKINPUT.Runnable())
+
+; Called only after input, controls, model writes and painting have no work.
+; One attempt per eligible revision prevents eviction/capture feedback loops.
+PUBLIC PROC Cache()
+  BYTE index,visible,started
+  CARD rect
+  LAYERTYPES.Rect client
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.live<>1 OR service.scene.busy<>0
+      OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0
+      OR DESKCORE.Runnable(service)<>0 OR DESKINPUT.Runnable()<>0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    BEGIN
+      LET window=@service.windows(index)
+      IF window.id<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE
+          AND window.visualRevision<>0
+          AND window.captureAttempt<>window.visualRevision THEN
+        BEGIN
+          LET layer=LAYERS.Find(@service.scene,window.layer)
+          DESKCACHE.ClientBounds(layer,@client)
+          visible=0
+          rect=0
+          WHILE rect<layer.visible.count DO
+            IF REGIONS.Contains(@layer.visible.rects(rect),@client)<>0 THEN
+              visible=1
+              EXIT
+            FI
+            rect==+1
+          OD
+
+          IF layer.dirty=0 AND layer.shown<>0 AND visible<>0
+              AND (client.left & 1)=0
+              AND DESKCACHE.Fits(CARD(client.right-client.left),
+                  CARD(client.bottom-client.top))<>0 THEN
+            window.captureAttempt=window.visualRevision
+            started=DESKCACHE.Capture(service,window)
+            RETURN
+          FI
+        END
+      FI
+    END
+  OD
+
+RETURN
+
+PUBLIC PROC Stop()
+
+  LET service=DESKSTATE.Get()
+  IF service<>NULL AND service.live<>0 THEN
+    DESKINPUT.Stop()
+    IF DESKCORE.Stop(service)=0 THEN
+      HEAPCORE.Abort($fae2)
+    FI
+
+    EXEC.FreeSignal(service.port.mp_SigBit)
+  FI
+
+RETURN
+
+ENDMODULE

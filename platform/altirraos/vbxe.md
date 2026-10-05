@@ -34,9 +34,10 @@ The [asynchronous scroll contract](../../docs/reference/display.md#asynchronous-
 adds one active operation to the same owner. Start validates and uploads a copy
 and fill together; Poll reads BUSY once and uses the original sixteen-tick
 deadline. Existing synchronous operations drain that list before dependent work.
-No interrupt producer or extra arena is introduced. The display record grows by
-seven upper-RAM bytes (ID, start tick and pending flag), with a four-byte driver
-sequence counter. These fit the existing C data-bank reservation; fixed and
+Copies and scrolls share the existing retained blitter IRQ producer, signal,
+watchdog and arena. The display retains seven bytes of operation state (ID,
+start tick and pending flag), plus its four-byte driver sequence counter. DR2
+renames that state without enlarging it. These fit the existing C data-bank reservation; fixed and
 per-Task bank-zero reservations, guards and stack capacities are unchanged.
 
 `VbxeFill` builds one 21-byte constant-source BCB on the caller's stack and fences
@@ -49,8 +50,9 @@ VCOUNT-equals-zero loop and a two-tick deadline proved unsuitable with OS VBI
 and a computing peer.
 
 Only this adapter writes MEMAC A, XDL, overlay palette 1 and blitter registers.
-MEMAC B, VBXE IRQs, collision and priority registers stay at their known inactive
-baseline. The mapping assembly publishes hardware stores in disable/bank/control
+MEMAC B, collision and priority registers stay at their known inactive baseline.
+VBXE completion IRQs are enabled only for the active asynchronous list and are
+acknowledged/disabled through the retained producer protocol. The mapping assembly publishes hardware stores in disable/bank/control
 order before committing the four-byte software map shadow. It uses only the
 owning Task's upper DP scratch and existing stack; it restores S and leaves D
 unchanged. Console, native NMI/IRQ,
@@ -67,13 +69,17 @@ STOP leaves the lease FAULTED and enters reset-required park. The launcher also
 parks on any normal/fault exit with VBXE ownership still live, including a
 rejected attempt to remove its retained Task; it cannot reclaim DMA storage.
 
-The current VRAM assignments reserve 107,008 bytes, including 7,416 bytes beyond
-payload capacity. Screen capacity is 76,800 bytes in an 81,920-byte reservation;
-XDL uses 12 of 256 bytes; BCB capacity is 252 of 256 bytes (12 × 21, not 1 KiB).
-The G3 fill uses only the first BCB, leaving another 231 capacity bytes unused.
-G4 assigns 20,480 bytes to both font-mask strips (18,432 bytes used), plus one
-4,096-byte clipped-glyph scratch page. The remaining 417,280 bytes are unassigned
-within the exclusively owned 512 KiB. The
+The current [VRAM map](vbxe-vram.json) reserves 243,200 bytes, including 2,293
+bytes beyond payload capacity. The screen uses 76,800 bytes. Its former
+5,120-byte padding at `$12C00` now holds one 640 × 16 widget strip, with no
+increase in the total reservation. Widget continuations draw there and publish
+the clipped strip only after reconstruction finishes. XDL uses 12 of 256 bytes;
+the 4,096-byte BCB arena has 4,095 bytes of whole-record capacity, with each
+submission bounded to 64 records and 8,192 estimated bus accesses.
+The font atlases reserve 20,480 bytes (18,432 used), clipped glyph scratch reserves
+4,096 bytes, pointer storage reserves 1,280 bytes, and two desktop snapshot slots
+reserve 65,536 bytes each. The remaining 281,088 bytes are unassigned within the
+exclusively owned 512 KiB. The
 32-byte cross-page test at `$3FFF0` is diagnostic borrowing, not a production
 reservation. CPU and VRAM address spaces are accounted separately.
 

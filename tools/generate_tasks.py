@@ -377,6 +377,10 @@ ENDMODULE
 
 
 def application_entry(routine):
+    if routine['name'].startswith('M_DESKAPP_'):
+        return bool(re.fullmatch(r'M_DESKAPP_RUN_[0-9A-F]+', routine['name']))
+    if routine['name'].startswith(('M_DESKTOP_', 'M_DESKCORE_', 'M_DESKMOVE_', 'M_DESKCACHE_', 'M_DESKEVENTS_', 'M_DESKSTATE_', 'M_DESKPAINT_', 'M_DESKINPUT_', 'M_DESKDRAG_', 'M_DESKHOST_', 'M_DESKBOOT_', 'M_DESKWIDGETS_', 'M_DESKWIDGETINPUT_')):
+        return False
     # These shared resident shell helpers run on the shell's Task. They are
     # included into several application/fixture modules, not Task entries.
     if re.fullmatch(r'M_.+_SHELL(?:DIAGNOSTIC|PROMPT|CLEAR|RELEASELOCK|DIR|CLOSECOMMANDINPUT|TYPE|MEM|UNREDIRECT|EXTERNAL|DISPATCH|COMMAND|READSTEP|INITIALPROMPT)_[0-9A-F]+', routine['name']):

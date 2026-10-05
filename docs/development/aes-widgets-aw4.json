@@ -1,0 +1,860 @@
+{
+  "slice": "AW4",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": [
+    "Finite donor form transitions and emitted C/Action binding in raw and optimized modes",
+    "Physical ST press/out/in/release, outside cancellation, radio exclusivity, disabled and hidden controls",
+    "Tab, Shift-Tab, Space, Return, Escape, BREAK and unhandled raw key delivery",
+    "Focus loss, tree replacement, title drag precedence and retirement while held",
+    "Live paint-token deferral, deferred overflow, stalled-client event overflow, LOSS readback and recovery",
+    "Native context/DP/stack guards, ownership-table restoration and OS return"
+  ],
+  "limits": [
+    "Development checks do not qualify physical hardware or the complete hosted system",
+    "The scene-token hold hook tests gated input; no new physical-SDFS/scroll timing distribution is claimed",
+    "AW3 retains its separate pixel, pending-scroll and hardware-fault evidence",
+    "Control-panel integration, latency distributions and package refresh remain AW5-AW6"
+  ],
+  "pins": {
+    "actionc": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "display": "VBXE FX 1.26 at D600",
+    "mouse": "ST port 1, existing 2x travel and normal 3958.6 Hz / fine-SIO alternate 7917 Hz capture policy",
+    "aes_revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+    "calypsi": "5.18"
+  },
+  "runners": {
+    "tools/test_widget_interaction.py": "09e9321811de5eae168432704c5726b93566269280dca1185e6f9956c2c8ada1",
+    "tools/test_widgets.py": "555e703481507b8d552448051ec860c4368456bfae5d913c3349bb38c70d83e3",
+    "tests/programs/widgets_interaction.act": "dc38631c51441daca038a1a7d3677b4cb076c7f548ea4c255158bd6f71e1f157",
+    "tests/programs/widgets_input.c": "8170df2eac4fdb8b16b1af9d9c7d4292f362b8bc24219cf415055689b87faf71"
+  },
+  "memory": {
+    "bank_zero_reserved_delta": {
+      "fixed_root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "runtime": 0,
+      "loading": 0,
+      "includes": "guards, alignment and unused reserved capacity"
+    },
+    "upper_ram": {
+      "per_widget_reserved": 4096,
+      "context_used": 2200,
+      "service_before_aw4_rounded": 11336,
+      "service_after_aw4_rounded": 11992,
+      "service_slice_growth": 656,
+      "service_growth_since_pre_widgets": 1456,
+      "shared_c_data": 2420,
+      "action_binding_with_alignment_allowance": 8,
+      "shared_total_since_pre_widgets": 3884,
+      "shared_ceiling": 4096,
+      "shared_headroom": 212,
+      "fixture_only_image_data_reserved": 8192,
+      "fixture_only_image_data_growth": 6144,
+      "c_code_and_data_banks_reserved": 131072,
+      "c_bank_reservation_growth": 0
+    },
+    "additional_vram": 0,
+    "modes": {
+      "raw": {
+        "linked_c_code_bytes": 65062,
+        "code_bank_free_bytes": 474,
+        "data_last_exclusive": 867465
+      },
+      "opt": {
+        "linked_c_code_bytes": 54214,
+        "code_bank_free_bytes": 11322,
+        "data_last_exclusive": 867465
+      }
+    }
+  },
+  "host_checks": {
+    "status": "pass",
+    "tests": 344,
+    "skipped": 4
+  },
+  "modes": {
+    "raw": {
+      "model": {
+        "checks": 1504,
+        "input_checks": 800,
+        "input_failures": 0,
+        "stack_usage": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 90,
+            "remaining_above_floor": 1190
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "2": {
+            "base": 13424,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "3": {
+            "base": 14480,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "4": {
+            "base": 15536,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "5": {
+            "base": 16592,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "6": {
+            "base": 17648,
+            "bytes": 2560,
+            "peak": 309,
+            "remaining_above_floor": 1995
+          },
+          "7": {
+            "base": 20240,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 22832,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 183,
+            "remaining_above_floor": 1097
+          }
+        },
+        "xex_sha256": "ee24e119e5582734ab5203884ab0f3f48b9f82157ac034d2a15aea53c5a80580",
+        "build_sha256": "c76af41cc8ab6980e41723e1f9afa986c42f0b3539e8264a9349e53c6c2c7674",
+        "status": "pass",
+        "result_sha256": "f7e7efed4dd887a0ba6b675202d19f01e181e1fe3b24333edf665b2545bb1c5d",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "live_tasks": 0,
+          "native_nmi_count": 1745,
+          "native_irq_count": 0,
+          "switches": 5
+        }
+      },
+      "physical": {
+        "checks": 98,
+        "cases": [
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 4,
+            "route": 16,
+            "tick": 3160,
+            "x": 164,
+            "y": 134,
+            "code": 0,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 2,
+            "object": 1,
+            "state": 1
+          },
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 5,
+            "route": 16,
+            "tick": 3247,
+            "x": 304,
+            "y": 134,
+            "code": 0,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 3,
+            "object": 3,
+            "state": 1
+          },
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 6,
+            "route": 33,
+            "tick": 3328,
+            "x": 0,
+            "y": 0,
+            "code": 33,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 3,
+            "object": 3,
+            "state": 1
+          },
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 7,
+            "route": 33,
+            "tick": 3334,
+            "x": 0,
+            "y": 0,
+            "code": 12,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 3,
+            "object": 7,
+            "state": 0
+          },
+          {
+            "kind": 9,
+            "window": 2,
+            "sequence": 8,
+            "route": 33,
+            "tick": 3340,
+            "x": 0,
+            "y": 0,
+            "code": 28,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 3,
+            "object": 65535,
+            "state": 0
+          },
+          {
+            "kind": 9,
+            "window": 2,
+            "sequence": 9,
+            "route": 33,
+            "tick": 0,
+            "x": 0,
+            "y": 0,
+            "code": 1,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 0,
+            "epoch": 1,
+            "revision": 3,
+            "object": 65535,
+            "state": 0
+          },
+          {
+            "kind": 1,
+            "window": 2,
+            "sequence": 10,
+            "route": 33,
+            "tick": 3352,
+            "x": 0,
+            "y": 0,
+            "code": 63,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 0,
+            "object": 0,
+            "state": 0
+          },
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 13,
+            "route": 33,
+            "tick": 9045,
+            "x": 0,
+            "y": 0,
+            "code": 33,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 3,
+            "revision": 2,
+            "object": 1,
+            "state": 1
+          },
+          {
+            "kind": 4,
+            "window": 0,
+            "sequence": 14,
+            "route": 0,
+            "tick": 0,
+            "x": 0,
+            "y": 0,
+            "code": 0,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 0,
+            "epoch": 0,
+            "revision": 0,
+            "object": 0,
+            "state": 0
+          },
+          {
+            "kind": 4,
+            "window": 0,
+            "sequence": 15,
+            "route": 0,
+            "tick": 0,
+            "x": 0,
+            "y": 0,
+            "code": 0,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 0,
+            "epoch": 0,
+            "revision": 0,
+            "object": 0,
+            "state": 0
+          },
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 16,
+            "route": 33,
+            "tick": 9785,
+            "x": 0,
+            "y": 0,
+            "code": 33,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 4,
+            "revision": 19,
+            "object": 1,
+            "state": 0
+          }
+        ],
+        "stack_usage": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 402,
+            "remaining_above_floor": 878
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "2": {
+            "base": 13424,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "3": {
+            "base": 14480,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "4": {
+            "base": 15536,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "5": {
+            "base": 16592,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "6": {
+            "base": 17648,
+            "bytes": 2560,
+            "peak": 736,
+            "remaining_above_floor": 1568
+          },
+          "7": {
+            "base": 20240,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 22832,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 293,
+            "remaining_above_floor": 987
+          }
+        },
+        "xex_sha256": "e3bd0ec1909b0b1bdf4cb30991e1348c6dc325163afcaf137e165a4a6d07a7cb",
+        "build_sha256": "11c6fc4d752615c6209375653d6c6d3af85ad06615287cbb3e671e259e150950",
+        "bank_zero_delta": {
+          "baseline": "desktop-dt0",
+          "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "idle": 0,
+          "runtime": 0,
+          "loading": 0
+        },
+        "status": "pass",
+        "result_sha256": "cb73518d161c9ec77cb597d4d50ce2e68ed30a93c068722a7b7abf455b6dd0f4",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "live_tasks": 0,
+          "native_nmi_count": 10469,
+          "native_irq_count": 36538,
+          "switches": 10209
+        }
+      },
+      "source_inputs": {
+        "ports/gem4xe/aes/widgets-model.c": "5728f0da516dcde71fd6d948f009fd18ecf69d0bb75d6223ecce754090b90627",
+        "ports/gem4xe/aes/widgets-graf.c": "b64f21702e40e9c42352ed55cdd2c5faff45f51ab3d5c1d3a9ef08858f3e089f",
+        "ports/gem4xe/aes/widgets-render.c": "2789011dee325a87b1195dc75ca5a4c2a6fb3902b0b002841184036464814073",
+        "ports/gem4xe/aes/widgets-state.c": "c593c0acfce03916b4322c86316d772e8ef26450c9ac4d330e401b2754bba3b9",
+        "ports/gem4xe/aes/widgets-input.c": "12fbd15434ae96d2a1287b052a2d9d0bce17003285e759aef3656a6aba3d3375",
+        "ports/gem4xe/aes/widgets-entry.c": "e703182c0e4cedb59efb8139cc38ba135a79e6044df5e45d3a49c531e8324d38"
+      }
+    },
+    "opt": {
+      "model": {
+        "checks": 1504,
+        "input_checks": 800,
+        "input_failures": 0,
+        "stack_usage": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 86,
+            "remaining_above_floor": 1194
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "2": {
+            "base": 13424,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "3": {
+            "base": 14480,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "4": {
+            "base": 15536,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "5": {
+            "base": 16592,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "6": {
+            "base": 17648,
+            "bytes": 2560,
+            "peak": 297,
+            "remaining_above_floor": 2007
+          },
+          "7": {
+            "base": 20240,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 22832,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 167,
+            "remaining_above_floor": 1113
+          }
+        },
+        "xex_sha256": "8491a3edfa0784237eaf4527e04de776a856a3b695765534b9c8919fc5bce119",
+        "build_sha256": "149904af72671f8e8563e7a27403603688310ea50939db628865efd2de9d329d",
+        "status": "pass",
+        "result_sha256": "fb494561fb0af4069b1283fa7e4c7d0d9d0fa339a5ac8f3b11658d789f14c460",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "live_tasks": 0,
+          "native_nmi_count": 1501,
+          "native_irq_count": 0,
+          "switches": 5
+        }
+      },
+      "physical": {
+        "checks": 96,
+        "cases": [
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 3,
+            "route": 16,
+            "tick": 4030,
+            "x": 164,
+            "y": 134,
+            "code": 0,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 2,
+            "object": 1,
+            "state": 1
+          },
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 4,
+            "route": 16,
+            "tick": 4116,
+            "x": 304,
+            "y": 134,
+            "code": 0,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 3,
+            "object": 3,
+            "state": 1
+          },
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 5,
+            "route": 33,
+            "tick": 4193,
+            "x": 0,
+            "y": 0,
+            "code": 33,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 3,
+            "object": 3,
+            "state": 1
+          },
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 6,
+            "route": 33,
+            "tick": 4199,
+            "x": 0,
+            "y": 0,
+            "code": 12,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 3,
+            "object": 7,
+            "state": 0
+          },
+          {
+            "kind": 9,
+            "window": 2,
+            "sequence": 7,
+            "route": 33,
+            "tick": 4205,
+            "x": 0,
+            "y": 0,
+            "code": 28,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 3,
+            "object": 65535,
+            "state": 0
+          },
+          {
+            "kind": 9,
+            "window": 2,
+            "sequence": 8,
+            "route": 33,
+            "tick": 0,
+            "x": 0,
+            "y": 0,
+            "code": 1,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 0,
+            "epoch": 1,
+            "revision": 3,
+            "object": 65535,
+            "state": 0
+          },
+          {
+            "kind": 1,
+            "window": 2,
+            "sequence": 9,
+            "route": 33,
+            "tick": 4217,
+            "x": 0,
+            "y": 0,
+            "code": 63,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 1,
+            "revision": 0,
+            "object": 0,
+            "state": 0
+          },
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 12,
+            "route": 33,
+            "tick": 10428,
+            "x": 0,
+            "y": 0,
+            "code": 33,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 3,
+            "revision": 2,
+            "object": 1,
+            "state": 1
+          },
+          {
+            "kind": 4,
+            "window": 0,
+            "sequence": 13,
+            "route": 0,
+            "tick": 0,
+            "x": 0,
+            "y": 0,
+            "code": 0,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 0,
+            "epoch": 0,
+            "revision": 0,
+            "object": 0,
+            "state": 0
+          },
+          {
+            "kind": 4,
+            "window": 0,
+            "sequence": 14,
+            "route": 0,
+            "tick": 0,
+            "x": 0,
+            "y": 0,
+            "code": 0,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 0,
+            "epoch": 0,
+            "revision": 0,
+            "object": 0,
+            "state": 0
+          },
+          {
+            "kind": 8,
+            "window": 2,
+            "sequence": 15,
+            "route": 33,
+            "tick": 11193,
+            "x": 0,
+            "y": 0,
+            "code": 33,
+            "buttons": 0,
+            "qualifiers": 0,
+            "flags": 1,
+            "epoch": 4,
+            "revision": 19,
+            "object": 1,
+            "state": 0
+          }
+        ],
+        "stack_usage": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 366,
+            "remaining_above_floor": 914
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "2": {
+            "base": 13424,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "3": {
+            "base": 14480,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "4": {
+            "base": 15536,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "5": {
+            "base": 16592,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "6": {
+            "base": 17648,
+            "bytes": 2560,
+            "peak": 710,
+            "remaining_above_floor": 1594
+          },
+          "7": {
+            "base": 20240,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 22832,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 283,
+            "remaining_above_floor": 997
+          }
+        },
+        "xex_sha256": "3a62a6cf0c143896f16989ca97328343ae493a2fb47c374e31c05d211afa797c",
+        "build_sha256": "302b4679efd7a17c906f9b1337e41c5cdcb839745bc91792d5f1588fbe08095d",
+        "bank_zero_delta": {
+          "baseline": "desktop-dt0",
+          "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "idle": 0,
+          "runtime": 0,
+          "loading": 0
+        },
+        "status": "pass",
+        "result_sha256": "8c67176674c30e14698f1fe12399a64ff54fdd40c6ea17c9aeba940e9768d467",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "live_tasks": 0,
+          "native_nmi_count": 11925,
+          "native_irq_count": 20158,
+          "switches": 12227
+        }
+      },
+      "source_inputs": {
+        "ports/gem4xe/aes/widgets-model.c": "5728f0da516dcde71fd6d948f009fd18ecf69d0bb75d6223ecce754090b90627",
+        "ports/gem4xe/aes/widgets-graf.c": "b64f21702e40e9c42352ed55cdd2c5faff45f51ab3d5c1d3a9ef08858f3e089f",
+        "ports/gem4xe/aes/widgets-render.c": "2789011dee325a87b1195dc75ca5a4c2a6fb3902b0b002841184036464814073",
+        "ports/gem4xe/aes/widgets-state.c": "c593c0acfce03916b4322c86316d772e8ef26450c9ac4d330e401b2754bba3b9",
+        "ports/gem4xe/aes/widgets-input.c": "12fbd15434ae96d2a1287b052a2d9d0bce17003285e759aef3656a6aba3d3375",
+        "ports/gem4xe/aes/widgets-entry.c": "e703182c0e4cedb59efb8139cc38ba135a79e6044df5e45d3a49c531e8324d38"
+      }
+    }
+  }
+}

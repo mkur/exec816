@@ -141,5 +141,6 @@ the renderer. [I0–I7](../../docs/history/gem-input.md) record reusable input,
 cursor/injected gestures, measured concurrency, failures and the refreshed bundle.
 [M0–M6](../../docs/history/gem-mouse.md) add ST mouse motion and the left
 button on port 1 through INPUT, bounded timing checks and the current bundle.
-There is no AES support. The G5 computing-peer regression remains
+The separate [hosted AES object port](aes/README.md) adds selected widget
+routines; it does not add full AES compatibility. The G5 computing-peer regression remains
 available through its development runner and retains its historical evidence.

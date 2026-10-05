@@ -1,0 +1,1282 @@
+{
+  "schema_version": 1,
+  "change": "desktop-pointer-sensitivity",
+  "date": "2026-10-04",
+  "tier": "development",
+  "qualification": false,
+  "status": "pass",
+  "pixels_per_step": 2,
+  "acceleration": false,
+  "source_base": "d03247949b910884dd3ad738db687b0db7c62809",
+  "native": {
+    "raw": {
+      "sensitivity_report": {
+        "path": "build/desktop/pointer-scale-raw/sensitivity/results.json",
+        "sha256": "9ae740ed0a103da06769b25126b4402c8b48e385f926df3c8ebf9330321a3867"
+      },
+      "drag_report": {
+        "path": "build/desktop/pointer-scale-raw/drag/results.json",
+        "sha256": "953fa57acdd5993a958f7052142699f546e1e609bc060088efc4441a48cfece9"
+      },
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "image_sha256": "e36e10d255be50e36ab6a5dd915666844197943f5649204dbf0648f3cd086203",
+      "xex_sha256": "eaeb2ee6a1288812464d6d4937c39927466b9a430980c976601c82ef401d9a3e",
+      "steps": [
+        {
+          "controller_steps": [
+            5,
+            -3
+          ],
+          "expected": [
+            330,
+            114
+          ],
+          "position": [
+            330,
+            114
+          ],
+          "capture_counts": [
+            5,
+            -3
+          ]
+        },
+        {
+          "controller_steps": [
+            40,
+            20
+          ],
+          "expected": [
+            410,
+            154
+          ],
+          "position": [
+            410,
+            154
+          ],
+          "capture_counts": [
+            45,
+            17
+          ]
+        },
+        {
+          "controller_steps": [
+            400,
+            200
+          ],
+          "expected": [
+            639,
+            239
+          ],
+          "position": [
+            639,
+            239
+          ],
+          "capture_counts": [
+            445,
+            217
+          ]
+        },
+        {
+          "controller_steps": [
+            -1,
+            -1
+          ],
+          "expected": [
+            638,
+            238
+          ],
+          "position": [
+            638,
+            238
+          ],
+          "capture_counts": [
+            444,
+            216
+          ]
+        },
+        {
+          "controller_steps": [
+            -4,
+            -3
+          ],
+          "expected": [
+            630,
+            232
+          ],
+          "position": [
+            630,
+            232
+          ],
+          "capture_counts": [
+            440,
+            213
+          ]
+        },
+        {
+          "controller_steps": [
+            -500,
+            -250
+          ],
+          "expected": [
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0
+          ],
+          "capture_counts": [
+            -60,
+            -37
+          ]
+        },
+        {
+          "controller_steps": [
+            1,
+            1
+          ],
+          "expected": [
+            2,
+            2
+          ],
+          "position": [
+            2,
+            2
+          ],
+          "capture_counts": [
+            -59,
+            -36
+          ]
+        }
+      ],
+      "sensitivity_runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 418,
+            "untouched_above_floor": 862
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 706,
+            "untouched_above_floor": 1598
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 48,
+            "untouched_above_floor": 208
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 289,
+          "untouched_from_base": 1247,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "drag_runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 418,
+            "untouched_above_floor": 862
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 706,
+            "untouched_above_floor": 1598
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 293,
+          "untouched_from_base": 1243,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "drag_loads": [
+        "idle"
+      ],
+      "drag_samples": 5,
+      "drag_scenes": [
+        {
+          "clock": 13455972,
+          "sha256": "b42f16352c475e0e66efd857159e089f7191a873aff22a3ab1a6d2f170f29407",
+          "observations": 33
+        },
+        {
+          "clock": 17724070,
+          "sha256": "41c300b3430e3c5cb6c5d51daea5ef2a02d56498ca8ca07ae401af8df78c8478",
+          "observations": 35
+        },
+        {
+          "clock": 22525733,
+          "sha256": "bc3ab3d5fa00b7c3a59f059544d82d31d0eedd5157c44db5878e65d9b867bbdb",
+          "observations": 37
+        }
+      ],
+      "cancellations": [
+        {
+          "kind": "escape",
+          "scene": {
+            "clock": 23094917,
+            "sha256": "b3f458414a76d6efaec38c74ec564e63363d89de98fef068ad719e29d33eb06b",
+            "observations": 3
+          }
+        },
+        {
+          "kind": "event_queue_loss",
+          "scene": {
+            "clock": 32129284,
+            "sha256": "78822e4a9c9b752176a84cb5e8330ef505989e21008476f25d001ff8e722f83c",
+            "observations": 1
+          }
+        },
+        {
+          "kind": "cooperative_close_refused",
+          "scene": {
+            "clock": 32441898,
+            "sha256": "7308e86c942ee1d8601f2ca7939bd39144d1d5c32606e55e3ae641c97d445fe8",
+            "observations": 1
+          }
+        },
+        {
+          "kind": "hide",
+          "scene": {
+            "clock": 34049861,
+            "sha256": "5296f7617b0c8132e1b83feb109c25321a002bb3324394042669e9bd186de808",
+            "observations": 32
+          }
+        },
+        {
+          "kind": "retirement_while_held"
+        }
+      ],
+      "reserved_bank_zero_delta": {
+        "baseline": "desktop-dt0",
+        "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "runtime": 0,
+        "loading": 0
+      }
+    },
+    "opt": {
+      "sensitivity_report": {
+        "path": "build/desktop/pointer-scale-opt/sensitivity/results.json",
+        "sha256": "5f2aa7a75c0a343075785f25d35e9e6c77bdc499c62b5640d7304f8c9339243d"
+      },
+      "drag_report": {
+        "path": "build/desktop/pointer-scale-opt/drag/results.json",
+        "sha256": "cbaae50b321e7da770728ce5dae961a07f5d0b5eecb4bea0199a9d6c35333530"
+      },
+      "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "image_sha256": "89149f760a4c4ffe4d004235e92c7ace9657f04e58195054e031ac05cd323fc7",
+      "xex_sha256": "03625766a71e482c5cbd44132a4c5610fede59d0d3ca6f79e565ca02c4f7e760",
+      "steps": [
+        {
+          "controller_steps": [
+            5,
+            -3
+          ],
+          "expected": [
+            330,
+            114
+          ],
+          "position": [
+            330,
+            114
+          ],
+          "capture_counts": [
+            5,
+            -3
+          ]
+        },
+        {
+          "controller_steps": [
+            40,
+            20
+          ],
+          "expected": [
+            410,
+            154
+          ],
+          "position": [
+            410,
+            154
+          ],
+          "capture_counts": [
+            45,
+            17
+          ]
+        },
+        {
+          "controller_steps": [
+            400,
+            200
+          ],
+          "expected": [
+            639,
+            239
+          ],
+          "position": [
+            639,
+            239
+          ],
+          "capture_counts": [
+            445,
+            217
+          ]
+        },
+        {
+          "controller_steps": [
+            -1,
+            -1
+          ],
+          "expected": [
+            638,
+            238
+          ],
+          "position": [
+            638,
+            238
+          ],
+          "capture_counts": [
+            444,
+            216
+          ]
+        },
+        {
+          "controller_steps": [
+            -4,
+            -3
+          ],
+          "expected": [
+            630,
+            232
+          ],
+          "position": [
+            630,
+            232
+          ],
+          "capture_counts": [
+            440,
+            213
+          ]
+        },
+        {
+          "controller_steps": [
+            -500,
+            -250
+          ],
+          "expected": [
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0
+          ],
+          "capture_counts": [
+            -60,
+            -37
+          ]
+        },
+        {
+          "controller_steps": [
+            1,
+            1
+          ],
+          "expected": [
+            2,
+            2
+          ],
+          "position": [
+            2,
+            2
+          ],
+          "capture_counts": [
+            -59,
+            -36
+          ]
+        }
+      ],
+      "sensitivity_runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 378,
+            "untouched_above_floor": 902
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 694,
+            "untouched_above_floor": 1610
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 285,
+          "untouched_from_base": 1251,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "drag_runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "return_s": 13390,
+        "return_d": 3072,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 378,
+            "untouched_above_floor": 902
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 263,
+            "untouched_above_floor": 505
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 145,
+            "untouched_above_floor": 623
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 722,
+            "untouched_above_floor": 1582
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 297,
+          "untouched_from_base": 1239,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "drag_loads": [
+        "idle",
+        "scroll",
+        "disk"
+      ],
+      "drag_samples": 15,
+      "drag_scenes": [
+        {
+          "clock": 13146869,
+          "sha256": "b42f16352c475e0e66efd857159e089f7191a873aff22a3ab1a6d2f170f29407",
+          "observations": 31
+        },
+        {
+          "clock": 17237109,
+          "sha256": "5946a59f7ab3c396571e5cee0dfd8efdf4bb0409fa4df103fbf3b82d1a814c66",
+          "observations": 3
+        },
+        {
+          "clock": 20722857,
+          "sha256": "c365d43761a43ca201dbad5704b01086da36a0fbe9a76480b3740acc137073db",
+          "observations": 1
+        },
+        {
+          "clock": 24848712,
+          "sha256": "04bbd6493f2a3e1cb972247f03da48e3764ff037ab41ac5f8e9269a93b1cf23b",
+          "observations": 34
+        },
+        {
+          "clock": 29614760,
+          "sha256": "293e086e4be193f3109d477aaaf07db47ea9ce069db62731c9d76d433b6cb16e",
+          "observations": 36
+        }
+      ],
+      "cancellations": [
+        {
+          "kind": "escape",
+          "scene": {
+            "clock": 30219561,
+            "sha256": "1a5a96b6206faf0f3a15570ae40df654f38d20d55f8b7ff7d375b742841e4dfa",
+            "observations": 4
+          }
+        },
+        {
+          "kind": "event_queue_loss",
+          "scene": {
+            "clock": 39218090,
+            "sha256": "8a3ca232d2c17f6628d11ff6cfa35ec058776bd143f75ebc86f2b3ff8b9ac023",
+            "observations": 1
+          }
+        },
+        {
+          "kind": "cooperative_close_refused",
+          "scene": {
+            "clock": 39530874,
+            "sha256": "ffc5ca5033616a4a69ce7779c24a600e66c37f062ca0e973c0af90f2eb2aeadd",
+            "observations": 1
+          }
+        },
+        {
+          "kind": "hide",
+          "scene": {
+            "clock": 41138889,
+            "sha256": "db4e6cf4130fe87e899927680bd30d624cae5c3f145b7bb7298139ed3f96eba3",
+            "observations": 31
+          }
+        },
+        {
+          "kind": "retirement_while_held"
+        }
+      ],
+      "reserved_bank_zero_delta": {
+        "baseline": "desktop-dt0",
+        "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "runtime": 0,
+        "loading": 0
+      }
+    }
+  },
+  "timing_scope": "No new latency qualification. DT3/DT4/DT6 response targets remain open.",
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "supported_boundary": {
+    "report": {
+      "path": "build/desktop/pointer-scale-opt/boundary/results.json",
+      "sha256": "519066fca0c8ebf7deadf49fcead96d3d01f8f1541cd08db4b3d632447c04f9c"
+    },
+    "observed": false,
+    "supported_position": [
+      514,
+      239,
+      0
+    ],
+    "supported_capture_counts": [
+      97,
+      97
+    ],
+    "burst_position": [
+      258,
+      0,
+      0
+    ],
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "live_tasks": 0,
+      "return_s": 10766,
+      "return_d": 2816,
+      "return_p": 0,
+      "return_dbr": 0,
+      "return_e": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 378,
+          "untouched_above_floor": 902
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 694,
+          "untouched_above_floor": 1610
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 46,
+          "untouched_above_floor": 210
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 285,
+        "untouched_from_base": 1251,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    }
+  },
+  "preview": {
+    "report": {
+      "path": "build/desktop/preview-pointer-2x/demo-results.json",
+      "sha256": "d4237fe45e0e389a44392abf721f28684a73dcb17a915dbe2bee046429140059"
+    },
+    "archive": "build/desktop/preview-pointer-2x/exec816-demo.zip",
+    "sha256": "05da680ce48b47612dc490ce877ecc8e0c46391075fceb098ca12948d76fc15e",
+    "result": {
+      "status": "pass",
+      "tier": "development",
+      "xex_sha256": "73f7a75dce956bbd37d68245b6d6040f58647a03f0884301aba61e90e97d595e",
+      "media_sha256": "f250f6e8c56e1fc3e7edc6a617ab4060c950789e1a0afd0c1a9c35afaf079d48",
+      "boot_xex_sha256": "e8513b127af1a316855c5ac1f710138adbd617c6f3273dbcca0317d9babd0ef3",
+      "autoboot_frames": 249,
+      "observations": [
+        {
+          "stage": "startup",
+          "guest_frame": 636
+        },
+        {
+          "stage": "independent-app-key",
+          "guest_frame": 745
+        },
+        {
+          "stage": "independent-app-drag",
+          "guest_frame": 790
+        },
+        {
+          "stage": "shell-focus-restored",
+          "guest_frame": 897
+        },
+        {
+          "stage": "system-volume",
+          "guest_frame": 900
+        },
+        {
+          "stage": "TASKS",
+          "guest_frame": 1025
+        },
+        {
+          "stage": "MOUNT",
+          "guest_frame": 1077
+        },
+        {
+          "stage": "CD SYS:WORK",
+          "guest_frame": 1199
+        },
+        {
+          "stage": "CD",
+          "guest_frame": 1244
+        },
+        {
+          "stage": "SYS:HELLO",
+          "guest_frame": 1395
+        },
+        {
+          "stage": "TYPE D1:STORY.TXT",
+          "guest_frame": 1652
+        },
+        {
+          "stage": "TYPE SYS:STORY.TXT",
+          "guest_frame": 1868
+        },
+        {
+          "stage": "desktop-pipeline",
+          "guest_frame": 2440
+        },
+        {
+          "stage": "CD SYS:",
+          "guest_frame": 2504
+        },
+        {
+          "stage": "CD",
+          "guest_frame": 2552
+        },
+        {
+          "stage": "HELLO",
+          "guest_frame": 2655
+        },
+        {
+          "stage": "boot-smoke",
+          "guest_frame": 2661
+        }
+      ],
+      "desktop_interaction": {
+        "app_updates": 2,
+        "drag_bounds": [
+          440,
+          88,
+          632,
+          232
+        ],
+        "pointer": [
+          100,
+          100
+        ]
+      },
+      "peak_tasks": 7,
+      "scope": "Desktop OF816 autoboot, independent client input/drag/focus, disk commands, seven-Task pipeline and EXIT"
+    },
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "live_tasks": 0,
+      "return_s": 14446,
+      "return_d": 3328,
+      "return_p": 0,
+      "return_dbr": 0,
+      "return_e": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 511,
+          "untouched_above_floor": 769
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 158,
+          "untouched_above_floor": 610
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 263,
+          "untouched_above_floor": 505
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 148,
+          "untouched_above_floor": 620
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 357,
+          "untouched_above_floor": 411
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 347,
+          "untouched_above_floor": 421
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 692,
+          "untouched_above_floor": 1612
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 63,
+          "untouched_above_floor": 193
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_from_base": 1249,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "reserved_bank_zero_delta": {
+      "baseline": "desktop-dt0",
+      "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "runtime": 0,
+      "loading": 0
+    },
+    "members": {
+      "exec816-demo/ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "exec816-demo/EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "exec816-demo/EXEC816-LICENSING.md": "4baba9d9a0c4955d2a4a4c76c520db7dbc97cbd85af95430d4299c9db2d1fd5f",
+      "exec816-demo/EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "exec816-demo/Exec-of816.xex": "e8513b127af1a316855c5ac1f710138adbd617c6f3273dbcca0317d9babd0ef3",
+      "exec816-demo/GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "exec816-demo/GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "exec816-demo/GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "exec816-demo/GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "exec816-demo/OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "exec816-demo/README.txt": "2b78c55182dcebe400691376d655cef3cb9228fbecb336cf5469287fc1483309",
+      "exec816-demo/SHA256SUMS": "814485d39441ef7a225fe8ab22006a1d369cf5bcb22003a05711c1567e00be00",
+      "exec816-demo/altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "exec816-demo/system.atr": "f250f6e8c56e1fc3e7edc6a617ab4060c950789e1a0afd0c1a9c35afaf079d48"
+    }
+  },
+  "linked_static_data_bytes": {
+    "before": 6640,
+    "after": 6640
+  },
+  "host_checks": {
+    "tests": 338,
+    "skips": 4,
+    "status": "pass",
+    "log": "build/desktop/pointer-host-tests.log",
+    "sha256": "6bfe7d9017d08953fb5b3847219a8777caf3a280ccc18d45c0338074185c1c0c",
+    "generated_desktop": "current"
+  },
+  "platform": {
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 1,
+        "internal_port": 0,
+        "map": "Mouse -> ST Mouse (port 1)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    }
+  },
+  "inputs": {
+    "abi/desktop.json": "9caeb650b2ef6c9d48e71694366a00272e8ca06238cae51b5df45bb78f31db27",
+    "lib/desktop/deskinput.act": "0f8b16ae40283053857c9e5606f2ec107d3db56b63c8d13eba40e2665300389c",
+    "lib/desktop/desktypes.act": "d2afd4fdd12c2753fe9d48080a3309f35b83a94b224b02601ecc84ca0486795b",
+    "tools/build_bitmap_console.py": "47b183644aa51f25538f341e65e4ecb8294a86f186bfe0c0a1556fad22638800",
+    "tools/build_desktop_input.py": "c65d7299cc8e6ae05b7dea3771d93824d364ae547d25ba33bb65d54203531f3f",
+    "tools/build_demo.py": "1e77d789ee0061746c71971d8338262358a9df9d21add7a891bd4d32abf02c9b",
+    "tools/desktop_mouse.py": "9b76c2c332e0241695039feaedc10aa0ef6587409410746f6adfcf5c6cfd4dc4",
+    "tools/test_desktop_pointer_scale.py": "864eba0eba9173e082fc869c55b3b31fa2ead779f5d47b4c26c068cf14b61877",
+    "tools/test_desktop_mouse_boundary.py": "b4a42b7b12dccdb37905167c19f00e1df583769cfa4d90ca2c4502e29f5ba452",
+    "tools/test_desktop_drag.py": "261ac842c17285330e2928d96cf3f89814acbdf7547175c141cb155a80f660ad",
+    "tools/test_demo.py": "f09c3ea7ce392fce0c87b1b91674de74b8395d78d7191d0206141d8e0bea9446",
+    "tools/test_desktop_apps.py": "258fd8a031f610858bc18551802481d976d56194b3e97e82b4ba4197785a4c76",
+    "tools/measure_desktop.py": "5742a1b5d7755152681a734e8a013d608d8379cd57fcee182b6d73d6854a178a",
+    "docs/desktop-distribution.txt": "392579758d1981a29a884d973b6d78737671c847dabfcaa8feb661b47e51d29f"
+  }
+}

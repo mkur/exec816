@@ -11,7 +11,10 @@ def assembly():
     a=ABI
     require(a['schema_version']==1 and a['state_bytes']==128,'Invalid SIO state')
     require(len(set(a['fields'].values()))==len(a['fields']) and all(0<=v<128 for v in a['fields'].values()),'Invalid SIO offsets')
-    return HEADER+f'SIO_STATE = T_BASE+${a["state_offset"]:04x}\n'+''.join(f'{k} = SIO_STATE+{v}\n' for k,v in a['fields'].items())+f'SD_BYTES = {a["state_bytes"]}\nSIO_OWNED_MASK = ${a["owned_irq_mask"]:02x}\nSIO_TERMINAL = {a["terminal_phase"]}\n'
+    require(set(a['fine_alarm_ticks'])=={'SETUP','HOLD','WRITE'} and
+            all(0<v<256 for v in a['fine_alarm_ticks'].values()),'Invalid fine SIO alarms')
+    return (HEADER+f'SIO_STATE = T_BASE+${a["state_offset"]:04x}\n'+''.join(f'{k} = SIO_STATE+{v}\n' for k,v in a['fields'].items())+f'SD_BYTES = {a["state_bytes"]}\nSIO_OWNED_MASK = ${a["owned_irq_mask"]:02x}\nSIO_TERMINAL = {a["terminal_phase"]}\n'
+            + ''.join(f'SIO_{k}_FINE_TICKS = {v}\n' for k,v in a['fine_alarm_ticks'].items()))
 
 def generate(output,base):
     write(Path(output)/'sio-storage-action.inc',HEADER+f'CONST SIO_STATE=${base+ABI["state_offset"]:x}\n'+''.join(f'CONST {k}=${base+ABI["state_offset"]+v:x}\n' for k,v in ABI['fields'].items()),False)

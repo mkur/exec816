@@ -1,0 +1,145 @@
+; One presenter continuation owns copied geometry until the shared DMA retires.
+MODULE DESKMOVE
+USE DESKTYPES
+USE DESKEVENTS
+USE DESKSTATE
+USE LAYERTYPES
+USE LAYERS
+USE CONSOLEBITMAP
+USE CONSOLEDISPLAY
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE CONSOLEBATCH
+USE HEAPCORE
+
+LONGCARD moveToken
+DESKTYPES.Window POINTER moving
+DESKTYPES.Request POINTER reply
+
+; Restoring a caret also schedules its next presentation. A command-window
+; move may expose no console pixels, so damage alone cannot wake that work.
+PUBLIC PROC HideCaret()
+
+  LET entry=CONSOLEWINDOWS.Find(0)
+  IF entry<>NULL THEN
+    BEGIN
+      LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+      IF view.cursorOn<>0 THEN
+        CONSOLEDISPLAY.RemoveCursor(view)
+        view.index=$ffff
+      FI
+    END
+  FI
+
+RETURN
+
+; Rebase placement only: copied pixels still represent the same circular model.
+PROC Rebase(LAYERTYPES.Layer POINTER layer)
+
+  LET entry=CONSOLEWINDOWS.Find(0)
+  IF entry=NULL THEN
+    RETURN
+  FI
+
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  view.left=CARD(layer.bounds.left+8) RSH 3
+  view.top=CARD(layer.bounds.top+16) RSH 3
+  view.cursorOn=0
+  view.index=$ffff
+  view.generation==+1
+
+RETURN
+
+PUBLIC PROC Pump()
+  BYTE status,completed
+
+  IF moveToken=0 OR CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN
+  FI
+
+  LET service=DESKSTATE.Get()
+  completed=(CONSOLEBITMAP.Failed()=0)
+  status=LAYERS.Finish(@service.scene,moveToken,completed)
+  IF status<>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($faed)
+  FI
+
+  IF completed<>0 AND moving.kind=DESKTYPES.CONTENT_CONSOLE THEN
+    Rebase(LAYERS.Find(@service.scene,moving.layer))
+  FI
+
+  moveToken=0
+  moving=NULL
+  IF reply<>NULL THEN
+    DESKEVENTS.Reply(reply,
+        IF completed<>0 THEN DESKTYPES.OK ELSE DESKTYPES.DRAW_FAILED FI)
+    reply=NULL
+  FI
+
+RETURN
+
+; Unsupported placement and nonclean sources retain the ordinary redraw path.
+PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window INT left,top
+    DESKTYPES.Request POINTER request)
+  BYTE status,drawn,eligible
+  LONGCARD token
+
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  eligible=(CONSOLEBITMAP.Enabled()<>0 AND layer.dirty=0 AND layer.shown<>0
+      AND ((layer.bounds.left OR left OR
+          (layer.bounds.right-layer.bounds.left)) & 1)=0)
+  IF eligible<>0 AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+    BEGIN
+      LET entry=CONSOLEWINDOWS.Find(0)
+      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      LET batch=CONSOLEBATCH.Get()
+      eligible=(instance.dirtyRows=0 AND batch.phase=CONSOLETYPES.BATCH_IDLE)
+    END
+  FI
+
+  IF eligible<>0 THEN
+    ; Removing the caret uses an ordinary paint transaction, before move admission.
+    HideCaret()
+
+    drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
+    status=LAYERS.BeginMove(@service.scene,window.layer,left,top,@token)
+    IF status=LAYERTYPES.EMPTY THEN
+      RETURN(DESKTYPES.OK)
+    FI
+
+    IF status=LAYERTYPES.OK THEN
+      BEGIN
+        LET packet=CONSOLEBITMAP.GetPacket()
+        packet.copy.source.offset=0
+        packet.copy.source.pitch=320
+        packet.copy.source.width=640
+        packet.copy.source.height=240
+        packet.copy.destination.offset=0
+        packet.copy.destination.pitch=320
+        packet.copy.destination.width=640
+        packet.copy.destination.height=240
+        packet.copy.sourceX=CARD(layer.bounds.left)
+        packet.copy.sourceY=CARD(layer.bounds.top)
+        packet.copy.destinationX=CARD(left)
+        packet.copy.destinationY=CARD(top)
+        packet.copy.width=CARD(layer.bounds.right-layer.bounds.left)
+        packet.copy.height=CARD(layer.bounds.bottom-layer.bounds.top)
+        IF CONSOLEBITMAP.CopyStart()=0 THEN
+          status=LAYERS.Finish(@service.scene,token,0)
+          RETURN(DESKTYPES.DRAW_FAILED)
+        FI
+      END
+
+      moveToken=token
+      moving=window
+      reply=request
+      RETURN(DESKTYPES.PENDING)
+    FI
+  FI
+
+  status=LAYERS.Move(@service.scene,window.layer,left,top)
+
+RETURN(IF status=LAYERTYPES.OK THEN DESKTYPES.OK ELSE DESKTYPES.BAD_ARGUMENT FI)
+
+ENDMODULE

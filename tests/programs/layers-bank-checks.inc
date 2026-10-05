@@ -24,6 +24,7 @@ PROC BankCrossing()
   FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
     Require(LAYERS.BeginPaint(state,state.items(slot).id,@token)=LAYERTYPES.OK)
     Require(LAYERS.PaintRegion(state,token)=@state.work)
+    ExhaustPaint(state,token)
     Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
   OD
 

@@ -15,7 +15,7 @@ from generate_layers import layout
 
 INPUT_FILES = ('abi/layers.json', 'lib/display/layertypes.act',
                'lib/display/regions.act', 'lib/display/layers.act',
-               'lib/display/layers-update.inc', 'tools/generate_layers.py',
+               'lib/display/layers-update.inc', 'tests/programs/layers-damage-checks.inc', 'tools/generate_layers.py',
                'tools/test_layers.py', 'tests/programs/native_layers.act',
                'tests/programs/layers-paint.inc',
                'tests/programs/layers-update-checks.inc',
@@ -175,6 +175,29 @@ def check_bank_scene(raw):
                 pixels_checked=len(pixels))
 
 
+def check_damage_batches(raw):
+    require(raw[:16] == raw[-16:] == bytes([0xa5])*16, 'Damage stream guards changed')
+    cuts = [(40+i*128, 20+i*40, 80+i*128, 40+i*40) for i in range(4)]
+    total = 0
+    for batch in range(8):
+        expected = {(x,y) for y in range(232+batch) for x in range(batch,640)
+                    if not any(contains(cut,x,y) for cut in cuts)}
+        at = 16+batch*layout()['Region']['size']
+        count, = struct.unpack_from('<H', raw, at)
+        require(0 < count <= 96, 'Damage batch overflow')
+        actual = set()
+        for i in range(count):
+            l,t,r,b = struct.unpack_from('<4h', raw, at+2+i*8)
+            require(0 <= l < r <= 640 and 0 <= t < b <= 240, 'Damage extent')
+            pixels = {(x,y) for y in range(t,b) for x in range(l,r)}
+            require(not actual & pixels, 'Duplicate visibility within a batch')
+            actual |= pixels
+        require(actual == expected, 'Independent damage/visibility coverage: '+str(batch))
+        total += count
+    require(total > 96, 'Missing streamed product-capacity case')
+    return dict(batches=8, fragments=total, independent_pixel_union=True)
+
+
 def run(out, mode):
     out.mkdir(parents=True, exist_ok=True)
     rows = geometry_cases()
@@ -198,6 +221,7 @@ def run(out, mode):
                             (0xd2000, scene_input),
                             (0xe0000, bytes([0xa5]) * (output_size + 32)),
                             (0xf0000, bytes([0xa5]) * (scene_size + 32)),
+                            (0xe4000, bytes([0xa5]) * (8*layout()['Region']['size']+32)),
                             (0x11ffe0, bytes([0xa5]) * (layout()['Scene']['size'] + 32))])
         routines = [r for r in program['image']['routines']
                     if r['name'].startswith(('M_LAYERS_', 'M_REGIONS_'))]
@@ -245,6 +269,9 @@ def run(out, mode):
                 require(report[name] > 0, 'Missing drawing path: '+name)
             (out/'scenes.bin').write_bytes(scenes)
             bank_scene = bridge.memdump(0x11ffe0, layout()['Scene']['size']+32)
+            damage = bridge.memdump(0xe4000, 8*layout()['Region']['size']+32)
+            report['damage_batches'] = check_damage_batches(damage)
+            (out/'damage-batches.bin').write_bytes(damage)
             report['bank_crossing'] = check_bank_scene(bank_scene)
             (out/'bank-scene.bin').write_bytes(bank_scene)
         report['status'] = 'pass'

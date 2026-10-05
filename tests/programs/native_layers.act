@@ -122,6 +122,20 @@ PROC RegionFailures()
 
 RETURN
 
+PROC ExhaustPaint(LAYERTYPES.Scene POINTER state LONGCARD token)
+  BYTE status
+
+  DO
+    status=LAYERS.AdvancePaint(state,token)
+    IF status<>LAYERTYPES.OK THEN
+      EXIT
+    FI
+  OD
+
+  Require(status=LAYERTYPES.EMPTY)
+
+RETURN
+
 INCLUDE "layers-paint.inc"
 
 ; Paint the cached partition into an observer buffer, checking that every
@@ -288,6 +302,7 @@ PROC SceneFailures()
 RETURN
 
 INCLUDE "layers-update-checks.inc"
+INCLUDE "layers-damage-checks.inc"
 INCLUDE "layers-bank-checks.inc"
 
 PROC Main()
@@ -302,6 +317,7 @@ PROC Main()
   Scenes()
   SceneFailures()
   UpdateTransactions()
+  DamageTransactions()
   BankCrossing()
   scenePhase=50
   FreeGuarded(canvas,768)

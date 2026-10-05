@@ -1,0 +1,197 @@
+; Physical controller fixture. Workloads and observation gates are test-only.
+MODULE DESKTEST
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE HEAPCORE
+USE CONSOLEDRIVER
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLEBITMAP
+USE DESKTOP
+USE DESKTYPES
+USE DESKBOOT
+USE DESKSTATE
+USE DESKPAINT
+USE REGIONS
+
+BYTE holdEvents
+CARD mode,runningMode,ready,checks,eventCount,keyCount,cancelCount,lossCount,buttonCount
+CARD lastCode,lastKind,lastButtons,writes,reads
+LONGCARD lastWindow,panel
+DESKTYPES.Request control,eventRequest,cancelRequest
+BYTE ARRAY text(512),buffer(128)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Send(BYTE operation LONGCARD id)
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  LET client=DESKBOOT.Binding()
+  control.operation=operation
+  control.window=id
+  Require(DESKTOP.Submit(client,@control)=DESKTYPES.OK)
+  reply=DESKTOP.Collect(client)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(client)
+  OD
+
+  Require(reply=@control AND control.status=DESKTYPES.OK)
+
+RETURN
+
+PROC Observe()
+
+  eventCount==+1
+  lastCode=eventRequest.event.code
+  lastKind=eventRequest.event.kind
+  lastWindow=eventRequest.event.window
+  lastButtons=eventRequest.event.buttons
+  IF lastKind=DESKTYPES.EVENT_KEY THEN
+    keyCount==+1
+  ELSEIF lastKind=DESKTYPES.EVENT_CANCEL THEN
+    cancelCount==+1
+  ELSEIF lastKind=DESKTYPES.EVENT_LOSS THEN
+    lossCount==+1
+  ELSEIF lastKind=DESKTYPES.EVENT_BUTTON THEN
+    buttonCount==+1
+  FI
+
+RETURN
+
+PROC CancelWait()
+  CARD count
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  LET client=DESKBOOT.Binding()
+  DESKTOP.Prepare(@cancelRequest,DESKTYPES.CANCEL_EVENT)
+  cancelRequest.target=eventRequest.sequence
+  Require(DESKTOP.Submit(client,@cancelRequest)=DESKTYPES.OK)
+  count=0
+  WHILE count<2 DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(client)
+    Require(reply<>NULL)
+    IF reply=@eventRequest THEN
+      Require(reply.status=DESKTYPES.OK OR reply.status=DESKTYPES.CANCELLED)
+      IF reply.status=DESKTYPES.OK THEN
+        Observe()
+      FI
+    ELSE
+      Require(reply=@cancelRequest AND (reply.status=DESKTYPES.OK
+          OR reply.status=DESKTYPES.ALREADY_DONE))
+    FI
+
+    count==+1
+  OD
+
+RETURN
+
+PROC Main()
+  CARD index,previousMode,ignored
+  LONGINT got
+  BYTE waiting
+  DESKTYPES.Request POINTER reply
+  EXEC.Message POINTER message
+  DOS.FileHandle POINTER output,file
+
+  LET client=DESKBOOT.Binding()
+  output=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Require(output<>NULL)
+  FOR index=0 TO 511 DO
+    text(index)=IF (index & 63)=63 THEN 10 ELSE BYTE(65+(index MOD 26)) FI
+  OD
+
+  Require(DOS.Write(output,text,512)=512)
+  DESKTOP.Prepare(@control,DESKTYPES.OPEN)
+  control.value=DESKTYPES.CONTENT_COMMANDS
+  control.payload=BYTE POINTER(c"Input")
+  control.bytes=5
+  REGIONS.Assign(@control.bounds,440,80,624,224)
+  Send(DESKTYPES.OPEN,0)
+  panel=control.window
+  previousMode=0
+  waiting=0
+  file=NULL
+  ready=1
+  WHILE mode<>9 DO
+    ; Mode changes occur with no borrowed event record in control Send().
+    IF mode<>previousMode THEN
+      IF waiting<>0 THEN
+        CancelWait()
+        waiting=0
+      FI
+
+      IF mode=4 THEN
+        Send(DESKTYPES.SHOW,panel)
+        Send(DESKTYPES.FOCUS,panel)
+      ELSEIF previousMode=4 THEN
+        Send(DESKTYPES.HIDE,panel)
+        Send(DESKTYPES.FOCUS,DESKBOOT.WindowId())
+      FI
+
+      previousMode=mode
+      runningMode=mode
+    FI
+
+    IF waiting=0 THEN
+      DESKTOP.Prepare(@eventRequest,DESKTYPES.NEXT_EVENT)
+      Require(DESKTOP.Submit(client,@eventRequest)=DESKTYPES.OK)
+      waiting=1
+    FI
+
+    IF holdEvents=0 THEN
+      reply=DESKTOP.Collect(client)
+      IF reply<>NULL THEN
+        Require(reply=@eventRequest AND reply.status=DESKTYPES.OK)
+        Observe()
+        waiting=0
+      FI
+    FI
+
+    IF mode=2 THEN
+      Require(DOS.Write(output,text,512)=512)
+      writes==+1
+    ELSEIF mode=3 THEN
+      IF file=NULL THEN
+        file=DOS.Open(BYTE POINTER(c"D1:TOOLS/SUB/DATA.BIN"),DOS.MODE_OLDFILE)
+        Require(file<>NULL)
+      FI
+
+      got=DOS.Read(file,buffer,128)
+      Require(got>=0)
+      reads==+1
+      IF got=0 THEN
+        Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)>=0)
+      FI
+    ELSE
+      ignored=EXECTASKS.Sleep(1)
+    FI
+  OD
+
+  IF waiting<>0 THEN
+    CancelWait()
+  FI
+
+  Send(DESKTYPES.CLOSE,panel)
+  IF file<>NULL THEN
+    Require(DOS.Close(file)<>0)
+  FI
+
+  Require(DOS.Close(output)<>0 AND DOS.ReleaseContext()<>0)
+  ready=2
+
+RETURN
+
+ENDMODULE

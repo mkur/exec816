@@ -65,7 +65,7 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None):
             if hashlib.sha256(content).hexdigest() != demo['artifacts'][name]:
                 raise ValueError(f'Changed bitmap shell notice: {name}')
             files[name] = content
-        guide = (ROOT/'docs/bitmap-shell-distribution.txt').read_text()
+        guide = (ROOT/('docs/desktop-distribution.txt' if demo.get('desktop') else 'docs/bitmap-shell-distribution.txt')).read_text()
     guide = guide.replace('@SYSTEM_DISK@', media['name'])
     guide = guide.replace('@SYSTEM_DRIVE@', str(record['boot_config']['system_drive']))
     if graphics is not None:

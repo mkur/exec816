@@ -1,0 +1,149 @@
+# Mouse sampling and pointer batching
+
+[History](README.md) · [Implementation plan](../plans/gem4xe/mouse-performance-implementation-plan.md)
+
+Development-tier work on the pinned PAL 65C816 8×, 4 MiB, VBXE FX 1.26 and ST
+port 1 configuration. The desktop retains two pixels per decoded step. This
+record does not qualify physical hardware or the whole hosted system.
+
+## MP1 — 4 kHz capture
+
+Implemented 2026-10-05. Timer 1 now runs at 3,958.6 Hz except for short SIO
+COMMAND and write-turnaround windows. Those use the existing 7,917.2 Hz clock
+and alarm counts, while pointer capture skips alternate fine edges. SIO owns
+the demand; the platform owns the divisor, shadow and divider. AUDF1 changes
+do not add STIMER resets during serial frames. Timer 2 deadlines and the
+blitter's sixteen-VBI watchdog retain their units.
+
+[MP1 evidence](../development/mouse-performance-mp1.json) includes a matching
+2× two-client baseline, raw/optimized emitted mouse/SIO cases, phase-shifted
+physical mouse boundaries, sensitivity/edge reversal, recovery/cancellation,
+blitter completion and lost-IRQ wrap, and stock-profile timeout checks.
+The original COMMAND setup/hold and RX/TX deadlines remain enforced. The two
+stock timeouts were observed 28.05 and 29.60 µs after their absolute deadlines,
+inside the unchanged 100 µs limit.
+
+In the matching twenty-motion idle workload, native IRQ entry through routing
+fell from **31.08% to 15.88%** of observed elapsed time. This excludes final
+scheduler/RTI and is not exclusive mouse or total CPU utilization. Pointer
+drawing still uses four submissions in this slice; its charged CPU median is
+4.07 ms versus 4.18 ms before. Loaded response targets remain open.
+
+A raw public-admission test initially failed because it required a short SIO
+alarm to remain armed throughout mouse registration. The unchanged 8 kHz
+baseline fails the same assertion, after the same seven successful checks.
+Public registration can outlast the alarm. The fixture now checks the joined
+owner and continued exact-byte transfer; it retains the independent wire timing
+oracles. The corrected raw in-flight acquisition and raw emulation cases pass.
+
+The profile-limit runner now uses the actual pinned mouse-tooling emulator;
+its older observer binary had been removed during cleanup. The evidence records
+the selected ROM and emulator hashes. Host checks pass: 340 tests with four
+historical skips; generated timer/SIO definitions are current.
+
+Reserved bank-zero change is **0 fixed, 0 root/kernel, 0 per public Task and
+0 idle bytes**, including guards, alignment and slack. Two timer fields consume
+unused bytes inside its existing 32-byte upper-RAM reservation. Stack/DP pools
+are unchanged; emitted guards and OS-return checks pass.
+
+## MP2 — One pointer list
+
+The shared GEM/desktop cursor renderer builds restore, save, AND and OR records
+in its existing command buffer and submits them together. A visible move uses
+one upload and one START; show uses three records, hide one, and an unchanged
+valid pointer performs no submission. The call remains synchronous and leaves
+interrupts enabled while waiting. The new save geometry is adopted only after
+success. Drawing/outline invalidation still erases the pointer before changing
+its saved background, and a pending scroll retains the command arena.
+
+[MP2 evidence](../development/mouse-performance-mp2.json) records 62 cursor cases
+in each raw/optimized build. Independent complete-scene pixels and record bytes
+cover parity, corners, overlapping/distant moves, neighboring nibbles, unchanged
+positions and rejected packets. Faults cover the one-, three- and four-record
+lists, plus reset-required retention. Desktop checks cover physical 2× motion,
+drag outlines, edge clamping, cancellation/retirement and both pending-scroll
+watchdog outcomes. The drag oracle now includes the optional independent app
+and tracks expected stacking separately from the target's layer list.
+
+In the same twenty-motion idle cost fixture, pointer submissions/uploads fall
+from **80 to 20**. Median charged cursor CPU falls from **4.071 to 3.761 ms**
+after MP1, a **7.6%** reduction; the original 8 kHz/four-submit baseline is
+4.182 ms. These CPU spans exclude native interrupt bodies and off-Task time,
+but include validation, fences, scheduling tails and bus stalls. The blitter
+still transfers the same pixels. Preparation-to-first-START is an elapsed
+measurement; exact hardware BUSY edges are not measured.
+
+The code adds no production buffer or VRAM reservation. Reserved bank-zero
+growth remains **0 fixed, 0 root/kernel, 0 per public Task and 0 idle bytes**.
+The instrumented renderer's large Task stack peaks at 350 bytes raw and
+374 bytes optimized, inside its existing guarded pool. The host suite passes:
+340 tests with four historical skips. Combined latency acceptance is
+recorded separately in MP3.
+
+## MP3 — Combined desktop checkpoint
+
+[MP3 evidence](../development/mouse-performance-mp3.json) uses the same 2×
+two-client fixture before and after the change: 100 motions and thirty clicks
+per load, with 31 application computation/repaint updates. The final image also
+passes the complete workload without tracing. Physical phase/count, serial,
+scanout, ownership and shutdown oracles pass in their selected scopes.
+
+| Load | Pointer p95 before → after | Pointer max before → after | Button max before → after | IRQ entry/routing share before → after |
+| --- | ---: | ---: | ---: | ---: |
+| Idle | 66.11 → 63.84 ms | 86.70 → 79.25 ms | 32.49 → 17.42 ms | 31.08 → 15.86% |
+| Scrolling | 104.76 → 80.75 ms | 146.82 → 124.21 ms | 64.91 → 58.24 ms | 31.04 → 15.80% |
+| Physical disk | 84.43 → 85.05 ms | 166.14 → 125.46 ms | 145.75 → 99.10 ms | 36.27 → 20.59% |
+
+Disk p95 is essentially unchanged: the 0.62 ms increase occurs within the same
+six-observation scanout tail, while its maximum and button delays improve.
+Do not claim that every percentile improved. All three button maxima meet the
+existing 40/100 ms idle/loaded gates in this cohort. **Pointer p95/max targets
+remain open**, as do outline and complete move-repair targets. MP2's small
+two-client drag cohort observes about 0.52/0.54/1.44 seconds for complete repair
+at idle/scroll/disk; it is a correctness checkpoint, not a new latency baseline.
+
+Normal physical periods are exactly 448 base cycles, with capture around
+252.6 µs. Maximum capture gaps are 0.298/0.291/0.514 ms for the three loads,
+all below 1 ms. Fine SIO timing occupies about 0.45% of the recorded configured
+timer interval, and has 224-cycle physical periods with alternate-edge capture.
+Every one of the 300 measured pointer moves uses one upload and one launch.
+The full cohort's median charged pointer CPU is 3.76–3.79 ms, depending on load.
+
+Reserved bank-zero deltas remain zero in every category. This checkpoint reuses
+the passing MP1/MP2 host, raw/optimized, wire-time and fault checks; it adds
+combined observed execution and an identical-image unobserved replay, without
+claiming release qualification.
+
+## MP4 — Refreshed OF816 desktop preview
+
+The local package is
+`build/desktop/preview-mouse-performance/exec816-demo.zip`, built from runtime
+revision `378f620` with this slice's guide update. Its SHA-256 is
+`c43b735407dd62053159587b45ba4db7a25745a97e46be59e8ee143bf1ca38e1`
+(236,907 bytes). [MP4 evidence](../development/mouse-performance-mp4.json)
+records the archive members, source hashes, actual emulator/ROM/compiler pins,
+and packaged boot results. The builder includes pre-existing optional cartridge
+packaging work; that branch is unused by this desktop build and its local
+override is recorded.
+
+The ZIP contains fourteen files: the OF816 boot XEX, matching read-only system
+disk, pinned ROM, short guide, notices and checksums. CRC, extracted member and
+checksum checks pass. The extracted XEX, disk and ROM are byte-identical to the
+boot-smoke inputs; development manifests and intermediates remain outside the
+archive. This refresh retains the shell plus independent application, 2× mouse
+travel and the five-second autoboot. The standard shell/prime build selection
+is unchanged.
+
+`tools/test_demo.py --boot-smoke` passes seventeen independent complete-scene
+checks, application keys, pointer movement, title dragging, focus return, disk
+commands, a seven-Task pipeline and clean EXIT. The autoboot observation is
+249 PAL frames, inside the existing 249–251-frame gate. Stack/DP guards, native
+return, ownership and OS restoration pass. Documentation content and local
+links are checked as part of this development slice.
+
+The final generated bank-zero budget, regions and Task pools match the retained
+pre-change build. Reserved growth is **0 fixed, 0 root/kernel, 0 per public Task
+and 0 idle bytes**, including guards, alignment and unused capacity. The current
+input/display/desktop contracts and packaged guide state the new behavior and
+the still-open pointer, outline and move-repair timing limits. This is a local
+development preview, not a GitHub publication or whole-system qualification.

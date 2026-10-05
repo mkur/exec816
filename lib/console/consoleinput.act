@@ -7,6 +7,7 @@ USE CONSOLECAPTURE
 USE CONSOLEFOREGROUND
 USE CONSOLEWINDOWS
 USE HEAPCORE
+USE DESKINPUT
 INCLUDE "console-storage-action.inc"
 CONST ATARI_LEFT=$86, ATARI_RIGHT=$87, ATARI_UP=$8e, ATARI_DOWN=$8f
 CONST INPUT_LEFT=2, INPUT_RIGHT=6, INPUT_PREVIOUS=16, INPUT_NEXT=14
@@ -180,7 +181,9 @@ PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
     FI
 
     entry=CONSOLEFOREGROUND.Resolve(capturedEvent.route)
-    IF capturedEvent.kind=INPUT.EVENT_LOSS THEN
+    IF DESKINPUT.Key(@capturedEvent)<>0 THEN
+      ; The graphical endpoint owns this capture-time route.
+    ELSEIF capturedEvent.kind=INPUT.EVENT_LOSS THEN
       IF entry<>NULL THEN
         Lose(CONSOLETYPES.Instance POINTER(entry.instance))
       FI

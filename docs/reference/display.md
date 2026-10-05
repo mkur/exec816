@@ -85,6 +85,18 @@ DEVICE_FAULT. If idle cannot be established, keep FAULTED ownership and storage
 and enter the platform's interrupt-disabled reset-required park (`$FF93`). This
 does not acknowledge normal completion or return hardware/storage to the OS.
 
+## Software pointer
+
+The shared GEM/desktop software pointer uses the existing synchronous list
+submission path. A warmed visible move has four ordered records: restore the
+old saved background, save the new one, AND the mask and OR the image. Show
+needs three records, hide one, and an unchanged valid pointer needs none.
+The maximum list is 84 bytes and 1,440 work units, using the existing command
+arena, saved background and parity masks. The complete list is validated before
+launch; new save geometry is adopted after completion. Faults use the same
+quiescent/reset-required policy as other drawing. This does not add a hardware
+queue or asynchronous cursor lifetime; pending scroll work retains the arena.
+
 ## Bitmap rectangle copies
 
 `VbxeCopyRect(display, copy)` is an ordinary synchronous C driver operation.
@@ -120,6 +132,24 @@ fault. There is no new kernel selector or advertised VDI opcode. Signed list
 steps support X ±1 and Y −4096…4095; validation checks both address extremes
 and rejects VRAM wrap and command-arena overlap before submission.
 
+## Asynchronous rectangle copies
+
+`VbxeCopyStart(display,copy,idOut)` accepts an even-X/even-width typed copy of
+at most 640×240 pixels (76,800 copied bytes). It uses the same complete surface
+and extent checks as CopyRect. Equal-pitch overlapping views copy in the safe
+direction; different pitches require disjoint extents. Zero pixel bytes are
+copied normally. Empty or identical geometry returns OK with `*idOut=0`, without
+consuming an identity or submitting hardware. Invalid arguments leave the output
+unchanged. Accepted descriptors are copied before returning.
+
+A nonzero ID means one list was launched, not that DMA finished. Copies and
+scrolls share **one** active operation, ID sequence, command arena, completion
+signal, deadline and recovery path. Use `VbxePoll`, `VbxeCompletionMask` and Fence
+as described below. Either start returns BUSY without changing its output or the
+pending operation. There is no second queue or per-copy allocation. Retain both
+surfaces until completion or proven quiescence. Drawing into arbitrary offscreen
+surfaces remains outside the desktop contract; this is a typed transfer API.
+
 ## Asynchronous screen scrolling
 
 `VbxeScrollStart(display, copy, value, id)` submits an upward screen copy
@@ -135,7 +165,7 @@ OK means accepted, with an operation ID written to `id`; the call may return
 while hardware is busy. Descriptor fields and records are copied before return.
 Only one list can be pending. Another start returns BUSY without replacing the
 operation, changing the output ID or touching its command storage.
-`VbxeScrollPoll(display, id)` checks once and returns BUSY, completed OK or a
+`VbxePoll(display, id)` checks once and returns BUSY, completed OK or a
 terminal error. A stale/zero ID returns BAD_ARGUMENT. IDs are not reused across
 close/reopen, and exhaustion rejects new starts. Both entries validate the owner
 on every invocation; an ID never grants access to another Task.

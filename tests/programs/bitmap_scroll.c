@@ -43,7 +43,7 @@ static void multirow(UWORD left,UWORD top,UWORD width,UWORD height,UWORD delta)
     check(VbxeScrollStart(&display,&copy,0xe5,&id)==DISPLAY_OK);
     check(scrollLaunches==launches+1 && id!=0);
     check(VbxeFence(&display)==DISPLAY_OK);
-    check(VbxeScrollPoll(&display,id)==DISPLAY_OK);
+    check(VbxePoll(&display,id)==DISPLAY_OK);
     check(!(*(volatile UBYTE *)0xd65eUL));
     for (y=0;y<240;y++) {
         check(VbxeRead(&display,(ULONG)y*320,row,sizeof(row))==DISPLAY_OK);
@@ -96,11 +96,11 @@ void ScrollCases(void)
     check(VbxeScrollStart(&display,&copy,0xa5,&id)==DISPLAY_OK);
     check((UWORD)(ownerChecks-before)==1 && id!=0);
     check((UWORD)(scrollLaunches-launches)==1);
-    check(display.scrollPending && (*(volatile UBYTE *)0xd653UL&3));
+    check(display.operationPending && (*(volatile UBYTE *)0xd653UL&3));
     scrollBusySeen=1;
     check(VbxeScrollStart(&display,&copy,0,&rejected)==DISPLAY_BUSY);
     check(rejected==0x12345678UL && scrollLaunches==launches+1);
-    check(VbxeScrollPoll(&display,id+1)==DISPLAY_BAD_ARGUMENT);
+    check(VbxePoll(&display,id+1)==DISPLAY_BAD_ARGUMENT);
     /* The completed launch owns its records; the original descriptor can die. */
     memset(&copy,0xcc,sizeof(copy));
     if (variant>=13 && variant<=15) { fault_arm=1; ProbeStopped=0; }
@@ -117,12 +117,12 @@ void ScrollCases(void)
     }
     do {
         before=ownerChecks;
-        status=VbxeScrollPoll(&display,id);
+        status=VbxePoll(&display,id);
         check((UWORD)(ownerChecks-before)==1);
         ++scrollPolls;
     } while (status==DISPLAY_BUSY);
     if (variant>=13 && variant<=15) {
-        check(status==DISPLAY_DEVICE_FAULT && !display.scrollPending);
+        check(status==DISPLAY_DEVICE_FAULT && !display.operationPending);
         check(display.lease.state==DISPLAY_FREE && ProbeStopped);
         /* DONE with injected BUSY is an immediate contradiction, not a
          * missing IRQ. Independent lost-IRQ/tick-wrap coverage waits in the
@@ -130,19 +130,19 @@ void ScrollCases(void)
         check((UWORD)(DisplayTicks()-started)<VBXE_WAIT_TICKS+2);
         fault_arm=0;
         check(VbxeOpen(&display)==DISPLAY_OK);
-        check(VbxeScrollPoll(&display,id)==DISPLAY_BAD_ARGUMENT);
+        check(VbxePoll(&display,id)==DISPLAY_BAD_ARGUMENT);
         geometry(0,0,640,232);
         launches=scrollLaunches; rejected=0x12345678UL;
         fault_arm=1; ProbeStopped=0;
         check(VbxeScrollStart(&display,&copy,0,&rejected)==DISPLAY_DEVICE_FAULT);
         check(rejected==0x12345678UL && scrollLaunches==launches);
-        check(display.lease.state==DISPLAY_FREE && !display.scrollPending);
+        check(display.lease.state==DISPLAY_FREE && !display.operationPending);
         fault_arm=0;
         check(VbxeOpen(&display)==DISPLAY_OK);
         return;
     }
-    check(status==DISPLAY_OK && !display.scrollPending);
-    check(VbxeScrollPoll(&display,id)==DISPLAY_OK);
+    check(status==DISPLAY_OK && !display.operationPending);
+    check(VbxePoll(&display,id)==DISPLAY_OK);
     for (y=0;y<240;y++) {
         check(VbxeRead(&display,(ULONG)y*320,row,sizeof(row))==DISPLAY_OK);
         good=1;
@@ -154,13 +154,13 @@ void ScrollCases(void)
     check(VbxeFill(&display,24UL*320+12,320,68,16,0x33)==DISPLAY_OK);
     geometry(24,16,136,16); old=id;
     check(VbxeScrollStart(&display,&copy,0x77,&id)==DISPLAY_OK && id!=old);
-    check(VbxeScrollPoll(&display,old)==DISPLAY_BAD_ARGUMENT);
-    check(VbxeFence(&display)==DISPLAY_OK && !display.scrollPending);
+    check(VbxePoll(&display,old)==DISPLAY_BAD_ARGUMENT);
+    check(VbxeFence(&display)==DISPLAY_OK && !display.operationPending);
     geometry(200,80,16,0);
     check(VbxeScrollStart(&display,&copy,0x99,&id)==DISPLAY_OK);
     /* A normal synchronous operation drains the async list before reuse. */
     check(VbxeFill(&display,0,320,1,1,0x11)==DISPLAY_OK);
-    check(VbxeScrollPoll(&display,id)==DISPLAY_OK);
+    check(VbxePoll(&display,id)==DISPLAY_OK);
     for (y=0;y<240;y++) {
         check(VbxeRead(&display,(ULONG)y*320,row,sizeof(row))==DISPLAY_OK);
         good=1;
@@ -178,9 +178,9 @@ void ScrollCases(void)
     multirow(0,0,640,240,240);
     geometry(0,0,640,232); old=id;
     check(VbxeScrollStart(&display,&copy,0,&id)==DISPLAY_OK);
-    check(VbxeClose(&display)==DISPLAY_OK && !display.scrollPending);
+    check(VbxeClose(&display)==DISPLAY_OK && !display.operationPending);
     check(VbxeOpen(&display)==DISPLAY_OK);
-    check(VbxeScrollPoll(&display,id)==DISPLAY_BAD_ARGUMENT);
+    check(VbxePoll(&display,id)==DISPLAY_BAD_ARGUMENT);
     check(VbxeScrollStart(&display,&copy,0,&old)==DISPLAY_OK && old!=id);
     check(VbxeFence(&display)==DISPLAY_OK);
 }

@@ -14,13 +14,19 @@ def assembly():
     a = ABI
     require(a['schema_version'] == 1 and a['state_bytes'] == 32,
             'Invalid shared timer state')
+    require(a['divisor'] + 1 == (a['fine_divisor'] + 1) * a['pointer_divider']
+            and a['pointer_divider'] == 2, 'Invalid shared timer cadence')
+    require(len(set(a['fields'].values())) == len(a['fields'])
+            and all(0 <= v < a['state_bytes'] for v in a['fields'].values()),
+            'Invalid shared timer offsets')
     console = json.loads((ROOT/'abi/console.json').read_text())['storage']
     require(a['state_offset'] >= console['keymap_offset']+128
             and a['state_offset']+a['state_bytes'] <= 0x1000,
             'Timer overlaps console tables or native code')
     return (HEADER+f'TIMER_STATE = T_BASE+${a["state_offset"]:04x}\n'
             + ''.join(f'{k} = TIMER_STATE+{v}\n' for k, v in a['fields'].items())
-            + f'TIMER_DIVISOR = {a["divisor"]}\nTIMER_AUDCTL = ${a["audctl"]:02x}\n')
+            + f'TIMER_DIVISOR = {a["divisor"]}\nTIMER_FINE_DIVISOR = {a["fine_divisor"]}\n'
+            + f'TIMER_POINTER_DIVIDER = {a["pointer_divider"]}\nTIMER_AUDCTL = ${a["audctl"]:02x}\n')
 
 
 def generate(output, base, memory):

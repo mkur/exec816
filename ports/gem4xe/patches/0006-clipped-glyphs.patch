@@ -1,0 +1,88 @@
+--- a/src/vdi/dev_vbxe.c
++++ b/src/vdi/dev_vbxe.c
+@@ -577,6 +577,76 @@
+                 (uint8_t)(mode == MD_ERASE ? ink : HW(0)));
+ }
+ 
++/* Clip the existing font atlas instead of staging screen pages through the
++ * CPU. Edge masks preserve the neighbouring nibble; zero ink uses inverse
++ * mask AND because the hardware stencil treats zero as transparent. */
++static void glyph_part(uint32_t src, uint16_t stride, uint32_t dst,
++                       uint16_t bytes, uint16_t rows, uint8_t ink,
++                       uint8_t coverage)
++{
++    blit_mask(src, stride, dst, SCR_STRIDE, bytes, rows,
++              ink ? (uint8_t)(ink & coverage) : coverage,
++              ink ? 0 : 0xFF, ink ? BLT_MODE_HR : BLT_MODE_AND);
++}
++
++static void draw_glyph_clipped(WORD ch, WORD cx, WORD cy, WORD overlay)
++{
++    WORD left, top, right, bottom, first, last;
++    uint16_t stride, bytes, rows;
++    uint32_t src, dst;
++    uint8_t ink, coverage;
++    WORD clear = (vwk.wrt_mode + 1 == MD_REPLACE && !overlay);
++
++    /* Reject distant cells before adding dimensions in 16-bit arithmetic. */
++    if (cx <= -FONT_W || cy <= -FONT_H || cx >= SCR_W || cy >= SCR_H)
++        return;
++    left = cx < 0 ? 0 : cx;
++    top = cy < 0 ? 0 : cy;
++    right = cx + FONT_W - 1;
++    bottom = cy + FONT_H - 1;
++    if (right >= SCR_W) right = SCR_W - 1;
++    if (bottom >= SCR_H) bottom = SCR_H - 1;
++    if (vwk.clip) {
++        if (left < vwk.xmn_clip) left = vwk.xmn_clip;
++        if (top < vwk.ymn_clip) top = vwk.ymn_clip;
++        if (right > vwk.xmx_clip) right = vwk.xmx_clip;
++        if (bottom > vwk.ymx_clip) bottom = vwk.ymx_clip;
++    }
++    if (left > right || top > bottom) return;
++    if (clear) dev_fill_rect(left, top, right, bottom, 0);
++    ink = (uint8_t)(HW(vwk.text_color) * 17);
++    if (!glyph_ink[ch & 0xFF] || (!ink && clear)) return;
++
++    stride = (cx & 1) ? FONT_OSTRIDE : FONT_VSTRIDE;
++    bytes = (cx & 1) ? FONT_OBYTES : FONT_BYTES;
++    src = ((cx & 1) ? VR_FONT_ODD : VR_FONT)
++        + (uint32_t)(ch & 0xFF) * bytes;
++    first = left >> 1;
++    last = right >> 1;
++    src += (uint16_t)((top - cy) * stride)
++         + (uint16_t)(first - (cx - (cx & 1)) / 2);
++    dst = VR_SCREEN0 + scr_row(top) + first;
++    rows = (uint16_t)(bottom - top + 1);
++    if (first == last) {
++        coverage = (uint8_t)(((left & 1) ? 0x0F : 0xFF)
++                  & ((right & 1) ? 0xFF : 0xF0));
++        glyph_part(src, stride, dst, 1, rows, ink, coverage);
++        return;
++    }
++    if (left & 1) {
++        glyph_part(src, stride, dst, 1, rows, ink, 0x0F);
++        ++first; ++src; ++dst;
++    }
++    if (!(right & 1)) {
++        glyph_part(src + last - first, stride, dst + last - first,
++                   1, rows, ink, 0xF0);
++        --last;
++    }
++    if (first <= last)
++        glyph_part(src, stride, dst, (uint16_t)(last - first + 1),
++                   rows, ink, 0xFF);
++}
++
+ /* v_gtext.  Alignment is left/baseline (vst_alignment is not implemented, so
+  * only the default applies): the y given is the BASELINE, and the cell top is
+  * y - FONT_TOP.
+@@ -609,6 +679,8 @@
+         draw_glyph(ch, cx, cy, HW(vwk.text_color),
+                    (WORD)(!overlay && mode == MD_REPLACE));
+         /* no run per glyph: a string is one list (vdi(), src/vdi/vdi.c) */
++    } else if (blittable) {
++        draw_glyph_clipped(ch, cx, cy, overlay);
+     } else {
+         draw_glyph_cpu(ch, cx, cy);
+     }

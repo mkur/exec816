@@ -12,7 +12,8 @@ UWORD GemDrawingCopy(const struct VbxeCopy *copy);
 /* Copy upward by sourceY-destinationY (positive multiple of eight), then fill
  * the exposed strip. The copied descriptor and operation ID outlive the call. */
 UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id);
-UWORD GemDrawingScrollPoll(ULONG id);
+UWORD GemDrawingCopyStart(const struct VbxeCopy *copy,ULONG *id);
+UWORD GemDrawingPoll(ULONG id);
 ULONG GemDrawingCompletionMask(void);
 UWORD GemDrawingFence(void);
 UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
@@ -24,4 +25,20 @@ UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,
 UWORD GemDrawingTextFill(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD foreground,UWORD background,UWORD fillX,UWORD fillY,
     UWORD fillWidth,UWORD fillHeight,UWORD fillPen);
+/* Half-open pixel clipping; a cut glyph preserves pixels outside the clip. */
+UWORD GemDrawingTextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom);
+
+/* Same owner; caller waits for its asynchronous drawing to retire first. */
+UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible);
+UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible);
+
+/* Internal renderer closure: callback is linked trusted code, never a client
+ * pointer. One owner check and fence cover the complete bounded paint quantum. */
+UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void));
+/* Widget-only strip buffer; first resets it, draw returns nonzero on completion.
+ * The complete clipped strip replaces screen pixels only after the final chunk. */
+UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                            UWORD first,UWORD (*draw)(void));
+void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom);
 #endif

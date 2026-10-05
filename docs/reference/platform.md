@@ -91,12 +91,21 @@ starts after the full arena. The image owns its bank even when some capacity is
 unused; packaging rejects code/metadata overlap, arena overflow and resident
 image payload in bank zero.
 
-The standard shell/prime and bitmap shell demos use a 4 KiB arena for the
-application globals and resident fault strings. `tools/build_demo.py` derives its
-`demo-memory.json` from the default profile with this explicit 2 KiB upper-RAM
-increase. Task pools and all bank-zero reservations are unchanged. Build reports
-record the selected capacity and actual image extents; standalone fixtures keep
-their separately recorded profiles.
+For a linked foreign image, native code starts above the foreign image's full
+banks. The current bitmap/desktop C image occupies fixed banks `$0C/$0D`, so
+native code begins at `$0E0000` and can grow contiguously without crossing those
+bindings. The existing native data arena and all stack/DP reservations stay in
+place. The effective origin is recorded in `memory.json` and `layout.json`;
+normal extent and bank-ownership checks still apply to the combined image.
+
+The text, bitmap and desktop demos use a 4 KiB arena to hold their composed
+application globals and the resident fault strings. `tools/build_demo.py`
+derives `demo-memory.json` from the default profile with this explicit 2 KiB
+upper-RAM increase over the default (1.5 KiB over the earlier desktop arena).
+Optional bitmap payloads inherit the matching demo’s arena size. Task pools and
+all bank-zero reservations are unchanged. Build reports record the selected
+capacity and actual image extents; standalone fixtures keep their separately
+recorded profiles.
 
 The profile reserves **`$8000–$8FFF` (4 KiB) for the VBXE CPU aperture** during
 loading and runtime. Persistent Exec reservations are packed below it:
@@ -271,9 +280,14 @@ participation while open, but requests timer edges only while an asynchronous
 list is ARMED. Its bounded check reads the VBI deadline, not blitter BUSY.
 Each acknowledged edge advances an armed alarm at
 most once; serial RX/TX receive bounded service opportunities around sampling.
-SIO retains timer 2 and its watchdog, transfer and recovery policy. Timer 1 keeps
-the existing divisor 7 and SIO alarm units. SIO transaction setup still resets
-STIMER; joining an existing timing owner does not reset it. A new owned timer
+SIO retains timer 2 and its watchdog, transfer and recovery policy. Timer 1 uses
+divisor 15 normally (3,958.6 Hz on PAL). SIO requests divisor 7 for COMMAND
+setup/transmission/hold and write turnaround, retaining its fine-alarm units.
+Pointer capture uses every normal edge and every second fine edge. Changing
+AUDF1 does not reset the timer; the first interval can retain the old reload.
+The capture divider resets at rate changes and pointer acquisition/release.
+SIO transaction setup still resets STIMER before serial transmission; joining
+an existing timing owner does not reset it. A new owned timer
 edge arriving during keyboard capture remains latched for the next native IRQ;
 it is never delegated to the ROM handler while the timing owner remains live.
 
@@ -284,7 +298,9 @@ serial resources while preserving surviving sampling/watchdog demand; last timer
 restores its vector and silent baseline. Task-side transitions use SWITCHING and
 local IRQ masking, covering asynchronous NMI entry as well as IRQ. The fixed
 ST/port 1 pointer backend uses this clock for public INPUT capture; diagnostic
-sampling counters and test entry points are excluded from production. See [mouse development](../history/gem-mouse.md).
+sampling counters and test entry points are excluded from production. See
+[mouse development](../history/gem-mouse.md) and the
+[4 kHz development record](../history/mouse-performance.md).
 
 The VBXE backend participates in both native and emulation IRQ routing, including
 when SIO owns the serial route. It acknowledges only its owned source and chains

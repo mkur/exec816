@@ -1,0 +1,57 @@
+MODULE DESKAPPS
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DESKAPP
+USE DESKBOOT
+USE DESKTOP
+USE DESKTYPES
+USE HEAPCORE
+
+CARD stage,advance,checks
+BYTE reverse
+DESKTYPES.Request request
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb80+(checks & 127))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Checkpoint(CARD value)
+  CARD ignored
+
+  stage=value
+  WHILE advance<value DO
+    ignored=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+PROC Main()
+  DOS.FileHandle POINTER output
+
+  output=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Require(output<>NULL)
+  Require(DOS.Write(output,BYTE POINTER(c"Shell alive"),11)=11)
+  Require(DESKAPP.Start()<>0)
+  Checkpoint(1)
+  Require(DOS.Write(output,BYTE POINTER(c"\nBehind the panel"),17)=17)
+  Checkpoint(2)
+  IF reverse<>0 THEN
+    DESKBOOT.Detach()
+    Checkpoint(3)
+  FI
+
+  DESKAPP.Stop()
+  Require(DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Checkpoint(4)
+
+RETURN
+
+ENDMODULE

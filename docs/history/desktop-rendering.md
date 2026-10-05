@@ -1,0 +1,365 @@
+# Desktop rendering development
+
+[History index](README.md) · [Design](../plans/gem4xe/desktop-rendering-design.md) ·
+[Plan](../plans/gem4xe/desktop-rendering-implementation-plan.md)
+
+## DR0: preserve the renderer and its observations
+
+The [baseline record](../development/desktop-rendering-dr0.json) pins the
+optimized executable, toolchain, emulator, ROM, machine, maps and stack usage.
+The complete executable and large pixel outputs remain in
+`build/desktop-rendering/dr0/moves/`; the frozen copies must not be rebuilt for
+later comparisons. `tools/record_rendering_baseline.py` checks the 15 full-frame
+comparisons before recording the baseline.
+
+The expanded presentation fixture covers console output/scroll, odd occlusion,
+exposure, and a static command window moving in all four directions, between
+disjoint positions and to screen edges. It uses independent retained pixels,
+without reading the renderer's damage/visibility to construct expected output.
+Settling samples include request processing, repair, caret and two explicit PAL
+frames. They are **not** hardware DMA durations. The pinned observer exposes IRQ
+and adoption boundaries, not exact hardware BUSY edges; retain this limitation
+in subsequent timing reports. Mouse, widget and IRQ evidence is referenced by
+hash rather than rerunning those completed matrices.
+
+The fixture now uses an explicit 8 KiB upper-RAM globals arena, matching the
+widget fixtures; its former 2 KiB arena no longer fits the merged desktop. The
+demo's separate 4 KiB arena is unchanged. There is no production implementation
+change in DR0. Reserved bank-zero delta is zero for fixed state, root/kernel,
+each of eight public Tasks and idle, including guards, alignment and capacity.
+VRAM delta is zero. Eight damage entries and candidate cache ranges
+`$50000–$5FFFF`, `$60000–$6FFFF` are checked against current reservations and
+diagnostic scratch; this slice does not reserve those ranges.
+
+## DR1: bounded damage and streamed painting
+
+Layers now retains eight damage rectangles per layer/background. Containment
+and exact rectangular unions merge; a ninth unmergeable rectangle collapses all
+entries to a conservative bound. The existing 96-entry visibility/work capacity
+is unchanged. `AdvancePaint` streams the next nonempty damage intersection and
+must return EMPTY before successful Finish. Failure preserves the complete
+original damage list. Every desktop, direct-console and fixture consumer has
+been migrated.
+
+The [DR1 record](../development/desktop-rendering-dr1.json) includes optimized
+geometry, independent pixel-set coverage of eight batches exceeding 96 total
+fragments, 15 desktop and ten widget scenes. Small raw/optimized probes cover
+far record access, eight advances, early Finish rejection and call results.
+The host suite passes 352 tests with four skips. These are development checks.
+
+A Layer grows from 792 to 850 bytes; a Scene and its enclosing desktop Service
+each grow by 292 bytes in upper RAM, including alignment and spare damage slots.
+No mutable Layers globals or new allocations are introduced. Reserved bank-zero
+delta is zero for fixed, root/kernel, every public Task and idle; guards,
+alignment and unused stack/DP capacity are unchanged. VRAM delta is zero.
+
+## DR2: typed asynchronous copies and shared completion
+
+`VbxeCopyStart` copies up to 640×240 even-aligned pixels in one launch, including
+safe overlap direction. Synchronous CopyRect shares its geometry preparation.
+Copies and copy/fill scrolling use the same operation ID, pending state, IRQ
+signal, command arena and deadline. `VbxePoll` replaces ScrollPoll throughout
+current code and tools. Empty/identical copies return OK with ID zero; BUSY and
+invalid admission preserve the output. No caller descriptor survives launch.
+The console drawing packet gains COPY_START without changing its 78-byte size.
+
+The [DR2 evidence](../development/desktop-rendering-dr2.json) records optimized
+pixel/overlap and failure cases, maximum copy, reopen/exhaustion, lost IRQ/tick
+wrap, unquiesced retention, mapping NMI, batched console output and drawing
+ownership/context cleanup. Small raw/optimized boundary probes cover descriptor
+and native-call behavior. The copy control disables substituted status reads;
+its fixture launch counters remain explicit. These are development checks.
+
+Operation state is renamed, not duplicated: seven existing payload bytes plus
+the existing four-byte sequence counter. Upper-RAM driver-state delta is zero;
+VRAM delta is zero. Fixed, root/kernel, all public Task and idle reserved
+bank-zero deltas are zero, including guards, alignment and unused capacity.
+There is no new signal, Task, stack, DP, queue or watchdog.
+
+## DR3: transactional window moves
+
+Clean, aligned front windows now copy through one IRQ-completed operation.
+Layers retains old/new bounds in its existing rectangle pair; it publishes new
+geometry only on successful completion and damages old-minus-new exposure.
+Failure after quiescence keeps old geometry and invalidates touched pixels.
+Programmatic MOVE and drag release share one continuation. Replies acknowledge
+geometry commit, while queued mutations remain gated during DMA. Console moves
+rebase placement without replaying its circular character model.
+
+The [DR3 record](../development/desktop-rendering-dr3.json) includes far-layout
+and transaction probes in both modes, optimized service/desktop/widget scenes,
+physical idle drags, screen-edge moves and cancellation/retirement checks. A
+passive CPU trace verifies one asynchronous launch for each of eight eligible
+moves. The small emitted probe checks old hit-test geometry during the hold,
+atomic commit and failure damage. The drag oracle now waits for adoption after
+gesture release. Removing a caret explicitly schedules its restoration even
+when the copied move exposes no console pixels. No observer code is linked
+into the production executable.
+
+The Layers/Service records do not grow: transactions reuse the existing saved
+rectangle pair. Presenter globals add ten upper-RAM bytes within the existing
+arena. Reserved bank-zero and VRAM deltas are zero; fixed, root/kernel, all eight
+public Tasks and idle retain their guards, alignment and full reserved capacity.
+Desktop test helpers default to an 8 KiB globals arena for composed fixtures;
+demo builders continue supplying their explicit 4 KiB profile.
+
+The two idle drag samples reached 279.6 ms release-to-repair, exceeding the
+250 ms target. These checks establish correctness, not timing acceptance;
+DR4–DR7 retain this open target and require the larger matched sample set.
+
+## DR4: disjoint base backgrounds
+
+The painter fills the frame around each client intersection. Command and widget
+clients retain one background fill; opaque console cells supply their own
+background, including partial cells. Title, close gadget, widget styles and the
+sixteen-scanline/four-command quanta remain unchanged. The independent optimized
+desktop and widget rasters pass all 25 scenes; see the
+[DR4 record](../development/desktop-rendering-dr4.json).
+
+For a complete 528 by 184 console window, excluding unchanged title/glyph work,
+explicit base fills fall from 89,536 to 7,616 packed-equivalent bytes: 81,920
+fewer bytes across the two removed client passes. Base-fill calls remain 22.
+The 160 by 80 command fixture removes 4,032 bytes and increases base-fill calls
+from 9 to 14. These geometry counts correct the initial DR4 record, which
+accounted for frame separation but omitted the console-clear removal.
+
+The [supplemental DR4 validation](../development/desktop-rendering-dr4-validation.json)
+executes nine additional optimized scenes on the frozen `a418ccf` implementation
+and the same fixture with the DR3 painter. It covers first/empty paint, five-command
+continuations, shortened labels/titles, focus, overlapping damage, full repaint
+and partial glyph/frame edges. Breakpoint packet reads count explicit fills;
+passive CPU traces count actual uploads/launches and separate painter CPU from
+native interrupts and other Tasks. A replay with both observers disabled has
+identical pixels and settled-cycle observations. Four host negative controls
+reject duplicate client fills, frame overdraw and fills outside sparse damage.
+
+| Matched scene | Explicit fill bytes, DR3 → DR4 | Launches | Painter CPU ms |
+| --- | --- | --- | --- |
+| First empty 160×80 window | 11,440 → 7,408 | 13 → 18 | 92.08 → 121.49 |
+| Full retained repaint | 12,137 → 8,105 | 21 → 26 | 126.33 → 155.07 |
+| Overlapping sparse damage | 1,451 → 1,126 | 21 → 21 | 942.24 → 945.79 |
+
+These are single matched samples, not latency distributions. Fill bytes count
+two pixels per byte and exclude glyph work and odd-nibble bus traffic. The
+retained-repaint scenes perform no surface copies. Odd clipped glyphs dominate
+the sparse case. Fewer filled pixels do not establish a speedup: extra border
+submissions make the complete command-window scenes slower. Exact hardware
+BUSY edges and timing acceptance remain outside this check.
+
+Reserved bank-zero delta is zero for fixed state, root/kernel, each of eight
+public Tasks and idle, including guards, alignment and unused capacity. Upper
+RAM globals and VRAM reservations also have zero delta.
+
+## DR5: bounded client snapshots
+
+Two 64 KiB slots at `$50000` and `$60000` hold compact client pixels. Their
+addresses come from the shared VRAM map and generate native and C constants.
+The private facility checks even geometry and slot capacity, chooses invalid
+then least-recently-used unpinned storage, and publishes a capture only after
+matching completion and window/revision validation. Restore pins survive until
+the painter adopts completion. Close invalidates identity; revision exhaustion
+disables caching. Retained drawing remains available.
+
+A Layers read transaction freezes a clean visible source without acknowledging
+damage. Failure releases only after quiescence and does not dirty the source
+screen solely because an optional destination failed. Capture removes overlays
+through the shared bridge. General offscreen rendering is unsupported.
+
+The [DR5 development record](../development/desktop-rendering-dr5.json) includes
+71-check small probes in both compiler modes; optimized full-scene capture,
+restore, revision mismatch, failed capture, pin/LRU and queued-close checks;
+and production-driver compact copies through both slots. The latter compares
+528 by 184 and 630 by 208 images, all unused slot bytes and surrounding guards,
+including zero-valued pixels. The 640 by 240 facility request falls back.
+The owner hook injects an already-quiescent capture failure; actual transport
+recovery remains covered by DR2. This is not new hosted-system qualification.
+
+Window metadata grows by eight bytes, each snapshot occupies fourteen bytes,
+and the Service grows from 12,280 to 12,342 bytes including alignment. The
+facility has nine bytes of upper-RAM continuation payload. VRAM reservations
+grow by 131,072 bytes including slack, totaling 243,200, with 281,088 unassigned.
+Reserved bank-zero delta is zero for fixed state, root/kernel, all eight public
+Tasks and idle, including guards, alignment and spare capacity. No cache owns
+a stack or direct page. Automatic scheduling is introduced in DR6.
+
+## DR6: restore during retained repair
+
+The presenter now attempts one clean visible capture per visual revision after
+input, controls, model output and painting have no pending work. Exposure selects
+valid aligned client fragments and holds its paint token/source pin across the
+IRQ-completed restore. Frame drawing and odd clipped fallback remain retained;
+console models and scroll paths are uncached. Position preserves cache-local
+pixels, while accepted content changes, hidden updates and widget focus styling
+invalidate revisions. Command-window frame-only focus preserves client pixels.
+
+The [DR6 record](../development/desktop-rendering-dr6.json) compares aligned
+widget scenes with real hits, forced misses and an uninstrumented production
+control against the same complete raster. It verifies warm exposure uses copies,
+hidden updates reject stale pixels, focus styling redraws and retirement clears
+validity. Odd-position scenes retain their pixel oracle, and service/lifetime
+checks pass. A visible nonconsole client cannot contain the Layers-clipped shell
+caret, so capture no longer erases an unrelated caret; pointer/outline exclusion
+remains in the drawing bridge. Diagnostic hit counters exist only in fixtures.
+
+The [supplemental command-cache check](../development/desktop-rendering-cache-policy.json)
+compares twelve complete scenes with cache hits and with forced misses. Three
+clean clients exercise two-slot eviction; frame-only focus preserves a valid
+snapshot without recapture. Aligned exposure restores it, odd exposure falls
+back, hidden replacement rejects it, and closing/reopening window storage uses
+a fresh identity. Both independent-client retirement orders also pass, with
+keyboard routing and console output behind the app. All thirty-six scenes,
+including twelve with the test counters disabled, match the independent oracle,
+with no settled pins or stack-floor breach.
+
+These simple one-text-command clients do not demonstrate a general speedup.
+Aligned exposure takes the same settled-frame count in both runs; an odd-to-even
+move using cached restoration costs one extra PAL frame (20.06 ms). These are
+single samples including request handling, all repair and two settling frames,
+not percentile evidence. The bounded cache policy does not establish latency
+acceptance for every eligible client.
+
+The larger composed demo exposed native code growing into fixed C banks
+`$0C/$0D`. The build now places the native linker's contiguous code above all
+foreign banks (`$0E0000` for this image), recording the effective origin and
+retaining combined extent checks. This is platform image placement, not a
+compiler code-generation workaround. Small descriptor/context probes pass in
+both compiler modes at the new location. Data storage stays in its current arena.
+
+No additional record, global payload, VRAM or reserved bank-zero capacity is
+introduced by DR6. Fixed, root/kernel, all eight public Tasks and idle keep their
+stack/DP bytes, guards, alignment and spare capacity. Code-bank ownership follows
+the generated image map; larger source code is reported separately from these
+reservations. Timing acceptance remains for DR7.
+
+## DR7: combined measurements and local preview
+
+The [DR7 development record](../development/desktop-rendering-dr7.json) completes
+the implementation and preview checks. All fifteen matched DR0 presentation
+scenes retain their complete pixel hashes. Eight clean moves each submit one
+copy list. The separate cache, independent-client and widget checks above pass;
+implementation correctness does not establish responsiveness acceptance.
+
+| Cohort | Pointer p95 / maximum ms | Button maximum ms |
+| --- | --- | --- |
+| Idle | 46.41 / 46.66 | 3.70 |
+| Scrolling | 61.31 / 66.37 | 25.85 |
+| Cold physical disk | 46.47 / 66.37 | 12.52 |
+| Two independent clients | 65.86 / 86.32 | 23.79 |
+
+Each cohort contains 100 qualifying motions and 60 button events. All button
+and sub-millisecond sampling-gap limits pass. Pointer p95 misses the 40 ms idle
+limit and the 60 ms scrolling/two-client limit. The separate drag diagnostic
+contains forty outline samples and ten releases per load: maximum repair is
+299.54 ms idle, 1,181.92 ms scrolling and 1,422.43 ms under disk activity, above
+250 ms. Outline p95 misses idle/loaded limits too. These smaller drag samples
+retain every observed failure; they do not support performance acceptance.
+
+Matched twelve-key echo improves p95/maximum from 172.93 to 152.87 ms and passes
+the baseline regression allowance. The widget warm-exposure sequence takes
+962.68 ms with snapshots versus 5,615.64 ms with forced misses, including cover,
+capture and two settling frames. This is one matched scene sample. The simple
+command-cache comparison above shows why eligibility alone is not a speedup.
+
+Move submission costs 2.89–3.64 ms of charged CPU in the eight observed copies.
+Launch-to-IRQ idle observation is 1.39–8.26 ms, an upper bound including interrupt
+latency, not a direct DMA BUSY measurement. Submission includes setup, upload,
+launch and return; upload is not separately timed. IRQ acknowledgement to the
+owner's completion poll takes 1.73–2.21 ms. The next measurements should isolate
+release-to-copy admission, geometry commit, exposure repair and scanout in the
+same drag run, then target retained preparation and presenter scheduling.
+Memory traffic savings do not supersede latency.
+
+The refreshed `build/desktop-rendering/dr7/preview/exec816-demo.zip` contains
+the standard five-second OF816 shell/prime boot plus a separately booted
+`desktop/` preview with its matching disks, pinned ROM, notices and guide.
+Both extracted variants pass shell/disk commands, desktop interaction where
+applicable, EXIT and ownership/guard restoration. The combined archive's 24
+checksums pass, and its executable/media bytes match those walkthroughs.
+This is a local development preview, not hosted-system or hardware qualification.
+
+Build the two variants with `tools/build_demo.py`, then combine their flat
+distributions with `tools/package_desktop_preview.py`:
+
+```sh
+python3 tools/build_demo.py --output build/desktop-preview
+python3 tools/build_demo.py --desktop --output build/desktop-preview/desktop
+python3 tools/package_desktop_preview.py --standard build/desktop-preview/exec816-demo.zip --desktop build/desktop-preview/desktop/exec816-demo.zip --output build/desktop-preview/exec816-demo.zip
+```
+
+Extract the result and run `tools/test_demo.py --boot-smoke` with `--bundle`
+pointing to each development directory and `--distribution-root` to its matching
+extracted directory (root or `desktop/`). Metadata stays in the development
+directories. Packaging requires fresh flat inputs; regenerate the standard ZIP
+before combining it again. Publication remains separate.
+
+The final host discovery passes 357 tests with four skips (361 total), including
+three package checks. Focused emitted checks use optimized builds; the earlier
+slices retain their small raw/optimized compiler-boundary probes. All fifteen
+DR0 scene hashes match. Settled console-move time drops from 581.62 to 220.61 ms,
+while the odd clipped retained scene still takes 32.29 seconds (54.23 before).
+These single-scene timings are distinct from physical drag distributions.
+
+Against DR0, reserved bank-zero delta is zero for fixed state, root/kernel, all
+eight public Tasks and idle, including guards, alignment and unused capacity.
+Each cache/window adds no stack or direct page. VRAM reservations increase by
+131,072 bytes for the two slots; metadata and code extents are recorded by the
+earlier slices and generated build maps. AW5–AW6 were paused during DR7; their
+subsequent [application and preview record](aes-widgets.md) measures the complete
+widget path. Rendering work through DR7 is implemented; latency acceptance
+remains open with unchanged limits.
+
+## Obscured console scrolling follow-up
+
+The [development record](../development/desktop-scroll-starvation.json) covers
+scrolling while another window obscures the console. The original writer could
+advance the retained model while a preceding scroll still had dirty rows.
+Each new scroll restarted damage at row zero, so repeated output repainted the
+top while starving lower rows. Closing the panel restored the fully visible
+hardware-copy path. Final, settled raster comparisons alone missed this bug.
+
+The writer now drains pending damage before consuming another source quantum
+when its visible console cannot copy. Input and desktop controls continue on
+each worker turn, and cancellation is checked before this admission gate.
+Long writes also use the existing bounded batch policy behind an occluder;
+publication marks the whole resulting model dirty and the presenter completes
+its bounded repaint before accepting another batch. The four-row, 256-byte,
+four-turn and tick-boundary limits are unchanged. One worker-owned byte retains
+copy eligibility from admission, preventing later exposure from promoting an
+already gathered redraw into a copy of newer pixels.
+
+The optimized presentation fixture now includes 25 uninterrupted short writes,
+a 512-byte long write, an odd-edged overlapping panel and its subsequent close.
+All eighteen full-scene raster checks pass. A fixture-only observer detects 27
+instances of writes overtaking unfinished repaints in the original build and
+zero in the fixed build. The final run also exercises nine redraw batches,
+including five multirow batches and a maximum of three rows.
+
+| Matched fixture | Short-write scene | Long-write scene |
+| --- | ---: | ---: |
+| Original, with starvation | 5.01 s | 4.53 s |
+| Complete repaint before more output | 7.74 s | 13.10 s |
+| Complete repaint plus bounded redraw batching | 7.74 s | 7.44 s |
+
+These single-run times include fixture work, repair and two settling frames;
+the short-write scene also opens the panel. Batching reduces the cost of the
+correct fallback, but the original defective path skipped intermediate lower-row
+work. This fix does not establish a throughput improvement over that path or
+meet the open latency targets. Partially visible pixel reuse remains unsupported;
+unobscured scrolling still uses the faster hardware copy.
+
+The focused hardware-scroll fixture also passes its six scenes, cancellation,
+source retirement and OS restoration, with 44 copy launches including 26
+multirow launches. The extracted OF816 desktop preview passes the packaged
+walkthrough, including physical BREAK during an obscured scroll, ownership
+restoration, widget interaction, disk commands and EXIT. These are development
+checks on the pinned PAL, 65816 x8, 4 MiB, VBXE configuration, not a full
+qualification or a hardware claim. Host discovery passes 357 tests with four
+historical skips.
+
+Reserved bank-zero delta is zero for fixed state, root/kernel, every public
+Task and idle, including guards, alignment and unused capacity. The existing
+upper-memory arena and occupied image banks are unchanged; the new scalar adds
+no reservation. VRAM, stack and direct-page reservations are unchanged.
+The refreshed `build/occluded-scroll/preview/exec816-demo.zip` retains the
+standard five-second OF816 shell/prime boot and provides the updated desktop
+under `desktop/`, with matching media, ROM, checksums and notices.

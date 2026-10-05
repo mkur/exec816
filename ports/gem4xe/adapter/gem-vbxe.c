@@ -29,6 +29,16 @@ static UWORD dirty, fault;
 static UBYTE commands[VBXE_BCB_BYTES];
 static UWORD commandCount;
 static ULONG commandWork;
+/* The 5120 bytes immediately after the screen hold one 640 x 16 strip.
+ * Only widget callbacks redirect drawing, never other owner operations. */
+#define WIDGET_STRIP_BASE 76800UL
+static UWORD stripActive,stripRedirect,stripLeft,stripTop,stripRight,stripBottom;
+static ULONG stripOffset;
+static void pointer_reset(void);
+static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom);
+static void outline_hide(void);
+static UWORD outlineLeft,outlineTop,outlineRight,outlineBottom,outlineVisible,outlineDrawn;
+
 
 
 static void latch(UWORD status) { if (status && !fault) fault=status; }
@@ -46,7 +56,9 @@ static void flush(void)
 }
 volatile uint8_t *vram_win(uint32_t address)
 {
-    ULONG base=address&~0xfffUL;
+    ULONG base;
+    if (stripRedirect && address<VBXE_SCREEN_BYTES) address+=stripOffset;
+    base=address&~0xfffUL;
     drain();
     if (!dirty || base!=pageAddress) {
         flush();
@@ -66,6 +78,7 @@ void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
     ULONG work;
     UBYTE *record;
     if (fault) return;
+    if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
     /* Check the whole operation before an arena flush could draw a prefix. */
     if (mode>6 || !VbxeBlitExtent(source,ss,bytes,rows) ||
         !VbxeBlitExtent(dest,ds,bytes,rows)) {
@@ -101,6 +114,7 @@ void blit_glyph(uint32_t source,uint16_t stride,uint32_t dest,uint16_t bytes,uin
     UBYTE *r;
     UWORD work=bytes*24;
     if (fault) return;
+    if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
     if (dirty) flush();
     if (commandCount==VBXE_LIST_RECORDS || commandWork+work>VBXE_LIST_WORK) drain();
     if (fault) return;
@@ -140,6 +154,7 @@ UWORD GemDrawingOpen(WORD *out)
     for (i=0;i<VBXE_LIST_RECORDS;i++) memcpy(commands+i*21,template,21);
     dirty=fault=commandCount=0;
     commandWork=0;
+    pointer_reset();
     status=GemVdiOpen(out);
     flush();
     if (!status && !fault) latch(VbxeOwnerShow(&display));
@@ -155,6 +170,7 @@ static UWORD close_owner(void)
     }
     GemVdiReset();
     dirty=commandCount=0; commandWork=0;
+    stripActive=stripRedirect=0;
     return fault ? DISPLAY_DEVICE_FAULT : status;
 }
 static UWORD fence_owner(void)
@@ -187,6 +203,7 @@ UWORD GemDrawingCopy(const struct VbxeCopy *copy)
     if (fault) return DISPLAY_DEVICE_FAULT;
     status=DisplayCheck(&display.lease);
     if (status!=DISPLAY_OK) return status;
+    pointer_erase(0,0,640,240);
     status=fence_owner();
     if (status!=DISPLAY_OK) return status;
     status=VbxeOwnerCopyRect(&display,copy);
@@ -207,21 +224,45 @@ UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
     if (fault) return DISPLAY_DEVICE_FAULT;
     status=DisplayCheck(&display.lease);
     if (status!=DISPLAY_OK) return status;
-    if (display.scrollPending) return DISPLAY_BUSY;
-    if (pen>=16) return DISPLAY_BAD_ARGUMENT;
+    if (display.operationPending) return DISPLAY_BUSY;
+    if (!copy || pen>=16) return DISPLAY_BAD_ARGUMENT;
+    pointer_erase(copy->destinationX,copy->destinationY,copy->destinationX+copy->width,
+                  copy->sourceY+copy->height);
     status=fence_owner();
     if (status!=DISPLAY_OK) return status;
     status=VbxeOwnerScrollStart(&display,copy,(UBYTE)(map_col[pen]*17),id);
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
-UWORD GemDrawingScrollPoll(ULONG id)
+UWORD GemDrawingCopyStart(const struct VbxeCopy *copy,ULONG *id)
 {
     UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     status=DisplayCheck(&display.lease);
     if (status!=DISPLAY_OK) return status;
-    status=VbxeOwnerScrollPoll(&display,id);
+    if (display.operationPending) return DISPLAY_BUSY;
+    if (!copy || !id) return DISPLAY_BAD_ARGUMENT;
+    /* Overlays are screen pixels only; offscreen captures/restores use the same
+     * operation but must never try to erase an overlay in cache coordinates. */
+    if (!copy->source.offset)
+        pointer_erase(copy->sourceX,copy->sourceY,copy->sourceX+copy->width,
+                      copy->sourceY+copy->height);
+    if (!copy->destination.offset)
+        pointer_erase(copy->destinationX,copy->destinationY,copy->destinationX+copy->width,
+                      copy->destinationY+copy->height);
+    status=fence_owner();
+    if (status!=DISPLAY_OK) return status;
+    status=VbxeOwnerCopyStart(&display,copy,id);
+    if (status==DISPLAY_DEVICE_FAULT) latch(status);
+    return status;
+}
+UWORD GemDrawingPoll(ULONG id)
+{
+    UWORD status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    status=VbxeOwnerPoll(&display,id);
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
@@ -267,63 +308,88 @@ void blit_text_fill(uint32_t font,uint16_t x,uint16_t y,const uint8_t *text,
     if (!fault) latch(VbxeOwnerTextFill(&display,font,x,y,text,count,ink,paper,&fill));
 }
 
-#ifndef GEM_DRAWING_ONLY
 #define CURSOR_SAVE 0x37000UL
 #define CURSOR_AND  0x37100UL
 #define CURSOR_OR   0x37200UL
+#define CURSOR_PARITY_BYTES 512UL
 static UWORD cursorX, cursorY, cursorVisible, cursorDrawn, cursorBytes, cursorRows;
 static ULONG cursorAddress;
-static UWORD cursorMaskParity;
+static UWORD cursorMasksReady;
 #include "gem-cursor-masks.h"
 
 
-/* Cursor transfers use the same fenced driver as drawing. The existing CPU
- * page stages masks only after donor writes have been flushed. Glyph scratch
- * remains untouched. Save/restore includes both edge nibbles; the masks retain
- * the neighboring pixels when an odd coordinate uses nine packed bytes. */
-static void cursor_hide(void)
+/* Only the admitted cursor operation calls this producer. Submit validates
+ * the entire list before DMA; no record flushes a partially prepared move. */
+static void cursor_record(UWORD index,ULONG source,UWORD sourceStride,
+    ULONG destination,UWORD destinationStride,UWORD bytes,UWORD rows,UBYTE mode)
 {
-    flush();
-    if (cursorDrawn && !fault)
-        latch(VbxeOwnerBlit(&display,CURSOR_SAVE,16,cursorAddress,320,cursorBytes,cursorRows,255,0,0));
-    cursorDrawn=0;
+    UBYTE *r=commands+index*21;
+    r[0]=(UBYTE)source; r[1]=(UBYTE)(source>>8); r[2]=(UBYTE)(source>>16);
+    r[3]=(UBYTE)sourceStride; r[4]=(UBYTE)(sourceStride>>8); r[5]=1;
+    r[6]=(UBYTE)destination; r[7]=(UBYTE)(destination>>8); r[8]=(UBYTE)(destination>>16);
+    r[9]=(UBYTE)destinationStride; r[10]=(UBYTE)(destinationStride>>8); r[11]=1;
+    r[12]=(UBYTE)(bytes-1); r[13]=0; r[14]=(UBYTE)(rows-1);
+    r[15]=255; r[16]=r[17]=r[18]=r[19]=0; r[20]=mode;
 }
-static void cursor_show(void)
+static void cursor_submit(UWORD count)
 {
-    UWORD width;
-    if (!cursorVisible || cursorDrawn || fault) return;
-    flush();
+    latch(VbxeOwnerSubmit(&display,commands,count));
+}
+
+/* One synchronous list restores the old save before replacing it with the
+ * new background. At most four records / 84 bytes / 1440 work units, inside
+ * the existing staging and VRAM arenas. Both edge nibbles remain preserved.
+ * Logical visibility is separate: drawing may temporarily erase the pointer. */
+static void cursor_render(UWORD x,UWORD y,UWORD draw)
+{
+    UWORD width=0,bytes=0,rows=0,count=0;
+    ULONG address=0,parity;
     if (fault) return;
-    width=640-cursorX;
-    if (width>16) width=16;
-    cursorRows=240-cursorY;
-    if (cursorRows>16) cursorRows=16;
-    cursorBytes=((cursorX&1)+width+1)/2;
-    cursorAddress=(ULONG)cursorY*320+cursorX/2;
-    latch(VbxeOwnerBlit(&display,cursorAddress,320,CURSOR_SAVE,16,cursorBytes,cursorRows,255,0,0));
-    if (fault) return;
-    /* Prepacked masks keep redraw/cursor work bounded in raw C builds too.
-     * Clipping changes the blit extent; unused edge nibbles remain preserved. */
-    if (cursorMaskParity!=(cursorX&1)) {
-        memcpy(page,cursorMasks[cursorX&1],512);
-        latch(VbxeOwnerWrite(&display,CURSOR_AND,page,512));
-        if (!fault) cursorMaskParity=cursorX&1;
+    if ((!draw && !cursorDrawn) || (draw && cursorDrawn && x==cursorX && y==cursorY)) {
+        cursorX=x; cursorY=y;
+        return;
     }
-    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_AND,16,cursorAddress,320,cursorBytes,cursorRows,255,0,4));
-    if (!fault) latch(VbxeOwnerBlit(&display,CURSOR_OR,16,cursorAddress,320,cursorBytes,cursorRows,255,0,3));
-    if (!fault) cursorDrawn=1;
+    flush();
+    if (fault) return;
+    if (draw) {
+        width=640-x;
+        if (width>16) width=16;
+        rows=240-y;
+        if (rows>16) rows=16;
+        bytes=((x&1)+width+1)/2;
+        address=(ULONG)y*320+x/2;
+        if (!cursorMasksReady) {
+            memcpy(page,cursorMasks,1024);
+            latch(VbxeOwnerWrite(&display,CURSOR_AND,page,1024));
+            if (fault) return;
+            cursorMasksReady=1;
+        }
+    }
+    if (cursorDrawn)
+        cursor_record(count++,CURSOR_SAVE,16,cursorAddress,320,cursorBytes,cursorRows,0);
+    if (draw) {
+        parity=(x&1)*CURSOR_PARITY_BYTES;
+        cursor_record(count++,address,320,CURSOR_SAVE,16,bytes,rows,0);
+        cursor_record(count++,CURSOR_AND+parity,16,address,320,bytes,rows,4);
+        cursor_record(count++,CURSOR_OR+parity,16,address,320,bytes,rows,3);
+    }
+    cursor_submit(count);
+    if (fault) return;
+    cursorX=x; cursorY=y; cursorDrawn=draw;
+    cursorAddress=address; cursorBytes=bytes; cursorRows=rows;
 }
+static void cursor_hide(void)
+{ cursor_render(cursorX,cursorY,0); }
+static void cursor_show(void)
+{ if (cursorVisible) cursor_render(cursorX,cursorY,1); }
+#ifndef GEM_DRAWING_ONLY
 static UWORD cursor_backend(void *context,const struct GemCursor *cursor)
 {
     UWORD status=DisplayCheck(&display.lease);
     (void)context;
     if (status!=DISPLAY_OK || fault) return GEM_DEVICE_FAULT;
-    cursor_hide();
-    if (fault) return GEM_DEVICE_FAULT;
-    cursorX=cursor->x;
-    cursorY=cursor->y;
-    cursorVisible=cursor->visible;
-    cursor_show();
+    cursor_render(cursor->x,cursor->y,cursor->visible);
+    if (!fault) cursorVisible=cursor->visible;
     return fault ? GEM_DEVICE_FAULT : GEM_OK;
 }
 static UWORD close_backend(void *context)
@@ -347,7 +413,7 @@ static UWORD open_backend(void *context,WORD *out)
         return status==DISPLAY_BUSY ? GEM_BUSY : status==DISPLAY_UNSUPPORTED ? GEM_UNSUPPORTED : GEM_DEVICE_FAULT;
     cursorX=cursorY=cursorVisible=cursorDrawn=cursorBytes=cursorRows=0;
     cursorAddress=0;
-    cursorMaskParity=2;
+    cursorMasksReady=0;
     return GEM_OK;
 }
 /* The saved background includes the edge nibbles, not just visible arrow
@@ -398,3 +464,191 @@ const struct GemBackend GemVbxeBackend={open_backend,command_backend,fence_backe
 
 ULONG GemDrawingCompletionMask(void)
 { return VbxeCompletionMask(&display); }
+
+UWORD GemDrawingTextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    extern UWORD GemBitmapTextClip(UWORD,UWORD,const UBYTE *,UWORD,UWORD,UWORD,
+                                  UWORD,UWORD,UWORD,UWORD);
+    UWORD status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (GemBitmapTextClip(x,y,text,count,fg,bg,left,top,right,bottom))
+        return DISPLAY_BAD_ARGUMENT;
+    return fence_owner();
+}
+
+
+static void pointer_reset(void)
+{
+    cursorX=cursorY=cursorVisible=cursorDrawn=cursorBytes=cursorRows=0;
+    cursorAddress=0;
+    cursorMasksReady=0;
+    outlineVisible=outlineDrawn=0;
+    stripActive=stripRedirect=0;
+}
+
+/* The save includes adjacent edge nibbles. Restore before either is changed. */
+static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    if (outlineDrawn && left<outlineRight && right>outlineLeft &&
+        top<outlineBottom && bottom>outlineTop) {
+        cursor_hide();
+        outline_hide();
+    }
+    if (cursorDrawn && left<(cursorX&~1U)+cursorBytes*2 && right>(cursorX&~1U) &&
+        top<cursorY+cursorRows && bottom>cursorY) cursor_hide();
+}
+
+UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible)
+{
+    UWORD status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (x>=640 || y>=240 || visible>1) return DISPLAY_BAD_ARGUMENT;
+    if (display.operationPending) return DISPLAY_BUSY;
+    cursor_render(x,y,visible);
+    if (!fault) cursorVisible=visible;
+    return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
+}
+
+/* Called by the admitted bitmap operation after complete geometry/source
+ * validation, before its first write. Invalid requests leave overlays intact. */
+void GemDrawingPrepare(UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    pointer_erase(left,top,right,bottom);
+}
+
+/* One XOR border with disjoint corners. Only the presenter updates it, between
+ * DMA lists; background writes remove it before modifying the saved pixels. */
+static void outline_record(UWORD index,ULONG address,UWORD bytes,UWORD rows,UBYTE mask)
+{
+    UBYTE *r=commands+index*21;
+    memset(r,0,21);
+    r[5]=1;
+    r[6]=(UBYTE)address; r[7]=(UBYTE)(address>>8); r[8]=(UBYTE)(address>>16);
+    r[9]=64; r[10]=1; r[11]=1;
+    r[12]=(UBYTE)(bytes-1); r[13]=(UBYTE)((bytes-1)>>8);
+    r[14]=(UBYTE)(rows-1); r[16]=mask; r[20]=5;
+}
+static void outline_toggle(void)
+{
+    ULONG address=(ULONG)outlineTop*320+outlineLeft/2;
+    UWORD bytes=(outlineRight-outlineLeft)/2;
+    UWORD rows=outlineBottom-outlineTop;
+    flush();
+    if (fault) return;
+    outline_record(0,address,bytes,1,255);
+    outline_record(1,address+(ULONG)(rows-1)*320,bytes,1,255);
+    outline_record(2,address+320,1,rows-2,240);
+    outline_record(3,address+320+bytes-1,1,rows-2,15);
+    latch(VbxeOwnerSubmit(&display,commands,4));
+}
+static void outline_hide(void)
+{
+    if (outlineDrawn && !fault) outline_toggle();
+    outlineDrawn=0;
+}
+UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible)
+{
+    UWORD status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (visible>1 || (visible && ((left|right)&1 || left>=right || top>=bottom ||
+        right>640 || bottom>240 || right-left<32 || bottom-top<32))) return DISPLAY_BAD_ARGUMENT;
+    if (display.operationPending) return DISPLAY_BUSY;
+    if (!visible || left!=outlineLeft || top!=outlineTop || right!=outlineRight || bottom!=outlineBottom) {
+        if (outlineDrawn) { cursor_hide(); outline_hide(); }
+        outlineLeft=left; outlineTop=top; outlineRight=right; outlineBottom=bottom;
+    }
+    outlineVisible=visible;
+    if (outlineVisible && !outlineDrawn) {
+        cursor_hide();
+        outline_toggle();
+        if (!fault) outlineDrawn=1;
+    }
+    return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
+}
+
+/* Only a trusted, bounded renderer calls this synchronous closure. */
+UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void))
+{
+    UWORD status;
+    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 ||
+        bottom-top>16) return DISPLAY_BAD_ARGUMENT;
+    status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (display.operationPending) return DISPLAY_BUSY;
+    GemDrawingPrepare(left,top,right,bottom);
+    draw();
+    return fence_owner();
+}
+
+/* Reconstruct a widget strip offscreen across bounded object continuations.
+ * A callback returns nonzero only when every intersecting object is complete.
+ * No callback or client pointer survives a call. The presenter freezes the
+ * model until the strip retires; a new first chunk discards an abandoned one. */
+UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                            UWORD first,UWORD (*draw)(void))
+{
+    UWORD status,complete,lo,hi,rows;
+    ULONG screen,scratch;
+    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 ||
+        bottom-top>16) return DISPLAY_BAD_ARGUMENT;
+    if (!first && (!stripActive || left!=stripLeft || top!=stripTop ||
+        right!=stripRight || bottom!=stripBottom)) return DISPLAY_BAD_ARGUMENT;
+    status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (display.operationPending) return DISPLAY_BUSY;
+    if (first) {
+        stripActive=1;stripLeft=left;stripTop=top;stripRight=right;stripBottom=bottom;
+        stripOffset=WIDGET_STRIP_BASE-(ULONG)top*320;
+    }
+    stripRedirect=1;
+    complete=draw();
+    stripRedirect=0;
+    if (complete && !fault) {
+        /* Scratch writes precede the copy in the same ordered list when it
+         * fits. Capacity drains still touch only completed scratch work. */
+        /* Preserve the neighbouring nibble at either odd clip edge. Pointer
+         * save/restore sees screen coordinates only at this publish boundary. */
+        GemDrawingPrepare(left,top,right,bottom);
+        screen=(ULONG)top*320;scratch=WIDGET_STRIP_BASE;
+        lo=left/2;hi=right/2;rows=bottom-top;
+        if (left&1) {
+            blit_and(screen+lo,320,1,rows,0xf0);
+            blit_mask(scratch+lo,320,screen+lo,320,1,rows,0x0f,0,3);
+            ++lo;
+        }
+        if (hi>lo) blit_mask(scratch+lo,320,screen+lo,320,hi-lo,rows,255,0,0);
+        if (right&1) {
+            blit_and(screen+hi,320,1,rows,0x0f);
+            blit_mask(scratch+hi,320,screen+hi,320,1,rows,0xf0,0,3);
+        }
+        stripActive=0;
+    }
+    return fence_owner();
+}
+
+/* The admitted disabled pattern is GEM IP_4PATT: alternating AAAA/5555,
+ * transparent WHITE (hardware zero). Group alternate scanlines in a blit,
+ * preserving partial packed bytes. Phase is anchored to screen coordinates. */
+void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    UWORD y,lo,hi,rows;
+    UBYTE mask;
+    ULONG base;
+    for (y=top;y<top+2 && y<bottom;y++) {
+        rows=(bottom-y+1)/2;lo=left/2;hi=right/2;
+        base=((ULONG)(y*20))<<4;
+        mask=(y&1) ? 0xf0 : 0x0f;
+        if (left&1) {
+            if (y&1) blit_and(base+lo,640,1,rows,0xf0);
+            lo++;
+        }
+        if ((right&1) && !(y&1)) blit_and(base+hi,640,1,rows,0x0f);
+        if (hi>lo) blit_and(base+lo,640,hi-lo,rows,mask);
+    }
+}

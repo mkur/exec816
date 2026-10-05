@@ -1,4 +1,5 @@
-; Retained batching is admitted only against synchronized, complete pixels.
+; Batch against synchronized pixels. Occluded views share the same bounded
+; gathering policy, then repaint the resulting model instead of copying.
 PUBLIC BYTE FUNC BeginBatch(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER instance LONGCARD unit)
 
@@ -11,6 +12,9 @@ PUBLIC BYTE FUNC BeginBatch(CONSOLETYPES.Presentation POINTER view
     RETURN(0)
   FI
 
+  ; Remember admission: exposure can repaint the gathered model before flush.
+  ; A batch which started obscured must not later copy those newer pixels.
+  batchCopyReady=DESKSTATE.CopyReady()
   RemoveCursor(view)
   IF CONSOLEBITMAP.Failed()<>0
       OR CONSOLEBATCH.Begin(instance,unit,view.generation)=0 THEN
@@ -28,13 +32,18 @@ PUBLIC PROC FlushBatch(CONSOLETYPES.Presentation POINTER view
 
   LET batch=CONSOLEBATCH.Get()
   CONSOLEBATCH.Publish(instance,reason)
+  IF batch.rows<>0 AND batchCopyReady=0 THEN
+    CONSOLECORE.Dirty(instance,0,instance.count)
+    batch.modelGeneration=instance.generation
+  FI
+
   view.scrollUnit=batch.unit
   view.scrollGeneration=batch.viewGeneration
   view.scrollModel=batch.modelGeneration
   view.scrollRow=batch.rows
   view.index=$ffff
   view.scrollState=1
-  IF batch.rows=0 THEN
+  IF batch.rows=0 OR batchCopyReady=0 THEN
     view.scrollState=0
     batch.phase=CONSOLETYPES.BATCH_PAINT
   FI

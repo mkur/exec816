@@ -101,7 +101,7 @@ def build_display_probe(output, optimize=True, instrument=True):
     backend=(ROOT/'platform/altirraos/vbxe.c').read_text()
     backend='extern void ProbeScrollLaunch(void);\n'+backend.replace(
         'REG(BUSY)=1;', 'REG(BUSY)=1; ProbeScrollLaunch();').replace(
-        'status=VbxeNotifyArm(d->scrollId);', 'status=VbxeNotifyArm(d->scrollId); ProbeScrollLaunch();')
+        'status=VbxeNotifyArm(d->operationId);', 'status=VbxeNotifyArm(d->operationId); ProbeScrollLaunch();')
     if instrument:
         backend=backend.replace('#define BUSY ', 'extern UBYTE ProbeBusy(void);\nextern UBYTE ProbeVcount(void);\nextern volatile UWORD ProbeStopped;\n#define BUSY ')
         backend=backend.replace('REG(BUSY)&3','ProbeBusy()&3').replace('REG(VCOUNT)','ProbeVcount()')
@@ -111,6 +111,7 @@ def build_display_probe(output, optimize=True, instrument=True):
         require(hook in backend,'Missing bitmap-copy chunk boundary')
         backend=backend.replace(hook,'        ProbeCopyChunk();\n'+hook)
     (output/'bitmap-copy-cases.h').write_text(header())
+    backend += '\nvoid ProbeCopySequence(void) { operationSequence=0xfffffffeUL; }\n'
     (output/'vbxe-probe.c').write_text(backend)
     mapping=(ROOT/'platform/altirraos/vbxe-map.s').read_text()
     if instrument:

@@ -33,10 +33,49 @@ PUBLIC LAYERTYPES.Layer POINTER FUNC Find(LAYERTYPES.Scene POINTER scene
 
 RETURN(NULL)
 
-; Damage is conservative, but it can never grant permission to draw outside
-; cached visibility. Hidden content remains dirty until it is exposed.
+; Expand a bound without arithmetic that could overflow signed coordinates.
+PROC Bound(LAYERTYPES.Rect POINTER target,rect)
+
+  IF rect.left<target.left THEN
+    target.left=rect.left
+  FI
+
+  IF rect.top<target.top THEN
+    target.top=rect.top
+  FI
+
+  IF rect.right>target.right THEN
+    target.right=rect.right
+  FI
+
+  IF rect.bottom>target.bottom THEN
+    target.bottom=rect.bottom
+  FI
+
+RETURN
+
+; Merge only when the union is a rectangle. Partial overlaps can be painted
+; twice; they must never force unrelated pixels into the common sparse case.
+BYTE FUNC Mergeable(LAYERTYPES.Rect POINTER a,b)
+
+  IF REGIONS.Contains(a,b)<>0 OR REGIONS.Contains(b,a)<>0 THEN
+    RETURN(1)
+  FI
+
+  IF a.top=b.top AND a.bottom=b.bottom THEN
+    RETURN(a.left<=b.right AND b.left<=a.right)
+  FI
+
+  IF a.left=b.left AND a.right=b.right THEN
+    RETURN(a.top<=b.bottom AND b.top<=a.bottom)
+  FI
+
+RETURN(0)
+
+; Overflow conservatively collapses every entry, including the new rectangle.
 PROC Mark(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER rect)
   LAYERTYPES.Rect clipped
+  BYTE index
 
   REGIONS.Intersect(@layer.bounds,rect,@clipped)
   IF REGIONS.Empty(@clipped)<>0 THEN
@@ -44,26 +83,33 @@ PROC Mark(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER rect)
   FI
 
   IF layer.dirty=0 THEN
-    REGIONS.Copy(@clipped,@layer.damage)
-    layer.dirty=1
-    RETURN
+    layer.damage.count=0
   FI
 
-  IF clipped.left<layer.damage.left THEN
-    layer.damage.left=clipped.left
+  index=0
+  WHILE index<layer.damage.count DO
+    IF Mergeable(@clipped,@layer.damage.rects(index))<>0 THEN
+      Bound(@clipped,@layer.damage.rects(index))
+      layer.damage.count==-1
+      REGIONS.Copy(@layer.damage.rects(layer.damage.count),
+          @layer.damage.rects(index))
+      index=0
+    ELSE
+      index==+1
+    FI
+  OD
+
+  IF layer.damage.count=LAYERTYPES.MAX_DAMAGE THEN
+    FOR index=0 TO LAYERTYPES.MAX_DAMAGE-1 DO
+      Bound(@clipped,@layer.damage.rects(index))
+    OD
+
+    layer.damage.count=0
   FI
 
-  IF clipped.top<layer.damage.top THEN
-    layer.damage.top=clipped.top
-  FI
-
-  IF clipped.right>layer.damage.right THEN
-    layer.damage.right=clipped.right
-  FI
-
-  IF clipped.bottom>layer.damage.bottom THEN
-    layer.damage.bottom=clipped.bottom
-  FI
+  REGIONS.Copy(@clipped,@layer.damage.rects(layer.damage.count))
+  layer.damage.count==+1
+  layer.dirty=1
 
 RETURN
 
@@ -249,8 +295,8 @@ PUBLIC BYTE FUNC Move(LAYERTYPES.Scene POINTER scene LONGCARD id INT left,top)
   FI
 
   REGIONS.Assign(@layer.bounds,left,top,left+width,top+height)
-  REGIONS.Copy(@layer.bounds,@layer.damage)
-  layer.dirty=1
+  layer.dirty=0
+  Mark(layer,@layer.bounds)
   IF layer.shown=0 THEN
     RETURN(LAYERTYPES.OK)
   FI

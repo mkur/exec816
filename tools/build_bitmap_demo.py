@@ -11,8 +11,16 @@ def build(output,media_bundle,optimize=True):
     media=json.loads((media_bundle/'demo-manifest.json').read_text())
     disk=media_bundle/media['media']
     require(sha256(disk)==media['artifacts'][media['media']],'Changed matching system disk')
+    # Preserve the matching composed demo's explicit upper-RAM data budget.
+    from generate_memory import PROFILE
+    profile=json.loads(PROFILE.read_text())
+    profile['image_data_bytes']=media['kernel']['memory']['image_data']['size']
+    output.mkdir(parents=True,exist_ok=True)
+    memory_profile=output/'demo-memory.json'
+    memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     p=build_bitmap(ROOT/'examples/demo.act',output,optimize=optimize,
-        dos_mounts=media['mounts'],system_mount=media['kernel']['system_mount'])
+        dos_mounts=media['mounts'],system_mount=media['kernel']['system_mount'],
+        memory_profile=memory_profile)
     out=p['output'];shutil.copyfile(disk,out/'system.atr')
     pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
     record=dict(format='exec816-bitmap-demo-v1',bitmap=True,tier='development',pin=pin,

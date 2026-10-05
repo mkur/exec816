@@ -1,0 +1,108 @@
+MODULE LAYERSPROBE
+USE EXEC
+USE HEAPCORE
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+USE DESKTYPES
+
+CARD checks
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa80+(checks & 127))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  LAYERTYPES.Scene POINTER scene
+  LAYERTYPES.Layer POINTER layer
+  LAYERTYPES.Rect bounds
+  LONGCARD token,id
+  DESKTYPES.Snapshot snapshot
+  BYTE index
+
+  scene=LAYERTYPES.Scene POINTER($11fff0)
+  Require(SIZEOF(LAYERTYPES.Scene)=LAYERTYPES.SCENE_SIZE)
+  Require(SIZEOF(LAYERTYPES.Damage)=LAYERTYPES.DAMAGE_SIZE)
+  Require(LAYERS.Init(scene,640,240)=LAYERTYPES.OK)
+  Require(LAYERS.BeginPaint(scene,0,@token)=LAYERTYPES.OK)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.BUSY)
+  Require(LAYERS.AdvancePaint(scene,token)=LAYERTYPES.EMPTY)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  layer=LAYERS.Find(scene,0)
+  FOR index=0 TO 7 DO
+    REGIONS.Assign(@bounds,INT(index*16),8,INT(index*16+8),16)
+    Require(LAYERS.Invalidate(scene,0,@bounds)=LAYERTYPES.OK)
+  OD
+
+  Require(layer.damage.count=8)
+  Require(LAYERS.BeginPaint(scene,0,@token)=LAYERTYPES.OK)
+  FOR index=0 TO 7 DO
+    BEGIN
+      LET region=LAYERS.PaintRegion(scene,token)
+      Require(region.count=1 AND region.rects(0).left=INT(index*16))
+      Require(LAYERS.AdvancePaint(scene,token)=
+          (IF index=7 THEN LAYERTYPES.EMPTY ELSE LAYERTYPES.OK FI))
+    END
+  OD
+
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(scene.busy=0 AND layer.dirty=0 AND layer.damage.count=0)
+  REGIONS.Assign(@bounds,16,16,80,64)
+  Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,id,1)=LAYERTYPES.OK)
+  Require(LAYERS.BeginMove(scene,id,32,32,@token)=LAYERTYPES.REDRAW)
+  Require(LAYERS.BeginPaint(scene,id,@token)=LAYERTYPES.OK)
+  Require(LAYERS.AdvancePaint(scene,token)=LAYERTYPES.EMPTY)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  layer=LAYERS.Find(scene,id)
+  Require(LAYERS.BeginMove(scene,id,32,32,@token)=LAYERTYPES.OK)
+  EXEC.Yield()
+  Require(layer.bounds.left=16 AND scene.copyTarget.left=32)
+  Require(LAYERS.Hit(scene,16,16)=id)
+  Require(LAYERS.Show(scene,id,0)=LAYERTYPES.BUSY)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(layer.bounds.left=32 AND layer.bounds.top=32 AND layer.dirty=0)
+  Require(LAYERS.Hit(scene,16,16)=0 AND LAYERS.Hit(scene,32,32)=id)
+  Require(LAYERS.BeginMove(scene,id,0,0,@token)=LAYERTYPES.OK)
+  Require(LAYERS.Finish(scene,token,0)=LAYERTYPES.OK)
+  Require(layer.bounds.left=32 AND layer.bounds.top=32 AND layer.dirty<>0)
+
+  Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.REDRAW)
+  Require(LAYERS.BeginPaint(scene,id,@token)=LAYERTYPES.OK)
+  Require(LAYERS.AdvancePaint(scene,token)=LAYERTYPES.EMPTY)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.OK)
+  EXEC.Yield()
+  Require(scene.activeKind=LAYERTYPES.UPDATE_READ)
+  Require(LAYERS.Delete(scene,id)=LAYERTYPES.BUSY)
+  Require(LAYERS.Invalidate(scene,id,@layer.bounds)=LAYERTYPES.BUSY)
+  Require(LAYERS.Finish(scene,token,0)=LAYERTYPES.OK)
+  Require(layer.dirty=0 AND layer.damage.count=0)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.BAD_TOKEN)
+  Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.OK)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(layer.dirty=0 AND layer.damage.count=0)
+  Require(LAYERS.Show(scene,id,0)=LAYERTYPES.OK)
+  Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.REDRAW)
+  Require(SIZEOF(DESKTYPES.Snapshot)=DESKTYPES.SNAPSHOT_SIZE)
+  snapshot.window=$12345678
+  snapshot.revision=$87654321
+  snapshot.width=528
+  snapshot.height=184
+  snapshot.valid=1
+  snapshot.pinned=1
+  Require(snapshot.window=$12345678 AND snapshot.revision=$87654321)
+  Require(snapshot.width=528 AND snapshot.height=184
+      AND snapshot.valid=1 AND snapshot.pinned=1)
+  Require(DESKTYPES.SNAPSHOT_0_BASE=$50000
+      AND DESKTYPES.SNAPSHOT_1_BASE=$60000 AND DESKTYPES.SNAPSHOT_BYTES=65536)
+
+RETURN
+
+ENDMODULE

@@ -126,10 +126,36 @@ assuming work is pending. Current behavior belongs in the
   and the integrated OF816 demo. [Development record](../history/command-toolbox.md).
 - [Layers implementation](layers-implementation-plan.md): L1–L4 complete;
   bounded regions, stacking, visibility, damage and drawing transactions.
-  [Current contracts](../reference/layers.md); desktop integration remains pending.
-- [First desktop on Exec816](gem4xe/desktop-design.md): proposed next graphics
-  milestone after the bitmap console; one presentation worker, a movable shell
-  window, then overlapping windows and exposure repair. Implementation pending.
+  [Current contracts](../reference/layers.md); the first desktop presenter now uses them.
+- [First desktop on Exec816](gem4xe/desktop-design.md): the
+  [DT0–DT7 implementation plan](gem4xe/desktop-implementation-plan.md) covers one
+  presentation worker, client/event lifetime, a framed shell, ST mouse timing
+  before dragging, two independent clients, exposure repair and the optional
+  preview. DT0–DT7 have development evidence and a local OF816 preview; pointer, outline, disk-load button and repair timing limits remain open.
+  [Current desktop contract](../reference/desktop.md).
+- [Mouse sampling and pointer batching](gem4xe/mouse-performance-implementation-plan.md):
+  MP1–MP4 implemented at the development tier: about 4 kHz capture with short
+  fine-timing SIO exceptions, one list per pointer move, matched measurements
+  and a refreshed OF816 preview. IRQ overhead and pointer setup cost fall;
+  pointer, outline and move-repair timing targets remain open. The 2× travel
+  and memory reservations are unchanged.
+- [Separate widget focus damage](gem4xe/widget-focus-damage-plan.md): implemented
+  at the development tier; independent rectangles and underline-only focus
+  repair reduce the five-press idle median from 319 to 119 ms. Release/status
+  regressions and remaining timing limits are recorded.
+- [AES widget library](gem4xe/aes-widgets-implementation-plan.md): AW0–AW6 implemented
+  at the development tier;
+  actual GEM4XE object/drawing/form extraction, retained widget windows, bounded
+  damage, event-driven controls and a control-panel preview. Uses the existing
+  presenter and Task pools. [Panel measurements and the local preview](../history/aes-widgets.md)
+  pass correctness checks; feedback latency remains open. Task-bar policy and
+  full AES compatibility follow.
+- [Desktop rendering with pixel reuse](gem4xe/desktop-rendering-design.md):
+  Amiga/GEM4XE synthesis with bounded damage, asynchronous window
+  copies, fewer background passes and optional VRAM snapshots. The
+  [DR0–DR7 plan](gem4xe/desktop-rendering-implementation-plan.md) is implemented
+  at the development tier. The preview and correctness checks pass; latency
+  acceptance remains open. One presenter is retained.
 - [Physical mouse design for hosted GEM](gem4xe/physical-mouse-design.md): implemented
   ST mouse on port 1 using Altirra's existing configuration, with shared SIO
   timing, reusable capture, lifetime, memory and acceptance rules. The

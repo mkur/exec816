@@ -1,0 +1,332 @@
+{
+  "version": 1,
+  "constants": {
+    "OBJECTS": 32,
+    "DEPTH": 8,
+    "TEXT_BYTES": 1024,
+    "LABEL_MAX": 63,
+    "PATCHES": 8,
+    "PACKET_LIMIT": 2048,
+    "CONTEXT_BYTES": 4096,
+    "VERSION": 1,
+    "OK": 0,
+    "BAD_ARGUMENT": 1,
+    "STALE": 2,
+    "EXHAUSTED": 3,
+    "OP_SET": 1,
+    "OP_UPDATE": 2,
+    "OP_READ": 3,
+    "OP_DRAW": 4,
+    "OP_POINTER": 5,
+    "OP_KEY": 6,
+    "OP_CANCEL": 7,
+    "PATCH_STATE": 1,
+    "PATCH_LABEL": 2,
+    "PATCH_HIDDEN": 4,
+    "G_BOX": 20,
+    "G_IBOX": 25,
+    "G_BUTTON": 26,
+    "G_STRING": 28,
+    "FLAG_SELECTABLE": 1,
+    "FLAG_DEFAULT": 2,
+    "FLAG_EXIT": 4,
+    "FLAG_RADIO": 16,
+    "FLAG_LAST": 32,
+    "FLAG_HIDDEN": 128,
+    "STATE_SELECTED": 1,
+    "STATE_DISABLED": 8,
+    "DAMAGE_RECTS": 8
+  },
+  "records": {
+    "Object": [
+      [
+        "next",
+        "INT"
+      ],
+      [
+        "head",
+        "INT"
+      ],
+      [
+        "tail",
+        "INT"
+      ],
+      [
+        "kind",
+        "CARD"
+      ],
+      [
+        "flags",
+        "CARD"
+      ],
+      [
+        "state",
+        "CARD"
+      ],
+      [
+        "spec",
+        "LONGCARD"
+      ],
+      [
+        "x",
+        "INT"
+      ],
+      [
+        "y",
+        "INT"
+      ],
+      [
+        "width",
+        "INT"
+      ],
+      [
+        "height",
+        "INT"
+      ]
+    ],
+    "Tree": [
+      [
+        "version",
+        "CARD"
+      ],
+      [
+        "count",
+        "CARD"
+      ],
+      [
+        "textBytes",
+        "CARD"
+      ],
+      [
+        "background",
+        "CARD"
+      ],
+      [
+        "objects",
+        "Object",
+        "OBJECTS"
+      ],
+      [
+        "text",
+        "BYTE",
+        "TEXT_BYTES"
+      ]
+    ],
+    "Change": [
+      [
+        "object",
+        "CARD"
+      ],
+      [
+        "mask",
+        "CARD"
+      ],
+      [
+        "state",
+        "CARD"
+      ],
+      [
+        "hidden",
+        "CARD"
+      ],
+      [
+        "offset",
+        "CARD"
+      ],
+      [
+        "length",
+        "CARD"
+      ]
+    ],
+    "Update": [
+      [
+        "epoch",
+        "LONGCARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "count",
+        "CARD"
+      ],
+      [
+        "textBytes",
+        "CARD"
+      ],
+      [
+        "changes",
+        "Change",
+        "PATCHES"
+      ],
+      [
+        "text",
+        "BYTE",
+        "TEXT_BYTES"
+      ]
+    ],
+    "ObjectState": [
+      [
+        "state",
+        "CARD"
+      ],
+      [
+        "flags",
+        "CARD"
+      ]
+    ],
+    "Snapshot": [
+      [
+        "epoch",
+        "LONGCARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "count",
+        "CARD"
+      ],
+      [
+        "focus",
+        "INT"
+      ],
+      [
+        "objects",
+        "ObjectState",
+        "OBJECTS"
+      ]
+    ],
+    "DamageRect": [
+      [
+        "left",
+        "INT"
+      ],
+      [
+        "top",
+        "INT"
+      ],
+      [
+        "right",
+        "INT"
+      ],
+      [
+        "bottom",
+        "INT"
+      ]
+    ],
+    "Packet": [
+      [
+        "operation",
+        "CARD"
+      ],
+      [
+        "status",
+        "CARD"
+      ],
+      [
+        "context",
+        "LONGCARD"
+      ],
+      [
+        "payload",
+        "LONGCARD"
+      ],
+      [
+        "bytes",
+        "CARD"
+      ],
+      [
+        "width",
+        "CARD"
+      ],
+      [
+        "height",
+        "CARD"
+      ],
+      [
+        "originX",
+        "INT"
+      ],
+      [
+        "originY",
+        "INT"
+      ],
+      [
+        "left",
+        "INT"
+      ],
+      [
+        "top",
+        "INT"
+      ],
+      [
+        "right",
+        "INT"
+      ],
+      [
+        "bottom",
+        "INT"
+      ],
+      [
+        "index",
+        "CARD"
+      ],
+      [
+        "x",
+        "INT"
+      ],
+      [
+        "y",
+        "INT"
+      ],
+      [
+        "code",
+        "CARD"
+      ],
+      [
+        "qualifiers",
+        "CARD"
+      ],
+      [
+        "buttons",
+        "CARD"
+      ],
+      [
+        "kind",
+        "CARD"
+      ],
+      [
+        "object",
+        "INT"
+      ],
+      [
+        "epoch",
+        "LONGCARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "state",
+        "CARD"
+      ],
+      [
+        "changed",
+        "CARD"
+      ],
+      [
+        "damageCount",
+        "CARD"
+      ],
+      [
+        "damage",
+        "DamageRect",
+        "DAMAGE_RECTS"
+      ]
+    ]
+  }
+}

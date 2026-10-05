@@ -6,6 +6,11 @@
   "native_reserved_bytes": 12288,
   "owned_irq_mask": 59,
   "terminal_phase": 13,
+  "fine_alarm_ticks": {
+    "SETUP": 8,
+    "HOLD": 6,
+    "WRITE": 10
+  },
   "fields": {
     "SD_OWNED": 0,
     "SD_PHASE": 1,

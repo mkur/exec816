@@ -7,7 +7,7 @@ from blitter_completion_trace import analyze_events
 from test_console_turn_profile import event
 
 MARKS = {name: dict(entry=pc) for pc, name in enumerate((
-    'GemDrawingScrollStart', 'launch', 'GemDrawingScrollPoll', 'bitmap_complete',
+    'GemDrawingScrollStart', 'launch', 'GemDrawingPoll', 'bitmap_complete',
     'completion_blitter_irq_complete', 'completion_blitter_irq_posted',
     'completion_selected', 'completion_tasks_wait'), 10)}
 

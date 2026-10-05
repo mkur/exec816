@@ -174,7 +174,9 @@ on the mapped aperture. Do not use SEI as a substitute for this invariant.
 
 Support only the cold-boot inactive VBXE baseline in the
 [platform pin](../../toolchain/altirra-gem-vdi.json): full FX 1.26, `$D600`,
-private 512 KiB VRAM, no VBXE interrupts, no shared-memory or ANTIC fallback.
+private 512 KiB VRAM, VBXE interrupts disabled at entry, no shared-memory or
+ANTIC fallback. During an owned session the desktop's asynchronous copies and
+scrolls use [blitter IRQ completion](display.md#asynchronous-screen-scrolling).
 Version reads do not prove inactivity. The launcher establishes the boot
 precondition; software tracks all later writes. An unknown previous graphics
 owner is UNSUPPORTED. Keep software shadows for write-only registers and snapshot
@@ -208,12 +210,14 @@ service/client heap allocations total 2,656 rounded bytes, including the
 the reply-port pointer. Task stacks and external guards are already in the
 platform budget.
 
-[VBXE extents](../../platform/altirraos/vbxe-vram.json) reserve 108,032 bytes of
-private VRAM, including screen slack, XDL, 252-byte BCB capacity rounded to 256,
-expanded font and strip scratch. Cursor storage at `$37000–$373FF` adds a 256-byte
-save area, two 256-byte mask planes and 256 reserved slack bytes. It reuses the
-existing CPU staging page and does not borrow glyph scratch. VRAM leaves
-416,256 bytes unassigned. CPU and VRAM reservations are separate.
+[VBXE extents](../../platform/altirraos/vbxe-vram.json) reserve 243,200 bytes of
+private VRAM, including screen slack, XDL, the 4,096-byte command arena,
+expanded font and strip scratch. Cursor storage at `$37000–$374FF` contains a 256-byte
+save area and four 256-byte mask planes, retaining both pixel parities. It reuses the
+existing CPU staging page and does not borrow glyph scratch. Two 65,536-byte
+[desktop snapshot slots](desktop.md#private-client-snapshots) at `$50000` and
+`$60000` include unused capacity. VRAM leaves 281,088 bytes unassigned. CPU and
+VRAM reservations are separate.
 Fixed, per-public-Task and private-idle bank-zero increments are all zero for
 G0–G6 and I0–I7; the existing eight-Task budget includes 56,128 reserved bytes with OS
 memory and leaves 9,408 bytes free after startup.

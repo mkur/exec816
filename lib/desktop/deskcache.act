@@ -1,0 +1,266 @@
+; Optional compact client pixels. Retained models remain authoritative.
+MODULE DESKCACHE
+USE DESKTYPES
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+USE CONSOLEBITMAP
+USE HEAPCORE
+
+CONST NO_SLOT=255, ACTIVE_CAPTURE=1, ACTIVE_RESTORE=2
+LONGCARD readToken
+DESKTYPES.Window POINTER capturing
+BYTE active,activeSlot
+
+PUBLIC LONGCARD FUNC SlotAddress(BYTE slot)
+
+RETURN(IF slot=0 THEN DESKTYPES.SNAPSHOT_0_BASE
+    ELSE DESKTYPES.SNAPSHOT_1_BASE FI)
+
+PUBLIC PROC ClientBounds(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER area)
+
+  REGIONS.Assign(area,layer.bounds.left+8,layer.bounds.top+16,
+      layer.bounds.right-8,layer.bounds.bottom-8)
+
+RETURN
+
+PUBLIC BYTE FUNC Fits(CARD width,height)
+
+RETURN(width<>0 AND width<=640 AND (width & 1)=0
+    AND height<>0 AND height<=240
+    AND LONGCARD(width RSH 1)*LONGCARD(height)<=DESKTYPES.SNAPSHOT_BYTES)
+
+; Invalidating a pinned slot does not release the storage used by DMA.
+PUBLIC PROC Invalidate(DESKTYPES.Service POINTER service LONGCARD id)
+  BYTE index
+
+  FOR index=0 TO DESKTYPES.SNAPSHOTS-1 DO
+    IF service.snapshots(index).window=id THEN
+      service.snapshots(index).valid=0
+      service.snapshots(index).revision=0
+    FI
+  OD
+
+RETURN
+
+; Zero disables caching after exhaustion, rather than reusing a revision.
+PUBLIC PROC Changed(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+
+  Invalidate(service,window.id)
+  IF window.visualRevision<>0 THEN
+    window.visualRevision==+1
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC Lookup(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window CARD width,height)
+  BYTE index
+
+  IF window.visualRevision=0 THEN
+    RETURN(NO_SLOT)
+  FI
+
+  FOR index=0 TO DESKTYPES.SNAPSHOTS-1 DO
+    BEGIN
+      LET slot=@service.snapshots(index)
+      IF slot.valid<>0 AND slot.pinned=0 AND slot.window=window.id
+          AND slot.revision=window.visualRevision
+          AND slot.width=width AND slot.height=height THEN
+        RETURN(index)
+      FI
+    END
+  OD
+
+RETURN(NO_SLOT)
+
+; With exactly two slots the most recent index defines exact LRU ordering.
+PUBLIC BYTE FUNC Choose(DESKTYPES.Service POINTER service)
+  BYTE index
+
+  FOR index=0 TO DESKTYPES.SNAPSHOTS-1 DO
+    IF service.snapshots(index).pinned=0 AND service.snapshots(index).valid=0 THEN
+      RETURN(index)
+    FI
+  OD
+
+  index=service.cacheRecent XOR 1
+  IF service.snapshots(index).pinned=0 THEN
+    RETURN(index)
+  FI
+
+  index=service.cacheRecent
+  IF service.snapshots(index).pinned=0 THEN
+    RETURN(index)
+  FI
+
+RETURN(NO_SLOT)
+
+; Capture publishes pixels only after both DMA and the read transaction retire.
+PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
+  BYTE status,okay
+
+  IF active<>ACTIVE_CAPTURE OR CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN
+  FI
+
+  LET slot=@service.snapshots(activeSlot)
+  okay=(CONSOLEBITMAP.Failed()=0 AND capturing.id=slot.window
+      AND capturing.visualRevision=slot.revision AND slot.revision<>0)
+  status=LAYERS.Finish(@service.scene,readToken,okay)
+  IF status<>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($faee)
+  FI
+
+  slot.valid=okay
+  slot.pinned=0
+  IF okay<>0 THEN
+    service.cacheRecent=activeSlot
+  FI
+
+  active=0
+  readToken=0
+  capturing=NULL
+
+RETURN
+
+PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+  LAYERTYPES.Rect client
+  CARD width,height
+  BYTE index,status
+  LONGCARD token
+
+  IF active<>0 OR service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0
+      OR CONSOLEBITMAP.Enabled()=0 OR CONSOLEBITMAP.Failed()<>0
+      OR window.id=0 OR window.visualRevision=0
+      OR window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+    RETURN(0)
+  FI
+
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  IF layer=NULL THEN
+    RETURN(0)
+  FI
+
+  ClientBounds(layer,@client)
+  width=CARD(client.right-client.left)
+  height=CARD(client.bottom-client.top)
+  IF Fits(width,height)=0 OR (client.left & 1)<>0 THEN
+    RETURN(0)
+  FI
+
+  index=Choose(service)
+  IF index=NO_SLOT THEN
+    RETURN(0)
+  FI
+
+  ; A visible nonconsole client cannot contain the Layers-clipped console
+  ; caret. The bridge removes intersecting pointer and outline overlays.
+  status=LAYERS.BeginRead(@service.scene,window.layer,@client,@token)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(0)
+  FI
+
+  LET slot=@service.snapshots(index)
+  slot.valid=0
+  slot.pinned=1
+  slot.window=window.id
+  slot.revision=window.visualRevision
+  slot.width=width
+  slot.height=height
+  LET packet=CONSOLEBITMAP.GetPacket()
+  packet.copy.source.offset=0
+  packet.copy.source.pitch=320
+  packet.copy.source.width=640
+  packet.copy.source.height=240
+  packet.copy.sourceX=CARD(client.left)
+  packet.copy.sourceY=CARD(client.top)
+  packet.copy.destination.offset=SlotAddress(index)
+  packet.copy.destination.pitch=width RSH 1
+  packet.copy.destination.width=width
+  packet.copy.destination.height=height
+  packet.copy.destinationX=0
+  packet.copy.destinationY=0
+  packet.copy.width=width
+  packet.copy.height=height
+  IF CONSOLEBITMAP.CopyStart()=0 THEN
+    status=LAYERS.Finish(@service.scene,token,0)
+    slot.pinned=0
+    RETURN(0)
+  FI
+
+  capturing=window
+  activeSlot=index
+  readToken=token
+  active=ACTIVE_CAPTURE
+
+RETURN(1)
+
+; The painter already owns a paint token. It must retain that token until
+; Restored releases this source pin; no fragment is widened for alignment.
+PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER client,area)
+  BYTE index
+
+  IF active<>0 OR CONSOLEBITMAP.Pending()<>0
+      OR service.scene.activeKind<>LAYERTYPES.UPDATE_PAINT
+      OR service.scene.activeId<>window.layer OR service.scene.busy=0
+      OR REGIONS.Empty(area)<>0 OR REGIONS.Contains(client,area)=0
+      OR ((area.left OR area.right OR client.left) & 1)<>0 THEN
+    RETURN(DESKTYPES.CACHE_MISS)
+  FI
+
+  index=Lookup(service,window,CARD(client.right-client.left),
+      CARD(client.bottom-client.top))
+  IF index=NO_SLOT THEN
+    RETURN(DESKTYPES.CACHE_MISS)
+  FI
+
+  LET slot=@service.snapshots(index)
+  LET packet=CONSOLEBITMAP.GetPacket()
+  slot.pinned=1
+  packet.copy.source.offset=SlotAddress(index)
+  packet.copy.source.pitch=slot.width RSH 1
+  packet.copy.source.width=slot.width
+  packet.copy.source.height=slot.height
+  packet.copy.sourceX=CARD(area.left-client.left)
+  packet.copy.sourceY=CARD(area.top-client.top)
+  packet.copy.destination.offset=0
+  packet.copy.destination.pitch=320
+  packet.copy.destination.width=640
+  packet.copy.destination.height=240
+  packet.copy.destinationX=CARD(area.left)
+  packet.copy.destinationY=CARD(area.top)
+  packet.copy.width=CARD(area.right-area.left)
+  packet.copy.height=CARD(area.bottom-area.top)
+  IF CONSOLEBITMAP.CopyStart()=0 THEN
+    slot.pinned=0
+    RETURN(DESKTYPES.CACHE_FAILED)
+  FI
+
+  service.cacheRecent=index
+  activeSlot=index
+  active=ACTIVE_RESTORE
+
+RETURN(DESKTYPES.CACHE_PENDING)
+
+PUBLIC BYTE FUNC Restored(DESKTYPES.Service POINTER service)
+  BYTE okay
+
+  IF active<>ACTIVE_RESTORE OR CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN(0)
+  FI
+
+  okay=(CONSOLEBITMAP.Failed()=0)
+  service.snapshots(activeSlot).pinned=0
+  IF okay=0 THEN
+    service.snapshots(activeSlot).valid=0
+  FI
+
+  active=0
+
+RETURN(okay)
+
+ENDMODULE

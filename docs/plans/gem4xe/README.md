@@ -27,13 +27,41 @@ through M0–M6 development checks, including the optional production artifact.
 See its [execution record](../../history/gem-mouse.md); physical hardware and
 broader hosted qualification remain separate work.
 
-The next graphics milestone is the [first desktop](desktop-design.md): one
+The [first desktop](desktop-design.md) implements one
 presentation worker, a framed movable shell window, then overlapping windows
-and exposure repair. This is a proposed design; implementation remains pending.
+and exposure repair. Its [DT0–DT7 implementation plan](desktop-implementation-plan.md)
+adds client/event lifetime, an ST sampling and visible-response checkpoint before
+dragging, and a second independent application Task. DT0–DT7 have development
+evidence and a local OF816 preview; pointer, outline, disk-load button and repair
+timing limits remain open. See the [current desktop contracts](../../reference/desktop.md)
+and [execution record](../../history/desktop.md).
 The [Layers foundation](../../reference/layers.md) is implemented through its
-[bounded library plan](../layers-implementation-plan.md); the desktop presenter
-and console integration remain next work.
+[bounded library plan](../layers-implementation-plan.md).
+The [mouse performance plan](mouse-performance-implementation-plan.md) is
+implemented through MP4: about 4 kHz capture with preserved fine SIO timing,
+one blitter list per pointer move, combined measurements and a refreshed OF816
+preview. The [execution record](../../history/mouse-performance.md) separates
+the measured savings from open pointer, outline and move-repair timing targets.
+The current 2× pointer travel and memory reservations remain unchanged.
+
+The [AES widget library plan](aes-widgets-implementation-plan.md) is implemented
+through AW6 at the development tier: selected object/drawing/form code runs in
+the existing presenter, with retained trees and bounded updates. The Control
+Panel demonstrates buttons, toggles and radio groups beside the shell.
+[Measurements and the tested local preview](../../history/aes-widgets.md)
+record passing correctness checks and open feedback-latency targets. Task-bar
+policy, editable fields, resource loading and full AES compatibility follow.
+
 Further console optimization is paused, without changing the recorded limits.
+
+The [desktop rendering design](desktop-rendering-design.md) combines
+Amiga refresh semantics with GEM4XE pixel reuse: bounded damage, asynchronous
+top-window copies, fewer background passes and optional VRAM snapshots. Its
+[DR0–DR7 implementation plan](desktop-rendering-implementation-plan.md) keeps
+the existing presenter and IRQ completion. DR0–DR7 are implemented at the
+development tier, including the local OF816 preview. Pointer, outline and
+move-repair timing limits remain open. See the
+[measurements and remaining work](../../history/desktop-rendering.md#dr7-combined-measurements-and-local-preview).
 
 The implemented foundation is the [bitmap console](bitmap-console-design.md):
 an 80×30 CON: backend on the existing 640×240 display, sharing faster glyph and
