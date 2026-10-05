@@ -120,6 +120,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [Bounded shell command aliases](shell-aliases.md): eight session-local
+  definitions, one-pass expansion and normal pipeline/redirection parsing.
 - [ASSIGN logical directories](assign.md): four boot-lifetime logical directory
   names, DOS-wide resolution, a loadable command and symbolic shell PATH.
 - [Multiple-file arguments and LIST patterns](multiple-file-patterns.md):

@@ -23,6 +23,8 @@ Source lives in [examples/shell](../../examples/shell/).
 | `MOUNT` | List published runtime mounts, handler, access and mounted/offline state. |
 | `DEVICES` | List resident drivers and runtime state. |
 | `PATH [ADD directory / SET directory / CLEAR / RESET]` | Inspect or change the shell's command search directories. |
+| `ALIAS [name ["command arguments"]]` | List, inspect, set or replace a session-local command alias. |
+| `UNALIAS name` | Remove a command alias. |
 | `EXIT` | Release shell resources and finish through coordinated shutdown. |
 
 Command names ignore case. MOUNT only lists; it does not mount/unmount media or
@@ -92,6 +94,32 @@ resource errors and BREAK stop lookup. A broken local command therefore reports
 its own error. Joined paths are limited to 255 bytes and are never truncated.
 Serial commands and both pipeline stages use the same search rules.
 
+### Command aliases
+
+`ALIAS` lists the shell's aliases in slot order. `ALIAS name` shows one entry;
+`ALIAS name "command arguments"` sets or replaces it, and `UNALIAS name`
+removes it. Quote a replacement containing spaces. For example:
+
+```text
+ALIAS LS "DIR SYS:"
+LS
+ALIAS GREET "ECHO hello"
+GREET friend
+UNALIAS GREET
+```
+
+An alias replaces one command word, then the shell appends that invocation's
+arguments. It works at the start of a command or in either pipeline stage;
+the ordinary parser then applies redirection and pipeline rules. Expansion
+happens once per stage, so aliases do not chain or recurse. Built-in names
+keep precedence and cannot be assigned. Names contain 1–15 ASCII letters,
+digits, `_` or `-`, starting with a letter; comparison ignores case. Alias
+replacements are at most 127 printable bytes and may contain fixed arguments,
+but no quotes or shell operators (`|`, `<`, `>`, `;`). A resulting line over
+255 bytes fails before opening files. The table holds eight aliases, allocates
+upper RAM only on first use, and lasts for this shell session. Other shell
+sessions and loaded programs have their own command lookup rules.
+
 ```text
 CD SYS:WORK
 HEAD SYS:STORY.TXT LINES 3
@@ -119,7 +147,7 @@ A line holds at most 255 bytes and sixteen words including command names and
 redirection targets. Double quotes surround a whole word and permit spaces or
 an empty word. Inside quotes, `**` means `*` and `*"` means `"`; other escapes
 and attached quoted fragments are errors. Outside quotes, asterisk is literal.
-There is no shell expansion, script syntax or command list. LIST interprets
+There is no variable or wildcard shell expansion, script syntax or command list. LIST interprets
 `*` and `?` in the final component of its own path argument; other commands
 receive the characters literally.
 

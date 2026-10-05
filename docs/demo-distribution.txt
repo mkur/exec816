@@ -77,7 +77,7 @@ prime search advancing independently.
 
 Type HELP to list the shell's built-in commands:
 
-    HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT
+    HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT
 
 Edit at the prompt: Ctrl-A/E beginning/end, Ctrl-B/F left/right, Ctrl-U clear,
 Ctrl-K delete to end, Ctrl-W delete previous word. Ctrl-P/N recalls the last
@@ -103,6 +103,8 @@ then SYS:). Try:
 HEAD MISSING explains error 205; HEAD ? prints its argument template without
 reading Input. Every supplied command supports ?. PATH lists the search order;
 PATH ADD directory, PATH SET directory, PATH CLEAR and PATH RESET change it.
+ALIAS LS "DIR SYS:" defines a session-local command shortcut; LS runs it and
+UNALIAS LS removes it. ALIAS alone lists up to eight definitions.
 
 Try CAT LONG.TXT | WC, then press BREAK to cancel it. EXIT stops the demo
 and restores the OS display. SYS: is read-only; WORK: is writable. Keep both

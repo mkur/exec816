@@ -34,6 +34,8 @@ bank-zero costs for each slice before moving to the next.
 The [multiple-file and LIST pattern slice](history/multiple-file-patterns.md)
 is implemented with exact CAT/DELETE names and read-only LIST filtering. The
 [ASSIGN slice](history/assign.md) adds four bounded logical directory names.
+The [shell alias slice](history/shell-aliases.md) adds eight session-local
+command shortcuts without changing DOS lookup.
 Before allowing patterns in mutating commands, account for the
 [mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
 ExNext after a mutation. The next batch is `>>` and minimal EXECUTE.

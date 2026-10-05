@@ -1,0 +1,148 @@
+MODULE SHELLALIASTEST
+USE HEAPCORE
+INCLUDE "../../examples/shell/shell-session.inc"
+
+CARD checks
+BYTE finished
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e920+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Same(BYTE POINTER actual,expected)
+  CARD index
+
+  index=0
+  DO
+    Check(actual(index)=expected(index))
+    IF expected(index)=ASCII.NUL THEN
+      EXIT
+    FI
+
+    index==+1
+  OD
+
+RETURN
+
+PROC PrepareLine(CSTRING command)
+
+  STR.strlcpy(ShellLine(),command,LINE_CAPACITY)
+  shell.status=PROCESS.RETURN_OK
+  shell.error=0
+  shell.done=0
+  Check(ShellParse()<>0)
+
+RETURN
+
+PROC SetAlias(CSTRING command)
+
+  PrepareLine(command)
+  Check(shell.command=CMD_ALIAS)
+  ShellAliasCommand()
+  Check(shell.status=PROCESS.RETURN_OK)
+
+RETURN
+
+PROC DropAlias(CSTRING command)
+
+  PrepareLine(command)
+  Check(shell.command=CMD_UNALIAS)
+  ShellUnaliasCommand()
+  Check(shell.status=PROCESS.RETURN_OK)
+
+RETURN
+
+PROC Main()
+  LONGCARD before
+  CARD index
+  BYTE slot
+  BYTE POINTER line
+
+  before=EXEC.AvailMem(0)
+  shell=ShellState POINTER(EXEC.AllocMem(SHELL_BYTES,
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Check(shell<>NULL AND SIZEOF(ShellState)=HEADER_SIZE)
+  aliases=NULL
+  aliasCount=0
+
+  SetAlias(c"ALIAS H ECHO")
+  SetAlias(c"ALIAS X CAT")
+  SetAlias(c"ALIAS Y WC")
+  SetAlias(c"ALIAS FIX DIR")
+  slot=ShellAliasIndex(BYTE POINTER(c"FIX"))
+  Check(slot<ALIAS_CAPACITY)
+  STR.strlcpy(@aliases(slot).text(0),c"DIR SYS:",ALIAS_TEXT_CAPACITY)
+
+  PrepareLine(c"H one two >NIL:")
+  Check(ShellAliasExpand()<>0 AND shell.command=CMD_ECHO
+      AND shell.argc=3 AND shell.outputRedirect<>NO_REDIRECT)
+  Same(shell.words(1).text,BYTE POINTER(c"one"))
+  Same(shell.words(2).text,BYTE POINTER(c"two"))
+  Same(shell.words(0).text,BYTE POINTER(c"ECHO"))
+
+  PrepareLine(c"FIX")
+  Check(ShellAliasExpand()<>0 AND shell.command=CMD_DIR AND shell.argc=2)
+  Same(shell.words(1).text,BYTE POINTER(c"SYS:"))
+
+  PrepareLine(c"X SYS:STORY.TXT | Y")
+  Check(ShellAliasExpand()<>0 AND shell.pipeline=1
+      AND shell.command=CMD_EXTERNAL)
+  Same(shell.words(0).text,BYTE POINTER(c"CAT"))
+  Same(shell.words(shell.pipelineIndex).text,BYTE POINTER(c"WC"))
+
+  SetAlias(c"ALIAS A B")
+  SetAlias(c"ALIAS B ECHO")
+  PrepareLine(c"A yes")
+  Check(ShellAliasExpand()<>0 AND shell.command=CMD_EXTERNAL)
+  Same(shell.words(0).text,BYTE POINTER(c"B"))
+
+  SetAlias(c"ALIAS C ECHO")
+  SetAlias(c"ALIAS D ECHO")
+  Check(aliasCount=ALIAS_CAPACITY)
+  PrepareLine(c"ALIAS I ECHO")
+  ShellAliasCommand()
+  Check(shell.status=PROCESS.RETURN_ERROR
+      AND shell.error=DOS.ERROR_BUFFER_OVERFLOW
+      AND aliasCount=ALIAS_CAPACITY)
+  SetAlias(c"ALIAS A DIR")
+  DropAlias(c"UNALIAS B")
+  SetAlias(c"ALIAS I ECHO")
+  Check(aliasCount=ALIAS_CAPACITY)
+
+  DropAlias(c"UNALIAS C")
+  SetAlias(c"ALIAS LONG ECHO")
+  slot=ShellAliasIndex(BYTE POINTER(c"LONG"))
+  Check(slot<ALIAS_CAPACITY)
+  STR.strlcpy(@aliases(slot).text(0),c"ECHO ",ALIAS_TEXT_CAPACITY)
+  FOR index=5 TO 126 DO
+    aliases(slot).text(index)='A
+  OD
+
+  aliases(slot).text(127)=ASCII.NUL
+  line=ShellLine()
+  STR.strlcpy(line,c"LONG ",LINE_CAPACITY)
+  FOR index=5 TO 134 DO
+    line(index)='B
+  OD
+
+  line(135)=ASCII.NUL
+  shell.status=PROCESS.RETURN_OK
+  shell.error=0
+  Check(ShellParse()<>0)
+  Check(ShellAliasExpand()=0 AND shell.error=DOS.ERROR_LINE_TOO_LONG
+      AND line(0)='L)
+
+  EXEC.FreeMem(BYTE POINTER(aliases),ALIAS_CAPACITY*SIZEOF(ShellAlias))
+  EXEC.FreeMem(BYTE POINTER(shell),SHELL_BYTES)
+  Check(EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

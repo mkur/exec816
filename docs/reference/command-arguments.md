@@ -55,8 +55,9 @@ needed. The table is reserved only when the first item is parsed, so an omitted
 optional `/M` field succeeds even with zero storage capacity.
 
 Omitted optional slots are zero. A quoted empty string is present; a command may
-reject it as an invalid filename. Extra positional arguments are errors. Aliases,
-rest-of-line fields, wildcard expansion and argument files remain unsupported.
+reject it as an invalid filename. Extra positional arguments are errors.
+ReadArgs template aliases, rest-of-line fields, wildcard expansion and argument
+files remain unsupported. Shell command aliases are a separate resident feature.
 This is a bounded Amiga-inspired subset, not full Amiga ReadArgs.
 
 ## Interface and storage

@@ -84,7 +84,7 @@ The second screenshot is taken after the last command above:
 Type `HELP` to list the shell's built-in commands:
 
 ```text
-HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH EXIT
+HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT
 ```
 
 The prompt supports insertion, Backspace and Ctrl-A/E for beginning/end.
@@ -98,6 +98,9 @@ browses history. Moving past the newest command restores your draft. See the
 The [command toolbox](toolbox.md) also supplies CMP, CKSUM, HEXDUMP, HEAD, GREP,
 LIST and MORE. Try `HEAD STORY.TXT LINES 5`, `LIST NAMES`, or `MORE LONG.TXT`.
 In MORE, Space advances a page, Return a displayed row, and Q quits.
+
+The shell can keep eight command aliases for its session. Try `ALIAS LS "DIR
+SYS:"`, then `LS`; `ALIAS` lists the definition and `UNALIAS LS` removes it.
 
 The columns are lines, words and bytes. Now run `CAT LONG.TXT | WC` and press
 **BREAK** while LONG.TXT is being read. Both pipeline stages retire before the
