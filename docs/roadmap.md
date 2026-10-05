@@ -28,14 +28,12 @@ bank-zero costs for each slice before moving to the next.
    on ERROR/FAIL or BREAK, and continue after WARN. Keep the script source
    separate from the command's Input so a command cannot consume the rest of
    the script. Begin with one active script and no arguments or conditionals.
-3. Design an Amiga-style `ASSIGN DATA: WORK:DATA` for stable logical paths.
-   This changes DOS path resolution and should have its own bounded design and
-   implementation slices.
-4. Add focused loadable TAIL and FIND utilities after the shared argument and
+3. Add focused loadable TAIL and FIND utilities after the shared argument and
    pattern behavior is settled.
 
 The [multiple-file and LIST pattern slice](history/multiple-file-patterns.md)
-is implemented with exact CAT/DELETE names and read-only LIST filtering.
+is implemented with exact CAT/DELETE names and read-only LIST filtering. The
+[ASSIGN slice](history/assign.md) adds four bounded logical directory names.
 Before allowing patterns in mutating commands, account for the
 [mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
 ExNext after a mutation. The next batch is `>>` and minimal EXECUTE.
@@ -98,7 +96,7 @@ The other possible milestones have no delivery order:
   [development record](history/filesystem-write-implementation.md) retains
   the selected coverage and remaining qualification limits.
 - A RAM filesystem and broader volume assignments beyond the implemented
-  [SYS: alias](reference/sys-volume.md).
+  [SYS: alias](reference/sys-volume.md) and [directory assigns](reference/assigns.md).
 - Longer shell pipelines and background execution beyond the current
   [two-command foreground pipeline](guides/shell.md) and the proposed
   [command and CLI sequence](#commands-and-cli).

@@ -1,6 +1,6 @@
 # Small command argument parser
 
-Status: implemented in program ABI version 10. See the
+Status: implemented; bounded `/M` was added in program ABI version 10. See the
 [command usability record](../history/command-usability.md) and
 [multiple-file implementation record](../history/multiple-file-patterns.md).
 
@@ -155,7 +155,7 @@ console, failed write/close and BREAK return ERROR with their original cause.
 Ordinary parse failures may also display the template; diagnostic failures do
 not replace the parse error. The shell owns the final fault explanation.
 
-All fifteen supplied commands use this wrapper. The implementation in DOSCOMMAND is
+All sixteen supplied commands use this wrapper. The implementation in DOSCOMMAND is
 shared by the checked COMMAND provider; it adds no per-Process state or allocation
 except the temporary console handle. Source/template and storage remain caller
 owned and must be valid and non-overlapping throughout the call.

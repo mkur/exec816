@@ -114,6 +114,8 @@ with caller-owned result slots/storage. It reads the Process argument tail and
 sets IoErr; it never consumes standard input or allocates memory. Program ABI
 version 10 adds bounded `/M` results in the same caller storage. Rebuild all
 commands with the current ABI when changing the parser contract.
+Program ABI version 11 adds `AssignPath` and `GetAssign` for the bounded
+[ASSIGN directory table](assigns.md).
 
 `COMMAND.MODE_OLDFILE`, `MODE_NEWFILE` and `MODE_READWRITE` share the DOS
 open-mode definitions in `abi/dos.json`. They are generated compile-time

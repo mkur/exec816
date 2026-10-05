@@ -1,0 +1,99 @@
+MODULE ASSIGN
+
+USE COMMAND
+USE CSTRING AS STR
+USE ASCII
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(2)
+COMMAND.AssignInfo info
+
+; Emit each piece through the caller's selected Output, retaining write errors.
+BYTE FUNC Text(CSTRING value)
+
+RETURN(BYTE(COMMAND.WriteAll(COMMAND.Output(),BYTE POINTER(value),
+    LONGINT(STR.strlen(value)))<>0))
+
+; Name syntax at the command boundary includes exactly one trailing colon.
+BYTE FUNC ValidName(BYTE POINTER value)
+  BYTE length,index
+
+  length=0
+  WHILE length<33 AND value(length)<>0 DO
+    length==+1
+  OD
+
+  IF length<2 OR length>32 OR value(length-1)<>': THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_INVALID_COMPONENT_NAME)
+    RETURN(0)
+  FI
+
+  FOR index=0 TO length-2 DO
+    IF value(index)=': THEN
+      COMMAND.SetIoErr(COMMAND.ERROR_INVALID_COMPONENT_NAME)
+      RETURN(0)
+    FI
+  OD
+
+  value(length-1)=0
+
+RETURN(1)
+
+LONGINT FUNC List()
+  CARD index
+
+  FOR index=0 TO 3 DO
+    IF COMMAND.BreakPending()<>0 THEN
+      COMMAND.SetIoErr(COMMAND.ERROR_BREAK)
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF COMMAND.GetAssign(index,BYTE POINTER(@info))<>0 THEN
+      IF Text(CSTRING(@info.name(0)))=0 OR Text(c": -> ")=0
+          OR Text(CSTRING(@info.target(0)))=0 OR Text(c"\n")=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+    ELSEIF COMMAND.IoErr()<>0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+  BYTE POINTER name,target
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"NAME,TARGET",
+      values,2,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  IF values(0)=0 THEN
+    RETURN(List())
+  FI
+
+  name=BYTE POINTER(values(0))
+  target=BYTE POINTER(values(1))
+  IF ValidName(name)=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF target<>NULL AND target^=0 THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_INVALID_COMPONENT_NAME)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF COMMAND.BreakPending()<>0 THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_BREAK)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF COMMAND.AssignPath(name,target)=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+RETURN(COMMAND.RETURN_OK)
+
+ENDMODULE

@@ -21,7 +21,7 @@ class WriteToolbox(WritableCommands, Toolbox):
         source=out/'files'
         source.mkdir(exist_ok=True)
         self.commands={}
-        for name in ('HELLO','CAT','WC','CMP','COPY','TEE','DELETE','RENAME','MAKEDIR'):
+        for name in ('HELLO','CAT','WC','CMP','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN'):
             self.commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',source/name,mode=='opt')
             for suffix in ('options.json','profile.json'):
                 (source/(name+'.'+suffix)).rename(out/(name+'.'+suffix))

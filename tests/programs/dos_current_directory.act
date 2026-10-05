@@ -53,7 +53,7 @@ PROC OpenLocks()
   Require(root<>DOS.FileLock POINTER(0) AND sub<>DOS.FileLock POINTER(0)
       AND file<>DOS.FileLock POINTER(0))
   client=DOSCLIENT.ClientContext POINTER(owner.context)
-  Require(SIZEOF(DOSCLIENT.ClientContext)=88 AND DOSCLIENT.CLIENT_SIZE=88)
+  Require(SIZEOF(DOSCLIENT.ClientContext)=94 AND DOSCLIENT.CLIENT_SIZE=94)
   Require(ADDRESS(@client.directory)-ADDRESS(client)=80
       AND client.directory=BYTE POINTER(0))
   item=FSTYPES.LockObject POINTER(root)

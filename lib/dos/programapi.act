@@ -12,6 +12,14 @@ USE DOSCOMMAND
 ; Explicit task-only providers. Opaque handles keep the external contract free
 ; of resident implementation records. Dispatch directly to their shared
 ; implementation, retaining each checked entry and its command signature.
+PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
+
+RETURN(DOSCALLS.AssignPath(name,target))
+
+PUBLIC LONGINT FUNC GetAssign(CARD index BYTE POINTER info)
+
+RETURN(DOSCALLS.GetAssign(index,DOSCALLS.AssignInfo POINTER(info)))
+
 PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
 
 RETURN(DOSCALLS.Open(name,mode))

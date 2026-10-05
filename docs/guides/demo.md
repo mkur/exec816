@@ -156,6 +156,23 @@ files. LIST matches `*` and `?` only in its final path component. DELETE accepts
 one to eight exact files or empty directories, and RENAME stays within one
 directory. Each accepts a sole unquoted `?` for help.
 
+You can give the writable directory a short logical name:
+
+```text
+MAKEDIR WORK:DATA
+ASSIGN DATA: WORK:DATA
+COPY SYS:STORY.TXT DATA:STORY.TXT
+CAT DATA:STORY.TXT
+ASSIGN
+DELETE DATA:STORY.TXT
+ASSIGN DATA:
+DELETE WORK:DATA
+```
+
+`ASSIGN` lists up to four system-wide directory mappings. It stores a validated
+physical path without keeping a lock on the disk; see the
+[ASSIGN contract](../reference/assigns.md).
+
 ## Stable system paths
 
 SYS names the system volume even when OF816 selects another drive. The shell

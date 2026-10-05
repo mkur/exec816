@@ -1,6 +1,6 @@
 {
   "abi": "exec816.program",
-  "version": 10,
+  "version": 11,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
@@ -383,6 +383,32 @@
         [
           "BYTE POINTER",
           "newName"
+        ]
+      ]
+    },
+    "AssignPath": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "name"
+        ],
+        [
+          "BYTE POINTER",
+          "target"
+        ]
+      ]
+    },
+    "GetAssign": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "CARD",
+          "index"
+        ],
+        [
+          "BYTE POINTER",
+          "info"
         ]
       ]
     }

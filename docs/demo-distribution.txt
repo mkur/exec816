@@ -129,6 +129,18 @@ COPY and TEE create or truncate unless APPEND is supplied. COPY takes an exact
 filename; DELETE accepts files or empty directories; RENAME stays in one directory.
 Each accepts ? for help. Partial output can remain after failure or BREAK.
 
+ASSIGN gives a short logical name to an existing directory for this boot:
+
+    ASSIGN DATA: WORK:
+    COPY SYS:STORY.TXT DATA:STORY.TXT
+    CAT DATA:STORY.TXT | WC
+    ASSIGN
+    ASSIGN DATA:
+
+Up to four assignments may exist. ASSIGN C: SYS: followed by PATH ADD C:
+also puts that logical directory in the shell's command search path; PATH RESET
+restores the default search path after removing C:.
+
 Output redirection creates or immediately truncates its
 target, even if the command later fails. Use copies of work.atr for experiments.
 There is no filesystem checker or recovery utility in the resident system;
@@ -154,7 +166,7 @@ Included files
 --------------
 
 Exec-of816.xex       Exec816 with the OF816 boot monitor
-@SYSTEM_DISK@        System disk with fifteen commands and sample text
+@SYSTEM_DISK@        System disk with sixteen commands and sample text
 work.atr            Disposable writable WORK: disk for drive D8
 altirraos-816.rom    AltirraOS 3.44 for 65C816
 README.txt          This guide

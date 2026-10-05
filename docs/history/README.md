@@ -120,6 +120,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [ASSIGN logical directories](assign.md): four boot-lifetime logical directory
+  names, DOS-wide resolution, a loadable command and symbolic shell PATH.
 - [Multiple-file arguments and LIST patterns](multiple-file-patterns.md):
   bounded `/M` results, ordered exact CAT/DELETE operands and final-component
   LIST matching on both packaged filesystem variants.

@@ -2,7 +2,7 @@
 
 [Guides](README.md) · [Shell](shell.md) · [Writing commands](commands.md)
 
-The demo supplies fifteen loadable commands, including CAT, WC and HELLO. Command
+The demo supplies sixteen loadable commands, including CAT, WC and HELLO. Command
 names and keyword names ignore case. Keywords may precede or follow positional
 arguments. Quote a word that should be data rather than a keyword. Numeric
 options are unsigned decimal; negative numbers and overflow are errors.
@@ -21,6 +21,7 @@ options are unsigned decimal; negative numbers and overflow are errors.
 | DELETE | `FILE ...` | Remove one to eight exact files or empty directories in order. |
 | RENAME | `FROM TO` | Rename one entry within its current directory; an existing destination is an error. |
 | MAKEDIR | `NAME` | Create one directory under an existing parent. |
+| ASSIGN | `[NAME:] [TARGET]` | List, set/replace or remove a system-wide logical directory name. The target must be an existing directory. |
 
 Commands with an optional FILE borrow Input when it is absent; CAT also accepts
 up to eight exact files and concatenates them in order. LIST defaults to the
@@ -49,6 +50,11 @@ LIST SYS:*.TXT NAMES
 The shell's default [PATH](shell.md#path) searches the current directory and then
 SYS:, so commands remain available after CD. Qualified paths such as `SYS:HEAD`
 bypass search.
+
+`ASSIGN DATA: WORK:DATA` lets commands use `DATA:FILE` independently of the
+physical volume name. `ASSIGN DATA:` removes it, and `ASSIGN` lists current
+mappings. `C:` is an ordinary assign; use `PATH SET C:` to search it for bare
+commands. See the [ASSIGN contract](../reference/assigns.md) for limits.
 
 ## Bytes, text and limits
 
@@ -120,7 +126,7 @@ GREP selected no lines. ERROR (10) includes malformed arguments, I/O failures,
 excessive text lines and BREAK. The shell retains primary and secondary results;
 its [pipeline aggregation](shell.md#pipes) handles successful early consumers.
 
-All fifteen commands accept a sole unquoted `?` for template help. For example,
+All sixteen commands accept a sole unquoted `?` for template help. For example,
 `HEAD ? <STORY.TXT >NIL:` prints help on the console and consumes no data.
 `GREP "?" STORY.TXT` searches for a literal question mark. An empty template,
 as used by WC and HELLO, is displayed as `Arguments: (none)`.

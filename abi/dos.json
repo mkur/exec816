@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 6,
+  "revision": 7,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -264,6 +264,22 @@
           "writer",
           "FileHandle POINTER",
           3
+        ]
+      ]
+    },
+    "AssignInfo": {
+      "size": 288,
+      "alignment": 2,
+      "fields": [
+        [
+          "name",
+          "BYTE[32]",
+          0
+        ],
+        [
+          "target",
+          "BYTE[256]",
+          32
         ]
       ]
     }
@@ -689,6 +705,38 @@
           "alignment": 2,
           "offset": 4,
           "size": 1
+        }
+      ],
+      "outgoing_bytes": 5,
+      "result_bytes": 4
+    },
+    "AssignPath": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
+      "result_bytes": 4
+    },
+    "GetAssign": {
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 2
+        },
+        {
+          "alignment": 1,
+          "offset": 2,
+          "size": 3
         }
       ],
       "outgoing_bytes": 5,

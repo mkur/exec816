@@ -42,6 +42,7 @@ DOS uses bounded 8.3 names on both supported filesystems. Examples:
 | --- | --- |
 | `D1:TOOLS/SUB` | Absolute path on the physical volume. |
 | `SYS:WORK` | Path on the selected system volume. |
+| `DATA:NOTES.TXT` | Path through a validated [ASSIGN](../reference/assigns.md). |
 | `/` | Parent of the current directory, clamped at root. |
 | `:` | Current volume's root. |
 | `/TOOLS` | TOOLS relative to the parent directory. |
@@ -80,8 +81,10 @@ ADD/SET validate the directory and store its absolute name, so a later CD does
 not change its meaning. Duplicate names ignoring case are successful no-ops.
 Invalid directories, a fifth entry, BREAK or cleanup failure preserve the old
 list. Entries hold names, not locks; PATH does not pin media. Default/reset SYS:
-is resolved lazily and follows the selected system volume. Other validated names
-use the physical mount spelling. PATH never changes the child's directory.
+is resolved lazily and follows the selected system volume. Physical names use
+the canonical mount spelling; assigned prefixes retain their logical spelling,
+so replacing an assignment redirects later command search. PATH never changes
+the child's directory.
 
 Only missing files/directories allow the next search attempt. A missing current
 directory skips that first attempt; invalid executables, unavailable volumes,
@@ -98,7 +101,7 @@ PATH RESET
 
 ### Help and errors
 
-All fifteen supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
+All sixteen supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
 `WC ?`. They print `Arguments: <template>` on the foreground console and return
 OK without reading Input or writing data Output. Quoted `"?"` remains data.
 Help still works with redirection and pipes; headless help fails explicitly.

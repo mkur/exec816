@@ -29,7 +29,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     require(sha256(binary)==pin['emulator']['sha256'] and sha256(rom)==pin['rom']['sha256'],'Install the pinned paced bridge and ROM before building the demo')
     media=output/'media';media.mkdir(exist_ok=True)
     commands={}
-    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR'):
+    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN'):
         commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',media/name)
         (media/(name+'.options.json')).rename(output/(name+'.options.json'))
         (media/(name+'.profile.json')).rename(output/(name+'.profile.json'))

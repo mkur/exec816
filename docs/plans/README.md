@@ -100,6 +100,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [ASSIGN logical directories](assign-implementation-plan.md): implemented
+  four-slot, system-wide directory assignments with bounded DOS resolution,
+  a loadable command and explicit shell PATH interaction.
+  [Development record](../history/assign.md).
 - [Multiple-file arguments and LIST patterns](multiple-file-patterns-implementation-plan.md):
   implemented bounded `/M` results for CAT and DELETE, plus command-level
   `*`/`?` matching in read-only LIST. [Development record](../history/multiple-file-patterns.md).

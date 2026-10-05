@@ -48,7 +48,7 @@ python3 tools/build_command.py examples/commands/hello.act -o build/commands/HEL
 
 This produces the o65 command and companion reports, not a new disk image.
 The [demo builder](../contributing/building.md#build-the-demo) compiles and bundles
-all fifteen supplied commands with the matching resident providers. Rebuild the resident image
+all sixteen supplied commands with the matching resident providers. Rebuild the resident image
 and commands together when their ABI changes.
 
 ## Arguments, input and errors

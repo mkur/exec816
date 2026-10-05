@@ -13,6 +13,8 @@ from generate_dos import ABI,check_routine,generate as generate_abi
 from dos_abi_fixture import FIXTURES,generate,buffers
 from ports_budget import current
 CALLS={
+ 'AssignPath':'result=DOS.AssignPath(name,name)',
+ 'GetAssign':'result=DOS.GetAssign(CARD(3),assignInfo)',
  'BeginForeground':'result=DOS.BeginForeground(file)','EndForeground':'result=DOS.EndForeground()',
  'BreakPending':'result=DOS.BreakPending()','ClearBreak':'DOS.ClearBreak()',
  'Open':'file=DOS.Open(name,LONGINT(1005))',
@@ -27,7 +29,7 @@ CALLS={
  'Input':'file=DOS.Input()','Output':'file=DOS.Output()',
  'SelectInput':'file=DOS.SelectInput(file)','SelectOutput':'file=DOS.SelectOutput(file)',
  'IsInteractive':'result=DOS.IsInteractive(file)','CurrentDir':'lock=DOS.CurrentDir(lock)','NameFromLock':'result=DOS.NameFromLock(lock,name,LONGINT(70000))'}
-PRELUDE='MODULE DOSIMPORTS\nUSE DOS\nDOS.FileHandle POINTER file\nDOS.FileLock POINTER lock\nDOS.FileInfoBlock POINTER info\nBYTE POINTER name\nLONGINT result\nPROC Main()\n'
+PRELUDE='MODULE DOSIMPORTS\nUSE DOS\nDOS.FileHandle POINTER file\nDOS.FileLock POINTER lock\nDOS.FileInfoBlock POINTER info\nDOS.AssignInfo POINTER assignInfo\nBYTE POINTER name\nLONGINT result\nPROC Main()\n'
 
 def interface_source(path,names):path.write_text(PRELUDE+'\n'.join('  '+CALLS[n] for n in names)+'\nRETURN\n\nENDMODULE\n')
 
@@ -40,7 +42,7 @@ def run(t,out,optimize):
     # Use its original isolated DOS fixture, without linking the full filesystem.
     p=build(t,out/'dos_abi.act',out,optimize=optimize,tasks=True,dos_test=True,image_data=[(a-16,bytes([0xa5])*(s+32)) for _,a,s,_ in FIXTURES])
     routines={}
-    for name in ABI['imports']:
+    for name in CALLS:
         r=next(r for r in p['image']['routines'] if re.fullmatch('M_DOSABI_'+name.upper()+'_[0-9A-F]+',r['name']))
         check_routine(r,name);routines[name]={k:r[k] for k in ('arguments','outgoing_bytes','result_bytes','fixed_frame','local_stack_peak')}
     with emulator(ROOT/'build/altirra-sio-multi',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
@@ -50,9 +52,9 @@ def run(t,out,optimize):
         def values(name,width):
             raw=bytes(data(b,p['image'],name));return [int.from_bytes(raw[i:i+width],'little') for i in range(0,len(raw),width)]
         actual=values('facts',2);require(actual==facts,'DOS field layout/array stride: '+str(actual))
-        observed=values('seen',4);expected=[0x5ffff,1005,0,0,0,0x70000,0xfffeee8e,0xffffffff,0x70000,0x5ffff,0xfffffffe,0x90000,0x90000,0x6fff0,0x90000,0x6fff0,0x9ffff,70001,0x70000,0x70000,0,0xffffffff,0x70000,0xdfffe,70003,0x90000,0x70000,0x70000,0x90000,0x90000,0xaffff,70003,0xbfffe,0x87654321,123456]
+        observed=values('seen',4);expected=[0x5ffff,1005,0,0,0,0x70000,0xfffeee8e,0xffffffff,0x70000,0x5ffff,0xfffffffe,0x90000,0x90000,0x6fff0,0x90000,0x6fff0,0x9ffff,70001,0x70000,0x70000,0,0xffffffff,0x70000,0xdfffe,70003,0x90000,0x70000,0x70000,0x90000,0x90000,0xaffff,70003,0xbfffe,0x87654321,123456,0xcfff0,0xdfff0,3,0xaff00]
         require(observed==expected,'DOS arguments: '+str(observed))
-        returns=values('returns',4);require(returns==[0x70000,70001,0xfffeee8e,0xffffffff,70000,0x90000,0xffffffff,0,0xffffffff,0,70003,0xffffffff,0x70000,0x90000,0x70000,0x90000,0xffffffff,0x70000,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xfffeee90],'DOS signed/pointer results: '+str(returns))
+        returns=values('returns',4);require(returns==[0x70000,70001,0xfffeee8e,0xffffffff,70000,0x90000,0xffffffff,0,0xffffffff,0,70003,0xffffffff,0x70000,0x90000,0x70000,0x90000,0xffffffff,0x70000,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xfffeee90,0xffffffff,0xffffffff],'DOS signed/pointer results: '+str(returns))
         for address,expected in buffers():require(far_read(b,address,len(expected),out)==expected,'DOS adjacent guard or record mismatch: '+hex(address))
         return dict(status='pass',optimize=optimize,build=p['build'],runtime=runtime,machine=machine,facts=actual,seen=observed,returns=returns,routines=routines,checks=values('checks',2),guarded_record_bytes=sum(s+32 for _,_,s,_ in FIXTURES),fixture_sha256=sha256(out/'dos-abi-fields.inc'))
 
@@ -70,10 +72,10 @@ def validate_record(r):
     require(len(r['production_rejections'])==len(ARCHIVAL_CALLS) and {c['name'] for c in r['production_rejections'] if c['status']=='rejected'}==ARCHIVAL_CALLS,'DOS production stubs or missing rejections')
 
 def validate_current(r):
-    require(r['status']=='pass' and {c['optimize'] for c in r['cases']}=={False,True},'Missing current ABI execution')
+    require(r['status']=='pass' and {c['optimize'] for c in r['cases']}=={False,True},'Missing selected ABI execution')
     for case in r['cases']:
-        require(case['runtime']['guards']=='intact' and set(case['routines'])==set(ABI['imports']),'Missing ABI call/guard')
-        for name in ABI['imports']:check_routine(case['routines'][name],name)
+        require(case['runtime']['guards']=='intact' and set(case['routines'])==set(CALLS),'Missing selected ABI call/guard')
+        for name in CALLS:check_routine(case['routines'][name],name)
 
 def record(report,path):
     import copy
@@ -88,7 +90,7 @@ def main():
     a=argparse.ArgumentParser();a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');a.add_argument('--case',choices=('raw','opt'));a.add_argument('--record',type=Path);a.add_argument('--output',type=Path,default=ROOT/'build/dos-abi');args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     t=compiler(args.compiler_dir)
     inputs=('abi/dos.json','lib/dos/dos.act','lib/dos/dos-types.inc','lib/dos/dos-packets.inc','lib/dos/doswire.act','tools/generate_dos.py','tools/generate_tasks.py','tools/native_program.py','tools/dos_abi_fixture.py','tools/test_dos_abi.py','tests/programs/dos_abi.act')
-    result=dict(schema_version=2,status='running',scope='Current emitted native DOS ABI and record layout; production semantics are qualified by DOS stream suites',platform=PIN,inputs={p:sha256(ROOT/p) for p in inputs},cases=[],bank_zero=current(),completion_limits=dict(host_seconds=180,frames=6000))
+    result=dict(schema_version=2,status='running',scope='Selected emitted native DOS calls and record layout, including ASSIGN; production semantics use focused DOS fixtures',platform=PIN,inputs={p:sha256(ROOT/p) for p in inputs},cases=[],bank_zero=current(),completion_limits=dict(host_seconds=180,frames=6000))
     try:
         for mode in ([args.case] if args.case else ['raw','opt']):
             print('DOS ABI',mode,flush=True);result['cases'].append(run(t,out/mode,mode=='opt'))
