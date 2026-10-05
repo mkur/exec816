@@ -3,8 +3,9 @@
 [GEM plans](README.md) · [Desktop contract](../../reference/desktop.md) ·
 [Layers](../../reference/layers.md) · [Roadmap](../../roadmap.md)
 
-Status: AW0–AW4 implemented; AW5–AW6 pending, 2026-10-05. Work paused after
-AW4 at the user’s request. Port a bounded selection of GEM4XE AES object
+Status: AW0–AW6 implemented at the development tier, 2026-10-05. Functional
+checks and the local preview pass; widget-feedback latency targets remain open.
+See the [execution record](../../history/aes-widgets.md). Port a bounded selection of GEM4XE AES object
 and form code into a widget library hosted by the existing Exec816 desktop
 presenter. Deliver a control-panel application beside the shell, with labels,
 buttons, toggles, radio groups and keyboard navigation. Preserve the source
@@ -473,5 +474,16 @@ repair. Reserved bank-zero and VRAM growth remain zero.
 
 AW4 evidence: [raw/optimized form interaction](../../development/aes-widgets-aw4.json).
 Physical ST mouse and keyboard routes exercise retained selection, capture,
-focus, cancellation and bounded queue recovery. The control-panel client,
-latency distributions and preview refresh remain AW5–AW6 work.
+focus, cancellation and bounded queue recovery.
+
+AW5 evidence: [panel interaction and measurements](../../development/aes-widgets-aw5.json).
+The independent client, two-context isolation, 100 actions per load and
+observer-disabled replay pass. Matched patch/full-redraw and pointer controls
+separate workload changes from rendering cost. Original latency limits remain
+unchanged and unmet; spatial paint bounds do not guarantee short CPU turns.
+
+AW6 evidence: [packaged preview](../../development/aes-widgets-aw6.json).
+The exact extracted standard and optional desktop bytes pass their walkthroughs,
+including OF816 autoboot, disk commands, seven-Task pipelines and clean EXIT.
+Reserved bank-zero growth remains zero in every category. No release or
+physical-hardware qualification is claimed.

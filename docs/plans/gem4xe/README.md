@@ -44,12 +44,13 @@ preview. The [execution record](../../history/mouse-performance.md) separates
 the measured savings from open pointer, outline and move-repair timing targets.
 The current 2× pointer travel and memory reservations remain unchanged.
 
-The next functional milestone is the
-[AES widget library plan](aes-widgets-implementation-plan.md): port selected
-object/drawing/form code into the existing presenter, add retained widget trees
-with bounded updates, and demonstrate buttons, toggles and radio groups beside
-the shell. AW0–AW4 are implemented; AW5–AW6 remain planned. Task-bar policy, editable fields, resource
-loading and full AES compatibility are later consumers/extensions.
+The [AES widget library plan](aes-widgets-implementation-plan.md) is implemented
+through AW6 at the development tier: selected object/drawing/form code runs in
+the existing presenter, with retained trees and bounded updates. The Control
+Panel demonstrates buttons, toggles and radio groups beside the shell.
+[Measurements and the tested local preview](../../history/aes-widgets.md)
+record passing correctness checks and open feedback-latency targets. Task-bar
+policy, editable fields, resource loading and full AES compatibility follow.
 
 Further console optimization is paused, without changing the recorded limits.
 
@@ -59,7 +60,7 @@ top-window copies, fewer background passes and optional VRAM snapshots. Its
 [DR0–DR7 implementation plan](desktop-rendering-implementation-plan.md) keeps
 the existing presenter and IRQ completion. DR0–DR7 are implemented at the
 development tier, including the local OF816 preview. Pointer, outline and
-move-repair timing limits remain open; AW5–AW6 remain paused. See the
+move-repair timing limits remain open. See the
 [measurements and remaining work](../../history/desktop-rendering.md#dr7-combined-measurements-and-local-preview).
 
 The implemented foundation is the [bitmap console](bitmap-console-design.md):

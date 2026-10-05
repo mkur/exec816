@@ -194,9 +194,12 @@ Build the optional local preview with `tools/build_demo.py --desktop`; the
 [distribution guide](../desktop-distribution.txt) describes ST/port 1 setup,
 interaction and the outstanding timing limits.
 
-`DESKAPP` owns an ordinary 1,024-byte-stack Task and one graphical window. A key
-or left-button press in its client area runs finite computation and installs a
-new retained batch. It initially leaves focus on the shell. A CLOSE event leads
+`DESKAPP` owns an ordinary 1,024-byte-stack Task and one 176×120 widget client.
+Its compiled-in Control Panel has a toggle, two sibling radio buttons, Apply
+(default/momentary), Cancel, a disabled button and a status label. It consumes
+semantic widget events, reads authoritative state, and patches only the label.
+Revision conflicts retry between turns with Stop checked; LOSS reads current
+state without synthesizing an action. It initially leaves focus on the shell. A CLOSE event leads
 to cooperative retirement; shell EXIT asks it to stop and waits for reply/storage
 retirement. No application callback runs inside the presenter.
 

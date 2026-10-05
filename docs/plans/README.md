@@ -122,16 +122,19 @@ assuming work is pending. Current behavior belongs in the
   and a refreshed OF816 preview. IRQ overhead and pointer setup cost fall;
   pointer, outline and move-repair timing targets remain open. The 2× travel
   and memory reservations are unchanged.
-- [AES widget library](gem4xe/aes-widgets-implementation-plan.md): AW0–AW6 planned;
+- [AES widget library](gem4xe/aes-widgets-implementation-plan.md): AW0–AW6 implemented
+  at the development tier;
   actual GEM4XE object/drawing/form extraction, retained widget windows, bounded
   damage, event-driven controls and a control-panel preview. Uses the existing
-  presenter and Task pools; task-bar policy and full AES compatibility follow.
+  presenter and Task pools. [Panel measurements and the local preview](../history/aes-widgets.md)
+  pass correctness checks; feedback latency remains open. Task-bar policy and
+  full AES compatibility follow.
 - [Desktop rendering with pixel reuse](gem4xe/desktop-rendering-design.md):
   Amiga/GEM4XE synthesis with bounded damage, asynchronous window
   copies, fewer background passes and optional VRAM snapshots. The
   [DR0–DR7 plan](gem4xe/desktop-rendering-implementation-plan.md) is implemented
   at the development tier. The preview and correctness checks pass; latency
-  acceptance remains open. One presenter is retained and AW5–AW6 stay paused.
+  acceptance remains open. One presenter is retained.
 - [Physical mouse design for hosted GEM](gem4xe/physical-mouse-design.md): implemented
   ST mouse on port 1 using Altirra's existing configuration, with shared SIO
   timing, reusable capture, lifetime, memory and acceptance rules. The

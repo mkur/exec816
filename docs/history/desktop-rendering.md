@@ -303,5 +303,7 @@ Against DR0, reserved bank-zero delta is zero for fixed state, root/kernel, all
 eight public Tasks and idle, including guards, alignment and unused capacity.
 Each cache/window adds no stack or direct page. VRAM reservations increase by
 131,072 bytes for the two slots; metadata and code extents are recorded by the
-earlier slices and generated build maps. AW5–AW6 remain paused. Rendering work
-through DR7 is implemented; latency acceptance remains open with unchanged limits.
+earlier slices and generated build maps. AW5–AW6 were paused during DR7; their
+subsequent [application and preview record](aes-widgets.md) measures the complete
+widget path. Rendering work through DR7 is implemented; latency acceptance
+remains open with unchanged limits.

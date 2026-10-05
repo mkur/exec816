@@ -97,7 +97,22 @@ pressed pixels after the immutable paint snapshot retires. A fresh released
 button observation is required after ambiguous input. Applications read current
 state after LOSS; they must never synthesize commands from selected bits.
 
-The desktop service now occupies 11,988 bytes (11,992 rounded), including its
-sixteen deferred records and the enlarged client event queues. Its growth over
-the pre-widget service is 1,456 bytes. No new Task, kernel primitive, bank-zero
+The desktop service occupies 12,342 bytes (12,344 rounded), including its
+sixteen deferred records, enlarged client event queues and DR7 rendering state.
+The AW4 widget work accounted for 1,456 bytes of its growth over the pre-widget
+service; AW5 adds no service storage. No new Task, kernel primitive, bank-zero
 reservation or VRAM extent is introduced.
+
+The optional `DESKAPP` Control Panel demonstrates this interface from an ordinary
+Task. Its eight-object tree, update packet and snapshot share one 3,072-byte
+upper-memory allocation; the presenter separately owns its 4,096-byte context.
+The panel uses selected-state GEM buttons for toggles/radios. Apply is the
+default momentary action; Cancel and Escape/BREAK report cancellation without
+closing the window. The close gadget and shell EXIT retain cooperative Task
+retirement. These controls demonstrate application state, not system settings.
+
+Input capture, widget state commit, application consumption and visible status
+are distinct stages. A scene token can delay widget dispatch or state requests,
+and a successful patch reply precedes its pixels. Functional completion does
+not imply the desktop meets its latency targets; see the
+[execution record](../history/aes-widgets.md).

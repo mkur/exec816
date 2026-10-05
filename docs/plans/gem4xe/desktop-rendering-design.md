@@ -8,8 +8,9 @@ with GEM4XE's VBXE optimizations for the existing Exec816 desktop: reuse valid
 pixels, repaint smaller areas and preserve input service while DMA runs.
 Retained models and the single presentation worker remain the foundation.
 
-This milestone does not resume paused AW5–AW6 widget work or general console
-optimization. Current public contracts remain authoritative until executable
+AW5–AW6 widget work and general console optimization were outside this
+milestone. The subsequent [widget application record](../../history/aes-widgets.md)
+covers AW5–AW6. Current public contracts remain authoritative until executable
 slices implement these proposals.
 
 ## Existing behavior and evidence

@@ -1,0 +1,913 @@
+{
+  "schema_version": 1,
+  "slice": "AW6",
+  "date": "2026-10-05",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_base": {
+    "revision": "cf9fe39f0518f934c17a513a81d37da7549cd9c4",
+    "dirty": true,
+    "display": "cf9fe39-dirty",
+    "actionc_pin": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "task_capacity": 8,
+    "stack_checks": true,
+    "mount": {
+      "profile": 4,
+      "boot": 1,
+      "format": 2,
+      "access": "readonly",
+      "alias": "D1",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128
+    },
+    "strings": {
+      "banner": "Exec816 (cf9fe39-dirty)\n\n",
+      "slots": "exec: 8 task slots\n",
+      "stackChecks": "exec: stack checks enabled\n",
+      "version": "Exec816 (cf9fe39-dirty)\nactionc pin: f1ff4ce\n",
+      "sioReady": " ready, 57.6k profile\n",
+      "mountStart": "SYS: mounting...\n"
+    }
+  },
+  "source_note": "Artifacts built from cf9fe39 plus AW5/AW6 working-tree changes. Banner is cf9fe39-dirty; source hashes below identify the actual inputs. Unrelated cartridge work was present but no cartridge option was used.",
+  "compiler": {
+    "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "override": false,
+    "compiler_contract": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "optimize": true,
+    "stack_checks": true
+  },
+  "calypsi": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "calypsi_runtime": {
+    "path": "/usr/local/lib/calypsi-65816-5.18/lib/clib-lc-hd.a",
+    "sha256": "321e782d2e18972ff29d32acf446a401012bd6da6959bb4b69c359c1412082db"
+  },
+  "c_image_sha256": "d15ac360ff591db2995a6fa744001d4b881f6feeb2b19e03f6fd9afb22f0ac9e",
+  "donor": {
+    "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+    "inputs": {
+      "src/aes/objc.c": "edd9fee2c19b6d88e02c3ef2bfc40dfa23fd55bdc92874debec47cc5f0f965ba",
+      "src/aes/graf.c": "c5033b54ab2932a8df161ad51782446c835b0a1c02a47b453e5b85757c333d02",
+      "src/aes/form.c": "8a291ea34452450c1cd61b05a782a8d079f5c1c1cdf2261db829874f0614fa00",
+      "src/aes/aes.h": "5d555f5ac71b4d8f0f2a31c1b72f187671bd0019113e58fbcc44b71bc317cd87",
+      "tools/aesref.py": "17159134e05640b514708cd780004e1a59698927e3cb17ac3628ed57eb1f6266",
+      "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "tools/vdiref.py": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+      "tools/fontref.py": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+      "tools/devref.py": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+      "tools/gemdata.py": "408f051d865d07b88cede092d8b4fbf39e0da154c1954085ae3a18d410f0eb87",
+      "tools/vbxeref.py": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+      "tools/anticref.py": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+      "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+      "src/vdi/font6x6.c": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+      "src/vdi/fillpat.c": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+      "src/vbxe/vbxe.h": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608"
+    },
+    "selected": {
+      "aes-objects.c": "ee76987cac75a585c32712499da9472012ea579253802bfc0b90ef59fc2a21f5",
+      "aes-graf.c": "31c05d1c959bcbf5cbf7a9bbc372b89eff22436a1ed3b2f03825a051906ec1d3",
+      "aes-form.c": "df3262546318ad1d09734086af63be5f03145188f927f0e77d7969c98584cc2b"
+    },
+    "patches": {
+      "0001-hosted-object-subset.patch": "3b036f4aa59bb11cbc98dd30ae76028685cda8e9622d0b45582509d66002cb06"
+    },
+    "adapted": {
+      "aes-objects.c": "d1fec69785c852905fcdb1a93274e0fa06ff52637e7080d5e95662b06a550900",
+      "aes-objects.h": "4e1f5f63551145955293d928a72d662c8f7fe8bea7240824c6a7e6ee843a8578",
+      "aes-graf.c": "31c05d1c959bcbf5cbf7a9bbc372b89eff22436a1ed3b2f03825a051906ec1d3",
+      "aes-form.c": "51ab6497ce1435b2681eacc16fed4faac50a26137a790e9301825b28e4532171"
+    }
+  },
+  "rom": {
+    "name": "AltirraOS 3.44 for 65C816",
+    "bytes": 16384,
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+    "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+    "cop0_after_xce": 50931
+  },
+  "emulator": {
+    "binary": "build/mouse-bridge/AltirraBridgeServer",
+    "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "patch": "toolchain/patches/altirra-mouse-observer.patch",
+    "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+    "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+    "source_sha256": {
+      "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+      "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+    }
+  },
+  "machine_pin": {
+    "path": "toolchain/altirra-gem-vdi.json",
+    "sha256": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431"
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "baseline": "desktop-dt0",
+      "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "runtime": 0,
+      "loading": 0
+    },
+    "baseline_note": "Against the established desktop DT0/DR7 pools, not the older bank-zero-compaction record embedded in demo reports. Root/kernel, fixed, all public Tasks, idle, guards, alignment and unused reserved capacity are unchanged.",
+    "upper_heap_delta": 6456,
+    "additional_vram_bytes": 0,
+    "additional_tasks": 0
+  },
+  "package": {
+    "archive": "build/aes-widgets/aw6/preview/exec816-demo.zip",
+    "sha256": "3a17d7e6513ff06b6e8531531ab28204c74f8f59d3bf6130adba7c1f125e6edd",
+    "bytes": 525762,
+    "members": {
+      "ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "EXEC816-LICENSING.md": "7bfcc44c90a9a28d28e311b480694b74984d35b71291ad66c45eb140c17b4cbe",
+      "EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "Exec-of816.xex": "a7a3e8bf4e3fdac7ec1a124f7e042519eb4e3fe15de9056a77cd7a1511448dde",
+      "OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "README.txt": "ab97b5ded7bee6aebd3695b20abb378203312d8acda69ec0ac892b6011345244",
+      "altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "desktop/ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "desktop/EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "desktop/EXEC816-LICENSING.md": "7bfcc44c90a9a28d28e311b480694b74984d35b71291ad66c45eb140c17b4cbe",
+      "desktop/EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "desktop/Exec-of816.xex": "f0ccd0d73d4ee817276b01e8b40dc842f4bc1e8fbc3f468c60b910297090524e",
+      "desktop/GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "desktop/GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "desktop/GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "desktop/GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "desktop/OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "desktop/README.txt": "d0055d11f319769bd9f779db00e1638710e4aa81669ab04d5e239dc24f36ee4a",
+      "desktop/altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "desktop/system.atr": "b6a88f69b76e7e06af39ce8f772ebff29b1bc5bd3656e28e1e86404cfa0fd4da",
+      "desktop/work.atr": "663ad1368b7917a6657714006e5876e5e26b7f56448f1d72b18b5d9a28f8f5a3",
+      "system.atr": "835bc2878e8099d40abb3cf2fa119e6581484e4d247616372a6951cda79b011d",
+      "work.atr": "663ad1368b7917a6657714006e5876e5e26b7f56448f1d72b18b5d9a28f8f5a3"
+    },
+    "default": "standard shell/prime, five-second OF816 autoboot",
+    "optional": "desktop/Exec-of816.xex with matching desktop media",
+    "verification": {
+      "status": "pass",
+      "members": 25,
+      "checksums": 24,
+      "sha256": "3a17d7e6513ff06b6e8531531ab28204c74f8f59d3bf6130adba7c1f125e6edd",
+      "bytes": 525762
+    },
+    "exact_extracted_members_match": true
+  },
+  "builds": {
+    "standard": {
+      "manifest": {
+        "path": "build/aes-widgets/aw6/standard/demo-manifest.json",
+        "sha256": "99f5c367765e54aeee83c21e510dfde35cc08ff0a4b7d0b5e217f3a44f194c59"
+      },
+      "of816_manifest": {
+        "path": "build/aes-widgets/aw6/standard/of816/of816.json",
+        "sha256": "c55a1b816b641783531c6176b2e5603e70ef04d942c794211c07fcafd45b744a"
+      },
+      "of816": {
+        "repository": "https://github.com/mgcaret/of816.git",
+        "revision": "8c923624520fab2196d5c75a97ab94da599d420a",
+        "license": "BSD-2-Clause",
+        "scope": "Pinned Forth core for the experimental AltirraOS XEX boot monitor"
+      },
+      "of816_inputs": {
+        "abi/boot-v1.json": "d003b5d3546353c999152de4d51cceb9361246930214b299ba68a3314ec92eee",
+        "docs/guides/boot-monitor.md": "96380514a9a8f2aacfcd8c826de6d83240635eceb741a49d8b84ffa8f2534dc2",
+        "platform/of816/boot.s": "57d67ad7cd3defe906f0d60c8ec51ae85adc5beea9b38d2a0adf610ecd60e151",
+        "platform/of816/platform-lib.s": "7c9ecedba3f417290a1ab955bf573454a9831bfec7605251ec7e0e3996f05367",
+        "platform/of816/platform-words.s": "43ef9f74dd1f8fb398adc8b46209d0141e05ed1e10a7f1bd8ab191090d141ad8",
+        "toolchain/altirra.json": "5ad56ae12ca012928cd322bc884bc77b1edab59313a16cd1133388d8dbfe4db6",
+        "toolchain/of816.json": "33c692f20996f093062bc18fc648faf0102b2c9f17682a2d86461645ab9c33a1",
+        "tools/boot_config.py": "a5b1974c84ddac14fbe158477f14ed147675f6bd7131b99ff5decd5b42b3f68d",
+        "tools/build_of816.py": "9005833bff0145414229e6ebfd72a6db81b2a2e400fd686356df6f89bc625733"
+      },
+      "assembler": "ca65 V2.18 - N/A",
+      "linker": "ld65 V2.18 - N/A",
+      "native_xex_sha256": "317badcbae66092d2989175c18f5784024f346ae65fa48e8128c8a2f9efdf52f",
+      "boot_xex_sha256": "a7a3e8bf4e3fdac7ec1a124f7e042519eb4e3fe15de9056a77cd7a1511448dde",
+      "system_disk_sha256": "835bc2878e8099d40abb3cf2fa119e6581484e4d247616372a6951cda79b011d",
+      "system": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      }
+    },
+    "desktop": {
+      "manifest": {
+        "path": "build/aes-widgets/aw6/desktop/demo-manifest.json",
+        "sha256": "502e4e5eb9ff2872e3036387b12d810b3fd343264c2ff8b4b5e3a94d0be67fa6"
+      },
+      "of816_manifest": {
+        "path": "build/aes-widgets/aw6/desktop/of816/of816.json",
+        "sha256": "e4ed820ac00fb7109abe50bc7180a90006254e499fee767912f4a6aa7f41a88e"
+      },
+      "of816": {
+        "repository": "https://github.com/mgcaret/of816.git",
+        "revision": "8c923624520fab2196d5c75a97ab94da599d420a",
+        "license": "BSD-2-Clause",
+        "scope": "Pinned Forth core for the experimental AltirraOS XEX boot monitor"
+      },
+      "of816_inputs": {
+        "abi/boot-v1.json": "d003b5d3546353c999152de4d51cceb9361246930214b299ba68a3314ec92eee",
+        "docs/guides/boot-monitor.md": "96380514a9a8f2aacfcd8c826de6d83240635eceb741a49d8b84ffa8f2534dc2",
+        "platform/of816/boot.s": "57d67ad7cd3defe906f0d60c8ec51ae85adc5beea9b38d2a0adf610ecd60e151",
+        "platform/of816/platform-lib.s": "7c9ecedba3f417290a1ab955bf573454a9831bfec7605251ec7e0e3996f05367",
+        "platform/of816/platform-words.s": "43ef9f74dd1f8fb398adc8b46209d0141e05ed1e10a7f1bd8ab191090d141ad8",
+        "toolchain/altirra.json": "5ad56ae12ca012928cd322bc884bc77b1edab59313a16cd1133388d8dbfe4db6",
+        "toolchain/of816.json": "33c692f20996f093062bc18fc648faf0102b2c9f17682a2d86461645ab9c33a1",
+        "tools/boot_config.py": "a5b1974c84ddac14fbe158477f14ed147675f6bd7131b99ff5decd5b42b3f68d",
+        "tools/build_of816.py": "9005833bff0145414229e6ebfd72a6db81b2a2e400fd686356df6f89bc625733"
+      },
+      "assembler": "ca65 V2.18 - N/A",
+      "linker": "ld65 V2.18 - N/A",
+      "native_xex_sha256": "f9a85bd498d9b6df31c5bfccd10fb95747f676ea40ea3464cecd0c2ca9f8f96b",
+      "boot_xex_sha256": "f0ccd0d73d4ee817276b01e8b40dc842f4bc1e8fbc3f468c60b910297090524e",
+      "system_disk_sha256": "b6a88f69b76e7e06af39ce8f772ebff29b1bc5bd3656e28e1e86404cfa0fd4da",
+      "system": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      }
+    }
+  },
+  "walkthroughs": {
+    "standard": {
+      "result": {
+        "path": "build/aes-widgets/aw6/standard/demo-results.json",
+        "sha256": "6b881e86c98c13f949c3a95842c6e7143249fbfa47994166e665250a413ca1ae"
+      },
+      "status": "pass",
+      "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+      "runner_sha256": "af6bd179b1e901abe9999e9b5a1ce732095190f99d2d9ea4be736851580f2d71",
+      "autoboot_frames": 249,
+      "peak_tasks": 7,
+      "desktop_interaction": null,
+      "filesystem_writes": false,
+      "observations": [
+        {
+          "stage": "startup",
+          "prime_frames": 1,
+          "prime_count": 26,
+          "guest_frame": 598
+        },
+        {
+          "stage": "system-volume",
+          "prime_frames": 1,
+          "prime_count": 26,
+          "guest_frame": 599
+        },
+        {
+          "stage": "MOUNT",
+          "prime_frames": 1,
+          "prime_count": 26,
+          "guest_frame": 638
+        },
+        {
+          "stage": "CD SYS:WORK",
+          "prime_frames": 4,
+          "prime_count": 79,
+          "guest_frame": 775
+        },
+        {
+          "stage": "CD",
+          "prime_frames": 4,
+          "prime_count": 79,
+          "guest_frame": 789
+        },
+        {
+          "stage": "HELLO",
+          "prime_frames": 6,
+          "prime_count": 110,
+          "guest_frame": 894
+        },
+        {
+          "stage": "PATH",
+          "prime_frames": 7,
+          "prime_count": 126,
+          "guest_frame": 918
+        },
+        {
+          "stage": "HEAD SYS:STORY.TXT LINES 3",
+          "prime_frames": 15,
+          "prime_count": 239,
+          "guest_frame": 1351
+        },
+        {
+          "stage": "HEAD MISSING",
+          "prime_frames": 17,
+          "prime_count": 266,
+          "guest_frame": 1460
+        },
+        {
+          "stage": "HEAD ?",
+          "prime_frames": 19,
+          "prime_count": 291,
+          "guest_frame": 1545
+        },
+        {
+          "stage": "TYPE D1:STORY.TXT",
+          "prime_frames": 21,
+          "prime_count": 317,
+          "guest_frame": 1676
+        },
+        {
+          "stage": "TYPE SYS:STORY.TXT",
+          "prime_frames": 23,
+          "prime_count": 342,
+          "guest_frame": 1778
+        },
+        {
+          "stage": "CAT SYS:STORY.TXT | WC",
+          "prime_frames": 33,
+          "prime_count": 464,
+          "guest_frame": 2283
+        },
+        {
+          "stage": "CD SYS:",
+          "prime_frames": 33,
+          "prime_count": 464,
+          "guest_frame": 2318
+        },
+        {
+          "stage": "CD",
+          "prime_frames": 34,
+          "prime_count": 478,
+          "guest_frame": 2334
+        },
+        {
+          "stage": "HELLO",
+          "prime_frames": 35,
+          "prime_count": 489,
+          "guest_frame": 2385
+        },
+        {
+          "stage": "boot-smoke",
+          "prime_frames": 35,
+          "prime_count": 489,
+          "guest_frame": 2389
+        }
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$951295f680efe218",
+        "actual_kernel_id": "$951295f680efe218",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "work_media": [
+        {
+          "name": "work-walkthrough.atr",
+          "sha256": "663ad1368b7917a6657714006e5876e5e26b7f56448f1d72b18b5d9a28f8f5a3",
+          "allocation": {
+            "sectors": 720,
+            "sector_bytes": 128,
+            "allocated": 8,
+            "free": 712,
+            "files": 1,
+            "directories": 1
+          }
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "fault_required": 0,
+        "switches": 5689,
+        "native_irq_count": 19565,
+        "native_nmi_count": 1947,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 522,
+            "untouched_above_floor": 758
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 231,
+            "untouched_above_floor": 537
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 138,
+            "untouched_above_floor": 630
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 243,
+            "untouched_above_floor": 525
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 302,
+            "untouched_above_floor": 466
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 429,
+            "untouched_above_floor": 339
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 331,
+            "untouched_above_floor": 1973
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 272,
+          "untouched_from_base": 1264,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "desktop": {
+      "result": {
+        "path": "build/aes-widgets/aw6/desktop/demo-results.json",
+        "sha256": "ecc768b220773abbc61eb3bf4fff45340afb508b01bd7f7b08d5caafab97842e"
+      },
+      "status": "pass",
+      "scope": "Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT",
+      "runner_sha256": "28e45b912b735dbfa263042b136963a22bf0292faa001445dfdf54172057eb07",
+      "autoboot_frames": 249,
+      "peak_tasks": 7,
+      "desktop_interaction": {
+        "app_updates": 5,
+        "drag_bounds": [
+          440,
+          88,
+          632,
+          232
+        ],
+        "pointer": [
+          100,
+          100
+        ]
+      },
+      "filesystem_writes": true,
+      "observations": [
+        {
+          "stage": "startup",
+          "guest_frame": 1138
+        },
+        {
+          "stage": "Toggle on [2]",
+          "guest_frame": 1646
+        },
+        {
+          "stage": "Large [5]",
+          "guest_frame": 1695
+        },
+        {
+          "stage": "Applied [6]",
+          "guest_frame": 1746
+        },
+        {
+          "stage": "Cancelled [7]",
+          "guest_frame": 1787
+        },
+        {
+          "stage": "panel-default-key",
+          "guest_frame": 1816
+        },
+        {
+          "stage": "independent-app-drag",
+          "guest_frame": 1843
+        },
+        {
+          "stage": "shell-focus-restored",
+          "guest_frame": 2368
+        },
+        {
+          "stage": "system-volume",
+          "guest_frame": 2370
+        },
+        {
+          "stage": "TASKS",
+          "guest_frame": 2468
+        },
+        {
+          "stage": "MOUNT",
+          "guest_frame": 2536
+        },
+        {
+          "stage": "CD SYS:WORK",
+          "guest_frame": 2664
+        },
+        {
+          "stage": "CD",
+          "guest_frame": 2700
+        },
+        {
+          "stage": "HELLO",
+          "guest_frame": 2823
+        },
+        {
+          "stage": "PATH",
+          "guest_frame": 2868
+        },
+        {
+          "stage": "HEAD SYS:STORY.TXT LINES 3",
+          "guest_frame": 3322
+        },
+        {
+          "stage": "HEAD MISSING",
+          "guest_frame": 3458
+        },
+        {
+          "stage": "HEAD ?",
+          "guest_frame": 3577
+        },
+        {
+          "stage": "TYPE D1:STORY.TXT",
+          "guest_frame": 3781
+        },
+        {
+          "stage": "TYPE SYS:STORY.TXT",
+          "guest_frame": 3962
+        },
+        {
+          "stage": "desktop-pipeline",
+          "guest_frame": 4487
+        },
+        {
+          "stage": "CD SYS:",
+          "guest_frame": 4536
+        },
+        {
+          "stage": "CD",
+          "guest_frame": 4574
+        },
+        {
+          "stage": "HELLO",
+          "guest_frame": 4661
+        },
+        {
+          "stage": "ECHO saved >WORK:OUT.TXT",
+          "guest_frame": 5054
+        },
+        {
+          "stage": "CAT WORK:OUT.TXT",
+          "guest_frame": 5195
+        },
+        {
+          "stage": "CAT SYS:STORY.TXT >WORK:COPY.TXT",
+          "guest_frame": 6147
+        },
+        {
+          "stage": "CMP SYS:STORY.TXT WORK:COPY.TXT",
+          "guest_frame": 6678
+        },
+        {
+          "stage": "HELLO | WC >WORK:PIPE.TXT",
+          "guest_frame": 7086
+        },
+        {
+          "stage": "CAT WORK:PIPE.TXT",
+          "guest_frame": 7229
+        },
+        {
+          "stage": "boot-smoke",
+          "guest_frame": 7234
+        }
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$97524f8fd11cb49f",
+        "actual_kernel_id": "$97524f8fd11cb49f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "work_media": [
+        {
+          "name": "work-walkthrough.atr",
+          "sha256": "8f6b9f5ff66c7549458769b512e7a10dc2aed7b9638ae3bfae0c6ac3d45077af",
+          "allocation": {
+            "sectors": 720,
+            "sector_bytes": 128,
+            "allocated": 19,
+            "free": 701,
+            "files": 4,
+            "directories": 1
+          }
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "fault_required": 0,
+        "switches": 5709,
+        "native_irq_count": 29625,
+        "native_nmi_count": 6780,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 537,
+            "untouched_above_floor": 743
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 153,
+            "untouched_above_floor": 615
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 555,
+            "untouched_above_floor": 213
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 140,
+            "untouched_above_floor": 628
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 455,
+            "untouched_above_floor": 313
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 351,
+            "untouched_above_floor": 417
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 712,
+            "untouched_above_floor": 1592
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 63,
+            "untouched_above_floor": 193
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 288,
+          "untouched_from_base": 1248,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  },
+  "source_inputs": {
+    "examples/demo.act": "af4f584fe2324b8466de0fbf27c205d973dff4d4738a552b05fef15981b43181",
+    "examples/demo-session.inc": "8815144889fc9ef241412d128d3bf83b93a8872b0ffd6bc40bd8674a770fd4f3",
+    "examples/shell/shell-session.inc": "c370fb358fdaaa33a58345e1a2c6a9f22d9bb32e5c65f81d8911d123229559ce",
+    "examples/shell/shell-commands.inc": "52ff5f3b932140355f737d7a92fe463bdd1aa4252f4a468ac913325ca38a8e51",
+    "examples/shell/shell-redirection.inc": "acb9f3fa51843fbd32eb0d985f25d378ed071953d96163a8b32b805baaee75b7",
+    "examples/shell/shell-path.inc": "c85aff49d4f411996cb7a238d3959264e25832aa94f523ac5c06e1a7c1b3de92",
+    "examples/shell/shell-boot.inc": "d3f2d67bcc3306e65108b232af1ac7c8316d7abaf929b6d064831b1f13166415",
+    "examples/commands/command-common.inc": "464a5651fa02639bba6a5327c037dc0be0c7b6558ea978d05c7cfd945e06bc38",
+    "docs/guides/demo.md": "245fcc2894ff23f8e87d1dda050f9e887e16374f737139aa34a64e1835956264",
+    "docs/demo.png": "3bca07615e65b5ef700f91389455042e98d5d972189504b069c70e32d0bd8e63",
+    "docs/images/demo-boot.png": "ca72d49560158f01671ba7abf8684d8a8078bcc1f3146eb8f92c93fdadd3b060",
+    "docs/demo-distribution.txt": "97b7fa2ee8cccb05e704a2e8e0839d3e623d14031350130ea166aa50d2c179aa",
+    "tools/package_demo.py": "a6e3557dfd365738b42d689112a8aa23d2654a520d11d8b297204e79842471c6",
+    "LICENSE": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+    "LICENSE-MIT": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+    "LICENSING.md": "7bfcc44c90a9a28d28e311b480694b74984d35b71291ad66c45eb140c17b4cbe",
+    "config/shell-sdfs.json": "30597413303be689ff2e904af6d38aac5d2f53d9ac917dd7ccf2bab47a5d051c",
+    "tools/build_command.py": "1c36b38d52925df90fa5c3493ed2f0ad3af45ad2f89fd3bbb48b6b7039387213",
+    "tools/make_data_disk.py": "f56df480f19aa750a6fbdcc5715f207082a42c8734c22c177b96744bc043fb24",
+    "tools/sdfs_reference.py": "298da1eed3ffbf5feacc3d7908463574eb29efb3f3e6b7adb09fa44c0b8eec57",
+    "tools/sdfs_reference.cpp": "66931b4b4d55aa9a9bfd14225ae706fb0a1aaec67917c7f29462320d01313ff2",
+    "tools/make_shell_disk.py": "148cdc8de55e3090117a21a292bf17c5e8f1a189d1788fa1e2ded55e8dbf2b5a",
+    "tools/build_demo.py": "1dc561072a8bae77d2a3bb03d358b3527f64c43c7c55c434442de15dbba7f247",
+    "examples/demo-disk/LONG.TXT": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+    "examples/demo-disk/README.TXT": "3fdb8e8d2f70179bd53bca322de0332faecef24d606c2ed3483c38173efd3d09",
+    "examples/demo-disk/STORY.TXT": "ca8653e644f744f7541c4d7cc77d700bb85ac2edab16179b4f5bac31a425c028",
+    "examples/demo-disk/WORK/README.TXT": "344ef9ef38b08e4df6735102545855a7c0f82b96a13cfb1f78790585e0f4df6b",
+    "lib/dos/command.act": "985bd20f17ec18066f09e2c7dcce07b2f8e7fb0897112f9b5b144a7318ad9ebe",
+    "lib/dos/cookedline.act": "f36dcb5798eb95438dafa1b07ce1b29fd2a3d1ef0923ea7e0e4fcd80ab8292ad",
+    "lib/dos/dos.act": "b74cbbf3e08e883db56c433dc4a364ea92015559588b59546a07b092a4f82b10",
+    "lib/dos/dosargs.act": "7d66f3d2cfcdbc5e7eeb06cf51bcd85f3b119c4dd761b70040a1bc43cd50b8de",
+    "lib/dos/dosbreak.act": "f653ec1735959807b1d776285a76e243d246d2edb64c897b652ab3072465cddd",
+    "lib/dos/dosbreaktypes.act": "afe9ccd719707e10ea0112697cf37a88b45316ebc50939141ac8d58e8eacda0b",
+    "lib/dos/doscalls.act": "f1df2a279390e3703978e50dc7771b35cdbf3a1b388cc2eaf1eeeef906ed9da0",
+    "lib/dos/doscancel.act": "f5ad0f60516480f252d0fe2c56ea939cb9c90021edbf90214e56ec5ce556c25c",
+    "lib/dos/dosclient.act": "99ce8ea8b68343c7157c43f21a2b3ff4b1bbbc4ea5225d4f522b3588f3330246",
+    "lib/dos/doscommand.act": "2905970e2c26dcd2fd1f5f1914796f1e7a5c7eb0a33c86fce4cdc2fec93dfefd",
+    "lib/dos/doscooked.act": "ae78fe49854420b2515d8413089121fa98b9557cf775ad72512e3933f7e2ca45",
+    "lib/dos/doscore.act": "35236d938935373e25be30d25bf72bc74f38161b847366f8b7d3f4b5f53b35eb",
+    "lib/dos/dosfault.act": "9541e51c0469f555e7bfb838fccbef2589c038c6b99aca8369d28cd7d11874f1",
+    "lib/dos/dosgroup.act": "de07ea8918aa6a4068d79447e38906c4ac3465522de982ebff968e0133d1bc64",
+    "lib/dos/dosinherit.act": "5840bed9bbb4e2ab92506acfebaf768e1a374b6d69734f06a0d7297714268ecd",
+    "lib/dos/dosobjects.act": "38ff9766b33932621e8e78ebd12ed35bb6c0afe77dd96cefc686180a9316f14e",
+    "lib/dos/dospipe.act": "f4cb23f6dab1f2fe2c30e32e2df7eb0908d7067a0447f9bdd7a181aabc0ab9d5",
+    "lib/dos/dosprocess.act": "812341822fe281fc9eacc3fec17d09169cde657b9df95b6185c4312a1a30d389",
+    "lib/dos/dosraw.act": "b34300768ad810b1fc4b8de3047ca329ca5f3e75cb571b35d0fd739f97c942b3",
+    "lib/dos/dosstreams.act": "e79c7ea69bb9bc3894b7273c17e889431d12a918c91f715a7c8b415c5d0a9163",
+    "lib/dos/dosutility.act": "7f58d666a4921d5159877a16dab10cdd66884a14dd2f0c1d113088ba685fa92c",
+    "lib/dos/doswire.act": "77be2691895300a4fc68423e8d7a21bc1c6e87727827d94b7e95c5477d90600b",
+    "lib/dos/o65.act": "5338c24d81d173981a6fc70d2602285e1cd0b612c320c54c2be47f4b3eea02e9",
+    "lib/dos/o65memory.act": "9b0c229328eedccd63b29f8d1b7d93d71b7edaf66cbf9db9da96db3dea1b1f36",
+    "lib/dos/o65profile.act": "c6897919226ebe7502b4ab4aacf94202bd5484d96cb7cc5911e0a479a0c89643",
+    "lib/dos/o65read.act": "45da4ed32729c33695735b46a5cbf5c14f4f730831166a01651b7c767a3b12d3",
+    "lib/dos/o65relocations.act": "e862559fecfdc0b6ca03581f1819c0eabd7aa0c718cd5d2aba5976f2b1d29959",
+    "lib/dos/o65types.act": "8056a2396f44fb20ce5659cb09c462baa0688072233b66672e6f15e7303c0fad",
+    "lib/dos/o65wire.act": "5fcad7c688f9fce18a04853ee66e476a220bcde11410d32e4731e47b98e0adc5",
+    "lib/dos/pipeline.act": "bf0dcf6254eb1f9a22746df1504656703d114649c094b74cca22372928ac8219",
+    "lib/dos/process.act": "629eb69e6321c4dc40723af052e98e893bea0a5a2a12ec3ca949a3b49beab7b2",
+    "lib/dos/processstate.act": "33125de3065a1c9ee2d88cd2ac682706efc9c882762f0c3c75e6b345a013d527",
+    "lib/dos/program.act": "78c4b0000581ea5e47f67488c66ff71487657c2e1861a07f5f441813a540052e",
+    "lib/dos/programapi.act": "a39992911c0e60b5487295f4b57172ad41aea647e9db590c26ab10151d85fe08",
+    "lib/dos/programfile.act": "d5af86dcedd0be80146edbf4c1dc98b41eff18614c7a03792ed39c121ec91b91",
+    "lib/dos/programimage.act": "65552b309fbffbe9c2c6da38fa831c1334396eed8f9e5ceda95e3e1af2f24339",
+    "lib/dos/programlibraries.act": "275ebe903d0bdaa05c068742e965b5b49bebb86652b1636d004c5481a502d3a4",
+    "lib/dos/programplace.act": "a1306380847086094dd63443cb54ca9e699eaab47ebe0ace563c07ae6728b86f",
+    "lib/dos/programproviders.act": "7b179e68c0cabaf9d2e417c6254837da8d1e9130e37161a741efda98ddf6fbec",
+    "examples/desktop.act": "cf709cf9c534fad77a970749ed6c248e9f5e4fcd5cf8d81e31b5a509b74dc9e7",
+    "docs/bitmap-shell-distribution.txt": "b1f1095c8e94d68b4eff1eddaf0d96b5c96b63bebf30c0c60b89d4b288a9302f",
+    "tools/build_bitmap_console.py": "b02e59ec8bad9f5098f77d32dbab93ebe271a11ea2230bf310371501fe492d28",
+    "tools/build_bitmap_artifact.py": "93ab012062795691f3910971cb993e41aafc120ed6f9c9f61d01176ded8d9ec6",
+    "docs/desktop-distribution.txt": "fea20626f19f697b6614c15526152e3ff957e2a8dc9bf207fd6d6ea155ac5956",
+    "lib/desktop/deskapp.act": "60d9e6cdeadc99319fdbe464d9de6b5e7e49a0f39829a83a775f2686df66a2de",
+    "lib/desktop/deskboot.act": "cb4cdb3bcf38c26ac57f66190984a4a4a9331a1aa84bdd35eaed69d0f2a7987c",
+    "lib/desktop/deskcache.act": "93e7149e545dbbc17bc7fa92440e824abab6c75af8e7c54cdc10fe7d7888633d",
+    "lib/desktop/deskcore.act": "09879a85e3c9ebf4e4993d0b046748c1ae12e668378cfeae9e44ba72ae12b345",
+    "lib/desktop/deskdrag.act": "8d08c5ec3a7746ae02d9c24354e9ba54c9d3b42e93fabd3015b37b348f82d9e1",
+    "lib/desktop/deskevents.act": "19a05d780e9713a5954bb27d57cb34f7c48a029cd1887881b0692e9563e72a47",
+    "lib/desktop/deskhost.act": "f9a6384e66dd1505d2402c6bca9ef8d78d2701f53c62cd19d9ea1bbb377f85e5",
+    "lib/desktop/deskinput.act": "4256854d062a1539308963ce9fc8a72f4d12c42cca52c9321d2aaeac3c2f2715",
+    "lib/desktop/deskmove.act": "10cf1e982a1f00fcebd7cde923cec111360653483545c40f51a7350de1774ffb",
+    "lib/desktop/deskpaint.act": "6d149d5fe575113804432cd7e0daf97670f6d7dbfec0f8906b0d720ee9bb14e7",
+    "lib/desktop/deskstate.act": "0fc9e3b4026fd980eba8154fb9d712628ce6fe979e409951469c7e1fc6b80673",
+    "lib/desktop/desktop.act": "2efeefd86d7b877e1bf37eb649124fdb97a7c64c8ed010d2589e6c9f76919a98",
+    "lib/desktop/desktypes.act": "6e33d6a360a0471c8e42e6494f0058a252298999facbae32706ca0261126405f",
+    "lib/desktop/deskwidgetinput.act": "8d1f1c7ea87f7ddb6bef6134d3cb8651367f752d76960b63230a363c69cc74fc",
+    "lib/desktop/deskwidgets.act": "fa1318e8294d92e36855ccf311ff1b506a114f80fb236bfb0fcacbc1f728232f"
+  },
+  "current_runner": {
+    "path": "tools/test_demo.py",
+    "sha256": "af6bd179b1e901abe9999e9b5a1ce732095190f99d2d9ea4be736851580f2d71"
+  },
+  "runner_note": "Desktop report pins its executed runner before the final standard-only IRQ/NMI rendezvous selection fix. Desktop execution path is unchanged; standard report pins the final runner.",
+  "checks": {
+    "host": {
+      "run": 361,
+      "passed": 357,
+      "skipped": 4,
+      "log_sha256": "b5d27e6c28a85475a80278def00a9add8fe3b33151136d2b0d0362c75dba2d7a"
+    },
+    "generators": [
+      "generate_widgets.py --check",
+      "generate_desktop.py --check"
+    ],
+    "local_links": {
+      "checked": 362,
+      "documents": 12,
+      "status": "pass"
+    },
+    "content_and_evidence_hashes": "pass"
+  },
+  "limits": [
+    "Widget feedback and pointer/outline/move-repair latency targets remain open; see aes-widgets-aw5.json.",
+    "Focused optimized emitted checks; unchanged AW0-AW4 ABI/raw/fault evidence reused. No release or physical-hardware qualification.",
+    "Local preview only; not published."
+  ],
+  "implementation_commit": "dd1e0a249e5ea4fd021ac53bd18c43bba9997686"
+}

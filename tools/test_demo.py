@@ -99,7 +99,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         def number(address,length=4):return int.from_bytes(far(address,length),'little')
         def pointer(address):return number(address,3)
         def rendezvous(condition):
-            b.bp_clear_all();marker=p['labels']['native_nmi']
+            b.bp_clear_all();marker=p['labels']['native_irq' if desktop else 'native_nmi']
+            # Qualify bank zero: the bridge's PC fields and breakpoints use
+            # the low word, which can also occur in the linked foreign image.
+            condition=f'(@xpc=${marker:x})&({condition})'
             b.bp_set(marker,condition=condition);b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
             original=b.regs
             def regs():
@@ -144,6 +147,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 f'(db(${v+console["PRESENTATION_SCROLLSTATE"]:x})=0)&'
                 f'(dw(${v+10:x})=dw(${i+54:x})+dw(${i+10:x}))'
                 for i,v in zip(instances,views))
+            if desktop:
+                # Console generations can settle while a widget repaint is
+                # still inside its C call. Snapshot after that transaction.
+                paint=next(d['address'] for d in p['image']['data'] if '_DESKPAINT_PAINTTOKEN_' in d['name'])
+                condition+=f'&(dw(${paint:x})=0)'
             rendezvous(condition)
             generations=[number(i+console['INSTANCE_GENERATION']) for i in instances]
             saved['settled_clock']=b.eval_expr('@clk')
@@ -208,13 +216,37 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b._cmd_ok(f'MOUSE AT 2000 0 0 {value}')
                 rendezvous(f'dw(${symbol("DESKINPUT","buttons"):x})={value}')
                 frames(2)
-            move(584,152);button(1);button(0)
+            from generate_desktop import layout as desktop_layout
+            service=pointer(symbol('DESKSTATE','service'))
+            types=desktop_layout()
+            context=pointer(service+types['Service']['fields']['windows']
+                +types['Window']['size']+types['Window']['fields']['widgets'])
             updates=symbol('DESKAPP','updates')
-            rendezvous(f'dw(${updates:x})>=1')
+            def action(x,y,label,states):
+                previous=number(updates,2)
+                move(x,y);button(1);button(0)
+                rendezvous(f'dw(${updates:x})>{previous}')
+                rendezvous(f'db(${symbol("DESKAPP","refresh"):x})=0')
+                require(number(updates,2)==previous+1,'Duplicate packaged widget action')
+                require([number(context+24+i*24+10,2) for i in range(8)]==states,
+                        'Packaged widget model differs')
+                offset=number(context+24+24+12)
+                require(far(context+792+offset,len(label)+1)==label+b'\0','Packaged status patch differs')
+                cells(label.decode('ascii'))
+            action(480,128,b'Toggle on [2]',[0,0,1,8,1,0,0,0])
+            action(584,160,b'Large [5]',[0,0,1,8,0,1,0,0])
+            action(480,192,b'Applied [6]',[0,0,1,8,0,1,0,0])
+            action(584,192,b'Cancelled [7]',[0,0,1,8,0,1,0,0])
             previous=number(updates,2)
-            press('a')
+            move(584,128);button(1);button(0)
+            frames(6)
+            require(number(updates,2)==previous,'Disabled packaged control activated')
+            press('\n')
             rendezvous(f'dw(${updates:x})>{previous}')
-            cells('independent-app-key')
+            rendezvous(f'db(${symbol("DESKAPP","refresh"):x})=0')
+            offset=number(context+24+24+12)
+            require(far(context+792+offset,12)==b'Applied [6]\0','Return missed default action')
+            cells('panel-default-key')
             move(500,86);button(1)
             rendezvous(f'db(${symbol("DESKDRAG","phase"):x})=1')
             move(508,94);button(0)
@@ -578,7 +610,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Desktop OF816 autoboot, independent client input/drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked 36/37-column edits, 255-byte command, BREAK recovery and physical Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked 36/37-column edits, 255-byte command, BREAK recovery and physical Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':

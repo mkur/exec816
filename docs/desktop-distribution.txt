@@ -46,9 +46,11 @@ Windows remain onscreen on an eight-pixel grid. Only the left button is supporte
 The pointer moves two screen pixels per ST mouse step, with fixed sensitivity
 and no acceleration.
 
-Click the application and press a key: its Task performs finite computation,
-then replaces the retained panel content. Its X gadget requests cooperative
-closure. The shell has no close gadget: click it and type EXIT to close the
+The Control Panel runs on its own Task. Click Toggle, select Small or Large,
+or press Apply or Cancel. The status label reports the action. Locked is
+disabled. Tab and Shift-Tab move focus, Space activates the focused control,
+Return activates Apply, and Escape or BREAK cancels the form interaction.
+Its X gadget requests cooperative closure. The shell has no close gadget: click it and type EXIT to close the
 whole desktop. Closing the application first leaves the shell available.
 
 Try these shell commands
@@ -72,8 +74,8 @@ CAT WORK:OUT.TXT. Redirection creates or truncates its target when opened,
 even if the command later fails. Keep SYS: on D1-D7; D8 is reserved for WORK:.
 
 This is a development preview, not hardware or whole-system qualification.
-Some pointer, drag outline and move repair timing
-targets remain open. Redrawing exposed windows after a drag can still take
+Widget feedback, pointer, drag outline and move repair timing
+targets remain open. First focus and clipped repairs can take several seconds. Redrawing exposed windows after a drag can still take
 over a second during disk activity. Captured movement is correct within the
 tested ST envelope; this desktop does not yet meet every interaction target.
 No resizing, menus, file browser, right button or general AES compatibility. The cooked editor

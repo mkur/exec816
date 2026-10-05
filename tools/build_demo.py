@@ -45,7 +45,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
             'Try TASKS, DIR, MEM, HELLO | WC,\nand CAT STORY.TXT | WC.\n'
             'EXIT returns to the OS.\n',encoding='ascii')
     if desktop:
-        (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nDrag titles; Escape cancels a drag.\nClick the app and press a key to compute and repaint.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
+        (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nDrag titles; Escape cancels a drag.\nControl Panel: Toggle, Small/Large, Apply and Cancel.\nTab/Shift-Tab: focus; Space: activate; Return: Apply.\nEscape/BREAK: cancel. Locked is disabled.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==set(commands)|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name

@@ -73,3 +73,24 @@ Run them with `tools/test_widgets.py --input` and
 `tools/test_widget_interaction.py`, each with `--mode raw` or `--mode opt` and
 `--output DIR`. The interaction fixture uses an 8 KiB test-data arena and a
 paint-token hold hook; production memory reservations and scheduling are unchanged.
+
+AW5–AW6 connect the hosted subset to the optional Action! Control Panel.
+`lib/desktop/deskapp.act` owns application semantics; this directory still owns
+only the source-port/model/render/input boundary. No donor event loop or Task
+is added. The [widget contract](../../../docs/reference/widgets.md) describes
+the admitted types and limits; the [execution record](../../../docs/history/aes-widgets.md)
+records matched patch/full-redraw work, loaded input, package checks and latency
+misses. Run the focused optimized application check with:
+
+```sh
+python3 tools/build_widget_panel.py --output build/aes-widgets/aw5/panel
+python3 tools/test_widget_panel.py --program build/aes-widgets/aw5/panel/program --output build/aes-widgets/aw5/measured
+```
+
+The fixture adds a second form owned by the shell/controller and a test-only
+matched SetTree control; neither adds a production Task or a public API mode.
+Use a separate output directory with `--unobserved` for the same 100-action
+cohorts without passive traces. `--comparison-only` runs the functional checks
+and matched patch/full-redraw pair without those cohorts; `--analyze-only`
+recomputes metrics from an already completed run.
+The donor repository remains untouched.

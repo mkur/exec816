@@ -47,14 +47,15 @@ two optional VRAM snapshot slots. It keeps one presenter, adds zero
 bank-zero reservations and leaves partially obscured scrolling on retained
 redraw. [Development measurements and the refreshed preview](history/desktop-rendering.md#dr7-combined-measurements-and-local-preview)
 pass correctness checks; pointer, outline and move-repair latency acceptance
-remains open. AW5–AW6 stay paused.
+remains open.
 
-The next functional milestone is the
-[AES widget library](plans/gem4xe/aes-widgets-implementation-plan.md), planned
-through AW0–AW6. AW0–AW4 now host selected GEM4XE object, drawing and form
-routines in the existing presenter, with retained widget trees, updates limited
-to changed controls and event-driven interaction. The control-panel client,
-interaction measurements and preview refresh remain AW5–AW6 work. Existing
+[AES widgets](plans/gem4xe/aes-widgets-implementation-plan.md) are implemented
+through AW6 at the development tier. Selected GEM4XE object, drawing and form
+routines run in the existing presenter, with retained trees, bounded patches
+and event-driven interaction. The optional desktop now includes an independent
+Control Panel; [interaction measurements and the packaged walkthrough](history/aes-widgets.md)
+pass correctness checks while widget-feedback latency remains open. Long
+clipped drawing calls and scene-token waits need focused follow-up. Existing
 Task/stack pools and window layers are reused. The library can later support a task bar; desktop work-area,
 window-switching and launcher policy are separate work. Editable fields,
 resource-file loading, menus and full AES compatibility remain deferred.
