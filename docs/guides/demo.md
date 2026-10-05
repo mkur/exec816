@@ -13,7 +13,7 @@ boot messages out of view.
 
 Download `exec816-demo.zip` from [Releases](https://github.com/mkur/exec816/releases)
 and extract it. The `exec816-demo/` folder
-contains `Exec-of816.xex`, `system.atr`, `altirraos-816.rom`, `README.txt`, license
+contains `Exec-of816.xex`, `system.atr`, `work.atr`, `altirraos-816.rom`, `README.txt`, license
 notices and `SHA256SUMS`. Keep these files together and follow the included boot
 instructions. Building from source is an [optional alternative](#build-from-source-optional).
 
@@ -41,7 +41,7 @@ WORK: is explicitly writable. Try:
 ```text
 ECHO saved >WORK:OUT.TXT
 CAT WORK:OUT.TXT
-CAT SYS:STORY.TXT >WORK:COPY.TXT
+COPY SYS:STORY.TXT WORK:COPY.TXT
 CMP SYS:STORY.TXT WORK:COPY.TXT
 ```
 
@@ -123,6 +123,25 @@ an optimized integration walkthrough. General compiler qualification and the
 full release matrices remain separate. The [console refactor record](../history/console-refactor-implementation.md)
 describes the implemented scrolling work and its focused checks.
 
+## Commands for the work disk
+
+The [toolbox](toolbox.md) includes COPY, TEE, DELETE, RENAME and MAKEDIR:
+
+```text
+MAKEDIR WORK:NOTES
+COPY SYS:STORY.TXT WORK:NOTES/ONE.TXT
+RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT
+CMP SYS:STORY.TXT WORK:NOTES/TWO.TXT
+HELLO | TEE WORK:LOG.TXT
+HELLO | TEE WORK:LOG.TXT APPEND
+DELETE WORK:NOTES/TWO.TXT
+DELETE WORK:NOTES
+```
+
+COPY and TEE create or truncate their destination; APPEND preserves it and adds
+bytes at EOF. COPY needs an exact filename, DELETE accepts only a file or empty
+directory, and RENAME stays within one directory. Each accepts `?` for help.
+
 ## Stable system paths
 
 SYS names the system volume even when OF816 selects another drive. The shell
@@ -156,8 +175,8 @@ python3 tools/build_demo.py
 ```
 
 The file to share is `build/demo/exec816-demo.zip`. It contains one
-`exec816-demo/` folder with the boot XEX, system disk, ROM, a short boot guide,
-two license notices and `SHA256SUMS`. Build intermediates and test output stay
+`exec816-demo/` folder with the boot XEX, system and work disks, ROM, a short boot guide,
+license notices and `SHA256SUMS`. Build intermediates and test output stay
 in the development directory. The [distribution guide](../demo-distribution.txt)
 has self-contained boot instructions; its disk and drive names are filled in
 when packaging.

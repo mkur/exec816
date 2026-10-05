@@ -106,10 +106,24 @@ Try saving output to the disposable WORK: disk:
 
     ECHO saved >WORK:OUT.TXT
     CAT WORK:OUT.TXT
-    CAT SYS:STORY.TXT >WORK:COPY.TXT
+    COPY SYS:STORY.TXT WORK:COPY.TXT
     CMP SYS:STORY.TXT WORK:COPY.TXT
 
-CMP succeeds silently. Output redirection creates or immediately truncates its
+CMP succeeds silently. The writable toolbox also includes:
+
+    MAKEDIR WORK:NOTES
+    COPY SYS:STORY.TXT WORK:NOTES/ONE.TXT
+    RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT
+    HELLO | TEE WORK:LOG.TXT
+    HELLO | TEE WORK:LOG.TXT APPEND
+    DELETE WORK:NOTES/TWO.TXT
+    DELETE WORK:NOTES
+
+COPY and TEE create or truncate unless APPEND is supplied. COPY takes an exact
+filename; DELETE accepts files or empty directories; RENAME stays in one directory.
+Each accepts ? for help. Partial output can remain after failure or BREAK.
+
+Output redirection creates or immediately truncates its
 target, even if the command later fails. Use copies of work.atr for experiments.
 There is no filesystem checker or recovery utility in the resident system;
 restore your copy after an interrupted or failed disk mutation.
@@ -134,7 +148,8 @@ Included files
 --------------
 
 Exec-of816.xex       Exec816 with the OF816 boot monitor
-@SYSTEM_DISK@        System disk with HELLO, CAT, WC, the command toolbox and sample text
+@SYSTEM_DISK@        System disk with fifteen commands and sample text
+work.atr            Disposable writable WORK: disk for drive D8
 altirraos-816.rom    AltirraOS 3.44 for 65C816
 README.txt          This guide
 EXEC816-GPL-3.0.txt  Exec816 OS licence

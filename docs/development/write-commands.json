@@ -1,0 +1,651 @@
+{
+  "date": "2026-10-05",
+  "status": "pass",
+  "tier": "development",
+  "plan_commit": "b063449b491b578640763b14e40441e873e5703d",
+  "source_state": "Implementation atop the committed plan; exact tested source and artifact hashes retained. Demo banner b063449-dirty.",
+  "scope": "Focused command development checks; no release or physical-device qualification.",
+  "source_inputs": {
+    "abi/dos.json": "7d45dbfa80e3a67c5ff3c63d9b90b365f80cbcde9905cb687504d3497ed78454",
+    "abi/program.json": "15e0b1fb7555b4891e9cce84c0145132dc94c3646f85d528b529a90203f9e2a9",
+    "docs/contributing/testing.md": "32d1531ffd3b87d6727faac77d6f4711c98b3e6815edf497feab38b1ae6608df",
+    "docs/demo-distribution.txt": "ef80b382e7ed8b06d2b636616a983af50757e3289d1b7f04fba7e1b3e84bd039",
+    "docs/guides/commands.md": "ef139c488a7698869de603aca264c86956fd0aec682fd63742021c4f7d14ea8c",
+    "docs/guides/demo.md": "b72bde002190d340e7cbe1a424e6a22dc91e9f2bfff0fd5e74680853e95fa568",
+    "docs/guides/toolbox.md": "d5f6aaa122544764f5162e36a54fd3ec557d5f0af1850337c72aafcaede715eb",
+    "docs/history/README.md": "53b047a7600eedaa27387d9a7c3afad8017fba9dcb430699c20f906e82c936ce",
+    "docs/history/write-commands.md": "18b4879c43934262e6872b10c4299e54d24c87078a12ae32d110898a00b0522d",
+    "docs/plans/README.md": "7b62862fd8cd71214c2bc884fdfffb14f41203c6a5e399d5f6914c6227508d30",
+    "docs/plans/write-commands-implementation-plan.md": "3c78021a247dfd2d1a1ec5e4445f7da078b208e3d5199637f0eb79a51b669828",
+    "docs/reference/command-arguments.md": "ef46855a6d3306018a0cf9b46ea1d41c031f79c86ee83253b7f9619b8298930c",
+    "docs/roadmap.md": "5a220b7d1a9255620accb057472f766cf474bfa183cd548cc68ff0da48e21945",
+    "examples/commands/command-common.inc": "5157ec62658ae159b55876b447a34ecaf073a9445a1476fbf1d99ca0a0f660bd",
+    "examples/commands/command-files.inc": "06cf33317a821ee6798aefdcc0897ef91a4b79809467e34d6bd7a22fedfc5eba",
+    "examples/commands/command-transfer.inc": "3c9e6befbbfcdac14ed0d7df9be6ee00fcc5985a10d648199663ae86934b473a",
+    "examples/commands/command-write.inc": "9953f964ff137d90b92be4e281c2ed97730f4663e96161e7f31691738fb09ea1",
+    "examples/commands/copy.act": "869678c375b8c98b006344eb7a59cf2bb8c2372180f474322187a995f5dc7624",
+    "examples/commands/delete.act": "3c4e1c37c44a20f68fac140c47f2b497f4500b308fa5ec91712d98a22f60ae86",
+    "examples/commands/makedir.act": "ea48348a66b0f904c8889a198686bdb09e81056b4eb8e27ecc300e6fb79009df",
+    "examples/commands/rename.act": "caeadd5c6af65178c10662351fd26b378dca7f1d7d701807f84b38035ba9c11b",
+    "examples/commands/tee.act": "bfa4a8f86e2803dcffbc4b19fb77cf558543243d00a785f4e4235cc9817d0209",
+    "examples/demo-disk/README.TXT": "279b964d3abf53eab6633248c2a8d463c9f49396a1419c17c79ed7baff9ceb74",
+    "lib/dos/command-modes.inc": "6186400a89aecef7b7471614ca7ad6850d6b253d6de5dbd3f4d803bdd18defee",
+    "lib/dos/command.act": "985bd20f17ec18066f09e2c7dcce07b2f8e7fb0897112f9b5b144a7318ad9ebe",
+    "lib/dos/dosargs.act": "7d66f3d2cfcdbc5e7eeb06cf51bcd85f3b119c4dd761b70040a1bc43cd50b8de",
+    "lib/dos/doscommand.act": "2905970e2c26dcd2fd1f5f1914796f1e7a5c7eb0a33c86fce4cdc2fec93dfefd",
+    "lib/dos/dosutility.act": "7f58d666a4921d5159877a16dab10cdd66884a14dd2f0c1d113088ba685fa92c",
+    "lib/dos/programapi.act": "a39992911c0e60b5487295f4b57172ad41aea647e9db590c26ab10151d85fe08",
+    "platform/altirraos/memory-4m.json": "8b4ef235eaff9d30b46fac1dc81c63061a88f9a2c87d5eec9d098f441940f594",
+    "tests/programs/toolbox_calls.act": "0aa3afa316da102148db6f71ce632e49fb04c7992e7f03fc035b1e29ffdc5672",
+    "tests/programs/write_commands_calls.act": "55a2947a1c5f90301d1039a5c9ad2224d81ae25abfd3a961f5363d08ed7486a6",
+    "tests/programs/write_commands_state.act": "16221788ed80c0f5a9e38427ff5c41873c390963e48ac3b53cf548b99cb36c3f",
+    "toolchain/actionc.json": "f31077466a9ef240f8d49fd2f62cd8503b5975c164127573834b09a7d05ba3cc",
+    "toolchain/altirra-shell-paced.json": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087",
+    "tools/build_demo.py": "3c48d10fc3981c764e7333800081a0d2c136be2b3fe3d008cb7c6366ce0d68c3",
+    "tools/filesystem_audit.py": "af2137ddc236cdbd4ba612e73a0267ba1717afacd1bd5f560a549364dbadfbf6",
+    "tools/generate_program.py": "cf5cae1fa7980f06f8204323e42a14ef4cceec745f8eb6e4041bd6b83164ade2",
+    "tools/test_demo.py": "af660776ed86e68ffd359dc54e9e2ea4f7e966e2c453550651bf3fc0d79be1a9",
+    "tools/test_filesystem_write_lifetime.py": "86cffa2cc1d3ac81e8184db32ed91745dafc197b8264dfcb49854fbd77bc08b3",
+    "tools/test_filesystem_write_shell.py": "397e53ed445666bb952b3372e9462353afad477a08313f02af1975592d0048f3",
+    "tools/test_shell_core.py": "10236d196438900190babfe36ef373facd0a708c08a541361f655c71cfc70296",
+    "tools/test_toolbox.py": "fcd487efd146041b9b677845151bbc99993e1b8f82d7589fd7b746b84b234490",
+    "tools/test_toolbox_shell.py": "cbc2129962817f0e6dbf864e9e30cdc78f7054e31eded8b80f270d842a91b705",
+    "tools/test_write_commands.py": "159bc64c76552e145f6883e74d2184b569b20396bebf2e68fe2c81d2bfcb6507",
+    "tools/test_write_commands_shell.py": "64088458952cba0c35f4baaabbb56f7727850e73a3259f85a91ae8d3ca981548"
+  },
+  "compiler": {
+    "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "changes": [],
+    "override": false,
+    "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "machine": {
+    "pin": "toolchain/altirra-shell-paced.json",
+    "pin_sha256": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic",
+      "vbxe": false,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "off",
+      "exeloadmode": "default",
+      "kernel_id": "$91213499097d0042",
+      "actual_kernel_id": "$91213499097d0042",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "shell_configuration_overrides": {
+      "diskemu": "fastest",
+      "accuratedisk": false
+    },
+    "demo_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    }
+  },
+  "host": {
+    "tests": 339,
+    "result": "pass",
+    "log_sha256": "a7a69a58f39aa7dbeec613f4cc5406c5bb3ddd062883454065ff6873640356d1",
+    "generated": [
+      "python3 tools/generate_program.py --check"
+    ]
+  },
+  "controlled": {
+    "raw": {
+      "path": "build/write-commands/final-raw/results.json",
+      "sha256": "9a7052e6f83f522824921cc892bac2b75baf4c9eff59eec153bfe83bbd9f113b",
+      "commands": {
+        "copy": [
+          "empty",
+          "binary",
+          "short",
+          "wide",
+          "append",
+          "output-open-error",
+          "same-object",
+          "seek-error",
+          "seek-before-close-error",
+          "read-error",
+          "prefix-error",
+          "prefix-before-write-error",
+          "file-error",
+          "file-prefix-error",
+          "zero-write",
+          "write-before-close-error",
+          "close-error",
+          "oversized-read",
+          "break-between",
+          "missing-source",
+          "empty-name",
+          "missing-argument",
+          "break-before",
+          "help",
+          "help-no-console"
+        ],
+        "tee": [
+          "empty",
+          "binary",
+          "short",
+          "wide",
+          "append",
+          "output-open-error",
+          "same-object",
+          "seek-error",
+          "seek-before-close-error",
+          "read-error",
+          "prefix-error",
+          "prefix-before-write-error",
+          "file-error",
+          "file-prefix-error",
+          "zero-write",
+          "write-before-close-error",
+          "close-error",
+          "oversized-read",
+          "break-between",
+          "mirror-error",
+          "mirror-prefix-error",
+          "prefix-before-mirror-error",
+          "empty-name",
+          "missing-argument",
+          "break-before",
+          "help",
+          "help-no-console"
+        ],
+        "delete": [
+          "success",
+          "mutation-error",
+          "empty-name",
+          "missing-argument",
+          "break-before",
+          "help",
+          "help-no-console"
+        ],
+        "rename": [
+          "success",
+          "mutation-error",
+          "empty-name",
+          "missing-argument",
+          "break-before",
+          "help",
+          "help-no-console"
+        ],
+        "makedir": [
+          "success",
+          "mutation-error",
+          "unlock-error",
+          "empty-name",
+          "missing-argument",
+          "break-before",
+          "help",
+          "help-no-console"
+        ]
+      },
+      "total": 74,
+      "guards": {
+        "copy": "intact",
+        "tee": "intact",
+        "delete": "intact",
+        "rename": "intact",
+        "makedir": "intact"
+      }
+    },
+    "opt": {
+      "path": "build/write-commands/final-opt/results.json",
+      "sha256": "7dc9fab2817a7f3a83d179981a40d0e5000ea40a631550d56afd970eb1025bbe",
+      "commands": {
+        "copy": [
+          "empty",
+          "binary",
+          "short",
+          "wide",
+          "append",
+          "output-open-error",
+          "same-object",
+          "seek-error",
+          "seek-before-close-error",
+          "read-error",
+          "prefix-error",
+          "prefix-before-write-error",
+          "file-error",
+          "file-prefix-error",
+          "zero-write",
+          "write-before-close-error",
+          "close-error",
+          "oversized-read",
+          "break-between",
+          "missing-source",
+          "empty-name",
+          "missing-argument",
+          "break-before",
+          "help",
+          "help-no-console"
+        ],
+        "tee": [
+          "empty",
+          "binary",
+          "short",
+          "wide",
+          "append",
+          "output-open-error",
+          "same-object",
+          "seek-error",
+          "seek-before-close-error",
+          "read-error",
+          "prefix-error",
+          "prefix-before-write-error",
+          "file-error",
+          "file-prefix-error",
+          "zero-write",
+          "write-before-close-error",
+          "close-error",
+          "oversized-read",
+          "break-between",
+          "mirror-error",
+          "mirror-prefix-error",
+          "prefix-before-mirror-error",
+          "empty-name",
+          "missing-argument",
+          "break-before",
+          "help",
+          "help-no-console"
+        ],
+        "delete": [
+          "success",
+          "mutation-error",
+          "empty-name",
+          "missing-argument",
+          "break-before",
+          "help",
+          "help-no-console"
+        ],
+        "rename": [
+          "success",
+          "mutation-error",
+          "empty-name",
+          "missing-argument",
+          "break-before",
+          "help",
+          "help-no-console"
+        ],
+        "makedir": [
+          "success",
+          "mutation-error",
+          "unlock-error",
+          "empty-name",
+          "missing-argument",
+          "break-before",
+          "help",
+          "help-no-console"
+        ]
+      },
+      "total": 74,
+      "guards": {
+        "copy": "intact",
+        "tee": "intact",
+        "delete": "intact",
+        "rename": "intact",
+        "makedir": "intact"
+      }
+    }
+  },
+  "shared_helper_regressions": {
+    "raw": {
+      "path": "build/write-commands/readers-raw/results.json",
+      "sha256": "51b258267d54d336ba6021b819102ff5b6bad970068943a05f09004be44274f0",
+      "commands": {
+        "cmp": 14,
+        "head": 22
+      }
+    },
+    "opt": {
+      "path": "build/write-commands/readers-opt/results.json",
+      "sha256": "4e6d7f7a7880b80153372b286b636537f7bb36d16b106e360de515f2944bb95a",
+      "commands": {
+        "cmp": 14,
+        "head": 22
+      }
+    }
+  },
+  "shell": {
+    "path": "build/write-commands/shell-opt/results.json",
+    "sha256": "0527b3a1d220ecbf57be837b89c5807bda0279e29519bcf1e1b59dd5bcdcbfd9",
+    "commands": 69,
+    "mode": "opt",
+    "geometry": "720x128",
+    "kernel_reused": true,
+    "reuse_reason": "Only loaded command helpers changed after the initial build; resident kernel and observer inputs unchanged.",
+    "write_observers": {
+      "fswriteio.act": "c87dbf5ec99bc4388d98b65b395de8aa6f3588a05987655f42ef7cbbc5282f14",
+      "blockwire.act": "06bcea6a7edca4472e5aecb6baa86937e838262e696bc66623b8f7ce9a2d244f",
+      "fswriteprobe.act": "ddd4df6ee8a4f93e41cf942887dbdd14ab64d1a7540c6bfb7ec01a6b24341b52"
+    },
+    "persisted_media": {
+      "mydos": {
+        "audit": {
+          "sectors": 720,
+          "sector_bytes": 128,
+          "allocated": 66,
+          "free": 654,
+          "files": 12,
+          "directories": 2
+        },
+        "sha256": "86365ee6de529d25266dbf10cfdfcb843684f6d0990196e1c9a994944d0d7ab1"
+      },
+      "sdfs": {
+        "audit": {
+          "sectors": 720,
+          "sector_bytes": 128,
+          "allocated": 65,
+          "free": 655,
+          "files": 12,
+          "directories": 2
+        },
+        "sha256": "a762370f8ae082a82c8d237f63fd9e0eb00607311fdf517598b7485c340cd510"
+      }
+    },
+    "guards": "intact",
+    "live_tasks_at_exit": 0
+  },
+  "demo": {
+    "path": "build/write-commands/demo/screenshots-results.json",
+    "sha256": "925f8fcb6de7114ca68c8b719c67b1509800a81e75b895a181f2a057af3daa84",
+    "manifest_sha256": "f9ca0553f3fae58cbbf1a1ce2b0ac9b85233a7b3ab4ff5d4bfaea2508b0f80a5",
+    "boot_manifest_sha256": "07eba2e7aa7505efb4d13172d8b948a2d3be9ca0e048a2bd2a4349273e86db42",
+    "autoboot_frames": 249,
+    "write_commands": true,
+    "persisted_media": [
+      {
+        "name": "work-walkthrough.atr",
+        "sha256": "dd382a1c952603f70dd4e1fc6636e7e0e254c136966f17d031e634b4b387116e",
+        "allocation": {
+          "sectors": 720,
+          "sector_bytes": 128,
+          "allocated": 22,
+          "free": 698,
+          "files": 5,
+          "directories": 1
+        }
+      }
+    ],
+    "guards": "intact",
+    "bundle": "build/write-commands/demo/exec816-demo.zip",
+    "bundle_sha256": "fb16acd6dfbd09ce5a55361eb458b017026298c7a58971c1353d8330c5dbbf23",
+    "entries": [
+      "exec816-demo/ALTIRRAOS-LICENSE.txt",
+      "exec816-demo/EXEC816-GPL-3.0.txt",
+      "exec816-demo/EXEC816-LICENSING.md",
+      "exec816-demo/EXEC816-MIT.txt",
+      "exec816-demo/Exec-of816.xex",
+      "exec816-demo/OF816-LICENSE.txt",
+      "exec816-demo/README.txt",
+      "exec816-demo/SHA256SUMS",
+      "exec816-demo/altirraos-816.rom",
+      "exec816-demo/system.atr",
+      "exec816-demo/work.atr"
+    ],
+    "checksums": "all match"
+  },
+  "bank_zero": {
+    "fixed_delta_bytes": 0,
+    "per_task_delta_bytes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle_delta_bytes": 0,
+    "loading_delta_bytes": 0,
+    "resident_code_delta_bytes": 0,
+    "baseline": "build/filesystem-write/demo-final/build.json",
+    "baseline_sha256": "b5a08affc8f5996d4c37258359be08f510ba953f6c923613d48d91449552f3cc",
+    "complete_memory_layout_equal": true,
+    "budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1312,
+        1312,
+        1312,
+        1312,
+        1312,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 25408,
+      "loading_excluding_os": 21872,
+      "runtime_including_os": 56128,
+      "loading_including_os": 52592
+    },
+    "accounting": "Includes guards, alignment, DP, stack pools, boot reservations and unused provider capacity. Generic build reports use the older bank-zero-compaction baseline; comparison here is against the preceding filesystem-write demo."
+  },
+  "commands": {
+    "COPY": {
+      "serialized_bytes": 4740,
+      "text_bytes": 3838,
+      "data_bytes": 0,
+      "bss_bytes": 809,
+      "sha256": "7b043b3cf5908a3e7e4af67fb73cd7453065611a81ced22126833f26a1e7bf5c",
+      "profile_sha256": "76be5b342a047a2549bb3b280481ae335875ef7cfe69e499fc2417eec0848196"
+    },
+    "TEE": {
+      "serialized_bytes": 4533,
+      "text_bytes": 3627,
+      "data_bytes": 0,
+      "bss_bytes": 806,
+      "sha256": "03856404d4df670a4ba635a350af37525592ef1b00fbad3779519f473aa0fe16",
+      "profile_sha256": "6d4130af74080d47504d2173f89e51945c283fc36a223614bff3d83d294f2a78"
+    },
+    "DELETE": {
+      "serialized_bytes": 1428,
+      "text_bytes": 1017,
+      "data_bytes": 0,
+      "bss_bytes": 291,
+      "sha256": "2294daa2a065015d65d9fbee2150325c7c31be8e1182b81b3033236d69cacc18",
+      "profile_sha256": "92adcc23ce3d28af5478c8a2cac146b17a4497749454486d75ddc34fcda54e25"
+    },
+    "RENAME": {
+      "serialized_bytes": 1633,
+      "text_bytes": 1200,
+      "data_bytes": 0,
+      "bss_bytes": 294,
+      "sha256": "57c5beba6d218e79c377a68879686e9aa544de074134c1a0777217f60684ab5a",
+      "profile_sha256": "80ef0f4d4392f8e3be01c9097d678b764b2f948c81b8daa4b411d591e25c1f9f"
+    },
+    "MAKEDIR": {
+      "serialized_bytes": 1655,
+      "text_bytes": 1178,
+      "data_bytes": 0,
+      "bss_bytes": 291,
+      "sha256": "5e5aa30215f581d58092c640494832a615cef36d359493683b919c7904f44c12",
+      "profile_sha256": "d6d106df9acffbfd3a0920ece2dffd0ea331f16c5f5b9b6f072ad4d87a13b392"
+    }
+  },
+  "storage": {
+    "mydos": {
+      "audit": {
+        "sectors": 720,
+        "sector_bytes": 128,
+        "allocated": 705,
+        "free": 15,
+        "files": 19,
+        "directories": 2
+      },
+      "sha256": "a78d1f844a2ec6bf8bf7bcf0c5e0ad0e0dda40f0c73fdae29ae27ab030100e4e"
+    },
+    "sdfs": {
+      "audit": {
+        "sectors": 720,
+        "sector_bytes": 128,
+        "allocated": 701,
+        "free": 19,
+        "files": 19,
+        "directories": 2
+      },
+      "sha256": "eddafc0c04e1ce3a34d5539dc3ad0085915ee3d0685f7ecd5c9f88d7efeedd7f"
+    }
+  },
+  "stack_observations": {
+    "shell": {
+      "tasks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 526,
+          "untouched_above_floor": 754
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 226,
+          "untouched_above_floor": 542
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 546,
+          "untouched_above_floor": 222
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 138,
+          "untouched_above_floor": 630
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 465,
+          "untouched_above_floor": 303
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 401,
+          "untouched_above_floor": 367
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 58,
+          "untouched_above_floor": 198
+        }
+      ],
+      "kernel": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 274,
+        "untouched_from_base": 1262,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "demo": {
+      "tasks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 522,
+          "untouched_above_floor": 758
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 227,
+          "untouched_above_floor": 541
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 138,
+          "untouched_above_floor": 630
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 546,
+          "untouched_above_floor": 222
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 302,
+          "untouched_above_floor": 466
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 353,
+          "untouched_above_floor": 415
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 369,
+          "untouched_above_floor": 1935
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 61,
+          "untouched_above_floor": 195
+        }
+      ],
+      "kernel": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_from_base": 1249,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    }
+  }
+}

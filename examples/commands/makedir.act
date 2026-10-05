@@ -1,0 +1,32 @@
+MODULE MAKEDIR
+
+INCLUDE "command-write.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(1)
+
+; Creation returns an owned lock; release it without changing CurrentDir.
+LONGINT FUNC Main()
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"NAME/A",
+      values,1,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  IF CommandName(values(0))=0 OR CommandReady()=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET lock=COMMAND.CreateDir(BYTE POINTER(values(0)))
+  IF lock=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  COMMAND.SetIoErr(0)
+  COMMAND.UnLock(lock)
+
+RETURN(IF COMMAND.IoErr()=0 THEN COMMAND.RETURN_OK ELSE COMMAND.RETURN_ERROR FI)
+
+ENDMODULE

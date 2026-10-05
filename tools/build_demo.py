@@ -27,7 +27,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     require(sha256(binary)==pin['emulator']['sha256'] and sha256(rom)==pin['rom']['sha256'],'Install the pinned paced bridge and ROM before building the demo')
     media=output/'media';media.mkdir(exist_ok=True)
     commands={}
-    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','GREP','LIST','MORE'):
+    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR'):
         commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',media/name)
         (media/(name+'.options.json')).rename(output/(name+'.options.json'))
         (media/(name+'.profile.json')).rename(output/(name+'.profile.json'))
@@ -104,7 +104,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
         source_inputs={str(path.relative_to(ROOT)):sha256(path) for path in
                        [ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',
                         ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-boot.inc',
-                        ROOT/'examples/commands/command-common.inc',
+                        *(ROOT/'examples/commands'/name for name in ('command-common.inc','command-files.inc','command-write.inc','command-transfer.inc')),
                         ROOT/'docs/guides/demo.md',ROOT/'docs/demo.png',ROOT/'docs/images/demo-boot.png',ROOT/'docs/demo-distribution.txt',
                         ROOT/'tools/package_demo.py',ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md',
                         config,ROOT/'tools/build_command.py',

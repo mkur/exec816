@@ -1,6 +1,7 @@
 # Commands for writable filesystems
 
-Status: implementation in progress, following the completed
+Status: implemented. See the [development record](../history/write-commands.md)
+and [command guide](../guides/toolbox.md#writable-files). This follows the completed
 [filesystem writers](../reference/filesystem-writes.md) and
 [first toolbox](command-toolbox-implementation-plan.md).
 

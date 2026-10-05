@@ -1,0 +1,34 @@
+MODULE RENAME
+
+INCLUDE "command-write.inc"
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(2)
+
+; Filesystem identity, sharing and same-parent rules govern the rename.
+LONGINT FUNC Main()
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"FROM/A,TO/A",
+      values,2,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  IF CommandName(values(0))=0 OR CommandName(values(1))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF CommandReady()=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF COMMAND.Rename(BYTE POINTER(values(0)),BYTE POINTER(values(1)))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  COMMAND.SetIoErr(0)
+
+RETURN(COMMAND.RETURN_OK)
+
+ENDMODULE

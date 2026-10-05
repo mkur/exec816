@@ -36,6 +36,18 @@ PATH
 CAT SYS:STORY.TXT | WC
 CD SYS:
 
+Writable toolbox (WORK: on D8):
+MAKEDIR WORK:NOTES
+COPY STORY.TXT WORK:NOTES/ONE.TXT
+RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT
+HELLO | TEE WORK:LOG.TXT
+HELLO | TEE WORK:LOG.TXT APPEND
+DELETE WORK:NOTES/TWO.TXT
+DELETE WORK:NOTES
+COPY/TEE truncate unless APPEND is used.
+RENAME stays within one directory.
+DELETE accepts files or empty directories.
+
 PATH searches here, then SYS: by default.
 Every supplied command supports ? help.
 Errors are explained on the console.

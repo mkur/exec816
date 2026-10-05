@@ -184,6 +184,17 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 saved['cache_commands'].append(dict(command=text,prime_frames=number(at('demoFrames')),
                     hits=number(cache+16),misses=number(cache+20),evictions=number(cache+24)))
             return screen
+        def writable_commands():
+            command('MAKEDIR WORK:NOTES')
+            command('COPY SYS:STORY.TXT WORK:NOTES/ONE.TXT')
+            command('RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT')
+            command('CMP SYS:STORY.TXT WORK:NOTES/TWO.TXT')
+            command('HELLO | TEE WORK:LOG.TXT',b'Hello from disk!')
+            command('HELLO | TEE WORK:LOG.TXT APPEND',b'Hello from disk!')
+            command('DELETE WORK:NOTES/TWO.TXT')
+            command('DELETE WORK:NOTES')
+            saved['write_commands']=True
+
         def save_screen(path):
             # Transfer the PNG by file; large inline replies time out on VBXE.
             b.screenshot(str(path))
@@ -307,6 +318,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     command('CAT WORK:PIPE.TXT',b'1 3 17')
                     saved['filesystem_writes']=True
                     screenshot('writable-files.png',[b'WORK:COPY.TXT',b'WORK:PIPE.TXT',b'1 3 17'])
+                    writable_commands()
                 require(observations[-1]['prime_frames']>observations[0]['prime_frames'],
                         'Prime display did not advance during the walkthrough')
                 for character in 'EXIT':press(character)
@@ -430,6 +442,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 command('HELLO | WC >WORK:PIPE.TXT')
                 command('CAT WORK:PIPE.TXT',b'1 3 17')
                 saved['filesystem_writes']=True
+                writable_commands()
             saved['memory']=memory();saved['ledger']=ledger()
             require(saved['ledger']['live']==5,'Idle demo Task count differs')
             for _ in range(2):
@@ -481,13 +494,18 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     require(audit.files['OUT.TXT']==b'saved\n' and audit.files['PIPE.TXT']==b'1 3 17\n'
                             and audit.files['COPY.TXT']==(ROOT/'examples/demo-disk/STORY.TXT').read_bytes(),
                             'Packaged writable walkthrough contents differ')
+                if saved.get('write_commands'):
+                    require(audit.files['LOG.TXT']==b'Hello from disk!\n'*2 and
+                            not any(name.startswith('NOTES/') for name in audit.files),
+                            'Packaged writable commands did not persist expected bytes')
+                    require(audit.directories==1,'Packaged writable commands retained a directory')
                 saved['work_media'].append(dict(name=target.name,sha256=sha256(target),allocation=allocation))
     return dict(status='pass',tier='development',bundle_manifest_sha256=sha256(out/'demo-manifest.json'),
         xex_sha256=sha256(out/'program.xex'),media_sha256=sha256(media_path),screenshot_sha256=sha256(out/'boot-smoke.png') if boot_smoke else None if stock_smoke or loading_smoke or cache_smoke else sha256(out/'walkthrough.png'),
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
         autoboot_frames=saved.get('autoboot_frames'),
-        filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
+        filesystem_writes=saved.get('filesystem_writes',False),write_commands=saved.get('write_commands',False),work_media=saved.get('work_media'),
         measurements=saved.get('measurements'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
         baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=None if stock_smoke or showcase or editing or disk_failure else 6 if shell_only else 7,

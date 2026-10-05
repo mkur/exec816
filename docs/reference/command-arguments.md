@@ -1,6 +1,6 @@
 # Small command argument parser
 
-Status: implemented in program ABI version 8. See the
+Status: implemented in program ABI version 9. See the
 [command usability record](../history/command-usability.md) for validation and costs.
 
 `COMMAND.ReadArgs()` exposes one shared resident DOS parser. Commands describe their arguments
@@ -141,7 +141,7 @@ console, failed write/close and BREAK return ERROR with their original cause.
 Ordinary parse failures may also display the template; diagnostic failures do
 not replace the parse error. The shell owns the final fault explanation.
 
-All ten supplied commands use this wrapper. The implementation in DOSCOMMAND is
+All fifteen supplied commands use this wrapper. The implementation in DOSCOMMAND is
 shared by the checked COMMAND provider; it adds no per-Process state or allocation
 except the temporary console handle. Source/template and storage remain caller
 owned and must be valid and non-overlapping throughout the call.

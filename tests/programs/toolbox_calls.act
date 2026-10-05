@@ -213,4 +213,29 @@ PUBLIC LONGINT FUNC ConsoleInfo(BYTE POINTER handle,buffer)
 
 RETURN(-1)
 
+; The original read-only toolbox does not call the current write imports.
+PUBLIC LONGINT FUNC Flush(BYTE POINTER handle)
+
+  T.state.error=209
+
+RETURN(0)
+
+PUBLIC BYTE POINTER FUNC CreateDir(BYTE POINTER name)
+
+  T.state.error=209
+
+RETURN(NULL)
+
+PUBLIC LONGINT FUNC DeleteFile(BYTE POINTER name)
+
+  T.state.error=209
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC Rename(BYTE POINTER oldName,newName)
+
+  T.state.error=209
+
+RETURN(0)
+
 ENDMODULE

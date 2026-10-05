@@ -1,0 +1,25 @@
+MODULE WRITECOMMANDSTATE
+
+PUBLIC TYPE TestCase=[
+  LONGCARD length,breakAt
+  LONGINT readChunk,writeChunk,readFail,prefixError,closeError,openError
+  LONGINT seekError,mutationError,unlockError,failTarget,failAt,writeError
+  LONGINT writePrefixError,zeroTarget,oversizedRead,same,interactive,patternBytes
+  BYTE ARRAY arguments(256)
+  BYTE ARRAY data(768)
+]
+
+PUBLIC TYPE CaptureState=[
+  LONGINT error
+  LONGCARD position,fileCursor,fileLength,fileHash,outputLength,outputHash
+  LONGCARD inputLive,fileLive,consoleLive,lockLive,opens,closes,reads
+  LONGCARD fileWrites,outputWrites,seeks,operation,mode,badOwner,consoleUsed
+  BYTE ARRAY file(1024)
+  BYTE ARRAY output(1024)
+  BYTE ARRAY console(256)
+]
+
+PUBLIC TestCase POINTER scenario
+PUBLIC CaptureState POINTER state
+
+ENDMODULE

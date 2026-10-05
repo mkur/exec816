@@ -76,7 +76,8 @@ The other possible milestones have no delivery order:
 - Longer shell pipelines, scripts and background execution beyond the current
   [two-command foreground pipeline](guides/shell.md).
 - ASSIGN, multiple-file arguments, TAIL, FIND and regular expressions beyond
-  the implemented [command toolbox](guides/toolbox.md) and
+  the implemented [command toolbox](guides/toolbox.md),
+  [writable commands](history/write-commands.md) (COPY, TEE, DELETE, RENAME, MAKEDIR), and
   [command usability](history/command-usability.md) services (PATH, fault text
   and template help).
 - Broader C bindings and more Amiga examples beyond the

@@ -48,7 +48,7 @@ python3 tools/build_command.py examples/commands/hello.act -o build/commands/HEL
 
 This produces the o65 command and companion reports, not a new disk image.
 The [demo builder](../contributing/building.md#build-the-demo) compiles and bundles
-all ten supplied commands with the matching resident providers. Rebuild the resident image
+all fifteen supplied commands with the matching resident providers. Rebuild the resident image
 and commands together when their ABI changes.
 
 ## Arguments, input and errors
@@ -112,7 +112,12 @@ handle. Prefetching advances the underlying cursor beyond consumed bytes.
 Arguments and buffers must remain valid for each synchronous call; these helpers
 do not provide memory isolation for arbitrary machine code.
 
-The examples' `command-common.inc` shares opening/cleanup and output presentation
-policy. The argument parser, buffered I/O and numeric formatting themselves remain
+The examples' `command-files.inc` shares owned-handle cleanup and optional input
+opening. `command-common.inc` adds text presentation; `command-write.inc` checks
+names and BREAK; `command-transfer.inc` implements COPY/TEE's counted transfer
+policy. Keeping those helpers separate avoids loading text formatting into
+filesystem mutation commands. Open modes and `OFFSET_BEGINNING`, `OFFSET_CURRENT`
+and `OFFSET_END` come from the generated COMMAND constants. CreateDir, DeleteFile
+and Rename use the existing filesystem imports. The argument parser, buffered I/O and numeric formatting themselves remain
 single resident implementations. New interfaces are generated from
 `abi/program.json`; rebuild the resident system and all commands together.
