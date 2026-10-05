@@ -92,8 +92,9 @@ Repeat with `--variant old --manual` and a different output directory to check
 the other power-on bank, final-second countdown cancellation and Forth entry.
 The fixture checks the cartridge handoff, documented shell/disk commands and
 EXIT, using the source revision's original guard and ownership assertions.
-It reads upper RAM through the debugger because cartridge boot places the OS
-screen below the scratch area assumed by the older XEX test helper.
+It selects the bitmap/desktop boot smoke or the standard shell/prime walkthrough
+from the matching demo manifest. Upper-RAM reads use the debugger without
+borrowing the cartridge-era OS screen or loader workspace.
 
 ## Build an individual program
 

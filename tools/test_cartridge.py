@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Replay cartridge boot against the matching, unchanged demo and its tests."""
 import argparse
-import inspect
 import json
 from pathlib import Path
 import shutil
@@ -17,12 +16,13 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual):
     sys.path.insert(0, str(exec_source/'tools'))
     from native_program import require, sha256
     from os_boundary import run_to
-    import banked_test_memory
     import test_demo
     from test_of816 import check_boot_guards, enter_forth, press, screen_text
 
     cart = json.loads((cartridge_build/'cartridge.json').read_text())
     boot = json.loads((demo_build/'of816/of816.json').read_text())
+    demo = json.loads((demo_build/'demo-manifest.json').read_text())
+    shell_only = demo.get('shell_only', False)
     require(cart['input_xex_sha256'] == boot['xex_sha256'], 'Cartridge and demo differ')
     image = cartridge_build/f'Exec-of816-atarimax-8mbit-{variant}.car'
     require(sha256(image) == cart['files'][image.name], 'Changed cartridge image')
@@ -35,32 +35,9 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual):
                 cartridge_sha256=sha256(image), observer_sha256=sha256(Path(__file__)),
                 exec_revision=subprocess.check_output(
                     ['git','-C',str(exec_source),'rev-parse','HEAD'], text=True).strip())
-    # The release's public walkthrough normally supplies its own XEX bootstrap.
-    # Admit the cartridge bootstrap without altering any walkthrough assertions.
-    # This exercises the documented public commands of the released preview.
-    observer = inspect.getsource(test_demo.run)
-    before = '    if showcase:\n'
-    require(before in observer, 'Walkthrough observer entry changed')
-    observer = observer.replace(before, '    if showcase and bootstrap is None:\n', 1)
-    namespace = dict(vars(test_demo))
-    exec(compile(observer,str(exec_source/'tools/test_demo.py'),'exec'),namespace)
-    run_demo = namespace['run']
     case['walkthrough_observer'] = dict(source_sha256=sha256(exec_source/'tools/test_demo.py'),
-                                      adjustment='Allow explicit bootstrap for showcase mode; assertions unchanged.')
-    # Cartridge cold boot opens E: below $A000. The release's far-read helper
-    # borrows $9000-$AFFF and requires MEMTOP >= $B000, so it cannot run here.
-    # Inspect upper RAM through the debugger instead, without touching target
-    # memory or changing the original cleanup and ownership assertions.
-    original_read = banked_test_memory.read
-
-    def read_memory(b, address, size, output):
-        if address + size <= 65536:
-            return b.memdump(address, size)
-        data = b''.join((b.eval_expr(f'dw(${address+i:x})') & 65535).to_bytes(2, 'little')
-                        for i in range(0, size, 2))
-        return data[:size]
-
-    case['walkthrough_observer']['upper_memory_reads'] = 'Debugger DW; no target scratch or execution'
+                                      scope='boot-smoke' if shell_only else 'showcase',
+                                      bootstrap='Public callback; original walkthrough assertions unchanged.')
 
     def bootstrap(b, program):
         b.boot(str(image))
@@ -115,15 +92,14 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual):
         case['loader_callbacks'] = cart['init_callbacks']
 
     try:
-        banked_test_memory.read = read_memory
-        case['shell'] = run_demo(case_build, showcase=True, bootstrap=bootstrap,
-                               media_path=demo_build/'of816'/boot['media']['name'])
+        case['shell'] = test_demo.run(case_build, showcase=not shell_only,
+                                     boot_smoke=shell_only, bootstrap=bootstrap,
+                                     media_path=demo_build/'of816'/boot['media']['name'])
         case['status'] = 'pass'
     except Exception as error:
         case.update(status='fail',error=str(error))
         raise
     finally:
-        banked_test_memory.read = original_read
         (output/'results.json').write_text(json.dumps(case,indent=2)+'\n')
     return case
 

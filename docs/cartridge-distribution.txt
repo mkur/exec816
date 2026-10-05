@@ -2,8 +2,10 @@ Exec816 Atarimax boot images
 ===========================
 
 These images contain the exact matching XEX from this ZIP. OF816 still offers
-its five-second countdown before starting the shell and prime demo. Keep the
-matching system.atr mounted in D1; the cartridge does not contain the disk.
+its five-second countdown before starting the selected Exec816 demo described
+in ../README.txt. Keep the matching system.atr mounted in D1 and a disposable
+copy of work.atr in D8 with writes enabled. Both disks are required during
+startup; the cartridge does not contain them.
 
 Use an Atarimax Maxflash 8 Mbit (1 MiB) cartridge. The 1 Mbit (128 KiB) model
 is too small for this uncompressed boot image.

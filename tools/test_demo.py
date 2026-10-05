@@ -40,8 +40,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     shell_cells=width*(height if shell_only else height-6)
     screenshots=[];commands=[]
     boot_image=None
-    if showcase or editing or ((boot_smoke or disk_failure) and (shell_only or distribution_root is not None) and bootstrap is None):
-        require(bootstrap is None,'This walkthrough uses the packaged OF816 autoboot')
+    if bootstrap is None and (showcase or editing or ((boot_smoke or disk_failure) and (shell_only or distribution_root is not None))):
         boot_image=distribution_root/'Exec-of816.xex' if distribution_root is not None else out/manifest['boot_image']
         boot=json.loads((out/manifest['boot_manifest']).read_text())
         require(sha256(boot_image)==boot['xex_sha256'] and
