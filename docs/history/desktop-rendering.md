@@ -109,19 +109,42 @@ DR4–DR7 retain this open target and require the larger matched sample set.
 
 ## DR4: disjoint base backgrounds
 
-The painter fills the frame around each client intersection, then fills the
-client once. Title, close gadget, clipped opaque text, widget styles and the
+The painter fills the frame around each client intersection. Command and widget
+clients retain one background fill; opaque console cells supply their own
+background, including partial cells. Title, close gadget, widget styles and the
 sixteen-scanline/four-command quanta remain unchanged. The independent optimized
 desktop and widget rasters pass all 25 scenes; see the
 [DR4 record](../development/desktop-rendering-dr4.json).
 
-For a complete 528 by 184 console window this removes 40,960 bytes of duplicate
-base fill; the 160 by 80 command fixture removes 4,032. These are geometry-derived
-work counts, not measured DMA time. The separated side borders increase base
-fill calls (22 to 32 and 9 to 14 respectively), so setup-heavy scenes can cost
-more despite fewer pixels. Matched scene timings are retained without attributing
-whole-scene time to the blitter. No glyph/copy replay count or exact hardware
-BUSY-edge claim is made by this check.
+For a complete 528 by 184 console window, excluding unchanged title/glyph work,
+explicit base fills fall from 89,536 to 7,616 packed-equivalent bytes: 81,920
+fewer bytes across the two removed client passes. Base-fill calls remain 22.
+The 160 by 80 command fixture removes 4,032 bytes and increases base-fill calls
+from 9 to 14. These geometry counts correct the initial DR4 record, which
+accounted for frame separation but omitted the console-clear removal.
+
+The [supplemental DR4 validation](../development/desktop-rendering-dr4-validation.json)
+executes nine additional optimized scenes on the frozen `a418ccf` implementation
+and the same fixture with the DR3 painter. It covers first/empty paint, five-command
+continuations, shortened labels/titles, focus, overlapping damage, full repaint
+and partial glyph/frame edges. Breakpoint packet reads count explicit fills;
+passive CPU traces count actual uploads/launches and separate painter CPU from
+native interrupts and other Tasks. A replay with both observers disabled has
+identical pixels and settled-cycle observations. Four host negative controls
+reject duplicate client fills, frame overdraw and fills outside sparse damage.
+
+| Matched scene | Explicit fill bytes, DR3 → DR4 | Launches | Painter CPU ms |
+| --- | --- | --- | --- |
+| First empty 160×80 window | 11,440 → 7,408 | 13 → 18 | 92.08 → 121.49 |
+| Full retained repaint | 12,137 → 8,105 | 21 → 26 | 126.33 → 155.07 |
+| Overlapping sparse damage | 1,451 → 1,126 | 21 → 21 | 942.24 → 945.79 |
+
+These are single matched samples, not latency distributions. Fill bytes count
+two pixels per byte and exclude glyph work and odd-nibble bus traffic. The
+retained-repaint scenes perform no surface copies. Odd clipped glyphs dominate
+the sparse case. Fewer filled pixels do not establish a speedup: extra border
+submissions make the complete command-window scenes slower. Exact hardware
+BUSY edges and timing acceptance remain outside this check.
 
 Reserved bank-zero delta is zero for fixed state, root/kernel, each of eight
 public Tasks and idle, including guards, alignment and unused capacity. Upper
