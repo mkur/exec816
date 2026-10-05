@@ -16,9 +16,11 @@ from native_program import ROOT, build, compiler, require, sha256
 DEMO_IMAGE_DATA_BYTES = 4096
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,system_kib=720):
     require(not (bitmap_shell_only and (gem_vdi or bitmap_console)),
             'The shell-only bitmap demo is a standalone boot selection')
+    require(system_kib in (360,720),'System disk must be 360 or 720 KiB')
+    system_sectors=system_kib*1024//sector_bytes
     output=output.resolve();output.mkdir(parents=True,exist_ok=True)
     toolchain=compiler(compiler_dir)
     pin=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
@@ -45,11 +47,13 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==set(commands)|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
-    try:files=make(output/disk_name,media,binary_names=set(commands),filesystem=filesystem,sector_bytes=sector_bytes)
-    except StopIteration as error:raise ValueError('Demo media does not fit the 720-sector data ATR') from error
+    try:files=make(output/disk_name,media,binary_names=set(commands),filesystem=filesystem,
+                   sector_bytes=sector_bytes,sectors=system_sectors)
+    except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error
     config=ROOT/('config/shell-sdfs-256.json' if filesystem=='sdfs' and sector_bytes==256 else f'config/shell-{filesystem}.json')
     mount_config=json.loads(config.read_text())
     mounts=mount_config['mounts']
+    mounts[0]['sectors']=system_sectors
     mounts[0]['sector_bytes']=sector_bytes
     # Keep SYS read-only and provide explicitly disposable writable media.
     # D8 avoids colliding when the boot monitor selects D1..D7 for SYS.
@@ -82,7 +86,14 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
         program=build(toolchain,source,output,optimize=True,tasks=True,
                       task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
-    guide=(ROOT/'docs/guides/demo.md').read_text().replace('../demo.png','demo.png').replace('../images/','images/').replace('read-only SDFS data disk',f'read-only {filesystem.upper()} data disk')
+    guide=(ROOT/'docs/guides/demo.md').read_text().replace('../demo.png','demo.png').replace('../images/','images/')
+    system_name='SDFS 2.1' if filesystem=='sdfs' else 'MyDOS'
+    guide=guide.replace('The supplied SDFS 2.1 system disk has 5,760 sectors of 128 bytes (720 KiB\nnominal capacity). The disposable WORK: disk remains 720 sectors (90 KiB).',
+        f'The supplied {system_name} system disk has {system_sectors:,} sectors of {sector_bytes} bytes '
+        f'({system_kib} KiB nominal capacity). The disposable WORK: disk remains 720 sectors '
+        f'({720*sector_bytes//1024} KiB).')
+    guide=guide.replace('720 KiB read-only SDFS data disk',
+                        f'{system_kib} KiB read-only {system_name} data disk')
     if bitmap_shell_only:
         guide=(ROOT/'docs/bitmap-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
     (output/'README.md').write_text(guide)
@@ -92,6 +103,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     record=dict(format='exec816-demo-v1',tier='development',kernel=program['build'],pin=pin,
         configuration={**pin['configuration'],'diskemu':'generic56k'},mounts=mounts,commands=commands,
         media=disk_name,filesystem=filesystem,sector_bytes=sector_bytes,
+        system_kib=system_kib,system_sectors=system_sectors,
         additional_media=[dict(name='work.atr',sha256=sha256(output/'work.atr'),
                                drive=8,alias='WORK',access='readwrite',
                                filesystem=filesystem,sector_bytes=sector_bytes)],
@@ -145,8 +157,10 @@ if __name__=='__main__':
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
     parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs')
     parser.add_argument('--sector-bytes',type=int,choices=(128,256),default=128)
+    parser.add_argument('--system-kib',type=int,choices=(360,720),default=720,
+                        help='Nominal system disk capacity; WORK remains 720 sectors')
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
-    args=parser.parse_args();result=bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only)
+    args=parser.parse_args();result=bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,args.system_kib)
     print(f'Demo distribution ready: {args.output}/{result["distribution"]}')

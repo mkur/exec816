@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Make the small read-only playground ATR, separate from qualification fixtures.
 
-720 sectors (128 or 256 bytes), DOS-2-compatible VTOC and MyDOS subdirectories.
+720 or more sectors (128 or 256 bytes), with a bounded MyDOS VTOC and
+subdirectories. The 720-sector default retains the DOS-2-compatible VTOC.
 The three boot sectors are empty: launch the shell XEX with this as a data disk.
 """
 import argparse
@@ -13,13 +14,24 @@ SOURCE = ROOT/'examples/shell-disk'
 SECTORS, SECTOR_BYTES = 720, 128
 
 
-def make(path, source=SOURCE, binary_names=(), sector_bytes=128):
+def make(path, source=SOURCE, binary_names=(), sector_bytes=128, sectors=SECTORS):
     if sector_bytes not in (128, 256):
         raise ValueError('Expected 128- or 256-byte sectors')
-    disk = bytearray(16+384+(SECTORS-3)*sector_bytes)
+    if not 368 <= sectors <= 65535:
+        raise ValueError('Expected 368..65535 sectors')
+    bitmap_bytes = 10+(sectors+8)//8
+    logical_pages = (bitmap_bytes+255)//256
+    vtoc_pages = 1 if sectors == 720 else logical_pages*(256//sector_bytes)
+    if vtoc_pages > 357:
+        raise ValueError('MyDOS VTOC overlaps boot sectors')
+    marker = 2 if sectors == 720 else logical_pages+2
+    disk = bytearray(16+384+(sectors-3)*sector_bytes)
     disk[:6] = struct.pack('<HHH', 0x296, (len(disk)-16)//16, sector_bytes)
     payload_bytes = sector_bytes-3
-    free = set(range(4, 720)) - set(range(360, 369))
+    # Retain the historical DOS-2-compatible final-sector reservation.
+    legacy_last = sectors == 720
+    free = set(range(4, sectors if legacy_last else sectors+1))
+    free.difference_update(range(361-vtoc_pages, 369))
     contents = {}
 
     def offset(sector):
@@ -52,22 +64,27 @@ def make(path, source=SOURCE, binary_names=(), sector_bytes=128):
                 payload = child.read_bytes() if relative in binary_names else child.read_text(encoding='ascii').encode('ascii')
                 contents[child.relative_to(source).as_posix()] = payload
                 chain = allocate((len(payload)+payload_bytes-1)//payload_bytes)
-                flags = 0x42
+                flags = 0x42 if sectors <= 1023 else 0x46
                 for index, sector in enumerate(chain):
                     chunk = payload[index*payload_bytes:(index+1)*payload_bytes]
                     following = chain[index+1] if index+1 < len(chain) else 0
                     at = offset(sector)
                     disk[at:at+len(chunk)] = chunk
-                    disk[at+payload_bytes:at+sector_bytes] = bytes([(ordinal << 2) | (following >> 8), following & 255, len(chunk)])
+                    high = (ordinal << 2) | (following >> 8) if flags == 0x42 else following >> 8
+                    disk[at+payload_bytes:at+sector_bytes] = bytes([high, following & 255, len(chunk)])
             entry = bytes([flags])+struct.pack('<HH', len(chain), chain[0] if chain else 0)+name
             at = offset(start+ordinal//8)+16*(ordinal%8)
             disk[at:at+16] = entry
 
     directory(source, 361)
-    vtoc = offset(360)
-    disk[vtoc:vtoc+5] = bytes([2])+struct.pack('<HH', 707, len(free))
+    bitmap = bytearray(vtoc_pages*sector_bytes)
+    bitmap[:5] = bytes([marker])+struct.pack('<HH',
+        sectors-11-vtoc_pages-int(legacy_last), len(free))
     for sector in free:
-        disk[vtoc+10+sector//8] |= 0x80 >> (sector & 7)
+        bitmap[10+sector//8] |= 0x80 >> (sector & 7)
+    for page in range(vtoc_pages):
+        at = offset(360-page)
+        disk[at:at+sector_bytes] = bitmap[page*sector_bytes:(page+1)*sector_bytes]
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(disk)

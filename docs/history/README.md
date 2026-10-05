@@ -85,6 +85,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Filesystems and DOS
 
+- [Larger demo system disk](system-disk-capacity.md): 720 KiB default, 360 KiB
+  option, matching mount descriptors and MyDOS extended VTOC images.
 - [MyDOS and SpartaDOS write implementation](filesystem-write-implementation.md):
   lightweight mounts, file/namespace writes, bounded commit units, inherited
   writer retirement, failure outcomes, native round trips and the OF816 demo.
