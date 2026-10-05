@@ -31,8 +31,9 @@ bank-zero costs for each slice before moving to the next.
 3. Extend the shared [command argument parser](reference/command-arguments.md)
    with bounded multiple-file results, then use exact names in CAT and DELETE.
    Add a small shared `*`/`?` matcher at command level, starting with read-only
-   LIST. Define quoting, unmatched patterns, result capacity and error order in
-   the implementation plan. Before allowing patterns in mutating commands,
+   LIST. The [implementation plan](plans/multiple-file-patterns-implementation-plan.md)
+   defines quoting, unmatched patterns, result capacity and error order. Before
+   allowing patterns in mutating commands,
    account for the [mount-wide enumeration epoch](reference/filesystem-writes.md)
    that invalidates ExNext after a mutation.
 4. Design an Amiga-style `ASSIGN DATA: WORK:DATA` for stable logical paths.
