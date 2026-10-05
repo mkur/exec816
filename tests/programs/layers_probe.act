@@ -1,0 +1,57 @@
+MODULE LAYERSPROBE
+USE EXEC
+USE HEAPCORE
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+
+CARD checks
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa80+(checks & 127))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  LAYERTYPES.Scene POINTER scene
+  LAYERTYPES.Layer POINTER layer
+  LAYERTYPES.Rect bounds
+  LONGCARD token
+  BYTE index
+
+  scene=LAYERTYPES.Scene POINTER($11fff0)
+  Require(SIZEOF(LAYERTYPES.Scene)=LAYERTYPES.SCENE_SIZE)
+  Require(SIZEOF(LAYERTYPES.Damage)=LAYERTYPES.DAMAGE_SIZE)
+  Require(LAYERS.Init(scene,640,240)=LAYERTYPES.OK)
+  Require(LAYERS.BeginPaint(scene,0,@token)=LAYERTYPES.OK)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.BUSY)
+  Require(LAYERS.AdvancePaint(scene,token)=LAYERTYPES.EMPTY)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  layer=LAYERS.Find(scene,0)
+  FOR index=0 TO 7 DO
+    REGIONS.Assign(@bounds,INT(index*16),8,INT(index*16+8),16)
+    Require(LAYERS.Invalidate(scene,0,@bounds)=LAYERTYPES.OK)
+  OD
+
+  Require(layer.damage.count=8)
+  Require(LAYERS.BeginPaint(scene,0,@token)=LAYERTYPES.OK)
+  FOR index=0 TO 7 DO
+    BEGIN
+      LET region=LAYERS.PaintRegion(scene,token)
+      Require(region.count=1 AND region.rects(0).left=INT(index*16))
+      Require(LAYERS.AdvancePaint(scene,token)=
+          (IF index=7 THEN LAYERTYPES.EMPTY ELSE LAYERTYPES.OK FI))
+    END
+  OD
+
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(scene.busy=0 AND layer.dirty=0 AND layer.damage.count=0)
+
+RETURN
+
+ENDMODULE

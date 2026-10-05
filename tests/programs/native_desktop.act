@@ -71,6 +71,7 @@ PROC Presenter()
       Require(LAYERS.BeginPaint(@service.scene,0,@token)=LAYERTYPES.OK)
       held=1
     ELSEIF hold=0 AND held<>0 THEN
+      Require(LAYERS.AdvancePaint(@service.scene,token)=LAYERTYPES.EMPTY)
       Require(LAYERS.Finish(@service.scene,token,1)=LAYERTYPES.OK)
       held=0
     FI

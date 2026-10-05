@@ -40,6 +40,10 @@ PROC UpdateTransactions()
   Require(token<>old)
   Require(LAYERS.Finish(state,old,1)=LAYERTYPES.BAD_TOKEN)
   Require(LAYERS.PaintRegion(state,old)=NULL)
+  IF state.activeKind=LAYERTYPES.UPDATE_PAINT THEN
+    ExhaustPaint(state,token)
+  FI
+
   Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
   Require(layer.dirty=0)
   Require(LAYERS.BeginPaint(state,id,@untouched)=LAYERTYPES.EMPTY)
@@ -51,14 +55,22 @@ PROC UpdateTransactions()
   REGIONS.Assign(@source,0,0,0,0)
   Require(state.copySource.top=1 AND state.copySource.bottom=16)
   Require(state.copyTarget.bottom=15)
+  IF state.activeKind=LAYERTYPES.UPDATE_PAINT THEN
+    ExhaustPaint(state,token)
+  FI
+
   Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
   Require(LAYERS.BeginCopy(state,id,@state.copyTarget,@state.copySource,
       @token)=LAYERTYPES.OK)
   Require(state.copySource.top=0 AND state.copyTarget.top=1)
   Require(LAYERS.PaintRegion(state,token)=NULL)
   Require(LAYERS.Finish(state,token,0)=LAYERTYPES.OK)
-  Require(layer.dirty<>0 AND REGIONS.Equal(@layer.damage,@bounds)<>0)
+  Require(layer.dirty<>0 AND REGIONS.Equal(@layer.damage.rects(0),@bounds)<>0)
   Require(LAYERS.BeginPaint(state,id,@token)=LAYERTYPES.OK)
+  IF state.activeKind=LAYERTYPES.UPDATE_PAINT THEN
+    ExhaustPaint(state,token)
+  FI
+
   Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
 
   ; Invalid geometry and empty copies must not consume a token or change it.
@@ -81,6 +93,10 @@ PROC UpdateTransactions()
   Require(LAYERS.BeginPaint(state,id,@token)=LAYERTYPES.OK)
   region=LAYERS.PaintRegion(state,token)
   Require(region.count=1 AND REGIONS.Equal(@region.rects(0),@part)<>0)
+  IF state.activeKind=LAYERTYPES.UPDATE_PAINT THEN
+    ExhaustPaint(state,token)
+  FI
+
   Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
   Require(state.rebuilds=rebuilds)
   Require(LAYERS.Show(state,id,0)=LAYERTYPES.OK)
@@ -89,6 +105,10 @@ PROC UpdateTransactions()
   Require(untouched=12345 AND layer.dirty<>0)
   Require(LAYERS.Show(state,id,1)=LAYERTYPES.OK)
   Require(LAYERS.BeginPaint(state,id,@token)=LAYERTYPES.OK)
+  IF state.activeKind=LAYERTYPES.UPDATE_PAINT THEN
+    ExhaustPaint(state,token)
+  FI
+
   Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
 
   ; Even an individually visible copy pair takes the conservative fallback
@@ -102,6 +122,10 @@ PROC UpdateTransactions()
   Require(untouched=12345 AND state.busy=0)
   Require(LAYERS.Invalidate(state,id,@bounds)=LAYERTYPES.OK)
   Require(LAYERS.BeginPaint(state,id,@token)=LAYERTYPES.OK)
+  IF state.activeKind=LAYERTYPES.UPDATE_PAINT THEN
+    ExhaustPaint(state,token)
+  FI
+
   Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
   REGIONS.Assign(@source,8,8,10,10)
   REGIONS.Assign(@target,10,10,12,12)
@@ -113,6 +137,10 @@ PROC UpdateTransactions()
   state.nextToken=$ffffffff
   Require(LAYERS.BeginPaint(state,id,@token)=LAYERTYPES.OK)
   Require(token=$ffffffff AND state.nextToken=0)
+  IF state.activeKind=LAYERTYPES.UPDATE_PAINT THEN
+    ExhaustPaint(state,token)
+  FI
+
   Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
   Require(LAYERS.BeginCopy(state,id,@source,@target,@untouched)=LAYERTYPES.EXHAUSTED)
   Require(LAYERS.Invalidate(state,id,@part)=LAYERTYPES.OK)

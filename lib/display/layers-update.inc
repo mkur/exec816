@@ -39,6 +39,28 @@ BYTE FUNC Claim(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE kind
 
 RETURN(LAYERTYPES.OK)
 
+; Stream one damage/visibility intersection at a time into the existing
+; bounded work region. The mutation gate makes the retained damage a snapshot.
+BYTE FUNC NextPaint(LAYERTYPES.Scene POINTER scene
+    LAYERTYPES.Layer POINTER layer)
+  BYTE status
+
+  scene.work.count=0
+  WHILE scene.nextDamage<layer.damage.count DO
+    status=REGIONS.Clip(@layer.visible,
+        @layer.damage.rects(scene.nextDamage),@scene.work)
+    scene.nextDamage==+1
+    IF status<>LAYERTYPES.OK THEN
+      RETURN(status)
+    FI
+
+    IF scene.work.count<>0 THEN
+      RETURN(LAYERTYPES.OK)
+    FI
+  OD
+
+RETURN(LAYERTYPES.EMPTY)
+
 ; Capture only dirty visible pixels. An empty result acquires no transaction.
 PUBLIC BYTE FUNC BeginPaint(LAYERTYPES.Scene POINTER scene LONGCARD id
     LONGCARD POINTER token)
@@ -63,18 +85,15 @@ PUBLIC BYTE FUNC BeginPaint(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.EMPTY)
   FI
 
-  status=REGIONS.Clip(@layer.visible,@layer.damage,@scene.work)
+  scene.nextDamage=0
+  status=NextPaint(scene,layer)
   IF status<>LAYERTYPES.OK THEN
     RETURN(status)
   FI
 
-  IF scene.work.count=0 THEN
-    RETURN(LAYERTYPES.EMPTY)
-  FI
-
 RETURN(Claim(scene,id,LAYERTYPES.UPDATE_PAINT,token))
 
-; The read-only region is stable until matching Finish, including across
+; The read-only region is stable until AdvancePaint or Finish, including across
 ; yields. The owner may submit one bounded portion per worker turn.
 PUBLIC LAYERTYPES.Region POINTER FUNC PaintRegion(LAYERTYPES.Scene POINTER scene
     LONGCARD token)
@@ -84,6 +103,20 @@ PUBLIC LAYERTYPES.Region POINTER FUNC PaintRegion(LAYERTYPES.Scene POINTER scene
   FI
 
 RETURN(@scene.work)
+
+; Acknowledge the current batch and expose the next. EMPTY is required before
+; successful Finish, so a caller cannot silently discard a later damage batch.
+PUBLIC BYTE FUNC AdvancePaint(LAYERTYPES.Scene POINTER scene LONGCARD token)
+
+  IF scene=NULL THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF token=0 OR token<>scene.busy OR scene.activeKind<>LAYERTYPES.UPDATE_PAINT THEN
+    RETURN(LAYERTYPES.BAD_TOKEN)
+  FI
+
+RETURN(NextPaint(scene,Find(scene,scene.activeId)))
 
 ; Conservative screen-copy fast path. Hidden source pixels are never valid
 ; screen-copy sources. The renderer additionally checks pixel alignment,
@@ -163,7 +196,12 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
   layer=Find(scene,scene.activeId)
   IF scene.activeKind=LAYERTYPES.UPDATE_PAINT THEN
     IF completed<>0 THEN
+      IF scene.work.count<>0 OR scene.nextDamage<layer.damage.count THEN
+        RETURN(LAYERTYPES.BUSY)
+      FI
+
       layer.dirty=0
+      layer.damage.count=0
     FI
   ELSEIF completed=0 THEN
     Mark(layer,@layer.bounds)

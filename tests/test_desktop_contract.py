@@ -17,7 +17,7 @@ class DesktopContractTests(unittest.TestCase):
             self.assertEqual(len(constants), len(set(constants)))
         sizes = {name: value['size'] for name, value in generate_desktop.layout().items()}
         self.assertEqual(sizes['Request'], 92)
-        self.assertEqual(sizes['Service'], 11988)
+        self.assertEqual(sizes['Service'], 12280)
         self.assertEqual(generate_desktop.layout()['Request']['fields']['message'], 0)
         constants = generate_desktop.ABI['constants']
         self.assertEqual(constants['EVENTS'] & (constants['EVENTS'] - 1), 0)

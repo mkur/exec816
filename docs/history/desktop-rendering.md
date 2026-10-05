@@ -30,3 +30,25 @@ each of eight public Tasks and idle, including guards, alignment and capacity.
 VRAM delta is zero. Eight damage entries and candidate cache ranges
 `$50000–$5FFFF`, `$60000–$6FFFF` are checked against current reservations and
 diagnostic scratch; this slice does not reserve those ranges.
+
+## DR1: bounded damage and streamed painting
+
+Layers now retains eight damage rectangles per layer/background. Containment
+and exact rectangular unions merge; a ninth unmergeable rectangle collapses all
+entries to a conservative bound. The existing 96-entry visibility/work capacity
+is unchanged. `AdvancePaint` streams the next nonempty damage intersection and
+must return EMPTY before successful Finish. Failure preserves the complete
+original damage list. Every desktop, direct-console and fixture consumer has
+been migrated.
+
+The [DR1 record](../development/desktop-rendering-dr1.json) includes optimized
+geometry, independent pixel-set coverage of eight batches exceeding 96 total
+fragments, 15 desktop and ten widget scenes. Small raw/optimized probes cover
+far record access, eight advances, early Finish rejection and call results.
+The host suite passes 352 tests with four skips. These are development checks.
+
+A Layer grows from 792 to 850 bytes; a Scene and its enclosing desktop Service
+each grow by 292 bytes in upper RAM, including alignment and spare damage slots.
+No mutable Layers globals or new allocations are introduced. Reserved bank-zero
+delta is zero for fixed, root/kernel, every public Task and idle; guards,
+alignment and unused stack/DP capacity are unchanged. VRAM delta is zero.

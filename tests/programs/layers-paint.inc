@@ -63,30 +63,37 @@ PROC PaintScene()
       status=LAYERS.BeginPaint(scene,layer.id,@token)
       Require(status=LAYERTYPES.OK OR status=LAYERTYPES.EMPTY)
       IF status=LAYERTYPES.OK THEN
-        region=LAYERS.PaintRegion(scene,token)
-        Require(region<>NULL AND region.count<>0)
-        IF region.count>maxPaintRects THEN
-          maxPaintRects=region.count
-        FI
-        pixels=model+SIZE(CARD(slot)*768)
-        index=0
-        WHILE index<region.count DO
-          rect=@region.rects(index)
-          width=CARD(rect.right-rect.left)
-          FOR y=CARD(rect.top) TO CARD(rect.bottom)-1 DO
-            target=canvas+SIZE(y*32+CARD(rect.left))
-            IF slot=LAYERTYPES.BACKGROUND_SLOT THEN
-              A816MEMORY.Fill(target,0,SIZE(width))
-            ELSE
-              source=pixels+SIZE((y-CARD(layer.bounds.top))*32
-                  +CARD(rect.left-layer.bounds.left))
-              A816MEMORY.Move(target,source,SIZE(width))
-            FI
-          OD
+        DO
+          region=LAYERS.PaintRegion(scene,token)
+          Require(region<>NULL AND region.count<>0)
+          IF region.count>maxPaintRects THEN
+            maxPaintRects=region.count
+          FI
+          pixels=model+SIZE(CARD(slot)*768)
+          index=0
+          WHILE index<region.count DO
+            rect=@region.rects(index)
+            width=CARD(rect.right-rect.left)
+            FOR y=CARD(rect.top) TO CARD(rect.bottom)-1 DO
+              target=canvas+SIZE(y*32+CARD(rect.left))
+              IF slot=LAYERTYPES.BACKGROUND_SLOT THEN
+                A816MEMORY.Fill(target,0,SIZE(width))
+              ELSE
+                source=pixels+SIZE((y-CARD(layer.bounds.top))*32
+                    +CARD(rect.left-layer.bounds.left))
+                A816MEMORY.Move(target,source,SIZE(width))
+              FI
+            OD
 
-          index==+1
+            index==+1
+          OD
+          status=LAYERS.AdvancePaint(scene,token)
+          IF status<>LAYERTYPES.OK THEN
+            EXIT
+          FI
         OD
 
+        Require(status=LAYERTYPES.EMPTY)
         Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
         paints==+1
       FI

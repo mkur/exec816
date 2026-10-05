@@ -35,20 +35,31 @@ BYTE FUNC DesktopDraw(LAYERTYPES.Rect POINTER bounds BYTE text
 
   LET region=LAYERS.PaintRegion(@service.scene,token)
   okay=1
-  index=0
-  WHILE index<region.count AND okay<>0 DO
-    REGIONS.Intersect(bounds,@region.rects(index),@clip)
-    IF REGIONS.Empty(@clip)=0 THEN
-      IF text<>0 THEN
-        okay=ClippedText(CARD(bounds.left),CARD(bounds.top),source,count,
-            foreground,background,@clip)
-      ELSE
-        okay=RawFill(CARD(clip.left),CARD(clip.top),CARD(clip.right-clip.left),
-            CARD(clip.bottom-clip.top),background)
+  DO
+    index=0
+    WHILE index<region.count AND okay<>0 DO
+      REGIONS.Intersect(bounds,@region.rects(index),@clip)
+      IF REGIONS.Empty(@clip)=0 THEN
+        IF text<>0 THEN
+          okay=ClippedText(CARD(bounds.left),CARD(bounds.top),source,count,
+              foreground,background,@clip)
+        ELSE
+          okay=RawFill(CARD(clip.left),CARD(clip.top),CARD(clip.right-clip.left),
+              CARD(clip.bottom-clip.top),background)
+        FI
       FI
+
+      index==+1
+    OD
+    IF okay=0 THEN
+      EXIT
     FI
 
-    index==+1
+    status=LAYERS.AdvancePaint(@service.scene,token)
+    IF status<>LAYERTYPES.OK THEN
+      okay=(status=LAYERTYPES.EMPTY)
+      EXIT
+    FI
   OD
 
   status=LAYERS.Finish(@service.scene,token,okay<>0 AND wasDirty=0)

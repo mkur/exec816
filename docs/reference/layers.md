@@ -6,7 +6,7 @@
 `LAYERS` is an ordinary Action! library for up to four opaque rectangular layers
 and a permanent background. It maintains stacking, cached visibility, damage and
 one drawing transaction per scene. It does not draw pixels, acquire the display,
-route input or create Tasks. The current console has not yet been migrated to it.
+route input or create Tasks. The desktop and its bitmap console consume these transactions.
 
 The generated records and status constants are in `LAYERTYPES`, from
 [layers.json](../../abi/layers.json). Implementation lives in
@@ -47,7 +47,7 @@ IDs and update tokens never repeat within that lifetime.
 | `Delete(scene,id)` | Retire the layer and damage the affected area. Reusing its slot assigns a different ID. |
 | `Find(scene,id)` | Borrow a read-only layer record, or NULL for a stale ID. Zero selects the permanent background. |
 | `Hit(scene,x,y)` | Return the frontmost shown layer's ID; zero for background or outside the screen. Uses existing geometry without rebuilding visibility. |
-| `Invalidate(scene,id,rect)` | Accumulate damage clipped to that layer's bounds. May overestimate damage by merging it into a bounding rectangle. Does not rebuild visibility. |
+| `Invalidate(scene,id,rect)` | Accumulate damage clipped to that layer's bounds. Retains eight rectangles, merging containment and exact rectangular unions. Overflow collapses all damage to one bound. Does not rebuild visibility. |
 
 All status-returning calls use `LAYERTYPES.OK` on success. Geometry errors return
 BAD_ARGUMENT and unknown/retired identities return BAD_ID. Show, Move, Order and
@@ -68,14 +68,22 @@ harmless no-ops. Find, Hit and PaintRegion may inspect stable state during it.
 `BeginPaint(scene,id,tokenOut)` intersects current damage with cached visibility.
 It returns EMPTY without acquiring anything when there is no visible work. OK
 publishes a fresh nonzero token and holds the scene stable. Obtain the read-only
-rectangle list through `PaintRegion(scene,token)`, render every rectangle, and
-call `Finish(scene,token,1)` after drawing completes. A mismatched or retired token
+rectangle list through `PaintRegion(scene,token)` and render every rectangle.
+Call `AdvancePaint(scene,token)` after each batch. OK exposes another nonempty
+batch; EMPTY means traversal is exhausted. Only then call
+`Finish(scene,token,1)` after drawing completes. An early successful Finish
+returns BUSY and leaves the token and damage intact. PaintRegion stays stable
+until AdvancePaint or Finish; an exhausted region has zero entries. A mismatched or retired token
 returns NULL from PaintRegion and BAD_TOKEN from Finish.
 
 The renderer may process a bounded part of the list per turn and yield or wait
 between parts. It must retain the scene and transaction throughout. Input
 capture and unrelated computation can continue; dependent model edits, layout
-changes and another drawing operation wait. Finish with zero after a failed
+changes and another drawing operation wait. The gate freezes the retained
+eight-entry damage list for the whole transaction. Each damage rectangle is
+clipped independently into the existing 96-entry work region; the potentially
+larger product is never stored in that buffer. Partial overlaps may be painted
+more than once. Empty clipped batches are skipped. Finish with zero after a failed
 paint preserves damage for retry. Invalid completion flags leave the transaction
 active. Successful paint acknowledges the visible work; any covered pixels are
 reconstructed from retained content when later exposure marks them dirty again.
@@ -133,8 +141,9 @@ capacity. Generic repeated subtraction remains subject to FULL.
 | --- | ---: |
 | Rect | 8 |
 | Region with 96 rectangle slots | 770 |
-| Layer including visibility and damage | 792 |
-| Scene with four layers, background, scratch region and transaction state | 4,782 |
+| Eight-entry Damage record | 66 |
+| Layer including visibility and damage | 850 |
+| Scene with four layers, background, scratch region and transaction state | 5,074 |
 
 All large arrays belong in upper RAM. Local rectangle temporaries use the
 caller's existing native stack. The library adds zero reserved bank-zero bytes:
@@ -145,5 +154,4 @@ VRAM. Generated layouts require rebuilt callers when changed.
 Unsupported: overlapping access to one scene by different Tasks, partially
 offscreen layers, resizing, transparency, nested layers, offscreen backing
 bitmaps, font clipping, window controls, input policy, dynamic library loading,
-C bindings and direct hardware submission. The desktop presenter will consume
-these interfaces in a separate milestone.
+C bindings and direct hardware submission. The desktop presenter supplies drawing, input and window policy separately.

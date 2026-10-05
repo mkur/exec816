@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "constants": {
     "MAX_LAYERS": 4,
     "MAX_RECTS": 96,
@@ -15,7 +15,8 @@
     "BACKGROUND_SLOT": 4,
     "SLOT_COUNT": 5,
     "UPDATE_PAINT": 1,
-    "UPDATE_COPY": 2
+    "UPDATE_COPY": 2,
+    "MAX_DAMAGE": 8
   },
   "records": {
     "Rect": [
@@ -47,6 +48,17 @@
         "count": "MAX_RECTS"
       }
     ],
+    "Damage": [
+      {
+        "name": "count",
+        "type": "BYTE"
+      },
+      {
+        "name": "rects",
+        "type": "Rect",
+        "count": "MAX_DAMAGE"
+      }
+    ],
     "Layer": [
       {
         "name": "id",
@@ -62,7 +74,7 @@
       },
       {
         "name": "damage",
-        "type": "Rect"
+        "type": "Damage"
       },
       {
         "name": "dirty",
@@ -127,6 +139,10 @@
       {
         "name": "copyTarget",
         "type": "Rect"
+      },
+      {
+        "name": "nextDamage",
+        "type": "BYTE"
       }
     ]
   }

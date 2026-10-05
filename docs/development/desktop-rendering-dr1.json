@@ -1,0 +1,341 @@
+{
+  "slice": "DR1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "validation": {
+    "layers": {
+      "path": "build/desktop-rendering/dr1/layers-final/results.json",
+      "sha256": "72b94ac748bbccaca6d0e73a6c0bfd8255f63e5f5b96b98d25d04a0866bb2909",
+      "checks": 53312,
+      "scenes": 0,
+      "damage_batches": {
+        "batches": 8,
+        "fragments": 104,
+        "independent_pixel_union": true
+      },
+      "bank_crossing": {
+        "address": 1179632,
+        "bytes": 5074,
+        "region_counts": [
+          1,
+          1,
+          1,
+          1,
+          14
+        ],
+        "pixels_checked": 153600
+      },
+      "library": {
+        "code_bytes": 20765,
+        "max_local_stack_peak": 58,
+        "mutable_global_bytes": 0,
+        "scene_bytes": 5074
+      }
+    },
+    "probe_raw": {
+      "path": "build/desktop-rendering/dr1/probe-raw/results.json",
+      "sha256": "49662f6c2b2125cf99cc75db20aa009abdcdb11c24745dcc81773c5b8d702ed1",
+      "checks": 35,
+      "scenes": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 194,
+          "remaining_above_floor": 1086
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 146,
+          "remaining_above_floor": 1134
+        }
+      }
+    },
+    "probe_opt": {
+      "path": "build/desktop-rendering/dr1/probe-opt/results.json",
+      "sha256": "0c179f0a88669c8b0e66c7cf6933bc6d2d36580fab025260be88086c423eb422",
+      "checks": 35,
+      "scenes": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 186,
+          "remaining_above_floor": 1094
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 142,
+          "remaining_above_floor": 1138
+        }
+      }
+    },
+    "desktop": {
+      "path": "build/desktop-rendering/dr1/presentation/presentation-results.json",
+      "sha256": "cde490f75f73d2fa41212a094abe1b739b5cb76e6556dcdd4cd5b3f00706e2aa",
+      "checks": 62,
+      "scenes": 15,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 356,
+          "remaining_above_floor": 924
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 688,
+          "remaining_above_floor": 1616
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 46,
+          "remaining_above_floor": 210
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    },
+    "widgets": {
+      "path": "build/desktop-rendering/dr1/widgets/presentation-results.json",
+      "sha256": "a290084a562c24a9cc3acbff99a33cc11522cfbaffb61118106dae6008414f49",
+      "checks": 49,
+      "scenes": 10,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 350,
+          "remaining_above_floor": 930
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 712,
+          "remaining_above_floor": 1592
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 44,
+          "remaining_above_floor": 212
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      }
+    }
+  },
+  "host": {
+    "tests": 352,
+    "skips": 4
+  },
+  "memory": {
+    "bank_zero": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "vram": 0,
+    "upper_ram": {
+      "scene_before": 4782,
+      "scene_after": 5074,
+      "scene_delta": 292,
+      "layer_before": 792,
+      "layer_after": 850,
+      "service_before": 11988,
+      "service_after": 12280
+    }
+  },
+  "contract": "Eight retained damage rectangles, exact-union merging, all-entry overflow bound, streamed visibility batches under one token; successful Finish requires explicit EMPTY advance."
+}

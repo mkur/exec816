@@ -224,22 +224,26 @@ RETURN(IF commandIndex=window.content.count THEN 1 ELSE 2 FI)
 
 BYTE FUNC Damaged(LAYERTYPES.Layer POINTER layer)
   CARD index
+  BYTE damage
 
   IF layer.dirty=0 THEN
     RETURN(0)
   FI
 
-  index=0
-  WHILE index<layer.visible.count DO
-    BEGIN
-      LET rect=@layer.visible.rects(index)
-      IF rect.left<layer.damage.right AND rect.right>layer.damage.left
-          AND rect.top<layer.damage.bottom AND rect.bottom>layer.damage.top THEN
-        RETURN(1)
-      FI
-    END
+  FOR damage=0 TO layer.damage.count-1 DO
+    index=0
+    WHILE index<layer.visible.count DO
+      BEGIN
+        LET rect=@layer.visible.rects(index)
+        LET changed=@layer.damage.rects(damage)
+        IF rect.left<changed.right AND rect.right>changed.left
+            AND rect.top<changed.bottom AND rect.bottom>changed.top THEN
+          RETURN(1)
+        FI
+      END
 
-    index==+1
+      index==+1
+    OD
   OD
 
 RETURN(0)
@@ -336,6 +340,17 @@ PUBLIC PROC Pump()
     IF regionIndex<region.count THEN
       RETURN
     FI
+  FI
+
+  IF done<>0 THEN
+    status=LAYERS.AdvancePaint(@service.scene,paintToken)
+    IF status=LAYERTYPES.OK THEN
+      regionIndex=0
+      nextY=region.rects(0).top
+      RETURN
+    FI
+
+    done=(status=LAYERTYPES.EMPTY)
   FI
 
   status=LAYERS.Finish(@service.scene,paintToken,done<>0)
