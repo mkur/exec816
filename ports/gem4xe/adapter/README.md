@@ -74,12 +74,15 @@ the binding and signal only after settling DMA. See the
 [display contract](../../../docs/reference/display.md).
 
 Fully visible nonzero-ink glyphs use one nibble-stencil command. Hardware-zero
-ink retains the inverse-mask AND path, and clipped glyphs retain the staged
-pixel path. Empty glyphs skip ink after the opaque background fill. Private
+ink retains the inverse-mask AND path. Clipped replace/transparent glyphs use
+the same font atlas through bounded mask commands, with partial-nibble masks
+preserving pixels outside the clip. XOR/erase retain the staged pixel path.
+Empty glyphs skip ink after the opaque background fill. Private
 preinitialized records avoid repeated generic rectangle setup, while submission
 still validates the whole list. The maintained fourth extraction patch supplies
 these changes. The 256-byte ink cache and 21-byte template fit inside the
-existing C bank reservations; B2 adds no bank-zero or VRAM reservation.
+existing C bank reservations; B2 adds no bank-zero or VRAM reservation. The sixth
+extraction patch adds clipped glyphs without new storage or reservations.
 
 Even-X `GemDrawingText` runs use a driver-generated list instead of repeating
 the generic device and list-validation path for every glyph. The driver checks

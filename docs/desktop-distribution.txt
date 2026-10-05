@@ -81,8 +81,8 @@ even if the command later fails. Keep SYS: on D1-D7; D8 is reserved for WORK:.
 
 This is a development preview, not hardware or whole-system qualification.
 Widget feedback, pointer, drag outline and move repair timing
-targets remain open. First focus and clipped repairs can take several seconds. Redrawing exposed windows after a drag can still take
-over a second during disk activity. Captured movement is correct within the
+targets remain open. Clipped text now uses the VBXE blitter, but full repairs
+and feedback during disk activity can still be visibly slow. Captured movement is correct within the
 tested ST envelope; this desktop does not yet meet every interaction target.
 No resizing, menus, file browser, right button or general AES compatibility. The cooked editor
 retains its 36-character editing tail, even on the wider bitmap screen.

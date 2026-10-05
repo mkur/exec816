@@ -19,6 +19,17 @@ def expected(stage):
     import vdiref as v
     device=v.VDI();device.call(v.V_OPNWK,(),v.WORK_IN)
     device.dev.fill_rect(0,0,639,239,3)
+    if stage==7:
+        for i in range(64):
+            x=16+(i%8)*32+(i&1);y=8+(i//8)*16
+            device.wrt_mode=(i>>1)&1;device.text_color=0 if i&4 else 2
+            device.clip=1;device.xmn=x+1;device.xmx=x+1+(i>>3)
+            device.ymn=y+1;device.ymx=y+5
+            device._glyph(ord('A' if i%7 else ' '),x,y)
+        device.clip=0;device.wrt_mode=1;device.text_color=0
+        for x,y in ((-3,150),(637,150),(300,-3),(300,237)):
+            device._glyph(ord('A'),x,y)
+        return bytes(device.dev.s.mem[:76800])
     tree=[a.Obj(-1,1,6,a.G_BOX,0,0,0x11178,17,19,320,160)]
     for i in range(1,7):
         tree.append(a.Obj(i+1 if i<6 else 0,-1,-1,a.G_BUTTON,a.SELECTABLE,0,0,9+(i-1)*50,23,40,24))
@@ -54,7 +65,7 @@ def run(out,mode,replay=False):
             require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
             report['machine']=verify_machine(b,ROM,PIN)
             def before(b):
-                for stage in range(1,7):
+                for stage in range(1,8):
                     marker=p['labels']['native_nmi'];condition='dw($%x)=%d'%(f['symbols']['WidgetPixelStage'],stage)
                     b.bp_clear_all();b.bp_set(marker,condition=condition)
                     run_to(b,marker,condition=condition,frame_limit=6000,timeout=120)

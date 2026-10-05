@@ -41,7 +41,7 @@ def observers(p):
         task_dps=[x['dp'] for x in p['build']['memory']['task_pools']])
     marks=flat_markers(definition)
     marks.update(capture=p['labels']['pointer_notify'],application=spans['application']['entry'])
-    for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit'):
+    for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit','vram_win'):
         if name in sy:marks[name]=sy[name]
     return spans,marks,definition
 
@@ -253,7 +253,7 @@ def analyze(report, out, p, spans, marks, definition):
         scope=profile['scope'],maximum_quantum_scope='Paint call charged CPU is a conservative upper bound on uninterrupted rendering; IRQ and other-Task time excluded.')
     for comparison in report['comparison']:
         lo,hi=align(comparison['begin']),align(comparison['end'])
-        comparison['work']={name:bisect_right(times(marks[name]),hi)-bisect_left(times(marks[name]),lo) for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit') if name in marks}
+        comparison['work']={name:bisect_right(times(marks[name]),hi)-bisect_left(times(marks[name]),lo) for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit','vram_win') if name in marks}
         spans_in=[s for s in profile['routine_spans'] if s['kind']=='paint' and lo<=s['start']<s['end']<=hi]
         comparison['paint_cpu_ms']=sum(s['charged_cpu_ms'] for s in spans_in)
         comparison['paint_quanta']=len(spans_in)
@@ -269,7 +269,7 @@ def analyze(report, out, p, spans, marks, definition):
             paint_cpu_ms=sum(s['charged_cpu_ms'] for s in paints),
             max_quantum_cpu_ms=max(s['charged_cpu_ms'] for s in paints),
             primitive_entries={name:bisect_right(times(marks[name]),hi)-bisect_left(times(marks[name]),lo)
-                for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit') if name in marks})
+                for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit','vram_win') if name in marks})
     # Count logical invalidated pixels independently from form geometry. These
     # are requested union rectangles, not physical writes after Layers clipping.
     focus,radio=2,4

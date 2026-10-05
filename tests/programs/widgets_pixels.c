@@ -6,6 +6,8 @@ static struct WidgetTree tree;
 static struct WidgetContext context;
 static struct WidgetPacket packet;
 static void check(uint16_t good) { if (!good) ++WidgetPixelFailures; }
+extern void ClippedGlyphsProbe(void);
+extern uint16_t GlyphClipTop;
 static void paint(uint16_t left,uint16_t top,uint16_t right,uint16_t bottom,uint16_t focus)
 {
     uint16_t y;
@@ -38,7 +40,7 @@ void WidgetPixelProbe(void)
     tree.objects[5].kind=G_STRING;tree.objects[5].flags=0;tree.objects[5].spec=4;
     tree.objects[6].kind=G_IBOX;tree.objects[6].flags=LASTOB;tree.objects[6].spec=0x21170UL;
     check(WidgetValidate(&context,&tree,sizeof(tree),320,160)==WIDGET_OK);
-    for (stage=1;stage<=6;stage++) {
+    for (stage=1;stage<=7;stage++) {
         if (stage!=3 && stage!=6) check(GemDrawingFill(0,0,640,240,3)==DISPLAY_OK);
         if (stage==3) check(GemDrawingPointer(276,50,1)==DISPLAY_OK);
         if (stage==5) {
@@ -52,7 +54,13 @@ void WidgetPixelProbe(void)
             tree.objects[8].flags=LASTOB;tree.objects[8].x=65;tree.objects[8].y=26;
             check(WidgetValidate(&context,&tree,sizeof(tree),608,160)==WIDGET_OK);
         }
-        if (stage==2) paint(32,45,295,57,0);
+        if (stage==7) {
+            for (i=0;i<240;i+=16) {
+                GlyphClipTop=i;
+                check(GemDrawingBatch(0,i,640,i+16,ClippedGlyphsProbe)==DISPLAY_OK);
+            }
+        }
+        else if (stage==2) paint(32,45,295,57,0);
         else paint(17,19,stage>=5 ? 625 : 337,179,stage==4);
         WidgetPixelStage=stage;
         while (WidgetPixelGate<stage) ExecYield();

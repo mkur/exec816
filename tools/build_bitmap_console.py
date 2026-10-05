@@ -28,7 +28,8 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
             sources += [aes/'widgets-state.c',aes/'widgets-input.c',aes/'widgets-entry.c']
             extra_roots=['WidgetEntry']
         if widget_probe:
-            sources.append(ROOT/'tests/programs/widgets_pixels.c')
+            sources += [ROOT/'tests/programs/widgets_pixels.c',
+                        ROOT/'tests/programs/glyphs_clipped.c']
             extra_roots=['WidgetPixelProbe']
             original=ROOT/'lib/console/console-bitmap.c'
             instrumented=out/'console-widget-probe.c'

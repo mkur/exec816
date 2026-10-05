@@ -180,3 +180,50 @@ PAL 65C816 at 8×, 4 MiB, VBXE FX 1.26 at `$D600`, ST mouse port 1 and 2× trave
 Physical SDFS uses Generic 57.6k, with SIO patch/burst disabled and normal
 4 kHz/fine-SIO timer policy unchanged. Exact tool/ROM/emulator hashes and
 walkthrough results are in the AW6 record.
+
+## Clipped-text and startup follow-up
+
+The [follow-up evidence](../development/aes-widgets-clipping.json) records the
+2026-10-05 response to slow initial Control Panel drawing and a reported mount
+timeout. The sixth VDI extraction patch draws clipped replace/transparent
+glyphs directly from the existing even/odd font atlases. Up to three masked
+blits preserve partial edge nibbles. Hardware-zero ink uses inverse-mask AND;
+XOR/erase keep their previous raster path. No donor checkout is changed.
+
+In the same matched full-panel redraw scenario, elapsed time falls from
+10,359.75 ms to 1,084.22 ms and Paint CPU time from 7,857.69 ms to 481.86 ms.
+The final scene hashes match. The small label-patch control stays approximately
+unchanged (495.12 ms before, 500.93 ms after). First-focus press feedback in
+this fixture falls from 3,683.07 ms to 312.92 ms. These are focused development
+measurements, not a repeat of the AW5 load matrix or a claim that the interaction
+targets now pass.
+
+Seven emitted pixel scenes include 64 clipped glyph cases plus four screen-edge
+cases, checked against the upstream software oracle. They cover both X parities,
+single-nibble clips, partial rows, hardware-zero/nonzero ink, blank glyphs and
+replace/transparent modes. The panel fixture also checks controls, independent
+contexts, final pixels, stack guards and ownership restoration. The demo links
+the same tested C image. Fixed, per-public-Task and idle bank-zero reservation
+deltas are all zero, including guards, alignment and unused capacity; upper-RAM
+and VRAM reservations are unchanged.
+
+The disk failure is independent of panel painting: mounting precedes application
+startup. Filesystem initialization mounts the entire configured set before
+publishing it. With the correct SYS disk in D1 but WORK absent from D8, the D8
+read times out and neither mount becomes available. The saved GUI profile placed
+WORK in D2. The same GUI executable and copied profile succeed with WORK in D8;
+no emulator change is needed. Startup now reports a filesystem-wide failure,
+lists the other required drives and explains that a SIO timeout requires a cold
+boot. The missing-WORK regression retains a usable console, checks that attaching
+the disk does not clear the offline latch, and exits through the existing
+reset-required path.
+
+The initial GUI experiment was invalid: the isolated test profile omitted the
+GUI's disk-retention setting, so Boot Image ejected its disks. That observation
+does not establish an emulator regression. The shared harness now explicitly
+retains disks across GUI boot, and the recorded valid controls use that policy.
+
+The refreshed archive is `build/clipped-glyphs/preview/exec816-demo.zip`. Its
+desktop boot, disks, guide, ROM and notices are checked from extracted ZIP bytes.
+The root keeps the unchanged AW6 standard shell/prime package and five-second
+OF816 autoboot. The follow-up record pins the archive and test results.
