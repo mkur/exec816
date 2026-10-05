@@ -40,6 +40,11 @@ PUBLIC BYTE FUNC StopAdmission()
   FI
 
   EXEC.Forbid()
+  IF service.count<>0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
   IF service.live<>0 THEN
     service.live=2
     EXEC.Signal(service.owner,service.mask)

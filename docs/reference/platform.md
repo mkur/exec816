@@ -92,9 +92,11 @@ unused; packaging rejects code/metadata overlap, arena overflow and resident
 image payload in bank zero.
 
 For a linked foreign image, native code starts above the foreign image's full
-banks. The current bitmap/desktop C image occupies fixed banks `$0C/$0D`, so
-native code begins at `$0E0000` and can grow contiguously without crossing those
-bindings. The existing native data arena and all stack/DP reservations stay in
+banks. The bitmap/desktop C image uses code bank `$0C`, data bank `$0D`, and
+an optional second code bank `$0E` for composed AES applications. Native code
+begins at `$0E0000` or `$0F0000`, above the actual linked C payload. Runtime
+renderer bindings check generated executable extents, including the second bank
+only when populated. The existing native data arena and all stack/DP reservations stay in
 place. The effective origin is recorded in `memory.json` and `layout.json`;
 normal extent and bank-ownership checks still apply to the combined image.
 

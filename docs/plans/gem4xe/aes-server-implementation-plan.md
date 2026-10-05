@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Design note](aes-server-design.md) ·
 [Desktop contract](../../reference/desktop.md) · [Roadmap](../../roadmap.md)
 
-Status: in progress, 2026-10-06. AS0a/AS0b have passed development checks; AS0c–AS4
+Status: in progress, 2026-10-06. AS0a–AS0c have passed development checks; AS1–AS4
 remain pending. Implementation starts from Exec816
 `ab6eb2dec33412fd383b4970cbd23c05e9011e20`, using the
 GEM4XE source revision and provenance recorded in the design and
@@ -17,7 +17,8 @@ presenter, and matched baseline observations. The
 [binding inventory](../../../ports/gem4xe/aes-binding-inputs.json) pins donor
 signatures and parameter counts. [AS0b](../../development/aes-server-as0b.json)
 adds the optional endpoint in the existing presenter, shared four-request
-admission, rollback and idle/wait integration. GEM calls remain pending in AS0c.
+admission, rollback and idle/wait integration. [AS0c](../../development/aes-server-as0c.json) adds real C init/exit, retained
+registration, capacity/reuse checks and a checked second upper C code bank.
 Fixed and per-Task bank-zero reservation deltas are zero. Baseline widget latency
 targets remain open; an unchanged heavy-scroll pointer observation also timed
 out, while the dedicated widget scroll/disk cohorts passed. These observations
@@ -61,8 +62,8 @@ remains a retained-widget application; it is not an AES compatibility oracle.
 | --- | --- | --- |
 | AS0a — passed | Generated protocol and emitted C/Action! layout/context probes; matched presenter baseline | Existing desktop and C bridges |
 | AS0b — passed | Presenter service admission, shared intake budget, retained discovery handle and rollback | AS0a |
-| AS0c | Real C `appl_init`/`appl_exit`, private binding state, re-registration and source-level call profile | AS0b |
-| AS1 | Two C clients exchange messages and block independently in message waits | AS0c |
+| AS0c — passed | Real C `appl_init`/`appl_exit`, private binding state, re-registration and source-level call profile | AS0b |
+| AS1 | Two C clients exchange messages and block independently in message waits | AS0c — passed |
 | AS2a | One real timer open, shared alarm lifecycle and presenter wake integration | AS1, implemented timer.device |
 | AS2b | GEM timer and combined-event semantics, including failure and race cases | AS2a |
 | AS3a | Nested owner-aware lock arbitration and pending acquisitions | AS2b |

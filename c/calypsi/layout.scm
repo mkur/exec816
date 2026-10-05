@@ -6,6 +6,8 @@
    (memory Data (address (#xd0000 . #xdffff))
             (placement-group initialized (section huge chuge))
             (placement-group zeroed (section zhuge)))
+   (memory ExtraCode (address (#xe0000 . #xeffff))
+            (section farcode switch))
    (memory DirectPage (address (#x0 . #x7f)) (section registers))
    (memory HostInfo (address (#x100 . #x10f)) (section execinfo))
    (base-address _DirectPageStart DirectPage 0)

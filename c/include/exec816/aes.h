@@ -12,6 +12,8 @@ struct ExecAESContext {
     LONG addrin[3], addrout[1];
     UWORD diagnostic;
     UBYTE busy;
+    ULONG identity, sequence;
+    WORD gemId;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);

@@ -75,6 +75,30 @@ class CalypsiImageTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'Duplicate'):
             self.parse(elf_image(), ('Receiver', 'Receiver'))
 
+    def test_extra_code_bank_and_actual_extents(self):
+        blob = elf_image()
+        struct.pack_into('<H', blob, 44, 6)
+        struct.pack_into('<IIIIIIII', blob, 52+5*32,
+                         1, 258, 0xe0000, 0xe0000, 2, 65536, 5, 1)
+        blob[258:260] = b'\x6b\x6b'
+        struct.pack_into('<I', blob, 512+2*16+4, 0xe0001)
+        image = self.parse(blob)
+        self.assertEqual(image['task_entries'], [0xe0001])
+        struct.pack_into('<I', blob, 512+2*16+4, 0xe0002)
+        with self.assertRaisesRegex(RuntimeError, 'not a linked function'):
+            self.parse(blob)
+
+    def test_rejects_code_bank_write_permission_and_overlap(self):
+        blob = elf_image()
+        struct.pack_into('<I', blob, 52+2*32+24, 7)
+        with self.assertRaisesRegex(RuntimeError, 'upper-bank layout'):
+            self.parse(blob)
+        blob = elf_image()
+        struct.pack_into('<H', blob, 44, 6)
+        blob[52+5*32:52+6*32] = blob[52+2*32:52+3*32]
+        with self.assertRaisesRegex(RuntimeError, 'Overlapping C storage'):
+            self.parse(blob)
+
     def test_rejects_truncated_and_unresolved_images(self):
         for size in (0, 52, 887):
             with self.subTest(size=size), self.assertRaises(RuntimeError):

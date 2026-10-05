@@ -80,7 +80,8 @@ def read_image(path, task_entries=()):
                     'Invalid host-only C metadata')
             info = struct.unpack('<IIII', payload)
         else:
-            require((address, reserved, permissions) == (0xc0000, 65536, 5) or
+            require((address in (0xc0000, 0xe0000) and reserved == 65536 and
+                     (permissions == 5 or (permissions == 4 and not payload))) or
                     (0xd0000 <= address <= address+reserved <= 0xe0000 and permissions in (4, 6)),
                     'C sections must fit the standalone upper-bank layout')
             if payload:
@@ -90,6 +91,11 @@ def read_image(path, task_entries=()):
     _, bss, bss_size, workspace = info
     require(bss_size == 0 or 0xd0000 <= bss < bss+bss_size <= 0xe0000, 'C BSS outside data bank')
     zero_fill = [dict(address=bss, size=bss_size, writable=True)] if bss_size else []
+    extents = sorted((s['address'], s['address']+len(s['bytes'])) for s in segments)
+    extents += [(s['address'], s['address']+s['size']) for s in zero_fill]
+    extents.sort()
+    require(all(a[1] <= b[0] for a, b in zip(extents, extents[1:])),
+            'Overlapping C storage')
     for name in ('main', *task_entries):
         require(name in functions and any(s['executable'] and s['address'] <= symbols[name] < s['address']+len(s['bytes']) for s in segments),
                 'C Task entry is not a linked function: ' + name)

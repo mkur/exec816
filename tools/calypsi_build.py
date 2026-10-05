@@ -59,7 +59,7 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
     foreign = read_image(elf, task_entries)
     foreign['provenance']['platform_internal_inputs'] = {
         'platform/altirraos/vbxe-internal.h': sha256(ROOT/'platform/altirraos/vbxe-internal.h')}
-    foreign['provenance'].update(tools=tools, runtime=dict(path=str(runtime), sha256=sha256(runtime)),
+    foreign['provenance'].update(tools=tools, linker_layout_sha256=sha256(ROOT/'c/calypsi/layout.scm'), runtime=dict(path=str(runtime), sha256=sha256(runtime)),
                                  compiler_flags=flags, source_options=definitions or {},
                                  source_optimization=source_optimization or {}, checked_layout=checked)
     if ROOT/'platform/altirraos/vbxe-map.s' in assembly:

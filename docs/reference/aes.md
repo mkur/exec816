@@ -1,0 +1,44 @@
+# AES application service
+
+[Reference](README.md)
+
+The optional AES endpoint runs in the existing desktop presenter. It uses
+ordinary Exec messages; it adds no Task or kernel gateway. The native desktop
+and retained Control Panel remain independent clients of their existing service.
+
+The current source profile in [gem.h](../../c/include/gem.h) implements
+`appl_init`, `appl_exit` and the corresponding `aes_call(AESPB *)` operations.
+Other opcodes return zero with `ExecAESDiagnostic() == AES_UNSUPPORTED`.
+This is a rebuilt Calypsi source interface, not a GEM binary ABI or a complete
+AES implementation. Window, resource, form and VDI workstation calls are pending.
+
+Startup retains the endpoint returned by `AESBOOT.Port()` until every C Task
+has detached. Each application wrapper calls `ExecAESAttach(endpoint)` before
+its GEM entry and `ExecAESDetach()` before ordinary Task removal. Detach calls
+`appl_exit` if needed, collects its reply, then deletes the private port/context.
+Failure to detach must prevent Task/image retirement. There is no forced client
+recovery or discovery by name in this profile.
+
+Each attached Task owns private parameter arrays, a request and reply port;
+there is no process-global GEM parameter block. Four applications can register
+at once. Successful init returns a positive signed 16-bit ID; repeated init on
+the same live binding returns that ID. Exit returns one. Failed init returns
+minus one. GEM IDs are never reused within a service lifetime. Native identities
+and request sequences are separately checked 32-bit values; exhaustion fails
+before reuse, reserving the last sequence for exit.
+
+`global[0]` is zero to avoid advertising a complete AES version, `[1]` is four,
+`[2]` is the application's ID, `[10]` is four display planes, and other words
+are zero. The binding exposes transport/resource errors through
+`ExecAESDiagnostic()` without inventing successful GEM return values.
+
+Registration retains the owner's Task lease and validates its original packet,
+owner and reply-port relationship on subsequent calls. Requests and buffers
+remain caller-owned storage, lent until the single reply is collected. This is
+a cooperative shared-memory ownership contract, not memory protection against
+malicious applications. Normal service shutdown refuses live registrations.
+
+The generated [wire ABI](../../abi/aes-server.json) is private to this source
+profile. Rebuild bindings and service together. Current implementation and
+development evidence are tracked in the
+[implementation plan](../plans/gem4xe/aes-server-implementation-plan.md).

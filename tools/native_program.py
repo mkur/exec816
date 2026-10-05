@@ -294,6 +294,15 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     output = output.resolve()
     source = source.resolve()
     output.mkdir(parents=True, exist_ok=True)
+    # Bind only actual linked executable extents, never a neighbouring native
+    # bank or an unused foreign reservation. This module has no stored data.
+    code_ranges = [(s['address'], s['address']+len(s['bytes']))
+                   for s in (foreign_image or {}).get('segments', ())
+                   if s.get('executable')]
+    code_test = ' OR '.join(f'(value>=${lo:x} AND value<${hi:x})'
+                           for lo, hi in code_ranges) or '0'
+    (output/'calypsimeta.act').write_text('MODULE CALYPSIMETA\n'
+        'PUBLIC BYTE FUNC Code(LONGCARD value)\n\nRETURN('+code_test+')\nENDMODULE\n')
     exec_build = None
     if tasks:
         from generate_build_info import generate as generate_build_info
