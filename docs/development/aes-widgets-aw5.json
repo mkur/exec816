@@ -1,0 +1,1195 @@
+{
+  "schema_version": 1,
+  "slice": "AW5",
+  "date": "2026-10-05",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_base": "cf9fe39f0518f934c17a513a81d37da7549cd9c4",
+  "source_state": "Working-tree AW5 implementation; unrelated cartridge edits excluded from the slice.",
+  "source_sha256": {
+    "lib/desktop/deskapp.act": "60d9e6cdeadc99319fdbe464d9de6b5e7e49a0f39829a83a775f2686df66a2de",
+    "tools/build_widget_panel.py": "0388601a5249f95bda18798a7ac3de59fc57f4d0820b37ded1dd2d9c94fb3dda",
+    "tools/control_panel_oracle.py": "bf610856aa47fba060d57a1625d7cc4f83b858194fcbdc377168ea39d00cf38e",
+    "tools/test_widget_panel.py": "aed690e24531252f81389f0be15d491cf006e2ddd64f108b150575d352cb9856",
+    "tools/desktop_oracle.py": "d3828d1854e445f7c0de20f25e0fd04d43512d5c2e5d0a9bf4dfd51d825a460f",
+    "tools/test_desktop_apps.py": "8e785a678097ac655a6ebd8f4d8543030bd156aac0b4ff317d32a0a50a80c752",
+    "tools/test_desktop_drag.py": "8a02565e083df04a4d5923d4ac43e863bcb6151488a8970ffa52b71a27021342",
+    "tools/measure_desktop.py": "e7087898d66c7d46705c7e0c691649e0e452adac9eda3e639de1c68b7f0d4e47",
+    "tools/sio_transaction_trace.py": "311c88a962da6274b81282070aa5e5fd45e06dc789e10f72889f8ed5baeeb8c4"
+  },
+  "compiler": {
+    "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "binary_sha256": "3314d5716128f1b6b3a403ce1ac624a3224ebbffa9c193c878b2b5e6507eb849",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "override": false,
+    "compiler_contract": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "optimize": true,
+    "stack_checks": true
+  },
+  "calypsi": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "calypsi_runtime": {
+    "path": "/usr/local/lib/calypsi-65816-5.18/lib/clib-lc-hd.a",
+    "sha256": "321e782d2e18972ff29d32acf446a401012bd6da6959bb4b69c359c1412082db"
+  },
+  "c_image_sha256": "d15ac360ff591db2995a6fa744001d4b881f6feeb2b19e03f6fd9afb22f0ac9e",
+  "same_c_image_as_packaged_desktop": true,
+  "donor_revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+  "donor_extraction": {
+    "path": "build/aes-widgets/aw5/panel/aes-selected/extraction.json",
+    "sha256": "c01d42e613b949c5675b3047595675cc29f393431f09d8929d17abffc91140aa"
+  },
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "emulator": {
+    "binary": "build/mouse-bridge/AltirraBridgeServer",
+    "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "patch": "toolchain/patches/altirra-mouse-observer.patch",
+    "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+    "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+    "source_sha256": {
+      "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+      "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+    }
+  },
+  "machine_pin": {
+    "path": "toolchain/altirra-gem-vdi.json",
+    "sha256": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "fixture": {
+    "build": {
+      "path": "build/aes-widgets/aw5/panel/program/build.json",
+      "sha256": "6fc9bb1ead212d5f099d5dca7197d02f6f099a1c2f9f18984a0fb246469fb58c"
+    },
+    "xex_sha256": "303f90d8b5e51b9124e43ae8f7fb1575e4ec90dba13b082a8b57de83c85609ae",
+    "fixture_source": {
+      "path": "build/aes-widgets/aw5/panel/fixture.act",
+      "sha256": "2819a9e856b01021e9bb5975f01d9ee2816e4d6dea057c25f08a58917c873f73"
+    },
+    "test_client": {
+      "path": "build/aes-widgets/aw5/panel/deskapp.act",
+      "sha256": "1a0e8fe6d8d07c4608d413ec9f1af32f069924ba27107b36eaaee50cdd21abce"
+    },
+    "scope": "Production panel client plus test-only full-redraw branch; second widget context owned by the existing shell/controller. No added production Task."
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "baseline": "desktop-dt0",
+      "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "runtime": 0,
+      "loading": 0
+    },
+    "scope": "All fixed/root/kernel, each public Task and idle reservations, including guards, alignment and unused capacity; unchanged from DT0/DR7.",
+    "per_application_stack_bytes": 1024,
+    "presenter_stack_bytes": 2560,
+    "application_old_request_bytes": 710,
+    "application_old_request_reserved": 712,
+    "application_new_request_bytes": 3072,
+    "widget_context_used": 2200,
+    "widget_context_reserved": 4096,
+    "upper_heap_delta": 6456,
+    "service_bytes": 12342,
+    "service_reserved": 12344,
+    "additional_vram_bytes": 0,
+    "additional_tasks": 0,
+    "additional_code_banks": 0,
+    "global_arena_reserved_delta": 0
+  },
+  "host_checks": {
+    "run": 361,
+    "passed": 357,
+    "skipped": 4,
+    "log_sha256": "b5d27e6c28a85475a80278def00a9add8fe3b33151136d2b0d0362c75dba2d7a",
+    "generators": [
+      "generate_widgets.py --check",
+      "generate_desktop.py --check"
+    ],
+    "matched_metrics_unchanged_after_trace_indexing": true
+  },
+  "interaction": {
+    "observed_result": {
+      "path": "build/aes-widgets/aw5/final/results.json",
+      "sha256": "d37b7108f1752c80edd2b427d1490a9b2037fabd1cb7c555925938c298113edb"
+    },
+    "unobserved_result": {
+      "path": "build/aes-widgets/aw5/unobserved/results.json",
+      "sha256": "84cd5acb3bbcc07ee14e63c41df59167bf03b5f41898264158abd40e1b16c42f"
+    },
+    "actions_per_load": 100,
+    "loads": [
+      "idle",
+      "scroll",
+      "disk"
+    ],
+    "action_cycle": [
+      2,
+      5,
+      6,
+      4,
+      7
+    ],
+    "edges_per_run": 600,
+    "functional": [
+      {
+        "name": "second context toggled",
+        "contexts": [
+          153304,
+          146104
+        ]
+      },
+      {
+        "name": "toggle",
+        "result": {
+          "samples": [
+            {
+              "load": null,
+              "object": 2,
+              "edge": "press",
+              "submitted": 30859121,
+              "consumed": 30890033,
+              "committed": 30918257,
+              "visible": 37393201,
+              "capture": 4325828773.25,
+              "capture_to_commit_ms": 32.07904378336545,
+              "capture_to_button_consumed_ms": 16.101829910386407,
+              "capture_to_visible_ms": 3683.0657518759367
+            },
+            {
+              "load": null,
+              "object": 2,
+              "edge": "release",
+              "submitted": 37393201,
+              "consumed": 37428145,
+              "committed": 48646961,
+              "application": 48655473,
+              "visible": 49699760,
+              "capture": 4332362856.375,
+              "capture_to_commit_ms": 6345.628007031502,
+              "capture_to_button_consumed_ms": 18.373605646628953,
+              "capture_to_visible_ms": 6938.01176803937,
+              "capture_to_application_ms": 6349.166031134274
+            }
+          ],
+          "scene": {
+            "clock": 49702001,
+            "sha256": "6e5d8507035cc6cba625fd37a2e82bc7c8dbcb4bac75ac79c62e90f9e1ec723c",
+            "scans": 1
+          },
+          "epoch": 2,
+          "state": {
+            "toggle": 1,
+            "radio": 4,
+            "focus": 2,
+            "status": "Toggle on [2]"
+          }
+        }
+      },
+      {
+        "name": "disabled and raw key ignored"
+      },
+      {
+        "name": "Tab, Shift-Tab, Space, Return, Escape and BREAK"
+      }
+    ],
+    "observed_progress": {
+      "idle": {
+        "writes": 0,
+        "reads": 0
+      },
+      "scroll": {
+        "writes": 73,
+        "reads": 0
+      },
+      "disk": {
+        "writes": 0,
+        "reads": 4775
+      }
+    },
+    "unobserved_progress": {
+      "idle": {
+        "writes": 0,
+        "reads": 0
+      },
+      "scroll": {
+        "writes": 73,
+        "reads": 0
+      },
+      "disk": {
+        "writes": 0,
+        "reads": 4775
+      }
+    },
+    "observed_runtime": {
+      "status": 0,
+      "guards": "intact",
+      "live_tasks": 0,
+      "fault_required": 0,
+      "switches": 34720,
+      "native_irq_count": 22031,
+      "native_nmi_count": 19897
+    },
+    "unobserved_runtime": {
+      "status": 0,
+      "guards": "intact",
+      "live_tasks": 0,
+      "fault_required": 0,
+      "switches": 34720,
+      "native_irq_count": 22031,
+      "native_nmi_count": 19897
+    },
+    "ownership": "restored",
+    "observed_stack_usage": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 374,
+        "remaining_above_floor": 906
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 167,
+        "remaining_above_floor": 601
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 245,
+        "remaining_above_floor": 523
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 159,
+        "remaining_above_floor": 609
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 712,
+        "remaining_above_floor": 1592
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 58,
+        "remaining_above_floor": 198
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 287,
+        "remaining_above_floor": 993
+      }
+    },
+    "unobserved_stack_usage": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 374,
+        "remaining_above_floor": 906
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 167,
+        "remaining_above_floor": 601
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 245,
+        "remaining_above_floor": 523
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 159,
+        "remaining_above_floor": 609
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 712,
+        "remaining_above_floor": 1592
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 58,
+        "remaining_above_floor": 198
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 287,
+        "remaining_above_floor": 993
+      }
+    }
+  },
+  "timing": {
+    "scope": "Capture to commit/application: passive boundaries or IRQ observation upper bounds. Visible feedback: first matching completed scanout, <=1 frame observation quantization.",
+    "targets": {
+      "idle": {
+        "p95_ms": 40,
+        "max_ms": 60,
+        "button_max_ms": 40
+      },
+      "loaded": {
+        "p95_ms": 60,
+        "max_ms": 100,
+        "button_max_ms": 100
+      }
+    },
+    "widget": {
+      "idle": {
+        "capture_to_commit_ms": {
+          "count": 200,
+          "median_ms": 20.584060142744573,
+          "p95_ms": 305.7388927498559,
+          "max_ms": 334.8732482918158
+        },
+        "capture_to_application_ms": {
+          "count": 100,
+          "median_ms": 12.817266933472798,
+          "p95_ms": 332.8803784718747,
+          "max_ms": 340.7120171304761
+        },
+        "capture_to_button_consumed_ms": {
+          "count": 200,
+          "median_ms": 16.858266173653295,
+          "p95_ms": 18.374521941021655,
+          "max_ms": 58.03540843470133
+        },
+        "capture_to_visible_ms": {
+          "count": 200,
+          "median_ms": 358.64707018392147,
+          "p95_ms": 600.4004911337945,
+          "max_ms": 660.523006742517
+        },
+        "press_feedback": {
+          "count": 100,
+          "median_ms": 370.5346507297227,
+          "p95_ms": 430.64243514397805,
+          "max_ms": 431.9062165640652
+        },
+        "application_label": {
+          "count": 100,
+          "median_ms": 339.7021902255353,
+          "p95_ms": 640.3132176170989,
+          "max_ms": 660.523006742517
+        }
+      },
+      "scroll": {
+        "capture_to_commit_ms": {
+          "count": 200,
+          "median_ms": 41.17587354573507,
+          "p95_ms": 280.5388938776028,
+          "max_ms": 296.75469671360446
+        },
+        "capture_to_application_ms": {
+          "count": 100,
+          "median_ms": 31.760525755625693,
+          "p95_ms": 299.53515680616425,
+          "max_ms": 316.96667084872826
+        },
+        "capture_to_button_consumed_ms": {
+          "count": 200,
+          "median_ms": 37.319824804512116,
+          "p95_ms": 47.1726679250443,
+          "max_ms": 57.530177803402694
+        },
+        "capture_to_visible_ms": {
+          "count": 200,
+          "median_ms": 379.86732057193683,
+          "p95_ms": 620.3568191333547,
+          "max_ms": 660.5235001318053
+        },
+        "press_feedback": {
+          "count": 100,
+          "median_ms": 378.3521925515134,
+          "p95_ms": 414.72802267899107,
+          "max_ms": 432.663921542645
+        },
+        "application_label": {
+          "count": 100,
+          "median_ms": 379.86732057193683,
+          "p95_ms": 640.3130061645468,
+          "max_ms": 660.5235001318053
+        }
+      },
+      "disk": {
+        "capture_to_commit_ms": {
+          "count": 200,
+          "median_ms": 50.682850775114574,
+          "p95_ms": 625.4741823482228,
+          "max_ms": 774.81691733192
+        },
+        "capture_to_application_ms": {
+          "count": 100,
+          "median_ms": 76.7239374156833,
+          "p95_ms": 696.1369028403717,
+          "max_ms": 797.9400997210237
+        },
+        "capture_to_button_consumed_ms": {
+          "count": 200,
+          "median_ms": 24.179881276440376,
+          "p95_ms": 57.01909698482757,
+          "max_ms": 113.08454295940534
+        },
+        "capture_to_visible_ms": {
+          "count": 200,
+          "median_ms": 660.5172975236087,
+          "p95_ms": 1222.0811442120503,
+          "max_ms": 1442.618332372399
+        },
+        "press_feedback": {
+          "count": 100,
+          "median_ms": 501.8397076879919,
+          "p95_ms": 868.9254968077713,
+          "max_ms": 928.7953266166605
+        },
+        "application_label": {
+          "count": 100,
+          "median_ms": 700.6851767531883,
+          "p95_ms": 1342.578085903304,
+          "max_ms": 1442.618332372399
+        }
+      }
+    },
+    "work": {
+      "idle": {
+        "paint_quanta": 1472,
+        "paint_cpu_ms": 28011.88997700806,
+        "max_quantum_cpu_ms": 53.36611317786402,
+        "primitive_entries": {
+          "GemWidgetFill": 9518,
+          "GemWidgetText": 1386,
+          "start": 5255,
+          "VbxeOwnerSubmit": 5255
+        },
+        "logical_requested_damage_pixels": 1174323,
+        "damage_scope": "Independent union of previous/new focus, press/release, changed radio siblings and 160x8 status; does not count Layers exposure or physical overdraw."
+      },
+      "scroll": {
+        "paint_quanta": 1480,
+        "paint_cpu_ms": 27195.613064384484,
+        "max_quantum_cpu_ms": 51.28746410592927,
+        "primitive_entries": {
+          "GemWidgetFill": 9600,
+          "GemWidgetText": 1400,
+          "start": 10088,
+          "VbxeOwnerSubmit": 4336
+        },
+        "logical_requested_damage_pixels": 1186520,
+        "damage_scope": "Independent union of previous/new focus, press/release, changed radio siblings and 160x8 status; does not count Layers exposure or physical overdraw."
+      },
+      "disk": {
+        "paint_quanta": 1480,
+        "paint_cpu_ms": 28152.288339519495,
+        "max_quantum_cpu_ms": 55.5527440197694,
+        "primitive_entries": {
+          "GemWidgetFill": 9600,
+          "GemWidgetText": 1400,
+          "start": 4713,
+          "VbxeOwnerSubmit": 4709
+        },
+        "logical_requested_damage_pixels": 1186520,
+        "damage_scope": "Independent union of previous/new focus, press/release, changed radio siblings and 160x8 status; does not count Layers exposure or physical overdraw."
+      }
+    },
+    "render_cost": {
+      "routines": {
+        "commit": {
+          "calls": 3401,
+          "elapsed_ms": {
+            "total": 7216.096966501686,
+            "max": 40.748105032711706
+          },
+          "charged_cpu_ms": {
+            "total": 3592.4290823382144,
+            "max": 7.092259567875565
+          },
+          "off_cpu_ms": {
+            "total": 2833.274032639816,
+            "max": 32.861911615652566
+          },
+          "interrupt_ms": {
+            "total": 790.3938515236566,
+            "max": 4.110637614025789
+          }
+        },
+        "paint": {
+          "calls": 4566,
+          "elapsed_ms": {
+            "total": 157684.44357670582,
+            "max": 1756.3922106518519
+          },
+          "charged_cpu_ms": {
+            "total": 107548.75116122693,
+            "max": 1395.056873688113
+          },
+          "off_cpu_ms": {
+            "total": 27391.415590255703,
+            "max": 116.99112886059497
+          },
+          "interrupt_ms": {
+            "total": 22744.276825223187,
+            "max": 285.8478331047296
+          }
+        },
+        "pump": {
+          "calls": 8016,
+          "elapsed_ms": {
+            "total": 194104.08575669705,
+            "max": 1766.516981754464
+          },
+          "charged_cpu_ms": {
+            "total": 133751.78874762292,
+            "max": 1405.9341339396854
+          },
+          "off_cpu_ms": {
+            "total": 31954.372627326153,
+            "max": 142.59232370848304
+          },
+          "interrupt_ms": {
+            "total": 28397.92438174798,
+            "max": 286.93554503305
+          }
+        },
+        "model_call": {
+          "calls": 8902,
+          "elapsed_ms": {
+            "total": 195798.59539118016,
+            "max": 1756.234255595387
+          },
+          "charged_cpu_ms": {
+            "total": 130137.67189330386,
+            "max": 1394.9399404267676
+          },
+          "off_cpu_ms": {
+            "total": 38052.77235441139,
+            "max": 188.59995855529976
+          },
+          "interrupt_ms": {
+            "total": 27608.15114346492,
+            "max": 285.8068113096102
+          }
+        },
+        "consume": {
+          "calls": 4363,
+          "elapsed_ms": {
+            "total": 5522.320508501098,
+            "max": 21.757269386322402
+          },
+          "charged_cpu_ms": {
+            "total": 3338.005635915357,
+            "max": 2.350295117278634
+          },
+          "off_cpu_ms": {
+            "total": 1428.558147337319,
+            "max": 19.99051282882634
+          },
+          "interrupt_ms": {
+            "total": 755.7567252484215,
+            "max": 0.8118368319332825
+          }
+        }
+      },
+      "max_charged_cpu_ms": 1413.3005769835308,
+      "scope": "Passive console turn accounting on the pinned native adapter.\n\nCharged CPU includes calls into C and the kernel, scheduling/return overhead and\nbus stalls. Native IRQ/NMI bodies and time assigned to another Task are separate.\nThis is a conservative service charge, not an instruction-only profiler. No\ninstructions, storage or scheduling changes are inserted into the guest.\n",
+      "maximum_quantum_scope": "Paint call charged CPU is a conservative upper bound on uninterrupted rendering; IRQ and other-Task time excluded."
+    },
+    "target_acceptance": false,
+    "trace_sha256": "809dfb75e86b17987446e823926b6e62cf7b082e9949e59314d792e2114efa18",
+    "observation_note": "Physical capture and C model commit use passive native boundaries. Button/application collection times are IRQ-observation upper bounds. Feedback is the first exact button crop on press or changed status row on release, followed by full panel equality and state checks.",
+    "trace_reanalysis": "Same completed guest trace reanalyzed with CPU-only host retention; no guest rerun or guest changes for postprocessing.",
+    "work_scope": "Widget fill/text helper entries are widget-specific. Hardware starts/list submissions include other drawing, including console work, in each cohort window. Paint CPU covers DESKWIDGETS.Paint, with interruptions and other Tasks excluded.",
+    "input_pacing": "Release after exact pressed feedback; next action after the full scene settles. This is not a rapid-click saturation test."
+  },
+  "matched_patch_full": {
+    "result": {
+      "path": "build/aes-widgets/aw5/matched/results.json",
+      "sha256": "aaf10c56912b530c67b6c74c7ffaa02b0300ebbf38d116373dda331efa4c93f0"
+    },
+    "comparison": [
+      {
+        "full_redraw": false,
+        "status_damage_pixels": 1280,
+        "work": {
+          "GemWidgetFill": 35,
+          "GemWidgetText": 5,
+          "start": 30,
+          "VbxeOwnerSubmit": 30
+        },
+        "paint_cpu_ms": 128.82859515153393,
+        "paint_quanta": 10,
+        "click_to_settled_ms": 495.12432705225274,
+        "scene_sha256": "6e5d8507035cc6cba625fd37a2e82bc7c8dbcb4bac75ac79c62e90f9e1ec723c",
+        "state": {
+          "toggle": 1,
+          "radio": 4,
+          "focus": 2,
+          "status": "Toggle on [2]"
+        },
+        "samples": [
+          {
+            "object": 2,
+            "edge": "press",
+            "capture_to_commit_ms": 19.724857939127038,
+            "capture_to_button_consumed_ms": 15.595753468879119,
+            "capture_to_visible_ms": 150.99756265691542
+          },
+          {
+            "object": 2,
+            "edge": "release",
+            "capture_to_commit_ms": 26.51333067373012,
+            "capture_to_button_consumed_ms": 13.069670796569957,
+            "capture_to_visible_ms": 339.4486586154933,
+            "capture_to_application_ms": 29.994896945074494
+          }
+        ]
+      },
+      {
+        "full_redraw": true,
+        "status_damage_pixels": 21120,
+        "work": {
+          "GemWidgetFill": 151,
+          "GemWidgetText": 19,
+          "start": 117,
+          "VbxeOwnerSubmit": 117
+        },
+        "paint_cpu_ms": 7857.685383976689,
+        "paint_quanta": 24,
+        "click_to_settled_ms": 10359.75127541131,
+        "scene_sha256": "6e5d8507035cc6cba625fd37a2e82bc7c8dbcb4bac75ac79c62e90f9e1ec723c",
+        "state": {
+          "toggle": 1,
+          "radio": 4,
+          "focus": 2,
+          "status": "Toggle on [2]"
+        },
+        "samples": [
+          {
+            "object": 2,
+            "edge": "press",
+            "capture_to_commit_ms": 19.754743233165907,
+            "capture_to_button_consumed_ms": 13.32249756477144,
+            "capture_to_visible_ms": 198.23747249354716
+          },
+          {
+            "object": 2,
+            "edge": "release",
+            "capture_to_commit_ms": 8.83688409157869,
+            "capture_to_button_consumed_ms": 4.227218454451006,
+            "capture_to_visible_ms": 319.49056851133173,
+            "capture_to_application_ms": 12.31034468175686
+          }
+        ]
+      }
+    ],
+    "render_cost": {
+      "routines": {
+        "commit": {
+          "calls": 68,
+          "elapsed_ms": {
+            "total": 173.55976142513381,
+            "max": 11.68099140233923
+          },
+          "charged_cpu_ms": {
+            "total": 101.98927512655436,
+            "max": 5.560144859095068
+          },
+          "off_cpu_ms": {
+            "total": 51.30712919328032,
+            "max": 5.044059663452118
+          },
+          "interrupt_ms": {
+            "total": 20.263357105299143,
+            "max": 1.080945446651226
+          }
+        },
+        "paint": {
+          "calls": 146,
+          "elapsed_ms": {
+            "total": 30056.86579388451,
+            "max": 1751.4275161796445
+          },
+          "charged_cpu_ms": {
+            "total": 24224.405853570515,
+            "max": 1394.1389581591789
+          },
+          "off_cpu_ms": {
+            "total": 918.7438590654642,
+            "max": 74.70780781500439
+          },
+          "interrupt_ms": {
+            "total": 4913.716081248529,
+            "max": 282.5961862417692
+          }
+        },
+        "pump": {
+          "calls": 377,
+          "elapsed_ms": {
+            "total": 32439.612675311786,
+            "max": 1766.516981754464
+          },
+          "charged_cpu_ms": {
+            "total": 26110.324029890933,
+            "max": 1405.9341339396854
+          },
+          "off_cpu_ms": {
+            "total": 1029.3015440265358,
+            "max": 75.58977641007135
+          },
+          "interrupt_ms": {
+            "total": 5299.987101394318,
+            "max": 285.0011066016896
+          }
+        },
+        "model_call": {
+          "calls": 255,
+          "elapsed_ms": {
+            "total": 31164.93524618011,
+            "max": 1751.3162921372075
+          },
+          "charged_cpu_ms": {
+            "total": 25106.471716811466,
+            "max": 1394.0274521800054
+          },
+          "off_cpu_ms": {
+            "total": 964.9014137717637,
+            "max": 74.70780781500439
+          },
+          "interrupt_ms": {
+            "total": 5093.562115596881,
+            "max": 282.5961862417692
+          }
+        },
+        "consume": {
+          "calls": 165,
+          "elapsed_ms": {
+            "total": 168.30904213403554,
+            "max": 4.813364929043572
+          },
+          "charged_cpu_ms": {
+            "total": 128.0950662480846,
+            "max": 2.1053625776911917
+          },
+          "off_cpu_ms": {
+            "total": 13.427518999011811,
+            "max": 2.741905243882325
+          },
+          "interrupt_ms": {
+            "total": 26.78645688693914,
+            "max": 0.5599968423085544
+          }
+        }
+      },
+      "max_charged_cpu_ms": 1413.3005769835308,
+      "scope": "Passive console turn accounting on the pinned native adapter.\n\nCharged CPU includes calls into C and the kernel, scheduling/return overhead and\nbus stalls. Native IRQ/NMI bodies and time assigned to another Task are separate.\nThis is a conservative service charge, not an instruction-only profiler. No\ninstructions, storage or scheduling changes are inserted into the guest.\n",
+      "maximum_quantum_scope": "Paint call charged CPU is a conservative upper bound on uninterrupted rendering; IRQ and other-Task time excluded."
+    },
+    "first_focus": [
+      {
+        "load": null,
+        "object": 2,
+        "edge": "press",
+        "submitted": 30859121,
+        "consumed": 30890033,
+        "committed": 30918257,
+        "visible": 37393201,
+        "capture": 4325828773.25,
+        "capture_to_commit_ms": 32.07904378336545,
+        "capture_to_button_consumed_ms": 16.101829910386407,
+        "capture_to_visible_ms": 3683.0657518759367
+      },
+      {
+        "load": null,
+        "object": 2,
+        "edge": "release",
+        "submitted": 37393201,
+        "consumed": 37428145,
+        "committed": 48646961,
+        "application": 48655473,
+        "visible": 49699760,
+        "capture": 4332362856.375,
+        "capture_to_commit_ms": 6345.628007031502,
+        "capture_to_button_consumed_ms": 18.373605646628953,
+        "capture_to_visible_ms": 6938.01176803937,
+        "capture_to_application_ms": 6349.166031134274
+      }
+    ],
+    "scope": "Both trials start with Toggle focused/off and identical status, and finish with identical state/pixels. Comparison-only fixture; same input, only label patch vs SetTree differs.",
+    "excluded": "End-of-run comparisons in final/unobserved preceded the explicit focus preconditioning fix and are not used as matched evidence."
+  },
+  "pointer": {
+    "active_panel_result": {
+      "path": "build/aes-widgets/aw5/pointer/results.json",
+      "sha256": "6e3a3b4f11d4cae156a4be6f41491a7019def38f28ab75938e7a652e35084990"
+    },
+    "active_panel": {
+      "idle": {
+        "sample_gap": {
+          "count": 36377,
+          "median_ms": 0.25261531564932144,
+          "p95_ms": 0.25317918912175297,
+          "max_ms": 0.29265033219195946
+        },
+        "sample_gap_pass": true,
+        "visible": {
+          "count": 100,
+          "median_ms": 43.63048525541354,
+          "p95_ms": 119.6676952658593,
+          "max_ms": 126.48894314604748
+        },
+        "button_consumption": {
+          "count": 60,
+          "median_ms": 3.843432072277302,
+          "p95_ms": 6.472844558409538,
+          "max_ms": 69.34057816766496
+        },
+        "visible_target_pass": false,
+        "button_target_pass": false
+      },
+      "scroll": {
+        "sample_gap": {
+          "count": 43109,
+          "median_ms": 0.25261531564932144,
+          "p95_ms": 0.25324967330580694,
+          "max_ms": 0.2906062908543952
+        },
+        "sample_gap_pass": true,
+        "visible": {
+          "count": 100,
+          "median_ms": 59.79828836207443,
+          "p95_ms": 106.27950644154959,
+          "max_ms": 142.65611189505188
+        },
+        "button_consumption": {
+          "count": 60,
+          "median_ms": 20.75385654213051,
+          "p95_ms": 33.14899369730426,
+          "max_ms": 103.33369045319921
+        },
+        "visible_target_pass": false,
+        "button_target_pass": false
+      },
+      "disk": {
+        "sample_gap": {
+          "count": 39321,
+          "median_ms": 0.25261531564932144,
+          "p95_ms": 0.2645271427544373,
+          "max_ms": 0.5141116384894393
+        },
+        "sample_gap_pass": true,
+        "visible": {
+          "count": 100,
+          "median_ms": 43.62096989056626,
+          "p95_ms": 121.11107038691587,
+          "max_ms": 145.82444645246053
+        },
+        "button_consumption": {
+          "count": 60,
+          "median_ms": 4.410477332991251,
+          "p95_ms": 83.43727401008488,
+          "max_ms": 102.48816218128815
+        },
+        "visible_target_pass": false,
+        "button_target_pass": false
+      }
+    },
+    "quiet_control_result": {
+      "path": "build/aes-widgets/aw5/pointer-quiet/results.json",
+      "sha256": "290f21e6b803bb3987f123ff3d49465bcf37d68b93a03ff98154dcca24b0e104"
+    },
+    "quiet_control": {
+      "idle": {
+        "sample_gap": {
+          "count": 33439,
+          "median_ms": 0.25261531564932144,
+          "p95_ms": 0.25317918912175297,
+          "max_ms": 0.29138161687898856
+        },
+        "sample_gap_pass": true,
+        "visible": {
+          "count": 100,
+          "median_ms": 43.629780413572995,
+          "p95_ms": 46.40911275918796,
+          "max_ms": 46.66285582178215
+        },
+        "button_consumption": {
+          "count": 60,
+          "median_ms": 3.8436435248294636,
+          "p95_ms": 3.932242144185266,
+          "max_ms": 32.32566794337019
+        },
+        "visible_target_pass": false,
+        "button_target_pass": true
+      }
+    },
+    "interpretation": "Quiet panel idle p95/max 46.409/46.663 ms matches DR7 46.408/46.661 ms. Active workload sends Space every ten moves; extra delay coincides with widget work, while capture gaps remain below 1 ms. Prior compute-client work differs and is not a matched renderer baseline."
+  },
+  "lifecycle": {
+    "result": {
+      "path": "build/aes-widgets/aw5/apps-replay/results.json",
+      "sha256": "a5d1266f4e2a775c02a1f408a5da25bc714960c7db7477a73da8d8b30c7d6090"
+    },
+    "production_build": {
+      "path": "build/aes-widgets/aw5/apps/build/program/build.json",
+      "sha256": "390001f403821adf7496e656eeb7803c83b73f64e152499d511b214bffc00d2a"
+    },
+    "cases": [
+      {
+        "reverse": false,
+        "checks": 6,
+        "scenes": [
+          {
+            "label": "overlapping app, focused shell",
+            "sha256": "ac1d6f4ac1926d0348e96bcaba3562859ae726225b7cb1379a6b07872324e43a",
+            "observations": 1
+          },
+          {
+            "label": "semantic action and status patch",
+            "sha256": "14821d4061a578584e06e250526e789cff23fa0558db028a65579beaecc60093",
+            "observations": 504
+          },
+          {
+            "label": "graphical keyboard route",
+            "sha256": "14821d4061a578584e06e250526e789cff23fa0558db028a65579beaecc60093",
+            "observations": 1
+          },
+          {
+            "label": "console output behind app",
+            "sha256": "105c678143e3fde9e9f922cbe25a6a42d82cc0b3f1953d1f04268c8c6e5b77c1",
+            "observations": 2
+          },
+          {
+            "label": "cooperative app close exposes shell",
+            "sha256": "245646d2e0d923bd549cb5326cb8489d77db37ae4c2d7cd4ef576e2aa4c04d2c",
+            "observations": 14
+          },
+          {
+            "label": "retirement settled",
+            "sha256": "245646d2e0d923bd549cb5326cb8489d77db37ae4c2d7cd4ef576e2aa4c04d2c",
+            "observations": 1
+          }
+        ],
+        "owners": {
+          "presenter": 69540,
+          "app": 4129568,
+          "shell": 4129500
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "live_tasks": 0,
+          "fault_required": 0,
+          "switches": 1273,
+          "native_irq_count": 21967,
+          "native_nmi_count": 1164
+        }
+      },
+      {
+        "reverse": true,
+        "checks": 6,
+        "scenes": [
+          {
+            "label": "overlapping app, focused shell",
+            "sha256": "ac1d6f4ac1926d0348e96bcaba3562859ae726225b7cb1379a6b07872324e43a",
+            "observations": 1
+          },
+          {
+            "label": "semantic action and status patch",
+            "sha256": "14821d4061a578584e06e250526e789cff23fa0558db028a65579beaecc60093",
+            "observations": 504
+          },
+          {
+            "label": "graphical keyboard route",
+            "sha256": "14821d4061a578584e06e250526e789cff23fa0558db028a65579beaecc60093",
+            "observations": 1
+          },
+          {
+            "label": "console output behind app",
+            "sha256": "105c678143e3fde9e9f922cbe25a6a42d82cc0b3f1953d1f04268c8c6e5b77c1",
+            "observations": 2
+          },
+          {
+            "label": "shell retired, app remains live",
+            "sha256": "e24da0a3dfb2906ab8c04c33eae8673c734067b809ae29fb2397eeb338caf434",
+            "observations": 3
+          },
+          {
+            "label": "app works after shell retirement",
+            "sha256": "e24da0a3dfb2906ab8c04c33eae8673c734067b809ae29fb2397eeb338caf434",
+            "observations": 1
+          },
+          {
+            "label": "retirement settled",
+            "sha256": "64b1a684128c627d8f80239b1914ad955af23e553f4af548fee7359110eef6d8",
+            "observations": 1
+          }
+        ],
+        "owners": {
+          "presenter": 69540,
+          "app": 4129568,
+          "shell": 4129500
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "live_tasks": 0,
+          "fault_required": 0,
+          "switches": 1923,
+          "native_irq_count": 45682,
+          "native_nmi_count": 1464
+        }
+      }
+    ]
+  },
+  "reused_evidence": [
+    {
+      "path": "docs/development/aes-widgets-aw0.json",
+      "sha256": "3c75b21d39c3b4a26ea525daac44b87052631b7300093712966a80d2d5892d5a"
+    },
+    {
+      "path": "docs/development/aes-widgets-aw1.json",
+      "sha256": "402a2224ba29c74bbef873199f733bc1e898c5e3e5c35fc6c1b40e4d7a8843b1"
+    },
+    {
+      "path": "docs/development/aes-widgets-aw2.json",
+      "sha256": "0b7f9e388ec45c3aeb8037e4fc80063fa24b89cd967fd55e8d087f39b3c3188a"
+    },
+    {
+      "path": "docs/development/aes-widgets-aw3.json",
+      "sha256": "16b240b8aa0862a1c0e380dbdf688cc4f369166110041c114b0f597d9727d1ce"
+    },
+    {
+      "path": "docs/development/aes-widgets-aw4.json",
+      "sha256": "99cd5a2c2956409aa85ca8a0b12ef0ac04672e5025c6c2916a256cd1a2ca6992"
+    },
+    {
+      "path": "docs/development/desktop-rendering-dr7.json",
+      "sha256": "68cad8837399e012306db9b343923e9bdd572fb988667ea322ea0123d2db9ba0"
+    }
+  ],
+  "validation_scope": "Optimized emitted native application, production-client retirement, physical ST/keyboard/SDFS, exact pixels, stack guards and cleanup. Unchanged ABI/renderer/fault raw+optimized evidence reused; no broad matrix repeated.",
+  "limits": [
+    "Widget latency targets missed; large first-focus repairs and long clipped paint calls remain.",
+    "Paint call charged CPU is a conservative upper bound on uninterrupted rendering, excluding IRQ/other-Task time; four objects/sixteen lines is a spatial bound.",
+    "Logical requested damage counts union rectangles, not physical pixel writes or clipped overdraw.",
+    "Physical hardware and whole-system/release qualification are separate."
+  ]
+}

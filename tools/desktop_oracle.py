@@ -43,7 +43,7 @@ def compose(bridge, program, font, terminal, pointer=(320, 120)):
         left, top, right, bottom = bounds
         kind = window[wf['kind']]
         title = window[wf['title']:wf['title']+32].split(b'\0')[0]
-        title = title[:(right-left-(32 if kind == 2 else 16))//8]
+        title = title[:(right-left-(32 if kind != 1 else 16))//8]
         cf = types['Content']['fields']
         content = bytearray(types['Content']['size'])
         if kind == 2:
@@ -54,9 +54,15 @@ def compose(bridge, program, font, terminal, pointer=(320, 120)):
             content[cf['commands']:cf['commands']+length] = bridge.memdump(content_address+cf['commands'], length)
             content[cf['text']:cf['text']+text_bytes] = bridge.memdump(content_address+cf['text'], text_bytes)
         frame(result, bounds, title, number(window, wf['id'], 4) == focused,
-              number(content, cf['background']) if kind == 2 else 0, close=kind == 2)
+              number(content, cf['background']) if kind == 2 else 0, close=kind != 1)
         if kind == 1:
             terminal.paint(result, (left+8)//8, (top+16)//8, number(window, wf['id'], 4) == focused)
+        elif kind == 3:
+            from control_panel_oracle import retained
+            context = number(bridge.memdump(content_address-wf['content']+wf['widgets'], 3), 0, 3)
+            retained(bridge, result, context,
+                     (left+8, top+16, right-8, bottom-8),
+                     number(window, wf['id'], 4) == focused)
         else:
             for index in range(number(content, cf['count'])):
                 start = cf['commands']+index*types['Command']['size']

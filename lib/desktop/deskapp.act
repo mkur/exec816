@@ -1,5 +1,5 @@
-; Optional desktop demonstration client. All application work runs on its own
-; ordinary Task; the presenter only replays the copied retained content.
+; Optional control panel. The presenter owns widget interaction and retained
+; pixels; this ordinary Task consumes semantic actions and patches its status.
 MODULE DESKAPP
 USE EXEC
 USE DESKTOP
@@ -8,13 +8,23 @@ USE DESKSTATE
 USE REGIONS
 USE A816MEMORY
 USE HEAPCORE
+USE WIDGETTYPES
+
+CONST BUFFER_SIZE=WIDGETTYPES.TREE_SIZE+WIDGETTYPES.UPDATE_SIZE
+    +WIDGETTYPES.SNAPSHOT_SIZE
+CONST OBJ_STATUS=1,OBJ_TOGGLE=2,OBJ_LOCKED=3,OBJ_SMALL=4,OBJ_LARGE=5,OBJ_APPLY=6,OBJ_CANCEL=7
 
 DESKTYPES.Client client
 DESKTYPES.Request control,eventWait,cancel
-DESKTYPES.Content POINTER content
+BYTE POINTER buffer
+WIDGETTYPES.Tree POINTER tree
+WIDGETTYPES.Update POINTER patch
+WIDGETTYPES.Snapshot POINTER snapshot
 EXEC.Task POINTER parent,worker
 LONGCARD parentMask,stopMask,windowId
-CARD updates,work
+CARD updates
+INT lastObject
+BYTE refresh
 BYTE parentBit,stopBit,started,finished,waiting,closing
 
 CARD FUNC Call(BYTE operation)
@@ -38,36 +48,137 @@ CARD FUNC Call(BYTE operation)
 
 RETURN(control.status)
 
-PROC Text(BYTE index INT y CSTRING text CARD count)
+PROC Label(CARD index CSTRING value CARD bytes)
 
-  LET command=@content.commands(index)
-  command.kind=DESKTYPES.DRAW_TEXT
-  REGIONS.Assign(@command.bounds,8,y,8+INT(count LSH 3),y+8)
-  command.pen=1
-  command.offset=content.textBytes
-  command.count=count
-  A816MEMORY.Move(@content.text(content.textBytes),BYTE POINTER(text),count)
-  content.textBytes==+count
+  tree.objects(index).spec=LONGCARD(tree.textBytes)
+  A816MEMORY.Move(@tree.text(tree.textBytes),BYTE POINTER(value),SIZE(bytes+1))
+  tree.textBytes==+bytes+1
 
 RETURN
 
-CARD FUNC Replace()
+; This flat, compiled-in form fits the existing 176 by 120 client rectangle.
+PROC BuildTree()
+  CARD index
 
-  A816MEMORY.Clear(BYTE POINTER(content),DESKTYPES.CONTENT_SIZE)
-  content.background=15
-  content.count=4
-  Text(0,8,c"Independent Task",16)
-  Text(1,24,c"Key/click: compute",18)
-  Text(2,40,c"Close: retire",13)
-  content.commands(3).kind=DESKTYPES.DRAW_FILL
-  REGIONS.Assign(@content.commands(3).bounds,8,64,168,88)
-  content.commands(3).pen=BYTE(2+(updates & 3))
-  DESKTOP.Prepare(@control,DESKTYPES.REPLACE)
+  tree.version=WIDGETTYPES.VERSION
+  tree.count=8
+  tree.background=8
+  FOR index=0 TO 7 DO
+    tree.objects(index).head=-1
+    tree.objects(index).tail=-1
+    tree.objects(index).next=INT(index+1)
+    tree.objects(index).kind=WIDGETTYPES.G_BUTTON
+    tree.objects(index).flags=WIDGETTYPES.FLAG_SELECTABLE
+    tree.objects(index).x=8+INT(index & 1)*88
+    tree.objects(index).y=24+INT((index-2) RSH 1)*32
+    tree.objects(index).width=72
+    tree.objects(index).height=16
+  OD
+
+  tree.objects(0).next=-1
+  tree.objects(0).head=1
+  tree.objects(0).tail=7
+  tree.objects(0).kind=WIDGETTYPES.G_BOX
+  tree.objects(0).flags=0
+  tree.objects(0).x=0
+  tree.objects(0).y=0
+  tree.objects(0).width=176
+  tree.objects(0).height=120
+  tree.objects(0).spec=$78
+  tree.objects(OBJ_STATUS).kind=WIDGETTYPES.G_STRING
+  tree.objects(OBJ_STATUS).flags=0
+  tree.objects(OBJ_STATUS).x=8
+  tree.objects(OBJ_STATUS).y=8
+  tree.objects(OBJ_STATUS).width=160
+  tree.objects(OBJ_STATUS).height=8
+  tree.objects(OBJ_LOCKED).state=WIDGETTYPES.STATE_DISABLED
+  tree.objects(OBJ_SMALL).flags=WIDGETTYPES.FLAG_SELECTABLE OR WIDGETTYPES.FLAG_RADIO
+  tree.objects(OBJ_SMALL).state=WIDGETTYPES.STATE_SELECTED
+  tree.objects(OBJ_LARGE).flags=WIDGETTYPES.FLAG_SELECTABLE OR WIDGETTYPES.FLAG_RADIO
+  tree.objects(OBJ_APPLY).flags=WIDGETTYPES.FLAG_SELECTABLE
+      OR WIDGETTYPES.FLAG_DEFAULT OR WIDGETTYPES.FLAG_EXIT
+  tree.objects(OBJ_CANCEL).next=0
+  tree.objects(OBJ_CANCEL).flags=WIDGETTYPES.FLAG_SELECTABLE
+      OR WIDGETTYPES.FLAG_EXIT OR WIDGETTYPES.FLAG_LAST
+  Label(OBJ_STATUS,c"Ready",5)
+  Label(OBJ_TOGGLE,c"Toggle",6)
+  Label(OBJ_LOCKED,c"Locked",6)
+  Label(OBJ_SMALL,c"Small",5)
+  Label(OBJ_LARGE,c"Large",5)
+  Label(OBJ_APPLY,c"Apply",5)
+  Label(OBJ_CANCEL,c"Cancel",6)
+
+RETURN
+
+CARD FUNC ReadState()
+
+  DESKTOP.Prepare(@control,DESKTYPES.READ_WIDGET_STATE)
   control.window=windowId
-  control.payload=BYTE POINTER(content)
-  control.bytes=DESKTYPES.CONTENT_SIZE
+  control.payload=BYTE POINTER(snapshot)
+  control.bytes=WIDGETTYPES.SNAPSHOT_SIZE
 
-RETURN(Call(DESKTYPES.REPLACE))
+RETURN(Call(DESKTYPES.READ_WIDGET_STATE))
+
+PROC Status(CSTRING value CARD bytes)
+
+  patch.textBytes=bytes+1
+  patch.changes(0).length=bytes
+  A816MEMORY.Move(@patch.text(0),BYTE POINTER(value),SIZE(bytes+1))
+
+RETURN
+
+; Read before each bounded patch. A concurrent gesture can stale its revision;
+; retry on a later turn, checking Stop between attempts. LOSS resynchronizes the
+; model without inventing an action. An old tree's action cannot patch a new one.
+PROC RefreshStatus()
+
+  IF ReadState()<>DESKTYPES.OK THEN
+    HEAPCORE.Abort($faf8)
+  FI
+
+  IF eventWait.event.kind<>DESKTYPES.EVENT_LOSS
+      AND eventWait.event.epoch<>snapshot.epoch THEN
+    refresh=0
+    RETURN
+  FI
+
+  patch.epoch=snapshot.epoch
+  patch.revision=snapshot.revision
+  patch.count=1
+  patch.changes(0).object=OBJ_STATUS
+  patch.changes(0).mask=WIDGETTYPES.PATCH_LABEL
+  IF eventWait.event.kind=DESKTYPES.EVENT_LOSS THEN
+    Status(c"Input resynced",14)
+  ELSEIF eventWait.event.kind=DESKTYPES.EVENT_WIDGET_CANCEL THEN
+    Status(c"Cancelled (Esc)",15)
+  ELSEIF lastObject=OBJ_TOGGLE THEN
+    IF (snapshot.objects(OBJ_TOGGLE).state & WIDGETTYPES.STATE_SELECTED)<>0 THEN
+      Status(c"Toggle on [2]",13)
+    ELSE
+      Status(c"Toggle off [2]",14)
+    FI
+  ELSEIF lastObject=OBJ_SMALL THEN
+    Status(c"Small [4]",9)
+  ELSEIF lastObject=OBJ_LARGE THEN
+    Status(c"Large [5]",9)
+  ELSEIF lastObject=OBJ_APPLY THEN
+    Status(c"Applied [6]",11)
+  ELSE
+    Status(c"Cancelled [7]",13)
+  FI
+
+  DESKTOP.Prepare(@control,DESKTYPES.UPDATE_WIDGETS)
+  control.window=windowId
+  control.payload=BYTE POINTER(patch)
+  control.bytes=WIDGETTYPES.UPDATE_SIZE
+  LET result=Call(DESKTYPES.UPDATE_WIDGETS)
+  IF result=DESKTYPES.OK THEN
+    refresh=0
+  ELSEIF result<>DESKTYPES.STALE THEN
+    HEAPCORE.Abort($faf8)
+  FI
+
+RETURN
 
 PROC CancelWait(BYTE unused)
   BYTE count
@@ -125,9 +236,12 @@ PROC Retire(BYTE unused)
     FI
   FI
 
-  IF content<>NULL THEN
-    EXEC.FreeMem(BYTE POINTER(content),DESKTYPES.CONTENT_SIZE)
-    content=NULL
+  IF buffer<>NULL THEN
+    EXEC.FreeMem(buffer,BUFFER_SIZE)
+    buffer=NULL
+    tree=NULL
+    patch=NULL
+    snapshot=NULL
   FI
 
   IF stopMask<>0 THEN
@@ -151,11 +265,17 @@ BYTE FUNC Admit()
   FI
 
   stopMask=LONGCARD(1) LSH stopBit
-  content=DESKTYPES.Content POINTER(EXEC.AllocMem(DESKTYPES.CONTENT_SIZE,
-      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
-  IF content=NULL OR DESKTOP.Init(@client,DESKSTATE.Get())=0 THEN
+  buffer=EXEC.AllocMem(BUFFER_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  IF buffer=NULL OR DESKTOP.Init(@client,DESKSTATE.Get())=0 THEN
     RETURN(0)
   FI
+
+  tree=WIDGETTYPES.Tree POINTER(buffer)
+  patch=WIDGETTYPES.Update POINTER(buffer+WIDGETTYPES.TREE_SIZE)
+  snapshot=WIDGETTYPES.Snapshot POINTER(buffer
+      +WIDGETTYPES.TREE_SIZE+WIDGETTYPES.UPDATE_SIZE)
+  BuildTree()
 
   DESKTOP.Prepare(@control,DESKTYPES.REGISTER)
   IF Call(DESKTYPES.REGISTER)<>DESKTYPES.OK THEN
@@ -163,16 +283,20 @@ BYTE FUNC Admit()
   FI
 
   DESKTOP.Prepare(@control,DESKTYPES.OPEN)
-  control.value=DESKTYPES.CONTENT_COMMANDS
-  control.payload=BYTE POINTER(c"Exec816 App")
-  control.bytes=11
+  control.value=DESKTYPES.CONTENT_WIDGETS
+  control.payload=BYTE POINTER(c"Control Panel")
+  control.bytes=13
   REGIONS.Assign(@control.bounds,432,80,624,224)
   IF Call(DESKTYPES.OPEN)<>DESKTYPES.OK THEN
     RETURN(0)
   FI
 
   windowId=control.window
-  IF Replace()<>DESKTYPES.OK THEN
+  DESKTOP.Prepare(@control,DESKTYPES.SET_TREE)
+  control.window=windowId
+  control.payload=BYTE POINTER(tree)
+  control.bytes=WIDGETTYPES.TREE_SIZE
+  IF Call(DESKTYPES.SET_TREE)<>DESKTYPES.OK THEN
     RETURN(0)
   FI
 
@@ -187,7 +311,6 @@ RETURN(1)
 
 PUBLIC PROC Run()
   LONGCARD bits
-  CARD index
   DESKTYPES.Request POINTER reply
 
   IF Admit()=0 THEN
@@ -198,42 +321,48 @@ PUBLIC PROC Run()
   started=1
   EXEC.Signal(parent,parentMask)
   WHILE closing=0 DO
-    DESKTOP.Prepare(@eventWait,DESKTYPES.NEXT_EVENT)
-    IF DESKTOP.Submit(@client,@eventWait)<>DESKTYPES.OK THEN
-      HEAPCORE.Abort($faf6)
+    IF (EXEC.SetSignal(0,stopMask) & stopMask)<>0 THEN
+      EXIT
     FI
 
-    waiting=1
-    reply=NULL
-    WHILE reply=NULL AND closing=0 DO
-      bits=EXEC.Wait((LONGCARD(1) LSH client.replies.mp_SigBit) OR stopMask)
-      IF (bits & stopMask)<>0 THEN
-        closing=1
-      ELSE
-        reply=DESKTOP.Collect(@client)
+    IF refresh<>0 THEN
+      RefreshStatus()
+      IF refresh<>0 THEN
+        EXEC.Yield()
       FI
-    OD
+    ELSE
+      DESKTOP.Prepare(@eventWait,DESKTYPES.NEXT_EVENT)
+      IF DESKTOP.Submit(@client,@eventWait)<>DESKTYPES.OK THEN
+        HEAPCORE.Abort($faf6)
+      FI
 
-    IF closing=0 THEN
-      IF reply<>NULL THEN
-        IF reply<>@eventWait OR reply.status<>DESKTYPES.OK THEN
-          HEAPCORE.Abort($faf7)
-        FI
-
-        waiting=0
-        IF reply.event.kind=DESKTYPES.EVENT_CLOSE THEN
+      waiting=1
+      reply=NULL
+      WHILE reply=NULL AND closing=0 DO
+        bits=EXEC.Wait((LONGCARD(1) LSH client.replies.mp_SigBit) OR stopMask)
+        IF (bits & stopMask)<>0 THEN
           closing=1
-        ELSEIF reply.event.kind=DESKTYPES.EVENT_KEY
-            OR (reply.event.kind=DESKTYPES.EVENT_BUTTON AND reply.event.buttons<>0) THEN
-          ; Finite CPU work without yielding or calling the GUI: ordinary VBI
-          ; preemption must leave shell input and presentation usable.
-          FOR index=0 TO 8191 DO
-            work=(work+index) XOR $5a5a
-          OD
+        ELSE
+          reply=DESKTOP.Collect(@client)
+        FI
+      OD
 
-          updates==+1
-          IF Replace()<>DESKTYPES.OK THEN
-            HEAPCORE.Abort($faf8)
+      IF closing=0 THEN
+        IF reply<>NULL THEN
+          IF reply<>@eventWait OR reply.status<>DESKTYPES.OK THEN
+            HEAPCORE.Abort($faf7)
+          FI
+
+          waiting=0
+          IF reply.event.kind=DESKTYPES.EVENT_CLOSE THEN
+            closing=1
+          ELSEIF reply.event.kind=DESKTYPES.EVENT_WIDGET_ACTION
+              OR reply.event.kind=DESKTYPES.EVENT_WIDGET_CANCEL THEN
+            lastObject=reply.event.object
+            updates==+1
+            refresh=1
+          ELSEIF reply.event.kind=DESKTYPES.EVENT_LOSS THEN
+            refresh=1
           FI
         FI
       FI
@@ -263,6 +392,8 @@ PUBLIC BYTE FUNC Start()
   closing=0
   waiting=0
   updates=0
+  refresh=0
+  lastObject=-1
   worker=EXEC.CreateTask(c"desktop-app",0,@Run,1024)
   IF worker=NULL THEN
     EXEC.FreeSignal(parentBit)

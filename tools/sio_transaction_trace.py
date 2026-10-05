@@ -7,7 +7,7 @@ from test_signal_concurrency import masked_intervals
 BASE_HZ=1773447.5
 
 
-def read_events(path):
+def read_events(path, kinds=None):
     # Ignore all other bridge output, which may contain session credentials.
     # Text-mode iteration normalizes CRLF before parsing.
     result=[];tick=0;masked=None
@@ -25,7 +25,8 @@ def read_events(path):
             if fields[0]=='mask':masked=bool(int(fields[5],16)&4)
             elif fields[0]=='cpu' and masked is not None:
                 require(bool(int(fields[11],16)&4)==masked,'CPU status disagrees with mask trace')
-            result.append((value+fraction,fields))
+            if kinds is None or fields[0] in kinds:
+                result.append((value+fraction,fields))
     require(result,'No SIO observation events')
     return result
 

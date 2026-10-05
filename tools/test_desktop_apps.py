@@ -2,6 +2,7 @@
 """Independent Task client, two-window pixels and reverse retirement."""
 import argparse
 from desktop_mouse import schedule
+from control_panel_oracle import panel
 import hashlib
 import json
 import os
@@ -86,13 +87,12 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                         frame(raster, (32, 24, 560, 208), b'Exec816 Shell', focused == 1)
                         terminal.paint(raster, 5, 5, focused == 1)
                     if panel_live:
-                        frame(raster, (432, 80, 624, 224), b'Exec816 App', focused == 2, 15, close=True)
-                        for y, value in ((104, b'Independent Task'), (120, b'Key/click: compute'), (136, b'Close: retire')):
-                            text(raster, 448, y, value, bg=15)
-                        rectangle(raster, (448, 160, 608, 184), 2+(read('DESKAPP', 'updates') & 3))
+                        panel(raster, focused == 2, status='Large [5]' if read('DESKAPP', 'updates') else 'Ready',
+                              radio=5 if read('DESKAPP', 'updates') else 4,
+                              focus=5 if read('DESKAPP', 'updates') else 2)
                     expected = overlay(raster, position)
                     golden = b''.join(colors[v >> 4]+colors[v & 15] for v in expected)
-                    for n in range(250):
+                    for n in range(1500):
                         f = b.rawscreen(str(directory/'scanout.bgra'))
                         raw = (directory/'scanout.bgra').read_bytes()
                         actual = b''.join(raw[y*f.stride+64:y*f.stride+2624] for y in range(240))
@@ -102,6 +102,9 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                             return
                         frames()
                     b.screenshot(str(directory/'failure.png'))
+                    case['app_failure']={name:read('DESKAPP',name,size) for name,size in (('updates',2),('lastObject',2),('refresh',1),('snapshot',3),('windowId',4),('tree',3),('patch',3))}
+                    case['app_failure']['snapshot_bytes']=b.memdump(read('DESKAPP','snapshot',3),140).hex()
+                    report['failed_case']=case
                     raise RuntimeError('Two-client recomposition differs: '+label)
                 def before(bridge):
                     nonlocal shell_live, panel_live, focused
@@ -117,10 +120,10 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                     require(owner != client_owner and client_owner != read('DESKAPP', 'parent', 3), 'App is not an independent Task')
                     case['owners'] = dict(presenter=owner, app=client_owner, shell=read('DESKAPP', 'parent', 3))
                     picture('overlapping app, focused shell')
-                    click(584, 152)
+                    click(584, 160)
                     focused = 2
                     reach(f'dw(${at("DESKAPP", "updates"):x})>=1')
-                    picture('independent compute and retained replacement')
+                    picture('semantic action and status patch')
                     old = read('DESKAPP', 'updates')
                     b._cmd_ok('KEY SPACE down')
                     reach(f'dw(${at("DESKAPP", "updates"):x})>{old}')

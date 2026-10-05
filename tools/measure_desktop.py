@@ -142,7 +142,7 @@ def trace_report(path, marks, windows, samples, native, cost_definition=None):
     return result
 
 
-def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'disk'), costs=False):
+def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'disk'), costs=False, quiet_app=False):
     out.mkdir(parents=True, exist_ok=True)
     p = read_build(program)
     pin = json.loads(json.dumps(PIN))
@@ -247,15 +247,16 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                 position = [320, 120]
                 if second_app:
                     # Select the independently scheduled application's exposed
-                    # client area. Graphical keys now drive real compute/repaint.
-                    schedule(b,p,position,(584,152))
-                    reach(f'(dw(${at("DESKINPUT", "cursorX"):x})=584)&(dw(${at("DESKINPUT", "cursorY"):x})=152)')
+                    # client area. The panel consumes widget actions on release.
+                    schedule(b,p,position,(584,160))
+                    reach(f'(dw(${at("DESKINPUT", "cursorX"):x})=584)&(dw(${at("DESKINPUT", "cursorY"):x})=160)')
                     b._cmd_ok('MOUSE AT 3000 0 0 1')
-                    reach(f'dw(${at("DESKAPP", "updates"):x})>=1')
+                    reach(f'dw(${at("DESKINPUT", "buttons"):x})=1')
                     frames(2)
                     b._cmd_ok('MOUSE AT 3000 0 0 0')
                     reach(f'dw(${at("DESKINPUT", "buttons"):x})=0')
-                    position = [584, 152]
+                    reach(f'dw(${at("DESKAPP", "updates"):x})>=1')
+                    position = [584, 160]
                 # Paced physical phases move to a blank desktop margin. Expected
                 # pixels follow the image's fixed desktop sensitivity.
                 schedule(b,p,position,(590,24))
@@ -267,7 +268,7 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                     b.memload(at('DESKTEST', 'mode'), mode.to_bytes(2, 'little'))
                     begin = clock()
                     for i in range(count):
-                        if second_app and i % 10 == 0:
+                        if second_app and not quiet_app and i % 10 == 0:
                             b._cmd_ok('KEY SPACE down')
                         # Change one diagonal phase and reverse every ten steps.
                         dx = 1 if (i//10) % 2 == 0 else -1
@@ -303,7 +304,7 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                             report['samples'].append(item)
                             reach(f'dw(${at("DESKINPUT", "buttons"):x})={pressed}')
                             frames(1)
-                        if second_app and i % 10 == 0:
+                        if second_app and not quiet_app and i % 10 == 0:
                             b._cmd_ok('KEY SPACE up')
                         if i % 20 == 0:
                             print(load, i, flush=True)
@@ -311,7 +312,8 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                     report.setdefault('progress', {})[load] = dict(writes=read('DESKTEST', 'writes'), reads=read('DESKTEST', 'reads'))
                 if second_app:
                     report['independent_app_updates'] = read('DESKAPP', 'updates')
-                    require(report['independent_app_updates'] > 1, 'Second app did not repaint')
+                    require(report['independent_app_updates'] >= (1 if quiet_app else 2), 'Second app did not respond')
+                    report['quiet_application_control'] = quiet_app
                 b.memload(at('DESKTEST', 'mode'), (9).to_bytes(2, 'little'))
                 b.bp_clear_all()
             report['runtime'], _ = execute(b, p, before_run=before, timeout=120, frame_limit=12000)
@@ -345,5 +347,6 @@ if __name__ == '__main__':
     parser.add_argument('--unobserved', action='store_true')
     parser.add_argument('--costs', action='store_true', help='Separate pointer CPU, interruptions and submissions')
     parser.add_argument('--loads', nargs='+', choices=('idle', 'scroll', 'disk', 'two_clients'), default=['idle', 'scroll', 'disk'])
+    parser.add_argument('--quiet-app', action='store_true', help='Matched pointer control with the panel present and no periodic application keys')
     args = parser.parse_args()
-    run(args.output.resolve(), args.program, args.count, args.unobserved, args.loads, args.costs)
+    run(args.output.resolve(), args.program, args.count, args.unobserved, args.loads, args.costs, args.quiet_app)

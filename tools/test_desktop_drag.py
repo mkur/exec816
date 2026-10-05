@@ -2,6 +2,7 @@
 """Physical nonmodal drags, independent recomposition and cancellation checks."""
 import argparse
 from desktop_mouse import schedule
+from control_panel_oracle import panel as draw_panel
 from bisect import bisect_left
 import hashlib
 import json
@@ -101,10 +102,7 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                 rectangle(model, (0, 0, 640, 240), 8)
                 focused = int.from_bytes(b.memdump(service+desktop_layout()['Service']['fields']['focus'], 4), 'little')
                 def application():
-                    frame(model, (432,80,624,224), b'Exec816 App', focused == 3, 15, close=True)
-                    for y, value in ((104,b'Independent Task'), (120,b'Key/click: compute'), (136,b'Close: retire')):
-                        paint_text(model,448,y,value,bg=15)
-                    rectangle(model,(448,160,608,184),2+(read('DESKAPP','updates') & 3))
+                    draw_panel(model, focused == 3)
                 if app_live and app_behind_shell:
                     application()
                 frame(model, shell, b'Exec816 Shell', focused == 1)
