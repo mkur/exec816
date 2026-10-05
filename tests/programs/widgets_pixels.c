@@ -40,8 +40,8 @@ void WidgetPixelProbe(void)
     tree.objects[5].kind=G_STRING;tree.objects[5].flags=0;tree.objects[5].spec=4;
     tree.objects[6].kind=G_IBOX;tree.objects[6].flags=LASTOB;tree.objects[6].spec=0x21170UL;
     check(WidgetValidate(&context,&tree,sizeof(tree),320,160)==WIDGET_OK);
-    for (stage=1;stage<=7;stage++) {
-        if (stage!=3 && stage!=6) check(GemDrawingFill(0,0,640,240,3)==DISPLAY_OK);
+    for (stage=1;stage<=12;stage++) {
+        if (stage!=3 && stage!=6 && stage!=12) check(GemDrawingFill(0,0,640,240,3)==DISPLAY_OK);
         if (stage==3) check(GemDrawingPointer(276,50,1)==DISPLAY_OK);
         if (stage==5) {
             tree.count=9;tree.objects[0].width=608;tree.objects[0].tail=8;
@@ -54,11 +54,30 @@ void WidgetPixelProbe(void)
             tree.objects[8].flags=LASTOB;tree.objects[8].x=65;tree.objects[8].y=26;
             check(WidgetValidate(&context,&tree,sizeof(tree),608,160)==WIDGET_OK);
         }
+        if (stage>=8 && stage<=11) {
+            tree.objects[0].kind=stage==8 ? G_IBOX : G_BOX;
+            tree.objects[0].spec=stage==11 ? 0x11178UL : 0x11108UL;
+            tree.objects[0].flags=stage==10 ? HIDETREE : 0;
+            check(WidgetValidate(&context,&tree,sizeof(tree),608,160)==WIDGET_OK);
+        }
         if (stage==7) {
             for (i=0;i<240;i+=16) {
                 GlyphClipTop=i;
                 check(GemDrawingBatch(0,i,640,i+16,ClippedGlyphsProbe)==DISPLAY_OK);
             }
+        }
+        else if (stage==11) {
+            packet.context=(uint32_t)&context;
+            packet.originX=17;packet.originY=19;packet.qualifiers=0;
+            packet.left=17;packet.top=42;packet.right=625;packet.bottom=58;packet.index=0;
+            check(WidgetPaint(&packet)==DISPLAY_OK && packet.changed);
+            /* A mismatched continuation must leave the pending strip intact. */
+            packet.right=624;
+            check(WidgetPaint(&packet)==DISPLAY_BAD_ARGUMENT);
+            packet.right=625;
+        }
+        else if (stage==12) {
+            do { check(WidgetPaint(&packet)==DISPLAY_OK); } while (packet.changed);
         }
         else if (stage==2) paint(32,45,295,57,0);
         else paint(17,19,stage>=5 ? 625 : 337,179,stage==4);

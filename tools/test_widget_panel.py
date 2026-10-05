@@ -46,7 +46,8 @@ def observers(p):
     return spans,marks,definition
 
 
-def run(out, program, count=100, unobserved=False, comparison_only=False):
+def run(out, program, count=100, unobserved=False, comparison_only=False,
+        idle_only=False, feedback=False):
     out.mkdir(parents=True, exist_ok=True)
     p=read_build(program)
     at=lambda mod,n:next(d['address'] for d in p['image']['data'] if '_'+mod+'_'+n.upper()+'_' in d['name'])
@@ -62,7 +63,8 @@ def run(out, program, count=100, unobserved=False, comparison_only=False):
     font=font_bytes(p['output'].parent/'selected/src/vdi/font8x8.c')
     colors={hw:bytes((v & 254)+(v >> 7) for v in PALETTE[pen*3:pen*3+3])[::-1] for pen,hw in enumerate(PENS)}
     report=dict(slice='AW5',status='running',tier='development',qualification=False,observer=not unobserved,
-        count_per_load=0 if comparison_only else count,samples=[],windows={},functional=[],comparison=[],build=p['build'],
+        count_per_load=0 if comparison_only else count,idle_only=idle_only,
+        feedback_observer=feedback,samples=[],windows={},functional=[],comparison=[],build=p['build'],
         reserved_bank_zero_delta=delta(p['build']['memory']),marks=marks,
         timing_scope='Capture to commit/application: passive boundaries or IRQ observation upper bounds. Visible feedback: first matching completed scanout, <=1 frame observation quantization.',
         targets=dict(idle=dict(p95_ms=40,max_ms=60,button_max_ms=40),loaded=dict(p95_ms=60,max_ms=100,button_max_ms=100)))
@@ -93,15 +95,33 @@ def run(out, program, count=100, unobserved=False, comparison_only=False):
                 nonlocal position
                 position=schedule(b,p,position,(x,y))
                 reach('(dw($%x)=%d)&(dw($%x)=%d)'%(at('DESKINPUT','cursorX'),position[0],at('DESKINPUT','cursorY'),position[1]))
-            def visible(pressed=-1, region=(432,80,624,224)):
+            def scan(region):
+                l,t,rr,bb=region
+                f=b.rawscreen(str(out/'scanout.bgra'));raw=(out/'scanout.bgra').read_bytes()
+                return b''.join(raw[y*f.stride+(x+16)*4:y*f.stride+(x+16)*4+3]
+                               for y in range(t,bb) for x in range(l,rr))
+            def visible(pressed=-1, region=(432,80,624,224), previous=None):
                 r=Raster(font);panel(r,True,**state,pressed=pressed)
                 packed=overlay(r,position)
                 l,t,rr,bb=region
                 want=b''.join(colors[packed[(y*640+x)//2] >> (0 if x & 1 else 4) & 15] for y in range(t,bb) for x in range(l,rr))
+                invalid_frames=max_invalid=0
                 for attempt in range(500):
-                    f=b.rawscreen(str(out/'scanout.bgra'));raw=(out/'scanout.bgra').read_bytes()
-                    actual=b''.join(raw[y*f.stride+(x+16)*4:y*f.stride+(x+16)*4+3] for y in range(t,bb) for x in range(l,rr))
-                    if actual==want:return dict(clock=clock(),sha256=hashlib.sha256(actual).hexdigest(),scans=attempt+1)
+                    actual=scan(region)
+                    if previous is not None:
+                        invalid=0
+                        for y in range(t,bb):
+                            for x in range(l,rr):
+                                # Pointer save/restore has its own presentation
+                                # timing; measure the control pixels around it.
+                                if position[0]-1<=x<position[0]+17 and position[1]<=y<position[1]+16:
+                                    continue
+                                at_pixel=((y-t)*(rr-l)+x-l)*3
+                                pixel=actual[at_pixel:at_pixel+3]
+                                invalid+=pixel!=previous[at_pixel:at_pixel+3] and pixel!=want[at_pixel:at_pixel+3]
+                        invalid_frames+=invalid>0;max_invalid=max(max_invalid,invalid)
+                    if actual==want:return dict(clock=clock(),sha256=hashlib.sha256(actual).hexdigest(),scans=attempt+1,
+                        invalid_frames=invalid_frames,max_invalid_pixels=max_invalid)
                     frames()
                 b.screenshot(str(out/'failure.png'))
                 raise RuntimeError('Panel pixels differ: '+str(state)+' pressed='+str(pressed))
@@ -131,6 +151,12 @@ def run(out, program, count=100, unobserved=False, comparison_only=False):
                 move(*POSITIONS[obj]);settled();state['focus']=obj
                 before=read('DESKAPP','updates');samples=[]
                 for down in (1,0):
+                    x,y=POSITIONS[obj]
+                    border=3 if obj==6 else 2 if obj==7 else 1
+                    button_region=(x-32-border,y-8-border,x+40+border,y+8+border)
+                    if feedback:
+                        frames(2)
+                        previous_pixels=scan(button_region)
                     item=dict(load=load,object=obj,edge='press' if down else 'release',submitted=clock())
                     b._cmd_ok('MOUSE AT 2000 0 0 '+str(down))
                     reach('dw($%x)=%d'%(at('DESKINPUT','buttons'),down));item['consumed']=clock()
@@ -144,6 +170,8 @@ def run(out, program, count=100, unobserved=False, comparison_only=False):
                     # Press feedback is an exact button crop; release feedback
                     # is the changed application label, followed by full panel.
                     region=(x-32,y-8,x+40,y+8) if down else (448,104,608,112)
+                    if feedback:
+                        item['button_feedback']=visible(obj if down else -1,button_region,previous_pixels)
                     item['visible']=visible(obj if down else -1,region)['clock']
                     samples.append(item)
                 settled();digest=visible();model()
@@ -190,7 +218,7 @@ def run(out, program, count=100, unobserved=False, comparison_only=False):
                 key('ESCAPE',-1);visible();model()
                 key('BREAK',-1);visible();model()
                 report['functional'].append(dict(name='Tab, Shift-Tab, Space, Return, Escape and BREAK'))
-                for name,value in (() if comparison_only else (('idle',0),('scroll',2),('disk',3))):
+                for name,value in (() if comparison_only else (('idle',0),) if idle_only else (('idle',0),('scroll',2),('disk',3))):
                     load(value);begin=clock();writes=read('DESKTEST','writes');reads=read('DESKTEST','reads')
                     for index in range(count):
                         click((2,5,6,4,7)[index%5],name)
@@ -225,6 +253,8 @@ def run(out, program, count=100, unobserved=False, comparison_only=False):
     return report
 
 def analyze(report, out, p, spans, marks, definition):
+    if report.get('feedback_observer'):
+        report['label_observation_scope']='With feedback enabled, the label check follows the button check and may overestimate first label visibility; compare button_feedback clocks for button latency.'
     trace=out/'emulator.log'
     events=read_events(trace, kinds={'cpu'})
     by_pc={}
@@ -246,6 +276,8 @@ def analyze(report, out, p, spans, marks, definition):
         sample['capture_to_commit_ms']=(commit-captured)/BASE_HZ*1000
         sample['capture_to_button_consumed_ms']=(align(sample['consumed'])-captured)/BASE_HZ*1000
         sample['capture_to_visible_ms']=(align(sample['visible'])-captured)/BASE_HZ*1000
+        if 'button_feedback' in sample:
+            sample['capture_to_button_pixels_ms']=(align(sample['button_feedback']['clock'])-captured)/BASE_HZ*1000
         if 'application' in sample:
             sample['capture_to_application_ms']=(align(sample['application'])-captured)/BASE_HZ*1000
     profile=analyze_events(events,definition)
@@ -260,9 +292,16 @@ def analyze(report, out, p, spans, marks, definition):
     report['latency']={}
     for load in report['windows']:
         selected=[s for s in report['samples'] if s['load']==load]
-        report['latency'][load]={key:distribution([s[key] for s in selected if key in s]) for key in ('capture_to_commit_ms','capture_to_application_ms','capture_to_button_consumed_ms','capture_to_visible_ms')}
+        report['latency'][load]={key:distribution([s[key] for s in selected if key in s]) for key in ('capture_to_commit_ms','capture_to_application_ms','capture_to_button_consumed_ms','capture_to_visible_ms','capture_to_button_pixels_ms')}
         report['latency'][load]['press_feedback']=distribution([s['capture_to_visible_ms'] for s in selected if s['edge']=='press'])
         report['latency'][load]['application_label']=distribution([s['capture_to_visible_ms'] for s in selected if s['edge']=='release'])
+        if report.get('feedback_observer'):
+            feedback=[s['button_feedback'] for s in selected]
+            report.setdefault('feedback',{})[load]=dict(
+                scope='Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.',
+                edges=len(feedback),edges_with_invalid_pixels=sum(s['invalid_frames']>0 for s in feedback),
+                invalid_frames=sum(s['invalid_frames'] for s in feedback),
+                max_invalid_pixels=max(s['max_invalid_pixels'] for s in feedback))
         lo,hi=map(align,report['windows'][load])
         paints=[s for s in profile['routine_spans'] if s['kind']=='paint' and lo<=s['start']<s['end']<=hi]
         report.setdefault('work',{})[load]=dict(paint_quanta=len(paints),
@@ -296,6 +335,8 @@ if __name__=='__main__':
     a.add_argument('--output',type=Path,required=True);a.add_argument('--program',type=Path,required=True)
     a.add_argument('--count',type=int,default=100);a.add_argument('--unobserved',action='store_true')
     a.add_argument('--comparison-only',action='store_true',help='Functional checks and matched patch/full-redraw control without the load cohorts')
+    a.add_argument('--idle-only',action='store_true',help='Run only the focused idle button cohort')
+    a.add_argument('--feedback',action='store_true',help='Observe intermediate button pixels for erase/redraw flicker')
     a.add_argument('--analyze-only',action='store_true',help='Recompute passive metrics from the completed guest run')
     args=a.parse_args()
     if args.analyze_only:
@@ -305,4 +346,4 @@ if __name__=='__main__':
         analyze(report,out,p,spans,marks,definition)
         report['status']='pass';report.pop('error',None)
         (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
-    else:run(args.output.resolve(),args.program.resolve(),args.count,args.unobserved,args.comparison_only)
+    else:run(args.output.resolve(),args.program.resolve(),args.count,args.unobserved,args.comparison_only,args.idle_only,args.feedback)

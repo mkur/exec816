@@ -19,6 +19,10 @@ def expected(stage):
     import vdiref as v
     device=v.VDI();device.call(v.V_OPNWK,(),v.WORK_IN)
     device.dev.fill_rect(0,0,639,239,3)
+    if stage==11:
+        # More than four objects intersect this strip. Its first chunk must
+        # remain offscreen, including across a rejected continuation.
+        return bytes(device.dev.s.mem[:76800])
     if stage==7:
         for i in range(64):
             x=16+(i%8)*32+(i&1);y=8+(i//8)*16
@@ -42,8 +46,16 @@ def expected(stage):
         tree[0].ob_width=608;tree[0].ob_tail=8;tree[6].ob_next=7;tree[6].ob_flags=0
         tree.append(a.Obj(8,-1,-1,a.G_STRING,0,0,8,24,70,504,24))
         tree.append(a.Obj(0,-1,-1,a.G_STRING,a.LASTOB,0,4,65,26,40,24))
+    if 8<=stage<=10:
+        # Transparent and hidden roots still receive the client's background.
+        # Several children intersect one strip, so this also checks that a
+        # continuation preserves pixels drawn by its preceding chunk.
+        device.dev.fill_rect(17,19,624,178,8)
+        tree[0].ob_type=a.G_IBOX if stage==8 else a.G_BOX
+        tree[0].ob_spec=0x11108
+        tree[0].ob_flags=a.HIDETREE if stage==10 else 0
     aes=a.AES(device,tree,{0:a.Text('Abc'),4:a.Text('XYZ'),8:a.Text('A'*63)});aes.gsx_start()
-    aes.gsx_sclip(a.Rect(32,45,263,12) if stage==2 else a.Rect(17,19,608 if stage>=5 else 320,160))
+    aes.gsx_sclip(a.Rect(32,45,263,12) if stage==2 else a.Rect(17,42,608,16) if stage==12 else a.Rect(17,19,608 if stage>=5 else 320,160))
     aes.ob_draw(0,7)
     if stage==4:
         for x in range(29,63):device.dev.plot_xor(x,63)
@@ -65,7 +77,7 @@ def run(out,mode,replay=False):
             require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
             report['machine']=verify_machine(b,ROM,PIN)
             def before(b):
-                for stage in range(1,8):
+                for stage in range(1,13):
                     marker=p['labels']['native_nmi'];condition='dw($%x)=%d'%(f['symbols']['WidgetPixelStage'],stage)
                     b.bp_clear_all();b.bp_set(marker,condition=condition)
                     run_to(b,marker,condition=condition,frame_limit=6000,timeout=120)

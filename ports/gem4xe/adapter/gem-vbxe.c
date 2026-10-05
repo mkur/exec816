@@ -29,6 +29,11 @@ static UWORD dirty, fault;
 static UBYTE commands[VBXE_BCB_BYTES];
 static UWORD commandCount;
 static ULONG commandWork;
+/* The 5120 bytes immediately after the screen hold one 640 x 16 strip.
+ * Only widget callbacks redirect drawing, never other owner operations. */
+#define WIDGET_STRIP_BASE 76800UL
+static UWORD stripActive,stripRedirect,stripLeft,stripTop,stripRight,stripBottom;
+static ULONG stripOffset;
 static void pointer_reset(void);
 static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom);
 static void outline_hide(void);
@@ -51,7 +56,9 @@ static void flush(void)
 }
 volatile uint8_t *vram_win(uint32_t address)
 {
-    ULONG base=address&~0xfffUL;
+    ULONG base;
+    if (stripRedirect && address<VBXE_SCREEN_BYTES) address+=stripOffset;
+    base=address&~0xfffUL;
     drain();
     if (!dirty || base!=pageAddress) {
         flush();
@@ -71,6 +78,7 @@ void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
     ULONG work;
     UBYTE *record;
     if (fault) return;
+    if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
     /* Check the whole operation before an arena flush could draw a prefix. */
     if (mode>6 || !VbxeBlitExtent(source,ss,bytes,rows) ||
         !VbxeBlitExtent(dest,ds,bytes,rows)) {
@@ -106,6 +114,7 @@ void blit_glyph(uint32_t source,uint16_t stride,uint32_t dest,uint16_t bytes,uin
     UBYTE *r;
     UWORD work=bytes*24;
     if (fault) return;
+    if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
     if (dirty) flush();
     if (commandCount==VBXE_LIST_RECORDS || commandWork+work>VBXE_LIST_WORK) drain();
     if (fault) return;
@@ -161,6 +170,7 @@ static UWORD close_owner(void)
     }
     GemVdiReset();
     dirty=commandCount=0; commandWork=0;
+    stripActive=stripRedirect=0;
     return fault ? DISPLAY_DEVICE_FAULT : status;
 }
 static UWORD fence_owner(void)
@@ -475,6 +485,7 @@ static void pointer_reset(void)
     cursorAddress=0;
     cursorMasksReady=0;
     outlineVisible=outlineDrawn=0;
+    stripActive=stripRedirect=0;
 }
 
 /* The save includes adjacent edge nibbles. Restore before either is changed. */
@@ -571,6 +582,53 @@ UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)
     if (display.operationPending) return DISPLAY_BUSY;
     GemDrawingPrepare(left,top,right,bottom);
     draw();
+    return fence_owner();
+}
+
+/* Reconstruct a widget strip offscreen across bounded object continuations.
+ * A callback returns nonzero only when every intersecting object is complete.
+ * No callback or client pointer survives a call. The presenter freezes the
+ * model until the strip retires; a new first chunk discards an abandoned one. */
+UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                            UWORD first,UWORD (*draw)(void))
+{
+    UWORD status,complete,lo,hi,rows;
+    ULONG screen,scratch;
+    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 ||
+        bottom-top>16) return DISPLAY_BAD_ARGUMENT;
+    if (!first && (!stripActive || left!=stripLeft || top!=stripTop ||
+        right!=stripRight || bottom!=stripBottom)) return DISPLAY_BAD_ARGUMENT;
+    status=DisplayCheck(&display.lease);
+    if (status!=DISPLAY_OK) return status;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (display.operationPending) return DISPLAY_BUSY;
+    if (first) {
+        stripActive=1;stripLeft=left;stripTop=top;stripRight=right;stripBottom=bottom;
+        stripOffset=WIDGET_STRIP_BASE-(ULONG)top*320;
+    }
+    stripRedirect=1;
+    complete=draw();
+    stripRedirect=0;
+    if (complete && !fault) {
+        /* Scratch writes precede the copy in the same ordered list when it
+         * fits. Capacity drains still touch only completed scratch work. */
+        /* Preserve the neighbouring nibble at either odd clip edge. Pointer
+         * save/restore sees screen coordinates only at this publish boundary. */
+        GemDrawingPrepare(left,top,right,bottom);
+        screen=(ULONG)top*320;scratch=WIDGET_STRIP_BASE;
+        lo=left/2;hi=right/2;rows=bottom-top;
+        if (left&1) {
+            blit_and(screen+lo,320,1,rows,0xf0);
+            blit_mask(scratch+lo,320,screen+lo,320,1,rows,0x0f,0,3);
+            ++lo;
+        }
+        if (hi>lo) blit_mask(scratch+lo,320,screen+lo,320,hi-lo,rows,255,0,0);
+        if (right&1) {
+            blit_and(screen+hi,320,1,rows,0x0f);
+            blit_mask(scratch+hi,320,screen+hi,320,1,rows,0xf0,0,3);
+        }
+        stripActive=0;
+    }
     return fence_owner();
 }
 

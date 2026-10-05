@@ -36,5 +36,9 @@ UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible);
 /* Internal renderer closure: callback is linked trusted code, never a client
  * pointer. One owner check and fence cover the complete bounded paint quantum. */
 UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void));
+/* Widget-only strip buffer; first resets it, draw returns nonzero on completion.
+ * The complete clipped strip replaces screen pixels only after the final chunk. */
+UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                            UWORD first,UWORD (*draw)(void));
 void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom);
 #endif

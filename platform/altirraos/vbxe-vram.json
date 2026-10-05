@@ -8,10 +8,19 @@
     {
       "name": "screen",
       "base": 0,
-      "reserved_bytes": 81920,
+      "reserved_bytes": 76800,
       "capacity_bytes": 76800,
       "g3_used_bytes": 76800,
       "g4_used_bytes": 76800
+    },
+    {
+      "name": "widget_strip",
+      "base": 76800,
+      "reserved_bytes": 5120,
+      "capacity_bytes": 5120,
+      "g3_used_bytes": 0,
+      "g4_used_bytes": 0,
+      "widget_used_bytes": 5120
     },
     {
       "name": "xdl",
@@ -103,5 +112,5 @@
       "bytes": 32
     }
   ],
-  "note": "Exclusive display ownership. B1 uses a 4096-byte command arena with at most 64 records and 8192 estimated bus accesses per submission. DT3 retains even and odd pointer masks in VRAM; cursor reservation grows by 256 bytes, with no new CPU aperture or bank-zero storage. DR5 reserves two compact client snapshot slots, including unused slot capacity; snapshots add no bank-zero storage."
+  "note": "Exclusive display ownership. B1 uses a 4096-byte command arena with at most 64 records and 8192 estimated bus accesses per submission. DT3 retains even and odd pointer masks in VRAM; cursor reservation grows by 256 bytes, with no new CPU aperture or bank-zero storage. DR5 reserves two compact client snapshot slots, including unused slot capacity; snapshots add no bank-zero storage. Widget repaint uses the former 5120-byte screen padding for a 640 by 16 offscreen strip; total reservation is unchanged."
 }

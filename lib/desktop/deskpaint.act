@@ -190,8 +190,8 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       FI
     FI
 
-    ; The console's replacement glyph cells cover the entire clipped client,
-    ; including partial cells. Other clients can leave gaps or draw transparently.
+    ; Widget background and objects share a drawing batch. The console's
+    ; replacement glyphs cover the client; command clients need a separate fill.
     IF okay<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
       REGIONS.Intersect(@client,@strip,@area)
       cached=DESKCACHE.Restore(service,window,@client,@area)
@@ -202,7 +202,9 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
         RETURN(0)
       FI
 
-      okay=Fill(@client,@strip,window.content.background)
+      IF window.kind<>DESKTYPES.CONTENT_WIDGETS OR window.widgets=NULL THEN
+        okay=Fill(@client,@strip,window.content.background)
+      FI
     FI
 
     IF okay=0 THEN

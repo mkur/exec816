@@ -84,6 +84,16 @@ these changes. The 256-byte ink cache and 21-byte template fit inside the
 existing C bank reservations; B2 adds no bank-zero or VRAM reservation. The sixth
 extraction patch adds clipped glyphs without new storage or reservations.
 
+The private `GemDrawingWidgetBatch` closure redirects widget drawing into a
+640 × 16 strip at VRAM `$12C00`. The strip uses the screen's former 5,120-byte
+padding, so the total VRAM reservation is unchanged. Partial object continuations
+stay offscreen; only the completed clip is copied to the screen. Odd edge nibbles
+are preserved, and pointer/outline removal happens at publication in screen
+coordinates. Every call checks its owner and fences before returning. A new first
+chunk replaces abandoned contents; a continuation with different bounds is rejected.
+No callback pointer survives the call. Six words and one longword of state use
+16 bytes inside the existing upper C data reservation; bank-zero growth is zero.
+
 Even-X `GemDrawingText` runs use a driver-generated list instead of repeating
 the generic device and list-validation path for every glyph. The driver checks
 the entire CPU string, screen rectangle, colours and 256-glyph atlas before

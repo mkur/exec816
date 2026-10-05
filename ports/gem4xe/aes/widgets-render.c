@@ -21,15 +21,38 @@ void WidgetText(WORD x,WORD y,const WORD *glyphs,WORD count,WORD mode,WORD colou
     GemWidgetText(x,y,glyphs,count,colour,gl_clip.g_x,gl_clip.g_y,
         gl_clip.g_x+gl_clip.g_w,gl_clip.g_y+gl_clip.g_h);
 }
-static void quantum(void)
+static UWORD quantum(void)
 {
     struct WidgetContext *c=(struct WidgetContext *)paint->context;
     uint16_t done=0,index;
-    GRECT mark;
-    while (paint->index<c->count && done<4) {
-        index=c->order[paint->index++];
+    WORD border;
+    GRECT bounds,mark;
+    /* The validated root spans the client. A visible solid box supplies its
+       own background; transparent or hidden roots need the client's fill.
+       Keep that fill in the same drawing batch as the first visible objects. */
+    if (!paint->index &&
+        (c->objects[0].ob_type!=G_BOX || !WidgetVisible(c,0) ||
+         ((c->objects[0].ob_spec>>4)&7)!=IP_SOLID))
+        WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,c->background,&gl_clip);
+    while (paint->index<c->count) {
+        index=c->order[paint->index];
+        bounds=c->bounds[index];
+        border=c->objects[index].ob_type==G_BUTTON ?
+            1+!!(c->objects[index].ob_flags&EXIT)+!!(c->objects[index].ob_flags&DEFAULT) : 0;
+        bounds.g_x+=paint->originX-border;bounds.g_y+=paint->originY-border;
+        bounds.g_w+=2*border;bounds.g_h+=2*border;
+        if (!WidgetVisible(c,index) || bounds.g_x>=gl_clip.g_x+gl_clip.g_w ||
+            bounds.g_y>=gl_clip.g_y+gl_clip.g_h ||
+            bounds.g_x+bounds.g_w<=gl_clip.g_x || bounds.g_y+bounds.g_h<=gl_clip.g_y) {
+            ++paint->index;
+            continue;
+        }
+        /* Bound actual drawing, not rejected objects. Keep order for overlap,
+           and scan past rejected tails without scheduling an empty chunk. */
+        if (done==4) break;
+        ++paint->index;
         WidgetDrawObject(c,index,paint->originX,paint->originY);
-        if (paint->qualifiers && c->focus==index && WidgetVisible(c,index)) {
+        if (paint->qualifiers && c->focus==index) {
             mark=c->bounds[index];
             mark.g_x+=paint->originX+3;mark.g_y+=paint->originY+mark.g_h-3;
             mark.g_w-=6;mark.g_h=1;
@@ -37,6 +60,7 @@ static void quantum(void)
         }
         done++;
     }
+    return paint->index==c->count;
 }
 uint16_t WidgetPaint(struct WidgetPacket *p)
 {
@@ -50,7 +74,7 @@ uint16_t WidgetPaint(struct WidgetPacket *p)
         return DISPLAY_BAD_ARGUMENT;
     r_set(&gl_clip,p->left,p->top,p->right-p->left,p->bottom-p->top);
     paint=p;
-    status=GemDrawingBatch(p->left,p->top,p->right,p->bottom,quantum);
+    status=GemDrawingWidgetBatch(p->left,p->top,p->right,p->bottom,p->index==0,quantum);
     p->changed=p->index<c->count;
     paint=0;
     return status;

@@ -227,3 +227,73 @@ The refreshed archive is `build/clipped-glyphs/preview/exec816-demo.zip`. Its
 desktop boot, disks, guide, ROM and notices are checked from extracted ZIP bytes.
 The root keeps the unchanged AW6 standard shell/prime package and five-second
 OF816 autoboot. The follow-up record pins the archive and test results.
+
+## Button feedback follow-up
+
+The [button feedback evidence](../development/aes-widgets-feedback.json) records
+a focused idle comparison on the pinned PAL 8× machine. The presenter previously
+cleared the client separately and charged hidden/out-of-clip objects against its
+four-object turn budget. A clear could therefore reach the display before the
+affected control was drawn. Painting now budgets only intersecting visible
+objects, keeps background initialization with the first object chunk, and draws
+widget strips offscreen until they are complete. Tree order, outward borders,
+focus marks and the existing sixteen-row/four-object limits are preserved.
+
+The buffer reuses 5,120 bytes of screen padding at VRAM `$12C00`. Intermediate
+command-list drains remain offscreen, while the completed clip is copied with
+odd edge nibbles preserved. Pending scratch writes and publication share an
+ordered list when capacity and pointer restoration permit. This is strip
+publication, not an atomic swap of a whole frame or window.
+
+Five paced actions give these capture-to-pressed-pixel observations:
+
+| Control | Before | After |
+| --- | ---: | ---: |
+| Toggle | 139.12 ms | 159.08 ms |
+| Large | 379.87 ms | 319.49 ms |
+| Apply | 379.87 ms | 339.70 ms |
+| Small | 179.29 ms | 138.87 ms |
+| Cancel | 379.87 ms | 339.45 ms |
+
+The improvement is modest and not uniform: Toggle takes one additional PAL
+frame in this sample. The ten press/release edges show **48 → 0 observed frames**
+with button pixels matching neither their old nor final colour. Observation
+starts after the model/application checkpoint, stops at the first exact match
+and excludes the pointer footprint; it is not continuous scanout or proof for
+every possible gesture. Final button hashes match across builds.
+
+Across those actions, Paint calls fall from 66 to 35 and hardware starts from
+250 to 189. Charged Paint CPU rises from 1,202.72 to 1,233.71 ms, with maximum
+call cost rising from 53.17 to 63.89 ms. Reduced scheduling/clearing delays account
+for the faster controls; this is not a CPU-throughput gain. Neither build enters
+the 4 KiB CPU staging adapter in the measured cohort. Old/new focus still produce
+one union rectangle, so painting between distant controls remains a latency
+cost. The existing responsiveness targets remain open.
+
+Optimized emitted checks cover twelve independent pixel scenes, including
+transparent/hidden roots, overlapping objects, odd clips, an unfinished strip
+that must stay offscreen, and rejection of a mismatched continuation. The panel
+fixture retains keyboard, disabled-control, independent-context, final-pixel,
+guard and ownership checks. An aligned ten-scene cache/exposure run passes on
+the buffered renderer before the final redundant-flush removal; final emitted
+pixel and application checks exercise the resulting ordered-list publication.
+The host suite runs 361 tests: 357 pass and four historical checks are skipped.
+This is development coverage, not release or physical-hardware qualification.
+
+Reserved bank-zero growth is **0 bytes** for fixed/root/kernel, each public Task
+and private idle, including guards, alignment and unused capacity. Six words and
+one longword use 16 more bytes within the existing upper C data reservation.
+Upper-RAM and total VRAM reservations do not grow.
+
+The refreshed archive is `build/widget-feedback/preview/exec816-demo.zip`, SHA-256
+`7024a53cda56b96ff5bd3e5f7adfe3fd33c39aa805314004dfc52e23abd4bca1`.
+All 24 file hashes verify. Its root retains the unchanged standard shell/prime
+boot artifacts; the extracted desktop passes the OF816 countdown, controls,
+dragging, physical disk commands, writable WORK, pipeline, BREAK, guards and EXIT
+checks. The measured panel and demo link the identical C renderer image.
+
+The initial walkthrough timed out after a BREAK checkpoint selected only by
+multiple dirty console rows. Command echo can satisfy that condition before CAT
+starts. The runner now waits for CAT's foreground scope and active console write
+as well as dirty rows; the same packaged image passes that precise scenario.
+The evidence retains the failed attempt and the successful checkpoint.

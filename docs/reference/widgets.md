@@ -68,8 +68,14 @@ zero for fixed/root/kernel, every public Task and private idle, including guards
 alignment and spare capacity. Widgets add no VRAM reservation.
 
 Painting reconstructs the damaged client background and intersecting objects
-in tree order. The presenter admits at most four objects and sixteen scanlines
-per turn and services input between continuations. One Layers token freezes the
+in tree order. The presenter draws at most four visible, intersecting objects
+and sixteen scanlines per turn; hidden and out-of-clip objects do not consume
+that drawing budget. Background initialization shares the first object batch,
+and a visible solid root box supplies its own background. A 5,120-byte VRAM strip
+holds partial drawing; the final chunk copies only completed pixels to the screen,
+preserving adjacent nibbles at odd clip edges. This uses the former screen padding,
+so total VRAM reservation is unchanged. The presenter services input between
+continuations. One Layers token freezes the
 model across these turns. Occluded updates retain their new state without
 painting; later exposure reconstructs that state. Pointer overlays share the
 existing drawing owner and command arena.
