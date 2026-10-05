@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import generate_tasks
 from pathlib import Path
 import adapter_state as adapter
 from build_bitmap_console import build_bitmap
@@ -51,12 +52,18 @@ def frame(raster, bounds, title, focused, background=0, close=False):
 def scenes(font):
     terminal = Terminal(64, 20)
     terminal.feed(b'ABC')
-    for stage in range(1, 16):
+    for stage in range(1, 19):
         if stage == 2:
             for row in range(25):
                 terminal.feed(bytes(33+(row*7+col) % 90 for col in range(64)))
         if stage == 5:
             terminal.feed(b'\x0cHello')
+        if stage == 16:
+            for row in range(25):
+                terminal.feed(bytes(33+(row*11+col) % 90 for col in range(64)))
+        if stage == 17:
+            terminal.feed(bytes(10 if col % 31 == 30 else 65+col % 26
+                                for col in range(512)))
         raster = Raster(font)
         rectangle(raster, (0, 0, 640, 240), 8)
         left, top = (32, 24) if stage < 3 else (80, 48)
@@ -71,6 +78,9 @@ def scenes(font):
             x, y = positions[stage-7]
             frame(raster, (x, y, x+160, y+80), b'Clip', False, 3, close=True)
             text(raster, x+11, y+19, b'XYZ', bg=3)
+        if stage in (16, 17):
+            frame(raster, (377, 0, 537, 173), b'Clip', False, 3, close=True)
+            text(raster, 388, 19, b'XYZ', bg=3)
         yield overlay(raster, (320, 120))
 
 
@@ -80,8 +90,31 @@ def run(out, mode, replay=False, observe_moves=False):
     profile['image_data_bytes'] = 8192  # Fixture records, separate from the demo's 4 KiB.
     memory = out/'fixture-memory.json'
     memory.write_text(json.dumps(profile, indent=2)+'\n')
-    p = read_build(out/'program') if replay else build_bitmap(
-        ROOT/'tests/programs/desktop_presentation.act', out, mode == 'opt', desktop=True, memory_profile=memory)
+    original = generate_tasks.policy_modules
+    def instrument(*args, **kwargs):
+        directory = original(*args, **kwargs)
+        path = directory/'consoledriver.act'
+        source = path.read_text().replace('USE EXEC\n', 'USE EXEC\nUSE SCROLLPROBE\n', 1)
+        needle = '  consumed=CONSOLECORE.Feed(instance,'
+        require(source.count(needle) == 1, 'Console feed boundary changed')
+        path.write_text(source.replace(needle, '  SCROLLPROBE.Feed(instance)\n'+needle))
+        include = ROOT/'lib/console/console-batch-display.inc'
+        source = include.read_text()
+        needle = '  CONSOLEBATCH.Publish(instance,reason)'
+        require(source.count(needle) == 1, 'Console batch publication changed')
+        target = directory/'scroll-batch.inc'
+        target.write_text(source.replace(needle, needle+'\n  SCROLLPROBE.Batch(batch.rows)'))
+        path = directory/'consoledisplay.act'
+        path.write_text(path.read_text().replace('USE A816MEMORY\n',
+            'USE A816MEMORY\nUSE SCROLLPROBE\n', 1).replace(str(include), str(target)))
+        return directory
+    (out/'scrollprobe.act').write_bytes((ROOT/'tests/programs/scrollprobe.act').read_bytes())
+    try:
+        generate_tasks.policy_modules = instrument
+        p = read_build(out/'program') if replay else build_bitmap(
+            ROOT/'tests/programs/desktop_presentation.act', out, mode == 'opt', desktop=True, memory_profile=memory)
+    finally:
+        generate_tasks.policy_modules = original
     require(p['build']['optimize'] == (mode == 'opt'), 'Wrong compiler mode')
     report = dict(status='running', tier='development', qualification=False, slice='DT2',
                   build=p['build'], observations=[], move_transactions=[], bank_zero_delta=bank_zero_delta(p['build']['memory']),
@@ -144,6 +177,14 @@ def run(out, mode, replay=False, observe_moves=False):
             if observe_moves: bridge.profile_stop()
             report['stack_usage'] = stack_usage(bridge, p['build']['memory'])
             report['checks'] = data(bridge,p['image'],'checks',True)[0]
+            report['continuous_scroll'] = {name: data(bridge,p['image'],name,True)[0]
+                                           for name in ('feeds', 'overtakes', 'batches', 'multirow', 'maxRows')}
+            require(report['continuous_scroll']['feeds'] >= 25, 'No continuous short-write coverage')
+            require(report['continuous_scroll']['overtakes'] == 0,
+                    'New console output overtook unfinished scroll repaint')
+            require(report['continuous_scroll']['multirow'] > 0 and
+                    1 < report['continuous_scroll']['maxRows'] <= 4,
+                    'No bounded multirow repaint behind the overlapping panel')
             report['status'] = 'pass'
         if observe_moves:
             from sio_transaction_trace import read_events,BASE_HZ

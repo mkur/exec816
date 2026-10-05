@@ -22,6 +22,7 @@ USE CONSOLECONTROL
 USE DISPLAY
 USE DISPLAYADAPTER
 USE DESKHOST
+USE DESKSTATE
 USE DESKPAINT
 USE DESKINPUT
 INCLUDE "console-storage-action.inc"
@@ -235,6 +236,14 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
 
   IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
     FinishWrite(instance,request)
+    RETURN(0)
+  FI
+
+  ; An obscured scroll repaints the retained rows in bounded passes. Let that
+  ; repaint reach the bottom before another write can invalidate its prefix.
+  ; Input, cancellation and desktop controls still run on every worker turn.
+  IF CONSOLEBITMAP.Enabled()<>0 AND view.claimed<>0 AND view.visible<>0
+      AND instance.dirtyRows<>0 AND DESKSTATE.CopyReady()=0 THEN
     RETURN(0)
   FI
 

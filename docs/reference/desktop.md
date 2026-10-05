@@ -119,7 +119,17 @@ that token retires.
 A scroll can reuse pixels only when the layer is clean and fully visible.
 Its existing copy/fill list holds the scene token until completion IRQ/watchdog
 processing proves completion or quiescence. Obscured scrolls update retained
-cells and redraw visible damage. No per-frame polling is added. Existing
+cells and redraw visible damage. Before consuming more output, an obscured
+visible console drains its existing row damage using the ordinary bounded
+presentation passes. This prevents repeated scrolls from restarting repair at
+the top and starving the lower rows. Input, cancellation and desktop controls
+continue between passes. This redraw path remains slower than an unobscured
+hardware copy; it does not reuse partially visible scroll sources.
+Long writes use the existing batch limits (four rows, 256 bytes, four worker
+turns or a tick boundary) before repainting the resulting model once. A batch
+admitted behind another window keeps its redraw path even if exposure changes
+before publication; newly repainted pixels cannot become a scroll-copy source.
+No per-frame polling is added. Existing
 reset-required hardware faults cannot return to free referenced storage.
 
 The presenter acquires the ST mouse source on joystick port 1 with the existing

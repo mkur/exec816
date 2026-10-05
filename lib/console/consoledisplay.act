@@ -17,7 +17,7 @@ BYTE oldchr=$5d
 CARD savmsc=$58,sdlst=$230,oldadr=$5e
 DISPLAY.Lease lease
 LONGCARD bitmapUnit,bitmapGeneration,bitmapModel
-BYTE bitmapReady
+BYTE bitmapReady,batchCopyReady
 
 CONST ROW_BUDGET=4, CELL_BUDGET=160
 

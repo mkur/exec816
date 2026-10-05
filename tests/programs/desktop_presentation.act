@@ -14,9 +14,11 @@ USE DESKBOOT
 USE DESKSTATE
 USE DESKPAINT
 USE REGIONS
+USE SCROLLPROBE
 
 CARD checks,checkpoint,gate
 BYTE ARRAY text(64)
+BYTE ARRAY bulk(512)
 DESKTYPES.Request request
 DESKTYPES.Content content
 LONGCARD panel
@@ -159,6 +161,43 @@ PROC Main()
   MovePanel(0,160,14)
   Send(DESKTYPES.CLOSE,panel)
   Pause(15)
+  ; Continuous output behind a panel must finish each bounded repaint before
+  ; another scroll can invalidate its lower rows. No settling between writes.
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_COMMANDS
+  request.payload=BYTE POINTER(c"Clip")
+  request.bytes=4
+  REGIONS.Assign(@request.bounds,377,0,537,173)
+  Send(DESKTYPES.OPEN,0)
+  panel=request.window
+  DESKTOP.Prepare(@request,DESKTYPES.REPLACE)
+  request.payload=BYTE POINTER(@content)
+  request.bytes=DESKTYPES.CONTENT_SIZE
+  Send(DESKTYPES.REPLACE,panel)
+  Send(DESKTYPES.SHOW,panel)
+  Settled()
+  SCROLLPROBE.enabled=1
+  FOR row=0 TO 24 DO
+    FOR column=0 TO 63 DO
+      text(column)=BYTE(33+(row*11+column) MOD 90)
+    OD
+
+    Require(DOS.Write(file,text,64)=64)
+  OD
+
+  Pause(16)
+  FOR column=0 TO 511 DO
+    bulk(column)=BYTE(65+(column MOD 26))
+    IF column MOD 31=30 THEN
+      bulk(column)=10
+    FI
+  OD
+
+  Require(DOS.Write(file,bulk,512)=512)
+  Pause(17)
+  SCROLLPROBE.enabled=0
+  Send(DESKTYPES.CLOSE,panel)
+  Pause(18)
   Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
 
 RETURN

@@ -307,3 +307,59 @@ earlier slices and generated build maps. AW5–AW6 were paused during DR7; their
 subsequent [application and preview record](aes-widgets.md) measures the complete
 widget path. Rendering work through DR7 is implemented; latency acceptance
 remains open with unchanged limits.
+
+## Obscured console scrolling follow-up
+
+The [development record](../development/desktop-scroll-starvation.json) covers
+scrolling while another window obscures the console. The original writer could
+advance the retained model while a preceding scroll still had dirty rows.
+Each new scroll restarted damage at row zero, so repeated output repainted the
+top while starving lower rows. Closing the panel restored the fully visible
+hardware-copy path. Final, settled raster comparisons alone missed this bug.
+
+The writer now drains pending damage before consuming another source quantum
+when its visible console cannot copy. Input and desktop controls continue on
+each worker turn, and cancellation is checked before this admission gate.
+Long writes also use the existing bounded batch policy behind an occluder;
+publication marks the whole resulting model dirty and the presenter completes
+its bounded repaint before accepting another batch. The four-row, 256-byte,
+four-turn and tick-boundary limits are unchanged. One worker-owned byte retains
+copy eligibility from admission, preventing later exposure from promoting an
+already gathered redraw into a copy of newer pixels.
+
+The optimized presentation fixture now includes 25 uninterrupted short writes,
+a 512-byte long write, an odd-edged overlapping panel and its subsequent close.
+All eighteen full-scene raster checks pass. A fixture-only observer detects 27
+instances of writes overtaking unfinished repaints in the original build and
+zero in the fixed build. The final run also exercises nine redraw batches,
+including five multirow batches and a maximum of three rows.
+
+| Matched fixture | Short-write scene | Long-write scene |
+| --- | ---: | ---: |
+| Original, with starvation | 5.01 s | 4.53 s |
+| Complete repaint before more output | 7.74 s | 13.10 s |
+| Complete repaint plus bounded redraw batching | 7.74 s | 7.44 s |
+
+These single-run times include fixture work, repair and two settling frames;
+the short-write scene also opens the panel. Batching reduces the cost of the
+correct fallback, but the original defective path skipped intermediate lower-row
+work. This fix does not establish a throughput improvement over that path or
+meet the open latency targets. Partially visible pixel reuse remains unsupported;
+unobscured scrolling still uses the faster hardware copy.
+
+The focused hardware-scroll fixture also passes its six scenes, cancellation,
+source retirement and OS restoration, with 44 copy launches including 26
+multirow launches. The extracted OF816 desktop preview passes the packaged
+walkthrough, including physical BREAK during an obscured scroll, ownership
+restoration, widget interaction, disk commands and EXIT. These are development
+checks on the pinned PAL, 65816 x8, 4 MiB, VBXE configuration, not a full
+qualification or a hardware claim. Host discovery passes 357 tests with four
+historical skips.
+
+Reserved bank-zero delta is zero for fixed state, root/kernel, every public
+Task and idle, including guards, alignment and unused capacity. The existing
+upper-memory arena and occupied image banks are unchanged; the new scalar adds
+no reservation. VRAM, stack and direct-page reservations are unchanged.
+The refreshed `build/occluded-scroll/preview/exec816-demo.zip` retains the
+standard five-second OF816 shell/prime boot and provides the updated desktop
+under `desktop/`, with matching media, ROM, checksums and notices.

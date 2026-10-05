@@ -512,6 +512,28 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     saved['desktop_peak_tasks']=7
                     ready(previous);result()
                     require(b'24 133 746' in cells('desktop-pipeline'),'Desktop pipeline result differs')
+                    # BREAK must still reach a writer whose obscured console
+                    # is draining a full scroll repaint between source quanta.
+                    baseline=ledger()
+                    previous=begin('CAT SYS:LONG.TXT')
+                    # Echoing the command can itself dirty multiple rows. Wait
+                    # for CAT's foreground handoff and active console write so
+                    # BREAK cannot target the shell before the child starts.
+                    window=windows+console['WINDOWS_ITEMS']
+                    foreground=window+console['WINDOW_SCOPE']
+                    route=f'(dw(${foreground:x})+db(${foreground+2:x})*65536)'
+                    write=saved['top']+console['INSTANCE_WRITE']
+                    dirty=saved['top']+console['INSTANCE_DIRTYROWS']
+                    rendezvous(f'({route}!=0)&({route}!={saved["scope"]})&'
+                               f'((dw(${write:x})|db(${write+2:x}))!=0)&(db(${dirty:x})>1)')
+                    saved['desktop_scroll_break_checkpoint']=dict(
+                        parent_scope=saved['scope'],foreground_scope=pointer(foreground),
+                        write=pointer(write),dirty_rows=number(dirty,1))
+                    started=b.eval_expr('@clk')
+                    press('\x03');ready(previous);result(304)
+                    cells('desktop-scroll-break')
+                    require(ledger()==baseline,'Obscured scroll BREAK retained ownership')
+                    saved['desktop_scroll_break_cycles']=(b.eval_expr('@clk')-started)&0xffffffff
                 else:
                     command('CAT SYS:STORY.TXT | WC',b'24 133 746')
                 command('CD SYS:')
@@ -700,6 +722,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
         measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),
+        desktop_scroll_break_cycles=saved.get('desktop_scroll_break_cycles'),
+        desktop_scroll_break_checkpoint=saved.get('desktop_scroll_break_checkpoint'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
         baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=saved.get('desktop_peak_tasks') if desktop else None if stock_smoke or showcase or editing or disk_failure else 6 if shell_only else 7,
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
