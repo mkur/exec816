@@ -39,6 +39,8 @@ class WriteToolbox(WritableCommands, Toolbox):
             self.baselines[filesystem]=audit
 
     def exercise(self,c):
+        # This fixture keeps its binaries at the root and assigns C: there.
+        c.command('ASSIGN C: SYS:')
         for mount in ('WORKM','WORKS'):
             c.command(f'COPY SYS:BINARY.BIN {mount}:COPY.BIN')
             c.command(f'CMP SYS:BINARY.BIN {mount}:COPY.BIN')
@@ -83,6 +85,7 @@ class WriteToolbox(WritableCommands, Toolbox):
         c.command('TEE WORKS:LATE.TXT <SYS:STORY.TXT >NIL:',error=6,status=10)
         c.command('HELLO',b'Hello from disk!\n')
         c.check_screen('write-command-close-errors')
+        c.command('ASSIGN C:')
 
     def persisted(self,bridge,program,out):
         time.sleep(3);bridge.regs();self.reports={}

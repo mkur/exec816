@@ -28,11 +28,13 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     rom=ROOT/'build/firmware/altirraos-816.rom'
     require(sha256(binary)==pin['emulator']['sha256'] and sha256(rom)==pin['rom']['sha256'],'Install the pinned paced bridge and ROM before building the demo')
     media=output/'media';media.mkdir(exist_ok=True)
+    command_dir=media/'C';command_dir.mkdir(exist_ok=True)
     commands={}
     for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN'):
-        commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',media/name)
-        (media/(name+'.options.json')).rename(output/(name+'.options.json'))
-        (media/(name+'.profile.json')).rename(output/(name+'.profile.json'))
+        commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',command_dir/name)
+        (command_dir/(name+'.options.json')).rename(output/(name+'.options.json'))
+        (command_dir/(name+'.profile.json')).rename(output/(name+'.profile.json'))
+    binary_names={f'C/{name}' for name in commands}
     sources=sorted(p for p in (ROOT/'examples/demo-disk').rglob('*') if p.is_file())
     for source in sources:
         # The media builder normalizes source text to LF; binary commands are exact.
@@ -44,10 +46,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'The full 80 by 30 screen is your shell.\nNo prime task is started.\n\n'
             'Try TASKS, DIR, MEM, HELLO | WC,\nand CAT STORY.TXT | WC.\n'
             'EXIT returns to the OS.\n',encoding='ascii')
-    require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==set(commands)|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
+    require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
-    try:files=make(output/disk_name,media,binary_names=set(commands),filesystem=filesystem,
+    try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
                    sector_bytes=sector_bytes,sectors=system_sectors)
     except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error
     config=ROOT/('config/shell-sdfs-256.json' if filesystem=='sdfs' and sector_bytes==256 else f'config/shell-{filesystem}.json')
@@ -116,7 +118,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         distribution='exec816-demo.zip',
         artifacts={name:sha256(output/name) for name in ('program.xex',disk_name,'work.atr','README.md',*([proof_name] if filesystem=='sdfs' else []))},
         files={name:dict(bytes=len(payload),sha256=hashlib.sha256(payload).hexdigest(),
-                        **({} if name in commands else dict(lines=payload.count(b'\n'),words=len(payload.split()))))
+                        **({} if name in binary_names else dict(lines=payload.count(b'\n'),words=len(payload.split()))))
                for name,payload in files.items()},
         source_inputs={str(path.relative_to(ROOT)):sha256(path) for path in
                        [ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',

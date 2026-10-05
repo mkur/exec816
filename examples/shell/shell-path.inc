@@ -6,7 +6,7 @@ RETURN(BYTE POINTER(ADDRESS(shell)+SIZE(PATH_OFFSET)
 
 PROC ShellPathReset()
 
-  STR.strlcpy(ShellPathEntry(0),c"SYS:",LINE_CAPACITY)
+  STR.strlcpy(ShellPathEntry(0),c"C:",LINE_CAPACITY)
   shell.pathCount=1
 
 RETURN

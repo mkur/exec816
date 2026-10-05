@@ -107,6 +107,13 @@ BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
     FI
     ShellCacheStatus()
 
+    ; Publish the command directory through the ordinary, replaceable ASSIGN.
+    IF DOS.AssignPath(BYTE POINTER(c"C"),BYTE POINTER(c"SYS:C"))=0 THEN
+      ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+      ShellByte(shell.console,ASCII.LF)
+      ShellText(shell.console,c"C: assignment failed")
+    FI
+
   ELSE
     ShellText(shell.console,c"SYS: mount failed; use CD SYS: to retry")
   FI

@@ -193,7 +193,10 @@ CD SYS:
 ```
 
 The commands above work while the current directory is WORK. Bare command
-names search CurrentDir and then SYS: through the default [PATH](shell.md#path).
+names search CurrentDir and then C: through the default [PATH](shell.md#path).
+The supplied commands live in SYS:C; startup assigns C: there using one of four
+assignment slots. `C:HELLO` and `SYS:C/HELLO` are explicit command paths.
+`PATH RESET` restores the C: search entry without changing its assignment.
 If the system disk failed to mount,
 the console stays usable; insert the matching disk and use `CD SYS:` to retry.
 To choose D2 before startup, see the [OF816 guide](boot-monitor.md).

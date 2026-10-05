@@ -65,8 +65,9 @@ def prepare(bundle, output, filesystem=None):
     disk_name=filesystem+'.atr'
     from make_data_disk import make
     for kind in ('sdfs','mydos'):
-        files=make(output/(kind+'.atr'),bundle/'media',binary_names=set(manifest['commands']),
-                   filesystem=kind,sector_bytes=manifest['mounts'][0]['sector_bytes'])
+        files=make(output/(kind+'.atr'),bundle/'media',binary_names={f'C/{name}' for name in manifest['commands']},
+                   filesystem=kind,sector_bytes=manifest['mounts'][0]['sector_bytes'],
+                   sectors=manifest['system_sectors'])
         require({name:hashlib.sha256(data).hexdigest() for name,data in files.items()}==
                 {name:item['sha256'] for name,item in manifest['files'].items()},'Comparison payloads differ')
     classes=sector_classes(output/disk_name,filesystem)
@@ -221,7 +222,7 @@ def run(bundle, output, filesystem=None, prime_worker='active', cpu_trace=False)
         b._cmd_ok('KEY ALL up'); ownership(b, p, bundle)
     result = dict(status='pass', media_sha256=sha256(bundle/media), xex_sha256=sha256(bundle/'program.xex'),
                   filesystem=filesystem,mount_table_override=override,observer=manifest['observer'],observer_table=manifest['observer_table'],runtime_table_sha256=hashlib.sha256(sector_classes(bundle/media,filesystem)).hexdigest(),bundle_manifest_sha256=sha256(bundle/'demo-manifest.json'),
-                  payload_sha256=manifest['files']['HELLO']['sha256'], compiler=p['build']['revision'],
+                  payload_sha256=manifest['files']['C/HELLO']['sha256'], compiler=p['build']['revision'],
                   machine=machine, configuration=manifest['configuration'], samples=samples, directory=directory, runtime=runtime,
                   prime_worker=prime,cpu_trace=cpu_trace,harness_sha256=sha256(Path(__file__)),
                   conditions=f'Cold startup; first disk command HELLO; demo prime worker {prime_worker}; guest timing excludes debugger pauses.')

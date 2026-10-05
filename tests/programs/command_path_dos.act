@@ -19,6 +19,13 @@ PUBLIC FileHandle POINTER FUNC Output()
 
 RETURN(FileHandle POINTER($d0000))
 
+; No logical directories are installed in this controlled PATH fixture.
+PUBLIC LONGINT FUNC GetAssign(CARD index AssignInfo POINTER info)
+
+  T.error=0
+
+RETURN(0)
+
 PUBLIC FileLock POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
 
   T.error=0

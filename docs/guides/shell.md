@@ -58,8 +58,11 @@ for selection through the boot monitor.
 ## External commands
 
 Built-ins take precedence. A bare command such as `HELLO` is searched in the
-current directory, then the shell's PATH, initially `SYS:`. A token containing
-`:` or `/`, such as `SYS:HELLO` or `/TOOLS/HELLO`, names an exact DOS path.
+current directory, then the shell's PATH, initially `C:`. Standard shell startup
+assigns `C:` to the existing `SYS:C` directory, where the demo keeps its external
+commands. This uses one of the four system-wide assignment slots and follows
+the selected system drive. A token containing
+`:` or `/`, such as `C:HELLO`, `SYS:C/HELLO` or `/TOOLS/HELLO`, names an exact DOS path.
 There is no extension guessing. The file must use the supported
 [o65 command profile](../reference/program-loading.md). The child inherits
 selected streams and the current directory. Its copied argument tail retains
@@ -77,13 +80,14 @@ Each shell stores at most four search directories. The current directory always
 comes first and does not consume an entry. `PATH` displays this order without
 accessing media. `PATH ADD directory` appends one directory; `PATH SET directory`
 replaces the explicit list. `PATH CLEAR` leaves current-directory lookup only,
-and `PATH RESET` restores `SYS:`. Subcommands ignore case.
+and `PATH RESET` restores `C:`. Subcommands ignore case.
 
 ADD/SET validate the directory and store its absolute name, so a later CD does
 not change its meaning. Duplicate names ignoring case are successful no-ops.
 Invalid directories, a fifth entry, BREAK or cleanup failure preserve the old
-list. Entries hold names, not locks; PATH does not pin media. Default/reset SYS:
-is resolved lazily and follows the selected system volume. Physical names use
+list. Entries hold names, not locks; PATH does not pin media. Default/reset C:
+is resolved through its current assignment. RESET changes the search list only;
+it does not recreate or replace C:. Physical names use
 the canonical mount spelling; assigned prefixes retain their logical spelling,
 so replacing an assignment redirects later command search. PATH never changes
 the child's directory.
@@ -93,6 +97,12 @@ directory skips that first attempt; invalid executables, unavailable volumes,
 resource errors and BREAK stop lookup. A broken local command therefore reports
 its own error. Joined paths are limited to 255 bytes and are never truncated.
 Serial commands and both pipeline stages use the same search rules.
+
+The shell still starts in `SYS:`. PATH applies only to executable lookup; file
+arguments remain relative to the current directory. If startup cannot establish
+C:, the console remains usable. After correcting media, use `CD SYS:` and
+`SYS:C/ASSIGN C: SYS:C` to restore the command assignment. Explicit command
+paths also work when C: has been removed or redirected.
 
 ### Command aliases
 
@@ -251,6 +261,8 @@ The 4 KiB upper-RAM data area accommodates shell globals and help/fault strings,
 matching the demo; it does not enlarge bank-zero reservations.
 This is a development XEX and sample data disk. Use the [demo builder](demo.md)
 for the OF816 distribution including external commands and the matching ROM.
+The sample disk includes a C directory for the boot assignment, with a short
+readme in place of executable commands.
 The [earlier shell guide](../history/shell-guide.md) and
 [implementation record](../history/shell-implementation.md) preserve historical
 startup transcripts and measurements.

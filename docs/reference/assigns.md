@@ -6,7 +6,10 @@ calls resolve `DATA:NOTES.TXT` beneath the validated `WORK:DATA` directory.
 `ASSIGN NAME:` removes a mapping; `ASSIGN` lists occupied slots. Names ignore
 ASCII case, use the existing 1–31-byte volume-label spelling, and may not
 replace `SYS:`, a stream name or any configured physical mount name. Four
-assignments can exist at once.
+assignments can exist at once. Standard shell startup assigns `C:` to `SYS:C`,
+using one slot and leaving three for other names. It is an ordinary replaceable,
+removable assignment, visible in `ASSIGN` output. Its target is the selected
+system drive's canonical `C` directory, such as `D2:C`.
 
 DOS `AssignPath(name, target)` takes the name **without** its colon. A null
 target removes it; a non-null target must resolve to a directory. It returns
@@ -35,11 +38,12 @@ existing rules. A joined path is limited to 255 bytes; overflow reports
 `MOUNT` lists physical volumes, while `ASSIGN` lists logical mappings. Existing
 Rename same-parent and same-mount restrictions still apply.
 
-The shell searches bare commands in CurrentDir and its own PATH. It does not
-search `C:` automatically. Explicit `C:HELLO` uses DOS resolution. A validated
+The shell searches bare commands in CurrentDir and its own PATH, initially
+`C:`. Explicit `C:HELLO` uses DOS resolution. A validated
 `PATH SET C:` or `PATH ADD C:` retains the logical spelling, so replacing `C:`
 changes later command search. An unavailable assigned PATH entry reports its
-normal DOS error.
+normal DOS error. `PATH RESET` restores the `C:` search entry without changing
+the assignment; `PATH CLEAR` leaves only CurrentDir lookup.
 
 Assignments are single-directory and non-persistent. There are no multi-target
 search lists, deferred/unvalidated targets, arbitrary device or stream targets,

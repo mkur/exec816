@@ -17,6 +17,9 @@ class Usability(Toolbox):
     def prepare(self, toolchain, out, mode, size):
         super().prepare(toolchain,out,mode,size)
         files=out/'files'
+        self.commands['ASSIGN']=compile_command(toolchain,ROOT/'examples/commands/assign.act',files/'ASSIGN',mode=='opt')
+        for suffix in ('.options.json','.profile.json'):
+            (files/('ASSIGN'+suffix)).rename(out/('ASSIGN'+suffix))
         for name in ('WORK','ONE','TWO','TOOLS'):(files/name).mkdir(exist_ok=True)
         (files/'WORK/HELLO').write_bytes((files/'HELLO').read_bytes()[:-1])
         (files/'TOOLS/HELLO').write_bytes((files/'HELLO').read_bytes())
@@ -32,7 +35,9 @@ class Usability(Toolbox):
 
     def exercise(self,c):
         if self.phase in ('all','path'):
-            c.command('PATH',b'Current directory\nSYS:\n')
+            c.command('PATH',b'Current directory\nC:\n')
+            # This lookup fixture deliberately assigns C: to its root binaries.
+            c.command('ASSIGN C: SYS:')
             c.command('CD WORK')
             c.command('HEAD SYS:A.TXT LINES 1',b'Alpha\n')
             c.command('HELLO',error=306)
@@ -58,9 +63,11 @@ class Usability(Toolbox):
             c.command('WHO',b'Second\n')
             c.command('PATH CLEAR extra',error=311)
             c.command('PATH RESET')
+            c.command('PATH',b'Current directory\nC:\n')
             c.command('HEAD SYS:A.TXT|WC',b'3 3 17\n')
             c.command('HEAD SYS:A.TXT|MISSING',error=205,diagnostic='MISSING')
             c.command('CD SYS:')
+            c.command('ASSIGN C:')
             c.check_screen('path-recovery')
         if self.phase in ('all','help'):
             for name,template in TEMPLATES.items():

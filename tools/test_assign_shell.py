@@ -6,16 +6,40 @@ import time
 from pathlib import Path
 
 from filesystem_audit import Audit
+from make_shell_disk import make
 from native_program import ROOT,compiler,require,sha256
 from test_shell_core import run
 from test_write_commands_shell import WriteToolbox
 
 
 class AssignShell(WriteToolbox):
+    def prepare(self,toolchain,out,mode,size):
+        super().prepare(toolchain,out,mode,size)
+        source=out/'files'
+        (source/'C').mkdir(exist_ok=True)
+        for name in self.commands:
+            (source/name).rename(source/'C'/name)
+        (source/'LOCAL').mkdir(exist_ok=True)
+        (source/'LOCAL/HELLO').write_bytes((source/'C/HELLO').read_bytes()[:-1])
+        self.files=make(out/'volume.atr',source,binary_names={f'C/{name}' for name in self.commands}|
+                        {'LOCAL/HELLO','BINARY.BIN','DOUBLE.BIN'})
+
     def exercise(self,c):
+        # ShellStart is the already-running-session entry. Reproduce the boot
+        # assignment explicitly; packaged OF816 tests exercise ShellBootStart.
+        c.command('SYS:C/ASSIGN C: SYS:C')
+        c.command('PATH',b'Current directory\nC:\n')
+        c.command('ASSIGN',b'C: -> D1:C\n')
+        c.command('HELLO',b'Hello from disk!\n')
+        c.command('C:HELLO',b'Hello from disk!\n')
+        c.command('SYS:HELLO',error=205)
+        c.command('CD SYS:LOCAL')
+        c.command('HELLO',error=306)
+        c.command('C:HELLO',b'Hello from disk!\n')
+        c.command('CD SYS:')
         for mount in ('WORKM','WORKS'):
             c.command(f'ASSIGN DATA: {mount}:')
-            c.command('ASSIGN',f'DATA: -> {mount}:\n'.encode())
+            c.command('ASSIGN',f'C: -> D1:C\nDATA: -> {mount}:\n'.encode())
             c.command('ASSIGN DATA: SYS:STORY.TXT',error=212)
             c.command('COPY SYS:STORY.TXT DATA:ALIAS.TXT')
             c.command('CMP SYS:STORY.TXT DATA:ALIAS.TXT')
@@ -24,24 +48,29 @@ class AssignShell(WriteToolbox):
         c.command('RENAME WORKM:ALIAS.TXT DATA:OTHER.TXT',error=215)
         c.command('RENAME DATA:ALIAS.TXT WORKS:ALIAS2.TXT')
         c.command('RENAME WORKS:ALIAS2.TXT DATA:ALIAS.TXT')
-        c.command('ASSIGN C: SYS:')
         c.command('PATH CLEAR')
         c.command('CD WORKM:')
         c.command('HELLO',error=205)
         c.command('PATH SET C:')
         c.command('PATH',b'Current directory\nC:\n')
         c.command('HELLO',b'Hello from disk!\n')
+        c.command('PATH CLEAR')
+        c.command('HELLO',error=205)
+        c.command('PATH RESET')
+        c.command('PATH',b'Current directory\nC:\n')
+        c.command('HELLO | WC',b'1 3 17\n')
         c.command('ASSIGN C: WORKS:')
         c.command('HELLO',error=205)
-        c.command('SYS:ASSIGN C: SYS:')
+        c.command('SYS:C/ASSIGN C: SYS:C')
         c.command('HELLO',b'Hello from disk!\n')
         c.command('CD SYS:')
         c.command('PATH RESET')
         c.command('ASSIGN C:')
-        c.command('ASSIGN DATA:')
-        c.command('ASSIGN')
-        c.command('CAT DATA:ALIAS.TXT',error=218)
-        c.command('ASSIGN ?',b'Arguments: NAME,TARGET\n')
+        c.command('HELLO',error=218)
+        c.command('SYS:C/ASSIGN DATA:')
+        c.command('SYS:C/ASSIGN')
+        c.command('SYS:C/CAT DATA:ALIAS.TXT',error=218)
+        c.command('SYS:C/ASSIGN ?',b'Arguments: NAME,TARGET\n')
         c.check_screen('assign')
 
     def persisted(self,bridge,program,out):

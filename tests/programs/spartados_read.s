@@ -82,7 +82,7 @@ stamp:
     cmp ticks+2,x
     bne stamp
     rts
-name: .byte "D1:HELLO",0
+name: .byte "D1:C>HELLO",0
 blocks: .byte 0
 result: .byte 0
 ticks: .res 12

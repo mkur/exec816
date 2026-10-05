@@ -36,6 +36,9 @@ is implemented with exact CAT/DELETE names and read-only LIST filtering. The
 [ASSIGN slice](history/assign.md) adds four bounded logical directory names.
 The [shell alias slice](history/shell-aliases.md) adds eight session-local
 command shortcuts without changing DOS lookup.
+The [system command directory slice](history/system-command-directory.md)
+stores external commands in SYS:C, assigns C: there at startup and defaults
+PATH to CurrentDir followed by C:.
 Before allowing patterns in mutating commands, account for the
 [mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
 ExNext after a mutation. The next batch is `>>` and minimal EXECUTE.

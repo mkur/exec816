@@ -91,7 +91,8 @@ MORE LONG.TXT pages text: Space advances a page, Return a line, Q quits.
 GREP shell STORY.TXT NOCASE searches literal text; there is no regex.
 
 Commands remain available after CD through the default PATH (current directory,
-then SYS:). Try:
+then C:). External commands live in SYS:C; startup assigns C: there.
+The shell starts at SYS: root, where the text files remain. Try:
 
     CD SYS:WORK
     HEAD SYS:STORY.TXT LINES 3
@@ -103,6 +104,8 @@ then SYS:). Try:
 HEAD MISSING explains error 205; HEAD ? prints its argument template without
 reading Input. Every supplied command supports ?. PATH lists the search order;
 PATH ADD directory, PATH SET directory, PATH CLEAR and PATH RESET change it.
+PATH RESET restores C: in the search list. C: is an ordinary assignment and
+uses one of the four assignment slots. C:HELLO and SYS:C/HELLO bypass search.
 ALIAS LS "DIR SYS:" defines a session-local command shortcut; LS runs it and
 UNALIAS LS removes it. ALIAS alone lists up to eight definitions.
 

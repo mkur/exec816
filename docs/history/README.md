@@ -120,6 +120,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [System command directory](system-command-directory.md): SYS:C command
+  storage, the boot C: assignment and CurrentDir-then-C: default PATH.
 - [Bounded shell command aliases](shell-aliases.md): eight session-local
   definitions, one-pass expansion and normal pipeline/redirection parsing.
 - [ASSIGN logical directories](assign.md): four boot-lifetime logical directory

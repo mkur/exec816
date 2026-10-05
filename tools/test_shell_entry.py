@@ -79,7 +79,7 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
                 ('devices',devices_output,0),('devices >nil:',b'',0),('devices extra',diagnostic_text(115,'Shell'),115),
                 ('echo ok',b'ok\n',0),('cd SYS:',diagnostic_text(error,'cd')if error else b'',error)]
             if not error:
-                listing=f"DOCS/\nHELLO.TXT {len(files['HELLO.TXT'])}\nREADME.TXT {len(files['README.TXT'])}\nTOOLS/\n".encode()
+                listing=f"C/\nDOCS/\nHELLO.TXT {len(files['HELLO.TXT'])}\nREADME.TXT {len(files['README.TXT'])}\nTOOLS/\n".encode()
                 commands.extend([('dir',listing,0),('type hello.txt',files['HELLO.TXT'],0),
                     ('type readme.txt',files['README.TXT'],0),('cd docs',b'',0),
                     ('type commands.txt',files['DOCS/COMMANDS.TXT'],0),('cd :',b'',0),

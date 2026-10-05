@@ -162,7 +162,8 @@ and publishes an Image; staging is freed before return. Break is checked between
 reads and before/after validation. The first causal error survives cleanup.
 
 The shell dispatches built-ins first. Bare tokens use the shell's bounded
-[PATH search](../guides/shell.md#path), initially CurrentDir then SYS:. Tokens
+[PATH search](../guides/shell.md#path), initially CurrentDir then C:. Standard
+shell startup assigns C: to SYS:C, which holds the supplied disk commands. Tokens
 containing `:` or `/` use one exact loader call. PROGRAMFILE.Load itself remains
 an exact-path service. There is no implicit extension, script or background
 syntax; one foreground pipeline of two external commands is supported. The bounded argument tail keeps

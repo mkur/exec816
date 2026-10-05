@@ -48,13 +48,14 @@ LIST SYS:*.TXT NAMES
 ```
 
 The shell's default [PATH](shell.md#path) searches the current directory and then
-SYS:, so commands remain available after CD. Qualified paths such as `SYS:HEAD`
+C: (assigned to SYS:C at startup), so commands remain available after CD.
+Qualified paths such as `C:HEAD` or `SYS:C/HEAD`
 bypass search.
 
 `ASSIGN DATA: WORK:DATA` lets commands use `DATA:FILE` independently of the
 physical volume name. `ASSIGN DATA:` removes it, and `ASSIGN` lists current
-mappings. `C:` is an ordinary assign; use `PATH SET C:` to search it for bare
-commands. See the [ASSIGN contract](../reference/assigns.md) for limits.
+mappings, including the boot C: assignment. Reassigning C: redirects the default
+command search. See the [ASSIGN contract](../reference/assigns.md) for limits.
 
 ## Bytes, text and limits
 

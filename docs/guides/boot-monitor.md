@@ -92,8 +92,8 @@ EXEC816
 ```
 
 Use the same Generic + 57600 baud profile. D1 can be empty. Startup reports
-`SYS: -> D2: ready, read-only`; try `SYS:HELLO` or
-`SYS:CAT SYS:STORY.TXT | SYS:WC`. The old D1 name is not retained.
+`SYS: -> D2: ready, read-only`; C: points to D2:C. Try `C:HELLO` or
+`C:CAT SYS:STORY.TXT | C:WC`. The old D1 name is not retained.
 WORK: stays on D8, so select D1–D7 for SYS: in this build.
 The setter validates the full cell and rejects zero, values outside 1..8,
 missing system selection and conflicts with other mounts. Rejection leaves the
