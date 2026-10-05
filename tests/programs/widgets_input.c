@@ -30,6 +30,8 @@ uint16_t WidgetInputProbe(void)
     c.epoch=42;c.revision=1;
     step(WIDGET_OP_POINTER,3,55,24,1,1,0);
     check(c.armed==1 && c.pressed && !c.objects[1].ob_state && !p.kind && p.changed);
+    check(p.damageCount==1 && p.damage[0].left==49 && p.damage[0].top==19 &&
+        p.damage[0].right==83 && p.damage[0].bottom==37);
     step(WIDGET_OP_POINTER,2,10,70,1,0,0);
     check(c.armed==1 && !c.pressed && p.changed);
     step(WIDGET_OP_POINTER,2,55,24,1,0,0);
@@ -47,6 +49,10 @@ uint16_t WidgetInputProbe(void)
     check(c.armed==-1); /* Disabled. */
     step(WIDGET_OP_KEY,1,0,0,0,44,0);
     check(c.focus==2 && p.index && !p.kind);
+    check(p.damageCount==2 && p.damage[0].left==93 && p.damage[0].right==119 &&
+        p.damage[1].left==53 && p.damage[1].right==79 &&
+        p.damage[0].top==33 && p.damage[0].bottom==34 &&
+        p.damage[1].top==33 && p.damage[1].bottom==34);
     step(WIDGET_OP_KEY,1,0,0,0,44,1);
     check(c.focus==1);
     step(WIDGET_OP_KEY,1,0,0,0,44,1);
@@ -56,8 +62,12 @@ uint16_t WidgetInputProbe(void)
     step(WIDGET_OP_KEY,1,0,0,0,12,0);
     check(p.kind==8 && p.object==4 && c.revision==2);
     step(WIDGET_OP_POINTER,3,135,24,1,1,0);
+    check(p.damageCount==2 && p.damage[0].left==129 && p.damage[0].right==163 &&
+        p.damage[1].left==173 && p.damage[1].right==199);
     step(WIDGET_OP_POINTER,3,135,24,0,0,0);
     check(p.kind==8 && p.object==3 && !c.objects[2].ob_state && c.objects[3].ob_state==SELECTED && c.revision==3);
+    check(p.damageCount==2 && p.damage[0].left==129 && p.damage[0].right==163 &&
+        p.damage[1].left==89 && p.damage[1].right==123);
     step(WIDGET_OP_KEY,1,0,0,0,33,0);
     check(p.kind==8 && c.revision==3); /* Selecting the same radio is an action, not a revision. */
     step(WIDGET_OP_POINTER,3,55,24,1,1,0);
@@ -83,6 +93,26 @@ uint16_t WidgetInputProbe(void)
     step(WIDGET_OP_POINTER,3,135,24,1,1,0);
     step(WIDGET_OP_CANCEL,0,0,0,0,0,0);
     check(c.armed==-1 && !c.pressed && !p.kind && p.changed);
+    /* More independently damaged controls than the bridge can retain must
+       preserve all pixels through its conservative full-client fallback. */
+    memset(&tree,0,sizeof(tree));tree.version=WIDGET_VERSION;tree.count=10;tree.textBytes=2;
+    tree.text[0]='X';tree.objects[0].next=-1;tree.objects[0].head=1;tree.objects[0].tail=9;
+    tree.objects[0].kind=G_BOX;tree.objects[0].width=300;tree.objects[0].height=100;
+    for (i=1;i<10;i++) {
+        struct WidgetObject *o=&tree.objects[i];
+        o->next=i==9 ? 0 : i+1;o->head=o->tail=-1;o->kind=G_BUTTON;
+        o->flags=SELECTABLE|(i==9 ? LASTOB : 0);o->x=10+i*24;o->y=20;o->width=16;o->height=16;
+    }
+    check(WidgetValidate(&c,&tree,sizeof(tree),300,100)==WIDGET_OK);
+    memset(&p,0,sizeof(p));
+    for (i=1;i<9;i++) WidgetDamage(&p,&c,i);
+    check(p.damageCount==8);
+    WidgetFocusDamage(&p,&c,1);WidgetDamage(&p,&c,1);
+    check(p.damageCount==8); /* Contained duplicates do not overflow. */
+    WidgetDamage(&p,&c,9);
+    check(p.changed && p.damageCount==1 && !p.damage[0].left && !p.damage[0].top &&
+        p.damage[0].right==300 && p.damage[0].bottom==100);
+    WidgetDamage(&p,&c,2);check(p.damageCount==1);
     return WidgetInputFailures-before;
 }
 #ifdef WIDGET_INPUT_HOST_TEST

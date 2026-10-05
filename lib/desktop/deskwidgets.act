@@ -37,6 +37,7 @@ PUBLIC PROC Run(CARD operation)
   packet.operation=operation
   packet.status=WIDGETTYPES.BAD_ARGUMENT
   packet.changed=0
+  packet.damageCount=0
   CONSOLEBITMAP.Call(entry)
 
 RETURN
@@ -59,19 +60,29 @@ RETURN(TASKMEMORY.Writable(ADDRESS(buffer),SIZE(bytes))<>0
 PUBLIC PROC Damage(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window)
   LAYERTYPES.Rect bounds
+  CARD index
 
-  IF packet.changed=0 THEN
+  IF packet.damageCount=0 THEN
     RETURN
+  FI
+
+  IF packet.damageCount>WIDGETTYPES.DAMAGE_RECTS THEN
+    HEAPCORE.Abort($fab0)
   FI
 
   DESKCACHE.Changed(service,window)
   LET layer=LAYERS.Find(@service.scene,window.layer)
-  REGIONS.Assign(@bounds,layer.bounds.left+8+packet.left,
-      layer.bounds.top+16+packet.top,layer.bounds.left+8+packet.right,
-      layer.bounds.top+16+packet.bottom)
-  IF LAYERS.Invalidate(@service.scene,window.layer,@bounds)<>LAYERTYPES.OK THEN
-    HEAPCORE.Abort($fab0)
-  FI
+  FOR index=0 TO packet.damageCount-1 DO
+    BEGIN
+      LET rect=@packet.damage(index)
+      REGIONS.Assign(@bounds,layer.bounds.left+8+rect.left,
+          layer.bounds.top+16+rect.top,layer.bounds.left+8+rect.right,
+          layer.bounds.top+16+rect.bottom)
+      IF LAYERS.Invalidate(@service.scene,window.layer,@bounds)<>LAYERTYPES.OK THEN
+        HEAPCORE.Abort($fab0)
+      FI
+    END
+  OD
 
 RETURN
 

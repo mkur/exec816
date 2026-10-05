@@ -22,7 +22,7 @@ def build_model(out,optimize,state=False,input_probe=False):
     if state:sources += [ROOT/'tests/programs/widgets_state.c']
     if input_probe:sources += [PORT/'widgets-input.c',ROOT/'tests/programs/widgets_input.c']
     foreign=emit(out/'c',sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/image-info.s'],
-        ['WidgetWorker'],optimize=optimize,includes=[PORT,out/'selected'],
+        ['WidgetWorker'],optimize=optimize,roots=['WidgetPacketLayout'],includes=[PORT,out/'selected'],
         probes=[(PORT/'widget-layout.c',expected_layout())],
         definitions={'widgets_native.c':(['-DWIDGET_STATE_PROBE'] if state else [])+(['-DWIDGET_INPUT_PROBE'] if input_probe else []),
                      'widgets-state.c':['-DWIDGET_STATE_TESTS']} if state or input_probe else {})
@@ -31,8 +31,40 @@ def build_model(out,optimize,state=False,input_probe=False):
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     checks='\n'.join(f'  IF SIZEOF(WIDGETTYPES.{n})<>{v["size"]} THEN\n    result=1\n    RETURN\n  FI\n' for n,v in layout().items())
     source=out/'launcher.act'
-    source.write_text('MODULE WIDGETPROBE\nUSE WIDGETTYPES\nCARD FUNC POINTER cMain()\nCARD result\nPROC Main()\n\n'+checks+
-        f'  LET entry=ADDRESS POINTER(@cMain)\n  entry^=${foreign["symbols"]["main"]:x}\n  result=cMain()\n\nRETURN\n\nENDMODULE\n')
+    source.write_text('MODULE WIDGETPROBE\nUSE WIDGETTYPES\nCARD FUNC POINTER cMain()\nCARD result\nPROC Main()\n  CARD index\n\n'+checks+f'''
+  LET packet=WIDGETTYPES.Packet POINTER(${foreign['symbols']['WidgetLayoutPacket']:x})
+  packet.damageCount=WIDGETTYPES.DAMAGE_RECTS
+  FOR index=0 TO WIDGETTYPES.DAMAGE_RECTS-1 DO
+    packet.damage(index).left=-100-INT(index)
+    packet.damage(index).top=INT(100+index)
+    packet.damage(index).right=INT(200+index)
+    packet.damage(index).bottom=INT(300+index)
+  OD
+
+  LET entry=ADDRESS POINTER(@cMain)
+  entry^=${foreign['symbols']['WidgetPacketLayout']:x}
+  result=cMain()
+  IF result<>0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO WIDGETTYPES.DAMAGE_RECTS-1 DO
+    IF packet.damage(index).left<>-300-INT(index)
+        OR packet.damage(index).top<>INT(500+index)
+        OR packet.damage(index).right<>INT(600+index)
+        OR packet.damage(index).bottom<>INT(700+index) THEN
+      result=1
+      RETURN
+    FI
+  OD
+
+  entry^=${foreign['symbols']['main']:x}
+  result=cMain()
+
+RETURN
+
+ENDMODULE
+''')
     program=build(compiler(ROOT/'build/actionc'),source,out/'program',optimize=optimize,
         tasks=True,task_capacity=8,console=False,foreign_image=foreign)
     return program,foreign

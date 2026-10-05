@@ -48,14 +48,17 @@ uint16_t WidgetStateProbe(void)
     update();patch.count=1;patch.changes[0].object=1;patch.changes[0].mask=WIDGET_PATCH_STATE;
     patch.changes[0].state=SELECTED;
     check(WidgetUpdate(&c,&patch,&packet)==WIDGET_OK && c.revision==2 &&
-        c.objects[1].ob_state==SELECTED && packet.left==55 && packet.right==97 && packet.changed);
-    check(WidgetUpdate(&c,&patch,&packet)==WIDGET_STALE && c.revision==2);
+        c.objects[1].ob_state==SELECTED && packet.damageCount==1 &&
+        packet.damage[0].left==55 && packet.damage[0].right==97 && packet.changed);
+    check(WidgetUpdate(&c,&patch,&packet)==WIDGET_STALE && c.revision==2 && !packet.damageCount);
     patch.revision=2;check(WidgetUpdate(&c,&patch,&packet)==WIDGET_OK && !packet.changed && c.revision==2);
     update();patch.count=2;patch.changes[0].object=2;patch.changes[0].mask=WIDGET_PATCH_STATE;
     patch.changes[0].state=0;patch.changes[1].object=3;patch.changes[1].mask=WIDGET_PATCH_STATE;
     patch.changes[1].state=SELECTED;
     check(WidgetUpdate(&c,&patch,&packet)==WIDGET_OK &&
         !c.objects[2].ob_state && c.objects[3].ob_state==SELECTED && c.revision==3);
+    check(packet.damageCount==2 && packet.damage[0].left==103 && packet.damage[0].right==145 &&
+        packet.damage[1].left==151 && packet.damage[1].right==193);
     update();patch.count=1;patch.changes[0].object=2;patch.changes[0].mask=WIDGET_PATCH_STATE;
     patch.changes[0].state=SELECTED;
     check(WidgetUpdate(&c,&patch,&packet)==WIDGET_BAD_ARGUMENT && !c.objects[2].ob_state && c.revision==3);
@@ -68,7 +71,7 @@ uint16_t WidgetStateProbe(void)
     patch.changes[0].object=1;patch.changes[0].mask=WIDGET_PATCH_STATE;
     patch.changes[0].state=0;patch.changes[1].object=33;patch.changes[1].mask=WIDGET_PATCH_STATE;
     check(WidgetUpdate(&c,&patch,&packet)==WIDGET_BAD_ARGUMENT && c.revision==4 &&
-        c.objects[1].ob_state==SELECTED);
+        c.objects[1].ob_state==SELECTED && !packet.damageCount);
     update();patch.count=1;patch.changes[0].object=1;patch.changes[0].mask=WIDGET_PATCH_HIDDEN;
     patch.changes[0].hidden=1;c.armed=1;c.pressed=1;
     check(WidgetUpdate(&c,&patch,&packet)==WIDGET_OK && c.focus==2 &&
@@ -87,7 +90,7 @@ uint16_t WidgetStateProbe(void)
     check(WidgetUpdate(&c,&patch,&packet)==WIDGET_OK && !packet.changed && c.revision==0xffffffffUL);
     patch.count=1;patch.changes[0].object=1;patch.changes[0].mask=WIDGET_PATCH_STATE;patch.changes[0].state=SELECTED;
     check(WidgetUpdate(&c,&patch,&packet)==WIDGET_EXHAUSTED && !packet.changed &&
-        !c.objects[1].ob_state && c.revision==0xffffffffUL);
+        !packet.damageCount && !c.objects[1].ob_state && c.revision==0xffffffffUL);
     WidgetTestEpoch(0xffffffffUL);packet.bytes=sizeof(tree);
     check(WidgetSet(&c,&tree,&packet)==WIDGET_OK && c.epoch==0xffffffffUL);
     epoch=other.epoch;

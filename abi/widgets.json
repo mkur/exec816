@@ -34,7 +34,8 @@
     "FLAG_LAST": 32,
     "FLAG_HIDDEN": 128,
     "STATE_SELECTED": 1,
-    "STATE_DISABLED": 8
+    "STATE_DISABLED": 8,
+    "DAMAGE_RECTS": 8
   },
   "records": {
     "Object": [
@@ -198,6 +199,24 @@
         "OBJECTS"
       ]
     ],
+    "DamageRect": [
+      [
+        "left",
+        "INT"
+      ],
+      [
+        "top",
+        "INT"
+      ],
+      [
+        "right",
+        "INT"
+      ],
+      [
+        "bottom",
+        "INT"
+      ]
+    ],
     "Packet": [
       [
         "operation",
@@ -298,6 +317,15 @@
       [
         "changed",
         "CARD"
+      ],
+      [
+        "damageCount",
+        "CARD"
+      ],
+      [
+        "damage",
+        "DamageRect",
+        "DAMAGE_RECTS"
       ]
     ]
   }

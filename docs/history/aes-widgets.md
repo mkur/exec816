@@ -297,3 +297,65 @@ multiple dirty console rows. Command echo can satisfy that condition before CAT
 starts. The runner now waits for CAT's foreground scope and active console write
 as well as dirty rows; the same packaged image passes that precise scenario.
 The evidence retains the failed attempt and the successful checkpoint.
+
+## Separate focus damage follow-up
+
+The [focus damage plan](../plans/gem4xe/widget-focus-damage-plan.md) preserves
+independent damage through the private Action!/C bridge. Eight copied rectangles
+replace the former bounding union; containment removes duplicates and overflow
+falls back to the complete client. Focus changes repair only the one-pixel
+underline. A pointer press queues the pressed button before the old focus mark.
+Layers retains its existing clipping and merging policy, and the completed-strip
+renderer is unchanged.
+
+The [execution record](../development/aes-widgets-focus-damage.json) compares the
+same five idle actions with the preceding buffered-renderer build, on the pinned
+PAL 65816 x8/VBXE configuration. Capture-to-visible press latency is:
+
+| Control | Before | After |
+| --- | ---: | ---: |
+| Toggle | 159.08 ms | 159.08 ms |
+| Large | 319.49 ms | 119.17 ms |
+| Apply | 339.70 ms | 159.08 ms |
+| Small | 138.87 ms | 118.91 ms |
+| Cancel | 339.45 ms | 119.17 ms |
+
+The five-press median falls from 319.49 to 119.17 ms and maximum from 339.70 to
+159.08 ms. Paint CPU across the ten edges falls from 1,233.71 to 899.75 ms; maximum
+call cost falls from 63.89 to 44.46 ms. Paint calls fall from 35 to 33 and logical
+requested damage from 47,129 to 23,792 pixels. Both builds make zero entries into
+the 4 KiB CPU staging path. Final button hashes match, and the observer finds
+zero invalid-colour frames on both builds, with the same limited observation
+scope described above.
+
+Release and status rendering do not improve uniformly. Apply's release feedback
+takes one additional PAL frame, 159.08 to 179.29 ms. Observed status visibility is
+later for Large (319.49 to 379.87 ms), Small (359.66 to 379.87 ms) and Cancel
+(279.58 to 319.74 ms). Separate repairs can require more presentation turns;
+the label observer also follows the button check and can overestimate first
+label visibility. These results establish faster press feedback, while the
+responsiveness targets and loaded timing qualification remain open.
+
+Raw and optimized emitted probes each pass 1,504 model, 800 state and 1,088 input
+checks, plus generated record sizes and bidirectional access to all eight signed
+rectangle records. Cases cover disjoint radios, focus bounds, containment,
+capacity overflow and failed updates. The optimized panel retains keyboard,
+disabled-control, independent-context, pixel, ownership and guard checks. Ten
+optimized full-scene oracles cover cache capture/restore, hidden updates,
+overlap, focus and close; all 57 presentation checks pass. The host suite runs
+361 tests: 357 pass and four historical checks are skipped. This is development
+coverage, not release or physical-hardware qualification.
+
+Reserved bank-zero growth is **0 bytes** for fixed/root/kernel, each public Task
+and private idle, including guards, alignment and unused capacity. The private
+packet grows from 58 to 124 bytes, using 66 additional bytes inside the existing
+upper C data reservation. Per-window contexts, public payloads, upper-RAM
+reservations and VRAM reservations are unchanged.
+
+The refreshed archive is `build/widget-focus/preview/exec816-demo.zip`, SHA-256
+`6a009ec92c43e46c058f29afc16768cac1e7d3909e64e2993e3eaa072b3c30c0`.
+All 24 file hashes verify, and the nine standard boot artifacts at the archive
+root are byte-identical to the previous standard shell/prime bundle. The extracted
+desktop passes the 249-frame OF816 countdown, controls, keyboard, dragging,
+disk commands, writable WORK, pipeline, scrolling/BREAK, guards and EXIT checks.
+It links the same C renderer image as the measured panel.

@@ -1,5 +1,20 @@
 #include <proto/exec.h>
 #include <clib/alib_protos.h>
+#include <exec/widget-types.h>
+struct WidgetPacket WidgetLayoutPacket;
+/* Action! writes every array element; C verifies stride/signed fields and
+   writes different values back for the Action! caller to check. */
+UWORD WidgetPacketLayout(void)
+{
+    UWORD i;
+    if (WidgetLayoutPacket.damageCount!=WIDGET_DAMAGE_RECTS) return 1;
+    for (i=0;i<WIDGET_DAMAGE_RECTS;i++) {
+        struct WidgetDamageRect *r=&WidgetLayoutPacket.damage[i];
+        if (r->left!=-100-(WORD)i || r->top!=100+i || r->right!=200+i || r->bottom!=300+i) return 1;
+        r->left=-300-i;r->top=500+i;r->right=600+i;r->bottom=700+i;
+    }
+    return 0;
+}
 extern UWORD WidgetModelProbe(void);
 #ifdef WIDGET_STATE_PROBE
 extern UWORD WidgetStateProbe(void);

@@ -48,7 +48,20 @@ the complete resulting strings must fit retained capacity. Hiding the root
 through UPDATE_WIDGETS is unsupported. Invalid batches have no partial effects.
 No-op assignments neither increment the revision nor damage pixels. A changed
 batch cancels an armed gesture and moves invalid keyboard focus to the first
-eligible object. Damage includes changed visual bounds and old/new focus.
+eligible object. Damage keeps changed visual bounds and old/new focus as
+separate rectangles. Focus changes damage only the one-pixel underline;
+selection, label and gesture feedback retain complete object bounds, including
+outward borders. A press queues its control before the previous focus mark.
+
+The private presenter/C packet copies up to eight damage rectangles. Contained
+duplicates are removed; capacity overflow falls back to the complete client,
+so earlier damage cannot be lost. The presenter invalidates its snapshot once
+per visual transaction and passes each rectangle independently to Layers.
+SET_TREE damages the complete client. Rejected/no-op updates return no damage.
+The drawing clip fields keep their paint-only role. The packet is 124 bytes,
+66 more than before, inside the existing upper C data reservation; public tree,
+update and snapshot payload sizes are unchanged. Rebuild both internal callers
+with the generated definition when this packet changes.
 
 STALE rejects an outdated epoch or revision; read current state before retrying.
 Epoch and revision never wrap to reusable identities. EXHAUSTED preserves the

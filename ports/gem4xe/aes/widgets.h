@@ -27,6 +27,7 @@ uint16_t WidgetRead(const struct WidgetContext *,struct WidgetSnapshot *,uint16_
 uint16_t WidgetEligible(const struct WidgetContext *,uint16_t);
 int16_t WidgetFirst(const struct WidgetContext *);
 void WidgetDamage(struct WidgetPacket *,const struct WidgetContext *,int16_t);
+void WidgetFocusDamage(struct WidgetPacket *,const struct WidgetContext *,int16_t);
 extern struct WidgetContext *WidgetCurrent;
 void WidgetFill(WORD mode,WORD style,WORD pattern,WORD colour,const GRECT *);
 void WidgetText(WORD x,WORD y,const WORD *glyphs,WORD count,WORD mode,WORD colour);

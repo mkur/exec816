@@ -3,20 +3,37 @@
 static struct WidgetContext staging;
 static uint32_t nextEpoch=1;
 
+/* Copy bounded damage to the bridge; no pointer into a context survives.
+ * Containment removes duplicate work without joining separated controls.
+ * Overflow falls back to the whole client, including every earlier change. */
+static void rectangle(struct WidgetPacket *p,const struct WidgetContext *c,
+                       WORD left,WORD top,WORD right,WORD bottom)
+{
+    uint16_t i=0,j;
+    struct WidgetDamageRect *r;
+    if (left>=right || top>=bottom) return;
+    while (i<p->damageCount) {
+        r=&p->damage[i];
+        if (r->left<=left && r->top<=top && r->right>=right && r->bottom>=bottom) return;
+        if (left<=r->left && top<=r->top && right>=r->right && bottom>=r->bottom) {
+            --p->damageCount;
+            for (j=i;j<p->damageCount;j++) p->damage[j]=p->damage[j+1];
+        } else ++i;
+    }
+    if (p->damageCount==WIDGET_DAMAGE_RECTS) {
+        p->damageCount=0;left=top=0;right=c->width;bottom=c->height;
+    }
+    r=&p->damage[p->damageCount++];
+    r->left=left;r->top=top;r->right=right;r->bottom=bottom;
+    p->changed=1;
+}
 static void damage(struct WidgetPacket *p,const struct WidgetContext *c,uint16_t index)
 {
     const GRECT *b=&c->bounds[index];
     const OBJECT *o=&c->objects[index];
     WORD border=o->ob_type==G_BUTTON ? 1+!!(o->ob_flags&EXIT)+!!(o->ob_flags&DEFAULT) : 0;
-    WORD l=b->g_x-border,t=b->g_y-border,r=b->g_x+b->g_w+border,d=b->g_y+b->g_h+border;
-    if (!p->changed) { p->left=l;p->top=t;p->right=r;p->bottom=d; }
-    else {
-        if (l<p->left) p->left=l;
-        if (t<p->top) p->top=t;
-        if (r>p->right) p->right=r;
-        if (d>p->bottom) p->bottom=d;
-    }
-    p->changed=1;
+    rectangle(p,c,b->g_x-border,b->g_y-border,
+              b->g_x+b->g_w+border,b->g_y+b->g_h+border);
 }
 uint16_t WidgetEligible(const struct WidgetContext *c,uint16_t index)
 {
@@ -33,16 +50,24 @@ void WidgetDamage(struct WidgetPacket *p,const struct WidgetContext *c,int16_t i
 {
     if (index>=0 && index<c->count) damage(p,c,(uint16_t)index);
 }
+void WidgetFocusDamage(struct WidgetPacket *p,const struct WidgetContext *c,int16_t index)
+{
+    const GRECT *b;
+    if (index<0 || index>=c->count || !WidgetVisible(c,index)) return;
+    b=&c->bounds[index];
+    rectangle(p,c,b->g_x+3,b->g_y+b->g_h-3,b->g_x+b->g_w-3,b->g_y+b->g_h-2);
+}
 uint16_t WidgetSet(struct WidgetContext *c,const struct WidgetTree *tree,struct WidgetPacket *p)
 {
     uint16_t status;
+    p->changed=p->damageCount=0;
     if (!nextEpoch) return WIDGET_EXHAUSTED;
     status=WidgetValidate(&staging,tree,p->bytes,p->width,p->height);
     if (status) return status;
     staging.epoch=nextEpoch++;staging.revision=1;
     memcpy(c,&staging,sizeof(*c));
     p->epoch=c->epoch;p->revision=c->revision;
-    p->left=p->top=0;p->right=c->width;p->bottom=c->height;p->changed=1;
+    rectangle(p,c,0,0,c->width,c->height);
     return WIDGET_OK;
 }
 uint16_t WidgetRead(const struct WidgetContext *c,struct WidgetSnapshot *out,uint16_t bytes)
@@ -62,6 +87,7 @@ uint16_t WidgetUpdate(struct WidgetContext *c,const struct WidgetUpdate *u,struc
     const struct WidgetChange *v;
     const char *label;
     OBJECT *o;
+    p->changed=p->damageCount=0;
     if (!c || !c->epoch || !u || p->bytes!=sizeof(*u) ||
         u->count>WIDGET_PATCHES || u->textBytes>WIDGET_TEXT_BYTES) return WIDGET_BAD_ARGUMENT;
     if (u->epoch!=c->epoch || u->revision!=c->revision) return WIDGET_STALE;
@@ -126,13 +152,13 @@ uint16_t WidgetUpdate(struct WidgetContext *c,const struct WidgetUpdate *u,struc
         }
     }
     if (!changed) { p->epoch=c->epoch;p->revision=c->revision;return WIDGET_OK; }
-    if (c->revision==0xffffffffUL) { p->changed=0;return WIDGET_EXHAUSTED; }
+    if (c->revision==0xffffffffUL) { p->changed=p->damageCount=0;return WIDGET_EXHAUSTED; }
     /* Any committed patch retires a gesture; it cannot overwrite press feedback. */
     WidgetDamage(p,c,c->armed);staging.armed=-1;staging.pressed=0;
     if (staging.focus<0 || !WidgetEligible(&staging,staging.focus))
         staging.focus=WidgetFirst(&staging);
     if (staging.focus!=c->focus) {
-        WidgetDamage(p,c,c->focus);WidgetDamage(p,&staging,staging.focus);
+        WidgetFocusDamage(p,&staging,staging.focus);WidgetFocusDamage(p,c,c->focus);
     }
     staging.revision++;
     memcpy(c,&staging,sizeof(*c));

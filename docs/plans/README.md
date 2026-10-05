@@ -139,6 +139,10 @@ assuming work is pending. Current behavior belongs in the
   and a refreshed OF816 preview. IRQ overhead and pointer setup cost fall;
   pointer, outline and move-repair timing targets remain open. The 2× travel
   and memory reservations are unchanged.
+- [Separate widget focus damage](gem4xe/widget-focus-damage-plan.md): implemented
+  at the development tier; independent rectangles and underline-only focus
+  repair reduce the five-press idle median from 319 to 119 ms. Release/status
+  regressions and remaining timing limits are recorded.
 - [AES widget library](gem4xe/aes-widgets-implementation-plan.md): AW0–AW6 implemented
   at the development tier;
   actual GEM4XE object/drawing/form extraction, retained widget windows, bounded

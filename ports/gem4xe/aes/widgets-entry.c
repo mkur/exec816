@@ -8,7 +8,7 @@ void WidgetEntry(void)
 {
     struct WidgetPacket *p=&WidgetPacket;
     struct WidgetContext *c=(struct WidgetContext *)p->context;
-    p->status=WIDGET_BAD_ARGUMENT;p->changed=0;
+    p->status=WIDGET_BAD_ARGUMENT;p->changed=p->damageCount=0;
     if (!c) return;
     switch (p->operation) {
     case WIDGET_OP_SET:

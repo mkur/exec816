@@ -37,6 +37,7 @@
 #define WIDGET_FLAG_HIDDEN 128
 #define WIDGET_STATE_SELECTED 1
 #define WIDGET_STATE_DISABLED 8
+#define WIDGET_DAMAGE_RECTS 8
 struct WidgetObject {
     int16_t next;
     int16_t head;
@@ -85,6 +86,12 @@ struct WidgetSnapshot {
     int16_t focus;
     struct WidgetObjectState objects[WIDGET_OBJECTS];
 };
+struct WidgetDamageRect {
+    int16_t left;
+    int16_t top;
+    int16_t right;
+    int16_t bottom;
+};
 struct WidgetPacket {
     uint16_t operation;
     uint16_t status;
@@ -111,6 +118,8 @@ struct WidgetPacket {
     uint32_t revision;
     uint16_t state;
     uint16_t changed;
+    uint16_t damageCount;
+    struct WidgetDamageRect damage[WIDGET_DAMAGE_RECTS];
 };
 #define WIDGET_OBJECT_SIZE 24
 #define WIDGET_TREE_SIZE 1800
@@ -118,6 +127,7 @@ struct WidgetPacket {
 #define WIDGET_UPDATE_SIZE 1132
 #define WIDGET_OBJECTSTATE_SIZE 4
 #define WIDGET_SNAPSHOT_SIZE 140
-#define WIDGET_PACKET_SIZE 58
+#define WIDGET_DAMAGERECT_SIZE 8
+#define WIDGET_PACKET_SIZE 124
 #pragma pack(pop)
 #endif

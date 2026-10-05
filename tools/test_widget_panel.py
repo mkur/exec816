@@ -309,24 +309,25 @@ def analyze(report, out, p, spans, marks, definition):
             max_quantum_cpu_ms=max(s['charged_cpu_ms'] for s in paints),
             primitive_entries={name:bisect_right(times(marks[name]),hi)-bisect_left(times(marks[name]),lo)
                 for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit','vram_win') if name in marks})
-    # Count logical invalidated pixels independently from form geometry. These
-    # are requested union rectangles, not physical writes after Layers clipping.
+    # Count logical damage independently from the Control Panel geometry. Its
+    # controls are disjoint; each focus underline fits inside its own button.
     focus,radio=2,4
     for load in report['windows']:
         pixels=0
         actions=[s['object'] for s in report['samples'] if s['load']==load and s['edge']=='press']
         def area(objects):
-            rects=[]
+            pixels=0
             for obj in set(objects):
                 x,y=POSITIONS[obj];border=3 if obj==6 else 2 if obj==7 else 1
-                rects.append((x-32-border,y-8-border,x+40+border,y+8+border))
-            return (max(r[2] for r in rects)-min(r[0] for r in rects))*(max(r[3] for r in rects)-min(r[1] for r in rects))
+                pixels+=(72+2*border)*(16+2*border)
+            return pixels
         for obj in actions:
-            pixels+=area([focus,obj])+area([radio,obj] if obj in (4,5) and obj!=radio else [obj])+160*8
+            pixels+=area([obj])+(66 if focus!=obj else 0)
+            pixels+=area([radio,obj] if obj in (4,5) and obj!=radio else [obj])+160*8
             focus=obj
             if obj in (4,5):radio=obj
         report['work'][load]['logical_requested_damage_pixels']=pixels
-        report['work'][load]['damage_scope']='Independent union of previous/new focus, press/release, changed radio siblings and 160x8 status; does not count Layers exposure or physical overdraw.'
+        report['work'][load]['damage_scope']='Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw.'
     report['trace_sha256']=sha256(trace)
 
 

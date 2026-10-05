@@ -3,8 +3,10 @@
 
 static void focus(struct WidgetContext *c,struct WidgetPacket *p,int16_t object)
 {
+    int16_t previous=c->focus;
     if (object==c->focus) return;
-    WidgetDamage(p,c,c->focus);c->focus=object;WidgetDamage(p,c,c->focus);
+    c->focus=object;
+    WidgetFocusDamage(p,c,object);WidgetFocusDamage(p,c,previous);
 }
 static void cancel(struct WidgetContext *c,struct WidgetPacket *p)
 {
@@ -34,7 +36,7 @@ uint16_t WidgetInput(struct WidgetContext *c,struct WidgetPacket *p)
 {
     uint16_t kind=p->kind,scan=p->code&63,i,start=0,status=WIDGET_OK;
     int16_t object;
-    p->kind=0;p->index=1;p->object=-1;p->changed=0;
+    p->kind=0;p->index=1;p->object=-1;p->changed=p->damageCount=0;
     if (!c || !c->epoch) return WIDGET_BAD_ARGUMENT;
     if (p->operation==WIDGET_OP_CANCEL) cancel(c,p);
     else if (p->operation==WIDGET_OP_POINTER) {
@@ -50,7 +52,8 @@ uint16_t WidgetInput(struct WidgetContext *c,struct WidgetPacket *p)
         } else if (kind==3 && (p->buttons&1) && p->code) {
             object=WidgetHit(c,p->x,p->y);
             if (object>=0 && WidgetEligible(c,object)) {
-                focus(c,p,object);c->armed=object;c->pressed=1;WidgetDamage(p,c,object);
+                /* Present the press before repairing the old focus mark. */
+                c->armed=object;c->pressed=1;WidgetDamage(p,c,object);focus(c,p,object);
             }
         }
     } else if (p->operation==WIDGET_OP_KEY) {

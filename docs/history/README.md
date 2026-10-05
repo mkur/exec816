@@ -21,7 +21,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 - [Hosted AES widget application](aes-widgets.md): Control Panel, loaded semantic
   input, matched updates, independent contexts, the AW6 local preview and its
-  clipped-text/startup and button-feedback follow-ups.
+  clipped-text/startup, button-feedback and separate-focus-damage follow-ups.
 
 - [Mouse sampling and pointer batching](mouse-performance.md): MP1–MP4 implement
   about 4 kHz capture with preserved fine SIO timing, one list per pointer move,
