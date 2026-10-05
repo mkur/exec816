@@ -11,11 +11,15 @@ I/O remains counted binary data. Exact signatures and constants come from
 
 | Call | Contract |
 | --- | --- |
-| `Open(name, mode)` | Open an existing disk file with an independent cursor at zero; return a handle or `NULL`. Device names have their own mode rules. |
+| `Open(name, mode)` | Open a disk file in the selected mode with an independent cursor at zero; return a handle or `NULL`. Device names have their own mode rules. |
 | `Read(file, buffer, length)` | Return a byte count, zero at EOF, or -1 on failure. |
-| `Write(file, buffer, length)` | Write to a supported stream; mounted filesystems reject nonempty writes. |
+| `Write(file, buffer, length)` | Write bytes; disk writers overwrite/extend and return a confirmed prefix or -1. |
 | `Seek(file, offset, origin)` | Return the **old** position or -1. A failed seek preserves the original position. |
-| `Close(file)` | Release the owned handle; return DOS true or false. |
+| `Close(file)` | Finalize the last writer and consume the owned handle, including on a terminal disk error. |
+| `Flush(file)` | Settle confirmed output without closing or changing position. |
+| `CreateDir(path)` | Create one directory and return an owned shared lock. |
+| `DeleteFile(path)` | Delete a file or empty directory. |
+| `Rename(old, new)` | Rename within the same parent without replacement. |
 | `Lock(name, mode)` / `UnLock(lock)` | Acquire/release a shared file or directory reference. UnLock(NULL) is harmless. |
 | `Examine(lock, info)` | Return object metadata and initialize directory enumeration. |
 | `ExNext(lock, info)` | Return the next entry; false with ERROR_NO_MORE_ENTRIES ends enumeration. |
@@ -24,8 +28,10 @@ I/O remains counted binary data. Exact signatures and constants come from
 
 Sizes, positions, modes and primary results use `LONGINT`. Boolean results are
 `DOSFALSE=0` and `DOSTRUE=-1`. Use named constants rather than numeric arguments.
-`MODE_OLDFILE` opens an existing disk file. `MODE_NEWFILE` and `MODE_READWRITE`
-retain their usual meanings but are rejected by the read-only disk handlers.
+`MODE_OLDFILE` opens an existing read-only handle. On writable mounts,
+`MODE_READWRITE` preserves or creates a file and `MODE_NEWFILE` creates or
+immediately truncates it. See [filesystem writes](filesystem-writes.md) for
+writer leases, inherited ownership, cancellation and finalization.
 
 Seek origins are `OFFSET_BEGINNING`, `OFFSET_CURRENT` and `OFFSET_END`. Positions
 must stay between zero and exact EOF; overflow and extension past EOF fail.
@@ -40,11 +46,11 @@ current-directory resolution. Components use `/`, not host separators. The
 [SYS:](sys-volume.md) describes stable system paths. Paths are bounded and are
 never silently truncated.
 
-Both [MyDOS](mydos.md) and [SpartaDOS](spartados.md) are read-only. Mounts are
-explicitly configured; geometry is validated when binding the mount, not
-rediscovered on each ordinary request. Keep media unchanged while mounted.
-There is no automatic disk-change detection, filesystem repair or writable RAM:
-filesystem.
+Both [MyDOS](mydos.md) and [SpartaDOS](spartados.md) support explicitly
+[writable mounts](filesystem-writes.md); read-only remains the default. Geometry
+and bounded header checks run at mount, without a filesystem scan. Keep media
+unchanged externally while mounted. There is no automatic disk-change detection,
+filesystem repair or RAM: filesystem.
 
 ## Errors and partial transfers
 
@@ -66,8 +72,8 @@ on success and clears any standard-stream selection referring to that handle.
 
 ## Fault text
 
-DOS and COMMAND publish shared English error formatting in DOS ABI revision 4
-and program ABI version 8. Message definitions come from the DOS and program ABI
+DOS and COMMAND publish shared English error formatting in DOS ABI revision 5
+and program ABI version 9. Message definitions come from the DOS and program ABI
 JSON files; one generated resident table covers all defined DOS/loader errors.
 
 | Call | Contract |

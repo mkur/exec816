@@ -1,0 +1,175 @@
+; Mount-local identities include detached inherited wrappers. No lease spans
+; generations, and registration never performs I/O or allocates storage.
+MODULE FSLEASES
+USE EXEC
+USE FSTYPES
+USE FSBTYPES
+USE FSCORE
+USE DOSOBJECTS
+USE FSFORMATS
+USE HEAPCORE
+
+PUBLIC PROC Link(FSTYPES.Object POINTER item)
+
+  EXEC.Forbid()
+  IF item.registered<>0 THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+  item.next=item.mount.objects
+  item.mount.objects=BYTE POINTER(item)
+  item.registered=1
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC Unlink(FSTYPES.Object POINTER item)
+  FSTYPES.Object POINTER current,previous
+
+  EXEC.Forbid()
+  IF item.registered<>0 THEN
+    current=FSTYPES.Object POINTER(item.mount.objects)
+    previous=NULL
+    WHILE current<>item DO
+      IF current=NULL THEN
+        HEAPCORE.Abort($ff94)
+      FI
+
+      previous=current
+      current=FSTYPES.Object POINTER(current.next)
+    OD
+
+    IF previous=NULL THEN
+      item.mount.objects=item.next
+    ELSE
+      previous.next=item.next
+    FI
+
+    item.next=NULL
+    item.registered=0
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC FSBTYPES.Entry POINTER FUNC ObjectEntry(FSTYPES.Object POINTER item)
+  FSTYPES.FileObject POINTER file
+
+  IF item.header.kind=DOSOBJECTS.KIND_FILE THEN
+    file=FSTYPES.FileObject POINTER(item)
+    RETURN(@file.backing.cursor.entry)
+  FI
+
+  LET lock=FSTYPES.LockObject POINTER(item)
+
+RETURN(@lock.state.entry)
+
+PUBLIC BYTE FUNC Same(FSTYPES.Mount POINTER mount FSBTYPES.Entry POINTER a,b)
+  LONGCARD left,right
+
+  left=a.key
+  right=b.key
+  IF mount.spec.format=FSFORMATS.MYDOS THEN
+    left=left & 255
+    right=right & 255
+  FI
+
+RETURN(a.parent=b.parent AND left=right AND a.start=b.start)
+
+; Called while the worker owns the only active filesystem packet. Forbid
+; protects detached wrappers being retained/discarded by another Task.
+PUBLIC BYTE FUNC Busy(FSTYPES.Mount POINTER mount FSBTYPES.Entry POINTER entry
+    BYTE exclusive,descendants)
+  FSTYPES.Object POINTER item
+  BYTE busy,index,depth
+  CARD POINTER ancestors
+
+  busy=0
+  EXEC.Forbid()
+  item=FSTYPES.Object POINTER(mount.objects)
+  WHILE item<>NULL DO
+    BEGIN
+      LET metadata=ObjectEntry(item)
+      LET file=FSTYPES.FileObject POINTER(item)
+      LET lock=FSTYPES.LockObject POINTER(item)
+      IF Same(mount,entry,metadata)<>0 THEN
+        IF exclusive<>0 THEN
+          busy=1
+        ELSEIF item.header.kind=DOSOBJECTS.KIND_FILE THEN
+          busy=file.backing.writable
+        FI
+      FI
+
+      IF descendants<>0 AND (entry.flags & FSBTYPES.DIR)<>0 THEN
+        IF item.header.kind=DOSOBJECTS.KIND_FILE THEN
+          ancestors=file.backing.cursor.ancestors
+          depth=file.backing.cursor.depth
+        ELSE
+          ancestors=lock.state.ancestors
+          depth=lock.state.depth
+        FI
+
+        FOR index=0 TO depth DO
+          IF ancestors(index)=entry.start THEN
+            busy=1
+          FI
+        OD
+      FI
+
+      IF busy<>0 THEN
+        EXIT
+      FI
+
+      item=FSTYPES.Object POINTER(item.next)
+    END
+  OD
+
+  EXEC.Permit()
+
+RETURN(busy)
+
+; Only an owned writer can explain a native incomplete entry. Return its
+; last committed metadata; a native flag alone grants no access.
+PUBLIC BYTE FUNC Live(FSBTYPES.Workspace POINTER work)
+  BYTE found
+  FSTYPES.Object POINTER item
+
+  found=0
+  LET mount=FSTYPES.Mount POINTER(work.volume.owner)
+  IF mount=NULL THEN
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  item=FSTYPES.Object POINTER(mount.objects)
+  WHILE item<>NULL DO
+    IF item.header.kind=DOSOBJECTS.KIND_FILE THEN
+      BEGIN
+        LET file=FSTYPES.FileObject POINTER(item)
+        IF file.backing.writable<>0 AND Same(mount,@work.entry,
+            @file.backing.cursor.entry)<>0 THEN
+          FSCORE.CopyEntry(@work.entry,@file.backing.cursor.entry)
+          found=1
+          EXIT
+        FI
+      END
+    FI
+
+    item=FSTYPES.Object POINTER(item.next)
+  OD
+
+  EXEC.Permit()
+
+RETURN(found)
+
+PUBLIC BYTE FUNC Writable(FSBTYPES.Workspace POINTER work)
+
+  LET mount=FSTYPES.Mount POINTER(work.volume.owner)
+  IF mount=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(mount.writable)
+
+ENDMODULE

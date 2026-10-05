@@ -1,0 +1,152 @@
+; Synchronous sector boundaries inside a bounded filesystem commit unit.
+; Control messages still pump while SIO owns the request. No mask spans I/O.
+MODULE FSWRITEIO
+USE EXEC
+USE FSTYPES
+USE FSWTYPES
+USE DOSCORE
+USE FSACTIVE
+USE FSOPERATION
+USE BLOCKIO
+USE BLOCKWIRE
+USE SDFS
+USE SIODRIVER
+USE FSIO
+USE A816MEMORY
+INCLUDE "../dos/dos-types.inc"
+
+PUBLIC FSWTYPES.State POINTER FUNC State(FSTYPES.Service POINTER service)
+
+RETURN(FSWTYPES.State POINTER(service.mutation))
+
+PUBLIC BYTE FUNC Error(FSTYPES.Service POINTER service LONGINT error)
+
+  service.work.error=error
+  IF service.changed<>0 THEN
+    service.selected.offline=1
+    service.selected.writable=0
+    service.selected.error=error
+    SDFS.Invalidate(service.work)
+    BLOCKIO.Invalidate(service.adapter)
+  FI
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Checkpoint(FSTYPES.Service POINTER service)
+
+  FSOPERATION.Pump(DOSCORE.GetRegistry())
+  IF service.committing=0 AND FSOPERATION.Canceled(FSACTIVE.CurrentScope(
+      service))<>0 THEN
+    RETURN(Error(service,ERROR_BREAK))
+  FI
+
+RETURN(1)
+
+; Once any write was submitted, failed completion invalidates this mount.
+BYTE FUNC Failed(FSTYPES.Service POINTER service LONGINT error)
+
+  service.work.ioError=error
+  service.work.error=ERROR_DISK_NOT_VALIDATED
+  IF error=ERROR_BREAK THEN
+    service.work.error=ERROR_BREAK
+  FI
+
+  SDFS.Invalidate(service.work)
+  BLOCKIO.Invalidate(service.adapter)
+  IF service.changed<>0 THEN
+    service.selected.offline=1
+    service.selected.writable=0
+    service.selected.error=error
+  FI
+
+  IF SIODRIVER.Unavailable()<>0 THEN
+    FSIO.Offline(service)
+  FI
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Read(FSTYPES.Service POINTER service CARD sector
+    BYTE POINTER destination)
+  LONGINT error
+
+  IF Checkpoint(service)=0 THEN
+    RETURN(0)
+  FI
+
+  LET status=BLOCKIO.BeginFetch(service.adapter,service.selected.block,
+      LONGCARD(sector))
+  IF status=0 THEN
+    RETURN(Failed(service,service.adapter.error))
+  FI
+
+  IF status=2 THEN
+    IF service.committing<>0 THEN
+      error=LONGINT(BLOCKWIRE.TransferCommitted(service.adapter.request,
+          DOSCORE.GetRegistry(),FSACTIVE.CurrentScope(service)))
+    ELSE
+      error=LONGINT(BLOCKWIRE.Transfer(service.adapter.request,
+          DOSCORE.GetRegistry(),FSACTIVE.CurrentScope(service)))
+    FI
+
+    error=BLOCKIO.FinishFetch(service.adapter,service.selected.block,
+        LONGCARD(sector),error)
+    IF error<>0 THEN
+      RETURN(Failed(service,error))
+    FI
+  FI
+
+  A816MEMORY.Move(destination,service.adapter.buffer,SIZE(
+      BLOCKIO.SectorBytes(service.selected.block,LONGCARD(sector))))
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Write(FSTYPES.Service POINTER service CARD sector
+    BYTE POINTER source)
+  LONGINT error
+
+  IF Checkpoint(service)=0 THEN
+    RETURN(0)
+  FI
+
+  IF BLOCKIO.BeginStore(service.adapter,service.selected.block,LONGCARD(sector),
+      source)=0 THEN
+    RETURN(Failed(service,service.adapter.error))
+  FI
+
+  service.committing=1
+  service.changed=1
+  error=LONGINT(BLOCKWIRE.TransferCommitted(service.adapter.request,
+      DOSCORE.GetRegistry(),FSACTIVE.CurrentScope(service)))
+  error=BLOCKIO.FinishStore(service.adapter,service.selected.block,
+      LONGCARD(sector),error)
+  SDFS.Invalidate(service.work)
+  IF error<>0 THEN
+    RETURN(Failed(service,error))
+  FI
+
+RETURN(1)
+
+PUBLIC PROC Zero(BYTE POINTER buffer)
+  CARD index
+
+  FOR index=0 TO 255 DO
+    buffer(index)=0
+  OD
+
+RETURN
+
+PUBLIC PROC Word(BYTE POINTER buffer CARD offset,value)
+
+  buffer(offset)=BYTE(value)
+  buffer(offset+1)=BYTE(value RSH 8)
+
+RETURN
+
+PUBLIC PROC Length(BYTE POINTER buffer CARD offset LONGINT value)
+
+  Word(buffer,offset,CARD(value))
+  buffer(offset+2)=BYTE(value RSH 16)
+
+RETURN
+
+ENDMODULE

@@ -1,4 +1,4 @@
-# MyDOS read-only format
+# MyDOS filesystem format
 
 [Reference index](README.md) · [DOS API](dos.md)
 
@@ -37,7 +37,9 @@ file, `$10` as a subdirectory and `$20` as write protection. Normal closed DOS 2
 and MyDOS files commonly have `$42` and `$46` respectively; a directory can
 have status `$10` alone. Therefore testing `$40` as a universal existence bit
 would lose directories. Accept only the documented combinations in the chosen
-format profile; skip deleted/unclosed files and reject unsupported live types.
+format profile; skip deleted files and reject unsupported live types. Read-only
+mounts skip unclosed files; writable mounts recognize their own live writers
+and reject unexplained incomplete entries.
 DOS 2.5's special enhanced-density flags require their own decoder and are
 outside this milestone.
 
@@ -81,7 +83,7 @@ directory metadata, valid byte count no greater than `S-3`, and correct file
 number in ten-bit mode. Derive exact file length by summing validated payload
 counts along the chain; multiplying the directory count by 125/253 is not an
 exact length. Permit a final sector with zero payload for an empty file. Also
-accept a canonical zero-count/zero-start empty entry. Nonzero count with zero
+accept a legacy zero-count/zero-start empty entry. Nonzero count with zero
 start, inconsistent EOF/count, out-of-range links and unsupported trailer formats
 are corruption, not ordinary EOF.
 
@@ -91,7 +93,8 @@ not reset on each small Read and thereby let a cyclic file produce bytes forever
 Backward seeks restart from the first sector with a fresh bounded traversal;
 forward seeks can continue a validated cursor. Compute `OFFSET_END` by a bounded
 walk when exact size is not yet known. Validate the directory sector count when
-EOF is reached. Do not eagerly read an entire large file merely to open it.
+EOF is reached. Read-only Open does not eagerly read an entire large file. Writable Open
+validates the selected chain before marking it incomplete.
 
 Do not report these checks as a complete filesystem check: unrelated files may
 cross-link, and corruption later in a chain may be discovered only after earlier
@@ -121,3 +124,10 @@ limited to qualified peripheral profiles. An enhanced-density MyDOS volume is
 not interchangeable with a DOS 2.5 enhanced-density volume just because both
 have 128-byte sectors. Explicit `MYDOS` mount type and structural validation are
 required; a marker or boot signature alone cannot identify every related format.
+
+### Writes
+
+See [filesystem writes](filesystem-writes.md) for the public contract and
+[the mutation protocol](../plans/filesystem-write-protocol.md) for sector ordering.
+Writable mounts use the VTOC on demand and preserve ten-bit link mode on existing
+files. Mounting remains a single header read; it does not scan file chains.

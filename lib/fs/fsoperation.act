@@ -19,7 +19,8 @@ PUBLIC CONST PREPARED=1,QUEUED=2,ACTIVE=3,REPLIED=4,COLLECTED=5
 PUBLIC BYTE FUNC Cancellable(LONGINT action)
 
 RETURN(action=8 OR action=23 OR action=24 OR action=82 OR action=1005
-    OR action=1008)
+    OR action=1008 OR action=1004 OR action=1006 OR action=87
+    OR action=27 OR action=22 OR action=16 OR action=17)
 
 ; Called while Forbid serializes publication with worker claim/reply.
 PUBLIC LONGINT FUNC Prepare(DOSBREAKTYPES.Scope POINTER scope DOSCORE.DosSlot
@@ -257,7 +258,8 @@ PUBLIC PROC Pump(DOSCORE.DosRegistry POINTER registry)
       EXECLISTS.Remove(@packet.sp_Msg.mn_Node)
       packet.sp_Pkt.dp_Res1=0
       packet.sp_Pkt.dp_Res2=ERROR_BREAK
-      IF packet.sp_Pkt.dp_Type=82 OR packet.sp_Pkt.dp_Type=1008 THEN
+      IF packet.sp_Pkt.dp_Type=82 OR packet.sp_Pkt.dp_Type=87
+          OR packet.sp_Pkt.dp_Type=1008 THEN
         packet.sp_Pkt.dp_Res1=-1
       FI
 

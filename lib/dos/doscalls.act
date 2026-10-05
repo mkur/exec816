@@ -109,7 +109,7 @@ BYTE POINTER FUNC Acquire(DOSCORE.DosSlot POINTER slot BYTE POINTER name
     FSREGISTRY.Release(mount)
   FI
 
-  IF action=8 THEN
+  IF action=8 OR action=22 THEN
     result.handle=BYTE POINTER(ADDRESS(success))
   FI
 
@@ -203,12 +203,12 @@ PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
   FI
 
   IF backend=DOSOBJECTS.BACKEND_FILE THEN
-    IF mode<>MODE_OLDFILE THEN
-      DOSCLIENT.SetError(ERROR_DISK_WRITE_PROTECTED)
+    IF mode<>MODE_OLDFILE AND mode<>MODE_READWRITE AND mode<>MODE_NEWFILE THEN
+      DOSCLIENT.SetError(ERROR_BAD_NUMBER)
       RETURN(BYTE POINTER(0))
     FI
 
-    RETURN(Acquire(slot,name,colon,resolved.base,1005))
+    RETURN(Acquire(slot,name,colon,resolved.base,mode))
   FI
 
   IF DOSSTREAMS.ValidMode(mode)=0 THEN
@@ -429,9 +429,18 @@ PUBLIC LONGINT FUNC Write(BYTE POINTER identity,buffer LONGINT length)
     RETURN(0)
   FI
 
-  DOSCLIENT.SetError(ERROR_DISK_WRITE_PROTECTED)
+  LET item=File(client,header)
+  IF item=NULL THEN
+    RETURN(-1)
+  FI
 
-RETURN(-1)
+  LET mount=item.mount
+  client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(buffer))
+  client.packet.sp_Pkt.dp_Arg3=length
+  LET result=DOSCLIENT.Call(slot,client,mount.port,87)
+  FSREGISTRY.Release(mount)
+
+RETURN(result)
 
 ; Apply a position change only to a valid caller-owned file.
 PUBLIC LONGINT FUNC Seek(BYTE POINTER identity LONGINT offset,mode)
@@ -481,6 +490,7 @@ RETURN(result)
 
 ; Close an owned file through its backend before relinquishing its identity.
 PUBLIC LONGINT FUNC Close(BYTE POINTER identity)
+  LONGINT previousError
   DOSCORE.DosSlot POINTER slot
   DOSCLIENT.ClientContext POINTER client
   DOSOBJECTS.Header POINTER header
@@ -522,8 +532,12 @@ PUBLIC LONGINT FUNC Close(BYTE POINTER identity)
 
   mount=item.mount
   DOSCLIENT.ClearSelections(client,identity)
+  previousError=slot.error
   result=DOSCLIENT.Call(slot,client,mount.port,1007)
   FSREGISTRY.Release(mount)
+  IF result<>0 THEN
+    slot.error=previousError
+  FI
 
 RETURN(result)
 
@@ -924,5 +938,174 @@ PUBLIC PROC ClearBreak()
   DOSBREAK.Clear()
 
 RETURN
+
+; Unbuffered streams have no pending output. Disk synchronization checks the
+; same owned wrapper and mount lifetime as Read/Write.
+PUBLIC LONGINT FUNC Flush(BYTE POINTER identity)
+
+  LET slot=DOSCORE.Current()
+  LET client=DOSCLIENT.EnsureSlot(slot)
+  IF client=NULL THEN
+    RETURN(0)
+  FI
+
+  LET header=Object(slot,identity,DOSOBJECTS.KIND_FILE)
+  IF header=NULL THEN
+    RETURN(0)
+  FI
+
+  IF header.backend<>DOSOBJECTS.BACKEND_FILE THEN
+    IF header.backend=DOSOBJECTS.BACKEND_RAW OR header.backend=DOSOBJECTS.BACKEND_CON THEN
+      IF DOSRAW.Live(DOSSTREAMS.Handle POINTER(header))=0 THEN
+        slot.error=ERROR_BAD_STREAM_NAME
+        RETURN(0)
+      FI
+    FI
+
+    slot.error=0
+    RETURN(-1)
+  FI
+
+  LET item=File(client,header)
+  IF item=NULL THEN
+    RETURN(0)
+  FI
+
+  LET mount=item.mount
+  LET result=DOSCLIENT.Call(slot,client,mount.port,27)
+  FSREGISTRY.Release(mount)
+
+RETURN(result)
+
+PUBLIC BYTE POINTER FUNC CreateDir(BYTE POINTER name)
+  DestinationInfo resolved
+
+  LET slot=DOSCORE.Current()
+  LET colon=FSNAMES.Path(name)
+  LET backend=Destination(slot,name,colon,@resolved)
+  IF backend=0 THEN
+    RETURN(NULL)
+  FI
+
+  IF backend<>DOSOBJECTS.BACKEND_FILE THEN
+    slot.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(NULL)
+  FI
+
+RETURN(Acquire(slot,name,colon,resolved.base,22))
+
+FSTYPES.Mount POINTER FUNC PathMount(DOSCORE.DosSlot POINTER slot
+    BYTE POINTER name CARD colon FSTYPES.Object POINTER base)
+  LONGINT error
+
+  IF colon=FSNAMES.RELATIVE OR colon=0 THEN
+    error=FSREGISTRY.RetainBase(base.mount)
+    IF error<>0 THEN
+      slot.error=error
+      RETURN(NULL)
+    FI
+
+    RETURN(base.mount)
+  FI
+
+  IF FSBOOT.Ensure()=0 THEN
+    BEGIN
+      LET registry=DOSCORE.GetRegistry()
+      slot.error=registry.error
+    END
+    RETURN(NULL)
+  FI
+
+  LET mount=FSREGISTRY.Lookup(name,colon)
+  IF mount=NULL THEN
+    slot.error=ERROR_DEVICE_NOT_MOUNTED
+  FI
+
+RETURN(mount)
+
+; Hold both resolved mount identities until rename replies; aliases compare
+; by identity rather than spelling. No target ownership escapes this call.
+LONGINT FUNC Namespace(BYTE POINTER name,newName LONGINT action)
+  DestinationInfo oldTarget,newTarget
+  CARD colon,newColon
+  FSTYPES.Mount POINTER second
+  LONGINT result
+
+  LET slot=DOSCORE.Current()
+  LET client=DOSCLIENT.EnsureSlot(slot)
+  IF client=NULL THEN
+    RETURN(0)
+  FI
+
+  colon=FSNAMES.Path(name)
+  IF Destination(slot,name,colon,@oldTarget)<>DOSOBJECTS.BACKEND_FILE THEN
+    IF slot.error=0 THEN
+      slot.error=ERROR_OBJECT_WRONG_TYPE
+    FI
+
+    RETURN(0)
+  FI
+
+  LET mount=PathMount(slot,name,colon,oldTarget.base)
+  IF mount=NULL THEN
+    RETURN(0)
+  FI
+
+  second=NULL
+  IF colon<>FSNAMES.RELATIVE AND colon<>0 THEN
+    name==+SIZE(colon+1)
+  FI
+
+  Arguments(client,slot)
+  client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(oldTarget.base))
+  client.packet.sp_Pkt.dp_Arg3=LONGINT(ADDRESS(name))
+  IF action=17 THEN
+    newColon=FSNAMES.Path(newName)
+    IF Destination(slot,newName,newColon,@newTarget)<>DOSOBJECTS.BACKEND_FILE THEN
+      IF slot.error=0 THEN
+        slot.error=ERROR_OBJECT_WRONG_TYPE
+      FI
+
+      FSREGISTRY.Release(mount)
+      RETURN(0)
+    FI
+
+    second=PathMount(slot,newName,newColon,newTarget.base)
+    IF second=NULL THEN
+      FSREGISTRY.Release(mount)
+      RETURN(0)
+    FI
+
+    IF second<>mount THEN
+      FSREGISTRY.Release(second)
+      FSREGISTRY.Release(mount)
+      slot.error=ERROR_RENAME_ACROSS_DEVICES
+      RETURN(0)
+    FI
+
+    IF newColon<>FSNAMES.RELATIVE AND newColon<>0 THEN
+      newName==+SIZE(newColon+1)
+    FI
+
+    client.packet.sp_Pkt.dp_Arg4=LONGINT(ADDRESS(newName))
+    client.packet.sp_Pkt.dp_Arg5=LONGINT(ADDRESS(newTarget.base))
+  FI
+
+  result=DOSCLIENT.Call(slot,client,mount.port,action)
+  IF second<>NULL THEN
+    FSREGISTRY.Release(second)
+  FI
+
+  FSREGISTRY.Release(mount)
+
+RETURN(result)
+
+PUBLIC LONGINT FUNC DeleteFile(BYTE POINTER name)
+
+RETURN(Namespace(name,NULL,16))
+
+PUBLIC LONGINT FUNC Rename(BYTE POINTER oldName,newName)
+
+RETURN(Namespace(oldName,newName,17))
 
 ENDMODULE

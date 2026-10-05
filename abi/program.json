@@ -1,6 +1,6 @@
 {
   "abi": "exec816.program",
-  "version": 8,
+  "version": 9,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
@@ -343,6 +343,46 @@
         [
           "CARD",
           "capacity"
+        ]
+      ]
+    },
+    "Flush": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ]
+      ]
+    },
+    "CreateDir": {
+      "result": "BYTE POINTER",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "name"
+        ]
+      ]
+    },
+    "DeleteFile": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "name"
+        ]
+      ]
+    },
+    "Rename": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "oldName"
+        ],
+        [
+          "BYTE POINTER",
+          "newName"
         ]
       ]
     }

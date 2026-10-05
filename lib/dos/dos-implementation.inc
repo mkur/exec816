@@ -1,4 +1,20 @@
 ; Native source adapters preserve the public DOS record identities and ABI.
+PUBLIC LONGINT FUNC Flush(FileHandle POINTER file)
+
+RETURN(DOSCALLS.Flush(BYTE POINTER(file)))
+
+PUBLIC FileLock POINTER FUNC CreateDir(BYTE POINTER name)
+
+RETURN(FileLock POINTER(DOSCALLS.CreateDir(name)))
+
+PUBLIC LONGINT FUNC DeleteFile(BYTE POINTER name)
+
+RETURN(DOSCALLS.DeleteFile(name))
+
+PUBLIC LONGINT FUNC Rename(BYTE POINTER oldName,newName)
+
+RETURN(DOSCALLS.Rename(oldName,newName))
+
 PUBLIC FileHandle POINTER FUNC Open(BYTE POINTER name LONGINT mode)
 
 RETURN(FileHandle POINTER(DOSCALLS.Open(name,mode)))

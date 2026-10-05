@@ -83,6 +83,10 @@ PUBLIC BYTE FUNC Select(FSTYPES.Service POINTER service)
     RETURN(FSPACKET.Error(service,ERROR_INVALID_LOCK))
   FI
 
+  IF state.epoch<>lock.common.mount.epoch THEN
+    RETURN(FSPACKET.Error(service,ERROR_OBJECT_IN_USE))
+  FI
+
   IF state.next>FSBACKEND.EnumLimit(service.work.volume) THEN
     RETURN(FSPACKET.Error(service,ERROR_INVALID_LOCK))
   FI

@@ -1,9 +1,9 @@
-"""Validate explicit read-only filesystem mounts and encode upper-RAM specs."""
+"""Validate explicit filesystem mount access and encode upper-RAM specs."""
 import argparse,json,re,struct
 from pathlib import Path
 from filesystem_formats import DEFAULT, FORMATS, MYDOS
 ALIAS=re.compile(r'[0-9@A-Z_`a-z]{1,31}\Z')
-FIELDS={'alias','unit','sectors','sector_bytes','profile','boot','format'}
+FIELDS={'alias','unit','sectors','sector_bytes','profile','boot','format','access'}
 def require(ok,message):
     if not ok:raise ValueError(message)
 def validate_mounts(mounts):
@@ -15,8 +15,9 @@ def validate_mounts(mounts):
         require({'alias','unit','sectors','sector_bytes'}<=set(mount),'Incomplete mount geometry')
         name=mount['alias'];require(isinstance(name,str) and ALIAS.fullmatch(name),'Invalid mount alias')
         require(name.upper() not in {'NIL','RAW','CON','CONSOLE','SYS'},'Reserved DOS alias')
-        spec=dict(profile=1,boot=1,format=DEFAULT);spec.update(mount)
-        for key in FIELDS-{'alias'}:require(type(spec[key]) is int,'Mount '+key+' must be an integer')
+        spec=dict(profile=1,boot=1,format=DEFAULT,access="readonly");spec.update(mount)
+        for key in FIELDS-{'alias','access'}:require(type(spec[key]) is int,'Mount '+key+' must be an integer')
+        require(spec['access'] in ('readonly','readwrite'),'Unknown mount access policy')
         require(49<=spec['unit']<=56,'SIO unit must be 49..56')
         require(1<=spec['sectors']<=65535,'Geometry must have 1..65535 sectors')
         if spec['format']==MYDOS: require(spec['sectors']>=368,'MyDOS needs at least 368 sectors')
@@ -31,7 +32,7 @@ def validate_mounts(mounts):
 def encode(mounts):
     data=bytearray()
     for spec in validate_mounts(mounts):
-        data+=struct.pack('<32sHHIHBB',spec['alias'].encode('ascii'),spec['unit'],spec['profile'],spec['sectors'],spec['sector_bytes'],spec['boot'],spec['format'])
+        data+=struct.pack('<32sHHIHBBBx',spec['alias'].encode('ascii'),spec['unit'],spec['profile'],spec['sectors'],spec['sector_bytes'],spec['boot'],spec['format'],int(spec['access']=='readwrite'))
     return bytes(data)
 def select_system(mounts, name=None):
     """Resolve an explicit system volume; list order is never a default."""

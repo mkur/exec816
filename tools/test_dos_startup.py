@@ -64,8 +64,8 @@ def run(t,out,mode,fault,filesystem='mydos'):
             # Build valid production descriptors; corrupt the loaded test image
             # explicitly to exercise the independent native validation gate.
             config=p['build']['task_storage']['BASE']+0x900
-            if fault=='duplicate-alias':far_write(b,config+44,b'd1'+bytes(30),out)
-            if fault=='duplicate-unit':far_write(b,config+44+32,(49).to_bytes(2,'little'),out)
+            if fault=='duplicate-alias':far_write(b,config+46,b'd1'+bytes(30),out)
+            if fault=='duplicate-unit':far_write(b,config+46+32,(49).to_bytes(2,'little'),out)
             for name,value,size in [('EXPECTED',error,4),('EXHAUSTED',int(fault=='generation'),1)]:
                 address=next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_DOSFAILTEST_'+name+'_'));b.memload(address,(value&((1<<(size*8))-1)).to_bytes(size,'little'))
         try:runtime,_=execute(b,p,before_run=before_run,timeout=240,frame_limit=12000)

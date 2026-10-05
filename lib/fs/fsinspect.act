@@ -4,11 +4,12 @@ USE EXEC
 USE DOSCORE
 USE FSTYPES
 USE FSREGISTRY
+USE BOOTCONFIG
 PUBLIC CONST CAPACITY=8
 
 PUBLIC TYPE Info=[
   BYTE ARRAY name(32)
-  BYTE offline,format,readOnly
+  BYTE offline,format,readOnly,requestedAccess
 ]
 
 PUBLIC TYPE CacheInfo=[
@@ -88,7 +89,8 @@ PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
             rows(count).name(index)=0
             rows(count).offline=mount.offline
             rows(count).format=mount.spec.format
-            rows(count).readOnly=1
+            rows(count).readOnly=mount.writable=0
+            rows(count).requestedAccess=mount.spec.access
             count==+1
           FI
         FI
@@ -99,5 +101,26 @@ PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
   EXEC.Permit()
 
 RETURN(count)
+
+PUBLIC BYTE FUNC SystemWritable()
+  BYTE writable
+
+  writable=0
+  LET registry=DOSCORE.GetRegistry()
+  EXEC.Forbid()
+  IF registry.state=FSTYPES.STATE_READY AND registry.runtime<>NULL
+      AND BOOTCONFIG.B_SYSTEM_SLOT<>255 THEN
+    BEGIN
+      LET service=FSTYPES.Service POINTER(registry.runtime)
+      LET mount=service.mounts(BOOTCONFIG.B_SYSTEM_SLOT).item
+      IF mount<>NULL THEN
+        writable=mount.writable
+      FI
+    END
+  FI
+
+  EXEC.Permit()
+
+RETURN(writable)
 
 ENDMODULE

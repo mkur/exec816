@@ -1,0 +1,460 @@
+; MyDOS VTOC/chain mutation. Existing ten-bit links retain their slot identity;
+; new files use the native sixteen-bit form and one empty payload sector.
+MODULE MYDOSWRITE
+USE FSTYPES
+USE FSBTYPES
+USE FSWTYPES
+USE FSWRITEIO
+USE FSALLOC
+USE MYDOS
+USE SDFS
+USE A816MEMORY
+INCLUDE "../dos/dos-types.inc"
+
+BYTE FUNC Bad(FSTYPES.Service POINTER service)
+
+RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+
+CARD FUNC Limit(FSBTYPES.Entry POINTER entry)
+
+  IF (entry.key & $400)=0 THEN
+    RETURN(1023)
+  FI
+
+RETURN($ffff)
+
+; Validate each touched payload and its next link against geometry, ancestry,
+; native file ordinal and allocation state before using its bytes.
+BYTE FUNC ReadPayload(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry
+    CARD sector)
+  BYTE index,high
+  CARD sectorBytes,next,ancestor
+
+  LET state=FSWRITEIO.State(service)
+  sectorBytes=service.selected.spec.dataBytes
+  IF MYDOS.DataSector(service.work.volume,LONGCARD(sector))=0
+      OR sector>Limit(entry) THEN
+    RETURN(Bad(service))
+  FI
+
+  FOR index=0 TO service.work.depth DO
+    ancestor=service.work.ancestors(index)
+    IF LONGCARD(sector)>=LONGCARD(ancestor)
+        AND LONGCARD(sector)<LONGCARD(ancestor)+8 THEN
+      RETURN(Bad(service))
+    FI
+  OD
+
+  IF FSALLOC.Allocated(service,sector)=0 OR
+      FSWRITEIO.Read(service,sector,state.data)=0 THEN
+    RETURN(0)
+  FI
+
+  high=state.data(sectorBytes-3)
+  IF Limit(entry)=1023 THEN
+    IF (high RSH 2)<>BYTE(entry.key) THEN
+      RETURN(Bad(service))
+    FI
+
+    high=high & 3
+  FI
+
+  next=(CARD(high) LSH 8)+CARD(state.data(sectorBytes-2))
+  IF state.data(sectorBytes-1)>BYTE(sectorBytes-3) OR next=sector THEN
+    RETURN(Bad(service))
+  FI
+
+  IF next<>0 THEN
+    IF MYDOS.DataSector(service.work.volume,LONGCARD(next))=0 OR
+        state.data(sectorBytes-1)<>BYTE(sectorBytes-3) THEN
+      RETURN(Bad(service))
+    FI
+  FI
+
+  state.next=next
+
+RETURN(1)
+
+PROC Trailer(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry
+    CARD next BYTE used)
+
+  LET state=FSWRITEIO.State(service)
+  LET sectorBytes=service.selected.spec.dataBytes
+  state.data(sectorBytes-3)=BYTE(next RSH 8)
+  IF Limit(entry)=1023 THEN
+    state.data(sectorBytes-3)=state.data(sectorBytes-3) OR (BYTE(entry.key) LSH 2)
+  FI
+
+  state.data(sectorBytes-2)=BYTE(next)
+  state.data(sectorBytes-1)=used
+
+RETURN
+
+; Directory records occupy only the first 128 bytes of each directory sector.
+PUBLIC BYTE FUNC EntryIO(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry BYTE write)
+  CARD sector,offset
+
+  LET state=FSWRITEIO.State(service)
+  sector=entry.parent+CARD((entry.key & 255) RSH 3)
+  offset=CARD(entry.key & 7) LSH 4
+  IF FSWRITEIO.Read(service,sector,state.map)=0 THEN
+    RETURN(0)
+  FI
+
+  IF write<>0 THEN
+    A816MEMORY.Move(@state.map(offset),state.row,16)
+    RETURN(FSWRITEIO.Write(service,sector,state.map))
+  FI
+
+  A816MEMORY.Move(state.row,@state.map(offset),16)
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry)
+  CARD sector
+  LONGINT count,length
+
+  LET state=FSWRITEIO.State(service)
+  sector=entry.start
+  count=0
+  length=0
+  WHILE sector<>0 DO
+    IF count>=entry.count OR LONGCARD(count)>=service.selected.spec.sectors THEN
+      RETURN(Bad(service))
+    FI
+
+    IF ReadPayload(service,entry,sector)=0 THEN
+      RETURN(0)
+    FI
+
+    length==+LONGINT(state.data(service.selected.spec.dataBytes-1))
+    count==+1
+    sector=state.next
+  OD
+
+  IF count<>entry.count THEN
+    RETURN(Bad(service))
+  FI
+
+  entry.length=length
+  entry.known=1
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Mark(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry BYTE opened)
+
+  LET state=FSWRITEIO.State(service)
+  IF EntryIO(service,entry,0)=0 THEN
+    RETURN(0)
+  FI
+
+  state.row(0)=BYTE(entry.key RSH 8) & $fe
+  IF opened<>0 THEN
+    state.row(0)=state.row(0) OR 1
+  FI
+
+  FSWRITEIO.Word(state.row,1,CARD(entry.count))
+  FSWRITEIO.Word(state.row,3,entry.start)
+
+RETURN(EntryIO(service,entry,1))
+
+BYTE FUNC Slot(FSTYPES.Service POINTER service)
+  CARD ordinal,offset
+
+  LET state=FSWRITEIO.State(service)
+  ordinal=0
+  WHILE ordinal<64 DO
+    IF FSWRITEIO.Read(service,service.work.directory+(ordinal RSH 3),
+        state.map)=0 THEN
+      RETURN(0)
+    FI
+
+    FOR offset=0 TO 112 STEP 16 DO
+      IF state.map(offset)=0 OR (state.map(offset) & $80)<>0 THEN
+        state.ordinal=LONGCARD(ordinal)
+        RETURN(1)
+      FI
+
+      ordinal==+1
+    OD
+  OD
+
+RETURN(FSWRITEIO.Error(service,ERROR_DISK_FULL))
+
+PUBLIC BYTE FUNC Create(FSTYPES.Service POINTER service BYTE directory)
+  BYTE count,index
+  CARD first,sector
+
+  LET state=FSWRITEIO.State(service)
+  IF Slot(service)=0 THEN
+    RETURN(0)
+  FI
+
+  count=1
+  IF directory<>0 THEN
+    count=8
+  FI
+
+  IF FSALLOC.Find(service,count,directory,$ffff)=0 THEN
+    RETURN(0)
+  FI
+
+  first=state.reserved(0)
+  FOR index=0 TO count-1 DO
+    sector=FSALLOC.Take(service)
+    IF sector=0 THEN
+      RETURN(0)
+    FI
+
+    FSWRITEIO.Zero(state.data)
+    IF FSWRITEIO.Write(service,sector,state.data)=0 THEN
+      RETURN(0)
+    FI
+  OD
+
+  LET entry=@service.work.entry
+  entry.parent=service.work.directory
+  entry.start=first
+  entry.count=LONGINT(count)
+  entry.length=0
+  entry.known=1
+  entry.flags=0
+  entry.key=$4600 OR state.ordinal
+  entry.days=0
+  entry.minutes=0
+  entry.ticks=0
+  FOR index=0 TO 22 DO
+    state.row(index)=0
+  OD
+
+  state.row(0)=$47
+  IF directory<>0 THEN
+    entry.key=$1000 OR state.ordinal
+    entry.flags=FSBTYPES.DIR
+    state.row(0)=$10
+  FI
+
+  FSWRITEIO.Word(state.row,1,CARD(count))
+  FSWRITEIO.Word(state.row,3,first)
+  FOR index=0 TO 10 DO
+    entry.name(index)=service.work.wanted(index)
+    state.row(index+5)=service.work.wanted(index)
+  OD
+
+RETURN(EntryIO(service,entry,1))
+
+PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
+    POINTER file BYTE POINTER source LONGINT length)
+  CARD sector,previous,payload,within,part,newSector,index
+  LONGINT ordinal,hops
+  BYTE used
+
+  LET state=FSWRITEIO.State(service)
+  payload=service.selected.spec.dataBytes-3
+  ordinal=file.position/LONGINT(payload)
+  within=CARD(file.position MOD LONGINT(payload))
+  sector=file.entry.start
+  previous=0
+  hops=0
+  WHILE sector<>0 DO
+    IF ReadPayload(service,@file.entry,sector)=0 THEN
+      RETURN(0)
+    FI
+
+    IF hops=ordinal THEN
+      EXIT
+    FI
+
+    previous=sector
+    sector=state.next
+    hops==+1
+    IF hops>file.entry.count THEN
+      Bad(service)
+      RETURN(0)
+    FI
+  OD
+
+  newSector=0
+  IF sector=0 THEN
+    IF hops<>ordinal OR within<>0 OR previous=0 THEN
+      Bad(service)
+      RETURN(0)
+    FI
+
+    IF FSALLOC.Find(service,1,0,Limit(@file.entry))=0 THEN
+      RETURN(0)
+    FI
+
+    newSector=FSALLOC.Take(service)
+    IF newSector=0 THEN
+      RETURN(0)
+    FI
+
+    sector=newSector
+    FSWRITEIO.Zero(state.data)
+    Trailer(service,@file.entry,0,0)
+    state.next=0
+  FI
+
+  part=payload-within
+  IF LONGINT(part)>length THEN
+    part=CARD(length)
+  FI
+
+  used=state.data(payload+2)
+  A816MEMORY.Move(@state.data(within),source,SIZE(part))
+  IF within+part>CARD(used) THEN
+    used=BYTE(within+part)
+    index=CARD(used)
+    WHILE index<payload DO
+      state.data(index)=0
+      index==+1
+    OD
+  FI
+
+  Trailer(service,@file.entry,state.next,used)
+  IF FSWRITEIO.Write(service,sector,state.data)=0 THEN
+    RETURN(0)
+  FI
+
+  IF newSector<>0 THEN
+    IF ReadPayload(service,@file.entry,previous)=0 THEN
+      RETURN(0)
+    FI
+
+    Trailer(service,@file.entry,newSector,BYTE(payload))
+    IF FSWRITEIO.Write(service,previous,state.data)=0 THEN
+      RETURN(0)
+    FI
+
+    file.entry.count==+1
+    IF Mark(service,@file.entry,1)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  file.position==+LONGINT(part)
+  IF file.position>file.entry.length THEN
+    file.entry.length=file.position
+  FI
+
+  file.storage(0)=0
+
+RETURN(LONGINT(part))
+
+BYTE FUNC Reclaim(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry
+    CARD sector)
+  LONGCARD hops
+  CARD next
+
+  LET state=FSWRITEIO.State(service)
+  hops=0
+  WHILE sector<>0 DO
+    IF ReadPayload(service,entry,sector)=0 THEN
+      RETURN(0)
+    FI
+
+    next=state.next
+    IF FSALLOC.Free(service,sector)=0 THEN
+      RETURN(0)
+    FI
+
+    sector=next
+    hops==+1
+    IF hops>service.selected.spec.sectors THEN
+      RETURN(Bad(service))
+    FI
+  OD
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Truncate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry)
+  CARD next
+
+  LET state=FSWRITEIO.State(service)
+  IF ReadPayload(service,entry,entry.start)=0 THEN
+    RETURN(0)
+  FI
+
+  next=state.next
+  FSWRITEIO.Zero(state.data)
+  Trailer(service,entry,0,0)
+  IF FSWRITEIO.Write(service,entry.start,state.data)=0 THEN
+    RETURN(0)
+  FI
+
+  entry.count=1
+  entry.length=0
+  IF Mark(service,entry,1)=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(Reclaim(service,entry,next))
+
+PUBLIC BYTE FUNC Empty(FSTYPES.Service POINTER service CARD directory)
+  CARD sector,offset
+
+  LET state=FSWRITEIO.State(service)
+  FOR sector=directory TO directory+7 DO
+    IF FSWRITEIO.Read(service,sector,state.data)=0 THEN
+      RETURN(0)
+    FI
+
+    FOR offset=0 TO 112 STEP 16 DO
+      IF state.data(offset)=0 THEN
+        RETURN(1)
+      FI
+
+      IF (state.data(offset) & $80)=0 THEN
+        RETURN(FSWRITEIO.Error(service,ERROR_DIR_NOT_EMPTY))
+      FI
+    OD
+  OD
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Delete(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry)
+  CARD sector
+
+  LET state=FSWRITEIO.State(service)
+  IF EntryIO(service,entry,0)=0 THEN
+    RETURN(0)
+  FI
+
+  state.row(0)=$80
+  IF EntryIO(service,entry,1)=0 THEN
+    RETURN(0)
+  FI
+
+  IF (entry.flags & FSBTYPES.DIR)<>0 THEN
+    FOR sector=entry.start TO entry.start+7 DO
+      IF FSALLOC.Free(service,sector)=0 THEN
+        RETURN(0)
+      FI
+    OD
+
+    RETURN(1)
+  FI
+
+RETURN(Reclaim(service,entry,entry.start))
+
+PUBLIC BYTE FUNC Rename(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
+    entry BYTE POINTER name)
+  BYTE index
+
+  LET state=FSWRITEIO.State(service)
+  IF EntryIO(service,entry,0)=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO 10 DO
+    state.row(index+5)=name(index)
+  OD
+
+RETURN(EntryIO(service,entry,1))
+
+ENDMODULE

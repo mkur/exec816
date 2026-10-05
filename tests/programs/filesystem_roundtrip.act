@@ -1,0 +1,58 @@
+MODULE FSROUNDTRIP
+USE EXEC
+USE DOS
+USE FSBOOT
+USE HEAPCORE
+CARD checks,count
+BYTE ARRAY buffer(257)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  CARD index,offset,part,position
+  LONGINT got
+  BYTE POINTER row,expected
+  CARD POINTER fields
+  DOS.FileHandle POINTER file
+
+  FOR index=0 TO count-1 DO
+    row=BYTE POINTER($d1000)+SIZE(index)*72
+    fields=CARD POINTER(row+64)
+    expected=BYTE POINTER($e0000)+SIZE(fields(1))
+    file=DOS.Open(row,DOS.MODE_OLDFILE)
+    Require(file<>NULL)
+    position=0
+    WHILE position<fields(0) DO
+      part=fields(0)-position
+      IF part>257 THEN
+        part=257
+      FI
+
+      got=DOS.Read(file,buffer,LONGINT(part))
+      Require(got=LONGINT(part))
+      FOR offset=0 TO part-1 DO
+        IF buffer(offset)<>expected(position+offset) THEN
+          Require(0)
+        FI
+      OD
+
+      position==+part
+    OD
+
+    Require(DOS.Read(file,buffer,1)=0)
+    Require(DOS.Close(file)<>0)
+  OD
+
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+
+RETURN
+
+ENDMODULE

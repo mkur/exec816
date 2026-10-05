@@ -20,6 +20,8 @@ CSTRING FUNC Message(LONGINT code)
     RETURN(c"No current directory")
   WHEN 202 THEN
     RETURN(c"Object in use")
+  WHEN 203 THEN
+    RETURN(c"Object already exists")
   WHEN 204 THEN
     RETURN(c"Directory not found")
   WHEN 205 THEN
@@ -40,12 +42,22 @@ CSTRING FUNC Message(LONGINT code)
     RETURN(c"Disk not validated")
   WHEN 214 THEN
     RETURN(c"Disk is read-only")
+  WHEN 215 THEN
+    RETURN(c"Rename across volumes")
+  WHEN 216 THEN
+    RETURN(c"Directory not empty")
   WHEN 217 THEN
     RETURN(c"Too many directory levels")
   WHEN 218 THEN
     RETURN(c"Volume not mounted")
   WHEN 219 THEN
     RETURN(c"Seek failed")
+  WHEN 221 THEN
+    RETURN(c"Disk full")
+  WHEN 222 THEN
+    RETURN(c"Object is delete protected")
+  WHEN 223 THEN
+    RETURN(c"Object is write protected")
   WHEN 225 THEN
     RETURN(c"Unsupported disk format")
   WHEN 226 THEN

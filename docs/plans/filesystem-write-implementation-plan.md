@@ -1,25 +1,26 @@
 # MyDOS and SpartaDOS write support implementation plan
 
-Status: implementation in progress. Both public filesystems remain
-read-only under their current [DOS](../reference/dos.md),
-[MyDOS](../reference/mydos.md) and [SpartaDOS](../reference/spartados.md)
-contracts. This plan adds a shared write path, delivers SpartaDOS first because
-it is the standard demo filesystem, then brings MyDOS to the same API subset.
-
-Use small executable slices and the [development testing tier](../contributing/testing.md).
+Status: implementation in progress. The shared write path, both format writers,
+namespace operations and DOS ownership/finalization are implemented. Current
+behavior is described by [filesystem writes](../reference/filesystem-writes.md).
+Shell integration, additional failure boundaries and distribution validation are
+being completed under the [development testing tier](../contributing/testing.md).
 Release qualification and physical-device support remain separate gates.
-The [W0 mutation protocol](filesystem-write-protocol.md) records format choices,
-write ordering, cancellation boundaries and the bounded scratch budget.
 
-Development progress: W0 reference media and the host allocation audit are in
-place. The W1/W2 foundation supports verified physical sector writes and
-write-through cache replacement. Raw/optimized 256-byte FASTEST125 block writes,
-128-byte STOCK810 and 256-byte GENERIC57600 SIO writes persisted to disposable
-ATR files and passed whole-image comparison. Read-cache and active wire BREAK
-regressions pass; the host suite passes 337 tests. These are development checks,
-not the complete W1 failure matrix or release qualification. Mutation lifecycle,
-public filesystem writes and W3–W9 remain under implementation. This foundation
-adds zero fixed or per-Task reserved bank-zero bytes, including padding/guards.
+The [W0 mutation protocol](filesystem-write-protocol.md) records format choices,
+write ordering, cancellation boundaries and bounded scratch storage. W0–W2's
+verified SIO/block foundation is committed. W3–W8 public operations pass focused
+raw/optimized emitted tests, persisted allocation/content audits, and native
+MyDOS/SpartaDOS read-back. SpartaDOS growth crosses the 62/126-pointer boundaries;
+MyDOS allocates above sector 1023 and across a VTOC page. Lifecycle suites cover
+wire BREAK, deferred commit, uncertain completion, consumed failed Close,
+stop/drain, inherited writers and cleanup error precedence. These selected checks
+do not constitute the complete proposed failure matrix or release qualification.
+
+Mounting remains one header read with no file, directory or allocation scan.
+Current reservations add zero fixed and zero per-Task bank-zero bytes, including
+padding and guards. Mutation scratch is 878 requested upper-RAM bytes shared by
+the service, allocated only when a configured mount requests write access.
 
 ## Outcome and scope
 

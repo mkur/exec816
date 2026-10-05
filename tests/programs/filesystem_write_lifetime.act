@@ -1,0 +1,222 @@
+MODULE FSWRITELIFETIME
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE DOSBREAK
+USE DOSINHERIT
+USE PROCESS
+USE FSBOOT
+USE FSREGISTRY
+USE FSTYPES
+USE FSWRITEPROBE
+USE HEAPCORE
+CARD checks,scenario,nth,phase
+BYTE gate,entered
+LONGINT result,error,expected
+DOS.FileHandle POINTER file,con
+FSTYPES.Service POINTER service
+BYTE ARRAY path=[68 49 58 87 82 73 84 69 46 66 73 78 0]
+BYTE ARRAY conName=[67 79 78 58 0]
+BYTE ARRAY buffer(300)
+PROCESS.Result outcome
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f700+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Arm(BYTE mode CARD action)
+
+  FSWRITEPROBE.mode=mode
+  FSWRITEPROBE.action=action
+  FSWRITEPROBE.ordinal=nth
+  FSWRITEPROBE.count=0
+  FSWRITEPROBE.fired=0
+
+RETURN
+
+LONGINT FUNC Child()
+
+  entered=1
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(DOS.Write(DOS.Output(),buffer,17)=17)
+  IF scenario=12 OR scenario=13 THEN
+    Arm(2,1007)
+  FI
+
+  IF scenario=13 THEN
+    DOS.SetIoErr(DOS.ERROR_OBJECT_NOT_FOUND)
+    RETURN(10)
+  FI
+
+RETURN(0)
+
+PROC Inheritance()
+  BYTE POINTER detached
+  DOS.FileHandle POINTER previous
+
+  Require(DOS.Write(file,buffer,17)=17)
+  IF scenario=9 THEN
+    detached=DOSINHERIT.Clone(DOSCORE.Current(),BYTE POINTER(file),
+        DOSOBJECTS.KIND_FILE)
+    Require(detached<>NULL)
+    Require(DOS.Close(file)<>0)
+    Require(DOS.Open(path,DOS.MODE_OLDFILE)=NULL AND
+        DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+    Require(DOSINHERIT.Discard(detached)<>0)
+    RETURN
+  FI
+
+  previous=DOS.SelectOutput(file)
+  LET identity=PROCESS.Start(@Child,NULL,0)
+  Require(identity<>0)
+  WHILE entered=0 DO
+    EXEC.Yield()
+  OD
+
+  IF scenario<>11 THEN
+    Require(DOS.Close(file)<>0)
+  FI
+
+  gate=1
+  Require(PROCESS.Wait(identity,@outcome)<>0)
+  IF scenario=12 THEN
+    Require(outcome.primary=20 AND outcome.secondary=6)
+  ELSEIF scenario=13 THEN
+    Require(outcome.primary=10 AND outcome.secondary=DOS.ERROR_OBJECT_NOT_FOUND)
+  ELSE
+    Require(outcome.primary=0 AND outcome.secondary=0)
+  FI
+
+  IF scenario=11 THEN
+    Require(DOS.Seek(file,0,DOS.OFFSET_CURRENT)=34)
+    Require(DOS.Close(file)<>0)
+  FI
+
+RETURN
+
+PROC Main()
+  CARD index,ticks
+
+  FOR index=0 TO 299 DO
+    buffer(index)=BYTE(index) XOR $69
+  OD
+
+  Require(FSBOOT.Ensure()<>0)
+  LET registry=DOSCORE.GetRegistry()
+  service=FSTYPES.Service POINTER(registry.runtime)
+  Require(service.work.operations=1)
+  IF scenario<=5 THEN
+    con=DOS.Open(conName,DOS.MODE_NEWFILE)
+    Require(con<>NULL AND DOS.BeginForeground(con)<>0)
+    FSWRITEPROBE.target=DOSBREAK.Current()
+  FI
+
+  IF scenario=4 THEN
+    Arm(3,1006)
+  FI
+
+  file=DOS.Open(path,DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  phase=1
+  IF scenario>=9 THEN
+    Inheritance()
+  ELSEIF scenario=4 OR scenario=5 OR scenario=7 THEN
+    IF scenario=5 THEN
+      Arm(3,1007)
+    ELSEIF scenario=7 THEN
+      Arm(2,1007)
+    FI
+
+    result=DOS.Close(file)
+    error=DOS.IoErr()
+    IF scenario=7 THEN
+      Require(result=0 AND error=6)
+    ELSE
+      Require(result<>0)
+    FI
+  ELSE
+    expected=300
+    IF scenario=1 THEN
+      Arm(1,87)
+      expected=-1
+    ELSEIF scenario=2 THEN
+      Arm(4,87)
+      expected=LONGINT(service.mounts(0).item.spec.dataBytes)
+      IF service.mounts(0).item.spec.format=1 THEN
+        expected==-3
+      FI
+    ELSEIF scenario=3 THEN
+      Arm(3,87)
+      expected=17
+    ELSEIF scenario=6 THEN
+      Arm(2,87)
+      expected=-1
+    ELSE
+      Arm(5,87)
+    FI
+
+    result=DOS.Write(file,buffer,IF scenario=3 OR scenario=6 THEN LONGINT(17)
+        ELSE LONGINT(300) FI)
+    error=DOS.IoErr()
+    Require(result=expected)
+    IF scenario=1 OR scenario=2 THEN
+      Require(error=DOS.ERROR_BREAK)
+    ELSEIF scenario=6 THEN
+      Require(error=6)
+    ELSE
+      Require(error=0)
+    FI
+
+    phase=2
+    IF scenario=6 THEN
+      Require(DOS.Close(file)=0 AND DOS.IoErr()=6)
+    ELSE
+      Require(DOS.Close(file)<>0)
+    FI
+  FI
+
+  phase=3
+  Require(DOSOBJECTS.Find(DOSCORE.Current(),BYTE POINTER(file),
+      DOSOBJECTS.KIND_FILE)=NULL)
+  IF scenario<>9 AND scenario<>10 AND scenario<>11 THEN
+    Require(FSWRITEPROBE.fired=1)
+  FI
+
+  IF scenario=6 OR scenario=7 OR scenario=12 OR scenario=13 THEN
+    Require(service.mounts(0).item.offline<>0 AND
+        service.mounts(0).item.writable=0 AND service.mounts(0).item.references=0)
+    Require(DOS.Open(path,DOS.MODE_OLDFILE)=NULL AND DOS.IoErr()=6)
+  FI
+
+  IF scenario<=5 THEN
+    Require(DOS.BreakPending()<>0)
+    Require(DOS.EndForeground()<>0 AND DOS.Close(con)<>0)
+  FI
+
+  Require(DOS.ReleaseContext()<>0)
+  IF scenario=8 THEN
+    WHILE registry.worker<>NULL DO
+      ticks=EXECTASKS.Sleep(1)
+    OD
+
+    Require(registry.runtime=NULL AND registry.state=FSTYPES.STATE_STOPPED)
+    registry.stop=0
+  ELSE
+    Require(FSBOOT.Stop()<>0)
+  FI
+
+RETURN
+
+ENDMODULE

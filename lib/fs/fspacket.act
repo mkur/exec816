@@ -8,10 +8,12 @@ USE DOSCLIENT
 USE FSTYPES
 USE DOSOBJECTS
 USE FSREGISTRY
+USE FSLEASES
 USE FSOBJECTS
 USE FSOPERATION
 USE DOSBREAKTYPES
 USE FSBTYPES
+USE FSWRITEIO
 INCLUDE "../dos/dos-types.inc"
 
 TYPE ResultCell=[BYTE POINTER handle]
@@ -27,6 +29,10 @@ PUBLIC PROC Reply(FSTYPES.Service POINTER service)
   service.packet=FSTYPES.Packet POINTER(0)
   service.object=FSTYPES.Object POINTER(0)
   service.stage=10
+  service.committing=0
+  service.changed=0
+  service.missing=0
+  service.namespacePhase=0
   service.nextStep=service.readyStep
   service.client=DOSCLIENT.ClientContext POINTER(0)
   service.owner=DOSCORE.DosSlot POINTER(0)
@@ -47,6 +53,10 @@ PUBLIC BYTE FUNC Error(FSTYPES.Service POINTER service LONGINT error)
 
   IF error=ERROR_DISK_NOT_VALIDATED AND service.work.ioError<>0 THEN
     error=service.work.ioError
+  FI
+
+  IF service.changed<>0 THEN
+    FSWRITEIO.Error(service,error)
   FI
 
   service.packet.sp_Pkt.dp_Res2=error
@@ -94,8 +104,9 @@ PUBLIC BYTE FUNC PublishOpenStep(BYTE POINTER raw)
   item.mount=service.selected
   item.generation=service.selected.generation
   item.header.backend=DOSOBJECTS.BACKEND_FILE
+  FSLEASES.Link(item)
   DOSOBJECTS.Link(service.owner,@item.header)
-  IF service.packet.sp_Pkt.dp_Type=8 THEN
+  IF service.packet.sp_Pkt.dp_Type=8 OR service.packet.sp_Pkt.dp_Type=22 THEN
     service.packet.sp_Pkt.dp_Res1=LONGINT(ADDRESS(item))
   ELSE
     cell=ResultCell POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg1))
@@ -118,6 +129,10 @@ PUBLIC BYTE FUNC Close(FSTYPES.Service POINTER service)
   FSREGISTRY.Release(item.mount)
   FSOBJECTS.Free(item)
   service.packet.sp_Pkt.dp_Res1=-1
+  IF service.packet.sp_Pkt.dp_Res2<>0 THEN
+    service.packet.sp_Pkt.dp_Res1=0
+  FI
+
   Reply(service)
 
 RETURN(FSSTATUS.MORE)
