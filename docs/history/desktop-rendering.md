@@ -181,3 +181,35 @@ grow by 131,072 bytes including slack, totaling 243,200, with 281,088 unassigned
 Reserved bank-zero delta is zero for fixed state, root/kernel, all eight public
 Tasks and idle, including guards, alignment and spare capacity. No cache owns
 a stack or direct page. Automatic scheduling is introduced in DR6.
+
+## DR6: restore during retained repair
+
+The presenter now attempts one clean visible capture per visual revision after
+input, controls, model output and painting have no pending work. Exposure selects
+valid aligned client fragments and holds its paint token/source pin across the
+IRQ-completed restore. Frame drawing and odd clipped fallback remain retained;
+console models and scroll paths are uncached. Position preserves cache-local
+pixels, while accepted content changes, hidden updates and widget focus styling
+invalidate revisions. Command-window frame-only focus preserves client pixels.
+
+The [DR6 record](../development/desktop-rendering-dr6.json) compares aligned
+widget scenes with real hits, forced misses and an uninstrumented production
+control against the same complete raster. It verifies warm exposure uses copies,
+hidden updates reject stale pixels, focus styling redraws and retirement clears
+validity. Odd-position scenes retain their pixel oracle, and service/lifetime
+checks pass. A visible nonconsole client cannot contain the Layers-clipped shell
+caret, so capture no longer erases an unrelated caret; pointer/outline exclusion
+remains in the drawing bridge. Diagnostic hit counters exist only in fixtures.
+
+The larger composed demo exposed native code growing into fixed C banks
+`$0C/$0D`. The build now places the native linker's contiguous code above all
+foreign banks (`$0E0000` for this image), recording the effective origin and
+retaining combined extent checks. This is platform image placement, not a
+compiler code-generation workaround. Small descriptor/context probes pass in
+both compiler modes at the new location. Data storage stays in its current arena.
+
+No additional record, global payload, VRAM or reserved bank-zero capacity is
+introduced by DR6. Fixed, root/kernel, all eight public Tasks and idle keep their
+stack/DP bytes, guards, alignment and spare capacity. Code-bank ownership follows
+the generated image map; larger source code is reported separately from these
+reservations. Timing acceptance remains for DR7.

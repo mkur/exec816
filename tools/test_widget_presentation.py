@@ -19,7 +19,7 @@ from bitmap_console_oracle import Terminal
 from stack_budget import stack_usage
 from desktop_budget import delta
 
-def scene(stage,font):
+def scene(stage,font,aligned=False):
     sys.path.insert(0,str(ROOT/'build/gem-vdi/upstream/tools'))
     import aesref as a
     import vdiref as v
@@ -29,6 +29,7 @@ def scene(stage,font):
     terminal.paint(r,5,5,stage!=9)
     if stage==10:return overlay(r,(320,120))
     x,y=(113,85) if stage<6 else (273,53)
+    if aligned:x-=1
     frame(r,(x,y,x+336,y+144),b'Cover' if stage==7 else b'Widgets',stage==9,
         15 if stage==7 else 8,close=True)
     if stage==7:return overlay(r,(320,120))
@@ -52,14 +53,37 @@ def scene(stage,font):
     r.pixels[:]=bytes(n for byte in packed for n in (byte>>4,byte&15))
     return overlay(r,(320,120))
 
-def run(out,mode,replay=False):
+def run(out,mode,replay=False,aligned=False,cache_miss=False,cache_observe=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
     memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
-    p=read_build(out/'program') if replay else build_bitmap(ROOT/'tests/programs/widgets_presentation.act',
+    source=ROOT/'tests/programs/widgets_presentation.act'
+    if aligned:
+        from library_paths import read_source
+        value=read_source(source).replace('113,85,449,229','112,85,448,229')
+        value=value.replace('273,53,609,197','272,53,608,197').replace('request.bounds.left=273','request.bounds.left=272')
+        # First warm exposure preserves the model; the existing second exposure
+        # follows an occluded update and must reject the old snapshot.
+        start=value.index('  DESKTOP.Prepare(@request,DESKTYPES.OPEN)',value.index('  Pause(6)'))
+        end=value.index('  patch.count=1',start)
+        cover=value[start:end]
+        value=value[:start]+cover+'  Send(DESKTYPES.CLOSE,cover)\n  Settled()\n'+value[start:]
+        source=out/'fixture.act';source.write_text(value)
+    if cache_observe or cache_miss:
+        from library_paths import read_source
+        value=read_source(ROOT/'lib/desktop/deskcache.act')
+        value=value.replace('BYTE active,activeSlot','BYTE active,activeSlot\nLONGCARD captures,restores')
+        value=value.replace('  active=ACTIVE_CAPTURE','  captures==+1\n  active=ACTIVE_CAPTURE',1)
+        value=value.replace('  active=ACTIVE_RESTORE','  restores==+1\n  active=ACTIVE_RESTORE',1)
+        if cache_miss:
+            start=value.index('  BYTE index',value.index('PUBLIC BYTE FUNC Lookup'))
+            end=value.index('; With exactly two slots',start)
+            value=value[:start]+'\nRETURN(NO_SLOT)\n\n'+value[end:]
+        (out/'deskcache.act').write_text(value)
+    p=read_build(out/'program') if replay else build_bitmap(source,
         out,mode=='opt',desktop=True,memory_profile=memory)
-    report=dict(slice='AW3',tier='development',qualification=False,status='running',mode=mode,scenes=[])
+    report=dict(slice='AW3',tier='development',qualification=False,status='running',mode=mode,aligned=aligned,cache_miss=cache_miss,cache_observe=cache_observe,scenes=[])
     at=lambda n:next(d['address'] for d in p['image']['data'] if '_WIDGETSCENE_'+n.upper()+'_' in d['name'])
     try:
         with emulator(BRIDGE,ROM,out,pin=PIN) as b:
@@ -75,13 +99,41 @@ def run(out,mode,replay=False):
                         print('Widget stage/checks/state',stage,b.peek16(at('checks')),b.peek16(adapter.STATE),b.regs(),flush=True)
                         raise
                     folder=out/f'stage-{stage}';folder.mkdir(exist_ok=True)
-                    report['scenes'].append(dict(stage=stage,pixels=pixels(b,folder,scene(stage,font_bytes(out/'selected/src/vdi/font8x8.c')))))
+                    row=dict(stage=stage,pixels=pixels(b,folder,scene(stage,font_bytes(out/'selected/src/vdi/font8x8.c'),aligned)))
+                    if cache_observe or cache_miss:
+                        for name in ('captures','restores'):
+                            address=next(d['address'] for d in p['image']['data'] if '_DESKCACHE_'+name.upper()+'_' in d['name'])
+                            row[name]=int.from_bytes(b.memdump(address,4),'little')
+                    if cache_observe:
+                        from generate_desktop import layout
+                        layout=layout()
+                        address=next(d['address'] for d in p['image']['data'] if '_DESKSTATE_SERVICE_' in d['name'])
+                        service=int.from_bytes(b.memdump(address,3),'little')
+                        raw=b.memdump(service,layout['Service']['size'])
+                        row['slots']=[];row['windows']=[]
+                        for kind,field,count in [('Snapshot','snapshots',2),('Window','windows',4)]:
+                            for index in range(count):
+                                base=layout['Service']['fields'][field]+index*layout[kind]['size']
+                                fields=layout[kind]['fields']
+                                names=['window','revision','width','height','valid','pinned'] if kind=='Snapshot' else ['id','layer','visualRevision','captureAttempt']
+                                item={n:int.from_bytes(raw[base+fields[n]:base+fields[n]+(1 if n in ('valid','pinned') else 2 if n in ('width','height') else 4)],'little') for n in names}
+                                row['slots' if kind=='Snapshot' else 'windows'].append(item)
+                    report['scenes'].append(row)
                     b.memload(at('gate'),stage.to_bytes(2,'little'))
                 b.bp_clear_all()
             report['runtime'],_=execute(b,p,before_run=before,frame_limit=20000,timeout=240)
             ownership(b,p,p['output']);report['checks']=data(b,p['image'],'checks',True)[0]
             report['stack_usage']=stack_usage(b,p['build']['memory'])
             require(all(v['remaining_above_floor']>0 for v in report['stack_usage'].values()),'Widget presenter stack floor')
+        if cache_observe or cache_miss:
+            require(report['scenes'][-1]['captures']>0,'No automatic capture')
+            if cache_miss:
+                require(report['scenes'][-1]['restores']==0,'Forced miss restored pixels')
+            elif aligned:
+                rows=report['scenes']
+                require(rows[6]['restores']>rows[5]['restores'],'Warm exposure replayed widgets')
+                require(rows[7]['restores']==rows[6]['restores'],'Occluded update used stale pixels')
+                require(rows[8]['restores']==rows[7]['restores'],'Widget focus reused stale pixels')
         report.update(status='pass',bank_zero_delta=delta(p['build']['memory']),
             build_sha256=sha256(out/'program/build.json'),xex_sha256=sha256(p['xex']))
     except Exception as e:report.update(status='fail',error=str(e));raise
@@ -91,4 +143,5 @@ def run(out,mode,replay=False):
 if __name__=='__main__':
     a=argparse.ArgumentParser(description=__doc__);a.add_argument('--output',required=True,type=Path)
     a.add_argument('--mode',choices=('raw','opt'),default='opt');a.add_argument('--replay',action='store_true')
-    args=a.parse_args();run(args.output,args.mode,args.replay)
+    a.add_argument('--aligned',action='store_true');a.add_argument('--cache-miss',action='store_true');a.add_argument('--cache-observe',action='store_true')
+    args=a.parse_args();run(args.output,args.mode,args.replay,args.aligned,args.cache_miss,args.cache_observe)

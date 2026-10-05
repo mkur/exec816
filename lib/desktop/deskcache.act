@@ -5,7 +5,6 @@ USE LAYERTYPES
 USE LAYERS
 USE REGIONS
 USE CONSOLEBITMAP
-USE DESKMOVE
 USE HEAPCORE
 
 CONST NO_SLOT=255, ACTIVE_CAPTURE=1, ACTIVE_RESTORE=2
@@ -157,7 +156,8 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
     RETURN(0)
   FI
 
-  DESKMOVE.HideCaret()
+  ; A visible nonconsole client cannot contain the Layers-clipped console
+  ; caret. The bridge removes intersecting pointer and outline overlays.
   status=LAYERS.BeginRead(@service.scene,window.layer,@client,@token)
   IF status<>LAYERTYPES.OK THEN
     RETURN(0)

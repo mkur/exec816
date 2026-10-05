@@ -4,6 +4,7 @@ USE EXEC
 USE DESKSTATE
 USE DESKTYPES
 USE DESKCORE
+USE DESKCACHE
 USE DESKWIDGETS
 USE LAYERTYPES
 USE LAYERS
@@ -137,7 +138,7 @@ RETURN(1)
 BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER layer)
   LAYERTYPES.Rect client,area,bounds
   CARD row,last,first,count,index,titleLength,titleLimit
-  BYTE okay
+  BYTE okay,cached
 
   LET service=DESKSTATE.Get()
   IF window=NULL THEN
@@ -146,6 +147,10 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
 
   REGIONS.Assign(@client,layer.bounds.left+8,layer.bounds.top+16,
       layer.bounds.right-8,layer.bounds.bottom-8)
+  IF started=2 THEN
+    RETURN(DESKCACHE.Restored(service))
+  FI
+
   IF started=0 THEN
     okay=FrameBackground(@client)
     REGIONS.Assign(@bounds,layer.bounds.left+2,layer.bounds.top+2,
@@ -188,6 +193,15 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
     ; The console's replacement glyph cells cover the entire clipped client,
     ; including partial cells. Other clients can leave gaps or draw transparently.
     IF okay<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
+      REGIONS.Intersect(@client,@strip,@area)
+      cached=DESKCACHE.Restore(service,window,@client,@area)
+      IF cached=DESKTYPES.CACHE_PENDING THEN
+        started=2
+        RETURN(2)
+      ELSEIF cached=DESKTYPES.CACHE_FAILED THEN
+        RETURN(0)
+      FI
+
       okay=Fill(@client,@strip,window.content.background)
     FI
 

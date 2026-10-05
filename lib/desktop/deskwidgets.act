@@ -5,6 +5,7 @@ USE A816MEMORY
 USE DESKEVENTS
 USE TASKMEMORY
 USE DESKTYPES
+USE DESKCACHE
 USE WIDGETTYPES
 USE CONSOLEBITMAP
 USE LAYERTYPES
@@ -63,6 +64,7 @@ PUBLIC PROC Damage(DESKTYPES.Service POINTER service
     RETURN
   FI
 
+  DESKCACHE.Changed(service,window)
   LET layer=LAYERS.Find(@service.scene,window.layer)
   REGIONS.Assign(@bounds,layer.bounds.left+8+packet.left,
       layer.bounds.top+16+packet.top,layer.bounds.left+8+packet.right,
@@ -200,6 +202,10 @@ PUBLIC CARD FUNC Request(DESKTYPES.Service POINTER service
   status=packet.status
   IF status=WIDGETTYPES.OK THEN
     IF operation<>WIDGETTYPES.OP_READ THEN
+      ; Hidden accepted updates can change retained pixels without damage now.
+      IF packet.changed=0 THEN
+        DESKCACHE.Changed(service,window)
+      FI
       window.widgetEpoch=packet.epoch
       IF operation=WIDGETTYPES.OP_SET THEN
         BEGIN

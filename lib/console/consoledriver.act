@@ -600,6 +600,11 @@ PUBLIC PROC Worker()
 
     DESKPAINT.Pump()
     DESKINPUT.Present()
+    IF stopping=0 AND writing=0 AND again=0
+        AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
+      DESKHOST.Cache()
+    FI
+
     IF CONSOLEBITMAP.Pending()<>0 THEN
       IF Runnable(service,inputPending)<>0 OR DESKHOST.Runnable()<>0 THEN
         EXEC.Yield()

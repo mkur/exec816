@@ -110,6 +110,7 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
   BYTE index,status
   CARD inputStatus
   LONGCARD route
+  LAYERTYPES.Rect frame
   DESKTYPES.ClientRecord POINTER client
 
   IF service.focus=id THEN
@@ -128,7 +129,16 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
         BEGIN
           LET layer=Layer(service,@service.windows(index))
           IF layer<>NULL THEN
-            status=LAYERS.Invalidate(@service.scene,layer.id,@layer.bounds)
+            IF service.windows(index).kind=DESKTYPES.CONTENT_COMMANDS THEN
+              REGIONS.Copy(@layer.bounds,@frame)
+              frame.bottom=frame.top+16
+              status=LAYERS.Invalidate(@service.scene,layer.id,@frame)
+            ELSE
+              IF service.windows(index).kind=DESKTYPES.CONTENT_WIDGETS THEN
+                DESKCACHE.Changed(service,@service.windows(index))
+              FI
+              status=LAYERS.Invalidate(@service.scene,layer.id,@layer.bounds)
+            FI
           FI
         END
       FI
@@ -297,6 +307,7 @@ CARD FUNC Content(DESKTYPES.Service POINTER service
   A816MEMORY.Move(BYTE POINTER(@service.staging),request.payload,DESKTYPES.CONTENT_SIZE)
   A816MEMORY.Move(BYTE POINTER(@window.content),BYTE POINTER(@service.staging),
       DESKTYPES.CONTENT_SIZE)
+  DESKCACHE.Changed(service,window)
   IF LAYERS.Invalidate(@service.scene,window.layer,@layer.bounds)<>LAYERTYPES.OK THEN
     HEAPCORE.Abort($fae0)
   FI

@@ -23,6 +23,12 @@ def run(out,replay=False):
     out.mkdir(parents=True,exist_ok=True)
     host=read_source(ROOT/'lib/desktop/deskhost.act').replace('USE DESKMOVE','USE SNAPSHOTPROBE\nUSE DESKMOVE',1)
     host=host.replace('    DESKPAINT.Sync()','    DESKPAINT.Sync()\n    SNAPSHOTPROBE.Pump(service)',1)
+    # This facility test drives retirement explicitly, including fault injection.
+    # Keep automatic policy out of this fixture, not out of production.
+    host=host.replace('    DESKCACHE.Pump(service)\n','')
+    if 'PUBLIC PROC Cache()' in host:
+        start=host.index('PUBLIC PROC Cache()');end=host.index('PUBLIC PROC Stop()',start)
+        host=host[:start]+'PUBLIC PROC Cache()\n\nRETURN\n\n'+host[end:]
     (out/'deskhost.act').write_text(host)
     (out/'snapshotprobe.act').write_text(read_source(ROOT/'tests/programs/snapshotprobe.act'))
     source=read_source(ROOT/'tests/programs/desktop_presentation.act').split('PROC Main()')[0]

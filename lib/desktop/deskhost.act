@@ -5,6 +5,11 @@ USE DESKSTATE
 USE DESKTYPES
 USE DESKCORE
 USE DESKMOVE
+USE DESKCACHE
+USE CONSOLEBITMAP
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
 USE DESKPAINT
 USE HEAPCORE
 USE DESKINPUT
@@ -82,6 +87,7 @@ PUBLIC PROC Controls()
 
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
+    DESKCACHE.Pump(service)
     DESKMOVE.Pump()
     count=DESKCORE.Pump(service)
     DESKPAINT.Sync()
@@ -92,6 +98,54 @@ RETURN
 PUBLIC BYTE FUNC Runnable()
 
 RETURN(DESKPAINT.Runnable() OR DESKINPUT.Runnable())
+
+; Called only after input, controls, model writes and painting have no work.
+; One attempt per eligible revision prevents eviction/capture feedback loops.
+PUBLIC PROC Cache()
+  BYTE index,visible,started
+  CARD rect
+  LAYERTYPES.Rect client
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.live<>1 OR service.scene.busy<>0
+      OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0
+      OR DESKCORE.Runnable(service)<>0 OR DESKINPUT.Runnable()<>0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    BEGIN
+      LET window=@service.windows(index)
+      IF window.id<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE
+          AND window.visualRevision<>0
+          AND window.captureAttempt<>window.visualRevision THEN
+        BEGIN
+          LET layer=LAYERS.Find(@service.scene,window.layer)
+          DESKCACHE.ClientBounds(layer,@client)
+          visible=0
+          rect=0
+          WHILE rect<layer.visible.count DO
+            IF REGIONS.Contains(@layer.visible.rects(rect),@client)<>0 THEN
+              visible=1
+              EXIT
+            FI
+            rect==+1
+          OD
+
+          IF layer.dirty=0 AND layer.shown<>0 AND visible<>0
+              AND (client.left & 1)=0
+              AND DESKCACHE.Fits(CARD(client.right-client.left),
+                  CARD(client.bottom-client.top))<>0 THEN
+            window.captureAttempt=window.visualRevision
+            started=DESKCACHE.Capture(service,window)
+            RETURN
+          FI
+        END
+      FI
+    END
+  OD
+
+RETURN
 
 PUBLIC PROC Stop()
 

@@ -202,12 +202,13 @@ retirement. No application callback runs inside the presenter.
 
 ## Storage and validation
 
-The generated service occupies 11,988 bytes in upper RAM, including the
-4,782-byte Layers scene, four 668-byte client records, four 772-byte windows
-one 710-byte staging batch and sixteen deferred widget input records. Public
+The generated service occupies 12,342 bytes in upper RAM, including the
+5,074-byte Layers scene, four 668-byte client records, four 780-byte windows,
+one 710-byte staging batch, sixteen deferred widget input records and two
+fourteen-byte snapshot records. Public
 client handles are 18 bytes and requests are
 92 bytes, excluding their ordinary Exec reply ports. The service heap request
-rounds to 11,992 bytes at Exec’s eight-byte alignment; unused window/queue/list
+rounds to 12,344 bytes at Exec’s eight-byte alignment; unused window/queue/list
 capacity is included. DT3 runtime/controller globals have 280 payload bytes in
 upper image RAM (plus compiler alignment). Pointer save/masks reserve 1,280 VRAM bytes at `$37000–$374FF`, an increase of
 256 reserved bytes (the former slack is now used). The command arena starts at
@@ -248,3 +249,19 @@ matching completion. Restore borrows the caller's paint token until completion.
 Quiescent failures retire the pin and follow display recovery; an unquiesced
 fault retains all referenced storage. Closing a window invalidates its snapshot
 identity before clearing the record. There is no public offscreen drawing API.
+
+Capture runs only after input, controls, model writes and visible damage have no
+work pending. Each eligible visual revision gets at most one attempt; eviction
+does not cause a recapture loop. The console is uncached. Accepted content/tree
+updates (including hidden updates), widget interaction and client focus styling
+invalidate revisions. Frame-only command-window focus changes damage the title
+and preserve the client snapshot. Position alone preserves local cached pixels.
+Font and palette are fixed for the display lifetime; changing them while windows
+are live is unsupported and any future setter must invalidate client revisions.
+
+Painting always redraws the frame. A valid even-aligned visible client fragment
+restores asynchronously while retaining its paint token and source pin; only
+completion advances the strip. Unaligned fragments use retained drawing without
+expanding over an occluder. The sixteen-scanline/four-command preparation limits
+remain. A fully visible nonconsole client cannot contain the console's clipped
+caret; the bridge removes intersecting pointer/outline overlays at capture.
