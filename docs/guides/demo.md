@@ -94,7 +94,7 @@ Atari cursor chords work too: Ctrl-+/Ctrl-* moves left/right and Ctrl--/Ctrl-=
 browses history. Moving past the newest command restores your draft. See the
 [shell guide](shell.md#editing-and-break) for the complete editing rules.
 
-`HELLO | WC` prints `1 3 17`. `CAT STORY.TXT | WC` prints `24 133 746`.
+`HELLO | WC` prints `1 3 17`. `CAT STORY.TXT | WC` prints `108 518 3171`.
 The [command toolbox](toolbox.md) also supplies CMP, CKSUM, HEXDUMP, HEAD, GREP,
 LIST and MORE. Try `HEAD STORY.TXT LINES 5`, `LIST NAMES`, or `MORE LONG.TXT`.
 In MORE, Space advances a page, Return a displayed row, and Q quits.

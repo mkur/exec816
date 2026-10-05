@@ -25,6 +25,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
     manifest=json.loads((out/'demo-manifest.json').read_text())
     require(all(sha256(out/name)==digest for name,digest in manifest['artifacts'].items()),'Changed demo bundle')
+    story=manifest['files']['STORY.TXT']
+    story_wc=f'{story["lines"]} {story["words"]} {story["bytes"]}'.encode('ascii')
+    story_pair_wc=f'{story["lines"]*2} {story["words"]*2} {story["bytes"]*2}'.encode('ascii')
     p=read_build(out);pin=manifest['pin'];observations=[];saved={}
     if expected_cache is None:expected_cache=p['build']['memory']['boot_config']['cache_blocks']
     bitmap=manifest.get('bitmap',False)
@@ -190,7 +193,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             command('COPY SYS:STORY.TXT WORK:NOTES/ONE.TXT')
             command('RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT')
             command('CMP SYS:STORY.TXT WORK:NOTES/TWO.TXT')
-            command('CAT SYS:STORY.TXT SYS:STORY.TXT | WC',b'48 266 1492')
+            command('CAT SYS:STORY.TXT SYS:STORY.TXT | WC',story_pair_wc)
             command('COPY SYS:STORY.TXT WORK:NOTES/THREE.TXT')
             command('LIST WORK:NOTES/*.TXT NAMES',b'TWO.TXT')
             command('LIST NAMES WORK:NOTES/*.TXT',b'TWO.TXT')
@@ -316,9 +319,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 command('TYPE README.TXT',b'Errors are explained on the console.')
                 memory()
                 command('HELLO | WC',b'1 3 17')
-                command('CAT STORY.TXT | WC',b'24 133 746')
+                command('CAT STORY.TXT | WC',story_wc)
                 screenshot('walkthrough.png',[b'HELLO | WC',b'1 3 17',
-                    b'CAT STORY.TXT | WC',b'24 133 746'])
+                    b'CAT STORY.TXT | WC',story_wc])
                 if work_media:
                     command('ECHO saved >WORK:OUT.TXT')
                     command('CAT WORK:OUT.TXT',b'saved')
@@ -353,12 +356,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 command('HELLO',b'Hello from disk!')
                 command('HELLO',b'Hello from disk!')
                 command('CAT STORY.TXT',b'system should also know how to stop.')
-                command('WC <STORY.TXT',b'24 133 746')
+                command('WC <STORY.TXT',story_wc)
                 saved['memory']=memory();saved['ledger']=ledger()
                 command('HELLO',b'Hello from disk!')
                 command('CAT STORY.TXT',b'system should also know how to stop.')
-                command('WC <STORY.TXT',b'24 133 746')
-                command('CAT STORY.TXT | WC',b'24 133 746')
+                command('WC <STORY.TXT',story_wc)
+                command('CAT STORY.TXT | WC',story_wc)
                 require(memory()==saved['memory'],'Repeated commands retained heap storage')
                 require(ledger()==saved['ledger'],'Repeated commands retained ownership')
                 b.profile_stop();saved['measuring']=False
@@ -430,7 +433,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 require(first['misses']==second['misses'] and second['hits']>first['hits'],
                         'Physical and SYS reads did not share the cache')
                 saved['sys_cache']=dict(physical=first,system=second)
-                command('CAT SYS:STORY.TXT | WC',b'24 133 746')
+                command('CAT SYS:STORY.TXT | WC',story_wc)
                 command('CD SYS:')
                 if shell_only:command('CD ..')
                 command('CD',f'D{system_drive}:'.encode())
@@ -520,7 +523,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
             if loading_smoke:
                 command('HELLO',b'Hello from disk!')
-                command('CAT STORY.TXT | WC',b'24 133 746')
+                command('CAT STORY.TXT | WC',story_wc)
                 saved['memory']=memory();saved['ledger']=ledger()
                 cancel(loading=True)
                 command('HELLO',b'Hello from disk!')
@@ -535,7 +538,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             command('TYPE README.TXT',b'Errors are explained on the console.')
             command('TASKS',b'primes')
             command('HELLO | WC',b'1 3 17')
-            command('CAT STORY.TXT | WC',b'24 133 746')
+            command('CAT STORY.TXT | WC',story_wc)
             if work_media:
                 command('ECHO saved >WORK:OUT.TXT')
                 command('CAT WORK:OUT.TXT',b'saved')
@@ -549,14 +552,14 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             require(saved['ledger']['live']==5,'Idle demo Task count differs')
             for _ in range(2):
                 command('HELLO|WC',b'1 3 17')
-                command('CAT <STORY.TXT | WC',b'24 133 746')
+                command('CAT <STORY.TXT | WC',story_wc)
                 require(ledger()==saved['ledger'],'Ownership retained after pipeline')
             cancel(loading=True);command('HELLO | WC',b'1 3 17')
             cancel();command('HELLO | WC',b'1 3 17')
             require(memory()==saved['memory'],'Demo heap did not return to warmed baseline')
             require(ledger()==saved['ledger'],'Demo ownership did not return to baseline')
             # Capture the real final machine display for the guide.
-            command('CAT STORY.TXT | WC',b'24 133 746');frames(3);cells('showcase')
+            command('CAT STORY.TXT | WC',story_wc);frames(3);cells('showcase')
             save_screen(out/'walkthrough.png')
             for character in 'EXIT':press(character)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all()

@@ -79,7 +79,7 @@ exec816
 The first two calculations print `42` and `81`. The last word starts the shell
 in the upper 18 rows and the independent prime search in the lower six rows.
 Wait for `SYS: -> D1: ready, read-only` and the `>` prompt. Try `HELLO` and
-`CAT STORY.TXT | WC`; the latter prints `24 133 746`. See the
+`CAT STORY.TXT | WC`; the latter prints `108 518 3171`. See the
 [standard image guide](demo.md) for other commands and pipes.
 
 To place the same companion disk in D2, cancel autoboot and enter:

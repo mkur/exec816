@@ -39,6 +39,9 @@ class WriteToolbox(WritableCommands, Toolbox):
             self.baselines[filesystem]=audit
 
     def exercise(self,c):
+        story=self.files['STORY.TXT']
+        lines=story.count(b'\n')
+        counts=f'{lines} {len(story.split())} {len(story)}\n'.encode('ascii')
         # This fixture keeps its binaries at the root and assigns C: there.
         c.command('ASSIGN C: SYS:')
         for mount in ('WORKM','WORKS'):
@@ -67,7 +70,7 @@ class WriteToolbox(WritableCommands, Toolbox):
             c.command(f'HELLO | TEE {mount}:PIPE.TXT',b'Hello from disk!\n')
             c.command(f'HELLO | TEE {mount}:PIPE.TXT APPEND',b'Hello from disk!\n')
             c.command(f'CMP SYS:HELLO2.TXT {mount}:PIPE.TXT')
-            c.command(f'TEE {mount}:TEE.TXT <SYS:STORY.TXT | WC',b'24 133 746\n')
+            c.command(f'TEE {mount}:TEE.TXT <SYS:STORY.TXT | WC',counts)
         c.command('RENAME WORKM:COPY.BIN WORKS:OTHER.BIN',error=215)
         c.command('RENAME WORKS:SAVE.BIN WORKS:COPY.BIN',error=203)
         c.command('DELETE WORKS:MISSING',error=205)

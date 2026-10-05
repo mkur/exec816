@@ -28,7 +28,7 @@ the five-second autoboot and Forth monitor with the normal text console.
 
 Wait for `SYS: ready` and the prompt. Try the [demo commands](demo.md): `TASKS`,
 `MOUNT`, `CD SYS:`, `DIR`, `HELLO`, `TYPE README.TXT`, `MEM`, `HELLO | WC` and
-`CAT STORY.TXT | WC`. The last two print `1 3 17` and `24 133 746`. The shell
+`CAT STORY.TXT | WC`. The last two print `1 3 17` and `108 518 3171`. The shell
 uses 80×24 cells; the prime search uses the lower 80×6 tile. `BREAK` cancels an
 edited line or a running command. `EXIT`, or Ctrl-D on an empty line, restores
 the OS display. A wrong-format disk leaves the console usable; mount the matching

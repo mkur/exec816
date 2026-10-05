@@ -78,7 +78,10 @@ RETURN(count)""")
         # little heap for two bank-aligned Images. Keep raw serial coverage;
         # exercise concurrent loaded commands in the optimized shell.
         if self.mode == 'opt':
-            c.command('CAT STORY.TXT|WC',b'24 133 746\n')
+            story=self.files['STORY.TXT']
+            lines=story.count(b'\n')
+            counts=f'{lines} {len(story.split())} {len(story)}\n'.encode('ascii')
+            c.command('CAT STORY.TXT|WC',counts)
         c.command('HELLO',b'Hello from disk!\n')
         for _ in range(3):c.command('ECHOARGS again',b'again\n')
         c.check_screen('disk-commands')
