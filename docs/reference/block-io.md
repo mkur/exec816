@@ -43,8 +43,8 @@ overlapping requests and invalid source extents before submission. Invalidate
 the scratch tag and all cached halves of that sector first; FinishStore publishes
 replacement bytes only after an error-free, exact-length terminal completion.
 Writes use the same upper-RAM buffer and request as reads, with no write-back
-queue or additional reservation. These internal sector operations do not by
-themselves enable the still-read-only public filesystem APIs.
+queue or additional reservation. The [filesystem writers](filesystem-writes.md)
+use these operations to commit data and metadata on explicitly writable mounts.
 
 The filesystem service owns one reusable transfer request and 256-byte upper-RAM
 buffer. Each mount retains its owning device-open request. Transfers borrow that

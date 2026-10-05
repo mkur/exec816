@@ -25,7 +25,8 @@ The tested configuration is recorded in the [platform pin](../../toolchain/altir
 
 In **System → Configure System… → Computer → Boot**, uncheck **Unload disks
 when booting new image**. Open **File → Disk Drives…**, use the **…** button on
-the **D1:** row to mount `system.atr`, and set **Emulation level** to
+the **D1:** row to mount `system.atr`. Mount a disposable copy of `work.atr`
+in **D8:** with writes enabled; both disks must be present. Set **Emulation level** to
 **Generic + 57600 baud**. In the settings window's **Computer → Acceleration**
 page, **SIO Patch** and **D: burst I/O** must both be unchecked.
 Choose **File → Boot Image…** and select `Exec-of816.xex`.
@@ -34,8 +35,19 @@ to enter Forth and type `EXEC816` when ready. The ATR is a data disk; boot the
 XEX. A missing disk or wrong drive profile can leave the SIO driver offline
 after a timeout; correct the settings and cold-boot again.
 
-The supplied system disk uses SDFS 2.1 with 128-byte sectors. Filesystem writes
-remain unsupported.
+The supplied disks use SDFS 2.1 with 128-byte sectors. SYS: remains read-only;
+WORK: is explicitly writable. Try:
+
+```text
+ECHO saved >WORK:OUT.TXT
+CAT WORK:OUT.TXT
+CAT SYS:STORY.TXT >WORK:COPY.TXT
+CMP SYS:STORY.TXT WORK:COPY.TXT
+```
+
+CMP succeeds silently. Redirection immediately creates or truncates its target;
+a later command failure does not restore old contents. Use disposable copies of
+WORK: and see [filesystem writes](../reference/filesystem-writes.md) for limits.
 
 The default sector cache keeps 64 KiB of recently read disk data in upper RAM,
 shared across files and commands. Repeated commands can avoid SIO while still
@@ -103,7 +115,7 @@ OS display and input state.
 There is one foreground pipeline of exactly two external commands. Resident
 commands such as TYPE, DIR and ECHO cannot be pipeline stages. Quoted `|` is
 literal text. Input redirection belongs on the left and output redirection on
-the right. File writes, longer pipelines, scripts and background shell syntax
+the right. Longer pipelines, scripts and background shell syntax
 are outside this demo. A failed stage reports the first failure in command order.
 
 This is a development play image, with focused raw/optimized slice checks and
@@ -161,11 +173,13 @@ For a custom build directory, pass `--bundle <build>/of816 --output <build>/exec
 Development artifacts remain in `build/demo`:
 
 - `of816/Exec-of816.xex`: demo with the OF816 boot monitor and five-second autoboot.
-- `of816/system.atr`: matching disk to mount with the OF816 image.
+- `of816/system.atr`: matching system disk to mount with the OF816 image.
+- `of816/work.atr`: disposable writable WORK: disk for D8:.
 - `of816/altirraos-816.rom`: pinned AltirraOS 3.44 ROM for 65C816.
 - `of816/ALTIRRAOS-LICENSE.txt` and `of816/OF816-LICENSE.txt`: upstream notices.
 - `of816/of816.json`: monitor build inputs, memory layout, media and ROM hashes.
 - `program.xex`: direct native entry used by development fixtures.
+- `work.atr`: disposable writable disk, with the same format and geometry.
 - `system.atr`: read-only SDFS data disk with HELLO, CAT, WC, the command toolbox and sample text.
 - `system.verification.json`: independent producer/read-back hashes for every
   file in SDFS builds.
@@ -176,7 +190,8 @@ The default uses SDFS 2.1 with 128-byte sectors. To build 256-byte media for
 a capable peripheral, pass `--sector-bytes 256`; the mount descriptor changes
 with the disk geometry. To retain MyDOS, pass `--format mydos --output build/demo-mydos`.
 Both filesystem options use the filename `system.atr`; the format and geometry
-are recorded in the build manifests. Filesystem writes remain unsupported.
+are recorded in the build manifests. The packaged WORK: disk uses the same
+format and geometry. Keep SYS: on D1–D7; D8 is reserved for WORK:.
 
 Pass `--bitmap-console` for the optional [80×30 bitmap console preview](bitmap-console.md).
 The ZIP then also contains `bitmap-console/Exec-bitmap-console.xex`, its matching

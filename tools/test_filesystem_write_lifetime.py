@@ -18,7 +18,9 @@ from generate_dos_mounts import encode
 CASES = {'before': 1, 'wire': 2, 'final': 3, 'create': 4, 'close-break': 5,
          'write-error': 6, 'close-error': 7, 'stop': 8, 'detached': 9,
          'parent-first': 10, 'child-first': 11, 'cleanup-error': 12,
-         'earlier-error': 13}
+         'earlier-error': 13, 'create-error': 14, 'delete-error': 15,
+         'rename-error': 16, 'truncate-error': 17, 'mkdir-error': 18,
+         'delete-break': 19, 'rename-break': 20, 'truncate-break': 21, 'mkdir-break': 22}
 
 
 def instrument(output):
@@ -58,7 +60,8 @@ def outcome(media, filesystem, baseline, fault, expected):
         require(fault, 'Allocation audit: ' + str(error))
         issue, report = str(error), None
     if not fault:
-        require(audit.files == {**baseline.files, 'WRITE.BIN': expected},
+        additions=expected if isinstance(expected,dict) else {'WRITE.BIN':expected}
+        require(audit.files == {**baseline.files, **additions},
                 'Unexpected committed contents')
     else:
         # Independently compare every pre-existing payload/map allocation.
@@ -73,7 +76,7 @@ def outcome(media, filesystem, baseline, fault, expected):
                 sha256=sha256(media))
 
 
-def run(output, mode, filesystem, size, names, ordinal, from_build=None):
+def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=None):
     observers = instrument(output)
     baseline = Audit((ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr').read_bytes())
     getattr(baseline, filesystem)()
@@ -88,19 +91,20 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None):
         require(sha256(output/'filesystem_write_lifetime.act') == record['source_sha256'], 'Changed test source')
         require(record['optimize'] == (mode == 'opt'), 'Changed emission mode')
         for group in ('platform_inputs', 'task_inputs', 'console_inputs', 'banked_inputs'):
-            for path, digest in record.get(group, {}).items():
-                require(sha256(ROOT/path) == digest, 'Changed input: ' + path)
-        for path, digest in observers.items():
-            require(sha256(from_build/path) == digest, 'Changed observer: ' + path)
+            for input_name, digest in record.get(group, {}).items():
+                require(sha256(ROOT/input_name) == digest, 'Changed input: ' + input_name)
+        for input_name, digest in observers.items():
+            require(sha256(from_build/input_name) == digest, 'Changed observer: ' + input_name)
     cases = []
     with emulator(ROOT/'build/altirra-sio-multi', ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
         configuration = {**PIN['configuration'], 'diskemu': 'fastest', 'accuratedisk': False}
         for key, value in configuration.items():
             bridge.config(key, str(value).lower() if isinstance(value, bool) else value)
         machine = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
-        for index, name in enumerate(names):
+        ordinals = ordinal if isinstance(ordinal, list) else [ordinal]
+        for index, (name, ordinal) in enumerate((name, n) for name in names for n in ordinals):
             print('Write lifetime', name, ordinal, flush=True)
-            case_out = output/name
+            case_out = output/(name if len(ordinals) == 1 else f'{name}-{ordinal}')
             case_out.mkdir(exist_ok=True)
             media = case_out/'volume.atr'
             shutil.copyfile(ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr', media)
@@ -112,6 +116,11 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None):
                     bridge.state_save(slot='loaded')
                 bridge.mount(0, str(media))
                 bridge.memload(program['build']['task_storage']['BASE'] + 0x900, encode(mounts))
+                if path:
+                    encoded=path.encode('ascii')+b'\0'
+                    symbol=next(d for d in program['image']['data'] if '_FSWRITELIFETIME_PATH_' in d['name'])
+                    require(len(encoded)<=symbol['size'], 'Injected path too long')
+                    bridge.memload(symbol['address'],encoded)
                 for key, value in (('scenario', CASES[name]), ('nth', ordinal)):
                     address = next(d['address'] for d in program['image']['data']
                                    if '_FSWRITELIFETIME_' + key.upper() + '_' in d['name'])
@@ -139,13 +148,18 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None):
             expected = {'before': b'', 'wire': payload[:size - (3 if filesystem == 'mydos' else 0)],
                         'final': payload[:17], 'create': b'', 'close-break': b'',
                         'stop': payload, 'detached': payload[:17],
-                        'parent-first': payload[:17]*2, 'child-first': payload[:17]*2}.get(name)
+                        'parent-first': payload[:17]*2, 'child-first': payload[:17]*2,
+                        'delete-break':{}, 'rename-break':{'TARGET':payload},
+                        'truncate-break':b'', 'mkdir-break':{}}.get(name)
             report = outcome(media, filesystem, baseline, expected is None, expected)
+            if name=='mkdir-break':
+                require(report['allocation']['directories']==baseline.directories+1,
+                        'Committed directory was not published')
             cases.append(dict(name=name, ordinal=ordinal, runtime=runtime, probe=probe,
                               media=report, status='pass'))
             (output/'progress.json').write_text(json.dumps(cases, indent=2) + '\n')
     return dict(status='pass', build=program['build'], cases=cases, observers=observers,
-                configuration=configuration, machine=machine,
+                configuration=configuration, machine=machine, path_override=path,
                 scope='Development only: task-side injection at physical write boundaries; '
                       'lost completion is injected after the real transport reply, not a device fault.',
                 bank_zero_delta=dict(fixed=0, per_task=0))
@@ -158,15 +172,18 @@ if __name__ == '__main__':
     parser.add_argument('--size', type=int, choices=(128, 256), default=128)
     parser.add_argument('--suite', default=','.join(CASES))
     parser.add_argument('--ordinal', type=int, default=1)
+    parser.add_argument('--ordinals', help='Comma-separated physical write boundaries for one fault operation')
     parser.add_argument('--from-build', type=Path)
+    parser.add_argument('--path', help='Existing short fixture path for split-record fault checks')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     result = dict(status='running')
     try:
-        result = run(output, args.case, args.filesystem, args.size, args.suite.split(','), args.ordinal,
-                     args.from_build.resolve() if args.from_build else None)
+        result = run(output, args.case, args.filesystem, args.size, args.suite.split(','),
+                     [int(n) for n in args.ordinals.split(',')] if args.ordinals else args.ordinal,
+                     args.from_build.resolve() if args.from_build else None, args.path)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise

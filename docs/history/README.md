@@ -85,6 +85,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Filesystems and DOS
 
+- [MyDOS and SpartaDOS write implementation](filesystem-write-implementation.md):
+  lightweight mounts, file/namespace writes, bounded commit units, inherited
+  writer retirement, failure outcomes, native round trips and the OF816 demo.
 - [Block I/O and DOS with MyDOS filesystems](block-io-dos-design.md)
 - [Block I/O and MyDOS implementation](block-io-dos-implementation.md)
 - [DOS console streams](dos-console-streams-design.md)

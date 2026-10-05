@@ -1,11 +1,12 @@
 # MyDOS and SpartaDOS write support implementation plan
 
-Status: implementation in progress. The shared write path, both format writers,
-namespace operations and DOS ownership/finalization are implemented. Current
-behavior is described by [filesystem writes](../reference/filesystem-writes.md).
-Shell integration, additional failure boundaries and distribution validation are
-being completed under the [development testing tier](../contributing/testing.md).
-Release qualification and physical-device support remain separate gates.
+Status: W0–W9 implemented and checked under the
+[development testing tier](../contributing/testing.md). Current behavior is
+described by [filesystem writes](../reference/filesystem-writes.md); the
+[implementation record](../history/filesystem-write-implementation.md) and
+[evidence](../development/filesystem-write.json) record the actual selected
+coverage, memory costs and packaged walkthrough. Release qualification and
+physical-device support remain separate gates.
 
 The [W0 mutation protocol](filesystem-write-protocol.md) records format choices,
 write ordering, cancellation boundaries and bounded scratch storage. W0–W2's
@@ -15,7 +16,9 @@ MyDOS/SpartaDOS read-back. SpartaDOS growth crosses the 62/126-pointer boundarie
 MyDOS allocates above sector 1023 and across a VTOC page. Lifecycle suites cover
 wire BREAK, deferred commit, uncertain completion, consumed failed Close,
 stop/drain, inherited writers and cleanup error precedence. These selected checks
-do not constitute the complete proposed failure matrix or release qualification.
+do not constitute an exhaustive failure/timing matrix or release qualification.
+Shell redirection and pipeline cleanup pass on both formats, including late
+Close failures; the refreshed OF816 distribution passes the writable walkthrough.
 
 Mounting remains one header read with no file, directory or allocation scan.
 Current reservations add zero fixed and zero per-Task bank-zero bytes, including
@@ -44,7 +47,10 @@ volume-label changes and new COPY/DELETE/MAKEDIR commands. Existing sparse SDFS
 files remain readable but cannot be opened for writing in this first version.
 Do not broaden the supported DOS derivatives or peripheral profiles implicitly.
 
-## Starting points and required changes
+## Baseline and implementation slices
+
+The table records the pre-implementation boundaries and the changes selected
+for this milestone; it is not a description of the current read/write APIs.
 
 The [filesystem architecture](../architecture/filesystems.md) already has the
 right ownership: one filesystem worker, one active filesystem operation, a
@@ -52,7 +58,7 @@ separate SIO worker, shared upper-RAM workspace and reference-counted file
 backing. Extend that implementation rather than adding workers per file or
 private kernel services.
 
-| Area | Current boundary and planned change |
+| Area | Baseline boundary and selected change |
 | --- | --- |
 | [DOSCALLS](../../lib/dos/doscalls.act) | Disk Open accepts only MODE_OLDFILE; nonempty disk Write returns write-protected. Route writable modes and Write through filesystem packets. |
 | [FSHANDLER](../../lib/fs/fshandler.act), [FSBACKEND](../../lib/fs/fsbackend.act) | Existing operations resolve/read/seek/examine. Add parent-plus-leaf resolution, allocation and resumable mutation operations to the common backend contract. |
@@ -467,5 +473,6 @@ Completion requires both formats passing the selected development coverage,
 native interoperability, defined failure outcomes, cleanup and the packaged
 walkthrough. Record implemented slices, source/toolchain/media hashes, measured
 bounds and report paths in a linked history page and development JSON. Update
-reference pages only as behavior lands. This plan-only change needs content
-and link checks and has zero runtime or memory effect.
+reference pages only as behavior lands. The implementation record distinguishes
+requested/rounded storage, resident code growth, unchanged reservations and the
+measured execution scope.

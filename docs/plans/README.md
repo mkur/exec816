@@ -49,9 +49,10 @@ assuming work is pending. Current behavior belongs in the
 ## Filesystems and DOS
 
 - [MyDOS and SpartaDOS write support](filesystem-write-implementation-plan.md):
-  W0–W9 in progress; shared write-through transport and mutation lifecycle,
-  SpartaDOS first, then MyDOS parity and namespace operations.
-  [Mutation protocol](filesystem-write-protocol.md).
+  W0–W9 implemented with lightweight mounts, write-through file/namespace
+  operations, inherited writers and shell cleanup. Both sector geometries pass
+  native DOS round trips; [development record](../history/filesystem-write-implementation.md)
+  and [mutation protocol](filesystem-write-protocol.md).
 - [Block I/O and MyDOS implementation plan](block-io-dos-implementation-plan.md)
 - [DOS console streams implementation plan](dos-console-streams-implementation-plan.md)
 - [DOS simplification](dos-simplification-plan.md)

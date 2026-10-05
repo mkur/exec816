@@ -73,7 +73,7 @@ resident applications can use the wider Exec and DOS APIs.
 
 ## The current user-facing system
 
-- **Disk access:** read-only MyDOS and SpartaDOS, explicit mounts, directories,
+- **Disk access:** MyDOS and SpartaDOS with explicit writable mounts, directories,
   file reads/seeks and `SYS:`. One shared sector cache reduces repeated SIO reads.
 - **Text console:** independent retained console instances tiled on one 40×24
   display, with focus and foreground input routing. Instances share one worker.

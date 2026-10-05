@@ -66,10 +66,11 @@ physical hardware.
 
 The other possible milestones have no delivery order:
 
-- [MyDOS and SpartaDOS write support](plans/filesystem-write-implementation-plan.md):
-  proposed shared write-through infrastructure, SpartaDOS first, then MyDOS
-  parity, directory operations and failure/interoperability checks. Current
-  [disk support](reference/dos.md) remains read-only.
+- Broader [filesystem write support](reference/filesystem-writes.md), including
+  cross-directory moves, sparse writing and a separately loaded checker if
+  needed. MyDOS/SpartaDOS file and namespace writes are implemented; their
+  [development record](history/filesystem-write-implementation.md) retains
+  the selected coverage and remaining qualification limits.
 - A RAM filesystem and broader volume assignments beyond the implemented
   [SYS: alias](reference/sys-volume.md).
 - Longer shell pipelines, scripts and background execution beyond the current

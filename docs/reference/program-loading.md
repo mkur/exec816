@@ -168,8 +168,11 @@ and directory are inherited through the existing Process protocol; diagnostics
 and prompts remain on the shell's private console. Application results, including
 primary status 20, do not terminate the shell.
 
-MyDOS remains read-only. File input and NIL redirection work; file output fails
-with the existing write-protected error. Files are ordinary serialized o65 bytes,
+File input, NIL redirection and output to explicitly writable MyDOS/SpartaDOS
+mounts work. Output redirection creates or truncates when Open commits; a later
+command failure does not restore the previous file. A failed final Close retires
+the handle and reports command failure while preserving a usable shell.
+See [filesystem writes](filesystem-writes.md). Files are ordinary serialized o65 bytes,
 without compiler sidecars. Example sources are [HELLO](../../examples/commands/hello.act)
 and [ECHOARGS](../../examples/commands/echoargs.act), plus the usable
 [WC counter](../guides/shell.md#wc); compile with

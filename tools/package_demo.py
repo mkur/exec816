@@ -34,6 +34,11 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None):
         rom['name']: rom['sha256'],
         rom['license']: rom['license_sha256'],
     }
+    for item in record.get('additional_media', []):
+        name = item['name']
+        if name in expected or Path(name).name != name:
+            raise ValueError('Invalid companion disk name')
+        expected[name] = item['sha256']
     files = {}
     for name, digest in expected.items():
         if Path(name).name != name:

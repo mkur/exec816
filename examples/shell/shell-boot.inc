@@ -100,7 +100,11 @@ BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
   IF shell.status=PROCESS.RETURN_OK THEN
     ShellText(shell.console,c"SYS: -> D")
     ShellByte(shell.console,ASCII.DIGIT_ZERO+BOOTCONFIG.SystemDrive())
-    ShellText(shell.console,c": ready, read-only")
+    IF FSINSPECT.SystemWritable()<>0 THEN
+      ShellText(shell.console,c": ready, read-write")
+    ELSE
+      ShellText(shell.console,c": ready, read-only")
+    FI
     ShellCacheStatus()
 
   ELSE

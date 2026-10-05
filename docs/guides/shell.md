@@ -130,7 +130,10 @@ Duplicate operators, append `>>`, attached operators and missing targets fail
 before execution. Targets resolve against the directory selected before the
 command. The shell restores borrowed streams before closing temporary handles;
 a successful redirected CD still changes directory. Input redirection does not
-run a script. Mounted filesystems reject output because they are read-only.
+run a script. Output redirection requires an explicitly writable mount and
+creates or truncates the target during Open. Terminal Close errors make an
+otherwise successful command fail while restoring the prompt and streams.
+See [filesystem writes](../reference/filesystem-writes.md).
 Diagnostics use the shell's retained console.
 
 ## Pipes

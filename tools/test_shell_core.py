@@ -140,8 +140,8 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
     source=instrument(out)
     if external:external.instrument(out)
     p=read_build(out) if reuse else build(t,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,
-            system_mount=None if no_mount else 'D1',dos_mounts=[] if no_mount else [dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=1)],
-            image_data=[])
+            system_mount=None if no_mount else 'D1',dos_mounts=[] if no_mount else getattr(external,'mounts',[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=1)]),
+            image_data=[],memory_profile=getattr(external,'memory_profile',None))
     media=out/'volume.atr'
     if external:external.prepare(t,out,mode,size)
     else:shutil.copyfile(ROOT/f'tests/fixtures/mydos/mydos450-{size}.atr',media)
@@ -154,6 +154,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
         machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',pin)
         b.config('diskemu','fastest')
         if not no_mount:b.mount(0,str(media))
+        if external and hasattr(external,'mount_extra'):external.mount_extra(b,out)
         def far(addr,n):
             result=bytearray()
             for i in range(0,n,2):
@@ -306,6 +307,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
         require(actual==expected,'Exact shell Write payload differs')
         require(b.memdump(state['screen'],960)==state['bytes'] and b.peek(752)==state['cursor'] and b.peek(16)==state['mask'],'Shell did not restore OS console')
         ownership(b,p,out);require(sha256(media)==digest,'Shell modified media')
+        if external and hasattr(external,'persisted'):external.persisted(b,p,out)
     return dict(status='pass',mode=mode,kernel_bank=bank,sector_bytes=size,no_mount=no_mount,smoke=smoke,eof=eof,build=p['build'],runtime=rt,machine=machine,pin=pin,limits=LIMITS,observations=observations,schedule=schedule,counts=counts,media_sha256=digest,writes_sha256=sha256(out/'writes.bin'),source_inputs={s:sha256(ROOT/s)for s in ('examples/shell/shell.act','examples/shell/shell-session.inc','examples/shell/shell-commands.inc','tests/programs/shell_core.act','tools/test_shell_core.py')},hook_sha256=sha256(out/'shell-observed.inc'))
 
 if __name__=='__main__':

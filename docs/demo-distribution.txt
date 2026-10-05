@@ -44,7 +44,8 @@ Computer > Boot
 Close the settings window, then:
 
 1. Open File > Disk Drives... and click the "..." button on the D@SYSTEM_DRIVE@: row
-   to select @SYSTEM_DISK@.
+   to select @SYSTEM_DISK@. Mount a disposable copy of work.atr in D8:
+   and enable writes for D8. Both disks must be present before boot.
 2. In the same Disk drives window, set Emulation level to
    "Generic + 57600 baud". This setting applies to all drives.
 3. Choose File > Boot Image... and select Exec-of816.xex. Leave the keyboard
@@ -98,8 +99,20 @@ reading Input. Every supplied command supports ?. PATH lists the search order;
 PATH ADD directory, PATH SET directory, PATH CLEAR and PATH RESET change it.
 
 Try CAT LONG.TXT | WC, then press BREAK to cancel it. EXIT stops the demo
-and restores the OS display. Disk access is read-only; keep the same disk
-mounted until reset. Pipes support two external commands.
+and restores the OS display. SYS: is read-only; WORK: is writable. Keep both
+disks mounted until shutdown. Pipes support two external commands.
+
+Try saving output to the disposable WORK: disk:
+
+    ECHO saved >WORK:OUT.TXT
+    CAT WORK:OUT.TXT
+    CAT SYS:STORY.TXT >WORK:COPY.TXT
+    CMP SYS:STORY.TXT WORK:COPY.TXT
+
+CMP succeeds silently. Output redirection creates or immediately truncates its
+target, even if the command later fails. Use copies of work.atr for experiments.
+There is no filesystem checker or recovery utility in the resident system;
+restore your copy after an interrupted or failed disk mutation.
 
 Licences and source
 -------------------

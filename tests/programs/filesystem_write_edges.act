@@ -1,0 +1,143 @@
+MODULE FSWRITEEDGES
+USE EXEC
+USE DOS
+USE DOSCORE
+USE FSTYPES
+USE FSBOOT
+USE HEAPCORE
+CARD checks,scenario,phase
+LONGINT result,error
+BYTE ARRAY original=[68 49 58 67 82 69 65 84 69 46 66 73 78 0]
+BYTE ARRAY missing=[68 49 58 77 73 83 83 73 78 71 0]
+BYTE ARRAY directory=[68 49 58 87 82 65 0]
+BYTE ARRAY renamed=[83 89 83 58 87 82 66 0]
+BYTE ARRAY child=[68 49 58 87 82 65 47 70 48 48 0]
+BYTE ARRAY empty=[68 49 58 69 77 80 84 89 0]
+BYTE POINTER buffer
+DOS.FileHandle POINTER file
+DOS.FileLock POINTER lock
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Grow across directory-record boundaries, then rename and reclaim the subtree.
+PROC Names()
+  BYTE index
+
+  lock=DOS.CreateDir(directory)
+  Require(lock<>NULL)
+  DOS.UnLock(lock)
+  FOR index=0 TO 11 DO
+    child(8)='0+index/10
+    child(9)='0+index MOD 10
+    file=DOS.Open(child,DOS.MODE_NEWFILE)
+    Require(file<>NULL)
+    IF index=0 THEN
+      Require(DOS.Rename(directory,renamed)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+    FI
+
+    Require(DOS.Close(file)<>0)
+  OD
+
+  Require(DOS.DeleteFile(directory)=0 AND DOS.IoErr()=DOS.ERROR_DIR_NOT_EMPTY)
+  Require(DOS.Rename(directory,renamed)<>0)
+  Require(DOS.Rename(renamed,renamed)<>0)
+  child(5)='B
+  FOR index=0 TO 11 DO
+    child(8)='0+index/10
+    child(9)='0+index MOD 10
+    file=DOS.Open(child,DOS.MODE_OLDFILE)
+    Require(file<>NULL AND DOS.Close(file)<>0)
+    Require(DOS.DeleteFile(child)<>0)
+  OD
+
+  Require(DOS.DeleteFile(renamed)<>0)
+
+RETURN
+
+; Host-selected images isolate admission failures and native allocation limits.
+PROC Main()
+  CARD index
+  LONGINT expected
+
+  Require(FSBOOT.Ensure()<>0)
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  Require(service.work.operations=1)
+  buffer=EXEC.AllocMem(1000,EXEC.MEMF_UPPER)
+  Require(buffer<>NULL)
+  FOR index=0 TO 999 DO
+    buffer(index)=BYTE(index) XOR $c3
+  OD
+
+  phase=1
+  IF scenario=1 THEN
+    file=DOS.Open(original,DOS.MODE_READWRITE)
+    Require(file<>NULL)
+    Require(DOS.Write(file,NULL,0)=0)
+    Require(DOS.Write(file,NULL,1)=-1 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+    Require(DOS.Write(file,buffer,-1)=-1 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+    Require(DOS.Seek(file,124,DOS.OFFSET_BEGINNING)=0)
+    Require(DOS.Write(file,buffer,4)=4)
+    Require(DOS.Seek(file,0,DOS.OFFSET_END)=128)
+    Require(DOS.Write(file,buffer,4)=4)
+    Require(DOS.Close(file)<>0)
+    phase=2
+    Names()
+  ELSEIF scenario=8 THEN
+    file=DOS.Open(empty,DOS.MODE_READWRITE)
+    Require(file<>NULL AND DOS.Close(file)<>0)
+  ELSEIF scenario=9 THEN
+    file=DOS.Open(original,DOS.MODE_READWRITE)
+    Require(file<>NULL)
+    Require(DOS.Seek(file,0,DOS.OFFSET_END)=0)
+    result=DOS.Write(file,buffer,1000)
+    error=DOS.IoErr()
+    Require(result=206 AND error=DOS.ERROR_DISK_FULL)
+    Require(DOS.Close(file)<>0)
+  ELSE
+    expected=DOS.ERROR_DISK_NOT_VALIDATED
+    IF scenario=2 THEN
+      expected=DOS.ERROR_DISK_WRITE_PROTECTED
+    ELSEIF scenario=3 THEN
+      expected=DOS.ERROR_WRITE_PROTECTED
+    ELSEIF scenario=4 OR scenario=10 THEN
+      expected=DOS.ERROR_DISK_FULL
+    ELSEIF scenario=7 THEN
+      expected=DOS.ERROR_ACTION_NOT_KNOWN
+    FI
+
+    IF scenario=10 THEN
+      lock=DOS.CreateDir(missing)
+      Require(lock=NULL)
+      file=NULL
+    ELSEIF scenario=4 THEN
+      file=DOS.Open(missing,DOS.MODE_NEWFILE)
+    ELSE
+      file=DOS.Open(original,DOS.MODE_READWRITE)
+    FI
+
+    error=DOS.IoErr()
+    Require(file=NULL AND error=expected)
+    IF scenario=3 THEN
+      Require(DOS.DeleteFile(original)=0 AND DOS.IoErr()=DOS.ERROR_DELETE_PROTECTED)
+      Require(DOS.Rename(original,missing)=0 AND DOS.IoErr()=DOS.ERROR_DELETE_PROTECTED)
+    FI
+
+    Require(service.mounts(0).item.offline=0 AND service.mounts(0).item.references=0)
+  FI
+
+  phase=3
+  EXEC.FreeMem(buffer,1000)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+
+RETURN
+
+ENDMODULE

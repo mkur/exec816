@@ -51,6 +51,15 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     mount_config=json.loads(config.read_text())
     mounts=mount_config['mounts']
     mounts[0]['sector_bytes']=sector_bytes
+    # Keep SYS read-only and provide explicitly disposable writable media.
+    # D8 avoids colliding when the boot monitor selects D1..D7 for SYS.
+    workspace=output/'workspace-source'
+    workspace.mkdir(exist_ok=True)
+    (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
+        'Copy this ATR before experimenting. Mount it in drive D8.\n',encoding='ascii')
+    make(output/'work.atr',workspace,filesystem=filesystem,sector_bytes=sector_bytes)
+    mounts.append(dict(alias='WORK',unit=56,sectors=720,sector_bytes=sector_bytes,
+                       profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
     entry=ROOT/('examples/shell/shell.act' if bitmap_shell_only else 'examples/demo.act')
@@ -83,9 +92,12 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=128,gem_vdi=False,
     record=dict(format='exec816-demo-v1',tier='development',kernel=program['build'],pin=pin,
         configuration={**pin['configuration'],'diskemu':'generic56k'},mounts=mounts,commands=commands,
         media=disk_name,filesystem=filesystem,sector_bytes=sector_bytes,
+        additional_media=[dict(name='work.atr',sha256=sha256(output/'work.atr'),
+                               drive=8,alias='WORK',access='readwrite',
+                               filesystem=filesystem,sector_bytes=sector_bytes)],
         boot_image='of816/Exec-of816.xex',boot_manifest='of816/of816.json',
         distribution='exec816-demo.zip',
-        artifacts={name:sha256(output/name) for name in ('program.xex',disk_name,'README.md',*([proof_name] if filesystem=='sdfs' else []))},
+        artifacts={name:sha256(output/name) for name in ('program.xex',disk_name,'work.atr','README.md',*([proof_name] if filesystem=='sdfs' else []))},
         files={name:dict(bytes=len(payload),sha256=hashlib.sha256(payload).hexdigest(),
                         **({} if name in commands else dict(lines=payload.count(b'\n'),words=len(payload.split()))))
                for name,payload in files.items()},

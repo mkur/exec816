@@ -2,7 +2,8 @@
 
 This records the W0 decisions for the
 [write implementation plan](filesystem-write-implementation-plan.md).
-The public filesystems remain read-only until their implementation slices land.
+The protocol is implemented; see the [current write contract](../reference/filesystem-writes.md)
+and [development record](../history/filesystem-write-implementation.md).
 No mount-time allocation audit or resident checker is introduced.
 
 ## Format inputs
@@ -77,8 +78,8 @@ treated as atomic records.
 | Flush | Ensure each accepted data unit's required writes have completed. Keep the native incomplete flag and writer lease; preserve position. There is no dirty write-back queue. |
 | Last Close | Finish required data/allocation/extent updates; clear the native incomplete flag; consume the wrapper/backing and release the lease. Failure still consumes the wrapper after all I/O retires and leaves the mount unvalidated. |
 | Create directory | Preflight parent capacity and full child allocation; reserve and zero sectors; initialize child header where applicable; publish parent entry/extent; return the preallocated lock. MyDOS requires a contiguous eight-sector child. |
-| Delete file/empty directory | Validate target and reclaimable extent; reject live objects and nonempty directory; write a deleted parent entry with detached start; release sectors and update counts. Finish reclamation before reporting success. |
-| Same-parent rename | Validate destination/collision/protection/busy state; replace the name in the same entry slot, retaining identity/allocation/flags/timestamp; finish all record sectors before success. |
+| Delete file/empty directory | Validate target and reclaimable extent; reject live objects and nonempty directory; tombstone the parent entry to remove live reachability; release sectors and update counts. Finish reclamation before reporting success. |
+| Same-parent rename | Validate destination/collision/protection/busy state; replace the name in the same entry slot, retaining identity/allocation/flags/timestamp; update a renamed SDFS directory's own header name; finish all record sectors before success. |
 
 SDFS directory growth reserves and initializes additional data/map sectors
 before connecting them. Initialize the new record area before extending record
@@ -102,8 +103,9 @@ transaction. Reads needed to finish that unit use the same policy. A terminal
 transport error always wins over pending BREAK. Normal reads retain their
 existing cancellation path. No Forbid/IRQ/NMI exclusion spans I/O.
 
-The shared worker may use at most three additional 256-byte staged sectors,
-two 23-byte records and bounded scalar/ancestry state. The existing block buffer
+The shared worker uses three additional 256-byte staged sectors,
+one 23-byte record and bounded scalar/entry state, totaling 878 requested bytes
+(880 after heap rounding). The existing block buffer
 is separate. File backing owns rights, lease and cursor state, not sector buffers.
-Measure exact record sizes and rounded allocations as they land. Fixed and
+The development record measures the remaining object growth. Fixed and
 per-Task bank-zero reservation deltas remain zero, including guards and padding.

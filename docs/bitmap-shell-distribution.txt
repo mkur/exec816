@@ -23,12 +23,13 @@ Extract this ZIP into one folder. In System > Configure System, select:
 
 1. Mount the included @SYSTEM_DISK@ in D@SYSTEM_DRIVE@: using File > Disk Drives.
    Select "Generic + 57600 baud" as the disk emulation level.
+   Mount a disposable copy of work.atr in D8: with writes enabled.
 2. Use File > Boot Image to start Exec-of816.xex.
 3. Leave the keyboard alone for the five-second OF816 countdown.
    The bitmap shell opens automatically; wait for SYS: ready and the > prompt.
 
 Boot the XEX; the ATR supplies its system files. Keep this matching disk
-mounted for the whole session. A disk from another build can contain
+and work.atr mounted for the whole session. A disk from another build can contain
 incompatible commands.
 
 Press a key during the countdown to enter OF816 instead. Type EXEC816
@@ -50,13 +51,17 @@ TASKS lists the shell and service workers without a primes task.
 HELP lists built-in commands. BREAK cancels a foreground command.
 EXIT or Ctrl-D closes the shell and restores the OS display.
 
-This is a development preview. Disk access is read-only. The cooked editor
+SYS: is read-only; WORK: is writable. Try ECHO saved >WORK:OUT.TXT and
+CAT WORK:OUT.TXT. Redirection creates or truncates its target when opened,
+even if the command later fails. Keep SYS: on D1-D7; D8 is reserved for WORK:.
+
+This is a development preview. The cooked editor
 retains its 36-character editing tail, even on the wider bitmap screen.
 
 Files and licences
 ------------------
 
-Exec-of816.xex and @SYSTEM_DISK@ are the boot image and matching system disk.
+Exec-of816.xex, @SYSTEM_DISK@ and work.atr are the boot image and matching disks.
 The pinned AltirraOS ROM, this guide, licence notices and SHA256SUMS complete
 the package. No separate graphics demo needs to be started.
 
