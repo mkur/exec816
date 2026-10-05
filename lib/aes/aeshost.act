@@ -1,0 +1,85 @@
+; Presenter-owned hooks. Failed optional AES setup leaves native GUI available.
+MODULE AESHOST
+USE EXEC
+USE AESSTATE
+USE AESTYPES
+USE AESCORE
+USE HEAPCORE
+
+PUBLIC PROC Start()
+  BYTE bit
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN
+  FI
+
+  bit=EXEC.AllocSignal(-1)
+  IF bit=$ff THEN
+    service.error=AESTYPES.RESOURCE
+    RETURN
+  FI
+
+  IF AESCORE.Init(service,bit)=0 THEN
+    EXEC.FreeSignal(bit)
+    service.error=AESTYPES.RESOURCE
+  FI
+
+RETURN
+
+PUBLIC LONGCARD FUNC Mask()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(service.mask)
+
+PUBLIC BYTE FUNC Pump(BYTE budget)
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR service.live=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(AESCORE.Pump(service,budget))
+
+PUBLIC BYTE FUNC Runnable()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR service.live=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(AESCORE.Runnable(service))
+
+PUBLIC BYTE FUNC Idle()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR service.live=0 THEN
+    RETURN(1)
+  FI
+
+RETURN(AESCORE.Idle(service))
+
+PUBLIC PROC Stop()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR service.live=0 THEN
+    RETURN
+  FI
+
+  IF AESCORE.Stop(service)=0 THEN
+    HEAPCORE.Abort($fca0)
+  FI
+
+  EXEC.FreeSignal(service.port.mp_SigBit)
+  service.mask=0
+  service.port.mp_SigTask=NULL
+  ; Last access: the controller may free storage after observing retirement.
+  service.owner=NULL
+
+RETURN
+
+ENDMODULE

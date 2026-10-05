@@ -1,0 +1,27 @@
+; One optional AES endpoint; its controller retains storage through shutdown.
+MODULE AESSTATE
+USE EXEC
+
+PUBLIC TYPE Service=[
+  EXEC.MsgPort port
+  EXEC.Task POINTER controller
+  EXEC.Task POINTER owner
+  LONGCARD mask
+  CARD error
+  BYTE live
+]
+
+Service POINTER boundService
+
+PUBLIC Service POINTER FUNC Get()
+
+RETURN(boundService)
+
+; Startup before presenter admission, or retirement after its last use.
+PUBLIC PROC Bind(Service POINTER value)
+
+  boundService=value
+
+RETURN
+
+ENDMODULE

@@ -1,0 +1,94 @@
+; Ordinary-message admission. Only the existing presenter executes policy.
+MODULE AESCORE
+USE EXEC
+USE EXECLISTS
+USE AESTYPES
+USE AESSTATE
+
+PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
+
+  IF service=NULL OR bit>=32 OR service.live<>0 THEN
+    RETURN(0)
+  FI
+
+  service.owner=EXEC.FindTask(NULL)
+  service.mask=LONGCARD(1) LSH bit
+  service.port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  service.port.mp_Flags=EXEC.PA_SIGNAL
+  service.port.mp_SigBit=bit
+  service.port.mp_SigTask=service.owner
+  EXECLISTS.NewList(@service.port.mp_MsgList)
+  service.error=AESTYPES.OK
+  ; Publication is last: the controller cannot see a half-initialized port.
+  service.live=1
+
+RETURN(1)
+
+PUBLIC PROC Reply(AESTYPES.Request POINTER request CARD status)
+
+  request.status=status
+  EXEC.ReplyMsg(@request.message)
+
+RETURN
+
+; The first admission slice deliberately advertises no GEM operation yet.
+; Short descriptors get only their native header back, without output writes.
+PROC Dispatch(AESTYPES.Request POINTER request)
+  BYTE index
+
+  IF request.message.mn_Length<>AESTYPES.REQUEST_SIZE THEN
+    EXEC.ReplyMsg(@request.message)
+    RETURN
+  FI
+
+  FOR index=0 TO AESTYPES.INTOUT_WORDS-1 DO
+    request.intout(index)=0
+  OD
+
+  IF request.version<>AESTYPES.VERSION
+      OR request.bytes<>AESTYPES.REQUEST_SIZE THEN
+    Reply(request,AESTYPES.MALFORMED)
+    RETURN
+  FI
+
+  Reply(request,AESTYPES.UNSUPPORTED)
+
+RETURN
+
+; Budget counts every dequeued descriptor, including later pending calls.
+PUBLIC BYTE FUNC Pump(AESSTATE.Service POINTER service BYTE budget)
+  BYTE count
+  AESTYPES.Request POINTER request
+
+  count=0
+  WHILE count<budget AND count<4 DO
+    request=AESTYPES.Request POINTER(EXEC.GetMsg(@service.port))
+    IF request=NULL THEN
+      EXIT
+    FI
+
+    count==+1
+    Dispatch(request)
+  OD
+
+RETURN(count)
+
+PUBLIC BYTE FUNC Runnable(AESSTATE.Service POINTER service)
+
+RETURN(EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0)
+
+PUBLIC BYTE FUNC Idle(AESSTATE.Service POINTER service)
+
+RETURN(Runnable(service)=0)
+
+PUBLIC BYTE FUNC Stop(AESSTATE.Service POINTER service)
+
+  IF Idle(service)=0 THEN
+    RETURN(0)
+  FI
+
+  service.live=0
+
+RETURN(1)
+
+ENDMODULE

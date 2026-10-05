@@ -73,7 +73,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     return foreign
 
 
-def prepare(source,out,foreign,desktop=False):
+def prepare(source,out,foreign,desktop=False,aes=False):
     text=read_source(source);sy=foreign['symbols']
     require(len(re.findall(r'(?m)^PROC Main\(\)',text))==1,'Expected one ordinary Main entry')
     text=text.replace('PROC Main()','PROC BitmapApplication(BYTE unused)')
@@ -118,20 +118,39 @@ RETURN
         binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN\n    HEAPCORE.Abort($f731)', '  IF CONSOLEDRIVER.Start()=0 THEN\n    DESKBOOT.Disable()\n    HEAPCORE.Abort($f731)')
         binding=binding.replace('  BitmapApplication(0)', '  IF DESKBOOT.Attach()=0 THEN\n    IF CONSOLEDRIVER.Stop()=0 THEN\n      HEAPCORE.Abort($f732)\n    FI\n\n    DESKBOOT.Disable()\n    HEAPCORE.Abort($fae7)\n  FI\n\n  BitmapApplication(0)\n  IF DESKBOOT.StopAdmission()=0 THEN\n    HEAPCORE.Abort($faea)\n  FI\n\n  DESKBOOT.Detach()')
         binding=binding.removesuffix('RETURN\n')+'  DESKBOOT.Disable()\n\nRETURN\n'
+    if aes:
+        require(desktop, 'AES requires the existing desktop presenter')
+        text=text.replace('USE EXEC\n', 'USE EXEC\nUSE AESBOOT\n', 1)
+        # Optional AES failure leaves the native desktop usable. Applications
+        # test the retained endpoint after the presenter's readiness reply.
+        binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN',
+            '  BEGIN\n    LET enabled=AESBOOT.Enable()\n  END\n\n  IF CONSOLEDRIVER.Start()=0 THEN',1)
+        binding=binding.replace('    DESKBOOT.Disable()', '    AESBOOT.Disable()\n    DESKBOOT.Disable()')
+        binding=binding.replace('  IF DESKBOOT.StopAdmission()=0 THEN',
+            '  BEGIN\n    LET stopped=AESBOOT.StopAdmission()\n  END\n\n  IF DESKBOOT.StopAdmission()=0 THEN')
+        binding=binding.replace('  DESKBOOT.Disable()\n\nRETURN',
+            '  AESBOOT.Disable()\n  DESKBOOT.Disable()\n\nRETURN')
     text=text.replace('ENDMODULE',binding+'\nENDMODULE')
     path=out/'launcher.act';path.write_text(text);return path
 
 
-def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,desktop=False,**kwargs):
+def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,desktop=False,aes=False,
+                 client_sources=(),client_entries=(),client_roots=(),client_probes=(),**kwargs):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
+    if aes:
+        from generate_aes_server import files as aes_files
+        for path,content in aes_files().items():
+            require(path.read_text()==content,'Stale AES protocol: '+str(path))
     if desktop and 'memory_profile' not in kwargs:
         from generate_memory import PROFILE
         profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
         memory=out/'fixture-memory.json'
         memory.write_text(json.dumps(profile,indent=2)+'\n')
         kwargs['memory_profile']=memory
-    foreign=drawing(out,optimize,probe,fault,widgets=desktop)
-    launcher=prepare(Path(source),out,foreign,desktop)
+    foreign=drawing(out,optimize,probe,fault,widgets=desktop,
+        client_sources=client_sources,client_entries=client_entries,
+        client_roots=client_roots,client_probes=client_probes)
+    launcher=prepare(Path(source),out,foreign,desktop,aes)
     program=build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,
                  task_capacity=8,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
     if desktop:

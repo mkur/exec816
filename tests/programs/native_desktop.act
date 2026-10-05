@@ -76,7 +76,8 @@ PROC Presenter()
       held=0
     FI
 
-    count=DESKCORE.Pump(service)
+    count=DESKCORE.Pump(service,4)
+    DESKCORE.Wake(service)
     IF inject<>0 THEN
       A816MEMORY.Clear(BYTE POINTER(@input),DESKTYPES.EVENT_SIZE)
       input.kind=CARD(injectKind)

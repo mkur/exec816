@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Design note](aes-server-design.md) ·
 [Desktop contract](../../reference/desktop.md) · [Roadmap](../../roadmap.md)
 
-Status: in progress, 2026-10-06. AS0a has passed development checks; AS0b–AS4
+Status: in progress, 2026-10-06. AS0a/AS0b have passed development checks; AS0c–AS4
 remain pending. Implementation starts from Exec816
 `ab6eb2dec33412fd383b4970cbd23c05e9011e20`, using the
 GEM4XE source revision and provenance recorded in the design and
@@ -15,7 +15,9 @@ The [AS0a record](../../development/aes-server-as0a.json) covers the generated
 132-byte request, private C contexts, raw/optimized probes with an active native
 presenter, and matched baseline observations. The
 [binding inventory](../../../ports/gem4xe/aes-binding-inputs.json) pins donor
-signatures and parameter counts. No AES endpoint or GEM calls are published yet.
+signatures and parameter counts. [AS0b](../../development/aes-server-as0b.json)
+adds the optional endpoint in the existing presenter, shared four-request
+admission, rollback and idle/wait integration. GEM calls remain pending in AS0c.
 Fixed and per-Task bank-zero reservation deltas are zero. Baseline widget latency
 targets remain open; an unchanged heavy-scroll pointer observation also timed
 out, while the dedicated widget scroll/disk cohorts passed. These observations
@@ -58,7 +60,7 @@ remains a retained-widget application; it is not an AES compatibility oracle.
 | Slice | Executable result | Dependency |
 | --- | --- | --- |
 | AS0a — passed | Generated protocol and emitted C/Action! layout/context probes; matched presenter baseline | Existing desktop and C bridges |
-| AS0b | Presenter service admission, shared intake budget, retained discovery handle and rollback | AS0a |
+| AS0b — passed | Presenter service admission, shared intake budget, retained discovery handle and rollback | AS0a |
 | AS0c | Real C `appl_init`/`appl_exit`, private binding state, re-registration and source-level call profile | AS0b |
 | AS1 | Two C clients exchange messages and block independently in message waits | AS0c |
 | AS2a | One real timer open, shared alarm lifecycle and presenter wake integration | AS1, implemented timer.device |

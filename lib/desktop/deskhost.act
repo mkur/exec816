@@ -15,6 +15,9 @@ USE HEAPCORE
 USE DESKINPUT
 USE CONSOLECAPTURE
 USE CONSOLEWINDOWS
+USE AESHOST
+
+BYTE firstPort
 
 PUBLIC BYTE FUNC Start()
   BYTE bit,stopped
@@ -45,6 +48,8 @@ PUBLIC BYTE FUNC Start()
     RETURN(0)
   FI
 
+  AESHOST.Start()
+
 RETURN(1)
 
 PUBLIC LONGCARD FUNC Mask()
@@ -54,7 +59,7 @@ PUBLIC LONGCARD FUNC Mask()
     RETURN(0)
   FI
 
-RETURN(service.mask OR DESKINPUT.Mask())
+RETURN(service.mask OR DESKINPUT.Mask() OR AESHOST.Mask())
 
 PUBLIC BYTE FUNC Ready()
 
@@ -64,6 +69,10 @@ RETURN(service=NULL OR service.scene.busy=0)
 
 PUBLIC BYTE FUNC Idle()
   BYTE index
+
+  IF AESHOST.Idle()=0 THEN
+    RETURN(0)
+  FI
 
   LET service=DESKSTATE.Get()
   IF service=NULL THEN
@@ -83,13 +92,39 @@ PUBLIC BYTE FUNC Idle()
 RETURN(1)
 
 PUBLIC PROC Controls()
-  BYTE count
+  BYTE count,admitted,selected
 
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
     DESKCACHE.Pump(service)
     DESKMOVE.Pump()
-    count=DESKCORE.Pump(service)
+    ; Four admissions total. Alternate the first endpoint between turns and
+    ; alternate within a turn; an empty endpoint yields its unused capacity.
+    selected=firstPort
+    firstPort=firstPort XOR 1
+    count=0
+    WHILE count<4 DO
+      IF selected=0 THEN
+        admitted=DESKCORE.Pump(service,1)
+        IF admitted=0 THEN
+          admitted=AESHOST.Pump(1)
+        FI
+      ELSE
+        admitted=AESHOST.Pump(1)
+        IF admitted=0 THEN
+          admitted=DESKCORE.Pump(service,1)
+        FI
+      FI
+
+      IF admitted=0 THEN
+        EXIT
+      FI
+
+      count==+admitted
+      selected=selected XOR 1
+    OD
+
+    DESKCORE.Wake(service)
     DESKPAINT.Sync()
   FI
 
@@ -97,7 +132,14 @@ RETURN
 
 PUBLIC BYTE FUNC Runnable()
 
-RETURN(DESKPAINT.Runnable() OR DESKINPUT.Runnable())
+  LET service=DESKSTATE.Get()
+  IF service<>NULL AND service.live<>0 THEN
+    IF DESKCORE.Runnable(service)<>0 THEN
+      RETURN(1)
+    FI
+  FI
+
+RETURN(AESHOST.Runnable() OR DESKPAINT.Runnable() OR DESKINPUT.Runnable())
 
 ; Called only after input, controls, model writes and painting have no work.
 ; One attempt per eligible revision prevents eviction/capture feedback loops.
@@ -149,6 +191,7 @@ RETURN
 
 PUBLIC PROC Stop()
 
+  AESHOST.Stop()
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
     DESKINPUT.Stop()

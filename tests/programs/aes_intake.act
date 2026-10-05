@@ -1,0 +1,180 @@
+MODULE AESINTAKE
+USE EXEC
+USE EXECLISTS
+USE A816MEMORY
+USE AESTYPES
+USE AESSTATE
+USE AESBOOT
+USE AESHOST
+USE AESINTAKEPROBE
+USE DESKSTATE
+USE DESKTYPES
+USE DESKPAINT
+USE HEAPCORE
+
+CONST REQUESTS=12
+; The runner replaces this in failure-injection builds only.
+CONST FAILURE=0
+CARD checks
+AESTYPES.Request ARRAY aes(REQUESTS)
+DESKTYPES.Request ARRAY native(REQUESTS)
+EXEC.MsgPort POINTER replies
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fcb0+(checks & 63))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Prepare(CARD index)
+
+  A816MEMORY.Clear(BYTE POINTER(@aes(index)),AESTYPES.REQUEST_SIZE)
+  aes(index).message.mn_Length=AESTYPES.REQUEST_SIZE
+  aes(index).message.mn_ReplyPort=replies
+  aes(index).version=AESTYPES.VERSION
+  aes(index).bytes=AESTYPES.REQUEST_SIZE
+  aes(index).owner=EXEC.FindTask(NULL)
+  aes(index).binding=BYTE POINTER(@aes(index))
+  aes(index).status=AESTYPES.PENDING
+  A816MEMORY.Clear(BYTE POINTER(@native(index)),DESKTYPES.REQUEST_SIZE)
+  native(index).operation=DESKTYPES.NEXT_EVENT
+  native(index).message.mn_Length=DESKTYPES.REQUEST_SIZE
+  native(index).message.mn_ReplyPort=replies
+
+RETURN
+
+EXEC.Message POINTER FUNC Collect()
+  EXEC.Message POINTER message
+
+  message=EXEC.GetMsg(replies)
+  WHILE message=NULL DO
+    message=EXEC.WaitPort(replies)
+    message=EXEC.GetMsg(replies)
+  OD
+
+RETURN(message)
+
+PROC Main()
+  CARD index,received
+  LONGCARD bits
+  BYTE bit
+
+  LET desktop=DESKSTATE.Get()
+  Require(desktop<>NULL AND desktop.live=1)
+  replies=EXEC.CreateMsgPort()
+  Require(replies<>NULL)
+  Prepare(0)
+  EXEC.PutMsg(@desktop.port,@native(0).message)
+  Require(Collect()=@native(0).message)
+  Require(native(0).status=DESKTYPES.BAD_ARGUMENT)
+  IF FAILURE<>0 THEN
+    BEGIN
+      LET service=AESSTATE.Get()
+      Require(AESBOOT.Port()=NULL AND AESHOST.Mask()=0)
+      IF FAILURE=1 THEN
+        Require(service=NULL)
+      ELSE
+        Require(service<>NULL AND service.live=0
+            AND service.error=AESTYPES.RESOURCE)
+      FI
+    END
+
+    EXEC.DeleteMsgPort(replies)
+    RETURN
+  FI
+
+  LET service=AESSTATE.Get()
+  Require(AESBOOT.Port()=@service.port)
+  Require(service.owner=desktop.owner AND service.owner<>EXEC.FindTask(NULL))
+  Require(service.port.mp_SigTask=service.owner AND service.mask<>0)
+  WHILE desktop.scene.busy<>0 OR DESKPAINT.Runnable()<>0 DO
+    EXEC.Yield()
+  OD
+
+  FOR index=0 TO REQUESTS-1 DO
+    Prepare(index)
+  OD
+
+  WHILE service.owner.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+
+  EXEC.Forbid()
+  AESINTAKEPROBE.enabled=1
+  FOR index=0 TO REQUESTS-1 DO
+    EXEC.PutMsg(@desktop.port,@native(index).message)
+    EXEC.PutMsg(@service.port,@aes(index).message)
+  OD
+
+  Require(AESHOST.Idle()=0)
+  EXEC.Permit()
+  received=0
+  WHILE received<REQUESTS*2 DO
+    BEGIN
+      LET message=Collect()
+      Require(message<>NULL)
+      received==+1
+    END
+  OD
+
+  WHILE AESINTAKEPROBE.count<REQUESTS*2
+      OR AESINTAKEPROBE.completed<AESINTAKEPROBE.turns(REQUESTS*2-1) DO
+    EXEC.Yield()
+  OD
+
+  AESINTAKEPROBE.enabled=0
+  Require(AESINTAKEPROBE.count=REQUESTS*2)
+  Require(AESINTAKEPROBE.maximum=4)
+  FOR index=0 TO REQUESTS-1 DO
+    Require(aes(index).status=AESTYPES.UNSUPPORTED)
+    Require(native(index).status=DESKTYPES.BAD_ARGUMENT)
+  OD
+
+  ; Both queues remain nonempty for six full turns: two admissions per port,
+  ; and the first port changes each turn. No fresh external signal is needed.
+  FOR index=0 TO REQUESTS*2-1 DO
+    Require(AESINTAKEPROBE.turns(index)=BYTE(index/4+1))
+    IF (index MOD 4)<>0 THEN
+      Require(AESINTAKEPROBE.ports(index)
+          =(AESINTAKEPROBE.ports(index-1) XOR 1))
+    ELSEIF index<>0 THEN
+      Require(AESINTAKEPROBE.ports(index)
+          =(AESINTAKEPROBE.ports(index-4) XOR 1))
+    FI
+  OD
+
+  Require(EXEC.GetMsg(replies)=NULL AND AESHOST.Idle()<>0)
+  bit=EXEC.AllocSignal(-1)
+  Require(bit<>$ff)
+  AESINTAKEPROBE.parent=EXEC.FindTask(NULL)
+  AESINTAKEPROBE.mask=LONGCARD(1) LSH bit
+  AESINTAKEPROBE.arm=1
+  EXEC.Signal(service.owner,service.mask)
+  bits=EXEC.Wait(AESINTAKEPROBE.mask)
+  Require(AESINTAKEPROBE.arm=0)
+  Prepare(0)
+  EXEC.PutMsg(@service.port,@aes(0).message)
+  Require(Collect()=@aes(0).message)
+  Require(aes(0).status=AESTYPES.UNSUPPORTED)
+  EXEC.FreeSignal(bit)
+
+  Prepare(0)
+  aes(0).version=0
+  EXEC.PutMsg(@service.port,@aes(0).message)
+  Require(Collect()=@aes(0).message AND aes(0).status=AESTYPES.MALFORMED)
+  Prepare(0)
+  aes(0).message.mn_Length=EXEC.MESSAGE_SIZE
+  aes(0).intout(0)=$1234
+  EXEC.PutMsg(@service.port,@aes(0).message)
+  Require(Collect()=@aes(0).message)
+  Require(aes(0).status=AESTYPES.PENDING AND aes(0).intout(0)=$1234)
+  Require(AESBOOT.StopAdmission()<>0 AND AESBOOT.Port()=NULL)
+  Require(EXEC.GetMsg(replies)=NULL AND AESHOST.Idle()<>0)
+  EXEC.DeleteMsgPort(replies)
+
+RETURN
+ENDMODULE

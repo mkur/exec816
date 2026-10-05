@@ -474,13 +474,13 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
 RETURN(IF status=LAYERTYPES.OK THEN DESKTYPES.OK ELSE DESKTYPES.BAD_ARGUMENT FI)
 
 ; Controls blocked by an active paint do not prevent cancellation/event intake.
-PUBLIC BYTE FUNC Pump(DESKTYPES.Service POINTER service)
+PUBLIC BYTE FUNC Pump(DESKTYPES.Service POINTER service BYTE budget)
   DESKTYPES.Request POINTER request
   CARD status
-  BYTE count,index
+  BYTE count
 
   count=0
-  WHILE count<4 DO
+  WHILE count<budget AND count<4 DO
     request=NULL
     IF service.scene.busy=0 THEN
       request=DESKTYPES.Request POINTER(EXECLISTS.RemHead(@service.deferred))
@@ -507,13 +507,19 @@ PUBLIC BYTE FUNC Pump(DESKTYPES.Service POINTER service)
     count==+1
   OD
 
+RETURN(count)
+
+; Pending events are revisited once per host turn, outside intake accounting.
+PUBLIC PROC Wake(DESKTYPES.Service POINTER service)
+  BYTE index
+
   FOR index=0 TO DESKTYPES.CLIENTS-1 DO
     IF service.clients(index).id<>0 THEN
       DESKEVENTS.Wake(service,@service.clients(index))
     FI
   OD
 
-RETURN(count)
+RETURN
 
 PUBLIC BYTE FUNC Runnable(DESKTYPES.Service POINTER service)
 
