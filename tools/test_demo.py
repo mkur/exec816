@@ -20,10 +20,12 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
+    require(not disk_boot or bootstrap is None,'Disk Boot requires the XEX bootstrap')
+    require(not disk_boot or system_drive!=1,'Disk Boot reserves D1; select SYS on D2-D7')
     distribution_root=Path(distribution_root) if distribution_root is not None else None
     manifest=json.loads((out/'demo-manifest.json').read_text())
     require(all(sha256(out/name)==digest for name,digest in manifest['artifacts'].items()),'Changed demo bundle')
@@ -40,7 +42,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     shell_cells=width*(height if shell_only else height-6)
     screenshots=[];commands=[]
     boot_image=None
-    if bootstrap is None and (showcase or editing or ((boot_smoke or disk_failure) and (shell_only or distribution_root is not None))):
+    if bootstrap is None and (disk_boot or showcase or editing or ((boot_smoke or disk_failure) and (shell_only or distribution_root is not None))):
         boot_image=distribution_root/'Exec-of816.xex' if distribution_root is not None else out/manifest['boot_image']
         boot=json.loads((out/manifest['boot_manifest']).read_text())
         require(sha256(boot_image)==boot['xex_sha256'] and
@@ -52,6 +54,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             bridge.boot(str(boot_image))
             bridge.bp_set(boot['labels']['of_start'])
             run_to(bridge,boot['labels']['of_start'],3000,90)
+            if system_drive!=boot['boot_config']['system_drive']:
+                config=boot['boot_config']
+                bridge.memload(config['address']+config['abi']['fields']['system_drive'],bytes([system_drive]))
             bridge.bp_clear_all()
             bridge._cmd_ok('KEY ALL up')
             bridge.bp_set(boot['labels']['of_autoboot'])
@@ -76,11 +81,16 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     binary=ROOT/('build/mouse-bridge/AltirraBridgeServer' if bitmap else 'build/shell-paced-bridge/AltirraBridgeServer');rom=ROOT/'build/firmware/altirraos-816.rom'
     if distribution_root is not None:
         rom=distribution_root/'altirraos-816.rom'
+    if rom_override is not None:
+        rom=Path(rom_override).resolve()
+        require(len(rom.read_bytes())==pin['rom']['bytes'],'Diagnostic ROM size differs from platform ROM')
     emulator_hash=pin['mouse_input']['tooling']['sha256'] if bitmap else pin['emulator']['sha256']
-    require(sha256(binary)==emulator_hash and sha256(rom)==pin['rom']['sha256'],'Unpinned demo machine')
+    require(sha256(binary)==emulator_hash,'Unpinned demo emulator')
+    require(rom_override is not None or sha256(rom)==pin['rom']['sha256'],'Unpinned demo ROM')
     def at(name):return next(d['address'] for d in p['image']['data'] if ('_SHELLAPP_' if shell_only else '_DEMO_')+name.upper()+'_' in d['name'])
     with emulator(binary.parent,rom,out,pin=pin) as b:
         for key,value in manifest['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
+        if disk_boot:b.config('exeloadmode','diskboot')
         if stock_smoke:b.config('diskemu','810')
         if desktop:b._cmd_ok('MOUSE ST')
         saved['pointer']=(320,120)
@@ -754,8 +764,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     return dict(status='pass',tier='development',bundle_manifest_sha256=sha256(out/'demo-manifest.json'),
         xex_sha256=sha256(out/'program.xex'),media_sha256=sha256(media_path),screenshot_sha256=sha256(out/'boot-smoke.png') if boot_smoke else None if stock_smoke or loading_smoke or cache_smoke else sha256(out/'walkthrough.png'),
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
+        rom=dict(path=str(rom),sha256=sha256(rom),pinned_sha256=pin['rom']['sha256'],override=rom_override is not None),
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
         autoboot_frames=saved.get('autoboot_frames'),distribution_root=str(distribution_root) if distribution_root else None,
+        disk_boot=disk_boot,
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
         measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),
@@ -773,6 +785,9 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle',type=Path,default=ROOT/'build/demo')
     parser.add_argument('--distribution-root',type=Path,help='Use boot image, ROM and disks extracted from the distribution ZIP')
+    parser.add_argument('--rom-override',type=Path,help='Explicit diagnostic firmware override; does not qualify a platform')
+    parser.add_argument('--disk-boot',action='store_true',help='Use Altirra Disk Boot for the XEX (requires SYS on D2-D7)')
+    parser.add_argument('--system-drive',type=int,choices=range(1,8),default=1,help='SYS companion drive (default D1)')
     smoke=parser.add_mutually_exclusive_group()
     smoke.add_argument('--stock-smoke',action='store_true')
     smoke.add_argument('--boot-smoke',action='store_true',help='Check shell, disk commands and EXIT; shell-only builds use OF816 autoboot')
@@ -780,6 +795,6 @@ if __name__=='__main__':
     smoke.add_argument('--editing',action='store_true',help='OF816 boot, physical editing/history, inherited CON, BREAK and EOF')
     smoke.add_argument('--disk-failure',choices=('missing','missing-work','wrong'),help='Check offline console and matching-disk recovery')
     smoke.add_argument('--screenshots',action='store_true',help='Capture boot/TASKS and the documented walkthrough through OF816 autoboot')
-    args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,boot_smoke=args.boot_smoke,showcase=args.screenshots,editing=args.editing,disk_failure=args.disk_failure,distribution_root=args.distribution_root)
+    args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,boot_smoke=args.boot_smoke,showcase=args.screenshots,editing=args.editing,disk_failure=args.disk_failure,distribution_root=args.distribution_root,rom_override=args.rom_override,disk_boot=args.disk_boot,system_drive=args.system_drive)
     (out/(args.disk_failure+'-disk-results.json' if args.disk_failure else 'editing-results.json' if args.editing else 'screenshots-results.json' if args.screenshots else 'stock810-results.json' if args.stock_smoke else 'loading-results.json' if args.loading_smoke else 'demo-results.json')).write_text(json.dumps(record,indent=2)+'\n')
     print('Packaged demo walkthrough passed')

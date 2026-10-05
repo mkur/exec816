@@ -12,6 +12,7 @@
 RUNAD = $02e0
 INITAD = $02e2
 GINTLK = $03fa
+TRIG3 = $d013
 NMIEN = $d40e
 
 .segment "STUB"
@@ -134,7 +135,7 @@ call_init:
 
 disable_cart:
     sta $d580                    ; writes work on hardware and the pinned emulator
-    lda #1
+    lda TRIG3                    ; OS interlock must match the disabled cartridge
     sta GINTLK
     lda #$40
     sta NMIEN

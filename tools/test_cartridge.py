@@ -10,7 +10,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run(cartridge_build, demo_build, exec_source, output, variant, manual):
+def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_override=None):
     # Published images use the tools from their release revision, including
     # historical stack placements. Do not reinterpret them with today's ABI.
     sys.path.insert(0, str(exec_source/'tools'))
@@ -48,7 +48,7 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual):
         require(b.peek16(cart['labels']['cart_segments']) == cart['segments'], 'Lost XEX segment')
         require(b.peek16(cart['labels']['cart_calls']) == cart['init_callbacks'], 'Lost INITAD call')
         require(b.memdump(cart['labels']['cart_remaining'],3) == bytes(3), 'Unread XEX bytes')
-        require(b.peek(0x3fa) == b'\x01', 'Cartridge interlock not restored')
+        require(b.peek(0x3fa) == b.peek(0xd013), 'Cartridge interlock differs from TRIG3')
         # Writes at the former ROM window must now reach RAM.
         saved_window = b.memdump(0xa000,16)
         probe = bytes((i*29+7)&255 for i in range(16))
@@ -94,7 +94,8 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual):
     try:
         case['shell'] = test_demo.run(case_build, showcase=not shell_only,
                                      boot_smoke=shell_only, bootstrap=bootstrap,
-                                     media_path=demo_build/'of816'/boot['media']['name'])
+                                     media_path=demo_build/'of816'/boot['media']['name'],
+                                     rom_override=rom_override)
         case['status'] = 'pass'
     except Exception as error:
         case.update(status='fail',error=str(error))
@@ -112,7 +113,8 @@ if __name__ == '__main__':
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--variant',choices=('old','new'),required=True)
     parser.add_argument('--manual',action='store_true')
+    parser.add_argument('--rom-override',type=Path,help='Explicit diagnostic firmware override; does not qualify a platform')
     args = parser.parse_args()
     run(args.cartridge_build.resolve(),args.demo_build.resolve(),args.exec_source.resolve(),
-        args.output.resolve(),args.variant,args.manual)
+        args.output.resolve(),args.variant,args.manual,args.rom_override)
     print('Cartridge boot, OF816, disk commands, guards and EXIT passed:',args.variant,flush=True)

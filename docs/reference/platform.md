@@ -8,6 +8,10 @@ adapter controls OS entry, hardware ownership and context transitions. Compiler
 semantics and ABI primitives belong to actionc; emulator correctness belongs to
 actionc-vm. Platform tests must qualify the hosted combination.
 
+Other ROMs remain outside this platform contract. The
+[firmware diagnostics](../contributing/building.md#firmware-diagnostics) record
+bounded XLOS boot checks and their setup without extending platform qualification.
+
 ## Compiler and memory contract
 
 Use the revision and generated ABI selected by [actionc.json](../../toolchain/actionc.json):

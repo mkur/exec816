@@ -96,6 +96,39 @@ It selects the bitmap/desktop boot smoke or the standard shell/prime walkthrough
 from the matching demo manifest. Upper-RAM reads use the debugger without
 borrowing the cartridge-era OS screen or loader workspace.
 
+## Firmware diagnostics
+
+The supported ROM remains the bundled AltirraOS 65816 build. For a diagnostic
+run with another locally installed 16 KiB ROM, add `--rom-override path/to/ROM`
+to `test_cartridge.py` or `test_demo.py`. Results record the actual ROM hash and
+the override separately from the platform pin; the emulator and machine checks
+remain in place. Passing development checks does not qualify another firmware.
+
+The [XLOS boot record](../development/xlos-boot.json) uses Drac's XLOS 2.48
+`XLOS816A.ROM` and `XLOS816F.ROM` from the December 2025 archive. The cartridge
+loader now copies TRIG3 into GINTLK when disabling the cartridge, before enabling
+interrupts. A constant `1` incorrectly advertised that the cartridge remained
+present and triggered XLOS's cartridge-removal halt during INITAD callbacks.
+The loader grows by one byte inside its existing 1 KiB boot reservation; fixed,
+public-Task and idle runtime bank-zero reservation changes are all **0 bytes**.
+
+Altirra's default XEX loader fails before Exec's INITAD under XLOS, including
+for a minimal executable with no Exec code. The checked XEX route uses **Computer
+→ Boot → Program load mode: Disk Boot**, with D1 set to **Off**, SYS media already
+on D2 and writable WORK media on D8. Cancel the OF816 countdown and enter
+`decimal`, `2 SYSTEM-DRIVE!`, then `EXEC816`. Keep the disk and CPU settings from
+the demo guide. Attaching SYS on D1 after loading did not pass filesystem startup;
+use D2 for this route. The equivalent automated check is:
+
+```sh
+python3 tools/test_demo.py --bundle build/demo-bitmap-shell --boot-smoke \
+  --rom-override path/to/XLOS816A.ROM --disk-boot --system-drive 2
+```
+
+Cartridges can keep SYS on D1 from cold start and use the normal countdown.
+These are bounded development checks of boot, shell, disk commands and cleanup;
+physical hardware and the rest of XLOS's services are outside their scope.
+
 ## Build an individual program
 
 For a resident Task example with console support:

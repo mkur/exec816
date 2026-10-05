@@ -38,6 +38,33 @@ does not reload the cartridge; power cycle or perform an emulator cold reset.
 The original XEX, disk, ROM and original boot guide remain in this ZIP.
 SHA256SUMS in its parent directory covers all files.
 
+Experimental XLOS boot
+----------------------
+
+Development checks also exercised Drac's XLOS 2.48 (December 2025), using the
+same CPU, memory, VBXE and disk settings. The bundled AltirraOS remains the
+supported ROM; these checks do not qualify all XLOS services or physical hardware.
+The cartridge interlock now follows the hardware value when the loader switches
+the cartridge off, avoiding XLOS's cartridge-removal halt. With these updated
+CAR images, keep SYS on D1 and WORK on D8 and use the normal countdown.
+
+For the XEX under XLOS, Altirra's default program loader fails before Exec starts.
+Use this checked alternative in AltirraSDL:
+
+1. Computer -> Boot -> Program load mode: Disk Boot.
+2. Disk Drives: set D1 to Off, mount system.atr read-only on D2, and mount a
+   disposable writable copy of work.atr on D8. Use Generic + 57600 baud.
+3. Boot Exec-of816.xex and press a key during the countdown to enter Forth.
+4. Enter these three lines:
+
+   decimal
+   2 SYSTEM-DRIVE!
+   EXEC816
+
+Startup should report SYS: -> D2: ready, read-only. Keep both disks mounted.
+Use D2 for this route; attaching SYS on D1 after XEX loading failed disk startup
+in the development checks. The XEX payload itself is unchanged.
+
 References
 ----------
 

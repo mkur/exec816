@@ -81,6 +81,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Platform and boot
 
+- [XLOS boot diagnostics](../development/xlos-boot.json): cartridge interlock
+  correction, the XEX Disk Boot route through D2 and bounded firmware checks.
 - [Bank manager](bank-manager.md)
 - [Banked loading and memory ownership](banked-loading.md)
 - [Native interrupt masking in the pinned emulator](emulator-native-irq-fix.md)
