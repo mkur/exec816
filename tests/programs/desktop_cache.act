@@ -1,0 +1,154 @@
+MODULE CACHEPOLICY
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE HEAPCORE
+USE CONSOLEBITMAP
+USE CONSOLEDRIVER
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE DESKTOP
+USE DESKTYPES
+USE DESKBOOT
+USE DESKSTATE
+USE DESKPAINT
+USE REGIONS
+
+CARD checks,checkpoint,gate
+LONGCARD first,second,third,reopened
+DESKTYPES.Request request
+DESKTYPES.Content content
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb20+(checks & 127))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Pause(CARD value)
+  CARD ignored
+
+  LET instance=CONSOLEDRIVER.GetInstance()
+  LET service=DESKSTATE.Get()
+  LET entry=CONSOLEWINDOWS.Find(0)
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  WHILE instance.dirtyRows<>0 OR service.scene.busy<>0
+      OR DESKPAINT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0
+      OR (view.focused<>0 AND view.cursorOn=0) DO
+    EXEC.Yield()
+  OD
+
+  ; Give the normal idle worker a chance to capture an eligible revision.
+  ignored=EXECTASKS.Sleep(2)
+  checkpoint=value
+  WHILE gate<value DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Send(BYTE operation LONGCARD id)
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  LET client=DESKBOOT.Binding()
+  request.operation=operation
+  request.window=id
+  Require(DESKTOP.Submit(client,@request)=DESKTYPES.OK)
+  reply=DESKTOP.Collect(client)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(client)
+  OD
+
+  Require(reply=@request AND request.status=DESKTYPES.OK)
+
+RETURN
+
+PROC Replace(LONGCARD id BYTE pen)
+
+  content.background=pen
+  content.count=1
+  content.textBytes=3
+  content.text(0)='X
+  content.text(1)='Y
+  content.text(2)='Z
+  content.commands(0).kind=DESKTYPES.DRAW_TEXT
+  content.commands(0).pen=1
+  content.commands(0).count=3
+  REGIONS.Assign(@content.commands(0).bounds,3,3,27,11)
+  DESKTOP.Prepare(@request,DESKTYPES.REPLACE)
+  request.payload=BYTE POINTER(@content)
+  request.bytes=DESKTYPES.CONTENT_SIZE
+  Send(DESKTYPES.REPLACE,id)
+
+RETURN
+
+LONGCARD FUNC Open(INT left BYTE pen)
+  LONGCARD id
+
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_COMMANDS
+  request.payload=BYTE POINTER(c"Cache")
+  request.bytes=5
+  REGIONS.Assign(@request.bounds,left,0,left+160,80)
+  Send(DESKTYPES.OPEN,0)
+  id=request.window
+  Replace(id,pen)
+  Send(DESKTYPES.SHOW,id)
+
+RETURN(id)
+
+PROC Move(LONGCARD id INT left)
+
+  DESKTOP.Prepare(@request,DESKTYPES.MOVE)
+  request.bounds.left=left
+  request.bounds.top=0
+  Send(DESKTYPES.MOVE,id)
+
+RETURN
+
+PROC Main()
+  DOS.FileHandle POINTER file
+
+  file=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Require(file<>NULL AND DOS.Write(file,BYTE POINTER(c"ABC"),3)=3)
+  first=Open(0,3)
+  Pause(1)
+  second=Open(192,4)
+  Pause(2)
+  third=Open(384,5)
+  Pause(3)
+  Send(DESKTYPES.FOCUS,second)
+  Pause(4)
+  Move(third,192)
+  Pause(5)
+  Move(third,384)
+  Pause(6)
+  Move(third,273)
+  Pause(7)
+  Send(DESKTYPES.HIDE,third)
+  Pause(8)
+  Move(third,192)
+  Send(DESKTYPES.SHOW,third)
+  Replace(second,6)
+  Pause(9)
+  Send(DESKTYPES.CLOSE,third)
+  Pause(10)
+  Send(DESKTYPES.CLOSE,second)
+  reopened=Open(192,7)
+  Require(reopened<>second AND reopened<>third)
+  Pause(11)
+  Send(DESKTYPES.CLOSE,first)
+  Send(DESKTYPES.CLOSE,reopened)
+  Send(DESKTYPES.FOCUS,DESKBOOT.WindowId())
+  Pause(12)
+  Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

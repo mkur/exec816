@@ -201,6 +201,23 @@ checks pass. A visible nonconsole client cannot contain the Layers-clipped shell
 caret, so capture no longer erases an unrelated caret; pointer/outline exclusion
 remains in the drawing bridge. Diagnostic hit counters exist only in fixtures.
 
+The [supplemental command-cache check](../development/desktop-rendering-cache-policy.json)
+compares twelve complete scenes with cache hits and with forced misses. Three
+clean clients exercise two-slot eviction; frame-only focus preserves a valid
+snapshot without recapture. Aligned exposure restores it, odd exposure falls
+back, hidden replacement rejects it, and closing/reopening window storage uses
+a fresh identity. Both independent-client retirement orders also pass, with
+keyboard routing and console output behind the app. All thirty-six scenes,
+including twelve with the test counters disabled, match the independent oracle,
+with no settled pins or stack-floor breach.
+
+These simple one-text-command clients do not demonstrate a general speedup.
+Aligned exposure takes the same settled-frame count in both runs; an odd-to-even
+move using cached restoration costs one extra PAL frame (20.06 ms). These are
+single samples including request handling, all repair and two settling frames,
+not percentile evidence. The bounded cache policy does not establish latency
+acceptance for every eligible client.
+
 The larger composed demo exposed native code growing into fixed C banks
 `$0C/$0D`. The build now places the native linker's contiguous code above all
 foreign banks (`$0E0000` for this image), recording the effective origin and
