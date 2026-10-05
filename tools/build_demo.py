@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the text-console demo with OF816 boot, system disk and pinned AltirraOS ROM."""
+"""Build a demo with OF816 boot, system disk and pinned AltirraOS ROM."""
 from stack_budget import bank_zero_delta
 import argparse
 import hashlib
@@ -70,21 +70,22 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     # shadow library modules (examples/console.act is a standalone application).
     entry=ROOT/('examples/shell/shell.act' if bitmap_shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
+    # Shell globals and shared fault strings exceed the default 2 KiB arena.
+    # Reserve 4 KiB in upper RAM for either composed application; fixed
+    # bank-zero and per-Task reservations remain unchanged.
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES
+    memory_profile=output/'demo-memory.json'
+    memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     if bitmap_shell_only:
         from build_bitmap_console import build_bitmap
         from build_bitmap_artifact import copy_notices
         program=build_bitmap(source,output/'bitmap-console',program_output=output,
-            compiler_dir=compiler_dir,stack_checks=True,dos_mounts=mounts,system_mount=mount_config.get('system_mount'))
+            compiler_dir=compiler_dir,stack_checks=True,dos_mounts=mounts,
+            system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
         copy_notices(output/'bitmap-console/selected',output)
         pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
     else:
-        # The shell/prime globals and shared fault strings exceed the default
-        # 2 KiB arena. Reserve 4 KiB in upper RAM for this composed application;
-        # fixed bank-zero and per-Task reservations remain unchanged.
-        profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
-        profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES
-        memory_profile=output/'demo-memory.json'
-        memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
         program=build(toolchain,source,output,optimize=True,tasks=True,
                       task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)

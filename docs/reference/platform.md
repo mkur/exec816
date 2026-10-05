@@ -91,8 +91,8 @@ starts after the full arena. The image owns its bank even when some capacity is
 unused; packaging rejects code/metadata overlap, arena overflow and resident
 image payload in bank zero.
 
-The standard shell/prime demo uses a 4 KiB arena to hold both applications'
-globals and the resident fault strings. `tools/build_demo.py` derives its
+The standard shell/prime and bitmap shell demos use a 4 KiB arena for the
+application globals and resident fault strings. `tools/build_demo.py` derives its
 `demo-memory.json` from the default profile with this explicit 2 KiB upper-RAM
 increase. Task pools and all bank-zero reservations are unchanged. Build reports
 record the selected capacity and actual image extents; standalone fixtures keep
