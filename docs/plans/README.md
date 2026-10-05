@@ -39,10 +39,19 @@ assuming work is pending. Current behavior belongs in the
 - [Loader and bank/region manager implementation plan](loader-bank-manager-plan.md)
 - [Memory allocation implementation plan](memory-allocation-implementation-plan.md)
 - [Messages and ports implementation plan](messages-ports-implementation-plan.md)
+- [ReplyMsg from interrupt context](interrupt-reply-design.md): implemented native
+  reply entry, shared queue transactions and controlled NMI continuations;
+  [IR0–IR5 implementation plan](interrupt-reply-implementation-plan.md) covers
+  the generic foundation and timer adoption gate. Development checks pass at
+  nominal 57.6k; the 125k transport performance gate remains open.
 - [Signals and Wait implementation plan](signals-wait-implementation-plan.md)
 
 ## Device I/O and SIO
 
+- [timer.device design](timer-device-design.md): implemented asynchronous VBI delays,
+  monotonic deadlines, cancellation and normal Exec I/O replies. Reuses ordinary
+  Wait without a worker. TD4/AES integration follows the
+  [development record](../history/interrupt-reply.md).
 - [Queued device I/O and SIO implementation plan](device-io-sio-implementation-plan.md)
 - [SIO driver boundary implementation plan](sio-driver-boundary-implementation-plan.md)
 
@@ -176,6 +185,12 @@ assuming work is pending. Current behavior belongs in the
   VBXE-only integration with expandable upper RAM, bank-zero and hardware
   constraints, and proposed executable slices. The
   [earlier analysis](gem4xe/README.md) is preserved.
+- [XaAES study for the GEM desktop](gem4xe/xaaes-study.md): pinned source analysis
+  of multitasking AES, client waits, update locks, redraws, callbacks and cleanup;
+  recommends GEM source compatibility over Exec services and a two-client proof.
+- [AES server layer design](gem4xe/aes-server-design.md): proposed GEM bindings,
+  bounded messages, pending events, update/mouse locks and retirement in the
+  existing presenter; timer.device dependency and AS0–AS4 proof slices.
 - [Command arguments implementation](command-arguments-implementation-plan.md)
 - [Command Main return-value implementation plan](command-main-implementation-plan.md)
 - [CSTRING module implementation plan](cstring-implementation-plan.md)

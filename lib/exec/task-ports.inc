@@ -1,5 +1,6 @@
-; Task-only port operations. SWITCHING serializes links; IRQs can post signals
-; but never inspect message queues. Pointer validity/membership belong to users.
+; Task port policy. Native transactions protect active message links from
+; interrupt producers; registry policy remains under SWITCHING. Storage validity
+; and message membership remain caller ownership obligations.
 ; Recognize the public port service family.
 BYTE FUNC PortService(BYTE service)
 
@@ -75,8 +76,7 @@ CARD FUNC SendMessage(TaskControl POINTER caller CARD saved MsgPort POINTER port
     mask=SignalBit(port.mp_SigBit)
   FI
 
-  msg.mn_Node.ln_Type=kind
-  EXECLISTS.AddTail(@port.mp_MsgList,@msg.mn_Node)
+  PortAppend(port,msg,kind)
   IF target<>NULL THEN
     IF PostSignal(target,mask)<>0 THEN
       caller.pending=1
@@ -101,10 +101,7 @@ CARD FUNC PortHead(TaskControl POINTER caller CARD saved MsgPort POINTER port)
     RETURN(T_FAULT)
   FI
 
-  msg=NULL
-  IF EXECLISTS.IsListEmpty(@port.mp_MsgList)=0 THEN
-    msg=Message POINTER(port.mp_MsgList.lh_Head)
-  FI
+  msg=PortPeek(port)
 
   PointerResult(saved,Task POINTER(msg))
 
@@ -132,7 +129,7 @@ CARD FUNC PortDelete(TaskControl POINTER caller CARD saved MsgPort POINTER port)
     RETURN(T_FAULT)
   FI
 
-  IF EXECLISTS.IsListEmpty(@port.mp_MsgList)=0 THEN
+  IF PortPeek(port)<>NULL THEN
     RETURN(T_FAULT)
   FI
 

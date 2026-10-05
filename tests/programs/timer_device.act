@@ -1,0 +1,91 @@
+MODULE TIMERDEVICEPROBE
+USE EXEC
+USE TIMER
+USE HEAPCORE
+USE EXECLISTS
+
+BYTE ARRAY name=[116 105 109 101 114 46 100 101 118 105 99 101 0]
+EXEC.MsgPort POINTER port
+TIMER.TimerClockRequest POINTER query
+TIMER.TimerRequest POINTER delay
+EXEC.IORequest POINTER request
+CARD checks
+LONGCARD before,after
+CARD openError,waitError
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC ReadClock()
+
+  query.tc_Request.io_Command=TIMER.TD_READCLOCK
+  Require(EXEC.DoIO(@query.tc_Request)=0)
+  Require(query.ticks_per_second=50 OR query.ticks_per_second=60)
+
+RETURN
+
+PROC Main()
+  INT error
+  BYTE index
+
+  port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  query=TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(port,38))
+  delay=TIMER.TimerRequest POINTER(EXEC.CreateIORequest(port,34))
+  Require(query<>NULL AND delay<>NULL)
+  error=EXEC.OpenDevice(name,0,@query.tc_Request,0)
+  Require(error=EXEC.IOERR_OPENFAIL)
+  error=EXEC.OpenDevice(name,TIMER.UNIT_VBLANK,@query.tc_Request,0)
+  openError=CARD(error)
+  Require(error=0)
+  delay.tr_Request.io_Device=query.tc_Request.io_Device
+  delay.tr_Request.io_Unit=query.tc_Request.io_Unit
+  ReadClock()
+  before=query.ticks_lo
+  FOR index=0 TO 2 DO
+    delay.tr_Request.io_Command=TIMER.TR_ADDREQUEST
+    delay.seconds=0
+    delay.microseconds=0
+    EXEC.SendIO(@delay.tr_Request)
+    error=EXEC.WaitIO(@delay.tr_Request)
+    waitError=CARD(error)
+    Require(error=0)
+    Require(delay.seconds=0 AND delay.microseconds=0)
+    Require(EXEC.GetMsg(port)=NULL)
+  OD
+
+  ReadClock()
+  after=query.ticks_lo
+  Require(after>=before+3)
+  delay.seconds=3600
+  EXEC.SendIO(@delay.tr_Request)
+  Require(EXEC.CheckIO(@delay.tr_Request)=NULL)
+  EXEC.AbortIO(@delay.tr_Request)
+  Require(EXEC.CheckIO(@delay.tr_Request)=@delay.tr_Request)
+  Require(EXEC.WaitIO(@delay.tr_Request)=EXEC.IOERR_ABORTED)
+  EXEC.AbortIO(@delay.tr_Request)
+  Require(EXEC.GetMsg(port)=NULL)
+  delay.microseconds=1000000
+  EXEC.SendIO(@delay.tr_Request)
+  Require(EXEC.WaitIO(@delay.tr_Request)=TIMER.TIMERERR_BADTIME)
+  ReadClock()
+  query.tc_Request.io_Command=TIMER.TD_WAITUNTIL
+  Require(EXEC.DoIO(@query.tc_Request)=0)
+  Require(EXEC.GetMsg(port)=NULL)
+  delay.tr_Request.io_Device=NULL
+  delay.tr_Request.io_Unit=NULL
+  EXEC.DeleteIORequest(@delay.tr_Request)
+  EXEC.CloseDevice(@query.tc_Request)
+  EXEC.DeleteIORequest(@query.tc_Request)
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+ENDMODULE

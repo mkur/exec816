@@ -19,6 +19,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Native interrupt replies and timer.device](interrupt-reply.md): shared port
+  transactions, exact return handoff, bounded native completion and Action!/C timers.
+
 - [Hosted AES widget application](aes-widgets.md): Control Panel, loaded semantic
   input, matched updates, independent contexts, the AW6 local preview and its
   clipped-text/startup, button-feedback and separate-focus-damage follow-ups.

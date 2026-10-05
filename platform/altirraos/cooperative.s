@@ -125,6 +125,12 @@ exec_entry:
     bcs rejected
     .endif
     inc E816_GATE_COUNT
+    .if GENERAL_TASKS
+        jsl native_resume_decode
+        bcc :+
+        jmp dispatch_frame
+:
+    .endif
     lda f:A816_SAVED_FRAME_A_FULL_OFFSET,x
     and #$00ff
     tay
@@ -232,19 +238,39 @@ restore_selected:
     checkpoint 11
     txa
     tcs
+restore_commit:
+    native_work_checkpoint 36
     checkpoint 12
     ; I is still set. Publish completion only after selecting the task stack.
-    stz E816_SWITCHING
+    .if GENERAL_TASKS
+        jml native_selected_return
+    .else
+        stz E816_SWITCHING
+    .endif
 context_restore:
+    native_work_checkpoint 37
     checkpoint 16
     rep #$30
     plb
+restore_after_plb:
+    native_work_checkpoint 30
     pld
+restore_after_pld:
+    native_work_checkpoint 38
     checkpoint 17
     ply
+restore_after_ply:
+    native_work_checkpoint 31
     plx
+restore_after_plx:
+    native_work_checkpoint 32
     pla
+restore_after_pla:
+    native_work_checkpoint 33
     rti
+restore_end:
+.export restore_commit, restore_after_plb, restore_after_pld
+.export restore_after_ply, restore_after_plx, restore_after_pla, restore_end
 all_exited:
     stz E816_SWITCHING
     lda #0

@@ -4,6 +4,18 @@
 
 For the current comparison against GEM4XE 0.9.4 and implemented Exec816, read
 [GEM4XE as the GUI layer for Exec816](exec816-integration-assessment.md).
+The [XaAES study](xaaes-study.md) examines how to reach the confirmed target:
+a multitasking GEM-compatible GUI over Exec816, with minimal changes to rebuilt
+GEM applications. It recommends adapting GEM4XE with XaAES's client, event and
+ownership semantics as references; direct XaAES or G4A binary compatibility
+is separate work. This source study does not change the current native contracts.
+The proposed [AES server design](aes-server-design.md) specifies the next layer:
+GEM bindings, client messages and waits, GUI locks and retirement in the existing
+presenter, with a [timer.device dependency](../timer-device-design.md) and a
+two-client proof. Ordinary Exec Wait remains unchanged. The implemented
+[native interrupt ReplyMsg foundation](../../reference/ports.md#native-interrupt-reply)
+supports timer.device without another worker; ordinary Action!/C message calls
+remain Task-only.
 The completed [minimal hosted VDI plan](minimal-vdi-implementation-plan.md)
 builds on the larger Task stacks. Its [current contract](../../reference/gem-vdi.md)
 defines the packet, display ownership and supported source boundary. The

@@ -178,5 +178,27 @@
       "outgoing_bytes": 3,
       "result_bytes": 3
     }
+  },
+  "native_bindings": {
+    "ReplyMsg": {
+      "symbol": "exec_reply_msg_native",
+      "address": "A16 low word, X16 zero-extended bank",
+      "entry": {
+        "E": 0,
+        "M": 0,
+        "X": 0,
+        "I": 1
+      },
+      "preserved": [
+        "A",
+        "X",
+        "Y",
+        "P",
+        "D",
+        "DBR",
+        "S"
+      ],
+      "context": "admitted native IRQ or deferred native continuation"
+    }
   }
 }

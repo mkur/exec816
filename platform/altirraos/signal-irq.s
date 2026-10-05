@@ -136,7 +136,10 @@ signal_pending_done:
     rtl
 :
     .if INPUT_NATIVE
-        jml input_route
+        ; Keyboard ownership does not replace an admitted serial producer.
+        ; If another source remains pending, give the serial route its turn.
+        jsl input_route
+        bcs signal_handled
     .elseif SIGNAL_IRQ_PROBE = 10
         jml console_probe_route
     .endif
@@ -259,27 +262,55 @@ cop_scratch_result:
         sta f:E816_KERNEL_DP+A816_DP_SCRATCH_OFFSET
 cop_scratch_done:
     .endif
+    lda f:T_BASE+T_BINDING_MASK,x
+    sta 5
+    lda f:T_BASE+T_BINDING_MASK+2,x
+    sta 7
     lda f:T_BASE+T_BINDING_TASK,x
     sta 1
     sep #$20
     lda f:T_BASE+T_BINDING_TASK+2,x
     sta 3
     rep #$20
-    lda f:T_BASE+T_BINDING_MASK,x
-    ldy #T_TASK_TC_SIGRECVD
-    ora [1],y
-    sta [1],y
-    signal_irq_checkpoint 1
-    lda f:T_BASE+T_BINDING_MASK+2,x
-    iny
-    iny
-    ora [1],y
-    sta [1],y
-    signal_irq_checkpoint 1
     lda f:T_BASE+T_BINDING_CONTEXT,x
     sec
     sbc #.loword(T_BASE)
     tax
+    bra signal_post_masks
+
+; Shared native publisher for retained recipients. X=context offset,
+; Y=bank-zero address of mask32, DBR=0, I=1. Twelve local bytes and saved D.
+; The caller owns IRQ_DEPTH/NI_ACTIVE/SWITCHING exclusion against NMI service.
+signal_post_recipient:
+    rep #$20
+    phd
+    tsc
+    sec
+    sbc #12
+    tcs
+    tcd
+    lda $0000,y
+    sta 5
+    lda $0002,y
+    sta 7
+    lda f:T_BASE+T_TCB_ITEM,x
+    sta 1
+    sep #$20
+    lda f:T_BASE+T_TCB_ITEM+2,x
+    sta 3
+    rep #$20
+signal_post_masks:
+    lda 5
+    ldy #T_TASK_TC_SIGRECVD
+    ora [1],y
+    sta [1],y
+    signal_irq_checkpoint 1
+    lda 7
+    iny
+    iny
+    ora [1],y
+    sta [1],y
+    signal_irq_checkpoint 1
     sep #$20
     lda f:T_BASE+T_TCB_STATE,x
     cmp #T_STATE_SIGNAL_WAIT
@@ -570,6 +601,10 @@ signal_pump_start:
         sta f:$d205
         sta f:$d206
         sta f:$d207
+        .if PUMP_DIVISOR
+            lda #PUMP_DIVISOR
+            sta f:$d204
+        .endif
         lda #$28
         sta f:$d208
         lda #$23

@@ -1,0 +1,571 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-05",
+  "tier": "development",
+  "scope": "Source study, documentation content/link checks and source inventory only; no compiler, native image, emulator or hardware execution.",
+  "inspection_method": "Selected functions and ranges in the listed source inputs; not a complete source correctness audit. Text reads normalize host newlines; SHA-256 hashes preserve exact source bytes.",
+  "conclusion": "Adapt GEM4XE over Exec816; use XaAES as a reference for multitasking AES semantics. Direct XaAES port not recommended as the first route.",
+  "freemint": {
+    "repository": "https://github.com/freemint/freemint.git",
+    "revision": "cd0b07fd0f3654d79bcaad38b8d995f0d2e08179",
+    "commit_date": "2026-10-03",
+    "local_checkout": "build/research/xaaes/freemint",
+    "status_porcelain": "",
+    "xaaes_version_macros": "1.7.0 Beta",
+    "inspected_inputs": {
+      "xaaes/README": {
+        "sha256": "9b6ad36610ae0d216620f0c5d8b9793bfca98a34fa5092395c63a6abcf15a121",
+        "physical_lines": 21
+      },
+      "xaaes/xaaes-kernel.txt": {
+        "sha256": "2e18eb6dbe50676b4c9e86c9e80eecf12956eff409128ff6d0a546a2cfab4daf",
+        "physical_lines": 105
+      },
+      "xaaes/src.km/Makefile": {
+        "sha256": "9fe309edc2a8df0a50647355339bd51bfa91d06f4b8e15846daf2cb8b23a5fae",
+        "physical_lines": 91
+      },
+      "xaaes/src.km/CONFIGVARS": {
+        "sha256": "2422e0b042795633b11d9099eb9278d20e27f74a7d2e58fe937316bd76d52614",
+        "physical_lines": 19
+      },
+      "xaaes/src.km/XAAESDEFS": {
+        "sha256": "b76877c57caf27f933598d784742cb0d6b6b89d6e75fcd1ed1b9f20a9885fd53",
+        "physical_lines": 37
+      },
+      "xaaes/src.km/SRCFILES": {
+        "sha256": "fc3ead257b9d0d55552f660d5a76b41c408b59bb0c85f8089388a1ac86e3dd13",
+        "physical_lines": 135
+      },
+      "xaaes/src.km/version.h": {
+        "sha256": "4d88eb49b0ef9e7ae7feadd7f08d703b4299192b801383c44377b4e9951d6736",
+        "physical_lines": 129
+      },
+      "xaaes/src.km/handler.c": {
+        "sha256": "5e25d419763f975f507d21a7717e50f7f4bfd1237712e521f91daab5ce9ddde1",
+        "physical_lines": 739
+      },
+      "xaaes/src.km/init.c": {
+        "sha256": "81cddab20ab9fa09c751dfed1869be667d9776453a819bda8893f2d9d64c0165",
+        "physical_lines": 782
+      },
+      "xaaes/src.km/k_init.c": {
+        "sha256": "ab1781cc6483b8377279c10a41120c12a3b02246af7bad888ae858c0000d2a54",
+        "physical_lines": 1189
+      },
+      "xaaes/src.km/k_main.c": {
+        "sha256": "c17d2a6d73f82ceebbcbee47c3df2c1e723121ce2d579a6e1c409800a50e9d2c",
+        "physical_lines": 2146
+      },
+      "xaaes/src.km/k_mouse.c": {
+        "sha256": "1444a417b18ef20aaa0c989e6efb8dcf6f87bf2b519fdcc460ebc3980d5ced13",
+        "physical_lines": 1325
+      },
+      "xaaes/src.km/k_keybd.c": {
+        "sha256": "bc8bc600126c35642872b70641279d579d03fed27a2639c87656a8f600162732",
+        "physical_lines": 960
+      },
+      "xaaes/src.km/xa_types.h": {
+        "sha256": "5dbbb529880bf72e5da7d53b75a6ae39ee86f2ed64b3a0613a2427c588ebbfcd",
+        "physical_lines": 2906
+      },
+      "xaaes/src.km/xa_global.h": {
+        "sha256": "3c4bdac4371e6d478e021f53350374454ea9549ca8bdca076bfb6e5a3e4e3160",
+        "physical_lines": 181
+      },
+      "xaaes/src.km/xa_global.c": {
+        "sha256": "dee52f6f41defee6a757848f7b6423faca749fcfabe439ec9c77051ece3f39aa",
+        "physical_lines": 234
+      },
+      "xaaes/src.km/xa_appl.c": {
+        "sha256": "c23061d3eebcf317a359ee1e0cafc1d55bd87c513bf21ef6d0205f2f0391ca8b",
+        "physical_lines": 1834
+      },
+      "xaaes/src.km/xa_evnt.c": {
+        "sha256": "41f3b17fabdc738246eb30932bcd93ebcd0a95c68a064956e3c016081856ef99",
+        "physical_lines": 800
+      },
+      "xaaes/src.km/semaphores.c": {
+        "sha256": "a14b8347736da45c2a0494f9902b3fa594b723557ee85792598d9bf37ecfe8be",
+        "physical_lines": 338
+      },
+      "xaaes/src.km/xa_wind.c": {
+        "sha256": "257ba084a6bb9140595435425fdc3b459b51f5e5ae2e459480813a89043b4f17",
+        "physical_lines": 2005
+      },
+      "xaaes/src.km/c_window.c": {
+        "sha256": "1260d7f350df5ea49ef201c3da9619444e5e7a32e05da96953b19a44115b669a",
+        "physical_lines": 3825
+      },
+      "xaaes/src.km/rectlist.c": {
+        "sha256": "6b4600c7b2e541ca0e9038c49edad7066cc24269b3fd7be85e2e00782280ac10",
+        "physical_lines": 554
+      },
+      "xaaes/src.km/messages.c": {
+        "sha256": "b00bb170ad1f17066df6ca989c68e40928c436c23054ffb91a5705a14191b90e",
+        "physical_lines": 750
+      },
+      "xaaes/src.km/xa_form.c": {
+        "sha256": "dea5dd2a519bde7ea4d1470ec754da8f2fe12688e4cf97cfc8691e8c27f81e0e",
+        "physical_lines": 1133
+      },
+      "xaaes/src.km/form.c": {
+        "sha256": "7c7ce10b7767d0fba780dc29cef16c2a6c3c4926d68977635cfb3fe10ba3373c",
+        "physical_lines": 1749
+      },
+      "xaaes/src.km/xa_objc.c": {
+        "sha256": "bea707d8fd9fd50f8989cffafafd495d907f4a26a0a60fe2764c2152a865e96d",
+        "physical_lines": 911
+      },
+      "xaaes/src.km/draw_obj.c": {
+        "sha256": "a898749a2379ef82bb0d4f10300d5ad7c95ca49a161a5918bb9e3d621d6e90bb",
+        "physical_lines": 1109
+      },
+      "xaaes/src.km/render_obj.c": {
+        "sha256": "36e993c74bed1f9a254a1b054e40dc094a3fc1546d91912a7f5f53446d22007c",
+        "physical_lines": 6113
+      },
+      "xaaes/src.km/obtree.c": {
+        "sha256": "4d86b59ef2c164a4d80f8d8b603957e3259146086e66515f7147d3a67aa56aa3",
+        "physical_lines": 4696
+      },
+      "xaaes/src.km/xa_rsrc.c": {
+        "sha256": "914528ea18de501fc2bebc7c2228fd3beb99915c119d85d18db79777f2b8267d",
+        "physical_lines": 1928
+      },
+      "xaaes/src.km/xa_shel.c": {
+        "sha256": "6841e6a690f392dbd168c0d979823b65aabb46bda48d181c5cd90eb89f4bacf1",
+        "physical_lines": 1772
+      },
+      "xaaes/src.km/desktop.c": {
+        "sha256": "d79f1b7b6cc28cc6b4c1a85b7e00f5a11c45b23912f7ee466a6269b81895d258",
+        "physical_lines": 275
+      },
+      "xaaes/src.km/xa_vdi.c": {
+        "sha256": "bb052efe04de0f3d0df304719bb32c7b2c0c5b8b2d3c91fe31c789f9a438dcae",
+        "physical_lines": 1000
+      },
+      "xaaes/src.km/xa_user_things.h": {
+        "sha256": "4a7ea166f391d4703d68214e59ffd4bbdb9e07258dc68a0b53e7a947d885f521",
+        "physical_lines": 98
+      },
+      "xaaes/src.km/xa_user_things.S": {
+        "sha256": "ff2887c79a686a5fe6d522f4124cf0c0d53446b4466286aae86bc2bf3f741d20",
+        "physical_lines": 117
+      },
+      "xaaes/src.km/sys_proc.c": {
+        "sha256": "4c6504d7e01eb330efcdbda8ed835dd1b3d56d83e419f33022ce794f7d697ed9",
+        "physical_lines": 241
+      },
+      "xaaes/src.km/tests/Makefile": {
+        "sha256": "e2f67d98f66dc2ccf32c24dc0ed0b5eb737ccbe3a90e64785ad9c4fbe6c4e243",
+        "physical_lines": 74
+      },
+      "xaaes/src.km/tests/wu_term.c": {
+        "sha256": "d30e706ca4a36ff735f324c8a8fc0efdb3bd491e0cfafae98555412277b7fd10",
+        "physical_lines": 8
+      },
+      "xaaes/src.km/tests/evnt_mul.c": {
+        "sha256": "184c09ffa689bbc9a1d52b4d702470b1f4dd454c3cad0af8df490f69d2f1e675",
+        "physical_lines": 71
+      },
+      "sys/arch/intr.S": {
+        "sha256": "73d8453b309433e5c4966552f096040083faee5accdb6738f36a22470b15e2f5",
+        "physical_lines": 1621
+      },
+      "sys/mint/module.h": {
+        "sha256": "8d43df85d10a594004aabe88a14a9fda08e86b511daa8feae1162556cd5d79e0",
+        "physical_lines": 75
+      }
+    }
+  },
+  "gem4xe": {
+    "repository": "https://github.com/slaapliedje/gem4xe.git",
+    "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+    "status_porcelain": "",
+    "inspected_inputs": {
+      "src/aes/proc.h": {
+        "sha256": "c52d75a0badc5705c3c38f3cb85dcc6b81338372113095948936a96fd6c48382",
+        "physical_lines": 198
+      },
+      "src/aes/event.c": {
+        "sha256": "5b406b1fef399c0b0f47bafa5908b8f453c8ca9dc842d792fb01c056e8c48e43",
+        "physical_lines": 1058
+      },
+      "src/aes/wind.c": {
+        "sha256": "d621c0d8a48991dfa79f001d62745ab9a13b2f7d7c4d5a982c5961347328a527",
+        "physical_lines": 1366
+      },
+      "src/aes/form.c": {
+        "sha256": "8a291ea34452450c1cd61b05a782a8d079f5c1c1cdf2261db829874f0614fa00",
+        "physical_lines": 296
+      },
+      "src/aes/objc.c": {
+        "sha256": "edd9fee2c19b6d88e02c3ef2bfc40dfa23fd55bdc92874debec47cc5f0f965ba",
+        "physical_lines": 1118
+      },
+      "src/sys/ctx.h": {
+        "sha256": "7991b9d8f9b7ac3bfcbdaccf698b03c5b72a68d64cd551a90bdc7e9879006aa9",
+        "physical_lines": 105
+      },
+      "src/app/gem.h": {
+        "sha256": "c51180aa14c60e115d4402a2ed223e27cc82cb5d1cb80a292b8b8add270d795c",
+        "physical_lines": 1255
+      },
+      "src/apps/g4bench.c": {
+        "sha256": "ad0b808e7015c53d7f81757182ea685b80dfc916460780243abe079eda22ecf8",
+        "physical_lines": 744
+      },
+      "src/apps/calcapp.c": {
+        "sha256": "96a30fbf5ce3f11e3cf6cc8f2f39ae8d4cc70b85a8b9bd5ff0ac6e469ce0b141",
+        "physical_lines": 35
+      },
+      "src/apps/calc.c": {
+        "sha256": "1363925792468664f6de42dd61b0b1ab647870ebaa2aa6de4a0ec37c1d1218fe",
+        "physical_lines": 238
+      },
+      "src/apps/clockapp.c": {
+        "sha256": "b33da15d5fb5ee47c3aae00f39be49cc1672a3cc693930f5b2bd0d9a4af9bf19",
+        "physical_lines": 31
+      },
+      "src/apps/clock.c": {
+        "sha256": "2cb078870e7d7f88ff65275f726de328ea50c1ee744fc2a65745b379eb7a4c0b",
+        "physical_lines": 182
+      },
+      "docs/qed.md": {
+        "sha256": "4015f6514e8c9d7306cdb1f94339126c91eeee1adb7c3f68983e9428015b9d5b",
+        "physical_lines": 193
+      }
+    }
+  },
+  "exec816": {
+    "baseline_revision": "7268d114604fca6ee2927b063b6603e156bcbcf2",
+    "inspected_inputs": {
+      "docs/reference/desktop.md": {
+        "sha256": "543fd78e34a7ebf737bf563721f8f04f8258a557f2dd6cc8a622ddab47372620",
+        "physical_lines": 283
+      },
+      "docs/reference/widgets.md": {
+        "sha256": "f0b84fa53b363e27f1473ad8ca88dfd4af929c1f8875579a6f6ad427df6badd4",
+        "physical_lines": 137
+      },
+      "docs/reference/layers.md": {
+        "sha256": "2be5a1dd79534633a8e3518f25e37bb4e5be45a88c066fd5faee4b72153714de",
+        "physical_lines": 176
+      },
+      "docs/reference/gem-vdi.md": {
+        "sha256": "353ddadcf6d4417f8a05a4759a7336cd46dc58df0262d4f3a28b0f77d5f1fb83",
+        "physical_lines": 234
+      },
+      "docs/reference/dos.md": {
+        "sha256": "9674e0fc22b6a5c32d5f07b9478c282a5471fdc2fec927814cacde5ca3f39acf",
+        "physical_lines": 168
+      },
+      "docs/reference/process.md": {
+        "sha256": "8c4c856c2cd9bdeec1e75abe92bd8299aa4ad787e5763910e43967705a8fa52a",
+        "physical_lines": 211
+      },
+      "docs/reference/program-loading.md": {
+        "sha256": "1ea364dc09f37f24cca5416955f011e45ac6d31fcaf8514f934a74b3a643412d",
+        "physical_lines": 188
+      },
+      "docs/reference/tasks.md": {
+        "sha256": "65a4a28261129116de6df83f95d83cd9bd29b64fb5d398d52f65ea1fcea4e97b",
+        "physical_lines": 273
+      },
+      "docs/architecture/task-capacity.md": {
+        "sha256": "82a2a6827f727cd325b68027c5cb835609906dffc257515ebcd7c61d39793304",
+        "physical_lines": 127
+      },
+      "docs/guides/calypsi-c.md": {
+        "sha256": "0a2615d58ce1c6768b7af0be1b15e890411467b1bc125dc94ec8ea8ef61cd37d",
+        "physical_lines": 227
+      },
+      "ports/gem4xe/aes/README.md": {
+        "sha256": "c7c663087e94e02822829dd9c533bb2c16bfcf46cd45f33a8906ec30ce8186f8",
+        "physical_lines": 96
+      },
+      "ports/gem4xe/hosted/hosted-dispatch.inc": {
+        "sha256": "21a20fd92a1020749946c9ba2afb99df9f9204dfd6de6e991fd276fa0eea1ba6",
+        "physical_lines": 201
+      },
+      "toolchain/actionc.json": {
+        "sha256": "f31077466a9ef240f8d49fd2f62cd8503b5975c164127573834b09a7d05ba3cc",
+        "physical_lines": 12
+      }
+    }
+  },
+  "xaaes_inventory": {
+    "definition": "Top-level xaaes/src.km/*.c physical lines after text newline normalization, including comments/blank lines; excludes subdirectories, headers and assembly. Inventory does not mean every file was manually inspected.",
+    "c_files": 58,
+    "physical_lines": 82727,
+    "headers": 72,
+    "top_level_assembly": [
+      "xaaes/src.km/accstart.S",
+      "xaaes/src.km/nkcc-gc.S",
+      "xaaes/src.km/xa_user_things.S"
+    ],
+    "source_files": {
+      "xaaes/src.km/about.c": {
+        "sha256": "7567fe1602405c30fdd727d0465a6868966bc29bed7ae2d9186e48865b129eef",
+        "physical_lines": 742
+      },
+      "xaaes/src.km/adi.c": {
+        "sha256": "b9076b13adcf5723fd6835c686937bce5e74b5b504f34377baf92abf89fb05a6",
+        "physical_lines": 148
+      },
+      "xaaes/src.km/adiload.c": {
+        "sha256": "1fc4e05d54d6d58f4d4079f5e62ab79e5b65f4b670d923c000d1e30ad929c0b0",
+        "physical_lines": 190
+      },
+      "xaaes/src.km/app_man.c": {
+        "sha256": "8a90f2d7d9590ca2478d936928505df2c90d40c07bd05df6b09afba8d68f6fdf",
+        "physical_lines": 1260
+      },
+      "xaaes/src.km/c_keybd.c": {
+        "sha256": "f91e83319416e58fd9095a03d143fd32ab24458b0d8b57172ded0289df715009",
+        "physical_lines": 116
+      },
+      "xaaes/src.km/c_mouse.c": {
+        "sha256": "e869f5aea0d8ffb7d2be2d9167f88c54fa893378ff37448fdcdcd09bbdce456e",
+        "physical_lines": 681
+      },
+      "xaaes/src.km/c_window.c": {
+        "sha256": "1260d7f350df5ea49ef201c3da9619444e5e7a32e05da96953b19a44115b669a",
+        "physical_lines": 3825
+      },
+      "xaaes/src.km/cnf_xaaes.c": {
+        "sha256": "4f7b4d7c554b8889b49ee0f55c9224ce019317c7f76e405db0e2a6f11fda2a72",
+        "physical_lines": 1203
+      },
+      "xaaes/src.km/debug.c": {
+        "sha256": "ab84a1eaae0de0f061edae50931ce85820876b2875d5148bc0301482f99d5a81",
+        "physical_lines": 546
+      },
+      "xaaes/src.km/desktop.c": {
+        "sha256": "d79f1b7b6cc28cc6b4c1a85b7e00f5a11c45b23912f7ee466a6269b81895d258",
+        "physical_lines": 275
+      },
+      "xaaes/src.km/draw_obj.c": {
+        "sha256": "a898749a2379ef82bb0d4f10300d5ad7c95ca49a161a5918bb9e3d621d6e90bb",
+        "physical_lines": 1109
+      },
+      "xaaes/src.km/form.c": {
+        "sha256": "7c7ce10b7767d0fba780dc29cef16c2a6c3c4926d68977635cfb3fe10ba3373c",
+        "physical_lines": 1749
+      },
+      "xaaes/src.km/global.c": {
+        "sha256": "fadcbced719e3a3f79b491bc427236dd811e2a45f7831fdac658c75a7c7f45ff",
+        "physical_lines": 111
+      },
+      "xaaes/src.km/handler.c": {
+        "sha256": "5e25d419763f975f507d21a7717e50f7f4bfd1237712e521f91daab5ce9ddde1",
+        "physical_lines": 739
+      },
+      "xaaes/src.km/init.c": {
+        "sha256": "81cddab20ab9fa09c751dfed1869be667d9776453a819bda8893f2d9d64c0165",
+        "physical_lines": 782
+      },
+      "xaaes/src.km/k_init.c": {
+        "sha256": "ab1781cc6483b8377279c10a41120c12a3b02246af7bad888ae858c0000d2a54",
+        "physical_lines": 1189
+      },
+      "xaaes/src.km/k_keybd.c": {
+        "sha256": "bc8bc600126c35642872b70641279d579d03fed27a2639c87656a8f600162732",
+        "physical_lines": 960
+      },
+      "xaaes/src.km/k_main.c": {
+        "sha256": "c17d2a6d73f82ceebbcbee47c3df2c1e723121ce2d579a6e1c409800a50e9d2c",
+        "physical_lines": 2146
+      },
+      "xaaes/src.km/k_mouse.c": {
+        "sha256": "1444a417b18ef20aaa0c989e6efb8dcf6f87bf2b519fdcc460ebc3980d5ced13",
+        "physical_lines": 1325
+      },
+      "xaaes/src.km/k_shutdown.c": {
+        "sha256": "ed99cc495117afb172cb795c0c9c093dfce3633dd1d2584f4a7f01d5a5bf0a96",
+        "physical_lines": 301
+      },
+      "xaaes/src.km/matchpat.c": {
+        "sha256": "4a010726499346d4f8fbf54de2cfc18ab66ce8f1d86acc3de930d8494b0e3cc9",
+        "physical_lines": 503
+      },
+      "xaaes/src.km/menuwidg.c": {
+        "sha256": "a872b73c879b11d1b22c3223cfbbafd4cd3e3e638695a8249d69c43d4f58e0e4",
+        "physical_lines": 3117
+      },
+      "xaaes/src.km/messages.c": {
+        "sha256": "b00bb170ad1f17066df6ca989c68e40928c436c23054ffb91a5705a14191b90e",
+        "physical_lines": 750
+      },
+      "xaaes/src.km/mscall.c": {
+        "sha256": "9438cbe7b6342527fd15f649f69f5d42a92c436632d74840a1c25723d9720445",
+        "physical_lines": 33
+      },
+      "xaaes/src.km/nkcc.c": {
+        "sha256": "f00bb5a9310c9bf28e8c057e55565a222c534e023a4b88a669b302309e98b590",
+        "physical_lines": 45
+      },
+      "xaaes/src.km/obtree.c": {
+        "sha256": "4d86b59ef2c164a4d80f8d8b603957e3259146086e66515f7147d3a67aa56aa3",
+        "physical_lines": 4696
+      },
+      "xaaes/src.km/rectlist.c": {
+        "sha256": "6b4600c7b2e541ca0e9038c49edad7066cc24269b3fd7be85e2e00782280ac10",
+        "physical_lines": 554
+      },
+      "xaaes/src.km/render_obj.c": {
+        "sha256": "36e993c74bed1f9a254a1b054e40dc094a3fc1546d91912a7f5f53446d22007c",
+        "physical_lines": 6113
+      },
+      "xaaes/src.km/scrlobjc.c": {
+        "sha256": "5386ff91a90beaac53b2a07ed91f72e6008620640a9c740b1d38b996de0e5939",
+        "physical_lines": 5037
+      },
+      "xaaes/src.km/semaphores.c": {
+        "sha256": "a14b8347736da45c2a0494f9902b3fa594b723557ee85792598d9bf37ecfe8be",
+        "physical_lines": 338
+      },
+      "xaaes/src.km/strings.c": {
+        "sha256": "e906a2e57fa526745fd3b8540dc537faf6badc793d61e17dfd0a1da8a8101057",
+        "physical_lines": 1
+      },
+      "xaaes/src.km/sys_proc.c": {
+        "sha256": "4c6504d7e01eb330efcdbda8ed835dd1b3d56d83e419f33022ce794f7d697ed9",
+        "physical_lines": 241
+      },
+      "xaaes/src.km/taskman.c": {
+        "sha256": "8f8702c684bf4de8763d27da3c1b96ae3e08e4c7e2a9d68b42786588e9223c1a",
+        "physical_lines": 2915
+      },
+      "xaaes/src.km/trnfm.c": {
+        "sha256": "a8366fcc633e1fea71d9895a5d91b21b265bb0dd531f7ae8bc934f985ac67d7b",
+        "physical_lines": 2609
+      },
+      "xaaes/src.km/util.c": {
+        "sha256": "b940b82c655fba02f75dacf03e949e4e4102376b87ccd9976ae0a5eb0a8c6cf8",
+        "physical_lines": 352
+      },
+      "xaaes/src.km/widgets.c": {
+        "sha256": "99c1c68fb44922362c7f92213a9d62b76c9477500f6c15e660c1f0688f1b521b",
+        "physical_lines": 4970
+      },
+      "xaaes/src.km/win_draw.c": {
+        "sha256": "004cea552388e1250fc63272cec66ea02c37259ba6bacb76a430bcb8534e85c5",
+        "physical_lines": 4052
+      },
+      "xaaes/src.km/xa_appl.c": {
+        "sha256": "c23061d3eebcf317a359ee1e0cafc1d55bd87c513bf21ef6d0205f2f0391ca8b",
+        "physical_lines": 1834
+      },
+      "xaaes/src.km/xa_evnt.c": {
+        "sha256": "41f3b17fabdc738246eb30932bcd93ebcd0a95c68a064956e3c016081856ef99",
+        "physical_lines": 800
+      },
+      "xaaes/src.km/xa_fnts.c": {
+        "sha256": "3fa943f08aacbd965ce15a1ce965a1c78d626e00ebb71497306f7bcb60bbb2f4",
+        "physical_lines": 1878
+      },
+      "xaaes/src.km/xa_form.c": {
+        "sha256": "dea5dd2a519bde7ea4d1470ec754da8f2fe12688e4cf97cfc8691e8c27f81e0e",
+        "physical_lines": 1133
+      },
+      "xaaes/src.km/xa_fsel.c": {
+        "sha256": "2cf6ea76016fa3f336003dd595610bd2411fa22cf8ff38d86cd65c56c373cf9c",
+        "physical_lines": 3920
+      },
+      "xaaes/src.km/xa_fslx.c": {
+        "sha256": "ba6403392ac01745e0ab0e2e0b87cb6b11324686535046ae5a7e3e0873d1ab84",
+        "physical_lines": 96
+      },
+      "xaaes/src.km/xa_global.c": {
+        "sha256": "dee52f6f41defee6a757848f7b6423faca749fcfabe439ec9c77051ece3f39aa",
+        "physical_lines": 234
+      },
+      "xaaes/src.km/xa_graf.c": {
+        "sha256": "48cd7689c88ea6dc0a0b37b36ef6e1069919266397b5bd8b35682ec69365bd5e",
+        "physical_lines": 1425
+      },
+      "xaaes/src.km/xa_lbox.c": {
+        "sha256": "bd7c73913b1b15ae0c0a95ce857d1b8f3f1647ee08c9f58c1a4c6de6904990ed",
+        "physical_lines": 1797
+      },
+      "xaaes/src.km/xa_menu.c": {
+        "sha256": "a37a02d277870ef04944ed4818e8863bb72b634d5d17b8c255ebfe4b80e63aab",
+        "physical_lines": 964
+      },
+      "xaaes/src.km/xa_objc.c": {
+        "sha256": "bea707d8fd9fd50f8989cffafafd495d907f4a26a0a60fe2764c2152a865e96d",
+        "physical_lines": 911
+      },
+      "xaaes/src.km/xa_pdlg.c": {
+        "sha256": "63ac9d7214e81345672dab0c0040f852f02420e0ae79f03dddddc7c42b2546b9",
+        "physical_lines": 3281
+      },
+      "xaaes/src.km/xa_rsc_lang.c": {
+        "sha256": "f0ec153cae816fe6e71d6a14b32586f0ea821278fa76d8b5bf7d4fe58a4f2cb4",
+        "physical_lines": 439
+      },
+      "xaaes/src.km/xa_rsrc.c": {
+        "sha256": "914528ea18de501fc2bebc7c2228fd3beb99915c119d85d18db79777f2b8267d",
+        "physical_lines": 1928
+      },
+      "xaaes/src.km/xa_scrp.c": {
+        "sha256": "a2d621ccacc07b4e929e1729e616e79bbbf4aa5417640abf68bb30fcc3df134a",
+        "physical_lines": 63
+      },
+      "xaaes/src.km/xa_shel.c": {
+        "sha256": "6841e6a690f392dbd168c0d979823b65aabb46bda48d181c5cd90eb89f4bacf1",
+        "physical_lines": 1772
+      },
+      "xaaes/src.km/xa_vdi.c": {
+        "sha256": "bb052efe04de0f3d0df304719bb32c7b2c0c5b8b2d3c91fe31c789f9a438dcae",
+        "physical_lines": 1000
+      },
+      "xaaes/src.km/xa_wdlg.c": {
+        "sha256": "9c25ccb9b9a10c166f2d3508df323aa0d35201e541acdb4a2f6c51c523f9b144",
+        "physical_lines": 1396
+      },
+      "xaaes/src.km/xa_wind.c": {
+        "sha256": "257ba084a6bb9140595435425fdc3b459b51f5e5ae2e459480813a89043b4f17",
+        "physical_lines": 2005
+      },
+      "xaaes/src.km/xacookie.c": {
+        "sha256": "4a69301eb2be46129c91354de0e5c118edb63b559a60dfcfed51bc67894fc859",
+        "physical_lines": 84
+      },
+      "xaaes/src.km/xcclib.c": {
+        "sha256": "4c1d80ccae7d790f78bef0150df852f8fccd0b64de8f8fa5db8583d9971abdf1",
+        "physical_lines": 44
+      }
+    },
+    "linked_bytes": null,
+    "stack_usage_bytes": null,
+    "performance_measurements": null
+  },
+  "reserved_bank_zero_delta_bytes": {
+    "fixed_and_kernel": 0,
+    "root_task": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "includes_guards_alignment_unused_capacity": true
+  },
+  "runtime_upper_ram_delta_bytes": 0,
+  "runtime_vram_delta_bytes": 0,
+  "validation": {
+    "source_revision_and_hash_verification": true,
+    "inventory_recomputed": true,
+    "local_links_and_anchors_checked": true,
+    "pinned_source_links_checked_against_checkout": true,
+    "content_review": true,
+    "runtime_tests_run": false,
+    "hosted_qualification_claimed": false,
+    "counts": {
+      "source_hashes": 125,
+      "local_links": 213,
+      "local_anchors": 5,
+      "pinned_source_links": 39,
+      "reference_links": 39
+    }
+  }
+}

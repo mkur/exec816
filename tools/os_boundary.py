@@ -74,7 +74,7 @@ def settings(rom, pin=PIN):
 "_Category Mask" = "hardware,firmware"
 "_Saved Category Mask" = "hardware,firmware"
 "Hardware mode" = 1
-"PAL mode" = 1
+"PAL mode" = {int(pin['machine']['video'].upper() == 'PAL')}
 "SECAM mode" = 0
 "Mixed video mode" = 0
 "Memory mode" = 2

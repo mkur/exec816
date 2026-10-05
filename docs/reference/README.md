@@ -9,7 +9,7 @@ rebuild programs when the ABI changes.
 | Area | Contracts |
 | --- | --- |
 | Exec core | [Tasks](tasks.md), [signals and Wait](signals.md), [lists](lists.md), [memory](memory.md) |
-| Communication | [Messages and ports](ports.md), [device I/O and SIO](device-io.md), [resident drivers](resident-drivers.md) |
+| Communication | [Messages and ports](ports.md), [device I/O and SIO](device-io.md), [timer.device](timer.md), [resident drivers](resident-drivers.md) |
 | Input | [Ownership, routes and events](input.md) |
 | Files and streams | [DOS](dos.md), [console/NIL streams](streams.md), [pipes](pipes.md), [MyDOS](mydos.md), [SpartaDOS](spartados.md), [filesystem writes](filesystem-writes.md), [SYS:](sys-volume.md), [ASSIGN](assigns.md) |
 | Console | [Device](console.md), [instances and windows](console-windows.md), [cooked input](cooked-console.md), [foreground BREAK](foreground-break.md) |

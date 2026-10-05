@@ -15,6 +15,8 @@ supported calls, ABI details and current limits.
 - [include/clib/alib_protos.h](include/clib/alib_protos.h): classic CreateTask signature.
 - [include/exec816/runtime.h](include/exec816/runtime.h): explicit Yield extension for probes.
 - [calypsi/exec.c](calypsi/exec.c) and [gateway.s](calypsi/gateway.s): the shim.
+- [include/exec/io.h](include/exec/io.h) and [include/devices/timer.h](include/devices/timer.h): generated device and VBI timer records.
+- [calypsi/io.c](calypsi/io.c), [io.s](calypsi/io.s) and [io-bridge.inc](calypsi/io-bridge.inc): caller-context device I/O binding installed by the launcher.
 
 Build with `python3 tools/build_calypsi.py` from the repository root.
 

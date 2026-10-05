@@ -1,0 +1,123 @@
+; Diagnostic clock seeds are written only with VBI disabled. Production
+; clients can observe the clock but cannot modify it through timer.device.
+MODULE TIMERCLOCKPROBE
+USE EXEC
+USE TIMER
+USE TIMERMETA
+USE HEAPCORE
+INCLUDE "../../lib/exec/exec-abi.inc"
+INCLUDE "timer-vectors.inc"
+
+BYTE ARRAY name=c"timer.device"
+EXEC.MsgPort POINTER port
+TIMER.TimerClockRequest POINTER query
+TIMER.TimerRequest POINTER delay
+TIMER.TimerClockRequest snapshot
+TYPE ClockState=[LONGCARD high,low BYTE version,fault CARD rate]
+TYPE Pending=[ADDRESS request BYTE next LONGCARD high,low]
+ClockState POINTER state
+Pending POINTER entry
+VOLATILE BYTE nmien=$d40e
+VOLATILE CARD legacy=E816_VBI_COUNT
+LONGCARD ARRAY results(RESULT_WORDS)
+CARD checks,position
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f700+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Save(LONGCARD value)
+
+  results(position)=value
+  position==+1
+
+RETURN
+
+PROC Main()
+  CARD index,offset,start
+  BYTE okay
+  INT error
+
+  nmien=0
+  state=ClockState POINTER(ADDRESS(TIMERMETA.BASE))
+  entry=Pending POINTER(ADDRESS(TIMERMETA.PENDING))
+  port=EXEC.CreateMsgPort()
+  query=TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(port,SIZEOF(TIMER.TimerClockRequest)))
+  delay=TIMER.TimerRequest POINTER(EXEC.CreateIORequest(port,SIZEOF(TIMER.TimerRequest)))
+  Require(port<>NULL AND query<>NULL AND delay<>NULL)
+  Require(EXEC.OpenDevice(name,TIMER.UNIT_VBLANK,@query.tc_Request,0)=0)
+  delay.tr_Request.io_Device=query.tc_Request.io_Device
+  delay.tr_Request.io_Unit=query.tc_Request.io_Unit
+  Save(LONGCARD(state.rate))
+  FOR index=0 TO CONVERSION_COUNT-1 DO
+    offset=index*4
+    snapshot.ticks_hi=conversion(offset)
+    snapshot.ticks_lo=conversion(offset+1)
+    snapshot.ticks_per_second=conversion(offset+2)
+    okay=TIMER.Deadline(@snapshot,conversion(offset+3))
+    Save(LONGCARD(okay))
+    Save(snapshot.ticks_hi)
+    Save(snapshot.ticks_lo)
+  OD
+
+  FOR index=0 TO RELATIVE_COUNT-1 DO
+    offset=index*4
+    state.high=relative(offset)
+    state.low=relative(offset+1)
+    delay.seconds=relative(offset+2)
+    delay.microseconds=relative(offset+3)
+    delay.tr_Request.io_Command=TIMER.TR_ADDREQUEST
+    EXEC.SendIO(@delay.tr_Request)
+    IF EXEC.CheckIO(@delay.tr_Request)=NULL THEN
+      Save(0)
+      Save(entry.high)
+      Save(entry.low)
+      EXEC.AbortIO(@delay.tr_Request)
+      Require(EXEC.WaitIO(@delay.tr_Request)=EXEC.IOERR_ABORTED)
+    ELSE
+      error=EXEC.WaitIO(@delay.tr_Request)
+      Save(LONGCARD(error))
+      Save(0)
+      Save(0)
+    FI
+  OD
+
+  ; The raw clock carries independently of the wrapping legacy scheduler tick.
+  state.high=7
+  state.low=LONGCARD($ffffffff)
+  legacy=$ffff
+  nmien=$40
+  WHILE legacy=$ffff DO OD
+  nmien=0
+  Save(state.high)
+  Save(state.low)
+  Save(LONGCARD(legacy))
+  ; A saturated clock fails reads and never publishes a zero wrap.
+  state.high=LONGCARD($ffffffff)
+  state.low=LONGCARD($ffffffff)
+  start=legacy
+  nmien=$40
+  WHILE legacy=start DO OD
+  nmien=0
+  query.tc_Request.io_Command=TIMER.TD_READCLOCK
+  Require(EXEC.DoIO(@query.tc_Request)=TIMER.TIMERERR_CLOCK)
+  Save(state.high)
+  Save(state.low)
+  Save(LONGCARD(state.fault))
+  delay.tr_Request.io_Device=NULL
+  delay.tr_Request.io_Unit=NULL
+  EXEC.DeleteIORequest(@delay.tr_Request)
+  EXEC.CloseDevice(@query.tc_Request)
+  EXEC.DeleteIORequest(@query.tc_Request)
+  EXEC.DeleteMsgPort(port)
+  Require(position=RESULT_WORDS)
+  nmien=$40
+
+RETURN
+ENDMODULE

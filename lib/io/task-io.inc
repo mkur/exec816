@@ -128,6 +128,11 @@ CARD FUNC IOOpen(CARD saved IOOpenArgs POINTER args)
 
   request.io_Device=BYTE POINTER(0)
   request.io_Unit=BYTE POINTER(0)
+  IF IOName(args.name,BYTE POINTER(ADDRESS(TIMERMETA.NAME)))<>0 THEN
+    MaskResult(saved,LONGCARD(IO_ROUTE_TIMER))
+    RETURN(saved)
+  FI
+
   IF ConsoleName(args.name)<>0 THEN
     MaskResult(saved,LONGCARD(IO_ROUTE_CONSOLE))
     RETURN(saved)
@@ -212,16 +217,14 @@ CARD FUNC IOCollect(TaskControl POINTER caller CARD saved IORequest POINTER requ
     RETURN(T_FAULT)
   FI
 
-  IF request.io_Message.mn_Node.ln_Type=P_NT_MESSAGE THEN
+  LET kind=PortCollect(@request.io_Message)
+  IF kind=P_NT_MESSAGE THEN
     MaskResult(saved,LONGCARD($10000)
         OR LONGCARD(request.io_Message.mn_ReplyPort.mp_SigBit))
     RETURN(saved)
   FI
 
-  IF request.io_Message.mn_Node.ln_Type=P_NT_REPLYMSG THEN
-    EXECLISTS.Remove(@request.io_Message.mn_Node)
-    request.io_Message.mn_Node.ln_Type=P_NT_FREEMSG
-  ELSEIF request.io_Message.mn_Node.ln_Type<>P_NT_FREEMSG THEN
+  IF kind<>P_NT_REPLYMSG AND kind<>P_NT_FREEMSG THEN
     RETURN(T_FAULT)
   FI
 
@@ -520,6 +523,8 @@ CARD FUNC IORequestCall(TaskControl POINTER caller CARD saved BYTE service
   route=0
   IF ConsoleDevice(request)<>0 THEN
     route=LONGCARD(IO_ROUTE_CONSOLE)
+  ELSEIF request.io_Device=BYTE POINTER(ADDRESS(TIMERMETA.OPENS)) THEN
+    route=LONGCARD(IO_ROUTE_TIMER)
   ELSEIF request.io_Device=BYTE POINTER(ADDRESS(IS_BASE+64)) THEN
     route=LONGCARD(IO_ROUTE_SIO)
   ELSEIF IS_TEST_DEVICE<>0 AND request.io_Device=BYTE POINTER(ADDRESS(IS_BASE)) THEN

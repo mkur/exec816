@@ -1,0 +1,7 @@
+; Driver-private native bridges; no public kernel selector or timer Task.
+MODULE TIMERNATIVE
+PUBLIC EXTERNAL PROC Enter()
+PUBLIC EXTERNAL PROC Leave()
+PUBLIC EXTERNAL BYTE FUNC Snapshot(BYTE POINTER destination)
+PUBLIC EXTERNAL PROC Enable(BYTE enabled)
+ENDMODULE

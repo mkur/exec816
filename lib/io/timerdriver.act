@@ -1,0 +1,365 @@
+; Caller-context VBI timer. IOCORE serializes Task peers with Forbid; the
+; native edit gate independently excludes the deferred expiry continuation.
+MODULE TIMERDRIVER
+USE EXEC
+USE TIMER
+USE TIMERMETA
+USE TIMERNATIVE
+USE HEAPCORE
+
+TYPE OpenRecord=[
+  EXEC.TaskLease lease
+  EXEC.MsgPort POINTER port
+  BYTE pad
+  EXEC.IORequest POINTER request
+  BYTE active
+  CARD generation,reserved
+]
+TYPE Pending=[
+  EXEC.IORequest POINTER request
+  BYTE next
+  LONGCARD high,low
+  BYTE owner,command,active,reserved
+]
+TYPE TimerState=[CARD opens,generation BYTE edit,armed,head,count]
+
+OpenRecord POINTER FUNC OpenAt(BYTE slot)
+
+RETURN(OpenRecord POINTER(ADDRESS(TIMERMETA.OPEN+CARD(slot)*TIMERMETA.OPEN_STRIDE)))
+
+Pending POINTER FUNC PendingAt(BYTE slot)
+
+RETURN(Pending POINTER(ADDRESS(TIMERMETA.PENDING+CARD(slot)*TIMERMETA.PENDING_STRIDE)))
+
+; Unit handles identify admitted open records, never execution slots.
+BYTE FUNC UnitIndex(EXEC.IORequest POINTER request)
+  LONGCARD offset
+
+  IF request.io_Device<>BYTE POINTER(ADDRESS(TIMERMETA.OPENS)) THEN
+    RETURN($ff)
+  FI
+
+  IF LONGCARD(ADDRESS(request.io_Unit))<LONGCARD(TIMERMETA.OPEN) THEN
+    RETURN($ff)
+  FI
+
+  offset=LONGCARD(ADDRESS(request.io_Unit))-LONGCARD(TIMERMETA.OPEN)
+  IF offset>=TIMERMETA.OPEN_CAPACITY*TIMERMETA.OPEN_STRIDE
+      OR offset MOD TIMERMETA.OPEN_STRIDE<>0 THEN
+    RETURN($ff)
+  FI
+
+RETURN(BYTE(offset/TIMERMETA.OPEN_STRIDE))
+
+PUBLIC BYTE FUNC Bound(EXEC.IORequest POINTER request)
+  BYTE slot
+  OpenRecord POINTER opened
+
+  slot=UnitIndex(request)
+  IF slot=$ff THEN
+    RETURN(0)
+  FI
+
+  opened=OpenAt(slot)
+
+RETURN(opened.active<>0 AND opened.port=request.io_Message.mn_ReplyPort)
+
+; Acquire the endpoint lease before publishing the first source activation.
+PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD unit EXEC.IORequest POINTER
+    request LONGCARD flags)
+  BYTE slot
+  EXEC.Task POINTER self
+  EXEC.MsgPort POINTER port
+  OpenRecord POINTER opened
+  TimerState POINTER state
+
+  request.io_Error=BYTE(EXEC.IOERR_OPENFAIL)
+  IF unit<>TIMER.UNIT_VBLANK OR flags<>0 THEN
+    RETURN(EXEC.IOERR_OPENFAIL)
+  FI
+
+  port=request.io_Message.mn_ReplyPort
+  IF port=NULL THEN
+    RETURN(EXEC.IOERR_OPENFAIL)
+  FI
+
+  self=EXEC.FindTask(NULL)
+  IF port.mp_Node.ln_Type<>EXEC.NT_MSGPORT OR port.mp_Flags<>EXEC.PA_SIGNAL
+      OR port.mp_SigTask<>self OR port.mp_SigBit>=32 THEN
+    RETURN(EXEC.IOERR_OPENFAIL)
+  FI
+
+  IF (self.tc_SigAlloc & (LONGCARD(1) LSH port.mp_SigBit))=0 THEN
+    RETURN(EXEC.IOERR_OPENFAIL)
+  FI
+
+  FOR slot=0 TO TIMERMETA.OPEN_CAPACITY-1 DO
+    opened=OpenAt(slot)
+    IF opened.active=0 THEN
+      EXIT
+    FI
+  OD
+
+  IF slot=TIMERMETA.OPEN_CAPACITY THEN
+    RETURN(EXEC.IOERR_OPENFAIL)
+  FI
+
+  IF EXEC.RetainTask(self,@opened.lease)=0 THEN
+    RETURN(EXEC.IOERR_OPENFAIL)
+  FI
+
+  TIMERNATIVE.Enter()
+  state=TimerState POINTER(ADDRESS(TIMERMETA.OPENS))
+  IF state.opens=0 THEN
+    state.generation==+1
+    state.head=$ff
+    state.count=0
+    state.armed=0
+    TIMERNATIVE.Enable(1)
+  FI
+
+  opened.port=port
+  opened.request=request
+  opened.generation=state.generation
+  opened.active=1
+  state.opens==+1
+  request.io_Device=BYTE POINTER(state)
+  request.io_Unit=BYTE POINTER(opened)
+  request.io_Error=0
+  TIMERNATIVE.Leave()
+
+RETURN(0)
+
+; Close is synchronous and requires collection of all borrowed requests.
+PUBLIC PROC Close(EXEC.IORequest POINTER request)
+  BYTE slot,index,okay
+  OpenRecord POINTER opened
+  Pending POINTER pending
+  TimerState POINTER state
+
+  slot=UnitIndex(request)
+  opened=OpenAt(slot)
+  IF opened.request<>request THEN
+    HEAPCORE.Abort(4)
+  FI
+
+  TIMERNATIVE.Enter()
+  FOR index=0 TO TIMERMETA.PENDING_CAPACITY-1 DO
+    pending=PendingAt(index)
+    IF pending.active<>0 AND pending.owner=slot THEN
+      HEAPCORE.Abort(4)
+    FI
+  OD
+
+  state=TimerState POINTER(ADDRESS(TIMERMETA.OPENS))
+  opened.active=0
+  state.opens==-1
+  IF state.opens=0 THEN
+    TIMERNATIVE.Enable(0)
+  FI
+
+  okay=EXEC.ReleaseTask(@opened.lease)
+  IF okay=0 THEN
+    HEAPCORE.Abort(4)
+  FI
+
+  request.io_Device=NULL
+  request.io_Unit=NULL
+  TIMERNATIVE.Leave()
+
+RETURN
+
+PROC Complete(EXEC.IORequest POINTER request BYTE error)
+
+  request.io_Error=error
+  IF (request.io_Flags & EXEC.IOF_QUICK)<>0 THEN
+    request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+  ELSE
+    EXEC.ReplyMsg(@request.io_Message)
+  FI
+
+RETURN
+
+; Derive a wide deadline without truncating the 32-bit seconds field.
+BYTE FUNC Relative(TIMER.TimerRequest POINTER request TIMER.TimerClockRequest
+    POINTER clock)
+  LONGCARD product,low,high,fraction,old
+
+  IF request.microseconds>=1000000 THEN
+    RETURN(TIMER.TIMERERR_BADTIME)
+  FI
+
+  product=(request.seconds RSH 16)*clock.ticks_per_second
+  low=(product LSH 16)+(request.seconds & LONGCARD($ffff))*clock.ticks_per_second
+  high=product RSH 16
+  IF low<(product LSH 16) THEN
+    high==+1
+  FI
+
+  fraction=(request.microseconds*clock.ticks_per_second+999999)/1000000+1
+  old=low
+  low==+fraction
+  IF low<old THEN
+    high==+1
+  FI
+
+  old=low
+  low==+clock.ticks_lo
+  IF low<old THEN
+    high==+1
+  FI
+
+  old=high
+  high==+clock.ticks_hi
+  IF high<old THEN
+    RETURN(TIMER.TIMERERR_OVERFLOW)
+  FI
+
+  clock.ticks_hi=high
+  clock.ticks_lo=low
+
+RETURN(0)
+
+; Insert after existing equal deadlines, giving deterministic FIFO expiry.
+BYTE FUNC Queue(EXEC.IORequest POINTER request TIMER.TimerClockRequest POINTER
+    deadline)
+  BYTE slot,current,previous
+  Pending POINTER pending,other
+  TimerState POINTER state
+
+  state=TimerState POINTER(ADDRESS(TIMERMETA.OPENS))
+  IF state.count=TIMERMETA.PENDING_CAPACITY THEN
+    RETURN(TIMER.TIMERERR_QUEUEFULL)
+  FI
+
+  FOR slot=0 TO TIMERMETA.PENDING_CAPACITY-1 DO
+    pending=PendingAt(slot)
+    IF pending.active=0 THEN
+      EXIT
+    FI
+  OD
+
+  pending.request=request
+  pending.high=deadline.ticks_hi
+  pending.low=deadline.ticks_lo
+  pending.owner=UnitIndex(request)
+  pending.command=BYTE(request.io_Command)
+  pending.active=1
+  previous=$ff
+  current=state.head
+  WHILE current<>$ff DO
+    other=PendingAt(current)
+    IF other.high>pending.high OR (other.high=pending.high AND other.low>pending.low) THEN
+      EXIT
+    FI
+
+    previous=current
+    current=other.next
+  OD
+
+  request.io_Flags=request.io_Flags & $fe
+  pending.next=current
+  IF previous=$ff THEN
+    state.head=slot
+  ELSE
+    other=PendingAt(previous)
+    other.next=slot
+  FI
+
+  state.count==+1
+  state.armed=1
+
+RETURN(0)
+
+; Read/prepare inside the edit gate, then release through the generic handoff.
+PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
+  TIMER.TimerClockRequest clock
+  TIMER.TimerClockRequest POINTER absolute
+  BYTE error,deferred
+  CARD required
+
+  TIMERNATIVE.Enter()
+  required=SIZEOF(TIMER.TimerClockRequest)
+  IF request.io_Command=TIMER.TR_ADDREQUEST THEN
+    required=SIZEOF(TIMER.TimerRequest)
+  FI
+
+  error=0
+  deferred=0
+  IF request.io_Command<TIMER.TR_ADDREQUEST OR request.io_Command>TIMER.TD_WAITUNTIL THEN
+    error=BYTE(EXEC.IOERR_NOCMD)
+  ELSEIF request.io_Message.mn_Length<required THEN
+    error=BYTE(EXEC.IOERR_BADLENGTH)
+  ELSE
+    error=TIMERNATIVE.Snapshot(BYTE POINTER(@clock.ticks_hi))
+    IF error=0 THEN
+      IF request.io_Command=TIMER.TD_READCLOCK THEN
+        absolute=TIMER.TimerClockRequest POINTER(request)
+        absolute.ticks_hi=clock.ticks_hi
+        absolute.ticks_lo=clock.ticks_lo
+        absolute.ticks_per_second=clock.ticks_per_second
+      ELSEIF request.io_Command=TIMER.TR_ADDREQUEST THEN
+        error=Relative(TIMER.TimerRequest POINTER(request),@clock)
+        deferred=1
+      ELSE
+        absolute=TIMER.TimerClockRequest POINTER(request)
+        IF absolute.ticks_hi>clock.ticks_hi OR (absolute.ticks_hi=clock.ticks_hi
+            AND absolute.ticks_lo>clock.ticks_lo) THEN
+          clock.ticks_hi=absolute.ticks_hi
+          clock.ticks_lo=absolute.ticks_lo
+          deferred=1
+        FI
+      FI
+    FI
+  FI
+
+  IF error=0 AND deferred<>0 THEN
+    error=Queue(request,@clock)
+    IF error=0 THEN
+      TIMERNATIVE.Leave()
+      RETURN
+    FI
+  FI
+
+  Complete(request,error)
+  TIMERNATIVE.Leave()
+
+RETURN
+
+; The first terminal commit wins. Remove every driver reference before reply.
+PUBLIC PROC AbortIO(EXEC.IORequest POINTER request)
+  BYTE current,previous
+  Pending POINTER pending,before
+  TimerState POINTER state
+
+  TIMERNATIVE.Enter()
+  state=TimerState POINTER(ADDRESS(TIMERMETA.OPENS))
+  previous=$ff
+  current=state.head
+  WHILE current<>$ff DO
+    pending=PendingAt(current)
+    IF pending.request=request THEN
+      IF previous=$ff THEN
+        state.head=pending.next
+      ELSE
+        before=PendingAt(previous)
+        before.next=pending.next
+      FI
+
+      pending.active=0
+      pending.request=NULL
+      state.count==-1
+      state.armed=BYTE(state.count<>0)
+      Complete(request,BYTE(EXEC.IOERR_ABORTED))
+      EXIT
+    FI
+
+    previous=current
+    current=pending.next
+  OD
+
+  TIMERNATIVE.Leave()
+
+RETURN
+
+ENDMODULE

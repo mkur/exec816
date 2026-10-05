@@ -5,6 +5,13 @@ This is the contract selected by S1 of the
 request and lifetime boundaries described below.
 The existing [device API](device-io.md#public-calls) is unchanged.
 
+[timer.device](timer.md) uses the same caller-context resident routing, with
+driver-owned deadlines/cancellation and a bounded native continuation instead
+of a worker Task. Forbid serializes Task peers; a separate native edit gate
+protects its pending table. It replies through the general native port binding,
+with no timer-private kernel operation. SIO/console/display keep their existing
+completion protocols.
+
 ## Calls and execution context
 
 The built-in dispatch description assigns each resident an immutable route ID,

@@ -5,7 +5,7 @@
   "release": "0.9.4",
   "exec_baseline": "acef1f301f29737b051ceb0a7848c6e6135668b7",
   "actionc_pin": "toolchain/actionc.json",
-  "actionc_pin_sha256": "f31077466a9ef240f8d49fd2f62cd8503b5975c164127573834b09a7d05ba3cc",
+  "actionc_pin_sha256": "ee7fedac8e5667b09bbc8e9b356f2238555149e5961866fee85525899c091154",
   "platform_pin": "toolchain/altirra-gem-vdi.json",
   "platform_pin_sha256": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
   "calypsi": {

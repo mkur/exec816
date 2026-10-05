@@ -8,6 +8,8 @@
 .include "layout.inc"
 .if GENERAL_TASKS
     .include "tasks.inc"
+    .include "native-interrupts.inc"
+    .include "timer-device.inc"
 .endif
 .if BANKED
     .include "memory.inc"
@@ -39,6 +41,21 @@
 .macro checkpoint number
     .if PROBE_NMI = number
         wai
+    .endif
+.endmacro
+
+; Test-only one-shot wait at an exact restore phase. BIT/INC preserve the
+; registers being restored; their temporary flags are replaced by outer RTI.
+.macro native_work_checkpoint number
+    .if PROBE_NMI = number
+        .local complete, waiting
+        bit a:E816_PROBE0
+        bmi complete
+        inc a:E816_PROBE0
+waiting:
+        bit a:E816_PROBE0
+        bpl waiting
+complete:
     .endif
 .endmacro
 

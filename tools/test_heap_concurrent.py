@@ -33,7 +33,7 @@ def race_program(toolchain,output,optimize,ports=False,registry=False):
         require(source.count(old)==1,'Ambiguous heap checkpoint')
         source=source.replace(old,new)
     (output/'heapcore.act').write_text(source)
-    if ports:
+    if ports and registry:
         lists=read_source(ROOT/'lib/exec/execlists.act').replace('MODULE EXECLISTS','MODULE EXECLISTS\nUSE HEAPAPIPROBE')
         points={
             '  item.ln_Pred=last':'  item.ln_Pred=last\n  HEAPAPIPROBE.Fill(BYTE POINTER(chain),1,0)',
@@ -80,6 +80,7 @@ RETURN
                   FINISH=finish,POST_CONTINUE=program['labels']['signal_post']+7)
     if ports:
         labels.update(PORT_RACE=1,**{name:next(d['address'] for d in image['data'] if '_'+name+'_' in d['name']) for name in ('PORT','ITEM')})
+        if not registry:labels['ATOMIC_PORTS']=1
     if registry:labels.update(REGISTRY_RACE=1,REGISTRY=program['build']['memory']['ports_storage']['BASE'])
     (output/'races.cfg').write_text(f'MEMORY {{ RAM: start=${base:x},size=$1000,file=%O; }} SEGMENTS {{ PROBE: load=RAM,type=ro; }}\n')
     command(['ca65','-I',output,'-I',ROOT/'platform/altirraos',*[v for k,a in labels.items() for v in ('-D',f'{k}={a}')],
@@ -98,17 +99,20 @@ RETURN
             segment['bytes'][offset:offset+7]=[0x5c,*native_labels[target].to_bytes(3,'little'),0xea,0xea,0xea]
         else:segment['bytes'][offset:offset+4]=[0x5c,*native_labels[target].to_bytes(3,'little')]
     if ports and not registry:
-        address=program['labels']['fast_dequeue_probe']
-        segment=next(s for s in image['segments'] if s['address']<=address<s['address']+len(s['bytes']))
-        offset=address-segment['address']
-        require(segment['bytes'][offset:offset+4]==[0xea]*4,'Native dequeue checkpoint changed')
-        segment['bytes'][offset:offset+4]=[0x22,*native_labels['native_dequeue'].to_bytes(3,'little')]
+        points=sorted(name for name in program['labels'] if name.startswith('port_link_probe_'))
+        require(len(points)==46,'Missing shared queue link access checkpoints')
+        for name in points:
+            address=program['labels'][name]
+            segment=next(s for s in image['segments'] if s['address']<=address<s['address']+len(s['bytes']))
+            offset=address-segment['address']
+            require(segment['bytes'][offset:offset+4]==[0xea]*4,'Native link checkpoint changed')
+            segment['bytes'][offset:offset+4]=[0x22,*native_labels['native_dequeue'].to_bytes(3,'little')]
     changed_image(program)
     program['build']['heap_race_probe']=dict(generated_core_sha256=sha256(output/'heapcore.act'),
         native_probe_sha256=sha256(output/'races.bin'),buffer=labels['BUFFER'],points=list(points),
         native_stack_peak=20 if ports and not registry else 2,serialized_wait='Wait for one actual POKEY IRQ and VBI while checking the worker cannot run')
     if ports:
-        program['build']['port_race_probe']=dict(compiled_lists_sha256=sha256(output/'execlists.act'),
+        program['build']['port_race_probe']=dict(queue_source_sha256=sha256(output/'execlists.act' if registry else ROOT/'platform/altirraos/ports-atomic.s'),
             native_probe_sha256=sha256(output/'races.bin'),points=list(points),native_dequeue=not registry,irq_rejected_service='PutMsg',registry=registry)
     (output/'build.json').write_text(json.dumps(program['build'],indent=2)+'\n')
     return program

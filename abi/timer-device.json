@@ -1,0 +1,17 @@
+{
+  "abi": "exec816.timer.device",
+  "revision": 1,
+  "constants": {"UNIT_VBLANK": 1, "TR_ADDREQUEST": 9, "TD_READCLOCK": 10, "TD_WAITUNTIL": 11, "TIMERERR_QUEUEFULL": 1, "TIMERERR_OVERFLOW": 2, "TIMERERR_CLOCK": 3, "TIMERERR_BADTIME": 4},
+  "records": {
+    "TimerRequest": {"size": 34, "fields": [["tr_Request", "IORequest", 0], ["seconds", "LONGCARD", 26], ["microseconds", "LONGCARD", 30]]},
+    "TimerClockRequest": {"size": 38, "fields": [["tc_Request", "IORequest", 0], ["ticks_hi", "LONGCARD", 26], ["ticks_lo", "LONGCARD", 30], ["ticks_per_second", "LONGCARD", 34]]}
+  },
+  "state_offset": 22784,
+  "state_bytes": 512,
+  "open_capacity": 8,
+  "pending_capacity": 16,
+  "completion_budget": 4,
+  "fields": {"CLOCK_HI": 0, "CLOCK_LO": 4, "VERSION": 8, "FAULT": 9, "RATE": 10, "OPENS": 16, "GENERATION": 18, "EDIT": 20, "ARMED": 21, "HEAD": 22, "COUNT": 23, "PENDING": 32, "OPEN": 288, "NAME": 480},
+  "pending_stride": 16,
+  "open_stride": 24
+}

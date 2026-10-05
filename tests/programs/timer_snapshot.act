@@ -1,0 +1,44 @@
+MODULE TIMERSNAPSHOTPROBE
+USE EXEC
+USE TIMER
+USE HEAPCORE
+USE HEAPAPIPROBE
+BYTE ARRAY name=c"timer.device"
+EXEC.MsgPort POINTER port
+TIMER.TimerClockRequest POINTER query
+CARD checks
+VOLATILE BYTE nmien=$d40e
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f600+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE index
+
+  nmien=0
+  port=EXEC.CreateMsgPort()
+  query=TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(port,SIZEOF(TIMER.TimerClockRequest)))
+  Require(port<>NULL AND query<>NULL)
+  Require(EXEC.OpenDevice(name,TIMER.UNIT_VBLANK,@query.tc_Request,0)=0)
+  query.tc_Request.io_Command=TIMER.TD_READCLOCK
+  FOR index=1 TO 6 DO
+    HEAPAPIPROBE.Fill(NULL,index,0)
+    Require(EXEC.DoIO(@query.tc_Request)=0)
+    Require(query.ticks_hi=8 AND query.ticks_lo=0)
+    Require(query.ticks_per_second=50 OR query.ticks_per_second=60)
+  OD
+
+  EXEC.CloseDevice(@query.tc_Request)
+  EXEC.DeleteIORequest(@query.tc_Request)
+  EXEC.DeleteMsgPort(port)
+  nmien=$40
+
+RETURN
+ENDMODULE

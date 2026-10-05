@@ -1,9 +1,11 @@
 ; The existing hosted startup owns the machine; C runs as an ordinary Task.
 MODULE CALYPSI
 USE EXEC
+USE HEAPCORE
 INCLUDE "../../examples/example-output.inc"
 INCLUDE "c-image.inc"
 INCLUDE "dos-bridge.inc"
+INCLUDE "io-bridge.inc"
 
 CARD FUNC POINTER cMain()
 BYTE ARRAY failed=c"C example failed.\n"
@@ -16,6 +18,7 @@ PROC Main()
   FI
 
   BindDos()
+  BindIO()
   LET previous=DOS.SelectOutput(console)
   LET entry=ADDRESS POINTER(@cMain)
   entry^=C_MAIN

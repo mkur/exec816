@@ -51,9 +51,16 @@ as needed, and `<proto/exec.h>` for the function declarations.
 | Signals | `AllocSignal`, `FreeSignal`, `SetSignal`, `Signal`, `Wait` |
 | Messages | `CreateMsgPort`, `DeleteMsgPort`, `PutMsg`, `GetMsg`, `WaitPort`, `ReplyMsg` |
 | Public ports | `AddPort`, `RemPort`, `FindPort` |
+| Device I/O (`<exec/io.h>`) | `CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice`, `BeginIO`, `SendIO`, `DoIO`, `CheckIO`, `WaitIO`, `AbortIO` |
 | Lists | `NewList`, `IsListEmpty` |
 | DOS output (`<proto/dos.h>`) | `Output`, `Write` |
 | Exec816 extension | `ExecYield` in `<exec816/runtime.h>` for low-level probes |
+
+The standard launcher binds both DOS and caller-context device I/O. Include
+`<devices/timer.h>` for the [VBI timer](../reference/timer.md). The executable
+[timer test](../../tests/programs/timer_device.c) demonstrates a borrowed request,
+asynchronous completion, cancellation and cleanup. Native interrupt reply is an
+assembly resident interface; the ordinary C ReplyMsg function remains Task-only.
 
 These retain Exec816's existing [Task](../reference/tasks.md),
 [signal](../history/signals-implementation.md) and [port](../history/messages-ports-implementation.md) contracts and

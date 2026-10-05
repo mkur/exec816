@@ -1,4 +1,5 @@
 MODULE TASKPOLICY
+USE TIMERMETA
 USE TASKMEMORY
 
 USE EXECLISTS
@@ -42,6 +43,13 @@ PUBLIC EXTERNAL BYTE FUNC WakeMatch(TaskControl POINTER ctx)
 PUBLIC EXTERNAL TaskControl POINTER FUNC TakeWake()
 
 PUBLIC EXTERNAL PROC CancelWakeNode(TaskControl POINTER ctx)
+
+PUBLIC EXTERNAL PROC PortAppend(MsgPort POINTER port Message POINTER message
+    BYTE kind)
+
+PUBLIC EXTERNAL Message POINTER FUNC PortPeek(MsgPort POINTER port)
+
+PUBLIC EXTERNAL BYTE FUNC PortCollect(Message POINTER message)
 
 ; Locate a private Task context in the fixed-capacity pool.
 TaskControl POINTER FUNC RecordFor(BYTE id)

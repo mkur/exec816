@@ -24,10 +24,14 @@ Prepare the compiler checkout at the recorded revision:
 ```sh
 git clone https://github.com/mkur/actionc.git build/actionc
 actionc_revision=$(python3 -c 'import json; print(json.load(open("toolchain/actionc.json"))["revision"])')
+git -C build/actionc fetch ../../toolchain/actionc-pointer-arrays.bundle refs/heads/fix/record-pointer-array-elements
 git -C build/actionc checkout --detach "$actionc_revision"
 ```
 
 For an existing checkout, fetch the recorded revision before checking it out.
+The small incremental bundle contains the locally pinned pointer-array typing
+fix on top of the upstream revision named by `bundle_base` in the pin. It is
+included so this build does not depend on an unpublished remote commit.
 The builders compile the compiler as needed. Use the exact bridge and ROM from
 the platform pin; an arbitrary installed AltirraSDL build does not satisfy that
 input check. The emulator is [AltirraSDL](https://github.com/ilmenit/AltirraSDL);

@@ -73,7 +73,9 @@ def queue_races(bridge,toolchain,output,optimize,registry=False):
     require(runtime['native_irq_count']>=3 and runtime['native_nmi_count']>=3,'Missing IRQ/NMI link-write entries')
     clean_ownership(bridge,program,output)
     return dict(build=program['build'],runtime=runtime,counters=counters,
-                scope='Real IRQ/NMI inside partial '+('registry insertion/removal' if registry else 'enqueue/dequeue/reply')+' writes; IRQ port COP rejects; worker resumes after guard release')
+                scope=('Real IRQ/NMI inside partial registry writes' if registry else
+                    'NMI before/after shared link accesses; requested IRQ deferred until unmasking')+
+                    '; IRQ port COP rejects; worker resumes after guard release')
 
 
 def queue_context(bridge,toolchain,output,optimize,variant,waiting=False,nonempty=False):

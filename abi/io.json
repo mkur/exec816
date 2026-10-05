@@ -29,6 +29,14 @@
         "test_only": false,
         "task_offset": 36,
         "lease_offset": 136
+      },
+      "TIMER": {
+        "id": 4,
+        "module": "TIMERDRIVER",
+        "storage": "timer_device_storage",
+        "device_offset": 16,
+        "name_offset": 480,
+        "test_only": false
       }
     }
   },

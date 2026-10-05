@@ -42,6 +42,23 @@ ExNext after a mutation. The next batch is `>>` and minimal EXECUTE.
 
 ## Follow-on capabilities
 
+The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
+using VBXE and preserving application source interfaces. The
+[XaAES study](plans/gem4xe/xaaes-study.md) recommends client/wait and window-redraw
+contracts followed by a two-client compatibility proof. Existing native desktop
+and widget milestones below are foundations, not full AES compatibility.
+The proposed [AES server layer](plans/gem4xe/aes-server-design.md) makes the first
+step concrete: reuse the presenter for client registration, messages, event
+waits, update/mouse locks and orderly exit. AS0–AS4 use the implemented
+[timer.device](reference/timer.md) with ordinary Exec Wait and include
+a measured two-client foundation before GEM window redraw. Native
+[interrupt-context ReplyMsg](reference/ports.md#native-interrupt-reply), protected
+port transactions and controlled NMI continuations are implemented. The
+[IR0–IR5 execution record](history/interrupt-reply.md) includes real Action!/C
+timer adoption without a worker. Development checks cover the standard 57.6k
+loaded envelope. Close the open 125k transport refill timing gate before
+claiming that combination is supported; AES TD4 measurements remain separate.
+
 The **first desktop on Exec816** has development evidence. The
 [design note](plans/gem4xe/desktop-design.md) proposes a desktop background,
 ST mouse pointer and one framed, movable shell window, followed by a second

@@ -7,6 +7,12 @@ use a message queue or other state to retain individual work items. Public calls
 belong to `EXEC`; exact declarations and selectors are generated from
 [tasks.json](../../abi/tasks.json).
 
+Admitted native ReplyMsg uses the same atomic retained-recipient publisher as
+hardware bindings. It commits received bits and one wake-node enqueue before
+return; scheduler policy processes that wake only at a safe exit. A retained
+Task does not by itself retain its reply port or signal. See the
+[native port contract](ports.md#native-interrupt-reply).
+
 ## Public API
 
 | Call | Contract |

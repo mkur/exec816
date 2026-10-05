@@ -6,6 +6,10 @@ Exec exposes the familiar request/reply device model through `EXEC`. Public call
 run in ordinary Task context with IRQs enabled. Blocking continuations run on the
 caller's stack; they do not retain a kernel activation while waiting.
 
+The resident [timer.device](timer.md) supports VBI delays and wide monotonic
+deadlines without a worker Task. C declarations are in `<exec/io.h>` and
+`<proto/exec.h>`; the Calypsi launcher binds the ordinary caller-context I/O path.
+
 ## Public calls
 
 | Call | Contract |
@@ -44,6 +48,12 @@ WaitIO collects only the requested reply and leaves unrelated messages alone.
 A client may collect through GetMsg instead, but must not collect the same
 completion twice. CheckIO is observational, not a dequeue.
 
+Exact reply collection and queue access share the IRQ-protected native port
+transactions. CheckIO observes the byte-wide completion type; terminal fields
+are written before publication. Drivers may complete through the admitted
+[native ReplyMsg binding](ports.md#native-interrupt-reply), while public
+Action!/C device calls remain Task-only.
+
 AbortIO does not wait for safe retirement. Cancellation can race with normal
 completion. Wait/collect afterwards before reusing buffers or closing the binding.
 Extra requests may borrow a successfully opened binding while its owner remains
@@ -80,3 +90,8 @@ See [filesystem execution](../architecture/filesystems.md), the
 [platform SIO boundary](platform.md#native-sio-ownership) and
 [historical I/O design](../history/device-io-sio-design.md) for the implementation
 rationale and revision-specific timing evidence.
+
+The interrupt-reply integration is development-tested under the default nominal
+57.6k profile. The loaded 125k refill timing gate remains open (including a
+port-only regression); see the [measured envelope](../history/interrupt-reply.md).
+Do not infer high-speed acceptance from functional transfer success.
