@@ -114,6 +114,7 @@ PROC FileWrites()
 
 RETURN
 
+; A retained CurrentDir lock must still examine a directory after children grow it.
 PROC Names()
 
   phase=5
@@ -127,11 +128,19 @@ PROC Names()
   Require(lock<>NULL)
   Require(DOS.CreateDir(Path(2))=NULL AND DOS.IoErr()=DOS.ERROR_OBJECT_EXISTS)
   Require(DOS.DeleteFile(Path(2))=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
-  DOS.UnLock(lock)
-  file=DOS.Open(Path(3),DOS.MODE_NEWFILE)
+  Require(DOS.Examine(lock,@info)<>0)
+  LET previous=DOS.CurrentDir(lock)
+  Require(DOS.IoErr()=0)
+  file=DOS.Open(BYTE POINTER(c"CHILD"),DOS.MODE_NEWFILE)
   Require(file<>NULL)
   Require(DOS.Write(file,BYTE POINTER($afff0),17)=17)
   Require(DOS.Close(file)<>0)
+  Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Examine(lock,@info)<>0)
+  Require(DOS.ExNext(lock,@info)<>0 AND info.fib_Size=17)
+  Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  Require(DOS.CurrentDir(previous)=lock AND DOS.IoErr()=0)
+  DOS.UnLock(lock)
   Require(DOS.DeleteFile(Path(2))=0 AND DOS.IoErr()=DOS.ERROR_DIR_NOT_EMPTY)
   Require(DOS.DeleteFile(Path(3))<>0)
   Require(DOS.DeleteFile(Path(2))<>0)

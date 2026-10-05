@@ -47,7 +47,7 @@ PROC Seed(FSBTYPES.Workspace POINTER work CARD directory)
 
 RETURN
 
-; Cache validated directory length/parent for this read-only mount generation.
+; Cache validated directory length/parent until a write invalidates the state.
 ; The cursor persists across entries; another directory replaces this one slot.
 PUBLIC BYTE FUNC BeginEntry(FSBTYPES.Workspace POINTER work CARD directory
     LONGCARD ordinal)
@@ -293,10 +293,8 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
     RETURN(status)
   FI
 
-  IF work.entry.known<>0 AND work.entry.length<>state.directory.entry.length THEN
-    RETURN(Error(work,ERROR_DISK_NOT_VALIDATED))
-  FI
-
+  ; A retained directory lock can predate child creation. Its saved length is
+  ; a snapshot; the validated header supplies the current extent.
   work.entry.length=state.directory.entry.length
   work.entry.known=1
   state.measurePhase=1

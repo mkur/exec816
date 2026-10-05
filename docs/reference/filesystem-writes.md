@@ -52,8 +52,10 @@ structures produce explicit errors before mutation when discovered in preflight.
 
 Completed mutations advance a mount-wide metadata epoch. An older ExNext cookie
 returns `ERROR_OBJECT_IN_USE`, including after a change elsewhere on that mount;
-restart with Examine. The cookie occupies 22 of the existing 32 reserved FIB
-bytes. Enumeration sees a live writer's last committed metadata. An unexplained
+restart with Examine. Examine refreshes directory metadata through the retained
+lock, including its extent after child creation. The cookie occupies 22 of the
+existing 32 reserved FIB bytes. Enumeration sees a live writer's last committed
+metadata. An unexplained
 native incomplete entry does not grant permission to resume writing it.
 
 ## Completion, cancellation and errors
