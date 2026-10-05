@@ -126,16 +126,17 @@ bounded correctness, not a frame-rate guarantee.
 
 G4 reserves zero additional bank-zero bytes: fixed, each public Task, and idle.
 The existing whole C code/data banks remain reserved (131,072 bytes including
-unused capacity); staging consumes 4,096 bytes within the data bank. B1 adds 4,096 construction bytes inside the existing data bank. VRAM now
-reserves 111,872 bytes including padding: screen 81,920, XDL 256, BCB 4,096,
-font masks 20,480 (18,432 used), glyph scratch 4,096 and cursor storage 1,280. These reservations are
+unused capacity); staging consumes 4,096 bytes within the data bank. B1 adds 4,096 construction bytes inside the existing data bank. The current
+[VRAM map](../../../platform/altirraos/vbxe-vram.json) reserves 243,200 bytes
+including padding: screen 81,920, XDL 256, BCB 4,096, font masks 20,480
+(18,432 used), glyph scratch 4,096, cursor storage 1,280 and two 65,536-byte
+desktop snapshot slots. There are 281,088 unassigned bytes. These reservations are
 separate from CPU RAM. The test's 76,800-byte CPU readback allocation, font copy
 and borrowed observer scratch are diagnostics, not production renderer storage.
 
 Run the development corpus with:
 
 ```sh
-python3 tools/test_gem_render.py --mode raw --output build/gem-vdi/g4-raw
 python3 tools/test_gem_render.py --mode opt --output build/gem-vdi/g4-opt
 python3 tools/test_gem_drawing.py --mode opt --output build/bitmap-console/drawing
 ```

@@ -262,9 +262,12 @@ command-cache comparison above shows why eligibility alone is not a speedup.
 
 Move submission costs 2.89–3.64 ms of charged CPU in the eight observed copies.
 Launch-to-IRQ idle observation is 1.39–8.26 ms, an upper bound including interrupt
-latency, not a direct DMA BUSY measurement. Larger end-to-end delays require
-reducing synchronous clipped repair and frame submissions, then measuring worker
-scheduling/input service. Memory traffic savings do not supersede latency.
+latency, not a direct DMA BUSY measurement. Submission includes setup, upload,
+launch and return; upload is not separately timed. IRQ acknowledgement to the
+owner's completion poll takes 1.73–2.21 ms. The next measurements should isolate
+release-to-copy admission, geometry commit, exposure repair and scanout in the
+same drag run, then target retained preparation and presenter scheduling.
+Memory traffic savings do not supersede latency.
 
 The refreshed `build/desktop-rendering/dr7/preview/exec816-demo.zip` contains
 the standard five-second OF816 shell/prime boot plus a separately booted
@@ -273,6 +276,28 @@ Both extracted variants pass shell/disk commands, desktop interaction where
 applicable, EXIT and ownership/guard restoration. The combined archive's 24
 checksums pass, and its executable/media bytes match those walkthroughs.
 This is a local development preview, not hosted-system or hardware qualification.
+
+Build the two variants with `tools/build_demo.py`, then combine their flat
+distributions with `tools/package_desktop_preview.py`:
+
+```sh
+python3 tools/build_demo.py --output build/desktop-preview
+python3 tools/build_demo.py --desktop --output build/desktop-preview/desktop
+python3 tools/package_desktop_preview.py --standard build/desktop-preview/exec816-demo.zip --desktop build/desktop-preview/desktop/exec816-demo.zip --output build/desktop-preview/exec816-demo.zip
+```
+
+Extract the result and run `tools/test_demo.py --boot-smoke` with `--bundle`
+pointing to each development directory and `--distribution-root` to its matching
+extracted directory (root or `desktop/`). Metadata stays in the development
+directories. Packaging requires fresh flat inputs; regenerate the standard ZIP
+before combining it again. Publication remains separate.
+
+The final host discovery passes 357 tests with four skips (361 total), including
+three package checks. Focused emitted checks use optimized builds; the earlier
+slices retain their small raw/optimized compiler-boundary probes. All fifteen
+DR0 scene hashes match. Settled console-move time drops from 581.62 to 220.61 ms,
+while the odd clipped retained scene still takes 32.29 seconds (54.23 before).
+These single-scene timings are distinct from physical drag distributions.
 
 Against DR0, reserved bank-zero delta is zero for fixed state, root/kernel, all
 eight public Tasks and idle, including guards, alignment and unused capacity.

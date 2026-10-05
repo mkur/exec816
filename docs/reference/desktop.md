@@ -215,8 +215,11 @@ upper image RAM (plus compiler alignment). Pointer save/masks reserve 1,280 VRAM
 `$38000`; there is no overlap or additional CPU aperture. No new bank-zero pool,
 stack or DP reservation is introduced.
 
-[Development evidence](../history/desktop.md) records raw/optimized execution,
-stack observations and limits. These checks do not establish physical-device or whole-system qualification.
+[Desktop development evidence](../history/desktop.md) and the
+[rendering record](../history/desktop-rendering.md#dr7-combined-measurements-and-local-preview)
+record execution, stack observations and open timing limits. DR0–DR7 add no
+reserved bank-zero bytes; snapshot VRAM grows by 131,072 bytes. These checks do
+not establish physical-device or whole-system qualification.
 
 ## Copied moves
 
