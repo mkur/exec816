@@ -106,3 +106,23 @@ demo builders continue supplying their explicit 4 KiB profile.
 The two idle drag samples reached 279.6 ms release-to-repair, exceeding the
 250 ms target. These checks establish correctness, not timing acceptance;
 DR4–DR7 retain this open target and require the larger matched sample set.
+
+## DR4: disjoint base backgrounds
+
+The painter fills the frame around each client intersection, then fills the
+client once. Title, close gadget, clipped opaque text, widget styles and the
+sixteen-scanline/four-command quanta remain unchanged. The independent optimized
+desktop and widget rasters pass all 25 scenes; see the
+[DR4 record](../development/desktop-rendering-dr4.json).
+
+For a complete 528 by 184 console window this removes 40,960 bytes of duplicate
+base fill; the 160 by 80 command fixture removes 4,032. These are geometry-derived
+work counts, not measured DMA time. The separated side borders increase base
+fill calls (22 to 32 and 9 to 14 respectively), so setup-heavy scenes can cost
+more despite fewer pixels. Matched scene timings are retained without attributing
+whole-scene time to the blitter. No glyph/copy replay count or exact hardware
+BUSY-edge claim is made by this check.
+
+Reserved bank-zero delta is zero for fixed state, root/kernel, each of eight
+public Tasks and idle, including guards, alignment and unused capacity. Upper
+RAM globals and VRAM reservations also have zero delta.

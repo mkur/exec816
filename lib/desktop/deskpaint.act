@@ -92,6 +92,47 @@ BYTE FUNC Fill(LAYERTYPES.Rect POINTER bounds,clip CARD pen)
 RETURN(CONSOLEBITMAP.RawFill(CARD(area.left),CARD(area.top),
     CARD(area.right-area.left),CARD(area.bottom-area.top),pen))
 
+; Paint the frame portion of this strip exactly once. The client background
+; is separate, so a wide client does not receive the full frame fill first.
+BYTE FUNC FrameBackground(LAYERTYPES.Rect POINTER client)
+  LAYERTYPES.Rect area
+
+  REGIONS.Intersect(@strip,client,@area)
+  IF REGIONS.Empty(@area)<>0 THEN
+    RETURN(CONSOLEBITMAP.RawFill(CARD(strip.left),CARD(strip.top),
+        CARD(strip.right-strip.left),CARD(strip.bottom-strip.top),8))
+  FI
+
+  IF strip.top<area.top THEN
+    IF CONSOLEBITMAP.RawFill(CARD(strip.left),CARD(strip.top),
+        CARD(strip.right-strip.left),CARD(area.top-strip.top),8)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF area.bottom<strip.bottom THEN
+    IF CONSOLEBITMAP.RawFill(CARD(strip.left),CARD(area.bottom),
+        CARD(strip.right-strip.left),CARD(strip.bottom-area.bottom),8)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF strip.left<area.left THEN
+    IF CONSOLEBITMAP.RawFill(CARD(strip.left),CARD(area.top),
+        CARD(area.left-strip.left),CARD(area.bottom-area.top),8)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF area.right<strip.right THEN
+    IF CONSOLEBITMAP.RawFill(CARD(area.right),CARD(area.top),
+        CARD(strip.right-area.right),CARD(area.bottom-area.top),8)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
 ; Frame, client and glyph coordinates are independently clipped in pixels.
 BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER layer)
   LAYERTYPES.Rect client,area,bounds
@@ -106,7 +147,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
   REGIONS.Assign(@client,layer.bounds.left+8,layer.bounds.top+16,
       layer.bounds.right-8,layer.bounds.bottom-8)
   IF started=0 THEN
-    okay=Fill(@strip,@strip,8)
+    okay=FrameBackground(@client)
     REGIONS.Assign(@bounds,layer.bounds.left+2,layer.bounds.top+2,
         layer.bounds.right-2,layer.bounds.top+14)
     IF okay<>0 THEN
@@ -144,7 +185,9 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       FI
     FI
 
-    IF okay<>0 THEN
+    ; The console's replacement glyph cells cover the entire clipped client,
+    ; including partial cells. Other clients can leave gaps or draw transparently.
+    IF okay<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
       okay=Fill(@client,@strip,window.content.background)
     FI
 
