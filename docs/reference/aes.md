@@ -7,7 +7,8 @@ ordinary Exec messages; it adds no Task or kernel gateway. The native desktop
 and retained Control Panel remain independent clients of their existing service.
 
 The current source profile in [gem.h](../../c/include/gem.h) implements
-`appl_init`, `appl_exit` and the corresponding `aes_call(AESPB *)` operations.
+`appl_init`, `appl_exit`, `appl_write`, `evnt_mesag` and the corresponding
+`aes_call(AESPB *)` operations.
 Other opcodes return zero with `ExecAESDiagnostic() == AES_UNSUPPORTED`.
 This is a rebuilt Calypsi source interface, not a GEM binary ABI or a complete
 AES implementation. Window, resource, form and VDI workstation calls are pending.
@@ -26,6 +27,17 @@ the same live binding returns that ID. Exit returns one. Failed init returns
 minus one. GEM IDs are never reused within a service lifetime. Native identities
 and request sequences are separately checked 32-bit values; exhaustion fails
 before reuse, reserving the last sequence for exit.
+
+`appl_write(id, 16, words)` copies eight words into the destination's FIFO.
+Each registration has sixteen entries. Success means accepted; a full queue
+returns zero with `AES_RESOURCE`, without replacing an older message or waiting
+for space. Other lengths and invalid pointers fail with `AES_MALFORMED`;
+unknown/retired IDs fail with `AES_IDENTITY`. The sender may reuse its buffer
+after return. Borrowed pointer payloads and long messages are unsupported.
+
+`evnt_mesag(words)` returns one after copying the oldest queued message, or
+blocks the application through its private reply port until a message arrives.
+Other applications and the presenter continue. Exit discards any queued messages.
 
 `global[0]` is zero to avoid advertising a complete AES version, `[1]` is four,
 `[2]` is the application's ID, `[10]` is four display planes, and other words

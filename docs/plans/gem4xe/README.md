@@ -19,7 +19,8 @@ breaks AS0–AS4 into executable commits, with code ownership, a shared intake
 budget, the two-client Task map and measured latency gates. AS0a now supplies the
 generated wire, private C contexts and baseline measurements; AS0b adds optional
 presenter admission with a shared intake budget. AS0c implements task-local
-[application registration](../../reference/aes.md) and cooperative retirement. The implemented
+[application registration](../../reference/aes.md) and cooperative retirement;
+AS1 adds copied FIFO messages and independent C message waits. The implemented
 [native interrupt ReplyMsg foundation](../../reference/ports.md#native-interrupt-reply)
 supports timer.device without another worker; ordinary Action!/C message calls
 remain Task-only.

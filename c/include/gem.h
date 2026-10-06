@@ -13,5 +13,7 @@ typedef struct {
 
 WORD appl_init(void);
 WORD appl_exit(void);
+WORD appl_write(WORD id, WORD length, const WORD *message);
+WORD evnt_mesag(WORD *message);
 void EXEC_CALL aes_call(AESPB *pb);
 #endif

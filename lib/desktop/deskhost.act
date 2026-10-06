@@ -125,6 +125,7 @@ PUBLIC PROC Controls()
     OD
 
     DESKCORE.Wake(service)
+    AESHOST.Wake()
     DESKPAINT.Sync()
   FI
 

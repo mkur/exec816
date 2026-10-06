@@ -11,6 +11,9 @@ PUBLIC TYPE Client=[
   AESTYPES.Request POINTER binding
   EXEC.MsgPort POINTER replies
   AESTYPES.Request POINTER waiting
+  CARD eventMask
+  INT ARRAY words(AESTYPES.QUEUE_DEPTH*AESTYPES.MESSAGE_WORDS)
+  BYTE head,queued
 ]
 
 PUBLIC TYPE Service=[

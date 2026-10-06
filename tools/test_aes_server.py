@@ -166,19 +166,27 @@ def check_bridge(words, entry):
     require((words[3] ^ words[23]) & 1, 'Missing opposite bridge stack parities')
 
 
-def registration(out, replay=False):
+def applications(out, suite, replay=False):
+    registration = suite == "registration"
     out.mkdir(parents=True, exist_ok=True)
     if replay:
         program = read_build(out/'program')
         foreign = json.loads((out/'c-image.json').read_text())
     else:
         foreign = drawing(out, True, widgets=True,
-            client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'tests/programs/aes_registration.c'],
-            client_entries=['AESClient'+n for n in ('One', 'Two', 'Three', 'Four', 'Five')],
-            client_roots=['AESRun', 'AESExhausted', 'AESService', 'AESChecks', 'AESFailures'],
+            client_sources=[ROOT/'c/calypsi/aes.c', ROOT/f'tests/programs/aes_{suite}.c'],
+            client_entries=['AESClient'+n for n in (('One', 'Two', 'Three', 'Four', 'Five') if registration else ('One', 'Two'))],
+            client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else []),
             client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())])
         sy = foreign['symbols']
-        source = out/'registration.act'
+        source = out/(suite+'.act')
+        exhaustion = f'''  service.nextClient=0
+  entry^=${sy['AESExhausted']:x}
+  Require(run()=0)
+  service.nextClient=100
+  service.nextGem=0
+  Require(run()=0)
+''' if registration else ''
         source.write_text(f'''MODULE AESPROBE
 USE EXEC
 USE AESBOOT
@@ -209,13 +217,7 @@ PROC Main()
   LET service=AESSTATE.Get()
   Require(service.count=0)
   Require(AESCORE.Idle(service)<>0)
-  service.nextClient=0
-  entry^=${sy['AESExhausted']:x}
-  Require(run()=0)
-  service.nextClient=100
-  service.nextGem=0
-  Require(run()=0)
-
+{exhaustion}
 RETURN
 ENDMODULE
 ''')
@@ -229,7 +231,7 @@ ENDMODULE
             tasks=True, task_capacity=8, foreign_image=foreign,
             console_deferred=True, memory_profile=memory)
     report = dict(status='running', tier='development', qualification=False,
-        slice='AS0c', build=program['build'],
+        slice='AS0c' if registration else 'AS1', build=program['build'],
         reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
     try:
         with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
@@ -241,15 +243,15 @@ ENDMODULE
                     report[name] = int.from_bytes(bridge.memdump(foreign['symbols'][name], 2), 'little')
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
             ownership(bridge, program, program['output'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= 160,
-                    'Incomplete registration checks')
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 1000),
+                    'Incomplete application checks')
             report['status'] = 'pass'
     except Exception as error:
         report.update(status='fail', error=str(error))
         raise
     finally:
         (out/'results.json').write_text(json.dumps(report, indent=2)+'\n')
-    print('AES registration checks passed', flush=True)
+    print('AES', suite, 'checks passed', flush=True)
     return report
 
 
@@ -337,13 +339,13 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
     parser.add_argument('--replay', action='store_true')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages'), default='context')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite == 'registration':
-        registration(args.output.resolve(), args.replay)
+    elif args.suite in ('registration', 'messages'):
+        applications(args.output.resolve(), args.suite, args.replay)
     else:
         require(args.mode == 'opt', 'Routine intake checks use optimized builds')
         intake(args.output.resolve(), args.failure, args.replay)

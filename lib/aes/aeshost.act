@@ -54,6 +54,15 @@ PUBLIC BYTE FUNC Runnable()
 
 RETURN(AESCORE.Runnable(service))
 
+PUBLIC PROC Wake()
+
+  LET service=AESSTATE.Get()
+  IF service<>NULL AND service.live<>0 THEN
+    AESCORE.Wake(service)
+  FI
+
+RETURN
+
 PUBLIC BYTE FUNC Idle()
 
   LET service=AESSTATE.Get()

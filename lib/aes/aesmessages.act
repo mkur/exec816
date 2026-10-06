@@ -1,0 +1,63 @@
+; Fixed copied-message queues. No application payload pointer is retained.
+MODULE AESMESSAGES
+USE AESTYPES
+USE AESSTATE
+
+PUBLIC AESSTATE.Client POINTER FUNC Destination(AESSTATE.Service POINTER service
+    INT id)
+  BYTE index
+
+  IF id<=0 THEN
+    RETURN(NULL)
+  FI
+
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    IF service.clients(index).id<>0 AND service.clients(index).gemId=id THEN
+      RETURN(@service.clients(index))
+    FI
+  OD
+
+RETURN(NULL)
+
+PUBLIC CARD FUNC Write(AESSTATE.Service POINTER service
+    AESTYPES.Request POINTER request)
+  BYTE index,tail
+
+  IF request.intin(1)<>16 THEN
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  LET client=Destination(service,request.intin(0))
+  IF client=NULL THEN
+    RETURN(AESTYPES.IDENTITY)
+  FI
+
+  IF client.queued=AESTYPES.QUEUE_DEPTH THEN
+    RETURN(AESTYPES.RESOURCE)
+  FI
+
+  tail=(client.head+client.queued) MOD AESTYPES.QUEUE_DEPTH
+  FOR index=0 TO AESTYPES.MESSAGE_WORDS-1 DO
+    client.words(CARD(tail)*AESTYPES.MESSAGE_WORDS+index)=request.words(index)
+  OD
+
+  client.queued==+1
+  request.intout(0)=1
+
+RETURN(AESTYPES.OK)
+
+PUBLIC PROC Take(AESSTATE.Client POINTER client
+    AESTYPES.Request POINTER request)
+  BYTE index
+
+  FOR index=0 TO AESTYPES.MESSAGE_WORDS-1 DO
+    request.words(index)=client.words(
+        CARD(client.head)*AESTYPES.MESSAGE_WORDS+index)
+  OD
+
+  client.head=(client.head+1) MOD AESTYPES.QUEUE_DEPTH
+  client.queued==-1
+
+RETURN
+
+ENDMODULE

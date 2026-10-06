@@ -135,8 +135,7 @@ static WORD submit(struct ExecAESContext *c, UWORD operation)
         return failure;
     }
     c->diagnostic = r->status;
-    if (c->identity != 0 && r->status != AES_IDENTITY &&
-        r->status != AES_BUSY && r->status != AES_OVERFLOW)
+    if (c->identity != 0)
         c->sequence = sequence;
     if (r->status == AES_OK) {
         if (operation == AES_OP_INIT) {
@@ -160,6 +159,7 @@ WORD appl_init(void)
 {
     struct ExecAESContext *c = ExecAESContext();
     if (c == NULL) return -1;
+    if (c->busy) { c->diagnostic = AES_BUSY; return -1; }
     if (c->identity != 0) { c->diagnostic = AES_OK; return c->gemId; }
     return submit(c, AES_OP_INIT);
 }
@@ -170,11 +170,39 @@ WORD appl_exit(void)
     return c != NULL ? submit(c, AES_OP_EXIT) : 0;
 }
 
+WORD appl_write(WORD id, WORD length, const WORD *message)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    UWORD i;
+    if (c == NULL) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    if (length != 16 || !ExecAESPointer(message, 16)) {
+        c->diagnostic = AES_MALFORMED; return 0;
+    }
+    c->request.intin[0] = id;
+    c->request.intin[1] = length;
+    for (i = 0; i < AES_MESSAGE_WORDS; ++i) c->request.words[i] = message[i];
+    return submit(c, AES_OP_WRITE);
+}
+
+WORD evnt_mesag(WORD *message)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    UWORD i;
+    WORD result;
+    if (c == NULL) return 0;
+    if (!ExecAESPointer(message, 16)) { c->diagnostic = AES_MALFORMED; return 0; }
+    result = submit(c, AES_OP_MESAG);
+    if (result)
+        for (i = 0; i < AES_MESSAGE_WORDS; ++i) message[i] = c->request.words[i];
+    return result;
+}
+
 void EXEC_CALL aes_call(AESPB *pb)
 {
     struct ExecAESContext *c = ExecAESContext();
     WORD result = 0;
-    UWORD i, op;
+    UWORD i, op, inputs = 0, addresses = 0;
     if (c == NULL) return;
     c->diagnostic = AES_MALFORMED;
     if (!ExecAESPointer(pb, sizeof(*pb)) ||
@@ -182,13 +210,24 @@ void EXEC_CALL aes_call(AESPB *pb)
         !ExecAESPointer(pb->global, 30) ||
         !ExecAESPointer(pb->int_out, 2)) return;
     op = pb->control[0];
+    if (op == AES_OP_WRITE) { inputs = 2; addresses = 1; }
+    if (op == AES_OP_MESAG) addresses = 1;
     if (op == AES_OP_INIT) result = -1;
-    if ((op == AES_OP_INIT || op == AES_OP_EXIT) &&
-        pb->control[1] == 0 && pb->control[2] == 1 &&
-        pb->control[3] == 0 && pb->control[4] == 0)
-        result = op == AES_OP_INIT ? appl_init() : appl_exit();
-    else if (op != AES_OP_INIT && op != AES_OP_EXIT)
+    if (pb->control[1] != inputs || pb->control[2] != 1 ||
+        pb->control[3] != addresses || pb->control[4] != 0 ||
+        (inputs && !ExecAESPointer(pb->int_in, inputs*2)) ||
+        (addresses && !ExecAESPointer(pb->addr_in, addresses*4))) {
+        pb->int_out[0] = result; return;
+    }
+    switch (op) {
+    case AES_OP_INIT: result = appl_init(); break;
+    case AES_OP_EXIT: result = appl_exit(); break;
+    case AES_OP_WRITE:
+        result = appl_write(pb->int_in[0], pb->int_in[1], (WORD *)(ULONG)pb->addr_in[0]); break;
+    case AES_OP_MESAG: result = evnt_mesag((WORD *)(ULONG)pb->addr_in[0]); break;
+    default:
         c->diagnostic = AES_UNSUPPORTED;
+    }
     pb->int_out[0] = result;
     for (i = 0; i < AES_GLOBAL_WORDS; ++i) pb->global[i] = c->request.global[i];
 }
