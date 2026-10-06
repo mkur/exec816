@@ -30,7 +30,7 @@ def instrument(out,size):
     (out/'shell-break-common.inc').write_text(source)
     for name in ('shell_break.act','breakprobe.act'):(out/name).write_bytes((ROOT/'tests/programs'/name).read_bytes())
     core=(ROOT/'examples/shell/shell-session.inc').read_text()
-    for name in ('shell-commands.inc','shell-redirection.inc'):core=core.replace('"'+name+'"','"'+str(ROOT/'examples/shell'/name)+'"')
+    for name in ('shell-jobs.inc','shell-commands.inc','shell-redirection.inc'):core=core.replace('"'+name+'"','"'+str(ROOT/'examples/shell'/name)+'"')
     core=core.replace('PROC ShellDispatch()\n  CARD index','PROC ShellDispatch()\n  CARD index\n  IF scenario=1 AND shell.command=1 THEN Compute(0) RETURN FI')
     core=core.replace('  ShellWrite(shell.console,prompt,2)','  BREAKPROBE.Prompt(prompt)\n  ShellWrite(shell.console,prompt,2)\n  BREAKPROBE.Retained(0)')
     (out/'shell-observed.inc').write_text(core)

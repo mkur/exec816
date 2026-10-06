@@ -39,7 +39,8 @@ class ProcessBindingsTests(unittest.TestCase):
 
     def test_process_helpers_do_not_become_command_entries(self):
         names = ['M_APP_MAIN_A','M_PROCESS_RUN_B','M_PROCESS_FINISH_C','M_PROCESS_HELPER_D',
-                 'M_APP_SHELLEXTERNAL_E','M_APP_SHELLCOMMAND_F','M_APP_SHELLDIR_A']
+                 'M_APP_SHELLEXTERNAL_E','M_APP_SHELLCOMMAND_F','M_APP_SHELLDIR_A',
+                 'M_APP_SHELLCOLLECTJOB_A','M_APP_SHELLRUN_B','M_APP_SHELLFINISH_C']
         image = dict(entry=0x10000,segments=[dict(address=0x10000,bytes=[0]*len(names),executable=True)],
                      routines=[dict(name=n,address=0x10000+i,arguments=[],result_bytes=0,outgoing_bytes=1)
                                for i,n in enumerate(names)])

@@ -127,3 +127,25 @@ rounded bytes. Delay lazily caches a 38-byte clock/alarm request (48 rounded)
 with the existing reply port and timer binding slots. The Process table remains
 1,028 bytes. Providers occupy 1,521 of the reserved 1,664 bytes for 45 entries.
 Fixed, root/kernel, idle, loading and per-Task bank-zero deltas are **0 bytes**.
+
+## F4 One shell-owned background job
+
+RUN uses the ordinary parser, aliases, PATH and original argument tail. It
+selects NIL streams by default, rejects interactive redirection and background
+pipelines, and restores the shell streams immediately after launch. JOBS collects
+at command boundaries; BREAK requests cooperative stop by Process identity.
+EXIT waits for cleanup and collection. Background OpenConsole requires a bound
+interactive scope, so an independent job cannot borrow the shell's keyboard.
+
+The [F4 record](../development/background-pane-primes-f4.json) covers actual
+loaded commands, aliases, quoting, stream/directory inheritance, natural and
+requested completion, stale identities, restart and EXIT. Two ordinary Tasks
+occupy spare slots to check clean eight-Task admission failure while a foreground
+command still fits. The earlier six-Task estimate was a workload peak, not an
+idle worker count; panes add no worker. Persistent C: mapping storage is removed
+explicitly by the fixture before its final heap comparison.
+
+The shell reuses padding in its 128-byte state and adds a 14-byte upper job row
+within the existing 4 KiB globals arena. The provider manifest remains 1,521
+bytes for 45 entries. Fixed, root/kernel, idle, loading and per-Task bank-zero
+reservation deltas are **0 bytes**. These are development checks.

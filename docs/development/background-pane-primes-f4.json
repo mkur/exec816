@@ -1,0 +1,164 @@
+{
+  "slice": "F4",
+  "tier": "development",
+  "status": "pass",
+  "artifact": "build/background-pane-primes/f4-final4/results.json",
+  "artifact_sha256": "1a0bac5b7d97221219c6a9991bedd1d1bb1f6bab420b08bc64514e3cf116d93b",
+  "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "image_sha256": "fde9af2997fa6dc728df85948dbe2aef7b0b1e5b9d2af224f70223761c4121a6",
+  "xex_sha256": "4ec604ad52dd0f9a4725f36b57431a90cdb88502c54cc5a3997c079be5faeb2b",
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": false,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "off",
+    "exeloadmode": "default",
+    "kernel_id": "$91213499097d0042",
+    "actual_kernel_id": "$91213499097d0042",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 548,
+        "untouched_above_floor": 732
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1024,
+        "touched_bytes": 232,
+        "untouched_above_floor": 536
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1024,
+        "touched_bytes": 138,
+        "untouched_above_floor": 630
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1024,
+        "touched_bytes": 582,
+        "untouched_above_floor": 186
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1024,
+        "touched_bytes": 48,
+        "untouched_above_floor": 720
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1024,
+        "touched_bytes": 47,
+        "untouched_above_floor": 721
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 316,
+        "untouched_above_floor": 1988
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 331,
+        "untouched_above_floor": 1973
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 131,
+        "untouched_above_floor": 125
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 273,
+      "untouched_from_base": 1263,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "idle": 0,
+    "loading": 0,
+    "per_task": 0
+  },
+  "sources": {
+    "docs/guides/shell.md": "5e46f7e7bb12a63c71d4e4b974861f942ac0de78606d63840bd64a4463d16dc5",
+    "docs/history/background-pane-primes.md": "78c0cf58eeae44a28de1ea34b659d88ddac7546248098bf9b4ee3f83ccaf59f3",
+    "docs/reference/dos.md": "59fa05ec84aee0c46baefb3edfddcf5b594cf275db1c91781476acc834bde083",
+    "examples/shell/shell-redirection.inc": "4790654280d93d8e0d984194c648151994e87a33ae46a9eac029d9377e54a860",
+    "examples/shell/shell-session.inc": "9f0e9dc08d96857f445d83b5206ed1db417c9d5098283379c91755b246f85d34",
+    "lib/dos/doscalls.act": "67bef4b1587f3d20afa96769682151b0d5e8e286bc46c193c6ad9d5b07736116",
+    "tests/test_process_bindings.py": "0c9f8578ccae6195007f94ba7f321e25cfff064eca016635552cf92f399cd0cb",
+    "tools/generate_tasks.py": "651ff4f720b542dc92bb9da55f6adadc6b009c2238cf5920dd0ae3893e2c2942",
+    "tools/test_o65_shell.py": "9ad487a436d517108e3b8d8178c063f5f7d59964c3ead29ff4475851e4da820e",
+    "tools/test_shell_break.py": "057f5973fcb9674266fc0af1aa1dbac58057f4955498306592720ebd667074d5",
+    "tools/test_shell_concurrent.py": "a492e702b0d07fd8347a310643cedfe215d64f31b098aaf96a188d23b066483f",
+    "tools/test_shell_core.py": "ed20007fda4bd1bd6f4ef21bb9d77ed0b51e39b00fa7c5695754257c89166a9f",
+    "tools/test_shell_entry.py": "1798078149ff07ca9830a2918edd585ab4c38b1161ac8c8d1c41033f73f1ddbd",
+    "tools/test_shell_heap.py": "24e55682872ce77b58d6bfc8fd36491e7152bbb029b6d4a8ebe6a83aaa48078e",
+    "tools/test_shell_lifetime.py": "8e99f3c8a1e93fe52d23bf4c704e4e5e81a78cc16c87d48bba6e9b45225401ed",
+    "examples/shell/shell-jobs.inc": "051bf39f585cada3711de5e50abfa600f7382ae7eaa4a872f1d7c23832ccbbc4",
+    "tests/programs/disk_conquery.act": "1128027fbec73af26f341e9ca404f27f0d64af3a3e766aede17b0681dc67d1d4",
+    "tests/programs/disk_delay.act": "e3f22aff7effa62d3329ab3d89ef24388db67d6fe4be881625a30f9b58fea091",
+    "tests/programs/shell_jobs.act": "3fbb2373d83886a0d7816ca81187316d8291c9ee200577835d9cd4d18998d1d9",
+    "tools/test_shell_jobs.py": "fca757cd6163ad7e144fa0042e4c19ba679f9f0a321183122c9f74106ef4846e"
+  },
+  "costs": {
+    "shell_state_bytes": 128,
+    "job_payload_bytes": 14,
+    "globals_reserved_bytes": 4096,
+    "providers_payload_bytes": 1521,
+    "providers_count": 45
+  },
+  "host_checks": {
+    "count": 391,
+    "artifact": "build/background-pane-primes/host-f4-final.log"
+  },
+  "scope": [
+    "Loaded RUN through aliases and PATH; copied quoted argument tail.",
+    "Independent NIL streams and no borrowed OpenConsole.",
+    "Natural completion, owned cancellation, stale identities and restart.",
+    "Concurrent foreground command and eight-slot pipeline admission rollback.",
+    "Relative file stream/directory inheritance; parent changes directory after launch.",
+    "EXIT stops and collects the job; heap, stack/domain guards and ownership return to baseline."
+  ],
+  "limits": [
+    "Focused development checks, not release or physical-hardware qualification.",
+    "Two ordinary fixture Tasks saturate spare capacity; no new bitmap worker is implied."
+  ]
+}

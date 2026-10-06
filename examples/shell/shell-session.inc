@@ -16,6 +16,8 @@ USE PROGRAMIMAGE
 USE PROCESS
 USE PIPELINE
 USE ASCII
+USE A816MEMORY
+USE DOSARGS
 USE SYS
 USE CSTRING.IMPL AS STR
 
@@ -70,6 +72,10 @@ CONST CMD_PATH=13
 CONST CMD_ALIAS=14
 CONST CMD_UNALIAS=15
 CONST CMD_CLS=16
+CONST CMD_RUN=17
+CONST CMD_JOBS=18
+CONST CMD_BREAK=19
+CONST JOB_RUNNING=1,JOB_STOPPING=2,JOB_DONE=3
 
 TYPE ShellWord=[BYTE POINTER text]
 TYPE ShellAlias=[
@@ -89,7 +95,8 @@ TYPE ShellState=[
   CARD length
   CARD argumentLength
   CARD argsUsed
-  BYTE ARRAY reservedDraw(2)
+  BYTE background
+  BYTE ARRAY reservedDraw(1)
   CARD inputRedirect,outputRedirect
   BYTE argc,command,done
   BYTE ARRAY reservedLine(2)
@@ -110,6 +117,13 @@ TYPE ShellState=[
   BYTE secondCommandStart,secondCommandEnd
 ]
 
+TYPE ShellJob=[
+  LONGCARD identity
+  PROCESS.Result outcome
+  BYTE state,announce
+]
+
+ShellJob job
 ShellState POINTER shell
 ShellAlias POINTER aliases
 BYTE aliasCount
@@ -422,7 +436,16 @@ RETURN
 ; Ordinary dispatch and pipeline validation use the same classification.
 BYTE FUNC ShellClassify(BYTE POINTER word)
 
-  IF ShellEqual(word,c"HELP")<>0 THEN
+  IF ShellEqual(word,c"RUN")<>0 THEN
+    RETURN(CMD_RUN)
+
+  ELSEIF ShellEqual(word,c"JOBS")<>0 THEN
+    RETURN(CMD_JOBS)
+
+  ELSEIF ShellEqual(word,c"BREAK")<>0 THEN
+    RETURN(CMD_BREAK)
+
+  ELSEIF ShellEqual(word,c"HELP")<>0 THEN
     RETURN(CMD_HELP)
 
   ELSEIF ShellEqual(word,c"ECHO")<>0 THEN
@@ -747,8 +770,13 @@ BYTE FUNC ShellParse()
   FI
 
   IF (shell.command=CMD_HELP OR shell.command=CMD_EXIT OR shell.command=CMD_CLS
+      OR shell.command=CMD_JOBS
       OR (shell.command>=CMD_MEM AND shell.command<=CMD_DEVICES))
     AND shell.argc<>1 THEN
+    RETURN(0)
+  FI
+
+  IF shell.command=CMD_BREAK AND shell.argc<>2 THEN
     RETURN(0)
   FI
 
@@ -1081,6 +1109,7 @@ RETURN
 INCLUDE "shell-commands.inc"
 INCLUDE "shell-redirection.inc"
 INCLUDE "shell-path.inc"
+INCLUDE "shell-jobs.inc"
 
 ; Run a disk command in the foreground and keep its result for the shell.
 PROC ShellExternal()
@@ -1166,7 +1195,7 @@ PROC ShellDispatch()
   CASE shell.command OF
   WHEN CMD_HELP THEN
     ShellText(DOS.Output(),
-        c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT")
+        c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXIT")
     ShellByte(DOS.Output(),ASCII.LF)
     ShellText(DOS.Output(),c"Edit: Ctrl-A/E home/end, B/F left/right\n")
     ShellText(DOS.Output(),c"Ctrl-U clear, K cut end, W cut word\n")
@@ -1239,8 +1268,17 @@ PROC ShellDispatch()
   WHEN CMD_UNALIAS THEN
     ShellUnaliasCommand()
 
+  WHEN CMD_JOBS THEN
+    ShellJobs()
+
+  WHEN CMD_BREAK THEN
+    ShellBreakJob()
+
   WHEN CMD_EXTERNAL THEN
-    IF shell.pipeline<>0 THEN
+    IF shell.background<>0 THEN
+      ShellRun()
+
+    ELSEIF shell.pipeline<>0 THEN
       ShellPipeline()
 
     ELSE
@@ -1261,12 +1299,17 @@ PROC ShellCommand()
   shell.status=PROCESS.RETURN_OK
   shell.error=0
   shell.diagnosticWord=$ff
+  ShellCollectJob()
+  IF shell.done<>0 THEN
+    RETURN
+  FI
+
   IF ShellPoll()=0 THEN
     IF ShellScope()<>0 THEN
-      IF ShellParse()=0 THEN
+      IF ShellPrepareCommand()=0 THEN
         ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_NUMBER)
 
-      ELSEIF ShellAliasExpand()<>0 THEN
+      ELSE
         IF ShellRedirect()<>0 THEN
           IF ShellPoll()=0 THEN
             shell.diagnosticWord=0
@@ -1286,6 +1329,7 @@ PROC ShellCommand()
   IF shell.done=0 THEN
     IF ShellScope()<>0 THEN
       ShellDiagnostic()
+      ShellJobAnnounce()
     FI
   FI
 
@@ -1384,6 +1428,9 @@ BYTE FUNC ShellOpen(BYTE POINTER consoleName)
 
   aliases=NULL
   aliasCount=0
+  job.identity=0
+  job.state=0
+  job.announce=0
   shell.historyAvailable=1
   ShellPathReset()
   shell.diagnosticWord=$ff
@@ -1445,6 +1492,10 @@ LONGINT FUNC ShellFinish()
   DOS.FileHandle POINTER ignored
 
   IF shell=NULL THEN
+    RETURN(PROCESS.RETURN_FAIL)
+  FI
+
+  IF ShellStopJob()=0 THEN
     RETURN(PROCESS.RETURN_FAIL)
   FI
 

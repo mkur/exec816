@@ -4,7 +4,7 @@
 
 The shell executes built-ins in its own Task and loads external commands into
 child Processes. It supports per-command stream redirection and one foreground
-pipeline of two external commands. The [demo](demo.md) adds an independent prime
+pipeline of two external commands, plus one separately owned background job. The [demo](demo.md) adds an independent prime
 Process in a second console tile; the shell itself also works as a resident entry.
 Source lives in [examples/shell](../../examples/shell/).
 
@@ -26,7 +26,10 @@ Source lives in [examples/shell](../../examples/shell/).
 | `PATH [ADD directory / SET directory / CLEAR / RESET]` | Inspect or change the shell's command search directories. |
 | `ALIAS [name ["command arguments"]]` | List, inspect, set or replace a session-local command alias. |
 | `UNALIAS name` | Remove a command alias. |
-| `EXIT` | Release shell resources and finish through coordinated shutdown. |
+| `RUN command [arguments...]` | Start one loadable background command; default streams are NIL. |
+| `JOBS` | Show the running/stopping job or latest collected result. |
+| `BREAK identity` | Request cooperative cancellation of that job. |
+| `EXIT` | Stop and collect the job, then release shell resources. |
 
 Command names ignore case. MOUNT only lists; it does not mount/unmount media or
 probe a drive. A mount's handler is MyDOS or SDFS according to its configuration,
@@ -39,6 +42,28 @@ It has no worker Task, so it does not appear under `TASKS`.
 TYPE maps ATASCII end-of-line to LF, drops CR, preserves printable ASCII/tab/LF
 and displays other bytes as dots. CAT is the external command for unchanged byte
 copying. TYPE rejects interactive Input when no file is supplied.
+
+## One background job
+
+`RUN HELLO` returns the prompt immediately. RUN uses the same PATH, aliases,
+quoting and copied argument tail as ordinary commands. Built-ins and background
+pipelines are unsupported. A second running/stopping job reports error 202.
+
+Input and Output default to NIL. Explicit file/NIL redirection works normally,
+for example `RUN CAT <WORK:INPUT.TXT >WORK:OUTPUT.TXT`. Interactive redirection
+is rejected before launch. A background command has its own cancellation scope;
+keyboard BREAK applies to the shell's current foreground interaction. Commands
+requiring OpenConsole must run in the foreground. A graphical command can open
+its own output pane through OpenPane.
+
+JOBS shows the Process identity. `BREAK 7` requests stop for job 7 and returns
+the prompt; the command must cooperate and settle its I/O. Result collection
+and diagnostics happen at complete-command boundaries, preserving a typed draft
+and the foreground result. While idle, one completed Process/Image can remain
+retained until the next command. Owned panes close during child cleanup, so
+layout restoration is immediate. EXIT waits for cancellation and collection;
+uncooperative commands can delay it. There is no forced termination, promotion
+or job lifetime beyond the shell.
 
 ## Paths and directories
 

@@ -1066,7 +1066,7 @@ PUBLIC BYTE POINTER FUNC OpenConsole()
     RETURN(NULL)
   FI
 
-  IF scope.active=0 THEN
+  IF scope.active=0 OR scope.handle=NULL THEN
     DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
     RETURN(NULL)
   FI
