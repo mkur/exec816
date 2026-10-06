@@ -81,11 +81,8 @@ void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
     UBYTE *record;
     if (fault) return;
     if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
-    /* Check the whole operation before an arena flush could draw a prefix. */
-    if (mode>6 || !VbxeBlitExtent(source,ss,bytes,rows) ||
-        !VbxeBlitExtent(dest,ds,bytes,rows)) {
-        latch(DISPLAY_BAD_ARGUMENT); return;
-    }
+    /* Private renderer geometry is already clipped to screen/strip/atlas.
+     * The producer supplies nonempty dimensions and a known hardware mode. */
     if (dirty) flush();
     limit=(UWORD)VBXE_LIST_WORK/(bytes*(mode ? 3 : 2));
     if (limit>VBXE_CHUNK_ROWS) limit=VBXE_CHUNK_ROWS;

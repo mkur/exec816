@@ -37,7 +37,8 @@ There is no cached authorization across calls. Acquisition, retirement and fault
 transitions retain their separate mandatory ownership checks.
 
 The GEM producer drains at 64 records or 8,192 work units. General rectangles
-establish their complete extents before splitting; atlas glyphs derive extents
+derive their extents from renderer clipping and fixed surface layouts before
+splitting; the private builder does not revalidate them. Atlas glyphs derive extents
 from the fixed atlas, admitted screen clip and widget-strip mapping. Pointer
 lists use clipped screen coordinates and fixed private storage, at most four
 records / 1,440 work units. Admitted XOR outlines use four records and at most

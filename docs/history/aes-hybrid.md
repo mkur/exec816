@@ -710,3 +710,24 @@ Reserved bank-zero delta is **0 bytes**, fixed, per public Task and idle,
 including guards, alignment and unused capacity. Upper-RAM/VRAM reservations
 and the existing demo package are unchanged. These are development checks,
 not release or physical-hardware qualification.
+
+## Trusted renderer geometry
+
+BR1 of the [command builder plan](../plans/gem4xe/vbxe-builder-refactor-plan.md)
+removes mode and full source/destination extent validation from private
+`blit_mask`. Clipping and fixed screen, atlas, raster-strip and widget-strip
+layouts establish geometry at the producer. Queue splitting, work/count limits,
+upload and recovery are unchanged; public validation remains at its boundary.
+
+[Development checks](../development/vbxe-builder-br1.json) pass: 389 host tests
+(four historical skips), 87 renderer cases, 15 widget pixel stages and 62 cursor
+cases including fault recovery. The original ten idle-load panel gestures also
+pass pixels, feedback, ownership and guards. Maximum widget-paint CPU in that
+window is 29.308 ms, versus 33.319 ms in the prepared-submit
+baseline. Button-pixel p95 falls from 159.083 to 139.125 ms; consumption p95 falls
+from 38.077 to 17.870 ms. These completion-paced samples do not close HY4.
+
+Linked panel C code shrinks by 72 bytes. Reserved bank-zero delta is **0 bytes**
+fixed, per public Task and idle, including guards/alignment/capacity. Upper-RAM
+and VRAM reservations are unchanged. This is development evidence, not hosted
+system qualification; no demo was refreshed.

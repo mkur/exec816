@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Implementation plans](../README.md) ·
 [Drawing adapter](../../../ports/gem4xe/adapter/README.md)
 
-Status: proposed. Refactor the trusted GEM command builders to remove repeated
+Status: BR1 implemented; BR2–BR4 pending. Refactor the trusted GEM command builders to remove repeated
 geometry validation and reduce construction cost in Control Panel redraws.
 Use generated upper-memory lookup tables for chunk limits and work costs,
 and advance a write pointer through sequential records. Keep clipping and
@@ -114,6 +114,8 @@ to replace already cheaper arithmetic. Signed label-centering divisions and
 clipped-glyph coordinate rounding remain a separate follow-up.
 
 ## BR1 Trust internal geometry
+
+Implemented with [development evidence](../../development/vbxe-builder-br1.json).
 
 Audit every caller of `blit_mask` and its fill/AND/OR/XOR wrappers in the selected
 renderer and adapter. Cover startup clears, widget strips and stipple,

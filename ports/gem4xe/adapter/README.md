@@ -31,6 +31,15 @@ further reduced by the work budget. Synchronous lists leave VBXE IRQs disabled;
 the asynchronous scroll path below owns completion IRQs. No second aperture is enabled.
 The producer establishes geometry and bounds each list while constructing it;
 the admitted driver submits these prepared records and inserts chaining itself.
+The private `blit_mask` callback trusts that geometry instead of checking mode
+and both VRAM extents again. Fill/XOR bounds come from admitted bitmap/VDI
+rectangles or widget clipping. Glyphs intersect screen/clip bounds and use the
+fixed font atlas; raster expansion bounds each band by its private strip.
+Widget stipple uses the clipped rectangle with alternate rows, and publication
+copies the admitted scratch strip. These producers supply nonempty dimensions,
+known modes, screen strides 320/640, atlas strides 1024/1280 or raster strides
+0–320, and no raster may overlap command storage. Queue count/work limits and
+staging/scratch dependencies still apply to every operation.
 Public raw lists still receive full validation through `VbxeSubmit`. A failed
 submission latches the command fault; a partially flushed VDI command is not
 reported complete.
