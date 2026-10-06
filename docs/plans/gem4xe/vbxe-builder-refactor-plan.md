@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Implementation plans](../README.md) ·
 [Drawing adapter](../../../ports/gem4xe/adapter/README.md)
 
-Status: BR1–BR3 implemented; BR4 documentation pending. Refactor the trusted GEM command builders to remove repeated
+Status: BR1–BR4 implemented and checked at the development tier. HY4 remains open. Refactor the trusted GEM command builders to remove repeated
 geometry validation and reduce construction cost in Control Panel redraws.
 Use generated upper-memory lookup tables for chunk limits and work costs,
 and advance a write pointer through sequential records. Keep clipping and
@@ -18,9 +18,8 @@ and [execution record](../../history/aes-hybrid.md#prepared-vbxe-lists) as the
 baseline. That change already removes record decoding in `VbxeOwnerSubmit`.
 Maximum measured widget-paint CPU is 33.319 ms; button-pixel p95 is
 159.082/199.246/179.375 ms for idle/scroll/disk loads. HY4 remains open.
-There is no separate baseline milestone. Retain the measured image and its
-source hashes before implementation, including the currently uncommitted
-prepared-submit changes.
+There is no separate baseline milestone. The measured image and source hashes
+are retained; commit `02c870f` records prepared-submit before the BR slices.
 
 The remaining generic `blit_mask` builder checks mode and both VRAM extents,
 divides to choose a row limit, and performs wide work accounting. The dedicated
@@ -222,6 +221,9 @@ bounded mixed lists, exact pixels, and lower widget label construction CPU
 without extra launches caused solely by switching primitive types.
 
 ## BR4 Measure integrated responsiveness
+
+Completed with [development evidence](../../development/vbxe-builder-br4.json) and
+[integrated results](../../history/aes-hybrid.md#integrated-builder-results).
 
 Run host checks and the focused optimized display, renderer, cursor and widget
 fixtures affected by BR1–BR3. Use the original active-client panel protocol:

@@ -159,10 +159,11 @@ assuming work is pending. Current behavior belongs in the
   at the development tier; independent rectangles and underline-only focus
   repair reduce the five-press idle median from 319 to 119 ms. Release/status
   regressions and remaining timing limits are recorded.
-- [VBXE command builder refactor](gem4xe/vbxe-builder-refactor-plan.md): proposed
-  BR1–BR4 slices to trust internal geometry, use generated upper-memory lookup
-  tables and sequential record addressing, then reserve widget glyph runs.
-  Preserves bounded lists and measures GUI latency.
+- [VBXE command builder refactor](gem4xe/vbxe-builder-refactor-plan.md): BR1–BR4
+  implemented at the development tier. Trusted geometry, generated upper-memory
+  tables, sequential records and reserved glyph runs reduce maximum widget-paint
+  CPU by 40–44% in the original panel samples. One additional upper RAM bank;
+  zero bank-zero/VRAM growth. HY4 remains open.
 - [AES widget library](gem4xe/aes-widgets-implementation-plan.md): AW0–AW6 implemented
   at the development tier;
   actual GEM4XE object/drawing/form extraction, retained widget windows, bounded

@@ -1,0 +1,820 @@
+{
+  "slice": "BR4",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "hy4_closed": false,
+  "baseline_commit": "02c870f",
+  "implementation_commits": [
+    "b5a244e",
+    "cb7b212",
+    "3970f83"
+  ],
+  "scope": "Original active-client ten gestures per idle/scroll/disk load, 60 edges, passive presenter/C markers, feedback and exact final pixels. Completion-paced work, not equal offered throughput. Extra internal markers do not change the guest. Inclusive routine costs overlap.",
+  "matched": {
+    "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "compiler_binary_sha256": "2e74c48d8ad6e0cfe4546d38bfd2c56ff1191465bc0e15bb2e4b3fd5868a2034",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "workload": "Unchanged continuous request/reply loop with a 100 ms caller timer after each exchange; completed counts are measured over each gesture cohort, not fixed offered throughput.",
+    "observer_definition_reproduced": true
+  },
+  "results": {
+    "idle": {
+      "paint_cpu_max_ms": {
+        "before": 33.31857864413804,
+        "after": 19.804223130371774
+      },
+      "label_cpu": {
+        "before": {
+          "calls": 67,
+          "total_cpu_ms": 69.88175573283111,
+          "max_cpu_ms": 4.4579131888595525
+        },
+        "after": {
+          "calls": 67,
+          "total_cpu_ms": 37.00306888137371,
+          "max_cpu_ms": 2.52911349222348
+        }
+      },
+      "latency_ms": {
+        "capture_to_button_consumed_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 10.543165219156473,
+            "p95_ms": 38.077036393803596,
+            "max_ms": 39.84717619213424
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 2.9657630124376393,
+            "p95_ms": 19.1320859512334,
+            "max_ms": 38.58261944602251
+          }
+        },
+        "capture_to_commit_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 25.053321285236805,
+            "p95_ms": 47.1136021788071,
+            "max_ms": 47.48688641755677
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 12.416634831310203,
+            "p95_ms": 28.665212812896915,
+            "max_ms": 48.257278549266324
+          }
+        },
+        "capture_to_button_pixels_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 119.16831482183713,
+            "p95_ms": 159.08153469442993,
+            "max_ms": 179.29075994637563
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 98.70591038076967,
+            "p95_ms": 139.1254181474219,
+            "max_ms": 139.12570008415813
+          }
+        },
+        "capture_to_visible_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 199.24736988267202,
+            "p95_ms": 299.53438148013964,
+            "max_ms": 299.53621406892506
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 179.03758075725386,
+            "p95_ms": 259.36967403884245,
+            "max_ms": 259.6210206391788
+          }
+        }
+      },
+      "input_service_gap": {
+        "before": {
+          "charged_cpu_ms": 43.0055724795913,
+          "elapsed_ms": 82.00263892785098
+        },
+        "after": {
+          "charged_cpu_ms": 32.70832657859903,
+          "elapsed_ms": 45.94356472351169
+        }
+      },
+      "paint_work": {
+        "before": {
+          "paint_quanta": 67,
+          "paint_cpu_ms": 1310.1129297596913,
+          "max_quantum_cpu_ms": 33.31857864413804,
+          "primitive_entries": {
+            "GemWidgetFill": 505,
+            "GemWidgetText": 67,
+            "start": 360,
+            "VbxeOwnerSubmit": 360,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47650,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "after": {
+          "paint_quanta": 67,
+          "paint_cpu_ms": 830.6694305864708,
+          "max_quantum_cpu_ms": 19.804223130371774,
+          "primitive_entries": {
+            "GemWidgetFill": 505,
+            "GemWidgetText": 67,
+            "start": 360,
+            "VbxeOwnerSubmit": 360,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47650,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        }
+      },
+      "prepared_lists": {
+        "cursor": {
+          "lists": 253,
+          "mean": 3.0513833992094863,
+          "median": 4,
+          "p95": 4,
+          "maximum": 4,
+          "histogram": {
+            "1": 60,
+            "3": 60,
+            "4": 133
+          }
+        },
+        "widget_drawing": {
+          "lists": 107,
+          "mean": 15.97196261682243,
+          "median": 15,
+          "p95": 38,
+          "maximum": 40,
+          "histogram": {
+            "1": 8,
+            "5": 32,
+            "10": 4,
+            "12": 2,
+            "13": 1,
+            "14": 3,
+            "15": 4,
+            "16": 2,
+            "17": 10,
+            "18": 5,
+            "21": 6,
+            "22": 2,
+            "29": 10,
+            "30": 8,
+            "31": 2,
+            "37": 2,
+            "38": 2,
+            "39": 2,
+            "40": 2
+          }
+        }
+      },
+      "maximum_queued_work": 5226,
+      "background": {
+        "before": {
+          "io": {
+            "writes": 0,
+            "reads": 0
+          },
+          "aes": {
+            "AESMessages": 90,
+            "AESTimers": 45
+          }
+        },
+        "after": {
+          "io": {
+            "writes": 0,
+            "reads": 0
+          },
+          "aes": {
+            "AESMessages": 82,
+            "AESTimers": 41
+          }
+        }
+      },
+      "observed_helpers": {
+        "VbxeBlitExtent": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        },
+        "_Mul16": {
+          "calls": 174,
+          "total_cpu_ms": 9.578095771089925,
+          "max_cpu_ms": 1.1631300052581202
+        },
+        "_Mul32": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        },
+        "_UDivMod16": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        },
+        "_UDivMod32": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        }
+      },
+      "feedback": {
+        "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+        "edges": 20,
+        "edges_with_invalid_pixels": 0,
+        "invalid_frames": 0,
+        "max_invalid_pixels": 0
+      }
+    },
+    "scroll": {
+      "paint_cpu_max_ms": {
+        "before": 31.316545880269928,
+        "after": 18.006453531891978
+      },
+      "label_cpu": {
+        "before": {
+          "calls": 68,
+          "total_cpu_ms": 64.4193019528348,
+          "max_cpu_ms": 4.03014467583619
+        },
+        "after": {
+          "calls": 68,
+          "total_cpu_ms": 34.89819969297089,
+          "max_cpu_ms": 2.1139616481457724
+        }
+      },
+      "latency_ms": {
+        "capture_to_button_consumed_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 58.28682551922174,
+            "p95_ms": 79.5072168756053,
+            "max_ms": 80.51817152749095
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 41.10898405506788,
+            "p95_ms": 77.48587144530639,
+            "max_ms": 84.05422207310902
+          }
+        },
+        "capture_to_commit_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 67.27835191061477,
+            "p95_ms": 87.80137274996864,
+            "max_ms": 89.9895542439232
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 50.6144106323982,
+            "p95_ms": 85.81935749437183,
+            "max_ms": 92.23630809482661
+          }
+        },
+        "capture_to_button_pixels_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 159.08160517861398,
+            "p95_ms": 199.24588971480688,
+            "max_ms": 199.2468060091996
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 139.11491600399788,
+            "p95_ms": 159.0806184000372,
+            "max_ms": 179.29075994637563
+          }
+        },
+        "capture_to_visible_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 219.45659513461774,
+            "p95_ms": 319.4923306159331,
+            "max_ms": 319.50353760119765
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 179.29132381984806,
+            "p95_ms": 259.3686872602657,
+            "max_ms": 259.3698150072105
+          }
+        }
+      },
+      "input_service_gap": {
+        "before": {
+          "charged_cpu_ms": 63.03978550253109,
+          "elapsed_ms": 96.5556493778361
+        },
+        "after": {
+          "charged_cpu_ms": 60.640997266623344,
+          "elapsed_ms": 90.8238755305697
+        }
+      },
+      "paint_work": {
+        "before": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1281.5301834421375,
+          "max_quantum_cpu_ms": 31.316545880269928,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 444,
+            "VbxeOwnerSubmit": 355,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "after": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 808.9975880312217,
+          "max_quantum_cpu_ms": 18.006453531891978,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 461,
+            "VbxeOwnerSubmit": 370,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        }
+      },
+      "prepared_lists": {
+        "console_drawing": {
+          "lists": 113,
+          "mean": 41.45132743362832,
+          "median": 50,
+          "p95": 50,
+          "maximum": 50,
+          "histogram": {
+            "1": 6,
+            "18": 21,
+            "50": 86
+          }
+        },
+        "cursor": {
+          "lists": 149,
+          "mean": 2.9261744966442955,
+          "median": 3,
+          "p95": 4,
+          "maximum": 4,
+          "histogram": {
+            "1": 40,
+            "3": 40,
+            "4": 69
+          }
+        },
+        "widget_drawing": {
+          "lists": 108,
+          "mean": 15.962962962962964,
+          "median": 15.0,
+          "p95": 38,
+          "maximum": 40,
+          "histogram": {
+            "1": 8,
+            "5": 32,
+            "10": 4,
+            "12": 2,
+            "13": 1,
+            "14": 3,
+            "15": 5,
+            "16": 2,
+            "17": 10,
+            "18": 5,
+            "21": 6,
+            "22": 2,
+            "29": 10,
+            "30": 8,
+            "31": 2,
+            "37": 2,
+            "38": 2,
+            "39": 2,
+            "40": 2
+          }
+        }
+      },
+      "maximum_queued_work": 7840,
+      "background": {
+        "before": {
+          "io": {
+            "writes": 2,
+            "reads": 0
+          },
+          "aes": {
+            "AESMessages": 108,
+            "AESTimers": 55
+          }
+        },
+        "after": {
+          "io": {
+            "writes": 2,
+            "reads": 0
+          },
+          "aes": {
+            "AESMessages": 104,
+            "AESTimers": 52
+          }
+        }
+      },
+      "observed_helpers": {
+        "VbxeBlitExtent": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        },
+        "_Mul16": {
+          "calls": 136,
+          "total_cpu_ms": 6.111401662580933,
+          "max_cpu_ms": 0.0725282253915044
+        },
+        "_Mul32": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        },
+        "_UDivMod16": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        },
+        "_UDivMod32": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        }
+      },
+      "feedback": {
+        "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+        "edges": 20,
+        "edges_with_invalid_pixels": 0,
+        "invalid_frames": 0,
+        "max_invalid_pixels": 0
+      }
+    },
+    "disk": {
+      "paint_cpu_max_ms": {
+        "before": 33.18430627351528,
+        "after": 18.601340045307236
+      },
+      "label_cpu": {
+        "before": {
+          "calls": 68,
+          "total_cpu_ms": 68.78495134476775,
+          "max_cpu_ms": 3.3609678324280816
+        },
+        "after": {
+          "calls": 68,
+          "total_cpu_ms": 33.916284524915454,
+          "max_cpu_ms": 1.5950570851406654
+        }
+      },
+      "latency_ms": {
+        "capture_to_button_consumed_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 6.239682877559105,
+            "p95_ms": 71.66641527307688,
+            "max_ms": 77.22486851175464
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 9.781301673717435,
+            "p95_ms": 54.23666333511423,
+            "max_ms": 68.88891551624731
+          }
+        },
+        "capture_to_commit_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 17.727336163038373,
+            "p95_ms": 83.17077331017693,
+            "max_ms": 86.37357463358796
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 33.364957237245534,
+            "p95_ms": 65.77908283160342,
+            "max_ms": 80.14383002598046
+          }
+        },
+        "capture_to_button_pixels_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 159.00879501648623,
+            "p95_ms": 179.37534096724036,
+            "max_ms": 199.4114570631496
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 99.30530788196437,
+            "p95_ms": 159.07201932958264,
+            "max_ms": 179.01728131224635
+          }
+        },
+        "capture_to_visible_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 259.234485373827,
+            "p95_ms": 359.4601757311677,
+            "max_ms": 379.7162024813252
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 179.24522716347678,
+            "p95_ms": 279.34841600893174,
+            "max_ms": 279.4905121239845
+          }
+        }
+      },
+      "input_service_gap": {
+        "before": {
+          "charged_cpu_ms": 65.57686370755266,
+          "elapsed_ms": 108.53182854299324
+        },
+        "after": {
+          "charged_cpu_ms": 62.522713528311385,
+          "elapsed_ms": 90.70320660746934
+        }
+      },
+      "paint_work": {
+        "before": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1295.1475163488064,
+          "max_quantum_cpu_ms": 33.18430627351528,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 342,
+            "VbxeOwnerSubmit": 339,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "after": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 824.0484282731798,
+          "max_quantum_cpu_ms": 18.601340045307236,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 343,
+            "VbxeOwnerSubmit": 338,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        }
+      },
+      "prepared_lists": {
+        "cursor": {
+          "lists": 215,
+          "mean": 2.902325581395349,
+          "median": 3,
+          "p95": 4,
+          "maximum": 4,
+          "histogram": {
+            "1": 59,
+            "3": 59,
+            "4": 97
+          }
+        },
+        "console_drawing": {
+          "lists": 15,
+          "mean": 40.333333333333336,
+          "median": 50,
+          "p95": 50,
+          "maximum": 50,
+          "histogram": {
+            "1": 1,
+            "18": 3,
+            "50": 11
+          }
+        },
+        "widget_drawing": {
+          "lists": 108,
+          "mean": 15.962962962962964,
+          "median": 15.0,
+          "p95": 38,
+          "maximum": 40,
+          "histogram": {
+            "1": 8,
+            "5": 32,
+            "10": 4,
+            "12": 2,
+            "13": 1,
+            "14": 3,
+            "15": 5,
+            "16": 2,
+            "17": 10,
+            "18": 5,
+            "21": 6,
+            "22": 2,
+            "29": 10,
+            "30": 8,
+            "31": 2,
+            "37": 2,
+            "38": 2,
+            "39": 2,
+            "40": 2
+          }
+        }
+      },
+      "maximum_queued_work": 7840,
+      "background": {
+        "before": {
+          "io": {
+            "writes": 0,
+            "reads": 27
+          },
+          "aes": {
+            "AESMessages": 105,
+            "AESTimers": 53
+          }
+        },
+        "after": {
+          "io": {
+            "writes": 0,
+            "reads": 22
+          },
+          "aes": {
+            "AESMessages": 92,
+            "AESTimers": 45
+          }
+        }
+      },
+      "observed_helpers": {
+        "VbxeBlitExtent": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        },
+        "_Mul16": {
+          "calls": 174,
+          "total_cpu_ms": 7.421279739039357,
+          "max_cpu_ms": 0.0786603494041972
+        },
+        "_Mul32": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        },
+        "_UDivMod16": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        },
+        "_UDivMod32": {
+          "calls": 0,
+          "total_cpu_ms": 0,
+          "max_cpu_ms": 0
+        }
+      },
+      "feedback": {
+        "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+        "edges": 20,
+        "edges_with_invalid_pixels": 0,
+        "invalid_frames": 0,
+        "max_invalid_pixels": 0
+      }
+    }
+  },
+  "checks": {
+    "host_tests": 393,
+    "host_skips": 4,
+    "render_cases": 87,
+    "cursor_cases": 62,
+    "widget_pixel_stages": 16,
+    "glyph_run_cases": 16,
+    "display_cases": [
+      "busy-timeout",
+      "retained-owner",
+      "map-nmi",
+      "copy-fault"
+    ],
+    "table_load_modes": [
+      "raw",
+      "opt"
+    ],
+    "all_guards_ownership_cleanup": true,
+    "docs_links": true,
+    "demo_refreshed": false
+  },
+  "memory": {
+    "bank_zero_reserved_delta": {
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "extra_upper_bank_reserved_bytes": 65536,
+    "table_bank": 15,
+    "table_payload_bytes": 37132,
+    "table_padding_bytes": 0,
+    "table_unused_capacity_bytes": 28404,
+    "mutable_state_delta_bytes": 2,
+    "code_payload_before_bytes": 72741,
+    "code_payload_after_bytes": 74100,
+    "data_payload_before_bytes": 3559,
+    "data_payload_after_bytes": 3559,
+    "bss_before_bytes": 12357,
+    "bss_after_bytes": 12359,
+    "vram_reserved_delta_bytes": 0,
+    "worker_stack_peak_bytes": {
+      "baseline": 776,
+      "BR1": 727,
+      "BR2": 715,
+      "BR3": 743
+    }
+  },
+  "arithmetic_audit": {
+    "private_builder_general_arithmetic_calls": 0,
+    "private_extent_checks": 0,
+    "scope": "Linked gem-vbxe listing: chunk limit/work, covered strides, record address and run capacity/encoding have no general multiply/divide/remainder helpers. Runtime extent count is zero in all measured windows. Other measured helper calls remain elsewhere; signed division is audited statically, not counted by this observer.",
+    "retained": [
+      "Public text-fill area admission",
+      "Selected AES object geometry and signed label centering",
+      "Partial glyph/VDI coordinate arithmetic",
+      "Other driver and AES event operations"
+    ]
+  },
+  "limitations": [
+    "HY4 still needs the full frozen/matched/raw-pointer matrix.",
+    "Idle consumption p95 rose from BR2 11.050 ms to BR3 19.132 ms; the retained BR3 investigation identifies existing cache/presenter and off-CPU delay, with no widget drawing in the slow samples.",
+    "Feedback checks exclude the pointer and begin after model observation; no whole-gesture flicker-freedom claim.",
+    "Background completion counts differ; disk reads 27 to 22 over shorter gesture cohorts are not a throughput regression measurement."
+  ],
+  "sources": {
+    "build/aes-hybrid/prepared-submit/panel-loaded-run/results.json": "3b290762f077690ffe940b8be183a8d61d5902545d4fbaef666248d600a2045a",
+    "build/aes-hybrid/prepared-submit/panel-loaded-run/work-unit-analysis.json": "d27bb3338031e4f87563383c61eb3bd1c71c64227a6c5423c4e074d3c237d012",
+    "build/vbxe-builder/analysis/baseline/work-unit-analysis.json": "ba6447291408363866ccf482a736eb5da7989d5a32f053ddd37fba50d1c712e9",
+    "build/vbxe-builder/br3/panel-run/results.json": "0d45c23fe3f014a6fa2a61cba7e8b082e45435e358beb61c033fa55963030b40",
+    "build/vbxe-builder/br3/panel-run/work-unit-analysis.json": "65034884a4a506cc4ee5eb15fa3b47cd4c944438f8bc93173e62632ca0d173c8",
+    "build/vbxe-builder/br3/panel-run/presenter-definition.json": "5a69a1b0ea5fdf408b29fc97c8b4d4303a07a45bd5e1a4485bf7a0bc572a15e5",
+    "build/vbxe-builder/br3/panel/program/build.json": "0b8f0730418a44105502c287f7e9062c90232d4a36d1805029dec9c7b1976b61",
+    "build/vbxe-builder/br3/panel/drawing/link.lst": "fca424e1233478fd2cbd4db739f7964bd07ddb849c6da040289e3670da4c8336",
+    "build/vbxe-builder/br3/panel/drawing/7-gem-vbxe.lst": "e55d28404b320a2b07e4644024b9db05f8f516576e796e68737466f292b04a31",
+    "build/vbxe-builder/br3/panel/selected/extraction.json": "dd7298c56f5474a98fadc5b55f3c6a1a2f12107012f4f07d818a910172349d46",
+    "tools/profile_vbxe_builder.py": "eaf3520da8f296539977f56fe5b3261fc6b022465db49883a7f056d1d96ea3de",
+    "tools/vbxe_builder_csites.py": "82f2e1b7eb62a025dcf06b9b07f28ec2119fc49bb557c4d678b6c8b1fabda6fd",
+    "tools/analyze_vbxe_builder.py": "e4b673cf74617460d77da081f8f25bb3206977ebdf536a84a388bd28815a4ff1",
+    "tools/test_widget_panel.py": "d2a73d20d50ad42a835451c2e9ce83020f7aba42f74ec46b0c5616d35aa6372c",
+    "docs/development/vbxe-builder-br1.json": "43e5eb325391cd92253ebd1a4ae18e02e9e5bde9d779da76223dfee095ecf836",
+    "docs/development/vbxe-builder-br2.json": "5929a3d3301acc195e8e6094cb7d96923602f296991123f9a20b14120100556d",
+    "docs/development/vbxe-builder-br3.json": "61b70f9e1b57533d06726867fcc491c0afd5fff5c0e9901741390f84ba230afd"
+  }
+}

@@ -799,3 +799,69 @@ peak is 743 bytes versus BR2's 715, leaving 1,561 above its interrupt floor.
 Reserved bank-zero delta is **0 bytes** fixed, per public Task and idle,
 including guards/alignment/capacity. Added upper-bank/VRAM reservations are
 zero for this slice. No demo was refreshed.
+
+
+## Integrated builder results
+
+BR4 completes the [builder refactor](../plans/gem4xe/vbxe-builder-refactor-plan.md)
+at the development tier. The [comparison record](../development/vbxe-builder-br4.json)
+uses the retained prepared-submit image and the same compiler binary/ABI, ROM,
+emulator configuration and original active-client panel protocol: ten gestures
+under each load, sixty button edges. Extra passive internal markers do not
+insert guest instructions. All selected renderer, widget, cursor and display
+checks pass; ownership, stack/domain guards, cleanup and final pixels pass.
+
+| Load | Maximum widget-paint CPU, ms | Button-pixel p95, ms | Input-consumption p95, ms |
+| --- | ---: | ---: | ---: |
+| Idle | 33.319 → 19.804 | 159.082 → 139.125 | 38.077 → 19.132 |
+| Scroll | 31.317 → 18.006 | 199.246 → 159.081 | 79.507 → 77.486 |
+| Disk | 33.184 → 18.601 | 179.375 → 159.072 | 71.666 → 54.237 |
+
+These are before/after figures for the complete refactor. Relative to BR2,
+the idle input p95 regression and its trace investigation remain recorded
+[above](#reserved-widget-glyph-runs). The refactor reduces construction work;
+it does not add an input-service opportunity inside a paint operation.
+Maximum input-service gaps remain 45.944/90.824/90.703 ms elapsed for
+idle/scroll/disk, down from 82.003/96.556/108.532 ms. Other presenter and
+scheduling work still limits response.
+
+Widget submission counts and complete size histograms are identical to the
+retained sample: 107/108/108 lists, median 15, p95 38, maximum 40 records.
+Observed queued work peaks at 5,226/7,840/7,840 units, below 8,192; emitted
+fixtures separately reach the exact 64-record and 8,192-work limits. Fixed
+cursor/outline bounds remain separate. No extent-validation calls appear in
+the measured windows. The linked private builder has no general arithmetic
+helper calls for chunk sizes/work, covered strides, record addressing or run
+capacity. Other multiplication remains visible elsewhere; signed division in
+label centering and partial-glyph coordinates remains a separate follow-up.
+
+The feedback observer finds no invalid sampled pixels on all sixty edges.
+It begins after model observation and excludes the pointer, so this does not
+prove whole-gesture flicker freedom. Work is completion-paced: scrolling
+completes two writes in both cohorts, while disk reads change from 27 to 22
+and AES exchange counts also differ. These shorter gesture cohorts are not an
+equal-offered-load throughput comparison. **HY4 remains open**; its full
+frozen/matched comparisons and raw-pointer cohort were not rerun.
+
+The final tables use 37,132 bytes in one additional reserved 64 KiB CPU bank,
+including 28,404 unused bytes; no table padding. Mutable renderer state grows
+by two upper-RAM bytes. Linked C code grows from 72,741 to 74,100 bytes; worker
+stack peak changes from 776 to 743 bytes in the original three-load protocol.
+Every slice has **zero added reserved bank-zero bytes**, fixed, per public Task
+and idle, including guards/alignment/unused capacity. VRAM reservations are
+unchanged. BR4 itself changes no guest code or reservation. This is development
+evidence, not hosted-system qualification; no demo was refreshed.
+
+To reproduce the measurement on an existing optimized active-client image:
+
+```sh
+python3 tools/profile_vbxe_builder.py BUILD/program OUTPUT
+python3 tools/analyze_vbxe_builder.py OUTPUT
+```
+
+The committed wrapper reproduces the measured observer definition exactly.
+The analyzer excludes native IRQ/NMI and off-Task time from charged CPU,
+retains kernel/C return tails and bus stalls, and reconciles exclusive work
+with each enclosing span. Inclusive component times overlap. Table generation,
+linked placement, image, trace, observer and tool hashes are retained in the
+slice evidence; the failed initial bank-D link remains recorded as well.
