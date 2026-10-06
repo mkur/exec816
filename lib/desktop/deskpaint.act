@@ -139,7 +139,7 @@ RETURN(1)
 BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER layer)
   LAYERTYPES.Rect client,area,bounds
   CARD row,last,first,count,index,titleLength,titleLimit
-  BYTE okay,cached
+  BYTE okay,cached,frameNeeded
 
   LET service=DESKSTATE.Get()
   IF window=NULL THEN
@@ -153,42 +153,48 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
   FI
 
   IF started=0 THEN
-    okay=FrameBackground(@client)
-    REGIONS.Assign(@bounds,layer.bounds.left+2,layer.bounds.top+2,
-        layer.bounds.right-2,layer.bounds.top+14)
-    IF okay<>0 THEN
-      okay=Fill(@bounds,@strip,IF window.id=service.focus THEN 2 ELSE 7 FI)
-    FI
-
-    REGIONS.Intersect(@bounds,@strip,@area)
-    titleLength=0
-    WHILE titleLength<DESKTYPES.TITLE_BYTES AND window.title(titleLength)<>0 DO
-      titleLength==+1
-    OD
-
-    titleLimit=CARD((layer.bounds.right-layer.bounds.left-16) RSH 3)
-    IF window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
-      titleLimit=CARD((layer.bounds.right-layer.bounds.left-32) RSH 3)
-    FI
-
-    IF titleLength>titleLimit THEN
-      titleLength=titleLimit
-    FI
-
-    IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
-      okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.left+8),CARD(layer.bounds.top+4),
-          @window.title(0),titleLength,1,IF window.id=service.focus THEN 2 ELSE 7 FI,@area)
-    FI
-
-    IF okay<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
-      REGIONS.Assign(@bounds,layer.bounds.right-14,layer.bounds.top+2,
+    frameNeeded=strip.left<client.left OR strip.top<client.top
+        OR strip.right>client.right OR strip.bottom>client.bottom
+    okay=1
+    IF frameNeeded<>0 THEN
+      okay=FrameBackground(@client)
+      REGIONS.Assign(@bounds,layer.bounds.left+2,layer.bounds.top+2,
           layer.bounds.right-2,layer.bounds.top+14)
-      okay=Fill(@bounds,@strip,8)
-      REGIONS.Intersect(@bounds,@strip,@area)
-      IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
-        okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.right-12),
-            CARD(layer.bounds.top+4),BYTE POINTER(c"X"),1,1,8,@area)
+      IF okay<>0 THEN
+        okay=Fill(@bounds,@strip,IF window.id=service.focus THEN 2 ELSE 7 FI)
       FI
+
+      REGIONS.Intersect(@bounds,@strip,@area)
+      titleLength=0
+      WHILE titleLength<DESKTYPES.TITLE_BYTES AND window.title(titleLength)<>0 DO
+        titleLength==+1
+      OD
+
+      titleLimit=CARD((layer.bounds.right-layer.bounds.left-16) RSH 3)
+      IF window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
+        titleLimit=CARD((layer.bounds.right-layer.bounds.left-32) RSH 3)
+      FI
+
+      IF titleLength>titleLimit THEN
+        titleLength=titleLimit
+      FI
+
+      IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
+        okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.left+8),CARD(layer.bounds.top+4),
+            @window.title(0),titleLength,1,IF window.id=service.focus THEN 2 ELSE 7 FI,@area)
+      FI
+
+      IF okay<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
+        REGIONS.Assign(@bounds,layer.bounds.right-14,layer.bounds.top+2,
+            layer.bounds.right-2,layer.bounds.top+14)
+        okay=Fill(@bounds,@strip,8)
+        REGIONS.Intersect(@bounds,@strip,@area)
+        IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
+          okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.right-12),
+              CARD(layer.bounds.top+4),BYTE POINTER(c"X"),1,1,8,@area)
+        FI
+      FI
+
     FI
 
     ; Widget background and objects share a drawing batch. The console's
@@ -214,6 +220,11 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
 
     commandIndex=0
     started=1
+    ; Return from frame/setup before entering the widget C renderer. The
+    ; worker may drain ready steps without a new control-admission budget.
+    IF window.kind=DESKTYPES.CONTENT_WIDGETS AND frameNeeded<>0 THEN
+      RETURN(2)
+    FI
   FI
 
   REGIONS.Intersect(@client,@strip,@area)
@@ -362,7 +373,9 @@ PUBLIC BYTE FUNC Ready()
 RETURN(CONSOLEBITMAP.Pending()=0
     AND (paintToken<>0 OR service.scene.busy=0) AND PaintPending()<>0)
 
-; One stripe/command chunk. The update token and model gate survive worker turns.
+; One strip step. Return 2 for an unfinished widget strip, 1 for other paint
+; progress, or 0 for no work. Non-widget work keeps its original turn budget.
+; The update token and model gate survive worker turns.
 PUBLIC BYTE FUNC Pump()
   BYTE count,slot,status,done
   DESKTYPES.Window POINTER window
@@ -411,7 +424,8 @@ PUBLIC BYTE FUNC Pump()
 
   done=PaintStrip(window,layer)
   IF done=2 THEN
-    RETURN(1)
+    RETURN(IF window<>NULL AND window.kind=DESKTYPES.CONTENT_WIDGETS
+        THEN 2 ELSE 1 FI)
   FI
 
   IF done<>0 THEN

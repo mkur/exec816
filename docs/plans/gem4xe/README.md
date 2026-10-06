@@ -56,11 +56,12 @@ bank, with no bank-zero/VRAM growth. HY4 acceptance remains separate.
 
 The [presenter input latency plan](presenter-input-latency-plan.md)
 follows that refactor with input boundaries between native admissions, smaller
-widget steps and bounded text presentation. PI1's boundaries pass development
-checks; its [measurements](../../history/aes-hybrid.md#presenter-input-boundaries)
-show a small CPU-gap reduction and mixed response times. PI2–PI4 remain pending,
-preserving scene ownership and complete strip publication while measuring
-input, model and pixel latency separately. BR4 supplies the baseline.
+widget steps and bounded text presentation. PI1 and
+[PI2](../../history/aes-hybrid.md#widget-paint-input-steps) pass development checks;
+smaller work units improve idle model response, leave button pixels essentially
+unchanged and regress combined feedback. PI1 is retained after a matched
+comparison. PI3/PI4, the 20 ms CPU-gap target and HY4 remain pending. Scene
+ownership and complete strip publication are preserved; BR4 supplies the original baseline.
 
 The completed [minimal hosted VDI plan](minimal-vdi-implementation-plan.md)
 builds on the larger Task stacks. Its [current contract](../../reference/gem-vdi.md)

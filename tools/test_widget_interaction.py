@@ -22,14 +22,22 @@ def build_fixture(out,mode):
     out.mkdir(parents=True,exist_ok=True)
     profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
     memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
-    (out/'widgetinputprobe.act').write_text('MODULE WIDGETINPUTPROBE\nPUBLIC BYTE holdPaint\nENDMODULE\n')
+    (out/'widgetinputprobe.act').write_text('MODULE WIDGETINPUTPROBE\nPUBLIC BYTE holdPaint\nPUBLIC CARD heldIndex\nENDMODULE\n')
     original=generate_tasks.policy_modules
     def instrument(*args,**kwargs):
         directory=original(*args,**kwargs)
         text=(ROOT/'lib/desktop/deskpaint.act').read_text().replace('USE EXEC\n','USE EXEC\nUSE WIDGETINPUTPROBE\n',1)
         needle='  LET region=LAYERS.PaintRegion(@service.scene,paintToken)'
         require(text.count(needle)==1,'Paint continuation boundary moved')
-        text=text.replace(needle,'  IF WIDGETINPUTPROBE.holdPaint<>0 THEN\n    RETURN\n  FI\n\n'+needle)
+        text=text.replace(needle,'  IF WIDGETINPUTPROBE.holdPaint=2 THEN\n    RETURN(0)\n  FI\n\n'+needle)
+        needle='  IF done=2 THEN\n'
+        require(text.count(needle)==1,'Paint step return moved')
+        text=text.replace(needle,needle+'''    IF WIDGETINPUTPROBE.holdPaint=1 AND window<>NULL
+        AND window.kind=DESKTYPES.CONTENT_WIDGETS AND started=1 AND commandIndex<>0 THEN
+      WIDGETINPUTPROBE.heldIndex=commandIndex
+      WIDGETINPUTPROBE.holdPaint=2
+    FI
+''')
         (directory/'deskpaint.act').write_text(text)
         return directory
     generate_tasks.policy_modules=instrument
@@ -64,10 +72,13 @@ def run(out,mode,replay=False):
                 finally:b.regs=original
             def frames(n=2):reach('@frame>=%d'%(b.eval_expr('@frame')+n))
             turn=1;position=[320,120]
-            def command(op,arg=0):
+            def begin_command(op,arg=0):
                 nonlocal turn
                 write('argument',arg);write('command',op);turn+=1
+            def finish_command():
                 reach('dw($%x)=%d'%(at('WIDGETINPUTTEST','checkpoint'),turn))
+            def command(op,arg=0):
+                begin_command(op,arg);finish_command()
             def key(name,shift=False):
                 if shift:b._cmd_ok('KEY SHIFT down')
                 b._cmd_ok('KEY '+name+' down');frames(3)
@@ -145,15 +156,46 @@ def run(out,mode,replay=False):
                             base=ll['Scene']['fields']['items']+slot*ll['Layer']['size']
                             lf=ll['Layer']['fields']
                             if not data[base+lf['dirty']]:continue
-                            damage=rect(base+lf['damage']);region=base+lf['visible']
-                            for i in range(word(region)):
-                                visible=rect(region+ll['Region']['fields']['rects']+i*8)
-                                pending|=(visible[0]<damage[2] and visible[2]>damage[0]
-                                    and visible[1]<damage[3] and visible[3]>damage[1])
+                            damages=base+lf['damage'];region=base+lf['visible']
+                            for d in range(data[damages+ll['Damage']['fields']['count']]):
+                                damage=rect(damages+ll['Damage']['fields']['rects']+d*8)
+                                for i in range(word(region)):
+                                    visible=rect(region+ll['Region']['fields']['rects']+i*8)
+                                    pending|=(visible[0]<damage[2] and visible[2]>damage[0]
+                                        and visible[1]<damage[3] and visible[3]>damage[1])
                         if not pending:return
                         frames(20)
                     raise RuntimeError('Visible widget damage did not settle')
-                # A real Layers paint token is held by a test-only continuation hook.
+                # Hold after a real object step, with live scratch and token.
+                settled();move(164,134)
+                b.memload(at('WIDGETINPUTPROBE','holdPaint'),b'\1');command(3);frames(3)
+                require(get(at('WIDGETINPUTPROBE','holdPaint'),1)==2 and
+                    get(at('WIDGETINPUTPROBE','heldIndex'))>0,'No held object continuation')
+                old=get(context+4,4)
+                button(1);move(170,134);button(0)
+                require(get(service+sf['widgetCount'],1)>0 and get(context+4,4)==old,
+                    'Physical input edited live paint snapshot')
+                b.memload(at('WIDGETINPUTPROBE','holdPaint'),b'\0');frames(30);event(8,1)
+                require(snapshot()['states'][1]==1,'Lost or doubled held press/release')
+                # Hide and patch requests cannot invalidate the live C context.
+                for op in (4,6):
+                    settled()
+                    b.memload(at('WIDGETINPUTPROBE','holdPaint'),b'\1');command(3);frames(3)
+                    token=get(busy,4);old=get(context+4,4)
+                    if op==6:
+                        data=bytearray(widgets()['Update']['size'])
+                        for offset,value in ((8,1),(12,1),(14,1),(16,8)):
+                            data[offset:offset+2]=value.to_bytes(2,'little')
+                        b.memload(at('WIDGETINPUTTEST','patch'),bytes(data))
+                    begin_command(op);frames(10)
+                    require(read('checkpoint')!=turn and get(busy,4)==token and
+                        get(window+wf['widgets'],4)==context and get(context+4,4)==old,
+                        'Control crossed an unfinished object strip')
+                    b.memload(at('WIDGETINPUTPROBE','holdPaint'),b'\0');finish_command();frames(30)
+                    if op==4:
+                        command(4,1);command(5,1)
+                    else:require(snapshot()['states'][1]==8,'Deferred patch lost')
+                report['continuation_cases']=['physical motion/press/release','hide','patch']
                 settled()
                 b.memload(at('WIDGETINPUTPROBE','holdPaint'),b'\1');command(3);frames(3)
                 require(get(service+sf['scene']+__import__('generate_layers').layout()['Scene']['fields']['busy'],4)!=0,'No held paint token')
@@ -185,8 +227,16 @@ def run(out,mode,replay=False):
                 require(armed()==65535,'Title gesture armed a widget')
                 settled();move(target_x+51,target_y+49);button(1)
                 reach('dw($%x)=1'%(context+20))
-                # Retire with a physical press still held; ownership checks follow.
-                write('command',255);b.bp_clear_all()
+                # Retire while an object strip is incomplete. No free/reply may
+                # happen before that paint token retires; cleanup checks follow.
+                b.memload(at('WIDGETINPUTPROBE','holdPaint'),b'\1');command(3);frames(3)
+                token=get(busy,4)
+                require(token and get(at('WIDGETINPUTPROBE','holdPaint'),1)==2,'No close continuation')
+                write('command',255);frames(10)
+                require(get(busy,4)==token and get(window+wf['widgets'],4)==context,
+                    'Close freed an unfinished widget context')
+                report['continuation_cases'].append('close')
+                b.memload(at('WIDGETINPUTPROBE','holdPaint'),b'\0');b.bp_clear_all()
             report['runtime'],_=execute(b,p,before_run=before,frame_limit=40000,timeout=300)
             ownership(b,p,p['output']);report['checks']=read('checks');report['stack_usage']=stack_usage(b,p['build']['memory'])
             require(all(v['remaining_above_floor']>0 for v in report['stack_usage'].values()),'Stack floor')

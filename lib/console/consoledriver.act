@@ -29,6 +29,7 @@ USE DESKPAINT
 USE DESKINPUT
 INCLUDE "console-storage-action.inc"
 CONST DELETE=127
+CONST PAINT_STEPS=4
 
 PUBLIC CONSOLETYPES.Service POINTER FUNC GetService()
 
@@ -459,7 +460,7 @@ RETURN(bits OR EXEC.SetSignal(0,STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR display
 PUBLIC PROC Worker()
   LONGCARD bits,displayMask
   BYTE again,writing,registered,stopping,accepted,inputPending,completeWrite
-  BYTE handoff,deferOutput
+  BYTE handoff,deferOutput,paintSteps,paintProgress
   CONSOLETYPES.Instance POINTER instance
   CONSOLETYPES.Window POINTER entry
 
@@ -576,19 +577,34 @@ PUBLIC PROC Worker()
     bits=0
 
     ; Commit visible GUI feedback before starting another console-output
-    ; quantum. An existing scene/DMA owner still gates both paths; painting
-    ; retains its one-quantum budget for this turn.
+    ; quantum. Drain at most four steps of the same strip, with input between
+    ; C calls. This never renews the turn's control or output budgets.
     deferOutput=0
-    IF DESKPAINT.Pump()<>0 THEN
+    paintSteps=0
+    DO
+      paintProgress=DESKPAINT.Pump()
+      IF paintProgress=0 THEN
+        EXIT
+      FI
+
+      paintSteps==+1
       DESKINPUT.Service(DESKINPUT.Mask())
+      DESKINPUT.Present()
       IF handoff=0 AND DESKHOST.ControlPending()<>0 THEN
         ; One handoff at most before the next eligible output quantum. This
         ; lets queued status patches run without starving console writers.
         handoff=1
         deferOutput=1
       FI
+
+      IF paintProgress<>2 OR paintSteps=PAINT_STEPS OR deferOutput<>0
+          OR DESKINPUT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
+        EXIT
+      FI
+    OD
+    IF paintSteps=0 THEN
+      DESKINPUT.Present()
     FI
-    DESKINPUT.Present()
 
     DESKHOST.AfterPaint()
     Arrival(service)

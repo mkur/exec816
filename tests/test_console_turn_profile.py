@@ -18,6 +18,18 @@ DEFINITION = dict(points=dict(turn=10, selected=20, native_irq=30,
 
 
 class ConsoleTurnProfile(unittest.TestCase):
+    def test_shared_c_return_ignores_nested_callback_and_primitive_returns(self):
+        definition = dict(DEFINITION, spans={'text': dict(entry=70, returns=[80],
+                                                         match_return_stack=True)})
+        events = [event(0, 20), event(1, 10), event(2, 70),
+                  event(3, 80, stack=0x4400), event(4, 80, stack=0x4450),
+                  event(12, 80), event(13, 10), event(14, 60)]
+        result = analyze_events(events, definition)
+        self.assertEqual(len(result['routine_spans']), 1)
+        self.assertEqual(result['routine_spans'][0]['end'], 12)
+        self.assertAlmostEqual(result['routine_spans'][0]['charged_cpu_ms'],
+                               10/BASE_HZ*1000)
+
     def test_exclusive_time_sums_and_clipped_intervals(self):
         timeline = Timeline([(0, 10, 1, False), (10, 20, 2, False),
                              (20, 30, 1, True), (30, 40, 1, False)], 1)

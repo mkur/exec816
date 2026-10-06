@@ -144,8 +144,12 @@ retires, after actual paint work, and after releasing a borrowed console view.
 These boundaries collect input and present the pointer when drawing is
 quiescent; they add no Yield or periodic wake. Widget model changes stay after
 native control admission and respect the existing scene/AES ownership gates.
-Each turn gives GUI painting its existing bounded quantum before new console
-output. Ready paint may continue without a voluntary Yield; VBI preemption
+Each turn gives GUI painting its bounded quantum before new console
+output. Widget strips can drain up to four ready steps, with captured input and
+pointer presentation between them; each object step draws at most one object
+part and examines at most eight objects. Frame work is a separate step when
+needed. These steps share
+the same control/output budgets and scene token. Ready paint may continue without a voluntary Yield; VBI preemption
 provides Task fairness, and blocked work retains the ordinary signal wait path.
 When painting releases the scene with a native control already pending, one new
 console-output quantum may be deferred to admit that control. An eligible output

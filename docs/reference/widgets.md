@@ -81,14 +81,22 @@ zero for fixed/root/kernel, every public Task and private idle, including guards
 alignment and spare capacity. Widgets add no VRAM reservation.
 
 Painting reconstructs the damaged client background and intersecting objects
-in tree order. The presenter draws at most four visible, intersecting objects
-and sixteen scanlines per turn; hidden and out-of-clip objects do not consume
-that drawing budget. Background initialization shares the first object batch,
+in tree order. Each C step draws at most one visible, intersecting object part and
+examines at most eight objects, including hidden and out-of-clip objects.
+The next tree-order index survives each return, including a scan-only step.
+Strips remain at most sixteen scanlines high. Wide text objects whose glyph row
+is clipped vertically resume in disjoint horizontal spans of at most 96 pixels;
+whole glyph rows retain the run encoder. Only a scalar horizontal offset survives
+the call, reset at the next strip. Background initialization shares the first object batch,
 and a visible solid root box supplies its own background. A 5,120-byte VRAM strip
 holds partial drawing; the final chunk copies only completed pixels to the screen,
 preserving adjacent nibbles at odd clip edges. This uses the former screen padding,
-so total VRAM reservation is unchanged. The presenter services input between
-continuations. One Layers token freezes the
+so total VRAM reservation is unchanged. Frame work returns before widget
+drawing; strips wholly inside the client skip frame work. The worker drains at most four ready steps of the same strip per turn,
+servicing captured input and the pointer between C calls. This does not renew
+control admission or console-output budgets or add a voluntary Yield.
+Scratch-only writes do not set the screen-change hint; captured motion can still
+move the pointer between them. One Layers token freezes the
 model across these turns. Occluded updates retain their new state without
 painting; later exposure reconstructs that state. Pointer overlays share the
 existing drawing owner and command arena.

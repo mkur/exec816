@@ -85,6 +85,14 @@ full-trace summary includes setup and retirement, while the per-load summaries
 cover only complete admissions inside their gesture windows. Costs are
 inclusive and must not be added to their containing control-pass costs.
 
+`paint_steps_per_turn` counts successful paint steps between actual worker
+turns; widget continuations can share a turn without renewing control budgets.
+Frame-background and full strip-step maxima are also recorded. The emitted
+widget pixel fixture separately reports complete `WidgetPaint` CPU for each
+scene. Its C return markers match the entry stack because Calypsi can share
+an RTL with nested drawing primitives; an unfiltered shared RTL truncates the
+sample before publication and fencing.
+
 ## Device I/O costs
 
 Use `--io-breakdown` in place of `--breakdown` on `measure_aes_calls.py` to

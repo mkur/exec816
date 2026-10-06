@@ -3,9 +3,10 @@
 [GEM plans](README.md) · [Implementation plans](../README.md) ·
 [Current desktop contract](../../reference/desktop.md)
 
-Status: PI1 is implemented and checked at the development tier;
-PI2–PI4 remain pending. Its [execution record](../../history/aes-hybrid.md#presenter-input-boundaries)
-documents a small CPU-gap reduction and mixed latency results. The 20 ms target
+Status: PI1 and PI2 are implemented and checked at the development tier;
+PI3–PI4 remain pending. The [PI1 record](../../history/aes-hybrid.md#presenter-input-boundaries)
+and [PI2 record](../../history/aes-hybrid.md#widget-paint-input-steps)
+document smaller work units and mixed latency results. The 20 ms target
 and HY4 remain open. Shorten the work the existing
 presenter performs between input-service opportunities. Keep the gains from the
 completed [VBXE builder refactor](vbxe-builder-refactor-plan.md), then divide
@@ -125,6 +126,26 @@ startup and retirement separately.
 Commit: `Service presenter input between native control admissions`.
 
 ## PI2 — Divide widget and frame painting into smaller steps
+
+Implemented. [Evidence](../../development/presenter-input-pi2.json) records one
+object part and eight examined objects per C call, up to four ready steps per
+worker turn, and a 96-pixel continuation for wide vertically clipped text.
+The sixteen-row strip, full-repaint scene token and complete-strip publication
+remain intact. Frame work is separate when present; client-only strips skip it.
+Scratch-only writes no longer request a screen/pointer repair. The only added
+persistent state is a two-byte offset within existing upper C storage.
+
+The maximum-depth hidden scan takes 3.162 ms CPU without setup/publication;
+the largest final pixel-fixture step is 17.498 ms. A long clipped label exposed
+a 67.000 ms one-object call, reduced to 15.045 ms by horizontal continuation.
+Original idle widget-paint maximum falls 19.802 → 16.369 ms and input-service
+CPU gap 31.615 → 29.939 ms. Model p95 improves; button pixels are effectively
+unchanged, combined status feedback is slower, and fixed-offer input p95
+regresses 48.815 → 58.277 ms. Overall performance acceptance remains open.
+PI1 is retained: disabling it raises the idle CPU gap to 35.031 ms and the
+fixed-offer p95 to 59.350 ms, without improving button pixels.
+
+The following records the implementation scope for this slice.
 
 Change `lib/desktop/deskpaint.act`, `deskwidgets.act`, and the local adaptation
 in `ports/gem4xe/aes/widgets-render.c`. Keep donor GEM4XE untouched.

@@ -110,8 +110,12 @@ operations; use window controls for desktop placement and visual focus.
 
 The same worker owns console I/O, the display lease and every physical draw.
 Background, frame and retained content repair use Layers' visible damage. One
-update token spans a repaint continuation of at most sixteen scanlines or four
-retained commands per turn; console model writes and layout edits wait while
+update token spans the repaint. Each turn paints at most sixteen scanlines or
+four retained commands. Widget painting has up to four ready steps within the
+same strip: frame work separately when needed, then at most one intersecting
+object part and eight examined objects per C call. Wide, vertically clipped
+text resumes in disjoint spans of at most 96 pixels. Input is serviced between steps, and unfinished
+widget scratch is published only when the strip is complete. Console model writes and layout edits wait while
 input delivery and request intake continue. No application refresh callback
 runs inside the presenter. Covered damage is retained without keeping the
 worker runnable; later exposure reconstructs pixels from the current model.

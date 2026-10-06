@@ -934,3 +934,99 @@ retains kernel/C return tails and bus stalls, and reconciles exclusive work
 with each enclosing span. Inclusive component times overlap. Table generation,
 linked placement, image, trace, observer and tool hashes are retained in the
 slice evidence; the failed initial bank-D link remains recorded as well.
+
+## Widget paint input steps
+
+PI2 of the [presenter latency plan](../plans/gem4xe/presenter-input-latency-plan.md)
+is implemented. The [PI2 record](../development/presenter-input-pi2.json) retains
+optimized development measurements and the PI1 comparison. Each widget C call
+examines at most eight objects and draws at most one object part. The worker
+can drain four ready steps of the same strip, with input between calls, without
+renewing control admissions or adding a Yield. Actual frame work is separate;
+client-only strips skip it. Scratch-only writes preserve the existing screen
+change hint instead of requesting another pointer redraw.
+
+One object was insufficient for a 63-character string clipped vertically:
+the complete C call reached 67.000 ms CPU. Wide text on that fallback path now
+resumes through disjoint 96-pixel clips, reducing that case to 15.045 ms. Whole
+glyph rows retain the run encoder. Selected/disabled controls and focus XOR
+retain exact pixels. The largest call in the expanded pixel fixture is
+17.498 ms; eight maximum-depth rejected objects take 3.162 ms without setup or
+publication, and 5.786 ms including final strip publication. These are measured
+cases, not worst-case execution bounds. Strips remain sixteen rows high.
+
+Only a two-byte horizontal offset survives in upper C storage; the existing
+native index and stage retain traversal progress. The scene token still freezes
+the model through the full repaint, and incomplete scratch is never published.
+A fresh first chunk resets the offset. No client pointer or callback is retained
+by the C renderer between calls.
+
+The same ten idle gestures produce these results against PI1:
+
+| Measurement, ms | Before median → after | Before p95 → after | Before maximum → after |
+| --- | ---: | ---: | ---: |
+| Input consumed | 7.260 → 5.739 | 25.449 → 20.388 | 25.700 → 23.428 |
+| Model commit | 18.549 → 16.785 | 37.125 → 28.979 | 44.867 → 31.462 |
+| Button pixels | 118.915 → 118.916 | 138.872 → 139.124 | 139.125 → 139.124 |
+| Combined visible feedback | 159.081 → 198.994 | 259.370 → 279.580 | 259.382 → 279.580 |
+
+Maximum idle widget-paint CPU falls 19.802 → 16.369 ms, and the longest charged
+CPU gap between input-service entries falls 31.615 → 29.939 ms. The latter still
+contains a 23.684 ms `UPDATE_WIDGETS` admission. The 20 ms gap target remains
+open. Frame/strip work stays below 18 ms in this trace, including setup and the
+full-redraw comparison; the complete run still has a 74.219 ms CPU gap around
+larger atomic control work.
+
+Button-pixel latency is effectively unchanged, while combined status feedback
+regresses. Smaller C steps increase calls from 67 to 134 and total widget-paint
+CPU from 825.701 to 944.228 ms. Widget list submissions rise from 107 to 174;
+all submissions including the pointer rise from 361 to 427. Observed fence
+calls rise from 809 to 1,008, with total fence CPU 51.732 → 54.388 ms. These
+inclusive costs overlap and must not be added. Shorter work units have not
+established a general visible-latency improvement.
+
+PI1 is retained. Disabling its native-admission/cache/post-console boundaries
+on the same PI2 renderer raises the longest idle CPU gap to 35.031 ms and the
+whole-run gap to 100.531 ms, with essentially identical button pixels. Its
+original input p95 is better without PI1 (11.050 versus 20.388 ms), but model
+p95 is worse (32.447 versus 28.979 ms). Neither variant dominates every timing
+measure; the extra boundaries remain useful for bounding consecutive work.
+The comparison uses the pre-PI1 host module from `5465f54` and removes only the
+post-console boundary from the current worker in isolated diagnostic builds.
+The two foreign C images are byte-identical.
+
+The fixed-offer diagnostic uses twenty exchanges over 400 PAL frames and sixteen
+button edges. All three cohorts complete every exchange and consume every edge,
+with 99 measured public calls and twenty expiries. PI1 → PI2 input median is
+2.807 → 2.818 ms, but p95/maximum regresses 48.815 → 58.277 ms and charged-CPU
+p95 rises 39.043 → 46.098 ms. PI2 without PI1 gives 2.700 ms median and 59.350 ms
+p95/maximum. Equal offered load therefore does not establish an input-tail gain
+from PI2. This diagnostic has no pixel observer and does not replace the
+original panel results or HY4 acceptance.
+
+Development checks pass: 396 host tests with four historical-source skips;
+22 exact pixel scenes, including odd edges, overlapping objects, long labels,
+disabled/focus effects, unpublished hidden-tree continuations and fault/reopen;
+ten complete presentation scenes with 49 assertions; and 122 interaction
+assertions including physical motion/press/release and hide/patch/close while
+an object strip is held open. The fixture's settled-damage reader was corrected
+to traverse the current damage list. The timing parser now matches the entry
+stack at shared C returns; otherwise nested primitive returns truncate samples.
+
+The intake case passes 182 assertions, consumes all 69 injected samples,
+retains four admissions per turn and twelve late AES admissions. Console
+fairness and zero presenter turns over fifty settled PAL frames pass. Passive
+paint tracing observes at most four steps per turn and verifies input service
+between consecutive steps. Guards, ownership and cleanup pass. The original
+feedback observer finds no invalid sampled pixels, but still begins after
+model observation and excludes the pointer; whole-gesture flicker freedom is
+not established.
+
+Reserved bank-zero delta is **0 bytes fixed, 0 per public Task and 0 idle**,
+including guards, alignment and unused capacity. Upper-RAM and VRAM
+reservations are unchanged. Native code grows 664 bytes (647,474 → 648,138),
+C code grows 544 bytes (74,100 → 74,644), native data stays at 10,118 bytes and
+C BSS grows two bytes (12,359 → 12,361). The idle panel worker touches 742 stack
+bytes, leaving 1,562 above its interrupt floor in the existing 2,560-byte stack.
+No demo was refreshed. PI3/PI4, the 20 ms gap target and **HY4 remain open**;
+original scroll/disk and raw-pointer acceptance cohorts were not rerun.

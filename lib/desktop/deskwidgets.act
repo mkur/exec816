@@ -269,7 +269,7 @@ PUBLIC CARD FUNC Request(DESKTYPES.Service POINTER service
 
 RETURN(DESKTYPES.BAD_ARGUMENT)
 
-; Four objects at most; the current Layers token freezes the retained tree.
+; One object part and at most eight examined; the Layers token freezes the tree.
 PUBLIC BYTE FUNC Paint(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER client,clip
     CARD POINTER index)
@@ -289,11 +289,13 @@ PUBLIC BYTE FUNC Paint(DESKTYPES.Service POINTER service
   packet.qualifiers=service.focus=window.id
   Run(WIDGETTYPES.OP_DRAW)
   index^=packet.index
-  IF CONSOLEBITMAP.Drawn(packet.status)=0 THEN
-    RETURN(0)
+  IF packet.status=WIDGETTYPES.OK AND packet.changed<>0 THEN
+    ; Incomplete chunks touched scratch only. Keep any prior screen-change
+    ; hint, but do not request a pointer redraw for an offscreen write.
+    RETURN(2)
   FI
 
-RETURN(IF packet.changed<>0 THEN 2 ELSE 1 FI)
+RETURN(CONSOLEBITMAP.Drawn(packet.status))
 
 PUBLIC PROC Retire(DESKTYPES.Window POINTER window)
 

@@ -49,7 +49,8 @@ def analyze(out):
     windows['whole_presenter_run']=[turnticks[0],turnticks[-1]]
     windows['before_worker_loop']=[events[0][0],turnticks[0]]
     kinds=['consoledisplay_present','consoledisplay_cells','consolebitmap_text','consolebitmap_clippedtext','pump','paint','deskhost_controls','commit','deskinput_service','deskinput_advance','consoledriver_writequantum','deskhost_cache','consolebitmap_run']
-    kinds += ['deskcore_pump','deskcore_dispatch','deskhost_inputboundary','deskwidgetinput_advance']
+    kinds += ['deskcore_pump','deskcore_dispatch','deskhost_inputboundary','deskwidgetinput_advance',
+              'deskpaint_paintstrip','frame_background']
     result=dict(status=j['status'],scope='Optimized development replay, unchanged guest binary. Inclusive routine costs overlap; exclusive costs reconcile to each unit. CPU excludes native interrupts and off-Task time, includes kernel/C tails and bus stalls. RTL endpoints exclude the RTL instruction; C call sites include JSL through the return continuation.',image_sha256=j.get('xex_sha256',j.get('build',{}).get('xex_sha256')),trace_sha256=sha256(out/'emulator.log'),worker_dp=p['worker_dp'],source_trace=str(out/'emulator.log'),definition=d,windows={})
     for load,(a,b) in windows.items():
         selected=[s for s in spans if a<=s['start']<s['end']<=b]
@@ -89,6 +90,22 @@ def analyze(out):
             if rows:result['windows'][load][k]=decompose(max(rows,key=lambda r:r['charged_cpu_ms']))
         result['windows'][load]['native_admissions']=summarize(
             [r for r in controls if a<=r['start']<r['end']<=b])
+        paint_steps=[s for s in selected if s['kind']=='pump' and s['return_a'] & 255]
+        per_turn=[sum(t['start']<=s['start']<s['end']<=t['end'] for s in paint_steps)
+                  for t in turns if a<=t['start']<t['end']<=b]
+        require(max(per_turn,default=0)<=4,'Paint renewed its per-turn budget')
+        drained=0
+        for turn in turns:
+            if not a<=turn['start']<turn['end']<=b:continue
+            steps=sorted((s for s in paint_steps if turn['start']<=s['start']<s['end']<=turn['end']),
+                         key=lambda s:s['start'])
+            for left,right in zip(steps,steps[1:]):
+                require(any(left['end']<tick<right['start'] for tick in serviceticks),
+                        'Consecutive paint steps skipped input service')
+                drained+=1
+        result['windows'][load]['paint_steps_per_turn']=dict(
+            maximum=max(per_turn,default=0),histogram=dict(sorted(Counter(per_turn).items())),
+            consecutive_steps_with_input=drained)
         if 'input_breakdown' in j:
             rows=[r for r in j['input_breakdown']['records'] if r['load']==load]
             result['windows'][load]['slowest_input_samples']=[decompose(dict(r,start=r['capture'],end=r['consumed'])) for r in sorted(rows,key=lambda r:r['elapsed_ms'],reverse=True)[:2]]

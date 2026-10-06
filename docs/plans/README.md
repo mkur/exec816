@@ -164,10 +164,11 @@ assuming work is pending. Current behavior belongs in the
   tables, sequential records and reserved glyph runs reduce maximum widget-paint
   CPU by 40–44% in the original panel samples. One additional upper RAM bank;
   zero bank-zero/VRAM growth. HY4 remains open.
-- [Presenter input latency](gem4xe/presenter-input-latency-plan.md): PI1 input
-  boundaries implemented at the development tier; CPU gaps shrink slightly,
-  with mixed response-time results. PI2–PI4 retain smaller widget/text steps
-  and integrated comparisons. Zero bank-zero/VRAM growth; HY4 remains open.
+- [Presenter input latency](gem4xe/presenter-input-latency-plan.md): PI1 boundaries
+  and PI2 widget steps implemented at the development tier. Work units shrink;
+  button pixels remain essentially unchanged and combined feedback regresses.
+  PI3 text steps and PI4 comparisons remain pending. Zero bank-zero/VRAM growth;
+  the 20 ms CPU-gap target and HY4 remain open.
 - [AES widget library](gem4xe/aes-widgets-implementation-plan.md): AW0–AW6 implemented
   at the development tier;
   actual GEM4XE object/drawing/form extraction, retained widget windows, bounded
