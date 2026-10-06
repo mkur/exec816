@@ -90,6 +90,13 @@ dynamic entry. No loaded-code finalizer or asynchronous callback is published.
 
 ## Checked providers
 
+`COMMAND.WriteAt(handle,column,row,buffer,length)` writes a printable horizontal
+span to an owned console handle. Coordinates are zero-based CARD values; length
+and result are LONGINT. It returns the accepted byte count, or -1 with IoErr.
+It preserves the ordinary cursor, rejects non-console streams and does not
+interpret escape sequences. Cancellation may return an accepted prefix with
+ERROR_BREAK; wait for the synchronous call before reusing the buffer.
+
 [abi/program.json](../../abi/program.json) defines the explicit `COMMAND` imports.
 [build_command.py](../../tools/build_command.py) compiles a standalone o65 command
 against their generated declarations. Names are `exec816_<operation>_v1`, plus

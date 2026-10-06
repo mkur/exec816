@@ -32,6 +32,11 @@ PUBLIC LONGINT FUNC Write(BYTE POINTER handle,buffer LONGINT length)
 
 RETURN(DOSCALLS.Write(handle,buffer,length))
 
+PUBLIC LONGINT FUNC WriteAt(BYTE POINTER handle CARD column,row
+    BYTE POINTER buffer LONGINT length)
+
+RETURN(DOSCALLS.WriteAt(handle,column,row,buffer,length))
+
 PUBLIC LONGINT FUNC Seek(BYTE POINTER handle LONGINT offset,mode)
 
 RETURN(DOSCALLS.Seek(handle,offset,mode))

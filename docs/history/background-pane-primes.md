@@ -61,3 +61,24 @@ checks cover small new ABI shapes; behavioral checks use optimized code.
 Validation: all 391 host checks passed on the baseline. Console generation and
 the F0 definitions are checked before committing this slice. No additional
 emulator run is needed for these unused constants and documentation.
+
+## F1 Positioned writes
+
+`COMMAND.WriteAt` is implemented through DOS and the existing console write
+FIFO. One-row ASCII validation precedes editing; the worker commits bounded
+spans without moving the stream cursor. An unchanged bitmap caret outside the
+dirty span is now retained instead of being restored and redrawn.
+
+The [F1 record](../development/background-pane-primes-f1.json) contains optimized
+text-console behavior, a raw mixed-argument ABI probe and final optimized bitmap
+pixels/drawing. It covers ring addressing, bank-crossing source, bad coordinates,
+row overflow, controls, negative/zero lengths, non-console rejection, sticky
+BREAK, FIFO order, queued abort, exact replies and leak-free context retirement.
+The final bitmap observer saw one five-glyph draw per update, with no fill,
+copy, scrolling or label repaint. Host checks: 391 passed.
+
+The provider adds 33 payload bytes, making the complete published manifest
+1,456 bytes for 43 providers, inside its existing 1,664-byte reservation.
+No new object, worker or permanent buffer is allocated. Fixed, root/kernel,
+idle, loading and per-Task bank-zero reservation deltas are **0 bytes**.
+Development checks do not qualify the release or physical hardware.

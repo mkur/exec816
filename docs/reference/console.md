@@ -20,7 +20,14 @@ Instance creation and Show use these capabilities rather than the model maximum.
 Open `console.device` with unit zero for the default instance or an opaque
 [instance identity](console-windows.md), and flags zero. Use the standard Exec
 [device I/O contract](device-io.md) and full IOStdReq record. READ, WRITE and CLEAR
-are supported; io_Actual reports transferred bytes. Other commands fail explicitly.
+are supported; io_Actual reports transferred bytes. `CONCMD_WRITE_AT=9` writes
+a printable ASCII span within one row using the same FIFO as CMD_WRITE. Its
+io_Offset packs the zero-based column in the low 16 bits and row in the high
+16 bits. It preserves the stream cursor and marks only the edited span. Invalid
+coordinates, a span crossing the row edge or control bytes fail before any edit.
+Zero-length writes are harmless. Cancellation reports an accepted prefix and
+retains caller storage until the exact terminal reply. Other commands fail
+explicitly.
 
 A successful open owns the instance's device binding; arbitrary multiple device
 opens on it are rejected. The DOS stream adapter shares its own binding among

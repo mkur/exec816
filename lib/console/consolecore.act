@@ -122,6 +122,18 @@ PUBLIC PROC Dirty(CONSOLETYPES.Instance POINTER instance CARD first,last)
 
 RETURN
 
+; An admitted printable row span never advances the ordinary stream cursor.
+; The worker bounds each copy to its source quantum and owns the instance.
+PUBLIC PROC WriteAt(CONSOLETYPES.Instance POINTER instance CARD column,row
+    BYTE POINTER bytes CARD length)
+
+  LET first=row*instance.width+column
+  LET offset=CellOffset(instance,first)
+  A816MEMORY.Move(instance.cells+SIZE(offset),bytes,SIZE(length))
+  Dirty(instance,first,first+length)
+
+RETURN
+
 ; Consume only a successfully presented prefix of one row.
 PUBLIC PROC Presented(CONSOLETYPES.Instance POINTER instance CARD row,last
     LONGCARD generation)

@@ -1,0 +1,185 @@
+MODULE POSITIONTEST
+USE EXEC
+USE EXECTASKS
+USE HEAPCORE
+USE DOS
+USE DOSBREAK
+USE DOSSTREAMS
+USE DOSRAW
+USE PROGRAMAPI
+USE CONSOLECORE
+USE CONSOLEDRIVER
+USE CONSOLETYPES
+USE CSTRING.IMPL AS STR
+
+CARD checks,checkpoint,gate
+BYTE finished
+CONSOLETYPES.Instance model
+BYTE ARRAY cells(26)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e800+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Independently inspect ring addressing, cursor preservation and exact damage.
+PROC Core()
+
+  cells(0)=$a5
+  cells(25)=$a5
+  Require(CONSOLECORE.Init(@model,BYTE POINTER(ADDRESS(cells)+SIZE(1)),
+      8,3,24)<>0)
+  CONSOLECORE.EditQuantum(@model)
+  CONSOLECORE.Clean(@model)
+  model.cellOrigin=16
+  model.row=2
+  model.lineStart=16
+  model.column=6
+  CONSOLECORE.WriteAt(@model,2,1,BYTE POINTER(c"123"),3)
+  Require(cells(3)='1 AND cells(4)='2 AND cells(5)='3)
+  Require(model.column=6 AND model.row=2 AND model.lineStart=16)
+  Require(model.dirtyRows=1 AND model.damageFirst(1)=2
+      AND model.damageEnd(1)=5 AND model.damageEnd(0)=0
+      AND model.damageEnd(2)=0)
+  Require(cells(0)=$a5 AND cells(25)=$a5)
+
+RETURN
+
+; A settled checkpoint lets the host compare the actual display independently.
+PROC Ready(CARD value)
+
+  checkpoint=value
+
+RETURN
+
+PROC Continuing()
+
+RETURN
+
+PROC Pause(CARD value)
+  CARD ignored
+
+  LET instance=CONSOLEDRIVER.GetInstance()
+  WHILE instance.dirtyRows<>0 DO
+    EXEC.Yield()
+  OD
+
+  ignored=EXECTASKS.Sleep(2)
+  Ready(value)
+  WHILE gate<value DO
+    EXEC.Yield()
+  OD
+
+  Continuing()
+
+RETURN
+
+; Queued positioned writes use ordinary FIFO ownership and exact replies.
+PROC Queued(DOS.FileHandle POINTER file)
+
+  LET handle=DOSSTREAMS.Handle POINTER(file)
+  LET endpoint=DOSRAW.RawEndpoint POINTER(handle.endpoint)
+  LET port=EXEC.CreateMsgPort()
+  LET first=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,42))
+  LET second=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,42))
+  LET third=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,42))
+  Require(port<>NULL AND first<>NULL AND second<>NULL AND third<>NULL)
+  first.io_Device=endpoint.owner.io_Device
+  first.io_Unit=endpoint.owner.io_Unit
+  second.io_Device=first.io_Device
+  second.io_Unit=first.io_Unit
+  third.io_Device=first.io_Device
+  third.io_Unit=first.io_Unit
+  first.io_Command=CONSOLETYPES.CONCMD_WRITE_AT
+  second.io_Command=first.io_Command
+  third.io_Command=first.io_Command
+  first.io_Offset=$0005000c
+  second.io_Offset=first.io_Offset
+  third.io_Offset=first.io_Offset
+  first.io_Data=BYTE POINTER(c"A")
+  second.io_Data=BYTE POINTER(c"B")
+  third.io_Data=BYTE POINTER(c"C")
+  first.io_Length=1
+  second.io_Length=1
+  third.io_Length=1
+  EXEC.Forbid()
+  EXEC.SendIO(EXEC.IORequest POINTER(first))
+  EXEC.SendIO(EXEC.IORequest POINTER(second))
+  EXEC.SendIO(EXEC.IORequest POINTER(third))
+  EXEC.AbortIO(EXEC.IORequest POINTER(third))
+  EXEC.Permit()
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(first))=0)
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(second))=0)
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(third))=EXEC.IOERR_ABORTED)
+  Require(first.io_Actual=1 AND second.io_Actual=1 AND third.io_Actual=0)
+  Require(EXEC.GetMsg(port)=NULL)
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(first))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(second))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(third))
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+; Real providers must reject bad spans before changing cells or cursor state.
+PROC Main()
+
+  Core()
+  LET baseline=EXEC.AvailMem(0)
+  LET file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  LET instance=CONSOLEDRIVER.GetInstance()
+  LET labels=c"\fPRIME SEARCH\n\nPrimes    00000\nLatest    00000\nPass      0000000000"
+  LET length=LONGINT(STR.strlen(labels))
+  Require(DOS.Write(file,BYTE POINTER(labels),length)=length)
+  LET column=instance.column
+  LET row=instance.row
+  Pause(1)
+  Require(PROGRAMAPI.WriteAt(BYTE POINTER(file),10,2,
+      BYTE POINTER(ADDRESS($30fffd)),5)=5)
+  Require(instance.column=column AND instance.row=row)
+  Pause(2)
+  Require(PROGRAMAPI.WriteAt(BYTE POINTER(file),10,2,
+      BYTE POINTER(c"    9"),5)=5)
+  Pause(3)
+  Require(PROGRAMAPI.WriteAt(BYTE POINTER(file),10,2,
+      BYTE POINTER(c"ab\n"),3)=-1)
+  Require(DOS.IoErr()=EXEC.IOERR_BADLENGTH)
+  Require(PROGRAMAPI.WriteAt(BYTE POINTER(file),instance.width,2,
+      BYTE POINTER(c"x"),1)=-1)
+  Require(PROGRAMAPI.WriteAt(BYTE POINTER(file),0,instance.height,
+      BYTE POINTER(c"x"),1)=-1)
+  Require(PROGRAMAPI.WriteAt(BYTE POINTER(file),instance.width-1,2,
+      BYTE POINTER(c"xy"),2)=-1)
+  Require(PROGRAMAPI.WriteAt(BYTE POINTER(file),0,0,NULL,-1)=-1)
+  Require(DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(PROGRAMAPI.WriteAt(BYTE POINTER(file),0,0,NULL,0)=0)
+  LET nil=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_READWRITE)
+  Require(PROGRAMAPI.WriteAt(BYTE POINTER(nil),0,0,
+      BYTE POINTER(c"x"),1)=-1)
+  Require(DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Require(DOS.Close(nil)<>0)
+  Require(DOS.BeginForeground(file)<>0)
+  LET scope=DOSBREAK.Current()
+  scope.pending=1
+  Require(PROGRAMAPI.WriteAt(BYTE POINTER(file),10,2,
+      BYTE POINTER(c"xxxxx"),5)=-1)
+  Require(DOS.IoErr()=DOS.ERROR_BREAK)
+  DOS.ClearBreak()
+  Require(DOS.EndForeground()<>0)
+  Queued(file)
+  Require(instance.cells(CONSOLECORE.CellOffset(instance,
+      instance.width*5+12))='B)
+  Require(instance.column=column AND instance.row=row)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+
+ENDMODULE

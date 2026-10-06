@@ -582,6 +582,43 @@ PUBLIC LONGINT FUNC Write(BYTE POINTER identity,buffer LONGINT length)
 
 RETURN(result)
 
+; Console-only positioned output shares raw I/O ownership and cancellation.
+PUBLIC LONGINT FUNC WriteAt(BYTE POINTER identity CARD column,row
+    BYTE POINTER buffer LONGINT length)
+  INT error
+
+  LET slot=DOSCORE.Current()
+  LET client=DOSCLIENT.EnsureSlot(slot)
+  IF client=NULL THEN
+    RETURN(-1)
+  FI
+
+  LET header=Object(slot,identity,DOSOBJECTS.KIND_FILE)
+  IF header=NULL THEN
+    RETURN(-1)
+  FI
+
+  IF header.backend<>DOSOBJECTS.BACKEND_RAW
+      AND header.backend<>DOSOBJECTS.BACKEND_CON THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(-1)
+  FI
+
+  LET handle=DOSSTREAMS.Handle POINTER(header)
+  LET request=DOSRAW.Prepare(client,handle,buffer,length,0)
+  IF request=NULL THEN
+    RETURN(IF length=0 AND DOSCLIENT.IoErr()=0 THEN LONGINT(0)
+        ELSE LONGINT(-1) FI)
+  FI
+
+  request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT
+  request.io_Offset=LONGCARD(column)
+      OR (LONGCARD(row) LSH CONSOLETYPES.POSITION_ROW_SHIFT)
+  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),
+      DOSBREAKTYPES.Scope POINTER(client.foreground))
+
+RETURN(DOSRAW.Complete(client,handle,error))
+
 ; Apply a position change only to a valid caller-owned file.
 PUBLIC LONGINT FUNC Seek(BYTE POINTER identity LONGINT offset,mode)
   DOSCORE.DosSlot POINTER slot

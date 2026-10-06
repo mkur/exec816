@@ -1,6 +1,6 @@
 {
   "abi": "exec816.program",
-  "version": 11,
+  "version": 12,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
@@ -409,6 +409,31 @@
         [
           "BYTE POINTER",
           "info"
+        ]
+      ]
+    },
+    "WriteAt": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "handle"
+        ],
+        [
+          "CARD",
+          "column"
+        ],
+        [
+          "CARD",
+          "row"
+        ],
+        [
+          "BYTE POINTER",
+          "buffer"
+        ],
+        [
+          "LONGINT",
+          "length"
         ]
       ]
     }

@@ -1,0 +1,38 @@
+MODULE POSITIONSHAPE
+USE EXEC
+USE HEAPCORE
+USE DOS
+USE PROGRAMAPI
+USE CONSOLEDRIVER
+USE CONSOLECORE
+
+BYTE finished
+
+; Small raw ABI probe: mixed pointers/coordinates/length and a wide result.
+PROC Main()
+
+  LET file=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  IF file=NULL THEN
+    HEAPCORE.Abort($e880)
+  FI
+
+  LET instance=CONSOLEDRIVER.GetInstance()
+  IF PROGRAMAPI.WriteAt(BYTE POINTER(file),7,3,
+      BYTE POINTER(c"42"),2)<>2 THEN
+    HEAPCORE.Abort($e881)
+  FI
+
+  IF instance.cells(CONSOLECORE.CellOffset(instance,3*instance.width+7))<>'4
+      OR instance.column<>0 OR instance.row<>0 THEN
+    HEAPCORE.Abort($e882)
+  FI
+
+  IF DOS.Close(file)=0 OR DOS.ReleaseContext()=0 THEN
+    HEAPCORE.Abort($e883)
+  FI
+
+  finished=1
+
+RETURN
+
+ENDMODULE

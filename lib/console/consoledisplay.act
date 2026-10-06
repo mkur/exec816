@@ -561,6 +561,15 @@ PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
       RETURN
     FI
 
+    ; Positioned output can leave the settled caret outside every dirty span.
+    ; Keep that overlay when its location and focus have not changed.
+    IF instance.dirtyRows=0 AND instance.operation=CONSOLETYPES.OP_IDLE
+        AND view.focused<>0 AND view.cursorOn<>0
+        AND view.index=instance.lineStart+instance.column
+        AND view.previousCursor=CursorPosition(view,instance) THEN
+      RETURN
+    FI
+
     RemoveCursor(view)
   ELSE
     RemoveCursor(view)
