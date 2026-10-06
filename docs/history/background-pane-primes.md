@@ -102,3 +102,28 @@ association moves bitmap metadata four bytes within the existing 880-byte
 reservation. Dynamic instances still round to 208 bytes. Providers use 1,490
 bytes for 44 entries. Fixed, root/kernel, idle, loading and per-Task bank-zero
 reservation deltas are **0 bytes**. These are development results.
+
+## F3 Background cancellation and timer delay
+
+Background starts keep the existing inheritance/trampoline and add a private
+scope without a keyboard route or parent suspension. The Process row's four
+tail bytes store flags and its published scope pointer. RequestBreak uses owned
+identity lookup, latches early requests, coalesces repeats and preserves saved
+completion. Foreground loans and pipeline followers also publish their scopes.
+Task-side Forbid protects publication and signaling; cleanup unpublishes before
+freeing. IRQ/NMI paths do not follow these pointers.
+
+The [F3 record](../development/background-pane-primes-f3.json) records optimized
+early-stop, allocation rollback, real timer waits/aborts, stale/foreign identity
+rejection, completion wins and foreground restoration. Physical BREAK stops the
+parent's cooked Read while the background wait continues; the parent then reads
+normally and requests child cancellation. Raw probes cover new call shapes and
+layouts. Exact collection, ownership and stack/domain guards pass; 391 host
+checks passed.
+
+Each background scope uses 56 requested/64 rounded upper bytes and one child
+signal. The DOS context grows from 94 to 98 requested bytes, or 96 to 112
+rounded bytes. Delay lazily caches a 38-byte clock/alarm request (48 rounded)
+with the existing reply port and timer binding slots. The Process table remains
+1,028 bytes. Providers occupy 1,521 of the reserved 1,664 bytes for 45 entries.
+Fixed, root/kernel, idle, loading and per-Task bank-zero deltas are **0 bytes**.

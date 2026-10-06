@@ -1,0 +1,276 @@
+{
+  "slice": "F3",
+  "tier": "development",
+  "status": "pass",
+  "runs": {
+    "optimized": {
+      "artifact": "build/background-pane-primes/f3-opt-final2/results.json",
+      "sha256": "5e83c69ca74ae7ce9249dfc58138a953cb0ed86992596523fb7d81906e6a427d",
+      "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "819782810dfc1b38fab02b36b03e178d943d40a75d094dfb6393c991d21d1fd7",
+      "xex_sha256": "68c462bd86b7e2d58b0977eb48edbc9140e3743e1725ff718c00a9109217d1f1",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 396,
+            "untouched_above_floor": 884
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 232,
+            "untouched_above_floor": 536
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 279,
+            "untouched_above_floor": 489
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 232,
+            "untouched_above_floor": 536
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 117,
+            "untouched_above_floor": 139
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 260,
+          "untouched_from_base": 1276,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "raw": {
+      "artifact": "build/background-pane-primes/f3-raw/results.json",
+      "sha256": "6b86a63851cbdc7610e412f0709146a0d6229151760af4dbb37dcb605728b024",
+      "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "c784fc8de800e702edd7e1b9ca282521cf622e51e0f134248a9da6cf0ba42a92",
+      "xex_sha256": "7e57ae5e215fe9cc9bb98fa633304a670f23347deb2822d439df9c1270d2b3c7",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 184,
+            "untouched_above_floor": 1096
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 262,
+            "untouched_above_floor": 506
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 266,
+          "untouched_from_base": 1270,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  },
+  "sources": {
+    "abi/process.json": "d17bda1a858a7362c8c43656c54e263f8fe57b3fca94168e4698d7703c97f424",
+    "abi/program.json": "65aafd57944c2f24dcb581bf61bd3e2edd6439b9d2452d1b0665b433de2c4286",
+    "lib/dos/command.act": "9a2d3b259acbcbb14bd7b0c1b6bf6d2571f26c3d3174ac8e50cd492d42b893a2",
+    "lib/dos/dosbreak.act": "4e678c7a91f2f66a3e7a5b4a4d134d27719e175f59a5c8873969d72f2367c930",
+    "lib/dos/dosclient.act": "379a5a7308bbc87a971d0c497dec8fb325b26854e982df476a8e667dbc9a200c",
+    "lib/dos/dosprocess.act": "71633d6158f1861914e407d158d12971395b758b5408458c724147bef1b08597",
+    "lib/dos/process-types.inc": "7e288bbb8a1fa18144473e98b772df4b3a777dae75cd0df19744dcb0f822eab4",
+    "lib/dos/process.act": "83b5aff471ead6f836096cd32b9502e75f0c3a64cf050ae867b90aa7a7e9a72a",
+    "lib/dos/processstate.act": "7c88a2da76f4be1b2edc6b2992af02bc252698071e59211ac99c34ef700d0d4c",
+    "lib/dos/programapi.act": "1d7be6ef971d1903f5696bc89b3b4c5e96b5bc74f99c6df91c38910c1e5c611e",
+    "tests/test_program_contract.py": "77f89688671a4fba486df3b9a1ba8d82fa23c52cb2043437bb7c0826d923187c",
+    "tools/generate_process.py": "d0f1724bfb051def7d9cea893c454cc7e518cee4917abab7b3b2ec97bed23d15",
+    "lib/dos/dosdelay.act": "6a27bc221a25cc0f8004cb3de78343d4ce5faf4b17428a58c16e5c99730f6187",
+    "tests/programs/background_delay.act": "049d206e85183fa99ffb2b39ccdc6721725fba5dc535fdf6910f6aa22c270b7a",
+    "tests/programs/bgfault.act": "bb347513c9cd093d121bc7f8370863c4bf187330be7746a1e53781e871cd51cb",
+    "tools/test_background_delay.py": "dcd8185bb774440f9970df20b0799e1e5a57b862646f082b6deb276290cfc0c9"
+  },
+  "costs": {
+    "bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "idle": 0,
+      "loading": 0,
+      "per_task": 0
+    },
+    "process_row_bytes": 128,
+    "process_table_bytes": 1028,
+    "scope_requested_bytes": 56,
+    "scope_rounded_bytes": 64,
+    "context_requested_bytes": 98,
+    "context_rounded_bytes": 112,
+    "context_rounded_delta": 16,
+    "timer_request_requested_bytes": 38,
+    "timer_request_rounded_bytes": 48,
+    "providers_payload_bytes": 1521,
+    "providers_count": 45
+  },
+  "scope": [
+    "Early request before child adoption; repeated request coalescing.",
+    "Scope allocation and timer request/open rollback.",
+    "Actual timer waits, cached request reuse, abort and exact collection.",
+    "Physical BREAK cancels parent cooked Read while independent background wait remains active.",
+    "Parent input remains usable; child stop, stale identity and sibling identity rejection.",
+    "Natural completion wins a later request; foreground loan restores a fresh input route.",
+    "Raw emitted ABI probes for StartBackgroundLoaded, RequestBreak, Delay and changed layouts."
+  ],
+  "limits": [
+    "Development checks, not release or hardware qualification.",
+    "Resident background entries exercise the shared start path; loaded background consumers follow in F4."
+  ]
+}

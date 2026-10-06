@@ -211,8 +211,10 @@ identity, private operation state, cancellation linkage and eight bytes for
 bounded group membership. This adds eight upper-heap bytes to the 48-byte
 allocation used by B3–B5. The console retains a 264-byte
 route table reserved as 272 bytes, and 560 capture bytes within the existing
-4,096-byte Task arena. ClientContext is 86 bytes within its existing 88-byte
-allocation. Reserved bank-zero change is zero fixed bytes and zero per Task,
+4,096-byte Task arena. ClientContext now uses a 98-byte allocation (112 rounded upper bytes),
+including assign-path scratch pointers and a cached timer request pointer. The
+38-byte clock/alarm request is acquired lazily; it rounds to 48 bytes. Background
+children have private scopes without a console route; see [Process](process.md). Reserved bank-zero change is zero fixed bytes and zero per Task,
 including guards, alignment and unused capacity. The filesystem registry uses
 96 bytes inside its existing 96-byte reservation and its worker allocates one
 additional control signal. See the

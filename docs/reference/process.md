@@ -14,6 +14,9 @@ Use the `PROCESS` module:
 | `Start(entry, arguments, length)` | Copy 0–255 argument text bytes (length excludes NUL), append NUL, inherit Input/Output/current directory and start the command. Return a nonzero `LONGCARD` identity, or zero with `DOS.IoErr()` set. A null argument pointer is valid only for length zero. |
 | `StartForeground(entry, arguments, length)` | As `Start`, also loan the caller's active foreground console binding to the child. The caller's DOS context is suspended until collection. |
 | `StartLoaded(image, arguments, length, foreground)` | Start a validated Image through the resident dispatcher; retain it through kernel retirement and collection. A nonzero foreground byte requests the same console loan. |
+| `StartBackground(entry, arguments, length)` | As Start with a private cancellation scope; no parent suspension or keyboard loan. |
+| `StartBackgroundLoaded(image, arguments, length)` | The loaded-image form of StartBackground; retain execution ownership until collection. |
+| `RequestBreak(identity)` | Request cooperative cancellation of an owned scoped child. Return one on acceptance or zero with IoErr. |
 | `Wait(identity, @result)` | Wait for kernel-acknowledged retirement, collect the two `LONGINT` results, and release the completion record. Return -1 on success, zero on error. |
 | `Collect(identity, @result)` | Collect an already retired child without waiting. Return -1 on success, zero on error. |
 | `GetArgStr()` | Borrow this child's argument text as a read-only `CSTRING`. Empty arguments return a non-null empty string; outside a Process return `CSTRING(0)`. |
@@ -47,8 +50,8 @@ that error slot and returns its previous value, without allocating a context.
 Process callbacks are admitted through a separate exact-signature function list
 in the existing upper-RAM DOS descriptor (one count byte and up to 36 three-byte
 addresses). Task entry/finalizer admission remains procedure-only. Process
-record offsets and its 128-byte stride are unchanged in Process ABI v6; the
-public argument getters are replaced by `GetArgStr()`.
+record keeps its 128-byte stride in Process ABI v7; its former four-byte tail
+stores cancellation flags and a three-byte published scope pointer.
 
 Commands return normally through a resident finalizer. Each child starts with an
 independent DOS context and reply port. Its inherited handles and directory lock
@@ -107,6 +110,28 @@ The shell's state-changing built-ins remain local. Exact-path disk commands use
 reading the next prompt. A resident foreground caller uses `StartForeground`
 followed by `Wait`.
 
+## Background cancellation
+
+Background starts retain the ordinary Input, Output and directory snapshots,
+but allocate an independent DOS scope and signal after child adoption. They do
+not bind that scope to a keyboard route or suspend the parent. Stream policy
+belongs to the caller: the shell selects NIL by default and rejects interactive
+background redirection. A background child can use BreakPending and normal
+interruptible DOS I/O without sharing its parent's BREAK.
+
+RequestBreak validates the identity through the existing kernel Process lookup.
+Only the starting Task may request cancellation. Background children, foreground
+loans and pipeline followers have scopes; plain Start without a scope reports
+212. An early request is latched before adoption and delivered when the scope
+is published. Repeated requests coalesce. Once quiescing is committed, acceptance
+does not alter the saved result; stale and foreign identities report 305.
+
+Task-side Forbid covers identity lookup, flags, scope publication and signaling.
+IRQ/NMI handlers never follow the published pointer. Cleanup clears it before
+freeing the scope. Background scope lifetime cannot be ended or replaced through
+DOS Begin/EndForeground. It lasts until ordinary child finalization; there is no
+forced termination or additional kernel job registry.
+
 ## Two-member foreground groups
 
 The resident `PIPELINE.Run` coordinator accepts two loaded Images and their
@@ -124,8 +149,7 @@ Both children must be prepared before `DOSGROUP.Seal` suspends parent DOS activi
 `StartPrepared(identity)` then launches each child; `DiscardPrepared(identity)`
 releases a child that has not launched. These operations are for this bounded
 resident coordinator, not general shell job control or loaded-command imports.
-Process ABI version 6 keeps the 128-byte row and these group operations while
-using the function-entry contract above.
+Process ABI version 7 keeps the 128-byte row and these group operations.
 
 The coordinator restores its selections and closes both parent pipe wrappers
 before sealing. Each child adopts its own DOS context and break signal, while

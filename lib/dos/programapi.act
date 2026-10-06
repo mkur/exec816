@@ -9,6 +9,7 @@ USE DOSUTILITY
 USE DOSFAULT
 USE DOSCOMMAND
 USE DOSPANE
+USE DOSDELAY
 
 ; Explicit task-only providers. Opaque handles keep the external contract free
 ; of resident implementation records. Dispatch directly to their shared
@@ -176,5 +177,9 @@ PUBLIC LONGINT FUNC ReadArgsOrHelp(CSTRING template ADDRESS POINTER values
 
 RETURN(DOSCOMMAND.ReadArgsOrHelp(PROCESS.GetArgStr(),template,values,
     valueCapacity,storage,storageCapacity))
+
+PUBLIC LONGINT FUNC Delay(LONGCARD ticks)
+
+RETURN(DOSDELAY.Delay(ticks))
 
 ENDMODULE

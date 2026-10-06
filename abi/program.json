@@ -1,6 +1,6 @@
 {
   "abi": "exec816.program",
-  "version": 13,
+  "version": 14,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
@@ -445,6 +445,15 @@
           "rows"
         ]
       ]
+    },
+    "Delay": {
+      "arguments": [
+        [
+          "LONGCARD",
+          "ticks"
+        ]
+      ],
+      "result": "LONGINT"
     }
   },
   "limits": {

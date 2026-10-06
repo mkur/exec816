@@ -90,6 +90,15 @@ dynamic entry. No loaded-code finalizer or asynchronous callback is published.
 
 ## Checked providers
 
+`COMMAND.Delay(ticks)` waits for LONGCARD VBI ticks through timer.device and
+returns LONGINT -1 on success, zero with IoErr on failure. Positive waits require
+Task context with scheduling enabled. A pending BREAK returns ERROR_BREAK;
+interrupted alarms are aborted and their exact replies collected before return.
+Zero ticks completes immediately unless cancellation is already pending.
+The DOS context lazily caches one clock/alarm request and binding, using its
+existing reply port. Context cleanup closes the idle binding and frees it.
+
+
 `COMMAND.OpenPane(rows)` returns an owned, output-only lower console handle,
 or NULL with IoErr. It preserves the default console's input route and focus.
 `COMMAND.Close` and Process cleanup restore the parent's full height and retire

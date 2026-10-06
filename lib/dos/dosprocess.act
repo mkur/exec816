@@ -231,11 +231,28 @@ BYTE FUNC EnterForeground(PROCESSSTATE.Entry POINTER process
 
 RETURN(1)
 
+; Publish after adoption, delivering any stop requested before the child ran.
+PROC PublishBreak(PROCESSSTATE.Entry POINTER process
+    DOSCLIENT.ClientContext POINTER client)
+
+  LET scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+  EXEC.Forbid()
+  process.breakScope=BYTE POINTER(scope)
+  IF (process.breakFlags & PROCESSSTATE.BREAK_PENDING)<>0 THEN
+    scope.pending=1
+    EXEC.Signal(EXEC.Task POINTER(scope.owner),scope.mask)
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
 ; Attach prepared DOS ownership when the child begins execution.
 PUBLIC BYTE FUNC Adopt(PROCESSSTATE.Entry POINTER process
     DOSCLIENT.ClientContext POINTER client)
   DOSCORE.DosSlot POINTER owner
   BYTE POINTER console
+  BYTE okay
 
   owner=DOSCORE.Current()
   console=process.console
@@ -258,16 +275,28 @@ PUBLIC BYTE FUNC Adopt(PROCESSSTATE.Entry POINTER process
   process.directory=BYTE POINTER(0)
   process.console=BYTE POINTER(0)
   EXEC.Permit()
-  IF process.groupScope<>BYTE POINTER(0) THEN
-    RETURN(DOSGROUP.Join(DOSBREAKTYPES.Scope POINTER(process.groupScope),client,
-        console))
+  okay=1
+  IF process.groupScope<>NULL THEN
+    okay=DOSGROUP.Join(DOSBREAKTYPES.Scope POINTER(process.groupScope),client,console)
+  ELSEIF process.foreground=PREPARED THEN
+    okay=EnterForeground(process,client,console)
+  ELSEIF (process.breakFlags & PROCESSSTATE.BREAK_BACKGROUND)<>0 THEN
+    BEGIN
+      LET scope=DOSBREAK.Allocate(client,NULL)
+      IF scope=NULL THEN
+        RETURN(0)
+      FI
+
+      scope.active=1
+      client.foreground=BYTE POINTER(scope)
+    END
   FI
 
-  IF process.foreground=PREPARED THEN
-    RETURN(EnterForeground(process,client,console))
+  IF okay<>0 AND client.foreground<>NULL THEN
+    PublishBreak(process,client)
   FI
 
-RETURN(1)
+RETURN(okay)
 
 ; Return console routing to the retained parent after child completion.
 BYTE FUNC RestoreForeground(PROCESSSTATE.Entry POINTER process
@@ -323,6 +352,9 @@ PUBLIC BYTE FUNC Cleanup(PROCESSSTATE.Entry POINTER process)
     RETURN(0)
   FI
 
+  EXEC.Forbid()
+  process.breakScope=NULL
+  EXEC.Permit()
   IF process.groupScope<>BYTE POINTER(0) THEN
     IF DOSGROUP.Leave(DOSBREAKTYPES.Scope POINTER(process.groupScope),client)=0 THEN
       RETURN(0)
@@ -331,6 +363,21 @@ PUBLIC BYTE FUNC Cleanup(PROCESSSTATE.Entry POINTER process)
     IF RestoreForeground(process,client)=0 THEN
       RETURN(0)
     FI
+  ELSEIF (process.breakFlags & PROCESSSTATE.BREAK_BACKGROUND)<>0 THEN
+    BEGIN
+      LET scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+      IF scope<>NULL THEN
+        IF scope.opState<>0 AND scope.opState<>FSOPERATION.COLLECTED THEN
+          RETURN(0)
+        FI
+
+        EXEC.Forbid()
+        client.foreground=NULL
+        scope.active=0
+        EXEC.Permit()
+        DOSBREAK.Free(scope)
+      FI
+    END
   ELSE
     IF DOSBREAK.End()=0 THEN
       RETURN(0)
