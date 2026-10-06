@@ -65,10 +65,10 @@ implicitly. Forced recovery of crashed clients is outside this interface.
 
 Action! and C callers use their ordinary Task ABI. Only the resident's assembly
 completion calls the [native ReplyMsg binding](ports.md#native-interrupt-reply).
-The [AES service](aes.md) waits on this reply signal alongside messages/input
-using ordinary Wait. One borrowed alarm serves all application deadlines; no
-kernel timed-wait operation is required. Its GUI timing and TD4 acceptance are
-tracked in the [AES execution record](../history/aes-server.md).
+Each [AES client](aes.md) lazily opens its own query request and borrowed alarm,
+then waits on the private timer reply signal alongside its message signal using
+ordinary Wait. The presenter owns no AES alarm. Its GUI timing and TD4 acceptance
+are tracked in the [hybrid AES execution record](../history/aes-hybrid.md).
 
 The measured loaded envelope is the demo's nominal 57.6 kbit/s SIO profile.
 Sixteen simultaneous expiries plus port/serial load passed all 4,095 refill

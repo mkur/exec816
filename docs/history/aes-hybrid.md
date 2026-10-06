@@ -230,3 +230,54 @@ eight extra upper-RAM counter bytes and 182 extra C code bytes within the same
 reserved banks. Production APIs, priorities, scheduler, AES, renderer and demo
 package are unchanged. This is optimized development evidence, not release or
 hardware qualification.
+
+## HY4 Timer device call costs
+
+The [I/O cost record](../development/aes-io-costs.json) and
+[`--io-breakdown` probe](../guides/aes-latency-diagnostics.md#device-io-costs)
+separate the C wrapper, assembly bridge, native dispatch, generic I/O, kernel
+gateways and timer driver. Adding these passive observations to the original
+85-call image reproduces its latency distributions exactly.
+
+The original window charges about 0.03 ms to a C wrapper and 0.02 ms to assembly
+marshalling per device call. Timer binding checks cost about 0.42 ms, mostly in
+`UnitIndex`: it used general 32-bit remainder and division to identify one of
+eight 24-byte open records. Queue insertion repeats that lookup. This makes
+handle arithmetic a better first target than replacing the C bridge.
+
+`UnitIndex` now checks the full address range before narrowing the offset, then
+uses at most seven subtractions and rejects any remainder. Device identity,
+alignment, active-binding and reply-port checks remain intact. Device records,
+public APIs, Forbid/edit-gate protection and completion ownership are unchanged.
+
+Matching builds of the current desktop fixture run the continuous exchange for
+100 PAL frames. The linked C segments and launcher are identical; the only
+changed recorded native source is `timerdriver.act`:
+
+| Charged CPU median | Before | After |
+| --- | ---: | ---: |
+| `UnitIndex` helper | 0.336 ms | 0.046 ms |
+| `DoIO` | 1.665 ms | 1.374 ms |
+| `SendIO` | 2.560 ms | 1.975 ms |
+| Combined-wait device I/O | 10.506 ms | 7.549 ms |
+
+The helper median falls by about 86%. Combined-wait total charged CPU p95 falls
+from 13.585 to 11.661 ms, but individual tails are mixed: `DoIO` p95 rises from
+1.671 to 2.844 ms, with more gateway and Permit scheduling work in those samples.
+These charges include conservative scheduling/return tails. Before/after windows
+contain 75/72 complete public calls and 24 native expiries each; continuous load
+does not fix offered work or execution phase. The distributions establish this
+bounded optimization's observed costs, not a uniform latency gain. Pointer,
+button and scanout acceptance was not rerun; **HY4 and AS4/TD4 remain open**.
+
+Optimized development checks pass: 266 binding assertions cover all eight
+distinct reply ports, every byte offset in the open table, invalid addresses,
+closed handles and borrowed cancellation; 214 concurrent lifecycle assertions
+cover expiry/cancel races and Task reuse; 17 C API assertions cover public I/O.
+The measured desktop runs restore ownership with intact guards. The host suite
+runs 388 tests with four historical-source skips. No ABI or compiler-context
+change requires a raw-mode probe in this slice.
+
+Reserved bank-zero delta is **0 bytes**, fixed and per Task, including guards,
+alignment and unused capacity. Upper-RAM reservations are unchanged and emitted
+executable code shrinks by 42 bytes. The existing demo package is unchanged.

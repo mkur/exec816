@@ -17,13 +17,14 @@ from console_turn_profile import flat_markers, analyze_events
 from test_widget_panel import observers
 from make_data_disk import make
 from aes_timing_breakdown import (scheduler_markers, caller_markers, input_breakdown,
-                                  caller_breakdown)
+                                  caller_breakdown, io_markers, io_breakdown)
 from desktop_mouse import schedule
 from measure_desktop import distribution
 
 
 def run(out,program,frames=100,load='idle',breakdown=False,offer_period=0,button_period=0,
-        continuous=False):
+        continuous=False,io_costs=False):
+    breakdown = breakdown or io_costs
     require(frames > 0 and offer_period >= 0 and button_period >= 0, 'Invalid diagnostic cadence')
     require(not button_period or breakdown, 'Button diagnostic requires --breakdown')
     require(not (continuous and offer_period), 'Choose continuous or fixed offers')
@@ -43,6 +44,9 @@ def run(out,program,frames=100,load='idle',breakdown=False,offer_period=0,button
         for pc, site in sites.items():
             extra['call_'+str(pc)] = pc
             extra['return_'+str(pc)] = site['end']
+        if io_costs:
+            io_definitions = io_markers(p,foreign)
+            extra.update(flat_markers(dict(points={},spans=io_definitions)))
     os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(
         f'{pc:x}' for pc in set([*marks.values(),*flat_markers(costs).values(),*extra.values()])))
     for key in ('EXEC816_MASK_TRACE','EXEC816_MOUSE_TRACE'):os.environ.pop(key,None)
@@ -55,6 +59,7 @@ def run(out,program,frames=100,load='idle',breakdown=False,offer_period=0,button
         'measure_aes_calls.py','aes_timing_breakdown.py','aes_latency_trace.py','console_turn_profile.py')}
     report.update(cost_definition=costs,breakdown_enabled=breakdown)
     if breakdown: report.update(scheduler_markers=scheduler,caller_sites=sites)
+    if io_costs: report['io_markers'] = io_definitions
     media=out/'media/TOOLS/SUB';media.mkdir(parents=True,exist_ok=True)
     (media/'DATA.BIN').write_bytes(bytes(i & 255 for i in range(32768)))
     disk=out/'disk.atr';make(disk,out/'media',binary_names={'TOOLS/SUB/DATA.BIN'},filesystem='sdfs')
@@ -177,6 +182,17 @@ def analyze_report(report, out, p):
     if breakdown:
         profile=report['costs']
         report['caller_breakdown']=caller_breakdown(events,sites,profile['segments'],report['latency']['records'])
+        if 'io_markers' in report:
+            report['io_breakdown']=io_breakdown(events,report['io_markers'],sites,
+                profile['segments'],report['latency']['records'])
+            rows=report['io_breakdown']['records']
+            report['io_breakdown']['summary']={name:dict(
+                calls=sum(r['callee']==name for r in rows),
+                charged_cpu_ms=distribution([r['charged_cpu_ms'] for r in rows if r['callee']==name]),
+                exclusive_cpu_ms={category:distribution([r['exclusive_cpu_ms'].get(category,0)
+                    for r in rows if r['callee']==name]) for category in
+                    sorted({k for r in rows if r['callee']==name for k in r['exclusive_cpu_ms']})})
+                for name in sorted({r['callee'] for r in rows})}
         if report['samples']:
             captures=[t for t,e in events if e[0]=='cpu' and int(e[4],16)==p['labels']['pointer_notify']]
             align=lambda t:t+round((events[0][0]-t)/(1<<32))*(1<<32)
@@ -206,6 +222,7 @@ if __name__=='__main__':
     p.add_argument('--output',type=Path,required=True);p.add_argument('--frames',type=int,default=100)
     p.add_argument('--load',choices=('idle','scroll','disk'),default='idle')
     p.add_argument('--breakdown',action='store_true',help='Passively split caller CPU and presenter scheduling delay')
+    p.add_argument('--io-breakdown',action='store_true',help='Also split C device calls into bridge, generic I/O, gateway and timer costs')
     p.add_argument('--offer-period',type=int,default=0,metavar='FRAMES',help='Diagnostic fixed-rate offers to command 7; requires a parked-client build')
     p.add_argument('--continuous',action='store_true',help='Start the original continuous exchange on the same parked-client image')
     p.add_argument('--button-period',type=int,default=0,metavar='FRAMES',help='Diagnostic fixed-rate physical button edges; requires --breakdown')
@@ -220,4 +237,4 @@ if __name__=='__main__':
         report['status']='pass';report.pop('error',None)
         (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
     else:
-        run(a.output.resolve(),a.program.resolve(),a.frames,a.load,a.breakdown,a.offer_period,a.button_period,a.continuous)
+        run(a.output.resolve(),a.program.resolve(),a.frames,a.load,a.breakdown,a.offer_period,a.button_period,a.continuous,a.io_breakdown)

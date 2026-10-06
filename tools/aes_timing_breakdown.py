@@ -191,7 +191,7 @@ def caller_markers(program, foreign):
     return sites
 
 
-def caller_breakdown(events, sites, segments, calls):
+def caller_spans(events, sites):
     sites = {int(pc): value for pc, value in sites.items()}
     stacks = defaultdict(list)
     spans = []
@@ -207,6 +207,11 @@ def caller_breakdown(events, sites, segments, calls):
             stack.append(dict(start=tick, end_pc=site['end'], dp=dp,
                               category=site['category'], callee=site['callee'], depth=len(stack)))
     require(not any(stacks.values()), 'Incomplete caller-cost span')
+    return spans
+
+
+def caller_breakdown(events, sites, segments, calls):
+    spans = caller_spans(events, sites)
     timelines = {dp: Timeline(segments, dp) for dp in {r['dp'] for r in calls}}
     rows = []
     for call in calls:
@@ -228,3 +233,106 @@ def caller_breakdown(events, sites, segments, calls):
                          exclusive_cpu_ms=dict(buckets), **measured))
     return dict(scope='Exclusive charged CPU by innermost checked C call site. Other includes wrapper setup, event matching, copying and unclassified helper work. Wait CPU excludes sleeping/off-Task time.',
                 records=rows)
+
+
+def io_markers(program, foreign):
+    """Caller-domain routines only; gateway spans include their kernel work."""
+    routines = []
+    categories = {}
+    for r in program['image']['routines']:
+        name = r['name'][2:].rsplit('_', 1)[0]
+        if '_CDEVICECALL' in name:
+            category = 'native_dispatch'
+        elif name.startswith(('IOCORE_', 'IORESIDENT_')):
+            category = 'generic_io'
+        elif name.startswith('TIMERDRIVER_'):
+            helper = name.removeprefix('TIMERDRIVER_')
+            category = ('timer_binding' if helper in ('BOUND', 'UNITINDEX', 'OPENAT') else
+                        'timer_queue' if helper in ('QUEUE', 'PENDINGAT') else 'timer_driver')
+        else:
+            continue
+        routines.append((name, name))
+        categories[name] = category
+    spans = native_markers(program, routines)
+    require(spans and all(s['returns'] for s in spans.values()), 'Missing native I/O return')
+    require('native_dispatch' in categories.values(), 'Missing C I/O dispatch')
+    for name, category in categories.items():
+        spans[name]['category'] = category
+    groups = dict(
+        io_gateway=('io_open_dispatch', 'io_close_dispatch', 'io_begin_dispatch',
+                    'io_send_dispatch', 'io_start', 'io_abort_dispatch', 'io_check_io',
+                    'io_collect', 'io_create_check', 'io_delete_check'),
+        task_exclusion=('tasks_forbid', 'tasks_permit'),
+        reply=('ports_reply_msg',))
+    hosted = (program['output']/'hosted.bin').read_bytes()
+    for category, names in groups.items():
+        for name in names:
+            entry, end = (program['labels'][n] for n in (name, name+'_end'))
+            last = (hosted[end-1-0x1400:end-0x1400] if end < 0x10000 else
+                    image_bytes(program, end-1, 1))
+            require(last == b'\x6b', 'Unknown I/O gateway return '+name)
+            spans[name] = dict(entry=entry, returns=[end-1], category=category)
+    entry, dispatch = (foreign['symbols'][n] for n in ('_IOCall', 'io_dispatch'))
+    require(image_bytes(program, dispatch-1, 1) == b'\x6b', 'Unknown C I/O assembly return')
+    spans['_IOCall'] = dict(entry=entry, returns=[dispatch-1], category='assembly_bridge')
+    return spans
+
+
+def io_breakdown(events, definitions, sites, segments, calls):
+    """Exclusive CPU within complete C device calls, with inclusive helper costs.
+
+    All observed helpers enter and return with the caller's DP. Kernel changes
+    of DP stay inside the gateway interval; no kernel helper is attributed by DP.
+    """
+    boundaries = defaultdict(list)
+    for name, definition in definitions.items():
+        boundaries[definition['entry']].append((name, True))
+        for pc in definition['returns']:
+            boundaries[pc].append((name, False))
+    active, spans = {}, []
+    for tick, e in events:
+        if e[0] != 'cpu':
+            continue
+        pc, dp = int(e[4], 16), int(e[9], 16)
+        for name, entry in boundaries[pc]:
+            key = (dp, name)
+            if entry:
+                require(key not in active, 'Nested I/O helper '+name)
+                active[key] = tick
+            else:
+                require(key in active, 'Missing I/O helper entry '+name)
+                spans.append(dict(dp=dp, name=name, start=active.pop(key), end=tick,
+                                  category=definitions[name]['category']))
+    require(not active, 'Incomplete I/O helper span')
+    timelines = {dp: Timeline(segments, dp) for dp in {c['dp'] for c in calls}}
+    records = []
+    for outer in caller_spans(events, sites):
+        if outer['category'] != 'device_io':
+            continue
+        begin, end, dp = outer['start'], outer['end'], outer['dp']
+        if not any(c['dp'] == dp and c['start'] <= begin < end <= c['client'] for c in calls):
+            continue
+        selected = [s for s in spans if s['dp'] == dp and begin <= s['start'] < s['end'] <= end]
+        require(any(definitions[s['name']]['category'] == 'native_dispatch' for s in selected),
+                'Missing native dispatch inside C I/O call')
+        points = sorted({begin, end, *(t for s in selected for t in (s['start'], s['end']))})
+        buckets = defaultdict(float)
+        timeline = timelines[dp]
+        for a, b in zip(points, points[1:]):
+            enclosing = [s for s in selected if s['start'] <= a < b <= s['end']]
+            # Caller-domain spans must nest even when the caller sleeps. The
+            # latest entry is the innermost, never an unrelated Task's helper.
+            enclosing.sort(key=lambda s: s['start'])
+            require(all(x['end'] >= y['end'] for x, y in zip(enclosing, enclosing[1:])),
+                    'Crossing I/O helper spans')
+            category = enclosing[-1]['category'] if enclosing else 'c_wrapper'
+            buckets[category] += timeline.measure(a, b)['charged_cpu_ms']
+        measured = timeline.measure(begin, end)
+        require(abs(sum(buckets.values())-measured['charged_cpu_ms']) < 1e-7,
+                'I/O CPU categories do not reconcile')
+        records.append(dict(callee=outer['callee'], dp=dp, start=begin, end=end,
+                            exclusive_cpu_ms=dict(buckets), helpers=[
+                                dict(name=s['name'], **timeline.measure(s['start'], s['end'])) for s in selected],
+                            **measured))
+    require(records, 'No complete C I/O calls in measured window')
+    return dict(scope=io_breakdown.__doc__, records=records)

@@ -144,7 +144,7 @@ def main():
     p.add_argument('--output',type=Path,default=ROOT/'build/interrupt-reply/ir5/timer')
     p.add_argument('--mode',choices=('raw','opt'),default='opt')
     p.add_argument('--from-build',type=Path)
-    p.add_argument('--suite',choices=('basic','queue','c','clock','snapshot','lifecycle'),default='basic')
+    p.add_argument('--suite',choices=('basic','queue','binding','c','clock','snapshot','lifecycle'),default='basic')
     p.add_argument('--large-stack',action='store_true')
     p.add_argument('--video',choices=('PAL','NTSC'),default='PAL')
     args=p.parse_args()
@@ -156,7 +156,8 @@ def main():
         compiler(args.compiler_dir),output/'snapshot',args.mode=='opt') if args.suite=='snapshot' else clock_program(
         compiler(args.compiler_dir),output/'clock',args.mode=='opt',50 if args.video=='PAL' else 60) if args.suite=='clock' else c_program(
         compiler(args.compiler_dir),output/'c',args.mode=='opt') if args.suite=='c' else build(
-        compiler(args.compiler_dir),ROOT/'tests/programs'/('timer_device.act' if args.suite=='basic' else 'timer_queue.act'),output/'program',
+        compiler(args.compiler_dir),ROOT/'tests/programs'/dict(basic='timer_device.act',
+            queue='timer_queue.act',binding='timer_binding.act')[args.suite],output/'program',
         tasks=True,optimize=args.mode=='opt')
     report=dict(status='running',tier='development',qualification=False,build=program['build'])
     try:
@@ -172,7 +173,7 @@ def main():
                 raise
             report['checks']=(int.from_bytes(bridge.memdump(program['c_checks'],2),'little') if args.suite=='c'
                               else data(bridge,program['image'],'checks',True)[0])
-            expected_checks=program.get('checks_expected',dict(basic=27,queue=70,c=17).get(args.suite))
+            expected_checks=program.get('checks_expected',dict(basic=27,queue=70,binding=266,c=17).get(args.suite))
             if args.suite=='basic':
                 report['concurrent_clock_reads']=data(bridge,program['image'],'concurrentReads',True)[0]
                 require(0<report['concurrent_clock_reads']<128,'Missing bounded read/expiry overlap')

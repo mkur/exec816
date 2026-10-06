@@ -5,7 +5,7 @@ from copy import deepcopy
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
-from aes_timing_breakdown import input_breakdown, caller_breakdown, scheduler_states
+from aes_timing_breakdown import input_breakdown, caller_breakdown, scheduler_states, io_breakdown
 from sio_transaction_trace import BASE_HZ
 from compare_aes_diagnostics import compare
 
@@ -32,6 +32,44 @@ def fixture():
 
 
 class AESTimingBreakdownTests(unittest.TestCase):
+    def test_io_categories_keep_gateway_cpu_but_exclude_interrupts_and_peers(self):
+        definitions = dict(
+            dispatch=dict(entry=20, returns=[21], category='native_dispatch'),
+            gateway=dict(entry=30, returns=[31], category='io_gateway'))
+        sites = {10: dict(end=14, category='device_io', callee='DoIO')}
+        events = [event(0, 10), event(1, 20), event(2, 30),
+                  event(3, 99, dp=0xa00), event(8, 31), event(9, 21), event(10, 14)]
+        segments = [(0, 3, 0xb00, False), (3, 4, 0xb00, True),
+                    (4, 6, 0xc00, False), (6, 10, 0xb00, False)]
+        calls = [dict(dp=0xb00, start=0, client=10)]
+        row = io_breakdown(events, definitions, sites, segments, calls)['records'][0]
+        self.assertAlmostEqual(row['exclusive_cpu_ms']['c_wrapper']*BASE_HZ/1000, 2)
+        self.assertAlmostEqual(row['exclusive_cpu_ms']['native_dispatch']*BASE_HZ/1000, 2)
+        self.assertAlmostEqual(row['exclusive_cpu_ms']['io_gateway']*BASE_HZ/1000, 3)
+        self.assertAlmostEqual(row['off_cpu_ms']*BASE_HZ/1000, 2)
+        self.assertAlmostEqual(row['interrupt_ms']*BASE_HZ/1000, 1)
+        with self.assertRaisesRegex(RuntimeError, 'Incomplete I/O helper'):
+            io_breakdown(events[:-2], definitions, sites, segments, calls)
+        with self.assertRaisesRegex(RuntimeError, 'Missing I/O helper entry'):
+            io_breakdown(events[:2]+events[3:], definitions, sites, segments, calls)
+        with self.assertRaisesRegex(RuntimeError, 'Missing native dispatch'):
+            io_breakdown([events[0], events[-1]], definitions, sites, segments, calls)
+
+    def test_io_helpers_remain_separate_when_two_tasks_overlap(self):
+        definitions = dict(dispatch=dict(entry=20, returns=[21], category='native_dispatch'))
+        sites = {10: dict(end=14, category='device_io', callee='CheckIO')}
+        events = [event(0, 10), event(1, 20), event(2, 10, dp=0xc00),
+                  event(3, 20, dp=0xc00), event(4, 21, dp=0xc00),
+                  event(5, 14, dp=0xc00), event(6, 21), event(7, 14)]
+        segments = [(0, 2, 0xb00, False), (2, 5, 0xc00, False), (5, 7, 0xb00, False)]
+        calls = [dict(dp=0xb00, start=0, client=7), dict(dp=0xc00, start=2, client=5)]
+        rows = io_breakdown(events, definitions, sites, segments, calls)['records']
+        self.assertEqual(len(rows), 2)
+        for row in rows:
+            expected = 4 if row['dp'] == 0xb00 else 3
+            self.assertAlmostEqual(row['charged_cpu_ms']*BASE_HZ/1000, expected)
+            self.assertEqual(len(row['helpers']), 1)
+
     def test_blocked_ready_selected_and_cpu_are_distinct(self):
         events, profile = fixture()
         row = input_breakdown(events, SCHEDULER, profile,

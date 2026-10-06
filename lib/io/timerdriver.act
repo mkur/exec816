@@ -34,6 +34,8 @@ RETURN(Pending POINTER(ADDRESS(TIMERMETA.PENDING+CARD(slot)*TIMERMETA.PENDING_ST
 ; Unit handles identify admitted open records, never execution slots.
 BYTE FUNC UnitIndex(EXEC.IORequest POINTER request)
   LONGCARD offset
+  CARD remaining
+  BYTE slot
 
   IF request.io_Device<>BYTE POINTER(ADDRESS(TIMERMETA.OPENS)) THEN
     RETURN($ff)
@@ -44,12 +46,24 @@ BYTE FUNC UnitIndex(EXEC.IORequest POINTER request)
   FI
 
   offset=LONGCARD(ADDRESS(request.io_Unit))-LONGCARD(TIMERMETA.OPEN)
-  IF offset>=TIMERMETA.OPEN_CAPACITY*TIMERMETA.OPEN_STRIDE
-      OR offset MOD TIMERMETA.OPEN_STRIDE<>0 THEN
+  IF offset>=TIMERMETA.OPEN_CAPACITY*TIMERMETA.OPEN_STRIDE THEN
     RETURN($ff)
   FI
 
-RETURN(BYTE(offset/TIMERMETA.OPEN_STRIDE))
+  ; The checked eight-slot extent fits CARD. At most seven subtractions
+  ; identify a handle without two general 32-bit divide/remainder calls.
+  remaining=CARD(offset)
+  slot=0
+  WHILE remaining>=TIMERMETA.OPEN_STRIDE DO
+    remaining==-TIMERMETA.OPEN_STRIDE
+    slot==+1
+  OD
+
+  IF remaining<>0 THEN
+    RETURN($ff)
+  FI
+
+RETURN(slot)
 
 PUBLIC BYTE FUNC Bound(EXEC.IORequest POINTER request)
   BYTE slot

@@ -89,6 +89,9 @@ AS4/TD4 successor performance gate remain open. The
 [latency diagnostics](guides/aes-latency-diagnostics.md) now separate caller
 device-I/O CPU, presenter scheduling delay and equal offered load;
 [measurements](development/aes-hybrid-diagnostics.json) retain the failed gate.
+The [timer I/O follow-up](history/aes-hybrid.md#hy4-timer-device-call-costs)
+reduces handle-validation arithmetic and records bridge, driver and gateway
+costs. Scheduling tails remain variable; GUI acceptance is still open.
 Additional local GEM calls and
 direct VDI drawing follow their own coverage gates.
 

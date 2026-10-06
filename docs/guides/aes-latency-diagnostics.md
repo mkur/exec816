@@ -5,8 +5,8 @@
 
 Use these development probes to separate caller CPU cost, presenter scheduling
 delay and changed offered load. They do not replace HY4's continuous workloads,
-pixel checks or frozen acceptance limits. Priorities and production code remain
-unchanged.
+pixel checks or frozen acceptance limits. The probes leave guest instructions
+and scheduling unchanged.
 
 ## Caller and presenter timing
 
@@ -60,6 +60,36 @@ helper names can collide, so caller sites resolve from emitted sections and
 relocated call operands. Missing evidence fails analysis instead of becoming a
 zero-duration observation. First selection and CPU charges retain the existing
 profiler's conservative treatment of kernel/interrupt return tails.
+
+## Device I/O costs
+
+Use `--io-breakdown` in place of `--breakdown` on `measure_aes_calls.py` to
+expand the device-I/O category. It implies the ordinary caller breakdown:
+
+```sh
+python3 tools/measure_aes_calls.py \
+  --program build/aes-hybrid/io-cost/optimized-image/program \
+  --output build/aes-hybrid/io-cost/after --frames 100 --io-breakdown
+```
+
+`io_breakdown` splits each complete C device call into C wrapper work, assembly
+marshalling, native operation dispatch, generic I/O, kernel I/O gateways,
+Forbid/Permit, timer binding checks, timer queue work, other driver work and
+task-side ReplyMsg. Native interrupt completion is outside that task-side reply
+category. The gateway categories include policy, validation and return costs;
+they do not measure the COP instruction alone.
+
+Checked native entry/return boundaries nest inside the existing C call-site
+intervals. Each helper enters and returns with the caller's DP; kernel work
+stays inside the enclosing gateway interval. Other Tasks and native interrupts
+remain separate. Exclusive categories reconcile to each device call's charged
+CPU. Per-helper measurements are inclusive and overlap their parents: do not
+sum them or component percentiles. Calls crossing the measured window or a
+public AES-call boundary are omitted from the complete-call distribution.
+
+The [I/O optimization record](../development/aes-io-costs.json) preserves the
+matched workload, source hashes and before/after costs. These call costs do not
+establish visible GUI latency or close HY4 acceptance.
 
 ## Equal offered load
 
