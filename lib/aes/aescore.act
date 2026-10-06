@@ -26,8 +26,7 @@ PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
   service.nextClient=1
   service.nextGem=1
   service.started=1
-  ; Publication is last: the controller cannot see a half-initialized port.
-  service.live=1
+  ; AESHOST publishes only after its optional timer setup has settled.
 
 RETURN(1)
 

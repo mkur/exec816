@@ -50,6 +50,13 @@ remain caller-owned storage, lent until the single reply is collected. This is
 a cooperative shared-memory ownership contract, not memory protection against
 malicious applications. Normal service shutdown refuses live registrations.
 
+The presenter opens `timer.device` on `UNIT_VBLANK` once, with a private signal
+port and two 38-byte records: the original clock query and a borrowed absolute
+alarm. The transport collects or cancels/collects the alarm before reuse or
+shutdown, then closes the original open. A setup failure releases its acquired
+resources and leaves message service available. GEM timer entry points remain
+pending until the event semantics slice passes.
+
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
 profile. Rebuild bindings and service together. Current implementation and
 development evidence are tracked in the

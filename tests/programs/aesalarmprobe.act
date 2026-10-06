@@ -1,0 +1,145 @@
+MODULE AESALARMPROBE
+USE EXEC
+USE TIMER
+USE AESSTATE
+USE AESTIMER
+USE AESTYPES
+USE AESALARMRACE
+USE HEAPCORE
+
+PUBLIC EXEC.Task POINTER controller
+PUBLIC LONGCARD mask
+PUBLIC BYTE stage,done
+PUBLIC CARD checks
+LONGCARD high,low
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fcc1+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PUBLIC PROC Tick(AESSTATE.Service POINTER service)
+  BYTE index
+  LONGCARD available,signals
+
+  IF stage=done THEN
+    RETURN
+  FI
+
+  LET state=@service.timer
+  LET owner=EXEC.FindTask(NULL)
+  IF stage=1 THEN
+    Require(state.opened=1 AND state.error=0)
+    Require(SIZEOF(TIMER.TimerClockRequest)=38)
+    Require(state.query<>state.alarm)
+    Require(state.query.tc_Request.io_Device=state.alarm.tc_Request.io_Device)
+    Require(state.query.tc_Request.io_Unit=state.alarm.tc_Request.io_Unit)
+    Require(AESTIMER.Read(service)<>0)
+    high=state.nowHigh
+    low=state.nowLow+100
+    AESTIMER.Target(service,1,high,low)
+    Require(state.state=AESSTATE.ALARM_OUTSTANDING)
+    Require(EXEC.CheckIO(@state.alarm.tc_Request)=NULL)
+    Require(AESALARMRACE.sends=1)
+  ELSEIF stage=2 THEN
+    AESTIMER.Target(service,1,high,low)
+    Require(AESALARMRACE.sends=1 AND AESALARMRACE.aborts=0)
+  ELSEIF stage=3 THEN
+    low==-50
+    AESTIMER.Target(service,1,high,low)
+    Require(AESALARMRACE.sends=2 AND AESALARMRACE.aborts=1)
+    Require(AESALARMRACE.collections=1 AND state.error=0)
+  ELSEIF stage=4 THEN
+    low==+150
+    AESTIMER.Target(service,1,high,low)
+    Require(AESALARMRACE.sends=3 AND AESALARMRACE.aborts=2)
+    Require(AESALARMRACE.collections=2 AND state.error=0)
+  ELSEIF stage=5 THEN
+    AESTIMER.Target(service,0,0,0)
+    Require(AESTIMER.Idle(service)<>0)
+    Require(AESALARMRACE.aborts=3 AND AESALARMRACE.collections=3)
+  ELSEIF stage=6 THEN
+    AESTIMER.Target(service,1,0,0)
+    Require(EXEC.CheckIO(@state.alarm.tc_Request)<>NULL)
+    Require(state.state=AESSTATE.ALARM_OUTSTANDING)
+    AESTIMER.Collect(service)
+    Require(AESTIMER.Idle(service)<>0 AND state.error=0)
+    Require(AESALARMRACE.sends=4 AND AESALARMRACE.collections=4)
+  ELSEIF stage=7 THEN
+    Require(AESTIMER.Read(service)<>0)
+    high=state.nowHigh
+    low=state.nowLow+3
+    AESTIMER.Target(service,1,high,low)
+    Require(state.state=AESSTATE.ALARM_OUTSTANDING)
+  ELSEIF stage=8 THEN
+    AESTIMER.Collect(service)
+    IF state.state<>AESSTATE.ALARM_IDLE THEN
+      RETURN
+    FI
+
+    Require(AESTIMER.Read(service)<>0)
+    Require(state.nowHigh>high OR (state.nowHigh=high AND state.nowLow>=low))
+    Require(state.error=0 AND AESALARMRACE.collections=5)
+    ; A stale signal is not another completion.
+    EXEC.Signal(EXEC.FindTask(NULL),state.mask)
+    AESTIMER.Collect(service)
+    Require(AESALARMRACE.collections=5)
+  ELSEIF stage=9 THEN
+    Require(AESTIMER.Read(service)<>0)
+    AESTIMER.Target(service,1,state.nowHigh,state.nowLow+3)
+    AESALARMRACE.armed=1
+    AESTIMER.Target(service,0,0,0)
+    Require(AESALARMRACE.races=1)
+    Require(AESTIMER.Idle(service)<>0 AND state.error=0)
+    Require(AESALARMRACE.collections=6)
+  ELSEIF stage=10 THEN
+    Require(AESTIMER.Close(service)<>0)
+    available=EXEC.AvailMem(0)
+    signals=owner.tc_SigAlloc
+    FOR index=1 TO 5 DO
+      state.error=0
+      AESALARMRACE.fault=index
+      Require(AESTIMER.Start(service)=0)
+      Require(state.error=AESTYPES.TIMER_ERROR)
+      Require(state.port=NULL AND state.query=NULL AND state.alarm=NULL)
+      Require(state.opened=0 AND state.mask=0)
+      Require(EXEC.AvailMem(0)=available)
+      Require(owner.tc_SigAlloc=signals)
+    OD
+
+    AESALARMRACE.fault=0
+    state.error=0
+    Require(AESTIMER.Start(service)<>0)
+  ELSEIF stage=11 THEN
+    Require(AESTIMER.Read(service)<>0)
+    AESALARMRACE.fault=6
+    AESTIMER.Target(service,1,state.nowHigh,state.nowLow+100)
+    Require(EXEC.CheckIO(@state.alarm.tc_Request)<>NULL)
+    AESTIMER.Collect(service)
+    Require(state.error=AESTYPES.TIMER_ERROR)
+    Require(AESTIMER.Idle(service)<>0)
+    AESALARMRACE.fault=0
+    Require(AESTIMER.Close(service)<>0)
+    state.error=0
+    Require(AESTIMER.Start(service)<>0)
+  ELSEIF stage=12 THEN
+    Require(AESTIMER.Read(service)<>0)
+    AESTIMER.Target(service,1,state.nowHigh,state.nowLow+100)
+    AESALARMRACE.fault=5
+    Require(AESTIMER.Read(service)=0)
+    Require(state.error=AESTYPES.TIMER_ERROR)
+    AESTIMER.Target(service,1,state.nowHigh,state.nowLow+200)
+    Require(AESTIMER.Idle(service)<>0)
+    AESALARMRACE.fault=0
+  FI
+
+  done=stage
+  EXEC.Signal(controller,mask)
+
+RETURN
+ENDMODULE

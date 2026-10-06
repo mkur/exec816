@@ -255,6 +255,71 @@ ENDMODULE
     return report
 
 
+def alarm(out, replay=False):
+    out.mkdir(parents=True, exist_ok=True)
+    if replay:
+        program = read_build(out/'program')
+    else:
+        for name in ('aes_alarm', 'aesalarmprobe', 'aesalarmrace'):
+            (out/(name+'.act')).write_text(read_source(ROOT/f'tests/programs/{name}.act'))
+        host = read_source(ROOT/'lib/aes/aeshost.act').replace('USE AESTIMER',
+            'USE AESTIMER\nUSE AESALARMPROBE')
+        host = host.replace('AESTIMER.Target(service,0,0,0)', 'AESALARMPROBE.Tick(service)')
+        (out/'aeshost.act').write_text(host)
+        timer = read_source(ROOT/'lib/aes/aestimer.act').replace('USE HEAPCORE',
+            'USE HEAPCORE\nUSE AESALARMRACE')
+        for number, target, call in (
+            (1, 'state.port', 'EXEC.CreateMsgPort()'),
+            (2, 'state.query', 'TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(\n        state.port,SIZEOF(TIMER.TimerClockRequest)))'),
+            (3, 'state.alarm', 'TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(\n          state.port,SIZEOF(TIMER.TimerClockRequest)))')):
+            needle = target+'='+call
+            require(timer.count(needle) == 1, 'Timer allocation boundary changed')
+            timer = timer.replace(needle, f'IF AESALARMRACE.fault={number} THEN\n    {target}=NULL\n  ELSE\n    {needle}\n  FI')
+        timer = timer.replace('TIMER.UNIT_VBLANK,', 'LONGCARD(IF AESALARMRACE.fault=4 THEN 0 ELSE TIMER.UNIT_VBLANK FI),')
+        timer = timer.replace('state.query.tc_Request.io_Command=TIMER.TD_READCLOCK',
+            'state.query.tc_Request.io_Command=IF AESALARMRACE.fault=5 THEN 0 ELSE TIMER.TD_READCLOCK FI')
+        timer = timer.replace('  EXEC.SendIO(@state.alarm.tc_Request)',
+            '  AESALARMRACE.sends==+1\n  EXEC.SendIO(@state.alarm.tc_Request)')
+        timer = timer.replace('      EXEC.AbortIO(@state.alarm.tc_Request)',
+            '      AESALARMRACE.BeforeAbort(service)\n      AESALARMRACE.aborts==+1\n      EXEC.AbortIO(@state.alarm.tc_Request)')
+        timer = timer.replace('  LET error=state.alarm.tc_Request.io_Error',
+            '  AESALARMRACE.collections==+1\n  LET error=state.alarm.tc_Request.io_Error')
+        (out/'aestimer.act').write_text(timer)
+        driver = read_source(ROOT/'lib/io/timerdriver.act').replace('USE HEAPCORE',
+            'USE HEAPCORE\nUSE AESALARMRACE')
+        driver = driver.replace('  IF state.count=TIMERMETA.PENDING_CAPACITY THEN',
+            '  IF state.count=TIMERMETA.PENDING_CAPACITY OR AESALARMRACE.fault=6 THEN')
+        (out/'timerdriver.act').write_text(driver)
+        program = build_bitmap(out/'aes_alarm.act', out, desktop=True, aes=True)
+    report = dict(status='running', tier='development', qualification=False,
+        slice='AS2a', build=program['build'],
+        reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
+    try:
+        with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
+            report['machine'] = verify_machine(bridge, ROM, PIN)
+            try:
+                report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=6000)
+            finally:
+                report['checks'] = data(bridge, program['image'], 'checks', True)[0]
+                for name in ('sends', 'aborts', 'collections', 'races'):
+                    report[name] = data(bridge, program['image'], name, True)[0]
+            ownership(bridge, program, program['output'])
+            require(report['checks'] >= 70 and report['races'] == 1, 'Incomplete alarm checks')
+            require(report['sends'] == report['collections'], 'Alarm ownership leaked')
+            base = program['build']['memory']['timer_device_storage']['BASE']
+            state = bridge.memdump(base, 24)
+            require(state[16:18] == bytes(2) and state[20:24] == bytes([0, 0, 255, 0]),
+                    'Timer remained active after AES shutdown')
+            report['status'] = 'pass'
+    except Exception as error:
+        report.update(status='fail', error=str(error))
+        raise
+    finally:
+        (out/'results.json').write_text(json.dumps(report, indent=2)+'\n')
+    print('AES alarm lifecycle checks passed', flush=True)
+    return report
+
+
 def intake(out, failure=0, replay=False):
     out.mkdir(parents=True, exist_ok=True)
     if replay:
@@ -339,13 +404,15 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
     parser.add_argument('--replay', action='store_true')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'alarm'), default='context')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
     elif args.suite in ('registration', 'messages'):
         applications(args.output.resolve(), args.suite, args.replay)
+    elif args.suite == 'alarm':
+        alarm(args.output.resolve(), args.replay)
     else:
         require(args.mode == 'opt', 'Routine intake checks use optimized builds')
         intake(args.output.resolve(), args.failure, args.replay)

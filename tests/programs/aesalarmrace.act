@@ -1,0 +1,37 @@
+; Diagnostic stalls/counters only; never part of a production image.
+MODULE AESALARMRACE
+USE EXEC
+USE TIMER
+USE AESSTATE
+USE HEAPCORE
+
+PUBLIC BYTE armed,fault
+PUBLIC CARD sends,aborts,collections,races
+
+PUBLIC PROC BeforeAbort(AESSTATE.Service POINTER service)
+
+  IF armed=0 THEN
+    RETURN
+  FI
+
+  armed=0
+  LET query=service.timer.query
+  query.tc_Request.io_Command=TIMER.TD_READCLOCK
+  DO
+    IF EXEC.DoIO(@query.tc_Request)<>0 THEN
+      HEAPCORE.Abort($fcc0)
+    FI
+
+    IF query.ticks_hi>service.timer.targetHigh
+        OR (query.ticks_hi=service.timer.targetHigh
+            AND query.ticks_lo>=service.timer.targetLow) THEN
+      EXIT
+    FI
+
+    EXEC.Yield()
+  OD
+
+  races==+1
+
+RETURN
+ENDMODULE

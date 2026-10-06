@@ -2,6 +2,18 @@
 MODULE AESSTATE
 USE EXEC
 USE AESTYPES
+USE TIMER
+
+PUBLIC CONST ALARM_IDLE=0
+PUBLIC CONST ALARM_OUTSTANDING=1
+PUBLIC CONST ALARM_RETIRING=2
+
+PUBLIC TYPE TimerState=[
+  EXEC.MsgPort POINTER port
+  TIMER.TimerClockRequest POINTER query,alarm
+  BYTE state,opened,error
+  LONGCARD mask,targetHigh,targetLow,nowHigh,nowLow,rate
+]
 
 PUBLIC TYPE Client=[
   LONGCARD id
@@ -28,6 +40,7 @@ PUBLIC TYPE Service=[
   CARD nextGem
   Client ARRAY clients(AESTYPES.CLIENTS)
   BYTE count
+  TimerState timer
 ]
 
 Service POINTER boundService

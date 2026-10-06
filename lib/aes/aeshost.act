@@ -5,6 +5,7 @@ USE AESSTATE
 USE AESTYPES
 USE AESCORE
 USE HEAPCORE
+USE AESTIMER
 
 PUBLIC PROC Start()
   BYTE bit
@@ -23,6 +24,12 @@ PUBLIC PROC Start()
   IF AESCORE.Init(service,bit)=0 THEN
     EXEC.FreeSignal(bit)
     service.error=AESTYPES.RESOURCE
+  ELSE
+    BEGIN
+      LET opened=AESTIMER.Start(service)
+    END
+
+    service.live=1
   FI
 
 RETURN
@@ -34,7 +41,7 @@ PUBLIC LONGCARD FUNC Mask()
     RETURN(0)
   FI
 
-RETURN(service.mask)
+RETURN(service.mask OR service.timer.mask)
 
 PUBLIC BYTE FUNC Pump(BYTE budget)
 
@@ -52,13 +59,14 @@ PUBLIC BYTE FUNC Runnable()
     RETURN(0)
   FI
 
-RETURN(AESCORE.Runnable(service))
+RETURN(AESCORE.Runnable(service) OR AESTIMER.Runnable(service))
 
 PUBLIC PROC Wake()
 
   LET service=AESSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
     AESCORE.Wake(service)
+    AESTIMER.Target(service,0,0,0)
   FI
 
 RETURN
@@ -70,7 +78,7 @@ PUBLIC BYTE FUNC Idle()
     RETURN(1)
   FI
 
-RETURN(AESCORE.Idle(service))
+RETURN(AESCORE.Idle(service) AND AESTIMER.Idle(service))
 
 PUBLIC PROC Stop()
 
@@ -79,7 +87,7 @@ PUBLIC PROC Stop()
     RETURN
   FI
 
-  IF AESCORE.Stop(service)=0 THEN
+  IF Idle()=0 OR AESTIMER.Close(service)=0 OR AESCORE.Stop(service)=0 THEN
     HEAPCORE.Abort($fca0)
   FI
 
