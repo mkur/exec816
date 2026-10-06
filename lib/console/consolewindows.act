@@ -4,6 +4,7 @@ USE CONSOLETYPES
 USE CONSOLEBITMAP
 USE CONSOLEBATCH
 USE EXEC
+USE AESLOCKS
 USE HEAPCORE
 USE EXECLISTS
 INCLUDE "console-storage-action.inc"
@@ -108,6 +109,14 @@ PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
   ; During DMA only input/READ can advance. Writes, caret and dirty cells
   ; retain their queues without keeping the worker runnable.
   IF CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN(0)
+  FI
+
+  IF instance.write<>NULL AND instance.writeCancel<>0 THEN
+    RETURN(1)
+  FI
+
+  IF AESLOCKS.PaintBlocked()<>0 THEN
     RETURN(0)
   FI
 

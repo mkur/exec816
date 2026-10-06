@@ -82,8 +82,9 @@ UWORD AESRun(void)
     CHECK(wind_update(END_MCTRL) == 0 && ExecAESDiagnostic() == AES_IDENTITY);
     CHECK(wind_update(4) == 0 && ExecAESDiagnostic() == AES_UNSUPPORTED);
     CHECK(wind_update(BEG_CHECK | END_UPDATE) == 0 && ExecAESDiagnostic() == AES_UNSUPPORTED);
-    CHECK(wind_update(BEG_CHECK | BEG_UPDATE) == 1);
+    /* Startup paint may still own a native token: wait before testing recurse. */
     CHECK(wind_update(BEG_UPDATE) == 1);
+    CHECK(wind_update(BEG_CHECK | BEG_UPDATE) == 1);
     CHECK(UPDATES == 2 && MOUSE == 0);
     CHECK(wind_update(BEG_MCTRL) == 1);
     CHECK(wind_update(BEG_CHECK | BEG_MCTRL) == 1);

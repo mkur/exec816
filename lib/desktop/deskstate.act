@@ -9,6 +9,7 @@ USE REGIONS
 DESKTYPES.Service POINTER service
 LONGCARD selectedLayer,scrollToken,lossGeneration
 EXEC.Task POINTER launcher
+PUBLIC BYTE outlineVisible
 
 PUBLIC DESKTYPES.Service POINTER FUNC Get()
 

@@ -15,6 +15,7 @@ USE CONSOLECORE
 USE CONSOLEBATCH
 USE CONSOLEBITMAP
 USE HEAPCORE
+USE AESLOCKS
 
 LONGCARD paintToken,paintLayer
 CARD regionIndex,commandIndex
@@ -323,6 +324,10 @@ PUBLIC BYTE FUNC Runnable()
     RETURN(1)
   FI
 
+  IF AESLOCKS.PaintBlocked()<>0 THEN
+    RETURN(0)
+  FI
+
   FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
     BEGIN
       LET layer=@service.scene.items(slot)
@@ -345,7 +350,7 @@ PUBLIC PROC Pump()
   FI
 
   IF paintToken=0 THEN
-    IF CONSOLEBITMAP.Failed()<>0 THEN
+    IF CONSOLEBITMAP.Failed()<>0 OR AESLOCKS.PaintBlocked()<>0 THEN
       RETURN
     FI
 

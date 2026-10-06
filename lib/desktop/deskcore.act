@@ -1,5 +1,6 @@
 ; Single-owner window policy and IPC. Hardware presentation is a separate module.
 MODULE DESKCORE
+USE AESLOCKS
 USE EXEC
 USE INPUT
 USE EXECLISTS
@@ -482,7 +483,7 @@ PUBLIC BYTE FUNC Pump(DESKTYPES.Service POINTER service BYTE budget)
   count=0
   WHILE count<budget AND count<4 DO
     request=NULL
-    IF service.scene.busy=0 THEN
+    IF service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0 THEN
       request=DESKTYPES.Request POINTER(EXECLISTS.RemHead(@service.deferred))
     FI
 
@@ -494,7 +495,8 @@ PUBLIC BYTE FUNC Pump(DESKTYPES.Service POINTER service BYTE budget)
       EXIT
     FI
 
-    IF service.scene.busy<>0 AND request.operation<>DESKTYPES.NEXT_EVENT
+    IF (service.scene.busy<>0 OR AESLOCKS.MouseBlocked()<>0)
+        AND request.operation<>DESKTYPES.NEXT_EVENT
         AND request.operation<>DESKTYPES.CANCEL_EVENT THEN
       EXECLISTS.AddTail(@service.deferred,@request.message.mn_Node)
     ELSE
@@ -524,7 +526,8 @@ RETURN
 PUBLIC BYTE FUNC Runnable(DESKTYPES.Service POINTER service)
 
 RETURN(EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
-    OR (service.scene.busy=0 AND EXECLISTS.IsListEmpty(@service.deferred)=0))
+    OR (service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0
+        AND EXECLISTS.IsListEmpty(@service.deferred)=0))
 
 PUBLIC BYTE FUNC Stop(DESKTYPES.Service POINTER service)
   BYTE index

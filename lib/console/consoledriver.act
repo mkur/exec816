@@ -1,6 +1,8 @@
 ; One resident console worker; public calls use the unchanged Exec IOStdReq.
 MODULE CONSOLEDRIVER
 USE EXEC
+USE AESHOST
+USE AESLOCKS
 USE TASKSTACKS
 USE A816MEMORY
 USE EXECLISTS
@@ -575,7 +577,7 @@ PUBLIC PROC Worker()
       ReadQuantum(service,instance)
       BEGIN
         LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-        IF CONSOLEBITMAP.Pending()=0 AND DESKHOST.Ready()<>0 AND
+        IF CONSOLEBITMAP.Pending()=0 AND DESKHOST.PaintReady()<>0 AND
             (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
           completeWrite=0
           IF view.scrollState<>0
@@ -598,8 +600,19 @@ PUBLIC PROC Worker()
           FI
         FI
 
-        writing=instance.write<>NULL
-        again=(writing<>0 AND instance.writeCancel<>0) OR view.scrollState<>0
+        ; Cancellation may finish a retained model edit while pixels are held.
+        IF AESLOCKS.PaintBlocked()<>0 AND CONSOLEBITMAP.Pending()=0
+            AND instance.write<>NULL AND instance.writeCancel<>0 THEN
+          CONSOLECORE.EditQuantum(instance)
+          IF instance.operation=CONSOLETYPES.OP_IDLE THEN
+            FinishWrite(instance,EXEC.IOStdReq POINTER(instance.write))
+          FI
+        FI
+
+        writing=instance.write<>NULL AND (AESLOCKS.PaintBlocked()=0
+            OR instance.writeCancel<>0)
+        again=(writing<>0 AND instance.writeCancel<>0)
+            OR (view.scrollState<>0 AND AESLOCKS.PaintBlocked()=0)
         IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
           again=0
         FI
@@ -609,6 +622,7 @@ PUBLIC PROC Worker()
 
     DESKPAINT.Pump()
     DESKINPUT.Present()
+    AESHOST.Settle()
     IF stopping=0 AND writing=0 AND again=0
         AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
       DESKHOST.Cache()

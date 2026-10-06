@@ -2,6 +2,34 @@
 MODULE AESLOCKS
 USE AESTYPES
 USE AESSTATE
+USE DESKSTATE
+USE CONSOLEBITMAP
+USE CONSOLEBATCH
+USE CONSOLETYPES
+
+PUBLIC BYTE FUNC PaintBlocked()
+
+  LET service=AESSTATE.Get()
+
+RETURN(service<>NULL AND service.live<>0
+    AND (service.updateOwner<>0 OR service.lockCount<>0))
+
+PUBLIC BYTE FUNC MouseBlocked()
+
+  LET service=AESSTATE.Get()
+
+RETURN(service<>NULL AND service.live<>0
+    AND (service.mouseOwner<>0 OR service.lockCount<>0))
+
+PUBLIC BYTE FUNC NativeReady()
+
+  LET desktop=DESKSTATE.Get()
+  LET batch=CONSOLEBATCH.Get()
+
+RETURN(desktop<>NULL AND desktop.scene.busy=0
+    AND CONSOLEBITMAP.Pending()=0
+    AND batch.phase=CONSOLETYPES.BATCH_IDLE
+    AND DESKSTATE.outlineVisible=0)
 
 BYTE FUNC Eligible(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code)
@@ -21,7 +49,7 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
     RETURN(1)
   FI
 
-RETURN(service.nativeBusy=0)
+RETURN(NativeReady())
 
 CARD FUNC Acquire(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code)

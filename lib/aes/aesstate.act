@@ -3,6 +3,9 @@ MODULE AESSTATE
 USE EXEC
 USE AESTYPES
 USE TIMER
+USE INPUT
+
+PUBLIC CONST POINTER_EVENTS=16
 
 PUBLIC CONST ALARM_IDLE=0
 PUBLIC CONST ALARM_OUTSTANDING=1
@@ -46,7 +49,8 @@ PUBLIC TYPE Service=[
   CARD updates,mouseHolds
   BYTE ARRAY lockOrder(AESTYPES.CLIENTS)
   BYTE lockCount
-  BYTE nativeBusy
+  INPUT.Event ARRAY pointerEvents(POINTER_EVENTS)
+  BYTE pointerHead,pointerCount,pointerLost
 ]
 
 Service POINTER boundService

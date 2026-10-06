@@ -275,7 +275,6 @@ RETURN
 PUBLIC PROC Wake(AESSTATE.Service POINTER service)
 
   AESEVENTS.Poll(service)
-  AESLOCKS.Wake(service)
 
 RETURN
 

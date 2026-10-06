@@ -16,6 +16,7 @@ USE DESKINPUT
 USE CONSOLECAPTURE
 USE CONSOLEWINDOWS
 USE AESHOST
+USE AESLOCKS
 
 BYTE firstPort
 
@@ -65,7 +66,13 @@ PUBLIC BYTE FUNC Ready()
 
   LET service=DESKSTATE.Get()
 
-RETURN(service=NULL OR service.scene.busy=0)
+RETURN((service=NULL OR service.scene.busy=0) AND AESLOCKS.MouseBlocked()=0)
+
+PUBLIC BYTE FUNC PaintReady()
+
+  LET service=DESKSTATE.Get()
+
+RETURN((service=NULL OR service.scene.busy=0) AND AESLOCKS.PaintBlocked()=0)
 
 PUBLIC BYTE FUNC Idle()
   BYTE index
@@ -151,6 +158,7 @@ PUBLIC PROC Cache()
 
   LET service=DESKSTATE.Get()
   IF service=NULL OR service.live<>1 OR service.scene.busy<>0
+      OR AESLOCKS.PaintBlocked()<>0
       OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0
       OR DESKCORE.Runnable(service)<>0 OR DESKINPUT.Runnable()<>0 THEN
     RETURN
@@ -192,7 +200,6 @@ RETURN
 
 PUBLIC PROC Stop()
 
-  AESHOST.Stop()
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
     DESKINPUT.Stop()
@@ -202,6 +209,10 @@ PUBLIC PROC Stop()
 
     EXEC.FreeSignal(service.port.mp_SigBit)
   FI
+
+  ; Native input/scene teardown above may still consult AES gates. Retire AES
+  ; last, before publishing that the controller can reclaim its allocation.
+  AESHOST.Stop()
 
 RETURN
 

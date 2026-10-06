@@ -68,8 +68,21 @@ if unavailable. A normal contended BEGIN waits in arrival order among eligible
 callers; an existing mouse owner can upgrade without waiting behind a dependent
 peer. Exit releases every owned hold. Message and timer service continue.
 
-AS3a supplies arbitration only. Native painting/input gates are the next AS3b
-slice; this intermediate implementation does not yet exclude native drawing.
+Update ownership also excludes native console painting/scrolling, widget
+feedback, background repair and cache capture. Mouse ownership defers native
+widget gestures, focus and geometry changes; an explicit mouse hold alone
+allows console painting. Acquisition waits for already admitted drawing and
+hardware/scene tokens to retire. Pending acquisitions stop new conflicting work,
+so continuous output cannot starve an application lock. The service holds no
+Layers token while an application owns a lock.
+
+Input capture and the serialized cursor path continue. Sixteen copied pointer
+records retain deferred gestures, coalescing adjacent motion; overflow reports
+input loss and cancels the gesture after release. Keyboard widget events retain
+the existing bounded queue. Unlock or owner exit resumes retained controls,
+gestures and damage without another input edge. Blocked paint alone does not
+keep the presenter runnable. Device completions and cancelled console writes
+can retire while drawing is excluded.
 
 `global[0]` is zero to avoid advertising a complete AES version, `[1]` is four,
 `[2]` is the application's ID, `[10]` is four display planes, and other words

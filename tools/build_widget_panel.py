@@ -5,7 +5,7 @@ from build_bitmap_console import build_bitmap
 from native_program import ROOT
 
 
-def build(out):
+def fixture(out):
     out.mkdir(parents=True, exist_ok=True)
     source = (ROOT/'tests/programs/desktop_input.act').read_text()
     source = source.replace('USE REGIONS\n', 'USE REGIONS\nUSE DESKAPP\nUSE WIDGETTYPES\nUSE A816MEMORY\n')
@@ -73,7 +73,12 @@ def build(out):
 '''+needle)
     (out/'deskapp.act').write_text(app)
     fixture=out/'fixture.act';fixture.write_text(source)
-    return build_bitmap(fixture, out, True, desktop=True, stack_checks=True,
+    return fixture
+
+
+def build(out, aes=False):
+    source=fixture(out)
+    return build_bitmap(source, out, True, desktop=True, aes=aes, stack_checks=True,
         dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2)])
 
 

@@ -1,0 +1,82 @@
+; Copied pointer deferral, independent of physical capture and native gestures.
+MODULE AESINPUTPROBE
+USE EXEC
+USE INPUT
+USE AESSTATE
+USE AESINPUT
+USE A816MEMORY
+USE HEAPCORE
+
+CARD checks,serviceBytes
+INPUT.Event sample,result
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc80+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE index
+
+  LET available=EXEC.AvailMem(0)
+  serviceBytes=SIZEOF(AESSTATE.Service)
+  LET service=AESSTATE.Service POINTER(EXEC.AllocMem(LONGCARD(serviceBytes),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(service<>NULL)
+  AESSTATE.Bind(service)
+  Require(AESINPUT.Pending()=0 AND AESINPUT.Pop(@result)=0)
+  sample.kind=INPUT.EVENT_POINTER
+  sample.route=$87654321
+  sample.buttons=0
+  FOR index=0 TO 3 DO
+    sample.x=INT(index)
+    sample.y=-INT(index)
+    sample.tick=LONGCARD(index)
+    AESINPUT.Push(@sample)
+  OD
+
+  Require(service.pointerCount=1)
+  sample.buttons=INPUT.LEFT
+  AESINPUT.Push(@sample)
+  Require(service.pointerCount=2)
+  sample.x=100
+  sample.route=0
+  Require(AESINPUT.Pop(@result)<>0 AND result.x=3 AND result.y=-3
+      AND result.route=$87654321 AND result.tick=3 AND result.buttons=0)
+  Require(AESINPUT.Pop(@result)<>0 AND result.buttons=INPUT.LEFT)
+  Require(AESINPUT.Pending()=0)
+  sample.kind=INPUT.EVENT_BUTTON
+  FOR index=0 TO 15 DO
+    sample.code=CARD(index)
+    AESINPUT.Push(@sample)
+  OD
+
+  Require(service.pointerCount=16)
+  FOR index=0 TO 15 DO
+    Require(AESINPUT.Pop(@result)<>0 AND result.code=CARD(index))
+  OD
+
+  FOR index=0 TO 16 DO
+    AESINPUT.Push(@sample)
+  OD
+
+  Require(service.pointerLost<>0 AND service.pointerCount=1)
+  AESINPUT.Push(@sample)
+  Require(service.pointerCount=1)
+  Require(AESINPUT.Pop(@result)<>0 AND result.kind=INPUT.EVENT_LOSS
+      AND result.code=INPUT.LOSS_NORMALIZED)
+  Require(service.pointerLost=0 AND AESINPUT.Pending()=0)
+  AESINPUT.Push(@sample)
+  Require(AESINPUT.Pop(@result)<>0 AND result.kind=INPUT.EVENT_BUTTON)
+  AESSTATE.Bind(NULL)
+  Require(AESINPUT.Pending()=0 AND AESINPUT.Pop(@result)=0)
+  EXEC.FreeMem(BYTE POINTER(service),LONGCARD(serviceBytes))
+  Require(EXEC.AvailMem(0)=available)
+
+RETURN
+ENDMODULE

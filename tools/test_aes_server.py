@@ -200,6 +200,11 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         program = read_build(recorded/'program')
         foreign = json.loads((recorded/'c-image.json').read_text())
     else:
+        if locks:
+            (out/'aeslockprobe.act').write_text('MODULE AESLOCKPROBE\nPUBLIC BYTE busy\nENDMODULE\n')
+            policy = read_source(ROOT/'lib/aes/aeslocks.act').replace('USE AESTYPES', 'USE AESTYPES\nUSE AESLOCKPROBE')
+            policy = policy.replace('PUBLIC BYTE FUNC NativeReady()\n', 'PUBLIC BYTE FUNC NativeReady()\n\n  IF AESLOCKPROBE.busy<>0 THEN\n    RETURN(0)\n  FI\n')
+            (out/'aeslocks.act').write_text(policy)
         if events:
             event_probes(out)
         entries = ['AESClient'+n for n in
@@ -233,15 +238,17 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
                 setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy[name]:x})\n    item^=LONGCARD({value})\n  END\n'
         if locks:
             for name, field in (('AESUpdates', 'updates'), ('AESMouseHolds', 'mouseHolds'),
-                    ('AESLockCount', 'lockCount'), ('AESNativeBusy', 'nativeBusy')):
+                    ('AESLockCount', 'lockCount')):
                 setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy[name]:x})\n    item^=LONGCARD(ADDRESS(@service.{field}))\n  END\n'
+        if locks:
+            setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESNativeBusy"]:x})\n    item^=LONGCARD(ADDRESS(@AESLOCKPROBE.busy))\n  END\n'
         source.write_text(f'''MODULE AESPROBE
 USE EXEC
 USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE AESEVENTPROBE'+chr(10)+'USE TIMERMETA' if events else ''}
+{'USE AESEVENTPROBE'+chr(10)+'USE TIMERMETA' if events else 'USE AESLOCKPROBE' if locks else ''}
 CARD checks
 CARD FUNC POINTER run()
 

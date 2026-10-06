@@ -2,6 +2,7 @@
 ; pointer survives a turn; identities resolve against the current scene.
 MODULE DESKDRAG
 USE EXEC
+USE AESLOCKS
 USE INPUT
 USE DESKTYPES
 USE DESKSTATE
@@ -17,7 +18,7 @@ USE HEAPCORE
 LONGCARD windowId,lossEpoch
 LAYERTYPES.Rect origin,target
 INT pressX,pressY
-BYTE phase,blocked,dirty,focusWanted
+BYTE phase,blocked,dirty,focusWanted,escapePending
 CONST DRAGGING=1
 CONST MOVE_PENDING=2
 CONST CLOSING=3
@@ -26,9 +27,11 @@ CONST ESC_SCAN=28
 
 PUBLIC PROC Reset()
 
+  escapePending=0
   windowId=0
   phase=0
   blocked=0
+  DESKSTATE.outlineVisible=0
   dirty=0
   focusWanted=0
   lossEpoch=DESKSTATE.LossEpoch()
@@ -37,6 +40,7 @@ RETURN
 
 PUBLIC PROC Cancel()
 
+  escapePending=0
   windowId=0
   phase=0
   blocked=1
@@ -50,7 +54,12 @@ PUBLIC BYTE FUNC Escape(INPUT.Event POINTER sample)
 
   IF phase<>0 AND sample.kind=INPUT.EVENT_KEY
       AND (sample.code & 63)=ESC_SCAN THEN
-    Cancel()
+    IF AESLOCKS.MouseBlocked()<>0 THEN
+      escapePending=1
+    ELSE
+      Cancel()
+    FI
+
     RETURN(1)
   FI
 
@@ -192,6 +201,14 @@ RETURN(0)
 PUBLIC PROC Advance()
   BYTE status,slot,drawn
 
+  IF AESLOCKS.MouseBlocked()<>0 THEN
+    RETURN
+  FI
+
+  IF escapePending<>0 THEN
+    Cancel()
+  FI
+
   LET service=DESKSTATE.Get()
   IF lossEpoch<>DESKSTATE.LossEpoch() THEN
     Cancel()
@@ -235,6 +252,7 @@ PUBLIC PROC Advance()
 
   IF phase=MOVE_PENDING THEN
     drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
+    DESKSTATE.outlineVisible=0
     status=BYTE(DESKMOVE.Start(service,window,target.left,target.top,NULL))
     IF status<>DESKTYPES.OK AND status<>DESKTYPES.PENDING THEN
       HEAPCORE.Abort($faed)
@@ -260,6 +278,20 @@ PUBLIC PROC Advance()
 
 RETURN
 
+; Erase only the native outline; retain the gesture for ownership release.
+PUBLIC PROC Suspend()
+  BYTE drawn
+
+  IF DESKSTATE.outlineVisible<>0 AND CONSOLEBITMAP.Pending()=0 THEN
+    drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
+    IF drawn<>0 OR CONSOLEBITMAP.Failed()<>0 THEN
+      DESKSTATE.outlineVisible=0
+      dirty=1
+    FI
+  FI
+
+RETURN
+
 PUBLIC PROC Present()
   BYTE drawn
 
@@ -273,13 +305,20 @@ PUBLIC PROC Present()
       drawn=CONSOLEBITMAP.Outline(CARD(target.left),CARD(target.top),
           CARD(target.right-target.left),CARD(target.bottom-target.top),
           phase=DRAGGING OR phase=MOVE_PENDING)
-      dirty=0
+      IF drawn<>0 THEN
+        DESKSTATE.outlineVisible=phase=DRAGGING OR phase=MOVE_PENDING
+        dirty=0
+      FI
     FI
   FI
 
 RETURN
 
 PUBLIC BYTE FUNC Runnable()
+
+  IF AESLOCKS.MouseBlocked()<>0 THEN
+    RETURN(0)
+  FI
 
   LET service=DESKSTATE.Get()
 

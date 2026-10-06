@@ -6,6 +6,11 @@ USE AESTYPES
 USE AESCORE
 USE HEAPCORE
 USE AESTIMER
+USE AESLOCKS
+USE DESKSTATE
+USE DESKDRAG
+USE CONSOLEBITMAP
+USE CONSOLEDISPLAY
 
 PUBLIC PROC Start()
   BYTE bit
@@ -78,6 +83,26 @@ PUBLIC BYTE FUNC Idle()
   FI
 
 RETURN(AESCORE.Idle(service) AND AESTIMER.Idle(service))
+
+; After this turn's native continuation/cursor work, prepare and grant pending
+; locks before deciding to sleep. No additional message admissions occur here.
+PUBLIC PROC Settle()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR service.live=0 OR service.lockCount=0 THEN
+    RETURN
+  FI
+
+  LET desktop=DESKSTATE.Get()
+  IF desktop.scene.busy=0 AND CONSOLEBITMAP.Pending()=0 THEN
+    ; Abandon gathered pixel reuse while retaining the model and I/O request.
+    CONSOLEDISPLAY.DiscardBatch()
+    DESKDRAG.Suspend()
+  FI
+
+  AESLOCKS.Wake(service)
+
+RETURN
 
 PUBLIC PROC Stop()
 
