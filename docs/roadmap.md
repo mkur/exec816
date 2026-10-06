@@ -233,6 +233,21 @@ The other possible milestones have no delivery order:
 
 ## Deferred API and compiler work
 
+- **Arithmetic in latency-sensitive paths.** Measure software multiply,
+  divide and remainder helper calls in the optimized presenter and timer paths
+  before attributing GUI delays to them. First candidates are the
+  [layer-selection counter](../lib/desktop/deskpaint.act) (`MOD 5`, currently
+  a 16-iteration helper), [console cursor coordinates](../lib/console/consoledisplay.act)
+  (separate division and remainder on the same operands), and repaint row
+  offsets (`row*width`). Consider bounded increment/wrap, shared coordinate
+  calculation and incremental row offsets. Also audit caller-side deadline
+  conversion and relative timer submission; preserve PAL/NTSC rounding and
+  overflow behavior. These conversions are outside native interrupt expiry.
+  General compiler improvements, including constant multiplication such as
+  timer open-record indexing by 24 and reuse of quotient/remainder work, belong
+  in actionc with focused regressions. Avoid Exec-specific compiler workarounds.
+  Compare any resulting GUI improvement against the unchanged HY4 limits;
+  the arithmetic contribution to the measured presenter delays is still unknown.
 - **Narrow DOS scalar types.** Review `Open` modes and Boolean return widths
   together across DOS, COMMAND and providers. Retain 32-bit positions and counts
   where needed. This is an ABI migration requiring rebuilt callers; expected
