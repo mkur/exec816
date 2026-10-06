@@ -86,7 +86,12 @@ def read_image(path, task_entries=()):
                     'C sections must fit the standalone upper-bank layout')
             if payload:
                 segments.append(dict(address=address, bytes=list(payload), writable=bool(permissions & 2), executable=bool(permissions & 1)))
-    require(direct_page and info is not None and info[0] == 0x31434345 and info[3] == 20,
+    # Calypsi may link the spill helper's three-byte task-relative indirect
+    # pointer after its fixed pseudo-registers. Both are inside caller DP;
+    # reject unrecognized layouts instead of changing the kernel reservation.
+    workspace = info[3] if info is not None else 0
+    require(direct_page and info is not None and info[0] == 0x31434345 and
+            (workspace == 20 or (workspace == 23 and symbols.get('_FillInd') == 20)),
             'C runtime register allocation changed')
     _, bss, bss_size, workspace = info
     require(bss_size == 0 or 0xd0000 <= bss < bss+bss_size <= 0xe0000, 'C BSS outside data bank')

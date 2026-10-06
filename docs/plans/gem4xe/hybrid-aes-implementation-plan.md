@@ -5,7 +5,8 @@
 
 Status: in progress, 2026-10-06. Started from Exec816
 `38d5964f563710c6b66b2438b71c60528d03d9af` and the hybrid design note.
-[HY1 passes development checks](../../development/aes-hybrid-hy1.json); HY2–HY4
+[HY1](../../development/aes-hybrid-hy1.json) and
+[HY2](../../development/aes-hybrid-hy2.json) pass development checks; HY3–HY4
 remain pending. Keep the compiler, donor and platform pins recorded in
 the repository; record any local overrides with the resulting evidence.
 

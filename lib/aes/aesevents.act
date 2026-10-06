@@ -15,8 +15,6 @@ PUBLIC CARD FUNC Wait(AESSTATE.Service POINTER service
 
   IF request.operation=AESTYPES.OP_MESAG THEN
     mask=AESTYPES.MU_MESAG
-  ELSEIF request.operation=AESTYPES.OP_TIMER THEN
-    mask=AESTYPES.MU_TIMER
   ELSE
     mask=CARD(request.intin(0))
     IF mask=0 OR (mask & $ffcf)<>0 THEN
@@ -29,18 +27,13 @@ PUBLIC CARD FUNC Wait(AESSTATE.Service POINTER service
       RETURN(AESTYPES.TIMER_ERROR)
     FI
 
-    IF request.operation=AESTYPES.OP_TIMER THEN
-      milliseconds=LONGCARD(CARD(request.intin(0)))
-          OR (LONGCARD(CARD(request.intin(1))) LSH 16)
-    ELSE
-      milliseconds=LONGCARD(CARD(request.intin(14)))
-          OR (LONGCARD(CARD(request.intin(15))) LSH 16)
-    FI
+    milliseconds=LONGCARD(CARD(request.intin(14)))
+        OR (LONGCARD(CARD(request.intin(15))) LSH 16)
 
     stamp.ticks_hi=service.timer.nowHigh
     stamp.ticks_lo=service.timer.nowLow
     stamp.ticks_per_second=service.timer.rate
-    IF request.operation<>AESTYPES.OP_MULTI OR milliseconds<>0 THEN
+    IF milliseconds<>0 THEN
       IF TIMER.Deadline(@stamp,milliseconds)=0 THEN
         RETURN(AESTYPES.OVERFLOW)
       FI

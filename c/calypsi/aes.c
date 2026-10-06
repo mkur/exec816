@@ -1,4 +1,4 @@
-#include <exec816/aes.h>
+#include "aes-private.h"
 #include <proto/exec.h>
 #include <gem.h>
 
@@ -80,6 +80,10 @@ BOOL ExecAESDetach(void)
     }
     if (context->identity != 0 && !appl_exit())
         return FALSE;
+    if (!ExecAESTimerClose(context)) {
+        context->diagnostic = AES_TIMER_ERROR;
+        return FALSE;
+    }
     Forbid();
     for (i = 0; i < AES_CONTEXTS; ++i)
         if (contexts[i] == context)
@@ -192,6 +196,14 @@ WORD appl_exit(void)
     struct ExecAESContext *c = ExecAESContext();
     WORD result;
     if (c == NULL) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    c->busy = 1;
+    if (!ExecAESTimerClose(c)) {
+        c->diagnostic = AES_TIMER_ERROR;
+        c->busy = 0;
+        return 0;
+    }
+    c->busy = 0;
     result = submit(c, AES_OP_EXIT);
     if (result) {
         c->busy = 1;
@@ -204,6 +216,7 @@ WORD appl_exit(void)
         c->request.receiving = NULL;
         c->request.records = NULL;
         c->request.directory = NULL;
+        c->timer.error = 0;
         c->busy = 0;
     }
     return result;
@@ -241,10 +254,7 @@ WORD evnt_timer(UWORD lo, UWORD hi)
 {
     struct ExecAESContext *c = ExecAESContext();
     if (c == NULL) return 0;
-    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
-    c->request.intin[0] = (WORD)lo;
-    c->request.intin[1] = (WORD)hi;
-    return submit(c, AES_OP_TIMER);
+    return ExecAESTimerWait(c, (ULONG)lo | ((ULONG)hi << 16));
 }
 
 WORD wind_update(WORD code)

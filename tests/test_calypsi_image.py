@@ -63,6 +63,20 @@ class CalypsiImageTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, message):
                     self.parse(blob)
 
+    def test_spill_helper_stays_in_task_relative_c_workspace(self):
+        blob = elf_image()
+        # Append its symbol and string to this synthetic linked image.
+        names_size = struct.unpack_from('<I', blob, 808+20)[0]
+        blob[320+names_size:320+names_size+9] = b'_FillInd\0'
+        struct.pack_into('<I', blob, 808+20, names_size+9)
+        struct.pack_into('<IIIBBH', blob, 512+7*16, names_size, 20, 3, 1, 0, 1)
+        struct.pack_into('<I', blob, 848+20, 128)
+        struct.pack_into('<I', blob, 272+12, 23)
+        self.assertEqual(self.parse(blob)['provenance']['dp_workspace_bytes'], 23)
+        struct.pack_into('<I', blob, 512+7*16+4, 128)
+        with self.assertRaisesRegex(RuntimeError, 'register allocation'):
+            self.parse(blob)
+
     def test_rejects_non_function_or_unlinked_task_entry(self):
         blob = elf_image()
         blob[512+2*16+12] = 1

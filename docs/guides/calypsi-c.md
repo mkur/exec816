@@ -138,6 +138,11 @@ zero-length write returns zero. The assembly bridge aligns the native stack,
 preserves the original C stack, and leaves Calypsi's lower DP untouched across
 blocking calls. No new COP service or console implementation is added.
 
+The public device-I/O binding uses the existing caller-context C/Action! bridge
+in images that link `io.c` and `io.s`; startup must bind `ExecIOEntry` before
+calling it. The desktop builder supplies that binding for resident C clients.
+Timer calls use the public device API and retain the caller's Task context.
+
 For example:
 
 ```c
@@ -152,7 +157,10 @@ example, DOS output stays in `main`: a raw Amiga `CreateTask` worker has no DOS
 Process context. The receiver continues to use only Exec calls.
 
 C uses the Task's existing D page. Calypsi's `_Dp` occupies offsets `$00–$0F`
-and `_Vfp` `$10–$13`: **20 of the 128 caller-workspace bytes**. These are
+and `_Vfp` `$10–$13`: 20 of the 128 caller-workspace bytes. Images that link
+Calypsi's spill helper also use `_FillInd` at `$14–$16`, for **23 bytes total**.
+The image checker validates both layouts and their exact symbol placement.
+These are
 D-relative link addresses, not shared fixed zero-page storage. DBR remains
 zero. Native entry supplies 16-bit A/X/Y and a zero-initialized Task workspace.
 The kernel uses its own D page and preserves the caller's D and lower workspace
@@ -175,7 +183,7 @@ The Calypsi linker selects referenced shim/runtime routines for this executable.
 ## Current limits and development checks
 
 This binding does not provide C disk commands/o65, DOS calls beyond
-`Output`/`Write`, device APIs, `stdio`, `malloc`, arbitrary CRT initialization or
+`Output`/`Write`, `stdio`, `malloc`, arbitrary CRT initialization or
 general Action!/C callbacks.
 Initialized globals and BSS are handled by the hosted loader. Pure compiler
 arithmetic helpers can be linked; a general-purpose C library port is separate.

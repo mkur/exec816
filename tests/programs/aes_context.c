@@ -2,6 +2,7 @@
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
+#include "aes_timer_vectors.h"
 
 ULONG AESProbePacket;
 volatile UWORD AESChecks[2], AESFailures[2], AESFinished[2];
@@ -29,6 +30,11 @@ static void client(UWORD who)
         CHECK(context->request.binding == (UBYTE *)context);
         CHECK(context->request.message.mn_ReplyPort == context->replies);
         CHECK(context->request.bytes == AES_REQUEST_SIZE);
+        CHECK(ExecAESTimerRead(context));
+        CHECK(context->timer.query->ticks_per_second == 50 || context->timer.query->ticks_per_second == 60);
+        ExecAESTimerSend(context, 0, 0);
+        CHECK(ExecAESTimerCollect(context, FALSE));
+        CHECK(context->timer.error == 0 && context->timer.state == AES_ALARM_IDLE);
         for (i = 0; i < 32; ++i) {
             for (j = 0; j < AES_INTIN_WORDS; ++j)
                 context->request.intin[j] = (WORD)(0x8100+who*256+i+j);
@@ -63,6 +69,7 @@ UWORD AESContextProbe(void)
     struct Task *one, *two;
     ULONG available = AvailMem(0);
     BYTE bit = AllocSignal(-1);
+    if (timer_vectors() != 0) return 5;
     if (bit < 0) return 1;
     controller = FindTask(NULL);
     wake = 1UL << bit;

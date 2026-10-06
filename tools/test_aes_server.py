@@ -22,12 +22,12 @@ def context_program(out, optimize):
     # whole-desktop C image exceeds its existing code bank; the code under
     # test and native bridge are independently exercised raw and optimized.
     foreign = drawing(out, True, probe=True, widgets=True,
-        client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', ROOT/'tests/programs/aes_context.c'],
+        client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', ROOT/'c/calypsi/aes-events.c', ROOT/'tests/programs/aes_context.c'],
         client_entries=['AESClientOne', 'AESClientTwo'],
         client_roots=['AESContextProbe', 'AESWireProbe', 'AESProbePacket',
                       'AESChecks', 'AESFailures'],
         client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())],
-        client_optimization={n: optimize for n in ('aes.c', 'aes_context.c')})
+        client_optimization={n: optimize for n in ('aes.c', 'aes-events.c', 'aes_context.c')})
     sy = foreign['symbols']
     checks = []
     for name, fields in ABI['records'].items():
@@ -143,7 +143,7 @@ def run(out, mode, replay=False):
             require((report['packet_address'] & 65535)+layout()['Request']['size'] > 65536,
                     'Wire probe did not cross a bank boundary')
             report['client_checks'] = [int.from_bytes(bridge.memdump(sy['AESChecks']+i*2, 2), 'little') for i in range(2)]
-            require(all(n == 1041 for n in report['client_checks']), 'Incomplete C contexts: '+str(report['client_checks']))
+            require(all(n == 1045 for n in report['client_checks']), 'Incomplete C contexts: '+str(report['client_checks']))
             require(bridge.memdump(sy['AESFailures'], 4) == bytes(4), 'C context corruption')
             raw = bridge.memdump(sy['ConsoleProbeResults'], 80)
             report['bridge_words'] = [int.from_bytes(raw[i:i+2], 'little') for i in range(0, 80, 2)]
@@ -181,8 +181,8 @@ def event_probes(out):
     (out/'aestimer.act').write_text(timer)
     events = read_source(ROOT/'lib/aes/aesevents.act').replace('USE AESTIMER',
         'USE AESTIMER\nUSE AESEVENTPROBE')
-    events = events.replace('    IF request.operation=AESTYPES.OP_TIMER THEN',
-        '    AESEVENTPROBE.Accept(service)\n    IF request.operation=AESTYPES.OP_TIMER THEN')
+    events = events.replace('    milliseconds=LONGCARD(CARD(request.intin(14)))',
+        '    AESEVENTPROBE.Accept(service)\n    milliseconds=LONGCARD(CARD(request.intin(14)))')
     events = events.replace('    client.deadlineLow=stamp.ticks_lo',
         '    client.deadlineLow=stamp.ticks_lo\n    AESEVENTPROBE.Converted(client,request)')
     events = events.replace('  timed=0',
@@ -195,10 +195,24 @@ def event_probes(out):
     (out/'timerdriver.act').write_text(driver)
 
 
+def timer_probes(out):
+    binding = (ROOT/'c/calypsi/aes-events.c').read_text().replace(
+        '#include "aes-private.h"', '#include "'+str(ROOT/'c/calypsi/aes-private.h')+'"\nextern UWORD AESFault;\nvoid AESBeforeSend(struct ExecAESContext *c);')
+    binding = binding.replace('t->query->tc_Request.io_Command = TD_READCLOCK;',
+        't->query->tc_Request.io_Command = AESFault == 4 ? 0 : TD_READCLOCK;')
+    binding = binding.replace('    SendIO(&t->alarm->tc_Request);',
+        '    AESBeforeSend(c);\n    SendIO(&t->alarm->tc_Request);')
+    (out/'aes-events.c').write_text(binding)
+    core = read_source(ROOT/'lib/aes/aescore.act').replace('  service.eventDirty=1',
+        '  IF request.operation=AESTYPES.OP_TIMER THEN\n    HEAPCORE.Abort($fcbe)\n  FI\n\n  service.eventDirty=1')
+    (out/'aescore.act').write_text(core)
+
+
 def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None):
     registration = suite == "registration"
     events = suite == 'events'
     locks = suite == 'locks'
+    timers = suite == 'timers'
     out.mkdir(parents=True, exist_ok=True)
     if replay or from_build:
         recorded = from_build or out
@@ -212,14 +226,16 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             (out/'aeslocks.act').write_text(policy)
         if events:
             event_probes(out)
+        if timers:
+            timer_probes(out)
         entries = ['AESClient'+n for n in
                    (('One', 'Two', 'Three', 'Four', 'Five') if registration else
-                    ('One', 'Two', 'Three', 'Four') if events else
+                    ('One', 'Two', 'Three', 'Four') if events or timers else
                     ('One', 'Two', 'Three') if locks else ('One', 'Two'))]
-        if events:
+        if events or timers:
             entries.append('AESBurn')
         foreign = drawing(out, True, widgets=True,
-            client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', ROOT/f'tests/programs/aes_{suite}.c']+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else []),
+            client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if timers else ROOT/'c/calypsi/aes-events.c'), ROOT/f'tests/programs/aes_{suite}.c']+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else []),
             client_entries=entries,
             client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else []),
             client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())],
@@ -234,6 +250,8 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
   Require(run()=0)
 ''' if registration else ''
         setup = '  LET service=AESSTATE.Get()\n'
+        if timers:
+            setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESClock"]:x})\n    item^=TIMERMETA.BASE+4\n  END\n'
         if events:
             for name, value in (('AESMode', 'ADDRESS(@AESEVENTPROBE.mode)'),
                     ('AESError', 'ADDRESS(@service.timer.error)'),
@@ -253,7 +271,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE AESEVENTPROBE'+chr(10)+'USE TIMERMETA' if events else 'USE AESLOCKPROBE' if locks else ''}
+{'USE AESEVENTPROBE'+chr(10)+'USE TIMERMETA' if events else 'USE AESLOCKPROBE' if locks else 'USE TIMERMETA' if timers else ''}
 CARD checks
 CARD FUNC POINTER run()
 
@@ -309,7 +327,7 @@ ENDMODULE
                     report['AESFirstFailure'] = int.from_bytes(bridge.memdump(foreign['symbols']['AESFirstFailure'], 2), 'little')
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
             ownership(bridge, program, program['output'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events or locks else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events or locks or timers else 1000),
                     'Incomplete application checks')
             if events:
                 values = bytes(data(bridge, program['image'], 'deadlines'))
@@ -527,12 +545,12 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'alarm', 'events', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'alarm', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'events', 'locks'):
+    elif args.suite in ('registration', 'messages', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None)
     elif args.suite == 'alarm':

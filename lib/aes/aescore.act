@@ -317,7 +317,6 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
       AESSTATE.Reply(request,status)
     FI
   ELSEIF request.operation=AESTYPES.OP_MESAG
-      OR request.operation=AESTYPES.OP_TIMER
       OR request.operation=AESTYPES.OP_MULTI THEN
     status=AESEVENTS.Wait(service,client,request)
     IF status<>AESTYPES.PENDING THEN

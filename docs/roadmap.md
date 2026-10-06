@@ -77,7 +77,8 @@ The [HY1–HY4 implementation plan](plans/gem4xe/hybrid-aes-implementation-plan.
 first refactors the existing AES profile: endpoint lifetime, caller-owned timers,
 atomic message/event migration and the integrated native GUI latency proof.
 [HY1](development/aes-hybrid-hy1.json) implements shared endpoint lifetime and
-passes development checks. HY2–HY4 remain pending. Additional local GEM calls
+passes development checks. [HY2](development/aes-hybrid-hy2.json) moves standalone
+timer waits into callers and passes PAL/NTSC development checks. HY3–HY4 remain pending. Additional local GEM calls
 and direct VDI drawing follow their own coverage gates.
 
 The **first desktop on Exec816** has development evidence. The

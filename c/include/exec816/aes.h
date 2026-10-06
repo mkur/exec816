@@ -1,6 +1,14 @@
 #ifndef EXEC816_AES_H
 #define EXEC816_AES_H
 #include <exec816/aes-wire.h>
+#include <devices/timer.h>
+
+struct ExecAESTimer {
+    struct MsgPort *port;
+    struct TimerClockRequest *query, *alarm;
+    UBYTE state, opened;
+    UWORD error;
+};
 
 /* Runtime hooks, separate from GEM application entry points. The startup
  * controller retains the service until every attached Task has detached. */
@@ -18,6 +26,7 @@ struct ExecAESContext {
     UBYTE busy;
     ULONG identity, sequence;
     WORD gemId;
+    struct ExecAESTimer timer;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);

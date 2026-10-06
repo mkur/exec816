@@ -54,7 +54,9 @@ Other applications and the presenter continue. Exit discards any queued messages
 returns one when its absolute VBI-clock deadline expires. Conversion uses the
 reported 50/60 Hz rate, rounds upward and adds one tick to prevent early expiry.
 Standalone zero delay therefore waits at least one tick. Overflow returns zero
-with `AES_OVERFLOW`.
+with `AES_OVERFLOW`. This operation runs in the caller, without presenter RPC or
+request-sequence advancement. The named wrapper and parameter-block opcode use
+the same helper.
 
 `evnt_multi` supports `MU_MESAG`, `MU_TIMER` and their combination. It returns
 all selected conditions ready at one decision, consuming at most one message.
@@ -65,8 +67,8 @@ in the six mouse/keyboard output words; input-event reporting is future work.
 Rectangle/button inputs have no effect when their event bits are absent.
 
 A clock/device failure returns zero with `AES_TIMER_ERROR` for affected timed
-waits, preserving queued messages. The service does not automatically reopen
-or retry a failed timer. Message-only and native GUI service remain available.
+waits, preserving queued messages. A failed timer binding does not automatically reopen or retry. The caller
+can retire and reinitialize its registration to obtain a fresh binding. Message-only and native GUI service remain available.
 
 `wind_update` arbitrates recursive update and mouse-control ownership between
 registered AES clients. `BEG_UPDATE` acquires update ownership and its implicit
@@ -105,7 +107,16 @@ remain caller-owned storage, lent until the single reply is collected. This is
 a cooperative shared-memory ownership contract, not memory protection against
 malicious applications. Normal service shutdown refuses live registrations.
 
-The presenter opens `timer.device` on `UNIT_VBLANK` once, with a private signal
+Each client lazily opens `timer.device` for standalone timer waits, with a
+private reply port and two 38-byte records: a clock query and borrowed alarm.
+It publishes outstanding ownership before `SendIO`, collects exactly its reply,
+and closes the original open before freeing those records on exit. Up to four
+client opens and the temporary presenter open fit within the device's eight-open
+limit; competing users can still exhaust capacity. Setup failure releases every
+acquired resource and leaves message-only calls usable.
+
+During HY2, the presenter still owns combined waits. It opens `timer.device` on
+`UNIT_VBLANK` once, with a private signal
 port and two 38-byte records: the original clock query and a borrowed absolute
 alarm. The transport collects or cancels/collects the alarm before reuse or
 shutdown, then closes the original open. A setup failure releases its acquired

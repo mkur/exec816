@@ -120,13 +120,13 @@ UWORD AESRun(void)
         CHECK(out[0] == 0 && ExecAESDiagnostic() == AES_UNSUPPORTED);
     }
     MODE = 1;
-    CHECK(evnt_timer(0xffff, 0xffff) == 1);
+    CHECK(event(MU_TIMER, 0xffffffffUL, NULL, 0) == MU_TIMER);
     MODE = 0;
     CHECK(appl_write(id, 16, message) == 1);
     MODE = 2;
     CHECK(event(MU_MESAG | MU_TIMER, 10, message, 0) == (MU_MESAG | MU_TIMER));
     MODE = 3;
-    CHECK(evnt_timer(10, 0) == 0 && ExecAESDiagnostic() == AES_OVERFLOW);
+    CHECK(event(MU_TIMER, 10, NULL, 0) == 0 && ExecAESDiagnostic() == AES_OVERFLOW);
     MODE = 0;
     CHECK(appl_write(id, 16, message) == 1);
     MODE = 4;
@@ -136,7 +136,7 @@ UWORD AESRun(void)
     CHECK(evnt_mesag(message) == 1 && message[0] == 1234);
     ERROR = 0; /* Diagnostic recovery after all alarm ownership is settled. */
     MODE = 5;
-    CHECK(evnt_timer(100, 0) == 0 && ExecAESDiagnostic() == AES_TIMER_ERROR);
+    CHECK(event(MU_TIMER, 100, NULL, 0) == 0 && ExecAESDiagnostic() == AES_TIMER_ERROR);
     MODE = 0;
     ERROR = 0;
     old = id;

@@ -58,6 +58,10 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     assembly=[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
         ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s']
     if probe:assembly.append(ROOT/'tests/programs/console_bridge.s')
+    if client_sources:
+        sources.append(ROOT/'c/calypsi/io.c')
+        assembly.append(ROOT/'c/calypsi/io.s')
+        extra_roots.append('ExecIOEntry')
     sources += list(client_sources)
     foreign=emit(out/'drawing',sources,assembly,client_entries,
         optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
@@ -81,6 +85,9 @@ def prepare(source,out,foreign,desktop=False,aes=False):
     text=re.sub(r'(?m)^(MODULE \w+\n)',lambda m:m[1]+uses,text,count=1)
     binding=f'CONST C_EXECDISPLAYENTRIES=${sy["ExecDisplayEntries"]:x}\n'
     binding+=read_source(ROOT/'c/calypsi/display-bridge.inc')
+    if 'ExecIOEntry' in sy:
+        binding+=f'CONST C_EXECIOENTRY=${sy["ExecIOEntry"]:x}\n'
+        binding+=read_source(ROOT/'c/calypsi/io-bridge.inc')
     binding+=f'''
 PROC Main()
 
@@ -101,6 +108,8 @@ PROC Main()
 
 RETURN
 '''
+    if 'ExecIOEntry' in sy:
+        binding=binding.replace('  BindDisplay()', '  BindIO()\n  BindDisplay()', 1)
     if 'ConsoleBridgeProbe' in sy:
         binding=binding.replace('  BindDisplay()',f'  LET probe=LONGCARD POINTER(${sy["ConsoleProbeNative"]:x})\n  probe^=LONGCARD(ADDRESS(@CONSOLEBITMAP.Call))\n  CONSOLEBITMAP.Call(${sy["ConsoleBridgeProbe"]:x})\n  BindDisplay()',1)
     if 'ConsoleBridgeProbe' in sy:

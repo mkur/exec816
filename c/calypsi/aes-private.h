@@ -9,4 +9,14 @@ struct AESDelivery *ExecAESReserve(struct ExecAESContext *c, WORD id,
 void ExecAESPublish(struct ExecAESContext *c, struct AESEndpoint *destination,
                     struct AESDelivery *record);
 void ExecAESRecycle(struct AESEndpoint *endpoint, struct AESDelivery *record);
+BOOL ExecAESEnter(struct ExecAESContext *c);
+BOOL ExecAESTimerRead(struct ExecAESContext *c);
+BOOL ExecAESTimerDeadline(struct TimerClockRequest *clock, ULONG milliseconds);
+BOOL ExecAESTimerCollect(struct ExecAESContext *c, BOOL cancel);
+BOOL ExecAESTimerClose(struct ExecAESContext *c);
+void ExecAESTimerSend(struct ExecAESContext *c, ULONG high, ULONG low);
+WORD ExecAESTimerWait(struct ExecAESContext *c, ULONG milliseconds);
+#define AES_ALARM_IDLE 0
+#define AES_ALARM_OUTSTANDING 1
+#define AES_ALARM_RETIRING 2
 #endif

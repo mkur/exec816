@@ -9,6 +9,20 @@ ULONG AESService;
 volatile UWORD AESCommand, AESPhase, AESPeerPhase, AESChecks, AESFailures;
 volatile UWORD AESReady, AESDone, AESFirstFailure, AESMessages, AESTimers, AESRestarts;
 volatile ULONG AESBurns;
+static struct ExecAESContext *clientContexts[2];
+static volatile UWORD quiescent;
+static volatile UBYTE retireAllowed[2];
+
+static ULONG held_bytes(struct ExecAESContext *c)
+{
+    ULONG bytes = ((sizeof(*c)+7UL) & ~7UL) + 2*((sizeof(struct MsgPort)+7UL) & ~7UL)
+        + AES_QUEUE_DEPTH * sizeof(struct AESDelivery);
+    if (c->timer.port) bytes += (sizeof(struct MsgPort)+7UL) & ~7UL;
+    if (c->timer.query) bytes += (sizeof(struct TimerClockRequest)+7UL) & ~7UL;
+    if (c->timer.alarm) bytes += (sizeof(struct TimerClockRequest)+7UL) & ~7UL;
+    return bytes;
+}
+
 static struct Task *controller, *workers[2];
 static ULONG wake, starts[2];
 static WORD ids[2];
@@ -134,6 +148,7 @@ static void task(UWORD who)
     ids[who]=appl_init();
     CHECK(ids[who] > previousIds[who]);
     previousIds[who]=ids[who];
+    clientContexts[who]=ExecAESContext();
     Forbid(); ++AESReady; Signal(controller, wake); Permit();
     for (;;) {
         Wait(starts[who]);
@@ -143,6 +158,10 @@ static void task(UWORD who)
         else if (who == 0) holder(issued); else peer();
         if (who == 0) AESPhase=3; else AESPeerPhase=3;
     }
+    /* Finish the current GEM call before the controller snapshots resources.
+     * Signals are hints; a stale start bit cannot grant retirement. */
+    Forbid(); ++quiescent; Signal(controller, wake); Permit();
+    while (!retireAllowed[who]) Wait(starts[who]);
     CHECK(ExecAESDetach());
     FreeSignal(bit);
     Forbid(); ++AESDone; Signal(controller, wake); RemTask(NULL);
@@ -158,7 +177,8 @@ UWORD AESStart(void)
     controllerBit=AllocSignal(-1);
     CHECK(controllerBit >= 0);
     wake=1UL << controllerBit;
-    AESReady=AESDone=AESPhase=AESPeerPhase=AESCommand=issued=stopping=0;
+    AESReady=AESDone=AESPhase=AESPeerPhase=AESCommand=issued=stopping=quiescent=0;
+    retireAllowed[0]=retireAllowed[1]=0;
     workers[0]=CreateTask("GEM update client", 1, (APTR)AESClientOne, 1024UL);
     workers[1]=CreateTask("GEM event client", 1, (APTR)AESClientTwo, 1024UL);
     CHECK(workers[0] && workers[1]);
@@ -191,16 +211,23 @@ UWORD AESPump(void)
 UWORD AESStop(void)
 {
     UWORD who=2;
-    ULONG available=AvailMem(0);
+    ULONG available, released;
     CHECK(issued == 0 || issued == 5 || (AESPhase == 3 && AESPeerPhase == 3));
     stopping=1;
+    Signal(workers[0], starts[0]);
+    Signal(workers[1], starts[1]);
+    while (quiescent != 2) Wait(wake);
+    available=AvailMem(0);
+    released=held_bytes(clientContexts[0])+held_bytes(clientContexts[1]);
+    retireAllowed[reverse]=1;
     Signal(workers[reverse], starts[reverse]);
     while (AESDone != 1) Wait(wake);
+    retireAllowed[1-reverse]=1;
     Signal(workers[1-reverse], starts[1-reverse]);
     while (AESDone != 2) Wait(wake);
     FreeSignal(controllerBit);
     /* Compare only retirement: the DOS Process may have opened files since startup. */
-    CHECK(AvailMem(0) == available + 432UL);
+    CHECK(AvailMem(0) == available + released);
     AESChecks=checks[0]+checks[1]+checks[2];
     return AESFailures;
 }
