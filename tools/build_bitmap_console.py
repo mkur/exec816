@@ -9,7 +9,9 @@ from library_paths import read_source
 from native_program import ROOT,build,compiler,require,sha256
 
 
-def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=False):
+def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=False,
+            client_sources=(),client_entries=(),client_roots=(),client_probes=(),
+            client_optimization=None):
     for path,content in files().items():require(path.read_text()==content,'Stale console packet: '+str(path))
     extraction=extract(out/'selected');src=out/'selected/src';ad=PORT/'adapter'
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',ROOT/'platform/altirraos/vbxe.c',
@@ -56,11 +58,17 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     assembly=[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
         ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s']
     if probe:assembly.append(ROOT/'tests/programs/console_bridge.s')
-    foreign=emit(out/'drawing',sources,assembly,[],
-        optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots,includes=[src,ad]+extra_includes,definitions={
+    if client_sources:
+        sources.append(ROOT/'c/calypsi/io.c')
+        assembly.append(ROOT/'c/calypsi/io.s')
+        extra_roots.append('ExecIOEntry')
+    sources += list(client_sources)
+    foreign=emit(out/'drawing',sources,assembly,client_entries,
+        optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
             'gem-vbxe.c':['-DGEM_DRAWING_ONLY']},
-        probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())]+extra_probes)
+        probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())]+extra_probes+list(client_probes),
+        source_optimization=client_optimization)
     for name in ('GemServiceWorker','GemClientInit','GemVbxeBackend'):
         require(name not in foreign['symbols'],'Unexpected GUI policy: '+name)
     foreign['provenance'].update(extraction=extraction,fixture_bridge=probe,fixture_fault=fault,source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [*sources,*assembly,ROOT/'abi/console-bitmap.json',ROOT/'c/include/hardware/console-bitmap.h']})
@@ -69,7 +77,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     return foreign
 
 
-def prepare(source,out,foreign,desktop=False):
+def prepare(source,out,foreign,desktop=False,aes=False):
     text=read_source(source);sy=foreign['symbols']
     require(len(re.findall(r'(?m)^PROC Main\(\)',text))==1,'Expected one ordinary Main entry')
     text=text.replace('PROC Main()','PROC BitmapApplication(BYTE unused)')
@@ -77,6 +85,9 @@ def prepare(source,out,foreign,desktop=False):
     text=re.sub(r'(?m)^(MODULE \w+\n)',lambda m:m[1]+uses,text,count=1)
     binding=f'CONST C_EXECDISPLAYENTRIES=${sy["ExecDisplayEntries"]:x}\n'
     binding+=read_source(ROOT/'c/calypsi/display-bridge.inc')
+    if 'ExecIOEntry' in sy:
+        binding+=f'CONST C_EXECIOENTRY=${sy["ExecIOEntry"]:x}\n'
+        binding+=read_source(ROOT/'c/calypsi/io-bridge.inc')
     binding+=f'''
 PROC Main()
 
@@ -97,6 +108,8 @@ PROC Main()
 
 RETURN
 '''
+    if 'ExecIOEntry' in sy:
+        binding=binding.replace('  BindDisplay()', '  BindIO()\n  BindDisplay()', 1)
     if 'ConsoleBridgeProbe' in sy:
         binding=binding.replace('  BindDisplay()',f'  LET probe=LONGCARD POINTER(${sy["ConsoleProbeNative"]:x})\n  probe^=LONGCARD(ADDRESS(@CONSOLEBITMAP.Call))\n  CONSOLEBITMAP.Call(${sy["ConsoleBridgeProbe"]:x})\n  BindDisplay()',1)
     if 'ConsoleBridgeProbe' in sy:
@@ -114,20 +127,39 @@ RETURN
         binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN\n    HEAPCORE.Abort($f731)', '  IF CONSOLEDRIVER.Start()=0 THEN\n    DESKBOOT.Disable()\n    HEAPCORE.Abort($f731)')
         binding=binding.replace('  BitmapApplication(0)', '  IF DESKBOOT.Attach()=0 THEN\n    IF CONSOLEDRIVER.Stop()=0 THEN\n      HEAPCORE.Abort($f732)\n    FI\n\n    DESKBOOT.Disable()\n    HEAPCORE.Abort($fae7)\n  FI\n\n  BitmapApplication(0)\n  IF DESKBOOT.StopAdmission()=0 THEN\n    HEAPCORE.Abort($faea)\n  FI\n\n  DESKBOOT.Detach()')
         binding=binding.removesuffix('RETURN\n')+'  DESKBOOT.Disable()\n\nRETURN\n'
+    if aes:
+        require(desktop, 'AES requires the existing desktop presenter')
+        text=text.replace('USE EXEC\n', 'USE EXEC\nUSE AESBOOT\n', 1)
+        # Optional AES failure leaves the native desktop usable. Applications
+        # test the retained endpoint after the presenter's readiness reply.
+        binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN',
+            '  BEGIN\n    LET enabled=AESBOOT.Enable()\n  END\n\n  IF CONSOLEDRIVER.Start()=0 THEN',1)
+        binding=binding.replace('    DESKBOOT.Disable()', '    AESBOOT.Disable()\n    DESKBOOT.Disable()')
+        binding=binding.replace('  IF DESKBOOT.StopAdmission()=0 THEN',
+            '  BEGIN\n    LET stopped=AESBOOT.StopAdmission()\n  END\n\n  IF DESKBOOT.StopAdmission()=0 THEN')
+        binding=binding.replace('  DESKBOOT.Disable()\n\nRETURN',
+            '  AESBOOT.Disable()\n  DESKBOOT.Disable()\n\nRETURN')
     text=text.replace('ENDMODULE',binding+'\nENDMODULE')
     path=out/'launcher.act';path.write_text(text);return path
 
 
-def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,desktop=False,**kwargs):
+def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,desktop=False,aes=False,
+                 client_sources=(),client_entries=(),client_roots=(),client_probes=(),**kwargs):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
+    if aes:
+        from generate_aes_server import files as aes_files
+        for path,content in aes_files().items():
+            require(path.read_text()==content,'Stale AES protocol: '+str(path))
     if desktop and 'memory_profile' not in kwargs:
         from generate_memory import PROFILE
         profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
         memory=out/'fixture-memory.json'
         memory.write_text(json.dumps(profile,indent=2)+'\n')
         kwargs['memory_profile']=memory
-    foreign=drawing(out,optimize,probe,fault,widgets=desktop)
-    launcher=prepare(Path(source),out,foreign,desktop)
+    foreign=drawing(out,optimize,probe,fault,widgets=desktop,
+        client_sources=client_sources,client_entries=client_entries,
+        client_roots=client_roots,client_probes=client_probes)
+    launcher=prepare(Path(source),out,foreign,desktop,aes)
     program=build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,
                  task_capacity=8,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
     if desktop:

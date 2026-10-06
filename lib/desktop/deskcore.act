@@ -1,5 +1,6 @@
 ; Single-owner window policy and IPC. Hardware presentation is a separate module.
 MODULE DESKCORE
+USE AESLOCKS
 USE EXEC
 USE INPUT
 USE EXECLISTS
@@ -129,14 +130,14 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
         BEGIN
           LET layer=Layer(service,@service.windows(index))
           IF layer<>NULL THEN
-            IF service.windows(index).kind=DESKTYPES.CONTENT_COMMANDS THEN
+            IF service.windows(index).kind<>DESKTYPES.CONTENT_CONSOLE THEN
               REGIONS.Copy(@layer.bounds,@frame)
               frame.bottom=frame.top+16
               status=LAYERS.Invalidate(@service.scene,layer.id,@frame)
-            ELSE
               IF service.windows(index).kind=DESKTYPES.CONTENT_WIDGETS THEN
-                DESKCACHE.Changed(service,@service.windows(index))
+                DESKWIDGETS.FocusDamage(service,@service.windows(index))
               FI
+            ELSE
               status=LAYERS.Invalidate(@service.scene,layer.id,@layer.bounds)
             FI
           FI
@@ -474,19 +475,19 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
 RETURN(IF status=LAYERTYPES.OK THEN DESKTYPES.OK ELSE DESKTYPES.BAD_ARGUMENT FI)
 
 ; Controls blocked by an active paint do not prevent cancellation/event intake.
-PUBLIC BYTE FUNC Pump(DESKTYPES.Service POINTER service)
+PUBLIC BYTE FUNC Pump(DESKTYPES.Service POINTER service BYTE budget)
   DESKTYPES.Request POINTER request
   CARD status
-  BYTE count,index
+  BYTE count
 
   count=0
-  WHILE count<4 DO
+  WHILE count<budget AND count<4 DO
     request=NULL
-    IF service.scene.busy=0 THEN
+    IF service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0 THEN
       request=DESKTYPES.Request POINTER(EXECLISTS.RemHead(@service.deferred))
     FI
 
-    IF request=NULL THEN
+    IF request=NULL AND EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0 THEN
       request=DESKTYPES.Request POINTER(EXEC.GetMsg(@service.port))
     FI
 
@@ -494,7 +495,8 @@ PUBLIC BYTE FUNC Pump(DESKTYPES.Service POINTER service)
       EXIT
     FI
 
-    IF service.scene.busy<>0 AND request.operation<>DESKTYPES.NEXT_EVENT
+    IF (service.scene.busy<>0 OR AESLOCKS.MouseBlocked()<>0)
+        AND request.operation<>DESKTYPES.NEXT_EVENT
         AND request.operation<>DESKTYPES.CANCEL_EVENT THEN
       EXECLISTS.AddTail(@service.deferred,@request.message.mn_Node)
     ELSE
@@ -507,18 +509,25 @@ PUBLIC BYTE FUNC Pump(DESKTYPES.Service POINTER service)
     count==+1
   OD
 
+RETURN(count)
+
+; Pending events are revisited once per host turn, outside intake accounting.
+PUBLIC PROC Wake(DESKTYPES.Service POINTER service)
+  BYTE index
+
   FOR index=0 TO DESKTYPES.CLIENTS-1 DO
     IF service.clients(index).id<>0 THEN
       DESKEVENTS.Wake(service,@service.clients(index))
     FI
   OD
 
-RETURN(count)
+RETURN
 
 PUBLIC BYTE FUNC Runnable(DESKTYPES.Service POINTER service)
 
 RETURN(EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
-    OR (service.scene.busy=0 AND EXECLISTS.IsListEmpty(@service.deferred)=0))
+    OR (service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0
+        AND EXECLISTS.IsListEmpty(@service.deferred)=0))
 
 PUBLIC BYTE FUNC Stop(DESKTYPES.Service POINTER service)
   BYTE index

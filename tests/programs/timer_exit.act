@@ -1,0 +1,65 @@
+MODULE TIMEREXITPROBE
+USE EXEC
+USE TIMER
+USE HEAPCORE
+USE HEAPAPIPROBE
+
+BYTE ARRAY name=c"timer.device"
+CARD checks
+VOLATILE BYTE nmien=$d40e
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f500+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE nested,boundary
+
+  nmien=0
+  LET self=EXEC.FindTask(NULL)
+  LET port=EXEC.CreateMsgPort()
+  LET request=TIMER.TimerClockRequest POINTER(
+      EXEC.CreateIORequest(port,SIZEOF(TIMER.TimerClockRequest)))
+  Require(port<>NULL AND request<>NULL)
+  Require(EXEC.OpenDevice(name,TIMER.UNIT_VBLANK,@request.tc_Request,0)=0)
+
+  FOR nested=0 TO 1 DO
+    IF nested<>0 THEN
+      EXEC.Forbid()
+    FI
+
+    FOR boundary=1 TO 6 DO
+      BEGIN
+        LET depth=self.tc_TDNestCnt
+        request.tc_Request.io_Command=TIMER.TD_WAITUNTIL
+        request.ticks_hi=7
+        request.ticks_lo=11
+        HEAPAPIPROBE.Fill(NULL,boundary,0)
+        EXEC.SendIO(@request.tc_Request)
+        ; The hook permits exactly one VBI, then stops the clock. Inspect the
+        ; published result before any further kernel call can rescue an expiry.
+        Require(request.tc_Request.io_Message.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+        Require(request.tc_Request.io_Error=0 AND self.tc_TDNestCnt=depth)
+        Require(EXEC.GetMsg(port)=@request.tc_Request.io_Message)
+        Require(EXEC.GetMsg(port)=NULL)
+      END
+    OD
+
+    IF nested<>0 THEN
+      EXEC.Permit()
+    FI
+  OD
+
+  EXEC.CloseDevice(@request.tc_Request)
+  EXEC.DeleteIORequest(@request.tc_Request)
+  EXEC.DeleteMsgPort(port)
+  nmien=$40
+
+RETURN
+ENDMODULE

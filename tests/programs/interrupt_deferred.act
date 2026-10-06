@@ -1,0 +1,62 @@
+MODULE INTERRUPTDEFERRED
+USE EXEC
+USE EXECLISTS
+USE HEAPCORE
+USE HEAPAPIPROBE
+INCLUDE "../../lib/exec/exec-abi.inc"
+
+EXEC.MsgPort port
+EXEC.Message item
+EXEC.TaskLease lease
+CARD checks
+LONGCARD bits
+VOLATILE BYTE nmien=$d40e
+VOLATILE CARD ticks=E816_VBI_COUNT
+CARD atReply,atReturn
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fd00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE bit,ignored
+
+  LET self=EXEC.FindTask(NULL)
+  bit=EXEC.AllocSignal(31)
+  Require(bit=31)
+  Require(EXEC.RetainTask(self,@lease)=1)
+  port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  port.mp_SigTask=self
+  port.mp_SigBit=31
+  port.mp_Flags=EXEC.PA_SIGNAL
+  EXECLISTS.NewList(@port.mp_MsgList)
+  item.mn_ReplyPort=@port
+  item.mn_Length=SIZEOF(EXEC.Message)
+  item.mn_Node.ln_Type=EXEC.NT_MESSAGE
+  bits=EXEC.SetSignal(0,LONGCARD($80000000))
+  HEAPAPIPROBE.Fill(BYTE POINTER(@item),0,0)
+  EXEC.Poll()
+  bits=EXEC.Wait(LONGCARD($80000000))
+  atReturn=ticks
+  Require(bits=LONGCARD($80000000))
+  Require(EXEC.GetMsg(@port)=@item)
+  Require(EXEC.GetMsg(@port)=NULL)
+  Require(item.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+  ; The probe disabled subsequent VBI at notification. Collection must not
+  ; depend on another tick or unrelated device interrupt.
+  atReply=ticks
+  Require(atReply=atReturn)
+  nmien=$40
+  ignored=EXEC.ReleaseTask(@lease)
+  Require(ignored=1)
+  EXEC.FreeSignal(31)
+
+RETURN
+
+ENDMODULE

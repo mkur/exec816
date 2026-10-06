@@ -25,7 +25,8 @@ Software-interrupt ports and other flag combinations are unsupported.
 
 ## Calls and queue semantics
 
-All calls belong to `EXEC` and are Task-context operations.
+The Action!/C calls below belong to `EXEC` and require Task context. An admitted
+native assembly binding for ReplyMsg is described separately below.
 
 | Call | Contract |
 | --- | --- |
@@ -75,3 +76,33 @@ caller-prepared static ports keep caller-owned storage and signals.
 For device completion use the additional [I/O request contract](device-io.md).
 The [historical design](../history/messages-ports-design.md) retains the original
 layout probes, implementation sequence and synchronization rationale.
+
+## Native interrupt reply
+
+Include [exec-native-ports.inc](../../lib/exec/exec-native-ports.inc) and call
+`JSL exec_reply_msg_native` with A16=message low word, X16=zero-extended bank.
+Require E=0, M=X=0, I=1, an admitted native IRQ or deferred continuation, and no
+live ROM activation. A/X/Y/P/D/DBR/S are preserved, including nondefault D/DBR
+and decimal/carry flags. The ordinary COP gateway remains Task-only. Emulation
+entries, raw VBI callbacks and arbitrary masked Task calls are unsupported.
+
+The caller must own the detached request and a stable reply endpoint. Retain a
+PA_SIGNAL recipient before enabling its producer; keep its allocated signal,
+port and request storage alive until producer retirement and reply collection.
+PA_IGNORE and null reply ports retain the ordinary semantics. There is no lease
+acquisition, allocation, compiled policy call or scheduling inside native reply.
+Invalid admitted-context/layout checks fault with status 4 before publication;
+they do not diagnose every stale pointer or duplicate ownership transfer.
+
+Task append, head removal/observation, exact I/O collection and native reply
+share bounded assembly transactions. IRQ exclusion and an NMI-visible guard
+protect every shared link. Forbid alone is insufficient for direct access to a
+port with interrupt producers; use the public operations. Registry and private
+driver queues keep their own synchronization.
+
+Queue publication and PA_SIGNAL notification finish before native reply returns.
+The publisher retains endpoint metadata locally and never reads the message
+after transferring ownership. A wake only records scheduler work; Task policy
+selects a runnable recipient at a safe exit. See the
+[platform admission protocol](platform.md#deferred-native-completion) and
+[development evidence](../history/interrupt-reply.md).

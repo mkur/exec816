@@ -1,0 +1,1336 @@
+{
+  "slice": "AS0a",
+  "status": "pass",
+  "date": "2026-10-06",
+  "tier": "development",
+  "qualification": false,
+  "baseline_revision": "ab6eb2dec33412fd383b4970cbd23c05e9011e20",
+  "scope": "Generated wire and C contexts composed with the active native desktop presenter. No AES endpoint or GEM calls published in this slice.",
+  "sources": {
+    "abi/aes-server.json": "2ab6de7e2b180cfcc21250343ed82c528c61df6aad4e1ba74ff349b9114a5c17",
+    "tools/generate_aes_server.py": "8f662b01a9ab09199a6a91192d33b604102c28e86cef32ad69f2ef0314122141",
+    "tools/test_aes_server.py": "74d32f57ae29bb60bb2c305b2a7d90620271ef60ec1d9c28f5b09a3f728d1708",
+    "tools/measure_aes_presenter.py": "e8943e9dd8fff8af024406e1155150b94e8c8143c3a5a220c7e803e45ec83679",
+    "tools/build_bitmap_console.py": "1d76bf7d1684c7915ecf9e392a04469a881887f164bc26b7adcde6bbbcf08aef",
+    "tools/calypsi_build.py": "a9a1ed0d0022b021e28a88bd9f159c03329958cbcc9775b405629c087e421c8e",
+    "tools/library_paths.py": "d4f7a5f870c5112e05fad1db09bb386fea5c5c194ef20698d4bf25d5b579db84",
+    "c/calypsi/aes.c": "827d98aeaf3b2167c0bff1e2f7bb9a18a28a33eaf2a36d6c83f3f4005bf1a298",
+    "c/calypsi/aes-layout.c": "69241c52c824345b9c46960a0754a95d11c7ef11db1fa0c973894cc6bff6f731",
+    "c/include/exec816/aes.h": "c6f0953510307f7d4f8e48d03fc5c05d1790d908b5ca362290849690be72a055",
+    "c/include/exec816/aes-wire.h": "3fb705ea96520e39e1d1543c0c5000665cd73b191aaed346a3303475dafb5d5f",
+    "lib/aes/aestypes.act": "7428a4af3c71123f3f26fffa9b22cc7ee33cf1552f555064af7fc006865746fe",
+    "tests/programs/aes_context.c": "63daddc898f528c7423e2684ce4fa25795e9df745dcb4a638fc9bdf2a095578d",
+    "ports/gem4xe/aes-binding-inputs.json": "e3efba33c0adb0583970b1d7ebe791b5e5e147a8c90cbe5c2cff745862aa8474",
+    "toolchain/actionc.json": "ee7fedac8e5667b09bbc8e9b356f2238555149e5961866fee85525899c091154",
+    "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431"
+  },
+  "host_checks": {
+    "tests": 365,
+    "skipped": 4,
+    "generated_outputs": "pass",
+    "local_markdown_links": 287
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "memory": {
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1312,
+        1312,
+        1312,
+        1312,
+        1312,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 25408,
+      "loading_excluding_os": 21872,
+      "runtime_including_os": 56128,
+      "loading_including_os": 52592
+    },
+    "task_pools": [
+      {
+        "dp": 2816,
+        "dp_reserved_bytes": 256,
+        "stack_base": 9232,
+        "stack_bytes": 1536,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 3072,
+        "dp_reserved_bytes": 256,
+        "stack_base": 12368,
+        "stack_bytes": 1024,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 3328,
+        "dp_reserved_bytes": 256,
+        "stack_base": 13424,
+        "stack_bytes": 1024,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 3584,
+        "dp_reserved_bytes": 256,
+        "stack_base": 14480,
+        "stack_bytes": 1024,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 3840,
+        "dp_reserved_bytes": 256,
+        "stack_base": 15536,
+        "stack_bytes": 1024,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4096,
+        "dp_reserved_bytes": 256,
+        "stack_base": 16592,
+        "stack_bytes": 1024,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4352,
+        "dp_reserved_bytes": 256,
+        "stack_base": 17648,
+        "stack_bytes": 2560,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4608,
+        "dp_reserved_bytes": 256,
+        "stack_base": 20240,
+        "stack_bytes": 2560,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4864,
+        "dp_reserved_bytes": 256,
+        "stack_base": 22832,
+        "stack_bytes": 512,
+        "interrupt_reserve": 256
+      }
+    ],
+    "wire_request_bytes": 132,
+    "c_context_bytes": 169,
+    "c_context_rounded_allocation": 176,
+    "reply_port_bytes": 27,
+    "reply_port_rounded_allocation": 32,
+    "per_attached_task_heap_bytes": 208,
+    "context_table_bytes": 32,
+    "context_capacity": 8,
+    "maximum_context_heap_bytes": 1664,
+    "allocation_header_bytes": 0,
+    "heap_note": "AllocMem rounds to 8 bytes; FreeMem takes the original size. Region metadata already reserved. Binding code/table occupy existing C banks.",
+    "fixture_packet_scratch_bytes": 131072,
+    "fixture_image_data": {
+      "address": 70400,
+      "size": 8192
+    },
+    "fixture_foreign_placement": {
+      "previous_origin": 78592,
+      "code_origin": 917504,
+      "foreign_end": 867737,
+      "policy": "Native code follows complete fixed foreign banks; data remains in its existing arena"
+    }
+  },
+  "cases": {
+    "raw": {
+      "status": "pass",
+      "report_sha256": "ce46f40ede303732e8df8f7da4758d8d34fc411fea6e46495563432eac84e80f",
+      "xex_sha256": "416518656fd104d505c80ce0eb6c040e41ed3d437ddb4afc6afd70c15eb54c88",
+      "build_sha256": "1799808a2887cff47db266a8967e0f3096f72ac165de63f6a5ef17b7eaea929c",
+      "client_checks": [
+        1041,
+        1041
+      ],
+      "packet_address": 196544,
+      "bridge_words": [
+        15998,
+        22136,
+        39612,
+        10668,
+        2816,
+        0,
+        23040,
+        23041,
+        23042,
+        23043,
+        23044,
+        23045,
+        23046,
+        23047,
+        23048,
+        23049,
+        10668,
+        2816,
+        0,
+        0,
+        15998,
+        22136,
+        39612,
+        10667,
+        2816,
+        0,
+        23040,
+        23041,
+        23042,
+        23043,
+        23044,
+        23045,
+        23046,
+        23047,
+        23048,
+        23049,
+        10667,
+        2816,
+        0,
+        0
+      ],
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 180,
+          "untouched_above_floor": 1100
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 113,
+          "untouched_above_floor": 655
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 107,
+          "untouched_above_floor": 661
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 672,
+          "untouched_above_floor": 1632
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 293,
+        "untouched_from_base": 1243,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "c_flags": [
+        "--code-model=large",
+        "--data-model=huge",
+        "-O2"
+      ],
+      "source_optimization": {
+        "aes.c": false,
+        "aes_context.c": false
+      },
+      "checked_layout": {
+        "sizeof(BYTE)": 1,
+        "sizeof(WORD)": 2,
+        "sizeof(LONG)": 4,
+        "sizeof(BPTR)": 4,
+        "sizeof(APTR)": 4,
+        "sizeof(void EXEC_PTR *)": 3,
+        "sizeof(struct Node)": 11,
+        "sizeof(struct List)": 11,
+        "sizeof(struct MinNode)": 6,
+        "sizeof(struct MinList)": 9,
+        "sizeof(struct MsgPort)": 27,
+        "offsetof(struct MsgPort, mp_Node)": 0,
+        "offsetof(struct MsgPort, mp_Flags)": 11,
+        "offsetof(struct MsgPort, mp_SigBit)": 12,
+        "offsetof(struct MsgPort, mp_SigTask)": 13,
+        "offsetof(struct MsgPort, mp_MsgList)": 16,
+        "sizeof(struct Message)": 16,
+        "offsetof(struct Message, mn_Node)": 0,
+        "offsetof(struct Message, mn_ReplyPort)": 11,
+        "offsetof(struct Message, mn_Length)": 14,
+        "sizeof(struct Task)": 62,
+        "offsetof(struct Task, tc_Node)": 0,
+        "offsetof(struct Task, tc_Flags)": 11,
+        "offsetof(struct Task, tc_State)": 12,
+        "offsetof(struct Task, tc_IDNestCnt)": 13,
+        "offsetof(struct Task, tc_TDNestCnt)": 14,
+        "offsetof(struct Task, tc_SigAlloc)": 16,
+        "offsetof(struct Task, tc_SigWait)": 20,
+        "offsetof(struct Task, tc_SigRecvd)": 24,
+        "offsetof(struct Task, tc_SigExcept)": 28,
+        "offsetof(struct Task, tc_SPReg)": 32,
+        "offsetof(struct Task, tc_SPLower)": 36,
+        "offsetof(struct Task, tc_SPUpper)": 40,
+        "offsetof(struct Task, tc_MemEntry)": 43,
+        "offsetof(struct Task, tc_UserData)": 54,
+        "offsetof(struct Task, tc_ExecPrivate)": 58,
+        "sizeof(struct ExecCreateTaskPacket)": 16,
+        "offsetof(struct ExecCreateTaskPacket, name)": 0,
+        "offsetof(struct ExecCreateTaskPacket, priority)": 4,
+        "offsetof(struct ExecCreateTaskPacket, entry)": 8,
+        "offsetof(struct ExecCreateTaskPacket, stackSize)": 12,
+        "sizeof(struct ExecDosWriteArgs)": 12,
+        "offsetof(struct ExecDosWriteArgs, file)": 0,
+        "offsetof(struct ExecDosWriteArgs, buffer)": 4,
+        "offsetof(struct ExecDosWriteArgs, length)": 8,
+        "sizeof(struct TaskLease)": 12,
+        "offsetof(struct TaskLease, task)": 0,
+        "offsetof(struct TaskLease, pad)": 3,
+        "offsetof(struct TaskLease, incarnation)": 4,
+        "offsetof(struct TaskLease, identity)": 8,
+        "offsetof(struct TaskLease, pad2)": 11,
+        "sizeof(struct ExecRetainTaskPacket)": 6,
+        "offsetof(struct ExecRetainTaskPacket, lease)": 3,
+        "packet size": 78,
+        "operation": 0,
+        "status": 2,
+        "text": 4,
+        "x": 8,
+        "y": 10,
+        "width": 12,
+        "height": 14,
+        "foreground": 16,
+        "background": 18,
+        "copy": 20,
+        "token": 52,
+        "completionMask": 56,
+        "fillX": 60,
+        "fillY": 62,
+        "fillWidth": 64,
+        "fillHeight": 66,
+        "fillPen": 68,
+        "clipLeft": 70,
+        "clipTop": 72,
+        "clipRight": 74,
+        "clipBottom": 76,
+        "Object size": 24,
+        "Tree size": 1800,
+        "Change size": 12,
+        "Update size": 1132,
+        "ObjectState size": 4,
+        "Snapshot size": 140,
+        "DamageRect size": 8,
+        "Packet size": 124,
+        "Object.next": 0,
+        "Object.head": 2,
+        "Object.tail": 4,
+        "Object.kind": 6,
+        "Object.flags": 8,
+        "Object.state": 10,
+        "Object.spec": 12,
+        "Object.x": 16,
+        "Object.y": 18,
+        "Object.width": 20,
+        "Object.height": 22,
+        "Tree.version": 0,
+        "Tree.count": 2,
+        "Tree.textBytes": 4,
+        "Tree.background": 6,
+        "Tree.objects": 8,
+        "Tree.text": 776,
+        "Change.object": 0,
+        "Change.mask": 2,
+        "Change.state": 4,
+        "Change.hidden": 6,
+        "Change.offset": 8,
+        "Change.length": 10,
+        "Update.epoch": 0,
+        "Update.revision": 4,
+        "Update.count": 8,
+        "Update.textBytes": 10,
+        "Update.changes": 12,
+        "Update.text": 108,
+        "ObjectState.state": 0,
+        "ObjectState.flags": 2,
+        "Snapshot.epoch": 0,
+        "Snapshot.revision": 4,
+        "Snapshot.count": 8,
+        "Snapshot.focus": 10,
+        "Snapshot.objects": 12,
+        "DamageRect.left": 0,
+        "DamageRect.top": 2,
+        "DamageRect.right": 4,
+        "DamageRect.bottom": 6,
+        "Packet.operation": 0,
+        "Packet.status": 2,
+        "Packet.context": 4,
+        "Packet.payload": 8,
+        "Packet.bytes": 12,
+        "Packet.width": 14,
+        "Packet.height": 16,
+        "Packet.originX": 18,
+        "Packet.originY": 20,
+        "Packet.left": 22,
+        "Packet.top": 24,
+        "Packet.right": 26,
+        "Packet.bottom": 28,
+        "Packet.index": 30,
+        "Packet.x": 32,
+        "Packet.y": 34,
+        "Packet.code": 36,
+        "Packet.qualifiers": 38,
+        "Packet.buttons": 40,
+        "Packet.kind": 42,
+        "Packet.object": 44,
+        "Packet.epoch": 46,
+        "Packet.revision": 50,
+        "Packet.state": 54,
+        "Packet.changed": 56,
+        "Packet.damageCount": 58,
+        "Packet.damage": 60,
+        "WORD": 2,
+        "huge pointer": 4,
+        "native pointer": 3,
+        "Request size": 132,
+        "Request message": 0,
+        "Request version": 16,
+        "Request bytes": 18,
+        "Request operation": 20,
+        "Request status": 22,
+        "Request client": 24,
+        "Request sequence": 28,
+        "Request owner": 32,
+        "Request ownerPad": 35,
+        "Request binding": 36,
+        "Request bindingPad": 39,
+        "Request intin": 40,
+        "Request intout": 72,
+        "Request words": 86,
+        "Request global": 102,
+        "C context size": 169,
+        "C context request": 0,
+        "VbxeUpload size": 6,
+        "VbxeUpload records": 0,
+        "VbxeUpload count": 4,
+        "VbxeTextUpload size": 25,
+        "VbxeTextUpload text": 0,
+        "VbxeTextUpload font": 4,
+        "VbxeTextUpload destination": 8,
+        "VbxeTextUpload count": 12,
+        "VbxeTextUpload ink": 14,
+        "VbxeTextUpload paper": 15,
+        "VbxeTextUpload fillDestination": 16,
+        "VbxeTextUpload fillBytes": 20,
+        "VbxeTextUpload fillRows": 22,
+        "VbxeTextUpload fillValue": 24
+      },
+      "foreign_segments": [
+        {
+          "address": 786432,
+          "bytes": 64905
+        },
+        {
+          "address": 851968,
+          "bytes": 3387
+        }
+      ],
+      "foreign_zero_fill": [
+        {
+          "address": 855356,
+          "size": 12381,
+          "writable": true
+        }
+      ],
+      "foreign_bank_reservations": [
+        {
+          "bank": 12,
+          "bytes": 65536
+        },
+        {
+          "bank": 13,
+          "bytes": 65536
+        }
+      ],
+      "code_bank_spare": 631
+    },
+    "opt": {
+      "status": "pass",
+      "report_sha256": "748588cadd5346c380b37a9e62ddb7e24e53b1736a0f8f87944dfaba9d7679ef",
+      "xex_sha256": "9c051db17741b7c70e3bb7eee056588e870d9fc0cae0ee2c0e17c0d36abd7a87",
+      "build_sha256": "8e9be94e184d7608c0af9d2190f16b3f4cf27693b2ffaa1f0571e242d943233e",
+      "client_checks": [
+        1041,
+        1041
+      ],
+      "packet_address": 196544,
+      "bridge_words": [
+        15998,
+        22136,
+        39612,
+        10680,
+        2816,
+        0,
+        23040,
+        23041,
+        23042,
+        23043,
+        23044,
+        23045,
+        23046,
+        23047,
+        23048,
+        23049,
+        10680,
+        2816,
+        0,
+        0,
+        15998,
+        22136,
+        39612,
+        10679,
+        2816,
+        0,
+        23040,
+        23041,
+        23042,
+        23043,
+        23044,
+        23045,
+        23046,
+        23047,
+        23048,
+        23049,
+        10679,
+        2816,
+        0,
+        0
+      ],
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 166,
+          "untouched_above_floor": 1114
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 106,
+          "untouched_above_floor": 662
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 111,
+          "untouched_above_floor": 657
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 661,
+          "untouched_above_floor": 1643
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 283,
+        "untouched_from_base": 1253,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "c_flags": [
+        "--code-model=large",
+        "--data-model=huge",
+        "-O2"
+      ],
+      "source_optimization": {
+        "aes.c": true,
+        "aes_context.c": true
+      },
+      "checked_layout": {
+        "sizeof(BYTE)": 1,
+        "sizeof(WORD)": 2,
+        "sizeof(LONG)": 4,
+        "sizeof(BPTR)": 4,
+        "sizeof(APTR)": 4,
+        "sizeof(void EXEC_PTR *)": 3,
+        "sizeof(struct Node)": 11,
+        "sizeof(struct List)": 11,
+        "sizeof(struct MinNode)": 6,
+        "sizeof(struct MinList)": 9,
+        "sizeof(struct MsgPort)": 27,
+        "offsetof(struct MsgPort, mp_Node)": 0,
+        "offsetof(struct MsgPort, mp_Flags)": 11,
+        "offsetof(struct MsgPort, mp_SigBit)": 12,
+        "offsetof(struct MsgPort, mp_SigTask)": 13,
+        "offsetof(struct MsgPort, mp_MsgList)": 16,
+        "sizeof(struct Message)": 16,
+        "offsetof(struct Message, mn_Node)": 0,
+        "offsetof(struct Message, mn_ReplyPort)": 11,
+        "offsetof(struct Message, mn_Length)": 14,
+        "sizeof(struct Task)": 62,
+        "offsetof(struct Task, tc_Node)": 0,
+        "offsetof(struct Task, tc_Flags)": 11,
+        "offsetof(struct Task, tc_State)": 12,
+        "offsetof(struct Task, tc_IDNestCnt)": 13,
+        "offsetof(struct Task, tc_TDNestCnt)": 14,
+        "offsetof(struct Task, tc_SigAlloc)": 16,
+        "offsetof(struct Task, tc_SigWait)": 20,
+        "offsetof(struct Task, tc_SigRecvd)": 24,
+        "offsetof(struct Task, tc_SigExcept)": 28,
+        "offsetof(struct Task, tc_SPReg)": 32,
+        "offsetof(struct Task, tc_SPLower)": 36,
+        "offsetof(struct Task, tc_SPUpper)": 40,
+        "offsetof(struct Task, tc_MemEntry)": 43,
+        "offsetof(struct Task, tc_UserData)": 54,
+        "offsetof(struct Task, tc_ExecPrivate)": 58,
+        "sizeof(struct ExecCreateTaskPacket)": 16,
+        "offsetof(struct ExecCreateTaskPacket, name)": 0,
+        "offsetof(struct ExecCreateTaskPacket, priority)": 4,
+        "offsetof(struct ExecCreateTaskPacket, entry)": 8,
+        "offsetof(struct ExecCreateTaskPacket, stackSize)": 12,
+        "sizeof(struct ExecDosWriteArgs)": 12,
+        "offsetof(struct ExecDosWriteArgs, file)": 0,
+        "offsetof(struct ExecDosWriteArgs, buffer)": 4,
+        "offsetof(struct ExecDosWriteArgs, length)": 8,
+        "sizeof(struct TaskLease)": 12,
+        "offsetof(struct TaskLease, task)": 0,
+        "offsetof(struct TaskLease, pad)": 3,
+        "offsetof(struct TaskLease, incarnation)": 4,
+        "offsetof(struct TaskLease, identity)": 8,
+        "offsetof(struct TaskLease, pad2)": 11,
+        "sizeof(struct ExecRetainTaskPacket)": 6,
+        "offsetof(struct ExecRetainTaskPacket, lease)": 3,
+        "packet size": 78,
+        "operation": 0,
+        "status": 2,
+        "text": 4,
+        "x": 8,
+        "y": 10,
+        "width": 12,
+        "height": 14,
+        "foreground": 16,
+        "background": 18,
+        "copy": 20,
+        "token": 52,
+        "completionMask": 56,
+        "fillX": 60,
+        "fillY": 62,
+        "fillWidth": 64,
+        "fillHeight": 66,
+        "fillPen": 68,
+        "clipLeft": 70,
+        "clipTop": 72,
+        "clipRight": 74,
+        "clipBottom": 76,
+        "Object size": 24,
+        "Tree size": 1800,
+        "Change size": 12,
+        "Update size": 1132,
+        "ObjectState size": 4,
+        "Snapshot size": 140,
+        "DamageRect size": 8,
+        "Packet size": 124,
+        "Object.next": 0,
+        "Object.head": 2,
+        "Object.tail": 4,
+        "Object.kind": 6,
+        "Object.flags": 8,
+        "Object.state": 10,
+        "Object.spec": 12,
+        "Object.x": 16,
+        "Object.y": 18,
+        "Object.width": 20,
+        "Object.height": 22,
+        "Tree.version": 0,
+        "Tree.count": 2,
+        "Tree.textBytes": 4,
+        "Tree.background": 6,
+        "Tree.objects": 8,
+        "Tree.text": 776,
+        "Change.object": 0,
+        "Change.mask": 2,
+        "Change.state": 4,
+        "Change.hidden": 6,
+        "Change.offset": 8,
+        "Change.length": 10,
+        "Update.epoch": 0,
+        "Update.revision": 4,
+        "Update.count": 8,
+        "Update.textBytes": 10,
+        "Update.changes": 12,
+        "Update.text": 108,
+        "ObjectState.state": 0,
+        "ObjectState.flags": 2,
+        "Snapshot.epoch": 0,
+        "Snapshot.revision": 4,
+        "Snapshot.count": 8,
+        "Snapshot.focus": 10,
+        "Snapshot.objects": 12,
+        "DamageRect.left": 0,
+        "DamageRect.top": 2,
+        "DamageRect.right": 4,
+        "DamageRect.bottom": 6,
+        "Packet.operation": 0,
+        "Packet.status": 2,
+        "Packet.context": 4,
+        "Packet.payload": 8,
+        "Packet.bytes": 12,
+        "Packet.width": 14,
+        "Packet.height": 16,
+        "Packet.originX": 18,
+        "Packet.originY": 20,
+        "Packet.left": 22,
+        "Packet.top": 24,
+        "Packet.right": 26,
+        "Packet.bottom": 28,
+        "Packet.index": 30,
+        "Packet.x": 32,
+        "Packet.y": 34,
+        "Packet.code": 36,
+        "Packet.qualifiers": 38,
+        "Packet.buttons": 40,
+        "Packet.kind": 42,
+        "Packet.object": 44,
+        "Packet.epoch": 46,
+        "Packet.revision": 50,
+        "Packet.state": 54,
+        "Packet.changed": 56,
+        "Packet.damageCount": 58,
+        "Packet.damage": 60,
+        "WORD": 2,
+        "huge pointer": 4,
+        "native pointer": 3,
+        "Request size": 132,
+        "Request message": 0,
+        "Request version": 16,
+        "Request bytes": 18,
+        "Request operation": 20,
+        "Request status": 22,
+        "Request client": 24,
+        "Request sequence": 28,
+        "Request owner": 32,
+        "Request ownerPad": 35,
+        "Request binding": 36,
+        "Request bindingPad": 39,
+        "Request intin": 40,
+        "Request intout": 72,
+        "Request words": 86,
+        "Request global": 102,
+        "C context size": 169,
+        "C context request": 0,
+        "VbxeUpload size": 6,
+        "VbxeUpload records": 0,
+        "VbxeUpload count": 4,
+        "VbxeTextUpload size": 25,
+        "VbxeTextUpload text": 0,
+        "VbxeTextUpload font": 4,
+        "VbxeTextUpload destination": 8,
+        "VbxeTextUpload count": 12,
+        "VbxeTextUpload ink": 14,
+        "VbxeTextUpload paper": 15,
+        "VbxeTextUpload fillDestination": 16,
+        "VbxeTextUpload fillBytes": 20,
+        "VbxeTextUpload fillRows": 22,
+        "VbxeTextUpload fillValue": 24
+      },
+      "foreign_segments": [
+        {
+          "address": 786432,
+          "bytes": 63181
+        },
+        {
+          "address": 851968,
+          "bytes": 3387
+        }
+      ],
+      "foreign_zero_fill": [
+        {
+          "address": 855356,
+          "size": 12381,
+          "writable": true
+        }
+      ],
+      "foreign_bank_reservations": [
+        {
+          "bank": 12,
+          "bytes": 65536
+        },
+        {
+          "bank": 13,
+          "bytes": 65536
+        }
+      ],
+      "code_bank_spare": 2355
+    }
+  },
+  "native_baseline": {
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "two_client_pointer": {
+      "sample_count": 12068,
+      "sample_gap": {
+        "count": 12067,
+        "median_ms": 0.25261531564932144,
+        "p95_ms": 0.25324967330580694,
+        "max_ms": 0.3101304098373366
+      },
+      "sample_gap_pass": true,
+      "irq_entry_through_routing_share": 0.15890794381917933,
+      "irq_scope": "Elapsed native IRQ entry through signal routing; excludes final dispatch/RTI",
+      "active_and_idle_input_service_gap": {
+        "count": 61,
+        "median_ms": 45.98733540180919,
+        "p95_ms": 55.84208159531083,
+        "max_ms": 56.22748911371777
+      },
+      "visible": {
+        "count": 30,
+        "median_ms": 45.14533133910082,
+        "p95_ms": 46.91540065324742,
+        "max_ms": 66.36614560058868
+      },
+      "button_consumption": {
+        "count": 30,
+        "median_ms": 4.085333791950425,
+        "p95_ms": 4.088998969521229,
+        "max_ms": 26.25733211724621
+      },
+      "cursor_call_elapsed": {
+        "count": 64,
+        "median_ms": 1.7507566477158192,
+        "p95_ms": 4.634194133178457,
+        "max_ms": 6.842252167036239
+      },
+      "minimum_electrical_phase_ms": 2.314136730858962,
+      "independent_button_edges": 32,
+      "visible_target_pass": true,
+      "button_target_pass": true
+    },
+    "repeat": "Two 30-motion/30-button-edge cohorts; identical visible, consumption and sampling distributions.",
+    "idle_presenter_turns": 0,
+    "idle_frames": 50,
+    "pump_cost": {
+      "controls": {
+        "calls": 93,
+        "elapsed_ms": {
+          "total": 287.66956732578774,
+          "max": 125.93507842775159
+        },
+        "charged_cpu_ms": {
+          "total": 186.0996026101703,
+          "max": 89.62733602207001
+        },
+        "off_cpu_ms": {
+          "total": 63.310938158586595,
+          "max": 17.970436113840414
+        },
+        "interrupt_ms": {
+          "total": 38.259026557030865,
+          "max": 18.337306291841173
+        }
+      },
+      "native_intake": {
+        "calls": 93,
+        "elapsed_ms": {
+          "total": 266.12734518501395,
+          "max": 125.42265840967944
+        },
+        "charged_cpu_ms": {
+          "total": 168.62382450002045,
+          "max": 89.24206947203118
+        },
+        "off_cpu_ms": {
+          "total": 63.310938158586595,
+          "max": 17.970436113840414
+        },
+        "interrupt_ms": {
+          "total": 34.1925825264069,
+          "max": 18.210152823807867
+        }
+      }
+    },
+    "pump_cost_scope": "Startup and retirement, excluding off-Task and interrupt time; idle count covers 50 settled PAL frames.",
+    "panel_latency": {
+      "idle": {
+        "capture_to_commit_ms": {
+          "count": 20,
+          "median_ms": 9.122979394653635,
+          "p95_ms": 22.53915044003276,
+          "max_ms": 23.667954647656614
+        },
+        "capture_to_application_ms": {
+          "count": 10,
+          "median_ms": 25.44803271593887,
+          "p95_ms": 27.973410546407493,
+          "max_ms": 27.973410546407493
+        },
+        "capture_to_button_consumed_ms": {
+          "count": 20,
+          "median_ms": 4.228910074868301,
+          "p95_ms": 18.37402855173328,
+          "max_ms": 18.3753677512303
+        },
+        "capture_to_visible_ms": {
+          "count": 20,
+          "median_ms": 279.57854686986786,
+          "p95_ms": 379.86732057193683,
+          "max_ms": 399.82435341333763
+        },
+        "capture_to_button_pixels_ms": {
+          "count": 20,
+          "median_ms": 119.16831482183713,
+          "p95_ms": 179.03835608327847,
+          "max_ms": 179.28942074687862
+        },
+        "press_feedback": {
+          "count": 10,
+          "median_ms": 138.87252089503636,
+          "p95_ms": 159.33471388355167,
+          "max_ms": 159.33471388355167
+        },
+        "application_label": {
+          "count": 10,
+          "median_ms": 319.7435362479014,
+          "p95_ms": 399.82435341333763,
+          "max_ms": 399.82435341333763
+        }
+      },
+      "scroll": {
+        "capture_to_commit_ms": {
+          "count": 20,
+          "median_ms": 78.49104639409963,
+          "p95_ms": 98.95542439232061,
+          "max_ms": 99.09011966804769
+        },
+        "capture_to_application_ms": {
+          "count": 10,
+          "median_ms": 66.87694448242759,
+          "p95_ms": 83.04432468398416,
+          "max_ms": 83.04432468398416
+        },
+        "capture_to_button_consumed_ms": {
+          "count": 20,
+          "median_ms": 72.43391755324024,
+          "p95_ms": 94.15777743632106,
+          "max_ms": 94.41095662544281
+        },
+        "capture_to_visible_ms": {
+          "count": 20,
+          "median_ms": 359.6576019307028,
+          "p95_ms": 479.9035494425406,
+          "max_ms": 580.4433173240257
+        },
+        "capture_to_button_pixels_ms": {
+          "count": 20,
+          "median_ms": 219.20362739804816,
+          "p95_ms": 319.7454393208708,
+          "max_ms": 339.7004281209339
+        },
+        "press_feedback": {
+          "count": 10,
+          "median_ms": 299.53459293269185,
+          "p95_ms": 339.7004281209339,
+          "max_ms": 339.7004281209339
+        },
+        "application_label": {
+          "count": 10,
+          "median_ms": 399.8232256663927,
+          "p95_ms": 580.4433173240257,
+          "max_ms": 580.4433173240257
+        }
+      },
+      "disk": {
+        "capture_to_commit_ms": {
+          "count": 20,
+          "median_ms": 13.154745206723064,
+          "p95_ms": 85.01872764770313,
+          "max_ms": 125.4931425937334
+        },
+        "capture_to_application_ms": {
+          "count": 10,
+          "median_ms": 38.32718476301103,
+          "p95_ms": 131.14202704055236,
+          "max_ms": 131.14202704055236
+        },
+        "capture_to_button_consumed_ms": {
+          "count": 20,
+          "median_ms": 8.507441015310574,
+          "p95_ms": 80.24469289336166,
+          "max_ms": 120.53218378328087
+        },
+        "capture_to_visible_ms": {
+          "count": 20,
+          "median_ms": 319.4719606867415,
+          "p95_ms": 520.0465477551493,
+          "max_ms": 520.0602216868557
+        },
+        "capture_to_button_pixels_ms": {
+          "count": 20,
+          "median_ms": 179.13851410881912,
+          "p95_ms": 239.4229318883136,
+          "max_ms": 319.4719606867415
+        },
+        "press_feedback": {
+          "count": 10,
+          "median_ms": 179.1442233277275,
+          "p95_ms": 319.4719606867415,
+          "max_ms": 319.4719606867415
+        },
+        "application_label": {
+          "count": 10,
+          "median_ms": 419.7228138977895,
+          "p95_ms": 520.0602216868557,
+          "max_ms": 520.0602216868557
+        }
+      }
+    },
+    "panel_work": {
+      "idle": {
+        "paint_quanta": 67,
+        "paint_cpu_ms": 1819.722250024317,
+        "max_quantum_cpu_ms": 44.7943201025122,
+        "primitive_entries": {
+          "GemWidgetFill": 505,
+          "GemWidgetText": 67,
+          "start": 360,
+          "VbxeOwnerSubmit": 360,
+          "vram_win": 0
+        },
+        "logical_requested_damage_pixels": 47650,
+        "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+      },
+      "scroll": {
+        "paint_quanta": 68,
+        "paint_cpu_ms": 1776.1725396438294,
+        "max_quantum_cpu_ms": 43.73557717383796,
+        "primitive_entries": {
+          "GemWidgetFill": 507,
+          "GemWidgetText": 68,
+          "start": 499,
+          "VbxeOwnerSubmit": 372,
+          "vram_win": 0
+        },
+        "logical_requested_damage_pixels": 47716,
+        "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+      },
+      "disk": {
+        "paint_quanta": 68,
+        "paint_cpu_ms": 1804.778616226305,
+        "max_quantum_cpu_ms": 45.53235999374101,
+        "primitive_entries": {
+          "GemWidgetFill": 507,
+          "GemWidgetText": 68,
+          "start": 354,
+          "VbxeOwnerSubmit": 349,
+          "vram_win": 0
+        },
+        "logical_requested_damage_pixels": 47716,
+        "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+      }
+    },
+    "panel_feedback": {
+      "idle": {
+        "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+        "edges": 20,
+        "edges_with_invalid_pixels": 0,
+        "invalid_frames": 0,
+        "max_invalid_pixels": 0
+      },
+      "scroll": {
+        "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+        "edges": 20,
+        "edges_with_invalid_pixels": 0,
+        "invalid_frames": 0,
+        "max_invalid_pixels": 0
+      },
+      "disk": {
+        "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+        "edges": 20,
+        "edges_with_invalid_pixels": 0,
+        "invalid_frames": 0,
+        "max_invalid_pixels": 0
+      }
+    },
+    "panel_progress": {
+      "idle": {
+        "writes": 0,
+        "reads": 0
+      },
+      "scroll": {
+        "writes": 2,
+        "reads": 0
+      },
+      "disk": {
+        "writes": 0,
+        "reads": 48
+      }
+    },
+    "panel_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 386,
+        "untouched_above_floor": 894
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1024,
+        "touched_bytes": 189,
+        "untouched_above_floor": 579
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1024,
+        "touched_bytes": 271,
+        "untouched_above_floor": 497
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1024,
+        "touched_bytes": 156,
+        "untouched_above_floor": 612
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 692,
+        "untouched_above_floor": 1612
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 64,
+        "untouched_above_floor": 192
+      }
+    ],
+    "task_assignment": {
+      "0": "controller / DOS Process",
+      "1": "Control Panel",
+      "2": "filesystem",
+      "3": "SIO",
+      "4": "free ordinary slot for AES C client",
+      "5": "free ordinary slot for AES C client",
+      "6": "presenter",
+      "7": "free large slot for selected command"
+    },
+    "artifacts": {
+      "baseline-timing": "2427f76e7a83a862c0d5f9cdb452f2f79ad8260fbb9a11b22fd844f0e5bbb552",
+      "baseline-repeat": "b66eaa18df4f60d3eed1d18351cea49961b23474da2251b1552687c16bd2dfb3",
+      "panel-timing": "eac1a2da76877e5f7fd09ac7e713b737c6ba347d55a49c93b9b0b3dcffddf24a",
+      "presenter-idle": "7bb37661455c1529a5ae65f9f079876087e3607f0ecf17144dd15938dd032dcb",
+      "baseline-loaded": "3383074a379194195388878a990e7983f1ce4b69d22cbdf9f999247b1a5ca7c6"
+    }
+  },
+  "comparison_contract": {
+    "scope": "Compare matched optimized configurations and workloads: 10 gestures per widget cohort and 30 pointer motions/button edges. Development measurements, not qualification.",
+    "observed_repeat_distribution_variation_ms": 0,
+    "idle_extra_presenter_wakes": 0,
+    "input_consumption_p95_extra_ms": {
+      "idle": 5,
+      "loaded": 10
+    },
+    "scanout_p95_extra_ms": 20.1,
+    "render_quantum_cpu_growth_fraction": 0.1,
+    "explanation": "20.1 ms allows one PAL scanout-observation frame of phase difference. CPU/consumption budgets are explicit integration allowances, not measured jitter. No deliberate extra-frame wait is allowed. Exceedances require investigation before AS4 acceptance."
+  },
+  "open_gates": [
+    "The unchanged continuous-scroll pointer cohort failed its 12-frame scanout check at [626,60]. Retained in baseline-loaded/results.json; no AES runtime present. Dedicated widget scroll/disk cohorts passed functional and ownership checks.",
+    "Existing widget latency targets remain open: idle button p95 about 179 ms; loaded button p95 about 320 ms. Baseline pass means measured/restored, not latency-qualified.",
+    "125 kbit/s SIO gate remains open. The nominal 57.6 kbit/s panel disk cohort completed 48 reads.",
+    "About 2 KiB remains in the optimized composed C code bank. Later wrappers may require another upper code bank; this does not authorize bank-zero expansion.",
+    "AES service, registration, timers, locks and combined two-C-client GUI/SIO proof remain AS0b-AS4."
+  ]
+}

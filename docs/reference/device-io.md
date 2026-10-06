@@ -6,6 +6,10 @@ Exec exposes the familiar request/reply device model through `EXEC`. Public call
 run in ordinary Task context with IRQs enabled. Blocking continuations run on the
 caller's stack; they do not retain a kernel activation while waiting.
 
+The resident [timer.device](timer.md) supports VBI delays and wide monotonic
+deadlines without a worker Task. C declarations are in `<exec/io.h>` and
+`<proto/exec.h>`; the Calypsi launcher binds the ordinary caller-context I/O path.
+
 ## Public calls
 
 | Call | Contract |
@@ -31,6 +35,27 @@ submission can use another Task's agreed port or PA_IGNORE, with an explicit
 collection protocol. OpenDevice validates the full request extent, unit and
 flags; mere Message-sized allocation does not make a device request valid.
 
+Established requests are trusted caller-owned objects. The caller supplies
+valid storage, retains its open binding and reply port, and observes the
+submission/collection rules. Ordinary I/O does not repeat request-extent,
+reply-port-owner or live-handle checks through the kernel and resident layers.
+Invalid, stale or wrongly owned requests are API misuse with unspecified
+behavior; a clean rejection is not promised. The system provides no memory
+protection between applications.
+
+Creation/open admission and normal device errors remain: allocation failure,
+unsupported commands or options, command-specific lengths, queue exhaustion
+and hardware failure. Native Task/context and stack guards remain, as do the
+port transactions and driver synchronization that implement completion.
+
+Established BeginIO, SendIO, DoIO, AbortIO and CloseDevice calls select resident
+callbacks on the caller's stack through `io_Device`; selection itself does not
+enter the kernel. CheckIO also runs in the caller: it reads the completion byte
+once, returning NULL or the original pointer without collecting or clearing a
+signal. Open admission and exact reply collection retain kernel operations.
+The [resident boundary](resident-drivers.md) describes the
+shared preparation, exclusion and callback rules.
+
 ## Completion and lifetime
 
 A quick completion is allowed only when IOF_QUICK was supplied. It completes
@@ -43,6 +68,14 @@ do not treat return from submission as ownership returning to the sender.
 WaitIO collects only the requested reply and leaves unrelated messages alone.
 A client may collect through GetMsg instead, but must not collect the same
 completion twice. CheckIO is observational, not a dequeue.
+
+Exact reply collection and queue access share the IRQ-protected native port
+transactions. CheckIO observes the byte-wide completion type; terminal fields
+are written before publication. A concurrent completion may be observed as
+pending or terminal; observing terminal state does not collect the reply or
+change request ownership. Drivers may complete through the admitted
+[native ReplyMsg binding](ports.md#native-interrupt-reply), while public
+Action!/C device calls remain Task-only.
 
 AbortIO does not wait for safe retirement. Cancellation can race with normal
 completion. Wait/collect afterwards before reusing buffers or closing the binding.
@@ -80,3 +113,8 @@ See [filesystem execution](../architecture/filesystems.md), the
 [platform SIO boundary](platform.md#native-sio-ownership) and
 [historical I/O design](../history/device-io-sio-design.md) for the implementation
 rationale and revision-specific timing evidence.
+
+The interrupt-reply integration is development-tested under the default nominal
+57.6k profile. The loaded 125k refill timing gate remains open (including a
+port-only regression); see the [measured envelope](../history/interrupt-reply.md).
+Do not infer high-speed acceptance from functional transfer success.

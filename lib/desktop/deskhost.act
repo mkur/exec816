@@ -15,6 +15,11 @@ USE HEAPCORE
 USE DESKINPUT
 USE CONSOLECAPTURE
 USE CONSOLEWINDOWS
+USE AESHOST
+USE AESLOCKS
+USE DESKWIDGETINPUT
+
+BYTE firstPort,lateAES
 
 PUBLIC BYTE FUNC Start()
   BYTE bit,stopped
@@ -45,6 +50,8 @@ PUBLIC BYTE FUNC Start()
     RETURN(0)
   FI
 
+  AESHOST.Start()
+
 RETURN(1)
 
 PUBLIC LONGCARD FUNC Mask()
@@ -54,16 +61,35 @@ PUBLIC LONGCARD FUNC Mask()
     RETURN(0)
   FI
 
-RETURN(service.mask OR DESKINPUT.Mask())
+RETURN(service.mask OR DESKINPUT.Mask() OR AESHOST.Mask())
 
 PUBLIC BYTE FUNC Ready()
 
   LET service=DESKSTATE.Get()
 
-RETURN(service=NULL OR service.scene.busy=0)
+RETURN((service=NULL OR service.scene.busy=0) AND AESLOCKS.MouseBlocked()=0)
+
+PUBLIC BYTE FUNC PaintReady()
+
+  LET service=DESKSTATE.Get()
+
+RETURN((service=NULL OR service.scene.busy=0) AND AESLOCKS.PaintBlocked()=0)
+
+; Eligible controls that waited for the paint snapshot must get an admission
+; opportunity before a fresh console write acquires that same scene again.
+PUBLIC BYTE FUNC ControlPending()
+
+  LET service=DESKSTATE.Get()
+
+RETURN(service<>NULL AND service.live<>0 AND service.scene.busy=0
+    AND AESLOCKS.MouseBlocked()=0 AND DESKCORE.Runnable(service)<>0)
 
 PUBLIC BYTE FUNC Idle()
   BYTE index
+
+  IF AESHOST.Idle()=0 THEN
+    RETURN(0)
+  FI
 
   LET service=DESKSTATE.Get()
   IF service=NULL THEN
@@ -82,22 +108,116 @@ PUBLIC BYTE FUNC Idle()
 
 RETURN(1)
 
+; A bounded active-service boundary, never an idle poll or periodic wake.
+; Capture/cursor may advance now; widget commits stay after native controls.
+PROC InputBoundary()
+
+  DESKINPUT.Service(DESKINPUT.Mask())
+  DESKINPUT.Present()
+
+RETURN
+
+BYTE FUNC AESAdmission(BYTE POINTER remaining)
+
+  IF remaining^=0 THEN
+    RETURN(0)
+  FI
+
+  LET admitted=AESHOST.Pump(1)
+  remaining^==-admitted
+  IF admitted<>0 THEN
+    InputBoundary()
+  FI
+
+RETURN(admitted)
+
+; Match already admitted waits at bounded service boundaries. An alarm can
+; complete during a paint/output quantum, after Controls took its clock sample.
+; Collect it before yielding, without admitting another request or polling time.
+PUBLIC PROC Events()
+
+  IF AESHOST.Wake()<>0 THEN
+    InputBoundary()
+  FI
+
+RETURN
+
 PUBLIC PROC Controls()
-  BYTE count
+  BYTE count,admitted,selected,aesRemaining,limit
 
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
     DESKCACHE.Pump(service)
     DESKMOVE.Pump()
-    count=DESKCORE.Pump(service)
+    lateAES=0
+    limit=4
+    aesRemaining=4
+    IF AESHOST.Runnable()<>0 AND (DESKPAINT.Ready()<>0
+        OR DESKWIDGETINPUT.Runnable()<>0) THEN
+      ; Reserve one of the shared admissions after this paint quantum. Input
+      ; and visible feedback get the first opportunity; AES still advances in
+      ; every drawing turn, including a long full-window repaint.
+      lateAES=1
+      aesRemaining=0
+      limit=3
+    FI
+    ; Four admissions total. Alternate the first endpoint between turns and
+    ; alternate within a turn; an empty endpoint yields its unused capacity.
+    selected=firstPort
+    firstPort=firstPort XOR 1
+    count=0
+    WHILE count<limit DO
+      IF selected=0 THEN
+        admitted=DESKCORE.Pump(service,1)
+        IF admitted=0 THEN
+          admitted=AESAdmission(@aesRemaining)
+        FI
+      ELSE
+        admitted=AESAdmission(@aesRemaining)
+        IF admitted=0 THEN
+          admitted=DESKCORE.Pump(service,1)
+        FI
+      FI
+
+      IF admitted=0 THEN
+        EXIT
+      FI
+
+      count==+admitted
+      selected=selected XOR 1
+    OD
+
+    DESKCORE.Wake(service)
+    IF lateAES=0 THEN
+      Events()
+    FI
     DESKPAINT.Sync()
+  FI
+
+RETURN
+
+PUBLIC PROC AfterPaint()
+  BYTE remaining,admitted
+
+  IF lateAES<>0 THEN
+    lateAES=0
+    remaining=1
+    admitted=AESAdmission(@remaining)
+    Events()
   FI
 
 RETURN
 
 PUBLIC BYTE FUNC Runnable()
 
-RETURN(DESKPAINT.Runnable() OR DESKINPUT.Runnable())
+  LET service=DESKSTATE.Get()
+  IF service<>NULL AND service.live<>0 THEN
+    IF DESKCORE.Runnable(service)<>0 THEN
+      RETURN(1)
+    FI
+  FI
+
+RETURN(AESHOST.Runnable() OR DESKPAINT.Runnable() OR DESKINPUT.Runnable())
 
 ; Called only after input, controls, model writes and painting have no work.
 ; One attempt per eligible revision prevents eviction/capture feedback loops.
@@ -108,6 +228,7 @@ PUBLIC PROC Cache()
 
   LET service=DESKSTATE.Get()
   IF service=NULL OR service.live<>1 OR service.scene.busy<>0
+      OR AESLOCKS.PaintBlocked()<>0
       OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0
       OR DESKCORE.Runnable(service)<>0 OR DESKINPUT.Runnable()<>0 THEN
     RETURN
@@ -158,6 +279,10 @@ PUBLIC PROC Stop()
 
     EXEC.FreeSignal(service.port.mp_SigBit)
   FI
+
+  ; Native input/scene teardown above may still consult AES gates. Retire AES
+  ; last, before publishing that the controller can reclaim its allocation.
+  AESHOST.Stop()
 
 RETURN
 

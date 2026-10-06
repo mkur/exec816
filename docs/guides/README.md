@@ -21,6 +21,9 @@
 - [Console example](console-example.md): asynchronous console device I/O.
 - [DOS stream example](streams-example.md): standard streams and ownership.
 - [Calypsi C](calypsi-c.md): the standalone C binding and its limits.
+- [Resident GEM applications](aes-applications.md): AES event loops, startup, retirement and the optional two-client proof.
+- [AES latency diagnostics](aes-latency-diagnostics.md): caller CPU categories,
+  presenter scheduling delay and equal offered load alongside HY4 acceptance.
 
 - [One C example on Exec816 and classic Amiga](amiga-c.md): build and run the
   same message exchange on both systems.

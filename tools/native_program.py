@@ -75,7 +75,7 @@ def compiler(directory, allow_override=False, pin=None):
 
 def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=False,
              dispatch=APP_BASE, probe_flags=0x100, forward_signature=0, preemptive=False,
-             memory=None, kernel_init=0, tasks=False, task_init=0, policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, heap_shutdown=0, heap_allocate=0, heap_deallocate=0, heap_probe=False, ports_create=0, ports_delete=0, io_create=0, io_delete=0, io_wait=0, io_do=0, io_open=0, console_test=False, console_enabled=False, console_start=0, stack_checks=True, io_close=0, io_begin=0, io_send=0, io_abort=0, display_kind=0):
+             memory=None, kernel_init=0, tasks=False, task_init=0, policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, heap_shutdown=0, heap_allocate=0, heap_deallocate=0, heap_probe=False, ports_create=0, ports_delete=0, io_create=0, io_delete=0, io_wait=0, io_do=0, io_open=0, console_test=False, console_enabled=False, console_start=0, stack_checks=True, io_close=0, io_begin=0, io_send=0, io_abort=0, io_check=0, display_kind=0, pump_divisor=0):
     command(["ca65", "-I", output, "-I", toolchain["directory"] / "docs/abi",
              "-I", toolchain["directory"] / "runtime/65816",
              "-I", ROOT / "platform/altirraos", "-D", f"PROGRAM_ENTRY={entry}", "-D", f"DISPLAY_KIND={display_kind}",
@@ -86,8 +86,8 @@ def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=Fal
              "-D", f"PORTS_CREATE={ports_create}", "-D", f"PORTS_DELETE={ports_delete}",
              "-D", f"IO_CREATE={io_create}", "-D", f"IO_DELETE={io_delete}",
              "-D", f"IO_OPEN={io_open}", "-D", f"IO_WAIT={io_wait}", "-D", f"IO_DO={io_do}",
-             "-D", f"IO_CLOSE={io_close}", "-D", f"IO_BEGIN={io_begin}", "-D", f"IO_SEND={io_send}", "-D", f"IO_ABORT={io_abort}",
-             "-D", f"SIGNAL_PROBE={policy_probe}", "-D", f"SIGNAL_IRQ_PROBE={irq_probe}", "-D", f"SIGNAL_AUTO={int(not manual_wake)}", "-D", f"PUMP_COUNT={pump_count}",
+             "-D", f"IO_CHECK={io_check}", "-D", f"IO_CLOSE={io_close}", "-D", f"IO_BEGIN={io_begin}", "-D", f"IO_SEND={io_send}", "-D", f"IO_ABORT={io_abort}",
+             "-D", f"SIGNAL_PROBE={policy_probe}", "-D", f"SIGNAL_IRQ_PROBE={irq_probe}", "-D", f"SIGNAL_AUTO={int(not manual_wake)}", "-D", f"PUMP_COUNT={pump_count}", "-D", f"PUMP_DIVISOR={pump_divisor}",
              "-D", f"INPUT_NATIVE={int(tasks and irq_probe != 10)}", "-D", f"CONSOLE_NATIVE={int(console_test)}", "-D", f"CONSOLE_STARTUP={int(console_enabled)}", "-D", f"CONSOLE_START={console_start}",
              "-D", f"COOPERATIVE={int(cooperative)}", "-D", f"DISPATCH_ENTRY={dispatch}",
              "-D", f"BANKED={int(memory is not None)}", "-D", f"MEMORY_INIT={kernel_init}",
@@ -102,6 +102,9 @@ def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=Fal
     if tasks:
         from generate_tasks import storage
         from generate_sio_adapter import ABI as sio_adapter
+        from generate_native_interrupts import ABI as native_interrupts
+        native_base = storage(memory)['BASE']+native_interrupts['code_offset']
+        config = config.replace('MEMORY {', f'MEMORY {{ NATIVEWORK: start=${native_base:x}, size=${native_interrupts["code_reserved_bytes"]:x}, file="%O.native";').replace('SEGMENTS {', 'SEGMENTS { NATIVE_WORK: load=NATIVEWORK,type=ro;')
         binding_size = 58
         binding_base = storage(memory)['ENTRY_COUNT']
         blitter = json.loads((ROOT/'abi/blitter.json').read_text())
@@ -250,7 +253,7 @@ def place_after_foreign(memory, foreign):
 
 def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, cooperative=False,
           probe_flags=0x100, forward_signature=0, preemptive=False, banked=False,
-          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False):
+          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False, pump_divisor=0):
     require(type(input_diagnostics) is bool, 'Input diagnostics option must be boolean')
     require(not input_diagnostics or tasks, 'Input diagnostics require Tasks')
     configuration=json.loads(Path(kernel_config or ROOT/'config/kernel.json').read_text())
@@ -263,6 +266,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             'Deferred console requires Tasks without automatic startup')
     require(not console_enabled or tasks,'Configured console requires Tasks')
     require(foreign_image is None or tasks, 'Foreign code requires Task packaging')
+    require(pump_divisor in (0,8), 'Unsupported diagnostic serial divisor')
     require(type(pump_count) is int and 2 <= pump_count <= 65535, 'Invalid diagnostic pump length')
     require(not heap_probe or tasks, 'Heap probes require tasks')
     require(not (sio_request_probe or sio_lifetime_probe) or (tasks and io_test_device), 'SIO probes require the diagnostic device build')
@@ -290,6 +294,15 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     output = output.resolve()
     source = source.resolve()
     output.mkdir(parents=True, exist_ok=True)
+    # Bind only actual linked executable extents, never a neighbouring native
+    # bank or an unused foreign reservation. This module has no stored data.
+    code_ranges = [(s['address'], s['address']+len(s['bytes']))
+                   for s in (foreign_image or {}).get('segments', ())
+                   if s.get('executable')]
+    code_test = ' OR '.join(f'(value>=${lo:x} AND value<${hi:x})'
+                           for lo, hi in code_ranges) or '0'
+    (output/'calypsimeta.act').write_text('MODULE CALYPSIMETA\n'
+        'PUBLIC BYTE FUNC Code(LONGCARD value)\n\nRETURN('+code_test+')\nENDMODULE\n')
     exec_build = None
     if tasks:
         from generate_build_info import generate as generate_build_info
@@ -347,6 +360,10 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             require((ROOT/'platform/altirraos/blitter.inc').read_text()==generate_blitter.assembly(),'Stale blitter layout')
             import generate_platform_timer
             generate_platform_timer.generate(output, generate_tasks.storage(memory)['BASE'], memory)
+            import generate_native_interrupts
+            generate_native_interrupts.generate(output, generate_tasks.storage(memory)['BASE'], memory)
+            import generate_timer_device
+            generate_timer_device.generate(output, generate_tasks.storage(memory)['BASE'], memory)
             generate_tasks.validate_memory(memory)
             task_generate(output)
             task_modules = generate_tasks.policy_modules(output,policy_probe,memory,manual_wake,irq_probe,io_test_device,dos_test,dos_system,console_native,sio_request_probe=sio_request_probe,sio_lifetime_probe=sio_lifetime_probe,input_diagnostics=input_diagnostics)
@@ -370,14 +387,15 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             compile_source.write_text(compile_source.read_text().replace('USE EXECMEMORY\n','USE EXECMEMORY\nUSE PORTCORE\nUSE IOCORE\nUSE DISPLAY\n',1))
         if console_enabled and not re.search(r'(?mi)^USE\s+CONSOLEDRIVER\s*$',compile_source.read_text()):
             compile_source.write_text(compile_source.read_text().replace('USE EXECMEMORY\n','USE EXECMEMORY\nUSE CONSOLEDRIVER\n',1))
-    require(initial_i in (0, 4) and 0 <= probe_nmi <= (24 if tasks else 18 if preemptive else 12 if cooperative else 8), "Invalid qualification mode")
+    require(initial_i in (0, 4) and (0 <= probe_nmi <= (24 if tasks else 18 if preemptive else 12 if cooperative else 8)
+            or tasks and heap_probe and 30 <= probe_nmi <= 39), "Invalid qualification mode")
     require(not cooperative or initial_i == 0, "Cooperative startup requires IRQs enabled")
     require(0 <= probe_flags <= 0x100 and (cooperative or probe_flags == 0x100), "Invalid register probe")
     require(forward_signature in (0, 1, 0x7F), "Invalid COP forwarding probe")
     command(["python3", ROOT / "tools/generate_exec_abi.py", "--check"])
     labels = assemble(toolchain, output, APP_BASE, probe_nmi, initial_i, cooperative,
                       probe_flags=probe_flags, forward_signature=forward_signature, preemptive=preemptive,
-                      memory=memory, tasks=tasks, policy_probe=policy_probe, irq_probe=irq_probe, manual_wake=manual_wake, pump_count=pump_count, heap_probe=heap_probe,console_test=console_native,console_enabled=console_enabled,stack_checks=stack_checks_enabled)
+                      memory=memory, tasks=tasks, policy_probe=policy_probe, irq_probe=irq_probe, manual_wake=manual_wake, pump_count=pump_count, pump_divisor=pump_divisor, heap_probe=heap_probe,console_test=console_native,console_enabled=console_enabled,stack_checks=stack_checks_enabled)
     if tasks:
         task_generate(output, labels)
     base_args = [toolchain["binary"], *(["--module-path", task_modules] if tasks else []),
@@ -424,6 +442,28 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         elif tasks and name == 'TASKPOLICY.IRQWindow':
             label,result='signal_irq_window','None'
             peak=5 if irq_probe==3 else 1
+        elif tasks and name.startswith('TIMERNATIVE.'):
+            operation=name.split('.')[1]
+            require(operation in ('Enter','Leave','Snapshot','Enable'), 'Unknown timer native bridge')
+            label='timer_device_'+operation.lower()
+            result='None'
+            peak=1
+            if operation == 'Snapshot':
+                arguments=[dict(alignment=1,offset=0,size=3)]
+                outgoing,result,peak=3,'Some(NativeResult(A8ZeroExtended))',13
+            elif operation == 'Enable':
+                arguments=[dict(alignment=1,offset=0,size=1)]
+        elif tasks and name in ('TASKPOLICY.PortAppend', 'TASKPOLICY.PortPeek', 'TASKPOLICY.PortCollect'):
+            operation = name.split('.')[1]
+            label = {'PortAppend':'ports_append', 'PortPeek':'ports_peek',
+                     'PortCollect':'ports_collect'}[operation]
+            arguments = [dict(alignment=1, offset=0, size=3)]
+            outgoing = 3
+            result = 'Some(NativeResult(A16X8ZeroExtended))' if operation == 'PortPeek' else 'Some(NativeResult(A8ZeroExtended))'
+            if operation == 'PortAppend':
+                arguments += [dict(alignment=1, offset=3, size=3), dict(alignment=1, offset=6, size=1)]
+                outgoing, result = 7, 'None'
+            peak = 29
         elif tasks and name in ('TASKPOLICY.SignalChange', 'TASKPOLICY.WaitBegin',
                                 'TASKPOLICY.WaitComplete', 'TASKPOLICY.WakeMatch',
                                 'TASKPOLICY.TakeWake', 'TASKPOLICY.CancelWakeNode'):
@@ -569,11 +609,16 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             arguments,outgoing=shape['arguments'],shape['outgoing_bytes']
             result='Some(NativeResult(A16X16))'
             label,peak='io_open_dispatch',3
-        elif tasks and name in ('IOCORE.Collect','IOCORE.StartGateway','IOCORE.CloseGateway','IOCORE.BeginGateway','IOCORE.SendGateway','IOCORE.AbortGateway'):
+        elif tasks and name=='IOCORE.Collect':
             arguments,outgoing=[{'alignment':1,'offset':0,'size':3}],3
             result='Some(NativeResult(A16X16))'
-            label={'Collect':'io_collect','StartGateway':'io_start','CloseGateway':'io_close_dispatch',
-                   'BeginGateway':'io_begin_dispatch','SendGateway':'io_send_dispatch','AbortGateway':'io_abort_dispatch'}[name.split('.')[1]]
+            label,peak='io_collect',3
+        elif tasks and name in ('IORESIDENT.TestClose','IORESIDENT.TestBeginIO','IORESIDENT.TestAbortIO'):
+            require(io_test_device,'Diagnostic device dispatch is unavailable in production')
+            arguments,outgoing=[{'alignment':1,'offset':0,'size':3}],3
+            result='None'
+            label={'TestClose':'io_test_close','TestBeginIO':'io_test_begin',
+                   'TestAbortIO':'io_test_abort'}[name.split('.')[1]]
             peak=3
         elif tasks and name=='IOPROBE.Advance':
             require(io_test_device,'Test I/O control is unavailable in production')
@@ -675,6 +720,15 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         image['data'].append(dict(kind='global',id=max(d['id'] for d in image['data'])+1,
             name='M_PROCESSSTATE_TABLE',address=process_storage['BASE'],size=process_storage['BYTES'],alignment=2))
         task_storage = generate_tasks.storage(memory)
+        native = memory['native_interrupt_storage']
+        image['segments'].append(dict(address=native['CODE_BASE'], bytes=list((output/'hosted.bin.native').read_bytes()), writable=False, executable=True))
+        image['segments'].append(dict(address=native['BASE'], bytes=[0]*native['BYTES'], writable=True, executable=False))
+        image['data'].append(dict(kind='global', id=max(d['id'] for d in image['data'])+1,
+            name='M_TASKPOLICY_NATIVE_INTERRUPTS', address=native['BASE'], size=native['BYTES'], alignment=2))
+        timer = memory['timer_device_storage']
+        image['segments'].append(dict(address=timer['BASE'], bytes=[0]*timer['BYTES'], writable=True, executable=False))
+        image['data'].append(dict(kind='global', id=max(d['id'] for d in image['data'])+1,
+            name='M_TIMERDRIVER_STORAGE', address=timer['BASE'], size=timer['BYTES'], alignment=2))
         image['segments'].append({'address':task_storage['BASE']+0x1000,'bytes':list((output/'hosted.bin.signals').read_bytes()),'writable':False,'executable':True})
         blitter_abi=json.loads((ROOT/'abi/blitter.json').read_text())
         image['segments'].append({'address':task_storage['BASE']+blitter_abi['code_offset'],
@@ -776,7 +830,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     heap_shutdown = 0
     heap_allocate = heap_deallocate = 0
     ports_create = ports_delete = io_create = io_delete = io_wait = io_do = io_open = 0
-    io_close = io_begin = io_send = io_abort = 0
+    io_close = io_begin = io_send = io_abort = io_check = 0
     if tasks:
         candidates = [r for r in image['routines'] if re.fullmatch(r'M_TASKPOLICY_INIT_[0-9A-F]+', r['name'])]
         require(len(candidates) == 1 and candidates[0]['arguments'] == []
@@ -799,7 +853,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             port_targets[operation]=target[0]['address']
         ports_create,ports_delete=port_targets['CreateMsgPort'],port_targets['DeleteMsgPort']
         io_targets={}
-        for operation in ('CreateIORequest','DeleteIORequest','WaitIO','DoIO','OpenDevice','CloseDevice','BeginIO','SendIO','AbortIO'):
+        for operation in ('CreateIORequest','DeleteIORequest','WaitIO','DoIO','OpenDevice','CloseDevice','BeginIO','SendIO','AbortIO','CheckIO'):
             target=[r for r in image['routines'] if re.fullmatch(r'M_IOCORE_'+operation.upper()+r'_[0-9A-F]+',r['name'])]
             require(len(target)==1,'Missing caller-context I/O helper')
             generate_io.check_routine(target[0],operation)
@@ -807,6 +861,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         io_create,io_delete=io_targets['CreateIORequest'],io_targets['DeleteIORequest']
         io_wait,io_do=io_targets['WaitIO'],io_targets['DoIO']
         io_open=io_targets['OpenDevice']
+        io_check=io_targets['CheckIO']
         io_close,io_begin,io_send,io_abort=(io_targets[name] for name in ('CloseDevice','BeginIO','SendIO','AbortIO'))
         task_init = candidates[0]['address']
         require_executable(image, task_init)
@@ -830,7 +885,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         display_kind = display_fields[0]['address']
     final_labels = assemble(toolchain, output, image["entry"], probe_nmi, initial_i, cooperative,
                             dispatch, probe_flags, forward_signature, preemptive, memory, kernel_init, tasks, task_init, policy_probe, irq_probe, manual_wake, pump_count, heap_shutdown, heap_allocate, heap_deallocate, heap_probe, ports_create, ports_delete, io_create, io_delete, io_wait, io_do, io_open,console_native,console_enabled,console_start,stack_checks_enabled,
-                            io_close=io_close,io_begin=io_begin,io_send=io_send,io_abort=io_abort,display_kind=display_kind)
+                            io_close=io_close,io_begin=io_begin,io_send=io_send,io_abort=io_abort,io_check=io_check,display_kind=display_kind,pump_divisor=pump_divisor)
     require(labels == final_labels, "Platform addresses changed during final assembly")
     if tasks:
         # Heap private-call thunks depend on final compiled routine addresses.
@@ -877,8 +932,14 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     if tasks:
         provenance.update(tasks=True, input_diagnostics=input_diagnostics, exec_build=exec_build, dos_test=dos_test, dos_system=dos_system, dos_mounts=list(dos_mounts), system_mount=system_mount, system_selection=system_selection, heap_probe=heap_probe, io_test_device=io_test_device, task_init=task_init, task_entries=entries, process_entries=process_entries,
             task_storage=task_storage, signal_probe=policy_probe, signal_irq_probe=irq_probe,
-            manual_wake=manual_wake, pump_count=pump_count if irq_probe==8 else None,
+            manual_wake=manual_wake, pump_count=pump_count if irq_probe==8 else None, pump_divisor=pump_divisor if irq_probe==8 else None,
             task_inputs={name:sha256(ROOT/name) for name in (
+                'abi/native-interrupts.json','tools/generate_native_interrupts.py',
+                'platform/altirraos/native-interrupts.inc','platform/altirraos/ports-atomic.s',
+                'platform/altirraos/interrupt-work.s',
+                'abi/timer-device.json','tools/generate_timer_device.py','lib/io/timer.act',
+                'lib/io/timer-types.inc','lib/io/timernative.act','lib/io/timerdriver.act',
+                'platform/altirraos/timer-device.inc','platform/altirraos/timer-device.s',
                 'tools/input_diagnostics.py','abi/input-native.json','abi/input.json','tools/generate_input_native.py','tools/generate_input.py','lib/input/inputnative.act','lib/input/input.act','lib/input/input-types.inc','lib/input/inputcapture.act','lib/input/task-input.inc','platform/altirraos/input.s','platform/altirraos/pointer.s','platform/altirraos/input-native.inc','platform/altirraos/input.inc','abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
                 'lib/spartados/sdfs.act','lib/spartados/sdfstypes.act','lib/spartados/sdfsfile.act',
                 'lib/spartados/sdfsdir.act','lib/spartados/sdfsname.act','lib/spartados/sdfsdate.act',
@@ -1086,7 +1147,7 @@ def platform_files(bridge_dir, rom):
 
 def verify_machine(bridge, rom, pin=PLATFORM_PIN):
     config = bridge.config()
-    for key, value in {"machine": "800XL", "memory": "64K", "video": "pal",
+    for key, value in {"machine": "800XL", "memory": "64K", "video": pin['machine']['video'].lower(),
                        "basic": False, "highbanks": pin['machine']['high_banks'],
                        "addons": pin['machine'].get('addons', 'off')}.items():
         require(config.get(key) == value, f"Incorrect machine setting: {key}")

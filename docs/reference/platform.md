@@ -96,9 +96,11 @@ unused; packaging rejects code/metadata overlap, arena overflow and resident
 image payload in bank zero.
 
 For a linked foreign image, native code starts above the foreign image's full
-banks. The current bitmap/desktop C image occupies fixed banks `$0C/$0D`, so
-native code begins at `$0E0000` and can grow contiguously without crossing those
-bindings. The existing native data arena and all stack/DP reservations stay in
+banks. The bitmap/desktop C image uses code bank `$0C`, data bank `$0D`, and
+an optional second code bank `$0E` for composed AES applications. Native code
+begins at `$0E0000` or `$0F0000`, above the actual linked C payload. Runtime
+renderer bindings check generated executable extents, including the second bank
+only when populated. The existing native data arena and all stack/DP reservations stay in
 place. The effective origin is recorded in `memory.json` and `layout.json`;
 normal extent and bank-ownership checks still apply to the combined image.
 
@@ -250,6 +252,50 @@ stack, not an arbitrary native Task stack.
 The [runtime model](../architecture/runtime.md) describes caller and worker
 contexts. The [preemption implementation record](../history/vbi-preemption.md)
 retains the entry protocol and original executable evidence.
+
+## Deferred native completion
+
+The fixed native source table has one production source, timer, and one
+diagnostic-only source. [native-interrupts.json](../../abi/native-interrupts.json)
+defines byte-wide enabled/pending/running/blocked flags, an activation guard and
+a budget of two callbacks per opportunity. These descriptors are adapter-owned
+and immutable; they are distinct from public EXECPRODUCER signal bindings.
+There is no application callback registration interface.
+
+Raw VBI updates the versioned timer clock and retains a hint. It never touches
+reply links or calls compiled code. After ROM retirement, a fully saved native
+Task frame can admit bounded assembly work if its original I bit is clear,
+stack/DP ownership is valid, and no OS, IRQ, queue transaction or native service
+activation is live. Forbid prevents Task scheduling but permits this service.
+Driver edit gates mark only their own source blocked. Timer release publishes
+a hint for an armed queue before unblocking it; the enclosing I/O wrapper's
+Permit provides the native service opportunity, even under an outer Forbid.
+No second VBI is required for a deadline reached during first insertion.
+Acknowledgement precedes the callback, preserving a new hint
+arriving while the callback runs. IRQ opportunities between replies/callbacks
+retain activation ownership against recursive NMI dispatch.
+
+COP/fast-service and eligible interrupt exits share a final work/wake check after
+retiring compiled policy and selecting a complete frame. A nested NMI in the
+adapter's restore-only ranges, including the empty IRQ-return check, may patch
+that frame's PC to an internal COP trampoline. The original PC/PBR is retained
+per Task; the trampoline restores it and requests a fresh scheduling decision.
+An armed redirect also prevents interrupt-exit scheduling until that COP consumes
+the saved PC, including an interrupt immediately after RTI. This prevents Task
+removal or slot reuse while return state is still live.
+Only recognized instruction ranges and an original unmasked Task frame qualify.
+Foreign/ROM frames are never redirected. No extra VBI is needed for a reply
+arriving after the last wake check. Idle revisits bounded service opportunities
+while eligible work remains; runnable Tasks can retain excess backlog until the
+next safe opportunity. See the instruction/exit inventory and measured limits
+in the [implementation record](../history/interrupt-reply.md).
+
+All new storage occupies the already reserved upper Task bank: `$5800–$58FF`
+source state, `$5900–$5AFF` timer state, `$5B00–$5FFF` alignment capacity and
+`$6000–$7FFF` native code. The complete suballocation is 10,240 bytes including
+1,280 alignment bytes and unused code capacity. Fixed and per-Task bank-zero
+reservation deltas are both **0 bytes**. Linker limits retain the existing near
+adapter reservation; no private interrupt stack or timer Task is allocated.
 
 ## OS calls
 

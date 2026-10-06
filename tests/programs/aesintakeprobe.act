@@ -1,0 +1,55 @@
+; Fixture-only observation and a deliberate arrival after the final empty check.
+MODULE AESINTAKEPROBE
+USE EXEC
+
+PUBLIC EXEC.Task POINTER parent
+PUBLIC LONGCARD mask
+PUBLIC BYTE arm,enabled,count,turn,completed,maximum,perTurn,lateCount
+PUBLIC BYTE ARRAY ports(64),turns(64)
+
+PUBLIC PROC StartTurn()
+
+  IF enabled<>0 THEN
+    turn==+1
+    perTurn=0
+  FI
+
+RETURN
+
+PUBLIC PROC Admission(BYTE port BYTE admitted)
+
+  IF enabled<>0 AND admitted<>0 THEN
+    perTurn==+admitted
+    IF count<64 THEN
+      ports(count)=port
+      turns(count)=turn
+      count==+1
+    FI
+  FI
+
+RETURN
+
+PUBLIC PROC FinishTurn()
+
+  IF enabled<>0 THEN
+    completed=turn
+    IF perTurn>maximum THEN
+      maximum=perTurn
+    FI
+  FI
+
+RETURN
+
+; Yield after notifying the producer, while the real worker is between its
+; final empty check and Wait. A posted port signal must remain durable.
+PUBLIC PROC Boundary()
+
+  IF arm<>0 THEN
+    arm=0
+    EXEC.Signal(parent,mask)
+    EXEC.Yield()
+  FI
+
+RETURN
+
+ENDMODULE

@@ -15,12 +15,14 @@ def build_example(output, optimize=True, context=False, large_stacks=False):
     require(not (context and large_stacks), 'Select one C context fixture')
     example = ROOT/('tests/programs/calypsi_large_stacks.c' if large_stacks else
                     'tests/programs/calypsi_context.c' if context else 'c/examples/messages.c')
-    foreign = emit(output, (ROOT/'c/calypsi/exec.c', ROOT/'c/calypsi/dos.c', example),
-                   (ROOT/'c/calypsi/gateway.s', ROOT/'c/calypsi/dos.s', ROOT/'c/calypsi/image-info.s'),
-                   ['Receiver'], optimize=optimize, roots=['ExecDosEntries'])
+    foreign = emit(output, (ROOT/'c/calypsi/exec.c', ROOT/'c/calypsi/dos.c',
+                            ROOT/'c/calypsi/io.c', example),
+                   (ROOT/'c/calypsi/gateway.s', ROOT/'c/calypsi/dos.s',
+                    ROOT/'c/calypsi/io.s', ROOT/'c/calypsi/image-info.s'),
+                   ['Receiver'], optimize=optimize, roots=['ExecDosEntries', 'ExecIOEntry'])
     include = output/'c-image.inc'
     include.write_text(''.join(f'CONST C_{name.upper()}=${foreign["symbols"][name]:x}\n'
-                               for name in ('main', 'ExecDosEntries')))
+                               for name in ('main', 'ExecDosEntries', 'ExecIOEntry')))
     source = output/'launcher.act'
     source.write_text(read_source(ROOT/'c/calypsi/launcher.act', {'c-image.inc': include}))
     source_inputs = {str(p.relative_to(ROOT)): sha256(p) for p in

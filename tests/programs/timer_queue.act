@@ -1,0 +1,115 @@
+MODULE TIMERQUEUEPROBE
+USE EXEC
+USE TIMER
+USE HEAPCORE
+
+BYTE ARRAY name=c"timer.device"
+EXEC.MsgPort POINTER port
+TIMER.TimerClockRequest POINTER query
+EXEC.IORequest POINTER ARRAY requests(17)
+CARD checks
+LONGCARD high,low,previous
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Clock()
+
+  query.tc_Request.io_Command=TIMER.TD_READCLOCK
+  Require(EXEC.DoIO(@query.tc_Request)=0)
+
+RETURN
+
+PROC Deadline(EXEC.IORequest POINTER request)
+  TIMER.TimerClockRequest POINTER clock
+
+  clock=TIMER.TimerClockRequest POINTER(request)
+  request.io_Command=TIMER.TD_WAITUNTIL
+  clock.ticks_hi=high
+  clock.ticks_lo=low
+  EXEC.SendIO(request)
+
+RETURN
+
+PROC Main()
+  BYTE index,expected
+  EXEC.Message POINTER message
+
+  port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  query=TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(port,38))
+  Require(query<>NULL)
+  Require(EXEC.OpenDevice(name,TIMER.UNIT_VBLANK,@query.tc_Request,0)=0)
+  FOR index=0 TO 16 DO
+    requests(index)=EXEC.CreateIORequest(port,38)
+    Require(requests(index)<>NULL)
+    requests(index).io_Device=query.tc_Request.io_Device
+    requests(index).io_Unit=query.tc_Request.io_Unit
+  OD
+
+  Clock()
+  high=query.ticks_hi
+  low=query.ticks_lo+30
+  FOR index=0 TO 16 DO
+    Deadline(requests(index))
+  OD
+
+  Require(EXEC.WaitIO(requests(16))=TIMER.TIMERERR_QUEUEFULL)
+  EXEC.AbortIO(requests(7))
+  Require(EXEC.WaitIO(requests(7))=EXEC.IOERR_ABORTED)
+  Deadline(requests(7))
+  FOR index=0 TO 15 DO
+    message=EXEC.WaitPort(port)
+    expected=index
+    IF index>=7 THEN
+      expected=index+1
+    FI
+
+    IF index=15 THEN
+      expected=7
+    FI
+
+    Require(EXEC.GetMsg(port)=EXEC.Message POINTER(requests(expected)))
+    Require(requests(expected).io_Error=0)
+  OD
+
+  Require(EXEC.GetMsg(port)=NULL)
+  Clock()
+  previous=query.ticks_lo
+  Require(query.ticks_hi=high AND previous>=low)
+  EXEC.CloseDevice(@query.tc_Request)
+  FOR index=0 TO 16 DO
+    requests(index).io_Device=NULL
+    requests(index).io_Unit=NULL
+  OD
+
+  FOR index=0 TO 7 DO
+    Require(EXEC.OpenDevice(name,TIMER.UNIT_VBLANK,requests(index),0)=0)
+  OD
+
+  Require(EXEC.OpenDevice(name,TIMER.UNIT_VBLANK,requests(8),0)=EXEC.IOERR_OPENFAIL)
+  FOR index=0 TO 7 DO
+    EXEC.CloseDevice(requests(index))
+  OD
+
+  Require(EXEC.OpenDevice(name,TIMER.UNIT_VBLANK,@query.tc_Request,0)=0)
+  Clock()
+  Require(query.ticks_lo>=previous)
+  EXEC.CloseDevice(@query.tc_Request)
+  FOR index=0 TO 16 DO
+    EXEC.DeleteIORequest(requests(index))
+  OD
+
+  EXEC.DeleteIORequest(@query.tc_Request)
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+ENDMODULE

@@ -23,6 +23,12 @@ void WidgetEntry(void)
         p->status=WidgetInput(c,p);break;
     case WIDGET_OP_DRAW:
         p->status=WidgetPaint(p);break;
+    case WIDGET_OP_FOCUS:
+        if (c->epoch) {
+            WidgetFocusDamage(p,c,c->focus);
+            p->status=WIDGET_OK;
+        }
+        break;
     }
     WidgetCurrent=0;
 }

@@ -1,6 +1,6 @@
-; Policy runs under SWITCHING with IRQs enabled. Delegated operations return a
-; route, never call driver code here. Request ownership and settled Close/Delete are caller
-; preconditions; there is no allocation ledger or queue-membership search.
+; Policy runs under SWITCHING with IRQs enabled. Open admission returns a
+; route; established resident dispatch runs in the caller. Request ownership
+; and settled Close/Delete are caller preconditions.
 BYTE FUNC IOService(BYTE service)
 
 RETURN(service>=IO_SERVICE_OPEN_DEVICE AND service<=IO_SERVICE_TEST_STEP)
@@ -98,25 +98,6 @@ BYTE FUNC IOName(BYTE POINTER name BYTE POINTER expected)
 
 RETURN(SameName(name,expected))
 
-; Identify which admitted resident owns the request binding.
-BYTE FUNC IOBound(IORequest POINTER request)
-  IOResident POINTER device
-
-  IF IS_TEST_DEVICE=0 THEN
-    RETURN(0)
-  FI
-
-  IF request.io_Device<>BYTE POINTER(ADDRESS(IS_BASE+4)) THEN
-    RETURN(0)
-  FI
-
-  device=IOResident POINTER(request.io_Device)
-  IF request.io_Unit<>@device.unit THEN
-    RETURN(0)
-  FI
-
-RETURN(device.opens<>0)
-
 ; Validate caller storage before admitting an ordinary resident-device open.
 CARD FUNC IOOpen(CARD saved IOOpenArgs POINTER args)
   IORequest POINTER request
@@ -128,6 +109,11 @@ CARD FUNC IOOpen(CARD saved IOOpenArgs POINTER args)
 
   request.io_Device=BYTE POINTER(0)
   request.io_Unit=BYTE POINTER(0)
+  IF IOName(args.name,BYTE POINTER(ADDRESS(TIMERMETA.NAME)))<>0 THEN
+    MaskResult(saved,LONGCARD(IO_ROUTE_TIMER))
+    RETURN(saved)
+  FI
+
   IF ConsoleName(args.name)<>0 THEN
     MaskResult(saved,LONGCARD(IO_ROUTE_CONSOLE))
     RETURN(saved)
@@ -193,35 +179,17 @@ CARD FUNC IOComplete(TaskControl POINTER caller CARD saved IORequest
 RETURN(SendMessage(caller,saved,request.io_Message.mn_ReplyPort,
     @request.io_Message,P_NT_REPLYMSG))
 
-; Require the caller to own the reply path before allowing it to wait.
-BYTE FUNC IOWaitOwner(TaskControl POINTER caller IORequest POINTER request)
-  MsgPort POINTER port
-
-  port=request.io_Message.mn_ReplyPort
-  IF ValidPort(port)=0 THEN
-    RETURN(0)
-  FI
-
-RETURN(port.mp_Flags=P_PA_SIGNAL AND port.mp_SigTask=caller.item
-    AND port.mp_SigBit<32)
-
 ; Return ownership of a settled request to its waiting caller.
 CARD FUNC IOCollect(TaskControl POINTER caller CARD saved IORequest POINTER request)
 
-  IF IOWaitOwner(caller,request)=0 THEN
-    RETURN(T_FAULT)
-  FI
-
-  IF request.io_Message.mn_Node.ln_Type=P_NT_MESSAGE THEN
+  LET kind=PortCollect(@request.io_Message)
+  IF kind=P_NT_MESSAGE THEN
     MaskResult(saved,LONGCARD($10000)
         OR LONGCARD(request.io_Message.mn_ReplyPort.mp_SigBit))
     RETURN(saved)
   FI
 
-  IF request.io_Message.mn_Node.ln_Type=P_NT_REPLYMSG THEN
-    EXECLISTS.Remove(@request.io_Message.mn_Node)
-    request.io_Message.mn_Node.ln_Type=P_NT_FREEMSG
-  ELSEIF request.io_Message.mn_Node.ln_Type<>P_NT_FREEMSG THEN
+  IF kind<>P_NT_REPLYMSG AND kind<>P_NT_FREEMSG THEN
     RETURN(T_FAULT)
   FI
 
@@ -259,32 +227,6 @@ CARD FUNC IOEnqueue(TaskControl POINTER caller CARD saved IORequest POINTER requ
 
 RETURN(saved)
 
-; Dispatch a new request after checking binding and current ownership.
-CARD FUNC IOBegin(TaskControl POINTER caller CARD saved IORequest
-    POINTER request BYTE service)
-
-  IF IOBound(request)=0 OR ValidPort(request.io_Message.mn_ReplyPort)=0 THEN
-    RETURN(T_FAULT)
-  FI
-
-  IF service=IO_SERVICE_SEND_IO THEN
-    request.io_Flags=0
-  FI
-
-  IF service=IO_SERVICE_DO_IO THEN
-    IF IOWaitOwner(caller,request)=0 THEN
-      RETURN(T_FAULT)
-    FI
-
-    request.io_Flags=IO_IOF_QUICK
-    MaskResult(saved,LONGCARD($10000))
-  FI
-
-  request.io_Error=0
-  request.io_Message.mn_Node.ln_Type=P_NT_MESSAGE
-
-RETURN(IOTestBegin(caller,saved,request))
-
 ; Start a deterministic diagnostic operation through the normal request
 ; protocol.
 CARD FUNC IOTestBegin(TaskControl POINTER caller CARD saved IORequest
@@ -312,10 +254,6 @@ RETURN(IOComplete(caller,saved,request))
 ; Cancel a request through its owning resident's supported path.
 CARD FUNC IOAbort(TaskControl POINTER caller CARD saved IORequest POINTER request)
   IOQueue POINTER queue
-
-  IF IOBound(request)=0 THEN
-    RETURN(T_FAULT)
-  FI
 
   IF request.io_Message.mn_Node.ln_Type<>P_NT_MESSAGE THEN
     RETURN(saved)
@@ -495,101 +433,40 @@ CARD FUNC IOCall(TaskControl POINTER caller CARD saved BYTE service)
 
   request=args.request
   IF service=IO_SERVICE_DELETE_CHECK THEN
-    IF IOExtent(request,P_MESSAGE_BYTES)=0 THEN
-      RETURN(T_FAULT)
-    FI
-
     Result(saved,request.io_Message.mn_Length)
     RETURN(saved)
   FI
 
 RETURN(IORequestCall(caller,saved,service,request))
 
-; Decode request-oriented gateway arguments before touching the request.
+; Collect a request; resident dispatch and observation are caller-side.
 CARD FUNC IORequestCall(TaskControl POINTER caller CARD saved BYTE service
     IORequest POINTER request)
-  LONGCARD route
-
-  IF IOExtent(request,IO_IOREQUEST_BYTES)=0 THEN
-    RETURN(T_FAULT)
-  FI
-
-  ; Void legacy services must return a defined completed tag, not the incoming
-  ; packet address in X. The caller wrapper interprets this as a LONGCARD.
-  MaskResult(saved,0)
-  route=0
-  IF ConsoleDevice(request)<>0 THEN
-    route=LONGCARD(IO_ROUTE_CONSOLE)
-  ELSEIF request.io_Device=BYTE POINTER(ADDRESS(IS_BASE+64)) THEN
-    route=LONGCARD(IO_ROUTE_SIO)
-  ELSEIF IS_TEST_DEVICE<>0 AND request.io_Device=BYTE POINTER(ADDRESS(IS_BASE)) THEN
-    route=LONGCARD(IO_ROUTE_IMMEDIATE)
-  FI
-
-  IF route<>0 THEN
-    IF service=IO_SERVICE_BEGIN_IO OR service=IO_SERVICE_SEND_IO
-        OR service=IO_SERVICE_DO_IO THEN
-      IF ValidPort(request.io_Message.mn_ReplyPort)=0 THEN
-        RETURN(T_FAULT)
-      FI
-
-      IF service=IO_SERVICE_DO_IO AND IOWaitOwner(caller,request)=0 THEN
-        RETURN(T_FAULT)
-      FI
-
-      MaskResult(saved,route)
-      RETURN(saved)
-    FI
-
-    IF service=IO_SERVICE_CLOSE_DEVICE OR service=IO_SERVICE_ABORT_IO THEN
-      MaskResult(saved,route)
-      RETURN(saved)
-    FI
-  FI
-
-  IF service=IO_SERVICE_BEGIN_IO OR service=IO_SERVICE_SEND_IO
-      OR service=IO_SERVICE_DO_IO THEN
-    RETURN(IOBegin(caller,saved,request,service))
-  FI
-
-RETURN(IOSettledCall(caller,saved,service,request))
-
-; Handle operations that require a settled request and valid caller ownership.
-CARD FUNC IOSettledCall(TaskControl POINTER caller CARD saved BYTE service
-    IORequest POINTER request)
   IOResident POINTER device
-
-  IF service=IO_SERVICE_CLOSE_DEVICE THEN
-    IF request.io_Device=BYTE POINTER(0) THEN
-      RETURN(saved)
-    FI
-
-    IF IOBound(request)=0 THEN
-      RETURN(T_FAULT)
-    FI
-
-    device=IOResident POINTER(request.io_Device)
-    device.opens==-1
-    request.io_Device=BYTE POINTER(0)
-    request.io_Unit=BYTE POINTER(0)
-    RETURN(saved)
-  FI
 
   IF service=IO_SERVICE_WAIT_REQUEST THEN
     RETURN(IOCollect(caller,saved,request))
   FI
 
-  IF service=IO_SERVICE_ABORT_IO THEN
+  ; Only the queued fixture retains a kernel-owned device protocol.
+  IF IS_TEST_DEVICE=0 THEN
+    RETURN(T_FAULT)
+  FI
+
+  MaskResult(saved,0)
+  CASE service OF
+  WHEN IO_SERVICE_TEST_BEGIN THEN
+    RETURN(IOTestBegin(caller,saved,request))
+
+  WHEN IO_SERVICE_TEST_ABORT THEN
     RETURN(IOAbort(caller,saved,request))
-  FI
 
-  IF service=IO_SERVICE_CHECK_IO THEN
-    IF request.io_Message.mn_Node.ln_Type=P_NT_MESSAGE THEN
-      request=IORequest POINTER(0)
-    FI
-
-    PointerResult(saved,Task POINTER(request))
+  WHEN IO_SERVICE_TEST_CLOSE THEN
+    device=IOResident POINTER(request.io_Device)
+    device.opens==-1
+    request.io_Device=NULL
+    request.io_Unit=NULL
     RETURN(saved)
-  FI
+  ESAC
 
 RETURN(T_FAULT)

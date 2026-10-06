@@ -12,6 +12,7 @@ USE WIDGETTYPES
 
 CONST BUFFER_SIZE=WIDGETTYPES.TREE_SIZE+WIDGETTYPES.UPDATE_SIZE
     +WIDGETTYPES.SNAPSHOT_SIZE
+CONST REFRESH_EVENT=1,REFRESH_SNAPSHOT=2
 CONST OBJ_STATUS=1,OBJ_TOGGLE=2,OBJ_LOCKED=3,OBJ_SMALL=4,OBJ_LARGE=5,OBJ_APPLY=6,OBJ_CANCEL=7
 
 DESKTYPES.Client client
@@ -28,7 +29,7 @@ BYTE refresh
 BYTE parentBit,stopBit,started,finished,waiting,closing
 
 CARD FUNC Call(BYTE operation)
-  EXEC.Message POINTER message
+  LONGCARD bits
   DESKTYPES.Request POINTER reply
 
   control.operation=operation
@@ -38,7 +39,7 @@ CARD FUNC Call(BYTE operation)
 
   reply=DESKTOP.Collect(@client)
   WHILE reply=NULL DO
-    message=EXEC.WaitPort(client.replies)
+    bits=EXEC.Wait(LONGCARD(1) LSH client.replies.mp_SigBit)
     reply=DESKTOP.Collect(@client)
   OD
 
@@ -127,23 +128,32 @@ PROC Status(CSTRING value CARD bytes)
 
 RETURN
 
-; Read before each bounded patch. A concurrent gesture can stale its revision;
-; retry on a later turn, checking Stop between attempts. LOSS resynchronizes the
-; model without inventing an action. An old tree's action cannot patch a new one.
+; The copied action already carries the committed epoch, revision and state.
+; Try that revision first; only LOSS or a stale patch needs a fresh snapshot.
+; Check Stop between retries. An old tree's action cannot patch a new one.
 PROC RefreshStatus()
+  CARD state
 
-  IF ReadState()<>DESKTYPES.OK THEN
-    HEAPCORE.Abort($faf8)
+  IF refresh=REFRESH_SNAPSHOT THEN
+    IF ReadState()<>DESKTYPES.OK THEN
+      HEAPCORE.Abort($faf8)
+    FI
+
+    IF eventWait.event.kind<>DESKTYPES.EVENT_LOSS
+        AND eventWait.event.epoch<>snapshot.epoch THEN
+      refresh=0
+      RETURN
+    FI
+
+    patch.epoch=snapshot.epoch
+    patch.revision=snapshot.revision
+    state=snapshot.objects(OBJ_TOGGLE).state
+  ELSE
+    patch.epoch=eventWait.event.epoch
+    patch.revision=eventWait.event.revision
+    state=eventWait.event.state
   FI
 
-  IF eventWait.event.kind<>DESKTYPES.EVENT_LOSS
-      AND eventWait.event.epoch<>snapshot.epoch THEN
-    refresh=0
-    RETURN
-  FI
-
-  patch.epoch=snapshot.epoch
-  patch.revision=snapshot.revision
   patch.count=1
   patch.changes(0).object=OBJ_STATUS
   patch.changes(0).mask=WIDGETTYPES.PATCH_LABEL
@@ -152,7 +162,7 @@ PROC RefreshStatus()
   ELSEIF eventWait.event.kind=DESKTYPES.EVENT_WIDGET_CANCEL THEN
     Status(c"Cancelled (Esc)",15)
   ELSEIF lastObject=OBJ_TOGGLE THEN
-    IF (snapshot.objects(OBJ_TOGGLE).state & WIDGETTYPES.STATE_SELECTED)<>0 THEN
+    IF (state & WIDGETTYPES.STATE_SELECTED)<>0 THEN
       Status(c"Toggle on [2]",13)
     ELSE
       Status(c"Toggle off [2]",14)
@@ -174,7 +184,9 @@ PROC RefreshStatus()
   LET result=Call(DESKTYPES.UPDATE_WIDGETS)
   IF result=DESKTYPES.OK THEN
     refresh=0
-  ELSEIF result<>DESKTYPES.STALE THEN
+  ELSEIF result=DESKTYPES.STALE THEN
+    refresh=REFRESH_SNAPSHOT
+  ELSE
     HEAPCORE.Abort($faf8)
   FI
 
@@ -360,9 +372,9 @@ PUBLIC PROC Run()
               OR reply.event.kind=DESKTYPES.EVENT_WIDGET_CANCEL THEN
             lastObject=reply.event.object
             updates==+1
-            refresh=1
+            refresh=REFRESH_EVENT
           ELSEIF reply.event.kind=DESKTYPES.EVENT_LOSS THEN
-            refresh=1
+            refresh=REFRESH_SNAPSHOT
           FI
         FI
       FI

@@ -1,20 +1,5 @@
 ; Caller-context device callbacks run under IOCORE's Forbid region. Worker
 ; handoff/completion use the same exclusion; IRQ capture never reads requests.
-PUBLIC BYTE FUNC Bound(EXEC.IORequest POINTER request)
-
-  IF request.io_Device<>BYTE POINTER(GetService()) THEN
-    RETURN(0)
-  FI
-
-  LET entry=CONSOLEWINDOWS.Bound(request.io_Unit)
-  IF entry=NULL THEN
-    RETURN(0)
-  FI
-
-  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
-
-RETURN(instance.open<>0)
-
 ; Close must not invalidate an instance still borrowed by any request.
 BYTE FUNC Idle(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
     POINTER instance)

@@ -79,12 +79,21 @@ native_dequeue:
     and #$ff
     beq native_done
 .ifdef PORT_RACE
-    lda 10                     ; fast GetMsg's removed node, before DP changes
-    cmp #.loword(ITEM)
+    .ifdef ATOMIC_PORTS
+        lda 1                  ; shared transaction's validated port
+        cmp #.loword(PORT)
+    .else
+        lda 10
+        cmp #.loword(ITEM)
+    .endif
     bne native_done
-    lda 12
+    .ifdef ATOMIC_PORTS
+        lda 3
+    .else
+        lda 12
+    .endif
     and #$ff
-    cmp #^ITEM
+    cmp #^PORT
     bne native_done
 .endif
     tsc
@@ -107,7 +116,11 @@ native_dequeue:
     inc a
     tcd
     lda f:CHECKPOINTS
-    ora #2
+    .ifdef ATOMIC_PORTS
+        ora #3
+    .else
+        ora #2
+    .endif
     sta f:CHECKPOINTS
     jsr hardware_wait
     tsc
@@ -147,12 +160,22 @@ hardware_wait:
     rep #$20
 wait_entries:
     wai
+    .ifdef ATOMIC_PORTS
+        ; IRQ must remain deferred throughout the partially updated list.
+        lda f:E816_IRQ_COUNT
+        cmp $02
+        bne failed
+        lda f:E816_VBI_COUNT
+        cmp $00
+        beq wait_entries
+    .else
     lda f:E816_IRQ_COUNT
     cmp $02
     beq wait_entries
     lda f:E816_VBI_COUNT
     cmp $00
     beq wait_entries
+    .endif
     lda f:WAKES             ; the IRQ/NMI must not enter Task policy here
     cmp $04
     bne failed

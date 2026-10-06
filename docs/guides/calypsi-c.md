@@ -51,9 +51,16 @@ as needed, and `<proto/exec.h>` for the function declarations.
 | Signals | `AllocSignal`, `FreeSignal`, `SetSignal`, `Signal`, `Wait` |
 | Messages | `CreateMsgPort`, `DeleteMsgPort`, `PutMsg`, `GetMsg`, `WaitPort`, `ReplyMsg` |
 | Public ports | `AddPort`, `RemPort`, `FindPort` |
+| Device I/O (`<exec/io.h>`) | `CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice`, `BeginIO`, `SendIO`, `DoIO`, `CheckIO`, `WaitIO`, `AbortIO` |
 | Lists | `NewList`, `IsListEmpty` |
 | DOS output (`<proto/dos.h>`) | `Output`, `Write` |
 | Exec816 extension | `ExecYield` in `<exec816/runtime.h>` for low-level probes |
+
+The standard launcher binds both DOS and caller-context device I/O. Include
+`<devices/timer.h>` for the [VBI timer](../reference/timer.md). The executable
+[timer test](../../tests/programs/timer_device.c) demonstrates a borrowed request,
+asynchronous completion, cancellation and cleanup. Native interrupt reply is an
+assembly resident interface; the ordinary C ReplyMsg function remains Task-only.
 
 These retain Exec816's existing [Task](../reference/tasks.md),
 [signal](../history/signals-implementation.md) and [port](../history/messages-ports-implementation.md) contracts and
@@ -131,6 +138,11 @@ zero-length write returns zero. The assembly bridge aligns the native stack,
 preserves the original C stack, and leaves Calypsi's lower DP untouched across
 blocking calls. No new COP service or console implementation is added.
 
+The public device-I/O binding uses the existing caller-context C/Action! bridge
+in images that link `io.c` and `io.s`; startup must bind `ExecIOEntry` before
+calling it. The desktop builder supplies that binding for resident C clients.
+Timer calls use the public device API and retain the caller's Task context.
+
 For example:
 
 ```c
@@ -145,14 +157,18 @@ example, DOS output stays in `main`: a raw Amiga `CreateTask` worker has no DOS
 Process context. The receiver continues to use only Exec calls.
 
 C uses the Task's existing D page. Calypsi's `_Dp` occupies offsets `$00–$0F`
-and `_Vfp` `$10–$13`: **20 of the 128 caller-workspace bytes**. These are
+and `_Vfp` `$10–$13`: 20 of the 128 caller-workspace bytes. Images that link
+Calypsi's spill helper also use `_FillInd` at `$14–$16`, for **23 bytes total**.
+The image checker validates both layouts and their exact symbol placement.
+These are
 D-relative link addresses, not shared fixed zero-page storage. DBR remains
 zero. Native entry supplies 16-bit A/X/Y and a zero-initialized Task workspace.
 The kernel uses its own D page and preserves the caller's D and lower workspace
 across COP calls and interrupts. The Action! bootstrap's zero-argument call to
 C `main` uses the common JSL/RTL and 16-bit result boundary.
 
-The linker places C code in bank `$0C` and data in bank `$0D`. Only actual code,
+The linker places C code in bank `$0C`, with optional spill into `$0E`, and data
+in bank `$0D`. Native code starts above the populated C banks. Only actual code,
 initialized data and BSS are packaged; unused link capacity is not copied or
 cleared. The existing bank allocator reserves the occupied banks. The virtual
 DP range and 16-byte host packaging metadata are never loaded as bank-zero
@@ -167,11 +183,20 @@ The Calypsi linker selects referenced shim/runtime routines for this executable.
 ## Current limits and development checks
 
 This binding does not provide C disk commands/o65, DOS calls beyond
-`Output`/`Write`, device APIs, `stdio`, `malloc`, arbitrary CRT initialization or
+`Output`/`Write`, `stdio`, `malloc`, arbitrary CRT initialization or
 general Action!/C callbacks.
 Initialized globals and BSS are handled by the hosted loader. Pure compiler
 arithmetic helpers can be linked; a general-purpose C library port is separate.
 User-defined tiny/near storage is not part of this target's linker layout.
+
+Calypsi 5.18 omitted implicit zero filling for the local partial array
+initializer `WORD in[16] = {MU_TIMER}` in both raw and optimized AES probes.
+The emitted code stored the first word while the remaining words retained
+stack contents. The AES fixture now fills its parameter block explicitly;
+this compiler limitation remains open and is separate from AES semantics.
+The [AS2b record](../development/aes-server-as2b.json) retains the failing image
+hashes and the successful corrected-fixture evidence. Do not infer general C
+source compatibility from the selected binding tests.
 
 C functions do **not** have Action!'s compiler-inserted stack-overflow checks.
 The platform still checks native domains/guards and the development runner

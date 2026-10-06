@@ -1,0 +1,74 @@
+; The launch controller retains the endpoint until its applications detach.
+MODULE AESBOOT
+USE EXEC
+USE AESSTATE
+USE DESKSTATE
+USE HEAPCORE
+
+PUBLIC BYTE FUNC Enable()
+
+  IF AESSTATE.Get()<>NULL OR DESKSTATE.Enabled()=0 THEN
+    RETURN(0)
+  FI
+
+  LET service=AESSTATE.Service POINTER(EXEC.AllocMem(SIZEOF(AESSTATE.Service),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  IF service=NULL THEN
+    RETURN(0)
+  FI
+
+  service.controller=EXEC.FindTask(NULL)
+  AESSTATE.Bind(service)
+
+RETURN(1)
+
+; The returned endpoint is borrowed under the controller's lifetime contract.
+PUBLIC EXEC.MsgPort POINTER FUNC Port()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR service.live<>1 THEN
+    RETURN(NULL)
+  FI
+
+RETURN(@service.port)
+
+PUBLIC BYTE FUNC StopAdmission()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR service.controller<>EXEC.FindTask(NULL) THEN
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  IF service.count<>0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  IF service.live<>0 THEN
+    service.live=2
+    EXEC.Signal(service.owner,service.mask)
+  FI
+
+  EXEC.Permit()
+
+RETURN(1)
+
+PUBLIC PROC Disable()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN
+  FI
+
+  IF service.live<>0 OR service.owner<>NULL
+      OR service.controller<>EXEC.FindTask(NULL) THEN
+    HEAPCORE.Abort($fca1)
+  FI
+
+  AESSTATE.Bind(NULL)
+  EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
+
+RETURN
+
+ENDMODULE

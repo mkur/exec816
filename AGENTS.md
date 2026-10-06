@@ -18,6 +18,12 @@
   departing from the Amiga model.
 - Keep device-specific queue, active-request, cancellation and lifecycle policy
   in the driver, using general public kernel primitives for coordination.
+- Treat correct API use and live application-owned pointers/handles as caller
+  responsibilities on this single-user system without memory protection. Keep
+  validation minimal: establish resources at creation/open, report normal
+  operational errors, and preserve synchronization and state transitions.
+  Do not revalidate the same request through wrappers, dispatch and drivers.
+  Stack/domain guards and IRQ/NMI coordination are separate requirements.
 - If a new combined kernel operation is justified, define a reusable public
   ABI operation usable by other drivers and ordinary Tasks subject to resource
   ownership rules. Do not add driver-specific private kernel services solely

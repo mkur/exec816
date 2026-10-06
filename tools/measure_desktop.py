@@ -67,7 +67,9 @@ def trace_report(path, marks, windows, samples, native, cost_definition=None):
     cursor_profile = None
     if cost_definition:
         from console_turn_profile import analyze_events
-        cursor_profile = analyze_events(events, cost_definition)['routine_spans']
+        profile = analyze_events(events, cost_definition,
+                                 include_segments='scheduler' in cost_definition)
+        cursor_profile = profile['routine_spans']
     for name, (begin, end) in windows.items():
         # The debugger exposes the same wrapping base clock as the trace. Align
         # read-only observations to the independently extended event timeline.
@@ -121,6 +123,16 @@ def trace_report(path, marks, windows, samples, native, cost_definition=None):
         limit = (40, 60) if name == 'idle' else (60, 100)
         result[name]['visible_target_pass'] = bool(motion) and distribution(motion)['p95_ms'] <= limit[0] and max(motion) <= limit[1]
         result[name]['button_target_pass'] = bool(button) and max(button) <= (40 if name == 'idle' else 100)
+        if cost_definition and 'scheduler' in cost_definition:
+            from aes_timing_breakdown import input_breakdown
+            samples = [dict(capture=s['capture_cycle'], observed=s['consume_cycle'], kind=s['kind'])
+                       for s in observed]
+            breakdown = input_breakdown(events, cost_definition['scheduler'], profile, samples, marks['consume'])
+            breakdown['summary'] = {kind:{key:distribution([r[key] for r in breakdown['records'] if r['kind']==kind])
+                for key in ('capture_to_ready_ms','ready_to_selected_ms','selected_to_consume_ms',
+                            'runnable_off_cpu_ms','blocked_off_cpu_ms','charged_cpu_ms','elapsed_ms')}
+                for kind in ('motion','button')}
+            result[name]['input_breakdown'] = breakdown
         if cursor_profile is not None:
             launches, uploads = times(marks['vbxe_start']), times(marks['vbxe_upload'])
             rows = []
@@ -142,9 +154,13 @@ def trace_report(path, marks, windows, samples, native, cost_definition=None):
     return result
 
 
-def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'disk'), costs=False, quiet_app=False):
+def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'disk'), costs=False, quiet_app=False,
+        breakdown=False):
+    require(not (unobserved and breakdown), 'Timing breakdown requires observation')
+    costs = costs or breakdown
     out.mkdir(parents=True, exist_ok=True)
     p = read_build(program)
+    foreign = json.loads((p['output'].parent/'c-image.json').read_text())['symbols']
     pin = json.loads(json.dumps(PIN))
     fastest = p['build']['dos_mounts'][0]['profile'] == 1
     if fastest:
@@ -170,6 +186,12 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                                task_dps=[pool['dp'] for pool in p['build']['memory']['task_pools']])
         marks.update(flat_markers(cost_definition))
         marks.update(vbxe_start=foreign['start'], vbxe_upload=foreign['_VbxeUpload'])
+        if breakdown:
+            from aes_timing_breakdown import scheduler_markers
+            scheduler = scheduler_markers(p)
+            scheduler['selected'] = points['selected']
+            cost_definition['scheduler'] = scheduler
+            marks.update(scheduler['points'])
     pcs = set(marks.values()) | {pc for v in native.values() for pc in v['returns']}
     for name in ('EXEC816_MOUSE_TRACE', 'EXEC816_LATENCY_TRACE', 'EXEC816_LATENCY_PCS', 'EXEC816_MASK_TRACE'):
         os.environ.pop(name, None)
@@ -182,6 +204,7 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
     disk = out/'disk.atr'
     make(disk, out/'media', binary_names={'TOOLS/SUB/DATA.BIN'}, filesystem='sdfs')
     report = dict(status='running', tier='development', qualification=False, build=p['build'],
+                  timing_breakdown=breakdown,
                   pin=pin, samples=[], windows={}, observer=not unobserved,
                   reserved_bank_zero_delta=delta(p['build']['memory']), marks=marks,
                   media_sha256=sha256(disk), scanout_scope='Actual last completed scanout; observation is an upper bound, at most one frame late')
@@ -267,6 +290,8 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                     mode = {'idle': 0, 'scroll': 2, 'disk': 3, 'two_clients': 0}[load]
                     b.memload(at('DESKTEST', 'mode'), mode.to_bytes(2, 'little'))
                     begin = clock()
+                    aes_before = {name:int.from_bytes(b.memdump(foreign[name],2),'little')
+                                  for name in ('AESMessages','AESTimers') if name in foreign}
                     for i in range(count):
                         if second_app and not quiet_app and i % 10 == 0:
                             b._cmd_ok('KEY SPACE down')
@@ -309,6 +334,10 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                         if i % 20 == 0:
                             print(load, i, flush=True)
                     report['windows'][load] = [begin, clock()]
+                    if aes_before:
+                        report.setdefault('aes_progress', {})[load] = {
+                            name:(int.from_bytes(b.memdump(foreign[name],2),'little')-old)&65535
+                            for name,old in aes_before.items()}
                     report.setdefault('progress', {})[load] = dict(writes=read('DESKTEST', 'writes'), reads=read('DESKTEST', 'reads'))
                 if second_app:
                     report['independent_app_updates'] = read('DESKAPP', 'updates')
@@ -346,7 +375,8 @@ if __name__ == '__main__':
     parser.add_argument('--count', type=int, default=100)
     parser.add_argument('--unobserved', action='store_true')
     parser.add_argument('--costs', action='store_true', help='Separate pointer CPU, interruptions and submissions')
+    parser.add_argument('--breakdown', action='store_true', help='Also split capture, ready, selection and consumption delay')
     parser.add_argument('--loads', nargs='+', choices=('idle', 'scroll', 'disk', 'two_clients'), default=['idle', 'scroll', 'disk'])
     parser.add_argument('--quiet-app', action='store_true', help='Matched pointer control with the panel present and no periodic application keys')
     args = parser.parse_args()
-    run(args.output.resolve(), args.program, args.count, args.unobserved, args.loads, args.costs, args.quiet_app)
+    run(args.output.resolve(), args.program, args.count, args.unobserved, args.loads, args.costs, args.quiet_app,args.breakdown)

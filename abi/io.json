@@ -29,20 +29,25 @@
         "test_only": false,
         "task_offset": 36,
         "lease_offset": 136
+      },
+      "TIMER": {
+        "id": 4,
+        "module": "TIMERDRIVER",
+        "storage": "timer_device_storage",
+        "device_offset": 16,
+        "name_offset": 480,
+        "test_only": false
       }
     }
   },
   "services": {
     "OPEN_DEVICE": 40,
-    "CLOSE_DEVICE": 41,
-    "BEGIN_IO": 42,
-    "CHECK_IO": 43,
+    "TEST_CLOSE": 41,
+    "TEST_BEGIN": 42,
     "WAIT_REQUEST": 44,
-    "ABORT_IO": 45,
-    "SEND_IO": 46,
+    "TEST_ABORT": 45,
     "CREATE_CHECK": 47,
     "DELETE_CHECK": 48,
-    "DO_IO": 49,
     "TEST_STEP": 50
   },
   "errors": {

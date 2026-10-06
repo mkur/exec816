@@ -337,7 +337,7 @@ ENDMODULE
         (directory/'consoleforeground.act').write_text('MODULE CONSOLEFOREGROUND\nUSE DOSBREAKTYPES\nPUBLIC BYTE FUNC Begin(DOSBREAKTYPES.Scope POINTER scope)\nRETURN(0)\nPUBLIC PROC End(DOSBREAKTYPES.Scope POINTER scope)\nRETURN\nPUBLIC PROC Notify(DOSBREAKTYPES.Scope POINTER scope)\nRETURN\nPUBLIC BYTE FUNC Handoff(DOSBREAKTYPES.Scope POINTER previous,target BYTE carry)\nRETURN(0)\nENDMODULE\n')
         console_policy='PROC ConsoleInit()\nRETURN\n'
     if not console:
-        console_policy+='BYTE FUNC ConsoleName(BYTE POINTER name)\nRETURN(0)\nBYTE FUNC ConsoleDevice(IORequest POINTER request)\nRETURN(0)\n'
+        console_policy+='BYTE FUNC ConsoleName(BYTE POINTER name)\nRETURN(0)\n'
     (directory/'task-console.inc').write_text(console_policy)
     input_policy = read_source(ROOT/'lib/input/task-input.inc').replace(
         '"input-storage.act.inc"', '"'+str(Path(output)/'input-storage.act.inc')+'"')
@@ -377,6 +377,9 @@ ENDMODULE
 
 
 def application_entry(routine):
+    if routine['name'].startswith(('M_AESCORE_', 'M_AESHOST_', 'M_AESBOOT_', 'M_AESSTATE_',
+                                   'M_AESINPUT_', 'M_AESLOCKS_', 'M_AESTYPES_')):
+        return False
     if routine['name'].startswith('M_DESKAPP_'):
         return bool(re.fullmatch(r'M_DESKAPP_RUN_[0-9A-F]+', routine['name']))
     if routine['name'].startswith(('M_DESKTOP_', 'M_DESKCORE_', 'M_DESKMOVE_', 'M_DESKCACHE_', 'M_DESKEVENTS_', 'M_DESKSTATE_', 'M_DESKPAINT_', 'M_DESKINPUT_', 'M_DESKDRAG_', 'M_DESKHOST_', 'M_DESKBOOT_', 'M_DESKWIDGETS_', 'M_DESKWIDGETINPUT_')):

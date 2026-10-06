@@ -1,0 +1,102 @@
+MODULE TIMERLIFECYCLE
+USE EXEC
+USE TIMER
+USE EXECLISTS
+USE HEAPCORE
+USE HEAPAPIPROBE
+USE TASKSTACKS
+
+EXEC.Task worker
+PROC POINTER missing()
+CARD checks,completed,aborted,expired
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f700+checks)
+  FI
+
+  EXEC.Forbid()
+  checks==+1
+  EXEC.Permit()
+
+RETURN
+
+; Each incarnation owns its endpoint. Reuse both request storage and Task slots.
+PROC Client()
+  BYTE round
+  INT error
+
+  LET port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  LET request=TIMER.TimerRequest POINTER(EXEC.CreateIORequest(port,
+      SIZEOF(TIMER.TimerRequest)))
+  Require(request<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"timer.device"),TIMER.UNIT_VBLANK,
+      @request.tr_Request,0)=0)
+  request.tr_Request.io_Command=TIMER.TR_ADDREQUEST
+  FOR round=0 TO 11 DO
+    request.seconds=0
+    request.microseconds=0
+    EXEC.SendIO(@request.tr_Request)
+    IF round MOD 3<>0 THEN
+      EXEC.Forbid()
+      ; Native busy wait: no Exec call and no borrowed compiler scratch.
+      ; Mode 1 first proves arbitrary I=1 Task frames defer completion.
+      HEAPAPIPROBE.Fill(BYTE POINTER(request),LONGCARD(round MOD 3-1),0)
+      Require(request.tr_Request.io_Message.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+      EXEC.Permit()
+    FI
+
+    EXEC.AbortIO(@request.tr_Request)
+    error=EXEC.WaitIO(@request.tr_Request)
+    Require(error=0 OR error=EXEC.IOERR_ABORTED)
+    EXEC.Forbid()
+    IF error=0 THEN
+      expired==+1
+    ELSE
+      aborted==+1
+    FI
+    EXEC.Permit()
+
+    EXEC.AbortIO(@request.tr_Request)
+    Require(EXEC.GetMsg(port)=NULL)
+  OD
+
+  EXEC.CloseDevice(@request.tr_Request)
+  EXEC.DeleteIORequest(@request.tr_Request)
+  EXEC.DeleteMsgPort(port)
+  EXEC.Forbid()
+  completed==+1
+  EXEC.Permit()
+
+RETURN
+
+PROC Main()
+  BYTE round
+  CARD index
+
+  FOR round=0 TO 2 DO
+    BEGIN
+      LET storage=BYTE POINTER(@worker)
+      FOR index=0 TO EXEC.TASK_SIZE-1 DO
+        storage(index)=0
+      OD
+    END
+
+    worker.tc_Node.ln_Type=EXEC.NT_TASK
+    worker.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(1))
+    worker.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(1))
+    worker.tc_SPReg=worker.tc_SPUpper-SIZE(2)
+    EXECLISTS.NewList(@worker.tc_MemEntry)
+    Require(EXEC.AddTask(@worker,@Client,missing)=@worker)
+    Client()
+    WHILE worker.tc_State<>EXEC.TS_REMOVED DO
+      EXEC.Yield()
+    OD
+  OD
+
+  Require(completed=6 AND expired>=48 AND aborted>0)
+
+RETURN
+ENDMODULE

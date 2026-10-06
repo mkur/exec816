@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "state_offset": 22528,
+  "state_bytes": 256,
+  "code_offset": 24576,
+  "code_reserved_bytes": 8192,
+  "source_capacity": 1,
+  "service_budget": 2,
+  "fields": {
+    "ACTIVE": 0,
+    "PORT_BUSY": 1,
+    "ENABLED": 2,
+    "PENDING": 4,
+    "RUNNING": 6,
+    "BLOCKED": 8,
+    "BUDGET": 10,
+    "RESUME": 16
+  },
+  "resume_stride": 4,
+  "sources": {
+    "TIMER": 0
+  },
+  "test_source_capacity": 1,
+  "test_sources": {
+    "PROBE": 1
+  }
+}

@@ -76,3 +76,27 @@ class ConsoleTurnProfile(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'ownership'):
             analyze_events([event(0, 20, dp=0x1200), event(1, 10),
                             event(2, 10)], DEFINITION)
+
+    def test_explicit_idle_window_still_validates_the_complete_trace(self):
+        events = [event(0, 20), event(1, 10), event(2, 10),
+                  event(3, 20, dp=0x1200), event(100, 20), event(101, 10),
+                  event(102, 60)]
+        with self.assertRaisesRegex(RuntimeError, 'No complete worker turns'):
+            analyze_events(events, DEFINITION, (10, 90))
+        result = analyze_events(events, DEFINITION, (10, 90), allow_empty_window=True)
+        self.assertEqual(result['complete_turns'], 0)
+        self.assertEqual(result['observed_turn_entries'], 0)
+        self.assertEqual(result['window_cpu']['charged_cpu_ms'], 0)
+        self.assertEqual(result['routines'], {})
+        with self.assertRaisesRegex(RuntimeError, 'Missing unique console worker'):
+            analyze_events(events[3:5], DEFINITION, (10, 90), allow_empty_window=True)
+
+    def test_caller_intervals_use_their_own_cpu_ownership(self):
+        events = [event(0, 20), event(1, 10), event(2, 20, dp=0x1200),
+                  event(12, 20), event(21, 10), event(22, 60)]
+        result = analyze_events(events, DEFINITION, intervals=[
+            dict(dp=0x1200, start=1, end=21)])
+        row = result['measured_intervals'][0]
+        self.assertAlmostEqual(row['charged_cpu_ms'], 10/BASE_HZ*1000)
+        self.assertAlmostEqual(row['off_cpu_ms'], 10/BASE_HZ*1000)
+        self.assertEqual(row['interrupt_ms'], 0)

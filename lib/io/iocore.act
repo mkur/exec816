@@ -8,16 +8,6 @@ USE HEAPCORE
 PUBLIC EXTERNAL LONGCARD FUNC OpenGateway(BYTE POINTER name LONGCARD unit
     EXEC.IORequest POINTER request LONGCARD flags)
 
-PUBLIC EXTERNAL LONGCARD FUNC CloseGateway(EXEC.IORequest POINTER request)
-
-PUBLIC EXTERNAL LONGCARD FUNC BeginGateway(EXEC.IORequest POINTER request)
-
-PUBLIC EXTERNAL LONGCARD FUNC SendGateway(EXEC.IORequest POINTER request)
-
-PUBLIC EXTERNAL LONGCARD FUNC StartGateway(EXEC.IORequest POINTER request)
-
-PUBLIC EXTERNAL LONGCARD FUNC AbortGateway(EXEC.IORequest POINTER request)
-
 ; Serialize resident-device admission and preserve its public error result.
 PUBLIC INT FUNC OpenDevice(BYTE POINTER name LONGCARD unit EXEC.IORequest
     POINTER request LONGCARD flags)
@@ -43,63 +33,42 @@ RETURN(error)
 
 ; Release a device binding only after request ownership permits closing it.
 PUBLIC PROC CloseDevice(EXEC.IORequest POINTER request)
-  LONGCARD route
 
   EXEC.Forbid()
-  route=CloseGateway(request)
-  IF (route & LONGCARD(IORESIDENTMETA.TAG))<>0 THEN
-    IF IORESIDENT.Bound(CARD(route),request)=0 THEN
-      HEAPCORE.Abort(4)
-    FI
-
-    IORESIDENT.Close(CARD(route),request)
+  IF request.io_Device<>NULL THEN
+    IORESIDENT.Close(request)
   FI
 
   EXEC.Permit()
 
 RETURN
 
-; Route a validated request to its resident device implementation.
+; Prepare and submit through the established binding on the caller's stack.
 PUBLIC LONGCARD FUNC Submit(EXEC.IORequest POINTER request BYTE mode)
-  LONGCARD route,result
+  LONGCARD result
   CARD error
 
   EXEC.Forbid()
-  IF mode=0 THEN
-    route=BeginGateway(request)
-  ELSEIF mode=1 THEN
-    route=SendGateway(request)
-  ELSE
-    route=StartGateway(request)
+  IF mode=1 THEN
+    request.io_Flags=0
+  ELSEIF mode=2 THEN
+    request.io_Flags=EXEC.IOF_QUICK
   FI
 
-  result=route
-  IF (route & LONGCARD(IORESIDENTMETA.TAG))<>0 THEN
-    IF IORESIDENT.Bound(CARD(route),request)=0 THEN
-      HEAPCORE.Abort(4)
-    FI
-
-    IF mode=1 THEN
-      request.io_Flags=0
-    ELSEIF mode=2 THEN
-      request.io_Flags=EXEC.IOF_QUICK
-    FI
-
-    request.io_Error=0
-    request.io_Message.mn_Node.ln_Type=EXEC.NT_MESSAGE
-    IORESIDENT.BeginIO(CARD(route),request)
-    result=LONGCARD($10000)
-    ; Only DoIO reads back: its checked reply owner is this Task, still under
-    ; exclusion. Nonblocking send/begin never touch a published request again.
-    IF mode=2 THEN
-      IF (request.io_Flags & EXEC.IOF_QUICK)<>0 THEN
-        error=CARD(request.io_Error)
-        IF error>=128 THEN
-          error=error OR $ff00
-        FI
-
-        result=LONGCARD(error)
+  request.io_Error=0
+  request.io_Message.mn_Node.ln_Type=EXEC.NT_MESSAGE
+  IORESIDENT.BeginIO(request)
+  result=LONGCARD($10000)
+  ; DoIO owns its reply path and remains under exclusion. Nonblocking callers
+  ; never touch the request again after publishing it to the driver.
+  IF mode=2 THEN
+    IF (request.io_Flags & EXEC.IOF_QUICK)<>0 THEN
+      error=CARD(request.io_Error)
+      IF error>=128 THEN
+        error=error OR $ff00
       FI
+
+      result=LONGCARD(error)
     FI
   FI
 
@@ -125,18 +94,9 @@ RETURN
 
 ; Ask the bound resident to cancel under the request ownership exclusion.
 PUBLIC PROC AbortIO(EXEC.IORequest POINTER request)
-  LONGCARD route
 
   EXEC.Forbid()
-  route=AbortGateway(request)
-  IF (route & LONGCARD(IORESIDENTMETA.TAG))<>0 THEN
-    IF IORESIDENT.Bound(CARD(route),request)=0 THEN
-      HEAPCORE.Abort(4)
-    FI
-
-    IORESIDENT.AbortIO(CARD(route),request)
-  FI
-
+  IORESIDENT.AbortIO(request)
   EXEC.Permit()
 
 RETURN
@@ -181,6 +141,15 @@ PUBLIC PROC DeleteIORequest(EXEC.IORequest POINTER request)
   EXEC.FreeMem(BYTE POINTER(request),LONGCARD(size))
 
 RETURN
+
+; Observe one published completion byte without collecting or changing signals.
+PUBLIC EXEC.IORequest POINTER FUNC CheckIO(EXEC.IORequest POINTER request)
+
+  IF request.io_Message.mn_Node.ln_Type=EXEC.NT_MESSAGE THEN
+    RETURN(NULL)
+  FI
+
+RETURN(request)
 
 PUBLIC EXTERNAL LONGCARD FUNC Collect(EXEC.IORequest POINTER request)
 

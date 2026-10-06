@@ -56,6 +56,73 @@ ExNext after a mutation. The next utility batch is `>>` and minimal EXECUTE.
 
 ## Follow-on capabilities
 
+The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
+using VBXE and preserving application source interfaces. The
+[XaAES study](plans/gem4xe/xaaes-study.md) recommends client/wait and window-redraw
+contracts followed by a two-client compatibility proof. Existing native desktop
+and widget milestones below are foundations, not full AES compatibility.
+The [AES layer](reference/aes.md) reuses the presenter for client registration,
+update/mouse locks and orderly exit. Copied messaging and event/timer waits run
+in the callers through public Exec services.
+Its [implementation slices](plans/gem4xe/aes-server-implementation-plan.md) use the implemented
+[timer.device](reference/timer.md) with ordinary Exec Wait and include
+a measured two-client foundation before GEM window redraw. Native
+[interrupt-context ReplyMsg](reference/ports.md#native-interrupt-reply), protected
+port transactions and controlled NMI continuations are implemented. The
+[IR0–IR5 execution record](history/interrupt-reply.md) includes real Action!/C
+timer adoption without a worker. Development checks cover the standard 57.6k
+loaded envelope. Close the open 125k transport refill timing gate before
+claiming that combination is supported; AES TD4 measurements remain separate.
+AS0–AS3b have development evidence for generated wire layouts, private C
+registration, messages, shared timer alarms and native GUI ownership gates.
+The AS4 proof runs two C clients beside the native desktop within the
+existing eight-Task budget. Functional checks pass; resolve the recorded relative
+latency regressions before accepting AS4/TD4. The
+[latency follow-up](development/aes-server-latency.json) records widget copying,
+focus damage, clock and presenter changes against the frozen limits. See the [execution record](history/aes-server.md)
+and [resident application guide](guides/aes-applications.md). GEM windows,
+`WM_REDRAW`, visible rectangles and independent VDI workstations follow.
+
+The proposed [hybrid AES and VDI model](plans/gem4xe/hybrid-aes-vdi-design.md)
+moves suitable operations, application messages and event waits into callers,
+retaining one GUI authority for window policy and input. Direct rendering needs
+explicit scene/display ownership and measured application stack capacity.
+Keep priority scheduling deferred until this execution model is measured.
+The [HY1–HY4 implementation plan](plans/gem4xe/hybrid-aes-implementation-plan.md)
+first refactors the existing AES profile: endpoint lifetime, caller-owned timers,
+atomic message/event migration and the integrated native GUI latency proof.
+[HY1](development/aes-hybrid-hy1.json) implements shared endpoint lifetime and
+passes development checks. [HY2](development/aes-hybrid-hy2.json) moves standalone
+timer waits into callers and passes PAL/NTSC development checks.
+[HY3](development/aes-hybrid-hy3.json) moves messaging and combined waits into
+callers and removes the presenter event engine.
+[HY4](development/aes-hybrid-hy4.json) records the integrated proof, reduced clock
+query work and refreshed OF816 desktop bundle. Functional checks pass; active
+clients still exceed the unchanged native GUI latency limits. HY4 and the
+AS4/TD4 successor performance gate remain open. The
+[latency diagnostics](guides/aes-latency-diagnostics.md) now separate caller
+device-I/O CPU, presenter scheduling delay and equal offered load;
+[measurements](development/aes-hybrid-diagnostics.json) retain the failed gate.
+The [timer I/O follow-up](history/aes-hybrid.md#hy4-timer-device-call-costs)
+reduces handle-validation arithmetic and records bridge, driver and gateway
+costs. The [trusted-request slice](history/aes-hybrid.md#hy4-trusted-device-requests)
+then removes layered request and binding validation, retaining operational
+errors and synchronization. DoIO/SendIO medians fall; scheduling tails remain
+variable and GUI acceptance is still open.
+The [caller dispatch slice](history/aes-hybrid.md#hy4-caller-device-dispatch)
+removes the established-device routing gateway; DoIO/SendIO medians fall to
+0.394/1.115 ms with unchanged memory reservations and public API. Development
+checks pass, while scheduling tails and the GUI acceptance gate remain open.
+The [I/O latency plan](plans/io-latency-implementation-plan.md) follows with
+caller-local CheckIO (IL1: 0.111 ms median) and removal of redundant timer
+exit polling (IL2: SendIO 0.644 ms median). The
+[IL3 rerun](development/io-latency-il3.json) passes functional checks but retains
+18 failed rows across frozen and matched GUI comparisons. Loaded scroll/disk
+button consumption improves over the previous HY4 record; idle-load panel and
+pointer-button tails worsen. HY4 remains open.
+Additional local GEM calls and
+direct VDI drawing follow their own coverage gates.
+
 The **first desktop on Exec816** has development evidence. The
 [design note](plans/gem4xe/desktop-design.md) proposes a desktop background,
 ST mouse pointer and one framed, movable shell window, followed by a second

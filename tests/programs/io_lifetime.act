@@ -6,8 +6,10 @@ CARD checks
 EXEC.MsgPort POINTER port
 EXEC.IORequest POINTER req,other
 EXEC.IOStdReq static
-ADDRESS ARRAY blocks(16)
-LONGCARD ARRAY sizes(16)
+; Bank-contained exhaustion may visit every bank in the current 4 MiB map.
+CONST BLOCK_CAPACITY=64
+ADDRESS ARRAY blocks(BLOCK_CAPACITY)
+LONGCARD ARRAY sizes(BLOCK_CAPACITY)
 LONGCARD before,signals
 
 INCLUDE "io-names.inc"
@@ -62,6 +64,10 @@ PROC Exhaustion()
   size=EXEC.AvailMem(EXEC.MEMF_LARGEST)
   block=EXEC.AllocMem(size,0)
   WHILE block<>BYTE POINTER(0) DO
+    IF count>=BLOCK_CAPACITY THEN
+      HEAPCORE.Abort($fefd)
+    FI
+
     blocks(count)=ADDRESS(block)
     sizes(count)=size
     count==+1

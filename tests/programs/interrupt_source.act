@@ -1,0 +1,76 @@
+MODULE INTERRUPTSOURCE
+USE EXEC
+USE EXECLISTS
+USE HEAPCORE
+USE HEAPAPIPROBE
+INCLUDE "../../lib/exec/exec-abi.inc"
+CONST MODE=0
+
+EXEC.MsgPort port
+EXEC.Message item
+EXEC.TaskLease lease
+CARD checks
+VOLATILE BYTE nmien=$d40e
+VOLATILE CARD ticks=E816_VBI_COUNT
+CARD atReturn
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE round,ignored
+  LONGCARD bits
+
+  LET self=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(31)=31)
+  Require(EXEC.RetainTask(self,@lease)=1)
+  port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  port.mp_Flags=EXEC.PA_SIGNAL
+  port.mp_SigBit=31
+  port.mp_SigTask=self
+  EXECLISTS.NewList(@port.mp_MsgList)
+  item.mn_ReplyPort=@port
+  item.mn_Length=SIZEOF(EXEC.Message)
+  FOR round=0 TO 1 DO
+    item.mn_Node.ln_Type=EXEC.NT_MESSAGE
+    bits=EXEC.SetSignal(0,LONGCARD($80000000))
+    IF MODE=4 THEN
+      EXEC.Forbid()
+    FI
+    HEAPAPIPROBE.Fill(BYTE POINTER(@item),0,0)
+    nmien=$40
+    EXEC.Poll()
+    IF MODE=1 OR MODE=2 OR MODE=3 THEN
+      Require(item.mn_Node.ln_Type=EXEC.NT_MESSAGE)
+      Require(EXEC.GetMsg(@port)=NULL)
+      HEAPAPIPROBE.Fill(BYTE POINTER(@item),1,0)
+      EXEC.Poll()
+    FI
+
+    IF MODE=4 THEN
+      Require(item.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+      EXEC.Permit()
+    FI
+
+    bits=EXEC.Wait(LONGCARD($80000000))
+    atReturn=ticks
+    Require(bits=LONGCARD($80000000))
+    Require(EXEC.GetMsg(@port)=@item)
+    Require(EXEC.GetMsg(@port)=NULL)
+    HEAPAPIPROBE.Fill(NULL,2,0)
+  OD
+
+  nmien=$40
+  ignored=EXEC.ReleaseTask(@lease)
+  Require(ignored=1)
+  EXEC.FreeSignal(31)
+
+RETURN
+ENDMODULE

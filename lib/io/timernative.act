@@ -1,0 +1,9 @@
+; Driver-private native bridges; no public kernel selector or timer Task.
+MODULE TIMERNATIVE
+PUBLIC EXTERNAL PROC Enter()
+; Release after publishing the queue. The enclosing IOCORE Permit services work,
+; including under nested Forbid; callers must retain that return boundary.
+PUBLIC EXTERNAL PROC Leave()
+PUBLIC EXTERNAL BYTE FUNC Snapshot(BYTE POINTER destination)
+PUBLIC EXTERNAL PROC Enable(BYTE enabled)
+ENDMODULE

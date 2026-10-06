@@ -39,10 +39,26 @@ assuming work is pending. Current behavior belongs in the
 - [Loader and bank/region manager implementation plan](loader-bank-manager-plan.md)
 - [Memory allocation implementation plan](memory-allocation-implementation-plan.md)
 - [Messages and ports implementation plan](messages-ports-implementation-plan.md)
+- [ReplyMsg from interrupt context](interrupt-reply-design.md): implemented native
+  reply entry, shared queue transactions and controlled NMI continuations;
+  [IR0–IR5 implementation plan](interrupt-reply-implementation-plan.md) covers
+  the generic foundation and timer adoption gate. Development checks pass at
+  nominal 57.6k; the 125k transport performance gate remains open.
 - [Signals and Wait implementation plan](signals-wait-implementation-plan.md)
 
 ## Device I/O and SIO
 
+- [Device I/O and GUI latency](io-latency-implementation-plan.md): caller-local
+  CheckIO, timer exit/poll reduction and the original HY4 GUI comparisons,
+  implemented in IL1–IL3. API costs fall; the GUI latency gate remains open.
+- [Caller device dispatch](caller-device-dispatch-implementation-plan.md):
+  implemented established resident dispatch in the caller, preserving public
+  I/O semantics. [Measurements](../history/aes-hybrid.md#hy4-caller-device-dispatch)
+  record 0.394/1.115 ms DoIO/SendIO medians with variable scheduling tails.
+- [timer.device design](timer-device-design.md): implemented asynchronous VBI delays,
+  monotonic deadlines, cancellation and normal Exec I/O replies. Reuses ordinary
+  Wait without a worker. TD4/AES integration follows the
+  [development record](../history/interrupt-reply.md).
 - [Queued device I/O and SIO implementation plan](device-io-sio-implementation-plan.md)
 - [SIO driver boundary implementation plan](sio-driver-boundary-implementation-plan.md)
 
@@ -182,6 +198,23 @@ assuming work is pending. Current behavior belongs in the
   VBXE-only integration with expandable upper RAM, bank-zero and hardware
   constraints, and proposed executable slices. The
   [earlier analysis](gem4xe/README.md) is preserved.
+- [XaAES study for the GEM desktop](gem4xe/xaaes-study.md): pinned source analysis
+  of multitasking AES, client waits, update locks, redraws, callbacks and cleanup;
+  recommends GEM source compatibility over Exec services and a two-client proof.
+- [AES server layer design](gem4xe/aes-server-design.md): proposed GEM bindings,
+  bounded messages, pending events, update/mouse locks and retirement in the
+  existing presenter; shared-alarm integration with the implemented timer.device,
+  AS0–AS4 proof slices and pending TD4 GUI latency measurements.
+- [AES server implementation plan](gem4xe/aes-server-implementation-plan.md):
+  executable AS0–AS4 slices for C bindings, presenter admission, messages,
+  shared timer alarms, GUI locks and the two-client latency/lifecycle proof.
+- [Hybrid AES and VDI design](gem4xe/hybrid-aes-vdi-design.md): proposed caller-context
+  operations and event waits, Exec message delivery, retained GUI coordination
+  and a separate ownership/stack gate for direct drawing. Priorities stay inactive.
+- [Hybrid AES implementation plan](gem4xe/hybrid-aes-implementation-plan.md):
+  proposed HY1–HY4 commits for shared endpoint lifetime, caller-owned timers,
+  atomic message/event migration and native GUI/latency validation. Keeps
+  registration and GUI locks in the presenter.
 - [Command arguments implementation](command-arguments-implementation-plan.md)
 - [Command Main return-value implementation plan](command-main-implementation-plan.md)
 - [CSTRING module implementation plan](cstring-implementation-plan.md)

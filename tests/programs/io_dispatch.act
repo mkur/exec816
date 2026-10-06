@@ -1,0 +1,82 @@
+MODULE IODISPATCH
+USE EXEC
+USE HEAPCORE
+
+CARD checks
+INCLUDE "io-names.inc"
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fe00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise caller dispatch, signed quick results and inherited exclusion.
+PROC Main()
+  LET before=EXEC.AvailMem(0)
+  LET self=EXEC.FindTask(NULL)
+  LET signals=self.tc_SigAlloc
+  LET port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  LET request=EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE)
+  Require(request<>NULL)
+  Require(EXEC.OpenDevice(immediateName,0,request,0)=0)
+
+  EXEC.Forbid()
+  LET depth=self.tc_TDNestCnt
+  request.io_Command=EXEC.CMD_RESET
+  Require(EXEC.DoIO(request)=0)
+  Require(request.io_Flags=EXEC.IOF_QUICK
+      AND request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  Require(EXEC.GetMsg(port)=NULL)
+  request.io_Command=EXEC.CMD_INVALID
+  Require(EXEC.DoIO(request)=EXEC.IOERR_NOCMD)
+  Require(request.io_Error=BYTE(EXEC.IOERR_NOCMD))
+
+  request.io_Command=EXEC.CMD_RESET
+  request.io_Flags=$81
+  EXEC.BeginIO(request)
+  Require(request.io_Flags=$81
+      AND request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  Require(EXEC.CheckIO(request)=request)
+  request.io_Flags=$ff
+  EXEC.SendIO(request)
+  Require(request.io_Flags=0 AND request.io_Error=0
+      AND request.io_Message.mn_Node.ln_Type=EXEC.NT_REPLYMSG)
+  Require(EXEC.CheckIO(request)=request)
+  Require(EXEC.CheckIO(request)=request)
+  Require(EXEC.WaitIO(request)=0)
+  Require(EXEC.CheckIO(request)=request)
+  Require(EXEC.GetMsg(port)=NULL)
+  EXEC.AbortIO(request)
+  Require(self.tc_TDNestCnt=depth)
+  EXEC.Permit()
+
+  EXEC.CloseDevice(request)
+  Require(request.io_Device=NULL AND request.io_Unit=NULL)
+  EXEC.CloseDevice(request)
+
+  ; The queued fixture still uses private kernel entries, with the same prep.
+  Require(EXEC.OpenDevice(queuedName,0,request,0)=0)
+  request.io_Command=EXEC.CMD_RESET
+  Require(EXEC.DoIO(request)=0)
+  Require(request.io_Flags=EXEC.IOF_QUICK
+      AND request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  Require(EXEC.GetMsg(port)=NULL)
+  request.io_Command=EXEC.CMD_INVALID
+  Require(EXEC.DoIO(request)=EXEC.IOERR_NOCMD)
+  EXEC.AbortIO(request)
+  EXEC.CloseDevice(request)
+  Require(request.io_Device=NULL AND request.io_Unit=NULL)
+
+  EXEC.DeleteIORequest(request)
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=before)
+  Require(self.tc_SigAlloc=signals)
+
+RETURN
+ENDMODULE

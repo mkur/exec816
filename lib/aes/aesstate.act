@@ -1,0 +1,77 @@
+; One optional AES endpoint; its controller retains storage through shutdown.
+MODULE AESSTATE
+USE EXEC
+USE AESTYPES
+USE INPUT
+
+PUBLIC CONST POINTER_EVENTS=16
+
+PUBLIC TYPE Client=[
+  LONGCARD id
+  LONGCARD sequence
+  INT gemId
+  EXEC.TaskLease lease
+  AESTYPES.Request POINTER binding
+  EXEC.MsgPort POINTER replies
+  AESTYPES.Endpoint POINTER endpoint
+  AESTYPES.Request POINTER pending
+]
+
+PUBLIC TYPE Service=[
+  EXEC.MsgPort port
+  EXEC.Task POINTER controller
+  EXEC.Task POINTER owner
+  LONGCARD mask
+  CARD error
+  BYTE live
+  BYTE started
+  LONGCARD nextClient
+  CARD nextGem
+  AESTYPES.Directory directory
+  Client ARRAY clients(AESTYPES.CLIENTS)
+  BYTE count
+  LONGCARD updateOwner,mouseOwner
+  CARD updates,mouseHolds
+  BYTE ARRAY lockOrder(AESTYPES.CLIENTS)
+  BYTE lockCount
+  INPUT.Event ARRAY pointerEvents(POINTER_EVENTS)
+  BYTE pointerHead,pointerCount,pointerLost
+]
+
+Service POINTER boundService
+
+PUBLIC Service POINTER FUNC Get()
+
+RETURN(boundService)
+
+; Startup before presenter admission, or retirement after its last use.
+PUBLIC PROC Bind(Service POINTER value)
+
+  boundService=value
+
+RETURN
+
+; Callers detach every service reference before this ownership transfer.
+PUBLIC PROC Reply(AESTYPES.Request POINTER request CARD status)
+
+  request.status=status
+  EXEC.ReplyMsg(@request.message)
+
+RETURN
+
+PUBLIC Client POINTER FUNC Find(Service POINTER value LONGCARD id)
+  BYTE index
+
+  IF id=0 THEN
+    RETURN(NULL)
+  FI
+
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    IF value.clients(index).id=id THEN
+      RETURN(@value.clients(index))
+    FI
+  OD
+
+RETURN(NULL)
+
+ENDMODULE

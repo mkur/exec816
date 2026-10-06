@@ -54,6 +54,7 @@ general_domains:
     sta E816_KERNEL_DP+A816_DP_DOMAIN_KIND_OFFSET
     rep #$20
 general_domains_done:
+    jsl timer_device_init
     rts
 
 .segment "STUBS"
@@ -168,6 +169,9 @@ general_finalizer_start:
     .include "signal-atomic.s"
     .include "heap.s"
     .include "ports.s"
+.include "ports-atomic.s"
+.include "interrupt-work.s"
+.include "timer-device.s"
     .include "fast-services.s"
     .include "memory.s"
     .include "io.s"

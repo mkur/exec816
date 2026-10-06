@@ -1,0 +1,45 @@
+; Caller-local timer records and conversion. Device operations use EXEC.
+MODULE TIMER
+USE EXEC
+INCLUDE "timer-types.inc"
+
+; Convert a GEM millisecond interval once, using a previously read clock.
+; The request must be caller-owned. Preserve it if the deadline would overflow.
+PUBLIC BYTE FUNC Deadline(TimerClockRequest POINTER clock LONGCARD milliseconds)
+  LONGCARD whole,fraction,low,high,delta
+
+  IF clock.ticks_per_second<>50 AND clock.ticks_per_second<>60 THEN
+    RETURN(0)
+  FI
+
+  ; Reduce the rational rate before converting. Derive the remainder from
+  ; the quotient so the 65816 does not repeat a software division. Splitting
+  ; NTSC into whole seconds keeps every intermediate within 32 bits.
+  IF clock.ticks_per_second=50 THEN
+    whole=milliseconds/20
+    fraction=milliseconds-whole*20
+    delta=whole+1
+    IF fraction<>0 THEN
+      delta==+1
+    FI
+  ELSE
+    whole=milliseconds/1000
+    fraction=milliseconds-whole*1000
+    delta=whole*60+(fraction*3+49)/50+1
+  FI
+  low=clock.ticks_lo+delta
+  high=clock.ticks_hi
+  IF low<clock.ticks_lo THEN
+    IF high=LONGCARD($ffffffff) THEN
+      RETURN(0)
+    FI
+
+    high==+1
+  FI
+
+  clock.ticks_hi=high
+  clock.ticks_lo=low
+
+RETURN(1)
+
+ENDMODULE

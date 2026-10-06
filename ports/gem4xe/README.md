@@ -25,6 +25,12 @@ The selected notices include COPYING, COPYING.LIB, font provenance and the
 upstream licence note; preserve these with imported source and distributions.
 Exec's MIT interface grant does not relicense donor code.
 
+[aes-binding-inputs.json](aes-binding-inputs.json) separately inventories the
+donor application signatures, parameter counts and globals for the
+[AES server plan](../../docs/plans/gem4xe/aes-server-implementation-plan.md).
+These are reference inputs for new native bindings; the widget extraction and
+its upstream licensing remain independent.
+
 Using the pinned local compiler, firmware and `build/shell-paced-bridge`, run:
 
 ```sh

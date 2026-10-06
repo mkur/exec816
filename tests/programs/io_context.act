@@ -3,8 +3,10 @@ USE EXEC
 EXEC.IORequest item
 CARD ARRAY checks(8)
 
-; Exercise I/O admission from the required execution context.
+; Keep space for the native context overlay even when Main is optimized.
 PROC Main()
+
+  checks(0)=1
 
 RETURN
 

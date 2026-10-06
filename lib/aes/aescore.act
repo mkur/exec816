@@ -1,0 +1,382 @@
+; Ordinary-message admission. Only the existing presenter executes policy.
+MODULE AESCORE
+USE EXEC
+USE EXECLISTS
+USE AESTYPES
+USE AESSTATE
+USE TASKMEMORY
+USE A816MEMORY
+USE HEAPCORE
+USE AESLOCKS
+
+PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
+
+  IF service=NULL OR bit>=32 OR service.live<>0 OR service.started<>0 THEN
+    RETURN(0)
+  FI
+
+  service.owner=EXEC.FindTask(NULL)
+  service.mask=LONGCARD(1) LSH bit
+  service.port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+  service.port.mp_Flags=EXEC.PA_SIGNAL
+  service.port.mp_SigBit=bit
+  service.port.mp_SigTask=service.owner
+  EXECLISTS.NewList(@service.port.mp_MsgList)
+  service.directory.owner=service.owner
+  service.directory.mask=service.mask
+  service.error=AESTYPES.OK
+  service.nextClient=1
+  service.nextGem=1
+  service.started=1
+  ; AESHOST publishes after endpoint initialization has settled.
+
+RETURN(1)
+
+; Admission audits writable upper storage. This is a cooperative shared-memory
+; ownership contract, not protection against an intentionally forged pointer.
+BYTE FUNC Storage(BYTE POINTER value CARD bytes)
+
+  LET location=ADDRESS(value)
+  IF location<$10000 OR location>ADDRESS($ffffff)-SIZE(bytes-1) THEN
+    RETURN(0)
+  FI
+
+  IF TASKMEMORY.Writable(location,SIZE(bytes))<>0 THEN
+    RETURN(1)
+  FI
+
+RETURN((EXEC.TypeOfMem(value) & EXEC.MEMF_PUBLIC)<>0
+    AND (EXEC.TypeOfMem(BYTE POINTER(location+SIZE(bytes-1)))
+        & EXEC.MEMF_PUBLIC)<>0)
+
+PROC Globals(AESTYPES.Request POINTER request INT id)
+  BYTE index
+
+  FOR index=0 TO AESTYPES.GLOBAL_WORDS-1 DO
+    request.global(index)=0
+  OD
+
+  ; Version zero deliberately does not advertise complete AES 4.x behavior.
+  request.global(1)=AESTYPES.CLIENTS
+  request.global(2)=id
+  request.global(10)=4
+
+RETURN
+
+CARD FUNC Register(AESSTATE.Service POINTER service
+    AESTYPES.Request POINTER request)
+  BYTE index,slot
+
+  request.intout(0)=-1
+  IF service.live<>1 THEN
+    RETURN(AESTYPES.BUSY)
+  FI
+
+  IF request.owner=NULL OR request.binding<>BYTE POINTER(request)
+      OR request.client<>0 OR request.sequence<>1
+      OR Storage(BYTE POINTER(request),AESTYPES.REQUEST_SIZE)=0
+      OR Storage(BYTE POINTER(request.message.mn_ReplyPort),
+          EXEC.MSGPORT_SIZE)=0
+      OR Storage(BYTE POINTER(request.receiving),EXEC.MSGPORT_SIZE)=0
+      OR Storage(BYTE POINTER(request.records),
+          AESTYPES.DELIVERY_SIZE*AESTYPES.QUEUE_DEPTH)=0 THEN
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  slot=AESTYPES.CLIENTS
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      IF client.binding=request OR client.lease.task=request.owner THEN
+        RETURN(AESTYPES.BUSY)
+      FI
+
+      IF client.id=0 THEN
+        slot=index
+      FI
+    END
+  OD
+
+  IF slot=AESTYPES.CLIENTS THEN
+    RETURN(AESTYPES.RESOURCE)
+  FI
+
+  IF service.nextClient=0 OR service.nextGem=0 OR service.nextGem>$7fff THEN
+    RETURN(AESTYPES.OVERFLOW)
+  FI
+
+  LET client=@service.clients(slot)
+  IF EXEC.RetainTask(request.owner,@client.lease)=0 THEN
+    RETURN(AESTYPES.IDENTITY)
+  FI
+
+  LET port=request.message.mn_ReplyPort
+  IF port.mp_Node.ln_Type<>EXEC.NT_MSGPORT OR port.mp_Flags<>EXEC.PA_SIGNAL
+      OR port.mp_SigTask<>request.owner OR port.mp_SigBit>=32 THEN
+    BEGIN
+      LET released=EXEC.ReleaseTask(@client.lease)
+      IF released=0 THEN
+        HEAPCORE.Abort($fca2)
+      FI
+    END
+
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  IF (request.owner.tc_SigAlloc & (LONGCARD(1) LSH port.mp_SigBit))=0 THEN
+    BEGIN
+      LET released=EXEC.ReleaseTask(@client.lease)
+      IF released=0 THEN
+        HEAPCORE.Abort($fca2)
+      FI
+    END
+
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  LET receiving=request.receiving
+  IF receiving=port OR receiving.mp_Node.ln_Type<>EXEC.NT_MSGPORT
+      OR receiving.mp_Flags<>EXEC.PA_SIGNAL
+      OR receiving.mp_SigTask<>request.owner OR receiving.mp_SigBit>=32
+      OR (request.owner.tc_SigAlloc
+          & (LONGCARD(1) LSH receiving.mp_SigBit))=0
+      OR EXECLISTS.IsListEmpty(@receiving.mp_MsgList)=0 THEN
+    BEGIN
+      LET released=EXEC.ReleaseTask(@client.lease)
+      IF released=0 THEN
+        HEAPCORE.Abort($fca2)
+      FI
+    END
+
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  client.id=service.nextClient
+  client.gemId=INT(service.nextGem)
+  client.sequence=1
+  client.binding=request
+  client.replies=port
+  service.nextClient==+1
+  IF service.nextGem=$7fff THEN
+    service.nextGem=0
+  ELSE
+    service.nextGem==+1
+  FI
+
+  ; Every reader uses this short Task-side publication guard. IRQ/NMI code
+  ; never reads the directory; public Exec primitives protect port internals.
+  EXEC.Forbid()
+  client.endpoint=@service.directory.endpoints(slot)
+  LET endpoint=client.endpoint
+  endpoint.id=client.id
+  endpoint.gemId=client.gemId
+  endpoint.owner=request.owner
+  endpoint.port=receiving
+  endpoint.records=request.records
+  endpoint.holds=0
+  endpoint.freeRecords=$ffff
+  endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
+  request.directory=@service.directory
+  EXEC.Permit()
+  service.count==+1
+  request.client=client.id
+  request.intout(0)=client.gemId
+  Globals(request,client.gemId)
+
+RETURN(AESTYPES.OK)
+
+; The exit reply and lease retirement are indivisible to Tasks. No descriptor
+; access is permitted after Reply: the caller may collect and free it at once.
+PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
+    AESTYPES.Request POINTER request)
+
+  LET endpoint=client.endpoint
+  EXEC.Forbid()
+  endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  IF endpoint.holds<>0 THEN
+    client.pending=request
+    EXEC.Permit()
+    RETURN
+  FI
+
+  EXEC.Permit()
+  ; Admission is closed and every publisher has finished using the pool.
+  WHILE EXEC.GetMsg(endpoint.port)<>NULL DO
+  OD
+
+  EXEC.Forbid()
+  endpoint.state=AESTYPES.ENDPOINT_RETIRED
+  endpoint.port=NULL
+  endpoint.records=NULL
+  endpoint.owner=NULL
+  EXEC.Permit()
+  AESLOCKS.Retire(service,client)
+  client.binding=NULL
+  client.replies=NULL
+  request.client=0
+  request.global(2)=0
+  request.intout(0)=1
+  EXEC.Forbid()
+  AESSTATE.Reply(request,AESTYPES.OK)
+  IF EXEC.ReleaseTask(@client.lease)=0 THEN
+    HEAPCORE.Abort($fca2)
+  FI
+
+  A816MEMORY.Clear(BYTE POINTER(client),SIZEOF(AESSTATE.Client))
+  service.count==-1
+  EXEC.Permit()
+
+RETURN
+
+; Short descriptors get only their native header back, without output writes.
+PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
+  BYTE index
+  CARD status
+
+  IF request.message.mn_Length<>AESTYPES.REQUEST_SIZE THEN
+    EXEC.ReplyMsg(@request.message)
+    RETURN
+  FI
+
+  FOR index=0 TO AESTYPES.RPC_INTOUT_WORDS-1 DO
+    request.intout(index)=0
+  OD
+
+  IF request.operation=AESTYPES.OP_INIT THEN
+    request.intout(0)=-1
+  FI
+
+  IF request.version<>AESTYPES.VERSION
+      OR request.bytes<>AESTYPES.REQUEST_SIZE THEN
+    AESSTATE.Reply(request,AESTYPES.MALFORMED)
+    RETURN
+  FI
+
+  IF request.client=0 AND request.operation<>AESTYPES.OP_INIT
+      AND request.operation<>AESTYPES.OP_EXIT THEN
+    AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
+    RETURN
+  FI
+
+  IF request.operation=AESTYPES.OP_INIT AND request.client=0 THEN
+    status=Register(service,request)
+    AESSTATE.Reply(request,status)
+    RETURN
+  FI
+
+  LET client=AESSTATE.Find(service,request.client)
+  IF client=NULL THEN
+    AESSTATE.Reply(request,AESTYPES.IDENTITY)
+    RETURN
+  FI
+
+  IF client.binding<>request OR request.binding<>BYTE POINTER(request)
+      OR client.lease.task<>request.owner
+      OR client.replies<>request.message.mn_ReplyPort THEN
+    AESSTATE.Reply(request,AESTYPES.IDENTITY)
+    RETURN
+  FI
+
+  IF client.pending<>NULL THEN
+    AESSTATE.Reply(request,AESTYPES.BUSY)
+    RETURN
+  FI
+
+  IF request.sequence=0 OR client.sequence=$ffffffff
+      OR request.sequence<>client.sequence+LONGCARD(1) THEN
+    AESSTATE.Reply(request,AESTYPES.IDENTITY)
+    RETURN
+  FI
+
+  ; Reserve the last sequence for cooperative exit, so exhaustion cannot trap
+  ; a well-behaved client with an unreleaseable registration.
+  IF request.sequence=$ffffffff AND request.operation<>AESTYPES.OP_EXIT THEN
+    AESSTATE.Reply(request,AESTYPES.OVERFLOW)
+    RETURN
+  FI
+
+  client.sequence=request.sequence
+  IF AESTYPES.Rpc(request.operation)=0 THEN
+    AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
+    RETURN
+  FI
+
+  IF request.operation=AESTYPES.OP_EXIT THEN
+    Retire(service,client,request)
+    RETURN
+  FI
+
+  IF request.operation=AESTYPES.OP_INIT THEN
+    request.intout(0)=client.gemId
+    Globals(request,client.gemId)
+    AESSTATE.Reply(request,AESTYPES.OK)
+  ELSEIF request.operation=AESTYPES.OP_UPDATE THEN
+    status=AESLOCKS.Request(service,client,request)
+    IF status<>AESTYPES.PENDING THEN
+      AESSTATE.Reply(request,status)
+    FI
+  ELSE
+    AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
+  FI
+
+RETURN
+
+; Pending scans do not admit new calls or keep an empty wait runnable.
+PUBLIC PROC Wake(AESSTATE.Service POINTER service)
+  BYTE index
+
+  EXEC.Forbid()
+  service.directory.changed=0
+  EXEC.Permit()
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      LET endpoint=client.endpoint
+      IF endpoint<>NULL AND endpoint.state=AESTYPES.ENDPOINT_CLOSING
+          AND endpoint.holds=0 THEN
+        Retire(service,client,client.pending)
+      FI
+    END
+  OD
+
+
+RETURN
+
+; Budget counts every dequeued descriptor, including later pending calls.
+PUBLIC BYTE FUNC Pump(AESSTATE.Service POINTER service BYTE budget)
+  BYTE count
+  AESTYPES.Request POINTER request
+
+  count=0
+  WHILE count<budget AND count<4 DO
+    request=AESTYPES.Request POINTER(EXEC.GetMsg(@service.port))
+    IF request=NULL THEN
+      EXIT
+    FI
+
+    count==+1
+    Dispatch(service,request)
+  OD
+
+RETURN(count)
+
+PUBLIC BYTE FUNC Runnable(AESSTATE.Service POINTER service)
+
+RETURN(service.directory.changed<>0
+    OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0)
+
+PUBLIC BYTE FUNC Idle(AESSTATE.Service POINTER service)
+
+RETURN(service.count=0 AND Runnable(service)=0)
+
+PUBLIC BYTE FUNC Stop(AESSTATE.Service POINTER service)
+
+  IF Idle(service)=0 THEN
+    RETURN(0)
+  FI
+
+  service.live=0
+
+RETURN(1)
+
+ENDMODULE

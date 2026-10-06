@@ -4,6 +4,48 @@
 
 For the current comparison against GEM4XE 0.9.4 and implemented Exec816, read
 [GEM4XE as the GUI layer for Exec816](exec816-integration-assessment.md).
+The [XaAES study](xaaes-study.md) examines how to reach the confirmed target:
+a multitasking GEM-compatible GUI over Exec816, with minimal changes to rebuilt
+GEM applications. It recommends adapting GEM4XE with XaAES's client, event and
+ownership semantics as references; direct XaAES or G4A binary compatibility
+is separate work. This source study does not change the current native contracts.
+The [AES server design](aes-server-design.md) specifies the application layer:
+GEM bindings, client messages and waits, GUI locks and retirement in the existing
+presenter, with the implemented [timer.device](../../reference/timer.md), a
+concrete shared-alarm lifecycle and AS0–AS4 two-client proof slices. AES timer
+event semantics have passed AS2b development checks. AS4's integrated functional
+proof passes, while its measured relative latency gate remains open. Ordinary Exec Wait
+remains unchanged. The [implementation plan](aes-server-implementation-plan.md)
+breaks AS0–AS4 into executable commits, with code ownership, a shared intake
+budget, the two-client Task map and measured latency gates. AS0a now supplies the
+generated wire, private C contexts and baseline measurements; AS0b adds optional
+presenter admission with a shared intake budget. AS0c implements task-local
+[application registration](../../reference/aes.md) and cooperative retirement;
+AS1 adds copied FIFO messages and independent C message waits. AS2a implements
+the shared timer transport and its cancellation/collection lifecycle; AS2b adds
+GEM timer and combined-event waits with PAL/NTSC and raw/optimized C evidence.
+AS3a implements recursive lock arbitration and queued acquisitions; AS3b gates
+native painting and interaction while retaining deferred input. The
+[execution history](../../history/aes-server.md) and
+[C application guide](../../guides/aes-applications.md) track the integrated
+proof and current profile. The implemented
+[native interrupt ReplyMsg foundation](../../reference/ports.md#native-interrupt-reply)
+supports timer.device without another worker; ordinary Action!/C message calls
+remain Task-only.
+
+The [hybrid AES and VDI model](hybrid-aes-vdi-design.md) uses caller-context
+operations, direct application-message delivery and event waits, with one GUI
+authority for windows and input. Messaging and waits now run in their callers. Direct
+drawing requires a separate ownership and stack proof. Priorities remain
+inactive while this model is measured; the public GEM call profile is unchanged.
+The [hybrid AES implementation plan](hybrid-aes-implementation-plan.md) refactors
+the existing profile through HY1–HY4: endpoint lifetime, caller timers, an atomic
+message/event migration and the integrated latency proof. Direct drawing and
+additional GEM calls retain their separate ownership and coverage gates. HY1–HY3
+are implemented; HY4's integrated functional proof and demo refresh are recorded
+in the [hybrid history](../../history/aes-hybrid.md). Its native GUI latency
+acceptance remains open.
+
 The completed [minimal hosted VDI plan](minimal-vdi-implementation-plan.md)
 builds on the larger Task stacks. Its [current contract](../../reference/gem-vdi.md)
 defines the packet, display ownership and supported source boundary. The

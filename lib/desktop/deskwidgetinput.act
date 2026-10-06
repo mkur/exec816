@@ -10,6 +10,7 @@ USE DESKCORE
 USE DESKEVENTS
 USE DESKWIDGETS
 USE LAYERS
+USE AESLOCKS
 
 ; Immediately disarm routing. Repair retained press pixels only after painting.
 PUBLIC PROC Lost()
@@ -152,7 +153,7 @@ PUBLIC PROC Advance()
 
   LET service=DESKSTATE.Get()
   Observe()
-  IF service.scene.busy<>0 THEN
+  IF service.scene.busy<>0 OR AESLOCKS.MouseBlocked()<>0 THEN
     RETURN
   FI
 
@@ -202,7 +203,7 @@ PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
 
-RETURN(service.scene.busy=0 AND (service.widgetCount<>0
+RETURN(service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0 AND (service.widgetCount<>0
     OR service.widgetCancel<>0 OR service.widgetLoss<>DESKSTATE.LossEpoch()))
 
 ENDMODULE

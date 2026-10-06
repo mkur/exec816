@@ -21,16 +21,6 @@ PROC Context()
 
 RETURN
 
-; Recognize only live bindings to the enabled diagnostic device.
-PUBLIC BYTE FUNC Bound(EXEC.IORequest POINTER request)
-  Resident POINTER device
-
-  Context()
-  device=Resident POINTER(ADDRESS(IORESIDENTMETA.BASE))
-
-RETURN(IORESIDENTMETA.TEST_DEVICE<>0 AND request.io_Device=BYTE POINTER(device)
-    AND request.io_Unit=@device.unit AND device.opens<>0)
-
 ; Admit the diagnostic unit and return the signed public device error.
 PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD unit EXEC.IORequest
     POINTER request LONGCARD flags)

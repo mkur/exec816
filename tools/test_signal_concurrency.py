@@ -78,6 +78,15 @@ def markers_for(program):
     for name in ('fast_complete', 'fast_general'):
         if name in program['labels']:
             markers[name] = program['labels'][name]
+    if 'exec_reply_msg_native' in program['labels']:
+        markers['native_reply']=program['labels']['exec_reply_msg_native']
+        markers['native_reply_return']=program['labels']['exec_reply_msg_native_end']-1
+        markers['native_timer_work']=program['labels']['native_timer_work']
+        code=program['build']['memory']['native_interrupt_storage']['CODE_BASE']
+        payload=next(s['bytes'] for s in program['image']['segments'] if s['address']==code)
+        require(payload[-1]==0x6b,'Native code no longer ends at timer callback RTL')
+        markers['native_timer_return']=code+len(payload)-1
+        markers['task_rti']=program['labels']['restore_end']-1
     for name in ('tasks_forbid', 'tasks_permit', 'ports_get_msg'):
         markers[name] = program['labels'][name]
         markers[name+'_return'] = program['labels'][name+'_end']-1
@@ -120,16 +129,17 @@ def serial_timing(trace, count):
     expected = [i & 255 for i in range(count)]
     require([int(e[2]) for _, e in ready] == expected, 'Incorrect transmitted bytes')
     require([int(e[2]) for _, e in writes] == expected, 'Incorrect SEROUT bytes')
-    require(all(int(e[3]) == 14 for _, e in ready), 'Incorrect POKEY divisor')
+    period=int(ready[0][1][3]);deadline=period*10
+    require(period in (14,30) and all(int(e[3])==period for _,e in ready), 'Incorrect POKEY divisor')
     require(all(int(e[4]) == 0 for _, e in writes), 'SEROUT overwritten')
     idle = [t for t, e in trace if e[0] == 'idle']
-    end = ready[-1][0] + 140
+    end = ready[-1][0] + deadline
     require(idle and idle[-1] == end, 'Last byte did not finish')
     latency = [w[0]-r[0] for r, w in zip(ready, writes[1:])]
-    gaps = [b[0]-a[0]-140 for a, b in zip(ready, ready[1:])]
+    gaps = [b[0]-a[0]-deadline for a, b in zip(ready, ready[1:])]
     require(min(latency) >= 0 and min(gaps) >= 0, 'Nonmonotonic serial timestamps')
-    misses = sum(x >= 140 for x in latency)
-    timing = dict(target_baud=125000, actual_baud=BASE_HZ/14, deadline_us=140/BASE_HZ*1e6,
+    misses = sum(x >= deadline for x in latency)
+    timing = dict(target_baud=125000 if period==14 else 57600, actual_baud=BASE_HZ/period, deadline_us=deadline/BASE_HZ*1e6,
                   ready_to_refill=stats(latency), deadline_misses=misses,
                   gaps=sum(x > 0 for x in gaps), max_gap_us=max(gaps)/BASE_HZ*1e6,
                   verdict='pass' if misses == 0 and max(gaps) == 0 else 'fail',
@@ -153,6 +163,8 @@ def analyze(trace, program, markers, count, out):
                  if e[0] == 'cpu' and int(e[4], 16) == markers['SIGNALCONCURRENT.STREAMSTART'])
     timing, refills = serial_timing(trace[begin:], count)
     start, end = timing['start_tick'], timing['end_tick']
+    if program.get('timer_burst'):
+        timing['native_completion']=native_completion_timing(trace,program,markers,start,end)
     intervals = masked_intervals(trace, start, end)
     reverse = {pc: name for name, pc in markers.items()}
     calls = [(t, reverse[int(e[4], 16)]) for t, e in trace
@@ -196,6 +208,35 @@ def analyze(trace, program, markers, count, out):
     return timing
 
 
+def native_completion_timing(trace,program,markers,start,end):
+    """Separate native publication from the recipient's actual restore RTI.
+
+    All timer descriptors in this fixture reply to root. Samples include
+    interrupt interference; a runnable root need not have blocked on its alarm.
+    """
+    active={};reply=[];publication=[];callbacks=[];posted=[];resume=[]
+    timer={}
+    root=program['build']['memory']['task_pools'][0]
+    for tick,e in trace:
+        if e[0]!='cpu' or not start<=tick<=end:continue
+        pc=int(e[4],16);stack=int(e[8],16)
+        if pc==markers['native_reply']:active[stack]=tick
+        elif pc==markers['signal_post_return'] and active:
+            publication.append(tick-min(active.values())+.75)
+            posted.append(tick+.75)
+        elif pc==markers['native_reply_return'] and stack in active:
+            reply.append(tick-active.pop(stack)+.75)
+        elif pc==markers['native_timer_work']:timer[stack]=tick
+        elif pc==markers['native_timer_return'] and stack in timer:
+            callbacks.append(tick-timer.pop(stack)+.75)
+        elif pc==markers['task_rti'] and root['stack_base']<=stack<root['stack_base']+root['stack_bytes']:
+            resume.extend(tick-p for p in posted);posted=[]
+    require(len(reply)==len(publication)==len(resume)==16,'Incomplete native timer timing observations')
+    return dict(reply=stats(reply),reply_entry_to_signal=stats(publication),
+                signal_to_recipient_rti=stats(resume),callbacks=stats(callbacks),
+                scope='Elapsed time under serial/port load; root may already be runnable; not a worst-case hardware guarantee')
+
+
 def run_program(program, bridge_dir, rom, out, workload, count, observed):
     out.mkdir(parents=True, exist_ok=True)
     with emulator(bridge_dir.resolve(), rom.resolve(), out, pin=PIN) as bridge:
@@ -217,6 +258,9 @@ def run_program(program, bridge_dir, rom, out, workload, count, observed):
         runtime, _ = execute(bridge, program, before_run=before, timeout=600, frame_limit=30000)
         counters = {name: int.from_bytes(bytes(data(bridge, program['image'], name)), 'little')
                     for name in COUNTERS}
+        if program.get('timer_burst'):
+            counters['timerReplies']=data(bridge,program['image'],'timerReplies',True)[0]
+            require(counters['timerReplies']==16,'Missing simultaneous timer completions')
         require(counters['sent'] == count and counters['waits'] == 1, 'Block completion mismatch')
         require(data(bridge, program['image'], 'badResult') == [0]*4, 'Incorrect signal result')
         require(counters['background'] > 0, 'Root made no progress')
@@ -257,9 +301,12 @@ def main():
     parser.add_argument('--output', type=Path, default=ROOT/'build/signals-concurrency')
     parser.add_argument('--mode', choices=('raw', 'opt'), action='append')
     parser.add_argument('--workload', choices=WORKLOADS, action='append')
+    parser.add_argument('--divisor',type=int,choices=(0,8),default=0)
     parser.add_argument('--count', type=int, default=4096)
     parser.add_argument('--require-deadline', action='store_true')
+    parser.add_argument('--timer-burst', action='store_true',help='Expire sixteen real timer requests during the port workload')
     args = parser.parse_args()
+    require(not args.timer_burst or args.workload==['ports'],'Timer burst requires --workload ports')
     require(512 <= args.count <= 65535, 'Use 512..65535 bytes so kernel interference makes progress')
     out = args.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -284,8 +331,19 @@ def main():
         allocator_requests=[257,4097],clear_flags=['CLEAR'])
     try:
         for mode in args.mode or ('raw', 'opt'):
-            program = build(toolchain, ROOT/'tests/programs/signals_concurrent.act', out/mode/'program',
-                            tasks=True, optimize=mode == 'opt', irq_probe=8, pump_count=args.count)
+            source=ROOT/'tests/programs/signals_concurrent.act'
+            if args.timer_burst:
+                from library_paths import read_source
+                text=read_source(source).replace('USE EXEC\n','USE EXEC\nUSE TIMER\n')
+                text=text.replace('PROC StreamResume()',
+                    read_source(ROOT/'tests/programs/timer_concurrent.inc')+'\nPROC StreamResume()')
+                text=text.replace('  StreamStart()','  TimerPrepare(0)\n  StreamStart()')
+                text=text.replace('  AwaitRemoval(@worker)','  TimerFinish(0)\n  AwaitRemoval(@worker)')
+                source=out/'signals_concurrent.act';source.write_text(text)
+                (out/'producerprobe.act').write_bytes((ROOT/'tests/programs/producerprobe.act').read_bytes())
+            program = build(toolchain, source, out/mode/'program',
+                            tasks=True, optimize=mode == 'opt', irq_probe=8, pump_count=args.count,pump_divisor=args.divisor)
+            program['timer_burst']=args.timer_burst
             markers = markers_for(program)
             for workload in args.workload or ('mixed',):
                 case_out = out/(workload+'-'+mode)

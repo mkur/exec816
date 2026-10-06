@@ -1,0 +1,3288 @@
+{
+  "slice": "AS4 latency follow-up",
+  "date": "2026-10-06",
+  "status": "functional_pass_native_regression_closed_aes_gate_open",
+  "tier": "development",
+  "qualification": false,
+  "parent": "af23c66",
+  "earlier_slice_commits": [
+    "9d8a6ee",
+    "d7a2b0c"
+  ],
+  "presenter_slice": "Committed with this record; source hashes pin its implementation.",
+  "sources": {
+    "abi/widgets.json": "6e4fec616b3b61ea4f323c19028414317429ae7dd45b6861dde932cef4c3d155",
+    "c/include/exec/widget-types.h": "1109095f6412aee5f30412ad57c9acf64b25f251ccea8ab0784a729a989dbc68",
+    "lib/aes/aesevents.act": "b7b3198ccc513a2c004c9e082c322427767450be663a9640cafcd7105fe99360",
+    "lib/aes/aeshost.act": "5b4277e9a4efd524944ef50ba845bf3da925237ff1c24dd3b3da448ef6461058",
+    "lib/console/consoledriver.act": "c0ad18eeaafc4fff86c84ed7ed38933c19a6f4544072269945c4819e3e12d177",
+    "lib/desktop/deskapp.act": "e7c73dd7164c6c8fe36fe6dcb263ec3161e473b548f1ca4b144627db5c2e9aef",
+    "lib/desktop/deskcore.act": "ae8b9139d1cb55a7bea8c9e2c12abc5e1a47fcc75081adc96cfda61d321d091e",
+    "lib/desktop/deskhost.act": "717f81f336ada6f3e5bcb23c2b891aeab8e4b00f33deed63b70d1cf81c8b734e",
+    "lib/desktop/deskwidgets.act": "e64f4fc9f7be2b62cfb23dcad62b7fb7dbf1bd324a55c2104ed191112d4cfe56",
+    "lib/io/timer.act": "c675b53c45eb4c65aa386f4c2ccf8bfcbaaaa515ade854f1100958b5da13791f",
+    "lib/io/timerdriver.act": "f34ff1ad21ca4d290cb65d25d170ae8303cad27709d2c18b89b0b9889137c406",
+    "lib/widgets/widgettypes.act": "9c4d34ed808263ce10a3d8e1dd52223e36ea5cd0464ef8fd544adafde9dc896a",
+    "ports/gem4xe/aes/widgets-entry.c": "4614b9d143e823fb52513d5a3338f0c6903c973daf4c5d4f6aae0f175844a617",
+    "ports/gem4xe/aes/widgets-state.c": "ad75c4f139fdbe43379abf8d935507cdd11edb426a6dea11ed1b009d052e63d3",
+    "tests/programs/aes_intake.act": "640467c829037baa26fbbcad2782c0d12a95f346d28e39566ea37bf459fec463",
+    "tests/programs/aeseventprobe.act": "29956dc222094ab8bb9db3a69b0c37e54082cb0c07a2feeb9dd7e8e688a91691",
+    "tests/programs/aesintakeprobe.act": "9fcad87f5af0ea0bc7f771af0619531d9312bfddf768c754f4c9e1616f450696",
+    "tests/programs/timer_device.act": "3c0066df2f3fb003fbd248b1c5ff801eb6bc40b6dee000170fe3993baabfa2c3",
+    "tools/build_widget_panel.py": "1d4eb85846032e0a0b0d99c95bebc78976ad859af422cc137f29c47a1da3eec3",
+    "tools/test_aes_server.py": "a54fc278191e0f7b0c19781da4f20e93e359108a5f1a5c0afbc8e5d24c02eee5",
+    "tools/test_timer_device.py": "c0baff85c17c93471a73c2248543727a40d7e60db14bc456b5137c15aa6e8e0f",
+    "tools/test_widget_panel.py": "a3fcec37cff4d9f6867dbd464edf7832d56531d15fbb3b3002bfdf901e56d227",
+    "abi/aes-server.json": "2ab6de7e2b180cfcc21250343ed82c528c61df6aad4e1ba74ff349b9114a5c17",
+    "toolchain/actionc.json": "ee7fedac8e5667b09bbc8e9b356f2238555149e5961866fee85525899c091154",
+    "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
+    "tools/compare_aes_latency.py": "f744038961f28c061e1a398d265445db1ddd33e673d0ad5f0bb32cf869d2c56c"
+  },
+  "scope": "Optimized emitted code on the pinned PAL machine, nominal 57.6k SDFS. Matched disabled/idle/two-active-client panels and raw-event pointer fixtures; original AS0 tolerances unchanged. Current final source was held fixed while all late-* images were built. No demo refresh or release/hardware qualification.",
+  "changes": [
+    "Use copied widget action epoch/revision/state for status patches; snapshot only for loss/stale recovery. Keep full transactional validation and context capacities.",
+    "Copy only active widget objects/text for updates; damage title/focus underline instead of entire non-console client on focus.",
+    "Read clock through checked snapshot without timer queue edit gate; equivalent smaller PAL/NTSC deadline arithmetic.",
+    "Single event-client scan, lazy fresh clock, skip inactive Wake; match expiries again after native output before yielding.",
+    "Reserve one shared AES admission after a ready paint/input quantum; at most three native plus one AES admission on that turn.",
+    "One bounded native-control opportunity after paint releases scene, before a new console writer takes it."
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "scope": "All three implementation slices; includes alignment, guards and unused capacity. Existing presenter stack/DP and upper arena reservations unchanged."
+  },
+  "upper_ram": {
+    "service_payload": 1692,
+    "service_heap_reservation": 1696,
+    "per_attached_task": 216,
+    "timer_heap_reservation": 112,
+    "widget_context_reservation": 4096,
+    "additional_presenter_flag_bytes": 1,
+    "scope": "No allocation or reservation growth; local handoff flags use the existing presenter stack."
+  },
+  "pins": {
+    "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "compiler_override": false,
+    "compiler_binary_sha256": "cb43ec00312fe8ffe2dcbd04088a7a83c176981f5b12135588edba773a460263",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "host_checks": {
+    "tests": 368,
+    "skipped": 4,
+    "generated_widgets": "pass",
+    "local_markdown_links": 241
+  },
+  "validation": {
+    "widget-state": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 1504,
+      "state_checks": 800,
+      "mode": "opt",
+      "xex_sha256": "1c93416ae5a5713438a27d7be7772c955a6d84295c09a9265df849343aff5df9",
+      "path": "build/aes-server/latency/widget-state/results.json",
+      "sha256": "ddaeb3b690783565a580ba5708e6d371c9e40017aaefc3fb2ee2177d193506f1",
+      "guards": "intact"
+    },
+    "timer-clock": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "checks": 20,
+      "clock_vectors": {
+        "words": 154,
+        "actual": [
+          50,
+          1,
+          0,
+          1,
+          1,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          0,
+          51,
+          1,
+          0,
+          51,
+          1,
+          0,
+          3278,
+          1,
+          0,
+          107374184,
+          1,
+          0,
+          214748366,
+          1,
+          0,
+          1,
+          1,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          0,
+          3,
+          1,
+          0,
+          3,
+          1,
+          0,
+          3,
+          1,
+          0,
+          61,
+          1,
+          0,
+          61,
+          1,
+          0,
+          3934,
+          1,
+          0,
+          128849020,
+          1,
+          0,
+          257698039,
+          1,
+          8,
+          214748350,
+          1,
+          8,
+          257698023,
+          0,
+          4294967295,
+          4294967280,
+          0,
+          4294967295,
+          4294967280,
+          0,
+          4,
+          5,
+          0,
+          0,
+          1,
+          0,
+          0,
+          2,
+          0,
+          0,
+          51,
+          0,
+          0,
+          51,
+          0,
+          0,
+          3276801,
+          0,
+          0,
+          3276802,
+          0,
+          50,
+          1,
+          0,
+          7,
+          4294967281,
+          0,
+          7,
+          4294967282,
+          0,
+          8,
+          35,
+          0,
+          8,
+          35,
+          0,
+          8,
+          3276785,
+          0,
+          8,
+          3276786,
+          0,
+          57,
+          4294967281,
+          0,
+          4294967295,
+          4294967281,
+          0,
+          4294967295,
+          4294967282,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0,
+          4,
+          0,
+          0,
+          8,
+          0,
+          0,
+          4294967295,
+          4294967295,
+          1
+        ],
+        "expected": [
+          50,
+          1,
+          0,
+          1,
+          1,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          0,
+          51,
+          1,
+          0,
+          51,
+          1,
+          0,
+          3278,
+          1,
+          0,
+          107374184,
+          1,
+          0,
+          214748366,
+          1,
+          0,
+          1,
+          1,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          0,
+          3,
+          1,
+          0,
+          3,
+          1,
+          0,
+          3,
+          1,
+          0,
+          61,
+          1,
+          0,
+          61,
+          1,
+          0,
+          3934,
+          1,
+          0,
+          128849020,
+          1,
+          0,
+          257698039,
+          1,
+          8,
+          214748350,
+          1,
+          8,
+          257698023,
+          0,
+          4294967295,
+          4294967280,
+          0,
+          4294967295,
+          4294967280,
+          0,
+          4,
+          5,
+          0,
+          0,
+          1,
+          0,
+          0,
+          2,
+          0,
+          0,
+          51,
+          0,
+          0,
+          51,
+          0,
+          0,
+          3276801,
+          0,
+          0,
+          3276802,
+          0,
+          50,
+          1,
+          0,
+          7,
+          4294967281,
+          0,
+          7,
+          4294967282,
+          0,
+          8,
+          35,
+          0,
+          8,
+          35,
+          0,
+          8,
+          3276785,
+          0,
+          8,
+          3276786,
+          0,
+          57,
+          4294967281,
+          0,
+          4294967295,
+          4294967281,
+          0,
+          4294967295,
+          4294967282,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0,
+          4,
+          0,
+          0,
+          8,
+          0,
+          0,
+          4294967295,
+          4294967295,
+          1
+        ]
+      },
+      "path": "build/aes-server/latency/timer-clock/results.json",
+      "sha256": "0ed0cfc696e498de74b3cbe84d32585a25674687dba04af8f4b38fa24e73dc59",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "8b57d712762d03210f7da3350fe40de94dd3b84aabd4d78ead558c4f6c1806e4",
+      "xex_sha256": "1ceb55d6e22ef974a6ba0968e261c45dc95f67b7b95fe17175af51f9683d5349",
+      "guards": "intact"
+    },
+    "timer-snapshot": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "checks": 20,
+      "snapshot_interrupted_words": 6,
+      "path": "build/aes-server/latency/timer-snapshot/results.json",
+      "sha256": "07ec49acbd7ad414b6b6654946756112bce15fc7f40b015e86a7f292919fb85d",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "26314e5b260b39cf9796c27907921036d5ee0949d0e15560ea943625c585e525",
+      "xex_sha256": "82eae7980beaf8c0317a3767d42825d2c381756a8e9054f33f9ca1e8fb11ed53",
+      "guards": "intact"
+    },
+    "timer-concurrent-final": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "checks": 169,
+      "concurrent_clock_reads": 46,
+      "path": "build/aes-server/latency/timer-concurrent-final/results.json",
+      "sha256": "289030aec1cfbd400b308ffa0ed5b8b0c0e58b057a22625db1c974b689e7f5f1",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "b42e3c4e67d772cf2ef51b6b9e5b3acb0aa11304b1a40c50171495c284cc12eb",
+      "xex_sha256": "cc4d02f6f7836452dd84918cbaf682c79df03a14140f4a2bae346935a0b9abca",
+      "guards": "intact"
+    },
+    "alarm-work": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "checks": 72,
+      "sends": 8,
+      "collections": 8,
+      "races": 1,
+      "path": "build/aes-server/latency/alarm-work/results.json",
+      "sha256": "84836cdebf86996816d8b21cb7f6b7b70b018a7c702d1616519595f7dfc0c0a5",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "f614c036ab43d1d348342f5fe2978b5444eb006c8559dd1d58541fb40497c82f",
+      "xex_sha256": "654643898a231e5b4ed3ac70c810545d38c3c34323b05fdfc6df335b12e46a31",
+      "guards": "intact"
+    },
+    "late-events": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "AESChecks": 118,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "video": "PAL",
+      "path": "build/aes-server/latency/late-events/results.json",
+      "sha256": "3241a74eeb5cfbce464f201f38a7940a90630aa7efff8404e3e39cd9370d5f19",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "ca12df0cf75db2baa43c97495fa6b833c5f4cd465e39022fbc3b9ad9de468de9",
+      "xex_sha256": "cc7c5bbf95d6c84f1921ba3daf1e9cfe04ed5cb6234c914d6d9e7a7e6d6f4404",
+      "guards": "intact"
+    },
+    "late-intake": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "checks": 166,
+      "maximum_per_turn": 4,
+      "deferred_admissions": 12,
+      "path": "build/aes-server/latency/late-intake/results.json",
+      "sha256": "c1cf99404d2fd388fbdcc9efd6e7875347f26c3c3c56d2e54186a4a992d5beb3",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "13ffcb5490388d5315fcd4717448d001de26950828de30a591efc86e99529a79",
+      "xex_sha256": "ce2cae46f1a8c1104c66a72482ad45537760d6ba771870c0870a5e1b38420a22",
+      "guards": "intact"
+    },
+    "late-console": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "ownership": "restored",
+      "path": "build/aes-server/latency/late-console/results.json",
+      "sha256": "fa13cf6b3d80d145b2856f4855e074eee912d739c842dd4b43e728ba04dbf17a",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "dc27264534e0171ba9bd842d8c0cd79268b2db8787839c0bf132d7bf48e77210",
+      "xex_sha256": "70dd3db2e89570c18920614d80f0a24f7775d043e7a778b6405d008d64a6d4b8",
+      "guards": "intact"
+    },
+    "late-integrated": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "checks": 1292,
+      "ownership": "restored",
+      "blocked_paint_turns": [
+        0
+      ],
+      "xex_sha256": "a1fac0a227b0dae01b4971e326c2e2f9cc99e3695789ac49532634b8581ad6c4",
+      "path": "build/aes-server/latency/late-integrated/results.json",
+      "sha256": "b6d58a6b456bfea86845df990b9c82210fe2dcb7343f5bab6f976a9957c74da8",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "e736f7af4013390d4d89162117672fa4ab8eab7a6ab9ba40ccda422d0e94c916",
+      "guards": "intact"
+    },
+    "late-replay": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "checks": 1292,
+      "ownership": "restored",
+      "xex_sha256": "a1fac0a227b0dae01b4971e326c2e2f9cc99e3695789ac49532634b8581ad6c4",
+      "path": "build/aes-server/latency/late-replay/results.json",
+      "sha256": "8f4def811d582ba81c4247b61e2463e921cfeb301a898cef561babb4212c2555",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "image_sha256": "e736f7af4013390d4d89162117672fa4ab8eab7a6ab9ba40ccda422d0e94c916",
+      "guards": "intact"
+    },
+    "late-idle-presenter": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "idle_presenter_turns": 0,
+      "xex_sha256": "c9b327ce11dd7783d362ae51a1e5b2f5dd970ca63ecf27844846759b08e4626e",
+      "path": "build/aes-server/latency/late-idle-presenter/results.json",
+      "sha256": "f548edd7ca74bb523ea65fb6f451a9babd18550fb7e9041d43b4fa3573c4259d",
+      "guards": "intact"
+    }
+  },
+  "panel": {
+    "disabled": {
+      "artifact": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "ownership": "restored",
+        "path": "build/aes-server/latency/late-disabled-timing/results.json",
+        "sha256": "e85044b822fdf9566ceb0a4bc05a40bdb6e9f474d9a2ab0c02d5a382e4c08acb",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "image_sha256": "cbb79b3d1689dc751b2a70fbc3c74aaba31d10dd7f723f12a91f34cd6e91d7b2",
+        "xex_sha256": "680844505c411c17db186b30d05817389fc5e80464cd3cec95295d51bf01a358",
+        "guards": "intact"
+      },
+      "count_per_load": 10,
+      "latency": {
+        "idle": {
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 11.801730809623628,
+            "p95_ms": 28.927836882681895,
+            "max_ms": 29.032717348554158
+          },
+          "capture_to_application_ms": {
+            "count": 10,
+            "median_ms": 32.51992235462284,
+            "p95_ms": 36.81628579363077,
+            "max_ms": 36.81628579363077
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 2.9653401073333154,
+            "p95_ms": 21.152797023875813,
+            "max_ms": 21.153078960612028
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 198.98911583229838,
+            "p95_ms": 279.5791107433403,
+            "max_ms": 299.5350863219802
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 139.12379701118866,
+            "p95_ms": 179.0373693047017,
+            "max_ms": 179.29083043055968
+          },
+          "commit_to_patch_ms": {
+            "count": 10,
+            "median_ms": 149.48863724468868,
+            "p95_ms": 204.85213123027324,
+            "max_ms": 204.85213123027324
+          },
+          "patch_to_visible_ms": {
+            "count": 10,
+            "median_ms": 72.94746531825724,
+            "p95_ms": 80.95940251966861,
+            "max_ms": 80.95940251966861
+          },
+          "press_feedback": {
+            "count": 10,
+            "median_ms": 139.12471330558134,
+            "p95_ms": 159.08160517861398,
+            "max_ms": 159.08160517861398
+          },
+          "application_label": {
+            "count": 10,
+            "median_ms": 259.36988549139454,
+            "p95_ms": 299.5350863219802,
+            "max_ms": 299.5350863219802
+          }
+        },
+        "scroll": {
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 77.67230211212906,
+            "p95_ms": 95.6503505178473,
+            "max_ms": 105.59968648634933
+          },
+          "capture_to_application_ms": {
+            "count": 10,
+            "median_ms": 86.83418877638047,
+            "p95_ms": 98.7056989282175,
+            "max_ms": 98.7056989282175
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 69.1490726395904,
+            "p95_ms": 86.83397732382831,
+            "max_ms": 96.68646802344021
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 219.20489611336114,
+            "p95_ms": 339.7009919944064,
+            "max_ms": 339.7015558678788
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 179.29075994637563,
+            "p95_ms": 219.20489611336114,
+            "max_ms": 219.45574932440908
+          },
+          "commit_to_patch_ms": {
+            "count": 10,
+            "median_ms": 138.3305680038456,
+            "p95_ms": 186.58481573319762,
+            "max_ms": 186.58481573319762
+          },
+          "patch_to_visible_ms": {
+            "count": 10,
+            "median_ms": 68.21931576773488,
+            "p95_ms": 72.59624262911646,
+            "max_ms": 72.59624262911646
+          },
+          "press_feedback": {
+            "count": 10,
+            "median_ms": 199.2457487464388,
+            "p95_ms": 219.45574932440908,
+            "max_ms": 219.45574932440908
+          },
+          "application_label": {
+            "count": 10,
+            "median_ms": 279.3269888169794,
+            "p95_ms": 339.7015558678788,
+            "max_ms": 339.7015558678788
+          }
+        },
+        "disk": {
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 21.112973459885335,
+            "p95_ms": 88.4759768755489,
+            "max_ms": 97.30390947575273
+          },
+          "capture_to_application_ms": {
+            "count": 10,
+            "median_ms": 36.810083185434024,
+            "p95_ms": 100.96986237258223,
+            "max_ms": 100.96986237258223
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 6.496809180987879,
+            "p95_ms": 79.4987587735188,
+            "max_ms": 86.06612262274469
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 219.45152027336587,
+            "p95_ms": 379.6204144751959,
+            "max_ms": 379.7353741793879
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 159.3285112753549,
+            "p95_ms": 239.32453596737426,
+            "max_ms": 239.6334681460827
+          },
+          "commit_to_patch_ms": {
+            "count": 10,
+            "median_ms": 211.1838664522068,
+            "p95_ms": 290.56054661894416,
+            "max_ms": 290.56054661894416
+          },
+          "patch_to_visible_ms": {
+            "count": 10,
+            "median_ms": 74.34382748854983,
+            "p95_ms": 112.82135501614793,
+            "max_ms": 112.82135501614793
+          },
+          "press_feedback": {
+            "count": 10,
+            "median_ms": 179.11144818214242,
+            "p95_ms": 219.4476436432429,
+            "max_ms": 219.4476436432429
+          },
+          "application_label": {
+            "count": 10,
+            "median_ms": 319.7189372676665,
+            "p95_ms": 379.7353741793879,
+            "max_ms": 379.7353741793879
+          }
+        }
+      },
+      "work": {
+        "idle": {
+          "paint_quanta": 67,
+          "paint_cpu_ms": 1822.1067299708618,
+          "max_quantum_cpu_ms": 45.78913387624951,
+          "primitive_entries": {
+            "GemWidgetFill": 505,
+            "GemWidgetText": 67,
+            "start": 371,
+            "VbxeOwnerSubmit": 371,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47650,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "scroll": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1775.9802587897302,
+          "max_quantum_cpu_ms": 44.145865609215946,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 421,
+            "VbxeOwnerSubmit": 344,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "disk": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1808.774505588691,
+          "max_quantum_cpu_ms": 45.99233977887702,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 347,
+            "VbxeOwnerSubmit": 344,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        }
+      },
+      "feedback": {
+        "idle": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "scroll": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "disk": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        }
+      },
+      "functional": [
+        "second context toggled",
+        "toggle",
+        "disabled and raw key ignored",
+        "Tab, Shift-Tab, Space, Return, Escape and BREAK",
+        "stale action patch retries from fresh snapshot"
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 401,
+          "remaining_above_floor": 879
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 192,
+          "remaining_above_floor": 576
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 249,
+          "remaining_above_floor": 519
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 153,
+          "remaining_above_floor": 615
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 695,
+          "remaining_above_floor": 1609
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 66,
+          "remaining_above_floor": 190
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "observation_scope": "With feedback enabled, the label check follows the button check and may overestimate first label visibility; compare button_feedback clocks for button latency."
+    },
+    "idle": {
+      "artifact": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "ownership": "restored",
+        "path": "build/aes-server/latency/late-idle-timing/results.json",
+        "sha256": "6a4caa543f15f86d3a5b1f3c4c7368871c658cfceb928bfeb49f7221d1f3b1b0",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "image_sha256": "fb2e99b77f0e5ada2ecd1091793cd4cbd3b20c136ff6aba40aa088547d639d5e",
+        "xex_sha256": "c9b327ce11dd7783d362ae51a1e5b2f5dd970ca63ecf27844846759b08e4626e",
+        "guards": "intact"
+      },
+      "count_per_load": 10,
+      "latency": {
+        "idle": {
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 12.056249198242407,
+            "p95_ms": 30.928953352157308,
+            "max_ms": 30.949957639005383
+          },
+          "capture_to_application_ms": {
+            "count": 10,
+            "median_ms": 22.668418433587686,
+            "p95_ms": 36.56261321522064,
+            "max_ms": 36.56261321522064
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 2.965833496621693,
+            "p95_ms": 22.92110423342106,
+            "max_ms": 22.92138617015728
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 199.17293858431105,
+            "p95_ms": 299.5353682587164,
+            "max_ms": 299.53565019545266
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 139.12492475813352,
+            "p95_ms": 179.28998462035102,
+            "max_ms": 179.29083043055968
+          },
+          "commit_to_patch_ms": {
+            "count": 10,
+            "median_ms": 150.0803519698215,
+            "p95_ms": 206.48687091103628,
+            "max_ms": 206.48687091103628
+          },
+          "patch_to_visible_ms": {
+            "count": 10,
+            "median_ms": 78.35973435920714,
+            "p95_ms": 79.832219448278,
+            "max_ms": 79.832219448278
+          },
+          "press_feedback": {
+            "count": 10,
+            "median_ms": 139.12548863160595,
+            "p95_ms": 159.08160517861398,
+            "max_ms": 159.08160517861398
+          },
+          "application_label": {
+            "count": 10,
+            "median_ms": 259.36988549139454,
+            "p95_ms": 299.53565019545266,
+            "max_ms": 299.53565019545266
+          }
+        },
+        "scroll": {
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 80.07151325314113,
+            "p95_ms": 107.39498913838725,
+            "max_ms": 108.86627599632918
+          },
+          "capture_to_application_ms": {
+            "count": 10,
+            "median_ms": 89.35865031245639,
+            "p95_ms": 112.34748984675329,
+            "max_ms": 112.34748984675329
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 71.17140484846605,
+            "p95_ms": 98.45223780235952,
+            "max_ms": 100.72718532688451
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 219.2029225562076,
+            "p95_ms": 339.7004281209339,
+            "max_ms": 339.7026131306396
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 179.0373693047017,
+            "p95_ms": 219.203415945496,
+            "max_ms": 259.3696035546584
+          },
+          "commit_to_patch_ms": {
+            "count": 10,
+            "median_ms": 138.9848022002343,
+            "p95_ms": 186.94379168258436,
+            "max_ms": 186.94379168258436
+          },
+          "patch_to_visible_ms": {
+            "count": 10,
+            "median_ms": 68.40976403304862,
+            "p95_ms": 79.64452006614235,
+            "max_ms": 79.64452006614235
+          },
+          "press_feedback": {
+            "count": 10,
+            "median_ms": 199.24715843011987,
+            "p95_ms": 219.203415945496,
+            "max_ms": 219.203415945496
+          },
+          "application_label": {
+            "count": 10,
+            "median_ms": 319.4926125526693,
+            "p95_ms": 339.7026131306396,
+            "max_ms": 339.7026131306396
+          }
+        },
+        "disk": {
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 25.87269992486386,
+            "p95_ms": 103.95655918768387,
+            "max_ms": 112.15873320185683
+          },
+          "capture_to_application_ms": {
+            "count": 10,
+            "median_ms": 42.79334460140489,
+            "p95_ms": 136.841448647338,
+            "max_ms": 136.841448647338
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 7.250355592708552,
+            "p95_ms": 92.62305481273057,
+            "max_ms": 102.73838103467962
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 279.36082122532525,
+            "p95_ms": 359.77481712878443,
+            "max_ms": 399.77712901002144
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 179.12406485108806,
+            "p95_ms": 239.34554025422236,
+            "max_ms": 239.49426188257615
+          },
+          "commit_to_patch_ms": {
+            "count": 10,
+            "median_ms": 213.16693897056442,
+            "p95_ms": 285.99338294480106,
+            "max_ms": 285.99338294480106
+          },
+          "patch_to_visible_ms": {
+            "count": 10,
+            "median_ms": 94.86036378297074,
+            "p95_ms": 111.26273825416315,
+            "max_ms": 111.26273825416315
+          },
+          "press_feedback": {
+            "count": 10,
+            "median_ms": 179.15458450278342,
+            "p95_ms": 219.43650714216236,
+            "max_ms": 219.43650714216236
+          },
+          "application_label": {
+            "count": 10,
+            "median_ms": 339.6441817420589,
+            "p95_ms": 399.77712901002144,
+            "max_ms": 399.77712901002144
+          }
+        }
+      },
+      "work": {
+        "idle": {
+          "paint_quanta": 67,
+          "paint_cpu_ms": 1814.3867382598019,
+          "max_quantum_cpu_ms": 45.69398022777669,
+          "primitive_entries": {
+            "GemWidgetFill": 505,
+            "GemWidgetText": 67,
+            "start": 380,
+            "VbxeOwnerSubmit": 380,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47650,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "scroll": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1773.9228959413797,
+          "max_quantum_cpu_ms": 44.08539017929767,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 426,
+            "VbxeOwnerSubmit": 348,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "disk": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1818.3824161696357,
+          "max_quantum_cpu_ms": 45.4052065257077,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 348,
+            "VbxeOwnerSubmit": 343,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        }
+      },
+      "feedback": {
+        "idle": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "scroll": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "disk": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        }
+      },
+      "functional": [
+        "second context toggled",
+        "toggle",
+        "disabled and raw key ignored",
+        "Tab, Shift-Tab, Space, Return, Escape and BREAK",
+        "stale action patch retries from fresh snapshot"
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 386,
+          "remaining_above_floor": 894
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 180,
+          "remaining_above_floor": 588
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 249,
+          "remaining_above_floor": 519
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 151,
+          "remaining_above_floor": 617
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 694,
+          "remaining_above_floor": 1610
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 54,
+          "remaining_above_floor": 202
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "observation_scope": "With feedback enabled, the label check follows the button check and may overestimate first label visibility; compare button_feedback clocks for button latency."
+    },
+    "loaded": {
+      "artifact": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "ownership": "restored",
+        "path": "build/aes-server/latency/late-active-timing/results.json",
+        "sha256": "ee7f167998b6ee3d82fe70b479d2b786732a41f6d8f9d708be2180de155c2303",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "image_sha256": "e736f7af4013390d4d89162117672fa4ab8eab7a6ab9ba40ccda422d0e94c916",
+        "xex_sha256": "a1fac0a227b0dae01b4971e326c2e2f9cc99e3695789ac49532634b8581ad6c4",
+        "guards": "intact"
+      },
+      "count_per_load": 10,
+      "latency": {
+        "idle": {
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 22.404173227569466,
+            "p95_ms": 37.65018417517293,
+            "max_ms": 38.32210990175915
+          },
+          "capture_to_application_ms": {
+            "count": 10,
+            "median_ms": 26.718298680958977,
+            "p95_ms": 42.62643805356516,
+            "max_ms": 42.62643805356516
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 3.4710641279203363,
+            "p95_ms": 13.828292069542515,
+            "max_ms": 17.111727299511262
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 239.41320507091413,
+            "p95_ms": 379.86605185662387,
+            "max_ms": 379.866192824992
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 159.081675662798,
+            "p95_ms": 199.24708794593582,
+            "max_ms": 199.24793375614448
+          },
+          "commit_to_patch_ms": {
+            "count": 10,
+            "median_ms": 191.6748310846529,
+            "p95_ms": 270.1210495376942,
+            "max_ms": 270.1210495376942
+          },
+          "patch_to_visible_ms": {
+            "count": 10,
+            "median_ms": 87.3518246240726,
+            "p95_ms": 107.29504256539875,
+            "max_ms": 107.29504256539875
+          },
+          "press_feedback": {
+            "count": 10,
+            "median_ms": 159.08209856790234,
+            "p95_ms": 179.29132381984806,
+            "max_ms": 179.29132381984806
+          },
+          "application_label": {
+            "count": 10,
+            "median_ms": 319.4919781950128,
+            "p95_ms": 379.866192824992,
+            "max_ms": 379.866192824992
+          }
+        },
+        "scroll": {
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 84.7606145656976,
+            "p95_ms": 121.07547587396864,
+            "max_ms": 122.04132064805978
+          },
+          "capture_to_application_ms": {
+            "count": 10,
+            "median_ms": 120.43195527355617,
+            "p95_ms": 136.09375242289383,
+            "max_ms": 136.09375242289383
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 46.91948873592255,
+            "p95_ms": 100.98022354763815,
+            "max_ms": 107.0427796706697
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 259.6224303228599,
+            "p95_ms": 419.7813157705542,
+            "max_ms": 459.9463756327717
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 199.24736988267202,
+            "p95_ms": 259.370378880683,
+            "max_ms": 279.57868783823596
+          },
+          "commit_to_patch_ms": {
+            "count": 10,
+            "median_ms": 173.3180006738288,
+            "p95_ms": 254.53939290562587,
+            "max_ms": 254.53939290562587
+          },
+          "patch_to_visible_ms": {
+            "count": 10,
+            "median_ms": 86.76673541224085,
+            "p95_ms": 100.21582257157316,
+            "max_ms": 100.21582257157316
+          },
+          "press_feedback": {
+            "count": 10,
+            "median_ms": 219.20306352457573,
+            "p95_ms": 259.3694625862903,
+            "max_ms": 259.3694625862903
+          },
+          "application_label": {
+            "count": 10,
+            "median_ms": 359.6583067725433,
+            "p95_ms": 459.9463756327717,
+            "max_ms": 459.9463756327717
+          }
+        },
+        "disk": {
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 30.545730843456038,
+            "p95_ms": 121.23371286716973,
+            "max_ms": 159.8566492664711
+          },
+          "capture_to_application_ms": {
+            "count": 10,
+            "median_ms": 50.451451198865485,
+            "p95_ms": 163.5874476126302,
+            "max_ms": 163.5874476126302
+          },
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 9.0177465078611,
+            "p95_ms": 21.900916153424333,
+            "max_ms": 145.39914488587905
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 279.51038866388774,
+            "p95_ms": 419.86963245317384,
+            "max_ms": 480.0354253509055
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 199.19542303902426,
+            "p95_ms": 259.37545374193485,
+            "max_ms": 259.4756822516596
+          },
+          "commit_to_patch_ms": {
+            "count": 10,
+            "median_ms": 195.51861557785048,
+            "p95_ms": 343.03158114350725,
+            "max_ms": 343.03158114350725
+          },
+          "patch_to_visible_ms": {
+            "count": 10,
+            "median_ms": 87.17512077464939,
+            "p95_ms": 135.04910633103037,
+            "max_ms": 135.04910633103037
+          },
+          "press_feedback": {
+            "count": 10,
+            "median_ms": 219.30998803178556,
+            "p95_ms": 259.37545374193485,
+            "max_ms": 259.37545374193485
+          },
+          "application_label": {
+            "count": 10,
+            "median_ms": 359.6411791158182,
+            "p95_ms": 480.0354253509055,
+            "max_ms": 480.0354253509055
+          }
+        }
+      },
+      "work": {
+        "idle": {
+          "paint_quanta": 67,
+          "paint_cpu_ms": 1825.5771597411256,
+          "max_quantum_cpu_ms": 46.06303541548312,
+          "primitive_entries": {
+            "GemWidgetFill": 505,
+            "GemWidgetText": 67,
+            "start": 344,
+            "VbxeOwnerSubmit": 344,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47650,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "scroll": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1778.427610628451,
+          "max_quantum_cpu_ms": 44.01286195390616,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 413,
+            "VbxeOwnerSubmit": 349,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "disk": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1797.5299522540138,
+          "max_quantum_cpu_ms": 46.269131169656845,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 330,
+            "VbxeOwnerSubmit": 327,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        }
+      },
+      "feedback": {
+        "idle": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "scroll": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "disk": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        }
+      },
+      "functional": [
+        "second context toggled",
+        "toggle",
+        "disabled and raw key ignored",
+        "Tab, Shift-Tab, Space, Return, Escape and BREAK",
+        "stale action patch retries from fresh snapshot"
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 380,
+          "remaining_above_floor": 900
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 211,
+          "remaining_above_floor": 557
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 306,
+          "remaining_above_floor": 462
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 326,
+          "remaining_above_floor": 442
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 263,
+          "remaining_above_floor": 505
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 177,
+          "remaining_above_floor": 591
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 746,
+          "remaining_above_floor": 1558
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "observation_scope": "With feedback enabled, the label check follows the button check and may overestimate first label visibility; compare button_feedback clocks for button latency."
+    }
+  },
+  "pointer": {
+    "disabled": {
+      "artifact": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "path": "build/aes-server/latency/late-pointer-disabled-timing/results.json",
+        "sha256": "aca79f1e0e30743a043474ba41a29721f8822ef9df50ec7b7634694591f4dad4",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "image_sha256": "0e0a5ee0c53532559533f42ddfd104f99e09c94deb6aaf226217f6477687c3cd",
+        "xex_sha256": "0bb8e860a29e06b8e9dbd6567fa15549d9684512a63f4e1b50bff1cc2681fcbd",
+        "guards": "intact"
+      },
+      "visible": {
+        "count": 30,
+        "median_ms": 45.14610666512541,
+        "p95_ms": 46.66123468554891,
+        "max_ms": 66.8720105895438
+      },
+      "button_consumption": {
+        "count": 30,
+        "median_ms": 2.8019577686962824,
+        "p95_ms": 3.440685444593088,
+        "max_ms": 8.619369899588232
+      },
+      "graphical_keyboard": {
+        "keys": 1,
+        "breaks": 1,
+        "destination": 2
+      },
+      "quiet_application_control": true
+    },
+    "idle": {
+      "artifact": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "path": "build/aes-server/latency/late-pointer-idle-timing/results.json",
+        "sha256": "4bceb20de3080f43470681a6ce1365f412ec05f656ed6b8b74e9fc66a63cb4c4",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "image_sha256": "c86e2d251f469e47c5c9c4aafa6f5a5205815090bddefe38b6898452ac5c9f64",
+        "xex_sha256": "c593587ba135a4bcaa8b93c00bd42ff77e972cfd83c6797d75a23c0cb02b5750",
+        "guards": "intact"
+      },
+      "visible": {
+        "count": 30,
+        "median_ms": 45.397382781277706,
+        "p95_ms": 46.41017002194878,
+        "max_ms": 86.8286205258402
+      },
+      "button_consumption": {
+        "count": 30,
+        "median_ms": 2.7039847528613055,
+        "p95_ms": 4.57343676652396,
+        "max_ms": 4.854386724162965
+      },
+      "graphical_keyboard": {
+        "keys": 1,
+        "breaks": 1,
+        "destination": 2
+      },
+      "quiet_application_control": true
+    },
+    "loaded": {
+      "artifact": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "path": "build/aes-server/latency/late-pointer-timing/results.json",
+        "sha256": "fd62fe97cbe146bbf4d1bda9be69cb2e89edd163ebdb832575176ec945263346",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "image_sha256": "37724ef74de5bb5f61ea5c6e1a7d0183d97925bcf7b49553519fa1da53535c06",
+        "xex_sha256": "2815e34b38bcd5d83388ea14b0bd0899a482b1355d54577e28a3b14df11d33dd",
+        "guards": "intact"
+      },
+      "visible": {
+        "count": 30,
+        "median_ms": 45.14709344370216,
+        "p95_ms": 46.65989548605189,
+        "max_ms": 46.66172807483729
+      },
+      "button_consumption": {
+        "count": 30,
+        "median_ms": 7.690247385389193,
+        "p95_ms": 17.43334663134939,
+        "max_ms": 18.221994166728926
+      },
+      "graphical_keyboard": {
+        "keys": 1,
+        "breaks": 1,
+        "destination": 2
+      },
+      "quiet_application_control": true
+    }
+  },
+  "comparison": {
+    "status": "fail",
+    "tier": "development",
+    "qualification": false,
+    "limits": {
+      "scope": "Compare matched optimized configurations and workloads: 10 gestures per widget cohort and 30 pointer motions/button edges. Development measurements, not qualification.",
+      "observed_repeat_distribution_variation_ms": 0,
+      "idle_extra_presenter_wakes": 0,
+      "input_consumption_p95_extra_ms": {
+        "idle": 5,
+        "loaded": 10
+      },
+      "scanout_p95_extra_ms": 20.1,
+      "render_quantum_cpu_growth_fraction": 0.1,
+      "explanation": "20.1 ms allows one PAL scanout-observation frame of phase difference. CPU/consumption budgets are explicit integration allowances, not measured jitter. No deliberate extra-frame wait is allowed. Exceedances require investigation before AS4 acceptance."
+    },
+    "comparisons": {
+      "AS0_to_disabled": {
+        "pass_limits": true,
+        "rows": [
+          {
+            "load": "idle",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 18.37402855173328,
+            "after": 21.152797023875813,
+            "delta": 2.7787684721425343,
+            "allowance": 5,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 179.03835608327847,
+            "after": 179.0373693047017,
+            "delta": -0.0009867785767596615,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "capture_to_visible_ms",
+            "before": 379.86732057193683,
+            "after": 279.5791107433403,
+            "delta": -100.28820982859651,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 44.7943201025122,
+            "after": 45.78913387624951,
+            "delta": 0.022208480259565677,
+            "allowance": 0.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 94.15777743632106,
+            "after": 86.83397732382831,
+            "delta": -7.323800112492748,
+            "allowance": 10,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 319.7454393208708,
+            "after": 219.20489611336114,
+            "delta": -100.54054320750964,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_visible_ms",
+            "before": 479.9035494425406,
+            "after": 339.7009919944064,
+            "delta": -140.2025574481342,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 43.73557717383796,
+            "after": 44.145865609215946,
+            "delta": 0.009381114001244084,
+            "allowance": 0.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 80.24469289336166,
+            "after": 79.4987587735188,
+            "delta": -0.7459341198428575,
+            "allowance": 10,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 239.4229318883136,
+            "after": 239.32453596737426,
+            "delta": -0.09839592093933902,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_visible_ms",
+            "before": 520.0465477551493,
+            "after": 379.6204144751959,
+            "delta": -140.42613327995338,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 45.53235999374101,
+            "after": 45.99233977887702,
+            "delta": 0.010102261011712077,
+            "allowance": 0.1,
+            "pass_limit": true
+          }
+        ]
+      },
+      "AS0_to_idle": {
+        "pass_limits": false,
+        "rows": [
+          {
+            "load": "idle",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 18.37402855173328,
+            "after": 22.92110423342106,
+            "delta": 4.547075681687783,
+            "allowance": 5,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 179.03835608327847,
+            "after": 179.28998462035102,
+            "delta": 0.2516285370725484,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "capture_to_visible_ms",
+            "before": 379.86732057193683,
+            "after": 299.5353682587164,
+            "delta": -80.33195231322043,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 44.7943201025122,
+            "after": 45.69398022777669,
+            "delta": 0.0200842455741177,
+            "allowance": 0.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 94.15777743632106,
+            "after": 98.45223780235952,
+            "delta": 4.294460366038464,
+            "allowance": 10,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 319.7454393208708,
+            "after": 219.203415945496,
+            "delta": -100.54202337537478,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_visible_ms",
+            "before": 479.9035494425406,
+            "after": 339.7004281209339,
+            "delta": -140.20312132160672,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 43.73557717383796,
+            "after": 44.08539017929767,
+            "delta": 0.00799836261607556,
+            "allowance": 0.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 80.24469289336166,
+            "after": 92.62305481273057,
+            "delta": 12.378361919368913,
+            "allowance": 10,
+            "pass_limit": false
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 239.4229318883136,
+            "after": 239.34554025422236,
+            "delta": -0.07739163409124217,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_visible_ms",
+            "before": 520.0465477551493,
+            "after": 359.77481712878443,
+            "delta": -160.27173062636484,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 45.53235999374101,
+            "after": 45.4052065257077,
+            "delta": -0.00279259559686329,
+            "allowance": 0.1,
+            "pass_limit": true
+          }
+        ]
+      },
+      "matched_disabled_to_idle": {
+        "pass_limits": false,
+        "rows": [
+          {
+            "load": "idle",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 21.152797023875813,
+            "after": 22.92110423342106,
+            "delta": 1.7683072095452488,
+            "allowance": 5,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 179.0373693047017,
+            "after": 179.28998462035102,
+            "delta": 0.25261531564930806,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "capture_to_visible_ms",
+            "before": 279.5791107433403,
+            "after": 299.5353682587164,
+            "delta": 19.95625751537608,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 45.78913387624951,
+            "after": 45.69398022777669,
+            "delta": -0.002078083606691039,
+            "allowance": 0.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 86.83397732382831,
+            "after": 98.45223780235952,
+            "delta": 11.618260478531212,
+            "allowance": 10,
+            "pass_limit": false
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 219.20489611336114,
+            "after": 219.203415945496,
+            "delta": -0.0014801678651394923,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_visible_ms",
+            "before": 339.7009919944064,
+            "after": 339.7004281209339,
+            "delta": -0.0005638734725152972,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 44.145865609215946,
+            "after": 44.08539017929767,
+            "delta": -0.0013699001952666157,
+            "allowance": 0.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 79.4987587735188,
+            "after": 92.62305481273057,
+            "delta": 13.124296039211771,
+            "allowance": 10,
+            "pass_limit": false
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 239.32453596737426,
+            "after": 239.34554025422236,
+            "delta": 0.021004286848096854,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_visible_ms",
+            "before": 379.6204144751959,
+            "after": 359.77481712878443,
+            "delta": -19.845597346411466,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 45.99233977887702,
+            "after": 45.4052065257077,
+            "delta": -0.012765892233188247,
+            "allowance": 0.1,
+            "pass_limit": true
+          }
+        ]
+      },
+      "AS0_to_loaded": {
+        "pass_limits": false,
+        "rows": [
+          {
+            "load": "idle",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 18.37402855173328,
+            "after": 13.828292069542515,
+            "delta": -4.5457364821907635,
+            "allowance": 10,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 179.03835608327847,
+            "after": 199.24708794593582,
+            "delta": 20.208731862657345,
+            "allowance": 20.1,
+            "pass_limit": false
+          },
+          {
+            "load": "idle",
+            "metric": "capture_to_visible_ms",
+            "before": 379.86732057193683,
+            "after": 379.86605185662387,
+            "delta": -0.0012687153129604667,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 44.7943201025122,
+            "after": 46.06303541548312,
+            "delta": 0.028323129139307124,
+            "allowance": 0.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 94.15777743632106,
+            "after": 100.98022354763815,
+            "delta": 6.822446111317092,
+            "allowance": 10,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 319.7454393208708,
+            "after": 259.370378880683,
+            "delta": -60.37506044018778,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_visible_ms",
+            "before": 479.9035494425406,
+            "after": 419.7813157705542,
+            "delta": -60.12223367198641,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 43.73557717383796,
+            "after": 44.01286195390616,
+            "delta": 0.00634002791288335,
+            "allowance": 0.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 80.24469289336166,
+            "after": 21.900916153424333,
+            "delta": -58.343776739937326,
+            "allowance": 10,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 239.4229318883136,
+            "after": 259.37545374193485,
+            "delta": 19.95252185362125,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_visible_ms",
+            "before": 520.0465477551493,
+            "after": 419.86963245317384,
+            "delta": -100.17691530197544,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 45.53235999374101,
+            "after": 46.269131169656845,
+            "delta": 0.01618126484146898,
+            "allowance": 0.1,
+            "pass_limit": true
+          }
+        ]
+      },
+      "matched_disabled_to_loaded": {
+        "pass_limits": false,
+        "rows": [
+          {
+            "load": "idle",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 21.152797023875813,
+            "after": 13.828292069542515,
+            "delta": -7.324504954333298,
+            "allowance": 10,
+            "pass_limit": true
+          },
+          {
+            "load": "idle",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 179.0373693047017,
+            "after": 199.24708794593582,
+            "delta": 20.209718641234105,
+            "allowance": 20.1,
+            "pass_limit": false
+          },
+          {
+            "load": "idle",
+            "metric": "capture_to_visible_ms",
+            "before": 279.5791107433403,
+            "after": 379.86605185662387,
+            "delta": 100.28694111328355,
+            "allowance": 20.1,
+            "pass_limit": false
+          },
+          {
+            "load": "idle",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 45.78913387624951,
+            "after": 46.06303541548312,
+            "delta": 0.0059818021448900804,
+            "allowance": 0.1,
+            "pass_limit": true
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 86.83397732382831,
+            "after": 100.98022354763815,
+            "delta": 14.14624622380984,
+            "allowance": 10,
+            "pass_limit": false
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 219.20489611336114,
+            "after": 259.370378880683,
+            "delta": 40.16548276732186,
+            "allowance": 20.1,
+            "pass_limit": false
+          },
+          {
+            "load": "scroll",
+            "metric": "capture_to_visible_ms",
+            "before": 339.7009919944064,
+            "after": 419.7813157705542,
+            "delta": 80.0803237761478,
+            "allowance": 20.1,
+            "pass_limit": false
+          },
+          {
+            "load": "scroll",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 44.145865609215946,
+            "after": 44.01286195390616,
+            "delta": -0.003012822457422182,
+            "allowance": 0.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_button_consumed_ms",
+            "before": 79.4987587735188,
+            "after": 21.900916153424333,
+            "delta": -57.59784262009447,
+            "allowance": 10,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_button_pixels_ms",
+            "before": 239.32453596737426,
+            "after": 259.37545374193485,
+            "delta": 20.050917774560588,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "load": "disk",
+            "metric": "capture_to_visible_ms",
+            "before": 379.6204144751959,
+            "after": 419.86963245317384,
+            "delta": 40.249217977977935,
+            "allowance": 20.1,
+            "pass_limit": false
+          },
+          {
+            "load": "disk",
+            "metric": "max_render_quantum_cpu_fraction",
+            "before": 45.99233977887702,
+            "after": 46.269131169656845,
+            "delta": 0.006018206338503029,
+            "allowance": 0.1,
+            "pass_limit": true
+          }
+        ]
+      },
+      "AS0_pointer_to_disabled": {
+        "pass_limits": true,
+        "rows": [
+          {
+            "metric": "visible",
+            "before": 46.91540065324742,
+            "after": 46.66123468554891,
+            "delta": -0.25416596769850486,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "metric": "button_consumption",
+            "before": 4.088998969521229,
+            "after": 3.440685444593088,
+            "delta": -0.6483135249281409,
+            "allowance": 5,
+            "pass_limit": true
+          }
+        ]
+      },
+      "AS0_pointer_to_idle": {
+        "pass_limits": true,
+        "rows": [
+          {
+            "metric": "visible",
+            "before": 46.91540065324742,
+            "after": 46.41017002194878,
+            "delta": -0.5052306312986374,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "metric": "button_consumption",
+            "before": 4.088998969521229,
+            "after": 4.57343676652396,
+            "delta": 0.48443779700273115,
+            "allowance": 5,
+            "pass_limit": true
+          }
+        ]
+      },
+      "matched_pointer_to_idle": {
+        "pass_limits": true,
+        "rows": [
+          {
+            "metric": "visible",
+            "before": 46.66123468554891,
+            "after": 46.41017002194878,
+            "delta": -0.2510646636001326,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "metric": "button_consumption",
+            "before": 3.440685444593088,
+            "after": 4.57343676652396,
+            "delta": 1.132751321930872,
+            "allowance": 5,
+            "pass_limit": true
+          }
+        ]
+      },
+      "AS0_pointer_to_loaded": {
+        "pass_limits": false,
+        "rows": [
+          {
+            "metric": "visible",
+            "before": 46.91540065324742,
+            "after": 46.65989548605189,
+            "delta": -0.25550516719552974,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "metric": "button_consumption",
+            "before": 4.088998969521229,
+            "after": 17.43334663134939,
+            "delta": 13.344347661828163,
+            "allowance": 10,
+            "pass_limit": false
+          }
+        ]
+      },
+      "matched_pointer_to_loaded": {
+        "pass_limits": false,
+        "rows": [
+          {
+            "metric": "visible",
+            "before": 46.66123468554891,
+            "after": 46.65989548605189,
+            "delta": -0.0013391994970248788,
+            "allowance": 20.1,
+            "pass_limit": true
+          },
+          {
+            "metric": "button_consumption",
+            "before": 3.440685444593088,
+            "after": 17.43334663134939,
+            "delta": 13.992661186756303,
+            "allowance": 10,
+            "pass_limit": false
+          }
+        ]
+      }
+    },
+    "scope": "Loaded allowance applies when either GEM clients or native scroll/disk work is active. Both frozen AS0 and matched AES-disabled comparisons are retained. Combined visibility includes the sequential label-observation upper bound.",
+    "artifacts": {
+      "disabled": {
+        "path": "build/aes-server/latency/late-disabled-timing/results.json",
+        "sha256": "e85044b822fdf9566ceb0a4bc05a40bdb6e9f474d9a2ab0c02d5a382e4c08acb"
+      },
+      "idle": {
+        "path": "build/aes-server/latency/late-idle-timing/results.json",
+        "sha256": "6a4caa543f15f86d3a5b1f3c4c7368871c658cfceb928bfeb49f7221d1f3b1b0"
+      },
+      "loaded": {
+        "path": "build/aes-server/latency/late-active-timing/results.json",
+        "sha256": "ee7f167998b6ee3d82fe70b479d2b786732a41f6d8f9d708be2180de155c2303"
+      },
+      "disabled_pointer": {
+        "path": "build/aes-server/latency/late-pointer-disabled-timing/results.json",
+        "sha256": "aca79f1e0e30743a043474ba41a29721f8822ef9df50ec7b7634694591f4dad4"
+      },
+      "idle_pointer": {
+        "path": "build/aes-server/latency/late-pointer-idle-timing/results.json",
+        "sha256": "4bceb20de3080f43470681a6ce1365f412ec05f656ed6b8b74e9fc66a63cb4c4"
+      },
+      "loaded_pointer": {
+        "path": "build/aes-server/latency/late-pointer-timing/results.json",
+        "sha256": "fd62fe97cbe146bbf4d1bda9be69cb2e89edd163ebdb832575176ec945263346"
+      }
+    }
+  },
+  "calls": {
+    "idle": {
+      "artifact": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "AESChecks": 189,
+        "AESFailures": 0,
+        "xex_sha256": "a1fac0a227b0dae01b4971e326c2e2f9cc99e3695789ac49532634b8581ad6c4",
+        "path": "build/aes-server/latency/late-calls-idle/results.json",
+        "sha256": "209cd6f47faf40b71c809fcadc452a202525f733df451bab459f8c5a96da0f74",
+        "guards": "intact"
+      },
+      "latency": {
+        "calls": 46,
+        "window": [
+          4312940789,
+          4316497461
+        ],
+        "operations": {
+          "12": {
+            "binding_setup": {
+              "count": 16,
+              "median_ms": 0.05638734724315211,
+              "p95_ms": 0.10410513984766959,
+              "max_ms": 0.10410513984766959
+            },
+            "submit_to_service": {
+              "count": 16,
+              "median_ms": 25.00546252426418,
+              "p95_ms": 27.83244217829961,
+              "max_ms": 27.83244217829961
+            },
+            "service_to_reply": {
+              "count": 16,
+              "median_ms": 0.9327172075857898,
+              "p95_ms": 0.957175219452507,
+              "max_ms": 0.957175219452507
+            },
+            "reply_to_client": {
+              "count": 16,
+              "median_ms": 2.4208497855166278,
+              "p95_ms": 2.42536077329608,
+              "max_ms": 2.42536077329608
+            },
+            "total": {
+              "count": 16,
+              "median_ms": 28.406958762523278,
+              "p95_ms": 31.2659382361192,
+              "max_ms": 31.2659382361192
+            }
+          },
+          "25": {
+            "binding_setup": {
+              "count": 23,
+              "median_ms": 0.05638734724315211,
+              "p95_ms": 0.10368223474334594,
+              "max_ms": 0.10452804495199322
+            },
+            "submit_to_service": {
+              "count": 23,
+              "median_ms": 5.117645151604432,
+              "p95_ms": 21.424584037587806,
+              "max_ms": 21.433817465698873
+            },
+            "service_to_reply": {
+              "count": 23,
+              "median_ms": 55.29611110562901,
+              "p95_ms": 125.41469369688136,
+              "max_ms": 126.92023586827352
+            },
+            "reply_to_client": {
+              "count": 23,
+              "median_ms": 2.4203563962282506,
+              "p95_ms": 4.26450458781554,
+              "max_ms": 24.814802806398273
+            },
+            "total": {
+              "count": 23,
+              "median_ms": 75.38854406459734,
+              "p95_ms": 133.05961975192386,
+              "max_ms": 133.62581920242917
+            }
+          },
+          "24": {
+            "binding_setup": {
+              "count": 7,
+              "median_ms": 0.05638734724315211,
+              "p95_ms": 0.10290690871875259,
+              "max_ms": 0.10290690871875259
+            },
+            "submit_to_service": {
+              "count": 7,
+              "median_ms": 25.22995465047598,
+              "p95_ms": 27.807279324592354,
+              "max_ms": 27.807279324592354
+            },
+            "service_to_reply": {
+              "count": 7,
+              "median_ms": 124.12715910676802,
+              "p95_ms": 133.02599879613015,
+              "max_ms": 133.02599879613015
+            },
+            "reply_to_client": {
+              "count": 7,
+              "median_ms": 2.3768676546669694,
+              "p95_ms": 2.4260656151366193,
+              "max_ms": 2.4260656151366193
+            },
+            "total": {
+              "count": 7,
+              "median_ms": 151.91766319555555,
+              "p95_ms": 160.6904771638292,
+              "max_ms": 160.6904771638292
+            }
+          }
+        },
+        "expiry_count": 17,
+        "clock_ticks": 443,
+        "deadline_to_device_reply": {
+          "count": 17,
+          "median_ms": 0.25261531564932144,
+          "p95_ms": 1.266741755817412,
+          "max_ms": 1.266741755817412
+        },
+        "expiry_decision_to_device_reply": {
+          "count": 17,
+          "median_ms": 0.008740038822688577,
+          "p95_ms": 0.06329479728043824,
+          "max_ms": 0.06329479728043824
+        },
+        "device_reply_to_aes_reply": {
+          "count": 7,
+          "median_ms": 3.483751281050045,
+          "p95_ms": 12.299913022516877,
+          "max_ms": 12.299913022516877
+        },
+        "scope": "Passive emitted boundaries; reply means public ReplyMsg invocation. Client means checked binding epilogue. Standalone timer calls only in device-to-AES distribution; VBI rounding excluded from deadline latency."
+      },
+      "routines": {
+        "pump": {
+          "calls": 40,
+          "elapsed_ms": {
+            "total": 95.17634438008456,
+            "max": 4.053897845862367
+          },
+          "charged_cpu_ms": {
+            "total": 68.94072139152695,
+            "max": 2.5060651640378415
+          },
+          "off_cpu_ms": {
+            "total": 11.055585237228618,
+            "max": 0.9474484020530634
+          },
+          "interrupt_ms": {
+            "total": 15.18003775132898,
+            "max": 0.6469743254311165
+          }
+        },
+        "deskhost_controls": {
+          "calls": 40,
+          "elapsed_ms": {
+            "total": 914.1200965915258,
+            "max": 35.31842639830048
+          },
+          "charged_cpu_ms": {
+            "total": 565.7880343229783,
+            "max": 19.716188384488404
+          },
+          "off_cpu_ms": {
+            "total": 233.710541191662,
+            "max": 11.694453881493532
+          },
+          "interrupt_ms": {
+            "total": 114.62152107688556,
+            "max": 4.001739549662451
+          }
+        },
+        "aescore_dispatch": {
+          "calls": 48,
+          "elapsed_ms": {
+            "total": 223.71736406067842,
+            "max": 8.892073207692926
+          },
+          "charged_cpu_ms": {
+            "total": 115.92717010230075,
+            "max": 3.9664269734514273
+          },
+          "off_cpu_ms": {
+            "total": 84.51060716485827,
+            "max": 6.446412989389311
+          },
+          "interrupt_ms": {
+            "total": 23.279586793519403,
+            "max": 0.9358185116841632
+          }
+        },
+        "aesevents_wait": {
+          "calls": 32,
+          "elapsed_ms": {
+            "total": 84.21852070613875,
+            "max": 5.380903579045898
+          },
+          "charged_cpu_ms": {
+            "total": 68.65737497163012,
+            "max": 3.591239661732304
+          },
+          "off_cpu_ms": {
+            "total": 1.8385094568629745,
+            "max": 0.9428669300895572
+          },
+          "interrupt_ms": {
+            "total": 13.722636277645659,
+            "max": 0.8940213905401766
+          }
+        },
+        "aesevents_poll": {
+          "calls": 42,
+          "elapsed_ms": {
+            "total": 508.4102433255002,
+            "max": 20.06149040216866
+          },
+          "charged_cpu_ms": {
+            "total": 297.06969053214146,
+            "max": 10.724802961463476
+          },
+          "off_cpu_ms": {
+            "total": 150.7818105695263,
+            "max": 7.17536042087516
+          },
+          "interrupt_ms": {
+            "total": 60.5587422238324,
+            "max": 2.266630390806607
+          }
+        },
+        "aestimer_read": {
+          "calls": 74,
+          "elapsed_ms": {
+            "total": 173.9380500409513,
+            "max": 5.012835169916222
+          },
+          "charged_cpu_ms": {
+            "total": 136.74897339785926,
+            "max": 3.271946307967955
+          },
+          "off_cpu_ms": {
+            "total": 9.252670293312883,
+            "max": 0.9482942122617106
+          },
+          "interrupt_ms": {
+            "total": 27.936406349779173,
+            "max": 0.8437661673097173
+          }
+        },
+        "aestimer_target": {
+          "calls": 42,
+          "elapsed_ms": {
+            "total": 194.9780723703408,
+            "max": 9.719909949406453
+          },
+          "charged_cpu_ms": {
+            "total": 154.193245077737,
+            "max": 7.216523184362662
+          },
+          "off_cpu_ms": {
+            "total": 9.30017663336524,
+            "max": 0.9484351806298185
+          },
+          "interrupt_ms": {
+            "total": 31.48465065923857,
+            "max": 1.5593216038253177
+          }
+        },
+        "timer_deadline": {
+          "calls": 32,
+          "elapsed_ms": {
+            "total": 11.958487634959592,
+            "max": 0.4039448588131309
+          },
+          "charged_cpu_ms": {
+            "total": 10.053018203245374,
+            "max": 0.32161933183812885
+          },
+          "off_cpu_ms": {
+            "total": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "total": 1.9054694317142178,
+            "max": 0.08556779944148332
+          }
+        }
+      },
+      "progress": {
+        "reads": 0,
+        "writes": 0
+      }
+    },
+    "scroll": {
+      "artifact": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "AESChecks": 213,
+        "AESFailures": 0,
+        "xex_sha256": "a1fac0a227b0dae01b4971e326c2e2f9cc99e3695789ac49532634b8581ad6c4",
+        "path": "build/aes-server/latency/late-calls-scroll/results.json",
+        "sha256": "e23eb519ee73f558f7cbf7bba54b3797757d1e61e46e42c8d9b07c6c076f02f0",
+        "guards": "intact"
+      },
+      "latency": {
+        "calls": 32,
+        "window": [
+          4312996789,
+          4316532853
+        ],
+        "operations": {
+          "12": {
+            "binding_setup": {
+              "count": 10,
+              "median_ms": 0.05638734724315211,
+              "p95_ms": 0.10424610821577746,
+              "max_ms": 0.10424610821577746
+            },
+            "submit_to_service": {
+              "count": 10,
+              "median_ms": 69.06907309068919,
+              "p95_ms": 107.59925230377556,
+              "max_ms": 107.59925230377556
+            },
+            "service_to_reply": {
+              "count": 10,
+              "median_ms": 0.9306731662482256,
+              "p95_ms": 0.9549902097468349,
+              "max_ms": 0.9549902097468349
+            },
+            "reply_to_client": {
+              "count": 10,
+              "median_ms": 2.419440101835549,
+              "p95_ms": 8.929218372689352,
+              "max_ms": 8.929218372689352
+            },
+            "total": {
+              "count": 10,
+              "median_ms": 72.50440173729416,
+              "p95_ms": 110.98390282204576,
+              "max_ms": 110.98390282204576
+            }
+          },
+          "25": {
+            "binding_setup": {
+              "count": 17,
+              "median_ms": 0.05638734724315211,
+              "p95_ms": 0.10424610821577746,
+              "max_ms": 0.10424610821577746
+            },
+            "submit_to_service": {
+              "count": 17,
+              "median_ms": 4.444027804600926,
+              "p95_ms": 74.24522011505837,
+              "max_ms": 74.24522011505837
+            },
+            "service_to_reply": {
+              "count": 17,
+              "median_ms": 112.53977070085243,
+              "p95_ms": 160.805225415469,
+              "max_ms": 160.805225415469
+            },
+            "reply_to_client": {
+              "count": 17,
+              "median_ms": 2.4218365640933834,
+              "p95_ms": 23.306300299275847,
+              "max_ms": 23.306300299275847
+            },
+            "total": {
+              "count": 17,
+              "median_ms": 117.78026978526289,
+              "p95_ms": 173.13234533303074,
+              "max_ms": 173.13234533303074
+            }
+          },
+          "24": {
+            "binding_setup": {
+              "count": 5,
+              "median_ms": 0.05638734724315211,
+              "p95_ms": 0.10347078219118412,
+              "max_ms": 0.10347078219118412
+            },
+            "submit_to_service": {
+              "count": 5,
+              "median_ms": 71.22299927119353,
+              "p95_ms": 133.88696310434904,
+              "max_ms": 133.88696310434904
+            },
+            "service_to_reply": {
+              "count": 5,
+              "median_ms": 128.69869280032253,
+              "p95_ms": 161.7752992406034,
+              "max_ms": 161.7752992406034
+            },
+            "reply_to_client": {
+              "count": 5,
+              "median_ms": 2.4212022064368974,
+              "p95_ms": 2.4245149630874328,
+              "max_ms": 2.4245149630874328
+            },
+            "total": {
+              "count": 5,
+              "median_ms": 232.14818876792236,
+              "p95_ms": 260.2531228017745,
+              "max_ms": 260.2531228017745
+            }
+          }
+        },
+        "expiry_count": 13,
+        "clock_ticks": 542,
+        "deadline_to_device_reply": {
+          "count": 13,
+          "median_ms": 0.20299445007534758,
+          "p95_ms": 0.6827098067464642,
+          "max_ms": 0.6827098067464642
+        },
+        "expiry_decision_to_device_reply": {
+          "count": 13,
+          "median_ms": 0.009021975558904338,
+          "p95_ms": 0.06329479728043824,
+          "max_ms": 0.06329479728043824
+        },
+        "device_reply_to_aes_reply": {
+          "count": 5,
+          "median_ms": 11.94128949405043,
+          "p95_ms": 46.879806140300175,
+          "max_ms": 46.879806140300175
+        },
+        "scope": "Passive emitted boundaries; reply means public ReplyMsg invocation. Client means checked binding epilogue. Standalone timer calls only in device-to-AES distribution; VBI rounding excluded from deadline latency."
+      },
+      "routines": {
+        "pump": {
+          "calls": 23,
+          "elapsed_ms": {
+            "total": 50.78921140885197,
+            "max": 9.986551617682508
+          },
+          "charged_cpu_ms": {
+            "total": 41.97262676228081,
+            "max": 8.327071988316542
+          },
+          "off_cpu_ms": {
+            "total": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "total": 8.816584646571156,
+            "max": 1.6594796293659666
+          }
+        },
+        "deskhost_controls": {
+          "calls": 23,
+          "elapsed_ms": {
+            "total": 384.06197533335495,
+            "max": 32.3706368527966
+          },
+          "charged_cpu_ms": {
+            "total": 259.2486526948218,
+            "max": 20.033719633651405
+          },
+          "off_cpu_ms": {
+            "total": 71.65133165768933,
+            "max": 9.3853215277024
+          },
+          "interrupt_ms": {
+            "total": 53.16199098084381,
+            "max": 4.218266963076156
+          }
+        },
+        "aescore_dispatch": {
+          "calls": 32,
+          "elapsed_ms": {
+            "total": 130.0944910971427,
+            "max": 6.516897173443251
+          },
+          "charged_cpu_ms": {
+            "total": 76.28623063270832,
+            "max": 3.3759104794475165
+          },
+          "off_cpu_ms": {
+            "total": 38.43580089063815,
+            "max": 4.069615818906395
+          },
+          "interrupt_ms": {
+            "total": 15.372459573796236,
+            "max": 0.8121892528535521
+          }
+        },
+        "aesevents_wait": {
+          "calls": 22,
+          "elapsed_ms": {
+            "total": 57.189950646974324,
+            "max": 3.7070451761329277
+          },
+          "charged_cpu_ms": {
+            "total": 47.54454248011289,
+            "max": 3.0172164667970156
+          },
+          "off_cpu_ms": {
+            "total": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "total": 9.645408166861438,
+            "max": 0.6898287093359121
+          }
+        },
+        "aesevents_poll": {
+          "calls": 30,
+          "elapsed_ms": {
+            "total": 293.5740979081704,
+            "max": 16.398709293621604
+          },
+          "charged_cpu_ms": {
+            "total": 170.88573245049542,
+            "max": 10.187995415708668
+          },
+          "off_cpu_ms": {
+            "total": 87.85317862524828,
+            "max": 8.174121308919492
+          },
+          "interrupt_ms": {
+            "total": 34.83518683242667,
+            "max": 2.16167944075029
+          }
+        },
+        "aestimer_read": {
+          "calls": 52,
+          "elapsed_ms": {
+            "total": 111.2993900298712,
+            "max": 3.3491264895070194
+          },
+          "charged_cpu_ms": {
+            "total": 92.4312673479198,
+            "max": 2.7121609182115627
+          },
+          "off_cpu_ms": {
+            "total": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "total": 18.868122681951398,
+            "max": 0.6484544932962493
+          }
+        },
+        "aestimer_target": {
+          "calls": 30,
+          "elapsed_ms": {
+            "total": 82.99308268217695,
+            "max": 8.131266925014696
+          },
+          "charged_cpu_ms": {
+            "total": 69.05913482073757,
+            "max": 6.6703412421286785
+          },
+          "off_cpu_ms": {
+            "total": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "total": 13.933947861439371,
+            "max": 1.460925682886017
+          }
+        },
+        "timer_deadline": {
+          "calls": 22,
+          "elapsed_ms": {
+            "total": 8.149522328684666,
+            "max": 0.4051430899420479
+          },
+          "charged_cpu_ms": {
+            "total": 6.898921451015607,
+            "max": 0.3210554583656973
+          },
+          "off_cpu_ms": {
+            "total": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "total": 1.2506008776690598,
+            "max": 0.0853563468893215
+          }
+        },
+        "consoledriver_writequantum": {
+          "calls": 22,
+          "elapsed_ms": {
+            "total": 50.203840260284,
+            "max": 8.79910456892578
+          },
+          "charged_cpu_ms": {
+            "total": 38.048842720182016,
+            "max": 6.27894256807715
+          },
+          "off_cpu_ms": {
+            "total": 4.7030571809991555,
+            "max": 4.7030571809991555
+          },
+          "interrupt_ms": {
+            "total": 7.451940359102821,
+            "max": 1.2447506903925827
+          }
+        }
+      },
+      "progress": {
+        "reads": 0,
+        "writes": 1
+      }
+    },
+    "disk": {
+      "artifact": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "AESChecks": 259,
+        "AESFailures": 0,
+        "xex_sha256": "a1fac0a227b0dae01b4971e326c2e2f9cc99e3695789ac49532634b8581ad6c4",
+        "path": "build/aes-server/latency/late-calls-disk/results.json",
+        "sha256": "ee9f3e23c08852692297792e26dd8506c5bc40fe433909267eec1a12cd139385",
+        "guards": "intact"
+      },
+      "latency": {
+        "calls": 45,
+        "window": [
+          4317158057,
+          4320694521
+        ],
+        "operations": {
+          "12": {
+            "binding_setup": {
+              "count": 16,
+              "median_ms": 0.05638734724315211,
+              "p95_ms": 0.13103009815627473,
+              "max_ms": 0.13103009815627473
+            },
+            "submit_to_service": {
+              "count": 16,
+              "median_ms": 20.406369514744586,
+              "p95_ms": 51.15594061848462,
+              "max_ms": 51.15594061848462
+            },
+            "service_to_reply": {
+              "count": 16,
+              "median_ms": 0.9535805260657562,
+              "p95_ms": 0.9881882604362408,
+              "max_ms": 0.9881882604362408
+            },
+            "reply_to_client": {
+              "count": 16,
+              "median_ms": 2.4924617165154315,
+              "p95_ms": 18.164901977645236,
+              "max_ms": 18.164901977645236
+            },
+            "total": {
+              "count": 16,
+              "median_ms": 27.147194940927204,
+              "p95_ms": 54.6699296144938,
+              "max_ms": 54.6699296144938
+            }
+          },
+          "25": {
+            "binding_setup": {
+              "count": 22,
+              "median_ms": 0.05638734724315211,
+              "p95_ms": 0.10896854854739145,
+              "max_ms": 0.11037823222847025
+            },
+            "submit_to_service": {
+              "count": 22,
+              "median_ms": 19.644576453489602,
+              "p95_ms": 39.983915509198894,
+              "max_ms": 57.948642404130936
+            },
+            "service_to_reply": {
+              "count": 22,
+              "median_ms": 81.47569916786372,
+              "p95_ms": 126.97873774103829,
+              "max_ms": 132.39890101060223
+            },
+            "reply_to_client": {
+              "count": 22,
+              "median_ms": 3.488755658117875,
+              "p95_ms": 23.525788048419816,
+              "max_ms": 29.00720207392663
+            },
+            "total": {
+              "count": 22,
+              "median_ms": 97.51458670188997,
+              "p95_ms": 166.0530548550211,
+              "max_ms": 176.39498772870354
+            }
+          },
+          "24": {
+            "binding_setup": {
+              "count": 7,
+              "median_ms": 0.05638734724315211,
+              "p95_ms": 0.05638734724315211,
+              "max_ms": 0.05638734724315211
+            },
+            "submit_to_service": {
+              "count": 7,
+              "median_ms": 27.210489738207645,
+              "p95_ms": 56.553055559862926,
+              "max_ms": 56.553055559862926
+            },
+            "service_to_reply": {
+              "count": 7,
+              "median_ms": 118.08321080832673,
+              "p95_ms": 125.60979391834265,
+              "max_ms": 125.60979391834265
+            },
+            "reply_to_client": {
+              "count": 7,
+              "median_ms": 2.4838626460608504,
+              "p95_ms": 7.846863242357046,
+              "max_ms": 7.846863242357046
+            },
+            "total": {
+              "count": 7,
+              "median_ms": 150.9209463488488,
+              "p95_ms": 177.1683401961434,
+              "max_ms": 177.1683401961434
+            }
+          }
+        },
+        "expiry_count": 14,
+        "clock_ticks": 567,
+        "deadline_to_device_reply": {
+          "count": 14,
+          "median_ms": 0.2435933400904171,
+          "p95_ms": 1.2205746152620813,
+          "max_ms": 1.2205746152620813
+        },
+        "expiry_decision_to_device_reply": {
+          "count": 14,
+          "median_ms": 0.06808772179610617,
+          "p95_ms": 0.12341780627844919,
+          "max_ms": 0.12341780627844919
+        },
+        "device_reply_to_aes_reply": {
+          "count": 7,
+          "median_ms": 7.358971720335673,
+          "p95_ms": 34.597796100532996,
+          "max_ms": 34.597796100532996
+        },
+        "scope": "Passive emitted boundaries; reply means public ReplyMsg invocation. Client means checked binding epilogue. Standalone timer calls only in device-to-AES distribution; VBI rounding excluded from deadline latency."
+      },
+      "routines": {
+        "pump": {
+          "calls": 35,
+          "elapsed_ms": {
+            "total": 99.20529082479182,
+            "max": 16.159345004574423
+          },
+          "charged_cpu_ms": {
+            "total": 53.25150589459231,
+            "max": 2.287775646022789
+          },
+          "off_cpu_ms": {
+            "total": 29.3250857440099,
+            "max": 13.402215176936446
+          },
+          "interrupt_ms": {
+            "total": 16.62869918618961,
+            "max": 1.5437445991493968
+          }
+        },
+        "deskhost_controls": {
+          "calls": 35,
+          "elapsed_ms": {
+            "total": 856.1388904943619,
+            "max": 52.397237583858555
+          },
+          "charged_cpu_ms": {
+            "total": 445.8947191839623,
+            "max": 20.94219028192264
+          },
+          "off_cpu_ms": {
+            "total": 287.01392344571804,
+            "max": 28.52501977081363
+          },
+          "interrupt_ms": {
+            "total": 123.23024786468164,
+            "max": 8.580533114174509
+          }
+        },
+        "aescore_dispatch": {
+          "calls": 44,
+          "elapsed_ms": {
+            "total": 205.7928131506571,
+            "max": 22.342781503258482
+          },
+          "charged_cpu_ms": {
+            "total": 100.31210396699085,
+            "max": 2.6729717118775715
+          },
+          "off_cpu_ms": {
+            "total": 77.58729818616,
+            "max": 19.909103596244037
+          },
+          "interrupt_ms": {
+            "total": 27.89341099750627,
+            "max": 1.8547913033794345
+          }
+        },
+        "aesevents_wait": {
+          "calls": 29,
+          "elapsed_ms": {
+            "total": 78.37643911082792,
+            "max": 3.952118684088477
+          },
+          "charged_cpu_ms": {
+            "total": 60.22795994806725,
+            "max": 2.2990531154714193
+          },
+          "off_cpu_ms": {
+            "total": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "total": 18.14847916276067,
+            "max": 1.653065568617058
+          }
+        },
+        "aesevents_poll": {
+          "calls": 37,
+          "elapsed_ms": {
+            "total": 461.3119362146328,
+            "max": 22.47120368660476
+          },
+          "charged_cpu_ms": {
+            "total": 214.89662084724807,
+            "max": 10.583764109171542
+          },
+          "off_cpu_ms": {
+            "total": 184.3933214825925,
+            "max": 11.904990139262651
+          },
+          "interrupt_ms": {
+            "total": 62.02199388479219,
+            "max": 4.616220666244701
+          }
+        },
+        "aestimer_read": {
+          "calls": 66,
+          "elapsed_ms": {
+            "total": 141.34228670428644,
+            "max": 3.2972501300433197
+          },
+          "charged_cpu_ms": {
+            "total": 109.3960351236786,
+            "max": 1.9388789349557853
+          },
+          "off_cpu_ms": {
+            "total": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "total": 31.94625158060783,
+            "max": 1.3583711950875343
+          }
+        },
+        "aestimer_target": {
+          "calls": 37,
+          "elapsed_ms": {
+            "total": 129.65614995651126,
+            "max": 10.326496837374663
+          },
+          "charged_cpu_ms": {
+            "total": 94.83491899252726,
+            "max": 6.904419217371815
+          },
+          "off_cpu_ms": {
+            "total": 8.017153031031366,
+            "max": 2.0183850945686297
+          },
+          "interrupt_ms": {
+            "total": 26.804077932952627,
+            "max": 2.2314587829636907
+          }
+        },
+        "timer_deadline": {
+          "calls": 29,
+          "elapsed_ms": {
+            "total": 11.984778235611712,
+            "max": 0.6148335375025198
+          },
+          "charged_cpu_ms": {
+            "total": 9.195507620045138,
+            "max": 0.3340245482316223
+          },
+          "off_cpu_ms": {
+            "total": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "total": 2.789270615566573,
+            "max": 0.2810909260071133
+          }
+        }
+      },
+      "progress": {
+        "reads": 13,
+        "writes": 0
+      }
+    }
+  },
+  "diagnostics": {
+    "removed_experiments": [
+      "Additional callbacks inside event matching worsened the pointer consumption tail.",
+      "Yielding immediately after a widget action shortened commit-to-patch time but worsened visible button feedback."
+    ],
+    "retained_ordering": "Moving the reserved AES admission after the paint quantum preserved bounded progress and improved the loaded panel cohort; raw pointer consumption still misses the relative limit.",
+    "test_repairs": [
+      "Four-client clock-fault injection now explicitly waits for four admissions before matching, preserving the message recovery assertions.",
+      "Alarm transport fixture controller stage is runnable work even without an application event wait.",
+      "Passive patch marker is associated with the model commit, not the later sampled application receipt; SetTree/full-redraw comparison does not require a WidgetUpdate marker."
+    ],
+    "observer_scope": "Patch benchmark uses event state; matched full-tree replacement reads the states it must preserve. Final scene still has an independent pixel oracle. Completed-scanout before/after checks are not a continuous whole-gesture flicker proof."
+  },
+  "conclusion": "Native disabled panel/pointer regressions pass the frozen comparison. AES disabled/idle/loaded functional checks pass. Active pointer visibility improves from 106.53 to 46.66 ms p95, but consumption and matched complete-feedback limits remain open. AS4 and timer TD4 are not accepted. Existing absolute widget and 125k transport goals remain open."
+}

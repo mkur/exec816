@@ -12,13 +12,14 @@ USE LAYERTYPES
 USE LAYERS
 USE REGIONS
 USE HEAPCORE
+USE CALYPSIMETA
 
 ADDRESS entry
 WIDGETTYPES.Packet POINTER packet
 
 PUBLIC BYTE FUNC Bind(LONGCARD code,data)
 
-  IF code<$c0000 OR code>$cffff OR data<$d0000
+  IF CALYPSIMETA.Code(code)=0 OR data<$d0000
       OR data>LONGCARD($e0000)-WIDGETTYPES.PACKET_SIZE OR (data & 1)<>0 THEN
     RETURN(0)
   FI
@@ -83,6 +84,25 @@ PUBLIC PROC Damage(DESKTYPES.Service POINTER service
       FI
     END
   OD
+
+RETURN
+
+; Active-window changes affect only the client's focus underline. Its frame
+; has separate damage; the retained tree and button states remain unchanged.
+PUBLIC PROC FocusDamage(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+
+  IF window.widgets=NULL THEN
+    RETURN
+  FI
+
+  packet.context=LONGCARD(ADDRESS(window.widgets))
+  Run(WIDGETTYPES.OP_FOCUS)
+  IF packet.status<>WIDGETTYPES.OK THEN
+    HEAPCORE.Abort($fab0)
+  FI
+
+  Damage(service,window)
 
 RETURN
 

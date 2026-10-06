@@ -48,7 +48,8 @@ def native_context_cases(program, output, bridge_dir, rom):
             if not fault:
                 word = lambda offset: int.from_bytes(snapshot[offset:offset+2], 'little')
                 require((word(0),word(2),word(4),word(6),word(8),snapshot[10],snapshot[11]) ==
-                        (0x15,0x1234,0x6ab,word(16),word(14)-1,0x12,9+(4 if variant==8 else 0)),
+                        (0x15,0x1234,probe['build']['task_storage']['PROFILE_TAG']|0xab,
+                         word(16),word(14)-1,0x12,9+(4 if variant==8 else 0)),
                         'Fast native register/flag restoration: '+snapshot.hex())
             results.append(dict(variant=variant,runtime=runtime,snapshot=snapshot.hex()))
         # Reuse the same emitted kernel and clone for invalid dequeue packets.

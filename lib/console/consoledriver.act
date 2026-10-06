@@ -1,6 +1,8 @@
 ; One resident console worker; public calls use the unchanged Exec IOStdReq.
 MODULE CONSOLEDRIVER
 USE EXEC
+USE AESHOST
+USE AESLOCKS
 USE TASKSTACKS
 USE A816MEMORY
 USE EXECLISTS
@@ -457,6 +459,7 @@ RETURN(bits OR EXEC.SetSignal(0,STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR display
 PUBLIC PROC Worker()
   LONGCARD bits,displayMask
   BYTE again,writing,registered,stopping,accepted,inputPending,completeWrite
+  BYTE handoff,deferOutput
   CONSOLETYPES.Instance POINTER instance
   CONSOLETYPES.Window POINTER entry
 
@@ -535,6 +538,7 @@ PUBLIC PROC Worker()
   bits=0
   stopping=0
   inputPending=1
+  handoff=0
   ; Stop may be requested after the final write reply but before DMA retires.
   WHILE service.stop=0 OR CONSOLEBITMAP.Pending()<>0
       OR batch.phase<>CONSOLETYPES.BATCH_IDLE DO
@@ -554,17 +558,39 @@ PUBLIC PROC Worker()
       FI
     FI
 
+    IF (bits & DESKINPUT.Mask())<>0 THEN
+      DESKINPUT.Service(bits)
+      DESKINPUT.Present()
+    FI
+
     DESKHOST.Controls()
     IF DESKHOST.Ready()<>0 THEN
       CONSOLECONTROL.Process()
     FI
     DESKINPUT.Service(bits)
+    DESKINPUT.Advance()
     inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)
     ; Present newly consumed motion before spending another quantum on output.
     ; Intersecting draws erase it safely and the final pass restores it.
     DESKINPUT.Present()
     bits=0
 
+    ; Commit visible GUI feedback before starting another console-output
+    ; quantum. An existing scene/DMA owner still gates both paths; painting
+    ; retains its one-quantum budget for this turn.
+    deferOutput=0
+    IF DESKPAINT.Pump()<>0 THEN
+      DESKINPUT.Service(DESKINPUT.Mask())
+      IF handoff=0 AND DESKHOST.ControlPending()<>0 THEN
+        ; One handoff at most before the next eligible output quantum. This
+        ; lets queued status patches run without starving console writers.
+        handoff=1
+        deferOutput=1
+      FI
+    FI
+    DESKINPUT.Present()
+
+    DESKHOST.AfterPaint()
     Arrival(service)
     entry=CONSOLEWINDOWS.Take()
     again=0
@@ -575,8 +601,10 @@ PUBLIC PROC Worker()
       ReadQuantum(service,instance)
       BEGIN
         LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-        IF CONSOLEBITMAP.Pending()=0 AND DESKHOST.Ready()<>0 AND
+        IF deferOutput=0 AND CONSOLEBITMAP.Pending()=0
+            AND DESKHOST.PaintReady()<>0 AND
             (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
+          handoff=0
           completeWrite=0
           IF view.scrollState<>0
               AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
@@ -598,8 +626,19 @@ PUBLIC PROC Worker()
           FI
         FI
 
-        writing=instance.write<>NULL
-        again=(writing<>0 AND instance.writeCancel<>0) OR view.scrollState<>0
+        ; Cancellation may finish a retained model edit while pixels are held.
+        IF AESLOCKS.PaintBlocked()<>0 AND CONSOLEBITMAP.Pending()=0
+            AND instance.write<>NULL AND instance.writeCancel<>0 THEN
+          CONSOLECORE.EditQuantum(instance)
+          IF instance.operation=CONSOLETYPES.OP_IDLE THEN
+            FinishWrite(instance,EXEC.IOStdReq POINTER(instance.write))
+          FI
+        FI
+
+        writing=instance.write<>NULL AND (AESLOCKS.PaintBlocked()=0
+            OR instance.writeCancel<>0)
+        again=(writing<>0 AND instance.writeCancel<>0)
+            OR (view.scrollState<>0 AND AESLOCKS.PaintBlocked()=0)
         IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
           again=0
         FI
@@ -607,8 +646,9 @@ PUBLIC PROC Worker()
       entry.busy=0
     FI
 
-    DESKPAINT.Pump()
     DESKINPUT.Present()
+    DESKHOST.Events()
+    AESHOST.Settle()
     IF stopping=0 AND writing=0 AND again=0
         AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
       DESKHOST.Cache()
@@ -620,7 +660,10 @@ PUBLIC PROC Worker()
       ELSE
         bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)
       FI
-    ELSEIF again=0 THEN
+    ELSEIF again=0 AND DESKPAINT.Ready()=0 THEN
+      ; Ready paint continues within the existing preemptive Task quantum.
+      ; Do not add a voluntary round-robin pass between its bounded stripes.
+      ; Blocked paint still follows the normal signal wait below.
       IF writing<>0 THEN
         EXEC.Yield()
       ELSEIF Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN

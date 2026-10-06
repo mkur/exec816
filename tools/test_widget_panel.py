@@ -29,7 +29,7 @@ from sio_transaction_trace import read_events, BASE_HZ
 POSITIONS = {2:(480,128),3:(568,128),4:(480,160),5:(568,160),6:(480,192),7:(568,192)}
 
 
-def observers(p):
+def observers(p, breakdown=False):
     sy=json.loads((p['output'].parent/'c-image.json').read_text())['symbols']
     spans=native_markers(p,[('DESKWIDGETS_INPUT','commit'),('DESKWIDGETS_PAINT','paint'),
         ('DESKPAINT_PUMP','pump'),('DESKWIDGETS_RUN','model_call'),('DESKAPP_REFRESHSTATUS','application'),('DESKINPUT_CONSUME','consume')])
@@ -40,18 +40,27 @@ def observers(p):
     definition=dict(points=points,spans={k:v for k,v in spans.items() if k!='application'},
         task_dps=[x['dp'] for x in p['build']['memory']['task_pools']])
     marks=flat_markers(definition)
+    if breakdown:
+        from aes_timing_breakdown import scheduler_markers
+        scheduler=scheduler_markers(p)
+        scheduler['selected']=points['selected']
+        definition['scheduler']=scheduler
+        marks.update(scheduler['points'])
     marks.update(capture=p['labels']['pointer_notify'],application=spans['application']['entry'])
-    for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit','vram_win'):
+    for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit','vram_win',
+                 'WidgetUpdate'):
         if name in sy:marks[name]=sy[name]
     return spans,marks,definition
 
 
 def run(out, program, count=100, unobserved=False, comparison_only=False,
-        idle_only=False, feedback=False):
+        idle_only=False, feedback=False, breakdown=False):
+    require(not (breakdown and unobserved), 'Timing breakdown requires observation')
     out.mkdir(parents=True, exist_ok=True)
     p=read_build(program)
+    foreign=json.loads((p['output'].parent/'c-image.json').read_text())['symbols']
     at=lambda mod,n:next(d['address'] for d in p['image']['data'] if '_'+mod+'_'+n.upper()+'_' in d['name'])
-    spans,marks,definition=observers(p)
+    spans,marks,definition=observers(p,breakdown)
     for name in ('EXEC816_MOUSE_TRACE','EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS','EXEC816_MASK_TRACE'):
         os.environ.pop(name,None)
     if not unobserved:
@@ -64,7 +73,7 @@ def run(out, program, count=100, unobserved=False, comparison_only=False,
     colors={hw:bytes((v & 254)+(v >> 7) for v in PALETTE[pen*3:pen*3+3])[::-1] for pen,hw in enumerate(PENS)}
     report=dict(slice='AW5',status='running',tier='development',qualification=False,observer=not unobserved,
         count_per_load=0 if comparison_only else count,idle_only=idle_only,
-        feedback_observer=feedback,samples=[],windows={},functional=[],comparison=[],build=p['build'],
+        feedback_observer=feedback,timing_breakdown=breakdown,samples=[],windows={},functional=[],comparison=[],build=p['build'],
         reserved_bank_zero_delta=delta(p['build']['memory']),marks=marks,
         timing_scope='Capture to commit/application: passive boundaries or IRQ observation upper bounds. Visible feedback: first matching completed scanout, <=1 frame observation quantization.',
         targets=dict(idle=dict(p95_ms=40,max_ms=60,button_max_ms=40),loaded=dict(p95_ms=60,max_ms=100,button_max_ms=100)))
@@ -202,6 +211,10 @@ def run(out, program, count=100, unobserved=False, comparison_only=False,
                 load(4);move(88,96)
                 for down in (1,0):
                     b._cmd_ok('MOUSE AT 2000 0 0 '+str(down));reach('dw($%x)=%d'%(at('DESKINPUT','buttons'),down));frames(4)
+                # Loaded peers can defer model consumption beyond four frames;
+                # wait for the semantic result, then measure latency separately.
+                reach('(dw($%x)=1)&(dw($%x)=65535)&(dw($%x)=0)'%
+                    (second+24+24+10,second+20,second+22))
                 require(get(second+24+24+10)==1,'Second form did not toggle')
                 load(0)
                 report['functional'].append(dict(name='second context toggled',contexts=[context,second]))
@@ -220,17 +233,29 @@ def run(out, program, count=100, unobserved=False, comparison_only=False,
                 report['functional'].append(dict(name='Tab, Shift-Tab, Space, Return, Escape and BREAK'))
                 for name,value in (() if comparison_only else (('idle',0),) if idle_only else (('idle',0),('scroll',2),('disk',3))):
                     load(value);begin=clock();writes=read('DESKTEST','writes');reads=read('DESKTEST','reads')
+                    aes_before={name:get(foreign[name]) for name in ('AESMessages','AESTimers') if name in foreign}
                     for index in range(count):
                         click((2,5,6,4,7)[index%5],name)
                         if (index+1)%10==0:print(name,index+1,flush=True)
                     report['windows'][name]=[begin,clock()]
                     report.setdefault('progress',{})[name]=dict(writes=read('DESKTEST','writes')-writes,reads=read('DESKTEST','reads')-reads)
+                    if aes_before:
+                        report.setdefault('aes_progress',{})[name]={
+                            key:(get(foreign[key])-old)&65535 for key,old in aes_before.items()}
+                        report['aes_workload']='Unchanged continuous request/reply loop with a 100 ms caller timer after each exchange; completed counts are measured over each gesture cohort, not fixed offered throughput.'
                     if value==2:require(read('DESKTEST','writes')>writes,'Console stopped under widget load')
                     if value==3:require(read('DESKTEST','reads')>reads,'Physical SDFS stopped under widget load')
                 load(0)
                 # End every action with identical state and focus. The only
                 # experimental difference is the application's patch/SetTree.
+                recovery=any('_DESKAPP_STALEONCE_' in d['name'] for d in p['image']['data'])
+                if recovery:
+                    retries=read('DESKAPP','staleRetries')
+                    b.poke(at('DESKAPP','staleOnce'),1)
                 click(2)
+                if recovery:
+                    require(read('DESKAPP','staleRetries')==retries+1,'Missing stale patch retry')
+                    report['functional'].append(dict(name='stale action patch retries from fresh snapshot'))
                 if state['toggle']:click(2)
                 for full in (0,1):
                     b.poke(at('DESKAPP','benchmarkFull'),full)
@@ -280,7 +305,26 @@ def analyze(report, out, p, spans, marks, definition):
             sample['capture_to_button_pixels_ms']=(align(sample['button_feedback']['clock'])-captured)/BASE_HZ*1000
         if 'application' in sample:
             sample['capture_to_application_ms']=(align(sample['application'])-captured)/BASE_HZ*1000
-    profile=analyze_events(events,definition)
+            # The actual retained-model patch is distinct from the client
+            # merely receiving its semantic action. Keep both IPC/scene wait
+            # and patch-to-scanout latency visible without changing the oracle.
+            if sample.get('load') is not None:
+                patches=times(marks['WidgetUpdate'])
+                patch=patches[bisect_left(patches,commit)]
+                require(patch<=align(sample['visible']),'Missing status patch before feedback')
+                sample['commit_to_patch_ms']=(patch-commit)/BASE_HZ*1000
+                sample['patch_to_visible_ms']=(align(sample['visible'])-patch)/BASE_HZ*1000
+    profile=analyze_events(events,definition,include_segments=report.get('timing_breakdown',False))
+    if report.get('timing_breakdown'):
+        from aes_timing_breakdown import input_breakdown
+        samples=[dict(capture=s['capture'],observed=align(s['consumed']),load=s['load'],edge=s['edge'])
+                 for s in report['samples']]
+        report['input_breakdown']=input_breakdown(events,definition['scheduler'],profile,samples,spans['consume']['entry'])
+        report['input_breakdown']['summary']={load:{key:distribution(
+            [r[key] for r in report['input_breakdown']['records'] if r['load']==load])
+            for key in ('capture_to_ready_ms','ready_to_selected_ms','selected_to_consume_ms',
+                        'runnable_off_cpu_ms','blocked_off_cpu_ms','charged_cpu_ms','elapsed_ms')}
+            for load in report['windows']}
     report['render_cost']=dict(routines=profile['routines'],max_charged_cpu_ms=profile['max_charged_cpu_ms'],
         scope=profile['scope'],maximum_quantum_scope='Paint call charged CPU is a conservative upper bound on uninterrupted rendering; IRQ and other-Task time excluded.')
     for comparison in report['comparison']:
@@ -292,7 +336,7 @@ def analyze(report, out, p, spans, marks, definition):
     report['latency']={}
     for load in report['windows']:
         selected=[s for s in report['samples'] if s['load']==load]
-        report['latency'][load]={key:distribution([s[key] for s in selected if key in s]) for key in ('capture_to_commit_ms','capture_to_application_ms','capture_to_button_consumed_ms','capture_to_visible_ms','capture_to_button_pixels_ms')}
+        report['latency'][load]={key:distribution([s[key] for s in selected if key in s]) for key in ('capture_to_commit_ms','capture_to_application_ms','capture_to_button_consumed_ms','capture_to_visible_ms','capture_to_button_pixels_ms','commit_to_patch_ms','patch_to_visible_ms')}
         report['latency'][load]['press_feedback']=distribution([s['capture_to_visible_ms'] for s in selected if s['edge']=='press'])
         report['latency'][load]['application_label']=distribution([s['capture_to_visible_ms'] for s in selected if s['edge']=='release'])
         if report.get('feedback_observer'):
@@ -338,13 +382,14 @@ if __name__=='__main__':
     a.add_argument('--comparison-only',action='store_true',help='Functional checks and matched patch/full-redraw control without the load cohorts')
     a.add_argument('--idle-only',action='store_true',help='Run only the focused idle button cohort')
     a.add_argument('--feedback',action='store_true',help='Observe intermediate button pixels for erase/redraw flicker')
+    a.add_argument('--breakdown',action='store_true',help='Passively split input wake, scheduling and execution delay')
     a.add_argument('--analyze-only',action='store_true',help='Recompute passive metrics from the completed guest run')
     args=a.parse_args()
     if args.analyze_only:
         out=args.output.resolve();report=json.loads((out/'results.json').read_text())
         require(report.get('ownership')=='restored','Guest run did not complete cleanly')
-        p=read_build(args.program.resolve());spans,marks,definition=observers(p)
+        p=read_build(args.program.resolve());spans,marks,definition=observers(p,report.get('timing_breakdown',False))
         analyze(report,out,p,spans,marks,definition)
         report['status']='pass';report.pop('error',None)
         (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
-    else:run(args.output.resolve(),args.program.resolve(),args.count,args.unobserved,args.comparison_only,args.idle_only,args.feedback)
+    else:run(args.output.resolve(),args.program.resolve(),args.count,args.unobserved,args.comparison_only,args.idle_only,args.feedback,args.breakdown)

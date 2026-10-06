@@ -8,6 +8,7 @@ USE DESKSTATE
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
+USE CALYPSIMETA
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-bitmap-types.inc"
 BYTE drawingPending,drawingChanged
@@ -37,7 +38,7 @@ PUBLIC BYTE FUNC Bind(LONGCARD entry,packet)
 
   LET state=GetBinding()
   LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
-  IF service.state<>0 OR state.enabled<>0 OR entry<$c0000 OR entry>$cffff
+  IF service.state<>0 OR state.enabled<>0 OR CALYPSIMETA.Code(entry)=0
       OR packet<$d0000 OR packet>LONGCARD($e0000)-PACKET_BYTES OR (packet & 1)<>0 THEN
     RETURN(0)
   FI

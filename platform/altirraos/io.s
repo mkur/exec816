@@ -1,5 +1,5 @@
-; Caller-domain checks precede public/private I/O. Caller helpers retire their
-; kernel activation before invoking drivers and never reread an async reply.
+; Caller-domain checks precede public/private I/O. Established resident calls
+; stay on the caller stack; admission and collection retain kernel packets.
 .include "io.inc"
 .segment "SIGNAL_CODE"
 .a16
@@ -32,15 +32,12 @@ name:
 .ident(.concat(.string(name), "_end")):
 .endmacro
 io_packet io_open_dispatch, IO_SERVICE_OPEN_DEVICE
-io_packet io_close_dispatch, IO_SERVICE_CLOSE_DEVICE
-io_packet io_begin_dispatch, IO_SERVICE_BEGIN_IO
-io_packet io_send_dispatch, IO_SERVICE_SEND_IO
-io_packet io_check_io, IO_SERVICE_CHECK_IO
 io_packet io_create_check, IO_SERVICE_CREATE_CHECK
 io_packet io_delete_check, IO_SERVICE_DELETE_CHECK
 io_packet io_collect, IO_SERVICE_WAIT_REQUEST
-io_packet io_start, IO_SERVICE_DO_IO
-io_packet io_abort_dispatch, IO_SERVICE_ABORT_IO
+io_packet io_test_close, IO_SERVICE_TEST_CLOSE
+io_packet io_test_begin, IO_SERVICE_TEST_BEGIN
+io_packet io_test_abort, IO_SERVICE_TEST_ABORT
 io_packet io_test_step, IO_SERVICE_TEST_STEP
 .macro io_caller name, target
 .export name, .ident(.concat(.string(name), "_end"))
@@ -49,6 +46,7 @@ name:
     jml target
 .ident(.concat(.string(name), "_end")):
 .endmacro
+io_caller io_check_io, IO_CHECK
 io_caller io_close_device, IO_CLOSE
 io_caller io_begin_io, IO_BEGIN
 io_caller io_send_io, IO_SEND

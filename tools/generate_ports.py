@@ -52,6 +52,13 @@ def constants(abi=ABI):
             'Invalid port service family')
     require(set(abi['imports'])==set(DECLARATIONS),'Invalid port imports')
     require(set(abi['records'])=={'MsgPort','Message'},'Invalid port records')
+    require(abi.get('native_bindings') == {'ReplyMsg': {
+        'symbol': 'exec_reply_msg_native',
+        'address': 'A16 low word, X16 zero-extended bank',
+        'entry': dict(E=0, M=0, X=0, I=1),
+        'preserved': ['A', 'X', 'Y', 'P', 'D', 'DBR', 'S'],
+        'context': 'admitted native IRQ or deferred native continuation'}},
+        'Invalid native ReplyMsg binding')
     c=dict(abi['constants'])
     for group,prefix,low in [('services','SERVICE',0),('errors','ERROR',0xff00)]:
         values=list(abi[group].values())
@@ -99,6 +106,18 @@ def declarations():
     return ''.join('PUBLIC EXTERNAL '+line+'\n' for line in DECLARATIONS.values())
 
 
+def native_declarations():
+    constants()
+    return HEADER+'''; Native IRQ/resident assembly binding; not the Task compiler ABI.
+; JSL with E=0, M=X=0, I=1 and an adapter-admitted complete native frame.
+; A16 = message low word; X16 = zero-extended bank.
+; Preserves A/X/Y/P/D/DBR/S. Publishes queue and signal before returning.
+; No scheduling, allocation, COP, waiting or raw-NMI/ROM entry is permitted.
+; The producer owns the request and retains its endpoint until publication.
+.import exec_reply_msg_native
+'''
+
+
 def call_types():
     return HEADER+types()+'''TYPE PortSendArgs=[MsgPort POINTER port Message POINTER message]
 TYPE PortPointerArgs=[BYTE POINTER value]
@@ -130,4 +149,5 @@ if __name__=='__main__':
     args=parser.parse_args()
     write(ROOT/'lib/exec/exec-port-types.inc',public_api(),args.check)
     write(ROOT/'lib/exec/port-call-types.inc',call_types(),args.check)
+    write(ROOT/'lib/exec/exec-native-ports.inc',native_declarations(),args.check)
     if args.output:generate(args.output,args.check)

@@ -16,6 +16,7 @@ from test_large_stacks import observe
 from test_console_display import terminal
 from test_cooperative import data
 from make_data_disk import make
+from generate_console import constants as console_constants
 
 PIN=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
 CASES=['concurrent','stop-queued','stop-active','device-fault','unquiesced',
@@ -146,8 +147,17 @@ def run(output,mode,cases=None,replay=False,production=False):
                         if name=='no-disk': payload+=b'SIO offline; reset required\n'
                         pointer=lambda address:int.from_bytes(b.memdump(address,3),'little')
                         expected=terminal(payload)
+                        # Cursor blink is independent of model publication. A
+                        # completed frame is valid in either recorded phase.
+                        if not b.memdump(view+console_constants()['PRESENTATION_CURSORON'],1)[0]:
+                            expected[1][expected[2]]^=128
                         require(b.memdump(pointer(inst),960)==expected[0],'Completion text differs')
-                        require(b.memdump(pointer(view+3),960)==expected[1],'Completion screen differs')
+                        actual=b.memdump(pointer(view+3),960)
+                        if actual!=expected[1]:
+                            (folder/'completion-diff.json').write_text(json.dumps(dict(
+                                differences=[(i,a,e) for i,(a,e) in enumerate(zip(actual,expected[1])) if a!=e],
+                                presentation=b.memdump(view,32).hex(),instance=b.memdump(inst,62).hex()),indent=2)+'\n')
+                        require(actual==expected[1],'Completion screen differs')
                         b.screenshot(str(folder/'completion.png'))
                         case['completion_sha256']=sha256(folder/'completion.png')
                     b.bp_clear_all()

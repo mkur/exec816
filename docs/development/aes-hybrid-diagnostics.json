@@ -1,0 +1,2525 @@
+{
+  "slice": "HY4 latency diagnostics",
+  "date": "2026-10-06",
+  "tier": "development",
+  "qualification": false,
+  "status": "pass",
+  "acceptance": {
+    "HY4": "open",
+    "AS4_TD4_successor": "open",
+    "latency": "fail",
+    "record": {
+      "path": "build/aes-hybrid/diagnostic/acceptance.json",
+      "sha256": "69ecab9799fc6b1276d55fa018f13004ee2492d338fa3dee99f2041f4c280cf0"
+    },
+    "limits": {
+      "scope": "Compare matched optimized configurations and workloads: 10 gestures per widget cohort and 30 pointer motions/button edges. Development measurements, not qualification.",
+      "observed_repeat_distribution_variation_ms": 0,
+      "idle_extra_presenter_wakes": 0,
+      "input_consumption_p95_extra_ms": {
+        "idle": 5,
+        "loaded": 10
+      },
+      "scanout_p95_extra_ms": 20.1,
+      "render_quantum_cpu_growth_fraction": 0.1,
+      "explanation": "20.1 ms allows one PAL scanout-observation frame of phase difference. CPU/consumption budgets are explicit integration allowances, not measured jitter. No deliberate extra-frame wait is allowed. Exceedances require investigation before AS4 acceptance."
+    }
+  },
+  "scope": "Passive timing breakdown plus externally paced optional fixture. No production kernel, AES, timer, priorities, renderer, ABI or acceptance-limit changes.",
+  "base_revision": "4ad6f36164d22ed9fa3bf777a4a637bcd0ab2e33",
+  "inputs": {
+    "tests/programs/aes_desktop.c": "c6ea6071fea0c67661ddb7f795cf2fa2b92fb1d496a3bfa7dffc2f795aa53ed3",
+    "tools/aes_timing_breakdown.py": "8445f3e0d68daacbce4fe14fcf8c3097f09ea8d6c8135503e7eb22dc7ca10c04",
+    "tools/compare_aes_diagnostics.py": "7911fd090c015f9cef58e0c351a4a5f967f47e79399d2c6ffaab195428c0c81c",
+    "tools/console_turn_profile.py": "a2544801d517d66badfadb82539a5221fc3e98c95992a1ee612c48b04d30b01f",
+    "tools/measure_aes_calls.py": "8bf6127e8046259f4c6d21c367cf6df680c3280acac01a585c3cfcb860be287f",
+    "tools/test_widget_panel.py": "d2a73d20d50ad42a835451c2e9ce83020f7aba42f74ec46b0c5616d35aa6372c",
+    "tools/measure_desktop.py": "21263a7ca63f363860a5e93cf7944bee11a95f1d138f89959c90867aa1211e8c",
+    "tests/test_aes_timing_breakdown.py": "73a9a818b8336fdd3fe23bc525c824a66954f2228c8c8d8511c21cf1248e6f71"
+  },
+  "build": {
+    "record": {
+      "path": "build/aes-hybrid/diagnostic/final-desktop/program/build.json",
+      "sha256": "1616a60b60f454f3650b24014365ae44c7d8fbf72421d8843c8c52c1a29ecf8f"
+    },
+    "xex": {
+      "sha256": "4aa8a8071a96fce6f2357ca4f26115a52b57369cec36f94f90b4c10dc184b20c"
+    },
+    "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "compiler_override": false,
+    "exec": {
+      "revision": "4ad6f36164d22ed9fa3bf777a4a637bcd0ab2e33",
+      "dirty": true,
+      "display": "4ad6f36-dirty",
+      "actionc_pin": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "task_capacity": 8,
+      "stack_checks": true,
+      "mount": null,
+      "strings": {
+        "banner": "Exec816 (4ad6f36-dirty)\n\n",
+        "slots": "exec: 8 task slots\n",
+        "stackChecks": "exec: stack checks enabled\n",
+        "version": "Exec816 (4ad6f36-dirty)\nactionc pin: 6510ea1\n",
+        "sioReady": "",
+        "mountStart": "SYS: no system volume configured\n",
+        "mountFailure": "Filesystem startup failed; check configured disks\nRequired: D1: on D1:\nUse CD SYS: to retry; cold-boot after SIO timeout"
+      }
+    }
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "host_checks": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "tests": 386,
+    "skipped": 4,
+    "result": "pass",
+    "scope": "Historical-source checks unavailable; nine focused observer/accounting cases included."
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "guards_alignment_unused_capacity_included": true,
+    "bank_zero_budget_unchanged": true
+  },
+  "optional_fixture_upper_ram_delta": {
+    "zero_fill": 8,
+    "initialized_data": 0,
+    "c_code": 182,
+    "heap_reservations": 0,
+    "bank_reservations": 0
+  },
+  "observer_reproduction": {
+    "panel_all_latency_distributions_identical": true,
+    "pointer_visible_button_and_sample_gap_identical": true,
+    "caller_85_call_distributions_identical": true
+  },
+  "cases": {
+    "continuous-idle": {
+      "source": {
+        "path": "build/aes-hybrid/diagnostic/continuous-idle/results.json",
+        "sha256": "974eee4d8c4916584ee6f7597f75da919f1842a14d5066965ab6af32f83538eb"
+      },
+      "trace": {
+        "path": "build/aes-hybrid/diagnostic/continuous-idle/emulator.log",
+        "sha256": "6af9a296d9e61a3e32b0fa57173ae692522e7ba0984331f3fc19b716adee196e"
+      },
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "switching": 0,
+        "irq_depth": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 393,
+            "untouched_above_floor": 887
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 168,
+            "untouched_above_floor": 600
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 517,
+            "untouched_above_floor": 251
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 517,
+            "untouched_above_floor": 251
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 693,
+            "untouched_above_floor": 1611
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 117,
+            "untouched_above_floor": 139
+          }
+        ]
+      },
+      "AESChecks": 313,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "frames": 100,
+      "aes_progress": {
+        "AESMessages": 75,
+        "AESTimers": 37
+      },
+      "progress": {
+        "reads": 0,
+        "writes": 0
+      },
+      "calls": 85,
+      "caller_summary": {
+        "24": {
+          "deadline": {
+            "count": 14,
+            "median_ms": 0.23217490227367882,
+            "p95_ms": 0.2323158706417867,
+            "max_ms": 0.2323158706417867
+          },
+          "binding": {
+            "count": 14,
+            "median_ms": 0.9210168330328358,
+            "p95_ms": 0.9210873172168896,
+            "max_ms": 0.9210873172168896
+          },
+          "device_io": {
+            "count": 14,
+            "median_ms": 4.316451431463294,
+            "p95_ms": 4.334142961660833,
+            "max_ms": 4.334142961660833
+          },
+          "alarm_submit": {
+            "count": 14,
+            "median_ms": 0.04130373185560891,
+            "p95_ms": 0.04130373185560891,
+            "max_ms": 0.04130373185560891
+          },
+          "message": {
+            "count": 14,
+            "median_ms": 0.20334687099561727,
+            "p95_ms": 0.2039107444680488,
+            "max_ms": 0.2039107444680488
+          },
+          "wait": {
+            "count": 14,
+            "median_ms": 0.658110826511639,
+            "p95_ms": 0.658181310695693,
+            "max_ms": 0.658181310695693
+          },
+          "other": {
+            "count": 14,
+            "median_ms": 0.07978809634906024,
+            "p95_ms": 0.09113604998174461,
+            "max_ms": 0.09113604998174461
+          },
+          "alarm_retire": {
+            "count": 14,
+            "median_ms": 0.058290420212608496,
+            "p95_ms": 0.06364721820070794,
+            "max_ms": 0.06364721820070794
+          },
+          "clock": {
+            "count": 14,
+            "median_ms": 0.036299354787779174,
+            "p95_ms": 0.03644032315588705,
+            "max_ms": 0.03644032315588705
+          }
+        },
+        "25": {
+          "deadline": {
+            "count": 42,
+            "median_ms": 0.23259780737800245,
+            "p95_ms": 0.2330207124823261,
+            "max_ms": 0.2330207124823261
+          },
+          "binding": {
+            "count": 42,
+            "median_ms": 1.0132806299594435,
+            "p95_ms": 1.01483128200863,
+            "max_ms": 1.01483128200863
+          },
+          "device_io": {
+            "count": 42,
+            "median_ms": 5.695192555742417,
+            "p95_ms": 9.123825204862282,
+            "max_ms": 9.123825204862282
+          },
+          "alarm_submit": {
+            "count": 42,
+            "median_ms": 0.040739858383177396,
+            "p95_ms": 0.047294887500193825,
+            "max_ms": 0.047294887500193825
+          },
+          "message": {
+            "count": 42,
+            "median_ms": 0.25268579983337536,
+            "p95_ms": 0.3647556524791402,
+            "max_ms": 0.3647556524791402
+          },
+          "wait": {
+            "count": 42,
+            "median_ms": 0.6235030921411545,
+            "p95_ms": 1.233755157680168,
+            "max_ms": 1.233755157680168
+          },
+          "other": {
+            "count": 42,
+            "median_ms": 0.4443322962760386,
+            "p95_ms": 0.5535827815596459,
+            "max_ms": 0.5535827815596459
+          },
+          "alarm_retire": {
+            "count": 42,
+            "median_ms": 0.041867605328040444,
+            "p95_ms": 0.06273092380800671,
+            "max_ms": 0.06273092380800671
+          },
+          "clock": {
+            "count": 42,
+            "median_ms": 0.03651080733994099,
+            "p95_ms": 0.07330355141609773,
+            "max_ms": 0.07330355141609773
+          }
+        },
+        "12": {
+          "binding": {
+            "count": 29,
+            "median_ms": 0.9443470979546899,
+            "p95_ms": 0.9497743801268433,
+            "max_ms": 0.9497743801268433
+          },
+          "message": {
+            "count": 29,
+            "median_ms": 1.2612439894612049,
+            "p95_ms": 1.6631448069367716,
+            "max_ms": 1.6631448069367716
+          },
+          "other": {
+            "count": 29,
+            "median_ms": 0.1349067282792414,
+            "p95_ms": 0.1416732099484197,
+            "max_ms": 0.1416732099484197
+          }
+        }
+      }
+    },
+    "panel-continuous": {
+      "source": {
+        "path": "build/aes-hybrid/diagnostic/panel-continuous/results.json",
+        "sha256": "52769309597b703d7a2b83e559e9df3f50ecfdf5e09fd2d2c8f8f7803f398b24"
+      },
+      "trace": {
+        "path": "build/aes-hybrid/diagnostic/panel-continuous/emulator.log",
+        "sha256": "abdfcb9ec2bd4236e628f81f6cf9f90e259d259b9d6477db210c4c4c13f882ab"
+      },
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "switching": 0,
+        "irq_depth": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 393,
+            "untouched_above_floor": 887
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 195,
+            "untouched_above_floor": 573
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 519,
+            "untouched_above_floor": 249
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 545,
+            "untouched_above_floor": 223
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 263,
+            "untouched_above_floor": 505
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 174,
+            "untouched_above_floor": 594
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 743,
+            "untouched_above_floor": 1561
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 127,
+            "untouched_above_floor": 129
+          }
+        ]
+      },
+      "ownership": "restored",
+      "aes_progress": {
+        "idle": {
+          "AESMessages": 89,
+          "AESTimers": 44
+        },
+        "scroll": {
+          "AESMessages": 130,
+          "AESTimers": 66
+        },
+        "disk": {
+          "AESMessages": 112,
+          "AESTimers": 56
+        }
+      },
+      "progress": {
+        "idle": {
+          "writes": 0,
+          "reads": 0
+        },
+        "scroll": {
+          "writes": 2,
+          "reads": 0
+        },
+        "disk": {
+          "writes": 0,
+          "reads": 29
+        }
+      },
+      "input_summary": {
+        "idle": {
+          "capture_to_ready_ms": {
+            "count": 20,
+            "median_ms": 0.320280132341104,
+            "p95_ms": 0.6047542991828063,
+            "max_ms": 0.7863215573057561
+          },
+          "ready_to_selected_ms": {
+            "count": 20,
+            "median_ms": 0.49021750009515364,
+            "p95_ms": 5.083953711626648,
+            "max_ms": 30.89695353259682
+          },
+          "selected_to_consume_ms": {
+            "count": 20,
+            "median_ms": 9.468563349070102,
+            "p95_ms": 22.213161088783288,
+            "max_ms": 38.159714341698866
+          },
+          "runnable_off_cpu_ms": {
+            "count": 20,
+            "median_ms": 0.4916976679602864,
+            "p95_ms": 20.605980723985343,
+            "max_ms": 30.89695353259682
+          },
+          "blocked_off_cpu_ms": {
+            "count": 20,
+            "median_ms": 0.320280132341104,
+            "p95_ms": 0.6047542991828063,
+            "max_ms": 0.7863215573057561
+          },
+          "charged_cpu_ms": {
+            "count": 20,
+            "median_ms": 7.832273016257881,
+            "p95_ms": 14.972884734394448,
+            "max_ms": 15.017712675452755
+          },
+          "elapsed_ms": {
+            "count": 20,
+            "median_ms": 9.914234844843165,
+            "p95_ms": 32.94282745894649,
+            "max_ms": 38.81662693708159
+          }
+        },
+        "scroll": {
+          "capture_to_ready_ms": {
+            "count": 20,
+            "median_ms": 0.0,
+            "p95_ms": 0.0,
+            "max_ms": 0.0
+          },
+          "ready_to_selected_ms": {
+            "count": 20,
+            "median_ms": 0.0,
+            "p95_ms": 11.24772512295966,
+            "max_ms": 15.408688444399962
+          },
+          "selected_to_consume_ms": {
+            "count": 20,
+            "median_ms": 98.05520039358369,
+            "p95_ms": 131.28877511175267,
+            "max_ms": 133.5048683425926
+          },
+          "runnable_off_cpu_ms": {
+            "count": 20,
+            "median_ms": 26.891055416075186,
+            "p95_ms": 39.213946282593646,
+            "max_ms": 42.73745064345012
+          },
+          "blocked_off_cpu_ms": {
+            "count": 20,
+            "median_ms": 0.0,
+            "p95_ms": 0.0,
+            "max_ms": 0.0
+          },
+          "charged_cpu_ms": {
+            "count": 20,
+            "median_ms": 67.84476281367225,
+            "p95_ms": 78.67571495632095,
+            "max_ms": 82.50723520149315
+          },
+          "elapsed_ms": {
+            "count": 20,
+            "median_ms": 110.79359552510013,
+            "p95_ms": 133.5048683425926,
+            "max_ms": 134.01016945807532
+          }
+        },
+        "disk": {
+          "capture_to_ready_ms": {
+            "count": 20,
+            "median_ms": 0.0,
+            "p95_ms": 0.6717142740340495,
+            "max_ms": 0.6784807557032277
+          },
+          "ready_to_selected_ms": {
+            "count": 20,
+            "median_ms": 0.5011425486235144,
+            "p95_ms": 17.474861815757162,
+            "max_ms": 34.12534061481944
+          },
+          "selected_to_consume_ms": {
+            "count": 20,
+            "median_ms": 12.548933644779448,
+            "p95_ms": 109.08301486229504,
+            "max_ms": 190.0579943866396
+          },
+          "runnable_off_cpu_ms": {
+            "count": 20,
+            "median_ms": 11.628833106139313,
+            "p95_ms": 32.193933003373374,
+            "max_ms": 106.87974975295293
+          },
+          "blocked_off_cpu_ms": {
+            "count": 20,
+            "median_ms": 0.0,
+            "p95_ms": 0.6717142740340495,
+            "max_ms": 0.6784807557032277
+          },
+          "charged_cpu_ms": {
+            "count": 20,
+            "median_ms": 10.007273967794365,
+            "p95_ms": 78.13249334981722,
+            "max_ms": 95.54962861883422
+          },
+          "elapsed_ms": {
+            "count": 20,
+            "median_ms": 19.266851711144536,
+            "p95_ms": 126.55787667805221,
+            "max_ms": 224.183335001459
+          }
+        }
+      },
+      "input_samples": 60
+    },
+    "pointer-continuous": {
+      "source": {
+        "path": "build/aes-hybrid/diagnostic/pointer-continuous/results.json",
+        "sha256": "d79cc4de731a960d87ad202d7b5848fbda167f45e2657c7c3f83039379c82ebf"
+      },
+      "trace": {
+        "path": "build/aes-hybrid/diagnostic/pointer-continuous/emulator.log",
+        "sha256": "b5d9bc14e7c3160e5185794942f950d90246f9606a316ff84c0280a5196600a2"
+      },
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "switching": 0,
+        "irq_depth": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 380,
+            "untouched_above_floor": 900
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 168,
+            "untouched_above_floor": 600
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 517,
+            "untouched_above_floor": 251
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 530,
+            "untouched_above_floor": 238
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 719,
+            "untouched_above_floor": 1585
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 127,
+            "untouched_above_floor": 129
+          }
+        ]
+      },
+      "aes_progress": {
+        "two_clients": {
+          "AESMessages": 38,
+          "AESTimers": 20
+        }
+      },
+      "progress": {
+        "two_clients": {
+          "writes": 0,
+          "reads": 0
+        }
+      },
+      "input_summary": {
+        "motion": {
+          "capture_to_ready_ms": {
+            "count": 30,
+            "median_ms": 0.6002433114033542,
+            "p95_ms": 1.1015973125790304,
+            "max_ms": 1.2864068431684614
+          },
+          "ready_to_selected_ms": {
+            "count": 30,
+            "median_ms": 1.9978037128248793,
+            "p95_ms": 22.929914756427806,
+            "max_ms": 22.932099766133476
+          },
+          "selected_to_consume_ms": {
+            "count": 30,
+            "median_ms": 1.718051986314791,
+            "p95_ms": 8.871703278501338,
+            "max_ms": 14.00943642256114
+          },
+          "runnable_off_cpu_ms": {
+            "count": 30,
+            "median_ms": 2.0336801625083347,
+            "p95_ms": 22.929914756427806,
+            "max_ms": 22.932099766133476
+          },
+          "blocked_off_cpu_ms": {
+            "count": 30,
+            "median_ms": 0.6002433114033542,
+            "p95_ms": 1.1015973125790304,
+            "max_ms": 1.2864068431684614
+          },
+          "charged_cpu_ms": {
+            "count": 30,
+            "median_ms": 1.4260360117793167,
+            "p95_ms": 6.523381718376213,
+            "max_ms": 6.556086379777242
+          },
+          "elapsed_ms": {
+            "count": 30,
+            "median_ms": 5.159089851828148,
+            "p95_ms": 25.398059429444626,
+            "max_ms": 25.504067642261752
+          }
+        },
+        "button": {
+          "capture_to_ready_ms": {
+            "count": 30,
+            "median_ms": 0.6680490964632446,
+            "p95_ms": 0.8024624354541084,
+            "max_ms": 0.8441185882299871
+          },
+          "ready_to_selected_ms": {
+            "count": 30,
+            "median_ms": 1.4892603248757013,
+            "p95_ms": 16.165265676034956,
+            "max_ms": 26.446864088167256
+          },
+          "selected_to_consume_ms": {
+            "count": 30,
+            "median_ms": 1.726228151665048,
+            "p95_ms": 16.276348750103963,
+            "max_ms": 16.63440840509798
+          },
+          "runnable_off_cpu_ms": {
+            "count": 30,
+            "median_ms": 1.4892603248757013,
+            "p95_ms": 25.590974641200262,
+            "max_ms": 26.446864088167256
+          },
+          "blocked_off_cpu_ms": {
+            "count": 30,
+            "median_ms": 0.6680490964632446,
+            "p95_ms": 0.8024624354541084,
+            "max_ms": 0.8441185882299871
+          },
+          "charged_cpu_ms": {
+            "count": 30,
+            "median_ms": 1.4334368511049804,
+            "p95_ms": 10.460346302893093,
+            "max_ms": 11.336605679051678
+          },
+          "elapsed_ms": {
+            "count": 30,
+            "median_ms": 4.1144437599647015,
+            "p95_ms": 29.32557913329828,
+            "max_ms": 29.383164711670346
+          }
+        }
+      },
+      "input_samples": 60
+    },
+    "final-fixed-idle": {
+      "source": {
+        "path": "build/aes-hybrid/diagnostic/final-fixed-idle/results.json",
+        "sha256": "c08a5838957fda4138cc8583d033f045bc56b28e992ec5164fe59bfdc0efe6eb"
+      },
+      "trace": {
+        "path": "build/aes-hybrid/diagnostic/final-fixed-idle/emulator.log",
+        "sha256": "80d79723aa677cca8de7fba81a2c22568718b1b40f294fd9086ea17c54dadec5"
+      },
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "switching": 0,
+        "irq_depth": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 391,
+            "untouched_above_floor": 889
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 181,
+            "untouched_above_floor": 587
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 489,
+            "untouched_above_floor": 279
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 519,
+            "untouched_above_floor": 249
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 693,
+            "untouched_above_floor": 1611
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 127,
+            "untouched_above_floor": 129
+          }
+        ]
+      },
+      "AESChecks": 133,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "ownership": "restored",
+      "frames": 400,
+      "aes_command": 7,
+      "aes_progress": {
+        "AESMessages": 40,
+        "AESTimers": 20
+      },
+      "progress": {
+        "reads": 0,
+        "writes": 0
+      },
+      "offered_load": {
+        "period_frames": 20,
+        "start_frame": 624,
+        "end_frame": 1024,
+        "offered": 20,
+        "started": 20,
+        "completed": 20,
+        "pending": 0,
+        "offers": [
+          {
+            "number": 1,
+            "frame": 624,
+            "clock": 21033054,
+            "started": 0,
+            "completed": 0
+          },
+          {
+            "number": 2,
+            "frame": 644,
+            "clock": 21743580,
+            "started": 1,
+            "completed": 1
+          },
+          {
+            "number": 3,
+            "frame": 664,
+            "clock": 22455004,
+            "started": 2,
+            "completed": 2
+          },
+          {
+            "number": 4,
+            "frame": 684,
+            "clock": 23165981,
+            "started": 3,
+            "completed": 3
+          },
+          {
+            "number": 5,
+            "frame": 704,
+            "clock": 23877405,
+            "started": 4,
+            "completed": 4
+          },
+          {
+            "number": 6,
+            "frame": 724,
+            "clock": 24588829,
+            "started": 5,
+            "completed": 5
+          },
+          {
+            "number": 7,
+            "frame": 744,
+            "clock": 25300253,
+            "started": 6,
+            "completed": 6
+          },
+          {
+            "number": 8,
+            "frame": 764,
+            "clock": 26011677,
+            "started": 7,
+            "completed": 7
+          },
+          {
+            "number": 9,
+            "frame": 784,
+            "clock": 26723101,
+            "started": 8,
+            "completed": 8
+          },
+          {
+            "number": 10,
+            "frame": 804,
+            "clock": 27434525,
+            "started": 9,
+            "completed": 9
+          },
+          {
+            "number": 11,
+            "frame": 824,
+            "clock": 28145502,
+            "started": 10,
+            "completed": 10
+          },
+          {
+            "number": 12,
+            "frame": 844,
+            "clock": 28856924,
+            "started": 11,
+            "completed": 11
+          },
+          {
+            "number": 13,
+            "frame": 864,
+            "clock": 29568349,
+            "started": 12,
+            "completed": 12
+          },
+          {
+            "number": 14,
+            "frame": 884,
+            "clock": 30279772,
+            "started": 13,
+            "completed": 13
+          },
+          {
+            "number": 15,
+            "frame": 904,
+            "clock": 30991197,
+            "started": 14,
+            "completed": 14
+          },
+          {
+            "number": 16,
+            "frame": 924,
+            "clock": 31702621,
+            "started": 15,
+            "completed": 15
+          },
+          {
+            "number": 17,
+            "frame": 944,
+            "clock": 32414045,
+            "started": 16,
+            "completed": 16
+          },
+          {
+            "number": 18,
+            "frame": 964,
+            "clock": 33125021,
+            "started": 17,
+            "completed": 17
+          },
+          {
+            "number": 19,
+            "frame": 984,
+            "clock": 33836445,
+            "started": 18,
+            "completed": 18
+          },
+          {
+            "number": 20,
+            "frame": 1004,
+            "clock": 34547868,
+            "started": 19,
+            "completed": 19
+          }
+        ],
+        "scope": "External frame-anchored offers; no completion feedback or dropped catch-up work. One request/reply and a 100 ms sender timer per offer; receiver uses a 5 s safety timeout between offers. Root AESPump signals the sender; admission delay remains part of the result.",
+        "drained": 20
+      },
+      "calls": 99,
+      "caller_summary": {
+        "24": {
+          "message": {
+            "count": 20,
+            "median_ms": 0.20369929191588698,
+            "p95_ms": 0.2091265740880404,
+            "max_ms": 0.2096904475604719
+          },
+          "wait": {
+            "count": 20,
+            "median_ms": 0.6578288897754233,
+            "p95_ms": 0.6633971403156845,
+            "max_ms": 0.6648773081808173
+          },
+          "alarm_submit": {
+            "count": 20,
+            "median_ms": 0.04116276348750103,
+            "p95_ms": 0.04644907729154655,
+            "max_ms": 0.047365371684247766
+          },
+          "device_io": {
+            "count": 20,
+            "median_ms": 4.304046215069801,
+            "p95_ms": 5.8214297293830235,
+            "max_ms": 5.828055242684094
+          },
+          "clock": {
+            "count": 20,
+            "median_ms": 0.03644032315588705,
+            "p95_ms": 0.04207905788020226,
+            "max_ms": 0.048140697708841114
+          },
+          "binding": {
+            "count": 20,
+            "median_ms": 0.9146027722839272,
+            "p95_ms": 0.9213692539531054,
+            "max_ms": 1.561224676794774
+          },
+          "alarm_retire": {
+            "count": 20,
+            "median_ms": 0.05779703092423091,
+            "p95_ms": 0.06421109167313946,
+            "max_ms": 0.06886304782069952
+          },
+          "other": {
+            "count": 20,
+            "median_ms": 0.08091584329392328,
+            "p95_ms": 0.08620215709796877,
+            "max_ms": 0.091840891822284
+          },
+          "deadline": {
+            "count": 20,
+            "median_ms": 0.23435991197935097,
+            "p95_ms": 0.2400691308877201,
+            "max_ms": 0.2411263936485292
+          }
+        },
+        "25": {
+          "message": {
+            "count": 39,
+            "median_ms": 0.34635928044106185,
+            "p95_ms": 0.36440323155887056,
+            "max_ms": 1.217543795347762
+          },
+          "wait": {
+            "count": 39,
+            "median_ms": 0,
+            "p95_ms": 1.3168560106797638,
+            "max_ms": 1.3203097356984066
+          },
+          "alarm_submit": {
+            "count": 39,
+            "median_ms": 0,
+            "p95_ms": 1.079535762970147,
+            "max_ms": 1.0800996364425786
+          },
+          "device_io": {
+            "count": 39,
+            "median_ms": 5.899737657866951,
+            "p95_ms": 10.479377032587658,
+            "max_ms": 10.539288589033507
+          },
+          "clock": {
+            "count": 39,
+            "median_ms": 0.0721758044712347,
+            "p95_ms": 0.08479247341688997,
+            "max_ms": 7.082744203028283
+          },
+          "binding": {
+            "count": 39,
+            "median_ms": 1.0124348197507962,
+            "p95_ms": 1.7140343878237163,
+            "max_ms": 1.9397952293484868
+          },
+          "alarm_retire": {
+            "count": 39,
+            "median_ms": 0,
+            "p95_ms": 0.06209656615152126,
+            "max_ms": 0.062378502887737025
+          },
+          "other": {
+            "count": 39,
+            "median_ms": 0.5776883725060933,
+            "p95_ms": 1.6256472210200752,
+            "max_ms": 1.628184651646017
+          },
+          "deadline": {
+            "count": 39,
+            "median_ms": 0.23605153239664553,
+            "p95_ms": 0.2421836564093383,
+            "max_ms": 0.2428884982498777
+          }
+        },
+        "12": {
+          "binding": {
+            "count": 40,
+            "median_ms": 0.9434308035619888,
+            "p95_ms": 0.9506906745195446,
+            "max_ms": 0.9511840638079221
+          },
+          "message": {
+            "count": 40,
+            "median_ms": 1.5901936764409434,
+            "p95_ms": 1.6021759877301132,
+            "max_ms": 1.6048543867241627
+          },
+          "other": {
+            "count": 40,
+            "median_ms": 0.13462479154302567,
+            "p95_ms": 0.1356115701197808,
+            "max_ms": 0.14075691555571845
+          }
+        }
+      },
+      "input_summary": {
+        "capture_to_ready_ms": {
+          "count": 16,
+          "median_ms": 0.6006662165076778,
+          "p95_ms": 0.7423394264560975,
+          "max_ms": 0.7423394264560975
+        },
+        "ready_to_selected_ms": {
+          "count": 16,
+          "median_ms": 0.4916976679602864,
+          "p95_ms": 16.92579002197697,
+          "max_ms": 16.92579002197697
+        },
+        "selected_to_consume_ms": {
+          "count": 16,
+          "median_ms": 1.722492489910189,
+          "p95_ms": 48.48712747346623,
+          "max_ms": 48.48712747346623
+        },
+        "runnable_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.49183863632839425,
+          "p95_ms": 30.075389883264094,
+          "max_ms": 30.075389883264094
+        },
+        "blocked_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.6006662165076778,
+          "p95_ms": 0.7423394264560975,
+          "max_ms": 0.7423394264560975
+        },
+        "charged_cpu_ms": {
+          "count": 16,
+          "median_ms": 1.4333663669209264,
+          "p95_ms": 29.317755388868292,
+          "max_ms": 29.317755388868292
+        },
+        "elapsed_ms": {
+          "count": 16,
+          "median_ms": 2.819437846341659,
+          "p95_ms": 65.4129174954432,
+          "max_ms": 65.4129174954432
+        }
+      },
+      "input_samples": 16
+    },
+    "final-fixed-scroll": {
+      "source": {
+        "path": "build/aes-hybrid/diagnostic/final-fixed-scroll/results.json",
+        "sha256": "2bca03d5d156ce51f8fecef2317f8338456df0251e4181d1a5e5e7d4254c13df"
+      },
+      "trace": {
+        "path": "build/aes-hybrid/diagnostic/final-fixed-scroll/emulator.log",
+        "sha256": "2ce8ff945cf9dcb2c877831eb877dfafbd32e66563af3fe9e8e050881c26705d"
+      },
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "switching": 0,
+        "irq_depth": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 391,
+            "untouched_above_floor": 889
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 211,
+            "untouched_above_floor": 557
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 519,
+            "untouched_above_floor": 249
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 519,
+            "untouched_above_floor": 249
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 728,
+            "untouched_above_floor": 1576
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 117,
+            "untouched_above_floor": 139
+          }
+        ]
+      },
+      "AESChecks": 133,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "ownership": "restored",
+      "frames": 400,
+      "aes_command": 7,
+      "aes_progress": {
+        "AESMessages": 34,
+        "AESTimers": 17
+      },
+      "progress": {
+        "reads": 0,
+        "writes": 2
+      },
+      "offered_load": {
+        "period_frames": 20,
+        "start_frame": 625,
+        "end_frame": 1025,
+        "offered": 20,
+        "started": 17,
+        "completed": 17,
+        "pending": 3,
+        "offers": [
+          {
+            "number": 1,
+            "frame": 625,
+            "clock": 21100700,
+            "started": 0,
+            "completed": 0
+          },
+          {
+            "number": 2,
+            "frame": 645,
+            "clock": 21778972,
+            "started": 0,
+            "completed": 0
+          },
+          {
+            "number": 3,
+            "frame": 665,
+            "clock": 22490397,
+            "started": 0,
+            "completed": 0
+          },
+          {
+            "number": 4,
+            "frame": 685,
+            "clock": 23201821,
+            "started": 1,
+            "completed": 0
+          },
+          {
+            "number": 5,
+            "frame": 705,
+            "clock": 23913244,
+            "started": 4,
+            "completed": 3
+          },
+          {
+            "number": 6,
+            "frame": 725,
+            "clock": 24624669,
+            "started": 5,
+            "completed": 5
+          },
+          {
+            "number": 7,
+            "frame": 745,
+            "clock": 25335645,
+            "started": 5,
+            "completed": 5
+          },
+          {
+            "number": 8,
+            "frame": 765,
+            "clock": 26047069,
+            "started": 5,
+            "completed": 5
+          },
+          {
+            "number": 9,
+            "frame": 785,
+            "clock": 26758492,
+            "started": 5,
+            "completed": 5
+          },
+          {
+            "number": 10,
+            "frame": 805,
+            "clock": 27469917,
+            "started": 5,
+            "completed": 5
+          },
+          {
+            "number": 11,
+            "frame": 825,
+            "clock": 28181340,
+            "started": 5,
+            "completed": 5
+          },
+          {
+            "number": 12,
+            "frame": 845,
+            "clock": 28892765,
+            "started": 5,
+            "completed": 5
+          },
+          {
+            "number": 13,
+            "frame": 865,
+            "clock": 29604188,
+            "started": 7,
+            "completed": 6
+          },
+          {
+            "number": 14,
+            "frame": 885,
+            "clock": 30315183,
+            "started": 10,
+            "completed": 9
+          },
+          {
+            "number": 15,
+            "frame": 905,
+            "clock": 31026589,
+            "started": 12,
+            "completed": 11
+          },
+          {
+            "number": 16,
+            "frame": 925,
+            "clock": 31738012,
+            "started": 14,
+            "completed": 13
+          },
+          {
+            "number": 17,
+            "frame": 945,
+            "clock": 32449437,
+            "started": 16,
+            "completed": 15
+          },
+          {
+            "number": 18,
+            "frame": 965,
+            "clock": 33160861,
+            "started": 17,
+            "completed": 17
+          },
+          {
+            "number": 19,
+            "frame": 985,
+            "clock": 33872285,
+            "started": 17,
+            "completed": 17
+          },
+          {
+            "number": 20,
+            "frame": 1005,
+            "clock": 34583708,
+            "started": 17,
+            "completed": 17
+          }
+        ],
+        "scope": "External frame-anchored offers; no completion feedback or dropped catch-up work. One request/reply and a 100 ms sender timer per offer; receiver uses a 5 s safety timeout between offers. Root AESPump signals the sender; admission delay remains part of the result.",
+        "drained": 20
+      },
+      "calls": 84,
+      "caller_summary": {
+        "24": {
+          "device_io": {
+            "count": 17,
+            "median_ms": 4.303200404861153,
+            "p95_ms": 5.470488976978456,
+            "max_ms": 5.470488976978456
+          },
+          "deadline": {
+            "count": 17,
+            "median_ms": 0.23471233289962065,
+            "p95_ms": 0.2411263936485292,
+            "max_ms": 0.2411263936485292
+          },
+          "clock": {
+            "count": 17,
+            "median_ms": 0.03644032315588705,
+            "p95_ms": 0.7653877546417359,
+            "max_ms": 0.7653877546417359
+          },
+          "message": {
+            "count": 17,
+            "median_ms": 0.203699291915887,
+            "p95_ms": 0.3040687700086977,
+            "max_ms": 0.3040687700086977
+          },
+          "alarm_submit": {
+            "count": 17,
+            "median_ms": 0.04102179511939316,
+            "p95_ms": 0.04736537168424777,
+            "max_ms": 0.04736537168424777
+          },
+          "alarm_retire": {
+            "count": 17,
+            "median_ms": 0.057585578372069096,
+            "p95_ms": 0.08479247341688997,
+            "max_ms": 0.08479247341688997
+          },
+          "binding": {
+            "count": 17,
+            "median_ms": 0.9154485824925744,
+            "p95_ms": 0.9217216748733751,
+            "max_ms": 0.9217216748733751
+          },
+          "wait": {
+            "count": 17,
+            "median_ms": 0.6578288897754233,
+            "p95_ms": 1.2628651256944452,
+            "max_ms": 1.2628651256944452
+          },
+          "other": {
+            "count": 17,
+            "median_ms": 0.08021100145338388,
+            "p95_ms": 0.08613167291391485,
+            "max_ms": 0.08613167291391485
+          }
+        },
+        "25": {
+          "device_io": {
+            "count": 33,
+            "median_ms": 9.018874254805965,
+            "p95_ms": 9.122626973733365,
+            "max_ms": 9.656967573046284
+          },
+          "deadline": {
+            "count": 33,
+            "median_ms": 0.23605153239664553,
+            "p95_ms": 0.9451224239792833,
+            "max_ms": 0.9661971950114113
+          },
+          "clock": {
+            "count": 33,
+            "median_ms": 0.07252822539150441,
+            "p95_ms": 0.09057217650931307,
+            "max_ms": 7.070832375923167
+          },
+          "message": {
+            "count": 33,
+            "median_ms": 0.34480862839187515,
+            "p95_ms": 0.36214773766914443,
+            "max_ms": 0.36242967440536017
+          },
+          "alarm_submit": {
+            "count": 33,
+            "median_ms": 0.04052840583101558,
+            "p95_ms": 0.04630810892343867,
+            "max_ms": 0.04630810892343867
+          },
+          "alarm_retire": {
+            "count": 33,
+            "median_ms": 0.056316863059098166,
+            "p95_ms": 0.06322431309638431,
+            "max_ms": 0.06329479728043824
+          },
+          "binding": {
+            "count": 33,
+            "median_ms": 1.0180735544751114,
+            "p95_ms": 2.1410275748224854,
+            "max_ms": 2.605447863553897
+          },
+          "wait": {
+            "count": 33,
+            "median_ms": 1.2571559067860762,
+            "p95_ms": 1.2649796512160636,
+            "max_ms": 1.2652615879522795
+          },
+          "other": {
+            "count": 33,
+            "median_ms": 0.5773359515858236,
+            "p95_ms": 0.5974944282252506,
+            "max_ms": 0.6017234792684869
+          }
+        },
+        "12": {
+          "binding": {
+            "count": 34,
+            "median_ms": 0.9428669300895572,
+            "p95_ms": 0.9507611587035985,
+            "max_ms": 0.9509021270717063
+          },
+          "other": {
+            "count": 34,
+            "median_ms": 0.13497721246329536,
+            "p95_ms": 0.1361049594081584,
+            "max_ms": 0.1406864313716645
+          },
+          "message": {
+            "count": 34,
+            "median_ms": 1.5899822238887815,
+            "p95_ms": 1.601189209153358,
+            "max_ms": 1.629241914406826
+          }
+        }
+      },
+      "input_summary": {
+        "capture_to_ready_ms": {
+          "count": 16,
+          "median_ms": 0.0,
+          "p95_ms": 0.0,
+          "max_ms": 0.0
+        },
+        "ready_to_selected_ms": {
+          "count": 16,
+          "median_ms": 0.0,
+          "p95_ms": 15.414609115860491,
+          "max_ms": 15.414609115860491
+        },
+        "selected_to_consume_ms": {
+          "count": 16,
+          "median_ms": 54.22418763453668,
+          "p95_ms": 100.83862082187377,
+          "max_ms": 100.83862082187377
+        },
+        "runnable_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.0,
+          "p95_ms": 27.331440598044207,
+          "max_ms": 27.331440598044207
+        },
+        "blocked_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.0,
+          "p95_ms": 0.0,
+          "max_ms": 0.0
+        },
+        "charged_cpu_ms": {
+          "count": 16,
+          "median_ms": 41.98517294704241,
+          "p95_ms": 83.78807379412135,
+          "max_ms": 83.78807379412135
+        },
+        "elapsed_ms": {
+          "count": 16,
+          "median_ms": 54.22418763453669,
+          "p95_ms": 100.83862082187377,
+          "max_ms": 100.83862082187377
+        }
+      },
+      "input_samples": 16
+    },
+    "final-fixed-disk": {
+      "source": {
+        "path": "build/aes-hybrid/diagnostic/final-fixed-disk/results.json",
+        "sha256": "6f5a7917acd888e79d16af5b717e382751a67f97d3d2d44e2687131083aa563b"
+      },
+      "trace": {
+        "path": "build/aes-hybrid/diagnostic/final-fixed-disk/emulator.log",
+        "sha256": "9f411e4049b31ff6c1d7951f37e835b370bdc5196a217598a04f9ca4e2ebf1bc"
+      },
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "switching": 0,
+        "irq_depth": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 391,
+            "untouched_above_floor": 889
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 180,
+            "untouched_above_floor": 588
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 519,
+            "untouched_above_floor": 249
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 519,
+            "untouched_above_floor": 249
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 263,
+            "untouched_above_floor": 505
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 174,
+            "untouched_above_floor": 594
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 722,
+            "untouched_above_floor": 1582
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 127,
+            "untouched_above_floor": 129
+          }
+        ]
+      },
+      "AESChecks": 133,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "ownership": "restored",
+      "frames": 400,
+      "aes_command": 7,
+      "aes_progress": {
+        "AESMessages": 40,
+        "AESTimers": 20
+      },
+      "progress": {
+        "reads": 42,
+        "writes": 0
+      },
+      "offered_load": {
+        "period_frames": 20,
+        "start_frame": 717,
+        "end_frame": 1117,
+        "offered": 20,
+        "started": 20,
+        "completed": 20,
+        "pending": 0,
+        "offers": [
+          {
+            "number": 1,
+            "frame": 717,
+            "clock": 24344136,
+            "started": 0,
+            "completed": 0
+          },
+          {
+            "number": 2,
+            "frame": 737,
+            "clock": 25051195,
+            "started": 1,
+            "completed": 1
+          },
+          {
+            "number": 3,
+            "frame": 757,
+            "clock": 25762472,
+            "started": 2,
+            "completed": 2
+          },
+          {
+            "number": 4,
+            "frame": 777,
+            "clock": 26473901,
+            "started": 3,
+            "completed": 3
+          },
+          {
+            "number": 5,
+            "frame": 797,
+            "clock": 27185213,
+            "started": 4,
+            "completed": 4
+          },
+          {
+            "number": 6,
+            "frame": 817,
+            "clock": 27896653,
+            "started": 5,
+            "completed": 5
+          },
+          {
+            "number": 7,
+            "frame": 837,
+            "clock": 28608088,
+            "started": 6,
+            "completed": 6
+          },
+          {
+            "number": 8,
+            "frame": 857,
+            "clock": 29319286,
+            "started": 7,
+            "completed": 7
+          },
+          {
+            "number": 9,
+            "frame": 877,
+            "clock": 30030909,
+            "started": 8,
+            "completed": 8
+          },
+          {
+            "number": 10,
+            "frame": 897,
+            "clock": 30741970,
+            "started": 9,
+            "completed": 9
+          },
+          {
+            "number": 11,
+            "frame": 917,
+            "clock": 31453673,
+            "started": 10,
+            "completed": 10
+          },
+          {
+            "number": 12,
+            "frame": 937,
+            "clock": 32164844,
+            "started": 11,
+            "completed": 11
+          },
+          {
+            "number": 13,
+            "frame": 957,
+            "clock": 32876016,
+            "started": 12,
+            "completed": 12
+          },
+          {
+            "number": 14,
+            "frame": 977,
+            "clock": 33587815,
+            "started": 13,
+            "completed": 13
+          },
+          {
+            "number": 15,
+            "frame": 997,
+            "clock": 34298768,
+            "started": 14,
+            "completed": 14
+          },
+          {
+            "number": 16,
+            "frame": 1017,
+            "clock": 35010485,
+            "started": 15,
+            "completed": 15
+          },
+          {
+            "number": 17,
+            "frame": 1037,
+            "clock": 35721881,
+            "started": 16,
+            "completed": 16
+          },
+          {
+            "number": 18,
+            "frame": 1057,
+            "clock": 36432858,
+            "started": 17,
+            "completed": 17
+          },
+          {
+            "number": 19,
+            "frame": 1077,
+            "clock": 37144281,
+            "started": 18,
+            "completed": 18
+          },
+          {
+            "number": 20,
+            "frame": 1097,
+            "clock": 37855733,
+            "started": 19,
+            "completed": 19
+          }
+        ],
+        "scope": "External frame-anchored offers; no completion feedback or dropped catch-up work. One request/reply and a 100 ms sender timer per offer; receiver uses a 5 s safety timeout between offers. Root AESPump signals the sender; admission delay remains part of the result.",
+        "drained": 20
+      },
+      "calls": 99,
+      "caller_summary": {
+        "24": {
+          "binding": {
+            "count": 20,
+            "median_ms": 0.9150256773882508,
+            "p95_ms": 0.9212987697690515,
+            "max_ms": 0.9215102223212134
+          },
+          "wait": {
+            "count": 20,
+            "median_ms": 1.2269886760109898,
+            "p95_ms": 1.2644157777436322,
+            "max_ms": 1.3227766821402946
+          },
+          "alarm_submit": {
+            "count": 20,
+            "median_ms": 0.04123324767155497,
+            "p95_ms": 0.047294887500193825,
+            "max_ms": 0.04736537168424777
+          },
+          "other": {
+            "count": 20,
+            "median_ms": 0.08056342237365358,
+            "p95_ms": 0.08627264128202272,
+            "max_ms": 0.091840891822284
+          },
+          "message": {
+            "count": 20,
+            "median_ms": 0.2973727725235734,
+            "p95_ms": 0.3043507067449135,
+            "max_ms": 0.30442119092896747
+          },
+          "clock": {
+            "count": 20,
+            "median_ms": 0.03644032315588705,
+            "p95_ms": 0.03679274407615675,
+            "max_ms": 0.043065836456957426
+          },
+          "deadline": {
+            "count": 20,
+            "median_ms": 0.2347828170836746,
+            "p95_ms": 0.24098542528042133,
+            "max_ms": 0.2411263936485292
+          },
+          "device_io": {
+            "count": 20,
+            "median_ms": 4.302918468124938,
+            "p95_ms": 5.367652552443758,
+            "max_ms": 5.418965038435026
+          },
+          "alarm_retire": {
+            "count": 20,
+            "median_ms": 0.08436956831256634,
+            "p95_ms": 0.09071314487742096,
+            "max_ms": 0.09134750253390642
+          }
+        },
+        "25": {
+          "binding": {
+            "count": 39,
+            "median_ms": 1.01250530393485,
+            "p95_ms": 2.1903665036602438,
+            "max_ms": 2.262471823947424
+          },
+          "wait": {
+            "count": 39,
+            "median_ms": 1.2614554420133666,
+            "p95_ms": 2.03931889723265,
+            "max_ms": 2.0563055855896493
+          },
+          "alarm_submit": {
+            "count": 39,
+            "median_ms": 0.041021795119393155,
+            "p95_ms": 0.047365371684247766,
+            "max_ms": 0.0528631380404551
+          },
+          "other": {
+            "count": 39,
+            "median_ms": 0.5848072750955413,
+            "p95_ms": 1.2675170818420056,
+            "max_ms": 1.3177018208884106
+          },
+          "message": {
+            "count": 39,
+            "median_ms": 0.3568614238650989,
+            "p95_ms": 1.0235008366472647,
+            "max_ms": 1.4170140362204127
+          },
+          "clock": {
+            "count": 39,
+            "median_ms": 0.07273967794366623,
+            "p95_ms": 0.09092459742958278,
+            "max_ms": 7.104453331716896
+          },
+          "deadline": {
+            "count": 39,
+            "median_ms": 0.23605153239664553,
+            "p95_ms": 0.24190171967312254,
+            "max_ms": 0.25980470242282333
+          },
+          "device_io": {
+            "count": 39,
+            "median_ms": 9.052918115704017,
+            "p95_ms": 11.957853277303109,
+            "max_ms": 15.109201146354769
+          },
+          "alarm_retire": {
+            "count": 39,
+            "median_ms": 0.056739768163421814,
+            "p95_ms": 0.06343576564854612,
+            "max_ms": 0.06879256363664557
+          }
+        },
+        "12": {
+          "other": {
+            "count": 40,
+            "median_ms": 0.13518866501545718,
+            "p95_ms": 0.14061594718761058,
+            "max_ms": 0.1408273997397724
+          },
+          "binding": {
+            "count": 40,
+            "median_ms": 0.9430783826417191,
+            "p95_ms": 2.0178212210961983,
+            "max_ms": 2.261837466290939
+          },
+          "message": {
+            "count": 40,
+            "median_ms": 1.5963258004536365,
+            "p95_ms": 2.3910349756618112,
+            "max_ms": 2.8797018237077783
+          }
+        }
+      },
+      "input_summary": {
+        "capture_to_ready_ms": {
+          "count": 16,
+          "median_ms": 0.6164546737357605,
+          "p95_ms": 0.8790787435207413,
+          "max_ms": 0.8790787435207413
+        },
+        "ready_to_selected_ms": {
+          "count": 16,
+          "median_ms": 0.513336312464846,
+          "p95_ms": 15.92688816556453,
+          "max_ms": 15.92688816556453
+        },
+        "selected_to_consume_ms": {
+          "count": 16,
+          "median_ms": 1.763796221765798,
+          "p95_ms": 70.40777919842567,
+          "max_ms": 70.40777919842567
+        },
+        "runnable_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.7218990130804549,
+          "p95_ms": 51.320450704066516,
+          "max_ms": 51.320450704066516
+        },
+        "blocked_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.6164546737357605,
+          "p95_ms": 0.8790787435207413,
+          "max_ms": 0.8790787435207413
+        },
+        "charged_cpu_ms": {
+          "count": 16,
+          "median_ms": 1.434000724577412,
+          "p95_ms": 27.194207891691185,
+          "max_ms": 27.194207891691185
+        },
+        "elapsed_ms": {
+          "count": 16,
+          "median_ms": 4.047060880009135,
+          "p95_ms": 70.40777919842567,
+          "max_ms": 70.40777919842567
+        }
+      },
+      "input_samples": 16
+    },
+    "final-continuous-idle": {
+      "source": {
+        "path": "build/aes-hybrid/diagnostic/final-continuous-idle/results.json",
+        "sha256": "b96db6b02778b23e5a2944c72dfeb5a67a353944e591ed482bce7287bc60bb92"
+      },
+      "trace": {
+        "path": "build/aes-hybrid/diagnostic/final-continuous-idle/emulator.log",
+        "sha256": "1e4371270e9e20ef8ae067fa186f530840cbd4a632c9e42041c732d6402c5a98"
+      },
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "switching": 0,
+        "irq_depth": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 391,
+            "untouched_above_floor": 889
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 198,
+            "untouched_above_floor": 570
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 519,
+            "untouched_above_floor": 249
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 541,
+            "untouched_above_floor": 227
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 18,
+            "untouched_above_floor": 750
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 742,
+            "untouched_above_floor": 1562
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 127,
+            "untouched_above_floor": 129
+          }
+        ]
+      },
+      "AESChecks": 649,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "ownership": "restored",
+      "frames": 400,
+      "aes_command": 5,
+      "aes_progress": {
+        "AESMessages": 94,
+        "AESTimers": 48
+      },
+      "progress": {
+        "reads": 0,
+        "writes": 0
+      },
+      "calls": 277,
+      "caller_summary": {
+        "24": {
+          "device_io": {
+            "count": 47,
+            "median_ms": 4.315746589622755,
+            "p95_ms": 5.348621822749193,
+            "max_ms": 5.792883634841178
+          },
+          "alarm_submit": {
+            "count": 47,
+            "median_ms": 0.04116276348750103,
+            "p95_ms": 0.046942466579924125,
+            "max_ms": 0.04764730842046353
+          },
+          "clock": {
+            "count": 47,
+            "median_ms": 0.03644032315588705,
+            "p95_ms": 0.04243147880047196,
+            "max_ms": 0.04849311862911082
+          },
+          "deadline": {
+            "count": 47,
+            "median_ms": 0.23457136453151275,
+            "p95_ms": 0.24013961507177406,
+            "max_ms": 0.24098542528042133
+          },
+          "alarm_retire": {
+            "count": 47,
+            "median_ms": 0.06287189217611461,
+            "p95_ms": 0.09635187960173616,
+            "max_ms": 0.09705672144227556
+          },
+          "wait": {
+            "count": 47,
+            "median_ms": 0.6587451841681246,
+            "p95_ms": 1.2640633568233623,
+            "max_ms": 2.325414200307593
+          },
+          "message": {
+            "count": 47,
+            "median_ms": 0.20348783936372516,
+            "p95_ms": 0.30378683327248196,
+            "max_ms": 1.4283619898530968
+          },
+          "other": {
+            "count": 47,
+            "median_ms": 0.080070033085276,
+            "p95_ms": 0.08683651475445424,
+            "max_ms": 0.09169992345417613
+          },
+          "binding": {
+            "count": 47,
+            "median_ms": 0.9190432758793253,
+            "p95_ms": 0.9212987697690516,
+            "max_ms": 0.9216511906893212
+          }
+        },
+        "25": {
+          "device_io": {
+            "count": 136,
+            "median_ms": 5.472744470868182,
+            "p95_ms": 10.509332810810582,
+            "max_ms": 13.463818353799589
+          },
+          "alarm_submit": {
+            "count": 136,
+            "median_ms": 0.04088082675128528,
+            "p95_ms": 0.04687198239587019,
+            "max_ms": 0.04743585586830171
+          },
+          "clock": {
+            "count": 136,
+            "median_ms": 0.036651775708048874,
+            "p95_ms": 0.0790127703244669,
+            "max_ms": 0.0911360499817446
+          },
+          "deadline": {
+            "count": 136,
+            "median_ms": 0.23450088034745883,
+            "p95_ms": 0.24028058343988193,
+            "max_ms": 1.2692087022593
+          },
+          "alarm_retire": {
+            "count": 136,
+            "median_ms": 0.041867605328040444,
+            "p95_ms": 0.06273092380800672,
+            "max_ms": 0.06907450037286134
+          },
+          "wait": {
+            "count": 136,
+            "median_ms": 0.6579698581435311,
+            "p95_ms": 1.2651206195841715,
+            "max_ms": 2.351563832591605
+          },
+          "message": {
+            "count": 136,
+            "median_ms": 0.2533906416739148,
+            "p95_ms": 0.36313451624589954,
+            "max_ms": 0.3648261366631942
+          },
+          "other": {
+            "count": 136,
+            "median_ms": 0.4503234519206235,
+            "p95_ms": 0.5630276622228738,
+            "max_ms": 1.3861419636047867
+          },
+          "binding": {
+            "count": 136,
+            "median_ms": 1.012293851382688,
+            "p95_ms": 1.711919862302098,
+            "max_ms": 2.11015550220686
+          }
+        },
+        "12": {
+          "message": {
+            "count": 94,
+            "median_ms": 1.5897002871525658,
+            "p95_ms": 1.676748254459182,
+            "max_ms": 2.05094878760155
+          },
+          "other": {
+            "count": 94,
+            "median_ms": 0.1350476966473493,
+            "p95_ms": 0.14132078902814998,
+            "max_ms": 0.14181417831652757
+          },
+          "binding": {
+            "count": 94,
+            "median_ms": 0.9429374142736111,
+            "p95_ms": 0.9512545479919761,
+            "max_ms": 1.9970988709843398
+          }
+        }
+      },
+      "input_summary": {
+        "capture_to_ready_ms": {
+          "count": 16,
+          "median_ms": 0.5342701151288662,
+          "p95_ms": 0.6704455587210786,
+          "max_ms": 0.6704455587210786
+        },
+        "ready_to_selected_ms": {
+          "count": 16,
+          "median_ms": 0.49078137356758517,
+          "p95_ms": 8.108571017749327,
+          "max_ms": 8.108571017749327
+        },
+        "selected_to_consume_ms": {
+          "count": 16,
+          "median_ms": 1.722422005726135,
+          "p95_ms": 60.708168694026746,
+          "max_ms": 60.708168694026746
+        },
+        "runnable_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.49078137356758517,
+          "p95_ms": 12.889160801207817,
+          "max_ms": 12.889160801207817
+        },
+        "blocked_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.5342701151288662,
+          "p95_ms": 0.6704455587210786,
+          "max_ms": 0.6704455587210786
+        },
+        "charged_cpu_ms": {
+          "count": 16,
+          "median_ms": 1.4326615250803871,
+          "p95_ms": 41.18024356514641,
+          "max_ms": 41.18024356514641
+        },
+        "elapsed_ms": {
+          "count": 16,
+          "median_ms": 2.818803488685174,
+          "p95_ms": 60.708168694026746,
+          "max_ms": 60.708168694026746
+        }
+      },
+      "input_samples": 16
+    }
+  },
+  "equal_load": {
+    "source": {
+      "path": "build/aes-hybrid/diagnostic/equal-load.json",
+      "sha256": "836afe56ce239ac11090635fd759cdb256ba5c160cc264733d14abaecbc31cba"
+    },
+    "status": "pass",
+    "schedule": {
+      "frames": 400,
+      "period_frames": 20,
+      "offers": [
+        0,
+        20,
+        40,
+        60,
+        80,
+        100,
+        120,
+        140,
+        160,
+        180,
+        200,
+        220,
+        240,
+        260,
+        280,
+        300,
+        320,
+        340,
+        360,
+        380
+      ],
+      "edges": [
+        [
+          12,
+          1
+        ],
+        [
+          37,
+          0
+        ],
+        [
+          62,
+          1
+        ],
+        [
+          87,
+          0
+        ],
+        [
+          112,
+          1
+        ],
+        [
+          137,
+          0
+        ],
+        [
+          162,
+          1
+        ],
+        [
+          187,
+          0
+        ],
+        [
+          212,
+          1
+        ],
+        [
+          237,
+          0
+        ],
+        [
+          262,
+          1
+        ],
+        [
+          287,
+          0
+        ],
+        [
+          312,
+          1
+        ],
+        [
+          337,
+          0
+        ],
+        [
+          362,
+          1
+        ],
+        [
+          387,
+          0
+        ]
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    "scope": "Identical external offer and button-edge schedules on the same recorded machine. Backlog and boundary-crossing calls remain visible. These distributions do not replace continuous-workload or scanout acceptance."
+  },
+  "warmed_combined_device_calls": {
+    "source": {
+      "path": "build/aes-hybrid/diagnostic/continuous-idle/device-costs.json",
+      "sha256": "a74ad7a781be43477bbe7de7db242e5ec3d4a0b03fa6664b7624b4e601fb3710"
+    },
+    "summary": {
+      "CheckIO": {
+        "count": 14,
+        "median_ms": 0.837140654008647,
+        "p95_ms": 0.8372111381927009,
+        "max_ms": 0.8372111381927009
+      },
+      "AbortIO": {
+        "count": 14,
+        "median_ms": 2.316039803828419,
+        "p95_ms": 2.3166036773008503,
+        "max_ms": 2.3166036773008503
+      },
+      "DoIO": {
+        "count": 56,
+        "median_ms": 1.6685720891089248,
+        "p95_ms": 1.6694178993175721,
+        "max_ms": 1.6694178993175721
+      },
+      "SendIO": {
+        "count": 28,
+        "median_ms": 4.0092813573562225,
+        "p95_ms": 4.031201938596999,
+        "max_ms": 4.031201938596999
+      }
+    }
+  },
+  "aggregate_input_time_percent": {
+    "idle": {
+      "charged_cpu_ms": 54.330436105789154,
+      "runnable_off_cpu_ms": 32.214338666889674,
+      "blocked_off_cpu_ms": 2.337159065400463,
+      "interrupt_ms": 11.118066161920709
+    },
+    "scroll": {
+      "charged_cpu_ms": 60.072077602377355,
+      "runnable_off_cpu_ms": 27.683486296978142,
+      "blocked_off_cpu_ms": 0.0,
+      "interrupt_ms": 12.244436100644505
+    },
+    "disk": {
+      "charged_cpu_ms": 45.384733665383834,
+      "runnable_off_cpu_ms": 43.49703666634151,
+      "blocked_off_cpu_ms": 0.47270504697952753,
+      "interrupt_ms": 10.64552462129513
+    },
+    "pointer_buttons": {
+      "charged_cpu_ms": 24.195636213408108,
+      "runnable_off_cpu_ms": 65.74261447152847,
+      "blocked_off_cpu_ms": 5.125199680206938,
+      "interrupt_ms": 4.936549634856486
+    }
+  },
+  "limitations": [
+    "Fixed-rate button cadence and 5 s receiver timeout differ from acceptance; no scanout acceptance claim.",
+    "Offers are external, but root AESPump delivers their signal. Root console/DOS blocking can delay admission; scrolling had 17 started/completed and 3 pending at the window boundary, all 20 drained afterward.",
+    "Fixed-offer first use includes one lazy sender timer opening; complete-call distributions exclude calls crossing the window boundary.",
+    "No equal-rate pre-hybrid image comparison was run. Historical continuous measurements cannot substitute for the new workload.",
+    "Ready publication/selection and charged CPU use checked passive instruction boundaries with conservative kernel and interrupt return-tail attribution.",
+    "Production demo unchanged; no new package, physical-hardware test or release qualification."
+  ]
+}

@@ -28,6 +28,7 @@ repository root; directory entries include all files below them.
 | `lib/exec/exec.act`, `lib/exec/execos.act`, `lib/exec/execproducer.act` | Action! interface declarations |
 | `lib/exec/execlists.act` | Public list types and application-side list helpers |
 | `lib/exec/exec-abi.inc` | Exec gateway constants and layouts |
+| `lib/exec/exec-native-ports.inc`, `lib/io/timer.act`, `lib/io/timer-types.inc` | Native port binding and public timer interface |
 | `lib/exec/exec-task-types.inc`, `lib/exec/exec-memory-types.inc`, `lib/exec/exec-port-types.inc`, `lib/exec/exec-io-types.inc` | Public Exec records and constants |
 | `lib/desktop/desktop.act`, `lib/desktop/desktypes.act` | Public desktop client binding and generated records |
 | `lib/input/input-types.inc` | Generated public input records and constants |
